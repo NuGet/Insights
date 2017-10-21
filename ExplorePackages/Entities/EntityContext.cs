@@ -65,6 +65,10 @@ namespace Knapcode.ExplorePackages.Entities
 
             modelBuilder
                 .Entity<Package>()
+                .HasIndex(x => new { x.LastCommitTimestamp });
+
+            modelBuilder
+                .Entity<Package>()
                 .Property(x => x.RowVersion)
                 .IsRowVersion();
 
