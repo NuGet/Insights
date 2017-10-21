@@ -8,12 +8,12 @@ namespace Knapcode.ExplorePackages.Commands
     public class FindEmptyIdsCommand : ICommand
     {
         private readonly PackagePathProvider _pathProvider;
-        private readonly FindEmptyIdsNuspecProcessor _processor;
+        private readonly FindEmptyIdsNuspecQuery _processor;
         private readonly ILogger _log;
 
         public FindEmptyIdsCommand(
             PackagePathProvider pathProvider,
-            FindEmptyIdsNuspecProcessor processor,
+            FindEmptyIdsNuspecQuery processor,
             ILogger log)
         {
             _pathProvider = pathProvider;
@@ -23,7 +23,7 @@ namespace Knapcode.ExplorePackages.Commands
 
         public async Task ExecuteAsync(CancellationToken token)
         {
-            var nuspecProcessor = new NuspecProcessorQueue(
+            var nuspecProcessor = new NuspecQueryProcessor(
                 _pathProvider,
                 _processor,
                 _log);

@@ -8,12 +8,12 @@ namespace Knapcode.ExplorePackages.Commands
     public class FindRepositoriesCommand : ICommand
     {
         private readonly PackagePathProvider _pathProvider;
-        private readonly FindRepositoriesNuspecProcessor _processor;
+        private readonly FindRepositoriesNuspecQuery _processor;
         private readonly ILogger _log;
 
         public FindRepositoriesCommand(
             PackagePathProvider pathProvider,
-            FindRepositoriesNuspecProcessor processor,
+            FindRepositoriesNuspecQuery processor,
             ILogger log)
         {
             _pathProvider = pathProvider;
@@ -23,7 +23,7 @@ namespace Knapcode.ExplorePackages.Commands
 
         public async Task ExecuteAsync(CancellationToken token)
         {
-            var nuspecProcessor = new NuspecProcessorQueue(
+            var nuspecProcessor = new NuspecQueryProcessor(
                 _pathProvider,
                 _processor,
                 _log);

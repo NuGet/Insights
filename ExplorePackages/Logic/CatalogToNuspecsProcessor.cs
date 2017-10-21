@@ -19,11 +19,11 @@ namespace Knapcode.ExplorePackages.Logic
             _log = log;
         }
 
-        public string CursorName => CursorNames.Catalog2Nuspecs;
+        public string CursorName => CursorNames.CatalogToNuspecs;
 
         public IReadOnlyList<string> DependencyCursorNames => new List<string>
         {
-             CursorNames.Catalog2Database,
+             CursorNames.CatalogToDatabase,
         };
 
         public async Task ProcessAsync(IReadOnlyList<CatalogEntry> entries)

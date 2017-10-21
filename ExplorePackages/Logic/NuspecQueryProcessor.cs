@@ -12,43 +12,48 @@ using NuGet.Common;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class NuspecProcessorQueue
+    public class NuspecQueryProcessor
     {
         private readonly PackagePathProvider _pathProvider;
-        private readonly INuspecProcessor _processor;
+        private readonly INuspecQuery _query;
         private readonly ILogger _log;
 
-        public NuspecProcessorQueue(
+        public NuspecQueryProcessor(
             PackagePathProvider pathProvider,
-            INuspecProcessor processor,
+            INuspecQuery query,
             ILogger log)
         {
             _pathProvider = pathProvider;
-            _processor = processor;
+            _query = query;
             _log = log;
         }
 
         public async Task ProcessAsync(CancellationToken token)
         {
-            var allWork = GenerateWorkFromDatabase();
+            var packages = GetPackages();
 
             var complete = 0;
             var stopwatch = Stopwatch.StartNew();
-            foreach (var work in allWork)
+            foreach (var package in packages)
             {
+                var nuspec = GetNuspecAndMetadata(package);
+
+                var isMatch = false;
                 try
                 {
-                    using (var stream = File.OpenRead(work.Path))
-                    {
-                        work.Nuspec = LoadXml(stream);
-                    }
-
-                    var nuspec = new NuspecAndMetadata(work.Id, work.Version, work.Path, work.Nuspec);
-                    await WorkAsync(nuspec);
+                    isMatch = await _query.IsMatchAsync(nuspec);
                 }
                 catch (Exception e)
                 {
-                    _log.LogError("Failed: " + work.Path + Environment.NewLine + "  " + e.Message);
+                    _log.LogError($"Could not query .nuspec for {nuspec.Id} {nuspec.Version}: {nuspec.Path}"
+                        + Environment.NewLine
+                        + "  "
+                        + e.Message);
+                }
+
+                if (isMatch)
+                {
+
                 }
 
                 complete++;
@@ -58,18 +63,41 @@ namespace Knapcode.ExplorePackages.Logic
                 }
             }
         }
-        
-        private async Task WorkAsync(NuspecAndMetadata nuspec)
+
+        private NuspecAndMetadata GetNuspecAndMetadata(Package package)
         {
+            var path = _pathProvider.GetLatestNuspecPath(package.Id, package.Version);
+            var exists = false;
+            XDocument document = null;
             try
             {
-                await _processor.ProcessAsync(nuspec);
+                if (File.Exists(path))
+                {
+                    exists = true;
+                    using (var stream = File.OpenRead(path))
+                    {
+                        document = LoadXml(stream);
+                    }
+                }
+                else
+                {
+                    _log.LogWarning($"Could not find .nuspec for {package.Id} {package.Version}: {path}");
+                }
             }
             catch (Exception e)
             {
-                _log.LogError(e.ToString());
-                throw;
+                _log.LogError($"Could not parse .nuspec for {package.Id} {package.Version}: {path}"
+                    + Environment.NewLine
+                    + "  "
+                    + e.Message);
             }
+
+            return new NuspecAndMetadata(
+                package.Id,
+                package.Version,
+                path,
+                exists,
+                document);
         }
         
         private static XDocument LoadXml(Stream stream)
@@ -86,7 +114,7 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
-        private IEnumerable<MutableNuspecToProcess> GenerateWorkFromDatabase()
+        private IEnumerable<Package> GetPackages()
         {
             int fetched;
             var lastKey = 0;
@@ -98,41 +126,19 @@ namespace Knapcode.ExplorePackages.Logic
                         .Packages
                         .Where(x => x.Key > lastKey)
                         .Where(x => !x.Deleted)
-                        .Select(x => new { x.Key, x.Id, x.Version })
                         .Take(1000)
                         .ToList();
+
                     fetched = packages.Count;
 
                     foreach (var package in packages)
                     {
-                        var path = _pathProvider.GetLatestNuspecPath(package.Id, package.Version);
-                        if (File.Exists(path))
-                        {
-                            yield return new MutableNuspecToProcess
-                            {
-                                Id = package.Id,
-                                Version = package.Version,
-                                Path = path,
-                            };
-                        }
-                        else
-                        {
-                            _log.LogWarning($"Could not find .nuspec for {package.Id} {package.Version}.");
-                        }
-
+                        yield return package;
                         lastKey = Math.Max(package.Key, lastKey);
                     }
                 }
             }
             while (fetched > 0);
-        }
-
-        public class MutableNuspecToProcess
-        {
-            public string Id { get; set; }
-            public string Version { get; set; }
-            public string Path { get; set; }
-            public XDocument Nuspec { get; set; }
         }
     }
 }

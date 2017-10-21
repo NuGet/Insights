@@ -17,7 +17,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public IReadOnlyList<string> DependencyCursorNames => new List<string>();
 
-        public string CursorName => CursorNames.Catalog2Database;
+        public string CursorName => CursorNames.CatalogToDatabase;
 
         public async Task ProcessAsync(IReadOnlyList<CatalogEntry> entries)
         {

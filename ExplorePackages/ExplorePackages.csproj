@@ -48,11 +48,11 @@
     <Compile Include="Commands\FetchCursorsCommand.cs" />
     <Compile Include="Entities\PackageQuery.cs" />
     <Compile Include="Entities\PackageQueryMatch.cs" />
-    <Compile Include="Logic\FindRepositoriesNuspecProcessor.cs" />
-    <Compile Include="Logic\FindEmptyIdsNuspecProcessor.cs" />
+    <Compile Include="Logic\FindRepositoriesNuspecQuery.cs" />
+    <Compile Include="Logic\FindEmptyIdsNuspecQuery.cs" />
     <Compile Include="Commands\ICommand.cs" />
-    <Compile Include="Logic\INuspecProcessor.cs" />
-    <Compile Include="Logic\NuspecProcessorQueue.cs" />
+    <Compile Include="Logic\INuspecQuery.cs" />
+    <Compile Include="Logic\NuspecQueryProcessor.cs" />
     <Compile Include="Logic\NuspecAndMetadata.cs" />
     <Compile Include="Logic\PackagePathProvider.cs" />
     <Compile Include="Logic\CatalogToDatabaseProcessor.cs" />
@@ -95,7 +95,7 @@
       <Version>4.5.24</Version>
     </PackageReference>
     <PackageReference Include="NuGet.CatalogReader">
-      <Version>1.5.8</Version>
+      <Version>1.5.12</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup />

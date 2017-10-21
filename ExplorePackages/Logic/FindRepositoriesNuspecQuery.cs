@@ -1,32 +1,33 @@
-﻿using System.IO;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using NuGet.Common;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class FindRepositoriesNuspecProcessor : INuspecProcessor
+    public class FindRepositoriesNuspecQuery : INuspecQuery
     {
         private readonly ILogger _log;
 
-        public FindRepositoriesNuspecProcessor(ILogger log)
+        public FindRepositoriesNuspecQuery(ILogger log)
         {
             _log = log;
         }
 
-        public Task ProcessAsync(NuspecAndMetadata nuspec)
-        {
-            if (HasRepository(nuspec.Document))
-            {
-                _log.LogInformation("Repository: " + nuspec.Path);
-            }
+        public string CursorName => CursorNames.FindRepositoriesNuspecQuery;
 
-            return Task.CompletedTask;
+        public Task<bool> IsMatchAsync(NuspecAndMetadata nuspec)
+        {
+            return Task.FromResult(HasRepository(nuspec.Document));
         }
 
         private bool HasRepository(XDocument nuspec)
         {
+            if (nuspec == null)
+            {
+                return false;
+            }
+
             var metadataEl = nuspec
                 .Root
                 .Elements()
@@ -35,11 +36,10 @@ namespace Knapcode.ExplorePackages.Logic
 
             if (metadataEl == null)
             {
-                throw new InvalidDataException("No <metadata> element was found!");
+                return false;
             }
 
             var ns = metadataEl.GetDefaultNamespace();
-
             var repositoryEl = metadataEl.Element(ns.GetName("repository"));
             return repositoryEl != null;
         }

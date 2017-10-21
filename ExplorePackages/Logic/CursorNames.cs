@@ -9,7 +9,9 @@
             public const string FlatContainerChina = NuGetOrgPrefix + "Flat Container, China";
         }
 
-        public const string Catalog2Database = "CatalogToDatabase";
-        public const string Catalog2Nuspecs = "CatalogToNuspecs";
+        public const string CatalogToDatabase = "CatalogToDatabase";
+        public const string CatalogToNuspecs = "CatalogToNuspecs";
+        public const string FindEmptyIdsNuspecQuery = "FindEmptyIdsNuspecQuery";
+        public const string FindRepositoriesNuspecQuery = "FindRepositoriesNuspecQuery";
     }
 }

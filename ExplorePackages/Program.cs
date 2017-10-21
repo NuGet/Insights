@@ -70,7 +70,7 @@ namespace Knapcode.ExplorePackages
                     {
                         command = new FindEmptyIdsCommand(
                             packagePathProvider,
-                            new FindEmptyIdsNuspecProcessor(
+                            new FindEmptyIdsNuspecQuery(
                                 log),
                             log);
                     }
@@ -79,7 +79,7 @@ namespace Knapcode.ExplorePackages
                     {
                         command = new FindRepositoriesCommand(
                             packagePathProvider,
-                            new FindRepositoriesNuspecProcessor(
+                            new FindRepositoriesNuspecQuery(
                                 log),
                             log);
                     }

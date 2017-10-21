@@ -87,13 +87,8 @@ namespace Knapcode.ExplorePackages.Logic
                     var currentPage = remainingPages.Dequeue();
                     var currentPages = new[] { currentPage };
 
-                    var allEntries = await catalogReader.GetEntriesAsync(currentPages, token);
-
-                    var entries = allEntries
-                        .Where(x => x.CommitTimeStamp > start && x.CommitTimeStamp <= end)
-                        .OrderBy(x => x.CommitTimeStamp)
-                        .ToList();
-
+                    var entries = await catalogReader.GetEntriesAsync(currentPages, start, end, token);
+                    
                     _taskQueue.Enqueue(entries);
 
                     while (_taskQueue.Count > 10)

@@ -1,32 +1,33 @@
-﻿using System.IO;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using NuGet.Common;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class FindEmptyIdsNuspecProcessor : INuspecProcessor
+    public class FindEmptyIdsNuspecQuery : INuspecQuery
     {
         private readonly ILogger _log;
 
-        public FindEmptyIdsNuspecProcessor(ILogger log)
+        public FindEmptyIdsNuspecQuery(ILogger log)
         {
             _log = log;
         }
-        
-        public Task ProcessAsync(NuspecAndMetadata nuspec)
-        {
-            if (HasEmptyId(nuspec.Document))
-            {
-                _log.LogInformation("Empty ID: " + nuspec.Path);
-            }
 
-            return Task.CompletedTask;
+        public string CursorName => CursorNames.FindEmptyIdsNuspecQuery;
+
+        public Task<bool> IsMatchAsync(NuspecAndMetadata nuspec)
+        {
+            return Task.FromResult(HasEmptyId(nuspec.Document));
         }
 
         private bool HasEmptyId(XDocument nuspec)
         {
+            if (nuspec == null)
+            {
+                return false;
+            }
+
             var metadataEl = nuspec
                 .Root
                 .Elements()
@@ -35,7 +36,7 @@ namespace Knapcode.ExplorePackages.Logic
 
             if (metadataEl == null)
             {
-                throw new InvalidDataException("No <metadata> element was found!");
+                return false;
             }
 
             var ns = metadataEl.GetDefaultNamespace();
