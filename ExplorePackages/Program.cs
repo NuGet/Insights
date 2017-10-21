@@ -17,18 +17,18 @@ namespace Knapcode.ExplorePackages
         public static void Main(string[] args)
         {
             ServicePointManager.DefaultConnectionLimit = 32;
-
-            /*
+            
             args = new[] { "findemptyids" };
             MainAsync(args, CancellationToken.None).Wait();
-            */
 
+            /*
             args = new[] { "fetchcursors" };
             MainAsync(args, CancellationToken.None).Wait();
             args = new[] { "catalogtodatabase" };
             MainAsync(args, CancellationToken.None).Wait();
             args = new[] { "catalogtonuspecs" };
             MainAsync(args, CancellationToken.None).Wait();
+            */
         }
 
         private static async Task MainAsync(string[] args, CancellationToken token)
@@ -72,6 +72,8 @@ namespace Knapcode.ExplorePackages
                     {
                         command = new FindEmptyIdsCommand(
                             packagePathProvider,
+                            new FindEmptyIdsNuspecProcessor(
+                                log),
                             log);
                     }
                     break;

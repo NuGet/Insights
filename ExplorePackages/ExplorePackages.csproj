@@ -45,7 +45,11 @@
     <Compile Include="Commands\FindEmptyIdsCommand.cs" />
     <Compile Include="Commands\Catalog2NuspecsCommand.cs" />
     <Compile Include="Commands\FetchCursorsCommand.cs" />
+    <Compile Include="Logic\FindEmptyIdsNuspecProcessor.cs" />
     <Compile Include="Commands\ICommand.cs" />
+    <Compile Include="Logic\INuspecProcessor.cs" />
+    <Compile Include="Logic\NuspecProcessorQueue.cs" />
+    <Compile Include="Logic\NuspecAndMetadata.cs" />
     <Compile Include="Logic\PackagePathProvider.cs" />
     <Compile Include="Logic\CatalogToDatabaseProcessor.cs" />
     <Compile Include="Logic\CatalogToNuspecsProcessor.cs" />
