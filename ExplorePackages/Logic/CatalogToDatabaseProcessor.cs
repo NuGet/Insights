@@ -15,11 +15,7 @@ namespace Knapcode.ExplorePackages.Logic
             _log = log;
         }
 
-        public IReadOnlyList<string> DependencyCursorNames => new List<string>
-        {
-             CursorNames.NuGetOrg.FlatContainerGlobal,
-             CursorNames.NuGetOrg.FlatContainerChina,
-        };
+        public IReadOnlyList<string> DependencyCursorNames => new List<string>();
 
         public string CursorName => CursorNames.Catalog2Database;
 

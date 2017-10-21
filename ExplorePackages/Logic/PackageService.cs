@@ -61,27 +61,13 @@ namespace Knapcode.ExplorePackages.Logic
 
                 existingPackage.Deleted = latestPackage.Deleted;
 
-                if (existingPackage.FirstCommitTimestamp.HasValue)
-                {
-                    existingPackage.FirstCommitTimestamp = Math.Min(
-                        existingPackage.FirstCommitTimestamp.Value,
-                        latestPackage.FirstCommitTimestamp.Value);
-                }
-                else
-                {
-                    existingPackage.FirstCommitTimestamp = latestPackage.FirstCommitTimestamp;
-                }
+                existingPackage.FirstCommitTimestamp = Math.Min(
+                    existingPackage.FirstCommitTimestamp,
+                    latestPackage.FirstCommitTimestamp);
 
-                if (existingPackage.LastCommitTimestamp.HasValue)
-                {
-                    existingPackage.LastCommitTimestamp = Math.Max(
-                        existingPackage.LastCommitTimestamp.Value,
-                        latestPackage.LastCommitTimestamp.Value);
-                }
-                else
-                {
-                    existingPackage.LastCommitTimestamp = latestPackage.LastCommitTimestamp;
-                }
+                existingPackage.LastCommitTimestamp = Math.Max(
+                    existingPackage.LastCommitTimestamp,
+                    latestPackage.LastCommitTimestamp);
             }
             
             // Add new records.

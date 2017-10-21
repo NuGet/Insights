@@ -27,7 +27,7 @@ namespace Knapcode.ExplorePackages.Commands
 
                 foreach (var cursor in cursors)
                 {
-                    await cursorService.SetAsync(cursor.Name, cursor.Value);
+                    await cursorService.SetAsync(cursor.Name, cursor.GetDateTimeOffset());
                 }
             }
         }

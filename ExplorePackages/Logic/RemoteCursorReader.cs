@@ -34,7 +34,9 @@ namespace Knapcode.ExplorePackages.Logic
             foreach (var pair in cursorInput)
             {
                 var value = await GetJsonCursorAsync(pair.Value, token);
-                output.Add(new Cursor { Name = pair.Key, Value = value.UtcDateTime });
+                var cursor = new Cursor { Name = pair.Key };
+                cursor.SetDateTimeOffset(value);
+                output.Add(cursor);
             }
 
             return output;

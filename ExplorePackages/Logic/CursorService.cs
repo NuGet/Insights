@@ -42,16 +42,13 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task SetAsync(string name, DateTimeOffset value)
         {
             var cursor = await GetCursorAsync(name);
-            var valueDateTime = value.UtcDateTime;
-
             if (cursor == null)
             {
-                _entityContext.Cursors.Add(new Cursor { Name = name, Value = valueDateTime });
+                cursor = new Cursor { Name = name };
+                _entityContext.Cursors.Add(cursor);
             }
-            else
-            {
-                cursor.Value = valueDateTime;
-            }
+
+            cursor.SetDateTimeOffset(value);
 
             await _entityContext.SaveChangesAsync();
         }
@@ -70,7 +67,7 @@ namespace Knapcode.ExplorePackages.Logic
                 return DateTimeOffset.MinValue;
             }
 
-            return new DateTimeOffset(cursor.Value, TimeSpan.Zero);
+            return cursor.GetDateTimeOffset();
         }
     }
 }
