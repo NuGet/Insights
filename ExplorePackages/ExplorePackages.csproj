@@ -42,9 +42,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\FindRepositoriesCommand.cs" />
     <Compile Include="Commands\FindEmptyIdsCommand.cs" />
-    <Compile Include="Commands\Catalog2NuspecsCommand.cs" />
+    <Compile Include="Commands\CatalogToNuspecsCommand.cs" />
     <Compile Include="Commands\FetchCursorsCommand.cs" />
+    <Compile Include="Entities\Migrations\20171021210404_AddCommitTimestampsToPackage.cs" />
+    <Compile Include="Entities\Migrations\20171021210404_AddCommitTimestampsToPackage.designer.cs">
+      <DependentUpon>20171021210404_AddCommitTimestampsToPackage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Entities\Migrations\20171021213612_AddPackageQueries.cs" />
+    <Compile Include="Entities\Migrations\20171021213612_AddPackageQueries.designer.cs">
+      <DependentUpon>20171021213612_AddPackageQueries.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Entities\PackageQuery.cs" />
+    <Compile Include="Entities\PackageQueryMatch.cs" />
+    <Compile Include="Logic\FindRepositoriesNuspecProcessor.cs" />
     <Compile Include="Logic\FindEmptyIdsNuspecProcessor.cs" />
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Logic\INuspecProcessor.cs" />

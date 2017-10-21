@@ -9,6 +9,7 @@ using Knapcode.ExplorePackages.Support;
 using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using Microsoft.EntityFrameworkCore;
 
 namespace Knapcode.ExplorePackages
 {
@@ -18,17 +19,15 @@ namespace Knapcode.ExplorePackages
         {
             ServicePointManager.DefaultConnectionLimit = 32;
             
-            args = new[] { "findemptyids" };
-            MainAsync(args, CancellationToken.None).Wait();
-
-            /*
-            args = new[] { "fetchcursors" };
-            MainAsync(args, CancellationToken.None).Wait();
+            // args = new[] { "findrepositories" };
+            // MainAsync(args, CancellationToken.None).Wait();
+            
+            // args = new[] { "fetchcursors" };
+            // MainAsync(args, CancellationToken.None).Wait();
             args = new[] { "catalogtodatabase" };
             MainAsync(args, CancellationToken.None).Wait();
-            args = new[] { "catalogtonuspecs" };
-            MainAsync(args, CancellationToken.None).Wait();
-            */
+            // args = new[] { "catalogtonuspecs" };
+            // MainAsync(args, CancellationToken.None).Wait();
         }
 
         private static async Task MainAsync(string[] args, CancellationToken token)
@@ -36,6 +35,7 @@ namespace Knapcode.ExplorePackages
             using (var entityContext = new EntityContext())
             {
                 await entityContext.Database.EnsureCreatedAsync();
+                await entityContext.Database.MigrateAsync();
             }
 
             var log = new ConsoleLogger();
@@ -73,6 +73,15 @@ namespace Knapcode.ExplorePackages
                         command = new FindEmptyIdsCommand(
                             packagePathProvider,
                             new FindEmptyIdsNuspecProcessor(
+                                log),
+                            log);
+                    }
+                    break;
+                case "findrepositories":
+                    {
+                        command = new FindRepositoriesCommand(
+                            packagePathProvider,
+                            new FindRepositoriesNuspecProcessor(
                                 log),
                             log);
                     }

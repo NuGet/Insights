@@ -2,14 +2,11 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Microsoft.EntityFrameworkCore;
 using NuGet.CatalogReader;
 using NuGet.Common;
-using NuGet.Packaging.Core;
-using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -38,6 +35,8 @@ namespace Knapcode.ExplorePackages.Logic
                     Id = entry.Id,
                     Version = entry.Version.ToNormalizedString(),
                     Deleted = entry.IsDelete,
+                    FirstCommitTimestamp = entry.CommitTimeStamp.UtcTicks,
+                    LastCommitTimestamp = entry.CommitTimeStamp.UtcTicks,
                 };
 
                 latestPackage.Identity = $"{latestPackage.Id}/{latestPackage.Version}";
@@ -59,7 +58,30 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 var latestPackage = identityToLatest[existingPackage.Identity];
                 identityToLatest.Remove(existingPackage.Identity);
+
                 existingPackage.Deleted = latestPackage.Deleted;
+
+                if (existingPackage.FirstCommitTimestamp.HasValue)
+                {
+                    existingPackage.FirstCommitTimestamp = Math.Min(
+                        existingPackage.FirstCommitTimestamp.Value,
+                        latestPackage.FirstCommitTimestamp.Value);
+                }
+                else
+                {
+                    existingPackage.FirstCommitTimestamp = latestPackage.FirstCommitTimestamp;
+                }
+
+                if (existingPackage.LastCommitTimestamp.HasValue)
+                {
+                    existingPackage.LastCommitTimestamp = Math.Max(
+                        existingPackage.LastCommitTimestamp.Value,
+                        latestPackage.LastCommitTimestamp.Value);
+                }
+                else
+                {
+                    existingPackage.LastCommitTimestamp = latestPackage.LastCommitTimestamp;
+                }
             }
             
             // Add new records.

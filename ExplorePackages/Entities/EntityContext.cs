@@ -6,6 +6,8 @@ namespace Knapcode.ExplorePackages.Entities
     {
         public DbSet<Package> Packages { get; set; }
         public DbSet<Cursor> Cursors { get; set; }
+        public DbSet<PackageQuery> PackageQueries { get; set; }
+        public DbSet<PackageQueryMatch> PackageQueryMatches { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -65,6 +67,35 @@ namespace Knapcode.ExplorePackages.Entities
                 .Entity<Package>()
                 .Property(x => x.RowVersion)
                 .IsRowVersion();
+
+            modelBuilder
+                .Entity<PackageQuery>()
+                .Property(x => x.Key)
+                .HasColumnName("PackageQueryKey");
+
+            modelBuilder
+                .Entity<PackageQuery>()
+                .HasKey(x => x.Key);
+
+            modelBuilder
+                .Entity<PackageQueryMatch>()
+                .Property(x => x.Key)
+                .HasColumnName("PackageQueryMatchKey");
+
+            modelBuilder
+                .Entity<PackageQuery>()
+                .Property(x => x.Name)
+                .HasColumnType("TEXT COLLATE NOCASE")
+                .IsRequired();
+
+            modelBuilder
+                .Entity<PackageQuery>()
+                .HasIndex(x => new { x.Name })
+                .IsUnique();
+
+            modelBuilder
+                .Entity<PackageQueryMatch>()
+                .HasKey(x => x.Key);
         }
     }
 }

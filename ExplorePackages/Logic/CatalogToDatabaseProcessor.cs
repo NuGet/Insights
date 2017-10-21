@@ -15,7 +15,12 @@ namespace Knapcode.ExplorePackages.Logic
             _log = log;
         }
 
-        public IReadOnlyList<string> DependencyCursorNames => new List<string>();
+        public IReadOnlyList<string> DependencyCursorNames => new List<string>
+        {
+             CursorNames.NuGetOrg.FlatContainerGlobal,
+             CursorNames.NuGetOrg.FlatContainerChina,
+        };
+
         public string CursorName => CursorNames.Catalog2Database;
 
         public async Task ProcessAsync(IReadOnlyList<CatalogEntry> entries)
