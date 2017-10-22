@@ -23,7 +23,8 @@ namespace Knapcode.ExplorePackages.Logic
 
         public IReadOnlyList<string> DependencyCursorNames => new List<string>
         {
-             CursorNames.CatalogToDatabase,
+             CursorNames.NuGetOrg.FlatContainerGlobal,
+             CursorNames.NuGetOrg.FlatContainerChina,
         };
 
         public async Task ProcessAsync(IReadOnlyList<CatalogEntry> entries)

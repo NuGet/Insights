@@ -88,6 +88,14 @@ namespace Knapcode.ExplorePackages.Logic
                     var currentPages = new[] { currentPage };
 
                     var entries = await catalogReader.GetEntriesAsync(currentPages, start, end, token);
+
+                    // Each processor should ensure values are sorted in an appropriate fashion, but for consistency we
+                    // sort here as well.
+                    entries = entries
+                        .OrderBy(x => x.CommitTimeStamp)
+                        .ThenBy(x => x.Id)
+                        .ThenBy(x => x.Version)
+                        .ToList();
                     
                     _taskQueue.Enqueue(entries);
 

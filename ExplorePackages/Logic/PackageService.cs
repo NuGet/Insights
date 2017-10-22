@@ -26,9 +26,13 @@ namespace Knapcode.ExplorePackages.Logic
         /// </summary>
         public async Task AddOrUpdateBatchAsync(IEnumerable<CatalogEntry> entries)
         {
+            // Make sure to process the entries in chronological order.
+            var sortedEntries = entries
+                .OrderBy(x => x.CommitTimeStamp);
+
             // Create a mapping from package ID + "/" + package version to package item.
             var identityToLatest = new Dictionary<string, Package>(StringComparer.OrdinalIgnoreCase);
-            foreach (var entry in entries)
+            foreach (var entry in sortedEntries)
             {
                 var latestPackage = new Package
                 {

@@ -30,7 +30,21 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task ProcessAsync(CancellationToken token)
         {
-            var packages = GetPackages();
+            DateTimeOffset start;
+            DateTimeOffset end;
+            using (var entities = new EntityContext())
+            {
+                var cursorService = new CursorService(entities);
+
+                start = await cursorService.GetAsync(_query.CursorName);
+                end = await cursorService.GetMinimumAsync(new[]
+                {
+                    CursorNames.CatalogToDatabase,
+                    CursorNames.CatalogToNuspecs,
+                });
+            }
+
+            var packages = GetPackages(start, end);
 
             var complete = 0;
             var stopwatch = Stopwatch.StartNew();
@@ -114,27 +128,55 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
-        private IEnumerable<Package> GetPackages()
+        private IEnumerable<Package> GetPackages(DateTimeOffset start, DateTimeOffset end)
         {
-            int fetched;
-            var lastKey = 0;
+            var startTicks = start.UtcTicks;
+            var endTicks = end.UtcTicks;
+            var packageKeys = new HashSet<int>();
+
+            int fetched;            
             do
             {
+                var commitTimestamps = new List<long>();
+                commitTimestamps.Add(startTicks);
+
                 using (var entities = new EntityContext())
                 {
                     var packages = entities
                         .Packages
-                        .Where(x => x.Key > lastKey)
-                        .Where(x => !x.Deleted)
-                        .Take(1000)
+                        .Where(x => x.LastCommitTimestamp > startTicks && x.LastCommitTimestamp <= endTicks)
+                        .OrderBy(x => x.LastCommitTimestamp)
+                        .Take(50)
                         .ToList();
 
                     fetched = packages.Count;
 
                     foreach (var package in packages)
                     {
-                        yield return package;
-                        lastKey = Math.Max(package.Key, lastKey);
+                        if (package.LastCommitTimestamp > commitTimestamps.Last())
+                        {
+                            commitTimestamps.Add(package.LastCommitTimestamp);
+                        }
+
+                        if (packageKeys.Add(package.Key))
+                        {
+                            Console.WriteLine($"{package.LastCommitTimestamp} {package.Identity}");
+                            yield return package;
+                        }
+                    }
+
+                    if (commitTimestamps.Last() == endTicks)
+                    {
+                        startTicks = endTicks;
+                    }
+                    else if (commitTimestamps.Count == 1)
+                    {
+                        throw new InvalidOperationException(
+                            "Only one commit timestamp was encountered. More records need to be fetched from the DB.");
+                    }
+                    else
+                    {
+                        startTicks = commitTimestamps[commitTimestamps.Count - 2];
                     }
                 }
             }
