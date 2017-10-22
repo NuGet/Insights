@@ -13,6 +13,7 @@ namespace Knapcode.ExplorePackages.Logic
     public class NuspecQueryProcessor
     {
         private readonly PackagePathProvider _pathProvider;
+        private readonly PackageQueryService _queryService;
         private readonly INuspecQuery _query;
         private readonly ILogger _log;
 
@@ -22,6 +23,7 @@ namespace Knapcode.ExplorePackages.Logic
             ILogger log)
         {
             _pathProvider = pathProvider;
+            _queryService = new PackageQueryService(log);
             _query = query;
             _log = log;
         }
@@ -39,32 +41,40 @@ namespace Knapcode.ExplorePackages.Logic
             var complete = 0;
             var stopwatch = Stopwatch.StartNew();
 
-            int batchCount;
-            var enumerator = new PackageCommitEnumerator();
+            int commitCount;
+            var packageService = new PackageService(_log);
 
             do
             {
-                var batches = await enumerator.GetPackageBatchesAsync(start, end);
-                batchCount = batches.Count;
+                var commits = await packageService.GetPackageCommitsAsync(start, end);
+                commitCount = commits.Count;
 
-                foreach (var batch in batches)
+                foreach (var commit in commits)
                 {
-                    foreach (var package in batch.Packages)
+                    foreach (var package in commit.Packages)
                     {
-                        var nuspec = GetNuspecAndMetadata(package);
+                        if (!package.Deleted)
+                        {
+                            var nuspec = GetNuspecAndMetadata(package);
 
-                        var isMatch = false;
-                        try
-                        {
-                            Console.WriteLine($"\"{package.LastCommitTimestamp}\"\t\"{package.Id}/{package.Version}\"");
-                            isMatch = await _query.IsMatchAsync(nuspec);
-                        }
-                        catch (Exception e)
-                        {
-                            _log.LogError($"Could not query .nuspec for {nuspec.Id} {nuspec.Version}: {nuspec.Path}"
-                                + Environment.NewLine
-                                + "  "
-                                + e.Message);
+                            var isMatch = false;
+                            try
+                            {
+                                isMatch = await _query.IsMatchAsync(nuspec);
+                            }
+                            catch (Exception e)
+                            {
+                                _log.LogError($"Could not query .nuspec for {nuspec.Id} {nuspec.Version}: {nuspec.Path}"
+                                    + Environment.NewLine
+                                    + "  "
+                                    + e.Message);
+                            }
+
+                            if (isMatch)
+                            {
+                                await _queryService.AddQueryAsync(_query.CursorName, _query.CursorName);
+                                await _queryService.AddMatchAsync(_query.CursorName, package.Id, package.Version);
+                            }
                         }
 
                         complete++;
@@ -74,11 +84,12 @@ namespace Knapcode.ExplorePackages.Logic
                         }
                     }
 
-                    start = batch.CommitTimestamp;
-                    // await cursorService.SetAsync(_query.CursorName, batch.CommitTimestamp);
+                    start = commit.CommitTimestamp;
                 }
+
+                await cursorService.SetAsync(_query.CursorName, start);
             }
-            while (batchCount > 0);
+            while (commitCount > 0);
         }
 
         private NuspecAndMetadata GetNuspecAndMetadata(Package package)

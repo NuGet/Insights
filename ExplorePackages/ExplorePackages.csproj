@@ -64,6 +64,7 @@
     <Compile Include="Logic\CursorNames.cs" />
     <Compile Include="Logic\ICatalogEntriesProcessor.cs" />
     <Compile Include="Logic\NuspecDownloader.cs" />
+    <Compile Include="Logic\PackageQueryService.cs" />
     <Compile Include="Logic\RemoteCursorReader.cs" />
     <Compile Include="Support\ConsoleLogger.cs" />
     <Compile Include="Support\ConsoleUtility.cs" />

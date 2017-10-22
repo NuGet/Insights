@@ -74,6 +74,16 @@ namespace Knapcode.ExplorePackages.Entities
 
             modelBuilder
                 .Entity<PackageQuery>()
+                .Property(x => x.Name)
+                .IsRequired();
+
+            modelBuilder
+                .Entity<PackageQuery>()
+                .Property(x => x.CursorName)
+                .IsRequired();
+
+            modelBuilder
+                .Entity<PackageQuery>()
                 .Property(x => x.Key)
                 .HasColumnName("PackageQueryKey");
 
@@ -82,24 +92,23 @@ namespace Knapcode.ExplorePackages.Entities
                 .HasKey(x => x.Key);
 
             modelBuilder
-                .Entity<PackageQueryMatch>()
-                .Property(x => x.Key)
-                .HasColumnName("PackageQueryMatchKey");
-
-            modelBuilder
-                .Entity<PackageQuery>()
-                .Property(x => x.Name)
-                .HasColumnType("TEXT COLLATE NOCASE")
-                .IsRequired();
-
-            modelBuilder
                 .Entity<PackageQuery>()
                 .HasIndex(x => new { x.Name })
                 .IsUnique();
 
             modelBuilder
                 .Entity<PackageQueryMatch>()
+                .Property(x => x.Key)
+                .HasColumnName("PackageQueryMatchKey");
+
+            modelBuilder
+                .Entity<PackageQueryMatch>()
                 .HasKey(x => x.Key);
+
+            modelBuilder
+                .Entity<PackageQueryMatch>()
+                .HasIndex(x => new { x.PackageQueryKey, x.PackageKey })
+                .IsUnique();
         }
     }
 }

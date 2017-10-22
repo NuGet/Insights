@@ -18,6 +18,8 @@ namespace Knapcode.ExplorePackages
         {
             ServicePointManager.DefaultConnectionLimit = 32;
 
+            args = new[] { "findemptyids" };
+            MainAsync(args, CancellationToken.None).Wait();
             args = new[] { "findrepositories" };
             MainAsync(args, CancellationToken.None).Wait();
 
