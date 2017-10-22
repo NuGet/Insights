@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Support;
 using NuGet.CatalogReader;
 using NuGet.Common;
@@ -29,22 +28,17 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task ProcessAsync(CancellationToken token)
         {
-            DateTimeOffset start;
+            var cursorService = new CursorService();
+            var start = await cursorService.GetAsync(_processor.CursorName);
             DateTimeOffset end;
-            using (var entityContext = new EntityContext())
+            var dependencyCursorNames = _processor.DependencyCursorNames;
+            if (dependencyCursorNames.Any())
             {
-                var cursorService = new CursorService(entityContext);
-                start = await cursorService.GetAsync(_processor.CursorName);
-
-                var dependencyCursorNames = _processor.DependencyCursorNames;
-                if (dependencyCursorNames.Any())
-                {
-                    end = await cursorService.GetMinimumAsync(dependencyCursorNames);
-                }
-                else
-                {
-                    end = DateTimeOffset.UtcNow;
-                }
+                end = await cursorService.GetMinimumAsync(dependencyCursorNames);
+            }
+            else
+            {
+                end = DateTimeOffset.UtcNow;
             }
 
             _taskQueue.Start();
@@ -63,11 +57,8 @@ namespace Knapcode.ExplorePackages.Logic
 
                 await _processor.ProcessAsync(entries);
 
-                using (var entityContext = new EntityContext())
-                {
-                    var cursorService = new CursorService(entityContext);
-                    await cursorService.SetAsync(_processor.CursorName, entries.Last().CommitTimeStamp);
-                }
+                var cursorService = new CursorService();
+                await cursorService.SetAsync(_processor.CursorName, entries.Last().CommitTimeStamp);
             }
             catch (Exception e)
             {

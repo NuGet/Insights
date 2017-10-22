@@ -18,15 +18,15 @@ namespace Knapcode.ExplorePackages
         {
             ServicePointManager.DefaultConnectionLimit = 32;
 
-            //args = new[] { "findrepositories" };
-            //MainAsync(args, CancellationToken.None).Wait();
+            args = new[] { "findrepositories" };
+            MainAsync(args, CancellationToken.None).Wait();
 
-            args = new[] { "fetchcursors" };
-            MainAsync(args, CancellationToken.None).Wait();
-            args = new[] { "catalogtodatabase" };
-            MainAsync(args, CancellationToken.None).Wait();
-            args = new[] { "catalogtonuspecs" };
-            MainAsync(args, CancellationToken.None).Wait();
+            //args = new[] { "fetchcursors" };
+            //MainAsync(args, CancellationToken.None).Wait();
+            //args = new[] { "catalogtodatabase" };
+            //MainAsync(args, CancellationToken.None).Wait();
+            //args = new[] { "catalogtonuspecs" };
+            //MainAsync(args, CancellationToken.None).Wait();
         }
 
         private static async Task MainAsync(string[] args, CancellationToken token)

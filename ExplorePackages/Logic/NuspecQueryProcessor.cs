@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -30,52 +28,57 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task ProcessAsync(CancellationToken token)
         {
-            DateTimeOffset start;
-            DateTimeOffset end;
-            using (var entities = new EntityContext())
+            var cursorService = new CursorService();
+            var start = await cursorService.GetAsync(_query.CursorName);
+            var end = await cursorService.GetMinimumAsync(new[]
             {
-                var cursorService = new CursorService(entities);
-
-                start = await cursorService.GetAsync(_query.CursorName);
-                end = await cursorService.GetMinimumAsync(new[]
-                {
-                    CursorNames.CatalogToDatabase,
-                    CursorNames.CatalogToNuspecs,
-                });
-            }
-
-            var packages = GetPackages(start, end);
-
+                CursorNames.CatalogToDatabase,
+                CursorNames.CatalogToNuspecs,
+            });
+            
             var complete = 0;
             var stopwatch = Stopwatch.StartNew();
-            foreach (var package in packages)
+
+            int batchCount;
+            var enumerator = new PackageCommitEnumerator();
+
+            do
             {
-                var nuspec = GetNuspecAndMetadata(package);
+                var batches = await enumerator.GetPackageBatchesAsync(start, end);
+                batchCount = batches.Count;
 
-                var isMatch = false;
-                try
+                foreach (var batch in batches)
                 {
-                    isMatch = await _query.IsMatchAsync(nuspec);
-                }
-                catch (Exception e)
-                {
-                    _log.LogError($"Could not query .nuspec for {nuspec.Id} {nuspec.Version}: {nuspec.Path}"
-                        + Environment.NewLine
-                        + "  "
-                        + e.Message);
-                }
+                    foreach (var package in batch.Packages)
+                    {
+                        var nuspec = GetNuspecAndMetadata(package);
 
-                if (isMatch)
-                {
+                        var isMatch = false;
+                        try
+                        {
+                            Console.WriteLine($"\"{package.LastCommitTimestamp}\"\t\"{package.Id}/{package.Version}\"");
+                            isMatch = await _query.IsMatchAsync(nuspec);
+                        }
+                        catch (Exception e)
+                        {
+                            _log.LogError($"Could not query .nuspec for {nuspec.Id} {nuspec.Version}: {nuspec.Path}"
+                                + Environment.NewLine
+                                + "  "
+                                + e.Message);
+                        }
 
-                }
+                        complete++;
+                        if (complete % 1000 == 0)
+                        {
+                            _log.LogInformation($"{complete} completed ({Math.Round(complete / stopwatch.Elapsed.TotalSeconds)} per second).");
+                        }
+                    }
 
-                complete++;
-                if (complete % 1000 == 0)
-                {
-                    _log.LogInformation($"{complete} completed ({Math.Round(complete / stopwatch.Elapsed.TotalSeconds)} per second).");
+                    start = batch.CommitTimestamp;
+                    // await cursorService.SetAsync(_query.CursorName, batch.CommitTimestamp);
                 }
             }
+            while (batchCount > 0);
         }
 
         private NuspecAndMetadata GetNuspecAndMetadata(Package package)
@@ -90,7 +93,7 @@ namespace Knapcode.ExplorePackages.Logic
                     exists = true;
                     using (var stream = File.OpenRead(path))
                     {
-                        document = LoadXml(stream);
+                        document = LoadDocument(stream);
                     }
                 }
                 else
@@ -114,73 +117,20 @@ namespace Knapcode.ExplorePackages.Logic
                 document);
         }
         
-        private static XDocument LoadXml(Stream stream)
+        private static XDocument LoadDocument(Stream stream)
         {
-            using (var streamReader = new StreamReader(stream))
-            using (var xmlReader = XmlReader.Create(streamReader, new XmlReaderSettings
+            var settings = new XmlReaderSettings
             {
                 IgnoreWhitespace = true,
                 IgnoreComments = true,
-                IgnoreProcessingInstructions = true
-            }))
+                IgnoreProcessingInstructions = true,
+            };
+
+            using (var streamReader = new StreamReader(stream))
+            using (var xmlReader = XmlReader.Create(streamReader, settings))
             {
                 return XDocument.Load(xmlReader, LoadOptions.None);
             }
-        }
-
-        private IEnumerable<Package> GetPackages(DateTimeOffset start, DateTimeOffset end)
-        {
-            var startTicks = start.UtcTicks;
-            var endTicks = end.UtcTicks;
-            var packageKeys = new HashSet<int>();
-
-            int fetched;            
-            do
-            {
-                var commitTimestamps = new List<long>();
-                commitTimestamps.Add(startTicks);
-
-                using (var entities = new EntityContext())
-                {
-                    var packages = entities
-                        .Packages
-                        .Where(x => x.LastCommitTimestamp > startTicks && x.LastCommitTimestamp <= endTicks)
-                        .OrderBy(x => x.LastCommitTimestamp)
-                        .Take(50)
-                        .ToList();
-
-                    fetched = packages.Count;
-
-                    foreach (var package in packages)
-                    {
-                        if (package.LastCommitTimestamp > commitTimestamps.Last())
-                        {
-                            commitTimestamps.Add(package.LastCommitTimestamp);
-                        }
-
-                        if (packageKeys.Add(package.Key))
-                        {
-                            Console.WriteLine($"{package.LastCommitTimestamp} {package.Identity}");
-                            yield return package;
-                        }
-                    }
-
-                    if (commitTimestamps.Last() == endTicks)
-                    {
-                        startTicks = endTicks;
-                    }
-                    else if (commitTimestamps.Count == 1)
-                    {
-                        throw new InvalidOperationException(
-                            "Only one commit timestamp was encountered. More records need to be fetched from the DB.");
-                    }
-                    else
-                    {
-                        startTicks = commitTimestamps[commitTimestamps.Count - 2];
-                    }
-                }
-            }
-            while (fetched > 0);
         }
     }
 }

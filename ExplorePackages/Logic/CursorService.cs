@@ -9,53 +9,55 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class CursorService
     {
-        private readonly EntityContext _entityContext;
-
-        public CursorService(EntityContext entityContext)
-        {
-            _entityContext = entityContext;
-        }
-
         public async Task<DateTimeOffset> GetAsync(string name)
         {
-            var cursor = await GetCursorAsync(name);
+            using (var entityContext = new EntityContext())
+            {
+                var cursor = await GetCursorAsync(entityContext, name);
 
-            return GetDateTimeOffset(cursor);
+                return GetDateTimeOffset(cursor);
+            }
         }
 
         public async Task<DateTimeOffset> GetMinimumAsync(IReadOnlyList<string> names)
         {
-            var cursors = await _entityContext
-                .Cursors
-                .Where(x => names.Contains(x.Name))
-                .OrderBy(x => x.Value)
-                .ToListAsync();
-
-            if (cursors.Count < names.Count)
+            using (var entityContext = new EntityContext())
             {
-                return DateTimeOffset.MinValue;
-            }
+                var cursors = await entityContext
+                       .Cursors
+                       .Where(x => names.Contains(x.Name))
+                       .OrderBy(x => x.Value)
+                       .ToListAsync();
 
-            return GetDateTimeOffset(cursors.First());
+                if (cursors.Count < names.Count)
+                {
+                    return DateTimeOffset.MinValue;
+                }
+
+                return GetDateTimeOffset(cursors.First());
+            }
         }
 
         public async Task SetAsync(string name, DateTimeOffset value)
         {
-            var cursor = await GetCursorAsync(name);
-            if (cursor == null)
+            using (var entityContext = new EntityContext())
             {
-                cursor = new Cursor { Name = name };
-                _entityContext.Cursors.Add(cursor);
+                var cursor = await GetCursorAsync(entityContext, name);
+                if (cursor == null)
+                {
+                    cursor = new Cursor { Name = name };
+                    entityContext.Cursors.Add(cursor);
+                }
+
+                cursor.SetDateTimeOffset(value);
+
+                await entityContext.SaveChangesAsync();
             }
-
-            cursor.SetDateTimeOffset(value);
-
-            await _entityContext.SaveChangesAsync();
         }
 
-        private async Task<Cursor> GetCursorAsync(string name)
+        private async Task<Cursor> GetCursorAsync(EntityContext entityContext, string name)
         {
-            return await _entityContext
+            return await entityContext
                 .Cursors
                 .FirstOrDefaultAsync(x => x.Name == name);
         }
