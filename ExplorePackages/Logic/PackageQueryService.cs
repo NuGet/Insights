@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -71,31 +70,50 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
-        public async Task AddMatchAsync(string queryName, string id, string version)
+        public async Task AddMatchesAsync(string queryName, IReadOnlyList<PackageIdentity> identities)
         {
             using (var entityContext = new EntityContext())
             {
+                // Find the query.
                 var query = await GetQueryAsync(queryName, entityContext);
-
                 if (query == null)
                 {
                     throw new ArgumentException($"The query {queryName} does not exist.");
                 }
 
-                var package = await _packageService.GetAsync(id, version);
+                // Don't persist matches that already exist.
+                var identityStrings = new HashSet<string>(identities
+                    .Select(x => $"{x.Id}/{x.Version}"));
+                var queryKey = query.Key;
+                var existingIdentities = (await entityContext
+                    .PackageQueryMatches
+                    .Where(x => identityStrings.Contains(x.Package.Identity) && x.PackageQueryKey == queryKey)
+                    .Select(x => new { x.Package.Id, x.Package.Version })
+                    .ToListAsync())
+                    .Select(x => new PackageIdentity(x.Id, x.Version))
+                    .ToList();
+                var newIdentities = identities
+                    .Except(existingIdentities)
+                    .ToList();
 
-                if (package == null)
+                // Find the packages for new matches.
+                var packages = await _packageService.GetBatchAsync(newIdentities);
+                var missing = newIdentities
+                    .Except(packages.Select(x => new PackageIdentity(x.Id, x.Version)))
+                    .ToList();
+                if (missing.Any())
                 {
-                    throw new ArgumentException($"The package {id} {version} does not exist.");
+                    throw new ArgumentException($"The following packages do not exist: {string.Join(", ", missing)}");
                 }
 
-                entityContext
-                    .PackageQueryMatches
-                    .Add(new PackageQueryMatch
+                // Add the new matches.
+                var newMatches = packages
+                    .Select(x => new PackageQueryMatch
                     {
                         PackageQueryKey = query.Key,
-                        PackageKey = package.Key,
+                        PackageKey = x.Key,
                     });
+                await entityContext.PackageQueryMatches.AddRangeAsync(newMatches);
 
                 await entityContext.SaveChangesAsync();
             }

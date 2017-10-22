@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -49,6 +51,8 @@ namespace Knapcode.ExplorePackages.Logic
                 var commits = await packageService.GetPackageCommitsAsync(start, end);
                 commitCount = commits.Count;
 
+                var matches = new List<PackageIdentity>();
+
                 foreach (var commit in commits)
                 {
                     foreach (var package in commit.Packages)
@@ -72,8 +76,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                             if (isMatch)
                             {
-                                await _queryService.AddQueryAsync(_query.CursorName, _query.CursorName);
-                                await _queryService.AddMatchAsync(_query.CursorName, package.Id, package.Version);
+                                matches.Add(new PackageIdentity(package.Id, package.Version));
                             }
                         }
 
@@ -85,6 +88,13 @@ namespace Knapcode.ExplorePackages.Logic
                     }
 
                     start = commit.CommitTimestamp;
+                }
+
+                if (matches.Any())
+                {
+                    var queryName = _query.CursorName;
+                    await _queryService.AddQueryAsync(queryName, _query.CursorName);
+                    await _queryService.AddMatchesAsync(queryName, matches);
                 }
 
                 await cursorService.SetAsync(_query.CursorName, start);

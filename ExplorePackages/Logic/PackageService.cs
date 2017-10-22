@@ -21,16 +21,21 @@ namespace Knapcode.ExplorePackages.Logic
             _log = log;
         }
 
-        public async Task<Package> GetAsync(string id, string version)
+        public async Task<IReadOnlyList<Package>> GetBatchAsync(IReadOnlyList<PackageIdentity> identities)
         {
             using (var entityContext = new EntityContext())
             {
+                var identityStrings = identities
+                    .Select(x => $"{x.Id}/{x.Version}")
+                    .ToList();
+
                 return await entityContext
                     .Packages
-                    .Where(x => x.Id == id && x.Version == version)
-                    .FirstOrDefaultAsync();
+                    .Where(x => identityStrings.Contains(x.Identity))
+                    .ToListAsync();
             }
         }
+
         public Task<IReadOnlyList<PackageCommit>> GetPackageCommitsAsync(
             DateTimeOffset start,
             DateTimeOffset end)
