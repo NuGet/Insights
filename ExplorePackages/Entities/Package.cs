@@ -9,6 +9,5 @@
         public bool Deleted { get; set; }
         public long FirstCommitTimestamp { get; set; }
         public long LastCommitTimestamp { get; set; }
-        public byte[] RowVersion { get; set; }
     }
 }

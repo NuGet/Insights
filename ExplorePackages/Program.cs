@@ -6,6 +6,7 @@ using Knapcode.ExplorePackages.Commands;
 using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Logic;
 using Knapcode.ExplorePackages.Support;
+using NuGet.CatalogReader;
 using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -18,17 +19,17 @@ namespace Knapcode.ExplorePackages
         {
             ServicePointManager.DefaultConnectionLimit = 32;
 
+            args = new[] { "fetchcursors" };
+            MainAsync(args, CancellationToken.None).Wait();
+            args = new[] { "catalogtodatabase" };
+            MainAsync(args, CancellationToken.None).Wait();
+            args = new[] { "catalogtonuspecs" };
+            MainAsync(args, CancellationToken.None).Wait();
+
             args = new[] { "findemptyids" };
             MainAsync(args, CancellationToken.None).Wait();
             args = new[] { "findrepositories" };
             MainAsync(args, CancellationToken.None).Wait();
-
-            //args = new[] { "fetchcursors" };
-            //MainAsync(args, CancellationToken.None).Wait();
-            //args = new[] { "catalogtodatabase" };
-            //MainAsync(args, CancellationToken.None).Wait();
-            //args = new[] { "catalogtonuspecs" };
-            //MainAsync(args, CancellationToken.None).Wait();
         }
 
         private static async Task MainAsync(string[] args, CancellationToken token)
@@ -39,7 +40,7 @@ namespace Knapcode.ExplorePackages
             }
 
             var log = new ConsoleLogger();
-
+            
             if (args.Length == 0)
             {
                 log.LogError("You must provide a parameter.");

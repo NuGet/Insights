@@ -22,11 +22,6 @@ namespace Knapcode.ExplorePackages.Entities
                 .HasKey(x => x.Name);
 
             modelBuilder
-                .Entity<Cursor>()
-                .Property(x => x.RowVersion)
-                .IsRowVersion();
-
-            modelBuilder
                 .Entity<Package>()
                 .Property(x => x.Key)
                 .HasColumnName("PackageKey");
@@ -66,11 +61,6 @@ namespace Knapcode.ExplorePackages.Entities
             modelBuilder
                 .Entity<Package>()
                 .HasIndex(x => new { x.LastCommitTimestamp });
-
-            modelBuilder
-                .Entity<Package>()
-                .Property(x => x.RowVersion)
-                .IsRowVersion();
 
             modelBuilder
                 .Entity<PackageQuery>()

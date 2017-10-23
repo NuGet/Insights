@@ -6,7 +6,6 @@ namespace Knapcode.ExplorePackages.Entities
     {
         public string Name { get; set; }
         public long Value { get; set; }
-        public byte[] RowVersion { get; set; }
         
         public void SetDateTimeOffset(DateTimeOffset value)
         {
