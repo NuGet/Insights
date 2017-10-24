@@ -11,17 +11,20 @@ namespace Knapcode.ExplorePackages.Commands
         private readonly PackagePathProvider _pathProvider;
         private readonly FindEmptyIdsNuspecQuery _findEmptyIds;
         private readonly FindRepositoriesNuspecQuery _findRepositories;
+        private readonly FindPackageTypesNuspecQuery _findPackageTypes;
         private readonly ILogger _log;
 
         public NuspecQueriesCommand(
             PackagePathProvider pathProvider,
             FindEmptyIdsNuspecQuery findEmptyIds,
             FindRepositoriesNuspecQuery findRepositories,
+            FindPackageTypesNuspecQuery findPackageTypes,
             ILogger log)
         {
             _pathProvider = pathProvider;
             _findEmptyIds = findEmptyIds;
             _findRepositories = findRepositories;
+            _findPackageTypes = findPackageTypes;
             _log = log;
         }
 
@@ -29,7 +32,7 @@ namespace Knapcode.ExplorePackages.Commands
         {
             var nuspecProcessor = new NuspecQueryProcessor(
                 _pathProvider,
-                new List<INuspecQuery> { _findEmptyIds, _findRepositories },
+                new List<INuspecQuery> { _findEmptyIds, _findRepositories, _findPackageTypes },
                 _log);
 
             await nuspecProcessor.ProcessAsync(token);

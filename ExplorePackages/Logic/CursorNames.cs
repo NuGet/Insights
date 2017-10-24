@@ -13,5 +13,6 @@
         public const string CatalogToNuspecs = "CatalogToNuspecs";
         public const string FindEmptyIdsNuspecQuery = "FindEmptyIdsNuspecQuery";
         public const string FindRepositoriesNuspecQuery = "FindRepositoriesNuspecQuery";
+        public const string FindPackageTypesNuspecQuery = "FindPackageTypesNuspecQuery";
     }
 }

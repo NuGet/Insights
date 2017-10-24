@@ -73,6 +73,7 @@ namespace Knapcode.ExplorePackages
                             packagePathProvider,
                             new FindEmptyIdsNuspecQuery(log),
                             new FindRepositoriesNuspecQuery(log),
+                            new FindPackageTypesNuspecQuery(log),
                             log);
                     }
                     break;

@@ -47,6 +47,7 @@
     <Compile Include="Commands\FetchCursorsCommand.cs" />
     <Compile Include="Entities\PackageQuery.cs" />
     <Compile Include="Entities\PackageQueryMatch.cs" />
+    <Compile Include="Logic\FindPackageTypesNuspecQuery.cs" />
     <Compile Include="Logic\PackageCommitEnumerator.cs" />
     <Compile Include="Logic\FindRepositoriesNuspecQuery.cs" />
     <Compile Include="Logic\FindEmptyIdsNuspecQuery.cs" />
