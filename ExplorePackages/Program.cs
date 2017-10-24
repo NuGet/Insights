@@ -6,7 +6,6 @@ using Knapcode.ExplorePackages.Commands;
 using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Logic;
 using Knapcode.ExplorePackages.Support;
-using NuGet.CatalogReader;
 using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
