@@ -66,7 +66,9 @@ namespace Knapcode.ExplorePackages.Logic
                     .PackageQueryMatches
                     .RemoveRange(matches);
 
-                await entityContext.SaveChangesAsync();
+                var deleted = await entityContext.SaveChangesAsync();
+
+                _log.LogInformation($"Deleted {deleted} query matches (looked for {packageKeys.Count} packages).");
             }
         }
 

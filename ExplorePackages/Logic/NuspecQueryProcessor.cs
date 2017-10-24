@@ -76,6 +76,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                             if (isMatch)
                             {
+                                _log.LogInformation($"Query match {_query.CursorName}: {package.Id} {package.Version}");
                                 matches.Add(new PackageIdentity(package.Id, package.Version));
                             }
                         }
@@ -115,6 +116,10 @@ namespace Knapcode.ExplorePackages.Logic
                     using (var stream = File.OpenRead(path))
                     {
                         document = LoadDocument(stream);
+                        document.Changing += (s, ev) =>
+                        {
+                            throw new NotSupportedException();
+                        };
                     }
                 }
                 else
