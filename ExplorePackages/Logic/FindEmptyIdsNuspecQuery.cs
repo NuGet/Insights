@@ -14,6 +14,7 @@ namespace Knapcode.ExplorePackages.Logic
             _log = log;
         }
 
+        public string Name => CursorName;
         public string CursorName => CursorNames.FindEmptyIdsNuspecQuery;
 
         public Task<bool> IsMatchAsync(NuspecAndMetadata nuspec)

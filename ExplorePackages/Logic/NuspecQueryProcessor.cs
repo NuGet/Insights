@@ -16,30 +16,32 @@ namespace Knapcode.ExplorePackages.Logic
     {
         private readonly PackagePathProvider _pathProvider;
         private readonly PackageQueryService _queryService;
-        private readonly INuspecQuery _query;
+        private readonly IReadOnlyList<INuspecQuery> _queries;
         private readonly ILogger _log;
 
         public NuspecQueryProcessor(
             PackagePathProvider pathProvider,
-            INuspecQuery query,
+            IReadOnlyList<INuspecQuery> queries,
             ILogger log)
         {
             _pathProvider = pathProvider;
             _queryService = new PackageQueryService(log);
-            _query = query;
+            _queries = queries;
             _log = log;
         }
 
         public async Task ProcessAsync(CancellationToken token)
         {
             var cursorService = new CursorService();
-            var start = await cursorService.GetAsync(_query.CursorName);
+
+            var cursorStarts = new Dictionary<string, DateTimeOffset>();
+            var start = await GetMinimumQueryStartAsync(cursorService, cursorStarts);
             var end = await cursorService.GetMinimumAsync(new[]
-            {
+{
                 CursorNames.CatalogToDatabase,
                 CursorNames.CatalogToNuspecs,
             });
-            
+
             var complete = 0;
             var stopwatch = Stopwatch.StartNew();
 
@@ -51,56 +53,115 @@ namespace Knapcode.ExplorePackages.Logic
                 var commits = await packageService.GetPackageCommitsAsync(start, end);
                 commitCount = commits.Count;
 
-                var matches = new List<PackageIdentity>();
+                var allQueryMatches = _queries.ToDictionary(
+                    x => x.Name,
+                    x => new List<PackageIdentity>());
 
-                foreach (var commit in commits)
+                foreach (var query in _queries)
                 {
-                    foreach (var package in commit.Packages)
+                    foreach (var commit in commits)
                     {
-                        if (!package.Deleted)
+                        if (commit.CommitTimestamp <= cursorStarts[query.CursorName])
                         {
-                            var nuspec = GetNuspecAndMetadata(package);
-
-                            var isMatch = false;
-                            try
-                            {
-                                isMatch = await _query.IsMatchAsync(nuspec);
-                            }
-                            catch (Exception e)
-                            {
-                                _log.LogError($"Could not query .nuspec for {nuspec.Id} {nuspec.Version}: {nuspec.Path}"
-                                    + Environment.NewLine
-                                    + "  "
-                                    + e.Message);
-                            }
-
-                            if (isMatch)
-                            {
-                                _log.LogInformation($"Query match {_query.CursorName}: {package.Id} {package.Version}");
-                                matches.Add(new PackageIdentity(package.Id, package.Version));
-                            }
+                            continue;
                         }
 
-                        complete++;
-                        if (complete % 1000 == 0)
-                        {
-                            _log.LogInformation($"{complete} completed ({Math.Round(complete / stopwatch.Elapsed.TotalSeconds)} per second).");
-                        }
+                        complete = await ProcessCommitAsync(query, allQueryMatches, commit, complete, stopwatch);
+
+                        start = commit.CommitTimestamp;
                     }
-
-                    start = commit.CommitTimestamp;
                 }
 
-                if (matches.Any())
-                {
-                    var queryName = _query.CursorName;
-                    await _queryService.AddQueryAsync(queryName, _query.CursorName);
-                    await _queryService.AddMatchesAsync(queryName, matches);
-                }
-
-                await cursorService.SetAsync(_query.CursorName, start);
+                await PersistResultsAndCursorsAsync(cursorService, cursorStarts, start, allQueryMatches);
             }
             while (commitCount > 0);
+        }
+
+        private async Task<DateTimeOffset> GetMinimumQueryStartAsync(
+            CursorService cursorService,
+            Dictionary<string, DateTimeOffset> cursorStarts)
+        {
+            var start = DateTimeOffset.MaxValue;
+            foreach (var query in _queries)
+            {
+                if (!cursorStarts.ContainsKey(query.CursorName))
+                {
+                    var cursorStart = await cursorService.GetAsync(query.CursorName);
+                    cursorStarts[query.CursorName] = cursorStart;
+
+                    if (cursorStart < start)
+                    {
+                        start = cursorStart;
+                    }
+                }
+            }
+
+            return start;
+        }
+
+        private async Task<int> ProcessCommitAsync(
+            INuspecQuery query,
+            Dictionary<string, List<PackageIdentity>> allQueryMatches,
+            PackageCommit commit,
+            int complete,
+            Stopwatch stopwatch)
+        {
+            foreach (var package in commit.Packages)
+            {
+                if (!package.Deleted)
+                {
+                    var nuspec = GetNuspecAndMetadata(package);
+
+                    var isMatch = false;
+                    try
+                    {
+                        isMatch = await query.IsMatchAsync(nuspec);
+                    }
+                    catch (Exception e)
+                    {
+                        _log.LogError($"Could not query .nuspec for {nuspec.Id} {nuspec.Version}: {nuspec.Path}"
+                            + Environment.NewLine
+                            + "  "
+                            + e.Message);
+                    }
+
+                    if (isMatch)
+                    {
+                        _log.LogInformation($"Query match {query.Name}: {package.Id} {package.Version}");
+                        allQueryMatches[query.Name].Add(new PackageIdentity(package.Id, package.Version));
+                    }
+                }
+
+                complete++;
+                if (complete % 1000 == 0)
+                {
+                    _log.LogInformation($"{complete} completed ({Math.Round(complete / stopwatch.Elapsed.TotalSeconds)} per second).");
+                }
+            }
+
+            return complete;
+        }
+
+        private async Task PersistResultsAndCursorsAsync(
+            CursorService cursorService,
+            Dictionary<string, DateTimeOffset> cursorStarts,
+            DateTimeOffset start,
+            Dictionary<string, List<PackageIdentity>> allQueryMatches)
+        {
+            foreach (var query in _queries)
+            {
+                if (allQueryMatches[query.Name].Any())
+                {
+                    await _queryService.AddQueryAsync(query.Name, query.CursorName);
+                    await _queryService.AddMatchesAsync(query.Name, allQueryMatches[query.Name]);
+                }
+
+                if (cursorStarts[query.CursorName] < start)
+                {
+                    await cursorService.SetAsync(query.CursorName, start);
+                    cursorStarts[query.CursorName] = start;
+                }
+            }
         }
 
         private NuspecAndMetadata GetNuspecAndMetadata(Package package)

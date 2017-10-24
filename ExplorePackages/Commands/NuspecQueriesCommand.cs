@@ -1,23 +1,27 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
 using NuGet.Common;
 
 namespace Knapcode.ExplorePackages.Commands
 {
-    public class FindRepositoriesCommand : ICommand
+    public class NuspecQueriesCommand : ICommand
     {
         private readonly PackagePathProvider _pathProvider;
-        private readonly FindRepositoriesNuspecQuery _processor;
+        private readonly FindEmptyIdsNuspecQuery _findEmptyIds;
+        private readonly FindRepositoriesNuspecQuery _findRepositories;
         private readonly ILogger _log;
 
-        public FindRepositoriesCommand(
+        public NuspecQueriesCommand(
             PackagePathProvider pathProvider,
-            FindRepositoriesNuspecQuery processor,
+            FindEmptyIdsNuspecQuery findEmptyIds,
+            FindRepositoriesNuspecQuery findRepositories,
             ILogger log)
         {
             _pathProvider = pathProvider;
-            _processor = processor;
+            _findEmptyIds = findEmptyIds;
+            _findRepositories = findRepositories;
             _log = log;
         }
 
@@ -25,7 +29,7 @@ namespace Knapcode.ExplorePackages.Commands
         {
             var nuspecProcessor = new NuspecQueryProcessor(
                 _pathProvider,
-                _processor,
+                new List<INuspecQuery> { _findEmptyIds, _findRepositories },
                 _log);
 
             await nuspecProcessor.ProcessAsync(token);

@@ -42,8 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Commands\FindRepositoriesCommand.cs" />
-    <Compile Include="Commands\FindEmptyIdsCommand.cs" />
+    <Compile Include="Commands\NuspecQueriesCommand.cs" />
     <Compile Include="Commands\CatalogToNuspecsCommand.cs" />
     <Compile Include="Commands\FetchCursorsCommand.cs" />
     <Compile Include="Entities\PackageQuery.cs" />

@@ -26,9 +26,7 @@ namespace Knapcode.ExplorePackages
             args = new[] { "catalogtonuspecs" };
             MainAsync(args, CancellationToken.None).Wait();
 
-            args = new[] { "findemptyids" };
-            MainAsync(args, CancellationToken.None).Wait();
-            args = new[] { "findrepositories" };
+            args = new[] { "nuspecqueries" };
             MainAsync(args, CancellationToken.None).Wait();
         }
 
@@ -69,21 +67,12 @@ namespace Knapcode.ExplorePackages
             ICommand command;
             switch (args[0])
             {
-                case "findemptyids":
+                case "nuspecqueries":
                     {
-                        command = new FindEmptyIdsCommand(
+                        command = new NuspecQueriesCommand(
                             packagePathProvider,
-                            new FindEmptyIdsNuspecQuery(
-                                log),
-                            log);
-                    }
-                    break;
-                case "findrepositories":
-                    {
-                        command = new FindRepositoriesCommand(
-                            packagePathProvider,
-                            new FindRepositoriesNuspecQuery(
-                                log),
+                            new FindEmptyIdsNuspecQuery(log),
+                            new FindRepositoriesNuspecQuery(log),
                             log);
                     }
                     break;
