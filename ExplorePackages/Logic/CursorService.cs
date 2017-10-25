@@ -55,6 +55,24 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
+        public async Task EnsureExistsAsync(string name)
+        {
+            using (var entityContext = new EntityContext())
+            {
+                var cursor = await GetCursorAsync(entityContext, name);
+                if (cursor == null)
+                {
+                    cursor = new Cursor
+                    {
+                        Name = name,
+                        Value = DateTimeOffset.MinValue.Ticks,
+                    };
+                    entityContext.Cursors.Add(cursor);
+                    await entityContext.SaveChangesAsync();
+                }
+            }
+        }
+
         private async Task<Cursor> GetCursorAsync(EntityContext entityContext, string name)
         {
             return await entityContext

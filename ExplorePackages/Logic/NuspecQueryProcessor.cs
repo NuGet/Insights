@@ -66,11 +66,14 @@ namespace Knapcode.ExplorePackages.Logic
                             continue;
                         }
 
-                        complete = await ProcessCommitAsync(query, allQueryMatches, commit, complete, stopwatch);
+                        await ProcessCommitAsync(query, allQueryMatches, commit);
 
                         start = commit.CommitTimestamp;
                     }
                 }
+
+                complete += commits.Sum(x => x.Packages.Count);
+                _log.LogInformation($"{complete} completed ({Math.Round(complete / stopwatch.Elapsed.TotalSeconds)} per second).");
 
                 await PersistResultsAndCursorsAsync(cursorService, cursorStarts, start, allQueryMatches);
             }
@@ -99,12 +102,10 @@ namespace Knapcode.ExplorePackages.Logic
             return start;
         }
 
-        private async Task<int> ProcessCommitAsync(
+        private async Task ProcessCommitAsync(
             INuspecQuery query,
             Dictionary<string, List<PackageIdentity>> allQueryMatches,
-            PackageCommit commit,
-            int complete,
-            Stopwatch stopwatch)
+            PackageCommit commit)
         {
             foreach (var package in commit.Packages)
             {
@@ -131,15 +132,7 @@ namespace Knapcode.ExplorePackages.Logic
                         allQueryMatches[query.Name].Add(new PackageIdentity(package.Id, package.Version));
                     }
                 }
-
-                complete++;
-                if (complete % 1000 == 0)
-                {
-                    _log.LogInformation($"{complete} completed ({Math.Round(complete / stopwatch.Elapsed.TotalSeconds)} per second).");
-                }
             }
-
-            return complete;
         }
 
         private async Task PersistResultsAndCursorsAsync(

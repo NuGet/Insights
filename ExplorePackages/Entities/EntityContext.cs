@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Entities
 {
@@ -11,6 +13,12 @@ namespace Knapcode.ExplorePackages.Entities
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            /*
+            optionsBuilder
+                .UseLoggerFactory(new LoggerFactory()
+                    .AddConsole(LogLevel.Trace));
+            */
+
             optionsBuilder
                 .UseSqlite("Data Source=ExplorePackages.sqlite3");
         }

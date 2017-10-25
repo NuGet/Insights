@@ -11,8 +11,11 @@
 
         public const string CatalogToDatabase = "CatalogToDatabase";
         public const string CatalogToNuspecs = "CatalogToNuspecs";
-        public const string FindEmptyIdsNuspecQuery = "FindEmptyIdsNuspecQuery";
+        public const string FindMissingDependencyIdsNuspecQuery = "FindEmptyIdsNuspecQuery";
         public const string FindRepositoriesNuspecQuery = "FindRepositoriesNuspecQuery";
         public const string FindPackageTypesNuspecQuery = "FindPackageTypesNuspecQuery";
+        public const string FindInvalidDependencyVersionsNuspecQuery = "FindInvalidDependencyVersionsNuspecQuery";
+        public const string FindMissingDependencyVersionsNuspecQuery = "FindMissingDependencyVersionsNuspecQuery";
+        public const string FindEmptyDependencyVersionsNuspecQuery = "FindEmptyDependencyVersionsNuspecQuery";
     }
 }

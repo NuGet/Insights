@@ -27,6 +27,9 @@ namespace Knapcode.ExplorePackages.Logic
 
                 if (query == null)
                 {
+                    var cursorService = new CursorService();
+                    await cursorService.EnsureExistsAsync(cursorName);
+
                     query = new PackageQuery
                     {
                         Name = queryName,

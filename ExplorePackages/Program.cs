@@ -70,9 +70,12 @@ namespace Knapcode.ExplorePackages
                     {
                         command = new NuspecQueriesCommand(
                             packagePathProvider,
-                            new FindEmptyIdsNuspecQuery(log),
+                            new FindMissingDependencyIdsNuspecQuery(log),
                             new FindRepositoriesNuspecQuery(log),
                             new FindPackageTypesNuspecQuery(log),
+                            new FindInvalidDependencyVersionsNuspecQuery(log),
+                            new FindMissingDependencyVersionsNuspecQuery(log),
+                            new FindEmptyDependencyVersionsNuspecQuery(log),
                             log);
                     }
                     break;

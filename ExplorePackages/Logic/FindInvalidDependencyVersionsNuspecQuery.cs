@@ -2,27 +2,28 @@
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using NuGet.Common;
+using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class FindEmptyIdsNuspecQuery : INuspecQuery
+    public class FindInvalidDependencyVersionsNuspecQuery : INuspecQuery
     {
         private readonly ILogger _log;
 
-        public FindEmptyIdsNuspecQuery(ILogger log)
+        public FindInvalidDependencyVersionsNuspecQuery(ILogger log)
         {
             _log = log;
         }
 
         public string Name => CursorName;
-        public string CursorName => CursorNames.FindEmptyIdsNuspecQuery;
+        public string CursorName => CursorNames.FindInvalidDependencyVersionsNuspecQuery;
 
         public Task<bool> IsMatchAsync(NuspecAndMetadata nuspec)
         {
-            return Task.FromResult(HasEmptyId(nuspec.Document));
+            return Task.FromResult(IsMatch(nuspec.Document));
         }
 
-        private bool HasEmptyId(XDocument nuspec)
+        private bool IsMatch(XDocument nuspec)
         {
             if (nuspec == null)
             {
@@ -56,8 +57,9 @@ namespace Knapcode.ExplorePackages.Logic
 
             foreach (var dependencyEl in dependencyEls)
             {
-                var id = dependencyEl.Attribute("id")?.Value;
-                if (string.IsNullOrWhiteSpace(id))
+                var version = dependencyEl.Attribute("version")?.Value;
+                if (!string.IsNullOrEmpty(version)
+                    && !VersionRange.TryParse(version, out var parsed))
                 {
                     return true;
                 }

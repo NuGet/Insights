@@ -19,10 +19,10 @@ namespace Knapcode.ExplorePackages.Logic
 
         public Task<bool> IsMatchAsync(NuspecAndMetadata nuspec)
         {
-            return Task.FromResult(HasPackageTypes(nuspec.Document));
+            return Task.FromResult(IsMatch(nuspec.Document));
         }
 
-        private bool HasPackageTypes(XDocument nuspec)
+        private bool IsMatch(XDocument nuspec)
         {
             if (nuspec == null)
             {
