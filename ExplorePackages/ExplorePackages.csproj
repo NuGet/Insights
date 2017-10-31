@@ -56,8 +56,10 @@
     <Compile Include="Logic\FindMissingDependencyIdsNuspecQuery.cs" />
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Logic\INuspecQuery.cs" />
+    <Compile Include="Logic\NuspecQueryNames.cs" />
     <Compile Include="Logic\NuspecQueryProcessor.cs" />
     <Compile Include="Logic\NuspecAndMetadata.cs" />
+    <Compile Include="Logic\NuspecUtility.cs" />
     <Compile Include="Logic\PackageCommit.cs" />
     <Compile Include="Logic\PackageIdentity.cs" />
     <Compile Include="Logic\PackagePathProvider.cs" />

@@ -14,7 +14,7 @@ namespace Knapcode.ExplorePackages.Logic
             _log = log;
         }
 
-        public string Name => CursorName;
+        public string Name => NuspecQueryNames.FindPackageTypesNuspecQuery;
         public string CursorName => CursorNames.FindPackageTypesNuspecQuery;
 
         public Task<bool> IsMatchAsync(NuspecAndMetadata nuspec)
@@ -24,17 +24,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         private bool IsMatch(XDocument nuspec)
         {
-            if (nuspec == null)
-            {
-                return false;
-            }
-
-            var metadataEl = nuspec
-                .Root
-                .Elements()
-                .Where(x => x.Name.LocalName == "metadata")
-                .FirstOrDefault();
-
+            var metadataEl = NuspecUtility.GetMetadata(nuspec);
             if (metadataEl == null)
             {
                 return false;
