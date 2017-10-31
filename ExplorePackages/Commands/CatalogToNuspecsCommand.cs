@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
 using NuGet.Common;
@@ -16,7 +17,7 @@ namespace Knapcode.ExplorePackages.Commands
             _log = log;
         }
 
-        public async Task ExecuteAsync(CancellationToken token)
+        public async Task ExecuteAsync(IReadOnlyList<string> args, CancellationToken token)
         {
             var catalogProcessor = new CatalogProcessorQueue(_processor, _log);
 

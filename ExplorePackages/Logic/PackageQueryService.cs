@@ -10,6 +10,7 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class PackageQueryService
     {
+        private const int PageSize = 1000;
         private readonly PackageService _packageService;
         private readonly ILogger _log;
 
@@ -72,6 +73,29 @@ namespace Knapcode.ExplorePackages.Logic
                 var deleted = await entityContext.SaveChangesAsync();
 
                 _log.LogInformation($"Deleted {deleted} query matches (looked for {packageKeys.Count} packages).");
+            }
+        }
+
+        public async Task<PackageQueryMatches> GetMatchedPackagesAsync(string queryName, long lastKey)
+        {
+            using (var entityContext = new EntityContext())
+            {
+                var matches = await entityContext
+                    .PackageQueryMatches
+                    .Where(x => x.PackageQuery.Name == queryName && x.Key > lastKey)
+                    .OrderBy(x => x.Key)
+                    .Take(PageSize)
+                    .Select(x => new { x.Key, x.Package })
+                    .ToListAsync();
+
+                if (!matches.Any())
+                {
+                    return new PackageQueryMatches(0, new List<Package>());
+                }
+                
+                return new PackageQueryMatches(
+                    matches.Max(x => x.Key),
+                    matches.Select(x => x.Package).ToList());
             }
         }
 

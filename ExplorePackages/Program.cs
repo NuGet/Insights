@@ -24,9 +24,13 @@ namespace Knapcode.ExplorePackages
             MainAsync(args, CancellationToken.None).Wait();
             args = new[] { "catalogtonuspecs" };
             MainAsync(args, CancellationToken.None).Wait();
-
             args = new[] { "nuspecqueries" };
             MainAsync(args, CancellationToken.None).Wait();
+
+            /*
+            args = new[] { "showqueryresults", "FindRepositoriesNuspecQuery" };
+            MainAsync(args, CancellationToken.None).Wait();
+            */
         }
 
         private static async Task MainAsync(string[] args, CancellationToken token)
@@ -105,12 +109,18 @@ namespace Knapcode.ExplorePackages
                             log);
                     }
                     break;
+                case "showqueryresults":
+                    {
+                        command = new ShowQueryResultsCommand(
+                            log);
+                    }
+                    break;
                 default:
                     log.LogError("Unknown command.");
                     return;
             }
             
-            await command.ExecuteAsync(token);
+            await command.ExecuteAsync(args, token);
         }
     }
 }

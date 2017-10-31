@@ -45,6 +45,7 @@
     <Compile Include="Commands\NuspecQueriesCommand.cs" />
     <Compile Include="Commands\CatalogToNuspecsCommand.cs" />
     <Compile Include="Commands\FetchCursorsCommand.cs" />
+    <Compile Include="Commands\ShowQueryResultsCommand.cs" />
     <Compile Include="Entities\PackageQuery.cs" />
     <Compile Include="Entities\PackageQueryMatch.cs" />
     <Compile Include="Logic\FindEmptyDependencyVersionsNuspecQuery.cs" />
@@ -67,6 +68,7 @@
     <Compile Include="Logic\CursorNames.cs" />
     <Compile Include="Logic\ICatalogEntriesProcessor.cs" />
     <Compile Include="Logic\NuspecDownloader.cs" />
+    <Compile Include="Logic\PackageQueryMatches.cs" />
     <Compile Include="Logic\PackageQueryService.cs" />
     <Compile Include="Logic\RemoteCursorReader.cs" />
     <Compile Include="Support\ConsoleLogger.cs" />

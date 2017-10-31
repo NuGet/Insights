@@ -1,10 +1,11 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Commands
 {
     public interface ICommand
     {
-        Task ExecuteAsync(CancellationToken token);
+        Task ExecuteAsync(IReadOnlyList<string> args, CancellationToken token);
     }
 }

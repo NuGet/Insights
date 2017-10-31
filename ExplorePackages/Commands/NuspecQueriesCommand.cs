@@ -37,7 +37,7 @@ namespace Knapcode.ExplorePackages.Commands
             _log = log;
         }
 
-        public async Task ExecuteAsync(CancellationToken token)
+        public async Task ExecuteAsync(IReadOnlyList<string> args, CancellationToken token)
         {
             var nuspecProcessor = new NuspecQueryProcessor(
                 _pathProvider,
