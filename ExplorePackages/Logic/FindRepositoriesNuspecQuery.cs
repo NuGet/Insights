@@ -23,10 +23,8 @@ namespace Knapcode.ExplorePackages.Logic
 
         private bool IsMatch(XDocument nuspec)
         {
-            var metadataEl = NuspecUtility.GetMetadata(nuspec);
+            var repositoryEl = NuspecUtility.GetRepository(nuspec);
 
-            var ns = metadataEl.GetDefaultNamespace();
-            var repositoryEl = metadataEl.Element(ns.GetName("repository"));
             return repositoryEl != null;
         }
     }

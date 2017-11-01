@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,19 +19,11 @@ namespace Knapcode.ExplorePackages
         {
             ServicePointManager.DefaultConnectionLimit = 32;
 
-            args = new[] { "fetchcursors" };
-            MainAsync(args, CancellationToken.None).Wait();
-            args = new[] { "catalogtodatabase" };
-            MainAsync(args, CancellationToken.None).Wait();
-            args = new[] { "catalogtonuspecs" };
-            MainAsync(args, CancellationToken.None).Wait();
-            args = new[] { "nuspecqueries" };
-            MainAsync(args, CancellationToken.None).Wait();
+            args = new[] { "update" };
+            //args = new[] { "showqueryresults", NuspecQueryNames.FindRepositoriesNuspecQuery };
+            //args = new[] { "showrepositories" };
 
-            /*
-            args = new[] { "showqueryresults", "FindRepositoriesNuspecQuery" };
             MainAsync(args, CancellationToken.None).Wait();
-            */
         }
 
         private static async Task MainAsync(string[] args, CancellationToken token)
@@ -67,60 +60,95 @@ namespace Knapcode.ExplorePackages
                 httpSource,
                 log);
 
-            ICommand command;
-            switch (args[0])
+            var commands = new List<ICommand>();
+
+            switch (args[0].Trim().ToLowerInvariant())
             {
                 case "nuspecqueries":
-                    {
-                        command = new NuspecQueriesCommand(
-                            packagePathProvider,
-                            new FindMissingDependencyIdsNuspecQuery(log),
-                            new FindRepositoriesNuspecQuery(log),
-                            new FindPackageTypesNuspecQuery(log),
-                            new FindInvalidDependencyVersionsNuspecQuery(log),
-                            new FindMissingDependencyVersionsNuspecQuery(log),
-                            new FindEmptyDependencyVersionsNuspecQuery(log),
-                            log);
-                    }
+                    commands.Add(GetNuspecQueriesCommand(log, packagePathProvider));
                     break;
                 case "fetchcursors":
-                    {
-                        command = new FetchCursorsCommand(
-                            new RemoteCursorReader(
-                                httpSource,
-                                log),
-                            log);
-                    }
+                    commands.Add(GetFetchCursorsCommand(log, httpSource));
                     break;
                 case "catalogtodatabase":
-                    {
-                        command = new CatalogToDatabaseCommand(
-                            new CatalogToDatabaseProcessor(
-                                log),
-                            log);
-                    }
+                    commands.Add(GetCatalogToDatabaseCommand(log));
                     break;
                 case "catalogtonuspecs":
-                    {
-                        command = new CatalogToNuspecsCommand(
-                            new CatalogToNuspecsProcessor(
-                                nuspecDownloader,
-                                log),
-                            log);
-                    }
+                    commands.Add(GetCatalogToNuspecsCommand(log, nuspecDownloader));
                     break;
                 case "showqueryresults":
-                    {
-                        command = new ShowQueryResultsCommand(
-                            log);
-                    }
+                    commands.Add(GetShowQueryResultsCommand(log));
+                    break;
+                case "showrepositories":
+                    commands.Add(GetShowRepositoriesCommand(log, packagePathProvider));
+                    break;
+                case "update":
+                    commands.Add(GetFetchCursorsCommand(log, httpSource));
+                    commands.Add(GetCatalogToDatabaseCommand(log));
+                    commands.Add(GetCatalogToNuspecsCommand(log, nuspecDownloader));
+                    commands.Add(GetNuspecQueriesCommand(log, packagePathProvider));
                     break;
                 default:
                     log.LogError("Unknown command.");
                     return;
             }
             
-            await command.ExecuteAsync(args, token);
+            foreach (var command in commands)
+            {
+                await command.ExecuteAsync(args, token);
+            }
+        }
+
+        private static ShowRepositoriesCommand GetShowRepositoriesCommand(ConsoleLogger log, PackagePathProvider packagePathProvider)
+        {
+            return new ShowRepositoriesCommand(
+                packagePathProvider,
+                log);
+        }
+
+        private static ShowQueryResultsCommand GetShowQueryResultsCommand(ConsoleLogger log)
+        {
+            return new ShowQueryResultsCommand(
+                log);
+        }
+
+        private static CatalogToNuspecsCommand GetCatalogToNuspecsCommand(ConsoleLogger log, NuspecDownloader nuspecDownloader)
+        {
+            return new CatalogToNuspecsCommand(
+                new CatalogToNuspecsProcessor(
+                    nuspecDownloader,
+                    log),
+                log);
+        }
+
+        private static CatalogToDatabaseCommand GetCatalogToDatabaseCommand(ConsoleLogger log)
+        {
+            return new CatalogToDatabaseCommand(
+                new CatalogToDatabaseProcessor(
+                    log),
+                log);
+        }
+
+        private static FetchCursorsCommand GetFetchCursorsCommand(ConsoleLogger log, HttpSource httpSource)
+        {
+            return new FetchCursorsCommand(
+                new RemoteCursorReader(
+                    httpSource,
+                    log),
+                log);
+        }
+
+        private static NuspecQueriesCommand GetNuspecQueriesCommand(ConsoleLogger log, PackagePathProvider packagePathProvider)
+        {
+            return new NuspecQueriesCommand(
+                packagePathProvider,
+                new FindMissingDependencyIdsNuspecQuery(log),
+                new FindRepositoriesNuspecQuery(log),
+                new FindPackageTypesNuspecQuery(log),
+                new FindInvalidDependencyVersionsNuspecQuery(log),
+                new FindMissingDependencyVersionsNuspecQuery(log),
+                new FindEmptyDependencyVersionsNuspecQuery(log),
+                log);
         }
     }
 }

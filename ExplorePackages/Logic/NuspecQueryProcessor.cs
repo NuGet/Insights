@@ -169,11 +169,7 @@ namespace Knapcode.ExplorePackages.Logic
                     exists = true;
                     using (var stream = File.OpenRead(path))
                     {
-                        document = LoadDocument(stream);
-                        document.Changing += (s, ev) =>
-                        {
-                            throw new NotSupportedException();
-                        };
+                        document = NuspecUtility.LoadXml(stream);
                     }
                 }
                 else
@@ -195,22 +191,6 @@ namespace Knapcode.ExplorePackages.Logic
                 path,
                 exists,
                 document);
-        }
-        
-        private static XDocument LoadDocument(Stream stream)
-        {
-            var settings = new XmlReaderSettings
-            {
-                IgnoreWhitespace = true,
-                IgnoreComments = true,
-                IgnoreProcessingInstructions = true,
-            };
-
-            using (var streamReader = new StreamReader(stream))
-            using (var xmlReader = XmlReader.Create(streamReader, settings))
-            {
-                return XDocument.Load(xmlReader, LoadOptions.None);
-            }
         }
     }
 }

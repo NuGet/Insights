@@ -46,6 +46,7 @@
     <Compile Include="Commands\CatalogToNuspecsCommand.cs" />
     <Compile Include="Commands\FetchCursorsCommand.cs" />
     <Compile Include="Commands\ShowQueryResultsCommand.cs" />
+    <Compile Include="Commands\ShowRepositoriesCommand.cs" />
     <Compile Include="Entities\PackageQuery.cs" />
     <Compile Include="Entities\PackageQueryMatch.cs" />
     <Compile Include="Logic\FindEmptyDependencyVersionsNuspecQuery.cs" />
