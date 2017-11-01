@@ -18,11 +18,7 @@ namespace Knapcode.ExplorePackages
         public static void Main(string[] args)
         {
             ServicePointManager.DefaultConnectionLimit = 32;
-
-            args = new[] { "update" };
-            //args = new[] { "showqueryresults", NuspecQueryNames.FindRepositoriesNuspecQuery };
-            //args = new[] { "showrepositories" };
-
+            
             MainAsync(args, CancellationToken.None).Wait();
         }
 
