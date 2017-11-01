@@ -5,8 +5,7 @@
         public static class NuGetOrg
         {
             private const string NuGetOrgPrefix = "NuGet.org, ";
-            public const string FlatContainerGlobal = NuGetOrgPrefix + "Flat Container, Global";
-            public const string FlatContainerChina = NuGetOrgPrefix + "Flat Container, China";
+            public const string FlatContainer = NuGetOrgPrefix + "Flat Container";
         }
 
         public const string CatalogToDatabase = "CatalogToDatabase";
