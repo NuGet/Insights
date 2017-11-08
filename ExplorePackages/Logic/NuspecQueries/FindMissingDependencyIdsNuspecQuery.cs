@@ -1,21 +1,20 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Xml.Linq;
 using NuGet.Common;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class FindMissingDependencyVersionsNuspecQuery : INuspecQuery
+    public class FindMissingDependencyIdsNuspecQuery : INuspecQuery
     {
         private readonly ILogger _log;
 
-        public FindMissingDependencyVersionsNuspecQuery(ILogger log)
+        public FindMissingDependencyIdsNuspecQuery(ILogger log)
         {
             _log = log;
         }
 
-        public string Name => NuspecQueryNames.FindMissingDependencyVersionsNuspecQuery;
-        public string CursorName => CursorNames.FindMissingDependencyVersionsNuspecQuery;
+        public string Name => NuspecQueryNames.FindMissingDependencyIdsNuspecQuery;
+        public string CursorName => CursorNames.FindMissingDependencyIdsNuspecQuery;
 
         public Task<bool> IsMatchAsync(NuspecAndMetadata nuspec)
         {
@@ -28,8 +27,8 @@ namespace Knapcode.ExplorePackages.Logic
 
             foreach (var dependencyEl in dependencyEls)
             {
-                var version = dependencyEl.Attribute("version");
-                if (version == null)
+                var id = dependencyEl.Attribute("id")?.Value;
+                if (string.IsNullOrWhiteSpace(id))
                 {
                     return true;
                 }
