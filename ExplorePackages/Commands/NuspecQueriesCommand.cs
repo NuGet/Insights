@@ -15,6 +15,7 @@ namespace Knapcode.ExplorePackages.Commands
         private readonly FindInvalidDependencyVersionsNuspecQuery _findInvalidDependencyVersions;
         private readonly FindMissingDependencyVersionsNuspecQuery _findMissingDependencyVersions;
         private readonly FindEmptyDependencyVersionsNuspecQuery _findEmptyDependencyVersions;
+        private readonly FindIdsEndingInDotNumberNuspecQuery _findIdsEndingInDotNumber;
         private readonly ILogger _log;
 
         public NuspecQueriesCommand(
@@ -25,6 +26,7 @@ namespace Knapcode.ExplorePackages.Commands
             FindInvalidDependencyVersionsNuspecQuery findInvalidDependencyVersions,
             FindMissingDependencyVersionsNuspecQuery findMissingDependencyVersions,
             FindEmptyDependencyVersionsNuspecQuery findEmptyDependencyVersions,
+            FindIdsEndingInDotNumberNuspecQuery findIdsEndingInDotNumber,
             ILogger log)
         {
             _pathProvider = pathProvider;
@@ -34,6 +36,7 @@ namespace Knapcode.ExplorePackages.Commands
             _findInvalidDependencyVersions = findInvalidDependencyVersions;
             _findMissingDependencyVersions = findMissingDependencyVersions;
             _findEmptyDependencyVersions = findEmptyDependencyVersions;
+            _findIdsEndingInDotNumber = findIdsEndingInDotNumber;
             _log = log;
         }
 
@@ -49,6 +52,7 @@ namespace Knapcode.ExplorePackages.Commands
                     _findInvalidDependencyVersions,
                     _findMissingDependencyVersions,
                     _findEmptyDependencyVersions,
+                    _findIdsEndingInDotNumber,
                 },
                 _log);
 

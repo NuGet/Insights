@@ -8,5 +8,6 @@
         public const string FindInvalidDependencyVersionsNuspecQuery = CursorNames.FindInvalidDependencyVersionsNuspecQuery;
         public const string FindMissingDependencyVersionsNuspecQuery = CursorNames.FindMissingDependencyVersionsNuspecQuery;
         public const string FindEmptyDependencyVersionsNuspecQuery = CursorNames.FindEmptyDependencyVersionsNuspecQuery;
+        public const string FindIdsEndingInDotNumberNuspecQuery = CursorNames.FindIdsEndingInDotNumberNuspecQuery;
     }
 }

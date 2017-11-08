@@ -16,5 +16,6 @@
         public const string FindInvalidDependencyVersionsNuspecQuery = "FindInvalidDependencyVersionsNuspecQuery";
         public const string FindMissingDependencyVersionsNuspecQuery = "FindMissingDependencyVersionsNuspecQuery";
         public const string FindEmptyDependencyVersionsNuspecQuery = "FindEmptyDependencyVersionsNuspecQuery";
+        public const string FindIdsEndingInDotNumberNuspecQuery = "FindIdsEndingInDotNumberNuspecQuery";
     }
 }

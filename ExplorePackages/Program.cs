@@ -144,6 +144,7 @@ namespace Knapcode.ExplorePackages
                 new FindInvalidDependencyVersionsNuspecQuery(log),
                 new FindMissingDependencyVersionsNuspecQuery(log),
                 new FindEmptyDependencyVersionsNuspecQuery(log),
+                new FindIdsEndingInDotNumberNuspecQuery(log),
                 log);
         }
     }

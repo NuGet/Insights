@@ -51,6 +51,7 @@
     <Compile Include="Entities\PackageQueryMatch.cs" />
     <Compile Include="Logic\FindEmptyDependencyVersionsNuspecQuery.cs" />
     <Compile Include="Logic\FindMissingDependencyVersionsNuspecQuery.cs" />
+    <Compile Include="Logic\FindIdsEndingInDotNumberNuspecQuery.cs" />
     <Compile Include="Logic\FindPackageTypesNuspecQuery.cs" />
     <Compile Include="Logic\FindInvalidDependencyVersionsNuspecQuery.cs" />
     <Compile Include="Logic\FindRepositoriesNuspecQuery.cs" />
