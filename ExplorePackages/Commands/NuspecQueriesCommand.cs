@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
@@ -9,34 +10,16 @@ namespace Knapcode.ExplorePackages.Commands
     public class NuspecQueriesCommand : ICommand
     {
         private readonly PackagePathProvider _pathProvider;
-        private readonly FindMissingDependencyIdsNuspecQuery _findMissingDependencyIds;
-        private readonly FindRepositoriesNuspecQuery _findRepositories;
-        private readonly FindPackageTypesNuspecQuery _findPackageTypes;
-        private readonly FindInvalidDependencyVersionsNuspecQuery _findInvalidDependencyVersions;
-        private readonly FindMissingDependencyVersionsNuspecQuery _findMissingDependencyVersions;
-        private readonly FindEmptyDependencyVersionsNuspecQuery _findEmptyDependencyVersions;
-        private readonly FindIdsEndingInDotNumberNuspecQuery _findIdsEndingInDotNumber;
+        private readonly List<INuspecQuery> _queries;
         private readonly ILogger _log;
 
         public NuspecQueriesCommand(
             PackagePathProvider pathProvider,
-            FindMissingDependencyIdsNuspecQuery findMissingDependencyIds,
-            FindRepositoriesNuspecQuery findRepositories,
-            FindPackageTypesNuspecQuery findPackageTypes,
-            FindInvalidDependencyVersionsNuspecQuery findInvalidDependencyVersions,
-            FindMissingDependencyVersionsNuspecQuery findMissingDependencyVersions,
-            FindEmptyDependencyVersionsNuspecQuery findEmptyDependencyVersions,
-            FindIdsEndingInDotNumberNuspecQuery findIdsEndingInDotNumber,
+            IEnumerable<INuspecQuery> queries,
             ILogger log)
         {
             _pathProvider = pathProvider;
-            _findMissingDependencyIds = findMissingDependencyIds;
-            _findRepositories = findRepositories;
-            _findPackageTypes = findPackageTypes;
-            _findInvalidDependencyVersions = findInvalidDependencyVersions;
-            _findMissingDependencyVersions = findMissingDependencyVersions;
-            _findEmptyDependencyVersions = findEmptyDependencyVersions;
-            _findIdsEndingInDotNumber = findIdsEndingInDotNumber;
+            _queries = queries.ToList();
             _log = log;
         }
 
@@ -44,16 +27,7 @@ namespace Knapcode.ExplorePackages.Commands
         {
             var nuspecProcessor = new NuspecQueryProcessor(
                 _pathProvider,
-                new List<INuspecQuery>
-                {
-                    _findMissingDependencyIds,
-                    _findRepositories,
-                    _findPackageTypes,
-                    _findInvalidDependencyVersions,
-                    _findMissingDependencyVersions,
-                    _findEmptyDependencyVersions,
-                    _findIdsEndingInDotNumber,
-                },
+                _queries,
                 _log);
 
             await nuspecProcessor.ProcessAsync(token);
