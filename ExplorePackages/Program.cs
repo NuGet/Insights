@@ -24,18 +24,12 @@ namespace Knapcode.ExplorePackages
 
         private static async Task MainAsync(string[] args, CancellationToken token)
         {
-            ServicePointManager.DefaultConnectionLimit = 32;
+            // Initialize the dependency injection container.
             var serviceCollection = InitializeServiceCollection();
-
             using (var serviceProvider = serviceCollection.BuildServiceProvider())
             {
-                using (var entityContext = new EntityContext())
-                {
-                    await entityContext.Database.EnsureCreatedAsync();
-                }
-
+                // Determine the commands to run.
                 var log = serviceProvider.GetRequiredService<ILogger>();
-
                 if (args.Length == 0)
                 {
                     log.LogError("You must provide a parameter.");
@@ -43,7 +37,6 @@ namespace Knapcode.ExplorePackages
                 }
 
                 var commands = new List<ICommand>();
-
                 switch (args[0].Trim().ToLowerInvariant())
                 {
                     case "nuspecqueries":
@@ -75,11 +68,28 @@ namespace Knapcode.ExplorePackages
                         return;
                 }
 
+                // Execute.
+                await InitializeGlobalState();
                 foreach (var command in commands)
                 {
                     await command.ExecuteAsync(args, token);
                 }
             }
+        }
+
+        private static async Task InitializeGlobalState()
+        {
+            using (var entityContext = new EntityContext())
+            {
+                await entityContext.Database.EnsureCreatedAsync();
+            }
+
+            // Allow up to 32 parallel HTTP connections.
+            ServicePointManager.DefaultConnectionLimit = 32;
+
+            // Set the user agent.
+            var userAgentStringBuilder = new UserAgentStringBuilder("Knapcode.ExplorePackages");
+            UserAgent.SetUserAgentString(userAgentStringBuilder);
         }
 
         private static ServiceCollection InitializeServiceCollection()
