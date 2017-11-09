@@ -42,25 +42,42 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Commands\NuspecQueriesCommand.cs" />
+    <Compile Include="Commands\PackageQueriesCommand.cs" />
     <Compile Include="Commands\CatalogToNuspecsCommand.cs" />
     <Compile Include="Commands\FetchCursorsCommand.cs" />
     <Compile Include="Commands\ShowQueryResultsCommand.cs" />
     <Compile Include="Commands\ShowRepositoriesCommand.cs" />
     <Compile Include="Entities\PackageQuery.cs" />
     <Compile Include="Entities\PackageQueryMatch.cs" />
-    <Compile Include="Logic\NuspecQueries\FindEmptyDependencyVersionsNuspecQuery.cs" />
-    <Compile Include="Logic\NuspecQueries\FindMissingDependencyVersionsNuspecQuery.cs" />
-    <Compile Include="Logic\NuspecQueries\FindIdsEndingInDotNumberNuspecQuery.cs" />
-    <Compile Include="Logic\NuspecQueries\FindPackageTypesNuspecQuery.cs" />
-    <Compile Include="Logic\NuspecQueries\FindInvalidDependencyVersionsNuspecQuery.cs" />
-    <Compile Include="Logic\NuspecQueries\FindRepositoriesNuspecQuery.cs" />
-    <Compile Include="Logic\NuspecQueries\FindMissingDependencyIdsNuspecQuery.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\FindEmptyDependencyVersionsNuspecQuery.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\FindFloatingDependencyVersionsNuspecQuery.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\FindMissingDependencyVersionsNuspecQuery.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\FindIdsEndingInDotNumberNuspecQuery.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\FindPackageTypesNuspecQuery.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\FindInvalidDependencyVersionsNuspecQuery.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\FindSemVer2DependencyVersionsNuspecQuery.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\FindSemVer2PackageVersionsNuspecQuery.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\FindRepositoriesNuspecQuery.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\FindMissingDependencyIdsNuspecQuery.cs" />
     <Compile Include="Commands\ICommand.cs" />
-    <Compile Include="Logic\NuspecQueries\INuspecQuery.cs" />
-    <Compile Include="Logic\NuspecQueries\NuspecQueryNames.cs" />
-    <Compile Include="Logic\NuspecQueries\NuspecQueryProcessor.cs" />
-    <Compile Include="Logic\NuspecAndMetadata.cs" />
+    <Compile Include="Logic\PackageQueries\ImmutablePackage.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\INuspecQuery.cs" />
+    <Compile Include="Logic\PackageQueries\PackageQueries\IPackageQuery.cs" />
+    <Compile Include="Logic\PackageQueries\PackageQueries\NuspecPackageQuery.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueryContext.cs" />
+    <Compile Include="Logic\PackageQueries\PackageQueries\HasRegistrationDiscrepancyInGzippedHivePackageQuery.cs" />
+    <Compile Include="Logic\PackageQueries\PackageQueries\HasRegistrationDiscrepancyInSemVer2HivePackageQuery.cs" />
+    <Compile Include="Logic\PackageQueries\PackageQueries\HasRegistrationDiscrepancyInOriginalHivePackageQuery.cs" />
+    <Compile Include="Logic\PackageQueries\PackageQueries\HasRegistrationDiscrepancyPackageQuery.cs" />
+    <Compile Include="Logic\Protocol\RegistrationCatalogEntry.cs" />
+    <Compile Include="Logic\Protocol\RegistrationIndex.cs" />
+    <Compile Include="Logic\Protocol\RegistrationLeafItem.cs" />
+    <Compile Include="Logic\Protocol\RegistrationPage.cs" />
+    <Compile Include="Logic\Protocol\RegistrationPageItem.cs" />
+    <Compile Include="Logic\Protocol\RegistrationService.cs" />
+    <Compile Include="Logic\PackageQueries\PackageQueryNames.cs" />
+    <Compile Include="Logic\PackageQueries\PackageQueryProcessor.cs" />
+    <Compile Include="Logic\PackageQueries\PackageQueryContext.cs" />
     <Compile Include="Logic\NuspecUtility.cs" />
     <Compile Include="Logic\PackageCommit.cs" />
     <Compile Include="Logic\PackageIdentity.cs" />
@@ -75,6 +92,7 @@
     <Compile Include="Logic\PackageQueryMatches.cs" />
     <Compile Include="Logic\PackageQueryService.cs" />
     <Compile Include="Logic\RemoteCursorReader.cs" />
+    <Compile Include="Logic\Protocol\ServiceIndexCache.cs" />
     <Compile Include="Support\ConsoleLogger.cs" />
     <Compile Include="Support\ConsoleUtility.cs" />
     <Compile Include="Logic\CursorService.cs" />
@@ -114,6 +132,9 @@
     </PackageReference>
     <PackageReference Include="NuGet.CatalogReader">
       <Version>1.5.12</Version>
+    </PackageReference>
+    <PackageReference Include="NuGet.Protocol">
+      <Version>4.3.0</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup />

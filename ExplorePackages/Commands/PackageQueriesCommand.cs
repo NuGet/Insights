@@ -7,15 +7,15 @@ using NuGet.Common;
 
 namespace Knapcode.ExplorePackages.Commands
 {
-    public class NuspecQueriesCommand : ICommand
+    public class PackageQueriesCommand : ICommand
     {
         private readonly PackagePathProvider _pathProvider;
-        private readonly List<INuspecQuery> _queries;
+        private readonly List<IPackageQuery> _queries;
         private readonly ILogger _log;
 
-        public NuspecQueriesCommand(
+        public PackageQueriesCommand(
             PackagePathProvider pathProvider,
-            IEnumerable<INuspecQuery> queries,
+            IEnumerable<IPackageQuery> queries,
             ILogger log)
         {
             _pathProvider = pathProvider;
@@ -25,12 +25,12 @@ namespace Knapcode.ExplorePackages.Commands
 
         public async Task ExecuteAsync(IReadOnlyList<string> args, CancellationToken token)
         {
-            var nuspecProcessor = new NuspecQueryProcessor(
+            var processor = new PackageQueryProcessor(
                 _pathProvider,
                 _queries,
                 _log);
 
-            await nuspecProcessor.ProcessAsync(token);
+            await processor.ProcessAsync(token);
         }
     }
 }

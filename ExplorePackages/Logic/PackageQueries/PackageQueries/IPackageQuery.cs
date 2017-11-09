@@ -2,10 +2,10 @@
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public interface INuspecQuery
+    public interface IPackageQuery
     {
         string Name { get; }
         string CursorName { get; }
-        Task<bool> IsMatchAsync(NuspecAndMetadata nuspec);
+        Task<bool> IsMatchAsync(PackageQueryContext context);
     }
 }

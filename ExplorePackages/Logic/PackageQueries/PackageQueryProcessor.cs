@@ -11,21 +11,21 @@ using NuGet.Common;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class NuspecQueryProcessor
+    public class PackageQueryProcessor
     {
         private readonly PackagePathProvider _pathProvider;
         private readonly PackageQueryService _queryService;
-        private readonly IReadOnlyList<INuspecQuery> _queries;
+        private readonly List<IPackageQuery> _queries;
         private readonly ILogger _log;
 
-        public NuspecQueryProcessor(
+        public PackageQueryProcessor(
             PackagePathProvider pathProvider,
-            IReadOnlyList<INuspecQuery> queries,
+            IEnumerable<IPackageQuery> queries,
             ILogger log)
         {
             _pathProvider = pathProvider;
             _queryService = new PackageQueryService(log);
-            _queries = queries;
+            _queries = queries.ToList();
             _log = log;
         }
 
@@ -60,7 +60,7 @@ namespace Knapcode.ExplorePackages.Logic
                 {
                     foreach (var package in commit.Packages)
                     {
-                        var nuspec = GetNuspecAndMetadata(package);
+                        var context = GetPackageQueryContext(package);
 
                         foreach (var query in _queries)
                         {
@@ -68,20 +68,15 @@ namespace Knapcode.ExplorePackages.Logic
                             {
                                 continue;
                             }
-
-                            if (package.Deleted)
-                            {
-                                continue;
-                            }
-
+                            
                             var isMatch = false;
                             try
                             {
-                                isMatch = await query.IsMatchAsync(nuspec);
+                                isMatch = await query.IsMatchAsync(context);
                             }
                             catch (Exception e)
                             {
-                                _log.LogError($"Could not query .nuspec for {nuspec.Id} {nuspec.Version}: {nuspec.Path}"
+                                _log.LogError($"Query failure {query.Name}: {context.Package.Id} {context.Package.Version}"
                                     + Environment.NewLine
                                     + "  "
                                     + e.Message);
@@ -100,7 +95,7 @@ namespace Knapcode.ExplorePackages.Logic
                 }
 
                 complete += commits.Sum(x => x.Packages.Count);
-                _log.LogInformation($"{complete} completed ({Math.Round(complete / stopwatch.Elapsed.TotalSeconds)} per second).");
+                _log.LogInformation($"{complete} completed ({Math.Round(complete / stopwatch.Elapsed.TotalSeconds)} per second). Cursors moving to {start:O}.");
 
                 await PersistResultsAndCursorsAsync(cursorService, cursorStarts, start, allQueryMatches);
             }
@@ -151,7 +146,16 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
-        private NuspecAndMetadata GetNuspecAndMetadata(Package package)
+        private PackageQueryContext GetPackageQueryContext(Package package)
+        {
+            var immutablePackage = new ImmutablePackage(package);
+            var nuspecQueryContext = GetNuspecQueryContext(package);
+            var isSemVer2 = NuspecUtility.IsSemVer2(nuspecQueryContext.Document);
+
+            return new PackageQueryContext(immutablePackage, nuspecQueryContext, isSemVer2);
+        }
+
+        private NuspecQueryContext GetNuspecQueryContext(Package package)
         {
             var path = _pathProvider.GetLatestNuspecPath(package.Id, package.Version);
             var exists = false;
@@ -166,10 +170,6 @@ namespace Knapcode.ExplorePackages.Logic
                         document = NuspecUtility.LoadXml(stream);
                     }
                 }
-                else
-                {
-                    _log.LogWarning($"Could not find .nuspec for {package.Id} {package.Version}: {path}");
-                }
             }
             catch (Exception e)
             {
@@ -177,14 +177,16 @@ namespace Knapcode.ExplorePackages.Logic
                     + Environment.NewLine
                     + "  "
                     + e.Message);
+
+                throw;
             }
 
-            return new NuspecAndMetadata(
-                package.Id,
-                package.Version,
-                path,
-                exists,
-                document);
+            if (!exists && !package.Deleted)
+            {
+                _log.LogWarning($"Could not find .nuspec for {package.Id} {package.Version}: {path}");
+            }
+
+            return new NuspecQueryContext(path, exists, document);
         }
     }
 }

@@ -55,7 +55,7 @@ namespace Knapcode.ExplorePackages.Commands
             do
             {
                 var matches = await matchesService.GetMatchedPackagesAsync(
-                    NuspecQueryNames.FindRepositoriesNuspecQuery,
+                    PackageQueryNames.FindRepositoriesNuspecQuery,
                     lastKey);
                 count = matches.Packages.Count;
                 lastKey = matches.LastKey;

@@ -1,27 +1,13 @@
-﻿using System.Threading.Tasks;
-using System.Xml.Linq;
-using NuGet.Common;
+﻿using System.Xml.Linq;
 
 namespace Knapcode.ExplorePackages.Logic
 {
     public class FindMissingDependencyIdsNuspecQuery : INuspecQuery
     {
-        private readonly ILogger _log;
-
-        public FindMissingDependencyIdsNuspecQuery(ILogger log)
-        {
-            _log = log;
-        }
-
-        public string Name => NuspecQueryNames.FindMissingDependencyIdsNuspecQuery;
+        public string Name => PackageQueryNames.FindMissingDependencyIdsNuspecQuery;
         public string CursorName => CursorNames.FindMissingDependencyIdsNuspecQuery;
-
-        public Task<bool> IsMatchAsync(NuspecAndMetadata nuspec)
-        {
-            return Task.FromResult(IsMatch(nuspec.Document));
-        }
-
-        private bool IsMatch(XDocument nuspec)
+        
+        public bool IsMatch(XDocument nuspec)
         {
             var dependencyEls = NuspecUtility.GetDependencies(nuspec);
 

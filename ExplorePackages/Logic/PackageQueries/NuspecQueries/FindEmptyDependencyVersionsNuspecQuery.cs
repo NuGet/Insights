@@ -1,27 +1,13 @@
-﻿using System.Threading.Tasks;
-using System.Xml.Linq;
-using NuGet.Common;
+﻿using System.Xml.Linq;
 
 namespace Knapcode.ExplorePackages.Logic
 {
     public class FindEmptyDependencyVersionsNuspecQuery : INuspecQuery
     {
-        private readonly ILogger _log;
-
-        public FindEmptyDependencyVersionsNuspecQuery(ILogger log)
-        {
-            _log = log;
-        }
-
-        public string Name => NuspecQueryNames.FindEmptyDependencyVersionsNuspecQuery;
+        public string Name => PackageQueryNames.FindEmptyDependencyVersionsNuspecQuery;
         public string CursorName => CursorNames.FindEmptyDependencyVersionsNuspecQuery;
-
-        public Task<bool> IsMatchAsync(NuspecAndMetadata nuspec)
-        {
-            return Task.FromResult(IsMatch(nuspec.Document));
-        }
-
-        private bool IsMatch(XDocument nuspec)
+        
+        public bool IsMatch(XDocument nuspec)
         {
             var dependencyEls = NuspecUtility.GetDependencies(nuspec);
 

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -40,7 +41,7 @@ namespace Knapcode.ExplorePackages
                 switch (args[0].Trim().ToLowerInvariant())
                 {
                     case "nuspecqueries":
-                        commands.Add(serviceProvider.GetRequiredService<NuspecQueriesCommand>());
+                        commands.Add(serviceProvider.GetRequiredService<PackageQueriesCommand>());
                         break;
                     case "fetchcursors":
                         commands.Add(serviceProvider.GetRequiredService<FetchCursorsCommand>());
@@ -61,7 +62,7 @@ namespace Knapcode.ExplorePackages
                         commands.Add(serviceProvider.GetRequiredService<FetchCursorsCommand>());
                         commands.Add(serviceProvider.GetRequiredService<CatalogToDatabaseCommand>());
                         commands.Add(serviceProvider.GetRequiredService<CatalogToNuspecsCommand>());
-                        commands.Add(serviceProvider.GetRequiredService<NuspecQueriesCommand>());
+                        commands.Add(serviceProvider.GetRequiredService<PackageQueriesCommand>());
                         break;
                     default:
                         log.LogError("Unknown command.");
@@ -95,42 +96,70 @@ namespace Knapcode.ExplorePackages
         private static ServiceCollection InitializeServiceCollection()
         {
             var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<ServiceIndexCache>();
             serviceCollection.AddSingleton<ILogger, ConsoleLogger>();
-            serviceCollection.AddSingleton(x => new HttpClientHandler());
-            serviceCollection.AddSingleton(x => new HttpSource(
-                new PackageSource("https://api.nuget.org/v3/index.json"),
-                () =>
+            serviceCollection.AddSingleton(
+                x => new HttpClientHandler()
                 {
-                    var httpClientHandler = x.GetRequiredService<HttpClientHandler>();
-                    var httpMessageHandler = new PassThroughHandler
+                    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                });
+            serviceCollection.AddSingleton(
+                x => new HttpSource(
+                    new PackageSource("https://api.nuget.org/v3/index.json"),
+                    () =>
                     {
-                        InnerHandler = httpClientHandler
-                    };
-                    return Task.FromResult<HttpHandlerResource>(new HttpHandlerResourceV3(
-                        httpClientHandler,
-                        httpMessageHandler));
-                },
-                NullThrottle.Instance));
-            serviceCollection.AddTransient(x => new PackagePathProvider(@"E:\data\nuget.org\packages"));
+                        var httpClientHandler = x.GetRequiredService<HttpClientHandler>();
+                        var httpMessageHandler = new PassThroughHandler
+                        {
+                            InnerHandler = httpClientHandler
+                        };
+                        return Task.FromResult<HttpHandlerResource>(new HttpHandlerResourceV3(
+                            httpClientHandler,
+                            httpMessageHandler));
+                    },
+                    NullThrottle.Instance));
+            serviceCollection.AddTransient(
+                x => new PackagePathProvider(@"E:\data\nuget.org\packages"));
             serviceCollection.AddTransient<NuspecDownloader>();
             serviceCollection.AddTransient<RemoteCursorReader>();
             serviceCollection.AddTransient<CatalogToDatabaseProcessor>();
             serviceCollection.AddTransient<CatalogToNuspecsProcessor>();
+            serviceCollection.AddTransient<RegistrationService>();
 
-            serviceCollection.AddTransient<NuspecQueriesCommand>();
+            serviceCollection.AddTransient<PackageQueriesCommand>();
             serviceCollection.AddTransient<FetchCursorsCommand>();
             serviceCollection.AddTransient<CatalogToDatabaseCommand>();
             serviceCollection.AddTransient<CatalogToNuspecsCommand>();
             serviceCollection.AddTransient<ShowQueryResultsCommand>();
             serviceCollection.AddTransient<ShowRepositoriesCommand>();
 
-            serviceCollection.AddTransient<INuspecQuery, FindIdsEndingInDotNumberNuspecQuery>();
-            serviceCollection.AddTransient<INuspecQuery, FindEmptyDependencyVersionsNuspecQuery>();
-            serviceCollection.AddTransient<INuspecQuery, FindRepositoriesNuspecQuery>();
-            serviceCollection.AddTransient<INuspecQuery, FindInvalidDependencyVersionsNuspecQuery>();
-            serviceCollection.AddTransient<INuspecQuery, FindMissingDependencyVersionsNuspecQuery>();
-            serviceCollection.AddTransient<INuspecQuery, FindMissingDependencyIdsNuspecQuery>();
-            serviceCollection.AddTransient<INuspecQuery, FindPackageTypesNuspecQuery>();
+            serviceCollection.AddTransient<FindIdsEndingInDotNumberNuspecQuery>();
+            serviceCollection.AddTransient<FindEmptyDependencyVersionsNuspecQuery>();
+            serviceCollection.AddTransient<FindRepositoriesNuspecQuery>();
+            serviceCollection.AddTransient<FindInvalidDependencyVersionsNuspecQuery>();
+            serviceCollection.AddTransient<FindMissingDependencyVersionsNuspecQuery>();
+            serviceCollection.AddTransient<FindMissingDependencyIdsNuspecQuery>();
+            serviceCollection.AddTransient<FindPackageTypesNuspecQuery>();
+            serviceCollection.AddTransient<FindSemVer2PackageVersionsNuspecQuery>();
+            serviceCollection.AddTransient<FindSemVer2DependencyVersionsNuspecQuery>();
+            serviceCollection.AddTransient<FindFloatingDependencyVersionsNuspecQuery>();
+
+            serviceCollection.AddTransient<IPackageQuery, HasRegistrationDiscrepancyInOriginalHivePackageQuery>();
+            serviceCollection.AddTransient<IPackageQuery, HasRegistrationDiscrepancyInGzippedHivePackageQuery>();
+            serviceCollection.AddTransient<IPackageQuery, HasRegistrationDiscrepancyInSemVer2HivePackageQuery>();
+
+            // Add all of the .nuspec queries as package queries.
+            var nuspecQueryDescriptors = serviceCollection
+                .Where(x => typeof(INuspecQuery).IsAssignableFrom(x.ServiceType))
+                .ToList();
+            foreach (var nuspecQueryDescriptor in nuspecQueryDescriptors)
+            {
+                serviceCollection.AddTransient<IPackageQuery>(x =>
+                {
+                    var nuspecQuery = (INuspecQuery) x.GetRequiredService(nuspecQueryDescriptor.ImplementationType);
+                    return new NuspecPackageQuery(nuspecQuery);
+                });
+            }
 
             return serviceCollection;
         }

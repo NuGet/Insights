@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
+using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -43,6 +44,65 @@ namespace Knapcode.ExplorePackages.Logic
 
             var ns = metadataEl.GetDefaultNamespace();
             return metadataEl.Element(ns.GetName("repository"));
+        }
+
+        public static bool IsSemVer2(XDocument nuspec)
+        {
+            return HasSemVer2PackageVersion(nuspec)
+                || HasSemVer2DependencyVersion(nuspec);
+        }
+
+        public static bool HasSemVer2DependencyVersion(XDocument nuspec)
+        {
+            var metadataEl = GetMetadata(nuspec);
+            if (metadataEl == null)
+            {
+                return false;
+            }
+
+            var ns = metadataEl.GetDefaultNamespace();
+            var dependencyEls = GetDependencies(nuspec);
+            foreach (var dependencyEl in dependencyEls)
+            {
+                var dependencyVersion = dependencyEl.Attribute("version")?.Value;
+                if (!string.IsNullOrEmpty(dependencyVersion)
+                    && VersionRange.TryParse(dependencyVersion, out var parsed))
+                {
+                    if (parsed.HasLowerBound && parsed.MinVersion.IsSemVer2)
+                    {
+                        return true;
+                    }
+
+                    if (parsed.HasUpperBound && parsed.MaxVersion.IsSemVer2)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public static bool HasSemVer2PackageVersion(XDocument nuspec)
+        {
+            var metadataEl = GetMetadata(nuspec);
+            if (metadataEl == null)
+            {
+                return false;
+            }
+
+            var ns = metadataEl.GetDefaultNamespace();
+            var version = metadataEl.Element(ns.GetName("version"));
+            if (version != null)
+            {
+                if (NuGetVersion.TryParse(version.Value, out var parsed)
+                    && parsed.IsSemVer2)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public static XElement GetMetadata(XDocument nuspec)
