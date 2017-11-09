@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Knapcode.ExplorePackages.Entities;
+using Knapcode.ExplorePackages.Support;
 using NuGet.Common;
 
 namespace Knapcode.ExplorePackages.Logic
@@ -39,6 +40,8 @@ namespace Knapcode.ExplorePackages.Logic
 {
                 CursorNames.CatalogToDatabase,
                 CursorNames.CatalogToNuspecs,
+                CursorNames.NuGetOrg.FlatContainer,
+                CursorNames.NuGetOrg.Registration,
             });
 
             var complete = 0;
@@ -52,47 +55,18 @@ namespace Knapcode.ExplorePackages.Logic
                 var commits = await packageService.GetPackageCommitsAsync(start, end);
                 commitCount = commits.Count;
 
+                var allQueryMatchesLock = new object();
                 var allQueryMatches = _queries.ToDictionary(
                     x => x.Name,
                     x => new List<PackageIdentity>());
 
-                foreach (var commit in commits)
-                {
-                    foreach (var package in commit.Packages)
-                    {
-                        var context = GetPackageQueryContext(package);
+                var taskQueue = new TaskQueue<Work>(
+                    workerCount: 32,
+                    workAsync: w => ConsumeWorkAsync(allQueryMatchesLock, allQueryMatches, w));
 
-                        foreach (var query in _queries)
-                        {
-                            if (commit.CommitTimestamp <= cursorStarts[query.CursorName])
-                            {
-                                continue;
-                            }
-                            
-                            var isMatch = false;
-                            try
-                            {
-                                isMatch = await query.IsMatchAsync(context);
-                            }
-                            catch (Exception e)
-                            {
-                                _log.LogError($"Query failure {query.Name}: {context.Package.Id} {context.Package.Version}"
-                                    + Environment.NewLine
-                                    + "  "
-                                    + e.Message);
-                                throw;
-                            }
-
-                            if (isMatch)
-                            {
-                                _log.LogInformation($"Query match {query.Name}: {package.Id} {package.Version}");
-                                allQueryMatches[query.Name].Add(new PackageIdentity(package.Id, package.Version));
-                            }
-                        }
-
-                        start = commit.CommitTimestamp;
-                    }
-                }
+                taskQueue.Start();
+                start = ProduceWork(cursorStarts, start, commits, taskQueue);
+                await taskQueue.CompleteAsync();
 
                 complete += commits.Sum(x => x.Packages.Count);
                 _log.LogInformation($"{complete} completed ({Math.Round(complete / stopwatch.Elapsed.TotalSeconds)} per second). Cursors moving to {start:O}.");
@@ -100,6 +74,69 @@ namespace Knapcode.ExplorePackages.Logic
                 await PersistResultsAndCursorsAsync(cursorService, cursorStarts, start, allQueryMatches);
             }
             while (commitCount > 0);
+        }
+
+        private DateTimeOffset ProduceWork(
+            Dictionary<string, DateTimeOffset> cursorStarts,
+            DateTimeOffset start,
+            IReadOnlyList<PackageCommit> commits,
+            TaskQueue<Work> taskQueue)
+        {
+            foreach (var commit in commits)
+            {
+                foreach (var package in commit.Packages)
+                {
+                    var context = GetPackageQueryContext(package);
+
+                    foreach (var query in _queries)
+                    {
+                        if (commit.CommitTimestamp <= cursorStarts[query.CursorName])
+                        {
+                            continue;
+                        }
+
+                        taskQueue.Enqueue(new Work
+                        {
+                            Query = query,
+                            Context = context,
+                        });
+                    }
+
+                    start = commit.CommitTimestamp;
+                }
+            }
+
+            return start;
+        }
+
+        private async Task ConsumeWorkAsync(object allQueryMatchesLock, Dictionary<string, List<PackageIdentity>> allQueryMatches, Work work)
+        {
+            var name = work.Query.Name;
+            var id = work.Context.Package.Id;
+            var version = work.Context.Package.Version;
+
+            var isMatch = false;
+            try
+            {
+                isMatch = await work.Query.IsMatchAsync(work.Context);
+            }
+            catch (Exception e)
+            {
+                _log.LogError($"Query failure {name}: {id} {version}"
+                    + Environment.NewLine
+                    + "  "
+                    + e.Message);
+                throw;
+            }
+
+            if (isMatch)
+            {
+                _log.LogInformation($"Query match {name}: {id} {version}");
+                lock (allQueryMatchesLock)
+                {
+                    allQueryMatches[name].Add(new PackageIdentity(id, version));
+                }
+            }
         }
 
         private async Task<DateTimeOffset> GetMinimumQueryStartAsync(
@@ -187,6 +224,12 @@ namespace Knapcode.ExplorePackages.Logic
             }
 
             return new NuspecQueryContext(path, exists, document);
+        }
+
+        private class Work
+        {
+            public IPackageQuery Query { get; set; }
+            public PackageQueryContext Context { get; set; }
         }
     }
 }

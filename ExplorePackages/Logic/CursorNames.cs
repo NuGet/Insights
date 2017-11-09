@@ -6,6 +6,7 @@
         {
             private const string NuGetOrgPrefix = "NuGet.org, ";
             public const string FlatContainer = NuGetOrgPrefix + "Flat Container";
+            public const string Registration = NuGetOrgPrefix + "Registration";
         }
 
         public const string CatalogToDatabase = "CatalogToDatabase";

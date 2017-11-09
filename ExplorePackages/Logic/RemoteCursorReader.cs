@@ -27,6 +27,7 @@ namespace Knapcode.ExplorePackages.Logic
             var cursorInput = new Dictionary<string, string>
             {
                 { CursorNames.NuGetOrg.FlatContainer, "https://api.nuget.org/v3-flatcontainer/cursor.json" },
+                { CursorNames.NuGetOrg.Registration, "https://api.nuget.org/v3/registration3/cursor.json" },
             };
 
             var output = new List<Cursor>();
