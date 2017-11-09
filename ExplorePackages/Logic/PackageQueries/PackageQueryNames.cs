@@ -17,5 +17,7 @@
         public const string HasRegistrationDiscrepancyInGzippedHivePackageQuery = CursorNames.HasRegistrationDiscrepancyInGzippedHivePackageQuery;
         public const string HasRegistrationDiscrepancyInSemVer2HivePackageQuery = CursorNames.HasRegistrationDiscrepancyInSemVer2HivePackageQuery;
         public const string HasPackagesContainerDiscrepancyPackageQuery = CursorNames.HasPackagesContainerDiscrepancyPackageQuery;
+        public const string HasFlatContainerDiscrepancyPackageQuery = CursorNames.HasFlatContainerDiscrepancyPackageQuery;
+        public const string HasV2DiscrepancyPackageQuery = CursorNames.HasV2DiscrepancyPackageQuery;
     }
 }

@@ -1,11 +1,11 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace Knapcode.ExplorePackages.Entities
 {
     public class EntityContext : DbContext
     {
+        public static string ConnectionString { get; set; } = "Data Source=ExplorePackages.sqlite3";
+
         public DbSet<Package> Packages { get; set; }
         public DbSet<Cursor> Cursors { get; set; }
         public DbSet<PackageQuery> PackageQueries { get; set; }
@@ -13,14 +13,8 @@ namespace Knapcode.ExplorePackages.Entities
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            /*
             optionsBuilder
-                .UseLoggerFactory(new LoggerFactory()
-                    .AddConsole(LogLevel.Trace));
-            */
-
-            optionsBuilder
-                .UseSqlite("Data Source=ExplorePackages.sqlite3");
+                .UseSqlite(ConnectionString);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -10,7 +10,7 @@
                   registrationService,
                   PackageQueryNames.HasRegistrationDiscrepancyInSemVer2HivePackageQuery,
                   CursorNames.HasRegistrationDiscrepancyInSemVer2HivePackageQuery,
-                  registrationType: "RegistrationsBaseUrl/3.6.0",
+                  type: "RegistrationsBaseUrl/3.6.0",
                   hasSemVer2: true)
         {
         }

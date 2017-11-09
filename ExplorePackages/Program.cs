@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -9,6 +11,7 @@ using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Logic;
 using Knapcode.ExplorePackages.Support;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol;
@@ -25,8 +28,11 @@ namespace Knapcode.ExplorePackages
 
         private static async Task MainAsync(string[] args, CancellationToken token)
         {
+            // Read the settings
+            var settings = GetSettings();
+
             // Initialize the dependency injection container.
-            var serviceCollection = InitializeServiceCollection();
+            var serviceCollection = InitializeServiceCollection(settings);
             using (var serviceProvider = serviceCollection.BuildServiceProvider())
             {
                 // Determine the commands to run.
@@ -70,16 +76,18 @@ namespace Knapcode.ExplorePackages
                 }
 
                 // Execute.
-                await InitializeGlobalState();
+                await InitializeGlobalState(settings);
                 foreach (var command in commands)
                 {
                     await command.ExecuteAsync(args, token);
                 }
             }
         }
-
-        private static async Task InitializeGlobalState()
+        
+        private static async Task InitializeGlobalState(ExplorePackagesSettings settings)
         {
+            // Initialize the database.
+            EntityContext.ConnectionString = "Data Source=" + settings.DatabasePath;
             using (var entityContext = new EntityContext())
             {
                 await entityContext.Database.EnsureCreatedAsync();
@@ -93,7 +101,31 @@ namespace Knapcode.ExplorePackages
             UserAgent.SetUserAgentString(userAgentStringBuilder);
         }
 
-        private static ServiceCollection InitializeServiceCollection()
+        private static ExplorePackagesSettings GetSettings()
+        {
+            return ReadSettingsFromDisk() ?? new ExplorePackagesSettings
+            {
+                DatabasePath = Path.Combine(Directory.GetCurrentDirectory(), "ExplorePackages.sqlite3"),
+                PackagePath = Path.Combine(Directory.GetCurrentDirectory(), "packages"),
+            };
+        }
+
+        private static ExplorePackagesSettings ReadSettingsFromDisk()
+        {
+            var settingsDirectory = Environment.GetEnvironmentVariable("USERPROFILE") ?? Directory.GetCurrentDirectory();
+            var settingsPath = Path.Combine(settingsDirectory, "Knapcode.ExplorePackages.Settings.json");
+            if (!File.Exists(settingsPath))
+            {
+                return null;
+            }
+
+            var content = File.ReadAllText(settingsPath);
+            var settings = JsonConvert.DeserializeObject<ExplorePackagesSettings>(content);
+
+            return settings;
+        }
+
+        private static ServiceCollection InitializeServiceCollection(ExplorePackagesSettings settings)
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<ServiceIndexCache>();
@@ -119,13 +151,15 @@ namespace Knapcode.ExplorePackages
                     },
                     NullThrottle.Instance));
             serviceCollection.AddTransient(
-                x => new PackagePathProvider(@"E:\data\nuget.org\packages"));
+                x => new PackagePathProvider(settings.PackagePath));
             serviceCollection.AddTransient<NuspecDownloader>();
             serviceCollection.AddTransient<RemoteCursorReader>();
             serviceCollection.AddTransient<CatalogToDatabaseProcessor>();
             serviceCollection.AddTransient<CatalogToNuspecsProcessor>();
-            serviceCollection.AddTransient<RegistrationClient>();
+            serviceCollection.AddTransient<V2Client>();
             serviceCollection.AddTransient<PackagesContainerClient>();
+            serviceCollection.AddTransient<FlatContainerClient>();
+            serviceCollection.AddTransient<RegistrationClient>();
 
             serviceCollection.AddTransient<PackageQueriesCommand>();
             serviceCollection.AddTransient<FetchCursorsCommand>();
@@ -145,10 +179,12 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<FindSemVer2DependencyVersionsNuspecQuery>();
             serviceCollection.AddTransient<FindFloatingDependencyVersionsNuspecQuery>();
 
+            serviceCollection.AddTransient<IPackageQuery, HasV2DiscrepancyPackageQuery>();
+            serviceCollection.AddTransient<IPackageQuery, HasPackagesContainerDiscrepancyPackageQuery>();
+            serviceCollection.AddTransient<IPackageQuery, HasFlatContainerDiscrepancyPackageQuery>();
             serviceCollection.AddTransient<IPackageQuery, HasRegistrationDiscrepancyInOriginalHivePackageQuery>();
             serviceCollection.AddTransient<IPackageQuery, HasRegistrationDiscrepancyInGzippedHivePackageQuery>();
             serviceCollection.AddTransient<IPackageQuery, HasRegistrationDiscrepancyInSemVer2HivePackageQuery>();
-            serviceCollection.AddTransient<IPackageQuery, HasPackagesContainerDiscrepancyPackageQuery>();
 
             // Add all of the .nuspec queries as package queries.
             var nuspecQueryDescriptors = serviceCollection

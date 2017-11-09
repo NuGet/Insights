@@ -19,7 +19,7 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var shouldExist = !context.Package.Deleted;
 
-            var actuallyExists = await _client.HasPackageAsync(BaseUrl, context.Package.Id, context.Package.Version);
+            var actuallyExists = await _client.HasPackageContentAsync(BaseUrl, context.Package.Id, context.Package.Version);
 
             return shouldExist != actuallyExists;
         }

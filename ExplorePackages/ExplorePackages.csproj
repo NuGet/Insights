@@ -49,6 +49,7 @@
     <Compile Include="Commands\ShowRepositoriesCommand.cs" />
     <Compile Include="Entities\PackageQuery.cs" />
     <Compile Include="Entities\PackageQueryMatch.cs" />
+    <Compile Include="ExplorePackagesSettings.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindEmptyDependencyVersionsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindFloatingDependencyVersionsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindMissingDependencyVersionsNuspecQuery.cs" />
@@ -62,7 +63,9 @@
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Logic\PackageQueries\ImmutablePackage.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\INuspecQuery.cs" />
+    <Compile Include="Logic\PackageQueries\PackageQueries\HasFlatContainerDiscrepancyPackageQuery.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueries\HasPackagesContainerDiscrepancyPackageQuery.cs" />
+    <Compile Include="Logic\PackageQueries\PackageQueries\HasV2DiscrepancyPackageQuery.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueries\IPackageQuery.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueries\NuspecPackageQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueryContext.cs" />
@@ -70,6 +73,8 @@
     <Compile Include="Logic\PackageQueries\PackageQueries\HasRegistrationDiscrepancyInSemVer2HivePackageQuery.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueries\HasRegistrationDiscrepancyInOriginalHivePackageQuery.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueries\HasRegistrationDiscrepancyPackageQuery.cs" />
+    <Compile Include="Logic\Protocol\FlatContainerClient.cs" />
+    <Compile Include="Logic\Protocol\FlatContainerIndex.cs" />
     <Compile Include="Logic\Protocol\PackagesContainerClient.cs" />
     <Compile Include="Logic\Protocol\RegistrationCatalogEntry.cs" />
     <Compile Include="Logic\Protocol\RegistrationIndex.cs" />
@@ -93,6 +98,7 @@
     <Compile Include="Logic\NuspecDownloader.cs" />
     <Compile Include="Logic\PackageQueryMatches.cs" />
     <Compile Include="Logic\PackageQueryService.cs" />
+    <Compile Include="Logic\Protocol\V2Client.cs" />
     <Compile Include="Logic\RemoteCursorReader.cs" />
     <Compile Include="Logic\Protocol\ServiceIndexCache.cs" />
     <Compile Include="Support\ConsoleLogger.cs" />
@@ -104,6 +110,7 @@
     <Compile Include="Logic\PackageService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Support\HttpSourceExtensions.cs" />
     <Compile Include="Support\PassThroughHandler.cs" />
     <Compile Include="Support\TaskQueue.cs" />
   </ItemGroup>
