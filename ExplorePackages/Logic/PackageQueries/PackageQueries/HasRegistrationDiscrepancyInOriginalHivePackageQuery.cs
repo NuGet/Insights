@@ -4,7 +4,7 @@
     {
         public HasRegistrationDiscrepancyInOriginalHivePackageQuery(
             ServiceIndexCache serviceIndexCache,
-            RegistrationService registrationService)
+            RegistrationClient registrationService)
             : base(
                   serviceIndexCache,
                   registrationService,

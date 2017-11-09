@@ -4,7 +4,7 @@
     {
         public HasRegistrationDiscrepancyInGzippedHivePackageQuery(
             ServiceIndexCache serviceIndexCache,
-            RegistrationService registrationService)
+            RegistrationClient registrationService)
             : base(
                   serviceIndexCache,
                   registrationService,

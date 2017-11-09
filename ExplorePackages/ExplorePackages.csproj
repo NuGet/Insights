@@ -62,6 +62,7 @@
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Logic\PackageQueries\ImmutablePackage.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\INuspecQuery.cs" />
+    <Compile Include="Logic\PackageQueries\PackageQueries\HasPackagesContainerDiscrepancyPackageQuery.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueries\IPackageQuery.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueries\NuspecPackageQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueryContext.cs" />
@@ -69,12 +70,13 @@
     <Compile Include="Logic\PackageQueries\PackageQueries\HasRegistrationDiscrepancyInSemVer2HivePackageQuery.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueries\HasRegistrationDiscrepancyInOriginalHivePackageQuery.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueries\HasRegistrationDiscrepancyPackageQuery.cs" />
+    <Compile Include="Logic\Protocol\PackagesContainerClient.cs" />
     <Compile Include="Logic\Protocol\RegistrationCatalogEntry.cs" />
     <Compile Include="Logic\Protocol\RegistrationIndex.cs" />
     <Compile Include="Logic\Protocol\RegistrationLeafItem.cs" />
     <Compile Include="Logic\Protocol\RegistrationPage.cs" />
     <Compile Include="Logic\Protocol\RegistrationPageItem.cs" />
-    <Compile Include="Logic\Protocol\RegistrationService.cs" />
+    <Compile Include="Logic\Protocol\RegistrationClient.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueryNames.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueryProcessor.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueryContext.cs" />

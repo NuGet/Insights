@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -10,7 +12,7 @@ using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class RegistrationService
+    public class RegistrationClient
     {
         private static readonly JsonSerializer Serializer = new JsonSerializer
         {
@@ -21,13 +23,41 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly HttpSource _httpSource;
         private readonly ILogger _log;
 
-        public RegistrationService(HttpSource httpSource, ILogger log)
+        public RegistrationClient(HttpSource httpSource, ILogger log)
         {
             _httpSource = httpSource;
             _log = log;
         }
 
-        public async Task<bool> HasPackageAsync(string baseUrl, string id, string version)
+        public async Task<bool> HasPackageLeafAsync(string baseUrl, string id, string version)
+        {
+            var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
+            var leafUrl = $"{baseUrl.TrimEnd('/')}/{id.ToLowerInvariant()}/{normalizedVersion.ToLowerInvariant()}.json";
+
+            return await _httpSource.ProcessResponseAsync(
+                new HttpSourceRequest(() => HttpRequestMessageFactory.Create(HttpMethod.Head, leafUrl, _log))
+                {
+                    IgnoreNotFounds = true,
+                },
+                response =>
+                {
+                    if (response.StatusCode == HttpStatusCode.OK)
+                    {
+                        return Task.FromResult(true);
+                    }
+                    else if (response.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        return Task.FromResult(false);
+                    }
+
+                    throw new HttpRequestException(
+                        $"The request to {leafUrl} return HTTP {(int)response.StatusCode} {response.ReasonPhrase}.");
+                },
+                _log,
+                CancellationToken.None);
+        }
+
+        public async Task<bool> HasPackageInIndexAsync(string baseUrl, string id, string version)
         {
             var parsedVersion = NuGetVersion.Parse(version);
             var registrationIndex = await GetRegistrationIndex(baseUrl, id);

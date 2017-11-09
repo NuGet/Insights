@@ -4,7 +4,7 @@
     {
         public HasRegistrationDiscrepancyInSemVer2HivePackageQuery(
             ServiceIndexCache serviceIndexCache,
-            RegistrationService registrationService)
+            RegistrationClient registrationService)
             : base(
                   serviceIndexCache,
                   registrationService,

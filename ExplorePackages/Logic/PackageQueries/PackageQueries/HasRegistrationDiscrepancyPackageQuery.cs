@@ -5,20 +5,20 @@ namespace Knapcode.ExplorePackages.Logic
     public abstract class HasRegistrationDiscrepancyPackageQuery : IPackageQuery
     {
         private readonly ServiceIndexCache _serviceIndexCache;
-        private readonly RegistrationService _registrationService;
+        private readonly RegistrationClient _client;
         private readonly string _registrationType;
         private readonly bool _hasSemVer2;
 
         public HasRegistrationDiscrepancyPackageQuery(
             ServiceIndexCache serviceIndexCache,
-            RegistrationService registrationService,
+            RegistrationClient client,
             string name,
             string cursorName,
             string registrationType,
             bool hasSemVer2)
         {
             _serviceIndexCache = serviceIndexCache;
-            _registrationService = registrationService;
+            _client = client;
             Name = name;
             CursorName = cursorName;
             _registrationType = registrationType;
@@ -33,12 +33,19 @@ namespace Knapcode.ExplorePackages.Logic
             var registrationUrl = await _serviceIndexCache.GetUrlAsync(_registrationType);
 
             var shouldExist = !context.Package.Deleted && (_hasSemVer2 || !context.IsSemVer2);
-            var actuallyExists = await _registrationService.HasPackageAsync(
+
+            var actuallyExistsInIndex = await _client.HasPackageInIndexAsync(
                 registrationUrl,
                 context.Package.Id,
                 context.Package.Version);
-            
-            return shouldExist != actuallyExists;
+
+            var actuallyExistsInLeaf = await _client.HasPackageLeafAsync(
+                registrationUrl,
+                context.Package.Id,
+                context.Package.Version);
+
+            return shouldExist != actuallyExistsInIndex
+                || shouldExist != actuallyExistsInLeaf;
         }
     }
 }

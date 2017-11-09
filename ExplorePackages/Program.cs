@@ -89,7 +89,7 @@ namespace Knapcode.ExplorePackages
             ServicePointManager.DefaultConnectionLimit = 32;
 
             // Set the user agent.
-            var userAgentStringBuilder = new UserAgentStringBuilder("Knapcode.ExplorePackages");
+            var userAgentStringBuilder = new UserAgentStringBuilder("Knapcode.ExplorePackages.Bot");
             UserAgent.SetUserAgentString(userAgentStringBuilder);
         }
 
@@ -124,7 +124,8 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<RemoteCursorReader>();
             serviceCollection.AddTransient<CatalogToDatabaseProcessor>();
             serviceCollection.AddTransient<CatalogToNuspecsProcessor>();
-            serviceCollection.AddTransient<RegistrationService>();
+            serviceCollection.AddTransient<RegistrationClient>();
+            serviceCollection.AddTransient<PackagesContainerClient>();
 
             serviceCollection.AddTransient<PackageQueriesCommand>();
             serviceCollection.AddTransient<FetchCursorsCommand>();
@@ -147,6 +148,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<IPackageQuery, HasRegistrationDiscrepancyInOriginalHivePackageQuery>();
             serviceCollection.AddTransient<IPackageQuery, HasRegistrationDiscrepancyInGzippedHivePackageQuery>();
             serviceCollection.AddTransient<IPackageQuery, HasRegistrationDiscrepancyInSemVer2HivePackageQuery>();
+            serviceCollection.AddTransient<IPackageQuery, HasPackagesContainerDiscrepancyPackageQuery>();
 
             // Add all of the .nuspec queries as package queries.
             var nuspecQueryDescriptors = serviceCollection
