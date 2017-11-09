@@ -56,16 +56,44 @@ namespace Knapcode.ExplorePackages.Logic
                     x => x.Name,
                     x => new List<PackageIdentity>());
 
-                foreach (var query in _queries)
+                foreach (var commit in commits)
                 {
-                    foreach (var commit in commits)
+                    foreach (var package in commit.Packages)
                     {
-                        if (commit.CommitTimestamp <= cursorStarts[query.CursorName])
-                        {
-                            continue;
-                        }
+                        var nuspec = GetNuspecAndMetadata(package);
 
-                        await ProcessCommitAsync(query, allQueryMatches, commit);
+                        foreach (var query in _queries)
+                        {
+                            if (commit.CommitTimestamp <= cursorStarts[query.CursorName])
+                            {
+                                continue;
+                            }
+
+                            if (package.Deleted)
+                            {
+                                continue;
+                            }
+
+                            var isMatch = false;
+                            try
+                            {
+                                isMatch = await query.IsMatchAsync(nuspec);
+                            }
+                            catch (Exception e)
+                            {
+                                _log.LogError($"Could not query .nuspec for {nuspec.Id} {nuspec.Version}: {nuspec.Path}"
+                                    + Environment.NewLine
+                                    + "  "
+                                    + e.Message);
+                                throw;
+                            }
+
+                            if (isMatch)
+                            {
+                                _log.LogInformation($"Query match {query.Name}: {package.Id} {package.Version}");
+                                allQueryMatches[query.Name].Add(new PackageIdentity(package.Id, package.Version));
+                            }
+                        }
 
                         start = commit.CommitTimestamp;
                     }
@@ -99,39 +127,6 @@ namespace Knapcode.ExplorePackages.Logic
             }
 
             return start;
-        }
-
-        private async Task ProcessCommitAsync(
-            INuspecQuery query,
-            Dictionary<string, List<PackageIdentity>> allQueryMatches,
-            PackageCommit commit)
-        {
-            foreach (var package in commit.Packages)
-            {
-                if (!package.Deleted)
-                {
-                    var nuspec = GetNuspecAndMetadata(package);
-
-                    var isMatch = false;
-                    try
-                    {
-                        isMatch = await query.IsMatchAsync(nuspec);
-                    }
-                    catch (Exception e)
-                    {
-                        _log.LogError($"Could not query .nuspec for {nuspec.Id} {nuspec.Version}: {nuspec.Path}"
-                            + Environment.NewLine
-                            + "  "
-                            + e.Message);
-                    }
-
-                    if (isMatch)
-                    {
-                        _log.LogInformation($"Query match {query.Name}: {package.Id} {package.Version}");
-                        allQueryMatches[query.Name].Add(new PackageIdentity(package.Id, package.Version));
-                    }
-                }
-            }
         }
 
         private async Task PersistResultsAndCursorsAsync(
