@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\CheckPackageCommand.cs" />
     <Compile Include="Commands\PackageQueriesCommand.cs" />
     <Compile Include="Commands\CatalogToNuspecsCommand.cs" />
     <Compile Include="Commands\FetchCursorsCommand.cs" />
@@ -50,6 +51,20 @@
     <Compile Include="Entities\PackageQuery.cs" />
     <Compile Include="Entities\PackageQueryMatch.cs" />
     <Compile Include="ExplorePackagesSettings.cs" />
+    <Compile Include="Logic\Consistency\FlatContainerConsistencyReport.cs" />
+    <Compile Include="Logic\Consistency\FlatContainerConsistencyService.cs" />
+    <Compile Include="Logic\Consistency\IConsistencyReport.cs" />
+    <Compile Include="Logic\Consistency\IConsistencyService.cs" />
+    <Compile Include="Logic\Consistency\PackageConsistencyReport.cs" />
+    <Compile Include="Logic\Consistency\PackageConsistencyService.cs" />
+    <Compile Include="Logic\Consistency\PackagesContainerConsistencyReport.cs" />
+    <Compile Include="Logic\Consistency\PackagesContainerConsistencyService.cs" />
+    <Compile Include="Logic\Consistency\RegistrationConsistencyReport.cs" />
+    <Compile Include="Logic\Consistency\RegistrationGzippedConsistencyService.cs" />
+    <Compile Include="Logic\Consistency\RegistrationOriginalConsistencyService.cs" />
+    <Compile Include="Logic\Consistency\RegistrationSemVer2ConsistencyService.cs" />
+    <Compile Include="Logic\Consistency\V2ConsistencyReport.cs" />
+    <Compile Include="Logic\Consistency\V2ConsistencyService.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindEmptyDependencyVersionsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindFloatingDependencyVersionsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindMissingDependencyVersionsNuspecQuery.cs" />
@@ -73,6 +88,8 @@
     <Compile Include="Logic\PackageQueries\PackageQueries\HasRegistrationDiscrepancyInSemVer2HivePackageQuery.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueries\HasRegistrationDiscrepancyInOriginalHivePackageQuery.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueries\HasRegistrationDiscrepancyPackageQuery.cs" />
+    <Compile Include="Logic\Consistency\RegistrationConsistencyService.cs" />
+    <Compile Include="Logic\PackageQueryContextBuilder.cs" />
     <Compile Include="Logic\Protocol\FlatContainerClient.cs" />
     <Compile Include="Logic\Protocol\FlatContainerIndex.cs" />
     <Compile Include="Logic\Protocol\PackagesContainerClient.cs" />

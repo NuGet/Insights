@@ -4,12 +4,11 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class HasV2DiscrepancyPackageQuery : IPackageQuery
     {
-        private const string BaseUrl = "https://www.nuget.org/api/v2";
-        private readonly V2Client _client;
+        private readonly V2ConsistencyService _service;
 
-        public HasV2DiscrepancyPackageQuery(V2Client client)
+        public HasV2DiscrepancyPackageQuery(V2ConsistencyService service)
         {
-            _client = client;
+            _service = service;
         }
 
         public string Name => PackageQueryNames.HasV2DiscrepancyPackageQuery;
@@ -17,14 +16,8 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task<bool> IsMatchAsync(PackageQueryContext context)
         {
-            var shouldExist = !context.Package.Deleted;
-
-            var actuallyExists = await _client.HasPackageAsync(
-                BaseUrl,
-                context.Package.Id,
-                context.Package.Version);
-
-            return shouldExist != actuallyExists;
+            var isConsistent = await _service.IsConsistentAsync(context);
+            return !isConsistent;
         }
     }
 }

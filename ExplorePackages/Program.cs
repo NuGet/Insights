@@ -64,6 +64,9 @@ namespace Knapcode.ExplorePackages
                     case "showrepositories":
                         commands.Add(serviceProvider.GetRequiredService<ShowRepositoriesCommand>());
                         break;
+                    case "checkpackage":
+                        commands.Add(serviceProvider.GetRequiredService<CheckPackageCommand>());
+                        break;
                     case "update":
                         commands.Add(serviceProvider.GetRequiredService<FetchCursorsCommand>());
                         commands.Add(serviceProvider.GetRequiredService<CatalogToDatabaseCommand>());
@@ -128,7 +131,6 @@ namespace Knapcode.ExplorePackages
         private static ServiceCollection InitializeServiceCollection(ExplorePackagesSettings settings)
         {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<ServiceIndexCache>();
             serviceCollection.AddSingleton<ILogger, ConsoleLogger>();
             serviceCollection.AddSingleton(
                 x => new HttpClientHandler()
@@ -152,14 +154,27 @@ namespace Knapcode.ExplorePackages
                     NullThrottle.Instance));
             serviceCollection.AddTransient(
                 x => new PackagePathProvider(settings.PackagePath));
-            serviceCollection.AddTransient<NuspecDownloader>();
-            serviceCollection.AddTransient<RemoteCursorReader>();
+
+            serviceCollection.AddTransient<PackageQueryProcessor>();
             serviceCollection.AddTransient<CatalogToDatabaseProcessor>();
             serviceCollection.AddTransient<CatalogToNuspecsProcessor>();
+            serviceCollection.AddTransient<NuspecDownloader>();
+            serviceCollection.AddTransient<RemoteCursorReader>();
+            serviceCollection.AddTransient<PackageQueryContextBuilder>();
+
+            serviceCollection.AddSingleton<ServiceIndexCache>();
             serviceCollection.AddTransient<V2Client>();
             serviceCollection.AddTransient<PackagesContainerClient>();
             serviceCollection.AddTransient<FlatContainerClient>();
             serviceCollection.AddTransient<RegistrationClient>();
+
+            serviceCollection.AddTransient<V2ConsistencyService>();
+            serviceCollection.AddTransient<FlatContainerConsistencyService>();
+            serviceCollection.AddTransient<PackagesContainerConsistencyService>();
+            serviceCollection.AddTransient<RegistrationOriginalConsistencyService>();
+            serviceCollection.AddTransient<RegistrationGzippedConsistencyService>();
+            serviceCollection.AddTransient<RegistrationSemVer2ConsistencyService>();
+            serviceCollection.AddTransient<PackageConsistencyService>();
 
             serviceCollection.AddTransient<PackageQueriesCommand>();
             serviceCollection.AddTransient<FetchCursorsCommand>();
@@ -167,6 +182,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<CatalogToNuspecsCommand>();
             serviceCollection.AddTransient<ShowQueryResultsCommand>();
             serviceCollection.AddTransient<ShowRepositoriesCommand>();
+            serviceCollection.AddTransient<CheckPackageCommand>();
 
             serviceCollection.AddTransient<FindIdsEndingInDotNumberNuspecQuery>();
             serviceCollection.AddTransient<FindEmptyDependencyVersionsNuspecQuery>();

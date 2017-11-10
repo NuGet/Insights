@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
-using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Support;
 using NuGet.Common;
 
@@ -14,17 +11,17 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class PackageQueryProcessor
     {
-        private readonly PackagePathProvider _pathProvider;
+        private readonly PackageQueryContextBuilder _contextBuilder;
         private readonly PackageQueryService _queryService;
         private readonly List<IPackageQuery> _queries;
         private readonly ILogger _log;
 
         public PackageQueryProcessor(
-            PackagePathProvider pathProvider,
+            PackageQueryContextBuilder contextBuilder,
             IEnumerable<IPackageQuery> queries,
             ILogger log)
         {
-            _pathProvider = pathProvider;
+            _contextBuilder = contextBuilder;
             _queryService = new PackageQueryService(log);
             _queries = queries.ToList();
             _log = log;
@@ -86,7 +83,7 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 foreach (var package in commit.Packages)
                 {
-                    var context = GetPackageQueryContext(package);
+                    var context = _contextBuilder.GetPackageQueryContext(package);
 
                     foreach (var query in _queries)
                     {
@@ -182,50 +179,7 @@ namespace Knapcode.ExplorePackages.Logic
                 }
             }
         }
-
-        private PackageQueryContext GetPackageQueryContext(Package package)
-        {
-            var immutablePackage = new ImmutablePackage(package);
-            var nuspecQueryContext = GetNuspecQueryContext(package);
-            var isSemVer2 = NuspecUtility.IsSemVer2(nuspecQueryContext.Document);
-
-            return new PackageQueryContext(immutablePackage, nuspecQueryContext, isSemVer2);
-        }
-
-        private NuspecQueryContext GetNuspecQueryContext(Package package)
-        {
-            var path = _pathProvider.GetLatestNuspecPath(package.Id, package.Version);
-            var exists = false;
-            XDocument document = null;
-            try
-            {
-                if (File.Exists(path))
-                {
-                    exists = true;
-                    using (var stream = File.OpenRead(path))
-                    {
-                        document = NuspecUtility.LoadXml(stream);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                _log.LogError($"Could not parse .nuspec for {package.Id} {package.Version}: {path}"
-                    + Environment.NewLine
-                    + "  "
-                    + e.Message);
-
-                throw;
-            }
-
-            if (!exists && !package.Deleted)
-            {
-                _log.LogWarning($"Could not find .nuspec for {package.Id} {package.Version}: {path}");
-            }
-
-            return new NuspecQueryContext(path, exists, document);
-        }
-
+        
         private class Work
         {
             public IPackageQuery Query { get; set; }

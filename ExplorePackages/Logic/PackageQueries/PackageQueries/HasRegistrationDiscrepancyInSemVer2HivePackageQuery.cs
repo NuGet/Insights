@@ -3,15 +3,11 @@
     public class HasRegistrationDiscrepancyInSemVer2HivePackageQuery : HasRegistrationDiscrepancyPackageQuery
     {
         public HasRegistrationDiscrepancyInSemVer2HivePackageQuery(
-            ServiceIndexCache serviceIndexCache,
-            RegistrationClient registrationService)
+            RegistrationSemVer2ConsistencyService service)
             : base(
-                  serviceIndexCache,
-                  registrationService,
+                  service,
                   PackageQueryNames.HasRegistrationDiscrepancyInSemVer2HivePackageQuery,
-                  CursorNames.HasRegistrationDiscrepancyInSemVer2HivePackageQuery,
-                  type: "RegistrationsBaseUrl/3.6.0",
-                  hasSemVer2: true)
+                  CursorNames.HasRegistrationDiscrepancyInSemVer2HivePackageQuery)
         {
         }
     }

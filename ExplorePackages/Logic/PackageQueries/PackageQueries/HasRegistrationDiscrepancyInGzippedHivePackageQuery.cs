@@ -2,16 +2,11 @@
 {
     public class HasRegistrationDiscrepancyInGzippedHivePackageQuery : HasRegistrationDiscrepancyPackageQuery
     {
-        public HasRegistrationDiscrepancyInGzippedHivePackageQuery(
-            ServiceIndexCache serviceIndexCache,
-            RegistrationClient registrationService)
+        public HasRegistrationDiscrepancyInGzippedHivePackageQuery(RegistrationGzippedConsistencyService service)
             : base(
-                  serviceIndexCache,
-                  registrationService,
+                  service,
                   PackageQueryNames.HasRegistrationDiscrepancyInGzippedHivePackageQuery,
-                  CursorNames.HasRegistrationDiscrepancyInGzippedHivePackageQuery,
-                  type: "RegistrationsBaseUrl/3.4.0",
-                  hasSemVer2: false)
+                  CursorNames.HasRegistrationDiscrepancyInGzippedHivePackageQuery)
         {
         }
     }

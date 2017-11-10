@@ -24,7 +24,7 @@ namespace Knapcode.ExplorePackages.Logic
             _log = log;
         }
 
-        public async Task<bool> HasPackageLeafAsync(string baseUrl, string id, string version)
+        public async Task<bool> HasLeafAsync(string baseUrl, string id, string version)
         {
             var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
             var leafUrl = $"{baseUrl.TrimEnd('/')}/{id.ToLowerInvariant()}/{normalizedVersion.ToLowerInvariant()}.json";

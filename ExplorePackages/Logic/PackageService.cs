@@ -7,6 +7,7 @@ using Knapcode.ExplorePackages.Entities;
 using Microsoft.EntityFrameworkCore;
 using NuGet.CatalogReader;
 using NuGet.Common;
+using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -19,6 +20,18 @@ namespace Knapcode.ExplorePackages.Logic
         {
             _enumerator = new PackageCommitEnumerator();
             _log = log;
+        }
+
+        public async Task<Package> GetPackageAsync(string id, string version)
+        {
+            var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
+            using (var entityContext = new EntityContext())
+            {
+                return await entityContext
+                    .Packages
+                    .Where(x => x.Id == id && x.Version == normalizedVersion)
+                    .FirstOrDefaultAsync();
+            }
         }
 
         public async Task<IReadOnlyList<Package>> GetBatchAsync(IReadOnlyList<PackageIdentity> identities)
