@@ -138,7 +138,7 @@ namespace Knapcode.ExplorePackages
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<ILogger, ConsoleLogger>();
             serviceCollection.AddSingleton(
-                x => new HttpClientHandler()
+                x => new HttpClientHandler
                 {
                     AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
                 });
