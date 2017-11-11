@@ -5,6 +5,7 @@
         public PackageConsistencyReport(
             PackageQueryContext context,
             bool isConsistent,
+            GalleryConsistencyReport gallery,
             V2ConsistencyReport v2,
             PackagesContainerConsistencyReport packagesContainer,
             FlatContainerConsistencyReport flatContainer,
@@ -16,6 +17,7 @@
         {
             Context = context;
             IsConsistent = isConsistent;
+            Gallery = gallery;
             V2 = v2;
             PackagesContainer = packagesContainer;
             FlatContainer = flatContainer;
@@ -28,6 +30,7 @@
 
         public PackageQueryContext Context { get; }
         public bool IsConsistent { get; }
+        public GalleryConsistencyReport Gallery { get; }
         public V2ConsistencyReport V2 { get; }
         public PackagesContainerConsistencyReport PackagesContainer { get; }
         public FlatContainerConsistencyReport FlatContainer { get; }

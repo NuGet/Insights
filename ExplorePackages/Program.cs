@@ -179,6 +179,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<RegistrationClient>();
             serviceCollection.AddTransient<SearchClient>();
 
+            serviceCollection.AddTransient<GalleryConsistencyService>();
             serviceCollection.AddTransient<V2ConsistencyService>();
             serviceCollection.AddTransient<FlatContainerConsistencyService>();
             serviceCollection.AddTransient<PackagesContainerConsistencyService>();

@@ -53,9 +53,11 @@
     <Compile Include="ExplorePackagesSettings.cs" />
     <Compile Include="Logic\Consistency\Reports\FlatContainerConsistencyReport.cs" />
     <Compile Include="Logic\Consistency\Reports\CrossCheckConsistencyReport.cs" />
+    <Compile Include="Logic\Consistency\Reports\GalleryConsistencyReport.cs" />
     <Compile Include="Logic\Consistency\Services\CrossCheckConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Services\FlatContainerConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Reports\IConsistencyReport.cs" />
+    <Compile Include="Logic\Consistency\Services\GalleryConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Services\IConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Reports\PackageConsistencyReport.cs" />
     <Compile Include="Logic\Consistency\Services\PackageConsistencyService.cs" />

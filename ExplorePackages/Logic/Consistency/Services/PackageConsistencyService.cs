@@ -4,6 +4,7 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class PackageConsistencyService : IConsistencyService<PackageConsistencyReport>
     {
+        private readonly GalleryConsistencyService _gallery;
         private readonly V2ConsistencyService _v2;
         private readonly PackagesContainerConsistencyService _packagesContainer;
         private readonly FlatContainerConsistencyService _flatContainer;
@@ -14,6 +15,7 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly CrossCheckConsistencyService _crossCheck;
 
         public PackageConsistencyService(
+            GalleryConsistencyService gallery,
             V2ConsistencyService v2,
             PackagesContainerConsistencyService packagesContainer,
             FlatContainerConsistencyService flatContainer,
@@ -23,6 +25,7 @@ namespace Knapcode.ExplorePackages.Logic
             SearchConsistencyService search,
             CrossCheckConsistencyService crossCheck)
         {
+            _gallery = gallery;
             _v2 = v2;
             _packagesContainer = packagesContainer;
             _flatContainer = flatContainer;
@@ -35,6 +38,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task<PackageConsistencyReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state)
         {
+            var gallery = await _gallery.GetReportAsync(context, state);
             var v2 = await _v2.GetReportAsync(context, state);
             var packagesContainer = await _packagesContainer.GetReportAsync(context, state);
             var flatContainer = await _flatContainer.GetReportAsync(context, state);
@@ -44,7 +48,8 @@ namespace Knapcode.ExplorePackages.Logic
             var search = await _search.GetReportAsync(context, state);
             var crossCheck = await _crossCheck.GetReportAsync(context, state);
             
-            var isConsistent = v2.IsConsistent
+            var isConsistent = gallery.IsConsistent
+                && v2.IsConsistent
                 && packagesContainer.IsConsistent
                 && flatContainer.IsConsistent
                 && registrationOriginal.IsConsistent
@@ -56,6 +61,7 @@ namespace Knapcode.ExplorePackages.Logic
             return new PackageConsistencyReport(
                 context,
                 isConsistent,
+                gallery,
                 v2,
                 packagesContainer,
                 flatContainer,
@@ -68,6 +74,11 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task<bool> IsConsistentAsync(PackageQueryContext context, PackageConsistencyState state)
         {
+            if (!(await _gallery.IsConsistentAsync(context, state)))
+            {
+                return false;
+            }
+
             if (!(await _v2.IsConsistentAsync(context, state)))
             {
                 return false;
@@ -113,6 +124,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task PopulateStateAsync(PackageQueryContext context, PackageConsistencyState state)
         {
+            await _gallery.PopulateStateAsync(context, state);
             await _v2.PopulateStateAsync(context, state);
             await _packagesContainer.PopulateStateAsync(context, state);
             await _flatContainer.PopulateStateAsync(context, state);

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Knapcode.ExplorePackages.Logic;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using NuGet.Common;
 using NuGet.Versioning;
 
@@ -54,7 +55,8 @@ namespace Knapcode.ExplorePackages.Commands
                 {
                     Converters =
                     {
-                        new NuspecJsonConverter()
+                        new NuspecJsonConverter(),
+                        new StringEnumConverter(),
                     },
                     Formatting = Formatting.Indented,
                 });
