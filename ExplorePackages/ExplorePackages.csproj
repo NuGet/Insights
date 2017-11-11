@@ -60,7 +60,7 @@
     <Compile Include="Logic\Consistency\Reports\PackageConsistencyReport.cs" />
     <Compile Include="Logic\Consistency\Services\PackageConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Reports\PackagesContainerConsistencyReport.cs" />
-    <Compile Include="Logic\Consistency\Services\PackageConsistencyState.cs" />
+    <Compile Include="Logic\Consistency\PackageConsistencyState.cs" />
     <Compile Include="Logic\Consistency\Services\PackagesContainerConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Reports\RegistrationConsistencyReport.cs" />
     <Compile Include="Logic\Consistency\Services\RegistrationGzippedConsistencyService.cs" />
