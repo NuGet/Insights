@@ -19,16 +19,20 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var shouldExist = !context.Package.Deleted;
 
-            var packageDeletedStatus = await _client.GetPackageDeletedStatusAsync(
+            var packageState = await _client.GetPackageStateAsync(
                 _settings.GalleryBaseUrl,
                 context.Package.Id,
                 context.Package.Version);
 
-            var isConsistent = shouldExist == (packageDeletedStatus == PackageDeletedStatus.NotDeleted);
+            var actuallyExists = packageState.PackageDeletedStatus == PackageDeletedStatus.NotDeleted;
+
+            var isConsistent = shouldExist == actuallyExists
+                && ((shouldExist && packageState.IsSemVer2 == context.IsSemVer2)
+                    || !shouldExist);
 
             return new GalleryConsistencyReport(
                 isConsistent,
-                packageDeletedStatus);
+                packageState);
         }
 
         public async Task<bool> IsConsistentAsync(PackageQueryContext context, PackageConsistencyState state)

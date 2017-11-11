@@ -88,7 +88,7 @@ namespace Knapcode.ExplorePackages.Logic
                         .Where(x => commit.CommitTimestamp > cursorStarts[x.CursorName])
                         .ToList();
 
-                    var context = _contextBuilder.GetPackageQueryContext(package);
+                    var context = _contextBuilder.GetPackageQueryFromDatabasePackageContext(package);
                     var state = new PackageConsistencyState();
 
                     taskQueue.Enqueue(new Work(queries, context, state));

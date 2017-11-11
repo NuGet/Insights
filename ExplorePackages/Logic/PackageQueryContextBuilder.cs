@@ -18,7 +18,7 @@ namespace Knapcode.ExplorePackages.Logic
             _log = log;
         }
 
-        public async Task<PackageQueryContext> GetPackageQueryContextAsync(string id, string version)
+        public async Task<PackageQueryContext> GetPackageQueryContextFromDatabaseAsync(string id, string version)
         {
             var packageService = new PackageService(_log);
             var package = await packageService.GetPackageAsync(id, version);
@@ -27,10 +27,10 @@ namespace Knapcode.ExplorePackages.Logic
                 return null;
             }
 
-            return GetPackageQueryContext(package);
+            return GetPackageQueryFromDatabasePackageContext(package);
         }
 
-        public PackageQueryContext GetPackageQueryContext(Package package)
+        public PackageQueryContext GetPackageQueryFromDatabasePackageContext(Package package)
         {
             var immutablePackage = new ImmutablePackage(package);
             var nuspecQueryContext = GetNuspecQueryContext(package);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -22,14 +23,14 @@ namespace Knapcode.ExplorePackages.Logic
             _log = log;
         }
 
-        public async Task<PackageDeletedStatus> GetPackageDeletedStatusAsync(string baseUrl, string id, string version)
+        public async Task<GalleryPackageState> GetPackageStateAsync(string baseUrl, string id, string version)
         {
             var parsedVersion = NuGetVersion.Parse(version);
             var normalizedVersion = parsedVersion.ToNormalizedString();
             var packageIdentity = new PackageIdentity(id, normalizedVersion);
             var url = $"{baseUrl.TrimEnd('/')}/packages/{id}/{normalizedVersion}";
 
-            var packageDeletedStatus = await _httpSource.ProcessStreamAsync(
+            var state = await _httpSource.ProcessStreamAsync(
                 new HttpSourceRequest(url, _log)
                 {
                     IgnoreNotFounds = true,
@@ -38,7 +39,10 @@ namespace Knapcode.ExplorePackages.Logic
                 {
                     if (stream == null)
                     {
-                        return PackageDeletedStatus.Unknown;
+                        return new GalleryPackageState(
+                            PackageDeletedStatus.Unknown,
+                            isSemVer2: false,
+                            isListed: false);
                     }
 
                     var buffer = new byte[8 * 1024];
@@ -51,26 +55,32 @@ namespace Knapcode.ExplorePackages.Logic
                         responseBody.Write(buffer, 0, read);
                         responseBody.Position = 0;
 
-                        var status = DeterminePackageDeletedStatus(packageIdentity, responseBody);
-                        if (status.HasValue)
+                        var partialState = DetermineState(packageIdentity, responseBody);
+                        if (partialState.PackageDeletedStatus.HasValue
+                            && partialState.IsSemVer2.HasValue
+                            && partialState.IsListed.HasValue)
                         {
-                            return status.Value;
+                            return new GalleryPackageState(
+                                partialState.PackageDeletedStatus.Value,
+                                partialState.IsSemVer2.Value,
+                                partialState.IsListed.Value);
                         }
 
                         desiredBytes += buffer.Length;
                     }
                     while (responseBody.Length < desiredBytes && read > 0);
 
-                    throw new InvalidDataException($"The package deleted status could not be determined at {url}.");
+                    throw new InvalidDataException($"The package state could not be determined at {url}.");
                 },
                 _log,
                 CancellationToken.None);
 
-            return packageDeletedStatus;
+            return state;
         }
 
-        private PackageDeletedStatus? DeterminePackageDeletedStatus(PackageIdentity packageIdentity, MemoryStream responseBody)
+        private PartialState DetermineState(PackageIdentity packageIdentity, MemoryStream responseBody)
         {
+            var state = new PartialState();
             var parser = new HtmlParser();
             var document = parser.Parse(responseBody);
 
@@ -101,25 +111,48 @@ namespace Knapcode.ExplorePackages.Logic
             }
             else if (!foundPackageIdentity.Equals(packageIdentity))
             {
-                return PackageDeletedStatus.Unknown;
+                state.PackageDeletedStatus = PackageDeletedStatus.Unknown;
+                state.IsSemVer2 = false;
+                state.IsListed = false;
+                return state;
             }
 
-            var dangerAlerts = document.QuerySelectorAll("div.alert-danger");
-            foreach (var dangerAlert in dangerAlerts)
+            var alerts = document.QuerySelectorAll("div.alert");
+            foreach (var alert in alerts)
             {
-                var flattenedText = FlattenWhitespace.Replace(dangerAlert.TextContent.Trim(), " ");
+                var flattenedText = FlattenWhitespace.Replace(alert.TextContent.Trim(), " ");
+                
                 if (flattenedText.Contains("This package has been deleted from the gallery."))
                 {
-                    return PackageDeletedStatus.SoftDeleted;
+                    state.PackageDeletedStatus = PackageDeletedStatus.SoftDeleted;
+                }
+
+                if (flattenedText.Contains("This package will only be available to download with SemVer 2.0.0 compatible NuGet clients"))
+                {
+                    state.IsSemVer2 = true;
+                }
+
+                if (flattenedText.Contains("The owner has unlisted this package."))
+                {
+                    state.IsListed = false;
                 }
             }
 
-            if (document.QuerySelector("footer") != null)
+            if (document.QuerySelector("#version-history") != null)
             {
-                return PackageDeletedStatus.NotDeleted;
+                state.PackageDeletedStatus = state.PackageDeletedStatus ?? PackageDeletedStatus.NotDeleted;
+                state.IsSemVer2 = state.IsSemVer2 ?? false;
+                state.IsListed = state.IsListed ?? state.PackageDeletedStatus.Value == PackageDeletedStatus.NotDeleted;
             }
 
-            return null;
+            return state;
+        }
+
+        private class PartialState
+        {
+            public PackageDeletedStatus? PackageDeletedStatus { get; set; }
+            public bool? IsSemVer2 { get; set; }
+            public bool? IsListed { get; set; }
         }
     }
 }

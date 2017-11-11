@@ -2,13 +2,13 @@
 {
     public class GalleryConsistencyReport : IConsistencyReport
     {
-        public GalleryConsistencyReport(bool isConsistent, PackageDeletedStatus packageDeletedStatus)
+        public GalleryConsistencyReport(bool isConsistent, GalleryPackageState packageState)
         {
             IsConsistent = isConsistent;
-            PackageDeletedStatus = packageDeletedStatus;
+            PackageState = packageState;
         }
 
         public bool IsConsistent { get; }
-        public PackageDeletedStatus PackageDeletedStatus { get; }
+        public GalleryPackageState PackageState { get; }
     }
 }

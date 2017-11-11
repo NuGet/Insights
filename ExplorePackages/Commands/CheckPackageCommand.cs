@@ -41,7 +41,7 @@ namespace Knapcode.ExplorePackages.Commands
                 return;
             }
 
-            var context = await _contextBuilder.GetPackageQueryContextAsync(id, version);
+            var context = await _contextBuilder.GetPackageQueryContextFromDatabaseAsync(id, version);
             if (context == null)
             {
                 _log.LogError($"The package {id} {version} could not be found.");
