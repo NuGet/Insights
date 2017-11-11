@@ -44,7 +44,6 @@ namespace Knapcode.ExplorePackages
                 }
 
                 var commands = new List<ICommand>();
-                var initializeDatabase = true;
                 switch (args[0].Trim().ToLowerInvariant())
                 {
                     case "nuspecqueries":
@@ -67,7 +66,6 @@ namespace Knapcode.ExplorePackages
                         break;
                     case "checkpackage":
                         commands.Add(serviceProvider.GetRequiredService<CheckPackageCommand>());
-                        initializeDatabase = args.Contains("-database", StringComparer.OrdinalIgnoreCase);
                         break;
                     case "update":
                         commands.Add(serviceProvider.GetRequiredService<FetchCursorsCommand>());
@@ -81,6 +79,7 @@ namespace Knapcode.ExplorePackages
                 }
 
                 // Execute.
+                var initializeDatabase = commands.Any(x => x.IsDatabaseRequired(args));
                 await InitializeGlobalState(settings, initializeDatabase);
                 foreach (var command in commands)
                 {

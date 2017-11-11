@@ -115,5 +115,10 @@ namespace Knapcode.ExplorePackages.Commands
             var dateTimeOffset = new DateTimeOffset(ticks.Value, TimeSpan.Zero);
             return dateTimeOffset.ToString("G", CultureInfo.InvariantCulture);
         }
+
+        public bool IsDatabaseRequired(IReadOnlyList<string> args)
+        {
+            return true;
+        }
     }
 }

@@ -28,9 +28,9 @@ namespace Knapcode.ExplorePackages.Commands
         public async Task ExecuteAsync(IReadOnlyList<string> args, CancellationToken token)
         {
             var argList = args.ToList();
-            var isSemVer2 = HasArg(argList, "-semver2");
-            var deleted = HasArg(argList, "-deleted");
-            var database = HasArg(argList, "-database");
+            var hasSemVer2Arg = HasSemVer2Arg(argList);
+            var hasDeletedArg = HasDeletedArg(argList);
+            var hasDatabaseArg = HasDatabaseArg(argList);
 
             if (argList.Count < 3)
             {
@@ -47,13 +47,10 @@ namespace Knapcode.ExplorePackages.Commands
                 return;
             }
 
-            if (parsedVersion.IsSemVer2)
-            {
-                isSemVer2 = true;
-            }
+            var isSemVer2 = parsedVersion.IsSemVer2 || hasSemVer2Arg;
 
             PackageQueryContext context;
-            if (database)
+            if (hasDatabaseArg)
             {
                 context = await _contextBuilder.GetPackageQueryContextFromDatabaseAsync(id, version);
                 if (context == null)
@@ -62,7 +59,7 @@ namespace Knapcode.ExplorePackages.Commands
                     return;
                 }
             }
-            else if (deleted)
+            else if (hasDeletedArg)
             {
                 context = _contextBuilder.CreateDeletedPackageQueryContext(id, version);
             }
@@ -85,6 +82,26 @@ namespace Knapcode.ExplorePackages.Commands
                     Formatting = Formatting.Indented,
                 });
             Console.WriteLine(reportJson);
+        }
+
+        private bool HasDatabaseArg(List<string> argList)
+        {
+            return HasArg(argList, "-database");
+        }
+
+        private bool HasDeletedArg(List<string> argList)
+        {
+            return HasArg(argList, "-deleted");
+        }
+
+        private bool HasSemVer2Arg(List<string> argList)
+        {
+            return HasArg(argList, "-semver2");
+        }
+
+        public bool IsDatabaseRequired(IReadOnlyList<string> args)
+        {
+            return HasDatabaseArg(args.ToList());
         }
 
         private bool HasArg(List<string> args, string arg)

@@ -28,5 +28,10 @@ namespace Knapcode.ExplorePackages.Commands
 
             await catalogProcessor.ProcessAsync(token);
         }
+
+        public bool IsDatabaseRequired(IReadOnlyList<string> args)
+        {
+            return true;
+        }
     }
 }

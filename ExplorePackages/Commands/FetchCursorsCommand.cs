@@ -28,5 +28,10 @@ namespace Knapcode.ExplorePackages.Commands
                 await cursorService.SetAsync(cursor.Name, cursor.GetDateTimeOffset());
             }
         }
+
+        public bool IsDatabaseRequired(IReadOnlyList<string> args)
+        {
+            return true;
+        }
     }
 }
