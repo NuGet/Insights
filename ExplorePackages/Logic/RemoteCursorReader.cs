@@ -12,15 +12,18 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class RemoteCursorReader
     {
+        private readonly ServiceIndexCache _serviceIndexCache;
         private readonly HttpSource _httpSource;
         private readonly SearchServiceCursorReader _searchServiceCursorReader;
         private readonly ILogger _log;
 
         public RemoteCursorReader(
+            ServiceIndexCache serviceIndexCache,
             HttpSource httpSource,
             SearchServiceCursorReader searchServiceCursorReader,
             ILogger log)
         {
+            _serviceIndexCache = serviceIndexCache;
             _httpSource = httpSource;
             _searchServiceCursorReader = searchServiceCursorReader;
             _log = log;
@@ -31,10 +34,12 @@ namespace Knapcode.ExplorePackages.Logic
             var output = new List<Cursor>();
 
             // Read the JSON cursors.
+            var flatContainerBaseUrl = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.FlatContainer);
+            var registrationBaseUrl = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.RegistrationOriginal);
             var jsonCursorInput = new Dictionary<string, string>
             {
-                { CursorNames.NuGetOrg.FlatContainer, "https://api.nuget.org/v3-flatcontainer/cursor.json" },
-                { CursorNames.NuGetOrg.Registration, "https://api.nuget.org/v3/registration3/cursor.json" },
+                { CursorNames.NuGetOrg.FlatContainer, $"{flatContainerBaseUrl.TrimEnd('/')}/cursor.json"  },
+                { CursorNames.NuGetOrg.Registration, $"{registrationBaseUrl.TrimEnd('/')}/cursor.json" },
             };
 
             foreach (var pair in jsonCursorInput)

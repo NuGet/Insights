@@ -13,13 +13,16 @@ namespace Knapcode.ExplorePackages.Logic
     {
         private readonly TaskQueue<IReadOnlyList<CatalogEntry>> _taskQueue;
         private readonly ICatalogEntriesProcessor _processor;
+        private readonly ExplorePackagesSettings _settings;
         private readonly ILogger _log;
 
         public CatalogProcessorQueue(
             ICatalogEntriesProcessor processor,
+            ExplorePackagesSettings settings,
             ILogger log)
         {
             _processor = processor;
+            _settings = settings;
             _log = log;
             _taskQueue = new TaskQueue<IReadOnlyList<CatalogEntry>>(
                 workerCount: 1,
@@ -69,7 +72,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         private async Task ProduceAsync(DateTimeOffset start, DateTimeOffset end, CancellationToken token)
         {
-            using (var catalogReader = new CatalogReader(new Uri("https://api.nuget.org/v3/index.json"), _log))
+            using (var catalogReader = new CatalogReader(new Uri(_settings.V3ServiceIndex), _log))
             {
                 var remainingPages = new Queue<CatalogPageEntry>(await catalogReader.GetPageEntriesAsync(start, end, token));
 

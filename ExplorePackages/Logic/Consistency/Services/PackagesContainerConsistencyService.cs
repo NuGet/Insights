@@ -5,10 +5,14 @@ namespace Knapcode.ExplorePackages.Logic
     public class PackagesContainerConsistencyService : IConsistencyService<PackagesContainerConsistencyReport>
     {
         private readonly PackagesContainerClient _client;
+        private readonly ExplorePackagesSettings _settings;
 
-        public PackagesContainerConsistencyService(PackagesContainerClient client)
+        public PackagesContainerConsistencyService(
+            PackagesContainerClient client,
+            ExplorePackagesSettings settings)
         {
             _client = client;
+            _settings = settings;
         }
 
         public async Task<PackagesContainerConsistencyReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state)
@@ -38,7 +42,7 @@ namespace Knapcode.ExplorePackages.Logic
             }
 
             var packageContentMetadata = await _client.GetPackageContentMetadataAsync(
-                   NuGetOrgConstants.PackagesContainerBaseUrl,
+                   _settings.PackagesContainerBaseUrl,
                    context.Package.Id,
                    context.Package.Version);
 

@@ -5,7 +5,6 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class FlatContainerConsistencyService : IConsistencyService<FlatContainerConsistencyReport>
     {
-        public const string Type = "PackageBaseAddress/3.0.0";
         private readonly ServiceIndexCache _serviceIndexCache;
         private readonly PackagesContainerClient _packagesContainer;
         private readonly FlatContainerClient _flatContainer;
@@ -43,7 +42,7 @@ namespace Knapcode.ExplorePackages.Logic
                 return;
             }
 
-            var baseUrl = await _serviceIndexCache.GetUrlAsync(Type);
+            var baseUrl = await GetBaseUrlAsync();
 
             var packageContentMetadata = await _flatContainer.GetPackageContentMetadataAsync(
                    baseUrl,
@@ -56,7 +55,7 @@ namespace Knapcode.ExplorePackages.Logic
         private async Task<PartialReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state, bool allowPartial)
         {
             var partialReport = new PartialReport { IsConsistent = true };
-            var baseUrl = await _serviceIndexCache.GetUrlAsync(Type);
+            var baseUrl = await GetBaseUrlAsync();
 
             var shouldExist = !context.Package.Deleted;
 
@@ -94,6 +93,11 @@ namespace Knapcode.ExplorePackages.Logic
             }
 
             return partialReport;
+        }
+
+        private async Task<string> GetBaseUrlAsync()
+        {
+            return await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.FlatContainer);
         }
 
         private class PartialReport

@@ -4,12 +4,15 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class GalleryConsistencyService : IConsistencyService<GalleryConsistencyReport>
     {
-        private const string BaseUrl = "https://www.nuget.org";
         private readonly GalleryClient _client;
+        private readonly ExplorePackagesSettings _settings;
 
-        public GalleryConsistencyService(GalleryClient client)
+        public GalleryConsistencyService(
+            GalleryClient client,
+            ExplorePackagesSettings settings)
         {
             _client = client;
+            _settings = settings;
         }
 
         public async Task<GalleryConsistencyReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state)
@@ -17,7 +20,7 @@ namespace Knapcode.ExplorePackages.Logic
             var shouldExist = !context.Package.Deleted;
 
             var packageDeletedStatus = await _client.GetPackageDeletedStatusAsync(
-                BaseUrl,
+                _settings.GalleryBaseUrl,
                 context.Package.Id,
                 context.Package.Version);
 

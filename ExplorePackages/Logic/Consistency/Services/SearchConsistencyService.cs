@@ -5,7 +5,6 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class SearchConsistencyService : IConsistencyService<SearchConsistencyReport>
     {
-        private const string V2SearchType = "SearchGalleryQueryService/3.0.0-rc";
         private readonly ServiceIndexCache _serviceIndexCache;
         private readonly SearchClient _searchClient;
 
@@ -39,7 +38,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         private async Task<PartialReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state, bool allowPartial)
         {
-            var baseUrls = await _serviceIndexCache.GetUrlsAsync(V2SearchType);
+            var baseUrls = await _serviceIndexCache.GetUrlsAsync(ServiceIndexTypes.V2Search);
             var baseUrlHasPackageSemVer1 = new Dictionary<string, bool>();
             var baseUrlHasPackageSemVer2 = new Dictionary<string, bool>();
 

@@ -100,9 +100,9 @@
     <Compile Include="Logic\Consistency\Services\RegistrationConsistencyService.cs" />
     <Compile Include="Logic\PackageQueryContextBuilder.cs" />
     <Compile Include="Logic\Protocol\GalleryClient.cs" />
-    <Compile Include="Logic\Protocol\NuGetOrgConstants.cs" />
     <Compile Include="Logic\Protocol\PackageDeletedStatus.cs" />
     <Compile Include="Logic\Protocol\SearchClient.cs" />
+    <Compile Include="Logic\Protocol\ServiceIndexTypes.cs" />
     <Compile Include="Logic\Protocol\V2SearchResult.cs" />
     <Compile Include="Logic\SearchServiceCursorReader.cs" />
     <Compile Include="Support\BlobMetadata.cs" />

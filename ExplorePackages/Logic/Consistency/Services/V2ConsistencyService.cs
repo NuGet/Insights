@@ -4,12 +4,15 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class V2ConsistencyService : IConsistencyService<V2ConsistencyReport>
     {
-        private const string BaseUrl = "https://www.nuget.org/api/v2";
         private readonly V2Client _client;
+        private readonly ExplorePackagesSettings _settings;
 
-        public V2ConsistencyService(V2Client client)
+        public V2ConsistencyService(
+            V2Client client,
+            ExplorePackagesSettings settings)
         {
             _client = client;
+            _settings = settings;
         }
 
         public async Task<V2ConsistencyReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state)
@@ -40,7 +43,7 @@ namespace Knapcode.ExplorePackages.Logic
             var report = new PartialReport { IsConsistent = true };
 
             var hasPackageSemVer1 = await _client.HasPackageAsync(
-                BaseUrl,
+                _settings.V2BaseUrl,
                 context.Package.Id,
                 context.Package.Version,
                 semVer2: false);
@@ -52,7 +55,7 @@ namespace Knapcode.ExplorePackages.Logic
             }
 
             var hasPackageSemVer2 = await _client.HasPackageAsync(
-                BaseUrl,
+                _settings.V2BaseUrl,
                 context.Package.Id,
                 context.Package.Version,
                 semVer2: true);

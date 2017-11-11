@@ -146,7 +146,7 @@ namespace Knapcode.ExplorePackages
                 });
             serviceCollection.AddSingleton(
                 x => new HttpSource(
-                    new PackageSource("https://api.nuget.org/v3/index.json"),
+                    new PackageSource(settings.V3ServiceIndex),
                     () =>
                     {
                         var httpClientHandler = x.GetRequiredService<HttpClientHandler>();
@@ -162,6 +162,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient(
                 x => new PackagePathProvider(settings.PackagePath));
 
+            serviceCollection.AddTransient(x => settings.Clone());
             serviceCollection.AddTransient<PackageQueryProcessor>();
             serviceCollection.AddTransient<CatalogToDatabaseProcessor>();
             serviceCollection.AddTransient<CatalogToNuspecsProcessor>();
