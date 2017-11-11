@@ -19,9 +19,9 @@ namespace Knapcode.ExplorePackages.Logic
         public string Name { get; }
         public string CursorName { get; }
 
-        public async Task<bool> IsMatchAsync(PackageQueryContext context)
+        public async Task<bool> IsMatchAsync(PackageQueryContext context, PackageConsistencyState state)
         {
-            var isConsistent = await _service.IsConsistentAsync(context, new PackageConsistencyState());
+            var isConsistent = await _service.IsConsistentAsync(context, state);
             return !isConsistent;
         }
     }

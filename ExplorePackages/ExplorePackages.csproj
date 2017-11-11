@@ -83,6 +83,7 @@
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Logic\PackageQueries\ImmutablePackage.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\INuspecQuery.cs" />
+    <Compile Include="Logic\PackageQueries\PackageQueries\HasCrossCheckDiscrepancyPackageQuery.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueries\HasFlatContainerDiscrepancyPackageQuery.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueries\HasPackagesContainerDiscrepancyPackageQuery.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueries\HasSearchDiscrepancyPackageQuery.cs" />

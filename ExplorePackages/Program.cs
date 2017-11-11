@@ -216,6 +216,7 @@ namespace Knapcode.ExplorePackages
                 serviceCollection.AddTransient<IPackageQuery, HasRegistrationDiscrepancyInGzippedHivePackageQuery>();
                 serviceCollection.AddTransient<IPackageQuery, HasRegistrationDiscrepancyInSemVer2HivePackageQuery>();
                 serviceCollection.AddTransient<IPackageQuery, HasSearchDiscrepancyPackageQuery>();
+                serviceCollection.AddTransient<IPackageQuery, HasCrossCheckDiscrepancyPackageQuery>();
             }
 
             // Add all of the .nuspec queries as package queries.

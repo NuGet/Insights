@@ -6,6 +6,6 @@ namespace Knapcode.ExplorePackages.Logic
     {
         string Name { get; }
         string CursorName { get; }
-        Task<bool> IsMatchAsync(PackageQueryContext context);
+        Task<bool> IsMatchAsync(PackageQueryContext context, PackageConsistencyState state);
     }
 }

@@ -20,5 +20,6 @@
         public const string HasFlatContainerDiscrepancyPackageQuery = CursorNames.HasFlatContainerDiscrepancyPackageQuery;
         public const string HasV2DiscrepancyPackageQuery = CursorNames.HasV2DiscrepancyPackageQuery;
         public const string HasSearchDiscrepancyPackageQuery = CursorNames.HasSearchDiscrepancyPackageQuery;
+        public const string HasCrossCheckDiscrepancyPackageQuery = CursorNames.HasCrossCheckDiscrepancyPackageQuery;
     }
 }

@@ -67,7 +67,7 @@ namespace Knapcode.ExplorePackages.Logic
                 await taskQueue.CompleteAsync();
 
                 complete += commits.Sum(x => x.Packages.Count);
-                _log.LogInformation($"{complete} completed ({Math.Round(complete / stopwatch.Elapsed.TotalSeconds)} per second). Cursors moving to {start:O}.");
+                _log.LogInformation($"{complete} completed ({Math.Round(complete / stopwatch.Elapsed.TotalSeconds)} per second).");
 
                 await PersistResultsAndCursorsAsync(cursorService, cursorStarts, start, allQueryMatches);
             }
@@ -84,21 +84,14 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 foreach (var package in commit.Packages)
                 {
+                    var queries = _queries
+                        .Where(x => commit.CommitTimestamp > cursorStarts[x.CursorName])
+                        .ToList();
+
                     var context = _contextBuilder.GetPackageQueryContext(package);
+                    var state = new PackageConsistencyState();
 
-                    foreach (var query in _queries)
-                    {
-                        if (commit.CommitTimestamp <= cursorStarts[query.CursorName])
-                        {
-                            continue;
-                        }
-
-                        taskQueue.Enqueue(new Work
-                        {
-                            Query = query,
-                            Context = context,
-                        });
-                    }
+                    taskQueue.Enqueue(new Work(queries, context, state));
 
                     start = commit.CommitTimestamp;
                 }
@@ -109,30 +102,33 @@ namespace Knapcode.ExplorePackages.Logic
 
         private async Task ConsumeWorkAsync(object allQueryMatchesLock, Dictionary<string, List<PackageIdentity>> allQueryMatches, Work work)
         {
-            var name = work.Query.Name;
-            var id = work.Context.Package.Id;
-            var version = work.Context.Package.Version;
+            foreach (var query in work.Queries)
+            {
+                var name = query.Name;
+                var id = work.Context.Package.Id;
+                var version = work.Context.Package.Version;
 
-            var isMatch = false;
-            try
-            {
-                isMatch = await work.Query.IsMatchAsync(work.Context);
-            }
-            catch (Exception e)
-            {
-                _log.LogError($"Query failure {name}: {id} {version}"
-                    + Environment.NewLine
-                    + "  "
-                    + e.Message);
-                throw;
-            }
-
-            if (isMatch)
-            {
-                _log.LogInformation($"Query match {name}: {id} {version}");
-                lock (allQueryMatchesLock)
+                var isMatch = false;
+                try
                 {
-                    allQueryMatches[name].Add(new PackageIdentity(id, version));
+                    isMatch = await query.IsMatchAsync(work.Context, work.State);
+                }
+                catch (Exception e)
+                {
+                    _log.LogError($"Query failure {name}: {id} {version}"
+                        + Environment.NewLine
+                        + "  "
+                        + e.Message);
+                    throw;
+                }
+
+                if (isMatch)
+                {
+                    _log.LogInformation($"Query match {name}: {id} {version}");
+                    lock (allQueryMatchesLock)
+                    {
+                        allQueryMatches[name].Add(new PackageIdentity(id, version));
+                    }
                 }
             }
         }
@@ -175,6 +171,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                 if (cursorStarts[query.CursorName] < start)
                 {
+                    _log.LogInformation($"Cursor {query.CursorName} moving to {start:O}.");
                     await cursorService.SetAsync(query.CursorName, start);
                     cursorStarts[query.CursorName] = start;
                 }
@@ -183,8 +180,16 @@ namespace Knapcode.ExplorePackages.Logic
         
         private class Work
         {
-            public IPackageQuery Query { get; set; }
-            public PackageQueryContext Context { get; set; }
+            public Work(IReadOnlyList<IPackageQuery> queries, PackageQueryContext context, PackageConsistencyState state)
+            {
+                Queries = queries;
+                Context = context;
+                State = state;
+            }
+
+            public IReadOnlyList<IPackageQuery> Queries { get; }
+            public PackageQueryContext Context { get; }
+            public PackageConsistencyState State { get; }
         }
     }
 }

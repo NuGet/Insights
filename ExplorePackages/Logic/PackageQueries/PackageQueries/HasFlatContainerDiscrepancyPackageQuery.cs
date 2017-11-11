@@ -14,9 +14,9 @@ namespace Knapcode.ExplorePackages.Logic
         public string Name => PackageQueryNames.HasFlatContainerDiscrepancyPackageQuery;
         public string CursorName => CursorNames.HasFlatContainerDiscrepancyPackageQuery;
 
-        public async Task<bool> IsMatchAsync(PackageQueryContext context)
+        public async Task<bool> IsMatchAsync(PackageQueryContext context, PackageConsistencyState state)
         {
-            var isConsistent = await _service.IsConsistentAsync(context, new PackageConsistencyState());
+            var isConsistent = await _service.IsConsistentAsync(context, state);
             return !isConsistent;
         }
     }

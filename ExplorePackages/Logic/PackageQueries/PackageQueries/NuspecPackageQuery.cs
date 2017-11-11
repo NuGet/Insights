@@ -14,7 +14,7 @@ namespace Knapcode.ExplorePackages.Logic
         public string Name => _nuspecQuery.Name;
         public string CursorName => _nuspecQuery.CursorName;
 
-        public Task<bool> IsMatchAsync(PackageQueryContext context)
+        public Task<bool> IsMatchAsync(PackageQueryContext context, PackageConsistencyState state)
         {
             return Task.FromResult(IsMatch(context));
         }

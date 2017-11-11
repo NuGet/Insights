@@ -148,7 +148,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public class PackageCommitEnumerator
         {
-            private const int PageSize = 2000;
+            private const int PageSize = 5000;
             
             public Task<IReadOnlyList<PackageCommit>> GetPackageCommitsAsync(
                 DateTimeOffset start,
