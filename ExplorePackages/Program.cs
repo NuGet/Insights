@@ -138,6 +138,13 @@ namespace Knapcode.ExplorePackages
                     AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
                 });
             serviceCollection.AddSingleton(
+                x =>
+                {
+                    var httpClient = new HttpClient(x.GetRequiredService<HttpClientHandler>());
+                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", UserAgent.UserAgentString);
+                    return httpClient;
+                });
+            serviceCollection.AddSingleton(
                 x => new HttpSource(
                     new PackageSource("https://api.nuget.org/v3/index.json"),
                     () =>

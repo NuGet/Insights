@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Support;
 using NuGet.Common;
 using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Logic
@@ -10,20 +13,34 @@ namespace Knapcode.ExplorePackages.Logic
     public class FlatContainerClient
     {
         private readonly HttpSource _httpSource;
+        private readonly HttpClient _httpClient;
         private readonly ILogger _log;
 
-        public FlatContainerClient(HttpSource httpSource, ILogger log)
+        public FlatContainerClient(HttpSource httpSource, HttpClient httpClient, ILogger log)
         {
             _httpSource = httpSource;
+            _httpClient = httpClient;
             _log = log;
+        }
+
+        public async Task<string> GetPackageMd5HeaderAsync(string baseUrl, string id, string version)
+        {
+            var packageUrl = GetPackageContentUrl(baseUrl, id, version);
+            return await _httpClient.GetContentMd5Async(packageUrl);
         }
 
         public async Task<bool> HasPackageContentAsync(string baseUrl, string id, string version)
         {
+            var packageUrl = GetPackageContentUrl(baseUrl, id, version);
+            return await _httpSource.UrlExistsAsync(packageUrl, _log);
+        }
+
+        private static string GetPackageContentUrl(string baseUrl, string id, string version)
+        {
             var lowerId = id.ToLowerInvariant();
             var lowerVersion = NuGetVersion.Parse(version).ToNormalizedString().ToLowerInvariant();
             var packageUrl = $"{baseUrl.TrimEnd('/')}/{lowerId}/{lowerVersion}/{lowerId}.{lowerVersion}.nupkg";
-            return await _httpSource.UrlExistsAsync(packageUrl, _log);
+            return packageUrl;
         }
 
         public async Task<bool> HasPackageManifestAsync(string baseUrl, string id, string version)

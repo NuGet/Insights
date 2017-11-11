@@ -4,7 +4,6 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class PackagesContainerConsistencyService : IConsistencyService<PackagesContainerConsistencyReport>
     {
-        private const string BaseUrl = "https://api.nuget.org/packages";
         private readonly PackagesContainerClient _client;
 
         public PackagesContainerConsistencyService(PackagesContainerClient client)
@@ -17,7 +16,7 @@ namespace Knapcode.ExplorePackages.Logic
             var shouldExist = !context.Package.Deleted;
 
             var hasPackageContent = await _client.HasPackageContentAsync(
-                BaseUrl,
+                NuGetOrgConstants.PackagesContainerBaseUrl,
                 context.Package.Id,
                 context.Package.Version);
 

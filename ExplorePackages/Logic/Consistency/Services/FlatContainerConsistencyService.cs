@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -7,12 +6,17 @@ namespace Knapcode.ExplorePackages.Logic
     {
         public const string Type = "PackageBaseAddress/3.0.0";
         private readonly ServiceIndexCache _serviceIndexCache;
-        private readonly FlatContainerClient _client;
+        private readonly PackagesContainerClient _packagesContainer;
+        private readonly FlatContainerClient _flatContainer;
 
-        public FlatContainerConsistencyService(ServiceIndexCache serviceIndexCache, FlatContainerClient client)
+        public FlatContainerConsistencyService(
+            ServiceIndexCache serviceIndexCache,
+            PackagesContainerClient packagesContainer,
+            FlatContainerClient flatContainer)
         {
             _serviceIndexCache = serviceIndexCache;
-            _client = client;
+            _packagesContainer = packagesContainer;
+            _flatContainer = flatContainer;
         }
 
         public async Task<FlatContainerConsistencyReport> GetReportAsync(PackageQueryContext context)
@@ -22,7 +26,9 @@ namespace Knapcode.ExplorePackages.Logic
                 report.IsConsistent,
                 report.HasPackageContent.Value,
                 report.HasPackageManifest.Value,
-                report.IsInIndex.Value);
+                report.IsInIndex.Value,
+                report.PackagesContainerMd5,
+                report.FlatContainerMd5);
         }
 
         public async Task<bool> IsConsistentAsync(PackageQueryContext context)
@@ -38,7 +44,7 @@ namespace Knapcode.ExplorePackages.Logic
 
             var shouldExist = !context.Package.Deleted;
             
-            var hasPackageContent = await _client.HasPackageContentAsync(
+            var hasPackageContent = await _flatContainer.HasPackageContentAsync(
                 baseUrl,
                 context.Package.Id,
                 context.Package.Version);
@@ -50,7 +56,7 @@ namespace Knapcode.ExplorePackages.Logic
                 return partialReport;
             }
 
-            var hasPackageManifest = await _client.HasPackageManifestAsync(
+            var hasPackageManifest = await _flatContainer.HasPackageManifestAsync(
                 baseUrl,
                 context.Package.Id,
                 context.Package.Version);
@@ -62,12 +68,36 @@ namespace Knapcode.ExplorePackages.Logic
                 return partialReport;
             }
 
-            var isInIndex = await _client.HasPackageInIndexAsync(
+            var isInIndex = await _flatContainer.HasPackageInIndexAsync(
                 baseUrl,
                 context.Package.Id,
                 context.Package.Version);
             partialReport.IsInIndex = isInIndex;
             partialReport.IsConsistent &= shouldExist == isInIndex;
+
+            if (allowPartial && !partialReport.IsConsistent)
+            {
+                return partialReport;
+            }
+
+            var packagesContainerMd5 = await _packagesContainer.GetPackageMd5HeaderAsync(
+                NuGetOrgConstants.PackagesContainerBaseUrl,
+                context.Package.Id,
+                context.Package.Version);
+            partialReport.PackagesContainerMd5 = packagesContainerMd5;
+            partialReport.IsConsistent &= shouldExist == (packagesContainerMd5 != null);
+
+            if (allowPartial && !partialReport.IsConsistent)
+            {
+                return partialReport;
+            }
+
+            var flatContainerMd5 = await _flatContainer.GetPackageMd5HeaderAsync(
+                baseUrl,
+                context.Package.Id,
+                context.Package.Version);
+            partialReport.FlatContainerMd5 = packagesContainerMd5;
+            partialReport.IsConsistent &= shouldExist == (flatContainerMd5 != null);
 
             if (allowPartial && !partialReport.IsConsistent)
             {
@@ -83,6 +113,8 @@ namespace Knapcode.ExplorePackages.Logic
             public bool? HasPackageContent { get; set; }
             public bool? HasPackageManifest { get; set; }
             public bool? IsInIndex { get; set; }
+            public string PackagesContainerMd5 { get; set; }
+            public string FlatContainerMd5 { get; set; }
         }
     }
 }
