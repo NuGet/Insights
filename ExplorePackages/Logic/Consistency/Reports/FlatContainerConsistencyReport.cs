@@ -22,7 +22,7 @@
         public bool HasPackageContent { get; }
         public bool HasPackageManifest { get; }
         public bool IsInIndex { get; }
-        public string PackagesContainerMd5 { get; set; }
-        public string FlatContainerMd5 { get; set; }
+        public string PackagesContainerMd5 { get; }
+        public string FlatContainerMd5 { get; }
     }
 }
