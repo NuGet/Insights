@@ -45,6 +45,7 @@ namespace Knapcode.ExplorePackages.Commands
             if (context == null)
             {
                 _log.LogError($"The package {id} {version} could not be found.");
+                return;
             }
 
             var state = new PackageConsistencyState();
