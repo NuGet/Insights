@@ -1,11 +1,8 @@
-﻿using System;
-using System.Net;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Support;
 using NuGet.Common;
 using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Logic
@@ -23,16 +20,10 @@ namespace Knapcode.ExplorePackages.Logic
             _log = log;
         }
 
-        public async Task<string> GetPackageMd5HeaderAsync(string baseUrl, string id, string version)
+        public async Task<BlobMetadata> GetPackageContentMetadataAsync(string baseUrl, string id, string version)
         {
             var packageUrl = GetPackageContentUrl(baseUrl, id, version);
-            return await _httpClient.GetContentMd5Async(packageUrl);
-        }
-
-        public async Task<bool> HasPackageContentAsync(string baseUrl, string id, string version)
-        {
-            var packageUrl = GetPackageContentUrl(baseUrl, id, version);
-            return await _httpSource.UrlExistsAsync(packageUrl, _log);
+            return await _httpClient.GetBlobMetadataAsync(packageUrl, _log);
         }
 
         private static string GetPackageContentUrl(string baseUrl, string id, string version)

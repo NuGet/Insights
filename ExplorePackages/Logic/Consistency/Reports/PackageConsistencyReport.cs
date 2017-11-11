@@ -11,7 +11,8 @@
             RegistrationConsistencyReport registrationOriginal,
             RegistrationConsistencyReport registrationGzipped,
             RegistrationConsistencyReport registrationSemVer2,
-            SearchConsistencyReport search)
+            SearchConsistencyReport search,
+            CrossCheckConsistencyReport crossCheck)
         {
             Context = context;
             IsConsistent = isConsistent;
@@ -22,6 +23,7 @@
             RegistrationGzipped = registrationGzipped;
             RegistrationSemVer2 = registrationSemVer2;
             Search = search;
+            CrossCheck = crossCheck;
         }
 
         public PackageQueryContext Context { get; }
@@ -33,5 +35,6 @@
         public RegistrationConsistencyReport RegistrationGzipped { get; }
         public RegistrationConsistencyReport RegistrationSemVer2 { get; }
         public SearchConsistencyReport Search { get; }
+        public CrossCheckConsistencyReport CrossCheck { get; }
     }
 }

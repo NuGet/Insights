@@ -52,12 +52,15 @@
     <Compile Include="Entities\PackageQueryMatch.cs" />
     <Compile Include="ExplorePackagesSettings.cs" />
     <Compile Include="Logic\Consistency\Reports\FlatContainerConsistencyReport.cs" />
+    <Compile Include="Logic\Consistency\Reports\CrossCheckConsistencyReport.cs" />
+    <Compile Include="Logic\Consistency\Services\CrossCheckConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Services\FlatContainerConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Reports\IConsistencyReport.cs" />
     <Compile Include="Logic\Consistency\Services\IConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Reports\PackageConsistencyReport.cs" />
     <Compile Include="Logic\Consistency\Services\PackageConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Reports\PackagesContainerConsistencyReport.cs" />
+    <Compile Include="Logic\Consistency\Services\PackageConsistencyState.cs" />
     <Compile Include="Logic\Consistency\Services\PackagesContainerConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Reports\RegistrationConsistencyReport.cs" />
     <Compile Include="Logic\Consistency\Services\RegistrationGzippedConsistencyService.cs" />
@@ -97,7 +100,10 @@
     <Compile Include="Logic\Protocol\SearchClient.cs" />
     <Compile Include="Logic\Protocol\V2SearchResult.cs" />
     <Compile Include="Logic\SearchServiceCursorReader.cs" />
+    <Compile Include="Support\BlobMetadata.cs" />
     <Compile Include="Support\HttpClientExtensions.cs" />
+    <Compile Include="Support\IIncrementalHash.cs" />
+    <Compile Include="Support\MD5IncrementalHash.cs" />
     <Compile Include="Support\PortDiscoverer.cs" />
     <Compile Include="Logic\Protocol\FlatContainerClient.cs" />
     <Compile Include="Logic\Protocol\FlatContainerIndex.cs" />
@@ -169,7 +175,7 @@
       <Version>1.5.12</Version>
     </PackageReference>
     <PackageReference Include="NuGet.Protocol">
-      <Version>4.4.0</Version>
+      <Version>4.3.0</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup />

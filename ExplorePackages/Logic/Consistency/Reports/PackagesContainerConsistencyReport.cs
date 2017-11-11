@@ -1,14 +1,18 @@
-﻿namespace Knapcode.ExplorePackages.Logic
+﻿using Knapcode.ExplorePackages.Support;
+
+namespace Knapcode.ExplorePackages.Logic
 {
     public class PackagesContainerConsistencyReport : IConsistencyReport
     {
-        public PackagesContainerConsistencyReport(bool isConsistent, bool hasPackageContent)
+        public PackagesContainerConsistencyReport(
+            bool isConsistent,
+            BlobMetadata packageContentMetadata)
         {
             IsConsistent = isConsistent;
-            HasPackageContent = hasPackageContent;
+            PackageContentMetadata = packageContentMetadata;
         }
 
         public bool IsConsistent { get; }
-        public bool HasPackageContent { get; }
+        public BlobMetadata PackageContentMetadata { get; }
     }
 }

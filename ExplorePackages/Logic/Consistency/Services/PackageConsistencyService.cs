@@ -4,49 +4,54 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class PackageConsistencyService : IConsistencyService<PackageConsistencyReport>
     {
-        private readonly V2ConsistencyService _v2ConsistencyService;
-        private readonly PackagesContainerConsistencyService _packagesContainerConsistencyService;
-        private readonly FlatContainerConsistencyService _flatContainerConsistencyService;
-        private readonly RegistrationOriginalConsistencyService _registrationOriginalConsistencyService;
-        private readonly RegistrationGzippedConsistencyService _registrationGzippedConsistencyService;
-        private readonly RegistrationSemVer2ConsistencyService _registrationSemVer2ConsistencyService;
-        private readonly SearchConsistencyService _searchConsistencyService;
+        private readonly V2ConsistencyService _v2;
+        private readonly PackagesContainerConsistencyService _packagesContainer;
+        private readonly FlatContainerConsistencyService _flatContainer;
+        private readonly RegistrationOriginalConsistencyService _registrationOriginal;
+        private readonly RegistrationGzippedConsistencyService _registrationGzipped;
+        private readonly RegistrationSemVer2ConsistencyService _registrationSemVer2;
+        private readonly SearchConsistencyService _search;
+        private readonly CrossCheckConsistencyService _crossCheck;
 
         public PackageConsistencyService(
-            V2ConsistencyService v2ConsistencyService,
-            PackagesContainerConsistencyService packageConsistencyService,
-            FlatContainerConsistencyService flatContainerConsistencyService,
-            RegistrationOriginalConsistencyService registrationOriginalConsistencyService,
-            RegistrationGzippedConsistencyService registrationGzippedConsistencyService,
-            RegistrationSemVer2ConsistencyService registrationSemVer2ConsistencyService,
-            SearchConsistencyService searchConsistencyService)
+            V2ConsistencyService v2,
+            PackagesContainerConsistencyService packagesContainer,
+            FlatContainerConsistencyService flatContainer,
+            RegistrationOriginalConsistencyService registrationOriginal,
+            RegistrationGzippedConsistencyService registrationGzipped,
+            RegistrationSemVer2ConsistencyService registrationSemVer2,
+            SearchConsistencyService search,
+            CrossCheckConsistencyService crossCheck)
         {
-            _v2ConsistencyService = v2ConsistencyService;
-            _packagesContainerConsistencyService = packageConsistencyService;
-            _flatContainerConsistencyService = flatContainerConsistencyService;
-            _registrationOriginalConsistencyService = registrationOriginalConsistencyService;
-            _registrationGzippedConsistencyService = registrationGzippedConsistencyService;
-            _registrationSemVer2ConsistencyService = registrationSemVer2ConsistencyService;
-            _searchConsistencyService = searchConsistencyService;
+            _v2 = v2;
+            _packagesContainer = packagesContainer;
+            _flatContainer = flatContainer;
+            _registrationOriginal = registrationOriginal;
+            _registrationGzipped = registrationGzipped;
+            _registrationSemVer2 = registrationSemVer2;
+            _search = search;
+            _crossCheck = crossCheck;
         }
 
-        public async Task<PackageConsistencyReport> GetReportAsync(PackageQueryContext context)
+        public async Task<PackageConsistencyReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state)
         {
-            var v2 = await _v2ConsistencyService.GetReportAsync(context);
-            var packagesContainer = await _packagesContainerConsistencyService.GetReportAsync(context);
-            var flatContainer = await _flatContainerConsistencyService.GetReportAsync(context);
-            var registrationOriginal = await _registrationOriginalConsistencyService.GetReportAsync(context);
-            var registrationGzipped = await _registrationGzippedConsistencyService.GetReportAsync(context);
-            var registrationSemVer2 = await _registrationSemVer2ConsistencyService.GetReportAsync(context);
-            var search = await _searchConsistencyService.GetReportAsync(context);
-
+            var v2 = await _v2.GetReportAsync(context, state);
+            var packagesContainer = await _packagesContainer.GetReportAsync(context, state);
+            var flatContainer = await _flatContainer.GetReportAsync(context, state);
+            var registrationOriginal = await _registrationOriginal.GetReportAsync(context, state);
+            var registrationGzipped = await _registrationGzipped.GetReportAsync(context, state);
+            var registrationSemVer2 = await _registrationSemVer2.GetReportAsync(context, state);
+            var search = await _search.GetReportAsync(context, state);
+            var crossCheck = await _crossCheck.GetReportAsync(context, state);
+            
             var isConsistent = v2.IsConsistent
                 && packagesContainer.IsConsistent
                 && flatContainer.IsConsistent
                 && registrationOriginal.IsConsistent
                 && registrationGzipped.IsConsistent
                 && registrationSemVer2.IsConsistent
-                && search.IsConsistent;
+                && search.IsConsistent
+                && crossCheck.IsConsistent;
 
             return new PackageConsistencyReport(
                 context,
@@ -57,47 +62,65 @@ namespace Knapcode.ExplorePackages.Logic
                 registrationOriginal,
                 registrationGzipped,
                 registrationSemVer2,
-                search);
+                search,
+                crossCheck);
         }
 
-        public async Task<bool> IsConsistentAsync(PackageQueryContext context)
+        public async Task<bool> IsConsistentAsync(PackageQueryContext context, PackageConsistencyState state)
         {
-            if (!(await _v2ConsistencyService.IsConsistentAsync(context)))
+            if (!(await _v2.IsConsistentAsync(context, state)))
             {
                 return false;
             }
 
-            if (!(await _packagesContainerConsistencyService.IsConsistentAsync(context)))
+            if (!(await _packagesContainer.IsConsistentAsync(context, state)))
             {
                 return false;
             }
 
-            if (!(await _flatContainerConsistencyService.IsConsistentAsync(context)))
+            if (!(await _flatContainer.IsConsistentAsync(context, state)))
             {
                 return false;
             }
 
-            if (!(await _registrationOriginalConsistencyService.IsConsistentAsync(context)))
+            if (!(await _registrationOriginal.IsConsistentAsync(context, state)))
             {
                 return false;
             }
 
-            if (!(await _registrationGzippedConsistencyService.IsConsistentAsync(context)))
+            if (!(await _registrationGzipped.IsConsistentAsync(context, state)))
             {
                 return false;
             }
 
-            if (!(await _registrationOriginalConsistencyService.IsConsistentAsync(context)))
+            if (!(await _registrationOriginal.IsConsistentAsync(context, state)))
             {
                 return false;
             }
 
-            if (!(await _searchConsistencyService.IsConsistentAsync(context)))
+            if (!(await _search.IsConsistentAsync(context, state)))
+            {
+                return false;
+            }
+
+            if (!(await _crossCheck.IsConsistentAsync(context, state)))
             {
                 return false;
             }
 
             return true;
+        }
+
+        public async Task PopulateStateAsync(PackageQueryContext context, PackageConsistencyState state)
+        {
+            await _v2.PopulateStateAsync(context, state);
+            await _packagesContainer.PopulateStateAsync(context, state);
+            await _flatContainer.PopulateStateAsync(context, state);
+            await _registrationOriginal.PopulateStateAsync(context, state);
+            await _registrationGzipped.PopulateStateAsync(context, state);
+            await _registrationSemVer2.PopulateStateAsync(context, state);
+            await _search.PopulateStateAsync(context, state);
+            await _crossCheck.PopulateStateAsync(context, state);
         }
     }
 }

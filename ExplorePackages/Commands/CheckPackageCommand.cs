@@ -46,7 +46,8 @@ namespace Knapcode.ExplorePackages.Commands
                 _log.LogError($"The package {id} {version} could not be found.");
             }
 
-            var report = await _service.GetReportAsync(context);
+            var state = new PackageConsistencyState();
+            var report = await _service.GetReportAsync(context, state);
             var reportJson = JsonConvert.SerializeObject(
                 report,
                 new JsonSerializerSettings
@@ -56,7 +57,6 @@ namespace Knapcode.ExplorePackages.Commands
                         new NuspecJsonConverter()
                     },
                     Formatting = Formatting.Indented,
-                    NullValueHandling = NullValueHandling.Ignore,
                 });
             Console.WriteLine(reportJson);
         }

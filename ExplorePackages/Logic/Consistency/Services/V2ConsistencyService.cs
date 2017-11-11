@@ -12,22 +12,27 @@ namespace Knapcode.ExplorePackages.Logic
             _client = client;
         }
 
-        public async Task<V2ConsistencyReport> GetReportAsync(PackageQueryContext context)
+        public async Task<V2ConsistencyReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state)
         {
-            var report = await GetReportAsync(context, allowPartial: false);
+            var report = await GetReportAsync(context, state, allowPartial: false);
             return new V2ConsistencyReport(
                 report.IsConsistent,
                 report.HasPackageSemVer1.Value,
                 report.HasPackageSemVer2.Value);
         }
 
-        public async Task<bool> IsConsistentAsync(PackageQueryContext context)
+        public async Task<bool> IsConsistentAsync(PackageQueryContext context, PackageConsistencyState state)
         {
-            var report = await GetReportAsync(context, allowPartial: true);
+            var report = await GetReportAsync(context, state, allowPartial: true);
             return report.IsConsistent;
         }
 
-        private async Task<PartialReport> GetReportAsync(PackageQueryContext context, bool allowPartial)
+        public Task PopulateStateAsync(PackageQueryContext context, PackageConsistencyState state)
+        {
+            return Task.CompletedTask;
+        }
+
+        private async Task<PartialReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state, bool allowPartial)
         {
             var shouldExistSemVer1 = !context.Package.Deleted && !context.IsSemVer2;
             var shouldExistSemVer2 = !context.Package.Deleted;

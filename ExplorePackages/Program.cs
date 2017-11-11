@@ -186,6 +186,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<RegistrationSemVer2ConsistencyService>();
             serviceCollection.AddTransient<SearchConsistencyService>();
             serviceCollection.AddTransient<PackageConsistencyService>();
+            serviceCollection.AddTransient<CrossCheckConsistencyService>();
 
             serviceCollection.AddTransient<PackageQueriesCommand>();
             serviceCollection.AddTransient<FetchCursorsCommand>();

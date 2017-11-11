@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Support;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -19,37 +20,49 @@ namespace Knapcode.ExplorePackages.Logic
             _flatContainer = flatContainer;
         }
 
-        public async Task<FlatContainerConsistencyReport> GetReportAsync(PackageQueryContext context)
+        public async Task<FlatContainerConsistencyReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state)
         {
-            var report = await GetReportAsync(context, allowPartial: false);
+            var report = await GetReportAsync(context, state, allowPartial: false);
             return new FlatContainerConsistencyReport(
                 report.IsConsistent,
-                report.HasPackageContent.Value,
+                report.PackageContentMetadata,
                 report.HasPackageManifest.Value,
-                report.IsInIndex.Value,
-                report.PackagesContainerMd5,
-                report.FlatContainerMd5);
+                report.IsInIndex.Value);
         }
 
-        public async Task<bool> IsConsistentAsync(PackageQueryContext context)
+        public async Task<bool> IsConsistentAsync(PackageQueryContext context, PackageConsistencyState state)
         {
-            var partialReport = await GetReportAsync(context, allowPartial: true);
+            var partialReport = await GetReportAsync(context, state, allowPartial: true);
             return partialReport.IsConsistent;
         }
 
-        private async Task<PartialReport> GetReportAsync(PackageQueryContext context, bool allowPartial)
+        public async Task PopulateStateAsync(PackageQueryContext context, PackageConsistencyState state)
+        {
+            if (state.FlatContainer.PackageContentMetadata != null)
+            {
+                return;
+            }
+
+            var baseUrl = await _serviceIndexCache.GetUrlAsync(Type);
+
+            var packageContentMetadata = await _flatContainer.GetPackageContentMetadataAsync(
+                   baseUrl,
+                   context.Package.Id,
+                   context.Package.Version);
+
+            state.FlatContainer.PackageContentMetadata = packageContentMetadata;
+        }
+
+        private async Task<PartialReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state, bool allowPartial)
         {
             var partialReport = new PartialReport { IsConsistent = true };
             var baseUrl = await _serviceIndexCache.GetUrlAsync(Type);
 
             var shouldExist = !context.Package.Deleted;
-            
-            var hasPackageContent = await _flatContainer.HasPackageContentAsync(
-                baseUrl,
-                context.Package.Id,
-                context.Package.Version);
-            partialReport.HasPackageContent = hasPackageContent;
-            partialReport.IsConsistent &= shouldExist == hasPackageContent;
+
+            await PopulateStateAsync(context, state);
+            partialReport.PackageContentMetadata = state.FlatContainer.PackageContentMetadata;
+            partialReport.IsConsistent &= shouldExist == partialReport.PackageContentMetadata.Exists;
 
             if (allowPartial && !partialReport.IsConsistent)
             {
@@ -80,41 +93,15 @@ namespace Knapcode.ExplorePackages.Logic
                 return partialReport;
             }
 
-            var packagesContainerMd5 = await _packagesContainer.GetPackageMd5HeaderAsync(
-                NuGetOrgConstants.PackagesContainerBaseUrl,
-                context.Package.Id,
-                context.Package.Version);
-            partialReport.PackagesContainerMd5 = packagesContainerMd5;
-            partialReport.IsConsistent &= shouldExist == (packagesContainerMd5 != null);
-
-            if (allowPartial && !partialReport.IsConsistent)
-            {
-                return partialReport;
-            }
-
-            var flatContainerMd5 = await _flatContainer.GetPackageMd5HeaderAsync(
-                baseUrl,
-                context.Package.Id,
-                context.Package.Version);
-            partialReport.FlatContainerMd5 = packagesContainerMd5;
-            partialReport.IsConsistent &= shouldExist == (flatContainerMd5 != null);
-
-            if (allowPartial && !partialReport.IsConsistent)
-            {
-                return partialReport;
-            }
-
             return partialReport;
         }
 
         private class PartialReport
         {
             public bool IsConsistent { get; set; }
-            public bool? HasPackageContent { get; set; }
+            public BlobMetadata PackageContentMetadata { get; set; }
             public bool? HasPackageManifest { get; set; }
             public bool? IsInIndex { get; set; }
-            public string PackagesContainerMd5 { get; set; }
-            public string FlatContainerMd5 { get; set; }
         }
     }
 }

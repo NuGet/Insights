@@ -18,22 +18,27 @@ namespace Knapcode.ExplorePackages.Logic
             _searchClient = searchClient;
         }
 
-        public async Task<SearchConsistencyReport> GetReportAsync(PackageQueryContext context)
+        public async Task<SearchConsistencyReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state)
         {
-            var report = await GetReportAsync(context, allowPartial: false);
+            var report = await GetReportAsync(context, state, allowPartial: false);
             return new SearchConsistencyReport(
                 report.IsConsistent,
                 report.BaseUrlHasPackageSemVer1,
                 report.BaseUrlHasPackageSemVer2);
         }
 
-        public async Task<bool> IsConsistentAsync(PackageQueryContext context)
+        public async Task<bool> IsConsistentAsync(PackageQueryContext context, PackageConsistencyState state)
         {
-            var report = await GetReportAsync(context, allowPartial: true);
+            var report = await GetReportAsync(context, state, allowPartial: true);
             return report.IsConsistent;
         }
 
-        private async Task<PartialReport> GetReportAsync(PackageQueryContext context, bool allowPartial)
+        public Task PopulateStateAsync(PackageQueryContext context, PackageConsistencyState state)
+        {
+            return Task.CompletedTask;
+        }
+
+        private async Task<PartialReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state, bool allowPartial)
         {
             var baseUrls = await _serviceIndexCache.GetUrlsAsync(V2SearchType);
             var baseUrlHasPackageSemVer1 = new Dictionary<string, bool>();
