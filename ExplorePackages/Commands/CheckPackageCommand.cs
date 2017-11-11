@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Knapcode.ExplorePackages.Logic;
 using Newtonsoft.Json;
 using NuGet.Common;
@@ -46,23 +47,35 @@ namespace Knapcode.ExplorePackages.Commands
             }
 
             var report = await _service.GetReportAsync(context);
-
-            var output = new
-            {
-                Context = new
+            var reportJson = JsonConvert.SerializeObject(
+                report,
+                new JsonSerializerSettings
                 {
-                    report.Context.Package,
-                    report.Context.IsSemVer2,
-                },
-                report.IsConsistent,
-                report.V2,
-                report.PackagesContainer,
-                report.FlatContainer,
-                report.RegistrationOriginal,
-                report.RegistrationGzipped,
-                report.RegistrationSemVer2,
-            };
-            Console.WriteLine(JsonConvert.SerializeObject(output, Formatting.Indented));
+                    Converters =
+                    {
+                        new NuspecJsonConverter()
+                    },
+                    Formatting = Formatting.Indented,
+                    NullValueHandling = NullValueHandling.Ignore,
+                });
+            Console.WriteLine(reportJson);
+        }
+
+        private class NuspecJsonConverter : JsonConverter
+        {
+            public override bool CanConvert(Type objectType)
+            {
+                return objectType == typeof(XDocument);
+            }
+
+            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+            {
+            }
         }
     }
 }

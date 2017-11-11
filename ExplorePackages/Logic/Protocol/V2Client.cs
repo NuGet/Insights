@@ -19,11 +19,12 @@ namespace Knapcode.ExplorePackages.Logic
             _log = log;
         }
 
-        public async Task<bool> HasPackageAsync(string baseUrl, string id, string version)
+        public async Task<bool> HasPackageAsync(string baseUrl, string id, string version, bool semVer2)
         {
+            var semVerLevel = semVer2 ? "2.0.0" : "1.0.0";
             var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
             var filter = $"Id eq '{id}' and NormalizedVersion eq '{normalizedVersion}' and 1 eq 1";
-            var url = $"{baseUrl.TrimEnd('/')}/Packages/$count?$filter={Uri.EscapeDataString(filter)}&semVerLevel=2.0.0";
+            var url = $"{baseUrl.TrimEnd('/')}/Packages/$count?$filter={Uri.EscapeDataString(filter)}&semVerLevel={semVerLevel}";
             var count = await _httpSource.ProcessResponseAsync(
                 new HttpSourceRequest(url, _log),
                 async response =>

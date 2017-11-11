@@ -18,10 +18,11 @@ namespace Knapcode.ExplorePackages.Logic
             _log = log;
         }
 
-        public async Task<bool> HasPackageAsync(string baseUrl, string id, string version)
+        public async Task<bool> HasPackageAsync(string baseUrl, string id, string version, bool semVer2)
         {
+            var semVerLevel = semVer2 ? "2.0.0" : "1.0.0";
             var query = $"packageid:{id} version:{version}";
-            var url = $"{baseUrl.TrimEnd('/')}/search/query?q={Uri.EscapeDataString(query)}&take=1&ignoreFilter=true&semVerLevel=2.0.0";
+            var url = $"{baseUrl.TrimEnd('/')}/search/query?q={Uri.EscapeDataString(query)}&take=1&ignoreFilter=true&semVerLevel={semVerLevel}";
 
             var result = await _httpSource.DeserializeUrlAsync<V2SearchResult>(
                 url,

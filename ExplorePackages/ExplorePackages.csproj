@@ -51,22 +51,22 @@
     <Compile Include="Entities\PackageQuery.cs" />
     <Compile Include="Entities\PackageQueryMatch.cs" />
     <Compile Include="ExplorePackagesSettings.cs" />
-    <Compile Include="Logic\Consistency\FlatContainerConsistencyReport.cs" />
-    <Compile Include="Logic\Consistency\FlatContainerConsistencyService.cs" />
-    <Compile Include="Logic\Consistency\IConsistencyReport.cs" />
-    <Compile Include="Logic\Consistency\IConsistencyService.cs" />
-    <Compile Include="Logic\Consistency\PackageConsistencyReport.cs" />
-    <Compile Include="Logic\Consistency\PackageConsistencyService.cs" />
-    <Compile Include="Logic\Consistency\PackagesContainerConsistencyReport.cs" />
-    <Compile Include="Logic\Consistency\PackagesContainerConsistencyService.cs" />
-    <Compile Include="Logic\Consistency\RegistrationConsistencyReport.cs" />
-    <Compile Include="Logic\Consistency\RegistrationGzippedConsistencyService.cs" />
-    <Compile Include="Logic\Consistency\RegistrationOriginalConsistencyService.cs" />
-    <Compile Include="Logic\Consistency\RegistrationSemVer2ConsistencyService.cs" />
-    <Compile Include="Logic\Consistency\SearchConsistencyResult.cs" />
-    <Compile Include="Logic\Consistency\SearchConsistencyService.cs" />
-    <Compile Include="Logic\Consistency\V2ConsistencyReport.cs" />
-    <Compile Include="Logic\Consistency\V2ConsistencyService.cs" />
+    <Compile Include="Logic\Consistency\Reports\FlatContainerConsistencyReport.cs" />
+    <Compile Include="Logic\Consistency\Services\FlatContainerConsistencyService.cs" />
+    <Compile Include="Logic\Consistency\Reports\IConsistencyReport.cs" />
+    <Compile Include="Logic\Consistency\Services\IConsistencyService.cs" />
+    <Compile Include="Logic\Consistency\Reports\PackageConsistencyReport.cs" />
+    <Compile Include="Logic\Consistency\Services\PackageConsistencyService.cs" />
+    <Compile Include="Logic\Consistency\Reports\PackagesContainerConsistencyReport.cs" />
+    <Compile Include="Logic\Consistency\Services\PackagesContainerConsistencyService.cs" />
+    <Compile Include="Logic\Consistency\Reports\RegistrationConsistencyReport.cs" />
+    <Compile Include="Logic\Consistency\Services\RegistrationGzippedConsistencyService.cs" />
+    <Compile Include="Logic\Consistency\Services\RegistrationOriginalConsistencyService.cs" />
+    <Compile Include="Logic\Consistency\Services\RegistrationSemVer2ConsistencyService.cs" />
+    <Compile Include="Logic\Consistency\Reports\SearchConsistencyReport.cs" />
+    <Compile Include="Logic\Consistency\Services\SearchConsistencyService.cs" />
+    <Compile Include="Logic\Consistency\Reports\V2ConsistencyReport.cs" />
+    <Compile Include="Logic\Consistency\Services\V2ConsistencyService.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindEmptyDependencyVersionsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindFloatingDependencyVersionsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindMissingDependencyVersionsNuspecQuery.cs" />
@@ -91,7 +91,7 @@
     <Compile Include="Logic\PackageQueries\PackageQueries\HasRegistrationDiscrepancyInSemVer2HivePackageQuery.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueries\HasRegistrationDiscrepancyInOriginalHivePackageQuery.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueries\HasRegistrationDiscrepancyPackageQuery.cs" />
-    <Compile Include="Logic\Consistency\RegistrationConsistencyService.cs" />
+    <Compile Include="Logic\Consistency\Services\RegistrationConsistencyService.cs" />
     <Compile Include="Logic\PackageQueryContextBuilder.cs" />
     <Compile Include="Logic\Protocol\SearchClient.cs" />
     <Compile Include="Logic\Protocol\V2SearchResult.cs" />
@@ -167,7 +167,7 @@
       <Version>1.5.12</Version>
     </PackageReference>
     <PackageReference Include="NuGet.Protocol">
-      <Version>4.3.0</Version>
+      <Version>4.4.0</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup />
