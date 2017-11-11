@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
+using Knapcode.ExplorePackages.Support;
 using Newtonsoft.Json;
 using NuGet.Common;
 using NuGet.Protocol;
@@ -14,64 +13,64 @@ namespace Knapcode.ExplorePackages.Logic
     public class RemoteCursorReader
     {
         private readonly HttpSource _httpSource;
+        private readonly SearchServiceCursorReader _searchServiceCursorReader;
         private readonly ILogger _log;
 
-        public RemoteCursorReader(HttpSource httpSource, ILogger log)
+        public RemoteCursorReader(
+            HttpSource httpSource,
+            SearchServiceCursorReader searchServiceCursorReader,
+            ILogger log)
         {
             _httpSource = httpSource;
+            _searchServiceCursorReader = searchServiceCursorReader;
             _log = log;
         }
 
         public async Task<IReadOnlyList<Cursor>> GetNuGetOrgCursors(CancellationToken token)
         {
-            var cursorInput = new Dictionary<string, string>
+            var output = new List<Cursor>();
+
+            // Read the JSON cursors.
+            var jsonCursorInput = new Dictionary<string, string>
             {
                 { CursorNames.NuGetOrg.FlatContainer, "https://api.nuget.org/v3-flatcontainer/cursor.json" },
                 { CursorNames.NuGetOrg.Registration, "https://api.nuget.org/v3/registration3/cursor.json" },
             };
 
-            var output = new List<Cursor>();
-            foreach (var pair in cursorInput)
+            foreach (var pair in jsonCursorInput)
             {
                 var value = await GetJsonCursorAsync(pair.Value, token);
-                var cursor = new Cursor { Name = pair.Key };
-                cursor.SetDateTimeOffset(value);
-                output.Add(cursor);
+                AddCursor(output, pair.Key, value);
             }
+
+            // Read the search service cursor.
+            var searchServiceCursor = await _searchServiceCursorReader.GetCursorAsync();
+            AddCursor(output, CursorNames.NuGetOrg.Search, searchServiceCursor);
 
             return output;
         }
 
+        private static void AddCursor(List<Cursor> output, string name, DateTimeOffset value)
+        {
+            var cursor = new Cursor { Name = name };
+            cursor.SetDateTimeOffset(value);
+            output.Add(cursor);
+        }
+
         public async Task<DateTimeOffset> GetJsonCursorAsync(string url, CancellationToken token)
         {
-            var json = await _httpSource.ProcessStreamAsync(
-                new HttpSourceRequest(url, _log),
-                async stream =>
-                {
-                    using (var textReader = new StreamReader(stream))
-                    {
-                        return await textReader.ReadToEndAsync();
-                    }
-                },
-                _log,
-                token);
+            var cursor = await _httpSource.DeserializeUrlAsync<JsonCursor>(
+                url,
+                ignoreNotFounds: false,
+                log: _log);
 
-            var cursor = JsonConvert.DeserializeObject<JsonCursor>(
-                json,
-                new JsonSerializerSettings
-                {
-                    DateParseHandling = DateParseHandling.None,
-                });
-
-            return DateTimeOffset.Parse(
-                cursor.Value,
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.AssumeUniversal);
+            return cursor.Value;
         }
 
         private class JsonCursor
         {
-            public string Value { get; set; }
+            [JsonProperty("value")]
+            public DateTimeOffset Value { get; set; }
         }
     }
 }

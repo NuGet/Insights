@@ -10,6 +10,7 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly RegistrationOriginalConsistencyService _registrationOriginalConsistencyService;
         private readonly RegistrationGzippedConsistencyService _registrationGzippedConsistencyService;
         private readonly RegistrationSemVer2ConsistencyService _registrationSemVer2ConsistencyService;
+        private readonly SearchConsistencyService _searchConsistencyService;
 
         public PackageConsistencyService(
             V2ConsistencyService v2ConsistencyService,
@@ -17,7 +18,8 @@ namespace Knapcode.ExplorePackages.Logic
             FlatContainerConsistencyService flatContainerConsistencyService,
             RegistrationOriginalConsistencyService registrationOriginalConsistencyService,
             RegistrationGzippedConsistencyService registrationGzippedConsistencyService,
-            RegistrationSemVer2ConsistencyService registrationSemVer2ConsistencyService)
+            RegistrationSemVer2ConsistencyService registrationSemVer2ConsistencyService,
+            SearchConsistencyService searchConsistencyService)
         {
             _v2ConsistencyService = v2ConsistencyService;
             _packagesContainerConsistencyService = packageConsistencyService;
@@ -25,6 +27,7 @@ namespace Knapcode.ExplorePackages.Logic
             _registrationOriginalConsistencyService = registrationOriginalConsistencyService;
             _registrationGzippedConsistencyService = registrationGzippedConsistencyService;
             _registrationSemVer2ConsistencyService = registrationSemVer2ConsistencyService;
+            _searchConsistencyService = searchConsistencyService;
         }
 
         public async Task<PackageConsistencyReport> GetReportAsync(PackageQueryContext context)
@@ -35,13 +38,15 @@ namespace Knapcode.ExplorePackages.Logic
             var registrationOriginal = await _registrationOriginalConsistencyService.GetReportAsync(context);
             var registrationGzipped = await _registrationGzippedConsistencyService.GetReportAsync(context);
             var registrationSemVer2 = await _registrationSemVer2ConsistencyService.GetReportAsync(context);
+            var search = await _searchConsistencyService.GetReportAsync(context);
 
             var isConsistent = v2.IsConsistent
                 && packagesContainer.IsConsistent
                 && flatContainer.IsConsistent
                 && registrationOriginal.IsConsistent
                 && registrationGzipped.IsConsistent
-                && registrationSemVer2.IsConsistent;
+                && registrationSemVer2.IsConsistent
+                && search.IsConsistent;
 
             return new PackageConsistencyReport(
                 context,
@@ -51,7 +56,8 @@ namespace Knapcode.ExplorePackages.Logic
                 flatContainer,
                 registrationOriginal,
                 registrationGzipped,
-                registrationSemVer2);
+                registrationSemVer2,
+                search);
         }
 
         public async Task<bool> IsConsistentAsync(PackageQueryContext context)
@@ -86,19 +92,12 @@ namespace Knapcode.ExplorePackages.Logic
                 return false;
             }
 
-            return true;
-        }
+            if (!(await _searchConsistencyService.IsConsistentAsync(context)))
+            {
+                return false;
+            }
 
-        private class PartialReport
-        {
-            public PackageQueryContext Context { get; set; }
-            public bool IsConsistent { get; set; }
-            public V2ConsistencyReport V2 { get; set; }
-            public PackageConsistencyReport PackagesContainer { get; set; }
-            public FlatContainerConsistencyReport FlatContainer { get; set; }
-            public RegistrationConsistencyReport RegistrationOriginal { get; set; }
-            public RegistrationConsistencyReport RegistrationGzipped { get; set; }
-            public RegistrationConsistencyReport RegistrationSemVer2 { get; set; }
+            return true;
         }
     }
 }

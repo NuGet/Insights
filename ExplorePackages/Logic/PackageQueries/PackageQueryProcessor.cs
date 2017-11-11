@@ -39,6 +39,7 @@ namespace Knapcode.ExplorePackages.Logic
                 CursorNames.CatalogToNuspecs,
                 CursorNames.NuGetOrg.FlatContainer,
                 CursorNames.NuGetOrg.Registration,
+                CursorNames.NuGetOrg.Search,
             });
 
             var complete = 0;

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -9,7 +11,8 @@ namespace Knapcode.ExplorePackages.Logic
     public class ServiceIndexCache
     {
         private readonly Lazy<Task<ServiceIndexResourceV3>> _lazyServiceIndexResource;
-        private readonly ConcurrentDictionary<string, string> _urls = new ConcurrentDictionary<string, string>();
+        private readonly ConcurrentDictionary<string, IReadOnlyList<string>> _urls
+            = new ConcurrentDictionary<string, IReadOnlyList<string>>();
 
         public ServiceIndexCache()
         {
@@ -21,18 +24,27 @@ namespace Knapcode.ExplorePackages.Logic
             });
         }
 
-        public async Task<string> GetUrlAsync(string type)
+        public async Task<IReadOnlyList<string>> GetUrlsAsync(string type)
         {
-            if (_urls.TryGetValue(type, out string url))
+            if (_urls.TryGetValue(type, out var urls))
             {
-                return url;
+                return urls;
             }
 
             var serviceIndexResource = await _lazyServiceIndexResource.Value;
-            url = serviceIndexResource.GetServiceEntryUri(type)?.AbsoluteUri;
-            _urls.AddOrUpdate(type, url, (key, value) => url);
+            urls = serviceIndexResource
+                .GetServiceEntryUris(type)
+                .Select(x => x.AbsoluteUri)
+                .ToList();
+            _urls.AddOrUpdate(type, urls, (key, value) => urls);
 
-            return url;
+            return urls;
+        }
+
+        public async Task<string> GetUrlAsync(string type)
+        {
+            var urls = await GetUrlsAsync(type);
+            return urls.FirstOrDefault();
         }
     }
 }

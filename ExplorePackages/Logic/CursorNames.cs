@@ -7,6 +7,7 @@
             private const string NuGetOrgPrefix = "NuGet.org, ";
             public const string FlatContainer = NuGetOrgPrefix + "Flat Container";
             public const string Registration = NuGetOrgPrefix + "Registration";
+            public const string Search = NuGetOrgPrefix + "Search";
         }
 
         public const string CatalogToDatabase = "CatalogToDatabase";
@@ -29,5 +30,6 @@
         public const string HasPackagesContainerDiscrepancyPackageQuery = "HasPackagesContainerDiscrepancyPackageQuery";
         public const string HasFlatContainerDiscrepancyPackageQuery = "HasFlatContainerDiscrepancyPackageQuery";
         public const string HasV2DiscrepancyPackageQuery = "HasV2DiscrepancyPackageQuery";
+        public const string HasSearchDiscrepancyPackageQuery = "HasSearchDiscrepancyPackageQuery";
     }
 }

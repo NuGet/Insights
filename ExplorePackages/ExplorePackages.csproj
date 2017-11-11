@@ -63,6 +63,8 @@
     <Compile Include="Logic\Consistency\RegistrationGzippedConsistencyService.cs" />
     <Compile Include="Logic\Consistency\RegistrationOriginalConsistencyService.cs" />
     <Compile Include="Logic\Consistency\RegistrationSemVer2ConsistencyService.cs" />
+    <Compile Include="Logic\Consistency\SearchConsistencyResult.cs" />
+    <Compile Include="Logic\Consistency\SearchConsistencyService.cs" />
     <Compile Include="Logic\Consistency\V2ConsistencyReport.cs" />
     <Compile Include="Logic\Consistency\V2ConsistencyService.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindEmptyDependencyVersionsNuspecQuery.cs" />
@@ -80,6 +82,7 @@
     <Compile Include="Logic\PackageQueries\NuspecQueries\INuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueries\HasFlatContainerDiscrepancyPackageQuery.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueries\HasPackagesContainerDiscrepancyPackageQuery.cs" />
+    <Compile Include="Logic\PackageQueries\PackageQueries\HasSearchDiscrepancyPackageQuery.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueries\HasV2DiscrepancyPackageQuery.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueries\IPackageQuery.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueries\NuspecPackageQuery.cs" />
@@ -90,6 +93,10 @@
     <Compile Include="Logic\PackageQueries\PackageQueries\HasRegistrationDiscrepancyPackageQuery.cs" />
     <Compile Include="Logic\Consistency\RegistrationConsistencyService.cs" />
     <Compile Include="Logic\PackageQueryContextBuilder.cs" />
+    <Compile Include="Logic\Protocol\SearchClient.cs" />
+    <Compile Include="Logic\Protocol\V2SearchResult.cs" />
+    <Compile Include="Logic\SearchServiceCursorReader.cs" />
+    <Compile Include="Support\PortDiscoverer.cs" />
     <Compile Include="Logic\Protocol\FlatContainerClient.cs" />
     <Compile Include="Logic\Protocol\FlatContainerIndex.cs" />
     <Compile Include="Logic\Protocol\PackagesContainerClient.cs" />

@@ -160,6 +160,8 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<CatalogToNuspecsProcessor>();
             serviceCollection.AddTransient<NuspecDownloader>();
             serviceCollection.AddTransient<RemoteCursorReader>();
+            serviceCollection.AddTransient<PortDiscoverer>();
+            serviceCollection.AddTransient<SearchServiceCursorReader>();
             serviceCollection.AddTransient<PackageQueryContextBuilder>();
 
             serviceCollection.AddSingleton<ServiceIndexCache>();
@@ -167,6 +169,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<PackagesContainerClient>();
             serviceCollection.AddTransient<FlatContainerClient>();
             serviceCollection.AddTransient<RegistrationClient>();
+            serviceCollection.AddTransient<SearchClient>();
 
             serviceCollection.AddTransient<V2ConsistencyService>();
             serviceCollection.AddTransient<FlatContainerConsistencyService>();
@@ -174,6 +177,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<RegistrationOriginalConsistencyService>();
             serviceCollection.AddTransient<RegistrationGzippedConsistencyService>();
             serviceCollection.AddTransient<RegistrationSemVer2ConsistencyService>();
+            serviceCollection.AddTransient<SearchConsistencyService>();
             serviceCollection.AddTransient<PackageConsistencyService>();
 
             serviceCollection.AddTransient<PackageQueriesCommand>();
@@ -194,13 +198,17 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<FindSemVer2PackageVersionsNuspecQuery>();
             serviceCollection.AddTransient<FindSemVer2DependencyVersionsNuspecQuery>();
             serviceCollection.AddTransient<FindFloatingDependencyVersionsNuspecQuery>();
-
-            serviceCollection.AddTransient<IPackageQuery, HasV2DiscrepancyPackageQuery>();
-            serviceCollection.AddTransient<IPackageQuery, HasPackagesContainerDiscrepancyPackageQuery>();
-            serviceCollection.AddTransient<IPackageQuery, HasFlatContainerDiscrepancyPackageQuery>();
-            serviceCollection.AddTransient<IPackageQuery, HasRegistrationDiscrepancyInOriginalHivePackageQuery>();
-            serviceCollection.AddTransient<IPackageQuery, HasRegistrationDiscrepancyInGzippedHivePackageQuery>();
-            serviceCollection.AddTransient<IPackageQuery, HasRegistrationDiscrepancyInSemVer2HivePackageQuery>();
+            
+            if (settings.RunConsistencyChecks)
+            {
+                serviceCollection.AddTransient<IPackageQuery, HasV2DiscrepancyPackageQuery>();
+                serviceCollection.AddTransient<IPackageQuery, HasPackagesContainerDiscrepancyPackageQuery>();
+                serviceCollection.AddTransient<IPackageQuery, HasFlatContainerDiscrepancyPackageQuery>();
+                serviceCollection.AddTransient<IPackageQuery, HasRegistrationDiscrepancyInOriginalHivePackageQuery>();
+                serviceCollection.AddTransient<IPackageQuery, HasRegistrationDiscrepancyInGzippedHivePackageQuery>();
+                serviceCollection.AddTransient<IPackageQuery, HasRegistrationDiscrepancyInSemVer2HivePackageQuery>();
+                serviceCollection.AddTransient<IPackageQuery, HasSearchDiscrepancyPackageQuery>();
+            }
 
             // Add all of the .nuspec queries as package queries.
             var nuspecQueryDescriptors = serviceCollection
