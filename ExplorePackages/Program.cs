@@ -169,6 +169,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<NuspecDownloader>();
             serviceCollection.AddTransient<RemoteCursorReader>();
             serviceCollection.AddTransient<PortDiscoverer>();
+            serviceCollection.AddTransient<SearchServiceUrlDiscoverer>();
             serviceCollection.AddTransient<SearchServiceCursorReader>();
             serviceCollection.AddTransient<PackageQueryContextBuilder>();
 
@@ -187,7 +188,8 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<RegistrationOriginalConsistencyService>();
             serviceCollection.AddTransient<RegistrationGzippedConsistencyService>();
             serviceCollection.AddTransient<RegistrationSemVer2ConsistencyService>();
-            serviceCollection.AddTransient<SearchConsistencyService>();
+            serviceCollection.AddTransient<SearchLoadBalancerConsistencyService>();
+            serviceCollection.AddTransient<SearchSpecificInstancesConsistencyService>();
             serviceCollection.AddTransient<PackageConsistencyService>();
             serviceCollection.AddTransient<CrossCheckConsistencyService>();
 

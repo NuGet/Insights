@@ -71,6 +71,8 @@
     <Compile Include="Logic\Consistency\Reports\SearchConsistencyReport.cs" />
     <Compile Include="Logic\Consistency\Services\SearchConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Reports\V2ConsistencyReport.cs" />
+    <Compile Include="Logic\Consistency\Services\SearchLoadBalancerConsistencyService.cs" />
+    <Compile Include="Logic\Consistency\Services\SearchSpecificInstancesConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Services\V2ConsistencyService.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindEmptyDependencyVersionsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindFloatingDependencyVersionsNuspecQuery.cs" />
@@ -103,8 +105,11 @@
     <Compile Include="Logic\Protocol\GalleryPackageState.cs" />
     <Compile Include="Logic\Protocol\PackageDeletedStatus.cs" />
     <Compile Include="Logic\Protocol\SearchClient.cs" />
+    <Compile Include="Logic\Protocol\SearchDiagnostics.cs" />
+    <Compile Include="Logic\Protocol\SearchDiagnosticsCommitUserData.cs" />
     <Compile Include="Logic\Protocol\ServiceIndexTypes.cs" />
     <Compile Include="Logic\Protocol\V2SearchResult.cs" />
+    <Compile Include="Logic\SearchServiceUrlDiscoverer.cs" />
     <Compile Include="Logic\SearchServiceCursorReader.cs" />
     <Compile Include="Support\BlobMetadata.cs" />
     <Compile Include="Support\HttpClientExtensions.cs" />

@@ -11,7 +11,7 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly RegistrationOriginalConsistencyService _registrationOriginal;
         private readonly RegistrationGzippedConsistencyService _registrationGzipped;
         private readonly RegistrationSemVer2ConsistencyService _registrationSemVer2;
-        private readonly SearchConsistencyService _search;
+        private readonly SearchSpecificInstancesConsistencyService _search;
         private readonly CrossCheckConsistencyService _crossCheck;
 
         public PackageConsistencyService(
@@ -22,7 +22,7 @@ namespace Knapcode.ExplorePackages.Logic
             RegistrationOriginalConsistencyService registrationOriginal,
             RegistrationGzippedConsistencyService registrationGzipped,
             RegistrationSemVer2ConsistencyService registrationSemVer2,
-            SearchConsistencyService search,
+            SearchSpecificInstancesConsistencyService search,
             CrossCheckConsistencyService crossCheck)
         {
             _gallery = gallery;

@@ -5,15 +5,18 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class SearchConsistencyService : IConsistencyService<SearchConsistencyReport>
     {
-        private readonly ServiceIndexCache _serviceIndexCache;
+        private readonly SearchServiceUrlDiscoverer _discoverer;
         private readonly SearchClient _searchClient;
+        private readonly bool _specificInstances;
 
         public SearchConsistencyService(
-            ServiceIndexCache serviceIndexCache,
-            SearchClient searchClient)
+            SearchServiceUrlDiscoverer discoverer,
+            SearchClient searchClient,
+            bool specificInstances)
         {
-            _serviceIndexCache = serviceIndexCache;
+            _discoverer = discoverer;
             _searchClient = searchClient;
+            _specificInstances = specificInstances;
         }
 
         public async Task<SearchConsistencyReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state)
@@ -38,7 +41,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         private async Task<PartialReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state, bool allowPartial)
         {
-            var baseUrls = await _serviceIndexCache.GetUrlsAsync(ServiceIndexTypes.V2Search);
+            var baseUrls = await _discoverer.GetUrlsAsync(ServiceIndexTypes.V2Search, _specificInstances);
             var baseUrlHasPackageSemVer1 = new Dictionary<string, bool>();
             var baseUrlHasPackageSemVer2 = new Dictionary<string, bool>();
 

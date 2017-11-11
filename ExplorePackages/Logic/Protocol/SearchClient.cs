@@ -18,6 +18,16 @@ namespace Knapcode.ExplorePackages.Logic
             _log = log;
         }
 
+        public async Task<SearchDiagnostics> GetDiagnosticsAsync(string baseUrl)
+        {
+            var url = $"{baseUrl.TrimEnd('/')}/search/diag";
+
+            return await _httpSource.DeserializeUrlAsync<SearchDiagnostics>(
+                url,
+                ignoreNotFounds: false,
+                log: _log);
+        }
+
         public async Task<bool> HasPackageAsync(string baseUrl, string id, string version, bool semVer2)
         {
             var semVerLevel = semVer2 ? "2.0.0" : "1.0.0";
