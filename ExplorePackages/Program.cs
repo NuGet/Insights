@@ -44,6 +44,7 @@ namespace Knapcode.ExplorePackages
                 }
 
                 var commands = new List<ICommand>();
+                var initializeDatabase = true;
                 switch (args[0].Trim().ToLowerInvariant())
                 {
                     case "nuspecqueries":
@@ -66,6 +67,7 @@ namespace Knapcode.ExplorePackages
                         break;
                     case "checkpackage":
                         commands.Add(serviceProvider.GetRequiredService<CheckPackageCommand>());
+                        initializeDatabase = args.Contains("-database", StringComparer.OrdinalIgnoreCase);
                         break;
                     case "update":
                         commands.Add(serviceProvider.GetRequiredService<FetchCursorsCommand>());
@@ -79,7 +81,7 @@ namespace Knapcode.ExplorePackages
                 }
 
                 // Execute.
-                await InitializeGlobalState(settings);
+                await InitializeGlobalState(settings, initializeDatabase);
                 foreach (var command in commands)
                 {
                     await command.ExecuteAsync(args, token);
@@ -87,13 +89,17 @@ namespace Knapcode.ExplorePackages
             }
         }
         
-        private static async Task InitializeGlobalState(ExplorePackagesSettings settings)
+        private static async Task InitializeGlobalState(ExplorePackagesSettings settings, bool initializeDatabase)
         {
             // Initialize the database.
             EntityContext.ConnectionString = "Data Source=" + settings.DatabasePath;
-            using (var entityContext = new EntityContext())
+            EntityContext.Enabled = initializeDatabase;
+            if (initializeDatabase)
             {
-                await entityContext.Database.EnsureCreatedAsync();
+                using (var entityContext = new EntityContext())
+                {
+                    await entityContext.Database.EnsureCreatedAsync();
+                }
             }
 
             // Allow up to 32 parallel HTTP connections.

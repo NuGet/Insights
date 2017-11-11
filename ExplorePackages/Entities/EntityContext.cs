@@ -1,10 +1,20 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 
 namespace Knapcode.ExplorePackages.Entities
 {
     public class EntityContext : DbContext
     {
         public static string ConnectionString { get; set; } = "Data Source=ExplorePackages.sqlite3";
+        public static bool Enabled { get; set; } = true;
+
+        public EntityContext()
+        {
+            if (!Enabled)
+            {
+                throw new NotSupportedException("Using the database is not enabled.");
+            }
+        }
 
         public DbSet<Package> Packages { get; set; }
         public DbSet<Cursor> Cursors { get; set; }

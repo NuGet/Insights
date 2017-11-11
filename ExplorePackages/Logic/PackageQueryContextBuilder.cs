@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Knapcode.ExplorePackages.Entities;
 using NuGet.Common;
+using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -16,6 +17,38 @@ namespace Knapcode.ExplorePackages.Logic
         {
             _pathProvider = pathProvider;
             _log = log;
+        }
+
+        public PackageQueryContext CreateDeletedPackageQueryContext(string id, string version)
+        {
+            return CreatePackageQueryContext(id, version, isSemVer2: false, deleted: true);
+        }
+
+        public PackageQueryContext CreateAvailablePackageQueryContext(string id, string version, bool isSemVer2)
+        {
+            return CreatePackageQueryContext(id, version, isSemVer2, deleted: false);
+        }
+
+        private PackageQueryContext CreatePackageQueryContext(string id, string version, bool isSemVer2, bool deleted)
+        {
+            var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
+            var immutablePackage = new ImmutablePackage(new Package
+            {
+                Key = 0,
+                Id = id,
+                Version = normalizedVersion,
+                Identity = $"{id}/{normalizedVersion}",
+                Deleted = deleted,
+                FirstCommitTimestamp = 0,
+                LastCommitTimestamp = 0,
+            });
+
+            var nuspecQueryContext = new NuspecQueryContext(
+                path: null,
+                exists: false,
+                document: null);
+
+            return new PackageQueryContext(immutablePackage, nuspecQueryContext, isSemVer2);
         }
 
         public async Task<PackageQueryContext> GetPackageQueryContextFromDatabaseAsync(string id, string version)

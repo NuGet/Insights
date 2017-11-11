@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -26,14 +27,19 @@ namespace Knapcode.ExplorePackages.Commands
 
         public async Task ExecuteAsync(IReadOnlyList<string> args, CancellationToken token)
         {
-            if (args.Count < 3)
+            var argList = args.ToList();
+            var isSemVer2 = HasArg(argList, "-semver2");
+            var deleted = HasArg(argList, "-deleted");
+            var database = HasArg(argList, "-database");
+
+            if (argList.Count < 3)
             {
                 _log.LogError("The second and third parameters should be the package ID then the package version.");
                 return;
             }
 
-            var id = args[1].Trim();
-            var version = args[2].Trim();
+            var id = argList[1].Trim();
+            var version = argList[2].Trim();
 
             if (!NuGetVersion.TryParse(version, out var parsedVersion))
             {
@@ -41,11 +47,28 @@ namespace Knapcode.ExplorePackages.Commands
                 return;
             }
 
-            var context = await _contextBuilder.GetPackageQueryContextFromDatabaseAsync(id, version);
-            if (context == null)
+            if (parsedVersion.IsSemVer2)
             {
-                _log.LogError($"The package {id} {version} could not be found.");
-                return;
+                isSemVer2 = true;
+            }
+
+            PackageQueryContext context;
+            if (database)
+            {
+                context = await _contextBuilder.GetPackageQueryContextFromDatabaseAsync(id, version);
+                if (context == null)
+                {
+                    _log.LogError($"The package {id} {version} could not be found in the database.");
+                    return;
+                }
+            }
+            else if (deleted)
+            {
+                context = _contextBuilder.CreateDeletedPackageQueryContext(id, version);
+            }
+            else
+            {
+                context = _contextBuilder.CreateAvailablePackageQueryContext(id, version, isSemVer2);
             }
 
             var state = new PackageConsistencyState();
@@ -62,6 +85,22 @@ namespace Knapcode.ExplorePackages.Commands
                     Formatting = Formatting.Indented,
                 });
             Console.WriteLine(reportJson);
+        }
+
+        private bool HasArg(List<string> args, string arg)
+        {
+            var hasArg = false;
+            for (var i = 0; i < args.Count; i++)
+            {
+                if (StringComparer.OrdinalIgnoreCase.Equals(args[i], arg))
+                {
+                    hasArg = true;
+                    args.RemoveAt(i);
+                    i--;
+                }
+            }
+
+            return hasArg;
         }
 
         private class NuspecJsonConverter : JsonConverter
