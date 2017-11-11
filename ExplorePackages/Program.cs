@@ -172,6 +172,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<PackageQueryContextBuilder>();
 
             serviceCollection.AddSingleton<ServiceIndexCache>();
+            serviceCollection.AddTransient<GalleryClient>();
             serviceCollection.AddTransient<V2Client>();
             serviceCollection.AddTransient<PackagesContainerClient>();
             serviceCollection.AddTransient<FlatContainerClient>();

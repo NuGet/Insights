@@ -97,7 +97,9 @@
     <Compile Include="Logic\PackageQueries\PackageQueries\HasRegistrationDiscrepancyPackageQuery.cs" />
     <Compile Include="Logic\Consistency\Services\RegistrationConsistencyService.cs" />
     <Compile Include="Logic\PackageQueryContextBuilder.cs" />
+    <Compile Include="Logic\Protocol\GalleryClient.cs" />
     <Compile Include="Logic\Protocol\NuGetOrgConstants.cs" />
+    <Compile Include="Logic\Protocol\PackageDeletedStatus.cs" />
     <Compile Include="Logic\Protocol\SearchClient.cs" />
     <Compile Include="Logic\Protocol\V2SearchResult.cs" />
     <Compile Include="Logic\SearchServiceCursorReader.cs" />
@@ -151,6 +153,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="AngleSharp">
+      <Version>0.9.9</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore">
       <Version>2.0.0</Version>
     </PackageReference>
