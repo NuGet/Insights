@@ -28,8 +28,12 @@ namespace Knapcode.ExplorePackages
 
         private static async Task MainAsync(string[] args, CancellationToken token)
         {
-            // Read the settings
-            var settings = GetSettings();
+            // Read and show the settings
+            Console.WriteLine("===== settings =====");
+            var settings = ReadSettingsFromDisk() ?? new ExplorePackagesSettings();
+            Console.WriteLine(JsonConvert.SerializeObject(settings, Formatting.Indented));
+            Console.WriteLine("====================");
+            Console.WriteLine();
 
             // Initialize the dependency injection container.
             var serviceCollection = InitializeServiceCollection(settings);
@@ -77,19 +81,30 @@ namespace Knapcode.ExplorePackages
                         log.LogError("Unknown command.");
                         return;
                 }
-
+                
                 // Execute.
                 var initializeDatabase = commands.Any(x => x.IsDatabaseRequired(args));
-                await InitializeGlobalState(settings, initializeDatabase);
+                await InitializeGlobalState(settings, initializeDatabase, log);
                 foreach (var command in commands)
                 {
+                    var commandName = command.GetType().Name;
+                    var suffix = "Command";
+                    if (commandName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+                    {
+                        commandName = commandName.Substring(0, commandName.Length - suffix.Length);
+                    }
+                    var heading = $"===== {commandName.ToLowerInvariant()} =====";
+                    Console.WriteLine(heading);
                     await command.ExecuteAsync(args, token);
+                    Console.WriteLine(new string('=', heading.Length));
+                    Console.WriteLine();
                 }
             }
         }
         
-        private static async Task InitializeGlobalState(ExplorePackagesSettings settings, bool initializeDatabase)
+        private static async Task InitializeGlobalState(ExplorePackagesSettings settings, bool initializeDatabase, ILogger log)
         {
+            Console.WriteLine("===== initialize =====");
             // Initialize the database.
             EntityContext.ConnectionString = "Data Source=" + settings.DatabasePath;
             EntityContext.Enabled = initializeDatabase;
@@ -97,8 +112,21 @@ namespace Knapcode.ExplorePackages
             {
                 using (var entityContext = new EntityContext())
                 {
-                    await entityContext.Database.EnsureCreatedAsync();
+                    if (!File.Exists(settings.DatabasePath))
+                    {
+                        log.LogInformation($"The database does not yet exist and will be created.");
+                        await entityContext.Database.EnsureCreatedAsync();
+                        log.LogInformation($"The database now exists.");
+                    }
+                    else
+                    {
+                        log.LogInformation($"The database already exists.");
+                    }
                 }
+            }
+            else
+            {
+                log.LogInformation("The database will not be used.");
             }
 
             // Allow up to 32 parallel HTTP connections.
@@ -107,15 +135,9 @@ namespace Knapcode.ExplorePackages
             // Set the user agent.
             var userAgentStringBuilder = new UserAgentStringBuilder("Knapcode.ExplorePackages.Bot");
             UserAgent.SetUserAgentString(userAgentStringBuilder);
-        }
-
-        private static ExplorePackagesSettings GetSettings()
-        {
-            return ReadSettingsFromDisk() ?? new ExplorePackagesSettings
-            {
-                DatabasePath = Path.Combine(Directory.GetCurrentDirectory(), "ExplorePackages.sqlite3"),
-                PackagePath = Path.Combine(Directory.GetCurrentDirectory(), "packages"),
-            };
+            log.LogInformation($"The following user agent will be used: {UserAgent.UserAgentString}");
+            Console.WriteLine("======================");
+            Console.WriteLine();
         }
 
         private static ExplorePackagesSettings ReadSettingsFromDisk()
@@ -124,9 +146,11 @@ namespace Knapcode.ExplorePackages
             var settingsPath = Path.Combine(settingsDirectory, "Knapcode.ExplorePackages.Settings.json");
             if (!File.Exists(settingsPath))
             {
+                Console.WriteLine($"No settings existed at {settingsPath}.");
                 return null;
             }
 
+            Console.WriteLine($"Settings will be read from {settingsPath}.");
             var content = File.ReadAllText(settingsPath);
             var settings = JsonConvert.DeserializeObject<ExplorePackagesSettings>(content);
 
