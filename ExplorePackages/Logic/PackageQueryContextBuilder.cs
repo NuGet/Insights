@@ -11,11 +11,19 @@ namespace Knapcode.ExplorePackages.Logic
     public class PackageQueryContextBuilder
     {
         private readonly PackagePathProvider _pathProvider;
+        private readonly GalleryConsistencyService _galleryConsistencyService;
+        private readonly ExplorePackagesSettings _settings;
         private readonly ILogger _log;
 
-        public PackageQueryContextBuilder(PackagePathProvider pathProvider, ILogger log)
+        public PackageQueryContextBuilder(
+            PackagePathProvider pathProvider,
+            GalleryConsistencyService galleryConsistencyService,
+            ExplorePackagesSettings settings,
+            ILogger log)
         {
             _pathProvider = pathProvider;
+            _galleryConsistencyService = galleryConsistencyService;
+            _settings = settings;
             _log = log;
         }
 
@@ -49,6 +57,22 @@ namespace Knapcode.ExplorePackages.Logic
                 document: null);
 
             return new PackageQueryContext(immutablePackage, nuspecQueryContext, isSemVer2);
+        }
+        public async Task<PackageQueryContext> GetPackageQueryContextFromGalleryAsync(string id, string version, PackageConsistencyState state)
+        {
+            var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
+
+            var initialContext = CreateAvailablePackageQueryContext(id, version, isSemVer2: false);
+
+            await _galleryConsistencyService.PopulateStateAsync(initialContext, state);
+
+            var deleted = state.Gallery.PackageState.PackageDeletedStatus != PackageDeletedStatus.NotDeleted;
+            
+            return CreatePackageQueryContext(
+                id,
+                version,
+                state.Gallery.PackageState.IsSemVer2,
+                deleted);
         }
 
         public async Task<PackageQueryContext> GetPackageQueryContextFromDatabaseAsync(string id, string version)

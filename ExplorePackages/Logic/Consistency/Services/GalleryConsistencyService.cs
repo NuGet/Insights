@@ -19,20 +19,16 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var shouldExist = !context.Package.Deleted;
 
-            var packageState = await _client.GetPackageStateAsync(
-                _settings.GalleryBaseUrl,
-                context.Package.Id,
-                context.Package.Version);
-
-            var actuallyExists = packageState.PackageDeletedStatus == PackageDeletedStatus.NotDeleted;
+            await PopulateStateAsync(context, state);
+            var actuallyExists = state.Gallery.PackageState.PackageDeletedStatus == PackageDeletedStatus.NotDeleted;
 
             var isConsistent = shouldExist == actuallyExists
-                && ((shouldExist && packageState.IsSemVer2 == context.IsSemVer2)
+                && ((shouldExist && state.Gallery.PackageState.IsSemVer2 == context.IsSemVer2)
                     || !shouldExist);
 
             return new GalleryConsistencyReport(
                 isConsistent,
-                packageState);
+                state.Gallery.PackageState);
         }
 
         public async Task<bool> IsConsistentAsync(PackageQueryContext context, PackageConsistencyState state)
@@ -41,9 +37,19 @@ namespace Knapcode.ExplorePackages.Logic
             return report.IsConsistent;
         }
 
-        public Task PopulateStateAsync(PackageQueryContext context, PackageConsistencyState state)
+        public async Task PopulateStateAsync(PackageQueryContext context, PackageConsistencyState state)
         {
-            return Task.CompletedTask;
+            if (state.Gallery.PackageState != null)
+            {
+                return;
+            }
+
+            var packageState = await _client.GetPackageStateAsync(
+                _settings.GalleryBaseUrl,
+                context.Package.Id,
+                context.Package.Version);
+
+            state.Gallery.PackageState = packageState;
         }
     }
 }

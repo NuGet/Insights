@@ -30,6 +30,7 @@ namespace Knapcode.ExplorePackages.Commands
             var argList = args.ToList();
             var hasSemVer2Arg = HasSemVer2Arg(argList);
             var hasDeletedArg = HasDeletedArg(argList);
+            var hasGalleryArg = HasGalleryArg(argList);
             var hasDatabaseArg = HasDatabaseArg(argList);
 
             if (argList.Count < 3)
@@ -49,8 +50,13 @@ namespace Knapcode.ExplorePackages.Commands
 
             var isSemVer2 = parsedVersion.IsSemVer2 || hasSemVer2Arg;
 
+            var state = new PackageConsistencyState();
             PackageQueryContext context;
-            if (hasDatabaseArg)
+            if (hasGalleryArg)
+            {
+                context = await _contextBuilder.GetPackageQueryContextFromGalleryAsync(id, version, state);
+            }
+            else if (hasDatabaseArg)
             {
                 context = await _contextBuilder.GetPackageQueryContextFromDatabaseAsync(id, version);
                 if (context == null)
@@ -68,7 +74,6 @@ namespace Knapcode.ExplorePackages.Commands
                 context = _contextBuilder.CreateAvailablePackageQueryContext(id, version, isSemVer2);
             }
 
-            var state = new PackageConsistencyState();
             var report = await _service.GetReportAsync(context, state);
             var reportJson = JsonConvert.SerializeObject(
                 report,
@@ -82,6 +87,11 @@ namespace Knapcode.ExplorePackages.Commands
                     Formatting = Formatting.Indented,
                 });
             Console.WriteLine(reportJson);
+        }
+
+        private bool HasGalleryArg(List<string> argList)
+        {
+            return HasArg(argList, "-gallery");
         }
 
         private bool HasDatabaseArg(List<string> argList)
