@@ -117,9 +117,6 @@ namespace Knapcode.ExplorePackages.Logic
                 pieces[0].Trim(),
                 NuGetVersion.Parse(pieces[1]).ToNormalizedString());
 
-            state.PackageId = foundPackageIdentity.Id;
-            state.PackageVersion = foundPackageIdentity.Version;
-
             if (!StringComparer.OrdinalIgnoreCase.Equals(packageIdentity.Id, foundPackageIdentity.Id))
             {
                 throw new InvalidDataException("The package ID found in the meta title does not match the request.");
@@ -131,6 +128,9 @@ namespace Knapcode.ExplorePackages.Logic
                 state.IsListed = false;
                 return state;
             }
+
+            state.PackageId = foundPackageIdentity.Id;
+            state.PackageVersion = foundPackageIdentity.Version;
 
             var alerts = document.QuerySelectorAll("div.alert");
             foreach (var alert in alerts)
