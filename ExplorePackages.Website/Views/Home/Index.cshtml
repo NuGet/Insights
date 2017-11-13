@@ -69,11 +69,11 @@
                     addStatus('Status: ' + status);
                 })
 
-                connection.on('Error', function (status) {
-                    addStatus('Error: ' + status);
+                connection.on('Error', function (error) {
+                    addStatus('Error: ' + error);
                 })
 
-                connection.on('Complete', function (status) {
+                connection.on('Complete', function () {
                     addStatus('Complete!');
                 })
                 
