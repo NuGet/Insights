@@ -15,11 +15,14 @@ namespace Knapcode.ExplorePackages.Logic
             _settings = settings;
         }
 
-        public async Task<PackagesContainerConsistencyReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state)
+        public async Task<PackagesContainerConsistencyReport> GetReportAsync(
+            PackageQueryContext context,
+            PackageConsistencyState state,
+            IProgressReport progressReport)
         {
             var shouldExist = !context.Package.Deleted;
 
-            await PopulateStateAsync(context, state);
+            await PopulateStateAsync(context, state, progressReport);
 
             var isConsistent = shouldExist == state.PackagesContainer.PackageContentMetadata.Exists;
 
@@ -28,13 +31,19 @@ namespace Knapcode.ExplorePackages.Logic
                 state.PackagesContainer.PackageContentMetadata);
         }
 
-        public async Task<bool> IsConsistentAsync(PackageQueryContext context, PackageConsistencyState state)
+        public async Task<bool> IsConsistentAsync(
+            PackageQueryContext context,
+            PackageConsistencyState state,
+            IProgressReport progressReport)
         {
-            var report = await GetReportAsync(context, new PackageConsistencyState());
+            var report = await GetReportAsync(context, state, progressReport);
             return report.IsConsistent;
         }
 
-        public async Task PopulateStateAsync(PackageQueryContext context, PackageConsistencyState state)
+        public async Task PopulateStateAsync(
+            PackageQueryContext context,
+            PackageConsistencyState state,
+            IProgressReport progressReport)
         {
             if (state.PackagesContainer.PackageContentMetadata != null)
             {

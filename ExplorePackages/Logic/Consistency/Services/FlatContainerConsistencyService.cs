@@ -19,9 +19,12 @@ namespace Knapcode.ExplorePackages.Logic
             _flatContainer = flatContainer;
         }
 
-        public async Task<FlatContainerConsistencyReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state)
+        public async Task<FlatContainerConsistencyReport> GetReportAsync(
+            PackageQueryContext context,
+            PackageConsistencyState state,
+            IProgressReport progressReport)
         {
-            var report = await GetReportAsync(context, state, allowPartial: false);
+            var report = await GetReportAsync(context, state, progressReport, allowPartial: false);
             return new FlatContainerConsistencyReport(
                 report.IsConsistent,
                 report.PackageContentMetadata,
@@ -29,13 +32,19 @@ namespace Knapcode.ExplorePackages.Logic
                 report.IsInIndex.Value);
         }
 
-        public async Task<bool> IsConsistentAsync(PackageQueryContext context, PackageConsistencyState state)
+        public async Task<bool> IsConsistentAsync(
+            PackageQueryContext context,
+            PackageConsistencyState state,
+            IProgressReport progressReport)
         {
-            var partialReport = await GetReportAsync(context, state, allowPartial: true);
-            return partialReport.IsConsistent;
+            var report = await GetReportAsync(context, state, progressReport, allowPartial: true);
+            return report.IsConsistent;
         }
 
-        public async Task PopulateStateAsync(PackageQueryContext context, PackageConsistencyState state)
+        public async Task PopulateStateAsync(
+            PackageQueryContext context,
+            PackageConsistencyState state,
+            IProgressReport progressReport)
         {
             if (state.FlatContainer.PackageContentMetadata != null)
             {
@@ -52,47 +61,55 @@ namespace Knapcode.ExplorePackages.Logic
             state.FlatContainer.PackageContentMetadata = packageContentMetadata;
         }
 
-        private async Task<PartialReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state, bool allowPartial)
+        private async Task<MutableReport> GetReportAsync(
+            PackageQueryContext context,
+            PackageConsistencyState state,
+            IProgressReport progressReport,
+            bool allowPartial)
         {
-            var partialReport = new PartialReport { IsConsistent = true };
+            var report = new MutableReport { IsConsistent = true };
+            var incrementalProgress = new IncrementalProgress(progressReport, 3);
             var baseUrl = await GetBaseUrlAsync();
 
             var shouldExist = !context.Package.Deleted;
 
-            await PopulateStateAsync(context, state);
-            partialReport.PackageContentMetadata = state.FlatContainer.PackageContentMetadata;
-            partialReport.IsConsistent &= shouldExist == partialReport.PackageContentMetadata.Exists;
+            await PopulateStateAsync(context, state, progressReport);
+            report.PackageContentMetadata = state.FlatContainer.PackageContentMetadata;
+            report.IsConsistent &= shouldExist == report.PackageContentMetadata.Exists;
+            await incrementalProgress.ReportProgressAsync("Check for the package content in flat container.");
 
-            if (allowPartial && !partialReport.IsConsistent)
+            if (allowPartial && !report.IsConsistent)
             {
-                return partialReport;
+                return report;
             }
 
             var hasPackageManifest = await _flatContainer.HasPackageManifestAsync(
                 baseUrl,
                 context.Package.Id,
                 context.Package.Version);
-            partialReport.HasPackageManifest = hasPackageManifest;
-            partialReport.IsConsistent &= shouldExist == hasPackageManifest;
+            report.HasPackageManifest = hasPackageManifest;
+            report.IsConsistent &= shouldExist == hasPackageManifest;
+            await incrementalProgress.ReportProgressAsync("Checked for the package manifest in flat container.");
 
-            if (allowPartial && !partialReport.IsConsistent)
+            if (allowPartial && !report.IsConsistent)
             {
-                return partialReport;
+                return report;
             }
 
             var isInIndex = await _flatContainer.HasPackageInIndexAsync(
                 baseUrl,
                 context.Package.Id,
                 context.Package.Version);
-            partialReport.IsInIndex = isInIndex;
-            partialReport.IsConsistent &= shouldExist == isInIndex;
+            report.IsInIndex = isInIndex;
+            report.IsConsistent &= shouldExist == isInIndex;
+            await incrementalProgress.ReportProgressAsync("Checked for the package in flat container index.");
 
-            if (allowPartial && !partialReport.IsConsistent)
+            if (allowPartial && !report.IsConsistent)
             {
-                return partialReport;
+                return report;
             }
 
-            return partialReport;
+            return report;
         }
 
         private async Task<string> GetBaseUrlAsync()
@@ -100,7 +117,7 @@ namespace Knapcode.ExplorePackages.Logic
             return await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.FlatContainer);
         }
 
-        private class PartialReport
+        private class MutableReport
         {
             public bool IsConsistent { get; set; }
             public BlobMetadata PackageContentMetadata { get; set; }

@@ -55,6 +55,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<SearchServiceUrlDiscoverer>();
             serviceCollection.AddTransient<SearchServiceCursorReader>();
             serviceCollection.AddTransient<PackageQueryContextBuilder>();
+            serviceCollection.AddTransient<IProgressReport, NullProgressReport>();
 
             serviceCollection.AddSingleton<ServiceIndexCache>();
             serviceCollection.AddTransient<GalleryClient>();

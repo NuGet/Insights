@@ -64,7 +64,7 @@ namespace Knapcode.ExplorePackages.Logic
 
             var initialContext = CreateAvailablePackageQueryContext(id, version, isSemVer2: false);
 
-            await _galleryConsistencyService.PopulateStateAsync(initialContext, state);
+            await _galleryConsistencyService.PopulateStateAsync(initialContext, state, NullProgressReport.Instance);
             
             return CreatePackageQueryContext(
                 state.Gallery.PackageState.PackageId,

@@ -15,9 +15,9 @@ namespace Knapcode.ExplorePackages.Logic
             _flatContainer = flatContainer;
         }
 
-        public async Task<CrossCheckConsistencyReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state)
+        public async Task<CrossCheckConsistencyReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state, IProgressReport progressReport)
         {
-            await PopulateStateAsync(context, state);
+            await PopulateStateAsync(context, state, progressReport);
 
             var doPackageContentsMatch = state.PackagesContainer.PackageContentMetadata?.ContentMD5 == state.FlatContainer.PackageContentMetadata?.ContentMD5;
 
@@ -28,17 +28,17 @@ namespace Knapcode.ExplorePackages.Logic
                 doPackageContentsMatch);
         }
 
-        public async Task<bool> IsConsistentAsync(PackageQueryContext context, PackageConsistencyState state)
+        public async Task<bool> IsConsistentAsync(PackageQueryContext context, PackageConsistencyState state, IProgressReport progressReport)
         {
-            var report = await GetReportAsync(context, state);
+            var report = await GetReportAsync(context, state, progressReport);
 
             return report.IsConsistent;
         }
 
-        public async Task PopulateStateAsync(PackageQueryContext context, PackageConsistencyState state)
+        public async Task PopulateStateAsync(PackageQueryContext context, PackageConsistencyState state, IProgressReport progressReport)
         {
-            await _packagesContainer.PopulateStateAsync(context, state);
-            await _flatContainer.PopulateStateAsync(context, state);
+            await _packagesContainer.PopulateStateAsync(context, state, progressReport);
+            await _flatContainer.PopulateStateAsync(context, state, progressReport);
         }
     }
 }

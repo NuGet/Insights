@@ -15,11 +15,14 @@ namespace Knapcode.ExplorePackages.Logic
             _settings = settings;
         }
 
-        public async Task<GalleryConsistencyReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state)
+        public async Task<GalleryConsistencyReport> GetReportAsync(
+            PackageQueryContext context,
+            PackageConsistencyState state,
+            IProgressReport progressReport)
         {
             var shouldExist = !context.Package.Deleted;
 
-            await PopulateStateAsync(context, state);
+            await PopulateStateAsync(context, state, progressReport);
             var actuallyExists = state.Gallery.PackageState.PackageDeletedStatus == PackageDeletedStatus.NotDeleted;
 
             var isConsistent = shouldExist == actuallyExists
@@ -31,13 +34,19 @@ namespace Knapcode.ExplorePackages.Logic
                 state.Gallery.PackageState);
         }
 
-        public async Task<bool> IsConsistentAsync(PackageQueryContext context, PackageConsistencyState state)
+        public async Task<bool> IsConsistentAsync(
+            PackageQueryContext context,
+            PackageConsistencyState state,
+            IProgressReport progressReport)
         {
-            var report = await GetReportAsync(context, state);
+            var report = await GetReportAsync(context, state, progressReport);
             return report.IsConsistent;
         }
 
-        public async Task PopulateStateAsync(PackageQueryContext context, PackageConsistencyState state)
+        public async Task PopulateStateAsync(
+            PackageQueryContext context,
+            PackageConsistencyState state,
+            IProgressReport progressReport)
         {
             if (state.Gallery.PackageState != null)
             {

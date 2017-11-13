@@ -82,6 +82,8 @@ namespace Knapcode.ExplorePackages.Website.Logic
                 $"{(isAvailable && context.IsSemVer2 ? " and is SemVer 2.0.0" : string.Empty)}. " +
                 $"The consistency report will now be generated.");
 
+            var report = await _packageConsistencyService.GetReportAsync(context, state, new ProgressReport(this));
+
             await InvokeCompleteAsync();
         }
 
@@ -107,6 +109,21 @@ namespace Knapcode.ExplorePackages.Website.Logic
             await Clients
                 .Client(Context.ConnectionId)
                 .InvokeAsync(method, args);
+        }
+
+        private class ProgressReport : IProgressReport
+        {
+            private readonly PackageReportHub _hub;
+
+            public ProgressReport(PackageReportHub hub)
+            {
+                _hub = hub;
+            }
+
+            public async Task ReportProgressAsync(decimal percent, string message)
+            {
+                await _hub.InvokeStatusAsync($"{Math.Round(percent * 100)}%: {message}");
+            }
         }
     }
 }

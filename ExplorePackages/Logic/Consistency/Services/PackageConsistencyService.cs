@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -36,85 +37,111 @@ namespace Knapcode.ExplorePackages.Logic
             _crossCheck = crossCheck;
         }
 
-        public async Task<PackageConsistencyReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state)
+        private static async Task AddAsync<TReport>(
+            MutableReport partialReport,
+            IConsistencyService<TReport> service,
+            Action<MutableReport, TReport> addPartialReport,
+            string message) where TReport : IConsistencyReport
         {
-            var gallery = await _gallery.GetReportAsync(context, state);
-            var v2 = await _v2.GetReportAsync(context, state);
-            var packagesContainer = await _packagesContainer.GetReportAsync(context, state);
-            var flatContainer = await _flatContainer.GetReportAsync(context, state);
-            var registrationOriginal = await _registrationOriginal.GetReportAsync(context, state);
-            var registrationGzipped = await _registrationGzipped.GetReportAsync(context, state);
-            var registrationSemVer2 = await _registrationSemVer2.GetReportAsync(context, state);
-            var search = await _search.GetReportAsync(context, state);
-            var crossCheck = await _crossCheck.GetReportAsync(context, state);
+            var min = (partialReport.Processed + 0) / (decimal)partialReport.Total;
+            var max = (partialReport.Processed + 1) / (decimal)partialReport.Total;
+
+            var report = await service.GetReportAsync(
+                partialReport.Context,
+                partialReport.State,
+                new PartialProgressReport(partialReport.ProgressReport, min, max));
+
+            partialReport.Processed++;
+            addPartialReport(partialReport, report);
+            partialReport.IsConsistent &= report.IsConsistent;
+
+            await partialReport.ProgressReport.ReportProgressAsync(max, message);
+        }
+        
+        public async Task<PackageConsistencyReport> GetReportAsync(
+            PackageQueryContext context,
+            PackageConsistencyState state,
+            IProgressReport progressReport)
+        {
+            var report = new MutableReport
+            {
+                Context = context,
+                State = state,
+                ProgressReport = progressReport,
+                Processed = 0,
+                IsConsistent = true,
+            };
             
-            var isConsistent = gallery.IsConsistent
-                && v2.IsConsistent
-                && packagesContainer.IsConsistent
-                && flatContainer.IsConsistent
-                && registrationOriginal.IsConsistent
-                && registrationGzipped.IsConsistent
-                && registrationSemVer2.IsConsistent
-                && search.IsConsistent
-                && crossCheck.IsConsistent;
+            await AddAsync(report, _gallery, (r, s) => r.Gallery = s, "Fetched the gallery report.");
+            await AddAsync(report, _v2, (r, s) => r.V2 = s, "Fetched the V2 report.");
+            await AddAsync(report, _packagesContainer, (r, s) => r.PackagesContainer = s, "Fetched the packages container report.");
+            await AddAsync(report, _flatContainer, (r, s) => r.FlatContainer = s, "Fetched the flat container report.");
+            await AddAsync(report, _registrationOriginal, (r, s) => r.RegistrationOriginal = s, "Fetched the original registration report.");
+            await AddAsync(report, _registrationGzipped, (r, s) => r.RegistrationGzipped = s, "Fetched the gzipped registration report.");
+            await AddAsync(report, _registrationSemVer2, (r, s) => r.RegistrationSemVer2 = s, "Fetched the SemVer 2.0.0 registration report.");
+            await AddAsync(report, _search, (r, s) => r.Search = s, "Fetched the search registration report.");
+            await AddAsync(report, _crossCheck, (r, s) => r.CrossCheck = s, "Fetched the original cross check report.");
 
             return new PackageConsistencyReport(
                 context,
-                isConsistent,
-                gallery,
-                v2,
-                packagesContainer,
-                flatContainer,
-                registrationOriginal,
-                registrationGzipped,
-                registrationSemVer2,
-                search,
-                crossCheck);
+                report.IsConsistent,
+                report.Gallery,
+                report.V2,
+                report.PackagesContainer,
+                report.FlatContainer,
+                report.RegistrationOriginal,
+                report.RegistrationGzipped,
+                report.RegistrationSemVer2,
+                report.Search,
+                report.CrossCheck);
         }
 
-        public async Task<bool> IsConsistentAsync(PackageQueryContext context, PackageConsistencyState state)
+        public async Task<bool> IsConsistentAsync(
+            PackageQueryContext context,
+            PackageConsistencyState state,
+            IProgressReport progressReport)
         {
-            if (!(await _gallery.IsConsistentAsync(context, state)))
+            if (!(await _gallery.IsConsistentAsync(context, state, progressReport)))
             {
                 return false;
             }
 
-            if (!(await _v2.IsConsistentAsync(context, state)))
+            if (!(await _v2.IsConsistentAsync(context, state, progressReport)))
             {
                 return false;
             }
 
-            if (!(await _packagesContainer.IsConsistentAsync(context, state)))
+            if (!(await _packagesContainer.IsConsistentAsync(context, state, progressReport)))
             {
                 return false;
             }
 
-            if (!(await _flatContainer.IsConsistentAsync(context, state)))
+            if (!(await _flatContainer.IsConsistentAsync(context, state, progressReport)))
             {
                 return false;
             }
 
-            if (!(await _registrationOriginal.IsConsistentAsync(context, state)))
+            if (!(await _registrationOriginal.IsConsistentAsync(context, state, progressReport)))
             {
                 return false;
             }
 
-            if (!(await _registrationGzipped.IsConsistentAsync(context, state)))
+            if (!(await _registrationGzipped.IsConsistentAsync(context, state, progressReport)))
             {
                 return false;
             }
 
-            if (!(await _registrationOriginal.IsConsistentAsync(context, state)))
+            if (!(await _registrationOriginal.IsConsistentAsync(context, state, progressReport)))
             {
                 return false;
             }
 
-            if (!(await _search.IsConsistentAsync(context, state)))
+            if (!(await _search.IsConsistentAsync(context, state, progressReport)))
             {
                 return false;
             }
 
-            if (!(await _crossCheck.IsConsistentAsync(context, state)))
+            if (!(await _crossCheck.IsConsistentAsync(context, state, progressReport)))
             {
                 return false;
             }
@@ -122,17 +149,40 @@ namespace Knapcode.ExplorePackages.Logic
             return true;
         }
 
-        public async Task PopulateStateAsync(PackageQueryContext context, PackageConsistencyState state)
+        public async Task PopulateStateAsync(
+            PackageQueryContext context,
+            PackageConsistencyState state,
+            IProgressReport progressReport)
         {
-            await _gallery.PopulateStateAsync(context, state);
-            await _v2.PopulateStateAsync(context, state);
-            await _packagesContainer.PopulateStateAsync(context, state);
-            await _flatContainer.PopulateStateAsync(context, state);
-            await _registrationOriginal.PopulateStateAsync(context, state);
-            await _registrationGzipped.PopulateStateAsync(context, state);
-            await _registrationSemVer2.PopulateStateAsync(context, state);
-            await _search.PopulateStateAsync(context, state);
-            await _crossCheck.PopulateStateAsync(context, state);
+            await _gallery.PopulateStateAsync(context, state, progressReport);
+            await _v2.PopulateStateAsync(context, state, progressReport);
+            await _packagesContainer.PopulateStateAsync(context, state, progressReport);
+            await _flatContainer.PopulateStateAsync(context, state, progressReport);
+            await _registrationOriginal.PopulateStateAsync(context, state, progressReport);
+            await _registrationGzipped.PopulateStateAsync(context, state, progressReport);
+            await _registrationSemVer2.PopulateStateAsync(context, state, progressReport);
+            await _search.PopulateStateAsync(context, state, progressReport);
+            await _crossCheck.PopulateStateAsync(context, state, progressReport);
+        }
+
+        private class MutableReport
+        {
+            public PackageQueryContext Context { get; set; }
+            public PackageConsistencyState State { get; set; }
+            public IProgressReport ProgressReport { get; set; }
+            public int Processed { get; set; }
+            public int Total => 9;
+            
+            public bool IsConsistent { get; set; }
+            public GalleryConsistencyReport Gallery { get; set; }
+            public V2ConsistencyReport V2 { get; set; }
+            public PackagesContainerConsistencyReport PackagesContainer { get; set; }
+            public FlatContainerConsistencyReport FlatContainer { get; set; }
+            public RegistrationConsistencyReport RegistrationOriginal { get; set; }
+            public RegistrationConsistencyReport RegistrationGzipped { get; set; }
+            public RegistrationConsistencyReport RegistrationSemVer2 { get; set; }
+            public SearchConsistencyReport Search { get; set; }
+            public CrossCheckConsistencyReport CrossCheck { get; set; }
         }
     }
 }

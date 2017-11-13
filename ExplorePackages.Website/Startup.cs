@@ -1,4 +1,5 @@
 ﻿using Knapcode.ExplorePackages.Entities;
+using Knapcode.ExplorePackages.Logic;
 using Knapcode.ExplorePackages.Support;
 using Knapcode.ExplorePackages.Website.Logic;
 using Microsoft.AspNetCore.Builder;

@@ -19,7 +19,10 @@ namespace Knapcode.ExplorePackages.Logic
             _specificInstances = specificInstances;
         }
 
-        public async Task<SearchConsistencyReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state)
+        public async Task<SearchConsistencyReport> GetReportAsync(
+            PackageQueryContext context,
+            PackageConsistencyState state,
+            IProgressReport progressReport)
         {
             var report = await GetReportAsync(context, state, allowPartial: false);
             return new SearchConsistencyReport(
@@ -28,13 +31,19 @@ namespace Knapcode.ExplorePackages.Logic
                 report.BaseUrlHasPackageSemVer2);
         }
 
-        public async Task<bool> IsConsistentAsync(PackageQueryContext context, PackageConsistencyState state)
+        public async Task<bool> IsConsistentAsync(
+            PackageQueryContext context,
+            PackageConsistencyState state,
+            IProgressReport progressReport)
         {
             var report = await GetReportAsync(context, state, allowPartial: true);
             return report.IsConsistent;
         }
 
-        public Task PopulateStateAsync(PackageQueryContext context, PackageConsistencyState state)
+        public Task PopulateStateAsync(
+            PackageQueryContext context,
+            PackageConsistencyState state,
+            IProgressReport progressReport)
         {
             return Task.CompletedTask;
         }

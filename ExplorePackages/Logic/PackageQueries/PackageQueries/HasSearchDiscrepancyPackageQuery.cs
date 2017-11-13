@@ -16,7 +16,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task<bool> IsMatchAsync(PackageQueryContext context, PackageConsistencyState state)
         {
-            var isConsistent = await _service.IsConsistentAsync(context, state);
+            var isConsistent = await _service.IsConsistentAsync(context, state, NullProgressReport.Instance);
             return !isConsistent;
         }
     }

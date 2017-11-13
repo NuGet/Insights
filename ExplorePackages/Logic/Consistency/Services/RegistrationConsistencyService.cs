@@ -21,29 +21,44 @@ namespace Knapcode.ExplorePackages.Logic
             _hasSemVer2 = hasSemVer2;
         }
 
-        public async Task<RegistrationConsistencyReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state)
+        public async Task<RegistrationConsistencyReport> GetReportAsync(
+            PackageQueryContext context,
+            PackageConsistencyState state,
+            IProgressReport progressReport)
         {
-            var report = await GetReportAsync(context, state, allowPartial: false);
+            var report = await GetReportAsync(context, state, progressReport, 
+                allowPartial: false);
             return new RegistrationConsistencyReport(
                 report.IsConsistent,
                 report.IsInIndex.Value,
                 report.HasLeaf.Value);
         }
 
-        public async Task<bool> IsConsistentAsync(PackageQueryContext context, PackageConsistencyState state)
+        public async Task<bool> IsConsistentAsync(
+            PackageQueryContext context,
+            PackageConsistencyState state,
+            IProgressReport progressReport)
         {
-            var report = await GetReportAsync(context, state, allowPartial: true);
+            var report = await GetReportAsync(context, state, progressReport, allowPartial: true);
             return report.IsConsistent;
         }
 
-        public Task PopulateStateAsync(PackageQueryContext context, PackageConsistencyState state)
+        public Task PopulateStateAsync(
+            PackageQueryContext context,
+            PackageConsistencyState state,
+            IProgressReport progressReport)
         {
             return Task.CompletedTask;
         }
 
-        private async Task<PartialReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state, bool allowPartial)
+        private async Task<MutableReport> GetReportAsync(
+            PackageQueryContext context,
+            PackageConsistencyState state,
+            IProgressReport progressReport,
+            bool allowPartial)
         {
-            var partialReport = new PartialReport { IsConsistent = true };
+            var report = new MutableReport { IsConsistent = true };
+            var incrementalProgress = new IncrementalProgress(progressReport, 2);
             var baseUrl = await _serviceIndexCache.GetUrlAsync(_type);
 
             var shouldExist = !context.Package.Deleted && (_hasSemVer2 || !context.IsSemVer2);
@@ -52,30 +67,32 @@ namespace Knapcode.ExplorePackages.Logic
                 baseUrl,
                 context.Package.Id,
                 context.Package.Version);
-            partialReport.IsInIndex = isInIndex;
-            partialReport.IsConsistent &= shouldExist == isInIndex;
+            report.IsInIndex = isInIndex;
+            report.IsConsistent &= shouldExist == isInIndex;
+            await incrementalProgress.ReportProgressAsync("Checked for the package in the registration index.");
 
-            if (allowPartial && !partialReport.IsConsistent)
+            if (allowPartial && !report.IsConsistent)
             {
-                return partialReport;
+                return report;
             }
 
             var hasLeaf = await _client.HasLeafAsync(
                 baseUrl,
                 context.Package.Id,
                 context.Package.Version);
-            partialReport.HasLeaf = hasLeaf;
-            partialReport.IsConsistent &= shouldExist == hasLeaf;
+            report.HasLeaf = hasLeaf;
+            report.IsConsistent &= shouldExist == hasLeaf;
+            await incrementalProgress.ReportProgressAsync("Checked for the package's registration leaf.");
 
-            if (allowPartial && !partialReport.IsConsistent)
+            if (allowPartial && !report.IsConsistent)
             {
-                return partialReport;
+                return report;
             }
 
-            return partialReport;
+            return report;
         }
 
-        private class PartialReport
+        private class MutableReport
         {
             public bool IsConsistent { get; set; }
             public bool? IsInIndex { get; set; }
