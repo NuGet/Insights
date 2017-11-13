@@ -20,7 +20,7 @@ namespace Knapcode.ExplorePackages.Logic
             PackageConsistencyState state,
             IProgressReport progressReport)
         {
-            var report = await GetReportAsync(context, state, allowPartial: false);
+            var report = await GetReportAsync(context, state, progressReport, allowPartial: false);
             return new V2ConsistencyReport(
                 report.IsConsistent,
                 report.HasPackageSemVer1.Value,
@@ -32,7 +32,7 @@ namespace Knapcode.ExplorePackages.Logic
             PackageConsistencyState state,
             IProgressReport progressReport)
         {
-            var report = await GetReportAsync(context, state, allowPartial: true);
+            var report = await GetReportAsync(context, state, progressReport, allowPartial: true);
             return report.IsConsistent;
         }
 
@@ -44,12 +44,17 @@ namespace Knapcode.ExplorePackages.Logic
             return Task.CompletedTask;
         }
 
-        private async Task<PartialReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state, bool allowPartial)
+        private async Task<MutableReport> GetReportAsync(
+            PackageQueryContext context,
+            PackageConsistencyState state,
+            IProgressReport progressReport,
+            bool allowPartial)
         {
+            var incrementalProgress = new IncrementalProgress(progressReport, 2);
             var shouldExistSemVer1 = !context.Package.Deleted && !context.IsSemVer2;
             var shouldExistSemVer2 = !context.Package.Deleted;
 
-            var report = new PartialReport { IsConsistent = true };
+            var report = new MutableReport { IsConsistent = true };
 
             var hasPackageSemVer1 = await _client.HasPackageAsync(
                 _settings.V2BaseUrl,
@@ -58,6 +63,8 @@ namespace Knapcode.ExplorePackages.Logic
                 semVer2: false);
             report.HasPackageSemVer1 = hasPackageSemVer1;
             report.IsConsistent &= shouldExistSemVer1 == hasPackageSemVer1;
+            await incrementalProgress.ReportProgressAsync("Checked for the package in V2, SemVer 1.0.0.");
+
             if (allowPartial && !report.IsConsistent)
             {
                 return report;
@@ -70,6 +77,8 @@ namespace Knapcode.ExplorePackages.Logic
                 semVer2: true);
             report.HasPackageSemVer2 = hasPackageSemVer2;
             report.IsConsistent &= shouldExistSemVer2 == hasPackageSemVer2;
+            await incrementalProgress.ReportProgressAsync("Checked for the package in V2, SemVer 2.0.0.");
+
             if (allowPartial && !report.IsConsistent)
             {
                 return report;
@@ -78,7 +87,7 @@ namespace Knapcode.ExplorePackages.Logic
             return report;
         }
 
-        private class PartialReport
+        private class MutableReport
         {
             public bool IsConsistent { get; set; }
             public bool? HasPackageSemVer1 { get; set; }

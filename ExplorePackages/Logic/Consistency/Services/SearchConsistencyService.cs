@@ -24,7 +24,7 @@ namespace Knapcode.ExplorePackages.Logic
             PackageConsistencyState state,
             IProgressReport progressReport)
         {
-            var report = await GetReportAsync(context, state, allowPartial: false);
+            var report = await GetReportAsync(context, state, progressReport, allowPartial: false);
             return new SearchConsistencyReport(
                 report.IsConsistent,
                 report.BaseUrlHasPackageSemVer1,
@@ -36,7 +36,7 @@ namespace Knapcode.ExplorePackages.Logic
             PackageConsistencyState state,
             IProgressReport progressReport)
         {
-            var report = await GetReportAsync(context, state, allowPartial: true);
+            var report = await GetReportAsync(context, state, progressReport, allowPartial: true);
             return report.IsConsistent;
         }
 
@@ -48,13 +48,18 @@ namespace Knapcode.ExplorePackages.Logic
             return Task.CompletedTask;
         }
 
-        private async Task<PartialReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state, bool allowPartial)
+        private async Task<MutableReport> GetReportAsync(
+            PackageQueryContext context,
+            PackageConsistencyState state,
+            IProgressReport progressReport,
+            bool allowPartial)
         {
             var baseUrls = await _discoverer.GetUrlsAsync(ServiceIndexTypes.V2Search, _specificInstances);
+            var incrementalProgress = new IncrementalProgress(progressReport, baseUrls.Count * 2);
             var baseUrlHasPackageSemVer1 = new Dictionary<string, bool>();
             var baseUrlHasPackageSemVer2 = new Dictionary<string, bool>();
 
-            var report = new PartialReport
+            var report = new MutableReport
             {
                 IsConsistent = true,
                 BaseUrlHasPackageSemVer1 = baseUrlHasPackageSemVer1,
@@ -73,6 +78,8 @@ namespace Knapcode.ExplorePackages.Logic
                     semVer2: false);
                 baseUrlHasPackageSemVer1[baseUrl] = hasPackageSemVer1;
                 report.IsConsistent &= hasPackageSemVer1 == shouldExistSemVer1;
+                await incrementalProgress.ReportProgressAsync($"Searched for the package on search {baseUrl}, SemVer 1.0.0.");
+
                 if (allowPartial && !report.IsConsistent)
                 {
                     return report;
@@ -85,6 +92,8 @@ namespace Knapcode.ExplorePackages.Logic
                     semVer2: true);
                 baseUrlHasPackageSemVer2[baseUrl] = hasPackageSemVer2;
                 report.IsConsistent &= hasPackageSemVer2 == shouldExistSemVer2;
+                await incrementalProgress.ReportProgressAsync($"Searched for the package on search {baseUrl}, SemVer 2.0.0.");
+
                 if (allowPartial && !report.IsConsistent)
                 {
                     return report;
@@ -94,7 +103,7 @@ namespace Knapcode.ExplorePackages.Logic
             return report;
         }
 
-        private class PartialReport
+        private class MutableReport
         {
             public bool IsConsistent { get; set; }
             public IReadOnlyDictionary<string, bool> BaseUrlHasPackageSemVer1 { get; set; }

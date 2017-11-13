@@ -38,24 +38,24 @@ namespace Knapcode.ExplorePackages.Logic
         }
 
         private static async Task AddAsync<TReport>(
-            MutableReport partialReport,
+            MutableReport report,
             IConsistencyService<TReport> service,
             Action<MutableReport, TReport> addPartialReport,
             string message) where TReport : IConsistencyReport
         {
-            var min = (partialReport.Processed + 0) / (decimal)partialReport.Total;
-            var max = (partialReport.Processed + 1) / (decimal)partialReport.Total;
+            var min = (report.Processed + 0) / (decimal)report.Total;
+            var max = (report.Processed + 1) / (decimal)report.Total;
 
-            var report = await service.GetReportAsync(
-                partialReport.Context,
-                partialReport.State,
-                new PartialProgressReport(partialReport.ProgressReport, min, max));
+            var childReport = await service.GetReportAsync(
+                report.Context,
+                report.State,
+                new PartialProgressReport(report.ProgressReport, min, max));
 
-            partialReport.Processed++;
-            addPartialReport(partialReport, report);
-            partialReport.IsConsistent &= report.IsConsistent;
+            report.Processed++;
+            addPartialReport(report, childReport);
+            report.IsConsistent &= childReport.IsConsistent;
 
-            await partialReport.ProgressReport.ReportProgressAsync(max, message);
+            await report.ProgressReport.ReportProgressAsync(max, message);
         }
         
         public async Task<PackageConsistencyReport> GetReportAsync(

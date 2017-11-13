@@ -29,7 +29,7 @@ namespace Knapcode.ExplorePackages.Logic
             var packageIdentity = new PackageIdentity(id, normalizedVersion);
             var url = $"{baseUrl.TrimEnd('/')}/packages/{id}/{normalizedVersion}";
 
-            var state = await _httpSource.ProcessStreamAsync(
+            return await _httpSource.ProcessStreamAsync(
                 new HttpSourceRequest(url, _log)
                 {
                     IgnoreNotFounds = true,
@@ -56,17 +56,17 @@ namespace Knapcode.ExplorePackages.Logic
                         responseBody.Write(buffer, 0, read);
                         responseBody.Position = 0;
 
-                        var partialState = DetermineState(packageIdentity, responseBody);
-                        if (partialState.PackageDeletedStatus.HasValue
-                            && partialState.IsSemVer2.HasValue
-                            && partialState.IsListed.HasValue)
+                        var state = DetermineState(packageIdentity, responseBody);
+                        if (state.PackageDeletedStatus.HasValue
+                            && state.IsSemVer2.HasValue
+                            && state.IsListed.HasValue)
                         {
                             return new GalleryPackageState(
-                                partialState.PackageId,
-                                partialState.PackageVersion,
-                                partialState.PackageDeletedStatus.Value,
-                                partialState.IsSemVer2.Value,
-                                partialState.IsListed.Value);
+                                state.PackageId,
+                                state.PackageVersion,
+                                state.PackageDeletedStatus.Value,
+                                state.IsSemVer2.Value,
+                                state.IsListed.Value);
                         }
 
                         desiredBytes += buffer.Length;
@@ -77,13 +77,11 @@ namespace Knapcode.ExplorePackages.Logic
                 },
                 _log,
                 CancellationToken.None);
-
-            return state;
         }
 
-        private PartialState DetermineState(PackageIdentity packageIdentity, MemoryStream responseBody)
+        private MutableState DetermineState(PackageIdentity packageIdentity, MemoryStream responseBody)
         {
-            var state = new PartialState
+            var state = new MutableState
             {
                 PackageId = packageIdentity.Id,
                 PackageVersion = packageIdentity.Version,
@@ -165,7 +163,7 @@ namespace Knapcode.ExplorePackages.Logic
             return state;
         }
 
-        private class PartialState
+        private class MutableState
         {
             public string PackageId { get; set; }
             public string PackageVersion { get; set; }
