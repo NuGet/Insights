@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json.Converters;
 
 namespace Knapcode.ExplorePackages.Website
 {
@@ -32,7 +33,10 @@ namespace Knapcode.ExplorePackages.Website
             services.AddLogging();
             services.AddTransient<NuGet.Common.ILogger, NuGetLogger>();
             services.AddMvc();
-            services.AddSignalR();
+            services.AddSignalR(o =>
+            {
+                o.JsonSerializerSettings.Converters.Add(new StringEnumConverter());
+            });
         }
         
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
