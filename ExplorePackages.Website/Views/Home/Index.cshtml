@@ -19,20 +19,67 @@
             </div>
             <button type="submit" id="getReport" class="btn btn-default">Submit</button>
         </form>
-        <h3>Output</h3>
-        <div id="statuses"></div>
+
+        <hr />
+
+        <div>
+            <ul class="nav nav-pills" role="tablist">
+                <li role="presentation" class="active">
+                    <a href="#progress" aria-controls="progress" role="tab" data-toggle="tab" id="progressTab">
+                        Progress
+                    </a>
+                </li>
+                <li role="presentation" class="disabled">
+                    <a href="#report" aria-controls="report" role="tab" data-toggle="tab" id="reportTab">
+                        Report
+                    </a>
+                </li>
+            </ul>
+            <br />
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="progress">
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                             aria-valuemax="100" style="width: 0%;" id="progressBar">
+                            <span class="sr-only">0% Complete</span>
+                        </div>
+                    </div>
+                    <div id="statuses"></div>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="report">
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 @section Scripts {
     <script>
         $(function () {
+            var $progressBar = $("#progressBar");
+            var $progressBarText = $("#progressBar .sr-only");
             var $statuses = $("#statuses");
             var $packageId = $("#packageId");
             var $packageVersion = $("#packageVersion");
             var $getReport = $("#getReport");
+            var $progressTab = $("#progressTab");
+            var $reportTab = $("#reportTab");
+            var $report = $("#report");
+
+            $reportTab.click(function () {
+                if ($reportTab.parent().hasClass("disabled")) {
+                    return false;
+                }
+            });
 
             var currentConnection = null;
+
+            function setProgress(percent) {
+                percent = Math.round(100 * percent);
+                $progressBar.attr('aria-valuenow', percent);
+                $progressBar.css('width', percent + '%');
+                $progressBarText.text(percent + '% complete');
+            }
 
             function addStatus(html) {
                 var $p = $("<p></p>");
@@ -55,7 +102,11 @@
                 }
 
                 lockForm();
+                $report.empty();
                 $statuses.empty();
+                $progressTab.parent().attr("class", "");
+                $reportTab.parent().attr("class", "disabled");
+                $progressTab.tab('show');
 
                 var packageId = $packageId.val();
                 var packageVersion = $packageVersion.val();
@@ -65,16 +116,22 @@
                 var connection = new signalR.HubConnection(hub, logger);
                 currentConnection = connection;
 
-                connection.on('Status', function (status) {
-                    addStatus('Status: ' + status);
+                connection.on('Progress', function (percent, message) {
+                    setProgress(percent);
+                    addStatus(message);
                 })
 
                 connection.on('Error', function (error) {
                     addStatus('Error: ' + error);
                 })
 
-                connection.on('Complete', function () {
-                    addStatus('Complete!');
+                connection.on('Complete', function (report) {
+                    var $pre = $("<pre></pre>");
+                    $pre.html(JSON.stringify(report, null, ' '));
+                    $report.append($pre);
+                    addStatus('Complete.');
+                    $reportTab.parent().attr("class", "");
+                    $reportTab.tab('show')
                 })
                 
                 connection.onclose(function () {

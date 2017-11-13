@@ -53,7 +53,7 @@ namespace Knapcode.ExplorePackages.Website.Logic
                 return;
             }
 
-            await InvokeStatusAsync($"Initializing package report for {id} {version}.");
+            await InvokeProgressAsync(0, $"Initializing package report for {id} {version}.");
 
             var state = new PackageConsistencyState();
             var context = await _packageQueryContextBuilder.GetPackageQueryContextFromGalleryAsync(id, version, state);
@@ -77,19 +77,20 @@ namespace Knapcode.ExplorePackages.Website.Logic
                         $"The package deleted status {packageDeletedStatus} is not supported.");
             }
 
-            await InvokeStatusAsync(
+            await InvokeProgressAsync(
+                0,
                 $"{context.Package.Id} {context.Package.Version} {availability}" +
                 $"{(isAvailable && context.IsSemVer2 ? " and is SemVer 2.0.0" : string.Empty)}. " +
                 $"The consistency report will now be generated.");
 
             var report = await _packageConsistencyService.GetReportAsync(context, state, new ProgressReport(this));
 
-            await InvokeCompleteAsync();
+            await InvokeCompleteAsync(report);
         }
 
-        private async Task InvokeStatusAsync(string message)
+        private async Task InvokeProgressAsync(decimal percent, string message)
         {
-            await InvokeOnClientAsync("Status", message);
+            await InvokeOnClientAsync("Progress", percent, message);
         }
 
         private async Task InvokeErrorAsync(string message)
@@ -98,9 +99,9 @@ namespace Knapcode.ExplorePackages.Website.Logic
             Context.Connection.Abort();
         }
 
-        private async Task InvokeCompleteAsync()
+        private async Task InvokeCompleteAsync(PackageConsistencyReport report)
         {
-            await InvokeOnClientAsync("Complete");
+            await InvokeOnClientAsync("Complete", report);
             Context.Connection.Abort();
         }
 
@@ -122,7 +123,7 @@ namespace Knapcode.ExplorePackages.Website.Logic
 
             public async Task ReportProgressAsync(decimal percent, string message)
             {
-                await _hub.InvokeStatusAsync($"{Math.Round(percent * 100)}%: {message}");
+                await _hub.InvokeProgressAsync(percent, message);
             }
         }
     }
