@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Knapcode.ExplorePackages.Entities;
+using Knapcode.ExplorePackages.Support;
+using Knapcode.ExplorePackages.Website.Logic;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +19,19 @@ namespace Knapcode.ExplorePackages.Website
         
         public void ConfigureServices(IServiceCollection services)
         {
+            // Completely disable the database.
+            EntityContext.Enabled = false;
+
+            // Enable ExplorePackages dependencies.
+            var explorePackagesSettings = new ExplorePackagesSettings();
+            Configuration.Bind("ExplorePackages", explorePackagesSettings);
+            services.AddExplorePackages(explorePackagesSettings);
+
+            // Add stuff specific to the website.
+            services.AddLogging();
+            services.AddTransient<NuGet.Common.ILogger, NuGetLogger>();
             services.AddMvc();
+            services.AddSignalR();
         }
         
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -32,6 +47,11 @@ namespace Knapcode.ExplorePackages.Website
             }
 
             app.UseStaticFiles();
+
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<PackageReportHub>(PackageReportHub.Path);
+            });
 
             app.UseMvc(routes =>
             {

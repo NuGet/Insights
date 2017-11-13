@@ -65,14 +65,12 @@ namespace Knapcode.ExplorePackages.Logic
             var initialContext = CreateAvailablePackageQueryContext(id, version, isSemVer2: false);
 
             await _galleryConsistencyService.PopulateStateAsync(initialContext, state);
-
-            var deleted = state.Gallery.PackageState.PackageDeletedStatus != PackageDeletedStatus.NotDeleted;
             
             return CreatePackageQueryContext(
-                id,
-                version,
+                state.Gallery.PackageState.PackageId,
+                state.Gallery.PackageState.PackageVersion,
                 state.Gallery.PackageState.IsSemVer2,
-                deleted);
+                state.Gallery.PackageState.PackageDeletedStatus != PackageDeletedStatus.NotDeleted);
         }
 
         public async Task<PackageQueryContext> GetPackageQueryContextFromDatabaseAsync(string id, string version)

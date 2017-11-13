@@ -6,7 +6,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        public ViewResult Index()
         {
             return View();
         }

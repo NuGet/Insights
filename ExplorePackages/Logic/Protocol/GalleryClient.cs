@@ -39,7 +39,9 @@ namespace Knapcode.ExplorePackages.Logic
                     if (stream == null)
                     {
                         return new GalleryPackageState(
-                            PackageDeletedStatus.Unknown,
+                            packageId: id,
+                            packageVersion: version,
+                            packageDeletedStatus: PackageDeletedStatus.Unknown,
                             isSemVer2: false,
                             isListed: false);
                     }
@@ -60,6 +62,8 @@ namespace Knapcode.ExplorePackages.Logic
                             && partialState.IsListed.HasValue)
                         {
                             return new GalleryPackageState(
+                                partialState.PackageId,
+                                partialState.PackageVersion,
                                 partialState.PackageDeletedStatus.Value,
                                 partialState.IsSemVer2.Value,
                                 partialState.IsListed.Value);
@@ -79,9 +83,19 @@ namespace Knapcode.ExplorePackages.Logic
 
         private PartialState DetermineState(PackageIdentity packageIdentity, MemoryStream responseBody)
         {
-            var state = new PartialState();
+            var state = new PartialState
+            {
+                PackageId = packageIdentity.Id,
+                PackageVersion = packageIdentity.Version,
+            };
+
             var parser = new HtmlParser();
             var document = parser.Parse(responseBody);
+
+            if (document.QuerySelector("nav") == null)
+            {
+                return null;
+            }
 
             var metaTitleEl = document.Head.QuerySelector("meta[property='og:title']");
             if (metaTitleEl == null)
@@ -104,6 +118,10 @@ namespace Knapcode.ExplorePackages.Logic
             var foundPackageIdentity = new PackageIdentity(
                 pieces[0].Trim(),
                 NuGetVersion.Parse(pieces[1]).ToNormalizedString());
+
+            state.PackageId = foundPackageIdentity.Id;
+            state.PackageVersion = foundPackageIdentity.Version;
+
             if (!StringComparer.OrdinalIgnoreCase.Equals(packageIdentity.Id, foundPackageIdentity.Id))
             {
                 throw new InvalidDataException("The package ID found in the meta title does not match the request.");
@@ -149,6 +167,8 @@ namespace Knapcode.ExplorePackages.Logic
 
         private class PartialState
         {
+            public string PackageId { get; set; }
+            public string PackageVersion { get; set; }
             public PackageDeletedStatus? PackageDeletedStatus { get; set; }
             public bool? IsSemVer2 { get; set; }
             public bool? IsListed { get; set; }

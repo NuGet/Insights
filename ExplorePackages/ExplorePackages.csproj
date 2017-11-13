@@ -116,6 +116,7 @@
     <Compile Include="Support\HttpClientExtensions.cs" />
     <Compile Include="Support\IIncrementalHash.cs" />
     <Compile Include="Support\MD5IncrementalHash.cs" />
+    <Compile Include="Support\NuGetLogger.cs" />
     <Compile Include="Support\PortDiscoverer.cs" />
     <Compile Include="Logic\Protocol\FlatContainerClient.cs" />
     <Compile Include="Logic\Protocol\FlatContainerIndex.cs" />

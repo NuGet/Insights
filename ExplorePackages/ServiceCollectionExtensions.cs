@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Commands;
 using Knapcode.ExplorePackages.Logic;
 using Knapcode.ExplorePackages.Support;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,7 +13,7 @@ namespace Knapcode.ExplorePackages
 {
     public static class ServiceCollectionExtensions
     {
-        public static ServiceCollection AddExplorePackages(this ServiceCollection serviceCollection, ExplorePackagesSettings settings)
+        public static IServiceCollection AddExplorePackages(this IServiceCollection serviceCollection, ExplorePackagesSettings settings)
         {
             serviceCollection.AddSingleton(
                 x => new HttpClientHandler

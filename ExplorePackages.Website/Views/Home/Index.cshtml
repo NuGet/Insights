@@ -1,4 +1,5 @@
-﻿@{
+﻿@using Knapcode.ExplorePackages.Website.Logic;
+@{
     ViewData["Title"] = "Home";
 }
 
@@ -6,6 +7,93 @@
     <div class="col-xs-12">
         <h2>@ViewData["Title"]</h2>
 
-        <p>Awesomeness on the way!</p>
+        <p>Enter a package ID and version below to check its consistency on the various NuGet API endpoints on NuGet.org.</p>
+        <form id="getReportForm">
+            <div class="form-group">
+                <label for="packageId">Package ID</label>
+                <input type="text" class="form-control" name="id" id="packageId" value="Newtonsoft.Json">
+            </div>
+            <div class="form-group">
+                <label for="packageVersion">Package Version</label>
+                <input type="text" class="form-control" name="version" id="packageVersion" value="9.0.1">
+            </div>
+            <button type="submit" id="getReport" class="btn btn-default">Submit</button>
+        </form>
+        <h3>Output</h3>
+        <div id="statuses"></div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            var $statuses = $("#statuses");
+            var $packageId = $("#packageId");
+            var $packageVersion = $("#packageVersion");
+            var $getReport = $("#getReport");
+
+            var currentConnection = null;
+
+            function addStatus(html) {
+                var $p = $("<p></p>");
+                $p.html(html);
+                $statuses.append($p);
+            }
+
+            function lockForm() {
+                $getReport.prop("disabled", true);
+            }
+
+            function unlockForm() {
+                currentConnection = null;
+                $getReport.prop("disabled", false);
+            }
+
+            $("#getReportForm").on('submit', function () {
+                if (currentConnection != null) {
+                    return false;
+                }
+
+                lockForm();
+                $statuses.empty();
+
+                var packageId = $packageId.val();
+                var packageVersion = $packageVersion.val();
+
+                var logger = new signalR.ConsoleLogger(signalR.LogLevel.Information);
+                var hub = new signalR.HttpConnection(@Json.Serialize(PackageReportHub.Path), { logger: logger });
+                var connection = new signalR.HubConnection(hub, logger);
+                currentConnection = connection;
+
+                connection.on('Status', function (status) {
+                    addStatus('Status: ' + status);
+                })
+
+                connection.on('Error', function (status) {
+                    addStatus('Error: ' + status);
+                })
+
+                connection.on('Complete', function (status) {
+                    addStatus('Complete!');
+                })
+                
+                connection.onclose(function () {
+                    unlockForm();
+                });
+
+                connection
+                    .start()
+                    .then(function () {
+                        connection.invoke('Start', packageId, packageVersion);
+                    })
+                    .catch(function (e) {
+                        console.log(e);
+                        addStatus('Connection error: ' + e);
+                        unlockForm();
+                    });
+
+                return false;
+            });
+        });
+    </script>
+}
