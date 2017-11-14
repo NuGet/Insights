@@ -33,13 +33,17 @@
                     <a href="#report" aria-controls="report" role="tab" data-toggle="tab" id="reportTab">
                         Report
                     </a>
+                <li role="presentation" class="disabled">
+                    <a href="#reportData" aria-controls="reportData" role="tab" data-toggle="tab" id="reportDataTab">
+                        Data
+                    </a>
                 </li>
             </ul>
             <br />
             <div class="tab-content">
                 <div role="tabpanel" class="tab-pane active" id="progress">
                     <div class="progress">
-                        <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                        <div class="progress-bar progress-bar-striped" role="progressbar" aria-valuenow="0" aria-valuemin="0"
                              aria-valuemax="100" style="width: 0%;" id="progressBar">
                             <span class="sr-only">0% Complete</span>
                         </div>
@@ -47,6 +51,8 @@
                     <div id="statuses"></div>
                 </div>
                 <div role="tabpanel" class="tab-pane" id="report">
+                </div>
+                <div role="tabpanel" class="tab-pane" id="reportData">
                 </div>
             </div>
         </div>
@@ -208,13 +214,13 @@
             <tr>
                 <th>In SemVer 1.0.0 results?</th>
                 {{#each search.statuses}}
-                    <td>{{yesno semVer1}}</td>
+                    <td>{{semVer1}}</td>
                 {{/each}}
             </tr>
             <tr>
                 <th>In SemVer 2.0.0 results?</th>
                 {{#each search.statuses}}
-                    <td>{{yesno semVer2}}</td>
+                    <td>{{semVer2}}</td>
                 {{/each}}
             </tr>
         </tbody>
@@ -280,11 +286,11 @@
                 $.each(searchHostCounts, function (hostName, counts) {
                     var status;
                     if (counts[false] == 0) {
-                        status = "Available";
+                        status = "Yes";
                     } else if (counts[true] == 0) {
-                        status = "Unavailable";
+                        status = "No";
                     } else {
-                        status = "Partially available (" + counts[true] + "/" + (counts[true] + counts[false]) + ")";
+                        status = "Partially (" + counts[true] + "/" + (counts[true] + counts[false]) + " instances)";
                     }
 
                     searchHostStatuses[hostName] = status;
@@ -362,7 +368,9 @@
             var $getReport = $("#getReport");
             var $progressTab = $("#progressTab");
             var $reportTab = $("#reportTab");
+            var $reportDataTab = $("#reportDataTab");
             var $report = $("#report");
+            var $reportData = $("#reportData");
 
             var reportTemplateSource = $("#report-template").html();
             var reportTemplate = Handlebars.compile(reportTemplateSource);
@@ -372,14 +380,24 @@
                     return false;
                 }
             });
-
-            var currentConnection = null;
+            $reportDataTab.click(function () {
+                if ($reportDataTab.parent().hasClass("disabled")) {
+                    return false;
+                }
+            });
 
             function setProgress(percent) {
                 percent = Math.round(100 * percent);
+                if (percent == 0) {
+                    $progressBar.addClass('notransition');
+                }
                 $progressBar.attr('aria-valuenow', percent);
                 $progressBar.css('width', percent + '%');
                 $progressBarText.text(percent + '% complete');
+                $progressBar[0].offsetHeight;
+                if (percent == 0) {
+                    $progressBar.removeClass('notransition');
+                }
             }
 
             function addStatus(html) {
@@ -390,65 +408,86 @@
                 $statuses.find("pre").append(html + "\n");
             }
 
+            var connection = null;
+            var inProgress = false;
+
             function lockForm() {
+                inProgress = true;
                 $getReport.prop("disabled", true);
+                $progressBar.addClass("active");
             }
 
             function unlockForm() {
-                currentConnection = null;
+                inProgress = false;
                 $getReport.prop("disabled", false);
+                $progressBar.removeClass("active");
             }
 
             $("#getReportForm").on('submit', function () {
-                if (currentConnection != null) {
+                if (inProgress) {
                     return false;
                 }
 
-                lockForm();
+                // Reset the form.
                 $report.empty();
+                $reportData.empty();
                 $statuses.empty();
                 $progressTab.parent().attr("class", "");
                 $reportTab.parent().attr("class", "disabled");
+                $reportDataTab.parent().attr("class", "disabled");
                 $progressTab.tab('show');
+                setProgress(0);
 
                 var packageId = $packageId.val();
                 var packageVersion = $packageVersion.val();
 
-                var logger = new signalR.ConsoleLogger(signalR.LogLevel.Information);
-                var hub = new signalR.HttpConnection(@Json.Serialize(PackageReportHub.Path), { logger: logger });
-                var connection = new signalR.HubConnection(hub, logger);
-                currentConnection = connection;
+                // Initialize the connection.
+                if (connection == null) {
+                    var logger = new signalR.ConsoleLogger(signalR.LogLevel.Trace);
+                    var hub = new signalR.HttpConnection(@Json.Serialize(PackageReportHub.Path), { logger: logger });
+                    connection = new signalR.HubConnection(hub, logger);
 
-                connection.on('Progress', function (percent, message) {
-                    setProgress(percent);
-                    addStatus(message);
-                })
-
-                connection.on('Error', function (error) {
-                    addStatus('Error: ' + error);
-                })
-
-                connection.on('Complete', function (report) {
-                    $report.append(reportTemplate(new ViewModel(report)));
-                    addStatus('Complete.');
-                    $reportTab.parent().attr("class", "");
-                    $reportTab.tab('show')
-                })
-                
-                connection.onclose(function () {
-                    unlockForm();
-                });
-
-                connection
-                    .start()
-                    .then(function () {
-                        connection.invoke('Start', packageId, packageVersion);
+                    connection.on('Progress', function (percent, message) {
+                        setProgress(percent);
+                        addStatus(message);
                     })
-                    .catch(function (e) {
-                        console.log(e);
-                        addStatus('Connection error: ' + e);
+
+                    connection.on('Error', function (error) {
+                        addStatus('Error: ' + error);
+
                         unlockForm();
                     });
+
+                    connection.on('Complete', function (report) {
+                        addStatus('Complete.');
+
+                        $report.append(reportTemplate(new ViewModel(report)));
+                        $reportTab.parent().attr("class", "");
+
+                        $pre = $("<pre></pre>");
+                        $pre.html(JSON.stringify(report, null, 2));
+                        $reportData.append($pre);
+                        $reportDataTab.parent().attr("class", "");
+
+                        $reportTab.tab('show');
+
+                        unlockForm();
+                    });
+
+                    connection
+                        .start()
+                        .then(function () {
+                            connection.invoke('Start', packageId, packageVersion);
+                        })
+                        .catch(function (e) {
+                            addStatus('Connection error: ' + e);
+                            unlockForm();
+                        });
+                } else {
+                    connection.invoke('Start', packageId, packageVersion);
+                }
+                
+                lockForm();
 
                 return false;
             });

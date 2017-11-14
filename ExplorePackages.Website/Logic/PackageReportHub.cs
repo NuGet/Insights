@@ -96,13 +96,11 @@ namespace Knapcode.ExplorePackages.Website.Logic
         private async Task InvokeErrorAsync(string message)
         {
             await InvokeOnClientAsync("Error", message);
-            Context.Connection.Abort();
         }
 
         private async Task InvokeCompleteAsync(PackageConsistencyReport report)
         {
             await InvokeOnClientAsync("Complete", report);
-            Context.Connection.Abort();
         }
 
         private async Task InvokeOnClientAsync(string method, params object[] args)
