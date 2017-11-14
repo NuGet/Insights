@@ -6,6 +6,7 @@
     "jquery": "2.2.0",
     "jquery-validation": "1.14.0",
     "jquery-validation-unobtrusive": "3.2.6",
-    "jquery-ajax-unobtrusive": "v3.2.4"
+    "jquery-ajax-unobtrusive": "v3.2.4",
+    "handlebars": "v4.0.11"
   }
 }

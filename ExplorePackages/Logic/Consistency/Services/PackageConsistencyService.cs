@@ -80,7 +80,7 @@ namespace Knapcode.ExplorePackages.Logic
             await AddAsync(report, _registrationGzipped, (r, s) => r.RegistrationGzipped = s, "Fetched the gzipped registration report.");
             await AddAsync(report, _registrationSemVer2, (r, s) => r.RegistrationSemVer2 = s, "Fetched the SemVer 2.0.0 registration report.");
             await AddAsync(report, _search, (r, s) => r.Search = s, "Fetched the search registration report.");
-            await AddAsync(report, _crossCheck, (r, s) => r.CrossCheck = s, "Fetched the original cross check report.");
+            await AddAsync(report, _crossCheck, (r, s) => r.CrossCheck = s, "Fetched the cross check report.");
 
             return new PackageConsistencyReport(
                 context,

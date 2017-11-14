@@ -9,3 +9,8 @@
     padding-left: 15px;
     padding-right: 15px;
 }
+
+.table-report tr th:first-child {
+    text-align: right;
+    width: 180px;
+}

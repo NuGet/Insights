@@ -53,8 +53,306 @@
     </div>
 </div>
 
+<script id="report-template" type="text/x-handlebars-template">
+    <h3>Overview</h3>
+    <table class="table table-condensed table-report">
+        <tbody>
+            <tr class="{{consistentclass @@root}}">
+                <th>Consistent?</th>
+                <td>{{yesno isConsistent}}</td>
+            </tr>
+            <tr>
+                <th>Package ID</th>
+                <td>{{package.id}}</td>
+            </tr>
+            <tr>
+                <th>Package version</th>
+                <td>{{package.version}}</td>
+            </tr>
+            <tr>
+                <th>Deleted status</th>
+                <td>{{package.deletedStatus}}</td>
+            </tr>
+            <tr>
+                <th>SemVer 2.0.0?</th>
+                <td>{{yesno package.isSemVer2}}</td>
+            </tr>
+            <tr>
+                <th>Listed?</th>
+                <td>{{yesno package.isListed}}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>V2</h3>
+    <table class="table table-condensed table-report">
+        <tbody>
+            <tr class="{{consistentclass v2}}">
+                <th>Consistent?</th>
+                <td>{{yesno v2.isConsistent}}</td>
+            </tr>
+            <tr>
+                <th>In SemVer 1.0.0 results?</th>
+                <td>{{yesno v2.hasPackageSemVer1}}</td>
+            </tr>
+            <tr>
+                <th>In SemVer 2.0.0 results?</th>
+                <td>{{yesno v2.hasPackageSemVer2}}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Packages container</h3>
+    <table class="table table-condensed table-report">
+        <tbody>
+            <tr class="{{consistentclass packagesContainer}}">
+                <th>Consistent?</th>
+                <td>{{yesno packagesContainer.isConsistent}}</td>
+            </tr>
+            <tr>
+                <th>Content exists?</th>
+                <td>{{yesno packagesContainer.packageContentMetadata.exists}}</td>
+            </tr>
+            <tr>
+                <th>Package MD5</th>
+                <td>{{packagesContainer.packageContentMetadata.contentMD5}}</td>
+            </tr>
+            <tr>
+                <th>Has MD5 header?</th>
+                <td>{{yesno packagesContainer.packageContentMetadata.hasContentMD5Header}}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Flat container</h3>
+    <table class="table table-condensed table-report">
+        <tbody>
+            <tr class="{{consistentclass flatContainer}}">
+                <th>Consistent?</th>
+                <td>{{yesno flatContainer.isConsistent}}</td>
+            </tr>
+            <tr>
+                <th>Content exists?</th>
+                <td>{{yesno flatContainer.packageContentMetadata.exists}}</td>
+            </tr>
+            <tr>
+                <th>Manifest exists?</th>
+                <td>{{yesno flatContainer.hasPackageManifest}}</td>
+            </tr>
+            <tr>
+                <th>In index?</th>
+                <td>{{yesno flatContainer.isInIndex}}</td>
+            </tr>
+            <tr>
+                <th>Package MD5</th>
+                <td>{{flatContainer.packageContentMetadata.contentMD5}}</td>
+            </tr>
+            <tr>
+                <th>Has MD5 header?</th>
+                <td>{{yesno flatContainer.packageContentMetadata.hasContentMD5Header}}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Registration hives</h3>
+    <table class="table table-condensed table-report">
+        <thead>
+            <tr class="{{consistentclass registration}}">
+                <th>Consistent?</th>
+                <td colspan="3">{{yesno registration.isConsistent}}</td>
+            </tr>
+            <tr>
+                <th></th>
+                <th>Original</th>
+                <th>Gzipped</th>
+                <th>SemVer 2.0.0</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th>Consistent?</th>
+                <td>{{yesno registrationOriginal.isConsistent}}</td>
+                <td>{{yesno registrationGzipped.isConsistent}}</td>
+                <td>{{yesno registrationSemVer2.isConsistent}}</td>
+            </tr>
+            <tr>
+                <th>In index?</th>
+                <td>{{yesno registrationOriginal.isInIndex}}</td>
+                <td>{{yesno registrationGzipped.isInIndex}}</td>
+                <td>{{yesno registrationSemVer2.isInIndex}}</td>
+            </tr>
+            <tr>
+                <th>Has leaf?</th>
+                <td>{{yesno registrationOriginal.hasLeaf}}</td>
+                <td>{{yesno registrationGzipped.hasLeaf}}</td>
+                <td>{{yesno registrationSemVer2.hasLeaf}}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Search service</h3>
+    <table class="table table-condensed table-report">
+        <thead>
+            <tr class="{{consistentclass search}}">
+                <th>Consistent?</th>
+                <td colspan="{{search.statuses.length}}">{{yesno search.isConsistent}}</td>
+            </tr>
+            <tr>
+                <th></th>
+                {{#each search.statuses}}
+                    <th>{{hostName}}</th>
+                {{/each}}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th>In SemVer 1.0.0 results?</th>
+                {{#each search.statuses}}
+                    <td>{{yesno semVer1}}</td>
+                {{/each}}
+            </tr>
+            <tr>
+                <th>In SemVer 2.0.0 results?</th>
+                {{#each search.statuses}}
+                    <td>{{yesno semVer2}}</td>
+                {{/each}}
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Cross check</h3>
+    <table class="table table-condensed table-report">
+        <tbody>
+            <tr class="{{consistentclass crossCheck}}">
+                <th>Consistent?</th>
+                <td>{{yesno crossCheck.isConsistent}}</td>
+            </tr>
+            <tr>
+                <th>Same package MD5?</th>
+                <td>{{yesno crossCheck.doPackageContentsMatch}}</td>
+            </tr>
+        </tbody>
+    </table>
+</script>
+
 @section Scripts {
     <script>
+        Handlebars.registerHelper('yesno', function (value) {
+            return value ? "Yes" : "No";
+        });
+
+        Handlebars.registerHelper('consistentclass', function (report) {
+            return report.isConsistent ? "success" : "danger";
+        });
+
+        function parseUrl(url) {
+            var a = document.createElement('a');
+            a.href = url;
+            return a;
+        }
+
+        function ViewModel(report) {
+            function getDeletedStatus(status) {
+                switch (status) {
+                    case "SoftDeleted":
+                        return "Soft deleted";
+                        break;
+                    case "NotDeleted":
+                        return "Not deleted";
+                        break;
+                    case "Unknown":
+                        return "Never pushed or hard deleted";
+                        break;
+                }
+            }
+
+            function getSearchHostStatuses(baseUrlHasPackage) {
+                var searchHostCounts = {};
+                $.each(baseUrlHasPackage, function (baseUrl, hasPackage) {
+                    var hostName = parseUrl(baseUrl).hostname;
+                    if (!(hostName in searchHostCounts)) {
+                        searchHostCounts[hostName] = { true: 0, false: 0 };
+                    }
+
+                    searchHostCounts[hostName][hasPackage]++;
+                });
+                var searchHostStatuses = {};
+                $.each(searchHostCounts, function (hostName, counts) {
+                    var status;
+                    if (counts[false] == 0) {
+                        status = "Available";
+                    } else if (counts[true] == 0) {
+                        status = "Unavailable";
+                    } else {
+                        status = "Partially available (" + counts[true] + "/" + (counts[true] + counts[false]) + ")";
+                    }
+
+                    searchHostStatuses[hostName] = status;
+                });
+
+                return searchHostStatuses;
+            }
+
+            function groupSearchHostStatus(search) {
+                var semVer1 = getSearchHostStatuses(search.baseUrlHasPackageSemVer1);
+                var semVer2 = getSearchHostStatuses(search.baseUrlHasPackageSemVer2);
+                var statuses = [];
+
+                $.each(semVer1, function (hostName, semVer1Status) {
+                    var semVer2Status = semVer2[hostName];
+                    statuses.push({
+                        hostName: hostName,
+                        semVer1: semVer1Status,
+                        semVer2: semVer2Status
+                    });
+                });
+
+                statuses.sort(function (a, b) {
+                    if (a.hostName < b.hostName) {
+                        return -1;
+                    } else if (a.hostName > b.hostName) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                });
+
+                return statuses;
+            }
+
+            // Verbatim copies
+            this.isConsistent = report.isConsistent;
+            this.v2 = report.v2;
+            this.packagesContainer = report.packagesContainer;
+            this.flatContainer = report.flatContainer;
+            this.registrationOriginal = report.registrationOriginal;
+            this.registrationGzipped = report.registrationGzipped;
+            this.registrationSemVer2 = report.registrationSemVer2;
+            this.crossCheck = report.crossCheck;
+
+            // Package details
+            this.package = {
+                id: report.context.package.id,
+                version: report.context.package.version,
+                isSemVer2: report.context.isSemVer2,
+                isListed: report.gallery.packageState.isListed,
+                deletedStatus: getDeletedStatus(report.gallery.packageState.packageDeletedStatus)
+            };
+
+            // Registration hives
+            this.registration = {
+                isConsistent: report.registrationOriginal.isConsistent
+                && report.registrationGzipped.isConsistent
+                && report.registrationSemVer2.isConsistent
+            }
+
+            // Search service
+            this.search = {
+                isConsistent: report.search.isConsistent,
+                statuses: groupSearchHostStatus(report.search)
+            };
+        };
+
         $(function () {
             var $progressBar = $("#progressBar");
             var $progressBarText = $("#progressBar .sr-only");
@@ -65,6 +363,9 @@
             var $progressTab = $("#progressTab");
             var $reportTab = $("#reportTab");
             var $report = $("#report");
+
+            var reportTemplateSource = $("#report-template").html();
+            var reportTemplate = Handlebars.compile(reportTemplateSource);
 
             $reportTab.click(function () {
                 if ($reportTab.parent().hasClass("disabled")) {
@@ -82,9 +383,11 @@
             }
 
             function addStatus(html) {
-                var $p = $("<p></p>");
-                $p.html(html);
-                $statuses.append($p);
+                if ($statuses.children().length == 0) {
+                    $statuses.append($("<pre></pre>"))
+                }
+
+                $statuses.find("pre").append(html + "\n");
             }
 
             function lockForm() {
@@ -126,9 +429,7 @@
                 })
 
                 connection.on('Complete', function (report) {
-                    var $pre = $("<pre></pre>");
-                    $pre.html(JSON.stringify(report, null, ' '));
-                    $report.append($pre);
+                    $report.append(reportTemplate(new ViewModel(report)));
                     addStatus('Complete.');
                     $reportTab.parent().attr("class", "");
                     $reportTab.tab('show')
