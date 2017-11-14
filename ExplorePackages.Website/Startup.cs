@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Converters;
+using NuGet.Protocol.Core.Types;
 
 namespace Knapcode.ExplorePackages.Website
 {
@@ -23,6 +24,10 @@ namespace Knapcode.ExplorePackages.Website
         {
             // Completely disable the database.
             EntityContext.Enabled = false;
+
+            // Set the user agent for the HTTP client.
+            var userAgentStringBuilder = new UserAgentStringBuilder("Knapcode.ExplorePackages.Website.Bot");
+            UserAgent.SetUserAgentString(userAgentStringBuilder);
 
             // Enable ExplorePackages dependencies.
             var explorePackagesSettings = new ExplorePackagesSettings();
