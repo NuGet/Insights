@@ -1,4 +1,5 @@
-﻿using Knapcode.ExplorePackages.Entities;
+﻿using System.Net;
+using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Logic;
 using Knapcode.ExplorePackages.Support;
 using Knapcode.ExplorePackages.Website.Logic;
@@ -24,6 +25,9 @@ namespace Knapcode.ExplorePackages.Website
         {
             // Completely disable the database.
             EntityContext.Enabled = false;
+
+            // Allow 32 concurrent outgoing connections.
+            ServicePointManager.DefaultConnectionLimit = 32;
 
             // Set the user agent for the HTTP client.
             var userAgentStringBuilder = new UserAgentStringBuilder("Knapcode.ExplorePackages.Website.Bot");
