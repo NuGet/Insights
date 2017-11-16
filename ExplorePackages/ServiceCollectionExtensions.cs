@@ -51,7 +51,8 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<CatalogToNuspecsProcessor>();
             serviceCollection.AddTransient<NuspecDownloader>();
             serviceCollection.AddTransient<RemoteCursorReader>();
-            serviceCollection.AddTransient<PortDiscoverer>();
+            serviceCollection.AddTransient<IPortTester, PortTester>();
+            serviceCollection.AddTransient<IPortDiscoverer, SimplePortDiscoverer>();
             serviceCollection.AddTransient<SearchServiceUrlDiscoverer>();
             serviceCollection.AddTransient<SearchServiceCursorReader>();
             serviceCollection.AddTransient<PackageQueryContextBuilder>();

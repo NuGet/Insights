@@ -12,11 +12,11 @@ namespace Knapcode.ExplorePackages.Logic
         private static readonly TimeSpan ConnectTimeout = TimeSpan.FromSeconds(10);
 
         private readonly ServiceIndexCache _serviceIndexCache;
-        private readonly PortDiscoverer _portDiscoverer;
+        private readonly IPortDiscoverer _portDiscoverer;
 
         public SearchServiceUrlDiscoverer(
             ServiceIndexCache serviceIndexCache,
-            PortDiscoverer portDiscoverer)
+            IPortDiscoverer portDiscoverer)
         {
             _serviceIndexCache = serviceIndexCache;
             _portDiscoverer = portDiscoverer;
@@ -54,21 +54,19 @@ namespace Knapcode.ExplorePackages.Logic
                 .Select(x => new
                 {
                     x.Host,
-                    MaximumPortTask = _portDiscoverer.FindMaximumPortAsync(
+                    PortsTask = _portDiscoverer.FindPortsAsync(
                         x.Host,
                         StartingPort,
                         requireSsl: x.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase),
                         connectTimeout: ConnectTimeout),
                 })
                 .ToList();
-            await Task.WhenAll(hostTasks.Select(x => x.MaximumPortTask));
+            await Task.WhenAll(hostTasks.Select(x => x.PortsTask));
 
             // Build a mapping from host to list of open instance ports.
             var hostToPorts = hostTasks.ToDictionary(
                 x => x.Host,
-                x => Enumerable
-                    .Range(StartingPort, (x.MaximumPortTask.Result.Value - StartingPort) + 1)
-                    .ToList(),
+                x => x.PortsTask.Result,
                 StringComparer.OrdinalIgnoreCase);
 
             // Build URLs to the diagnostic endpoint on all search instances.

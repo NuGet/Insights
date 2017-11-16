@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Net.Security;
-using System.Net.Sockets;
-using System.Security.Cryptography.X509Certificates;
+using System.Linq;
 using System.Threading.Tasks;
-using NuGet.Common;
 
 namespace Knapcode.ExplorePackages.Support
 {
@@ -14,24 +10,46 @@ namespace Knapcode.ExplorePackages.Support
     /// the number of instances in a Azure Cloud Service definition file that exposes instance endpoints:
     /// <see cref="https://docs.microsoft.com/en-us/azure/cloud-services/cloud-services-enable-communication-role-instances#instance-input-endpoint"/>
     /// </summary>
-    public class PortDiscoverer
+    public class ContiguousPortDiscoverer : IPortDiscoverer
     {
-        private readonly ILogger _log;
+        private readonly IPortTester _portTester;
 
-        public PortDiscoverer(ILogger log)
+        public ContiguousPortDiscoverer(IPortTester portTester)
         {
-            _log = log;
+            _portTester = portTester;
         }
 
-        public async Task<int?> FindMaximumPortAsync(string host, int startingPort, bool requireSsl, TimeSpan connectTimeout)
+        public async Task<IReadOnlyList<int>> FindPortsAsync(
+            string host,
+            int startingPort,
+            bool requireSsl,
+            TimeSpan connectTimeout)
+        {
+            var maximumPort = await FindMaximumPortAsync(host, startingPort, requireSsl, connectTimeout);
+            if (!maximumPort.HasValue)
+            {
+                return new List<int>();
+            }
+
+            return Enumerable
+                .Range(startingPort, (maximumPort.Value - startingPort) + 1)
+                .ToList();
+        }
+
+        private async Task<int?> FindMaximumPortAsync(string host, int startingPort, bool requireSsl, TimeSpan connectTimeout)
         {
             var state = new State(host, requireSsl, connectTimeout);
             var maxPort = ushort.MaxValue + 1;
-            while (maxPort - startingPort > 1)
+            do
             {
                 maxPort = await FindMaximumPortAsync(state, startingPort, maxPort);
-                startingPort = state.HighestValidPort.Value;
+
+                if (state.HighestValidPort.HasValue)
+                {
+                    startingPort = state.HighestValidPort.Value;
+                }
             }
+            while (maxPort - startingPort > 1 && state.HighestValidPort.HasValue);
 
             return state.HighestValidPort;
         }
@@ -45,8 +63,11 @@ namespace Knapcode.ExplorePackages.Support
                 bool isPortOpen;
                 if (!state.ValidPorts.Contains(currentPort))
                 {
-                    isPortOpen = await IsPortOpenAsync(state.Host, currentPort, state.RequireSsl, state.ConnectTimeout);
-                    _log.LogInformation($"Port {currentPort} on {state.Host} is {(isPortOpen ? "open" : "closed")}.");
+                    isPortOpen = await _portTester.IsPortOpenAsync(
+                        state.Host,
+                        currentPort,
+                        state.RequireSsl,
+                        state.ConnectTimeout);
 
                     if (isPortOpen)
                     {
@@ -68,54 +89,6 @@ namespace Knapcode.ExplorePackages.Support
             }
 
             return Math.Min(currentPort, maxPort);
-        }
-
-        private async Task<bool> IsPortOpenAsync(string host, int port, bool requireSsl, TimeSpan connectTimeout)
-        {
-            using (var tcpClient = new TcpClient())
-            {
-                var connectTask = tcpClient.ConnectAsync(host, port);
-                var timeoutTask = Task.Delay(connectTimeout);
-
-                var firstTask = await Task.WhenAny(connectTask, timeoutTask);
-                if (firstTask == timeoutTask)
-                {
-                    return false;
-                }
-
-                if (requireSsl)
-                {
-                    try
-                    {
-                        using (var networkStream = tcpClient.GetStream())
-                        using (var sslStream = new SslStream(
-                            networkStream,
-                            leaveInnerStreamOpen: false,
-                            userCertificateValidationCallback: AcceptAllCertificates))
-                        {
-                            await sslStream.AuthenticateAsClientAsync(host);
-                            return true;
-                        }
-                    }
-                    catch (IOException)
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    return true;
-                }
-            }
-        }
-
-        public static bool AcceptAllCertificates(
-            object sender,
-            X509Certificate certificate,
-            X509Chain chain,
-            SslPolicyErrors sslPolicyErrors)
-        {
-            return true;
         }
 
         private class State

@@ -119,9 +119,11 @@
     <Compile Include="Support\BlobMetadata.cs" />
     <Compile Include="Support\HttpClientExtensions.cs" />
     <Compile Include="Support\IIncrementalHash.cs" />
+    <Compile Include="Support\IPortDiscoverer.cs" />
+    <Compile Include="Support\IPortTester.cs" />
     <Compile Include="Support\MD5IncrementalHash.cs" />
     <Compile Include="Support\NuGetLogger.cs" />
-    <Compile Include="Support\PortDiscoverer.cs" />
+    <Compile Include="Support\ContiguousPortDiscoverer.cs" />
     <Compile Include="Logic\Protocol\FlatContainerClient.cs" />
     <Compile Include="Logic\Protocol\FlatContainerIndex.cs" />
     <Compile Include="Logic\Protocol\PackagesContainerClient.cs" />
@@ -161,6 +163,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Support\HttpSourceExtensions.cs" />
     <Compile Include="Support\PassThroughHandler.cs" />
+    <Compile Include="Support\PortTester.cs" />
+    <Compile Include="Support\SimplePortDiscoverer.cs" />
     <Compile Include="Support\TaskQueue.cs" />
   </ItemGroup>
   <ItemGroup>
