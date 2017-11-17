@@ -12,28 +12,41 @@ namespace Knapcode.ExplorePackages.Logic
         private static readonly TimeSpan ConnectTimeout = TimeSpan.FromSeconds(10);
 
         private readonly ServiceIndexCache _serviceIndexCache;
+        private readonly SearchServiceUrlCache _urlCache;
         private readonly IPortDiscoverer _portDiscoverer;
 
         public SearchServiceUrlDiscoverer(
             ServiceIndexCache serviceIndexCache,
+            SearchServiceUrlCache urlCache,
             IPortDiscoverer portDiscoverer)
         {
             _serviceIndexCache = serviceIndexCache;
+            _urlCache = urlCache;
             _portDiscoverer = portDiscoverer;
         }
 
         public async Task<IReadOnlyList<string>> GetUrlsAsync(string serviceIndexType, bool specificInstances)
         {
-            var urls = await _serviceIndexCache.GetUrlsAsync(serviceIndexType);
+            var urls = _urlCache.GetUrls(serviceIndexType, specificInstances);
+            if (urls != null)
+            {
+                return urls;
+            }
+
+            urls = await _serviceIndexCache.GetUrlsAsync(serviceIndexType);
 
             if (specificInstances)
             {
                 urls = await ExpandInstancePortsAsync(urls);
             }
 
-            return urls
+            urls = urls
                 .Distinct()
                 .ToList();
+
+            _urlCache.SetUrls(serviceIndexType, specificInstances, urls);
+
+            return urls;
         }
 
         private async Task<IReadOnlyList<string>> ExpandInstancePortsAsync(IReadOnlyList<string> urls)

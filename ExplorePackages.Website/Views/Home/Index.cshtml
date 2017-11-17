@@ -450,7 +450,17 @@
                     connection.on('Progress', function (percent, message) {
                         setProgress(percent);
                         addStatus(message);
-                    })
+                    });
+                    
+                    connection.onclose(function (error) {
+                        if (error) {
+                            console.log("Connection closed. Error: " + error);
+                        } else {
+                            console.log("Connection closed");
+                        }
+
+                        connection = null;
+                    });
 
                     connection.on('Error', function (error) {
                         addStatus('Error: ' + error);
@@ -486,7 +496,7 @@
                 } else {
                     connection.invoke('Start', packageId, packageVersion);
                 }
-                
+
                 lockForm();
 
                 return false;

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -20,10 +21,17 @@ namespace Knapcode.ExplorePackages
                 {
                     AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
                 });
+            serviceCollection.AddSingleton<HttpMessageHandler>(
+                x => new InitializeServicePointHandler(
+                    connectionLeaseTimeout: TimeSpan.FromMinutes(1),
+                    connectionLimit: 32)
+                {
+                    InnerHandler = x.GetRequiredService<HttpClientHandler>(),
+                });
             serviceCollection.AddSingleton(
                 x =>
                 {
-                    var httpClient = new HttpClient(x.GetRequiredService<HttpClientHandler>());
+                    var httpClient = new HttpClient(x.GetRequiredService<HttpMessageHandler>());
                     httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", UserAgent.UserAgentString);
                     return httpClient;
                 });
@@ -33,10 +41,7 @@ namespace Knapcode.ExplorePackages
                     () =>
                     {
                         var httpClientHandler = x.GetRequiredService<HttpClientHandler>();
-                        var httpMessageHandler = new PassThroughHandler
-                        {
-                            InnerHandler = httpClientHandler
-                        };
+                        var httpMessageHandler = x.GetRequiredService<HttpMessageHandler>();
                         return Task.FromResult<HttpHandlerResource>(new HttpHandlerResourceV3(
                             httpClientHandler,
                             httpMessageHandler));
@@ -44,6 +49,10 @@ namespace Knapcode.ExplorePackages
                     NullThrottle.Instance));
             serviceCollection.AddTransient(
                 x => new PackagePathProvider(settings.PackagePath));
+
+            var searchServiceUrlCache = new SearchServiceUrlCache();
+            serviceCollection.AddSingleton(searchServiceUrlCache);
+            serviceCollection.AddSingleton<ISearchServiceUrlCacheInvalidator>(searchServiceUrlCache);
 
             serviceCollection.AddTransient(x => settings.Clone());
             serviceCollection.AddTransient<PackageQueryProcessor>();

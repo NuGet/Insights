@@ -125,9 +125,6 @@ namespace Knapcode.ExplorePackages
                 log.LogInformation("The database will not be used.");
             }
 
-            // Allow up to 32 parallel HTTP connections.
-            ServicePointManager.DefaultConnectionLimit = 32;
-
             // Set the user agent.
             var userAgentStringBuilder = new UserAgentStringBuilder("Knapcode.ExplorePackages.Bot");
             UserAgent.SetUserAgentString(userAgentStringBuilder);

@@ -10,11 +10,16 @@ namespace Knapcode.ExplorePackages.Logic
     public class SearchClient
     {
         private readonly HttpSource _httpSource;
+        private readonly ISearchServiceUrlCacheInvalidator _invalidator;
         private readonly ILogger _log;
 
-        public SearchClient(HttpSource httpSource, ILogger log)
+        public SearchClient(
+            HttpSource httpSource,
+            ISearchServiceUrlCacheInvalidator invalidator,
+            ILogger log)
         {
             _httpSource = httpSource;
+            _invalidator = invalidator;
             _log = log;
         }
 
@@ -22,10 +27,19 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var url = $"{baseUrl.TrimEnd('/')}/search/diag";
 
-            return await _httpSource.DeserializeUrlAsync<SearchDiagnostics>(
-                url,
-                ignoreNotFounds: false,
-                log: _log);
+            try
+            {
+                return await _httpSource.DeserializeUrlAsync<SearchDiagnostics>(
+                    url,
+                    ignoreNotFounds: false,
+                    maxTries: 1,
+                    log: _log);
+            }
+            catch
+            {
+                _invalidator.InvalidateCache();
+                throw;
+            }
         }
 
         public async Task<bool> HasPackageAsync(string baseUrl, string id, string version, bool semVer2)
@@ -34,10 +48,20 @@ namespace Knapcode.ExplorePackages.Logic
             var query = $"packageid:{id} version:{version}";
             var url = $"{baseUrl.TrimEnd('/')}/search/query?q={Uri.EscapeDataString(query)}&take=1&ignoreFilter=true&semVerLevel={semVerLevel}";
 
-            var result = await _httpSource.DeserializeUrlAsync<V2SearchResult>(
-                url,
-                ignoreNotFounds: false,
-                log: _log);
+            V2SearchResult result;
+            try
+            {
+                result = await _httpSource.DeserializeUrlAsync<V2SearchResult>(
+                    url,
+                    ignoreNotFounds: false,
+                    maxTries: 1,
+                    log: _log);
+            }
+            catch
+            {
+                _invalidator.InvalidateCache();
+                throw;
+            }
 
             if (result.TotalHits == 0)
             {

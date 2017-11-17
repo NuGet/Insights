@@ -42,16 +42,31 @@ namespace Knapcode.ExplorePackages.Support
                 CancellationToken.None);
         }
 
+        public static Task<T> DeserializeUrlAsync<T>(
+            this HttpSource httpSource,
+            string url,
+            bool ignoreNotFounds,
+            ILogger log)
+        {
+            return httpSource.DeserializeUrlAsync<T>(
+                url,
+                ignoreNotFounds,
+                maxTries: 3,
+                log: log);
+        }
+
         public static async Task<T> DeserializeUrlAsync<T>(
             this HttpSource httpSource,
             string url,
             bool ignoreNotFounds,
+            int maxTries,
             ILogger log)
         {
             return await httpSource.ProcessStreamAsync(
                 new HttpSourceRequest(url, log)
                 {
                     IgnoreNotFounds = ignoreNotFounds,
+                    MaxTries = maxTries,
                 },
                 stream =>
                 {

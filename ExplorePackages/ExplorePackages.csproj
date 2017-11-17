@@ -62,6 +62,7 @@
     <Compile Include="Logic\Consistency\Reports\PackageConsistencyReport.cs" />
     <Compile Include="Logic\IncrementalProgress.cs" />
     <Compile Include="Logic\IProgressReport.cs" />
+    <Compile Include="Logic\ISearchServiceUrlCacheInvalidator.cs" />
     <Compile Include="Logic\NullProgressReport.cs" />
     <Compile Include="Logic\Consistency\Services\PackageConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Reports\PackagesContainerConsistencyReport.cs" />
@@ -113,12 +114,14 @@
     <Compile Include="Logic\Protocol\SearchDiagnosticsCommitUserData.cs" />
     <Compile Include="Logic\Protocol\ServiceIndexTypes.cs" />
     <Compile Include="Logic\Protocol\V2SearchResult.cs" />
+    <Compile Include="Logic\SearchServiceUrlCache.cs" />
     <Compile Include="Logic\SearchServiceUrlDiscoverer.cs" />
     <Compile Include="Logic\SearchServiceCursorReader.cs" />
     <Compile Include="ServiceCollectionExtensions.cs" />
     <Compile Include="Support\BlobMetadata.cs" />
     <Compile Include="Support\HttpClientExtensions.cs" />
     <Compile Include="Support\IIncrementalHash.cs" />
+    <Compile Include="Support\InitializeServicePointHandler.cs" />
     <Compile Include="Support\IPortDiscoverer.cs" />
     <Compile Include="Support\IPortTester.cs" />
     <Compile Include="Support\MD5IncrementalHash.cs" />

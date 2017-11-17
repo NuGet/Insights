@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Converters;
 using NuGet.Protocol.Core.Types;
 
@@ -26,9 +27,6 @@ namespace Knapcode.ExplorePackages.Website
             // Completely disable the database.
             EntityContext.Enabled = false;
 
-            // Allow 32 concurrent outgoing connections.
-            ServicePointManager.DefaultConnectionLimit = 32;
-
             // Set the user agent for the HTTP client.
             var userAgentStringBuilder = new UserAgentStringBuilder("Knapcode.ExplorePackages.Website.Bot");
             UserAgent.SetUserAgentString(userAgentStringBuilder);
@@ -41,6 +39,7 @@ namespace Knapcode.ExplorePackages.Website
             // Add stuff specific to the website.
             services.AddLogging();
             services.AddTransient<NuGet.Common.ILogger, NuGetLogger>();
+            services.AddSingleton<IHostedService, SearchSearchUrlCacheRefresher>();
             services.AddMvc();
             services.AddSignalR(o =>
             {
