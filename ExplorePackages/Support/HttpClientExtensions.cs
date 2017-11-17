@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -14,9 +15,10 @@ namespace Knapcode.ExplorePackages.Support
             using (var request = new HttpRequestMessage(HttpMethod.Head, url))
             {
                 log.LogInformation($"  {request.Method} {request.RequestUri}");
+                var stopwatch = Stopwatch.StartNew();
                 using (var response = await httpClient.SendAsync(request))
                 {
-                    log.LogInformation($"  {response.StatusCode} {response.RequestMessage.RequestUri}");
+                    log.LogInformation($"  {response.StatusCode} {response.RequestMessage.RequestUri} {stopwatch.ElapsedMilliseconds}ms");
                     if (response.StatusCode == HttpStatusCode.NotFound)
                     {
                         return new BlobMetadata(
@@ -44,9 +46,10 @@ namespace Knapcode.ExplorePackages.Support
             using (var request = new HttpRequestMessage(HttpMethod.Get, url))
             {
                 log.LogInformation($"  {request.Method} {request.RequestUri}");
+                var stopwatch = Stopwatch.StartNew();
                 using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead))
                 {
-                    log.LogInformation($"  {response.StatusCode} {response.RequestMessage.RequestUri}");
+                    log.LogInformation($"  {response.StatusCode} {response.RequestMessage.RequestUri} {stopwatch.ElapsedMilliseconds}ms");
 
                     response.EnsureSuccessStatusCode();
 
