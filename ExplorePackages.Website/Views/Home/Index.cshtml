@@ -68,12 +68,16 @@
                 <td>{{yesno isConsistent}}</td>
             </tr>
             <tr>
-                <th>Package ID</th>
+                <th>ID</th>
                 <td>{{package.id}}</td>
             </tr>
             <tr>
-                <th>Package version</th>
-                <td>{{package.version}}</td>
+                <th>Normalized version</th>
+                <td>{{package.normalizedVersion}}</td>
+            </tr>
+            <tr>
+                <th>Full version</th>
+                <td>{{package.fullVersion}}</td>
             </tr>
             <tr>
                 <th>Deleted status</th>
@@ -339,7 +343,8 @@
             // Package details
             this.package = {
                 id: report.context.package.id,
-                version: report.context.package.version,
+                normalizedVersion: report.context.package.version,
+                fullVersion: report.context.fullVersion,
                 isSemVer2: report.context.isSemVer2,
                 isListed: report.gallery.packageState.isListed,
                 deletedStatus: getDeletedStatus(report.gallery.packageState.packageDeletedStatus)

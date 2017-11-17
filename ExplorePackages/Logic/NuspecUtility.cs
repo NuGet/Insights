@@ -46,6 +46,24 @@ namespace Knapcode.ExplorePackages.Logic
             return metadataEl.Element(ns.GetName("repository"));
         }
 
+        public static string GetOriginalVersion(XDocument nuspec)
+        {
+            var metadataEl = GetMetadata(nuspec);
+            if (metadataEl == null)
+            {
+                return null;
+            }
+
+            var ns = metadataEl.GetDefaultNamespace();
+            var versionEl = metadataEl.Element(ns.GetName("version"));
+            if (versionEl == null)
+            {
+                return null;
+            }
+
+            return versionEl.Value.Trim();
+        }
+
         public static bool IsSemVer2(XDocument nuspec)
         {
             return HasSemVer2PackageVersion(nuspec)

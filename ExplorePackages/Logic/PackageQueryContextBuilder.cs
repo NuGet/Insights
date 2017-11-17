@@ -39,7 +39,9 @@ namespace Knapcode.ExplorePackages.Logic
 
         private PackageQueryContext CreatePackageQueryContext(string id, string version, bool isSemVer2, bool deleted)
         {
-            var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
+            var parsedVersion = NuGetVersion.Parse(version);
+            var normalizedVersion = parsedVersion.ToNormalizedString();
+            var fullVersion = parsedVersion.ToFullString();
             var immutablePackage = new ImmutablePackage(new Package
             {
                 Key = 0,
@@ -56,7 +58,7 @@ namespace Knapcode.ExplorePackages.Logic
                 exists: false,
                 document: null);
 
-            return new PackageQueryContext(immutablePackage, nuspecQueryContext, isSemVer2);
+            return new PackageQueryContext(immutablePackage, nuspecQueryContext, isSemVer2, fullVersion);
         }
         public async Task<PackageQueryContext> GetPackageQueryContextFromGalleryAsync(string id, string version, PackageConsistencyState state)
         {
@@ -91,7 +93,14 @@ namespace Knapcode.ExplorePackages.Logic
             var nuspecQueryContext = GetNuspecQueryContext(package);
             var isSemVer2 = NuspecUtility.IsSemVer2(nuspecQueryContext.Document);
 
-            return new PackageQueryContext(immutablePackage, nuspecQueryContext, isSemVer2);
+            var originalVersion = NuspecUtility.GetOriginalVersion(nuspecQueryContext.Document);
+            string fullVersion = null;
+            if (NuGetVersion.TryParse(originalVersion, out var parsedVersion))
+            {
+                fullVersion = parsedVersion.ToFullString();
+            }
+
+            return new PackageQueryContext(immutablePackage, nuspecQueryContext, isSemVer2, fullVersion);
         }
 
         private NuspecQueryContext GetNuspecQueryContext(Package package)

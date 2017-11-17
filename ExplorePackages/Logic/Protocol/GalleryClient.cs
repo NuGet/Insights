@@ -57,7 +57,9 @@ namespace Knapcode.ExplorePackages.Logic
                         responseBody.Position = 0;
 
                         var state = DetermineState(packageIdentity, responseBody);
-                        if (state.PackageDeletedStatus.HasValue
+                        if (state.PackageId != null
+                            && state.PackageVersion != null
+                            && state.PackageDeletedStatus.HasValue
                             && state.IsSemVer2.HasValue
                             && state.IsListed.HasValue)
                         {
@@ -81,11 +83,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         private MutableState DetermineState(PackageIdentity packageIdentity, MemoryStream responseBody)
         {
-            var state = new MutableState
-            {
-                PackageId = packageIdentity.Id,
-                PackageVersion = packageIdentity.Version,
-            };
+            var state = new MutableState();
 
             var parser = new HtmlParser();
             var document = parser.Parse(responseBody);
@@ -117,20 +115,29 @@ namespace Knapcode.ExplorePackages.Logic
                 pieces[0].Trim(),
                 NuGetVersion.Parse(pieces[1]).ToNormalizedString());
 
+            // Use the found package ID.
+            state.PackageId = foundPackageIdentity.Id;
+
             if (!StringComparer.OrdinalIgnoreCase.Equals(packageIdentity.Id, foundPackageIdentity.Id))
             {
                 throw new InvalidDataException("The package ID found in the meta title does not match the request.");
             }
             else if (!foundPackageIdentity.Equals(packageIdentity))
             {
+                // Use the input version, since the found one does not match.
+                state.PackageVersion = packageIdentity.Version; 
+
                 state.PackageDeletedStatus = PackageDeletedStatus.Unknown;
                 state.IsSemVer2 = false;
                 state.IsListed = false;
                 return state;
             }
 
-            state.PackageId = foundPackageIdentity.Id;
-            state.PackageVersion = foundPackageIdentity.Version;
+            var fullVersionEl = document.QuerySelector(".package-details-main .package-title small");
+            if (fullVersionEl != null)
+            {
+                state.PackageVersion = fullVersionEl.TextContent.Trim();
+            }
 
             var alerts = document.QuerySelectorAll("div.alert");
             foreach (var alert in alerts)
