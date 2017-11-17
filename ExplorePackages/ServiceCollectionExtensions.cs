@@ -83,6 +83,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<FlatContainerClient>();
             serviceCollection.AddTransient<RegistrationClient>();
             serviceCollection.AddTransient<SearchClient>();
+            serviceCollection.AddTransient<AutocompleteClient>();
 
             serviceCollection.AddTransient<GalleryConsistencyService>();
             serviceCollection.AddTransient<V2ConsistencyService>();

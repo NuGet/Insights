@@ -7,5 +7,6 @@
         public const string RegistrationGzipped = "RegistrationsBaseUrl/3.4.0";
         public const string RegistrationSemVer2 = "RegistrationsBaseUrl/3.6.0";
         public const string V2Search = "SearchGalleryQueryService/3.0.0-rc";
+        public const string Autocomplete = "SearchAutocompleteService";
     }
 }
