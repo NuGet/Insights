@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
 using Knapcode.ExplorePackages.Support;
 using Microsoft.Extensions.DependencyInjection;
+using NuGet.CatalogReader;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -23,8 +25,7 @@ namespace Knapcode.ExplorePackages
                 });
             serviceCollection.AddSingleton<HttpMessageHandler>(
                 x => new InitializeServicePointHandler(
-                    connectionLeaseTimeout: TimeSpan.FromMinutes(1),
-                    connectionLimit: 32)
+                    connectionLeaseTimeout: TimeSpan.FromMinutes(1))
                 {
                     InnerHandler = x.GetRequiredService<HttpClientHandler>(),
                 });
@@ -53,6 +54,13 @@ namespace Knapcode.ExplorePackages
             var searchServiceUrlCache = new SearchServiceUrlCache();
             serviceCollection.AddSingleton(searchServiceUrlCache);
             serviceCollection.AddSingleton<ISearchServiceUrlCacheInvalidator>(searchServiceUrlCache);
+            serviceCollection.AddSingleton(
+                x => new CatalogReader(
+                    new Uri(x.GetRequiredService<ExplorePackagesSettings>().V3ServiceIndex, UriKind.Absolute),
+                    x.GetRequiredService<HttpSource>(),
+                    cacheContext: null,
+                    cacheTimeout: TimeSpan.Zero,
+                    log: x.GetRequiredService<ILogger>()));
 
             serviceCollection.AddTransient(x => settings.Clone());
             serviceCollection.AddTransient<PackageQueryProcessor>();
@@ -66,6 +74,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<SearchServiceCursorReader>();
             serviceCollection.AddTransient<PackageQueryContextBuilder>();
             serviceCollection.AddTransient<IProgressReport, NullProgressReport>();
+            serviceCollection.AddTransient<LatestCatalogCommitFetcher>();
 
             serviceCollection.AddSingleton<ServiceIndexCache>();
             serviceCollection.AddTransient<GalleryClient>();

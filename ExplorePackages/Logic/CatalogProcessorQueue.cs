@@ -12,17 +12,17 @@ namespace Knapcode.ExplorePackages.Logic
     public class CatalogProcessorQueue
     {
         private readonly TaskQueue<IReadOnlyList<CatalogEntry>> _taskQueue;
+        private readonly CatalogReader _catalogReader;
         private readonly ICatalogEntriesProcessor _processor;
-        private readonly ExplorePackagesSettings _settings;
         private readonly ILogger _log;
 
         public CatalogProcessorQueue(
+            CatalogReader catalogReader,
             ICatalogEntriesProcessor processor,
-            ExplorePackagesSettings settings,
             ILogger log)
         {
+            _catalogReader = catalogReader;
             _processor = processor;
-            _settings = settings;
             _log = log;
             _taskQueue = new TaskQueue<IReadOnlyList<CatalogEntry>>(
                 workerCount: 1,
@@ -72,31 +72,28 @@ namespace Knapcode.ExplorePackages.Logic
 
         private async Task ProduceAsync(DateTimeOffset start, DateTimeOffset end, CancellationToken token)
         {
-            using (var catalogReader = new CatalogReader(new Uri(_settings.V3ServiceIndex), _log))
+            var remainingPages = new Queue<CatalogPageEntry>(await _catalogReader.GetPageEntriesAsync(start, end, token));
+
+            while (remainingPages.Any())
             {
-                var remainingPages = new Queue<CatalogPageEntry>(await catalogReader.GetPageEntriesAsync(start, end, token));
+                var currentPage = remainingPages.Dequeue();
+                var currentPages = new[] { currentPage };
 
-                while (remainingPages.Any())
+                var entries = await _catalogReader.GetEntriesAsync(currentPages, start, end, token);
+
+                // Each processor should ensure values are sorted in an appropriate fashion, but for consistency we
+                // sort here as well.
+                entries = entries
+                    .OrderBy(x => x.CommitTimeStamp)
+                    .ThenBy(x => x.Id)
+                    .ThenBy(x => x.Version)
+                    .ToList();
+
+                _taskQueue.Enqueue(entries);
+
+                while (_taskQueue.Count > 10)
                 {
-                    var currentPage = remainingPages.Dequeue();
-                    var currentPages = new[] { currentPage };
-
-                    var entries = await catalogReader.GetEntriesAsync(currentPages, start, end, token);
-
-                    // Each processor should ensure values are sorted in an appropriate fashion, but for consistency we
-                    // sort here as well.
-                    entries = entries
-                        .OrderBy(x => x.CommitTimeStamp)
-                        .ThenBy(x => x.Id)
-                        .ThenBy(x => x.Version)
-                        .ToList();
-                    
-                    _taskQueue.Enqueue(entries);
-
-                    while (_taskQueue.Count > 10)
-                    {
-                        await Task.Delay(TimeSpan.FromSeconds(1));
-                    }
+                    await Task.Delay(TimeSpan.FromSeconds(1));
                 }
             }
         }

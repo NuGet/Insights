@@ -31,6 +31,9 @@ namespace Knapcode.ExplorePackages
             Console.WriteLine("====================");
             Console.WriteLine();
 
+            // Allow 32 concurrent outgoing connections.
+            ServicePointManager.DefaultConnectionLimit = 32;
+
             // Initialize the dependency injection container.
             var serviceCollection = InitializeServiceCollection(settings);
             using (var serviceProvider = serviceCollection.BuildServiceProvider())

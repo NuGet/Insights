@@ -18,6 +18,7 @@
                 <input type="text" class="form-control" name="version" id="packageVersion" value="">
             </div>
             <button type="submit" id="getReport" class="btn btn-primary">Submit</button>
+            <button type="button" id="getLatest" class="btn btn-default">Find Latest Package</button>
         </form>
 
         <hr />
@@ -371,6 +372,7 @@
             var $packageId = $("#packageId");
             var $packageVersion = $("#packageVersion");
             var $getReport = $("#getReport");
+            var $getLatest = $("#getLatest");
             var $progressTab = $("#progressTab");
             var $reportTab = $("#reportTab");
             var $reportDataTab = $("#reportDataTab");
@@ -413,27 +415,9 @@
                 $statuses.find("pre").append(html + "\n");
             }
 
-            var connection = null;
             var inProgress = false;
 
-            function lockForm() {
-                inProgress = true;
-                $getReport.prop("disabled", true);
-                $progressBar.addClass("active");
-            }
-
-            function unlockForm() {
-                inProgress = false;
-                $getReport.prop("disabled", false);
-                $progressBar.removeClass("active");
-            }
-
-            $("#getReportForm").on('submit', function () {
-                if (inProgress) {
-                    return false;
-                }
-
-                // Reset the form.
+            function resetForm() {
                 $report.empty();
                 $reportData.empty();
                 $statuses.empty();
@@ -442,62 +426,125 @@
                 $reportDataTab.parent().attr("class", "disabled");
                 $progressTab.tab('show');
                 setProgress(0);
+            }
+
+            function lockForm() {
+                inProgress = true;
+                $getReport.prop("disabled", true);
+                $getLatest.prop("disabled", true);
+                $progressBar.addClass("active");
+            }
+
+            function unlockForm() {
+                inProgress = false;
+                $getReport.prop("disabled", false);
+                $getLatest.prop("disabled", false);
+                $progressBar.removeClass("active");
+            }
+
+            function initializeConnection(callback) {
+                var logger = new signalR.ConsoleLogger(signalR.LogLevel.Trace);
+                var hub = new signalR.HttpConnection(@Json.Serialize(PackageReportHub.Path), { logger: logger });
+                var connection = new signalR.HubConnection(hub, logger);
+
+                connection.on('Progress', function (percent, message) {
+                    setProgress(percent);
+                    addStatus(message);
+                });
+
+                connection.onclose(function (error) {
+                    if (error) {
+                        console.log("Connection closed. Error: " + error);
+                    } else {
+                        console.log("Connection closed");
+                    }
+
+                    connection = null;
+                });
+
+                connection.on('Error', function (error) {
+                    addStatus('Error: ' + error);
+
+                    unlockForm();
+                });
+
+                connection.on('FoundLatest', function (data) {
+                    addStatus('Found latest.');
+
+                    $packageId.val(data.id);
+                    $packageVersion.val(data.version);
+                    
+                    $pre = $("<pre></pre>");
+                    $pre.html(JSON.stringify(data, null, 2));
+                    $reportData.append($pre);
+                    $reportDataTab.parent().attr("class", "");
+
+                    unlockForm();
+                });
+
+                connection.on('Complete', function (report) {
+                    addStatus('Complete.');
+
+                    $report.append(reportTemplate(new ViewModel(report)));
+                    $reportTab.parent().attr("class", "");
+
+                    $pre = $("<pre></pre>");
+                    $pre.html(JSON.stringify(report, null, 2));
+                    $reportData.append($pre);
+                    $reportDataTab.parent().attr("class", "");
+
+                    $reportTab.tab('show');
+
+                    unlockForm();
+                });
+
+                connection
+                    .start()
+                    .then(callback)
+                    .catch(function (e) {
+                        addStatus('Connection error: ' + e);
+                        unlockForm();
+                    });
+
+                return connection;
+            }
+
+            var connection = null;
+
+            $("#getLatest").click(function () {
+                if (inProgress) {
+                    return false;
+                }
+
+                resetForm();
+
+                if (connection == null) {
+                    connection = initializeConnection(function () {
+                        connection.invoke('GetLatest');
+                    });
+                } else {
+                    connection.invoke('GetLatest');
+                }
+
+                lockForm();
+
+                return false;
+            })
+
+            $("#getReportForm").on('submit', function () {
+                if (inProgress) {
+                    return false;
+                }
+
+                resetForm();
 
                 var packageId = $packageId.val();
                 var packageVersion = $packageVersion.val();
-
-                // Initialize the connection.
+                
                 if (connection == null) {
-                    var logger = new signalR.ConsoleLogger(signalR.LogLevel.Trace);
-                    var hub = new signalR.HttpConnection(@Json.Serialize(PackageReportHub.Path), { logger: logger });
-                    connection = new signalR.HubConnection(hub, logger);
-
-                    connection.on('Progress', function (percent, message) {
-                        setProgress(percent);
-                        addStatus(message);
+                    connection = initializeConnection(function () {
+                        connection.invoke('Start', packageId, packageVersion);
                     });
-                    
-                    connection.onclose(function (error) {
-                        if (error) {
-                            console.log("Connection closed. Error: " + error);
-                        } else {
-                            console.log("Connection closed");
-                        }
-
-                        connection = null;
-                    });
-
-                    connection.on('Error', function (error) {
-                        addStatus('Error: ' + error);
-
-                        unlockForm();
-                    });
-
-                    connection.on('Complete', function (report) {
-                        addStatus('Complete.');
-
-                        $report.append(reportTemplate(new ViewModel(report)));
-                        $reportTab.parent().attr("class", "");
-
-                        $pre = $("<pre></pre>");
-                        $pre.html(JSON.stringify(report, null, 2));
-                        $reportData.append($pre);
-                        $reportDataTab.parent().attr("class", "");
-
-                        $reportTab.tab('show');
-
-                        unlockForm();
-                    });
-
-                    connection
-                        .start()
-                        .then(function () {
-                            connection.invoke('Start', packageId, packageVersion);
-                        })
-                        .catch(function (e) {
-                            addStatus('Connection error: ' + e);
-                            unlockForm();
-                        });
                 } else {
                     connection.invoke('Start', packageId, packageVersion);
                 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
 using Microsoft.AspNetCore.SignalR;
@@ -12,13 +13,40 @@ namespace Knapcode.ExplorePackages.Website.Logic
 
         private readonly PackageConsistencyService _packageConsistencyService;
         private readonly PackageQueryContextBuilder _packageQueryContextBuilder;
-        
+        private readonly LatestCatalogCommitFetcher _latestCatalogCommitFetcher;
+
         public PackageReportHub(
             PackageConsistencyService packageConsistencyService,
-            PackageQueryContextBuilder packageQueryContextBuilder)
+            PackageQueryContextBuilder packageQueryContextBuilder,
+            LatestCatalogCommitFetcher latestCatalogCommitFetcher)
         {
             _packageConsistencyService = packageConsistencyService;
             _packageQueryContextBuilder = packageQueryContextBuilder;
+            _latestCatalogCommitFetcher = latestCatalogCommitFetcher;
+        }
+        
+        public async Task GetLatest()
+        {
+            try
+            {
+                await GetLatestInternalAsync();
+            }
+            catch
+            {
+                await InvokeErrorAsync("An internal server error occurred.");
+            }
+        }
+
+        private async Task GetLatestInternalAsync()
+        {
+            await InvokeProgressAsync(0, "Fetching the latest catalog commit...");
+
+            var commit = await _latestCatalogCommitFetcher.GetLatestCommitAsync(new ProgressReport(this));
+            
+            var catalogItem = commit.First();
+            await InvokeProgressAsync(1, $"Using package {catalogItem.Id} {catalogItem.Version}.");
+
+            await InvokeFoundLatestAsync(catalogItem.Id, catalogItem.Version.ToFullString());
         }
 
         public async Task Start(string id, string version)
@@ -101,6 +129,11 @@ namespace Knapcode.ExplorePackages.Website.Logic
         private async Task InvokeCompleteAsync(PackageConsistencyReport report)
         {
             await InvokeOnClientAsync("Complete", report);
+        }
+
+        private async Task InvokeFoundLatestAsync(string id, string version)
+        {
+            await InvokeOnClientAsync("FoundLatest", new { Id = id, Version = version });
         }
 
         private async Task InvokeOnClientAsync(string method, params object[] args)

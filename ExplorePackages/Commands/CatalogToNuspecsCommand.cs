@@ -2,29 +2,30 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
+using NuGet.CatalogReader;
 using NuGet.Common;
 
 namespace Knapcode.ExplorePackages.Commands
 {
     public class CatalogToNuspecsCommand : ICommand
     {
+        private readonly CatalogReader _catalogReader;
         private readonly CatalogToNuspecsProcessor _processor;
-        private readonly ExplorePackagesSettings _settings;
         private readonly ILogger _log;
 
         public CatalogToNuspecsCommand(
+            CatalogReader catalogReader,
             CatalogToNuspecsProcessor processor,
-            ExplorePackagesSettings settings,
             ILogger log)
         {
+            _catalogReader = catalogReader;
             _processor = processor;
-            _settings = settings;
             _log = log;
         }
 
         public async Task ExecuteAsync(IReadOnlyList<string> args, CancellationToken token)
         {
-            var catalogProcessor = new CatalogProcessorQueue(_processor, _settings, _log);
+            var catalogProcessor = new CatalogProcessorQueue(_catalogReader, _processor, _log);
 
             await catalogProcessor.ProcessAsync(token);
         }

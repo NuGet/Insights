@@ -63,6 +63,7 @@
     <Compile Include="Logic\IncrementalProgress.cs" />
     <Compile Include="Logic\IProgressReport.cs" />
     <Compile Include="Logic\ISearchServiceUrlCacheInvalidator.cs" />
+    <Compile Include="Logic\LatestCatalogCommitFetcher.cs" />
     <Compile Include="Logic\NullProgressReport.cs" />
     <Compile Include="Logic\Consistency\Services\PackageConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Reports\PackagesContainerConsistencyReport.cs" />
