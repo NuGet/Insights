@@ -20,20 +20,7 @@ namespace Knapcode.ExplorePackages.Commands
 
         public async Task ExecuteAsync(IReadOnlyList<string> args, CancellationToken token)
         {
-            var complete = false;
-            do
-            {
-                try
-                {
-                    await _processor.ProcessAsync(token);
-                    complete = true;
-                }
-                catch (Exception e)
-                {
-                    _log.LogError("An exception was thrown while processing package queries: " + Environment.NewLine + e);
-                }
-            }
-            while (!complete);
+            await _processor.ProcessAsync(token);
         }
 
         public bool IsDatabaseRequired(IReadOnlyList<string> args)

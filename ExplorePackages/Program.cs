@@ -94,7 +94,15 @@ namespace Knapcode.ExplorePackages
                     }
                     var heading = $"===== {commandName.ToLowerInvariant()} =====";
                     Console.WriteLine(heading);
-                    await command.ExecuteAsync(args, token);
+                    try
+                    {
+                        await command.ExecuteAsync(args, token);
+                    }
+                    catch (Exception e)
+                    {
+                        log.LogError("An exception occurred." + Environment.NewLine + e);
+                        break;
+                    }
                     Console.WriteLine(new string('=', heading.Length));
                     Console.WriteLine();
                 }

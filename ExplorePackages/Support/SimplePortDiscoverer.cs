@@ -7,8 +7,8 @@ namespace Knapcode.ExplorePackages.Support
 {
     public class SimplePortDiscoverer : IPortDiscoverer
     {
-        private const int ParallelConnections = 12;
-        private const int AllowedClosedPorts = 3;
+        private const int ParallelConnections = 6;
+        private const int AllowedClosedPorts = 2;
         private readonly IPortTester _portTester;
 
         public SimplePortDiscoverer(IPortTester portTester)

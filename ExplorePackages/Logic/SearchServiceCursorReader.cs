@@ -20,7 +20,9 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task<DateTimeOffset> GetCursorAsync()
         {
             // Get all V2 search URLs, including ports to specific instances.
-            var baseUrls = await _discoverer.GetUrlsAsync(ServiceIndexTypes.V2Search, specificInstances: true);
+            var specificBaseUrls = await _discoverer.GetUrlsAsync(ServiceIndexTypes.V2Search, specificInstances: true);
+            var loadBalancerBaseUrls = await _discoverer.GetUrlsAsync(ServiceIndexTypes.V2Search, specificInstances: false);
+            var baseUrls = loadBalancerBaseUrls.Concat(specificBaseUrls);
 
             // Get all commit timestamps.
             var commitTimestampTasks = baseUrls
