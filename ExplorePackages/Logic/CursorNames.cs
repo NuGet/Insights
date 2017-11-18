@@ -23,6 +23,8 @@
         public const string FindFloatingDependencyVersionsNuspecQuery = "FindFloatingDependencyVersionsNuspecQuery";
         public const string FindSemVer2PackageVersionsNuspecQuery = "FindSemVer2PackageVersionsNuspecQuery";
         public const string FindSemVer2DependencyVersionsNuspecQuery = "FindSemVer2DependencyVersionsNuspecQuery";
+        public const string FindNonAsciiIdsNuspecQuery = "FindNonAsciiIdsNuspecQuery";
+        public const string FindInvalidPackageIdsNuspecQuery = "FindInvalidPackageIdsNuspecQuery";
 
         public const string HasRegistrationDiscrepancyInOriginalHivePackageQuery = "HasRegistrationDiscrepancyInOriginalHivePackageQuery";
         public const string HasRegistrationDiscrepancyInGzippedHivePackageQuery = "HasRegistrationDiscrepancyInGzippedHivePackageQuery";
@@ -32,5 +34,6 @@
         public const string HasV2DiscrepancyPackageQuery = "HasV2DiscrepancyPackageQuery";
         public const string HasSearchDiscrepancyPackageQuery = "HasSearchDiscrepancyPackageQuery";
         public const string HasCrossCheckDiscrepancyPackageQuery = "HasCrossCheckDiscrepancyPackageQuery";
+        public const string FindMissingNuspecPackageQuery = "FindMissingNuspecPackageQuery";
     }
 }

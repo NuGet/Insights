@@ -12,6 +12,8 @@
         public const string FindSemVer2PackageVersionsNuspecQuery = CursorNames.FindSemVer2PackageVersionsNuspecQuery;
         public const string FindSemVer2DependencyVersionsNuspecQuery = CursorNames.FindSemVer2DependencyVersionsNuspecQuery;
         public const string FindFloatingDependencyVersionsNuspecQuery = CursorNames.FindFloatingDependencyVersionsNuspecQuery;
+        public const string FindNonAsciiIdsNuspecQuery = CursorNames.FindNonAsciiIdsNuspecQuery;
+        public const string FindInvalidPackageIdsNuspecQuery = CursorNames.FindInvalidPackageIdsNuspecQuery;
 
         public const string HasRegistrationDiscrepancyInOriginalHivePackageQuery = CursorNames.HasRegistrationDiscrepancyInOriginalHivePackageQuery;
         public const string HasRegistrationDiscrepancyInGzippedHivePackageQuery = CursorNames.HasRegistrationDiscrepancyInGzippedHivePackageQuery;
@@ -21,5 +23,6 @@
         public const string HasV2DiscrepancyPackageQuery = CursorNames.HasV2DiscrepancyPackageQuery;
         public const string HasSearchDiscrepancyPackageQuery = CursorNames.HasSearchDiscrepancyPackageQuery;
         public const string HasCrossCheckDiscrepancyPackageQuery = CursorNames.HasCrossCheckDiscrepancyPackageQuery;
+        public const string FindMissingNuspecPackageQuery = CursorNames.FindMissingNuspecPackageQuery;
     }
 }

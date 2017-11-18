@@ -107,6 +107,8 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<FindSemVer2PackageVersionsNuspecQuery>();
             serviceCollection.AddTransient<FindSemVer2DependencyVersionsNuspecQuery>();
             serviceCollection.AddTransient<FindFloatingDependencyVersionsNuspecQuery>();
+            serviceCollection.AddTransient<FindNonAsciiIdsNuspecQuery>();
+            serviceCollection.AddTransient<FindInvalidPackageIdsNuspecQuery>();
 
             if (settings.RunConsistencyChecks)
             {
@@ -119,6 +121,8 @@ namespace Knapcode.ExplorePackages
                 serviceCollection.AddTransient<IPackageQuery, HasSearchDiscrepancyPackageQuery>();
                 serviceCollection.AddTransient<IPackageQuery, HasCrossCheckDiscrepancyPackageQuery>();
             }
+
+            serviceCollection.AddTransient<IPackageQuery, HasMissingNuspecPackageQuery>();
 
             // Add all of the .nuspec queries as package queries.
             var nuspecQueryDescriptors = serviceCollection
