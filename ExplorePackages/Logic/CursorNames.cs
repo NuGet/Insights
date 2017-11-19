@@ -15,7 +15,7 @@
 
         public const string ReprocessPackageQueries = "ReprocessPackageQueries";
 
-        public const string FindMissingDependencyIdsNuspecQuery = "FindEmptyIdsNuspecQuery";
+        public const string FindMissingDependencyIdsNuspecQuery = "FindMissingDependencyIdsNuspecQuery";
         public const string FindRepositoriesNuspecQuery = "FindRepositoriesNuspecQuery";
         public const string FindPackageTypesNuspecQuery = "FindPackageTypesNuspecQuery";
         public const string FindInvalidDependencyVersionsNuspecQuery = "FindInvalidDependencyVersionsNuspecQuery";
