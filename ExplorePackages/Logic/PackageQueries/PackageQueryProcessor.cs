@@ -12,28 +12,33 @@ namespace Knapcode.ExplorePackages.Logic
     public class PackageQueryProcessor
     {
         private readonly PackageQueryContextBuilder _contextBuilder;
+        private readonly CursorService _cursorService;
+        private readonly PackageService _packageService;
         private readonly PackageQueryService _queryService;
         private readonly List<IPackageQuery> _queries;
         private readonly ILogger _log;
 
         public PackageQueryProcessor(
             PackageQueryContextBuilder contextBuilder,
+            CursorService cursorService,
+            PackageService packageService,
+            PackageQueryService queryService,
             IEnumerable<IPackageQuery> queries,
             ILogger log)
         {
             _contextBuilder = contextBuilder;
-            _queryService = new PackageQueryService(log);
+            _cursorService = cursorService;
+            _packageService = packageService;
+            _queryService = queryService;
             _queries = queries.ToList();
             _log = log;
         }
 
         public async Task ProcessAsync(CancellationToken token)
         {
-            var cursorService = new CursorService();
-
             var cursorStarts = new Dictionary<string, DateTimeOffset>();
-            var start = await GetMinimumQueryStartAsync(cursorService, cursorStarts);
-            var end = await cursorService.GetMinimumAsync(new[]
+            var start = await GetMinimumQueryStartAsync(cursorStarts);
+            var end = await _cursorService.GetMinimumAsync(new[]
 {
                 CursorNames.CatalogToDatabase,
                 CursorNames.CatalogToNuspecs,
@@ -46,11 +51,9 @@ namespace Knapcode.ExplorePackages.Logic
             var stopwatch = Stopwatch.StartNew();
 
             int commitCount;
-            var packageService = new PackageService(_log);
-
             do
             {
-                var commits = await packageService.GetPackageCommitsAsync(start, end);
+                var commits = await _packageService.GetPackageCommitsAsync(start, end);
                 commitCount = commits.Count;
 
                 var allQueryMatchesLock = new object();
@@ -69,7 +72,7 @@ namespace Knapcode.ExplorePackages.Logic
                 complete += commits.Sum(x => x.Packages.Count);
                 _log.LogInformation($"{complete} completed ({Math.Round(complete / stopwatch.Elapsed.TotalSeconds)} per second).");
 
-                await PersistResultsAndCursorsAsync(cursorService, cursorStarts, start, allQueryMatches);
+                await PersistResultsAndCursorsAsync(cursorStarts, start, allQueryMatches);
             }
             while (commitCount > 0);
         }
@@ -134,7 +137,6 @@ namespace Knapcode.ExplorePackages.Logic
         }
 
         private async Task<DateTimeOffset> GetMinimumQueryStartAsync(
-            CursorService cursorService,
             Dictionary<string, DateTimeOffset> cursorStarts)
         {
             var start = DateTimeOffset.MaxValue;
@@ -142,7 +144,7 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 if (!cursorStarts.ContainsKey(query.CursorName))
                 {
-                    var cursorStart = await cursorService.GetAsync(query.CursorName);
+                    var cursorStart = await _cursorService.GetAsync(query.CursorName);
                     cursorStarts[query.CursorName] = cursorStart;
 
                     if (cursorStart < start)
@@ -156,7 +158,6 @@ namespace Knapcode.ExplorePackages.Logic
         }
 
         private async Task PersistResultsAndCursorsAsync(
-            CursorService cursorService,
             Dictionary<string, DateTimeOffset> cursorStarts,
             DateTimeOffset start,
             Dictionary<string, List<PackageIdentity>> allQueryMatches)
@@ -172,7 +173,7 @@ namespace Knapcode.ExplorePackages.Logic
                 if (cursorStarts[query.CursorName] < start)
                 {
                     _log.LogInformation($"Cursor {query.CursorName} moving to {start:O}.");
-                    await cursorService.SetAsync(query.CursorName, start);
+                    await _cursorService.SetAsync(query.CursorName, start);
                     cursorStarts[query.CursorName] = start;
                 }
             }
