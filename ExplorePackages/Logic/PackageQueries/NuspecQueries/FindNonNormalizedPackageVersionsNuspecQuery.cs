@@ -15,7 +15,7 @@ namespace Knapcode.ExplorePackages.Logic
             if (NuGetVersion.TryParse(orignalVersion, out var parsedVersion))
             {
                 var normalizedVersion = parsedVersion.ToFullString();
-                return !StringComparer.OrdinalIgnoreCase.Equals(orignalVersion, orignalVersion);
+                return !StringComparer.OrdinalIgnoreCase.Equals(orignalVersion, normalizedVersion);
             }
 
             return false;
