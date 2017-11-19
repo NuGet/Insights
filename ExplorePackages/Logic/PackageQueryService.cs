@@ -50,6 +50,17 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
+        public Task<IReadOnlyList<PackageCommit>> GetMatchedPackageCommitsAsync(DateTimeOffset start, DateTimeOffset end)
+        {
+            return _enumerator.GetPackageCommitsAsync(
+                e => e
+                    .PackageQueryMatches
+                    .Select(x => x.Package)
+                    .Distinct(),
+                start,
+                end);
+        }
+
         private static async Task<PackageQuery> GetQueryAsync(string queryName, EntityContext entityContext)
         {
             return await entityContext
