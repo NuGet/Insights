@@ -28,6 +28,7 @@
         public const string FindNonAsciiIdsNuspecQuery = "FindNonAsciiIdsNuspecQuery";
         public const string FindInvalidPackageIdsNuspecQuery = "FindInvalidPackageIdsNuspecQuery";
         public const string FindInvalidPackageVersionsNuspecQuery = "FindInvalidPackageVersionsNuspecQuery";
+        public const string FindNonNormalizedPackageVersionsNuspecQuery = "FindNonNormalizedPackageVersionsNuspecQuery";
 
         public const string HasRegistrationDiscrepancyInOriginalHivePackageQuery = "HasRegistrationDiscrepancyInOriginalHivePackageQuery";
         public const string HasRegistrationDiscrepancyInGzippedHivePackageQuery = "HasRegistrationDiscrepancyInGzippedHivePackageQuery";

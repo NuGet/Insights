@@ -113,6 +113,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<FindNonAsciiIdsNuspecQuery>();
             serviceCollection.AddTransient<FindInvalidPackageIdsNuspecQuery>();
             serviceCollection.AddTransient<FindInvalidPackageVersionsNuspecQuery>();
+            serviceCollection.AddTransient<FindNonNormalizedPackageVersionsNuspecQuery>();
 
             if (settings.RunBoringQueries)
             {

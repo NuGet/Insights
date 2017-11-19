@@ -42,16 +42,24 @@ namespace Knapcode.ExplorePackages.Logic
             do
             {
                 var commits = await GetCommitsAsync(bounds, reprocess);
+                var packageCount = commits.Sum(x => x.Packages.Count);
                 commitCount = commits.Count;
 
                 if (commits.Any())
                 {
-                    bounds.Start = commits.Max(x => x.CommitTimestamp);
+                    var min = commits.Min(x => x.CommitTimestamp);
+                    var max = commits.Max(x => x.CommitTimestamp);
+                    bounds.Start = max;
+                    _log.LogInformation($"Fetched {commits.Count} commits ({packageCount} packages) between {min:O} and {max:O}.");
+                }
+                else
+                {
+                    _log.LogInformation("No more commits were found within the bounds.");
                 }
 
                 var results = await ProcessCommitsAsync(queries, bounds, commits);
 
-                complete += commits.Sum(x => x.Packages.Count);
+                complete += packageCount;
                 _log.LogInformation($"{complete} completed ({Math.Round(complete / stopwatch.Elapsed.TotalSeconds)} per second).");
 
                 await PersistResultsAndCursorsAsync(bounds, results);
@@ -149,7 +157,7 @@ namespace Knapcode.ExplorePackages.Logic
                     var context = _contextBuilder.GetPackageQueryFromDatabasePackageContext(package);
                     var state = new PackageConsistencyState();
 
-                    taskQueue.Enqueue(new Work(queries, context, state));
+                    taskQueue.Enqueue(new Work(applicableQueries, context, state));
                 }
             }
         }
@@ -266,7 +274,7 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 QueryNameToCursorName = queryNameToCursorName;
                 CursorNameToStart = cursorNameToStart;
-                Start = cursorNameToStart.Values.Max();
+                Start = cursorNameToStart.Values.Min();
                 End = end;
             }
 
