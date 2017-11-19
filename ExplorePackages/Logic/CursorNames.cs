@@ -27,6 +27,7 @@
         public const string FindSemVer2DependencyVersionsNuspecQuery = "FindSemVer2DependencyVersionsNuspecQuery";
         public const string FindNonAsciiIdsNuspecQuery = "FindNonAsciiIdsNuspecQuery";
         public const string FindInvalidPackageIdsNuspecQuery = "FindInvalidPackageIdsNuspecQuery";
+        public const string FindInvalidPackageVersionsNuspecQuery = "FindInvalidPackageVersionsNuspecQuery";
 
         public const string HasRegistrationDiscrepancyInOriginalHivePackageQuery = "HasRegistrationDiscrepancyInOriginalHivePackageQuery";
         public const string HasRegistrationDiscrepancyInGzippedHivePackageQuery = "HasRegistrationDiscrepancyInGzippedHivePackageQuery";

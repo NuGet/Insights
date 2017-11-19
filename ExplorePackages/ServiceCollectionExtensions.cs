@@ -112,6 +112,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<FindFloatingDependencyVersionsNuspecQuery>();
             serviceCollection.AddTransient<FindNonAsciiIdsNuspecQuery>();
             serviceCollection.AddTransient<FindInvalidPackageIdsNuspecQuery>();
+            serviceCollection.AddTransient<FindInvalidPackageVersionsNuspecQuery>();
 
             if (settings.RunBoringQueries)
             {
