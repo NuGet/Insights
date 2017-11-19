@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Xml;
 using System.Xml.Linq;
 using NuGet.Versioning;
 
@@ -10,30 +7,6 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public static class NuspecUtility
     {
-        public static XDocument LoadXml(Stream stream)
-        {
-            var settings = new XmlReaderSettings
-            {
-                IgnoreWhitespace = true,
-                IgnoreComments = true,
-                IgnoreProcessingInstructions = true,
-            };
-
-            using (var streamReader = new StreamReader(stream))
-            using (var xmlReader = XmlReader.Create(streamReader, settings))
-            {
-                var document = XDocument.Load(xmlReader, LoadOptions.None);
-
-                // Make the document immutable.
-                document.Changing += (s, ev) =>
-                {
-                    throw new NotSupportedException();
-                };
-
-                return document;
-            }
-        }
-
         public static XElement GetRepository(XDocument nuspec)
         {
             var metadataEl = GetMetadata(nuspec);

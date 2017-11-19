@@ -81,6 +81,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<PackageService>();
             serviceCollection.AddTransient<PackageQueryService>();
 
+            serviceCollection.AddTransient<V2Parser>();
             serviceCollection.AddSingleton<ServiceIndexCache>();
             serviceCollection.AddTransient<GalleryClient>();
             serviceCollection.AddTransient<V2Client>();

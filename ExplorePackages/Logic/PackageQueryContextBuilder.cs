@@ -117,7 +117,7 @@ namespace Knapcode.ExplorePackages.Logic
                     exists = true;
                     using (var stream = File.OpenRead(path))
                     {
-                        document = NuspecUtility.LoadXml(stream);
+                        document = XmlUtility.LoadXml(stream);
                     }
                 }
             }

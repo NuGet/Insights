@@ -66,7 +66,7 @@ namespace Knapcode.ExplorePackages.Commands
                     XDocument nuspec;
                     using (var stream = File.OpenRead(path))
                     {
-                        nuspec = NuspecUtility.LoadXml(stream);
+                        nuspec = XmlUtility.LoadXml(stream);
                     }
 
                     var repositoryEl = NuspecUtility.GetRepository(nuspec);
