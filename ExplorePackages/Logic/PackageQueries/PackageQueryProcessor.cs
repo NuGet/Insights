@@ -16,7 +16,6 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly CursorService _cursorService;
         private readonly PackageService _packageService;
         private readonly PackageQueryService _queryService;
-        private readonly List<IPackageQuery> _queries;
         private readonly ILogger _log;
 
         public PackageQueryProcessor(
@@ -24,23 +23,57 @@ namespace Knapcode.ExplorePackages.Logic
             CursorService cursorService,
             PackageService packageService,
             PackageQueryService queryService,
-            IEnumerable<IPackageQuery> queries,
             ILogger log)
         {
             _contextBuilder = contextBuilder;
             _cursorService = cursorService;
             _packageService = packageService;
             _queryService = queryService;
-            _queries = queries.ToList();
             _log = log;
         }
 
-        public async Task ProcessAsync(CancellationToken token)
+        public async Task ProcessAsync(IReadOnlyList<IPackageQuery> queries, CancellationToken token)
         {
-            var cursorStarts = new Dictionary<string, DateTimeOffset>();
-            var start = await GetMinimumQueryStartAsync(cursorStarts);
+            var bounds = await GetBoundsAsync(queries);
+            var complete = 0;
+            var stopwatch = Stopwatch.StartNew();
+
+            int commitCount;
+            do
+            {
+                var commits = await _packageService.GetPackageCommitsAsync(bounds.Start, bounds.End);
+                commitCount = commits.Count;
+
+                if (commits.Any())
+                {
+                    bounds.Start = commits.Max(x => x.CommitTimestamp);
+                }
+
+                var results = await ProcessCommitsAsync(queries, bounds.Starts, commits);
+
+                complete += commits.Sum(x => x.Packages.Count);
+                _log.LogInformation($"{complete} completed ({Math.Round(complete / stopwatch.Elapsed.TotalSeconds)} per second).");
+
+                await PersistResultsAndCursorsAsync(bounds, results);
+            }
+            while (commitCount > 0);
+        }
+
+        private async Task<Bounds> GetBoundsAsync(IReadOnlyList<IPackageQuery> queries)
+        {
+            var starts = new Dictionary<string, DateTimeOffset>();
+            
+            foreach (var query in queries)
+            {
+                if (!starts.ContainsKey(query.CursorName))
+                {
+                    var cursorStart = await _cursorService.GetAsync(query.CursorName);
+                    starts[query.CursorName] = cursorStart;
+                }
+            }
+
             var end = await _cursorService.GetMinimumAsync(new[]
-{
+            {
                 CursorNames.CatalogToDatabase,
                 CursorNames.CatalogToNuspecs,
                 CursorNames.NuGetOrg.FlatContainer,
@@ -48,27 +81,11 @@ namespace Knapcode.ExplorePackages.Logic
                 CursorNames.NuGetOrg.Search,
             });
 
-            var complete = 0;
-            var stopwatch = Stopwatch.StartNew();
-
-            int commitCount;
-            do
-            {
-                var commits = await _packageService.GetPackageCommitsAsync(start, end);
-                start = commits.Any() ? commits.Max(x => x.CommitTimestamp) : start;
-                commitCount = commits.Count;
-
-                var results = await ProcessCommitsAsync(cursorStarts, commits);
-
-                complete += commits.Sum(x => x.Packages.Count);
-                _log.LogInformation($"{complete} completed ({Math.Round(complete / stopwatch.Elapsed.TotalSeconds)} per second).");
-
-                await PersistResultsAndCursorsAsync(cursorStarts, start, results);
-            }
-            while (commitCount > 0);
+            return new Bounds(starts, end);
         }
 
-        private async Task<ConcurrentBag<Result>> ProcessCommitsAsync(
+    private async Task<ConcurrentBag<Result>> ProcessCommitsAsync(
+            IReadOnlyList<IPackageQuery> queries,
             IReadOnlyDictionary<string, DateTimeOffset> cursorStarts,
             IReadOnlyList<PackageCommit> commits)
         {
@@ -79,13 +96,14 @@ namespace Knapcode.ExplorePackages.Logic
                 workAsync: w => ConsumeWorkAsync(w, results));
 
             taskQueue.Start();
-            ProduceWork(cursorStarts, commits, taskQueue);
+            ProduceWork(queries, cursorStarts, commits, taskQueue);
             await taskQueue.CompleteAsync();
 
             return results;
         }
 
         private void ProduceWork(
+            IReadOnlyList<IPackageQuery> queries,
             IReadOnlyDictionary<string, DateTimeOffset> cursorStarts,
             IReadOnlyList<PackageCommit> commits,
             TaskQueue<Work> taskQueue)
@@ -94,7 +112,7 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 foreach (var package in commit.Packages)
                 {
-                    var queries = _queries
+                    var applicableQueries = queries
                         .Where(x => commit.CommitTimestamp > cursorStarts[x.CursorName])
                         .ToList();
 
@@ -139,32 +157,9 @@ namespace Knapcode.ExplorePackages.Logic
                 }
             }
         }
+        
 
-        private async Task<DateTimeOffset> GetMinimumQueryStartAsync(
-            Dictionary<string, DateTimeOffset> cursorStarts)
-        {
-            var start = DateTimeOffset.MaxValue;
-            foreach (var query in _queries)
-            {
-                if (!cursorStarts.ContainsKey(query.CursorName))
-                {
-                    var cursorStart = await _cursorService.GetAsync(query.CursorName);
-                    cursorStarts[query.CursorName] = cursorStart;
-
-                    if (cursorStart < start)
-                    {
-                        start = cursorStart;
-                    }
-                }
-            }
-
-            return start;
-        }
-
-        private async Task PersistResultsAndCursorsAsync(
-            Dictionary<string, DateTimeOffset> cursorStarts,
-            DateTimeOffset start,
-            ConcurrentBag<Result> results)
+        private async Task PersistResultsAndCursorsAsync(Bounds bounds, ConcurrentBag<Result> results)
         {
             var queryGroups = results.GroupBy(x => x.Query);
 
@@ -187,11 +182,11 @@ namespace Knapcode.ExplorePackages.Logic
                     await _queryService.RemoveMatchesAsync(query.Name, resultGroups[false].ToList());
                 }
 
-                if (cursorStarts[query.CursorName] < start)
+                if (bounds.Starts[query.CursorName] < bounds.Start)
                 {
-                    _log.LogInformation($"Cursor {query.CursorName} moving to {start:O}.");
-                    await _cursorService.SetAsync(query.CursorName, start);
-                    cursorStarts[query.CursorName] = start;
+                    _log.LogInformation($"Cursor {query.CursorName} moving to {bounds.Start:O}.");
+                    await _cursorService.SetAsync(query.CursorName, bounds.Start);
+                    bounds.Starts[query.CursorName] = bounds.Start;
                 }
             }
         }
@@ -222,6 +217,20 @@ namespace Knapcode.ExplorePackages.Logic
             public IPackageQuery Query { get; }
             public PackageIdentity PackageIdentity { get; }
             public bool IsMatch { get; }
+        }
+
+        private class Bounds
+        {
+            public Bounds(Dictionary<string, DateTimeOffset> starts, DateTimeOffset end)
+            {
+                Starts = starts;
+                Start = starts.Values.Max();
+                End = end;
+            }
+
+            public Dictionary<string, DateTimeOffset> Starts { get; }
+            public DateTimeOffset Start { get; set; }
+            public DateTimeOffset End { get; }
         }
     }
 }
