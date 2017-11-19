@@ -49,7 +49,7 @@ namespace Knapcode.ExplorePackages
                 var commands = new List<ICommand>();
                 switch (args[0].Trim().ToLowerInvariant())
                 {
-                    case "nuspecqueries":
+                    case "packagequeries":
                         commands.Add(serviceProvider.GetRequiredService<PackageQueriesCommand>());
                         break;
                     case "fetchcursors":

@@ -26,7 +26,16 @@ namespace Knapcode.ExplorePackages.Commands
 
         public async Task ExecuteAsync(IReadOnlyList<string> args, CancellationToken token)
         {
-            await _processor.ProcessAsync(_queries, token);
+            var argList = args.ToList();
+
+            var reprocess = HasReprocessArg(argList);
+
+            await _processor.ProcessAsync(_queries, reprocess, token);
+        }
+
+        private bool HasReprocessArg(List<string> argList)
+        {
+            return ArgsUtility.HasArg(argList, "-reprocess");
         }
 
         public bool IsDatabaseRequired(IReadOnlyList<string> args)

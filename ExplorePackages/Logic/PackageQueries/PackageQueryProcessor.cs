@@ -32,16 +32,16 @@ namespace Knapcode.ExplorePackages.Logic
             _log = log;
         }
 
-        public async Task ProcessAsync(IReadOnlyList<IPackageQuery> queries, CancellationToken token)
+        public async Task ProcessAsync(IReadOnlyList<IPackageQuery> queries, bool reprocess, CancellationToken token)
         {
-            var bounds = await GetBoundsAsync(queries);
+            var bounds = await GetBoundsAsync(queries, reprocess);
             var complete = 0;
             var stopwatch = Stopwatch.StartNew();
 
             int commitCount;
             do
             {
-                var commits = await _packageService.GetPackageCommitsAsync(bounds.Start, bounds.End);
+                var commits = await GetCommitsAsync(bounds, reprocess);
                 commitCount = commits.Count;
 
                 if (commits.Any())
@@ -49,7 +49,7 @@ namespace Knapcode.ExplorePackages.Logic
                     bounds.Start = commits.Max(x => x.CommitTimestamp);
                 }
 
-                var results = await ProcessCommitsAsync(queries, bounds.Starts, commits);
+                var results = await ProcessCommitsAsync(queries, bounds, commits);
 
                 complete += commits.Sum(x => x.Packages.Count);
                 _log.LogInformation($"{complete} completed ({Math.Round(complete / stopwatch.Elapsed.TotalSeconds)} per second).");
@@ -59,34 +59,64 @@ namespace Knapcode.ExplorePackages.Logic
             while (commitCount > 0);
         }
 
-        private async Task<Bounds> GetBoundsAsync(IReadOnlyList<IPackageQuery> queries)
+        private async Task<IReadOnlyList<PackageCommit>> GetCommitsAsync(Bounds bounds, bool reprocess)
         {
-            var starts = new Dictionary<string, DateTimeOffset>();
+            if (!reprocess)
+            {
+                return await _packageService.GetPackageCommitsAsync(bounds.Start, bounds.End);
+            }
+            else
+            {
+                return await _queryService.GetMatchedPackageCommitsAsync(bounds.Start, bounds.End);
+            }
+        }
+
+        private async Task<Bounds> GetBoundsAsync(IReadOnlyList<IPackageQuery> queries, bool reprocess)
+        {
+            Dictionary<string, string> queryNameToCursorName;
+            IReadOnlyList<string> dependentCursorNames;
+
+            if (!reprocess)
+            {
+                queryNameToCursorName = queries.ToDictionary(x => x.Name, x => x.CursorName);
+
+                dependentCursorNames = new[]
+                {
+                    CursorNames.CatalogToDatabase,
+                    CursorNames.CatalogToNuspecs,
+                    CursorNames.NuGetOrg.FlatContainer,
+                    CursorNames.NuGetOrg.Registration,
+                    CursorNames.NuGetOrg.Search,
+                };
+            }
+            else
+            {
+                queryNameToCursorName = queries.ToDictionary(x => x.Name, x => CursorNames.ReprocessPackageQueries);
+
+                dependentCursorNames = queries
+                    .Select(x => x.CursorName)
+                    .ToList();
+            }
             
+            var cursorNameToStart = new Dictionary<string, DateTimeOffset>();
             foreach (var query in queries)
             {
-                if (!starts.ContainsKey(query.CursorName))
+                var cursorName = queryNameToCursorName[query.Name];
+                if (!cursorNameToStart.ContainsKey(cursorName))
                 {
-                    var cursorStart = await _cursorService.GetAsync(query.CursorName);
-                    starts[query.CursorName] = cursorStart;
+                    var cursorStart = await _cursorService.GetAsync(cursorName);
+                    cursorNameToStart[cursorName] = cursorStart;
                 }
             }
 
-            var end = await _cursorService.GetMinimumAsync(new[]
-            {
-                CursorNames.CatalogToDatabase,
-                CursorNames.CatalogToNuspecs,
-                CursorNames.NuGetOrg.FlatContainer,
-                CursorNames.NuGetOrg.Registration,
-                CursorNames.NuGetOrg.Search,
-            });
+            var end = await _cursorService.GetMinimumAsync(dependentCursorNames);
 
-            return new Bounds(starts, end);
+            return new Bounds(queryNameToCursorName, cursorNameToStart, end);
         }
 
     private async Task<ConcurrentBag<Result>> ProcessCommitsAsync(
             IReadOnlyList<IPackageQuery> queries,
-            IReadOnlyDictionary<string, DateTimeOffset> cursorStarts,
+            Bounds bounds,
             IReadOnlyList<PackageCommit> commits)
         {
             var results = new ConcurrentBag<Result>();
@@ -96,7 +126,7 @@ namespace Knapcode.ExplorePackages.Logic
                 workAsync: w => ConsumeWorkAsync(w, results));
 
             taskQueue.Start();
-            ProduceWork(queries, cursorStarts, commits, taskQueue);
+            ProduceWork(queries, bounds, commits, taskQueue);
             await taskQueue.CompleteAsync();
 
             return results;
@@ -104,7 +134,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         private void ProduceWork(
             IReadOnlyList<IPackageQuery> queries,
-            IReadOnlyDictionary<string, DateTimeOffset> cursorStarts,
+            Bounds bounds,
             IReadOnlyList<PackageCommit> commits,
             TaskQueue<Work> taskQueue)
         {
@@ -113,7 +143,7 @@ namespace Knapcode.ExplorePackages.Logic
                 foreach (var package in commit.Packages)
                 {
                     var applicableQueries = queries
-                        .Where(x => commit.CommitTimestamp > cursorStarts[x.CursorName])
+                        .Where(x => commit.CommitTimestamp > bounds.CursorNameToStart[bounds.QueryNameToCursorName[x.Name]])
                         .ToList();
 
                     var context = _contextBuilder.GetPackageQueryFromDatabasePackageContext(package);
@@ -162,6 +192,10 @@ namespace Knapcode.ExplorePackages.Logic
         private async Task PersistResultsAndCursorsAsync(Bounds bounds, ConcurrentBag<Result> results)
         {
             var queryGroups = results.GroupBy(x => x.Query);
+            var cursorNameToQueryNames = bounds
+                .QueryNameToCursorName
+                .ToLookup(x => x.Value, x => x.Key)
+                .ToDictionary(x => x.Key, x => new HashSet<string>(x));
 
             foreach (var queryGroup in queryGroups)
             {
@@ -182,11 +216,15 @@ namespace Knapcode.ExplorePackages.Logic
                     await _queryService.RemoveMatchesAsync(query.Name, resultGroups[false].ToList());
                 }
 
-                if (bounds.Starts[query.CursorName] < bounds.Start)
+                var cursorName = bounds.QueryNameToCursorName[query.Name];
+                cursorNameToQueryNames[cursorName].Remove(query.Name);
+
+                if (!cursorNameToQueryNames[cursorName].Any()
+                    && bounds.CursorNameToStart[cursorName] < bounds.Start)
                 {
-                    _log.LogInformation($"Cursor {query.CursorName} moving to {bounds.Start:O}.");
-                    await _cursorService.SetAsync(query.CursorName, bounds.Start);
-                    bounds.Starts[query.CursorName] = bounds.Start;
+                    _log.LogInformation($"Cursor {cursorName} moving to {bounds.Start:O}.");
+                    await _cursorService.SetAsync(cursorName, bounds.Start);
+                    bounds.CursorNameToStart[cursorName] = bounds.Start;
                 }
             }
         }
@@ -221,14 +259,19 @@ namespace Knapcode.ExplorePackages.Logic
 
         private class Bounds
         {
-            public Bounds(Dictionary<string, DateTimeOffset> starts, DateTimeOffset end)
+            public Bounds(
+                IReadOnlyDictionary<string, string> queryNameToCursorName,
+                Dictionary<string, DateTimeOffset> cursorNameToStart,
+                DateTimeOffset end)
             {
-                Starts = starts;
-                Start = starts.Values.Max();
+                QueryNameToCursorName = queryNameToCursorName;
+                CursorNameToStart = cursorNameToStart;
+                Start = cursorNameToStart.Values.Max();
                 End = end;
             }
 
-            public Dictionary<string, DateTimeOffset> Starts { get; }
+            public IReadOnlyDictionary<string, string> QueryNameToCursorName { get; }
+            public Dictionary<string, DateTimeOffset> CursorNameToStart { get; }
             public DateTimeOffset Start { get; set; }
             public DateTimeOffset End { get; }
         }

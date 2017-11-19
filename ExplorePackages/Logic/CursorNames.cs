@@ -13,6 +13,8 @@
         public const string CatalogToDatabase = "CatalogToDatabase";
         public const string CatalogToNuspecs = "CatalogToNuspecs";
 
+        public const string ReprocessPackageQueries = "ReprocessPackageQueries";
+
         public const string FindMissingDependencyIdsNuspecQuery = "FindEmptyIdsNuspecQuery";
         public const string FindRepositoriesNuspecQuery = "FindRepositoriesNuspecQuery";
         public const string FindPackageTypesNuspecQuery = "FindPackageTypesNuspecQuery";

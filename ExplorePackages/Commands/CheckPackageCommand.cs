@@ -91,45 +91,29 @@ namespace Knapcode.ExplorePackages.Commands
 
         private bool HasGalleryArg(List<string> argList)
         {
-            return HasArg(argList, "-gallery");
+            return ArgsUtility.HasArg(argList, "-gallery");
         }
 
         private bool HasDatabaseArg(List<string> argList)
         {
-            return HasArg(argList, "-database");
+            return ArgsUtility.HasArg(argList, "-database");
         }
 
         private bool HasDeletedArg(List<string> argList)
         {
-            return HasArg(argList, "-deleted");
+            return ArgsUtility.HasArg(argList, "-deleted");
         }
 
         private bool HasSemVer2Arg(List<string> argList)
         {
-            return HasArg(argList, "-semver2");
+            return ArgsUtility.HasArg(argList, "-semver2");
         }
 
         public bool IsDatabaseRequired(IReadOnlyList<string> args)
         {
             return HasDatabaseArg(args.ToList());
         }
-
-        private bool HasArg(List<string> args, string arg)
-        {
-            var hasArg = false;
-            for (var i = 0; i < args.Count; i++)
-            {
-                if (StringComparer.OrdinalIgnoreCase.Equals(args[i], arg))
-                {
-                    hasArg = true;
-                    args.RemoveAt(i);
-                    i--;
-                }
-            }
-
-            return hasArg;
-        }
-
+        
         private class NuspecJsonConverter : JsonConverter
         {
             public override bool CanConvert(Type objectType)
