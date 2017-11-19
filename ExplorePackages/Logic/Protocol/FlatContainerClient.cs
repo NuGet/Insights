@@ -34,11 +34,17 @@ namespace Knapcode.ExplorePackages.Logic
             return packageUrl;
         }
 
-        public async Task<bool> HasPackageManifestAsync(string baseUrl, string id, string version)
+        public string GetPackageManifestUrl(string baseUrl, string id, string version)
         {
             var lowerId = id.ToLowerInvariant();
             var lowerVersion = NuGetVersion.Parse(version).ToNormalizedString().ToLowerInvariant();
             var packageUrl = $"{baseUrl.TrimEnd('/')}/{lowerId}/{lowerVersion}/{lowerId}.nuspec";
+            return packageUrl;
+        }
+
+        public async Task<bool> HasPackageManifestAsync(string baseUrl, string id, string version)
+        {
+            var packageUrl = GetPackageManifestUrl(baseUrl, id, version);
             return await _httpSource.UrlExistsAsync(packageUrl, _log);
         }
 

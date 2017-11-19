@@ -13,14 +13,30 @@ namespace Knapcode.ExplorePackages.Logic
         private const int BufferSize = 8192;
         
         private readonly PackagePathProvider _pathProvider;
+        private readonly ServiceIndexCache _serviceIndexCache;
+        private readonly FlatContainerClient _flatContainerClient;
         private readonly HttpSource _httpSource;
         private readonly ILogger _log;
 
-        public NuspecDownloader(PackagePathProvider pathProvider, HttpSource httpSource, ILogger log)
+        public NuspecDownloader(
+            PackagePathProvider pathProvider,
+            ServiceIndexCache serviceIndexCache,
+            FlatContainerClient flatContainerClient,
+            HttpSource httpSource,
+            ILogger log)
         {
             _pathProvider = pathProvider;
+            _serviceIndexCache = serviceIndexCache;
+            _flatContainerClient = flatContainerClient;
             _httpSource = httpSource;
             _log = log;
+        }
+
+        public async Task<bool> StoreNuspecAsync(string id, string version, CancellationToken token)
+        {
+            var baseUrl = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.FlatContainer);
+            var manifestUrl = _flatContainerClient.GetPackageManifestUrl(baseUrl, id, version);
+            return await StoreNuspecAsync(id, version, manifestUrl, token);
         }
 
         public async Task<bool> StoreNuspecAsync(string id, string version, string url, CancellationToken token)
