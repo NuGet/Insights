@@ -70,7 +70,6 @@ namespace Knapcode.ExplorePackages.Logic
                     PortsTask = _portDiscoverer.FindPortsAsync(
                         x.Host,
                         StartingPort,
-                        requireSsl: x.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase),
                         connectTimeout: ConnectTimeout),
                 })
                 .ToList();

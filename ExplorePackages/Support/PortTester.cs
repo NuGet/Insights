@@ -17,14 +17,14 @@ namespace Knapcode.ExplorePackages.Support
             _log = log;
         }
 
-        public async Task<bool> IsPortOpenAsync(string host, int port, bool requireSsl, TimeSpan connectTimeout)
+        public async Task<bool> IsPortOpenAsync(string host, int port, TimeSpan connectTimeout)
         {
-            var isPortOpen = await IsPortOpenInternalAsync(host, port, requireSsl, connectTimeout);
+            var isPortOpen = await IsPortOpenInternalAsync(host, port, connectTimeout);
             _log.LogInformation($"Port {port} on {host} is {(isPortOpen ? "open" : "closed")}.");
             return isPortOpen;
         }
 
-        private async Task<bool> IsPortOpenInternalAsync(string host, int port, bool requireSsl, TimeSpan connectTimeout)
+        private async Task<bool> IsPortOpenInternalAsync(string host, int port, TimeSpan connectTimeout)
         {
             using (var tcpClient = new TcpClient())
             {
@@ -37,29 +37,7 @@ namespace Knapcode.ExplorePackages.Support
                     return false;
                 }
 
-                if (requireSsl)
-                {
-                    try
-                    {
-                        using (var networkStream = tcpClient.GetStream())
-                        using (var sslStream = new SslStream(
-                            networkStream,
-                            leaveInnerStreamOpen: false,
-                            userCertificateValidationCallback: AcceptAllCertificates))
-                        {
-                            await sslStream.AuthenticateAsClientAsync(host);
-                            return true;
-                        }
-                    }
-                    catch (IOException)
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    return true;
-                }
+                return true;
             }
         }
 

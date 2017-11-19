@@ -5,6 +5,6 @@ namespace Knapcode.ExplorePackages.Support
 {
     public interface IPortTester
     {
-        Task<bool> IsPortOpenAsync(string host, int port, bool requireSsl, TimeSpan connectTimeout);
+        Task<bool> IsPortOpenAsync(string host, int port, TimeSpan connectTimeout);
     }
 }

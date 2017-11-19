@@ -19,7 +19,6 @@ namespace Knapcode.ExplorePackages.Support
         public async Task<IReadOnlyList<int>> FindPortsAsync(
             string host,
             int startingPort,
-            bool requireSsl,
             TimeSpan connectTimeout)
         {
             var openPorts = new List<int>();
@@ -36,7 +35,6 @@ namespace Knapcode.ExplorePackages.Support
                         Task = _portTester.IsPortOpenAsync(
                             host,
                             port,
-                            requireSsl,
                             connectTimeout)
                     })
                     .ToList();
