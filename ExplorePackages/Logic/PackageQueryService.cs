@@ -12,11 +12,13 @@ namespace Knapcode.ExplorePackages.Logic
     {
         private const int PageSize = 1000;
         private readonly PackageService _packageService;
+        private readonly PackageCommitEnumerator _enumerator;
         private readonly ILogger _log;
 
-        public PackageQueryService(ILogger log)
+        public PackageQueryService(PackageService packageService, PackageCommitEnumerator enumerator, ILogger log)
         {
-            _packageService = new PackageService(log);
+            _packageService = packageService;
+            _enumerator = enumerator;
             _log = log;
         }
 

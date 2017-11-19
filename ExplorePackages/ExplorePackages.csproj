@@ -80,6 +80,7 @@
     <Compile Include="Logic\Consistency\Services\SearchLoadBalancerConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Services\SearchSpecificInstancesConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Services\V2ConsistencyService.cs" />
+    <Compile Include="Logic\PackageCommitEnumerator.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindEmptyDependencyVersionsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindFloatingDependencyVersionsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindInvalidPackageIdsNuspecQuery.cs" />

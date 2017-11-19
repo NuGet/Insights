@@ -11,17 +11,20 @@ namespace Knapcode.ExplorePackages.Logic
     public class PackageQueryContextBuilder
     {
         private readonly PackagePathProvider _pathProvider;
+        private readonly PackageService _packageService;
         private readonly GalleryConsistencyService _galleryConsistencyService;
         private readonly ExplorePackagesSettings _settings;
         private readonly ILogger _log;
 
         public PackageQueryContextBuilder(
             PackagePathProvider pathProvider,
+            PackageService packageService,
             GalleryConsistencyService galleryConsistencyService,
             ExplorePackagesSettings settings,
             ILogger log)
         {
             _pathProvider = pathProvider;
+            _packageService = packageService;
             _galleryConsistencyService = galleryConsistencyService;
             _settings = settings;
             _log = log;
@@ -77,8 +80,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task<PackageQueryContext> GetPackageQueryContextFromDatabaseAsync(string id, string version)
         {
-            var packageService = new PackageService(_log);
-            var package = await packageService.GetPackageAsync(id, version);
+            var package = await _packageService.GetPackageAsync(id, version);
             if (package == null)
             {
                 return null;

@@ -12,13 +12,15 @@ namespace Knapcode.ExplorePackages.Commands
 {
     public class ShowRepositoriesCommand : ICommand
     {
+        private readonly PackageQueryService _queryService;
         private readonly PackagePathProvider _pathProvider;
-        private readonly ILogger _log;
 
-        public ShowRepositoriesCommand(PackagePathProvider pathProvider, ILogger log)
+        public ShowRepositoriesCommand(
+            PackageQueryService queryService,
+            PackagePathProvider pathProvider)
         {
+            _queryService = queryService;
             _pathProvider = pathProvider;
-            _log = log;
         }
 
         public async Task ExecuteAsync(IReadOnlyList<string> args, CancellationToken token)
@@ -47,14 +49,12 @@ namespace Knapcode.ExplorePackages.Commands
             Console.Write('\t');
             Console.Write("Last Commit Timestamp");
             Console.WriteLine();
-
-            var matchesService = new PackageQueryService(_log);
-
+            
             int count;
             long lastKey = 0;
             do
             {
-                var matches = await matchesService.GetMatchedPackagesAsync(
+                var matches = await _queryService.GetMatchedPackagesAsync(
                     PackageQueryNames.FindRepositoriesNuspecQuery,
                     lastKey);
                 count = matches.Packages.Count;

@@ -10,11 +10,11 @@ namespace Knapcode.ExplorePackages.Commands
 {
     public class ShowQueryResultsCommand : ICommand
     {
-        private readonly ILogger _log;
+        private readonly PackageQueryService _queryService;
 
-        public ShowQueryResultsCommand(ILogger log)
+        public ShowQueryResultsCommand(PackageQueryService queryService)
         {
-            _log = log;
+            _queryService = queryService;
         }
 
         public async Task ExecuteAsync(IReadOnlyList<string> args, CancellationToken token)
@@ -27,14 +27,12 @@ namespace Knapcode.ExplorePackages.Commands
 
 
             Console.WriteLine("ID\tVersion\tFirst Commit Timestamp\tLast Commit Timestamp");
-
-            var matchesService = new PackageQueryService(_log);
-
+            
             int count;
             long lastKey = 0;
             do
             {
-                var matches = await matchesService.GetMatchedPackagesAsync(args[1], lastKey);
+                var matches = await _queryService.GetMatchedPackagesAsync(args[1], lastKey);
                 count = matches.Packages.Count;
                 lastKey = matches.LastKey;
 

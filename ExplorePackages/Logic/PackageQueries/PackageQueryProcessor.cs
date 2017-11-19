@@ -55,7 +55,7 @@ namespace Knapcode.ExplorePackages.Logic
             do
             {
                 var commits = await _packageService.GetPackageCommitsAsync(start, end);
-                start = commits.Max(x => x.CommitTimestamp);
+                start = commits.Any() ? commits.Max(x => x.CommitTimestamp) : start;
                 commitCount = commits.Count;
 
                 var results = await ProcessCommitsAsync(cursorStarts, commits);

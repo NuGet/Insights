@@ -76,6 +76,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<IProgressReport, NullProgressReport>();
             serviceCollection.AddTransient<LatestCatalogCommitFetcher>();
 
+            serviceCollection.AddTransient<PackageCommitEnumerator>();
             serviceCollection.AddTransient<CursorService>();
             serviceCollection.AddTransient<PackageService>();
             serviceCollection.AddTransient<PackageQueryService>();
