@@ -10,6 +10,7 @@ namespace Knapcode.ExplorePackages
             DatabasePath = Path.Combine(currentDirectory, "Knapcode.ExplorePackages.sqlite3");
             PackagePath = Path.Combine(currentDirectory, "packages");
             RunConsistencyChecks = true;
+            RunBoringQueries = false;
             GalleryBaseUrl = "https://www.nuget.org";
             PackagesContainerBaseUrl = "https://api.nuget.org/packages";
             V2BaseUrl = "https://www.nuget.org/api/v2";
@@ -19,6 +20,7 @@ namespace Knapcode.ExplorePackages
         public string DatabasePath { get; set; }
         public string PackagePath { get; set; }
         public bool RunConsistencyChecks { get; set; }
+        public bool RunBoringQueries { get; set; }
         public string GalleryBaseUrl { get; set; }
         public string PackagesContainerBaseUrl { get; set; }
         public string V2BaseUrl { get; set; }

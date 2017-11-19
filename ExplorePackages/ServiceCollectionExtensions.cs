@@ -103,10 +103,8 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<CrossCheckConsistencyService>();
 
             serviceCollection.AddTransient<FindIdsEndingInDotNumberNuspecQuery>();
-            serviceCollection.AddTransient<FindEmptyDependencyVersionsNuspecQuery>();
             serviceCollection.AddTransient<FindRepositoriesNuspecQuery>();
             serviceCollection.AddTransient<FindInvalidDependencyVersionsNuspecQuery>();
-            serviceCollection.AddTransient<FindMissingDependencyVersionsNuspecQuery>();
             serviceCollection.AddTransient<FindMissingDependencyIdsNuspecQuery>();
             serviceCollection.AddTransient<FindPackageTypesNuspecQuery>();
             serviceCollection.AddTransient<FindSemVer2PackageVersionsNuspecQuery>();
@@ -114,6 +112,12 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<FindFloatingDependencyVersionsNuspecQuery>();
             serviceCollection.AddTransient<FindNonAsciiIdsNuspecQuery>();
             serviceCollection.AddTransient<FindInvalidPackageIdsNuspecQuery>();
+
+            if (settings.RunBoringQueries)
+            {
+                serviceCollection.AddTransient<FindMissingDependencyVersionsNuspecQuery>();
+                serviceCollection.AddTransient<FindEmptyDependencyVersionsNuspecQuery>();
+            }
 
             if (settings.RunConsistencyChecks)
             {
