@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -54,32 +55,38 @@ namespace Knapcode.ExplorePackages.Logic
             do
             {
                 var commits = await _packageService.GetPackageCommitsAsync(start, end);
+                start = commits.Max(x => x.CommitTimestamp);
                 commitCount = commits.Count;
 
-                var allQueryMatchesLock = new object();
-                var allQueryMatches = _queries.ToDictionary(
-                    x => x.Name,
-                    x => new List<PackageIdentity>());
-
-                var taskQueue = new TaskQueue<Work>(
-                    workerCount: 32,
-                    workAsync: w => ConsumeWorkAsync(allQueryMatchesLock, allQueryMatches, w));
-
-                taskQueue.Start();
-                start = ProduceWork(cursorStarts, start, commits, taskQueue);
-                await taskQueue.CompleteAsync();
+                var results = await ProcessCommitsAsync(cursorStarts, commits);
 
                 complete += commits.Sum(x => x.Packages.Count);
                 _log.LogInformation($"{complete} completed ({Math.Round(complete / stopwatch.Elapsed.TotalSeconds)} per second).");
 
-                await PersistResultsAndCursorsAsync(cursorStarts, start, allQueryMatches);
+                await PersistResultsAndCursorsAsync(cursorStarts, start, results);
             }
             while (commitCount > 0);
         }
 
-        private DateTimeOffset ProduceWork(
-            Dictionary<string, DateTimeOffset> cursorStarts,
-            DateTimeOffset start,
+        private async Task<ConcurrentBag<Result>> ProcessCommitsAsync(
+            IReadOnlyDictionary<string, DateTimeOffset> cursorStarts,
+            IReadOnlyList<PackageCommit> commits)
+        {
+            var results = new ConcurrentBag<Result>();
+
+            var taskQueue = new TaskQueue<Work>(
+                workerCount: 32,
+                workAsync: w => ConsumeWorkAsync(w, results));
+
+            taskQueue.Start();
+            ProduceWork(cursorStarts, commits, taskQueue);
+            await taskQueue.CompleteAsync();
+
+            return results;
+        }
+
+        private void ProduceWork(
+            IReadOnlyDictionary<string, DateTimeOffset> cursorStarts,
             IReadOnlyList<PackageCommit> commits,
             TaskQueue<Work> taskQueue)
         {
@@ -95,15 +102,11 @@ namespace Knapcode.ExplorePackages.Logic
                     var state = new PackageConsistencyState();
 
                     taskQueue.Enqueue(new Work(queries, context, state));
-
-                    start = commit.CommitTimestamp;
                 }
             }
-
-            return start;
         }
 
-        private async Task ConsumeWorkAsync(object allQueryMatchesLock, Dictionary<string, List<PackageIdentity>> allQueryMatches, Work work)
+        private async Task ConsumeWorkAsync(Work work, ConcurrentBag<Result> results)
         {
             foreach (var query in work.Queries)
             {
@@ -125,13 +128,14 @@ namespace Knapcode.ExplorePackages.Logic
                     throw;
                 }
 
+                results.Add(new Result(
+                    query,
+                    new PackageIdentity(work.Context.Package.Id, work.Context.Package.Version),
+                    isMatch));
+
                 if (isMatch)
                 {
                     _log.LogInformation($"Query match {name}: {id} {version}");
-                    lock (allQueryMatchesLock)
-                    {
-                        allQueryMatches[name].Add(new PackageIdentity(id, version));
-                    }
                 }
             }
         }
@@ -160,14 +164,27 @@ namespace Knapcode.ExplorePackages.Logic
         private async Task PersistResultsAndCursorsAsync(
             Dictionary<string, DateTimeOffset> cursorStarts,
             DateTimeOffset start,
-            Dictionary<string, List<PackageIdentity>> allQueryMatches)
+            ConcurrentBag<Result> results)
         {
-            foreach (var query in _queries)
+            var queryGroups = results.GroupBy(x => x.Query);
+
+            foreach (var queryGroup in queryGroups)
             {
-                if (allQueryMatches[query.Name].Any())
+                var query = queryGroup.Key;
+
+                var resultGroups = queryGroup.ToLookup(
+                    x => x.IsMatch,
+                    x => x.PackageIdentity);
+
+                if (resultGroups[true].Any())
                 {
                     await _queryService.AddQueryAsync(query.Name, query.CursorName);
-                    await _queryService.AddMatchesAsync(query.Name, allQueryMatches[query.Name]);
+                    await _queryService.AddMatchesAsync(query.Name, resultGroups[true].ToList());
+                }
+
+                if (resultGroups[false].Any())
+                {
+                    await _queryService.RemoveMatchesAsync(query.Name, resultGroups[false].ToList());
                 }
 
                 if (cursorStarts[query.CursorName] < start)
@@ -178,7 +195,7 @@ namespace Knapcode.ExplorePackages.Logic
                 }
             }
         }
-        
+
         private class Work
         {
             public Work(IReadOnlyList<IPackageQuery> queries, PackageQueryContext context, PackageConsistencyState state)
@@ -191,6 +208,20 @@ namespace Knapcode.ExplorePackages.Logic
             public IReadOnlyList<IPackageQuery> Queries { get; }
             public PackageQueryContext Context { get; }
             public PackageConsistencyState State { get; }
+        }
+
+        private class Result
+        {
+            public Result(IPackageQuery query, PackageIdentity packageIdentity, bool isMatch)
+            {
+                Query = query;
+                PackageIdentity = packageIdentity;
+                IsMatch = isMatch;
+            }
+
+            public IPackageQuery Query { get; }
+            public PackageIdentity PackageIdentity { get; }
+            public bool IsMatch { get; }
         }
     }
 }
