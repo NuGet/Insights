@@ -44,14 +44,25 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\ArgsUtility.cs" />
+    <Compile Include="Commands\V2ToDatabaseCommand.cs" />
     <Compile Include="Commands\CheckPackageCommand.cs" />
     <Compile Include="Commands\PackageQueriesCommand.cs" />
     <Compile Include="Commands\CatalogToNuspecsCommand.cs" />
     <Compile Include="Commands\FetchCursorsCommand.cs" />
     <Compile Include="Commands\ShowQueryResultsCommand.cs" />
     <Compile Include="Commands\ShowRepositoriesCommand.cs" />
+    <Compile Include="Entities\Migrations\20171120023631_Initial.cs" />
+    <Compile Include="Entities\Migrations\20171120023631_Initial.designer.cs">
+      <DependentUpon>20171120023631_Initial.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Entities\Migrations\20171120024303_AddV2FeedPackageEntity.cs" />
+    <Compile Include="Entities\Migrations\20171120024303_AddV2FeedPackageEntity.designer.cs">
+      <DependentUpon>20171120024303_AddV2FeedPackageEntity.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Entities\Migrations\EntityContextModelSnapshot.cs" />
     <Compile Include="Entities\PackageQuery.cs" />
     <Compile Include="Entities\PackageQueryMatch.cs" />
+    <Compile Include="Entities\V2PackageEntity.cs" />
     <Compile Include="ExplorePackagesSettings.cs" />
     <Compile Include="Logic\Consistency\Reports\FlatContainerConsistencyReport.cs" />
     <Compile Include="Logic\Consistency\Reports\CrossCheckConsistencyReport.cs" />
@@ -125,13 +136,15 @@
     <Compile Include="Logic\Protocol\SearchDiagnostics.cs" />
     <Compile Include="Logic\Protocol\SearchDiagnosticsCommitUserData.cs" />
     <Compile Include="Logic\Protocol\ServiceIndexTypes.cs" />
-    <Compile Include="Logic\Protocol\V2FeedPackage.cs" />
+    <Compile Include="Logic\Protocol\V2Package.cs" />
     <Compile Include="Logic\Protocol\V2Parser.cs" />
     <Compile Include="Logic\Protocol\V2OrderByTimestamp.cs" />
     <Compile Include="Logic\Protocol\V2SearchResult.cs" />
     <Compile Include="Logic\SearchServiceUrlCache.cs" />
     <Compile Include="Logic\SearchServiceUrlDiscoverer.cs" />
     <Compile Include="Logic\SearchServiceCursorReader.cs" />
+    <Compile Include="Logic\V2PackageEntityService.cs" />
+    <Compile Include="Logic\V2ToDatabaseProcessor.cs" />
     <Compile Include="Logic\XmlUtility.cs" />
     <Compile Include="ServiceCollectionExtensions.cs" />
     <Compile Include="Support\BlobMetadata.cs" />

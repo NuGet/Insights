@@ -129,10 +129,7 @@ namespace Knapcode.ExplorePackages.Logic
                 }
 
                 // Add new records.
-                foreach (var pair in identityToLatest)
-                {
-                    entityContext.Packages.Add(pair.Value);
-                }
+                await entityContext.Packages.AddRangeAsync(identityToLatest.Values);
 
                 var commitStopwatch = Stopwatch.StartNew();
                 var changes = await entityContext.SaveChangesAsync();

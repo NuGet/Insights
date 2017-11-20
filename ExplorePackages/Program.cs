@@ -9,6 +9,7 @@ using Knapcode.ExplorePackages.Commands;
 using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Logic;
 using Knapcode.ExplorePackages.Support;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using NuGet.Common;
@@ -71,7 +72,11 @@ namespace Knapcode.ExplorePackages
                     case "checkpackage":
                         commands.Add(serviceProvider.GetRequiredService<CheckPackageCommand>());
                         break;
+                    case "v2todatabase":
+                        commands.Add(serviceProvider.GetRequiredService<V2ToDatabaseCommand>());
+                        break;
                     case "update":
+                        commands.Add(serviceProvider.GetRequiredService<V2ToDatabaseCommand>());
                         commands.Add(serviceProvider.GetRequiredService<FetchCursorsCommand>());
                         commands.Add(serviceProvider.GetRequiredService<CatalogToDatabaseCommand>());
                         commands.Add(serviceProvider.GetRequiredService<CatalogToNuspecsCommand>());
@@ -85,6 +90,7 @@ namespace Knapcode.ExplorePackages
                 // Execute.
                 var initializeDatabase = commands.Any(x => x.IsDatabaseRequired(args));
                 await InitializeGlobalState(settings, initializeDatabase, log);
+                
                 foreach (var command in commands)
                 {
                     var commandName = command.GetType().Name;
@@ -120,16 +126,8 @@ namespace Knapcode.ExplorePackages
             {
                 using (var entityContext = new EntityContext())
                 {
-                    if (!File.Exists(settings.DatabasePath))
-                    {
-                        log.LogInformation($"The database does not yet exist and will be created.");
-                        await entityContext.Database.EnsureCreatedAsync();
-                        log.LogInformation($"The database now exists.");
-                    }
-                    else
-                    {
-                        log.LogInformation($"The database already exists.");
-                    }
+                    await entityContext.Database.MigrateAsync();
+                    log.LogInformation("The database schema is up to date.");
                 }
             }
             else
@@ -177,6 +175,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<ShowQueryResultsCommand>();
             serviceCollection.AddTransient<ShowRepositoriesCommand>();
             serviceCollection.AddTransient<CheckPackageCommand>();
+            serviceCollection.AddTransient<V2ToDatabaseCommand>();
 
             return serviceCollection;
         }

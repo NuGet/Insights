@@ -34,8 +34,9 @@ namespace Knapcode.ExplorePackages.Logic
                     throw new NotSupportedException($"The {nameof(orderBy)} value is not supported.");
             }
             
-            var filter = $"{filterField} gt DateTime'{start.UtcDateTime:O}'";
-            var url = $"{baseUrl.TrimEnd('/')}/Packages?$select=Id,Version,Created&semVerLevel=2.0.0&$top=500&$filter={Uri.EscapeDataString(filter)}";
+            var filterValue = $"{filterField} gt DateTime'{start.UtcDateTime:O}'";
+            var orderByValue = $"{filterField} asc";
+            var url = $"{baseUrl.TrimEnd('/')}/Packages?$select=Id,Version,Created&semVerLevel=2.0.0&$top=100&$orderby={Uri.EscapeDataString(orderByValue)}&$filter={Uri.EscapeDataString(filterValue)}";
 
             return await _httpSource.ProcessStreamAsync(
                 new HttpSourceRequest(url, _log),

@@ -20,6 +20,7 @@ namespace Knapcode.ExplorePackages.Entities
         public DbSet<Cursor> Cursors { get; set; }
         public DbSet<PackageQuery> PackageQueries { get; set; }
         public DbSet<PackageQueryMatch> PackageQueryMatches { get; set; }
+        public DbSet<V2PackageEntity> V2PackageEntities { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -111,6 +112,37 @@ namespace Knapcode.ExplorePackages.Entities
                 .Entity<PackageQueryMatch>()
                 .HasIndex(x => new { x.PackageQueryKey, x.PackageKey })
                 .IsUnique();
+
+            modelBuilder
+                .Entity<V2PackageEntity>()
+                .HasKey(x => x.Key);
+
+            modelBuilder
+                .Entity<V2PackageEntity>()
+                .Property(x => x.Id)
+                .HasColumnType("TEXT COLLATE NOCASE")
+                .IsRequired();
+
+            modelBuilder
+                .Entity<V2PackageEntity>()
+                .Property(x => x.Version)
+                .HasColumnType("TEXT COLLATE NOCASE")
+                .IsRequired();
+
+            modelBuilder
+                .Entity<V2PackageEntity>()
+                .Property(x => x.Identity)
+                .HasColumnType("TEXT COLLATE NOCASE")
+                .IsRequired();
+
+            modelBuilder
+                .Entity<V2PackageEntity>()
+                .HasIndex(x => new { x.Id, x.Version })
+                .IsUnique();
+
+            modelBuilder
+                .Entity<V2PackageEntity>()
+                .HasIndex(x => new { x.Created });
         }
     }
 }
