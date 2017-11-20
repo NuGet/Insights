@@ -6,6 +6,7 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class V2ToDatabaseProcessor
     {
+        private const int PageSize = 100;
         private readonly CursorService _cursorService;
         private readonly V2Client _v2Client;
         private readonly V2PackageEntityService _service;
@@ -25,36 +26,51 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task UpdateAsync()
         {
-            var start = await _cursorService.GetAsync(CursorNames.V2ToDatabase);
+            var cursor = await _cursorService.GetAsync(CursorNames.V2ToDatabase);
+            var start = cursor;
+            if (cursor > DateTimeOffset.MinValue.AddHours(1))
+            {
+                start = start.AddHours(-1);
+            }
 
-            int addedCount;
             int packageCount;
-            var caughtUp = false;
             do
             {
-                var startMinusDelta = start;
-                if (startMinusDelta > DateTimeOffset.UtcNow.AddHours(-1))
-                {
-                    startMinusDelta = start.AddHours(-1);
-                    caughtUp = true;
-                }
-
                 var packages = await _v2Client.GetPackagesAsync(
                    _settings.V2BaseUrl,
                    V2OrderByTimestamp.Created,
-                   startMinusDelta);
-                packageCount = packages.Count;
+                   start,
+                   PageSize);
 
-                if (packages.Any())
+                // If we have a full page, take only packages with a created timestamp less than the max.
+                if (packages.Count == PageSize)
                 {
-                    start = packages.Max(x => x.Created);
+                    var max = packages.Max(x => x.Created);
+                    var packagesBeforeMax = packages
+                        .Where(x => x.Created < max)
+                        .ToList();
+
+                    if (packages.Any()
+                        && !packagesBeforeMax.Any())
+                    {
+                        throw new InvalidOperationException("All of the packages in the page have the same created timestamp.");
+                    }
+
+                    packages = packagesBeforeMax;
                 }
+                
+                await _service.AddOrUpdatePackagesAsync(packages);
 
-                addedCount = await _service.AddOrUpdatePackagesAsync(packages);
+                packageCount = packages.Count;
+                start = packages.Max(x => x.Created);
 
-                await _cursorService.SetAsync(CursorNames.V2ToDatabase, start);
+                if (start > cursor)
+                {
+                    cursor = start;
+                    await _cursorService.SetAsync(CursorNames.V2ToDatabase, cursor);
+                }
             }
-            while (addedCount > 0 || packageCount > 0 || !caughtUp);
+            while (packageCount > 0);
         }
     }
 }

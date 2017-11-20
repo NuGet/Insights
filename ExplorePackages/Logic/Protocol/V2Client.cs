@@ -22,7 +22,7 @@ namespace Knapcode.ExplorePackages.Logic
             _log = log;
         }
 
-        public async Task<IReadOnlyList<V2Package>> GetPackagesAsync(string baseUrl, V2OrderByTimestamp orderBy, DateTimeOffset start)
+        public async Task<IReadOnlyList<V2Package>> GetPackagesAsync(string baseUrl, V2OrderByTimestamp orderBy, DateTimeOffset start, int top)
         {
             string filterField;
             switch (orderBy)
@@ -36,7 +36,7 @@ namespace Knapcode.ExplorePackages.Logic
             
             var filterValue = $"{filterField} gt DateTime'{start.UtcDateTime:O}'";
             var orderByValue = $"{filterField} asc";
-            var url = $"{baseUrl.TrimEnd('/')}/Packages?$select=Id,Version,Created&semVerLevel=2.0.0&$top=100&$orderby={Uri.EscapeDataString(orderByValue)}&$filter={Uri.EscapeDataString(filterValue)}";
+            var url = $"{baseUrl.TrimEnd('/')}/Packages?$select=Id,Version,Created&semVerLevel=2.0.0&$top={top}&$orderby={Uri.EscapeDataString(orderByValue)}&$filter={Uri.EscapeDataString(filterValue)}";
 
             return await _httpSource.ProcessStreamAsync(
                 new HttpSourceRequest(url, _log),
