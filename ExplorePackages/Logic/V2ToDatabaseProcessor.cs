@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Support;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -26,9 +28,21 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task UpdateAsync()
         {
-            var cursor = await _cursorService.GetAsync(CursorNames.V2ToDatabase);
-            var start = cursor;
-            if (cursor > DateTimeOffset.MinValue.AddHours(1))
+            var taskQueue = new TaskQueue<IReadOnlyList<V2Package>>(
+                workerCount: 1,
+                workAsync: ConsumeAsync);
+
+            taskQueue.Start();
+
+            await ProduceAsync(taskQueue);
+
+            await taskQueue.CompleteAsync();
+        }
+
+        private async Task ProduceAsync(TaskQueue<IReadOnlyList<V2Package>> taskQueue)
+        {
+            var start = await _cursorService.GetAsync(CursorNames.V2ToDatabase);
+            if (start > DateTimeOffset.MinValue.AddHours(1))
             {
                 start = start.AddHours(-1);
             }
@@ -58,19 +72,30 @@ namespace Knapcode.ExplorePackages.Logic
 
                     packages = packagesBeforeMax;
                 }
-                
-                await _service.AddOrUpdatePackagesAsync(packages);
 
-                packageCount = packages.Count;
-                start = packages.Max(x => x.Created);
-
-                if (start > cursor)
+                while (taskQueue.Count > 50)
                 {
-                    cursor = start;
-                    await _cursorService.SetAsync(CursorNames.V2ToDatabase, cursor);
+                    await Task.Delay(TimeSpan.FromSeconds(1));
                 }
+                
+                taskQueue.Enqueue(packages);
+                start = packages.Max(x => x.Created);
+                packageCount = packages.Count;
             }
             while (packageCount > 0);
+        }
+
+        private async Task ConsumeAsync(IReadOnlyList<V2Package> packages)
+        {
+            var oldCUrsor = await _cursorService.GetAsync(CursorNames.V2ToDatabase);
+
+            await _service.AddOrUpdatePackagesAsync(packages);
+
+            var newCursor = packages.Max(x => x.Created);
+            if (newCursor > oldCUrsor)
+            {
+                await _cursorService.SetAsync(CursorNames.V2ToDatabase, newCursor);
+            }
         }
     }
 }
