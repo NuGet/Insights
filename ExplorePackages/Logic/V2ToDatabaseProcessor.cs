@@ -48,10 +48,11 @@ namespace Knapcode.ExplorePackages.Logic
                 if (packages.Any())
                 {
                     start = packages.Max(x => x.Created);
-                    await _cursorService.SetAsync(CursorNames.V2ToDatabase, start);
                 }
 
                 addedCount = await _service.AddOrUpdatePackagesAsync(packages);
+
+                await _cursorService.SetAsync(CursorNames.V2ToDatabase, start);
             }
             while (addedCount > 0 || packageCount > 0 || !caughtUp);
         }
