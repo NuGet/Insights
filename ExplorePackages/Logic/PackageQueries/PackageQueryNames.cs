@@ -16,6 +16,7 @@
         public const string FindInvalidPackageIdsNuspecQuery = CursorNames.FindInvalidPackageIdsNuspecQuery;
         public const string FindInvalidPackageVersionsNuspecQuery = CursorNames.FindInvalidPackageVersionsNuspecQuery;
         public const string FindNonNormalizedPackageVersionsNuspecQuery = CursorNames.FindNonNormalizedPackageVersionsNuspecQuery;
+        public const string FindPackageVersionsContainingWhitespaceNuspecQuery = CursorNames.FindPackageVersionsContainingWhitespaceNuspecQuery;
 
         public const string HasRegistrationDiscrepancyInOriginalHivePackageQuery = CursorNames.HasRegistrationDiscrepancyInOriginalHivePackageQuery;
         public const string HasRegistrationDiscrepancyInGzippedHivePackageQuery = CursorNames.HasRegistrationDiscrepancyInGzippedHivePackageQuery;

@@ -8,6 +8,7 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class V2ToDatabaseProcessor
     {
+        private static readonly TimeSpan FuzzFactor = TimeSpan.FromHours(1);
         private const int PageSize = 100;
         private readonly CursorService _cursorService;
         private readonly V2Client _v2Client;
@@ -42,12 +43,12 @@ namespace Knapcode.ExplorePackages.Logic
         private async Task ProduceAsync(TaskQueue<IReadOnlyList<V2Package>> taskQueue)
         {
             var start = await _cursorService.GetAsync(CursorNames.V2ToDatabase);
-            if (start > DateTimeOffset.MinValue.AddHours(1))
+            if (start > DateTimeOffset.MinValue.Add(FuzzFactor))
             {
-                start = start.AddHours(-1);
+                start = start.Subtract(FuzzFactor);
             }
 
-            int packageCount;
+            var complete = false;
             do
             {
                 var packages = await _v2Client.GetPackagesAsync(
@@ -72,17 +73,23 @@ namespace Knapcode.ExplorePackages.Logic
 
                     packages = packagesBeforeMax;
                 }
+                else
+                {
+                    complete = true;
+                }
 
                 while (taskQueue.Count > 50)
                 {
                     await Task.Delay(TimeSpan.FromSeconds(1));
                 }
                 
-                taskQueue.Enqueue(packages);
-                start = packages.Max(x => x.Created);
-                packageCount = packages.Count;
+                if (packages.Count > 0)
+                {
+                    taskQueue.Enqueue(packages);
+                    start = packages.Max(x => x.Created);
+                }
             }
-            while (packageCount > 0);
+            while (!complete);
         }
 
         private async Task ConsumeAsync(IReadOnlyList<V2Package> packages)

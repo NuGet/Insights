@@ -84,40 +84,49 @@ namespace Knapcode.ExplorePackages.Logic
                     lockPath,
                     async innerToken =>
                     {
-                        if (File.Exists(uniquePath))
+                        if (File.Exists(uniquePath) && File.Exists(latestPath))
                         {
                             return true;
                         }
 
-                        Directory.CreateDirectory(Path.GetDirectoryName(uniquePath));
+                        tempStream.Position = 0;
+                        await SafelyWriteFileAsync(uniquePath, tempStream);
 
                         tempStream.Position = 0;
-                        using (var fileStream = new FileStream(
-                            uniquePath,
-                            FileMode.Create,
-                            FileAccess.Write,
-                            FileShare.None,
-                            BufferSize,
-                            FileOptions.Asynchronous))
-                        {
-                            await tempStream.CopyToAsync(fileStream);
-                        }
-
-                        tempStream.Position = 0;
-                        using (var fileStream = new FileStream(
-                            latestPath,
-                            FileMode.Create,
-                            FileAccess.Write,
-                            FileShare.None,
-                            BufferSize,
-                            FileOptions.Asynchronous))
-                        {
-                            await tempStream.CopyToAsync(fileStream);
-                        }
+                        await SafelyWriteFileAsync(latestPath, tempStream);
 
                         return true;
                     },
                     token);
+            }
+        }
+
+        private static async Task SafelyWriteFileAsync(string path, Stream sourceStream)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+            var newPath = $"{path}.new";
+            var oldPath = $"{path}.old";
+
+            using (var destStream = new FileStream(
+                newPath,
+                FileMode.Create,
+                FileAccess.Write,
+                FileShare.None,
+                BufferSize,
+                FileOptions.Asynchronous))
+            {
+                await sourceStream.CopyToAsync(destStream);
+            }
+            
+            try
+            {
+                File.Replace(newPath, path, oldPath);
+                File.Delete(oldPath);
+            }
+            catch (FileNotFoundException)
+            {
+                File.Move(newPath, path);
             }
         }
 

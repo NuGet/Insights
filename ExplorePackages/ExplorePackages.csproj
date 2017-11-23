@@ -101,6 +101,7 @@
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindMissingDependencyVersionsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindIdsEndingInDotNumberNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindNonAsciiIdsNuspecQuery.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\FindPackageVersionsContainingWhitespaceNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueries\HasMissingNuspecPackageQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindPackageTypesNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindInvalidDependencyVersionsNuspecQuery.cs" />

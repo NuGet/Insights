@@ -116,10 +116,11 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<FindNonAsciiIdsNuspecQuery>();
             serviceCollection.AddTransient<FindInvalidPackageIdsNuspecQuery>();
             serviceCollection.AddTransient<FindInvalidPackageVersionsNuspecQuery>();
-            serviceCollection.AddTransient<FindNonNormalizedPackageVersionsNuspecQuery>();
+            serviceCollection.AddTransient<FindPackageVersionsContainingWhitespaceNuspecQuery>();
 
             if (settings.RunBoringQueries)
             {
+                serviceCollection.AddTransient<FindNonNormalizedPackageVersionsNuspecQuery>();
                 serviceCollection.AddTransient<FindMissingDependencyVersionsNuspecQuery>();
                 serviceCollection.AddTransient<FindEmptyDependencyVersionsNuspecQuery>();
             }

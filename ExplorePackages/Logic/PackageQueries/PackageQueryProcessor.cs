@@ -75,7 +75,10 @@ namespace Knapcode.ExplorePackages.Logic
             }
             else
             {
-                return await _queryService.GetMatchedPackageCommitsAsync(bounds.Start, bounds.End);
+                return await _queryService.GetMatchedPackageCommitsAsync(
+                    bounds.Start,
+                    bounds.End,
+                    bounds.QueryNameToCursorName.Keys.ToList());
             }
         }
 

@@ -50,11 +50,12 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
-        public Task<IReadOnlyList<PackageCommit>> GetMatchedPackageCommitsAsync(DateTimeOffset start, DateTimeOffset end)
+        public Task<IReadOnlyList<PackageCommit>> GetMatchedPackageCommitsAsync(DateTimeOffset start, DateTimeOffset end, IReadOnlyList<string> queryNames)
         {
             return _enumerator.GetPackageCommitsAsync(
                 e => e
                     .PackageQueryMatches
+                    .Where(x => queryNames.Contains(x.PackageQuery.Name))
                     .Select(x => x.Package)
                     .Distinct(),
                 start,
