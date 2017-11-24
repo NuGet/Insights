@@ -10,5 +10,6 @@
         public PackageRegistrationEntity PackageRegistration { get; set; }
         public V2PackageEntity V2Package { get; set; }
         public CatalogPackageEntity CatalogPackage { get; set; }
+        public PackageDownloadsEntity PackageDownloads { get; set; }
     }
 }

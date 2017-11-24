@@ -56,7 +56,12 @@
     <Compile Include="Entities\Migrations\20171124002059_Initial.designer.cs">
       <DependentUpon>20171124002059_Initial.cs</DependentUpon>
     </Compile>
+    <Compile Include="Entities\Migrations\20171124062101_AddPackageDownloads.cs" />
+    <Compile Include="Entities\Migrations\20171124062101_AddPackageDownloads.designer.cs">
+      <DependentUpon>20171124062101_AddPackageDownloads.cs</DependentUpon>
+    </Compile>
     <Compile Include="Entities\Migrations\EntityContextModelSnapshot.cs" />
+    <Compile Include="Entities\PackageDownloadsEntity.cs" />
     <Compile Include="Entities\PackageQueryEntity.cs" />
     <Compile Include="Entities\PackageQueryMatchEntity.cs" />
     <Compile Include="Entities\PackageRegistrationEntity.cs" />
@@ -91,6 +96,7 @@
     <Compile Include="Logic\Consistency\Services\SearchSpecificInstancesConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Services\V2ConsistencyService.cs" />
     <Compile Include="Logic\PackageCommitEnumerator.cs" />
+    <Compile Include="Logic\PackageDownloadsProcessor.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindEmptyDependencyVersionsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindFloatingDependencyVersionsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindNonNormalizedPackageVersionsNuspecQuery.cs" />
@@ -131,6 +137,8 @@
     <Compile Include="Logic\Protocol\GalleryClient.cs" />
     <Compile Include="Logic\Protocol\GalleryPackageState.cs" />
     <Compile Include="Logic\Protocol\PackageDeletedStatus.cs" />
+    <Compile Include="Logic\Protocol\PackageDownloads.cs" />
+    <Compile Include="Logic\Protocol\PackageDownloadsClient.cs" />
     <Compile Include="Logic\Protocol\SearchClient.cs" />
     <Compile Include="Logic\Protocol\SearchDiagnostics.cs" />
     <Compile Include="Logic\Protocol\SearchDiagnosticsCommitUserData.cs" />
@@ -151,6 +159,7 @@
     <Compile Include="Support\InitializeServicePointHandler.cs" />
     <Compile Include="Support\IPortDiscoverer.cs" />
     <Compile Include="Support\IPortTester.cs" />
+    <Compile Include="Support\JsonReaderExtensions.cs" />
     <Compile Include="Support\MD5IncrementalHash.cs" />
     <Compile Include="Support\NuGetLogger.cs" />
     <Compile Include="Logic\Protocol\FlatContainerClient.cs" />
@@ -229,6 +238,9 @@
     </PackageReference>
     <PackageReference Include="NuGet.Protocol">
       <Version>4.3.0</Version>
+    </PackageReference>
+    <PackageReference Include="System.Reactive">
+      <Version>3.1.1</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup />
