@@ -51,7 +51,6 @@ namespace Knapcode.ExplorePackages.Logic
                     {
                         taskQueue.Enqueue(batch);
                         batch = new List<PackageDownloads>();
-                        break;
                     }
                 }
 
