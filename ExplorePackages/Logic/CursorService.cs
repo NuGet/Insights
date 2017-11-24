@@ -48,7 +48,12 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
-        public async Task SetValueAsync(string name, long value)
+        public async Task ResetValueAsync(string name)
+        {
+            await SetValueAsync(name, DefaultCursor);
+        }
+
+        public async Task SetValueAsync(string name, DateTimeOffset value)
         {
             using (var entityContext = new EntityContext())
             {
@@ -59,20 +64,10 @@ namespace Knapcode.ExplorePackages.Logic
                     entityContext.Cursors.Add(cursor);
                 }
 
-                cursor.Value = value;
+                cursor.Value = value.UtcTicks;
 
                 await entityContext.SaveChangesAsync();
             }
-        }
-
-        public async Task ResetValueAsync(string name)
-        {
-            await SetValueAsync(name, DefaultCursor);
-        }
-
-        public async Task SetValueAsync(string name, DateTimeOffset value)
-        {
-            await SetValueAsync(name, value.UtcTicks);
         }
 
         public async Task EnsureExistsAsync(string name)

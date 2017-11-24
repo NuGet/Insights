@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\ArgsUtility.cs" />
+    <Compile Include="Commands\DownloadsToDatabaseCommand.cs" />
     <Compile Include="Commands\V2ToDatabaseCommand.cs" />
     <Compile Include="Commands\CheckPackageCommand.cs" />
     <Compile Include="Commands\PackageQueriesCommand.cs" />
@@ -81,6 +82,7 @@
     <Compile Include="Logic\Consistency\Services\GalleryConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Services\IConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Reports\PackageConsistencyReport.cs" />
+    <Compile Include="Logic\ETagNames.cs" />
     <Compile Include="Logic\ETagService.cs" />
     <Compile Include="Logic\IncrementalProgress.cs" />
     <Compile Include="Logic\IProgressReport.cs" />
@@ -145,6 +147,7 @@
     <Compile Include="Logic\Protocol\PackageDeletedStatus.cs" />
     <Compile Include="Logic\Protocol\PackageDownloads.cs" />
     <Compile Include="Logic\Protocol\PackageDownloadsClient.cs" />
+    <Compile Include="Logic\Protocol\PackageDownloadSet.cs" />
     <Compile Include="Logic\Protocol\SearchClient.cs" />
     <Compile Include="Logic\Protocol\SearchDiagnostics.cs" />
     <Compile Include="Logic\Protocol\SearchDiagnosticsCommitUserData.cs" />

@@ -79,9 +79,11 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<IProgressReport, NullProgressReport>();
             serviceCollection.AddTransient<LatestCatalogCommitFetcher>();
             serviceCollection.AddTransient<V2ToDatabaseProcessor>();
+            serviceCollection.AddTransient<PackageDownloadsToDatabaseProcessor>();
 
             serviceCollection.AddTransient<PackageCommitEnumerator>();
             serviceCollection.AddTransient<CursorService>();
+            serviceCollection.AddTransient<ETagService>();
             serviceCollection.AddTransient<PackageService>();
             serviceCollection.AddTransient<PackageQueryService>();
 
@@ -94,6 +96,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<RegistrationClient>();
             serviceCollection.AddTransient<SearchClient>();
             serviceCollection.AddTransient<AutocompleteClient>();
+            serviceCollection.AddTransient<PackageDownloadsClient>();
 
             serviceCollection.AddTransient<GalleryConsistencyService>();
             serviceCollection.AddTransient<V2ConsistencyService>();

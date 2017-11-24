@@ -75,12 +75,16 @@ namespace Knapcode.ExplorePackages
                     case "v2todatabase":
                         commands.Add(serviceProvider.GetRequiredService<V2ToDatabaseCommand>());
                         break;
+                    case "downloadstodatabase":
+                        commands.Add(serviceProvider.GetRequiredService<DownloadsToDatabaseCommand>());
+                        break;
                     case "update":
                         commands.Add(serviceProvider.GetRequiredService<V2ToDatabaseCommand>());
                         commands.Add(serviceProvider.GetRequiredService<FetchCursorsCommand>());
                         commands.Add(serviceProvider.GetRequiredService<CatalogToDatabaseCommand>());
                         commands.Add(serviceProvider.GetRequiredService<CatalogToNuspecsCommand>());
                         commands.Add(serviceProvider.GetRequiredService<PackageQueriesCommand>());
+                        commands.Add(serviceProvider.GetRequiredService<DownloadsToDatabaseCommand>());
                         break;
                     default:
                         log.LogError("Unknown command.");
@@ -175,6 +179,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<ShowRepositoriesCommand>();
             serviceCollection.AddTransient<CheckPackageCommand>();
             serviceCollection.AddTransient<V2ToDatabaseCommand>();
+            serviceCollection.AddTransient<DownloadsToDatabaseCommand>();
 
             return serviceCollection;
         }

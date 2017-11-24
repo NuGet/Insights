@@ -105,9 +105,8 @@ namespace Knapcode.ExplorePackages.Logic
                     var id = getId(foreignPackage);
                     var version = NuGetVersion.Parse(getVersion(foreignPackage)).ToNormalizedString();
                     var identity = $"{id}/{version}";
-
-                    PackageEntity latestPackage;
-                    if (!identityToLatest.TryGetValue(identity, out latestPackage))
+                    
+                    if (!identityToLatest.TryGetValue(identity, out var latestPackage))
                     {
                         latestPackage = new PackageEntity
                         {

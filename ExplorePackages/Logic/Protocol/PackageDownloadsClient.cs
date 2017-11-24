@@ -24,54 +24,94 @@ namespace Knapcode.ExplorePackages.Logic
             _settings = settings;
         }
 
-        public IAsyncEnumerable<PackageDownloads> GetPackageDownloads()
+        public async Task<PackageDownloadSet> GetPackageDownloadSetAsync(string etag)
         {
             if (_settings.DownloadsV1Url == null)
             {
                 throw new InvalidOperationException("The downloads.v1.json URL is required.");
             }
 
-            return new PackageDownloadsAsyncEnumerable(_httpClient, _settings);
+            var disposables = new Stack<IDisposable>();
+            try
+            {
+                var request = new HttpRequestMessage(HttpMethod.Get, _settings.DownloadsV1Url);
+                disposables.Push(request);
+
+                // Prior to this version, Azure Blob Storage did not put quotes around etag headers...
+                request.Headers.TryAddWithoutValidation("x-ms-version", "2017-04-17");
+
+                if (etag != null)
+                {
+                    request.Headers.TryAddWithoutValidation("If-None-Match", etag);
+                }
+
+                var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+                disposables.Push(response);
+
+                string newEtag;
+                TextReader textReader;                
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    newEtag = response.Headers.ETag.ToString();
+
+                    var stream = await response.Content.ReadAsStreamAsync();
+                    disposables.Push(stream);
+
+                    textReader = new StreamReader(stream);
+                    disposables.Push(textReader);
+                }
+                else if (etag != null && response.StatusCode == HttpStatusCode.NotModified)
+                {
+                    newEtag = etag;
+
+                    textReader = new StringReader("[]");
+                    disposables.Push(textReader);
+                }
+                else
+                {
+                    response.Dispose();
+                    throw new HttpRequestException($"Response status code is not 200 OK: {((int)response.StatusCode)} ({response.ReasonPhrase})");
+                }
+
+                var jsonReader = new JsonTextReader(textReader);
+                disposables.Push(jsonReader);
+
+                return new PackageDownloadSet(
+                    newEtag,
+                    new PackageDownloadsAsyncEnumerator(
+                        jsonReader,
+                        disposables));
+            }
+            catch
+            {
+                DisposeAll(disposables);
+                throw;
+            }
         }
 
-        private class PackageDownloadsAsyncEnumerable : IAsyncEnumerable<PackageDownloads>
+        private static void DisposeAll(Stack<IDisposable> disposables)
         {
-            private readonly HttpClient _httpClient;
-            private readonly ExplorePackagesSettings _settings;
-
-            public PackageDownloadsAsyncEnumerable(
-                HttpClient httpClient,
-                ExplorePackagesSettings settings)
+            while (disposables.Any())
             {
-                _httpClient = httpClient;
-                _settings = settings;
-            }
-
-            public IAsyncEnumerator<PackageDownloads> GetEnumerator()
-            {
-                return new PackageDownloadsAsyncEnumerator(_httpClient, _settings);
+                disposables.Pop()?.Dispose();
             }
         }
 
         private class PackageDownloadsAsyncEnumerator : IAsyncEnumerator<PackageDownloads>
         {
-            private readonly HttpClient _httpClient;
-            private readonly ExplorePackagesSettings _settings;
-
             private Stack<IDisposable> _disposables;
-            private JsonTextReader _jsonReader;
+            private JsonReader _jsonReader;
 
             private State _state;
             private string _currentId;
             private PackageDownloads _current;
 
             public PackageDownloadsAsyncEnumerator(
-                HttpClient httpClient,
-                ExplorePackagesSettings settings)
+                JsonReader jsonReader,
+                Stack<IDisposable> disposables)
             {
-                _httpClient = httpClient;
-                _settings = settings;
-                _disposables = new Stack<IDisposable>();
+                _jsonReader = jsonReader;
+                _disposables = disposables;
                 _state = State.Uninitialized;
             }
 
@@ -79,10 +119,7 @@ namespace Knapcode.ExplorePackages.Logic
 
             public void Dispose()
             {
-                while (_disposables.Any())
-                {
-                    _disposables.Pop()?.Dispose();
-                }
+                DisposeAll(_disposables);
             }
 
             public async Task<bool> MoveNext(CancellationToken cancellationToken)
@@ -93,7 +130,6 @@ namespace Knapcode.ExplorePackages.Logic
                     switch (_state)
                     {
                         case State.Uninitialized:
-                            await InitializeJsonReaderAsync();
                             await _jsonReader.ReadAsStartArrayAsync();
                             _state = State.InRootArray;
                             break;
@@ -138,30 +174,6 @@ namespace Knapcode.ExplorePackages.Logic
                 }
 
                 return _current != null;
-            }
-
-            private async Task InitializeJsonReaderAsync()
-            {
-                using (var request = new HttpRequestMessage(HttpMethod.Get, _settings.DownloadsV1Url))
-                {
-                    var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-                    _disposables.Push(response);
-
-                    if (response.StatusCode != HttpStatusCode.OK)
-                    {
-                        response.Dispose();
-                        throw new HttpRequestException($"Response status code is not 200 OK: {((int)response.StatusCode)} ({response.ReasonPhrase})");
-                    }
-
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    _disposables.Push(stream);
-
-                    var textReader = new StreamReader(stream);
-                    _disposables.Push(textReader);
-
-                    _jsonReader = new JsonTextReader(textReader);
-                    _disposables.Push(_jsonReader);
-                }
             }
 
             private enum State
