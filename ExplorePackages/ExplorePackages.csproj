@@ -61,9 +61,9 @@
     <Compile Include="Entities\Migrations\20171124062101_AddPackageDownloads.designer.cs">
       <DependentUpon>20171124062101_AddPackageDownloads.cs</DependentUpon>
     </Compile>
-    <Compile Include="Entities\Migrations\20171124191522_AddETags.cs" />
-    <Compile Include="Entities\Migrations\20171124191522_AddETags.designer.cs">
-      <DependentUpon>20171124191522_AddETags.cs</DependentUpon>
+    <Compile Include="Entities\Migrations\20171124192230_AddETags.cs" />
+    <Compile Include="Entities\Migrations\20171124192230_AddETags.designer.cs">
+      <DependentUpon>20171124192230_AddETags.cs</DependentUpon>
     </Compile>
     <Compile Include="Entities\Migrations\EntityContextModelSnapshot.cs" />
     <Compile Include="Entities\PackageDownloadsEntity.cs" />
@@ -81,6 +81,7 @@
     <Compile Include="Logic\Consistency\Services\GalleryConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Services\IConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Reports\PackageConsistencyReport.cs" />
+    <Compile Include="Logic\ETagService.cs" />
     <Compile Include="Logic\IncrementalProgress.cs" />
     <Compile Include="Logic\IProgressReport.cs" />
     <Compile Include="Logic\ISearchServiceUrlCacheInvalidator.cs" />

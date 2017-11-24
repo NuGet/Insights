@@ -10,7 +10,7 @@ using System;
 namespace Knapcode.ExplorePackages.Entities.Migrations
 {
     [DbContext(typeof(EntityContext))]
-    [Migration("20171124191522_AddETags")]
+    [Migration("20171124192230_AddETags")]
     partial class AddETags
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -62,8 +62,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations
                     b.Property<string>("Name")
                         .IsRequired();
 
-                    b.Property<string>("Value")
-                        .IsRequired();
+                    b.Property<string>("Value");
 
                     b.HasKey("ETagKey");
 

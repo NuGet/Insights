@@ -67,11 +67,6 @@ namespace Knapcode.ExplorePackages.Entities
 
             modelBuilder
                 .Entity<ETagEntity>()
-                .Property(x => x.Value)
-                .IsRequired();
-
-            modelBuilder
-                .Entity<ETagEntity>()
                 .HasIndex(x => new { x.Name })
                 .IsUnique();
 

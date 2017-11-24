@@ -61,8 +61,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations
                     b.Property<string>("Name")
                         .IsRequired();
 
-                    b.Property<string>("Value")
-                        .IsRequired();
+                    b.Property<string>("Value");
 
                     b.HasKey("ETagKey");
 
