@@ -52,6 +52,7 @@
     <Compile Include="Commands\ShowQueryResultsCommand.cs" />
     <Compile Include="Commands\ShowRepositoriesCommand.cs" />
     <Compile Include="Entities\CatalogPackageEntity.cs" />
+    <Compile Include="Entities\ETagEntity.cs" />
     <Compile Include="Entities\Migrations\20171124002059_Initial.cs" />
     <Compile Include="Entities\Migrations\20171124002059_Initial.designer.cs">
       <DependentUpon>20171124002059_Initial.cs</DependentUpon>
@@ -59,6 +60,10 @@
     <Compile Include="Entities\Migrations\20171124062101_AddPackageDownloads.cs" />
     <Compile Include="Entities\Migrations\20171124062101_AddPackageDownloads.designer.cs">
       <DependentUpon>20171124062101_AddPackageDownloads.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Entities\Migrations\20171124191522_AddETags.cs" />
+    <Compile Include="Entities\Migrations\20171124191522_AddETags.designer.cs">
+      <DependentUpon>20171124191522_AddETags.cs</DependentUpon>
     </Compile>
     <Compile Include="Entities\Migrations\EntityContextModelSnapshot.cs" />
     <Compile Include="Entities\PackageDownloadsEntity.cs" />

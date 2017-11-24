@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Knapcode.ExplorePackages.Entities
+﻿namespace Knapcode.ExplorePackages.Entities
 {
     public class CursorEntity
     {

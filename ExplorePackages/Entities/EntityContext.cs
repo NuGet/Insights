@@ -19,6 +19,7 @@ namespace Knapcode.ExplorePackages.Entities
         public DbSet<PackageRegistrationEntity> PackageRegistrations { get; set; }
         public DbSet<PackageEntity> Packages { get; set; }
         public DbSet<CursorEntity> Cursors { get; set; }
+        public DbSet<ETagEntity> ETags { get; set; }
         public DbSet<PackageQueryEntity> PackageQueries { get; set; }
         public DbSet<PackageQueryMatchEntity> PackageQueryMatches { get; set; }
         public DbSet<V2PackageEntity> V2PackageEntities { get; set; }
@@ -48,6 +49,29 @@ namespace Knapcode.ExplorePackages.Entities
 
             modelBuilder
                 .Entity<CursorEntity>()
+                .HasIndex(x => new { x.Name })
+                .IsUnique();
+
+            modelBuilder
+                .Entity<ETagEntity>()
+                .ToTable("ETags");
+
+            modelBuilder
+                .Entity<ETagEntity>()
+                .HasKey(x => x.ETagKey);
+
+            modelBuilder
+                .Entity<ETagEntity>()
+                .Property(x => x.Name)
+                .IsRequired();
+
+            modelBuilder
+                .Entity<ETagEntity>()
+                .Property(x => x.Value)
+                .IsRequired();
+
+            modelBuilder
+                .Entity<ETagEntity>()
                 .HasIndex(x => new { x.Name })
                 .IsUnique();
 
