@@ -45,29 +45,36 @@ namespace Knapcode.ExplorePackages.Logic
             }
 
             _taskQueue.Start();
+            var failureTask = _taskQueue.FailureTask;
+            var produceThenCompleteTask = ProduceThenCompleteAsync(start, end, token);
+            var firstTask = await Task.WhenAny(failureTask, produceThenCompleteTask);
+            if (firstTask == failureTask)
+            {
+                await await failureTask;
+            }
+            else
+            {
+                await produceThenCompleteTask;
+            }
+        }
+
+        private async Task ProduceThenCompleteAsync(DateTimeOffset start, DateTimeOffset end, CancellationToken token)
+        {
             await ProduceAsync(start, end, token);
             await _taskQueue.CompleteAsync();
         }
 
         private async Task WorkAsync(IReadOnlyList<CatalogEntry> entries)
         {
-            try
+            if (!entries.Any())
             {
-                if (!entries.Any())
-                {
-                    return;
-                }
-
-                await _processor.ProcessAsync(entries);
-
-                var cursorService = new CursorService();
-                await cursorService.SetValueAsync(_processor.CursorName, entries.Last().CommitTimeStamp);
+                return;
             }
-            catch (Exception e)
-            {
-                _log.LogError(e.ToString());
-                throw;
-            }
+
+            await _processor.ProcessAsync(entries);
+
+            var cursorService = new CursorService();
+            await cursorService.SetValueAsync(_processor.CursorName, entries.Last().CommitTimeStamp);
         }
 
         private async Task ProduceAsync(DateTimeOffset start, DateTimeOffset end, CancellationToken token)
