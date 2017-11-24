@@ -21,7 +21,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         private bool IsMatch(PackageQueryContext context)
         {
-            if (context.Package.Deleted || context.Nuspec.Document == null)
+            if (context.Nuspec.Document == null)
             {
                 return false;
             }
