@@ -36,7 +36,7 @@ namespace Knapcode.ExplorePackages
                     var log = x.GetRequiredService<ILogger>();
                     var loggingHandler = new LoggingHander(innerHandler, log);
                     var httpClient = new HttpClient(loggingHandler);
-                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", UserAgent.UserAgentString);
+                    UserAgent.SetUserAgent(httpClient);
                     return httpClient;
                 });
             serviceCollection.AddSingleton(
