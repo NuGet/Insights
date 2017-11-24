@@ -83,9 +83,9 @@ namespace Knapcode.ExplorePackages.Logic
                 .ToDictionary(x => x.Id, x => x, StringComparer.OrdinalIgnoreCase);
         }
 
-        private async Task AddOrUpdatePackagesAsync<T, TKey>(
+        private async Task AddOrUpdatePackagesAsync<T>(
             IEnumerable<T> foreignPackages,
-            Func<T, TKey> orderBy,
+            Func<IEnumerable<T>, IEnumerable<T>> sort,
             Func<T, string> getId,
             Func<T, string> getVersion,
             Action<PackageEntity, T> initializePackageFromForeign,
@@ -157,11 +157,40 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
+        public async Task AddOrUpdatePackagesAsync(IEnumerable<PackageDownloads> packageDownloads)
+        {
+            await AddOrUpdatePackagesAsync(
+                packageDownloads,
+                x => x.OrderBy(d => d.Downloads),
+                d => d.Id,
+                d => d.Version,
+                (p, d) => p.PackageDownloads = new PackageDownloadsEntity
+                {
+                    Downloads = d.Downloads,
+                },
+                (p, d) => p.PackageDownloads.Downloads = Math.Max(
+                    p.PackageDownloads.Downloads,
+                    d.Downloads),
+                (pe, pl) =>
+                {
+                    if (pe.PackageDownloads == null)
+                    {
+                        pe.PackageDownloads = pl.PackageDownloads;
+                    }
+                    else
+                    {
+                        pe.PackageDownloads.Downloads = Math.Max(
+                            pe.PackageDownloads.Downloads,
+                            pl.PackageDownloads.Downloads);
+                    }
+                });
+        }
+
         public async Task AddOrUpdatePackagesAsync(IEnumerable<V2Package> v2Packages)
         {
             await AddOrUpdatePackagesAsync(
                 v2Packages,
-                v2 => v2.Created,
+                x => x.OrderBy(v2 => v2.Created),
                 v2 => v2.Id,
                 v2 => v2.Version,
                 (p, v2) => p.V2Package = new V2PackageEntity
@@ -193,7 +222,7 @@ namespace Knapcode.ExplorePackages.Logic
         {
             await AddOrUpdatePackagesAsync(
                 entries,
-                c => c.CommitTimeStamp,
+                x => x.OrderBy(c => c.CommitTimeStamp),
                 c => c.Id,
                 c => c.Version.ToNormalizedString(),
                 (p, c) => p.CatalogPackage = new CatalogPackageEntity

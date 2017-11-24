@@ -103,6 +103,7 @@ namespace Knapcode.ExplorePackages.Logic
                             if (_jsonReader.TokenType == JsonToken.EndArray)
                             {
                                 _state = State.Complete;
+                                Dispose();
                             }
                             else if (_jsonReader.TokenType == JsonToken.StartArray)
                             {
