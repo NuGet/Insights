@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public delegate IQueryable<Package> GetPackages(EntityContext entities);
+    public delegate IQueryable<PackageEntity> GetPackages(EntityContext entities);
 
     public class PackageCommitEnumerator
     {
@@ -35,8 +35,10 @@ namespace Knapcode.ExplorePackages.Logic
                 using (var entities = new EntityContext())
                 {
                     var packages = await getPackages(entities)
-                        .Where(x => x.LastCommitTimestamp > start && x.LastCommitTimestamp <= end)
-                        .OrderBy(x => x.LastCommitTimestamp)
+                        .Include(x => x.PackageRegistration)
+                        .Include(x => x.CatalogPackage)
+                        .Where(x => x.CatalogPackage.LastCommitTimestamp > start && x.CatalogPackage.LastCommitTimestamp <= end)
+                        .OrderBy(x => x.CatalogPackage.LastCommitTimestamp)
                         .Take(PageSize)
                         .ToListAsync();
 
@@ -44,7 +46,7 @@ namespace Knapcode.ExplorePackages.Logic
                     totalFetched += packages.Count;
 
                     var packageGroups = packages
-                        .GroupBy(x => x.LastCommitTimestamp)
+                        .GroupBy(x => x.CatalogPackage.LastCommitTimestamp)
                         .ToDictionary(x => x.Key, x => x.ToList());
 
                     var commitTimestamps = packageGroups
@@ -84,7 +86,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         private IEnumerable<PackageCommit> InitializePackageCommits(
             IEnumerable<long> commitTimestamps,
-            Dictionary<long, List<Package>> packageGroups)
+            Dictionary<long, List<PackageEntity>> packageGroups)
         {
             foreach (var commitTimestamp in commitTimestamps)
             {

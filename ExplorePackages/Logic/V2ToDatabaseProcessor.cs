@@ -12,13 +12,13 @@ namespace Knapcode.ExplorePackages.Logic
         private const int PageSize = 100;
         private readonly CursorService _cursorService;
         private readonly V2Client _v2Client;
-        private readonly V2PackageEntityService _service;
+        private readonly PackageService _service;
         private readonly ExplorePackagesSettings _settings;
 
         public V2ToDatabaseProcessor(
             CursorService cursorService,
             V2Client v2Client,
-            V2PackageEntityService service,
+            PackageService service,
             ExplorePackagesSettings settings)
         {
             _cursorService = cursorService;
@@ -42,7 +42,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         private async Task ProduceAsync(TaskQueue<IReadOnlyList<V2Package>> taskQueue)
         {
-            var start = await _cursorService.GetAsync(CursorNames.V2ToDatabase);
+            var start = await _cursorService.GetValueAsync(CursorNames.V2ToDatabase);
             if (start > DateTimeOffset.MinValue.Add(FuzzFactor))
             {
                 start = start.Subtract(FuzzFactor);
@@ -94,14 +94,14 @@ namespace Knapcode.ExplorePackages.Logic
 
         private async Task ConsumeAsync(IReadOnlyList<V2Package> packages)
         {
-            var oldCUrsor = await _cursorService.GetAsync(CursorNames.V2ToDatabase);
+            var oldCUrsor = await _cursorService.GetValueAsync(CursorNames.V2ToDatabase);
 
             await _service.AddOrUpdatePackagesAsync(packages);
 
             var newCursor = packages.Max(x => x.Created);
             if (newCursor > oldCUrsor)
             {
-                await _cursorService.SetAsync(CursorNames.V2ToDatabase, newCursor);
+                await _cursorService.SetValueAsync(CursorNames.V2ToDatabase, newCursor);
             }
         }
     }

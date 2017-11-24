@@ -32,11 +32,12 @@ namespace Knapcode.ExplorePackages.Logic
                 {
                     var cursorService = new CursorService();
                     await cursorService.EnsureExistsAsync(cursorName);
-
-                    query = new PackageQuery
+                    var cursor = await cursorService.GetAsync(cursorName);
+                    
+                    query = new PackageQueryEntity
                     {
                         Name = queryName,
-                        CursorName = cursorName,
+                        CursorKey = cursor.CursorKey,
                     };
 
                     entityContext.PackageQueries.Add(query);
@@ -62,7 +63,7 @@ namespace Knapcode.ExplorePackages.Logic
                 end);
         }
 
-        private static async Task<PackageQuery> GetQueryAsync(string queryName, EntityContext entityContext)
+        private static async Task<PackageQueryEntity> GetQueryAsync(string queryName, EntityContext entityContext)
         {
             return await entityContext
                 .PackageQueries
@@ -77,19 +78,20 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 var matches = await entityContext
                     .PackageQueryMatches
-                    .Where(x => x.PackageQuery.Name == queryName && x.Key > lastKey)
-                    .OrderBy(x => x.Key)
+                    .Include(x => x.Package.CatalogPackage)
+                    .Where(x => x.PackageQuery.Name == queryName && x.PackageQueryMatchKey > lastKey)
+                    .OrderBy(x => x.PackageQueryMatchKey)
                     .Take(PageSize)
-                    .Select(x => new { x.Key, x.Package })
+                    .Select(x => new { x.PackageQueryMatchKey, x.Package })
                     .ToListAsync();
 
                 if (!matches.Any())
                 {
-                    return new PackageQueryMatches(0, new List<Package>());
+                    return new PackageQueryMatches(0, new List<PackageEntity>());
                 }
                 
                 return new PackageQueryMatches(
-                    matches.Max(x => x.Key),
+                    matches.Max(x => x.PackageQueryMatchKey),
                     matches.Select(x => x.Package).ToList());
             }
         }
@@ -126,7 +128,7 @@ namespace Knapcode.ExplorePackages.Logic
                 // Don't persist matches that already exist.
                 var existingMatches = await GetExistingMatchesAsync(entityContext, query, identities);
                 var existingIdentities = existingMatches
-                    .Select(x => new PackageIdentity(x.Package.Id, x.Package.Version))
+                    .Select(x => new PackageIdentity(x.Package.PackageRegistration.Id, x.Package.Version))
                     .ToList();
                 var newIdentities = identities
                     .Except(existingIdentities)
@@ -137,10 +139,10 @@ namespace Knapcode.ExplorePackages.Logic
 
                 // Add the new matches.
                 var newMatches = packages
-                    .Select(x => new PackageQueryMatch
+                    .Select(x => new PackageQueryMatchEntity
                     {
-                        PackageQueryKey = query.Key,
-                        PackageKey = x.Key,
+                        PackageQueryKey = query.PackageQueryKey,
+                        PackageKey = x.PackageKey,
                     });
                 await entityContext.PackageQueryMatches.AddRangeAsync(newMatches);
 
@@ -148,12 +150,12 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
-        private async Task<IReadOnlyList<Package>> GetPackagesAsync(IReadOnlyList<PackageIdentity> identities)
+        private async Task<IReadOnlyList<PackageEntity>> GetPackagesAsync(IReadOnlyList<PackageIdentity> identities)
         {
             var packages = await _packageService.GetBatchAsync(identities);
 
             var missing = identities
-                .Except(packages.Select(x => new PackageIdentity(x.Id, x.Version)))
+                .Except(packages.Select(x => new PackageIdentity(x.PackageRegistration.Id, x.Version)))
                 .ToList();
             if (missing.Any())
             {
@@ -163,11 +165,11 @@ namespace Knapcode.ExplorePackages.Logic
             return packages;
         }
 
-        private static async Task<List<PackageQueryMatch>> GetExistingMatchesAsync(EntityContext entityContext, PackageQuery query, IReadOnlyList<PackageIdentity> identities)
+        private static async Task<List<PackageQueryMatchEntity>> GetExistingMatchesAsync(EntityContext entityContext, PackageQueryEntity query, IReadOnlyList<PackageIdentity> identities)
         {
             var identityStrings = new HashSet<string>(identities.Select(x => x.Value));
 
-            var queryKey = query.Key;
+            var queryKey = query.PackageQueryKey;
 
             var existingIdentities = await entityContext
                 .PackageQueryMatches

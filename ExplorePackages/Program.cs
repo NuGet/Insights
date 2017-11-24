@@ -108,7 +108,6 @@ namespace Knapcode.ExplorePackages
                     catch (Exception e)
                     {
                         log.LogError("An exception occurred." + Environment.NewLine + e);
-                        break;
                     }
                     Console.WriteLine(new string('=', heading.Length));
                     Console.WriteLine();

@@ -20,7 +20,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task ProcessAsync(IReadOnlyList<CatalogEntry> entries)
         {
-            await _packageService.AddOrUpdateBatchAsync(entries);
+            await _packageService.AddOrUpdatePackagesAsync(entries);
         }
     }
 }

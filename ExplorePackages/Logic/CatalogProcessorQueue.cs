@@ -32,7 +32,7 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task ProcessAsync(CancellationToken token)
         {
             var cursorService = new CursorService();
-            var start = await cursorService.GetAsync(_processor.CursorName);
+            var start = await cursorService.GetValueAsync(_processor.CursorName);
             DateTimeOffset end;
             var dependencyCursorNames = _processor.DependencyCursorNames;
             if (dependencyCursorNames.Any())
@@ -61,7 +61,7 @@ namespace Knapcode.ExplorePackages.Logic
                 await _processor.ProcessAsync(entries);
 
                 var cursorService = new CursorService();
-                await cursorService.SetAsync(_processor.CursorName, entries.Last().CommitTimeStamp);
+                await cursorService.SetValueAsync(_processor.CursorName, entries.Last().CommitTimeStamp);
             }
             catch (Exception e)
             {

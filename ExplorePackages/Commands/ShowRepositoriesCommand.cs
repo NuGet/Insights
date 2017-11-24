@@ -62,7 +62,7 @@ namespace Knapcode.ExplorePackages.Commands
 
                 foreach (var match in matches.Packages)
                 {
-                    var path = _pathProvider.GetLatestNuspecPath(match.Id, match.Version);
+                    var path = _pathProvider.GetLatestNuspecPath(match.PackageRegistration.Id, match.Version);
                     XDocument nuspec;
                     using (var stream = File.OpenRead(path))
                     {
@@ -76,9 +76,9 @@ namespace Knapcode.ExplorePackages.Commands
                     var hasUrl = urlAttr != null;
                     var isValidAbsoluteUri = Uri.TryCreate(urlAttr?.Value, UriKind.Absolute, out Uri parsedUrl);
 
-                    Console.Write(match.Key);
+                    Console.Write(match.PackageKey);
                     Console.Write('\t');
-                    Console.Write(match.Id);
+                    Console.Write(match.PackageRegistration);
                     Console.Write('\t');
                     Console.Write(match.Version);
                     Console.Write('\t');
@@ -96,9 +96,9 @@ namespace Knapcode.ExplorePackages.Commands
                     Console.Write('\t');
                     Console.Write(parsedUrl?.Authority);
                     Console.Write('\t');
-                    Console.Write(FormatDateTimeOffset(match.FirstCommitTimestamp));
+                    Console.Write(FormatDateTimeOffset(match.CatalogPackage.FirstCommitTimestamp));
                     Console.Write('\t');
-                    Console.Write(FormatDateTimeOffset(match.LastCommitTimestamp));
+                    Console.Write(FormatDateTimeOffset(match.CatalogPackage.LastCommitTimestamp));
                     Console.WriteLine();
                 }
             }

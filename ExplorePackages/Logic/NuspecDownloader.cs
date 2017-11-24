@@ -43,6 +43,12 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var lowerId = id.ToLowerInvariant();
             var lowerVersion = version.ToLowerInvariant();
+            var latestPath = _pathProvider.GetLatestNuspecPath(id, version);
+
+            if (File.Exists(latestPath))
+            {
+                return true;
+            }
 
             using (var tempStream = new FileStream(
                 Path.GetTempFileName(),
@@ -78,7 +84,6 @@ namespace Knapcode.ExplorePackages.Logic
                 var hash = await HashStreamAsync(tempStream);
                 var lockPath = _pathProvider.GetPackageSpecificPath(id, version);
                 var uniquePath = _pathProvider.GetUniqueNuspecPath(id, version, hash);
-                var latestPath = _pathProvider.GetLatestNuspecPath(id, version);
 
                 return await ConcurrencyUtilities.ExecuteWithFileLockedAsync(
                     lockPath,

@@ -36,7 +36,7 @@ namespace Knapcode.ExplorePackages.Commands
             var resume = HasResumeArg(argList);
             if (reprocessAll && !resume)
             {
-                await _cursorService.SetAsync(CursorNames.ReprocessPackageQueries, DateTimeOffset.MinValue);
+                await _cursorService.ResetValueAsync(CursorNames.ReprocessPackageQueries);
             }
 
             await _processor.ProcessAsync(queries, reprocessAll, token);

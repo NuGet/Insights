@@ -2,10 +2,9 @@
 {
     public class V2PackageEntity
     {
-        public int Key { get; set; }
-        public string Id { get; set; }
-        public string Version { get; set; }
-        public string Identity { get; set; }
-        public long Created { get; set; }
+        public long PackageKey { get; set; }
+        public long CreatedTimestamp { get; set; }
+
+        public PackageEntity Package { get; set; }
     }
 }

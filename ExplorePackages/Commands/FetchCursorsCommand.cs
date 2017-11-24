@@ -8,25 +8,18 @@ namespace Knapcode.ExplorePackages.Commands
 {
     public class FetchCursorsCommand : ICommand
     {
-        private readonly RemoteCursorReader _reader;
+        private readonly RemoteCursorService _service;
         private readonly ILogger _log;
 
-        public FetchCursorsCommand(RemoteCursorReader reader, ILogger log)
+        public FetchCursorsCommand(RemoteCursorService service, ILogger log)
         {
-            _reader = reader;
+            _service = service;
             _log = log;
         }
 
         public async Task ExecuteAsync(IReadOnlyList<string> args, CancellationToken token)
         {
-            var cursorService = new CursorService();
-
-            var cursors = await _reader.GetNuGetOrgCursors(token);
-
-            foreach (var cursor in cursors)
-            {
-                await cursorService.SetAsync(cursor.Name, cursor.GetDateTimeOffset());
-            }
+            await _service.UpdateNuGetOrgCursors(token);
         }
 
         public bool IsDatabaseRequired(IReadOnlyList<string> args)

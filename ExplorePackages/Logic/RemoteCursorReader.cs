@@ -10,28 +10,31 @@ using NuGet.Protocol;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class RemoteCursorReader
+    public class RemoteCursorService
     {
         private readonly ServiceIndexCache _serviceIndexCache;
         private readonly HttpSource _httpSource;
         private readonly SearchServiceCursorReader _searchServiceCursorReader;
+        private readonly CursorService _cursorService;
         private readonly ILogger _log;
 
-        public RemoteCursorReader(
+        public RemoteCursorService(
             ServiceIndexCache serviceIndexCache,
             HttpSource httpSource,
             SearchServiceCursorReader searchServiceCursorReader,
+            CursorService cursorService,
             ILogger log)
         {
             _serviceIndexCache = serviceIndexCache;
             _httpSource = httpSource;
             _searchServiceCursorReader = searchServiceCursorReader;
+            _cursorService = cursorService;
             _log = log;
         }
 
-        public async Task<IReadOnlyList<Cursor>> GetNuGetOrgCursors(CancellationToken token)
+        public async Task UpdateNuGetOrgCursors(CancellationToken token)
         {
-            var output = new List<Cursor>();
+            var output = new List<CursorEntity>();
 
             // Read the JSON cursors.
             var flatContainerBaseUrl = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.FlatContainer);
@@ -45,21 +48,12 @@ namespace Knapcode.ExplorePackages.Logic
             foreach (var pair in jsonCursorInput)
             {
                 var value = await GetJsonCursorAsync(pair.Value, token);
-                AddCursor(output, pair.Key, value);
+                await _cursorService.SetValueAsync(pair.Key, value);
             }
 
             // Read the search service cursor.
             var searchServiceCursor = await _searchServiceCursorReader.GetCursorAsync();
-            AddCursor(output, CursorNames.NuGetOrg.Search, searchServiceCursor);
-
-            return output;
-        }
-
-        private static void AddCursor(List<Cursor> output, string name, DateTimeOffset value)
-        {
-            var cursor = new Cursor { Name = name };
-            cursor.SetDateTimeOffset(value);
-            output.Add(cursor);
+            await _cursorService.SetValueAsync(CursorNames.NuGetOrg.Search, searchServiceCursor);
         }
 
         public async Task<DateTimeOffset> GetJsonCursorAsync(string url, CancellationToken token)

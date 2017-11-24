@@ -45,15 +45,21 @@ namespace Knapcode.ExplorePackages.Logic
             var parsedVersion = NuGetVersion.Parse(version);
             var normalizedVersion = parsedVersion.ToNormalizedString();
             var fullVersion = parsedVersion.ToFullString();
-            var immutablePackage = new ImmutablePackage(new Package
+            var immutablePackage = new ImmutablePackage(new PackageEntity
             {
-                Key = 0,
-                Id = id,
+                PackageKey = 0,
+                PackageRegistration = new PackageRegistrationEntity
+                {
+                    Id = id
+                },
                 Version = normalizedVersion,
                 Identity = $"{id}/{normalizedVersion}",
-                Deleted = deleted,
-                FirstCommitTimestamp = 0,
-                LastCommitTimestamp = 0,
+                CatalogPackage = new CatalogPackageEntity
+                {
+                    Deleted = deleted,
+                    FirstCommitTimestamp = 0,
+                    LastCommitTimestamp = 0,
+                },                
             });
 
             var nuspecQueryContext = new NuspecQueryContext(
@@ -89,7 +95,7 @@ namespace Knapcode.ExplorePackages.Logic
             return GetPackageQueryFromDatabasePackageContext(package);
         }
 
-        public PackageQueryContext GetPackageQueryFromDatabasePackageContext(Package package)
+        public PackageQueryContext GetPackageQueryFromDatabasePackageContext(PackageEntity package)
         {
             var immutablePackage = new ImmutablePackage(package);
             var nuspecQueryContext = GetNuspecQueryContext(package);
@@ -105,9 +111,9 @@ namespace Knapcode.ExplorePackages.Logic
             return new PackageQueryContext(immutablePackage, nuspecQueryContext, isSemVer2, fullVersion);
         }
 
-        private NuspecQueryContext GetNuspecQueryContext(Package package)
+        private NuspecQueryContext GetNuspecQueryContext(PackageEntity package)
         {
-            var path = _pathProvider.GetLatestNuspecPath(package.Id, package.Version);
+            var path = _pathProvider.GetLatestNuspecPath(package.PackageRegistration.Id, package.Version);
             var exists = false;
             XDocument document = null;
             try
@@ -123,7 +129,7 @@ namespace Knapcode.ExplorePackages.Logic
             }
             catch (Exception e)
             {
-                _log.LogError($"Could not parse .nuspec for {package.Id} {package.Version}: {path}"
+                _log.LogError($"Could not parse .nuspec for {package.PackageRegistration} {package.Version}: {path}"
                     + Environment.NewLine
                     + "  "
                     + e.Message);
@@ -131,9 +137,9 @@ namespace Knapcode.ExplorePackages.Logic
                 throw;
             }
 
-            if (!exists && !package.Deleted)
+            if (!exists && !package.CatalogPackage.Deleted)
             {
-                _log.LogWarning($"Could not find .nuspec for {package.Id} {package.Version}: {path}");
+                _log.LogWarning($"Could not find .nuspec for {package.PackageRegistration} {package.Version}: {path}");
             }
 
             return new NuspecQueryContext(path, exists, document);

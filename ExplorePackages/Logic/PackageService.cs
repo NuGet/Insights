@@ -22,19 +22,20 @@ namespace Knapcode.ExplorePackages.Logic
             _log = log;
         }
 
-        public async Task<Package> GetPackageAsync(string id, string version)
+        public async Task<PackageEntity> GetPackageAsync(string id, string version)
         {
             var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
             using (var entityContext = new EntityContext())
             {
                 return await entityContext
                     .Packages
-                    .Where(x => x.Id == id && x.Version == normalizedVersion)
+                    .Include(x => x.PackageRegistration)
+                    .Where(x => x.PackageRegistration.Id == id && x.Version == normalizedVersion)
                     .FirstOrDefaultAsync();
             }
         }
 
-        public async Task<IReadOnlyList<Package>> GetBatchAsync(IReadOnlyList<PackageIdentity> identities)
+        public async Task<IReadOnlyList<PackageEntity>> GetBatchAsync(IReadOnlyList<PackageIdentity> identities)
         {
             using (var entityContext = new EntityContext())
             {
@@ -44,6 +45,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                 return await entityContext
                     .Packages
+                    .Include(x => x.PackageRegistration)
                     .Where(x => identityStrings.Contains(x.Identity))
                     .ToListAsync();
             }
@@ -57,47 +59,139 @@ namespace Knapcode.ExplorePackages.Logic
                 end);
         }
 
+        private async Task<IReadOnlyDictionary<string, PackageRegistrationEntity>> AddPackageRegistrationsAsync(
+            EntityContext entityContext,
+            IEnumerable<string> ids)
+        {
+            var idSet = new HashSet<string>(ids, StringComparer.OrdinalIgnoreCase);
+
+            var existingRegistrations = await entityContext
+                .PackageRegistrations
+                .Where(x => idSet.Contains(x.Id))
+                .ToListAsync();
+
+            idSet.ExceptWith(existingRegistrations.Select(x => x.Id));
+
+            var newRegistrations = idSet
+                .Select(x => new PackageRegistrationEntity { Id = x })
+                .ToList();
+
+            await entityContext.AddRangeAsync(newRegistrations);
+
+            return existingRegistrations
+                .Concat(newRegistrations)
+                .ToDictionary(x => x.Id, x => x);
+        }
+
         /// <summary>
         /// Adds the provided catalog entries to the database. Catalog entries are processed in the order provided.
         /// </summary>
-        public async Task AddOrUpdateBatchAsync(IEnumerable<CatalogEntry> entries)
+        public async Task AddOrUpdatePackagesAsync(IEnumerable<V2Package> v2Packages)
         {
             using (var entityContext = new EntityContext())
             {
+                var packageRegistrations = await AddPackageRegistrationsAsync(entityContext, v2Packages.Select(x => x.Id));
+
+                var identityToPackage = new Dictionary<string, PackageEntity>(StringComparer.OrdinalIgnoreCase);
+                foreach (var v2Package in v2Packages)
+                {
+                    var package = new PackageEntity
+                    {
+                        PackageRegistration = packageRegistrations[v2Package.Id],
+                        Version = NuGetVersion.Parse(v2Package.Version).ToNormalizedString(),
+                        V2Package = new V2PackageEntity
+                        {
+                            CreatedTimestamp = v2Package.Created.UtcTicks,
+                        },
+                    };
+
+                    package.Identity = $"{v2Package.Id}/{package.Version}";
+                    identityToPackage[package.Identity] = package;
+                }
+
+                var getExistingStopwatch = Stopwatch.StartNew();
+                var identities = identityToPackage.Keys.ToList();
+                var existingPackages = await entityContext
+                    .Packages
+                    .Include(x => x.V2Package)
+                    .Where(p => identities.Contains(p.Identity))
+                    .ToListAsync();
+
+                _log.LogInformation($"Got {existingPackages.Count} existing. {getExistingStopwatch.ElapsedMilliseconds}ms");
+
+                // Update existing records.
+                foreach (var existingPackage in existingPackages)
+                {
+                    var latestPackage = identityToPackage[existingPackage.Identity];
+                    identityToPackage.Remove(existingPackage.Identity);
+
+                    if (existingPackage.V2Package == null)
+                    {
+                        existingPackage.V2Package = latestPackage.V2Package;
+                    }
+                    else
+                    {
+                        existingPackage.V2Package.CreatedTimestamp = Math.Max(
+                            existingPackage.V2Package.CreatedTimestamp,
+                            latestPackage.V2Package.CreatedTimestamp);
+                    }
+                }
+
+                // Add new records.
+                await entityContext.Packages.AddRangeAsync(identityToPackage.Values);
+
+                var commitStopwatch = Stopwatch.StartNew();
+                var changes = await entityContext.SaveChangesAsync();
+                _log.LogInformation($"Committed {changes} changes. {commitStopwatch.ElapsedMilliseconds}ms");
+            }
+        }
+
+        /// <summary>
+        /// Adds the provided catalog entries to the database. Catalog entries are processed in the order provided.
+        /// </summary>
+        public async Task AddOrUpdatePackagesAsync(IEnumerable<CatalogEntry> entries)
+        {
+            using (var entityContext = new EntityContext())
+            {
+                var packageRegistrations = await AddPackageRegistrationsAsync(entityContext, entries.Select(x => x.Id));
+
                 // Make sure to process the entries in chronological order.
                 var sortedEntries = entries
                     .OrderBy(x => x.CommitTimeStamp);
 
                 // Create a mapping from package ID + "/" + package version to package item.
-                var identityToLatest = new Dictionary<string, Package>(StringComparer.OrdinalIgnoreCase);
+                var identityToLatest = new Dictionary<string, PackageEntity>(StringComparer.OrdinalIgnoreCase);
                 foreach (var entry in sortedEntries)
                 {
-                    var identity = $"{entry.Id}/{entry.Version}";
+                    var identity = $"{entry.Id}/{entry.Version.ToNormalizedString()}";
 
-                    Package latestPackage;
+                    PackageEntity latestPackage;
                     if (!identityToLatest.TryGetValue(identity, out latestPackage))
                     {
-                        latestPackage = new Package
+                        latestPackage = new PackageEntity
                         {
-                            Id = entry.Id,
+                            PackageRegistration = packageRegistrations[entry.Id],
                             Version = entry.Version.ToNormalizedString(),
                             Identity = identity,
-                            Deleted = entry.IsDelete,
-                            FirstCommitTimestamp = entry.CommitTimeStamp.UtcTicks,
-                            LastCommitTimestamp = entry.CommitTimeStamp.UtcTicks,
+                            CatalogPackage = new CatalogPackageEntity
+                            {
+                                Deleted = entry.IsDelete,
+                                FirstCommitTimestamp = entry.CommitTimeStamp.UtcTicks,
+                                LastCommitTimestamp = entry.CommitTimeStamp.UtcTicks,
+                            },
                         };
                         identityToLatest[latestPackage.Identity] = latestPackage;
                     }
                     else
                     {
-                        latestPackage.Deleted = entry.IsDelete;
+                        latestPackage.CatalogPackage.Deleted = entry.IsDelete;
 
-                        latestPackage.FirstCommitTimestamp = Math.Min(
-                            latestPackage.FirstCommitTimestamp,
+                        latestPackage.CatalogPackage.FirstCommitTimestamp = Math.Min(
+                            latestPackage.CatalogPackage.FirstCommitTimestamp,
                             entry.CommitTimeStamp.UtcTicks);
 
-                        latestPackage.LastCommitTimestamp = Math.Max(
-                            latestPackage.LastCommitTimestamp,
+                        latestPackage.CatalogPackage.LastCommitTimestamp = Math.Max(
+                            latestPackage.CatalogPackage.LastCommitTimestamp,
                             entry.CommitTimeStamp.UtcTicks);
                     }
                 }
@@ -106,6 +200,7 @@ namespace Knapcode.ExplorePackages.Logic
                 var identities = identityToLatest.Keys.ToList();
                 var existingPackages = await entityContext
                     .Packages
+                    .Include(x => x.CatalogPackage)
                     .Where(p => identities.Contains(p.Identity))
                     .ToListAsync();
 
@@ -117,15 +212,22 @@ namespace Knapcode.ExplorePackages.Logic
                     var latestPackage = identityToLatest[existingPackage.Identity];
                     identityToLatest.Remove(existingPackage.Identity);
 
-                    existingPackage.Deleted = latestPackage.Deleted;
+                    if (existingPackage.CatalogPackage == null)
+                    {
+                        existingPackage.CatalogPackage = latestPackage.CatalogPackage;
+                    }
+                    else
+                    {
+                        existingPackage.CatalogPackage.Deleted = latestPackage.CatalogPackage.Deleted;
 
-                    existingPackage.FirstCommitTimestamp = Math.Min(
-                        existingPackage.FirstCommitTimestamp,
-                        latestPackage.FirstCommitTimestamp);
+                        existingPackage.CatalogPackage.FirstCommitTimestamp = Math.Min(
+                            existingPackage.CatalogPackage.FirstCommitTimestamp,
+                            latestPackage.CatalogPackage.FirstCommitTimestamp);
 
-                    existingPackage.LastCommitTimestamp = Math.Max(
-                        existingPackage.LastCommitTimestamp,
-                        latestPackage.LastCommitTimestamp);
+                        existingPackage.CatalogPackage.LastCommitTimestamp = Math.Max(
+                            existingPackage.CatalogPackage.LastCommitTimestamp,
+                            latestPackage.CatalogPackage.LastCommitTimestamp);
+                    }
                 }
 
                 // Add new records.

@@ -51,17 +51,15 @@
     <Compile Include="Commands\FetchCursorsCommand.cs" />
     <Compile Include="Commands\ShowQueryResultsCommand.cs" />
     <Compile Include="Commands\ShowRepositoriesCommand.cs" />
-    <Compile Include="Entities\Migrations\20171120023631_Initial.cs" />
-    <Compile Include="Entities\Migrations\20171120023631_Initial.designer.cs">
-      <DependentUpon>20171120023631_Initial.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Entities\Migrations\20171120024303_AddV2FeedPackageEntity.cs" />
-    <Compile Include="Entities\Migrations\20171120024303_AddV2FeedPackageEntity.designer.cs">
-      <DependentUpon>20171120024303_AddV2FeedPackageEntity.cs</DependentUpon>
+    <Compile Include="Entities\CatalogPackageEntity.cs" />
+    <Compile Include="Entities\Migrations\20171124002059_Initial.cs" />
+    <Compile Include="Entities\Migrations\20171124002059_Initial.designer.cs">
+      <DependentUpon>20171124002059_Initial.cs</DependentUpon>
     </Compile>
     <Compile Include="Entities\Migrations\EntityContextModelSnapshot.cs" />
-    <Compile Include="Entities\PackageQuery.cs" />
-    <Compile Include="Entities\PackageQueryMatch.cs" />
+    <Compile Include="Entities\PackageQueryEntity.cs" />
+    <Compile Include="Entities\PackageQueryMatchEntity.cs" />
+    <Compile Include="Entities\PackageRegistrationEntity.cs" />
     <Compile Include="Entities\V2PackageEntity.cs" />
     <Compile Include="ExplorePackagesSettings.cs" />
     <Compile Include="Logic\Consistency\Reports\FlatContainerConsistencyReport.cs" />
@@ -144,7 +142,6 @@
     <Compile Include="Logic\SearchServiceUrlCache.cs" />
     <Compile Include="Logic\SearchServiceUrlDiscoverer.cs" />
     <Compile Include="Logic\SearchServiceCursorReader.cs" />
-    <Compile Include="Logic\V2PackageEntityService.cs" />
     <Compile Include="Logic\V2ToDatabaseProcessor.cs" />
     <Compile Include="Logic\XmlUtility.cs" />
     <Compile Include="ServiceCollectionExtensions.cs" />
@@ -187,9 +184,9 @@
     <Compile Include="Support\ConsoleLogger.cs" />
     <Compile Include="Support\ConsoleUtility.cs" />
     <Compile Include="Logic\CursorService.cs" />
-    <Compile Include="Entities\Cursor.cs" />
+    <Compile Include="Entities\CursorEntity.cs" />
     <Compile Include="Entities\EntityContext.cs" />
-    <Compile Include="Entities\Package.cs" />
+    <Compile Include="Entities\PackageEntity.cs" />
     <Compile Include="Logic\PackageService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

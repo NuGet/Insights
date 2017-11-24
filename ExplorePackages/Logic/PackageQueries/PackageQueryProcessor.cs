@@ -115,7 +115,7 @@ namespace Knapcode.ExplorePackages.Logic
                 var cursorName = queryNameToCursorName[query.Name];
                 if (!cursorNameToStart.ContainsKey(cursorName))
                 {
-                    var cursorStart = await _cursorService.GetAsync(cursorName);
+                    var cursorStart = await _cursorService.GetValueAsync(cursorName);
                     cursorNameToStart[cursorName] = cursorStart;
                 }
             }
@@ -234,7 +234,7 @@ namespace Knapcode.ExplorePackages.Logic
                     && bounds.CursorNameToStart[cursorName] < bounds.Start)
                 {
                     _log.LogInformation($"Cursor {cursorName} moving to {bounds.Start:O}.");
-                    await _cursorService.SetAsync(cursorName, bounds.Start);
+                    await _cursorService.SetValueAsync(cursorName, bounds.Start);
                     bounds.CursorNameToStart[cursorName] = bounds.Start;
                 }
             }

@@ -39,15 +39,12 @@ namespace Knapcode.ExplorePackages.Logic
 
         private async Task DownloadNuspecAsync(ConcurrentBag<CatalogEntry> work)
         {
-            await Task.Yield();
-
             CatalogEntry entry;
             while (work.TryTake(out entry))
             {
                 var success = await _downloader.StoreNuspecAsync(
                     entry.Id,
                     entry.Version.ToNormalizedString(),
-                    entry.NuspecUri.AbsoluteUri,
                     CancellationToken.None);
 
                 if (!success)

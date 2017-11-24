@@ -9,7 +9,17 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class CursorService
     {
-        public async Task<DateTimeOffset> GetAsync(string name)
+        private static readonly DateTimeOffset DefaultCursor = DateTimeOffset.MinValue;
+
+        public async Task<CursorEntity> GetAsync(string name)
+        {
+            using (var entityContext = new EntityContext())
+            {
+                return await GetCursorAsync(entityContext, name);
+            }
+        }
+
+        public async Task<DateTimeOffset> GetValueAsync(string name)
         {
             using (var entityContext = new EntityContext())
             {
@@ -31,28 +41,38 @@ namespace Knapcode.ExplorePackages.Logic
 
                 if (cursors.Count < names.Count)
                 {
-                    return DateTimeOffset.MinValue;
+                    return DefaultCursor;
                 }
 
                 return GetDateTimeOffset(cursors.First());
             }
         }
 
-        public async Task SetAsync(string name, DateTimeOffset value)
+        public async Task SetValueAsync(string name, long value)
         {
             using (var entityContext = new EntityContext())
             {
                 var cursor = await GetCursorAsync(entityContext, name);
                 if (cursor == null)
                 {
-                    cursor = new Cursor { Name = name };
+                    cursor = new CursorEntity { Name = name };
                     entityContext.Cursors.Add(cursor);
                 }
 
-                cursor.SetDateTimeOffset(value);
+                cursor.Value = value;
 
                 await entityContext.SaveChangesAsync();
             }
+        }
+
+        public async Task ResetValueAsync(string name)
+        {
+            await SetValueAsync(name, DefaultCursor);
+        }
+
+        public async Task SetValueAsync(string name, DateTimeOffset value)
+        {
+            await SetValueAsync(name, value.UtcTicks);
         }
 
         public async Task EnsureExistsAsync(string name)
@@ -62,10 +82,10 @@ namespace Knapcode.ExplorePackages.Logic
                 var cursor = await GetCursorAsync(entityContext, name);
                 if (cursor == null)
                 {
-                    cursor = new Cursor
+                    cursor = new CursorEntity
                     {
                         Name = name,
-                        Value = DateTimeOffset.MinValue.Ticks,
+                        Value = DefaultCursor.Ticks,
                     };
                     entityContext.Cursors.Add(cursor);
                     await entityContext.SaveChangesAsync();
@@ -73,21 +93,21 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
-        private async Task<Cursor> GetCursorAsync(EntityContext entityContext, string name)
+        private async Task<CursorEntity> GetCursorAsync(EntityContext entityContext, string name)
         {
             return await entityContext
                 .Cursors
                 .FirstOrDefaultAsync(x => x.Name == name);
         }
 
-        private static DateTimeOffset GetDateTimeOffset(Cursor cursor)
+        private static DateTimeOffset GetDateTimeOffset(CursorEntity cursor)
         {
             if (cursor == null)
             {
-                return DateTimeOffset.MinValue;
+                return DefaultCursor;
             }
 
-            return cursor.GetDateTimeOffset();
+            return new DateTimeOffset(cursor.Value, TimeSpan.Zero);
         }
     }
 }

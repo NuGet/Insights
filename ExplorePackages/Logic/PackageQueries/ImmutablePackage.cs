@@ -4,19 +4,19 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class ImmutablePackage
     {
-        private readonly Package _package;
+        private readonly PackageEntity _package;
 
-        public ImmutablePackage(Package package)
+        public ImmutablePackage(PackageEntity package)
         {
             _package = package;
         }
 
-        public int Key => _package.Key;
-        public string Id => _package.Id;
+        public long Key => _package.PackageKey;
+        public string Id => _package.PackageRegistration.Id;
         public string Version => _package.Version;
         public string Identity => _package.Identity;
-        public bool Deleted => _package.Deleted;
-        public long FirstCommitTimestamp => _package.FirstCommitTimestamp;
-        public long LastCommitTimestamp => _package.LastCommitTimestamp;
+        public bool Deleted => _package.CatalogPackage.Deleted;
+        public long FirstCommitTimestamp => _package.CatalogPackage.FirstCommitTimestamp;
+        public long LastCommitTimestamp => _package.CatalogPackage.LastCommitTimestamp;
     }
 }

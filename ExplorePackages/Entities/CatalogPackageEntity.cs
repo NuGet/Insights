@@ -1,13 +1,12 @@
 ﻿namespace Knapcode.ExplorePackages.Entities
 {
-    public class Package
+    public class CatalogPackageEntity
     {
-        public int Key { get; set; }
-        public string Id { get; set; }
-        public string Version { get; set; }
-        public string Identity { get; set; }
+        public long PackageKey { get; set; }
         public bool Deleted { get; set; }
         public long FirstCommitTimestamp { get; set; }
         public long LastCommitTimestamp { get; set; }
+
+        public PackageEntity Package { get; set; }
     }
 }

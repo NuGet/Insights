@@ -16,11 +16,13 @@ namespace Knapcode.ExplorePackages.Entities
             }
         }
 
-        public DbSet<Package> Packages { get; set; }
-        public DbSet<Cursor> Cursors { get; set; }
-        public DbSet<PackageQuery> PackageQueries { get; set; }
-        public DbSet<PackageQueryMatch> PackageQueryMatches { get; set; }
+        public DbSet<PackageRegistrationEntity> PackageRegistrations { get; set; }
+        public DbSet<PackageEntity> Packages { get; set; }
+        public DbSet<CursorEntity> Cursors { get; set; }
+        public DbSet<PackageQueryEntity> PackageQueries { get; set; }
+        public DbSet<PackageQueryMatchEntity> PackageQueryMatches { get; set; }
         public DbSet<V2PackageEntity> V2PackageEntities { get; set; }
+        public DbSet<CatalogPackageEntity> CatalogPackageEntities { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -31,118 +33,138 @@ namespace Knapcode.ExplorePackages.Entities
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder
-                .Entity<Cursor>()
-                .HasKey(x => x.Name);
+                .Entity<CursorEntity>()
+                .ToTable("Cursors");
 
             modelBuilder
-                .Entity<Package>()
-                .Property(x => x.Key)
-                .HasColumnName("PackageKey");
+                .Entity<CursorEntity>()
+                .HasKey(x => x.CursorKey);
 
             modelBuilder
-                .Entity<Package>()
-                .HasKey(x => x.Key);
+                .Entity<CursorEntity>()
+                .Property(x => x.Name)
+                .IsRequired();
 
             modelBuilder
-                .Entity<Package>()
+                .Entity<CursorEntity>()
+                .HasIndex(x => new { x.Name })
+                .IsUnique();
+
+            modelBuilder
+                .Entity<PackageRegistrationEntity>()
+                .ToTable("PackageRegistrations");
+
+            modelBuilder
+                .Entity<PackageRegistrationEntity>()
+                .HasKey(x => x.PackageRegistrationKey);
+
+            modelBuilder
+                .Entity<PackageRegistrationEntity>()
                 .Property(x => x.Id)
                 .HasColumnType("TEXT COLLATE NOCASE")
                 .IsRequired();
 
             modelBuilder
-                .Entity<Package>()
+                .Entity<PackageRegistrationEntity>()
+                .HasIndex(x => new { x.Id })
+                .IsUnique();
+
+            modelBuilder
+                .Entity<PackageEntity>()
+                .ToTable("Packages");
+
+            modelBuilder
+                .Entity<PackageEntity>()
+                .HasKey(x => x.PackageKey);
+
+            modelBuilder
+                .Entity<PackageEntity>()
                 .Property(x => x.Version)
                 .HasColumnType("TEXT COLLATE NOCASE")
                 .IsRequired();
 
             modelBuilder
-                .Entity<Package>()
+                .Entity<PackageEntity>()
                 .Property(x => x.Identity)
                 .HasColumnType("TEXT COLLATE NOCASE")
                 .IsRequired();
 
             modelBuilder
-                .Entity<Package>()
+                .Entity<PackageEntity>()
                 .HasIndex(x => new { x.Identity })
                 .IsUnique();
 
             modelBuilder
-                .Entity<Package>()
-                .HasIndex(x => new { x.Id, x.Version })
+                .Entity<PackageEntity>()
+                .HasIndex(x => new { x.PackageRegistrationKey, x.Version })
                 .IsUnique();
 
             modelBuilder
-                .Entity<Package>()
-                .HasIndex(x => new { x.LastCommitTimestamp });
+                .Entity<PackageQueryEntity>()
+                .ToTable("PackageQueries");
 
             modelBuilder
-                .Entity<PackageQuery>()
+                .Entity<PackageQueryEntity>()
                 .Property(x => x.Name)
                 .IsRequired();
 
             modelBuilder
-                .Entity<PackageQuery>()
-                .Property(x => x.CursorName)
-                .IsRequired();
-
+                .Entity<PackageQueryEntity>()
+                .HasKey(x => x.PackageQueryKey);
+            
             modelBuilder
-                .Entity<PackageQuery>()
-                .Property(x => x.Key)
-                .HasColumnName("PackageQueryKey");
-
-            modelBuilder
-                .Entity<PackageQuery>()
-                .HasKey(x => x.Key);
-
-            modelBuilder
-                .Entity<PackageQuery>()
+                .Entity<PackageQueryEntity>()
                 .HasIndex(x => new { x.Name })
                 .IsUnique();
 
             modelBuilder
-                .Entity<PackageQueryMatch>()
-                .Property(x => x.Key)
-                .HasColumnName("PackageQueryMatchKey");
+                .Entity<PackageQueryMatchEntity>()
+                .ToTable("PackageQueryMatches");
 
             modelBuilder
-                .Entity<PackageQueryMatch>()
-                .HasKey(x => x.Key);
-
+                .Entity<PackageQueryMatchEntity>()
+                .HasKey(x => x.PackageQueryMatchKey);
+            
             modelBuilder
-                .Entity<PackageQueryMatch>()
+                .Entity<PackageQueryMatchEntity>()
                 .HasIndex(x => new { x.PackageQueryKey, x.PackageKey })
                 .IsUnique();
 
             modelBuilder
                 .Entity<V2PackageEntity>()
-                .HasKey(x => x.Key);
+                .ToTable("V2Packages");
 
             modelBuilder
                 .Entity<V2PackageEntity>()
-                .Property(x => x.Id)
-                .HasColumnType("TEXT COLLATE NOCASE")
-                .IsRequired();
+                .HasKey(x => x.PackageKey);
+            
+            modelBuilder
+                .Entity<V2PackageEntity>()
+                .HasIndex(x => new { x.CreatedTimestamp });
 
             modelBuilder
                 .Entity<V2PackageEntity>()
-                .Property(x => x.Version)
-                .HasColumnType("TEXT COLLATE NOCASE")
-                .IsRequired();
+                .HasOne(x => x.Package)
+                .WithOne(x => x.V2Package)
+                .HasForeignKey<V2PackageEntity>(x => x.PackageKey);
 
             modelBuilder
-                .Entity<V2PackageEntity>()
-                .Property(x => x.Identity)
-                .HasColumnType("TEXT COLLATE NOCASE")
-                .IsRequired();
+                .Entity<CatalogPackageEntity>()
+                .ToTable("CatalogPackages");
 
             modelBuilder
-                .Entity<V2PackageEntity>()
-                .HasIndex(x => new { x.Id, x.Version })
-                .IsUnique();
+                .Entity<CatalogPackageEntity>()
+                .HasKey(x => x.PackageKey);
 
             modelBuilder
-                .Entity<V2PackageEntity>()
-                .HasIndex(x => new { x.Created });
+                .Entity<CatalogPackageEntity>()
+                .HasIndex(x => new { x.LastCommitTimestamp });
+
+            modelBuilder
+                .Entity<CatalogPackageEntity>()
+                .HasOne(x => x.Package)
+                .WithOne(x => x.CatalogPackage)
+                .HasForeignKey<CatalogPackageEntity>(x => x.PackageKey);
         }
     }
 }

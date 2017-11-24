@@ -38,13 +38,13 @@ namespace Knapcode.ExplorePackages.Commands
 
                 foreach (var match in matches.Packages)
                 {
-                    Console.Write(match.Id);
+                    Console.Write(match.PackageRegistration);
                     Console.Write('\t');
                     Console.Write(match.Version);
                     Console.Write('\t');
-                    Console.Write(FormatDateTimeOffset(match.FirstCommitTimestamp));
+                    Console.Write(FormatDateTimeOffset(match.CatalogPackage.FirstCommitTimestamp));
                     Console.Write('\t');
-                    Console.Write(FormatDateTimeOffset(match.LastCommitTimestamp));
+                    Console.Write(FormatDateTimeOffset(match.CatalogPackage.LastCommitTimestamp));
                     Console.WriteLine();
                 }
             }
