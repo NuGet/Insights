@@ -160,6 +160,7 @@
     <Compile Include="Support\IPortDiscoverer.cs" />
     <Compile Include="Support\IPortTester.cs" />
     <Compile Include="Support\JsonReaderExtensions.cs" />
+    <Compile Include="Support\LoggingHander.cs" />
     <Compile Include="Support\MD5IncrementalHash.cs" />
     <Compile Include="Support\NuGetLogger.cs" />
     <Compile Include="Logic\Protocol\FlatContainerClient.cs" />

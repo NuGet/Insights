@@ -14,11 +14,9 @@ namespace Knapcode.ExplorePackages.Support
             // Try to get all of the information using a HEAD request.
             using (var request = new HttpRequestMessage(HttpMethod.Head, url))
             {
-                log.LogInformation($"  {request.Method} {request.RequestUri}");
                 var stopwatch = Stopwatch.StartNew();
                 using (var response = await httpClient.SendAsync(request))
                 {
-                    log.LogInformation($"  {response.StatusCode} {response.RequestMessage.RequestUri} {stopwatch.ElapsedMilliseconds}ms");
                     if (response.StatusCode == HttpStatusCode.NotFound)
                     {
                         return new BlobMetadata(
@@ -45,12 +43,9 @@ namespace Knapcode.ExplorePackages.Support
             // package.
             using (var request = new HttpRequestMessage(HttpMethod.Get, url))
             {
-                log.LogInformation($"  {request.Method} {request.RequestUri}");
                 var stopwatch = Stopwatch.StartNew();
                 using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead))
                 {
-                    log.LogInformation($"  {response.StatusCode} {response.RequestMessage.RequestUri} {stopwatch.ElapsedMilliseconds}ms");
-
                     response.EnsureSuccessStatusCode();
 
                     var buffer = new byte[16 * 1024];

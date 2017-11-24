@@ -32,7 +32,10 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddSingleton(
                 x =>
                 {
-                    var httpClient = new HttpClient(x.GetRequiredService<HttpMessageHandler>());
+                    var innerHandler = x.GetRequiredService<HttpMessageHandler>();
+                    var log = x.GetRequiredService<ILogger>();
+                    var loggingHandler = new LoggingHander(innerHandler, log);
+                    var httpClient = new HttpClient(loggingHandler);
                     httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", UserAgent.UserAgentString);
                     return httpClient;
                 });
