@@ -80,7 +80,7 @@ namespace Knapcode.ExplorePackages.Logic
 
             return existingRegistrations
                 .Concat(newRegistrations)
-                .ToDictionary(x => x.Id, x => x);
+                .ToDictionary(x => x.Id, x => x, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
