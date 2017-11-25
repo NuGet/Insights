@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -6,5 +7,8 @@ namespace Knapcode.ExplorePackages.Logic
     {
         [JsonProperty("totalHits")]
         public int TotalHits { get; set; }
+        
+        [JsonProperty("data")]
+        public List<V2SearchResultItem> Data { get; set; }
     }
 }

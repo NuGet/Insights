@@ -156,6 +156,8 @@
     <Compile Include="Logic\Protocol\V2Parser.cs" />
     <Compile Include="Logic\Protocol\V2OrderByTimestamp.cs" />
     <Compile Include="Logic\Protocol\V2SearchResult.cs" />
+    <Compile Include="Logic\Protocol\V2SearchResultItem.cs" />
+    <Compile Include="Logic\Protocol\V2SearchResultPackageRegistration.cs" />
     <Compile Include="Logic\SearchServiceUrlCache.cs" />
     <Compile Include="Logic\SearchServiceUrlDiscoverer.cs" />
     <Compile Include="Logic\SearchServiceCursorReader.cs" />
