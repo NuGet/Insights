@@ -174,6 +174,7 @@ namespace Knapcode.ExplorePackages.Logic
             var existingIdentities = await entityContext
                 .PackageQueryMatches
                 .Include(x => x.Package)
+                .Include(x => x.Package.PackageRegistration)
                 .Where(x => identityStrings.Contains(x.Package.Identity) && x.PackageQueryKey == queryKey)
                 .ToListAsync();
 
