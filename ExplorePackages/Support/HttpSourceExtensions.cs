@@ -13,8 +13,11 @@ namespace Knapcode.ExplorePackages.Support
     {
         private static readonly JsonSerializer Serializer = new JsonSerializer
         {
-            DateParseHandling = DateParseHandling.DateTimeOffset,
-            DateTimeZoneHandling = DateTimeZoneHandling.Utc,
+            DateParseHandling = DateParseHandling.None,
+            Converters =
+            {
+                new AssumeUniversalDateTimeOffsetConverter(),
+            },
         };
 
         public static async Task<bool> UrlExistsAsync(this HttpSource httpSource, string url, ILogger log)
