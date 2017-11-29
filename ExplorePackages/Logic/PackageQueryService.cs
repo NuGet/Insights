@@ -55,10 +55,10 @@ namespace Knapcode.ExplorePackages.Logic
         {
             return _enumerator.GetPackageCommitsAsync(
                 e => e
-                    .PackageQueryMatches
-                    .Where(x => queryNames.Contains(x.PackageQuery.Name))
-                    .Select(x => x.Package)
-                    .Distinct(),
+                    .Packages
+                    .Where(x => x
+                        .PackageQueryMatches
+                        .Any(pqm => queryNames.Contains(pqm.PackageQuery.Name))),
                 start,
                 end);
         }

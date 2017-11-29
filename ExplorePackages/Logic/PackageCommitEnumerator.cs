@@ -11,7 +11,7 @@ namespace Knapcode.ExplorePackages.Logic
 
     public class PackageCommitEnumerator
     {
-        private const int PageSize = 1000;
+        private const int PageSize = 5000;
 
         public Task<IReadOnlyList<PackageCommit>> GetPackageCommitsAsync(
             GetPackages getPackages,
@@ -37,6 +37,7 @@ namespace Knapcode.ExplorePackages.Logic
                     var packages = await getPackages(entities)
                         .Include(x => x.PackageRegistration)
                         .Include(x => x.CatalogPackage)
+                        .Where(x => x.CatalogPackage != null)
                         .Where(x => x.CatalogPackage.LastCommitTimestamp > start && x.CatalogPackage.LastCommitTimestamp <= end)
                         .OrderBy(x => x.CatalogPackage.LastCommitTimestamp)
                         .Take(PageSize)

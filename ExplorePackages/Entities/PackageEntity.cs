@@ -1,4 +1,6 @@
-﻿namespace Knapcode.ExplorePackages.Entities
+﻿using System.Collections.Generic;
+
+namespace Knapcode.ExplorePackages.Entities
 {
     public class PackageEntity
     {
@@ -11,5 +13,6 @@
         public V2PackageEntity V2Package { get; set; }
         public CatalogPackageEntity CatalogPackage { get; set; }
         public PackageDownloadsEntity PackageDownloads { get; set; }
+        public List<PackageQueryMatchEntity> PackageQueryMatches { get; set; }
     }
 }
