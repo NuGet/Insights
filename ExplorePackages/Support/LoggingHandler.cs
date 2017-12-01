@@ -6,11 +6,11 @@ using NuGet.Common;
 
 namespace Knapcode.ExplorePackages.Support
 {
-    public class LoggingHander : DelegatingHandler
+    public class LoggingHandler : DelegatingHandler
     {
         private readonly ILogger _log;
 
-        public LoggingHander(HttpMessageHandler innerHandler, ILogger log)
+        public LoggingHandler(HttpMessageHandler innerHandler, ILogger log)
         {
             _log = log;
             InnerHandler = innerHandler;

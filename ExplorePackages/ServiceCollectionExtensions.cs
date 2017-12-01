@@ -34,7 +34,7 @@ namespace Knapcode.ExplorePackages
                 {
                     var innerHandler = x.GetRequiredService<HttpMessageHandler>();
                     var log = x.GetRequiredService<ILogger>();
-                    var loggingHandler = new LoggingHander(innerHandler, log);
+                    var loggingHandler = new LoggingHandler(innerHandler, log);
                     var httpClient = new HttpClient(loggingHandler);
                     UserAgent.SetUserAgent(httpClient);
                     return httpClient;
@@ -77,6 +77,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<SearchServiceCursorReader>();
             serviceCollection.AddTransient<PackageQueryContextBuilder>();
             serviceCollection.AddTransient<IProgressReport, NullProgressReport>();
+            serviceCollection.AddTransient<LatestV2PackageFetcher>();
             serviceCollection.AddTransient<LatestCatalogCommitFetcher>();
             serviceCollection.AddTransient<V2ToDatabaseProcessor>();
             serviceCollection.AddTransient<PackageDownloadsToDatabaseProcessor>();

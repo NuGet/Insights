@@ -13,23 +13,26 @@ namespace Knapcode.ExplorePackages.Website.Logic
 
         private readonly PackageConsistencyService _packageConsistencyService;
         private readonly PackageQueryContextBuilder _packageQueryContextBuilder;
+        private readonly LatestV2PackageFetcher _latestV2PackageFetcher;
         private readonly LatestCatalogCommitFetcher _latestCatalogCommitFetcher;
 
         public PackageReportHub(
             PackageConsistencyService packageConsistencyService,
             PackageQueryContextBuilder packageQueryContextBuilder,
+            LatestV2PackageFetcher latestV2PackageFetcher,
             LatestCatalogCommitFetcher latestCatalogCommitFetcher)
         {
             _packageConsistencyService = packageConsistencyService;
             _packageQueryContextBuilder = packageQueryContextBuilder;
+            _latestV2PackageFetcher = latestV2PackageFetcher;
             _latestCatalogCommitFetcher = latestCatalogCommitFetcher;
         }
-        
-        public async Task GetLatest()
+
+        private async Task ExecuteAndReportErrorAsync(Func<Task> executeAsync)
         {
             try
             {
-                await GetLatestInternalAsync();
+                await executeAsync();
             }
             catch
             {
@@ -37,7 +40,12 @@ namespace Knapcode.ExplorePackages.Website.Logic
             }
         }
 
-        private async Task GetLatestInternalAsync()
+        public async Task GetLatestCatalog()
+        {
+            await ExecuteAndReportErrorAsync(GetLatestCatalogInternalAsync);
+        }
+
+        private async Task GetLatestCatalogInternalAsync()
         {
             await InvokeProgressAsync(0, "Fetching the latest catalog commit...");
 
@@ -49,16 +57,25 @@ namespace Knapcode.ExplorePackages.Website.Logic
             await InvokeFoundLatestAsync(catalogItem.Id, catalogItem.Version.ToFullString());
         }
 
+        public async Task GetLatestV2()
+        {
+            await ExecuteAndReportErrorAsync(GetLatestV2InternalAsync);
+        }
+
+        private async Task GetLatestV2InternalAsync()
+        {
+            await InvokeProgressAsync(0, "Fetching the latest V2 package...");
+
+            var package = await _latestV2PackageFetcher.GetLatestPackageAsync(new ProgressReport(this));
+            
+            await InvokeProgressAsync(1, $"Using package {package.Id} {package.Version}.");
+
+            await InvokeFoundLatestAsync(package.Id, package.Version);
+        }
+
         public async Task Start(string id, string version)
         {
-            try
-            {
-                await StartInternalAsync(id, version);
-            }
-            catch
-            {
-                await InvokeErrorAsync("An internal server error occurred.");
-            }
+            await ExecuteAndReportErrorAsync(() => StartInternalAsync(id, version));
         }
 
         private async Task StartInternalAsync(string id, string version)

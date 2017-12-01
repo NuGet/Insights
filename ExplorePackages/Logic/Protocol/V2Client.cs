@@ -33,10 +33,17 @@ namespace Knapcode.ExplorePackages.Logic
                 default:
                     throw new NotSupportedException($"The {nameof(orderBy)} value is not supported.");
             }
-            
+
             var filterValue = $"{filterField} gt DateTime'{start.UtcDateTime:O}'";
             var orderByValue = $"{filterField} asc";
-            var url = $"{baseUrl.TrimEnd('/')}/Packages?$select=Id,Version,Created&semVerLevel=2.0.0&$top={top}&$orderby={Uri.EscapeDataString(orderByValue)}&$filter={Uri.EscapeDataString(filterValue)}";
+
+            return await GetPackagesAsync(baseUrl, filterValue, orderByValue, top);
+        }
+
+        public async Task<IReadOnlyList<V2Package>> GetPackagesAsync(string baseUrl, string filter, string orderBy, int top)
+        {
+            filter = filter ?? "1 eq 1";
+            var url = $"{baseUrl.TrimEnd('/')}/Packages?$select=Id,Version,Created&semVerLevel=2.0.0&$top={top}&$orderby={Uri.EscapeDataString(orderBy)}&$filter={Uri.EscapeDataString(filter)}";
 
             return await _httpSource.ProcessStreamAsync(
                 new HttpSourceRequest(url, _log),

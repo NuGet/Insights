@@ -18,7 +18,8 @@
                 <input type="text" class="form-control" name="version" id="packageVersion" value="">
             </div>
             <button type="submit" id="getReport" class="btn btn-primary">Submit</button>
-            <button type="button" id="getLatest" class="btn btn-default">Find Latest Package</button>
+            <button type="button" id="getLatestV2" class="btn btn-default">Find Latest V2 Package</button>
+            <button type="button" id="getLatestCatalog" class="btn btn-default">Find Latest Catalog Package</button>
         </form>
 
         <hr />
@@ -512,19 +513,21 @@
 
             var connection = null;
 
-            $("#getLatest").click(function () {
+            $("#getLatestCatalog, #getLatestV2").click(function () {
                 if (inProgress) {
                     return false;
                 }
 
                 resetForm();
 
+                var method = this.id === "getLatestV2" ? "GetLatestV2" : "GetLatestCatalog";
+
                 if (connection == null) {
                     connection = initializeConnection(function () {
-                        connection.invoke('GetLatest');
+                        connection.invoke(method);
                     });
                 } else {
-                    connection.invoke('GetLatest');
+                    connection.invoke(method);
                 }
 
                 lockForm();
