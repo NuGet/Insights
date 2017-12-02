@@ -110,6 +110,9 @@
     <Compile Include="Logic\PackageDownloadsToDatabaseProcessor.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindEmptyDependencyVersionsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindFloatingDependencyVersionsNuspecQuery.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\FindInvalidDependencyIdNuspecQuery.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\FindInvalidDependencyTargetFrameworkNuspecQuery.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\FindMixedDependencyGroupStylesNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindNonNormalizedPackageVersionsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindInvalidPackageVersionsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindInvalidPackageIdsNuspecQuery.cs" />
@@ -117,6 +120,9 @@
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindIdsEndingInDotNumberNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindNonAsciiIdsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindPackageVersionsContainingWhitespaceNuspecQuery.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\FindUnsupportedDependencyTargetFrameworkNuspecQuery.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\FindWhitespaceDependencyTargetFrameworkNuspecQuery.cs" />
+    <Compile Include="Logic\PackageIdValidator.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueries\HasMissingNuspecPackageQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindPackageTypesNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindInvalidDependencyVersionsNuspecQuery.cs" />
@@ -167,6 +173,8 @@
     <Compile Include="Logic\UrlReportHandler.cs" />
     <Compile Include="Logic\UrlReportProvider.cs" />
     <Compile Include="Logic\V2ToDatabaseProcessor.cs" />
+    <Compile Include="Logic\XmlDependencyGroup.cs" />
+    <Compile Include="Logic\XmlDependencyGroups.cs" />
     <Compile Include="Logic\XmlUtility.cs" />
     <Compile Include="ServiceCollectionExtensions.cs" />
     <Compile Include="Support\AssumeUniversalDateTimeOffsetConverter.cs" />

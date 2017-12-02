@@ -135,6 +135,10 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<FindInvalidPackageIdsNuspecQuery>();
             serviceCollection.AddTransient<FindInvalidPackageVersionsNuspecQuery>();
             serviceCollection.AddTransient<FindPackageVersionsContainingWhitespaceNuspecQuery>();
+            serviceCollection.AddTransient<FindInvalidDependencyIdNuspecQuery>();
+            serviceCollection.AddTransient<FindInvalidDependencyTargetFrameworkNuspecQuery>();
+            serviceCollection.AddTransient<FindMixedDependencyGroupStylesNuspecQuery>();
+            serviceCollection.AddTransient<FindWhitespaceDependencyTargetFrameworkNuspecQuery>();
 
             if (settings.RunBoringQueries)
             {

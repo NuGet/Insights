@@ -128,12 +128,12 @@ namespace Knapcode.ExplorePackages.Logic
                 .FirstOrDefault();
         }
 
-        public static IEnumerable<XElement> GetDependencies(XDocument nuspec)
+        public static XmlDependencyGroups GetDependencyGroups(XDocument nuspec)
         {
             var metadataEl = GetMetadata(nuspec);
             if (metadataEl == null)
             {
-                return Enumerable.Empty<XElement>();
+                return XmlDependencyGroups.Empty;
             }
 
             var ns = metadataEl.GetDefaultNamespace();
@@ -141,15 +141,39 @@ namespace Knapcode.ExplorePackages.Logic
             var dependenciesEl = metadataEl.Element(ns.GetName("dependencies"));
             if (dependenciesEl == null)
             {
-                return Enumerable.Empty<XElement>();
+                return XmlDependencyGroups.Empty;
             }
 
-            var dependenyName = ns.GetName("dependency");
+            var dependencyName = ns.GetName("dependency");
+            var groupName = ns.GetName("group");
 
-            return dependenciesEl
-                .Elements(ns.GetName("group"))
-                .SelectMany(x => x.Elements(dependenyName))
-                .Concat(dependenciesEl.Elements(dependenyName));
+            var legacyDependencies = dependenciesEl
+                .Elements(dependencyName)
+                .ToList();
+
+            var groups = new List<XmlDependencyGroup>();
+            foreach (var groupEl in dependenciesEl.Elements(groupName))
+            {
+                var targetFramework = groupEl.Attribute("targetFramework")?.Value;
+                var groupDependencies = groupEl
+                    .Elements(dependencyName)
+                    .ToList();
+                groups.Add(new XmlDependencyGroup(
+                    targetFramework,
+                    groupDependencies));
+            }
+
+            return new XmlDependencyGroups(legacyDependencies, groups);
+        }
+
+        public static IReadOnlyList<XElement> GetDependencies(XDocument nuspec)
+        {
+            var groups = GetDependencyGroups(nuspec);
+            return groups
+                .Groups
+                .SelectMany(x => x.Dependencies)
+                .Concat(groups.Dependencies)
+                .ToList();
         }
     }
 }

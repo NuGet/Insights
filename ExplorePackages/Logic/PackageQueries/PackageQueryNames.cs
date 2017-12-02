@@ -17,6 +17,12 @@
         public const string FindInvalidPackageVersionsNuspecQuery = CursorNames.FindInvalidPackageVersionsNuspecQuery;
         public const string FindNonNormalizedPackageVersionsNuspecQuery = CursorNames.FindNonNormalizedPackageVersionsNuspecQuery;
         public const string FindPackageVersionsContainingWhitespaceNuspecQuery = CursorNames.FindPackageVersionsContainingWhitespaceNuspecQuery;
+        public const string FindDuplicateDependenciesNuspecQuery = CursorNames.FindDuplicateDependenciesNuspecQuery;
+        public const string FindMixedDependencyGroupStylesNuspecQuery = CursorNames.FindMixedDependencyGroupStylesNuspecQuery;
+        public const string FindWhitespaceDependencyTargetFrameworkNuspecQuery = CursorNames.FindWhitespaceDependencyTargetFrameworkNuspecQuery;
+        public const string FindUnsupportedDependencyTargetFrameworkNuspecQuery = CursorNames.FindUnsupportedDependencyTargetFrameworkNuspecQuery;
+        public const string FindInvalidDependencyTargetFrameworkNuspecQuery = CursorNames.FindInvalidDependencyTargetFrameworkNuspecQuery;
+        public const string FindInvalidDependencyIdNuspecQuery = CursorNames.FindInvalidDependencyIdNuspecQuery;
 
         public const string HasRegistrationDiscrepancyInOriginalHivePackageQuery = CursorNames.HasRegistrationDiscrepancyInOriginalHivePackageQuery;
         public const string HasRegistrationDiscrepancyInGzippedHivePackageQuery = CursorNames.HasRegistrationDiscrepancyInGzippedHivePackageQuery;

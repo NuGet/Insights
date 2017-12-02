@@ -93,7 +93,7 @@ namespace Knapcode.ExplorePackages.Website.Logic
                 return;
             }
 
-            if (!PackageIdValidator.IsValidPackageId(id))
+            if (!StrictPackageIdValidator.IsValid(id))
             {
                 await InvokeErrorAsync("The ID you provided is invalid.");
                 return;
