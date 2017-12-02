@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
 using Microsoft.AspNetCore.SignalR;
+using NuGet.Packaging;
 using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Website.Logic
@@ -89,6 +90,12 @@ namespace Knapcode.ExplorePackages.Website.Logic
             if (string.IsNullOrWhiteSpace(id))
             {
                 await InvokeErrorAsync("You must provide a package ID.");
+                return;
+            }
+
+            if (!PackageIdValidator.IsValidPackageId(id))
+            {
+                await InvokeErrorAsync("The ID you provided is invalid.");
                 return;
             }
 
