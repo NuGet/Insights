@@ -49,6 +49,7 @@ namespace Knapcode.ExplorePackages.Logic
 ### Queries
 
 I've written the following queries, but you can fork this repository and search for anything you want.
+
 https://github.com/joelverhagen/ExplorePackages/tree/master/ExplorePackages/Logic/PackageQueries
 
 ### Consistency
