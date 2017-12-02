@@ -10,10 +10,9 @@ namespace Knapcode.ExplorePackages.Support
     {
         private readonly ILogger _log;
 
-        public LoggingHandler(HttpMessageHandler innerHandler, ILogger log)
+        public LoggingHandler(ILogger log)
         {
             _log = log;
-            InnerHandler = innerHandler;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

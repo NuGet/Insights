@@ -18,24 +18,35 @@ namespace Knapcode.ExplorePackages
     {
         public static IServiceCollection AddExplorePackages(this IServiceCollection serviceCollection, ExplorePackagesSettings settings)
         {
+            serviceCollection.AddSingleton<UrlReportProvider>();
+            serviceCollection.AddTransient<UrlReportHandler>();
+            serviceCollection.AddTransient<LoggingHandler>();
             serviceCollection.AddSingleton(
                 x => new HttpClientHandler
                 {
                     AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
                 });
-            serviceCollection.AddSingleton<HttpMessageHandler>(
+            serviceCollection.AddTransient(
                 x => new InitializeServicePointHandler(
-                    connectionLeaseTimeout: TimeSpan.FromMinutes(1))
+                    connectionLeaseTimeout: TimeSpan.FromMinutes(1)));
+            serviceCollection.AddTransient<HttpMessageHandler>(
+                x =>
                 {
-                    InnerHandler = x.GetRequiredService<HttpClientHandler>(),
+                    var httpClientHandler = x.GetRequiredService<HttpClientHandler>();
+                    var initializeServicePointerHander = x.GetRequiredService<InitializeServicePointHandler>();
+                    var loggingHandler = x.GetRequiredService<LoggingHandler>();
+                    var urlReportHandler = x.GetRequiredService<UrlReportHandler>();
+
+                    initializeServicePointerHander.InnerHandler = httpClientHandler;
+                    loggingHandler.InnerHandler = initializeServicePointerHander;
+                    urlReportHandler.InnerHandler = loggingHandler;
+
+                    return urlReportHandler;
                 });
             serviceCollection.AddSingleton(
                 x =>
                 {
-                    var innerHandler = x.GetRequiredService<HttpMessageHandler>();
-                    var log = x.GetRequiredService<ILogger>();
-                    var loggingHandler = new LoggingHandler(innerHandler, log);
-                    var httpClient = new HttpClient(loggingHandler);
+                    var httpClient = new HttpClient(x.GetRequiredService<HttpMessageHandler>());
                     UserAgent.SetUserAgent(httpClient);
                     return httpClient;
                 });

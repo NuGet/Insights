@@ -17,7 +17,7 @@
                 <label for="packageVersion">Package Version</label>
                 <input type="text" class="form-control" name="version" id="packageVersion" value="">
             </div>
-            <button type="submit" id="getReport" class="btn btn-primary">Submit</button>
+            <button type="submit" id="getReport" class="btn btn-primary">Explore</button>
             <button type="button" id="getLatestV2" class="btn btn-default">Find Latest V2 Package</button>
             <button type="button" id="getLatestCatalog" class="btn btn-default">Find Latest Catalog Package</button>
         </form>
@@ -29,6 +29,11 @@
                 <li role="presentation" class="active">
                     <a href="#progress" aria-controls="progress" role="tab" data-toggle="tab" id="progressTab">
                         Progress
+                    </a>
+                </li>
+                <li role="presentation">
+                    <a href="#urls" aria-controls="urls" role="tab" data-toggle="tab" id="urlsTab">
+                        URLs
                     </a>
                 </li>
                 <li role="presentation" class="disabled">
@@ -55,6 +60,8 @@
                 <div role="tabpanel" class="tab-pane" id="report">
                 </div>
                 <div role="tabpanel" class="tab-pane" id="reportData">
+                </div>
+                <div role="tabpanel" class="tab-pane" id="urls">
                 </div>
             </div>
         </div>
@@ -373,12 +380,15 @@
             var $packageId = $("#packageId");
             var $packageVersion = $("#packageVersion");
             var $getReport = $("#getReport");
-            var $getLatest = $("#getLatest");
+            var $getLatestV2 = $("#getLatestV2");
+            var $getLatestCatalog = $("#getLatestCatalog");
             var $progressTab = $("#progressTab");
             var $reportTab = $("#reportTab");
             var $reportDataTab = $("#reportDataTab");
+            var $urlsTab = $("#urlsTab");
             var $report = $("#report");
             var $reportData = $("#reportData");
+            var $urls = $("#urls");
 
             var reportTemplateSource = $("#report-template").html();
             var reportTemplate = Handlebars.compile(reportTemplateSource);
@@ -422,7 +432,7 @@
                 $report.empty();
                 $reportData.empty();
                 $statuses.empty();
-                $progressTab.parent().attr("class", "");
+                $urls.empty();
                 $reportTab.parent().attr("class", "disabled");
                 $reportDataTab.parent().attr("class", "disabled");
                 $progressTab.tab('show');
@@ -432,14 +442,16 @@
             function lockForm() {
                 inProgress = true;
                 $getReport.prop("disabled", true);
-                $getLatest.prop("disabled", true);
+                $getLatestV2.prop("disabled", true);
+                $getLatestCatalog.prop("disabled", true);
                 $progressBar.addClass("active");
             }
 
             function unlockForm() {
                 inProgress = false;
                 $getReport.prop("disabled", false);
-                $getLatest.prop("disabled", false);
+                $getLatestV2.prop("disabled", false);
+                $getLatestCatalog.prop("disabled", false);
                 $progressBar.removeClass("active");
             }
 
@@ -451,6 +463,19 @@
                 connection.on('Progress', function (percent, message) {
                     setProgress(percent);
                     addStatus(message);
+                });
+
+                connection.on('Url', function (url) {
+                    if ($urls.children().length == 0) {
+                        $urls.append($("<div></div>"))
+                    }
+
+                    var a = $("<a></a>");
+                    a.attr("href", url);
+                    a.text(url);
+                    var p = $("<p></p>");
+                    p.append(a);
+                    $urls.find("div").append(p);
                 });
 
                 connection.onclose(function (error) {

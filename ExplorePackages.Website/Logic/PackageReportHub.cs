@@ -15,24 +15,29 @@ namespace Knapcode.ExplorePackages.Website.Logic
         private readonly PackageQueryContextBuilder _packageQueryContextBuilder;
         private readonly LatestV2PackageFetcher _latestV2PackageFetcher;
         private readonly LatestCatalogCommitFetcher _latestCatalogCommitFetcher;
+        private readonly UrlReportProvider _urlReportProvider;
 
         public PackageReportHub(
             PackageConsistencyService packageConsistencyService,
             PackageQueryContextBuilder packageQueryContextBuilder,
             LatestV2PackageFetcher latestV2PackageFetcher,
-            LatestCatalogCommitFetcher latestCatalogCommitFetcher)
+            LatestCatalogCommitFetcher latestCatalogCommitFetcher,
+            UrlReportProvider urlReportProvider)
         {
             _packageConsistencyService = packageConsistencyService;
             _packageQueryContextBuilder = packageQueryContextBuilder;
             _latestV2PackageFetcher = latestV2PackageFetcher;
             _latestCatalogCommitFetcher = latestCatalogCommitFetcher;
+            _urlReportProvider = urlReportProvider;
         }
 
         private async Task ExecuteAndReportErrorAsync(Func<Task> executeAsync)
         {
             try
             {
+                _urlReportProvider.SetUrlReport(new UrlReport(this));
                 await executeAsync();
+                _urlReportProvider.SetUrlReport(null);
             }
             catch
             {
@@ -138,6 +143,11 @@ namespace Knapcode.ExplorePackages.Website.Logic
             await InvokeOnClientAsync("Progress", percent, message);
         }
 
+        private async Task InvokeUrlAsync(string url)
+        {
+            await InvokeOnClientAsync("Url", url);
+        }
+
         private async Task InvokeErrorAsync(string message)
         {
             await InvokeOnClientAsync("Error", message);
@@ -158,6 +168,21 @@ namespace Knapcode.ExplorePackages.Website.Logic
             await Clients
                 .Client(Context.ConnectionId)
                 .InvokeAsync(method, args);
+        }
+
+        private class UrlReport : IUrlReport
+        {
+            private readonly PackageReportHub _hub;
+
+            public UrlReport(PackageReportHub hub)
+            {
+                _hub = hub;
+            }
+
+            public async Task ReportUrlAsync(Uri uri)
+            {
+                await _hub.InvokeUrlAsync(uri.AbsoluteUri);
+            }
         }
 
         private class ProgressReport : IProgressReport

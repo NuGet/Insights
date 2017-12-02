@@ -21,3 +21,8 @@
     -o-transition: none !important;
     transition: none !important;
 }
+
+#urls div {
+    overflow: auto;
+    white-space: nowrap;
+}

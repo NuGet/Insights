@@ -87,6 +87,7 @@
     <Compile Include="Logic\IncrementalProgress.cs" />
     <Compile Include="Logic\IProgressReport.cs" />
     <Compile Include="Logic\ISearchServiceUrlCacheInvalidator.cs" />
+    <Compile Include="Logic\IUrlReport.cs" />
     <Compile Include="Logic\LatestV2PackageFetcher.cs" />
     <Compile Include="Logic\LatestCatalogCommitFetcher.cs" />
     <Compile Include="Logic\NullProgressReport.cs" />
@@ -104,6 +105,7 @@
     <Compile Include="Logic\Consistency\Services\SearchLoadBalancerConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Services\SearchSpecificInstancesConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Services\V2ConsistencyService.cs" />
+    <Compile Include="Logic\NullUrlReport.cs" />
     <Compile Include="Logic\PackageCommitEnumerator.cs" />
     <Compile Include="Logic\PackageDownloadsToDatabaseProcessor.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindEmptyDependencyVersionsNuspecQuery.cs" />
@@ -162,6 +164,8 @@
     <Compile Include="Logic\SearchServiceUrlCache.cs" />
     <Compile Include="Logic\SearchServiceUrlDiscoverer.cs" />
     <Compile Include="Logic\SearchServiceCursorReader.cs" />
+    <Compile Include="Logic\UrlReportHandler.cs" />
+    <Compile Include="Logic\UrlReportProvider.cs" />
     <Compile Include="Logic\V2ToDatabaseProcessor.cs" />
     <Compile Include="Logic\XmlUtility.cs" />
     <Compile Include="ServiceCollectionExtensions.cs" />
