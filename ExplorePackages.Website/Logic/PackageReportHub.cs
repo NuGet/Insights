@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
 using Microsoft.AspNetCore.SignalR;
@@ -143,9 +144,14 @@ namespace Knapcode.ExplorePackages.Website.Logic
             await InvokeOnClientAsync("Progress", percent, message);
         }
 
-        private async Task InvokeUrlAsync(string url)
+        private async Task InvokeHttpRequestAsync(string id, string method, string requestUri)
         {
-            await InvokeOnClientAsync("Url", url);
+            await InvokeOnClientAsync("HttpRequest", id, method, requestUri);
+        }
+
+        private async Task InvokeHttpResponseAsync(string id, int statusCode, string reasonPhrase, decimal duration)
+        {
+            await InvokeOnClientAsync("HttpResponse", id, statusCode, reasonPhrase, duration);
         }
 
         private async Task InvokeErrorAsync(string message)
@@ -179,9 +185,21 @@ namespace Knapcode.ExplorePackages.Website.Logic
                 _hub = hub;
             }
 
-            public async Task ReportUrlAsync(Uri uri)
+            public async Task ReportRequestAsync(Guid id, HttpRequestMessage request)
             {
-                await _hub.InvokeUrlAsync(uri.AbsoluteUri);
+                await _hub.InvokeHttpRequestAsync(
+                    id.ToString(),
+                    request.Method.ToString(),
+                    request.RequestUri.AbsoluteUri);
+            }
+
+            public async Task ReportResponseAsync(Guid id, HttpResponseMessage response, TimeSpan duration)
+            {
+                await _hub.InvokeHttpResponseAsync(
+                    id.ToString(),
+                    (int)response.StatusCode,
+                    response.ReasonPhrase,
+                    (decimal)duration.TotalSeconds);
             }
         }
 

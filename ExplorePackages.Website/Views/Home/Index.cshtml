@@ -68,6 +68,33 @@
     </div>
 </div>
 
+<script id="http-sessions-template" type="text/x-handlebars-template">
+    <table class="table table-condensed">
+        <thead>
+            <tr>
+                <th>Method</th>
+                <th>URL</th>
+                <th>Result</th>
+                <th>Duration</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</script>
+
+<script id="http-session-template" type="text/x-handlebars-template">
+    <tr>
+        <td>{{method}}</td>
+        <td><a href="{{requestUri}}">{{requestUri}}</a></td>
+        <td>{{statusCode}} {{reasonPhrase}}</td>
+        <td>
+            {{#if duration}}
+                {{duration}} seconds
+            {{/if}}
+        </td>
+    </tr>
+</script>
+
 <script id="report-template" type="text/x-handlebars-template">
     <h3>Overview</h3>
     <table class="table table-condensed table-report">
@@ -219,7 +246,7 @@
             <tr>
                 <th></th>
                 {{#each search.statuses}}
-                    <th>{{hostName}}</th>
+                <th>{{hostName}}</th>
                 {{/each}}
             </tr>
         </thead>
@@ -227,13 +254,13 @@
             <tr>
                 <th>In SemVer 1.0.0 results?</th>
                 {{#each search.statuses}}
-                    <td>{{semVer1}}</td>
+                <td>{{semVer1}}</td>
                 {{/each}}
             </tr>
             <tr>
                 <th>In SemVer 2.0.0 results?</th>
                 {{#each search.statuses}}
-                    <td>{{semVer2}}</td>
+                <td>{{semVer2}}</td>
                 {{/each}}
             </tr>
         </tbody>
@@ -264,10 +291,35 @@
             return report.isConsistent ? "success" : "danger";
         });
 
+        var httpSessionsTemplate = Handlebars.compile($("#http-sessions-template").html());
+        var httpSessionTemplate = Handlebars.compile($("#http-session-template").html());
+        var reportTemplate = Handlebars.compile($("#report-template").html());
+
         function parseUrl(url) {
             var a = document.createElement('a');
             a.href = url;
             return a;
+        }
+
+        function HttpSession() {
+            this.method = null;
+            this.requestUri = null;
+            this.statusCode = null;
+            this.reasonPhrase = null;
+            this.duration = null;
+            this.$row = null;
+
+            var self = this;
+
+            this.update = function () {
+                var $newRow = $(httpSessionTemplate(self));
+
+                if (self.$row) {
+                    self.$row.replaceWith($newRow);
+                } 
+
+                self.$row = $newRow;
+            }
         }
 
         function ViewModel(report) {
@@ -390,14 +442,14 @@
             var $reportData = $("#reportData");
             var $urls = $("#urls");
 
-            var reportTemplateSource = $("#report-template").html();
-            var reportTemplate = Handlebars.compile(reportTemplateSource);
+            var httpSessions = {};
 
             $reportTab.click(function () {
                 if ($reportTab.parent().hasClass("disabled")) {
                     return false;
                 }
             });
+
             $reportDataTab.click(function () {
                 if ($reportDataTab.parent().hasClass("disabled")) {
                     return false;
@@ -437,6 +489,7 @@
                 $reportDataTab.parent().attr("class", "disabled");
                 $progressTab.tab('show');
                 setProgress(0);
+                httpSessions = {};
             }
 
             function lockForm() {
@@ -465,17 +518,39 @@
                     addStatus(message);
                 });
 
-                connection.on('Url', function (url) {
-                    if ($urls.children().length == 0) {
-                        $urls.append($("<div></div>"))
+                function handleHttpSession(id, update) {
+                    var isNew = false;
+                    if (!(id in httpSessions)) {
+                        httpSessions[id] = new HttpSession();
+                        isNew = true;
                     }
 
-                    var a = $("<a></a>");
-                    a.attr("href", url);
-                    a.text(url);
-                    var p = $("<p></p>");
-                    p.append(a);
-                    $urls.find("div").append(p);
+                    var httpSession = httpSessions[id];
+                    update(httpSession);
+                    httpSession.update();
+
+                    if (isNew) {
+                        if ($urls.children().length == 0) {
+                            $urls.append(httpSessionsTemplate({}));
+                        }
+
+                        $urls.find('tbody').append(httpSession.$row);
+                    }
+                }
+
+                connection.on('HttpRequest', function (id, method, requestUri) {
+                    handleHttpSession(id, function (httpSession) {
+                        httpSession.method = method;
+                        httpSession.requestUri = requestUri;
+                    });
+                });
+
+                connection.on('HttpResponse', function (id, statusCode, reasonPhrase, duration) {
+                    handleHttpSession(id, function (httpSession) {
+                        httpSession.statusCode = statusCode;
+                        httpSession.reasonPhrase = reasonPhrase;
+                        httpSession.duration = Math.round(100 * duration) / 100;
+                    });
                 });
 
                 connection.onclose(function (error) {
@@ -499,7 +574,7 @@
 
                     $packageId.val(data.id);
                     $packageVersion.val(data.version);
-                    
+
                     $pre = $("<pre></pre>");
                     $pre.html(JSON.stringify(data, null, 2));
                     $reportData.append($pre);
@@ -569,7 +644,7 @@
 
                 var packageId = $packageId.val();
                 var packageVersion = $packageVersion.val();
-                
+
                 if (connection == null) {
                     connection = initializeConnection(function () {
                         connection.invoke('Start', packageId, packageVersion);

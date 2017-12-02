@@ -1,4 +1,6 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Diagnostics;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,9 +17,13 @@ namespace Knapcode.ExplorePackages.Logic
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            await _provider.GetUrlReport().ReportUrlAsync(request.RequestUri);
-
-            return await base.SendAsync(request, cancellationToken);
+            var urlReport = _provider.GetUrlReport();
+            var id = Guid.NewGuid();
+            await urlReport.ReportRequestAsync(id, request);
+            var stopwatch = Stopwatch.StartNew();
+            var response = await base.SendAsync(request, cancellationToken);
+            await urlReport.ReportResponseAsync(id, response, stopwatch.Elapsed);
+            return response;
         }
     }
 }

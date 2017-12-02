@@ -22,7 +22,7 @@
     transition: none !important;
 }
 
-#urls div {
+#urls {
     overflow: auto;
     white-space: nowrap;
 }

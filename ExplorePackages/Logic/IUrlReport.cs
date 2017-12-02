@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Logic
 {
     public interface IUrlReport
     {
-        Task ReportUrlAsync(Uri uri);
+        Task ReportRequestAsync(Guid id, HttpRequestMessage request);
+        Task ReportResponseAsync(Guid id, HttpResponseMessage response, TimeSpan duration);
     }
 }

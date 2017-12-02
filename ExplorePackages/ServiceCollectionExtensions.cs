@@ -34,19 +34,20 @@ namespace Knapcode.ExplorePackages
                 {
                     var httpClientHandler = x.GetRequiredService<HttpClientHandler>();
                     var initializeServicePointerHander = x.GetRequiredService<InitializeServicePointHandler>();
-                    var loggingHandler = x.GetRequiredService<LoggingHandler>();
                     var urlReportHandler = x.GetRequiredService<UrlReportHandler>();
 
                     initializeServicePointerHander.InnerHandler = httpClientHandler;
-                    loggingHandler.InnerHandler = initializeServicePointerHander;
-                    urlReportHandler.InnerHandler = loggingHandler;
+                    urlReportHandler.InnerHandler = initializeServicePointerHander;
 
                     return urlReportHandler;
                 });
             serviceCollection.AddSingleton(
                 x =>
                 {
-                    var httpClient = new HttpClient(x.GetRequiredService<HttpMessageHandler>());
+                    var httpMessageHandler = x.GetRequiredService<HttpMessageHandler>();
+                    var loggingHandler = x.GetRequiredService<LoggingHandler>();
+                    loggingHandler.InnerHandler = httpMessageHandler;
+                    var httpClient = new HttpClient(loggingHandler);
                     UserAgent.SetUserAgent(httpClient);
                     return httpClient;
                 });
