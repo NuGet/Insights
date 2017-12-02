@@ -14,6 +14,11 @@ namespace Knapcode.ExplorePackages.Logic
 
             foreach (var group in groups.Groups)
             {
+                if (group.TargetFramework == null)
+                {
+                    continue;
+                }
+
                 try
                 {
                     NuGetFramework.Parse(group.TargetFramework);
