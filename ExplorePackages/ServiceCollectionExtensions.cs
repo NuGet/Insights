@@ -139,6 +139,8 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<FindInvalidDependencyTargetFrameworkNuspecQuery>();
             serviceCollection.AddTransient<FindMixedDependencyGroupStylesNuspecQuery>();
             serviceCollection.AddTransient<FindWhitespaceDependencyTargetFrameworkNuspecQuery>();
+            serviceCollection.AddTransient<FindUnsupportedDependencyTargetFrameworkNuspecQuery>();
+            // serviceCollection.AddTransient<FindDuplicateDependenciesNuspecQuery>();
 
             if (settings.RunBoringQueries)
             {
