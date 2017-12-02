@@ -39,7 +39,7 @@ namespace Knapcode.ExplorePackages.Logic
             return await StoreNuspecAsync(id, version, manifestUrl, token);
         }
 
-        public async Task<bool> StoreNuspecAsync(string id, string version, string url, CancellationToken token)
+        private async Task<bool> StoreNuspecAsync(string id, string version, string url, CancellationToken token)
         {
             var lowerId = id.ToLowerInvariant();
             var lowerVersion = version.ToLowerInvariant();
