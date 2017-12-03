@@ -11,7 +11,7 @@ namespace Knapcode.ExplorePackages.Logic
         public bool IsMatch(XDocument nuspec)
         {
             return NuspecUtility
-                .GetVersionedUnsupportedDependencyTargetFrameworks(nuspec)
+                .GetUnsupportedVersionedDependencyTargetFrameworks(nuspec)
                 .Any();
         }
     }

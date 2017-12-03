@@ -240,7 +240,7 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
-        public static IEnumerable<string> GetVersionedUnsupportedDependencyTargetFrameworks(XDocument nuspec)
+        public static IEnumerable<string> GetUnsupportedVersionedDependencyTargetFrameworks(XDocument nuspec)
         {
             return GetUnsupportedDependencyTargetFrameworks(nuspec)
                 .Where(x => !NuGetFramework

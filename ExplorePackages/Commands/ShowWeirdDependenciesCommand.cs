@@ -34,6 +34,10 @@ namespace Knapcode.ExplorePackages.Commands
                 (package, nuspec) => NuspecUtility.GetUnsupportedDependencyTargetFrameworks(nuspec));
 
             await ShowMatchedStringCounts(
+                PackageQueryNames.FindUnsupportedVersionedDependencyTargetFrameworksNuspecQuery,
+                (package, nuspec) => NuspecUtility.GetUnsupportedVersionedDependencyTargetFrameworks(nuspec));
+
+            await ShowMatchedStringCounts(
                 PackageQueryNames.FindMixedDependencyGroupStylesNuspecQuery,
                 (package, nuspec) =>
                 {
@@ -46,6 +50,19 @@ namespace Knapcode.ExplorePackages.Commands
                         return new string[0];
                     }
                 });
+
+            await ShowMatchedStringCounts(
+                PackageQueryNames.FindDuplicateDependencyTargetFrameworksNuspecQuery,
+                (package, nuspec) => NuspecUtility
+                    .GetDuplicateDependencyTargetFrameworks(nuspec)
+                    .Keys);
+
+            await ShowMatchedStringCounts(
+                PackageQueryNames.FindDuplicateNormalizedDependencyTargetFrameworksNuspecQuery,
+                (package, nuspec) => NuspecUtility
+                    .GetDuplicateNormalizedDependencyTargetFrameworks(nuspec)
+                    .Keys
+                    .Select(x => x.ToString()));
         }
 
         private async Task ShowMatchedStringCounts(string queryName, Func<PackageEntity, XDocument, IEnumerable<string>> getStrings)
