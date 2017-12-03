@@ -11,10 +11,7 @@ namespace Knapcode.ExplorePackages.Logic
         public bool IsMatch(XDocument nuspec)
         {
             return NuspecUtility
-                .GetDependencyTargetFrameworks(nuspec)
-                .Select(x => string.IsNullOrEmpty(x) ? string.Empty : x)
-                .GroupBy(x => x)
-                .Where(x => x.Count() > 2)
+                .GetDuplicateDependencyTargetFrameworks(nuspec)
                 .Any();
         }
     }

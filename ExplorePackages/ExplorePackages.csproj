@@ -110,6 +110,7 @@
     <Compile Include="Logic\PackageCommitEnumerator.cs" />
     <Compile Include="Logic\PackageDownloadsToDatabaseProcessor.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindDuplicateDependencyTargetFrameworksNuspecQuery.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\FindDuplicateNormalizedDependencyTargetFrameworksNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindEmptyDependencyVersionsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindFloatingDependencyVersionsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindInvalidDependencyIdNuspecQuery.cs" />
@@ -123,6 +124,7 @@
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindNonAsciiIdsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindPackageVersionsContainingWhitespaceNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindUnsupportedDependencyTargetFrameworkNuspecQuery.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\FindUnsupportedVersionedDependencyTargetFrameworksNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindWhitespaceDependencyTargetFrameworkNuspecQuery.cs" />
     <Compile Include="Logic\PackageIdValidator.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueries\HasMissingNuspecPackageQuery.cs" />

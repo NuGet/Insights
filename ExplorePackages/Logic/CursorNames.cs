@@ -39,6 +39,8 @@
         public const string FindInvalidDependencyTargetFrameworkNuspecQuery = "FindInvalidDependencyTargetFrameworkNuspecQuery";
         public const string FindInvalidDependencyIdNuspecQuery = "FindInvalidDependencyIdNuspecQuery";
         public const string FindDuplicateDependencyTargetFrameworksNuspecQuery = "FindDuplicateDependencyTargetFrameworksNuspecQuery";
+        public const string FindDuplicateNormalizedDependencyTargetFrameworksNuspecQuery = "FindDuplicateNormalizedDependencyTargetFrameworksNuspecQuery";
+        public const string FindUnsupportedVersionedDependencyTargetFrameworksNuspecQuery = "FindUnsupportedVersionedDependencyTargetFrameworksNuspecQuery";
 
         public const string HasRegistrationDiscrepancyInOriginalHivePackageQuery = "HasRegistrationDiscrepancyInOriginalHivePackageQuery";
         public const string HasRegistrationDiscrepancyInGzippedHivePackageQuery = "HasRegistrationDiscrepancyInGzippedHivePackageQuery";

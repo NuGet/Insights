@@ -239,5 +239,30 @@ namespace Knapcode.ExplorePackages.Logic
                 }
             }
         }
+
+        public static IEnumerable<string> GetVersionedUnsupportedDependencyTargetFrameworks(XDocument nuspec)
+        {
+            return GetUnsupportedDependencyTargetFrameworks(nuspec)
+                .Where(x => !NuGetFramework
+                    .Parse(x)
+                    .Equals(NuGetFramework.UnsupportedFramework));
+        }
+
+        public static IReadOnlyDictionary<NuGetFramework, IReadOnlyList<string>> GetDuplicateNormalizedDependencyTargetFrameworks(XDocument nuspec)
+        {
+            return GetDependencyTargetFrameworks(nuspec)
+                .GroupBy(x => NuGetFramework.Parse(x ?? string.Empty))
+                .Where(x => x.Count() > 2)
+                .ToDictionary(x => x.Key, x => (IReadOnlyList<string>) x.ToList());
+        }
+
+        public static IReadOnlyDictionary<string, int> GetDuplicateDependencyTargetFrameworks(XDocument nuspec)
+        {
+            return GetDependencyTargetFrameworks(nuspec)
+                .Select(x => x ?? string.Empty)
+                .GroupBy(x => x)
+                .Where(x => x.Count() > 2)
+                .ToDictionary(x => x.Key, x => x.Count());
+        }
     }
 }
