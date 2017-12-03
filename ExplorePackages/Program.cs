@@ -78,6 +78,9 @@ namespace Knapcode.ExplorePackages
                     case "downloadstodatabase":
                         commands.Add(serviceProvider.GetRequiredService<DownloadsToDatabaseCommand>());
                         break;
+                    case "showweirddependencies":
+                        commands.Add(serviceProvider.GetRequiredService<ShowWeirdDependenciesCommand>());
+                        break;
                     case "update":
                         commands.Add(serviceProvider.GetRequiredService<V2ToDatabaseCommand>());
                         commands.Add(serviceProvider.GetRequiredService<FetchCursorsCommand>());
@@ -183,6 +186,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<CheckPackageCommand>();
             serviceCollection.AddTransient<V2ToDatabaseCommand>();
             serviceCollection.AddTransient<DownloadsToDatabaseCommand>();
+            serviceCollection.AddTransient<ShowWeirdDependenciesCommand>();
 
             return serviceCollection;
         }

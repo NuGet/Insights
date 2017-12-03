@@ -1,12 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
+using NuGet.Frameworks;
 using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Logic
 {
     public static class NuspecUtility
     {
+        private static readonly NuGetFrameworkNameComparer NuGetFrameworkNameComparer = new NuGetFrameworkNameComparer();
+
         public static XElement GetRepository(XDocument nuspec)
         {
             var metadataEl = GetMetadata(nuspec);
@@ -174,6 +177,59 @@ namespace Knapcode.ExplorePackages.Logic
                 .SelectMany(x => x.Dependencies)
                 .Concat(groups.Dependencies)
                 .ToList();
+        }
+
+        public static IEnumerable<string> GetInvalidDependencyIds(XDocument nuspec)
+        {
+            var dependencyEls = GetDependencies(nuspec);
+
+            foreach (var dependencyEl in dependencyEls)
+            {
+                var id = dependencyEl.Attribute("id")?.Value?.Trim();
+                if (!StrictPackageIdValidator.IsValid(id))
+                {
+                    yield return id;
+                }
+            }
+        }
+
+        public static bool HasMixedDependencyGroupStyles(XDocument nuspec)
+        {
+            var groups = GetDependencyGroups(nuspec);
+
+            return groups.Dependencies.Any() && groups.Groups.Any();
+        }
+
+        public static IEnumerable<string> GetUnsupportedDependencyTargetFrameworks(XDocument nuspec)
+        {
+            var groups = GetDependencyGroups(nuspec);
+
+            foreach (var group in groups.Groups)
+            {
+                if (string.IsNullOrWhiteSpace(group.TargetFramework))
+                {
+                    continue;
+                }
+
+                var unsupported = false;
+                try
+                {
+                    var parsedFramework = NuGetFramework.Parse(group.TargetFramework);
+                    if (NuGetFrameworkNameComparer.Equals(parsedFramework, NuGetFramework.UnsupportedFramework))
+                    {
+                        unsupported = true;
+                    }
+                }
+                catch
+                {
+                    continue;
+                }
+
+                if (unsupported)
+                {
+                    yield return group.TargetFramework;
+                }
+            }
         }
     }
 }

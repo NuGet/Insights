@@ -78,11 +78,13 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 var matches = await entityContext
                     .PackageQueryMatches
-                    .Include(x => x.Package.CatalogPackage)
+                    .Include(x => x.Package)
+                    .ThenInclude(x => x.PackageRegistration)
+                    .Include(x => x.Package)
+                    .ThenInclude(x => x.CatalogPackage)
                     .Where(x => x.PackageQuery.Name == queryName && x.PackageQueryMatchKey > lastKey)
                     .OrderBy(x => x.PackageQueryMatchKey)
                     .Take(PageSize)
-                    .Select(x => new { x.PackageQueryMatchKey, x.Package })
                     .ToListAsync();
 
                 if (!matches.Any())

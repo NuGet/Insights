@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="Commands\ArgsUtility.cs" />
     <Compile Include="Commands\DownloadsToDatabaseCommand.cs" />
+    <Compile Include="Commands\ShowWeirdDependenciesCommand.cs" />
     <Compile Include="Commands\V2ToDatabaseCommand.cs" />
     <Compile Include="Commands\CheckPackageCommand.cs" />
     <Compile Include="Commands\PackageQueriesCommand.cs" />
