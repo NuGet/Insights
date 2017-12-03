@@ -23,6 +23,7 @@
         public const string FindUnsupportedDependencyTargetFrameworkNuspecQuery = CursorNames.FindUnsupportedDependencyTargetFrameworkNuspecQuery;
         public const string FindInvalidDependencyTargetFrameworkNuspecQuery = CursorNames.FindInvalidDependencyTargetFrameworkNuspecQuery;
         public const string FindInvalidDependencyIdNuspecQuery = CursorNames.FindInvalidDependencyIdNuspecQuery;
+        public const string FindDuplicateDependencyTargetFrameworksNuspecQuery = CursorNames.FindDuplicateDependencyTargetFrameworksNuspecQuery;
 
         public const string HasRegistrationDiscrepancyInOriginalHivePackageQuery = CursorNames.HasRegistrationDiscrepancyInOriginalHivePackageQuery;
         public const string HasRegistrationDiscrepancyInGzippedHivePackageQuery = CursorNames.HasRegistrationDiscrepancyInGzippedHivePackageQuery;

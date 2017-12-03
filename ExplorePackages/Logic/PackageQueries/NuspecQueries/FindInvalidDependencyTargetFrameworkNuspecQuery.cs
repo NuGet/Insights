@@ -10,18 +10,16 @@ namespace Knapcode.ExplorePackages.Logic
 
         public bool IsMatch(XDocument nuspec)
         {
-            var groups = NuspecUtility.GetDependencyGroups(nuspec);
-
-            foreach (var group in groups.Groups)
+            foreach (var targetFramework in NuspecUtility.GetDependencyTargetFrameworks(nuspec))
             {
-                if (group.TargetFramework == null)
+                if (string.IsNullOrWhiteSpace(targetFramework))
                 {
                     continue;
                 }
 
                 try
                 {
-                    NuGetFramework.Parse(group.TargetFramework);
+                    NuGetFramework.Parse(targetFramework);
                 }
                 catch
                 {

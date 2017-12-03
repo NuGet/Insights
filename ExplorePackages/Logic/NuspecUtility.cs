@@ -200,7 +200,7 @@ namespace Knapcode.ExplorePackages.Logic
             return groups.Dependencies.Any() && groups.Groups.Any();
         }
 
-        public static IEnumerable<string> GetUnsupportedDependencyTargetFrameworks(XDocument nuspec)
+        public static IEnumerable<string> GetDependencyTargetFrameworks(XDocument nuspec)
         {
             var groups = GetDependencyGroups(nuspec);
 
@@ -211,10 +211,18 @@ namespace Knapcode.ExplorePackages.Logic
                     continue;
                 }
 
+                yield return group.TargetFramework;
+            }
+        }
+
+        public static IEnumerable<string> GetUnsupportedDependencyTargetFrameworks(XDocument nuspec)
+        {
+            foreach (var targetFramework in GetDependencyTargetFrameworks(nuspec))
+            {
                 var unsupported = false;
                 try
                 {
-                    var parsedFramework = NuGetFramework.Parse(group.TargetFramework);
+                    var parsedFramework = NuGetFramework.Parse(targetFramework);
                     if (NuGetFrameworkNameComparer.Equals(parsedFramework, NuGetFramework.UnsupportedFramework))
                     {
                         unsupported = true;
@@ -227,7 +235,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                 if (unsupported)
                 {
-                    yield return group.TargetFramework;
+                    yield return targetFramework;
                 }
             }
         }

@@ -109,6 +109,7 @@
     <Compile Include="Logic\NullUrlReport.cs" />
     <Compile Include="Logic\PackageCommitEnumerator.cs" />
     <Compile Include="Logic\PackageDownloadsToDatabaseProcessor.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\FindDuplicateDependencyTargetFrameworksNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindEmptyDependencyVersionsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindFloatingDependencyVersionsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindInvalidDependencyIdNuspecQuery.cs" />
