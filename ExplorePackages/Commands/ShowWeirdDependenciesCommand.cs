@@ -81,13 +81,14 @@ namespace Knapcode.ExplorePackages.Commands
                 {
                     foreach (var value in getStrings(package, nuspec))
                     {
-                        if (!matches.ContainsKey(value))
+                        var fixedValue = value ?? "(null)";
+                        if (!matches.ContainsKey(fixedValue))
                         {
-                            matches[value] = 1;
+                            matches[fixedValue] = 1;
                         }
                         else
                         {
-                            matches[value]++;
+                            matches[fixedValue]++;
                         }
                     }
                 });
