@@ -177,6 +177,9 @@ namespace Knapcode.ExplorePackages.Logic
                                 NuGetFramework.Parse("Unsupported,Version=v0.0"),
                                 new[]
                                 {
+                                    "   .NETFramework4.5.1",
+                                    ".NETFramework4.5.1  ",
+                                    "   .NETFramework4.5.1  ",
                                     "Unsupported,Version=v0.0",
                                     "Unsupported,Version=v0.1",
                                     "ZAMARIN",
@@ -218,6 +221,9 @@ namespace Knapcode.ExplorePackages.Logic
                         Resources.Nuspecs.UnsupportedDependencyTargetFrameworks,
                         new[]
                         {
+                            "   .NETFramework4.5.1",
+                            ".NETFramework4.5.1  ",
+                            "   .NETFramework4.5.1  ",
                             "Unsupported,Version=v0.0",
                             "Unsupported,Version=v0.1",
                             "ZAMARIN",
