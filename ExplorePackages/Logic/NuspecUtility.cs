@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 using NuGet.Frameworks;
@@ -316,10 +317,36 @@ namespace Knapcode.ExplorePackages.Logic
         {
             foreach (var dependencyEl in GetDependencies(nuspec))
             {
-                var id = dependencyEl.Attribute("id")?.Value;
-                if (string.IsNullOrEmpty(id))
+                var id = dependencyEl.Attribute("id");
+                if (id == null)
                 {
-                    yield return id;
+                    yield return null;
+                }
+            }
+        }
+
+        public static IEnumerable<string> GetEmptyDependencyIds(XDocument nuspec)
+        {
+            foreach (var dependencyEl in GetDependencies(nuspec))
+            {
+                var idAttr = dependencyEl.Attribute("id");
+                if (idAttr != null && idAttr.Value == string.Empty)
+                {
+                    yield return idAttr.Value;
+                }
+            }
+        }
+
+        public static IEnumerable<string> GetWhitespaceDependencyIds(XDocument nuspec)
+        {
+            foreach (var dependencyEl in GetDependencies(nuspec))
+            {
+                var idAttr = dependencyEl.Attribute("id");
+                if (idAttr != null
+                    && !string.IsNullOrEmpty(idAttr.Value)
+                    && string.IsNullOrWhiteSpace(idAttr.Value))
+                {
+                    yield return idAttr.Value;
                 }
             }
         }

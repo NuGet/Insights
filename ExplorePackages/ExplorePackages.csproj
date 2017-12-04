@@ -115,6 +115,7 @@
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindFloatingDependencyVersionsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindInvalidDependencyIdNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindInvalidDependencyTargetFrameworkNuspecQuery.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\FindEmptyDependencyIdsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindMixedDependencyGroupStylesNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindNonNormalizedPackageVersionsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindInvalidPackageVersionsNuspecQuery.cs" />
@@ -126,6 +127,7 @@
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindUnsupportedDependencyTargetFrameworkNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindWhitespaceDependencyTargetFrameworkNuspecQuery.cs" />
     <Compile Include="Logic\PackageIdValidator.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\FindWhitespaceDependencyIdsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueries\HasMissingNuspecPackageQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindPackageTypesNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindInvalidDependencyVersionsNuspecQuery.cs" />

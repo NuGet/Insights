@@ -264,6 +264,8 @@ namespace Knapcode.ExplorePackages.Logic
                         new[]
                         {
                             null,
+                            null,
+                            "",
                             "",
                             " ",
                             "   ",
@@ -299,10 +301,10 @@ namespace Knapcode.ExplorePackages.Logic
                 {
                     {
                         Resources.Nuspecs.InvalidDependencyIds,
-                        new[]
+                        new string[]
                         {
                             null,
-                            "",
+                            null,
                         }
                     }
                 },
@@ -318,6 +320,62 @@ namespace Knapcode.ExplorePackages.Logic
 
             // Act
             var actual = NuspecUtility.GetMissingDependencyIds(nuspec);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        public static IEnumerable<object[]> GetEmptyDependencyIdsTestData =>
+            new TestDataBuilder<string[]>(
+                new Dictionary<string, string[]>
+                {
+                    {
+                        Resources.Nuspecs.InvalidDependencyIds,
+                        new[]
+                        {
+                            "",
+                            "",
+                        }
+                    }
+                },
+                defaultExpected: new string[0])
+            .Build();
+
+        [Theory]
+        [MemberData(nameof(GetEmptyDependencyIdsTestData))]
+        public void GetEmptyDependencyIds(string resourceName, string[] expected)
+        {
+            // Arrange
+            var nuspec = Resources.LoadXml(resourceName);
+
+            // Act
+            var actual = NuspecUtility.GetEmptyDependencyIds(nuspec);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        public static IEnumerable<object[]> GetWhitespaceDependencyIdsTestData =>
+            new TestDataBuilder<string[]>(
+                new Dictionary<string, string[]>
+                {
+                    {
+                        Resources.Nuspecs.InvalidDependencyIds,
+                        new[] { " ", "   ", "  \r " }
+                    }
+                },
+                defaultExpected: new string[0])
+            .Build();
+
+        [Theory]
+        [MemberData(nameof(GetWhitespaceDependencyIdsTestData))]
+        public void GetWhitespaceDependencyIds(string resourceName, string[] expected)
+        {
+            // Arrange
+            var nuspec = Resources.LoadXml(resourceName);
+
+            // Act
+            var actual = NuspecUtility.GetWhitespaceDependencyIds(nuspec);
 
             // Assert
             Assert.Equal(expected, actual);
