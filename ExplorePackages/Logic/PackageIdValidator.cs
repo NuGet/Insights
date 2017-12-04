@@ -14,7 +14,9 @@ namespace Knapcode.ExplorePackages.Logic
 
         public static bool IsValid(string id)
         {
-            return id.Length <= MaxPackageIdLength && IdRegex.IsMatch(id);
+            return id != null
+                && id.Length <= MaxPackageIdLength
+                && IdRegex.IsMatch(id);
         }
     }
 }

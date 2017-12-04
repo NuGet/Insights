@@ -6,6 +6,9 @@
         <dependency id="System.Collections" version="  " />
         <dependency id="System.Collections.Concurrent" version=" &#xD;" />
         <dependency id="NETStandard.Library" version="" />
+        <dependency id="NETStandard.Library2" version="" />
+        <dependency id="NETStandard.Library3" />
+        <dependency id="NETStandard.Library4" />
       </group>
       <group targetFramework=".NETFramework4.5.2">
         <dependency id="System.Collections" version="[4.0.11, )" />

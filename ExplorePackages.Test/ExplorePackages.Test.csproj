@@ -68,21 +68,12 @@
     <EmbeddedResource Include="TestData\NuGet.Core.2.14.0.nuspec" />
     <EmbeddedResource Include="TestData\NuGet.Versioning.4.3.0.nuspec" />
     <EmbeddedResource Include="TestData\NuGet.Versioning.1.0.0.nuspec" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="TestData\InvalidDependencyTargetFrameworks.nuspec" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="TestData\WhitespaceDependencyTargetFrameworks.nuspec" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="TestData\InvalidDependencyVersions.nuspec" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="TestData\DuplicateDependencyTargetFrameworks.nuspec" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="TestData\UnsupportedDependencyTargetFrameworks.nuspec" />
+    <EmbeddedResource Include="TestData\InvalidDependencyIds.nuspec" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

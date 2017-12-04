@@ -185,7 +185,7 @@ namespace Knapcode.ExplorePackages.Logic
 
             foreach (var dependencyEl in dependencyEls)
             {
-                var id = dependencyEl.Attribute("id")?.Value?.Trim();
+                var id = dependencyEl.Attribute("id")?.Value;
                 if (!StrictPackageIdValidator.IsValid(id))
                 {
                     yield return id;
@@ -308,6 +308,42 @@ namespace Knapcode.ExplorePackages.Logic
                     && !VersionRange.TryParse(version, out var parsed))
                 {
                     yield return version;
+                }
+            }
+        }
+
+        public static IEnumerable<string> GetMissingDependencyIds(XDocument nuspec)
+        {
+            foreach (var dependencyEl in GetDependencies(nuspec))
+            {
+                var id = dependencyEl.Attribute("id")?.Value;
+                if (string.IsNullOrEmpty(id))
+                {
+                    yield return id;
+                }
+            }
+        }
+
+        public static IEnumerable<string> GetMissingDependencyVersions(XDocument nuspec)
+        {
+            foreach (var dependencyEl in GetDependencies(nuspec))
+            {
+                var version = dependencyEl.Attribute("version");
+                if (version == null)
+                {
+                    yield return null;
+                }
+            }
+        }
+
+        public static IEnumerable<string> GetEmptyDependencyVersions(XDocument nuspec)
+        {
+            foreach (var dependencyEl in GetDependencies(nuspec))
+            {
+                var version = dependencyEl.Attribute("version");
+                if (version != null && version.Value == string.Empty)
+                {
+                    yield return string.Empty;
                 }
             }
         }

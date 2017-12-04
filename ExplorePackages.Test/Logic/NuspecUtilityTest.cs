@@ -249,6 +249,134 @@ namespace Knapcode.ExplorePackages.Logic
             Assert.Equal(expected, actual);
         }
 
+        public static IEnumerable<object[]> GetInvalidDependencyIdsTestData =>
+            new TestDataBuilder<string[]>(
+                new Dictionary<string, string[]>
+                {
+                    {
+                        Resources.Nuspecs.InvalidDependencyIds,
+                        new[]
+                        {
+                            null,
+                            "",
+                            " ",
+                            "   ",
+                            "  \r ",
+                            "foo bar",
+                            "    foo bar baz  ",
+                            "!!!",
+                            "RX--Main",
+                            "../jquery.TypeScript.DefinitelyTyped",
+                        }
+                    }
+                },
+                defaultExpected: new string[0])
+            .Build();
+
+        [Theory]
+        [MemberData(nameof(GetInvalidDependencyIdsTestData))]
+        public void GetInvalidDependencyIds(string resourceName, string[] expected)
+        {
+            // Arrange
+            var nuspec = Resources.LoadXml(resourceName);
+
+            // Act
+            var actual = NuspecUtility.GetInvalidDependencyIds(nuspec);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        public static IEnumerable<object[]> GetMissingDependencyIdsTestData =>
+            new TestDataBuilder<string[]>(
+                new Dictionary<string, string[]>
+                {
+                    {
+                        Resources.Nuspecs.InvalidDependencyIds,
+                        new[]
+                        {
+                            null,
+                            "",
+                        }
+                    }
+                },
+                defaultExpected: new string[0])
+            .Build();
+
+        [Theory]
+        [MemberData(nameof(GetMissingDependencyIdsTestData))]
+        public void GetMissingDependencyIds(string resourceName, string[] expected)
+        {
+            // Arrange
+            var nuspec = Resources.LoadXml(resourceName);
+
+            // Act
+            var actual = NuspecUtility.GetMissingDependencyIds(nuspec);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        public static IEnumerable<object[]> GetEmptyDependencyVersionsTestData =>
+            new TestDataBuilder<string[]>(
+                new Dictionary<string, string[]>
+                {
+                    {
+                        Resources.Nuspecs.InvalidDependencyVersions,
+                        new[]
+                        {
+                            "",
+                            "",
+                        }
+                    }
+                },
+                defaultExpected: new string[0])
+            .Build();
+
+        [Theory]
+        [MemberData(nameof(GetEmptyDependencyVersionsTestData))]
+        public void GetEmptyDependencyVersions(string resourceName, string[] expected)
+        {
+            // Arrange
+            var nuspec = Resources.LoadXml(resourceName);
+
+            // Act
+            var actual = NuspecUtility.GetEmptyDependencyVersions(nuspec);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        public static IEnumerable<object[]> GetMissingDependencyVersionsTestData =>
+            new TestDataBuilder<string[]>(
+                new Dictionary<string, string[]>
+                {
+                    {
+                        Resources.Nuspecs.InvalidDependencyVersions,
+                        new string[]
+                        {
+                            null,
+                            null,
+                        }
+                    }
+                },
+                defaultExpected: new string[0])
+            .Build();
+
+        [Theory]
+        [MemberData(nameof(GetMissingDependencyVersionsTestData))]
+        public void GetMissingDependencyVersions(string resourceName, string[] expected)
+        {
+            // Arrange
+            var nuspec = Resources.LoadXml(resourceName);
+
+            // Act
+            var actual = NuspecUtility.GetMissingDependencyVersions(nuspec);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
         private class TestDataBuilder<T>
         {
             private static IReadOnlyList<string> ResourceNames => typeof(Resources.Nuspecs)
