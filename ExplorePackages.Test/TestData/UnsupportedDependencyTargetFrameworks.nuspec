@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <dependencies>
+      <group targetFramework=".NETFramework4.5.1" />
+      <group targetFramework="Unsupported,Version=v0.0" />
+      <group targetFramework="Unsupported,Version=v0.1" />
+      <group targetFramework="ZAMARIN" />
+      <group targetFramework="unsupported" />
+      <group targetFramework="unsupported0.0" />
+      <group targetFramework="unsupported1.0" />
+      <group targetFramework="unsupported10" />
+    </dependencies>
+  </metadata>
+</package>

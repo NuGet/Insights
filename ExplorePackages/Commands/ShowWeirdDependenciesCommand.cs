@@ -26,18 +26,6 @@ namespace Knapcode.ExplorePackages.Commands
         public async Task ExecuteAsync(IReadOnlyList<string> args, CancellationToken token)
         {
             await ShowMatchedStringCounts(
-                PackageQueryNames.FindInvalidDependencyIdNuspecQuery,
-                (package, nuspec) => NuspecUtility.GetInvalidDependencyIds(nuspec));
-
-            await ShowMatchedStringCounts(
-                PackageQueryNames.FindUnsupportedDependencyTargetFrameworkNuspecQuery,
-                (package, nuspec) => NuspecUtility.GetUnsupportedDependencyTargetFrameworks(nuspec));
-
-            await ShowMatchedStringCounts(
-                PackageQueryNames.FindUnsupportedVersionedDependencyTargetFrameworksNuspecQuery,
-                (package, nuspec) => NuspecUtility.GetUnsupportedVersionedDependencyTargetFrameworks(nuspec));
-
-            await ShowMatchedStringCounts(
                 PackageQueryNames.FindMixedDependencyGroupStylesNuspecQuery,
                 (package, nuspec) =>
                 {
@@ -50,6 +38,26 @@ namespace Knapcode.ExplorePackages.Commands
                         return new string[0];
                     }
                 });
+
+            await ShowMatchedStringCounts(
+                PackageQueryNames.FindInvalidDependencyVersionsNuspecQuery,
+                (package, nuspec) => NuspecUtility.GetInvalidDependencyVersions(nuspec));
+
+            await ShowMatchedStringCounts(
+                PackageQueryNames.FindWhitespaceDependencyTargetFrameworkNuspecQuery,
+                (package, nuspec) => NuspecUtility.GetWhitespaceDependencyTargetFrameworks(nuspec));
+
+            await ShowMatchedStringCounts(
+                PackageQueryNames.FindInvalidDependencyTargetFrameworkNuspecQuery,
+                (package, nuspec) => NuspecUtility.GetInvalidDependencyTargetFrameworks(nuspec));
+
+            await ShowMatchedStringCounts(
+                PackageQueryNames.FindInvalidDependencyIdNuspecQuery,
+                (package, nuspec) => NuspecUtility.GetInvalidDependencyIds(nuspec));
+
+            await ShowMatchedStringCounts(
+                PackageQueryNames.FindUnsupportedDependencyTargetFrameworkNuspecQuery,
+                (package, nuspec) => NuspecUtility.GetUnsupportedDependencyTargetFrameworks(nuspec));
 
             await ShowMatchedStringCounts(
                 PackageQueryNames.FindDuplicateDependencyTargetFrameworksNuspecQuery,
@@ -84,11 +92,14 @@ namespace Knapcode.ExplorePackages.Commands
                         }
                     }
                 });
-            var maxWidth = matches.Values.Max(x => x.ToString().Length);
             Console.WriteLine(queryName);
-            foreach (var pair in matches.OrderByDescending(x => x.Value))
+            if (matches.Any())
             {
-                Console.WriteLine($"  {pair.Value.ToString().PadLeft(maxWidth)} {pair.Key}");
+                var maxWidth = matches.Values.Max(x => x.ToString().Length);
+                foreach (var pair in matches.OrderByDescending(x => x.Value))
+                {
+                    Console.WriteLine($"  {pair.Value.ToString().PadLeft(maxWidth)} {pair.Key}");
+                }
             }
             Console.WriteLine();
         }

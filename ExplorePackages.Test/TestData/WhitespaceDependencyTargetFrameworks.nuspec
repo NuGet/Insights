@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <dependencies>
+      <group targetFramework=".NETFramework4.5.1" />
+      <group />
+      <group targetFramework="" />
+      <group targetFramework="   " />
+      <group targetFramework=" &#xA;  " />
+      <group targetFramework=" &#xD;" />
+      <group targetFramework="&#x9;  &#x20; " />
+    </dependencies>
+  </metadata>
+</package>

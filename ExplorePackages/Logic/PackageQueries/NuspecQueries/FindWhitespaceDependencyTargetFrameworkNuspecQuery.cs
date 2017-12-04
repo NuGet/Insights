@@ -1,4 +1,5 @@
-﻿using System.Xml.Linq;
+﻿using System.Linq;
+using System.Xml.Linq;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -9,17 +10,9 @@ namespace Knapcode.ExplorePackages.Logic
 
         public bool IsMatch(XDocument nuspec)
         {
-            var groups = NuspecUtility.GetDependencyGroups(nuspec);
-            foreach (var group in groups.Groups)
-            {
-                if (!string.IsNullOrEmpty(group.TargetFramework)
-                    && string.IsNullOrWhiteSpace(group.TargetFramework))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return NuspecUtility
+                .GetWhitespaceDependencyTargetFrameworks(nuspec)
+                .Any();
         }
     }
 }

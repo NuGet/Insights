@@ -7,7 +7,7 @@
     <ProjectGuid>{77D818A0-CAE8-4C68-8464-3DCE3D5BE90E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Knapcode.ExplorePackages.Test</RootNamespace>
+    <RootNamespace>Knapcode.ExplorePackages</RootNamespace>
     <AssemblyName>Knapcode.ExplorePackages.Test</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -39,6 +39,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Logic\NuspecUtilityTest.cs" />
+    <Compile Include="TestData\Resources.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -60,6 +62,27 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestData\MixedDependencyGroupStyles.nuspec" />
+    <EmbeddedResource Include="TestData\NuGet.Core.2.14.0.nuspec" />
+    <EmbeddedResource Include="TestData\NuGet.Versioning.4.3.0.nuspec" />
+    <EmbeddedResource Include="TestData\NuGet.Versioning.1.0.0.nuspec" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestData\InvalidDependencyTargetFrameworks.nuspec" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestData\WhitespaceDependencyTargetFrameworks.nuspec" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestData\InvalidDependencyVersions.nuspec" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestData\DuplicateDependencyTargetFrameworks.nuspec" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestData\UnsupportedDependencyTargetFrameworks.nuspec" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

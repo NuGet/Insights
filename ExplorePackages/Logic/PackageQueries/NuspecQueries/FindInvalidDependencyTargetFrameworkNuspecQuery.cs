@@ -1,5 +1,5 @@
-﻿using System.Xml.Linq;
-using NuGet.Frameworks;
+﻿using System.Linq;
+using System.Xml.Linq;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -10,24 +10,9 @@ namespace Knapcode.ExplorePackages.Logic
 
         public bool IsMatch(XDocument nuspec)
         {
-            foreach (var targetFramework in NuspecUtility.GetDependencyTargetFrameworks(nuspec))
-            {
-                if (string.IsNullOrWhiteSpace(targetFramework))
-                {
-                    continue;
-                }
-
-                try
-                {
-                    NuGetFramework.Parse(targetFramework);
-                }
-                catch
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return NuspecUtility
+                .GetInvalidDependencyTargetFrameworks(nuspec)
+                .Any();
         }
     }
 }

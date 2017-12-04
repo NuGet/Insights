@@ -206,7 +206,7 @@ namespace Knapcode.ExplorePackages.Logic
 
             foreach (var group in groups.Groups)
             {
-                if (string.IsNullOrWhiteSpace(group.TargetFramework))
+                if (string.IsNullOrEmpty(group.TargetFramework))
                 {
                     continue;
                 }
@@ -240,19 +240,12 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
-        public static IEnumerable<string> GetUnsupportedVersionedDependencyTargetFrameworks(XDocument nuspec)
-        {
-            return GetUnsupportedDependencyTargetFrameworks(nuspec)
-                .Where(x => !NuGetFramework
-                    .Parse(x)
-                    .Equals(NuGetFramework.UnsupportedFramework));
-        }
-
         public static IReadOnlyDictionary<NuGetFramework, IReadOnlyList<string>> GetDuplicateNormalizedDependencyTargetFrameworks(XDocument nuspec)
         {
             return GetDependencyTargetFrameworks(nuspec)
+                .Where(x => IsValidTargetFramework(x))
                 .GroupBy(x => NuGetFramework.Parse(x ?? string.Empty))
-                .Where(x => x.Count() > 2)
+                .Where(x => x.Count() > 1)
                 .ToDictionary(x => x.Key, x => (IReadOnlyList<string>) x.ToList());
         }
 
@@ -261,8 +254,62 @@ namespace Knapcode.ExplorePackages.Logic
             return GetDependencyTargetFrameworks(nuspec)
                 .Select(x => x ?? string.Empty)
                 .GroupBy(x => x)
-                .Where(x => x.Count() > 2)
+                .Where(x => x.Count() > 1)
                 .ToDictionary(x => x.Key, x => x.Count());
+        }
+
+        public static IEnumerable<string> GetInvalidDependencyTargetFrameworks(XDocument nuspec)
+        {
+            foreach (var targetFramework in GetDependencyTargetFrameworks(nuspec))
+            {
+                if (string.IsNullOrEmpty(targetFramework))
+                {
+                    continue;
+                }
+
+                if (!IsValidTargetFramework(targetFramework))
+                {
+                    yield return targetFramework;
+                }
+            }
+        }
+
+        private static bool IsValidTargetFramework(string input)
+        {
+            try
+            {
+                NuGetFramework.Parse(input);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public static IEnumerable<string> GetWhitespaceDependencyTargetFrameworks(XDocument nuspec)
+        {
+            foreach (var group in GetDependencyGroups(nuspec).Groups)
+            {
+                if (!string.IsNullOrEmpty(group.TargetFramework)
+                    && string.IsNullOrWhiteSpace(group.TargetFramework))
+                {
+                    yield return group.TargetFramework;
+                }
+            }
+        }
+
+        public static IEnumerable<string> GetInvalidDependencyVersions(XDocument nuspec)
+        {
+            foreach (var dependencyEl in GetDependencies(nuspec))
+            {
+                var version = dependencyEl.Attribute("version")?.Value;
+                if (!string.IsNullOrEmpty(version)
+                    && !VersionRange.TryParse(version, out var parsed))
+                {
+                    yield return version;
+                }
+            }
         }
     }
 }
