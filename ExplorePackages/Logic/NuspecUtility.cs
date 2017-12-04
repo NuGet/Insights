@@ -152,6 +152,7 @@ namespace Knapcode.ExplorePackages.Logic
 
             var legacyDependencies = dependenciesEl
                 .Elements(dependencyName)
+                .Select(GetXmlDependency)
                 .ToList();
 
             var groups = new List<XmlDependencyGroup>();
@@ -160,6 +161,7 @@ namespace Knapcode.ExplorePackages.Logic
                 var targetFramework = groupEl.Attribute("targetFramework")?.Value;
                 var groupDependencies = groupEl
                     .Elements(dependencyName)
+                    .Select(GetXmlDependency)
                     .ToList();
                 groups.Add(new XmlDependencyGroup(
                     targetFramework,
@@ -385,27 +387,35 @@ namespace Knapcode.ExplorePackages.Logic
                 dependencies);
         }
 
-        private static IReadOnlyList<Dependency> GetParsedDependencies(IEnumerable<XElement> dependencyEls)
+        private static IReadOnlyList<Dependency> GetParsedDependencies(IEnumerable<XmlDependency> dependencies)
         {
-            return dependencyEls
+            return dependencies
                 .Select(GetParsedDependency)
                 .ToList();
         }
 
-        private static Dependency GetParsedDependency(XElement dependencyEl)
+        private static XmlDependency GetXmlDependency(XElement dependencyEl)
         {
             var id = dependencyEl.Attribute("id")?.Value;
             var version = dependencyEl.Attribute("version")?.Value;
+            return new XmlDependency(
+                id,
+                version,
+                dependencyEl);
+        }
+
+        private static Dependency GetParsedDependency(XmlDependency dependency)
+        {
             VersionRange parsedVersionRange;
-            if (version == null
-                || !VersionRange.TryParse(version, out parsedVersionRange))
+            if (dependency.Version == null
+                || !VersionRange.TryParse(dependency.Version, out parsedVersionRange))
             {
                 parsedVersionRange = null;
             }
 
             return new Dependency(
-                id,
-                version,
+                dependency.Id,
+                dependency.Version,
                 parsedVersionRange);
         }
 

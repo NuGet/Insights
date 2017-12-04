@@ -6,16 +6,16 @@ namespace Knapcode.ExplorePackages.Logic
     public class XmlDependencyGroups
     {
         internal static readonly XmlDependencyGroups Empty = new XmlDependencyGroups(
-            new List<XElement>(),
+            new List<XmlDependency>(),
             new List<XmlDependencyGroup>());
 
-        public XmlDependencyGroups(IReadOnlyList<XElement> dependencies, IReadOnlyList<XmlDependencyGroup> groups)
+        public XmlDependencyGroups(IReadOnlyList<XmlDependency> dependencies, IReadOnlyList<XmlDependencyGroup> groups)
         {
             Dependencies = dependencies;
             Groups = groups;
         }
 
-        public IReadOnlyList<XElement> Dependencies { get; }
+        public IReadOnlyList<XmlDependency> Dependencies { get; }
         public IReadOnlyList<XmlDependencyGroup> Groups { get; }
     }
 }
