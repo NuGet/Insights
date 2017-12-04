@@ -556,6 +556,77 @@ namespace Knapcode.ExplorePackages.Logic
             Assert.Equal(expected, actual);
         }
 
+        public static IEnumerable<object[]> GetDuplicateDependenciesTestData =>
+            new TestDataBuilder<ILookup<NuGetFramework, string>>(
+                new Dictionary<string, ILookup<NuGetFramework, string>>
+                {
+                    {
+                        Resources.Nuspecs.InvalidDependencyIds,
+                        new Dictionary<NuGetFramework, IEnumerable<string>>
+                        {
+                            {
+                                NuGetFramework.AnyFramework,
+                                new[] { null, "" }.AsEnumerable()
+                            },
+                        }.ToLookup()
+                    },
+                    {
+                        Resources.Nuspecs.DuplicateDependencies,
+                        new List<KeyValuePair<NuGetFramework, IEnumerable<string>>>
+                        {
+                            KeyValuePair.Create(
+                                NuGetFramework.Parse(".NETStandard,Version=v1.1"),
+                                new[]
+                                {
+                                    "NETStandard.Library",
+                                    "Microsoft.CSharp",
+                                    "System.ComponentModel.TypeConverter",
+                                }.AsEnumerable()),
+                            KeyValuePair.Create(
+                                NuGetFramework.Parse(".NETStandard,Version=v1.3"),
+                                new[]
+                                {
+                                    "NETStandard.Library",
+                                    "Microsoft.CSharp",
+                                }.AsEnumerable()),
+                            KeyValuePair.Create(
+                                NuGetFramework.AnyFramework,
+                                new[]
+                                {
+                                    "NETStandard.Library",
+                                }.AsEnumerable()),
+                            KeyValuePair.Create(
+                                NuGetFramework.UnsupportedFramework,
+                                new[]
+                                {
+                                    "NETStandard.Library",
+                                }.AsEnumerable()),
+                            KeyValuePair.Create(
+                                (NuGetFramework) null,
+                                new[]
+                                {
+                                    "NETStandard.Library",
+                                }.AsEnumerable()),
+                        }.ToLookup()
+                    }
+                },
+                defaultExpected: new Dictionary<NuGetFramework, IEnumerable<string>>().ToLookup())
+            .Build();
+
+        [Theory]
+        [MemberData(nameof(GetDuplicateDependenciesTestData))]
+        public void GetDuplicateDependencies(string resourceName, ILookup<NuGetFramework, string> expected)
+        {
+            // Arrange
+            var nuspec = Resources.LoadXml(resourceName);
+
+            // Act
+            var actual = NuspecUtility.GetDuplicateDependencies(nuspec);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
         private class TestDataBuilder<T>
         {
             private static IReadOnlyList<string> ResourceNames => typeof(Resources.Nuspecs)
