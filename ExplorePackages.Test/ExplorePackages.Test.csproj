@@ -84,5 +84,8 @@
   <ItemGroup>
     <EmbeddedResource Include="TestData\DuplicateDependencies.nuspec" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestData\FloatingDependencyVersions.nuspec" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

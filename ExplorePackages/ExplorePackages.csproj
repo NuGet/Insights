@@ -131,6 +131,7 @@
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindWhitespaceDependencyTargetFrameworkNuspecQuery.cs" />
     <Compile Include="Logic\PackageIdValidator.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindWhitespaceDependencyIdsNuspecQuery.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\FindWhitespaceDependencyVersionsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueries\HasMissingNuspecPackageQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindPackageTypesNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindInvalidDependencyVersionsNuspecQuery.cs" />

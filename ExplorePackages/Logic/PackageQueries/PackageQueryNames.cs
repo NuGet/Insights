@@ -27,6 +27,7 @@
         public const string FindDuplicateNormalizedDependencyTargetFrameworksNuspecQuery = CursorNames.FindDuplicateNormalizedDependencyTargetFrameworksNuspecQuery;
         public const string FindWhitespaceDependencyIdsNuspecQuery = CursorNames.FindWhitespaceDependencyIdsNuspecQuery;
         public const string FindEmptyDependencyIdsNuspecQuery = CursorNames.FindEmptyDependencyIdsNuspecQuery;
+        public const string FindWhitespaceDependencyVersionsNuspecQuery = CursorNames.FindWhitespaceDependencyVersionsNuspecQuery;
 
         public const string HasRegistrationDiscrepancyInOriginalHivePackageQuery = CursorNames.HasRegistrationDiscrepancyInOriginalHivePackageQuery;
         public const string HasRegistrationDiscrepancyInGzippedHivePackageQuery = CursorNames.HasRegistrationDiscrepancyInGzippedHivePackageQuery;

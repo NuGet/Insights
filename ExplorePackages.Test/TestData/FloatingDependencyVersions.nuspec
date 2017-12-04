@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <dependencies>
+      <group targetFramework=".NETFramework4.5.1">
+        <dependency id="System.Collections" version="[4.0.11, )" />
+        <dependency id="System.Foo" version="4.0.*" />
+      </group>
+      <group targetFramework=".NETFramework4.5.2">
+        <dependency id="System.Collections" version="[4.0.11, )" />
+        <dependency id="System.Bar" version=" 4.0.1-*   " />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

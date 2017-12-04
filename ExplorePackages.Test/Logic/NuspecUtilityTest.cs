@@ -526,6 +526,36 @@ namespace Knapcode.ExplorePackages.Logic
             Assert.Equal(expected, actual);
         }
 
+        public static IEnumerable<object[]> GetFloatingDependencyVersionsTestData =>
+            new TestDataBuilder<string[]>(
+                new Dictionary<string, string[]>
+                {
+                    {
+                        Resources.Nuspecs.FloatingDependencyVersions,
+                        new string[]
+                        {
+                            "4.0.*",
+                            " 4.0.1-*   ",
+                        }
+                    }
+                },
+                defaultExpected: new string[0])
+            .Build();
+
+        [Theory]
+        [MemberData(nameof(GetFloatingDependencyVersionsTestData))]
+        public void GetFloatingDependencyVersions(string resourceName, string[] expected)
+        {
+            // Arrange
+            var nuspec = Resources.LoadXml(resourceName);
+
+            // Act
+            var actual = NuspecUtility.GetFloatingDependencyVersions(nuspec);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
         private class TestDataBuilder<T>
         {
             private static IReadOnlyList<string> ResourceNames => typeof(Resources.Nuspecs)
