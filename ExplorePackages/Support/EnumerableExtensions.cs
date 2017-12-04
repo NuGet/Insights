@@ -9,14 +9,8 @@ namespace Knapcode.ExplorePackages.Support
             this IEnumerable<KeyValuePair<TKey, IEnumerable<TValue>>> dictionary)
         {
             return dictionary
-                .SelectMany(pair => pair
-                    .Value
-                    .Select(value => new
-                    {
-                        Key = pair.Key,
-                        Value = value,
-                    }))
-                .ToLookup(x => x.Key, x => x.Value);
+                .SelectMany(p => p.Value, KeyValuePair.Create)
+                .ToLookup(p => p.Key.Key, p => p.Value);
         }
     }
 }
