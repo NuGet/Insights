@@ -75,5 +75,14 @@
     <EmbeddedResource Include="TestData\UnsupportedDependencyTargetFrameworks.nuspec" />
     <EmbeddedResource Include="TestData\InvalidDependencyIds.nuspec" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestData\Microsoft.AspNetCore.1.1.2.nuspec" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestData\Newtonsoft.Json.10.0.3.nuspec" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestData\DuplicateDependencies.nuspec" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

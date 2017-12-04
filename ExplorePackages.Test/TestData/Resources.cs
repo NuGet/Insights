@@ -7,11 +7,14 @@ namespace Knapcode.ExplorePackages.TestData
     {
         public static class Nuspecs
         {
+            public const string Microsoft_AspNetCore_1_1_2 = "Microsoft.AspNetCore.1.1.2.nuspec";
+            public const string DuplicateDependencies = "DuplicateDependencies.nuspec";
             public const string DuplicateDependencyTargetFrameworks = "DuplicateDependencyTargetFrameworks.nuspec";
             public const string InvalidDependencyIds = "InvalidDependencyIds.nuspec";
             public const string InvalidDependencyTargetFrameworks = "InvalidDependencyTargetFrameworks.nuspec";
             public const string InvalidDependencyVersions = "InvalidDependencyVersions.nuspec";
             public const string MixedDependencyGroupStyles = "MixedDependencyGroupStyles.nuspec";
+            public const string Newtonsoft_Json_10_0_3 = "Newtonsoft.Json.10.0.3.nuspec";
             public const string NuGet_Core_2_14_0 = "NuGet.Core.2.14.0.nuspec";
             public const string NuGet_Versioning_1_0_0 = "NuGet.Versioning.1.0.0.nuspec";
             public const string NuGet_Versioning_4_3_0 = "NuGet.Versioning.4.3.0.nuspec";

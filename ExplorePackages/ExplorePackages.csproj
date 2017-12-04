@@ -83,6 +83,9 @@
     <Compile Include="Logic\Consistency\Services\GalleryConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Services\IConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Reports\PackageConsistencyReport.cs" />
+    <Compile Include="Logic\Dependency.cs" />
+    <Compile Include="Logic\DependencyGroup.cs" />
+    <Compile Include="Logic\DependencyGroups.cs" />
     <Compile Include="Logic\ETagNames.cs" />
     <Compile Include="Logic\ETagService.cs" />
     <Compile Include="Logic\IncrementalProgress.cs" />
@@ -184,12 +187,14 @@
     <Compile Include="ServiceCollectionExtensions.cs" />
     <Compile Include="Support\AssumeUniversalDateTimeOffsetConverter.cs" />
     <Compile Include="Support\BlobMetadata.cs" />
+    <Compile Include="Support\EnumerableExtensions.cs" />
     <Compile Include="Support\HttpClientExtensions.cs" />
     <Compile Include="Support\IIncrementalHash.cs" />
     <Compile Include="Support\InitializeServicePointHandler.cs" />
     <Compile Include="Support\IPortDiscoverer.cs" />
     <Compile Include="Support\IPortTester.cs" />
     <Compile Include="Support\JsonReaderExtensions.cs" />
+    <Compile Include="Support\KeyValuePair.cs" />
     <Compile Include="Support\LoggingHandler.cs" />
     <Compile Include="Support\MD5IncrementalHash.cs" />
     <Compile Include="Support\NuGetLogger.cs" />

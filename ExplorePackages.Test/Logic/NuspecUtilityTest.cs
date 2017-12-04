@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Knapcode.ExplorePackages.Support;
 using Knapcode.ExplorePackages.TestData;
 using NuGet.Frameworks;
 using Xunit;
@@ -14,6 +15,7 @@ namespace Knapcode.ExplorePackages.Logic
                 new Dictionary<string, bool>
                 {
                     { Resources.Nuspecs.MixedDependencyGroupStyles, true },
+                    { Resources.Nuspecs.DuplicateDependencies, true },
                 },
                 defaultExpected: false)
             .Build();
@@ -36,7 +38,14 @@ namespace Knapcode.ExplorePackages.Logic
             new TestDataBuilder<string[]>(
                 new Dictionary<string, string[]>
                 {
-                    { Resources.Nuspecs.InvalidDependencyTargetFrameworks, new[] { "portable-net45+net-cl" } },
+                    {
+                        Resources.Nuspecs.InvalidDependencyTargetFrameworks,
+                        new[] { "portable-net45+net-cl" }
+                    },
+                    {
+                        Resources.Nuspecs.DuplicateDependencies,
+                        new[] { "portable-net45+net-cl", "portable-net40+net-cl" }
+                    },
                 },
                 defaultExpected: new string[0])
             .Build();
@@ -62,7 +71,11 @@ namespace Knapcode.ExplorePackages.Logic
                     {
                         Resources.Nuspecs.WhitespaceDependencyTargetFrameworks,
                         new[] { "   ", " \n  ", " \r", "\t    " }
-                    }
+                    },
+                    {
+                        Resources.Nuspecs.DuplicateDependencies,
+                        new[] { "   " }
+                    },
                 },
                 defaultExpected: new string[0])
             .Build();
@@ -87,7 +100,7 @@ namespace Knapcode.ExplorePackages.Logic
                 {
                     {
                         Resources.Nuspecs.InvalidDependencyVersions,
-                        new[] { "  ", " \r", "[15.106.0.preview]", "1.0.0~~1" }
+                        new[] { "[15.106.0.preview]", "1.0.0~~1" }
                     }
                 },
                 defaultExpected: new string[0])
@@ -107,25 +120,57 @@ namespace Knapcode.ExplorePackages.Logic
             Assert.Equal(expected, actual);
         }
 
+        public static IEnumerable<object[]> GetWhitespaceDependencyVersionsTestData =>
+            new TestDataBuilder<string[]>(
+                new Dictionary<string, string[]>
+                {
+                    {
+                        Resources.Nuspecs.InvalidDependencyVersions,
+                        new[] { "  ", " \r" }
+                    }
+                },
+                defaultExpected: new string[0])
+            .Build();
+
+        [Theory]
+        [MemberData(nameof(GetWhitespaceDependencyVersionsTestData))]
+        public void GetWhitespaceDependencyVersions(string resourceName, string[] expected)
+        {
+            // Arrange
+            var nuspec = Resources.LoadXml(resourceName);
+
+            // Act
+            var actual = NuspecUtility.GetWhitespaceDependencyVersions(nuspec);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
         public static IEnumerable<object[]> GetDuplicateDependencyTargetFrameworksTestData =>
-            new TestDataBuilder<Dictionary<string, int>>(
-                new Dictionary<string, Dictionary<string, int>>
+            new TestDataBuilder<ILookup<string, string>>(
+                new Dictionary<string, ILookup<string, string>>
                 {
                     {
                         Resources.Nuspecs.DuplicateDependencyTargetFrameworks,
-                        new Dictionary<string, int>
+                        new Dictionary<string, IEnumerable<string>>
                         {
-                            { ".NETFramework4.5", 3 },
-                            { ".NETStandard1.1", 2 },
-                        }
+                            {
+                                ".NETFramework4.5",
+                                new[] { ".NETFramework4.5", ".NETFramework4.5", ".NETFramework4.5" }
+                            },
+                            {
+                                ".NETStandard1.1",
+                                new[] { ".NETStandard1.1", ".NETStandard1.1" }
+                            },
+                        }.ToLookup()
                     }
                 },
-                defaultExpected: new Dictionary<string, int>())
+                defaultExpected: new Dictionary<string, IEnumerable<string>>().ToLookup())
             .Build();
 
         [Theory]
         [MemberData(nameof(GetDuplicateDependencyTargetFrameworksTestData))]
-        public void GetDuplicateDependencyTargetFrameworks(string resourceName, Dictionary<string, int> expected)
+        public void GetDuplicateDependencyTargetFrameworks(string resourceName, ILookup<string, string> expected)
         {
             // Arrange
             var nuspec = Resources.LoadXml(resourceName);
@@ -138,12 +183,12 @@ namespace Knapcode.ExplorePackages.Logic
         }
 
         public static IEnumerable<object[]> GetDuplicateNormalizedDependencyTargetFrameworksTestData =>
-            new TestDataBuilder<Dictionary<NuGetFramework, IReadOnlyList<string>>>(
-                new Dictionary<string, Dictionary<NuGetFramework, IReadOnlyList<string>>>
+            new TestDataBuilder<ILookup<NuGetFramework, string>>(
+                new Dictionary<string, ILookup<NuGetFramework, string>>
                 {
                     {
                         Resources.Nuspecs.DuplicateDependencyTargetFrameworks,
-                        new Dictionary<NuGetFramework, IReadOnlyList<string>>
+                        new Dictionary<NuGetFramework, IEnumerable<string>>
                         {
                             {
                                 NuGetFramework.Parse(".NETFramework,Version=v4.5"),
@@ -157,21 +202,23 @@ namespace Knapcode.ExplorePackages.Logic
                                 NuGetFramework.Parse(".NETStandard,Version=v1.1"),
                                 new[] { ".NETStandard1.1", ".NETStandard1.1" }
                             },
-                        }
+                        }.ToLookup()
                     },
                     {
                         Resources.Nuspecs.WhitespaceDependencyTargetFrameworks,
-                        new Dictionary<NuGetFramework, IReadOnlyList<string>>
+                        new List<KeyValuePair<NuGetFramework, IEnumerable<string>>>
                         {
-                            {
+                            KeyValuePair.Create(
+                                (NuGetFramework) null,
+                                new[] { null, "" }.AsEnumerable()),
+                            KeyValuePair.Create(
                                 NuGetFramework.Parse("Unsupported,Version=v0.0"),
-                                new[] { "   ", " \n  ", " \r", "\t    " }
-                            }
-                        }
+                                new[] { "   ", " \n  ", " \r", "\t    " }.AsEnumerable()),
+                        }.ToLookup()
                     },
                     {
                         Resources.Nuspecs.UnsupportedDependencyTargetFrameworks,
-                        new Dictionary<NuGetFramework, IReadOnlyList<string>>
+                        new Dictionary<NuGetFramework, IEnumerable<string>>
                         {
                             {
                                 NuGetFramework.Parse("Unsupported,Version=v0.0"),
@@ -189,15 +236,49 @@ namespace Knapcode.ExplorePackages.Logic
                                     "unsupported10",
                                 }
                             }
-                        }
+                        }.ToLookup()
+                    },
+                    {
+                        Resources.Nuspecs.DuplicateDependencies,
+                        new List<KeyValuePair<NuGetFramework, IEnumerable<string>>>
+                        {
+                            KeyValuePair.Create(
+                                NuGetFramework.Parse(".NETStandard,Version=v1.3"),
+                                new[]
+                                {
+                                    ".NETStandard1.3",
+                                    "netstandard1.3",
+                                }.AsEnumerable()),
+                            KeyValuePair.Create(
+                                NuGetFramework.AnyFramework,
+                                new[]
+                                {
+                                    null,
+                                    "",
+                                }.AsEnumerable()),
+                            KeyValuePair.Create(
+                                NuGetFramework.Parse("Unsupported,Version=v0.0"),
+                                new[]
+                                {
+                                    "   ",
+                                    "ZAMARIN",
+                                }.AsEnumerable()),
+                            KeyValuePair.Create(
+                                (NuGetFramework) null,
+                                new[]
+                                {
+                                    "portable-net45+net-cl",
+                                    "portable-net40+net-cl",
+                                }.AsEnumerable()),
+                        }.ToLookup()
                     }
                 },
-                defaultExpected: new Dictionary<NuGetFramework, IReadOnlyList<string>>())
+                defaultExpected: new Dictionary<NuGetFramework, IEnumerable<string>>().ToLookup())
             .Build();
 
         [Theory]
         [MemberData(nameof(GetDuplicateNormalizedDependencyTargetFrameworksTestData))]
-        public void GetDuplicateNormalizedDependencyTargetFrameworks(string resourceName, Dictionary<NuGetFramework, IReadOnlyList<string>> expected)
+        public void GetDuplicateNormalizedDependencyTargetFrameworks(string resourceName, ILookup<NuGetFramework, string> expected)
         {
             // Arrange
             var nuspec = Resources.LoadXml(resourceName);
@@ -236,6 +317,10 @@ namespace Knapcode.ExplorePackages.Logic
                     {
                         Resources.Nuspecs.WhitespaceDependencyTargetFrameworks,
                         new[] { "   ", " \n  ", " \r", "\t    " }
+                    },
+                    {
+                        Resources.Nuspecs.DuplicateDependencies,
+                        new[] { "   ", "ZAMARIN" }
                     },
                 },
                 defaultExpected: new string[0])

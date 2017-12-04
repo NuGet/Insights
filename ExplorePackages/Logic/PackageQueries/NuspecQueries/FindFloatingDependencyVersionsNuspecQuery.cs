@@ -1,4 +1,5 @@
-﻿using System.Xml.Linq;
+﻿using System.Linq;
+using System.Xml.Linq;
 using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Logic
@@ -10,20 +11,9 @@ namespace Knapcode.ExplorePackages.Logic
         
         public bool IsMatch(XDocument nuspec)
         {
-            var dependencyEls = NuspecUtility.GetDependencies(nuspec);
-
-            foreach (var dependencyEl in dependencyEls)
-            {
-                var version = dependencyEl.Attribute("version")?.Value;
-                if (!string.IsNullOrEmpty(version)
-                    && VersionRange.TryParse(version, out var parsed)
-                    && parsed.IsFloating)
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return NuspecUtility
+                .GetFloatingDependencyVersions(nuspec)
+                .Any();
         }
     }
 }

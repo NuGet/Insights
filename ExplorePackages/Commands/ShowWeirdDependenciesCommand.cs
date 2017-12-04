@@ -63,14 +63,13 @@ namespace Knapcode.ExplorePackages.Commands
                 PackageQueryNames.FindDuplicateDependencyTargetFrameworksNuspecQuery,
                 (package, nuspec) => NuspecUtility
                     .GetDuplicateDependencyTargetFrameworks(nuspec)
-                    .Keys);
+                    .Select(x => x.Key));
 
             await ShowMatchedStringCounts(
                 PackageQueryNames.FindDuplicateNormalizedDependencyTargetFrameworksNuspecQuery,
                 (package, nuspec) => NuspecUtility
                     .GetDuplicateNormalizedDependencyTargetFrameworks(nuspec)
-                    .Keys
-                    .Select(x => x.ToString()));
+                    .Select(x => x.Key.ToString()));
         }
 
         private async Task ShowMatchedStringCounts(string queryName, Func<PackageEntity, XDocument, IEnumerable<string>> getStrings)

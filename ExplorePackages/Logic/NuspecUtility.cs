@@ -74,19 +74,18 @@ namespace Knapcode.ExplorePackages.Logic
             }
 
             var ns = metadataEl.GetDefaultNamespace();
-            var dependencyEls = GetDependencies(nuspec);
-            foreach (var dependencyEl in dependencyEls)
+            foreach (var dependency in GetDependencies(nuspec))
             {
-                var dependencyVersion = dependencyEl.Attribute("version")?.Value;
-                if (!string.IsNullOrEmpty(dependencyVersion)
-                    && VersionRange.TryParse(dependencyVersion, out var parsed))
+                if (dependency.ParsedVersionRange != null)
                 {
-                    if (parsed.HasLowerBound && parsed.MinVersion.IsSemVer2)
+                    if (dependency.ParsedVersionRange.HasLowerBound
+                        && dependency.ParsedVersionRange.MinVersion.IsSemVer2)
                     {
                         return true;
                     }
 
-                    if (parsed.HasUpperBound && parsed.MaxVersion.IsSemVer2)
+                    if (dependency.ParsedVersionRange.HasUpperBound
+                        && dependency.ParsedVersionRange.MaxVersion.IsSemVer2)
                     {
                         return true;
                     }
@@ -132,7 +131,7 @@ namespace Knapcode.ExplorePackages.Logic
                 .FirstOrDefault();
         }
 
-        public static XmlDependencyGroups GetDependencyGroups(XDocument nuspec)
+        public static XmlDependencyGroups GetXmlDependencyGroups(XDocument nuspec)
         {
             var metadataEl = GetMetadata(nuspec);
             if (metadataEl == null)
@@ -170,9 +169,10 @@ namespace Knapcode.ExplorePackages.Logic
             return new XmlDependencyGroups(legacyDependencies, groups);
         }
 
-        public static IReadOnlyList<XElement> GetDependencies(XDocument nuspec)
+        public static IReadOnlyList<Dependency> GetDependencies(XDocument nuspec)
         {
-            var groups = GetDependencyGroups(nuspec);
+            var groups = GetParsedDependencyGroups(nuspec);
+
             return groups
                 .Groups
                 .SelectMany(x => x.Dependencies)
@@ -182,115 +182,93 @@ namespace Knapcode.ExplorePackages.Logic
 
         public static IEnumerable<string> GetInvalidDependencyIds(XDocument nuspec)
         {
-            var dependencyEls = GetDependencies(nuspec);
-
-            foreach (var dependencyEl in dependencyEls)
+            foreach (var dependency in GetDependencies(nuspec))
             {
-                var id = dependencyEl.Attribute("id")?.Value;
-                if (!StrictPackageIdValidator.IsValid(id))
+                if (!StrictPackageIdValidator.IsValid(dependency.Id))
                 {
-                    yield return id;
+                    yield return dependency.Id;
                 }
             }
         }
 
         public static bool HasMixedDependencyGroupStyles(XDocument nuspec)
         {
-            var groups = GetDependencyGroups(nuspec);
+            var groups = GetParsedDependencyGroups(nuspec);
 
             return groups.Dependencies.Any() && groups.Groups.Any();
         }
 
-        public static IEnumerable<string> GetDependencyTargetFrameworks(XDocument nuspec)
-        {
-            var groups = GetDependencyGroups(nuspec);
-
-            foreach (var group in groups.Groups)
-            {
-                if (string.IsNullOrEmpty(group.TargetFramework))
-                {
-                    continue;
-                }
-
-                yield return group.TargetFramework;
-            }
-        }
-
         public static IEnumerable<string> GetUnsupportedDependencyTargetFrameworks(XDocument nuspec)
         {
-            foreach (var targetFramework in GetDependencyTargetFrameworks(nuspec))
+            foreach (var group in GetParsedDependencyGroups(nuspec).Groups)
             {
-                var unsupported = false;
-                try
+                if (group.ParsedTargetFramework != null
+                    && group.ParsedTargetFramework.IsUnsupported)
                 {
-                    var parsedFramework = NuGetFramework.Parse(targetFramework);
-                    if (NuGetFrameworkNameComparer.Equals(parsedFramework, NuGetFramework.UnsupportedFramework))
-                    {
-                        unsupported = true;
-                    }
-                }
-                catch
-                {
-                    continue;
-                }
-
-                if (unsupported)
-                {
-                    yield return targetFramework;
+                    yield return group.TargetFramework;
                 }
             }
         }
 
-        public static IReadOnlyDictionary<NuGetFramework, IReadOnlyList<string>> GetDuplicateNormalizedDependencyTargetFrameworks(XDocument nuspec)
+        public static ILookup<NuGetFramework, string> GetDuplicateNormalizedDependencyTargetFrameworks(XDocument nuspec)
         {
-            return GetDependencyTargetFrameworks(nuspec)
-                .Where(x => IsValidTargetFramework(x))
-                .GroupBy(x => NuGetFramework.Parse(x ?? string.Empty))
+            return GetParsedDependencyGroups(nuspec)
+                .Groups
+                .ToLookup(x => x.ParsedTargetFramework, x => x.TargetFramework)
                 .Where(x => x.Count() > 1)
-                .ToDictionary(x => x.Key, x => (IReadOnlyList<string>) x.ToList());
+                .SelectMany(x => x.Select(y => new
+                {
+                    ParsedTargetFramework = x.Key,
+                    TargetFramework = y
+                }))
+                .ToLookup(x => x.ParsedTargetFramework, x => x.TargetFramework);
         }
 
-        public static IReadOnlyDictionary<string, int> GetDuplicateDependencyTargetFrameworks(XDocument nuspec)
+        public static ILookup<string, string> GetDuplicateDependencyTargetFrameworks(XDocument nuspec)
         {
-            return GetDependencyTargetFrameworks(nuspec)
-                .Select(x => x ?? string.Empty)
-                .GroupBy(x => x)
+            return GetParsedDependencyGroups(nuspec)
+                .Groups
+                .ToLookup(x => x.TargetFramework, x => x.TargetFramework)
                 .Where(x => x.Count() > 1)
-                .ToDictionary(x => x.Key, x => x.Count());
+                .SelectMany(x => x)
+                .ToLookup(x => x);
         }
 
         public static IEnumerable<string> GetInvalidDependencyTargetFrameworks(XDocument nuspec)
         {
-            foreach (var targetFramework in GetDependencyTargetFrameworks(nuspec))
+            foreach (var group in GetParsedDependencyGroups(nuspec).Groups)
             {
-                if (string.IsNullOrEmpty(targetFramework))
+                if (group.ParsedTargetFramework == null)
                 {
-                    continue;
-                }
-
-                if (!IsValidTargetFramework(targetFramework))
-                {
-                    yield return targetFramework;
+                    yield return group.TargetFramework;
                 }
             }
         }
 
-        private static bool IsValidTargetFramework(string input)
+        /// <summary>
+        /// Interprets null or empty string as <see cref="NuGetFramework.AnyFramework"/>.
+        /// Failed parsing is returned as null.
+        /// </summary>
+        private static NuGetFramework ParseTargetFramework(string input)
         {
+            if (string.IsNullOrEmpty(input))
+            {
+                return NuGetFramework.AnyFramework;
+            }
+
             try
             {
-                NuGetFramework.Parse(input);
-                return true;
+                return NuGetFramework.Parse(input);
             }
             catch
             {
-                return false;
+                return null;
             }
         }
 
         public static IEnumerable<string> GetWhitespaceDependencyTargetFrameworks(XDocument nuspec)
         {
-            foreach (var group in GetDependencyGroups(nuspec).Groups)
+            foreach (var group in GetParsedDependencyGroups(nuspec).Groups)
             {
                 if (!string.IsNullOrEmpty(group.TargetFramework)
                     && string.IsNullOrWhiteSpace(group.TargetFramework))
@@ -300,77 +278,188 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
+        public static IEnumerable<string> GetWhitespaceDependencyVersions(XDocument nuspec)
+        {
+            foreach (var dependency in GetDependencies(nuspec))
+            {
+                if (!string.IsNullOrEmpty(dependency.Version)
+                    && string.IsNullOrWhiteSpace(dependency.Version))
+                {
+                    yield return dependency.Version;
+                }
+            }
+        }
+
         public static IEnumerable<string> GetInvalidDependencyVersions(XDocument nuspec)
         {
-            foreach (var dependencyEl in GetDependencies(nuspec))
+            foreach (var dependency in GetDependencies(nuspec))
             {
-                var version = dependencyEl.Attribute("version")?.Value;
-                if (!string.IsNullOrEmpty(version)
-                    && !VersionRange.TryParse(version, out var parsed))
+                if (!string.IsNullOrWhiteSpace(dependency.Version)
+                    && dependency.ParsedVersionRange == null)
                 {
-                    yield return version;
+                    yield return dependency.Version;
                 }
             }
         }
 
         public static IEnumerable<string> GetMissingDependencyIds(XDocument nuspec)
         {
-            foreach (var dependencyEl in GetDependencies(nuspec))
+            foreach (var dependency in GetDependencies(nuspec))
             {
-                var id = dependencyEl.Attribute("id");
-                if (id == null)
+                if (dependency.Id == null)
                 {
-                    yield return null;
+                    yield return dependency.Id;
                 }
             }
         }
 
         public static IEnumerable<string> GetEmptyDependencyIds(XDocument nuspec)
         {
-            foreach (var dependencyEl in GetDependencies(nuspec))
+            foreach (var dependency in GetDependencies(nuspec))
             {
-                var idAttr = dependencyEl.Attribute("id");
-                if (idAttr != null && idAttr.Value == string.Empty)
+                if (dependency.Id == string.Empty)
                 {
-                    yield return idAttr.Value;
+                    yield return dependency.Id;
                 }
             }
         }
 
         public static IEnumerable<string> GetWhitespaceDependencyIds(XDocument nuspec)
         {
-            foreach (var dependencyEl in GetDependencies(nuspec))
+            foreach (var dependency in GetDependencies(nuspec))
             {
-                var idAttr = dependencyEl.Attribute("id");
-                if (idAttr != null
-                    && !string.IsNullOrEmpty(idAttr.Value)
-                    && string.IsNullOrWhiteSpace(idAttr.Value))
+                if (!string.IsNullOrEmpty(dependency.Id)
+                    && string.IsNullOrWhiteSpace(dependency.Id))
                 {
-                    yield return idAttr.Value;
+                    yield return dependency.Id;
                 }
             }
         }
 
         public static IEnumerable<string> GetMissingDependencyVersions(XDocument nuspec)
         {
-            foreach (var dependencyEl in GetDependencies(nuspec))
+            foreach (var dependency in GetDependencies(nuspec))
             {
-                var version = dependencyEl.Attribute("version");
-                if (version == null)
+                if (dependency.Version == null)
                 {
-                    yield return null;
+                    yield return dependency.Version;
                 }
             }
         }
 
         public static IEnumerable<string> GetEmptyDependencyVersions(XDocument nuspec)
         {
-            foreach (var dependencyEl in GetDependencies(nuspec))
+            foreach (var dependency in GetDependencies(nuspec))
             {
-                var version = dependencyEl.Attribute("version");
-                if (version != null && version.Value == string.Empty)
+                if (dependency.Version == string.Empty)
                 {
-                    yield return string.Empty;
+                    yield return dependency.Version;
+                }
+            }
+        }
+        
+        public static DependencyGroups GetParsedDependencyGroups(XDocument nuspec)
+        {
+            var xmlDependencyGroups = GetXmlDependencyGroups(nuspec);
+
+            var dependencies = GetParsedDependencies(xmlDependencyGroups.Dependencies);
+
+            var groups = xmlDependencyGroups
+                .Groups
+                .Select(GetParsedDependencyGroup)
+                .ToList();
+
+            return new DependencyGroups(dependencies, groups);
+        }
+
+        private static DependencyGroup GetParsedDependencyGroup(XmlDependencyGroup group)
+        {
+            var targetFramework = group.TargetFramework;
+            var parsedTargetFramework = ParseTargetFramework(targetFramework);
+
+            var dependencies = GetParsedDependencies(group.Dependencies);
+
+            return new DependencyGroup(
+                targetFramework,
+                parsedTargetFramework,
+                dependencies);
+        }
+
+        private static IReadOnlyList<Dependency> GetParsedDependencies(IEnumerable<XElement> dependencyEls)
+        {
+            return dependencyEls
+                .Select(GetParsedDependency)
+                .ToList();
+        }
+
+        private static Dependency GetParsedDependency(XElement dependencyEl)
+        {
+            var id = dependencyEl.Attribute("id")?.Value;
+            var version = dependencyEl.Attribute("version")?.Value;
+            VersionRange parsedVersionRange;
+            if (version == null
+                || !VersionRange.TryParse(version, out parsedVersionRange))
+            {
+                parsedVersionRange = null;
+            }
+
+            return new Dependency(
+                id,
+                version,
+                parsedVersionRange);
+        }
+
+        public static ILookup<NuGetFramework, string> GetDuplicateDependencies(XDocument nuspec)
+        {
+            var groups = GetParsedDependencyGroups(nuspec);
+
+            return groups
+                .Groups
+                .Concat(new[]
+                {
+                    new DependencyGroup(
+                        null,
+                        null,
+                        groups.Dependencies)
+                })
+                .Select(x => new DependencyGroup(
+                    x.TargetFramework,
+                    string.IsNullOrEmpty(x.TargetFramework) ? NuGetFramework.AnyFramework : x.ParsedTargetFramework,
+                    x.Dependencies))
+                .SelectMany(x => x
+                    .Dependencies
+                    .Select(y => new { x.ParsedTargetFramework, y.Id }))
+                .ToLookup(
+                    x => x.ParsedTargetFramework,
+                    x => x.Id)
+                .Select(x => new
+                {
+                    ParsedTargetFramework = x.Key,
+                    DuplicateIds = x
+                        .ToLookup(y => y, StringComparer.OrdinalIgnoreCase)
+                        .Where(y => y.Count() > 1)
+                        .Select(y => y.Key),
+                })
+                .SelectMany(x => x
+                    .DuplicateIds
+                    .Select(y => new
+                    {
+                        ParsedTargetFramework = x.ParsedTargetFramework,
+                        Id = y,
+                    }))
+                .ToLookup(
+                    x => x.ParsedTargetFramework,
+                    x => x.Id);
+        }
+
+        public static IEnumerable<string> GetFloatingDependencyVersions(XDocument nuspec)
+        {
+            foreach (var dependency in GetDependencies(nuspec))
+            {
+                if (dependency.ParsedVersionRange != null
+                    && dependency.ParsedVersionRange.IsFloating)
+                {
+                    yield return dependency.Version;
                 }
             }
         }
