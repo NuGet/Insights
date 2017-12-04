@@ -1,4 +1,4 @@
-﻿namespace Knapcode.ExplorePackages.Support
+﻿namespace Knapcode.ExplorePackages.Logic
 {
     public class BlobMetadata
     {

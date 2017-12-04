@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Logic;
 using NuGet.Common;
 
 namespace Knapcode.ExplorePackages.Support

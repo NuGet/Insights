@@ -189,7 +189,7 @@
     <Compile Include="Logic\XmlUtility.cs" />
     <Compile Include="ServiceCollectionExtensions.cs" />
     <Compile Include="Support\AssumeUniversalDateTimeOffsetConverter.cs" />
-    <Compile Include="Support\BlobMetadata.cs" />
+    <Compile Include="Logic\Data\BlobMetadata.cs" />
     <Compile Include="Support\EnumerableExtensions.cs" />
     <Compile Include="Support\HttpClientExtensions.cs" />
     <Compile Include="Support\IIncrementalHash.cs" />
