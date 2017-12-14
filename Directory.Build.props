@@ -1,0 +1,10 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+  <PropertyGroup Condition="'$(ArtifactsDirectory)' != ''">
+    <_ProjectArtifactsDirectory>$(ArtifactsDirectory)/$(SolutionName)/$(MSBuildProjectName)/</_ProjectArtifactsDirectory>
+    <BaseIntermediateOutputPath>$(_ProjectArtifactsDirectory)obj/</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)/</IntermediateOutputPath>
+    <BaseOutputPath>$(_ProjectArtifactsDirectory)/bin/</BaseOutputPath>
+    <OutputPath>$(BaseOutputPath)$(Configuration)/</OutputPath>
+  </PropertyGroup>
+</Project>
