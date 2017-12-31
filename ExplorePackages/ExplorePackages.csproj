@@ -82,6 +82,7 @@
     <Compile Include="Logic\Consistency\Services\GalleryConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Services\IConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Reports\PackageConsistencyReport.cs" />
+    <Compile Include="Logic\DatabaseToMZipProcessor.cs" />
     <Compile Include="Logic\Data\Dependency.cs" />
     <Compile Include="Logic\Data\DependencyGroup.cs" />
     <Compile Include="Logic\Data\DependencyGroups.cs" />
