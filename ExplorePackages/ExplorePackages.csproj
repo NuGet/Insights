@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\ArgsUtility.cs" />
+    <Compile Include="Commands\DatabaseToMZipCommand.cs" />
     <Compile Include="Commands\DownloadsToDatabaseCommand.cs" />
     <Compile Include="Commands\ShowWeirdDependenciesCommand.cs" />
     <Compile Include="Commands\V2ToDatabaseCommand.cs" />
@@ -92,6 +93,7 @@
     <Compile Include="Logic\IUrlReport.cs" />
     <Compile Include="Logic\LatestV2PackageFetcher.cs" />
     <Compile Include="Logic\LatestCatalogCommitFetcher.cs" />
+    <Compile Include="Logic\MZipDownloader.cs" />
     <Compile Include="Logic\NullProgressReport.cs" />
     <Compile Include="Logic\Consistency\Services\PackageConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Reports\PackagesContainerConsistencyReport.cs" />
@@ -239,6 +241,7 @@
     <Compile Include="Support\HttpSourceExtensions.cs" />
     <Compile Include="Support\PassThroughHandler.cs" />
     <Compile Include="Support\PortTester.cs" />
+    <Compile Include="Support\SafeFileWriter.cs" />
     <Compile Include="Support\SimplePortDiscoverer.cs" />
     <Compile Include="Support\TaskQueue.cs" />
   </ItemGroup>
@@ -248,6 +251,9 @@
   <ItemGroup>
     <PackageReference Include="AngleSharp">
       <Version>0.9.9</Version>
+    </PackageReference>
+    <PackageReference Include="Knapcode.MiniZip">
+      <Version>0.4.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore">
       <Version>2.0.0</Version>

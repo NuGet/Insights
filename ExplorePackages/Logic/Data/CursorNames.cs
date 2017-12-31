@@ -14,6 +14,7 @@
         public const string CatalogToNuspecs = "CatalogToNuspecs";
 
         public const string V2ToDatabase = "V2ToDatabase";
+        public const string DatabaseToMZip = "DatabaseToMZip";
 
         public const string ReprocessPackageQueries = "ReprocessPackageQueries";
 

@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
 using Knapcode.ExplorePackages.Support;
+using Knapcode.MiniZip;
 using Microsoft.Extensions.DependencyInjection;
 using NuGet.CatalogReader;
 using NuGet.Common;
@@ -49,6 +50,7 @@ namespace Knapcode.ExplorePackages
                     loggingHandler.InnerHandler = httpMessageHandler;
                     var httpClient = new HttpClient(loggingHandler);
                     UserAgent.SetUserAgent(httpClient);
+                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("x-ms-version", "2017-04-17");
                     return httpClient;
                 });
             serviceCollection.AddSingleton(
@@ -77,11 +79,22 @@ namespace Knapcode.ExplorePackages
                     cacheTimeout: TimeSpan.Zero,
                     log: x.GetRequiredService<ILogger>()));
 
+            serviceCollection.AddTransient(
+                x => new HttpZipProvider(
+                    x.GetRequiredService<HttpClient>())
+                {
+                    FirstBufferSize = 4096,
+                    SecondBufferSize = 4096,
+                    BufferGrowthExponent = 2,
+                });
+            serviceCollection.AddTransient<MZipFormat>();
+
             serviceCollection.AddTransient(x => settings.Clone());
             serviceCollection.AddTransient<PackageQueryProcessor>();
             serviceCollection.AddTransient<CatalogToDatabaseProcessor>();
             serviceCollection.AddTransient<CatalogToNuspecsProcessor>();
             serviceCollection.AddTransient<NuspecDownloader>();
+            serviceCollection.AddTransient<MZipDownloader>();
             serviceCollection.AddTransient<RemoteCursorService>();
             serviceCollection.AddTransient<IPortTester, PortTester>();
             serviceCollection.AddTransient<IPortDiscoverer, SimplePortDiscoverer>();

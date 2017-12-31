@@ -26,7 +26,7 @@ namespace Knapcode.ExplorePackages.Logic
             return await _httpClient.GetBlobMetadataAsync(packageUrl, _log);
         }
 
-        private static string GetPackageContentUrl(string baseUrl, string id, string version)
+        public string GetPackageContentUrl(string baseUrl, string id, string version)
         {
             var lowerId = id.ToLowerInvariant();
             var lowerVersion = NuGetVersion.Parse(version).ToNormalizedString().ToLowerInvariant();

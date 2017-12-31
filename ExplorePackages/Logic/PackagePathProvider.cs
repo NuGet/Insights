@@ -34,5 +34,14 @@ namespace Knapcode.ExplorePackages.Logic
 
             return Path.Combine(packageSpecificPath, $"{lowerId}.nuspec");
         }
+
+        public string GetLatestMZipPath(string id, string version)
+        {
+            var packageSpecificPath = GetPackageSpecificPath(id, version);
+            var lowerId = id.ToLowerInvariant();
+            var lowerVersion = version.ToLowerInvariant();
+
+            return Path.Combine(packageSpecificPath, $"{lowerId}.{lowerVersion}.mzip");
+        }
     }
 }

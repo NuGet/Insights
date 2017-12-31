@@ -3,6 +3,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Support;
 using NuGet.Common;
 using NuGet.Protocol;
 
@@ -95,46 +96,17 @@ namespace Knapcode.ExplorePackages.Logic
                         }
 
                         tempStream.Position = 0;
-                        await SafelyWriteFileAsync(uniquePath, tempStream);
+                        await SafeFileWriter.WriteAsync(uniquePath, tempStream);
 
                         tempStream.Position = 0;
-                        await SafelyWriteFileAsync(latestPath, tempStream);
+                        await SafeFileWriter.WriteAsync(latestPath, tempStream);
 
                         return true;
                     },
                     token);
             }
         }
-
-        private static async Task SafelyWriteFileAsync(string path, Stream sourceStream)
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-
-            var newPath = $"{path}.new";
-            var oldPath = $"{path}.old";
-
-            using (var destStream = new FileStream(
-                newPath,
-                FileMode.Create,
-                FileAccess.Write,
-                FileShare.None,
-                BufferSize,
-                FileOptions.Asynchronous))
-            {
-                await sourceStream.CopyToAsync(destStream);
-            }
-            
-            try
-            {
-                File.Replace(newPath, path, oldPath);
-                File.Delete(oldPath);
-            }
-            catch (FileNotFoundException)
-            {
-                File.Move(newPath, path);
-            }
-        }
-
+        
         private async Task<string> HashStreamAsync(Stream stream)
         {
             stream.Position = 0;

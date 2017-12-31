@@ -81,11 +81,15 @@ namespace Knapcode.ExplorePackages
                     case "showweirddependencies":
                         commands.Add(serviceProvider.GetRequiredService<ShowWeirdDependenciesCommand>());
                         break;
+                    case "databasetomzip":
+                        commands.Add(serviceProvider.GetRequiredService<DatabaseToMZipCommand>());
+                        break;
                     case "update":
                         commands.Add(serviceProvider.GetRequiredService<V2ToDatabaseCommand>());
                         commands.Add(serviceProvider.GetRequiredService<FetchCursorsCommand>());
                         commands.Add(serviceProvider.GetRequiredService<CatalogToDatabaseCommand>());
                         commands.Add(serviceProvider.GetRequiredService<CatalogToNuspecsCommand>());
+                        commands.Add(serviceProvider.GetRequiredService<DatabaseToMZipCommand>());
                         commands.Add(serviceProvider.GetRequiredService<PackageQueriesCommand>());
                         if (settings.DownloadsV1Url != null)
                         {
@@ -187,6 +191,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<V2ToDatabaseCommand>();
             serviceCollection.AddTransient<DownloadsToDatabaseCommand>();
             serviceCollection.AddTransient<ShowWeirdDependenciesCommand>();
+            serviceCollection.AddTransient<DatabaseToMZipCommand>();
 
             return serviceCollection;
         }
