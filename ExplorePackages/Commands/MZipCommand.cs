@@ -5,11 +5,11 @@ using Knapcode.ExplorePackages.Logic;
 
 namespace Knapcode.ExplorePackages.Commands
 {
-    public class DatabaseToMZipCommand : ICommand
+    public class MZipCommand : ICommand
     {
-        private readonly DatabaseToMZipProcessor _processor;
+        private readonly MZipProcessor _processor;
 
-        public DatabaseToMZipCommand(DatabaseToMZipProcessor processor)
+        public MZipCommand(MZipProcessor processor)
         {
             _processor = processor;
         }

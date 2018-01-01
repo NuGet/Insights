@@ -28,7 +28,13 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task ProcessAsync(IReadOnlyList<CatalogEntry> entries)
         {
-            var work = new ConcurrentBag<CatalogEntry>(entries);
+            var packageIdentities = entries
+                .Select(x => new PackageIdentity(x.Id, x.Version.ToNormalizedString()))
+                .Distinct()
+                .ToList();
+
+            var work = new ConcurrentBag<PackageIdentity>(packageIdentities);
+
             var tasks = Enumerable
                 .Range(0, 32)
                 .Select(i => DownloadNuspecAsync(work))
@@ -37,19 +43,18 @@ namespace Knapcode.ExplorePackages.Logic
             await Task.WhenAll(tasks);
         }
 
-        private async Task DownloadNuspecAsync(ConcurrentBag<CatalogEntry> work)
+        private async Task DownloadNuspecAsync(ConcurrentBag<PackageIdentity> work)
         {
-            CatalogEntry entry;
-            while (work.TryTake(out entry))
+            while (work.TryTake(out var packageIdentity))
             {
                 var success = await _downloader.StoreNuspecAsync(
-                    entry.Id,
-                    entry.Version.ToNormalizedString(),
+                    packageIdentity.Id,
+                    packageIdentity.Version,
                     CancellationToken.None);
 
                 if (!success)
                 {
-                    _log.LogWarning($"The .nuspec for package {entry.Id} {entry.Version} could not be found.");
+                    _log.LogWarning($"The .nuspec for package {packageIdentity.Id} {packageIdentity.Version} could not be found.");
                 }
             }
         }

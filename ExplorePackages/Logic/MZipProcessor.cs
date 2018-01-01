@@ -7,14 +7,14 @@ using NuGet.Common;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class DatabaseToMZipProcessor
+    public class MZipProcessor
     {
         private readonly PackageService _packageService;
         private readonly CursorService _cursorService;
         private readonly MZipDownloader _mZipDownloader;
         private readonly ILogger _log;
 
-        public DatabaseToMZipProcessor(
+        public MZipProcessor(
             PackageService packageService,
             CursorService cursorService,
             MZipDownloader mZipDownloader,
@@ -28,7 +28,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task ExecuteAsync(CancellationToken token)
         {
-            var start = await _cursorService.GetValueAsync(CursorNames.DatabaseToMZip);
+            var start = await _cursorService.GetValueAsync(CursorNames.MZip);
             var end = await _cursorService.GetMinimumAsync(new[]
             {
                 CursorNames.NuGetOrg.FlatContainer,
@@ -77,8 +77,8 @@ namespace Knapcode.ExplorePackages.Logic
 
                 if (commits.Any())
                 {
-                    _log.LogInformation($"Cursor {CursorNames.DatabaseToMZip} moving to {start:O}.");
-                    await _cursorService.SetValueAsync(CursorNames.DatabaseToMZip, start);
+                    _log.LogInformation($"Cursor {CursorNames.MZip} moving to {start:O}.");
+                    await _cursorService.SetValueAsync(CursorNames.MZip, start);
                 }
             }
             while (commitCount > 0);
