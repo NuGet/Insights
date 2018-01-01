@@ -7,7 +7,7 @@ using Knapcode.MiniZip;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class MZipDownloader
+    public class MZipStore
     {
         private readonly PackagePathProvider _pathProvider;
         private readonly ServiceIndexCache _serviceIndexCache;
@@ -15,7 +15,7 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly HttpZipProvider _httpZipProvider;
         private readonly MZipFormat _mZipFormat;
 
-        public MZipDownloader(
+        public MZipStore(
             PackagePathProvider pathProvider,
             ServiceIndexCache serviceIndexCache,
             FlatContainerClient flatContainerClient,
@@ -31,10 +31,6 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task StoreMZipAsync(string id, string version, CancellationToken token)
         {
-            var baseUrl = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.FlatContainer);
-            var contentUrl = _flatContainerClient.GetPackageContentUrl(baseUrl, id, version);
-            var lowerId = id.ToLowerInvariant();
-            var lowerVersion = version.ToLowerInvariant();
             var latestPath = _pathProvider.GetLatestMZipPath(id, version);
 
             if (File.Exists(latestPath))
@@ -42,11 +38,35 @@ namespace Knapcode.ExplorePackages.Logic
                 return;
             }
 
+            var baseUrl = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.FlatContainer);
+            var contentUrl = _flatContainerClient.GetPackageContentUrl(baseUrl, id, version);
+
             using (var reader = await _httpZipProvider.GetReaderAsync(new Uri(contentUrl)))
             {
                 await SafeFileWriter.WriteAsync(
                     latestPath,
                     destStream => _mZipFormat.WriteAsync(reader.Stream, destStream));
+            }
+        }
+
+        public async Task<Stream> GetMZipStreamAsync(string id, string version, CancellationToken token)
+        {
+            var latestPath = _pathProvider.GetLatestMZipPath(id, version);
+
+            Stream fileStream = null;
+            try
+            {
+                fileStream = new FileStream(latestPath, FileMode.Open);
+                return await _mZipFormat.ReadAsync(fileStream);
+            }
+            catch (FileNotFoundException)
+            {
+                return null;
+            }
+            catch
+            {
+                fileStream?.Dispose();
+                throw;
             }
         }
     }

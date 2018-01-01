@@ -132,6 +132,7 @@ namespace Knapcode.ExplorePackages.Logic
                     .Include(x => x.V2Package)
                     .Include(x => x.CatalogPackage)
                     .Include(x => x.PackageDownloads)
+                    .Include(x => x.PackageArchive)
                     .Where(p => identities.Contains(p.Identity))
                     .ToListAsync();
 
@@ -154,6 +155,43 @@ namespace Knapcode.ExplorePackages.Logic
                 var changes = await entityContext.SaveChangesAsync();
                 _log.LogInformation($"Committed {changes} changes. {commitStopwatch.ElapsedMilliseconds}ms");
             }
+        }
+
+        public async Task AddOrUpdatePackagesAsync(IEnumerable<PackageArchiveMetadata> packageArchive)
+        {
+            await AddOrUpdatePackagesAsync(
+                packageArchive,
+                x => x,
+                d => d.Id,
+                d => d.Version,
+                (p, f) => p.PackageArchive = new PackageArchiveEntity
+                {
+                    Size = f.Size,
+                    EntryCount = f.EntryCount,
+                    OffsetOfCentralDirectory = f.OffsetOfCentralDirectory,
+                    Zip64OffsetOfCentralDirectory = f.Zip64OffsetOfCentralDirectory,
+                },
+                (p, f) =>
+                {
+                    p.PackageArchive.Size = f.Size;
+                    p.PackageArchive.EntryCount = f.EntryCount;
+                    p.PackageArchive.OffsetOfCentralDirectory = f.OffsetOfCentralDirectory;
+                    p.PackageArchive.Zip64OffsetOfCentralDirectory = f.Zip64OffsetOfCentralDirectory;
+                },
+                (pe, pl) =>
+                {
+                    if (pe.PackageArchive == null)
+                    {
+                        pe.PackageArchive = pl.PackageArchive;
+                    }
+                    else
+                    {
+                        pe.PackageArchive.Size = pl.PackageArchive.Size;
+                        pe.PackageArchive.EntryCount = pl.PackageArchive.EntryCount;
+                        pe.PackageArchive.OffsetOfCentralDirectory = pl.PackageArchive.OffsetOfCentralDirectory;
+                        pe.PackageArchive.Zip64OffsetOfCentralDirectory = pl.PackageArchive.Zip64OffsetOfCentralDirectory;
+                    }
+                });
         }
 
         public async Task AddOrUpdatePackagesAsync(IEnumerable<PackageDownloads> packageDownloads)

@@ -84,6 +84,9 @@ namespace Knapcode.ExplorePackages
                     case "mzip":
                         commands.Add(serviceProvider.GetRequiredService<MZipCommand>());
                         break;
+                    case "mziptodatabase":
+                        commands.Add(serviceProvider.GetRequiredService<MZipToDatabaseCommand>());
+                        break;
                     case "sandbox":
                         commands.Add(serviceProvider.GetRequiredService<SandboxCommand>());
                         break;
@@ -196,6 +199,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<DownloadsToDatabaseCommand>();
             serviceCollection.AddTransient<ShowWeirdDependenciesCommand>();
             serviceCollection.AddTransient<MZipCommand>();
+            serviceCollection.AddTransient<MZipToDatabaseCommand>();
 
             return serviceCollection;
         }

@@ -45,6 +45,12 @@
     <Compile Include="Commands\ArgsUtility.cs" />
     <Compile Include="Commands\MZipCommand.cs" />
     <Compile Include="Commands\DownloadsToDatabaseCommand.cs" />
+    <Compile Include="Commands\MZipToDatabaseCommand.cs" />
+    <Compile Include="Entities\Migrations\20180101225732_AddOffsetOfCentralDirectory.cs" />
+    <Compile Include="Entities\Migrations\20180101225732_AddOffsetOfCentralDirectory.designer.cs">
+      <DependentUpon>20180101225732_AddOffsetOfCentralDirectory.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Logic\PackageArchiveMetadata.cs" />
     <Compile Include="Commands\SandboxCommand.cs" />
     <Compile Include="Commands\ShowWeirdDependenciesCommand.cs" />
     <Compile Include="Commands\V2ToDatabaseCommand.cs" />
@@ -89,7 +95,7 @@
     <Compile Include="Logic\Consistency\Services\GalleryConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Services\IConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Reports\PackageConsistencyReport.cs" />
-    <Compile Include="Logic\MZipProcessor.cs" />
+    <Compile Include="Logic\MZipCollector.cs" />
     <Compile Include="Logic\Data\Dependency.cs" />
     <Compile Include="Logic\Data\DependencyGroup.cs" />
     <Compile Include="Logic\Data\DependencyGroups.cs" />
@@ -101,7 +107,7 @@
     <Compile Include="Logic\IUrlReport.cs" />
     <Compile Include="Logic\LatestV2PackageFetcher.cs" />
     <Compile Include="Logic\LatestCatalogCommitFetcher.cs" />
-    <Compile Include="Logic\MZipDownloader.cs" />
+    <Compile Include="Logic\MZipStore.cs" />
     <Compile Include="Logic\NullProgressReport.cs" />
     <Compile Include="Logic\Consistency\Services\PackageConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Reports\PackagesContainerConsistencyReport.cs" />

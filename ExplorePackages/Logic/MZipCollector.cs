@@ -7,22 +7,22 @@ using NuGet.Common;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class MZipProcessor
+    public class MZipCollector
     {
         private readonly PackageService _packageService;
         private readonly CursorService _cursorService;
-        private readonly MZipDownloader _mZipDownloader;
+        private readonly MZipStore _mZipStore;
         private readonly ILogger _log;
 
-        public MZipProcessor(
+        public MZipCollector(
             PackageService packageService,
             CursorService cursorService,
-            MZipDownloader mZipDownloader,
+            MZipStore mZipDownloader,
             ILogger log)
         {
             _packageService = packageService;
             _cursorService = cursorService;
-            _mZipDownloader = mZipDownloader;
+            _mZipStore = mZipDownloader;
             _log = log;
         }
 
@@ -86,7 +86,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         private async Task StoreMZipAsync(PackageEntity package, CancellationToken token)
         {
-            await _mZipDownloader.StoreMZipAsync(
+            await _mZipStore.StoreMZipAsync(
                 package.PackageRegistration.Id,
                 package.Version,
                 token);

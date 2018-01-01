@@ -1,13 +1,12 @@
-﻿namespace Knapcode.ExplorePackages.Entities
+﻿namespace Knapcode.ExplorePackages.Logic
 {
-    public class PackageArchiveEntity
+    public class PackageArchiveMetadata
     {
-        public long PackageKey { get; set; }
+        public string Id { get; set; }
+        public string Version { get; set; }
         public long Size { get; set; }
         public long EntryCount { get; set; }
         public long OffsetOfCentralDirectory { get; set; }
         public long? Zip64OffsetOfCentralDirectory { get; set; }
-
-        public PackageEntity Package { get; set; }
     }
 }

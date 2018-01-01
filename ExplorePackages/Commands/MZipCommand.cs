@@ -7,9 +7,9 @@ namespace Knapcode.ExplorePackages.Commands
 {
     public class MZipCommand : ICommand
     {
-        private readonly MZipProcessor _processor;
+        private readonly MZipCollector _processor;
 
-        public MZipCommand(MZipProcessor processor)
+        public MZipCommand(MZipCollector processor)
         {
             _processor = processor;
         }

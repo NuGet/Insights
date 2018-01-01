@@ -15,6 +15,7 @@
 
         public const string V2ToDatabase = "V2ToDatabase";
         public const string MZip = "MZip";
+        public const string MZipToDatabase = "MZipToDatabase";
 
         public const string ReprocessPackageQueries = "ReprocessPackageQueries";
 

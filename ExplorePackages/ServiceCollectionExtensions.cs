@@ -94,7 +94,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<CatalogToDatabaseProcessor>();
             serviceCollection.AddTransient<CatalogToNuspecsProcessor>();
             serviceCollection.AddTransient<NuspecDownloader>();
-            serviceCollection.AddTransient<MZipDownloader>();
+            serviceCollection.AddTransient<MZipStore>();
             serviceCollection.AddTransient<RemoteCursorService>();
             serviceCollection.AddTransient<IPortTester, PortTester>();
             serviceCollection.AddTransient<IPortDiscoverer, SimplePortDiscoverer>();
@@ -106,7 +106,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<LatestCatalogCommitFetcher>();
             serviceCollection.AddTransient<V2ToDatabaseProcessor>();
             serviceCollection.AddTransient<PackageDownloadsToDatabaseProcessor>();
-            serviceCollection.AddTransient<MZipProcessor>();
+            serviceCollection.AddTransient<MZipCollector>();
 
             serviceCollection.AddTransient<PackageCommitEnumerator>();
             serviceCollection.AddTransient<CursorService>();
