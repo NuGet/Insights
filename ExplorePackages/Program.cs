@@ -84,6 +84,9 @@ namespace Knapcode.ExplorePackages
                     case "databasetomzip":
                         commands.Add(serviceProvider.GetRequiredService<DatabaseToMZipCommand>());
                         break;
+                    case "sandbox":
+                        commands.Add(serviceProvider.GetRequiredService<SandboxCommand>());
+                        break;
                     case "update":
                         commands.Add(serviceProvider.GetRequiredService<V2ToDatabaseCommand>());
                         commands.Add(serviceProvider.GetRequiredService<FetchCursorsCommand>());
@@ -181,6 +184,7 @@ namespace Knapcode.ExplorePackages
 
             serviceCollection.AddSingleton<ILogger, ConsoleLogger>();
 
+            serviceCollection.AddTransient<SandboxCommand>();
             serviceCollection.AddTransient<PackageQueriesCommand>();
             serviceCollection.AddTransient<FetchCursorsCommand>();
             serviceCollection.AddTransient<CatalogToDatabaseCommand>();

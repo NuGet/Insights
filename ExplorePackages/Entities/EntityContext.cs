@@ -25,6 +25,7 @@ namespace Knapcode.ExplorePackages.Entities
         public DbSet<V2PackageEntity> V2PackageEntities { get; set; }
         public DbSet<CatalogPackageEntity> CatalogPackageEntities { get; set; }
         public DbSet<PackageDownloadsEntity> PackageDownloads { get; set; }
+        public DbSet<PackageArchiveEntity> PackageArchives { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -199,6 +200,20 @@ namespace Knapcode.ExplorePackages.Entities
                 .HasOne(x => x.Package)
                 .WithOne(x => x.PackageDownloads)
                 .HasForeignKey<PackageDownloadsEntity>(x => x.PackageKey);
+
+            modelBuilder
+                .Entity<PackageArchiveEntity>()
+                .ToTable("PackageArchives");
+
+            modelBuilder
+                .Entity<PackageArchiveEntity>()
+                .HasKey(x => x.PackageKey);
+
+            modelBuilder
+                .Entity<PackageArchiveEntity>()
+                .HasOne(x => x.Package)
+                .WithOne(x => x.PackageArchive)
+                .HasForeignKey<PackageArchiveEntity>(x => x.PackageKey);
         }
     }
 }

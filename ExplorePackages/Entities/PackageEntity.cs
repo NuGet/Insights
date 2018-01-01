@@ -13,6 +13,7 @@ namespace Knapcode.ExplorePackages.Entities
         public V2PackageEntity V2Package { get; set; }
         public CatalogPackageEntity CatalogPackage { get; set; }
         public PackageDownloadsEntity PackageDownloads { get; set; }
+        public PackageArchiveEntity PackageArchive { get; set; }
         public List<PackageQueryMatchEntity> PackageQueryMatches { get; set; }
     }
 }

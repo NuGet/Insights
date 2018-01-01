@@ -12,6 +12,7 @@
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <TargetFrameworkProfile />
+    <OutputPath Condition="'$(OutputPath)' == ''">bin\$(Configuration)</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -44,6 +45,7 @@
     <Compile Include="Commands\ArgsUtility.cs" />
     <Compile Include="Commands\DatabaseToMZipCommand.cs" />
     <Compile Include="Commands\DownloadsToDatabaseCommand.cs" />
+    <Compile Include="Commands\SandboxCommand.cs" />
     <Compile Include="Commands\ShowWeirdDependenciesCommand.cs" />
     <Compile Include="Commands\V2ToDatabaseCommand.cs" />
     <Compile Include="Commands\CheckPackageCommand.cs" />
@@ -66,7 +68,12 @@
     <Compile Include="Entities\Migrations\20171124192230_AddETags.designer.cs">
       <DependentUpon>20171124192230_AddETags.cs</DependentUpon>
     </Compile>
+    <Compile Include="Entities\Migrations\20180101030441_AddPackageArchives.cs" />
+    <Compile Include="Entities\Migrations\20180101030441_AddPackageArchives.designer.cs">
+      <DependentUpon>20180101030441_AddPackageArchives.cs</DependentUpon>
+    </Compile>
     <Compile Include="Entities\Migrations\EntityContextModelSnapshot.cs" />
+    <Compile Include="Entities\PackageArchiveEntity.cs" />
     <Compile Include="Entities\PackageDownloadsEntity.cs" />
     <Compile Include="Entities\PackageQueryEntity.cs" />
     <Compile Include="Entities\PackageQueryMatchEntity.cs" />
@@ -257,16 +264,16 @@
       <Version>0.4.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore">
-      <Version>2.0.0</Version>
+      <Version>2.0.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite">
-      <Version>2.0.0</Version>
+      <Version>2.0.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Design">
       <Version>2.0.0-preview1-final</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
-      <Version>2.0.0</Version>
+      <Version>2.0.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection">
       <Version>2.0.0</Version>
