@@ -63,6 +63,10 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 return null;
             }
+            catch (DirectoryNotFoundException)
+            {
+                return null;
+            }
             catch
             {
                 fileStream?.Dispose();

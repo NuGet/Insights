@@ -96,11 +96,12 @@ namespace Knapcode.ExplorePackages
                         commands.Add(serviceProvider.GetRequiredService<CatalogToDatabaseCommand>());
                         commands.Add(serviceProvider.GetRequiredService<CatalogToNuspecsCommand>());
                         commands.Add(serviceProvider.GetRequiredService<MZipCommand>());
-                        commands.Add(serviceProvider.GetRequiredService<PackageQueriesCommand>());
+                        commands.Add(serviceProvider.GetRequiredService<MZipToDatabaseCommand>());
                         if (settings.DownloadsV1Url != null)
                         {
                             commands.Add(serviceProvider.GetRequiredService<DownloadsToDatabaseCommand>());
                         }
+                        commands.Add(serviceProvider.GetRequiredService<PackageQueriesCommand>());
                         break;
                     default:
                         log.LogError("Unknown command.");
