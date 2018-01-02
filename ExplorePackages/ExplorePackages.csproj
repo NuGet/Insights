@@ -46,9 +46,9 @@
     <Compile Include="Commands\MZipCommand.cs" />
     <Compile Include="Commands\DownloadsToDatabaseCommand.cs" />
     <Compile Include="Commands\MZipToDatabaseCommand.cs" />
-    <Compile Include="Entities\Migrations\20180101225732_AddOffsetOfCentralDirectory.cs" />
-    <Compile Include="Entities\Migrations\20180101225732_AddOffsetOfCentralDirectory.designer.cs">
-      <DependentUpon>20180101225732_AddOffsetOfCentralDirectory.cs</DependentUpon>
+    <Compile Include="Entities\Migrations\20180102064112_AddPackageArchives.cs" />
+    <Compile Include="Entities\Migrations\20180102064112_AddPackageArchives.designer.cs">
+      <DependentUpon>20180102064112_AddPackageArchives.cs</DependentUpon>
     </Compile>
     <Compile Include="Logic\PackageArchiveMetadata.cs" />
     <Compile Include="Commands\SandboxCommand.cs" />
@@ -73,10 +73,6 @@
     <Compile Include="Entities\Migrations\20171124192230_AddETags.cs" />
     <Compile Include="Entities\Migrations\20171124192230_AddETags.designer.cs">
       <DependentUpon>20171124192230_AddETags.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Entities\Migrations\20180101030441_AddPackageArchives.cs" />
-    <Compile Include="Entities\Migrations\20180101030441_AddPackageArchives.designer.cs">
-      <DependentUpon>20180101030441_AddPackageArchives.cs</DependentUpon>
     </Compile>
     <Compile Include="Entities\Migrations\EntityContextModelSnapshot.cs" />
     <Compile Include="Entities\PackageArchiveEntity.cs" />

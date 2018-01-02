@@ -13,8 +13,10 @@ namespace Knapcode.ExplorePackages.Entities.Migrations
                 columns: table => new
                 {
                     PackageKey = table.Column<long>(nullable: false),
-                    EntryCount = table.Column<long>(nullable: false),
-                    Size = table.Column<long>(nullable: false)
+                    EntryCount = table.Column<int>(nullable: false),
+                    OffsetOfCentralDirectory = table.Column<uint>(nullable: false),
+                    Size = table.Column<long>(nullable: false),
+                    Zip64OffsetOfCentralDirectory = table.Column<ulong>(nullable: true)
                 },
                 constraints: table =>
                 {

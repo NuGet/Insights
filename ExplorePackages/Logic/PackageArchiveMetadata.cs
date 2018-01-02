@@ -5,8 +5,8 @@
         public string Id { get; set; }
         public string Version { get; set; }
         public long Size { get; set; }
-        public long EntryCount { get; set; }
-        public long OffsetOfCentralDirectory { get; set; }
-        public long? Zip64OffsetOfCentralDirectory { get; set; }
+        public int EntryCount { get; set; }
+        public uint OffsetOfCentralDirectory { get; set; }
+        public ulong? Zip64OffsetOfCentralDirectory { get; set; }
     }
 }

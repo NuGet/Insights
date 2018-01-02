@@ -75,13 +75,13 @@ namespace Knapcode.ExplorePackages.Entities.Migrations
                 {
                     b.Property<long>("PackageKey");
 
-                    b.Property<long>("EntryCount");
+                    b.Property<int>("EntryCount");
 
-                    b.Property<long>("OffsetOfCentralDirectory");
+                    b.Property<uint>("OffsetOfCentralDirectory");
 
                     b.Property<long>("Size");
 
-                    b.Property<long?>("Zip64OffsetOfCentralDirectory");
+                    b.Property<ulong?>("Zip64OffsetOfCentralDirectory");
 
                     b.HasKey("PackageKey");
 

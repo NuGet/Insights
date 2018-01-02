@@ -10,7 +10,7 @@ using System;
 namespace Knapcode.ExplorePackages.Entities.Migrations
 {
     [DbContext(typeof(EntityContext))]
-    [Migration("20180101030441_AddPackageArchives")]
+    [Migration("20180102064112_AddPackageArchives")]
     partial class AddPackageArchives
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -76,9 +76,13 @@ namespace Knapcode.ExplorePackages.Entities.Migrations
                 {
                     b.Property<long>("PackageKey");
 
-                    b.Property<long>("EntryCount");
+                    b.Property<int>("EntryCount");
+
+                    b.Property<uint>("OffsetOfCentralDirectory");
 
                     b.Property<long>("Size");
+
+                    b.Property<ulong?>("Zip64OffsetOfCentralDirectory");
 
                     b.HasKey("PackageKey");
 
