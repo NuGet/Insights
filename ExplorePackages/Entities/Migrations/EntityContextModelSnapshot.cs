@@ -75,13 +75,54 @@ namespace Knapcode.ExplorePackages.Entities.Migrations
                 {
                     b.Property<long>("PackageKey");
 
+                    b.Property<uint>("CentralDirectorySize");
+
+                    b.Property<byte[]>("Comment")
+                        .IsRequired();
+
+                    b.Property<ushort>("CommentSize");
+
+                    b.Property<ushort>("DiskWithStartOfCentralDirectory");
+
+                    b.Property<ushort>("EntriesForWholeCentralDirectory");
+
+                    b.Property<ushort>("EntriesInThisDisk");
+
                     b.Property<int>("EntryCount");
+
+                    b.Property<ushort>("NumberOfThisDisk");
+
+                    b.Property<long>("OffsetAfterEndOfCentralDirectory");
 
                     b.Property<uint>("OffsetOfCentralDirectory");
 
                     b.Property<long>("Size");
 
+                    b.Property<ulong?>("Zip64CentralDirectorySize");
+
+                    b.Property<uint?>("Zip64DiskWithStartOfCentralDirectory");
+
+                    b.Property<uint?>("Zip64DiskWithStartOfEndOfCentralDirectory");
+
+                    b.Property<ulong?>("Zip64EndOfCentralDirectoryOffset");
+
+                    b.Property<ulong?>("Zip64EntriesForWholeCentralDirectory");
+
+                    b.Property<ulong?>("Zip64EntriesInThisDisk");
+
+                    b.Property<uint?>("Zip64NumberOfThisDisk");
+
+                    b.Property<long?>("Zip64OffsetAfterEndOfCentralDirectoryLocator");
+
                     b.Property<ulong?>("Zip64OffsetOfCentralDirectory");
+
+                    b.Property<ulong?>("Zip64SizeOfCentralDirectoryRecord");
+
+                    b.Property<uint?>("Zip64TotalNumberOfDisks");
+
+                    b.Property<ushort?>("Zip64VersionMadeBy");
+
+                    b.Property<ushort?>("Zip64VersionToExtract");
 
                     b.HasKey("PackageKey");
 

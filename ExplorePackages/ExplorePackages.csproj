@@ -46,9 +46,9 @@
     <Compile Include="Commands\MZipCommand.cs" />
     <Compile Include="Commands\DownloadsToDatabaseCommand.cs" />
     <Compile Include="Commands\MZipToDatabaseCommand.cs" />
-    <Compile Include="Entities\Migrations\20180102064112_AddPackageArchives.cs" />
-    <Compile Include="Entities\Migrations\20180102064112_AddPackageArchives.designer.cs">
-      <DependentUpon>20180102064112_AddPackageArchives.cs</DependentUpon>
+    <Compile Include="Entities\Migrations\20180103150110_AddPackageArchives.cs" />
+    <Compile Include="Entities\Migrations\20180103150110_AddPackageArchives.designer.cs">
+      <DependentUpon>20180103150110_AddPackageArchives.cs</DependentUpon>
     </Compile>
     <Compile Include="Logic\PackageArchiveMetadata.cs" />
     <Compile Include="Commands\SandboxCommand.cs" />
@@ -261,6 +261,9 @@
   <ItemGroup>
     <PackageReference Include="AngleSharp">
       <Version>0.9.9</Version>
+    </PackageReference>
+    <PackageReference Include="AutoMapper">
+      <Version>6.2.2</Version>
     </PackageReference>
     <PackageReference Include="Knapcode.MiniZip">
       <Version>0.4.0</Version>

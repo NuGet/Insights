@@ -214,6 +214,11 @@ namespace Knapcode.ExplorePackages.Entities
                 .HasOne(x => x.Package)
                 .WithOne(x => x.PackageArchive)
                 .HasForeignKey<PackageArchiveEntity>(x => x.PackageKey);
+
+            modelBuilder
+                .Entity<PackageArchiveEntity>()
+                .Property(x => x.Comment)
+                .IsRequired();
         }
     }
 }

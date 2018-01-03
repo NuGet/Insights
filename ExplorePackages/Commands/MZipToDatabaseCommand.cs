@@ -125,9 +125,7 @@ namespace Knapcode.ExplorePackages.Commands
                 Id = package.PackageRegistration.Id,
                 Version = package.Version,
                 Size = size,
-                EntryCount = zipDirectory.Entries.Count,
-                OffsetOfCentralDirectory = zipDirectory.OffsetOfCentralDirectory,
-                Zip64OffsetOfCentralDirectory = zipDirectory.Zip64?.OffsetOfCentralDirectory,
+                ZipDirectory = zipDirectory,
             };
 
             return metadata;

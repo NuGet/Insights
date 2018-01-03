@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Knapcode.ExplorePackages.Entities;
 using Microsoft.EntityFrameworkCore;
 using NuGet.CatalogReader;
@@ -13,8 +14,19 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class PackageService
     {
+        private static readonly IMapper Mapper;
         private readonly PackageCommitEnumerator _enumerator;
         private readonly ILogger _log;
+
+        static PackageService()
+        {
+            var mapperConfiguration = new MapperConfiguration(cfg => cfg
+                .CreateMap<PackageArchiveEntity, PackageArchiveEntity>()
+                .ForMember(x => x.PackageKey, x => x.Ignore())
+                .ForMember(x => x.Package, x => x.Ignore()));
+
+            Mapper = mapperConfiguration.CreateMapper();
+        }
 
         public PackageService(PackageCommitEnumerator enumerator, ILogger log)
         {
@@ -157,27 +169,15 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
-        public async Task AddOrUpdatePackagesAsync(IEnumerable<PackageArchiveMetadata> packageArchive)
+        public async Task AddOrUpdatePackagesAsync(IEnumerable<PackageArchiveMetadata> metadataSequence)
         {
             await AddOrUpdatePackagesAsync(
-                packageArchive,
+                metadataSequence,
                 x => x,
                 d => d.Id,
                 d => d.Version,
-                (p, f) => p.PackageArchive = new PackageArchiveEntity
-                {
-                    Size = f.Size,
-                    EntryCount = f.EntryCount,
-                    OffsetOfCentralDirectory = f.OffsetOfCentralDirectory,
-                    Zip64OffsetOfCentralDirectory = f.Zip64OffsetOfCentralDirectory,
-                },
-                (p, f) =>
-                {
-                    p.PackageArchive.Size = f.Size;
-                    p.PackageArchive.EntryCount = f.EntryCount;
-                    p.PackageArchive.OffsetOfCentralDirectory = f.OffsetOfCentralDirectory;
-                    p.PackageArchive.Zip64OffsetOfCentralDirectory = f.Zip64OffsetOfCentralDirectory;
-                },
+                (p, f) => p.PackageArchive = Initialize(new PackageArchiveEntity(), f),
+                (p, f) => Initialize(p.PackageArchive, f),
                 (pe, pl) =>
                 {
                     if (pe.PackageArchive == null)
@@ -186,12 +186,46 @@ namespace Knapcode.ExplorePackages.Logic
                     }
                     else
                     {
-                        pe.PackageArchive.Size = pl.PackageArchive.Size;
-                        pe.PackageArchive.EntryCount = pl.PackageArchive.EntryCount;
-                        pe.PackageArchive.OffsetOfCentralDirectory = pl.PackageArchive.OffsetOfCentralDirectory;
-                        pe.PackageArchive.Zip64OffsetOfCentralDirectory = pl.PackageArchive.Zip64OffsetOfCentralDirectory;
+                        Update(pe.PackageArchive, pl.PackageArchive);
                     }
                 });
+        }
+
+        private PackageArchiveEntity Initialize(PackageArchiveEntity entity, PackageArchiveMetadata metadata)
+        {
+            entity.Size = metadata.Size;
+            entity.EntryCount = metadata.ZipDirectory.Entries.Count;
+
+            entity.CentralDirectorySize = metadata.ZipDirectory.CentralDirectorySize;
+            entity.Comment = metadata.ZipDirectory.Comment;
+            entity.CommentSize = metadata.ZipDirectory.CommentSize;
+            entity.DiskWithStartOfCentralDirectory = metadata.ZipDirectory.DiskWithStartOfCentralDirectory;
+            entity.EntriesForWholeCentralDirectory = metadata.ZipDirectory.EntriesForWholeCentralDirectory;
+            entity.EntriesInThisDisk = metadata.ZipDirectory.EntriesInThisDisk;
+            entity.NumberOfThisDisk = metadata.ZipDirectory.NumberOfThisDisk;
+            entity.OffsetAfterEndOfCentralDirectory = metadata.ZipDirectory.OffsetAfterEndOfCentralDirectory;
+            entity.OffsetOfCentralDirectory = metadata.ZipDirectory.OffsetOfCentralDirectory;
+
+            entity.Zip64CentralDirectorySize = metadata.ZipDirectory.Zip64?.CentralDirectorySize;
+            entity.Zip64DiskWithStartOfCentralDirectory = metadata.ZipDirectory.Zip64?.DiskWithStartOfCentralDirectory;
+            entity.Zip64DiskWithStartOfEndOfCentralDirectory = metadata.ZipDirectory.Zip64?.DiskWithStartOfEndOfCentralDirectory;
+            entity.Zip64EndOfCentralDirectoryOffset = metadata.ZipDirectory.Zip64?.EndOfCentralDirectoryOffset;
+            entity.Zip64EntriesForWholeCentralDirectory = metadata.ZipDirectory.Zip64?.EntriesForWholeCentralDirectory;
+            entity.Zip64EntriesInThisDisk = metadata.ZipDirectory.Zip64?.EntriesInThisDisk;
+            entity.Zip64NumberOfThisDisk = metadata.ZipDirectory.Zip64?.NumberOfThisDisk;
+            entity.Zip64OffsetAfterEndOfCentralDirectoryLocator = metadata.ZipDirectory.Zip64?.OffsetAfterEndOfCentralDirectoryLocator;
+            entity.Zip64OffsetOfCentralDirectory = metadata.ZipDirectory.Zip64?.OffsetOfCentralDirectory;
+            entity.Zip64SizeOfCentralDirectoryRecord = metadata.ZipDirectory.Zip64?.SizeOfCentralDirectoryRecord;
+            entity.Zip64TotalNumberOfDisks = metadata.ZipDirectory.Zip64?.TotalNumberOfDisks;
+            entity.Zip64VersionMadeBy = metadata.ZipDirectory.Zip64?.VersionMadeBy;
+            entity.Zip64VersionToExtract = metadata.ZipDirectory.Zip64?.VersionToExtract;
+
+            return entity;
+        }
+        
+        public void Update(PackageArchiveEntity existing, PackageArchiveEntity latest)
+        {
+            Mapper.Map(latest, existing);
         }
 
         public async Task AddOrUpdatePackagesAsync(IEnumerable<PackageDownloads> packageDownloads)

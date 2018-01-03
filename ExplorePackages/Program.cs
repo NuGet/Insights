@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Commands;
 using Knapcode.ExplorePackages.Entities;
-using Knapcode.ExplorePackages.Logic;
 using Knapcode.ExplorePackages.Support;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
