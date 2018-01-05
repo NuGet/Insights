@@ -219,6 +219,40 @@ namespace Knapcode.ExplorePackages.Entities
                 .Entity<PackageArchiveEntity>()
                 .Property(x => x.Comment)
                 .IsRequired();
+
+            modelBuilder
+                .Entity<PackageEntryEntity>()
+                .ToTable("PackageEntries");
+
+            modelBuilder
+                .Entity<PackageEntryEntity>()
+                .HasKey(x => x.PackageEntryKey);
+
+            modelBuilder
+                .Entity<PackageEntryEntity>()
+                .HasOne(x => x.PackageArchive)
+                .WithMany(x => x.PackageEntries)
+                .HasForeignKey(x => x.PackageKey);
+
+            modelBuilder
+                .Entity<PackageEntryEntity>()
+                .Property(x => x.Comment)
+                .IsRequired();
+
+            modelBuilder
+                .Entity<PackageEntryEntity>()
+                .Property(x => x.ExtraField)
+                .IsRequired();
+
+            modelBuilder
+                .Entity<PackageEntryEntity>()
+                .Property(x => x.Name)
+                .IsRequired();
+
+            modelBuilder
+                .Entity<PackageEntryEntity>()
+                .HasIndex(x => new { x.PackageKey, x.Index })
+                .IsUnique();
         }
     }
 }

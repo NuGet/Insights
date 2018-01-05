@@ -50,6 +50,11 @@
     <Compile Include="Entities\Migrations\20180103150110_AddPackageArchives.designer.cs">
       <DependentUpon>20180103150110_AddPackageArchives.cs</DependentUpon>
     </Compile>
+    <Compile Include="Entities\Migrations\20180104062208_AddPackageEntries.cs" />
+    <Compile Include="Entities\Migrations\20180104062208_AddPackageEntries.designer.cs">
+      <DependentUpon>20180104062208_AddPackageEntries.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Entities\PackageEntryEntity.cs" />
     <Compile Include="Logic\PackageArchiveMetadata.cs" />
     <Compile Include="Commands\SandboxCommand.cs" />
     <Compile Include="Commands\ShowWeirdDependenciesCommand.cs" />

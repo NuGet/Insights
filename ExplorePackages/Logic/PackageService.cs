@@ -100,9 +100,9 @@ namespace Knapcode.ExplorePackages.Logic
             Func<IEnumerable<T>, IEnumerable<T>> sort,
             Func<T, string> getId,
             Func<T, string> getVersion,
-            Action<PackageEntity, T> initializePackageFromForeign,
-            Action<PackageEntity, T> updatePackageFromForeign,
-            Action<PackageEntity, PackageEntity> updateExistingPackage)
+            Action<EntityContext, PackageEntity, T> initializePackageFromForeign,
+            Action<EntityContext, PackageEntity, T> updatePackageFromForeign,
+            Action<EntityContext, PackageEntity, PackageEntity> updateExistingPackage)
         {
             using (var entityContext = new EntityContext())
             {
@@ -127,13 +127,13 @@ namespace Knapcode.ExplorePackages.Logic
                             Identity = identity,
                         };
 
-                        initializePackageFromForeign(latestPackage, foreignPackage);
+                        initializePackageFromForeign(entityContext, latestPackage, foreignPackage);
 
                         identityToLatest[latestPackage.Identity] = latestPackage;
                     }
                     else
                     {
-                        updatePackageFromForeign(latestPackage, foreignPackage);
+                        updatePackageFromForeign(entityContext, latestPackage, foreignPackage);
                     }
                 }
 
@@ -156,7 +156,7 @@ namespace Knapcode.ExplorePackages.Logic
                     var latestPackage = identityToLatest[existingPackage.Identity];
                     identityToLatest.Remove(existingPackage.Identity);
 
-                    updateExistingPackage(existingPackage, latestPackage);
+                    updateExistingPackage(entityContext, existingPackage, latestPackage);
                 }
 
                 // Add new records.
@@ -176,9 +176,9 @@ namespace Knapcode.ExplorePackages.Logic
                 x => x,
                 d => d.Id,
                 d => d.Version,
-                (p, f) => p.PackageArchive = Initialize(new PackageArchiveEntity(), f),
-                (p, f) => Initialize(p.PackageArchive, f),
-                (pe, pl) =>
+                (c, p, f) => p.PackageArchive = Initialize(new PackageArchiveEntity(), f),
+                (c, p, f) => Initialize(p.PackageArchive, f),
+                (c, pe, pl) =>
                 {
                     if (pe.PackageArchive == null)
                     {
@@ -235,14 +235,14 @@ namespace Knapcode.ExplorePackages.Logic
                 x => x.OrderBy(d => d.Downloads),
                 d => d.Id,
                 d => d.Version,
-                (p, d) => p.PackageDownloads = new PackageDownloadsEntity
+                (c, p, d) => p.PackageDownloads = new PackageDownloadsEntity
                 {
                     Downloads = d.Downloads,
                 },
-                (p, d) => p.PackageDownloads.Downloads = Math.Max(
+                (c, p, d) => p.PackageDownloads.Downloads = Math.Max(
                     p.PackageDownloads.Downloads,
                     d.Downloads),
-                (pe, pl) =>
+                (c, pe, pl) =>
                 {
                     if (pe.PackageDownloads == null)
                     {
@@ -264,14 +264,14 @@ namespace Knapcode.ExplorePackages.Logic
                 x => x.OrderBy(v2 => v2.Created),
                 v2 => v2.Id,
                 v2 => v2.Version,
-                (p, v2) => p.V2Package = new V2PackageEntity
+                (c, p, v2) => p.V2Package = new V2PackageEntity
                 {
                     CreatedTimestamp = v2.Created.UtcTicks
                 },
-                (p, v2) => p.V2Package.CreatedTimestamp = Math.Min(
+                (c, p, v2) => p.V2Package.CreatedTimestamp = Math.Min(
                     p.V2Package.CreatedTimestamp,
                     v2.Created.UtcTicks),
-                (pe, pl) =>
+                (c, pe, pl) =>
                 {
                     if (pe.V2Package == null)
                     {
@@ -296,25 +296,25 @@ namespace Knapcode.ExplorePackages.Logic
                 x => x.OrderBy(c => c.CommitTimeStamp),
                 c => c.Id,
                 c => c.Version.ToNormalizedString(),
-                (p, c) => p.CatalogPackage = new CatalogPackageEntity
+                (c, p, cp) => p.CatalogPackage = new CatalogPackageEntity
                 {
-                    Deleted = c.IsDelete,
-                    FirstCommitTimestamp = c.CommitTimeStamp.UtcTicks,
-                    LastCommitTimestamp = c.CommitTimeStamp.UtcTicks,
+                    Deleted = cp.IsDelete,
+                    FirstCommitTimestamp = cp.CommitTimeStamp.UtcTicks,
+                    LastCommitTimestamp = cp.CommitTimeStamp.UtcTicks,
                 },
-                (p, c) =>
+                (c, p, cp) =>
                 {
-                    p.CatalogPackage.Deleted = c.IsDelete;
+                    p.CatalogPackage.Deleted = cp.IsDelete;
 
                     p.CatalogPackage.FirstCommitTimestamp = Math.Min(
                         p.CatalogPackage.FirstCommitTimestamp,
-                        c.CommitTimeStamp.UtcTicks);
+                        cp.CommitTimeStamp.UtcTicks);
 
                     p.CatalogPackage.LastCommitTimestamp = Math.Max(
                         p.CatalogPackage.LastCommitTimestamp,
-                        c.CommitTimeStamp.UtcTicks);
+                        cp.CommitTimeStamp.UtcTicks);
                 },
-                (pe, pl) =>
+                (c, pe, pl) =>
                 {
                     if (pe.CatalogPackage == null)
                     {

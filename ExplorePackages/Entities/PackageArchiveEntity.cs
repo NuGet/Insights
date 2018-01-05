@@ -1,4 +1,6 @@
-﻿namespace Knapcode.ExplorePackages.Entities
+﻿using System.Collections.Generic;
+
+namespace Knapcode.ExplorePackages.Entities
 {
     public class PackageArchiveEntity
     {
@@ -32,5 +34,6 @@
         public ushort? Zip64VersionToExtract { get; set; }
 
         public PackageEntity Package { get; set; }
+        public List<PackageEntryEntity> PackageEntries { get; set; }
     }
 }
