@@ -26,6 +26,7 @@ namespace Knapcode.ExplorePackages.Entities
         public DbSet<CatalogPackageEntity> CatalogPackageEntities { get; set; }
         public DbSet<PackageDownloadsEntity> PackageDownloads { get; set; }
         public DbSet<PackageArchiveEntity> PackageArchives { get; set; }
+        public DbSet<PackageEntryEntity> PackageEntries { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

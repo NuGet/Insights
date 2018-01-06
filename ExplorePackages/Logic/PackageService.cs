@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Knapcode.ExplorePackages.Entities;
+using Knapcode.MiniZip;
 using Microsoft.EntityFrameworkCore;
 using NuGet.CatalogReader;
 using NuGet.Common;
@@ -20,10 +21,21 @@ namespace Knapcode.ExplorePackages.Logic
 
         static PackageService()
         {
-            var mapperConfiguration = new MapperConfiguration(cfg => cfg
-                .CreateMap<PackageArchiveEntity, PackageArchiveEntity>()
-                .ForMember(x => x.PackageKey, x => x.Ignore())
-                .ForMember(x => x.Package, x => x.Ignore()));
+            var mapperConfiguration = new MapperConfiguration(expression =>
+            {
+                expression
+                    .CreateMap<PackageArchiveEntity, PackageArchiveEntity>()
+                    .ForMember(x => x.PackageKey, x => x.Ignore())
+                    .ForMember(x => x.Package, x => x.Ignore())
+                    .ForMember(x => x.PackageEntries, x => x.Ignore());
+
+                expression
+                    .CreateMap<PackageEntryEntity, PackageEntryEntity>()
+                    .ForMember(x => x.PackageEntryKey, x => x.Ignore())
+                    .ForMember(x => x.PackageKey, x => x.Ignore())
+                    .ForMember(x => x.PackageArchive, x => x.Ignore())
+                    .ForMember(x => x.Index, x => x.Ignore());
+            });
 
             Mapper = mapperConfiguration.CreateMapper();
         }
@@ -100,8 +112,8 @@ namespace Knapcode.ExplorePackages.Logic
             Func<IEnumerable<T>, IEnumerable<T>> sort,
             Func<T, string> getId,
             Func<T, string> getVersion,
-            Action<EntityContext, PackageEntity, T> initializePackageFromForeign,
-            Action<EntityContext, PackageEntity, T> updatePackageFromForeign,
+            Action<PackageEntity, T> initializePackageFromForeign,
+            Action<PackageEntity, T> updatePackageFromForeign,
             Action<EntityContext, PackageEntity, PackageEntity> updateExistingPackage)
         {
             using (var entityContext = new EntityContext())
@@ -127,13 +139,13 @@ namespace Knapcode.ExplorePackages.Logic
                             Identity = identity,
                         };
 
-                        initializePackageFromForeign(entityContext, latestPackage, foreignPackage);
+                        initializePackageFromForeign(latestPackage, foreignPackage);
 
                         identityToLatest[latestPackage.Identity] = latestPackage;
                     }
                     else
                     {
-                        updatePackageFromForeign(entityContext, latestPackage, foreignPackage);
+                        updatePackageFromForeign(latestPackage, foreignPackage);
                     }
                 }
 
@@ -145,6 +157,7 @@ namespace Knapcode.ExplorePackages.Logic
                     .Include(x => x.CatalogPackage)
                     .Include(x => x.PackageDownloads)
                     .Include(x => x.PackageArchive)
+                    .ThenInclude(x => x.PackageEntries)
                     .Where(p => identities.Contains(p.Identity))
                     .ToListAsync();
 
@@ -176,8 +189,8 @@ namespace Knapcode.ExplorePackages.Logic
                 x => x,
                 d => d.Id,
                 d => d.Version,
-                (c, p, f) => p.PackageArchive = Initialize(new PackageArchiveEntity(), f),
-                (c, p, f) => Initialize(p.PackageArchive, f),
+                (p, f) => p.PackageArchive = Initialize(new PackageArchiveEntity(), f),
+                (p, f) => Initialize(p.PackageArchive, f),
                 (c, pe, pl) =>
                 {
                     if (pe.PackageArchive == null)
@@ -186,9 +199,54 @@ namespace Knapcode.ExplorePackages.Logic
                     }
                     else
                     {
-                        Update(pe.PackageArchive, pl.PackageArchive);
+                        Update(c, pe.PackageArchive, pl.PackageArchive);
                     }
                 });
+        }
+
+        private void Update(EntityContext entityContext, PackageArchiveEntity existing, PackageArchiveEntity latest)
+        {
+            Mapper.Map(latest, existing);
+
+            latest.PackageEntries.Sort((a, b) => a.Index.CompareTo(b.Index));
+            existing.PackageEntries.Sort((a, b) => a.Index.CompareTo(b.Index));
+            
+            for (var index = 0; index < latest.PackageEntries.Count; index++)
+            {
+                var latestEntry = latest.PackageEntries[index];
+
+                if (index < existing.PackageEntries.Count)
+                {
+                    var existingEntry = existing.PackageEntries[index];
+
+                    if (existingEntry.Index != (ulong)index)
+                    {
+                        throw new InvalidOperationException("One of the package archive entries seems to have an incorrect index.");
+                    }
+
+                    Mapper.Map(latestEntry, existingEntry);
+                }
+                else if (index == existing.PackageEntries.Count)
+                {
+                    latestEntry.PackageKey = existing.PackageKey;
+                    latestEntry.PackageArchive = existing;
+
+                    existing.PackageEntries.Add(latestEntry);
+
+                    entityContext.PackageEntries.Add(latestEntry);
+                }
+                else
+                {
+                    throw new InvalidOperationException("The list of existing package entries should have grown.");
+                }
+            }
+
+            while (latest.PackageEntries.Count < existing.PackageEntries.Count)
+            {
+                var last = existing.PackageEntries.Last();
+                existing.PackageEntries.RemoveAt(existing.PackageEntries.Count - 1);
+                entityContext.PackageEntries.Remove(last);
+            }
         }
 
         private PackageArchiveEntity Initialize(PackageArchiveEntity entity, PackageArchiveMetadata metadata)
@@ -220,12 +278,75 @@ namespace Knapcode.ExplorePackages.Logic
             entity.Zip64VersionMadeBy = metadata.ZipDirectory.Zip64?.VersionMadeBy;
             entity.Zip64VersionToExtract = metadata.ZipDirectory.Zip64?.VersionToExtract;
 
+            // Make sure the entries are sorted by index.
+            if (entity.PackageEntries == null)
+            {
+                entity.PackageEntries = new List<PackageEntryEntity>();
+            }
+
+            entity.PackageEntries.Sort((a, b) => a.Index.CompareTo(b.Index));
+            
+            for (var index = 0; index < metadata.ZipDirectory.Entries.Count; index++)
+            {
+                var entryMetadata = metadata.ZipDirectory.Entries[index];
+                PackageEntryEntity entryEntity;
+                if (index < entity.PackageEntries.Count)
+                {
+                    entryEntity = entity.PackageEntries[index];
+
+                    if (entryEntity.Index != (ulong)index)
+                    {
+                        throw new InvalidOperationException("One of the package archive entries seems to have an incorrect index.");
+                    }
+                }
+                else if(index == entity.PackageEntries.Count)
+                {
+                    entryEntity = new PackageEntryEntity
+                    {
+                        PackageArchive = entity,
+                        Index = (ulong)index,
+                    };
+
+                    entity.PackageEntries.Add(entryEntity);
+                }
+                else
+                {
+                    throw new InvalidOperationException("The list of existing package entries should have grown.");
+                }
+
+                Initialize(entryEntity, entryMetadata);
+            }
+
+            entity
+                .PackageEntries
+                .RemoveAll(x => x.Index >= (ulong)metadata.ZipDirectory.Entries.Count);
+
             return entity;
         }
-        
-        public void Update(PackageArchiveEntity existing, PackageArchiveEntity latest)
+
+        private PackageEntryEntity Initialize(PackageEntryEntity entity, ZipEntry metadata)
         {
-            Mapper.Map(latest, existing);
+            entity.Comment = metadata.Comment;
+            entity.CommentSize = metadata.CommentSize;
+            entity.CompressedSize = metadata.CompressedSize;
+            entity.CompressionMethod = metadata.CompressionMethod;
+            entity.Crc32 = metadata.Crc32;
+            entity.DiskNumberStart = metadata.DiskNumberStart;
+            entity.ExternalAttributes = metadata.ExternalAttributes;
+            entity.ExtraField = metadata.ExtraField;
+            entity.ExtraFieldSize = metadata.ExtraFieldSize;
+            entity.Flags = metadata.Flags;
+            entity.InternalAttributes = metadata.InternalAttributes;
+            entity.LastModifiedDate = metadata.LastModifiedDate;
+            entity.LastModifiedTime = metadata.LastModifiedTime;
+            entity.LocalHeaderOffset = metadata.LocalHeaderOffset;
+            entity.Name = metadata.Name;
+            entity.NameSize = metadata.NameSize;
+            entity.UncompressedSize = metadata.UncompressedSize;
+            entity.VersionMadeBy = metadata.VersionMadeBy;
+            entity.VersionToExtract = metadata.VersionToExtract;
+
+            return entity;
         }
 
         public async Task AddOrUpdatePackagesAsync(IEnumerable<PackageDownloads> packageDownloads)
@@ -235,11 +356,11 @@ namespace Knapcode.ExplorePackages.Logic
                 x => x.OrderBy(d => d.Downloads),
                 d => d.Id,
                 d => d.Version,
-                (c, p, d) => p.PackageDownloads = new PackageDownloadsEntity
+                (p, d) => p.PackageDownloads = new PackageDownloadsEntity
                 {
                     Downloads = d.Downloads,
                 },
-                (c, p, d) => p.PackageDownloads.Downloads = Math.Max(
+                (p, d) => p.PackageDownloads.Downloads = Math.Max(
                     p.PackageDownloads.Downloads,
                     d.Downloads),
                 (c, pe, pl) =>
@@ -264,11 +385,11 @@ namespace Knapcode.ExplorePackages.Logic
                 x => x.OrderBy(v2 => v2.Created),
                 v2 => v2.Id,
                 v2 => v2.Version,
-                (c, p, v2) => p.V2Package = new V2PackageEntity
+                (p, v2) => p.V2Package = new V2PackageEntity
                 {
                     CreatedTimestamp = v2.Created.UtcTicks
                 },
-                (c, p, v2) => p.V2Package.CreatedTimestamp = Math.Min(
+                (p, v2) => p.V2Package.CreatedTimestamp = Math.Min(
                     p.V2Package.CreatedTimestamp,
                     v2.Created.UtcTicks),
                 (c, pe, pl) =>
@@ -296,13 +417,13 @@ namespace Knapcode.ExplorePackages.Logic
                 x => x.OrderBy(c => c.CommitTimeStamp),
                 c => c.Id,
                 c => c.Version.ToNormalizedString(),
-                (c, p, cp) => p.CatalogPackage = new CatalogPackageEntity
+                (p, cp) => p.CatalogPackage = new CatalogPackageEntity
                 {
                     Deleted = cp.IsDelete,
                     FirstCommitTimestamp = cp.CommitTimeStamp.UtcTicks,
                     LastCommitTimestamp = cp.CommitTimeStamp.UtcTicks,
                 },
-                (c, p, cp) =>
+                (p, cp) =>
                 {
                     p.CatalogPackage.Deleted = cp.IsDelete;
 

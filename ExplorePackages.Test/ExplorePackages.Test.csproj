@@ -39,10 +39,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Logic\NuspecUtilityTest.cs" />
+    <Compile Include="Logic\PackageServiceTest.cs" />
     <Compile Include="TestData\Resources.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite">
+      <Version>2.0.1</Version>
+    </PackageReference>
     <PackageReference Include="Moq">
       <Version>4.7.145</Version>
     </PackageReference>
