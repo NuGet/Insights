@@ -47,7 +47,7 @@ namespace Knapcode.ExplorePackages.Logic
                 while (await enumerator.MoveNext())
                 {
                     batch.Add(enumerator.Current);
-                    if (batch.Count >= 1000)
+                    if (batch.Count >= 5000)
                     {
                         taskQueue.Enqueue(batch);
                         batch = new List<PackageDownloads>();
