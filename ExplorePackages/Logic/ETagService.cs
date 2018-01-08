@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class ETagService
+    public class ETagService : IETagService
     {
         public async Task<string> GetValueAsync(string name)
         {

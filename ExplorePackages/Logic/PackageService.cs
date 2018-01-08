@@ -13,7 +13,7 @@ using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class PackageService
+    public class PackageService : IPackageService
     {
         private static readonly IMapper Mapper;
         private readonly PackageCommitEnumerator _enumerator;

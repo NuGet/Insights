@@ -16,6 +16,7 @@ namespace Knapcode.ExplorePackages
             V2BaseUrl = "https://www.nuget.org/api/v2";
             V3ServiceIndex = "https://api.nuget.org/v3/index.json";
             DownloadsV1Url = null;
+            DownloadsV1Path = Path.Combine(currentDirectory, "downloads.txt");
         }
 
         public string DatabasePath { get; set; }
@@ -27,6 +28,7 @@ namespace Knapcode.ExplorePackages
         public string V2BaseUrl { get; set; }
         public string V3ServiceIndex { get; set; }
         public string DownloadsV1Url { get; set; }
+        public string DownloadsV1Path { get; set; }
 
         public ExplorePackagesSettings Clone()
         {
@@ -41,6 +43,7 @@ namespace Knapcode.ExplorePackages
                 V2BaseUrl = V2BaseUrl,
                 V3ServiceIndex = V3ServiceIndex,
                 DownloadsV1Url = DownloadsV1Url,
+                DownloadsV1Path = DownloadsV1Path,
             };
         }
     }

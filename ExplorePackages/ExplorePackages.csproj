@@ -55,6 +55,8 @@
       <DependentUpon>20180104062208_AddPackageEntries.cs</DependentUpon>
     </Compile>
     <Compile Include="Entities\PackageEntryEntity.cs" />
+    <Compile Include="Logic\IETagService.cs" />
+    <Compile Include="Logic\IPackageService.cs" />
     <Compile Include="Logic\PackageArchiveMetadata.cs" />
     <Compile Include="Commands\SandboxCommand.cs" />
     <Compile Include="Commands\ShowWeirdDependenciesCommand.cs" />
@@ -178,6 +180,7 @@
     <Compile Include="Logic\Protocol\AutocompleteVersionResults.cs" />
     <Compile Include="Logic\Protocol\GalleryClient.cs" />
     <Compile Include="Logic\Protocol\GalleryPackageState.cs" />
+    <Compile Include="Logic\Protocol\IPackageDownloadsClient.cs" />
     <Compile Include="Logic\Protocol\PackageDeletedStatus.cs" />
     <Compile Include="Logic\Protocol\PackageDownloads.cs" />
     <Compile Include="Logic\Protocol\PackageDownloadsClient.cs" />

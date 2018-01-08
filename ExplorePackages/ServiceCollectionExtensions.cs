@@ -110,8 +110,9 @@ namespace Knapcode.ExplorePackages
 
             serviceCollection.AddTransient<PackageCommitEnumerator>();
             serviceCollection.AddTransient<CursorService>();
-            serviceCollection.AddTransient<ETagService>();
+            serviceCollection.AddTransient<IETagService, ETagService>();
             serviceCollection.AddTransient<PackageService>();
+            serviceCollection.AddTransient<IPackageService, PackageService>();
             serviceCollection.AddTransient<PackageQueryService>();
 
             serviceCollection.AddTransient<V2Parser>();
@@ -123,7 +124,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<RegistrationClient>();
             serviceCollection.AddTransient<SearchClient>();
             serviceCollection.AddTransient<AutocompleteClient>();
-            serviceCollection.AddTransient<PackageDownloadsClient>();
+            serviceCollection.AddTransient<IPackageDownloadsClient, PackageDownloadsClient>();
 
             serviceCollection.AddTransient<GalleryConsistencyService>();
             serviceCollection.AddTransient<V2ConsistencyService>();

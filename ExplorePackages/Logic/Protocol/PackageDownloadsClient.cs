@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class PackageDownloadsClient
+    public class PackageDownloadsClient : IPackageDownloadsClient
     {
         private readonly HttpClient _httpClient;
         private readonly ExplorePackagesSettings _settings;
