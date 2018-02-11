@@ -27,22 +27,50 @@ namespace Knapcode.ExplorePackages.Logic
             _settings = settings;
         }
 
-        public async Task UpdateAsync()
+        public async Task UpdateAsync(V2OrderByTimestamp orderBy)
+        {
+            switch (orderBy)
+            {
+                case V2OrderByTimestamp.Created:
+                    await UpdateAsync(
+                        CursorNames.V2ToDatabaseCreated,
+                        V2OrderByTimestamp.Created,
+                        x => x.Created);
+                    break;
+                case V2OrderByTimestamp.LastEdited:
+                    await UpdateAsync(
+                        CursorNames.V2ToDatabaseLastEdited,
+                        V2OrderByTimestamp.LastEdited,
+                        x => x.LastEdited ?? DateTimeOffset.MinValue);
+                    break;
+                default:
+                    throw new NotSupportedException($"V2 order by mode {orderBy} is not supported.");
+            }
+        }
+
+        private async Task UpdateAsync(
+            string cursorName,
+            V2OrderByTimestamp orderBy,
+            Func<V2Package, DateTimeOffset> getTimestamp)
         {
             var taskQueue = new TaskQueue<IReadOnlyList<V2Package>>(
                 workerCount: 1,
-                workAsync: ConsumeAsync);
+                workAsync: x => ConsumeAsync(x, cursorName, getTimestamp));
 
             taskQueue.Start();
 
-            await ProduceAsync(taskQueue);
+            await ProduceAsync(taskQueue, cursorName, orderBy, getTimestamp);
 
             await taskQueue.CompleteAsync();
         }
 
-        private async Task ProduceAsync(TaskQueue<IReadOnlyList<V2Package>> taskQueue)
+        private async Task ProduceAsync(
+            TaskQueue<IReadOnlyList<V2Package>> taskQueue,
+            string cursorName,
+            V2OrderByTimestamp orderBy,
+            Func<V2Package, DateTimeOffset> getTimestamp)
         {
-            var start = await _cursorService.GetValueAsync(CursorNames.V2ToDatabase);
+            var start = await _cursorService.GetValueAsync(cursorName);
             if (start > DateTimeOffset.MinValue.Add(FuzzFactor))
             {
                 start = start.Subtract(FuzzFactor);
@@ -53,22 +81,22 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 var packages = await _v2Client.GetPackagesAsync(
                    _settings.V2BaseUrl,
-                   V2OrderByTimestamp.Created,
+                   orderBy,
                    start,
                    PageSize);
 
                 // If we have a full page, take only packages with a created timestamp less than the max.
                 if (packages.Count == PageSize)
                 {
-                    var max = packages.Max(x => x.Created);
+                    var max = packages.Max(getTimestamp);
                     var packagesBeforeMax = packages
-                        .Where(x => x.Created < max)
+                        .Where(x => getTimestamp(x) < max)
                         .ToList();
 
                     if (packages.Any()
                         && !packagesBeforeMax.Any())
                     {
-                        throw new InvalidOperationException("All of the packages in the page have the same created timestamp.");
+                        throw new InvalidOperationException($"All of the packages in the page have the same {orderBy} timestamp.");
                     }
 
                     packages = packagesBeforeMax;
@@ -86,22 +114,25 @@ namespace Knapcode.ExplorePackages.Logic
                 if (packages.Count > 0)
                 {
                     taskQueue.Enqueue(packages);
-                    start = packages.Max(x => x.Created);
+                    start = packages.Max(getTimestamp);
                 }
             }
             while (!complete);
         }
 
-        private async Task ConsumeAsync(IReadOnlyList<V2Package> packages)
+        private async Task ConsumeAsync(
+            IReadOnlyList<V2Package> packages,
+            string cursorName,
+            Func<V2Package, DateTimeOffset> getTimestamp)
         {
-            var oldCUrsor = await _cursorService.GetValueAsync(CursorNames.V2ToDatabase);
+            var oldCUrsor = await _cursorService.GetValueAsync(cursorName);
 
             await _service.AddOrUpdatePackagesAsync(packages);
 
-            var newCursor = packages.Max(x => x.Created);
+            var newCursor = packages.Max(getTimestamp);
             if (newCursor > oldCUrsor)
             {
-                await _cursorService.SetValueAsync(CursorNames.V2ToDatabase, newCursor);
+                await _cursorService.SetValueAsync(cursorName, newCursor);
             }
         }
     }

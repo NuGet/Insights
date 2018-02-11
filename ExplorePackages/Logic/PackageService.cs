@@ -385,26 +385,48 @@ namespace Knapcode.ExplorePackages.Logic
                 x => x.OrderBy(v2 => v2.Created),
                 v2 => v2.Id,
                 v2 => v2.Version,
-                (p, v2) => p.V2Package = new V2PackageEntity
+                (p, v2) => p.V2Package = ToEntity(v2),
+                (p, v2) =>
                 {
-                    CreatedTimestamp = v2.Created.UtcTicks
+                    var e = ToEntity(v2);
+                    if (e.LastUpdatedTimestamp < p.V2Package.LastUpdatedTimestamp)
+                    {
+                        return;
+                    }
+
+                    p.V2Package.CreatedTimestamp = e.CreatedTimestamp;
+                    p.V2Package.LastEditedTimestamp = e.LastUpdatedTimestamp;
+                    p.V2Package.PublishedTimestamp = e.PublishedTimestamp;
+                    p.V2Package.LastUpdatedTimestamp = e.LastUpdatedTimestamp;
+                    p.V2Package.Listed = e.Listed;
                 },
-                (p, v2) => p.V2Package.CreatedTimestamp = Math.Min(
-                    p.V2Package.CreatedTimestamp,
-                    v2.Created.UtcTicks),
                 (c, pe, pl) =>
                 {
                     if (pe.V2Package == null)
                     {
                         pe.V2Package = pl.V2Package;
                     }
-                    else
+                    else if (pe.V2Package.LastUpdatedTimestamp < pl.V2Package.LastUpdatedTimestamp)
                     {
-                        pe.V2Package.CreatedTimestamp = Math.Max(
-                            pe.V2Package.CreatedTimestamp,
-                            pl.V2Package.CreatedTimestamp);
+                        pe.V2Package.CreatedTimestamp = pl.V2Package.CreatedTimestamp;
+                        pe.V2Package.LastEditedTimestamp = pl.V2Package.LastUpdatedTimestamp;
+                        pe.V2Package.PublishedTimestamp = pl.V2Package.PublishedTimestamp;
+                        pe.V2Package.LastUpdatedTimestamp = pl.V2Package.LastUpdatedTimestamp;
+                        pe.V2Package.Listed = pl.V2Package.Listed;
                     }
                 });
+        }
+
+        private static V2PackageEntity ToEntity(V2Package v2)
+        {
+            return new V2PackageEntity
+            {
+                CreatedTimestamp = v2.Created.UtcTicks,
+                LastEditedTimestamp = v2.LastEdited?.UtcTicks,
+                PublishedTimestamp = v2.Published.UtcTicks,
+                LastUpdatedTimestamp = v2.LastUpdated.UtcTicks,
+                Listed = v2.Listed,
+            };
         }
 
         /// <summary>

@@ -30,6 +30,9 @@ namespace Knapcode.ExplorePackages.Logic
                 case V2OrderByTimestamp.Created:
                     filterField = "Created";
                     break;
+                case V2OrderByTimestamp.LastEdited:
+                    filterField = "LastEdited";
+                    break;
                 default:
                     throw new NotSupportedException($"The {nameof(orderBy)} value is not supported.");
             }
@@ -43,7 +46,7 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task<IReadOnlyList<V2Package>> GetPackagesAsync(string baseUrl, string filter, string orderBy, int top)
         {
             filter = filter ?? "1 eq 1";
-            var url = $"{baseUrl.TrimEnd('/')}/Packages?$select=Id,Version,Created&semVerLevel=2.0.0&$top={top}&$orderby={Uri.EscapeDataString(orderBy)}&$filter={Uri.EscapeDataString(filter)}";
+            var url = $"{baseUrl.TrimEnd('/')}/Packages?$select=Id,Version,Created,LastEdited,LastUpdated,Published&semVerLevel=2.0.0&$top={top}&$orderby={Uri.EscapeDataString(orderBy)}&$filter={Uri.EscapeDataString(filter)}";
 
             return await _httpSource.ProcessStreamAsync(
                 new HttpSourceRequest(url, _log),

@@ -54,6 +54,10 @@
     <Compile Include="Entities\Migrations\20180104062208_AddPackageEntries.designer.cs">
       <DependentUpon>20180104062208_AddPackageEntries.cs</DependentUpon>
     </Compile>
+    <Compile Include="Entities\Migrations\20180209165050_AddV2Timestamps.cs" />
+    <Compile Include="Entities\Migrations\20180209165050_AddV2Timestamps.designer.cs">
+      <DependentUpon>20180209165050_AddV2Timestamps.cs</DependentUpon>
+    </Compile>
     <Compile Include="Entities\PackageEntryEntity.cs" />
     <Compile Include="Logic\IETagService.cs" />
     <Compile Include="Logic\IPackageService.cs" />

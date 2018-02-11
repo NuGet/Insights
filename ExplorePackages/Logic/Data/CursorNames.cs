@@ -13,7 +13,8 @@
         public const string CatalogToDatabase = "CatalogToDatabase";
         public const string CatalogToNuspecs = "CatalogToNuspecs";
 
-        public const string V2ToDatabase = "V2ToDatabase";
+        public const string V2ToDatabaseCreated = "V2ToDatabase";
+        public const string V2ToDatabaseLastEdited = "V2ToDatabaseLastEdited";
         public const string MZip = "MZip";
         public const string MZipToDatabase = "MZipToDatabase";
 

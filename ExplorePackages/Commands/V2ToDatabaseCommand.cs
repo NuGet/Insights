@@ -16,7 +16,9 @@ namespace Knapcode.ExplorePackages.Commands
                 
         public async Task ExecuteAsync(IReadOnlyList<string> args, CancellationToken token)
         {
-            await _processor.UpdateAsync();
+            await _processor.UpdateAsync(V2OrderByTimestamp.Created);
+
+            await _processor.UpdateAsync(V2OrderByTimestamp.LastEdited);
         }
 
         public bool IsDatabaseRequired(IReadOnlyList<string> args)

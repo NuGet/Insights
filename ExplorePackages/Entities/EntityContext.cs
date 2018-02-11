@@ -166,6 +166,10 @@ namespace Knapcode.ExplorePackages.Entities
 
             modelBuilder
                 .Entity<V2PackageEntity>()
+                .HasIndex(x => new { x.LastEditedTimestamp });
+
+            modelBuilder
+                .Entity<V2PackageEntity>()
                 .HasOne(x => x.Package)
                 .WithOne(x => x.V2Package)
                 .HasForeignKey<V2PackageEntity>(x => x.PackageKey);

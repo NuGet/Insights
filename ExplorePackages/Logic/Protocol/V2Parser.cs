@@ -22,6 +22,9 @@ namespace Knapcode.ExplorePackages.Logic
         private static readonly XName _xnameId = XName.Get("Id", DataServicesNS);
         private static readonly XName _xnameVersion = XName.Get("Version", DataServicesNS);
         private static readonly XName _xnameCreated = XName.Get("Created", DataServicesNS);
+        private static readonly XName _xnameLastEdited = XName.Get("LastEdited", DataServicesNS);
+        private static readonly XName _xnameLastUpdated = XName.Get("LastUpdated", DataServicesNS);
+        private static readonly XName _xnamePublished = XName.Get("Published", DataServicesNS);
 
         public IReadOnlyList<V2Package> ParsePage(XDocument doc)
         {
@@ -39,10 +42,37 @@ namespace Knapcode.ExplorePackages.Logic
             var id = properties.Element(_xnameId).Value.Trim();
             var version = properties.Element(_xnameVersion).Value.Trim();
             var created = properties.Element(_xnameCreated).Value.Trim();
+            var lastEdited = properties.Element(_xnameLastEdited).Value?.Trim();
+            var lastUpdated = properties.Element(_xnameLastUpdated).Value.Trim();
+            var published = properties.Element(_xnamePublished).Value.Trim();
 
             var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
+
             var parsedCreated = DateTimeOffset.Parse(
                 created,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal);
+
+            DateTimeOffset? parsedLastEdited;
+            if (string.IsNullOrEmpty(lastEdited))
+            {
+                parsedLastEdited = null;
+            }
+            else
+            {
+                parsedLastEdited = DateTimeOffset.Parse(
+                    lastEdited,
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.AssumeUniversal);
+            }
+
+            var parsedLastUpdated = DateTimeOffset.Parse(
+                lastUpdated,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal);
+
+            var parsedPublished = DateTimeOffset.Parse(
+                published,
                 CultureInfo.InvariantCulture,
                 DateTimeStyles.AssumeUniversal);
 
@@ -51,6 +81,9 @@ namespace Knapcode.ExplorePackages.Logic
                 Id = id,
                 Version = normalizedVersion,
                 Created = parsedCreated,
+                LastEdited = parsedLastEdited,
+                LastUpdated = parsedLastUpdated,
+                Published = parsedPublished,
             };
         }
     }

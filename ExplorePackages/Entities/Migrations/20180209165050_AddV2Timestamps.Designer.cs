@@ -10,9 +10,10 @@ using System;
 namespace Knapcode.ExplorePackages.Entities.Migrations
 {
     [DbContext(typeof(EntityContext))]
-    partial class EntityContextModelSnapshot : ModelSnapshot
+    [Migration("20180209165050_AddV2Timestamps")]
+    partial class AddV2Timestamps
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
