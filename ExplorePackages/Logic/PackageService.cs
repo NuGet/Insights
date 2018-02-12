@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -112,8 +113,8 @@ namespace Knapcode.ExplorePackages.Logic
             Func<IEnumerable<T>, IEnumerable<T>> sort,
             Func<T, string> getId,
             Func<T, string> getVersion,
-            Action<PackageEntity, T> initializePackageFromForeign,
-            Action<PackageEntity, T> updatePackageFromForeign,
+            Func<PackageEntity, T, Task> initializePackageFromForeignAsync,
+            Func<PackageEntity, T, Task> updatePackageFromForeignAsync,
             Action<EntityContext, PackageEntity, PackageEntity> updateExistingPackage)
         {
             using (var entityContext = new EntityContext())
@@ -139,13 +140,13 @@ namespace Knapcode.ExplorePackages.Logic
                             Identity = identity,
                         };
 
-                        initializePackageFromForeign(latestPackage, foreignPackage);
+                        await initializePackageFromForeignAsync(latestPackage, foreignPackage);
 
                         identityToLatest[latestPackage.Identity] = latestPackage;
                     }
                     else
                     {
-                        updatePackageFromForeign(latestPackage, foreignPackage);
+                        await updatePackageFromForeignAsync(latestPackage, foreignPackage);
                     }
                 }
 
@@ -189,8 +190,16 @@ namespace Knapcode.ExplorePackages.Logic
                 x => x,
                 d => d.Id,
                 d => d.Version,
-                (p, f) => p.PackageArchive = Initialize(new PackageArchiveEntity(), f),
-                (p, f) => Initialize(p.PackageArchive, f),
+                (p, f) =>
+                {
+                    p.PackageArchive = Initialize(new PackageArchiveEntity(), f);
+                    return Task.CompletedTask;
+                },
+                (p, f) =>
+                {
+                    Initialize(p.PackageArchive, f);
+                    return Task.CompletedTask;
+                },
                 (c, pe, pl) =>
                 {
                     if (pe.PackageArchive == null)
@@ -356,13 +365,22 @@ namespace Knapcode.ExplorePackages.Logic
                 x => x.OrderBy(d => d.Downloads),
                 d => d.Id,
                 d => d.Version,
-                (p, d) => p.PackageDownloads = new PackageDownloadsEntity
+                (p, d) =>
                 {
-                    Downloads = d.Downloads,
+                    p.PackageDownloads = new PackageDownloadsEntity
+                    {
+                        Downloads = d.Downloads,
+                    };
+                    return Task.CompletedTask;
                 },
-                (p, d) => p.PackageDownloads.Downloads = Math.Max(
-                    p.PackageDownloads.Downloads,
-                    d.Downloads),
+                (p, d) =>
+                {
+                    p.PackageDownloads.Downloads = Math.Max(
+                        p.PackageDownloads.Downloads,
+                        d.Downloads);
+                    return Task.CompletedTask;
+
+                },
                 (c, pe, pl) =>
                 {
                     if (pe.PackageDownloads == null)
@@ -385,20 +403,26 @@ namespace Knapcode.ExplorePackages.Logic
                 x => x.OrderBy(v2 => v2.Created),
                 v2 => v2.Id,
                 v2 => v2.Version,
-                (p, v2) => p.V2Package = ToEntity(v2),
+                (p, v2) =>
+                {
+                    p.V2Package = ToEntity(v2);
+                    return Task.CompletedTask;
+                },
                 (p, v2) =>
                 {
                     var e = ToEntity(v2);
-                    if (e.LastUpdatedTimestamp < p.V2Package.LastUpdatedTimestamp)
+                    if (e.LastUpdatedTimestamp < p.V2Package.LastUpdatedTimestamp && false)
                     {
-                        return;
+                        return Task.CompletedTask;
                     }
 
                     p.V2Package.CreatedTimestamp = e.CreatedTimestamp;
-                    p.V2Package.LastEditedTimestamp = e.LastUpdatedTimestamp;
+                    p.V2Package.LastEditedTimestamp = e.LastEditedTimestamp;
                     p.V2Package.PublishedTimestamp = e.PublishedTimestamp;
                     p.V2Package.LastUpdatedTimestamp = e.LastUpdatedTimestamp;
                     p.V2Package.Listed = e.Listed;
+
+                    return Task.CompletedTask;
                 },
                 (c, pe, pl) =>
                 {
@@ -406,10 +430,10 @@ namespace Knapcode.ExplorePackages.Logic
                     {
                         pe.V2Package = pl.V2Package;
                     }
-                    else if (pe.V2Package.LastUpdatedTimestamp < pl.V2Package.LastUpdatedTimestamp)
+                    else if (pe.V2Package.LastUpdatedTimestamp < pl.V2Package.LastUpdatedTimestamp || true)
                     {
                         pe.V2Package.CreatedTimestamp = pl.V2Package.CreatedTimestamp;
-                        pe.V2Package.LastEditedTimestamp = pl.V2Package.LastUpdatedTimestamp;
+                        pe.V2Package.LastEditedTimestamp = pl.V2Package.LastEditedTimestamp;
                         pe.V2Package.PublishedTimestamp = pl.V2Package.PublishedTimestamp;
                         pe.V2Package.LastUpdatedTimestamp = pl.V2Package.LastUpdatedTimestamp;
                         pe.V2Package.Listed = pl.V2Package.Listed;
@@ -434,20 +458,56 @@ namespace Knapcode.ExplorePackages.Logic
         /// </summary>
         public async Task AddOrUpdatePackagesAsync(IEnumerable<CatalogEntry> entries)
         {
+            // Determine the listed status of all of the packages.
+            var entryBag = new ConcurrentBag<CatalogEntry>(entries);
+            var entryToListed = new ConcurrentDictionary<CatalogEntry, bool>();
+            var workerTasks = Enumerable
+                .Range(0, 16)
+                .Select(async _ =>
+                {
+                    await Task.Yield();
+                    while (entryBag.TryTake(out var entry))
+                    {
+                        bool listed;
+                        if (entry.IsDelete)
+                        {
+                            listed = false;
+                        }
+                        else
+                        {
+                            listed = await IsListedAsync(entry);
+                        }
+
+                        entryToListed.TryAdd(entry, listed);
+                    }
+                })
+                .ToArray();
+            await Task.WhenAll(workerTasks);
+
             await AddOrUpdatePackagesAsync(
-                entries,
+                entryToListed.Keys,
                 x => x.OrderBy(c => c.CommitTimeStamp),
                 c => c.Id,
                 c => c.Version.ToNormalizedString(),
-                (p, cp) => p.CatalogPackage = new CatalogPackageEntity
+                (p, cp) =>
                 {
-                    Deleted = cp.IsDelete,
-                    FirstCommitTimestamp = cp.CommitTimeStamp.UtcTicks,
-                    LastCommitTimestamp = cp.CommitTimeStamp.UtcTicks,
+                    p.CatalogPackage = new CatalogPackageEntity
+                    {
+                        Deleted = cp.IsDelete,
+                        FirstCommitTimestamp = cp.CommitTimeStamp.UtcTicks,
+                        LastCommitTimestamp = cp.CommitTimeStamp.UtcTicks,
+                        Listed = entryToListed[cp],
+                    };
+
+                    return Task.CompletedTask;
                 },
                 (p, cp) =>
                 {
-                    p.CatalogPackage.Deleted = cp.IsDelete;
+                    if (p.CatalogPackage.LastCommitTimestamp < cp.CommitTimeStamp.UtcTicks)
+                    {
+                        p.CatalogPackage.Deleted = cp.IsDelete;
+                        p.CatalogPackage.Listed = entryToListed[cp];
+                    }
 
                     p.CatalogPackage.FirstCommitTimestamp = Math.Min(
                         p.CatalogPackage.FirstCommitTimestamp,
@@ -456,6 +516,8 @@ namespace Knapcode.ExplorePackages.Logic
                     p.CatalogPackage.LastCommitTimestamp = Math.Max(
                         p.CatalogPackage.LastCommitTimestamp,
                         cp.CommitTimeStamp.UtcTicks);
+
+                    return Task.CompletedTask;
                 },
                 (c, pe, pl) =>
                 {
@@ -465,7 +527,11 @@ namespace Knapcode.ExplorePackages.Logic
                     }
                     else
                     {
-                        pe.CatalogPackage.Deleted = pl.CatalogPackage.Deleted;
+                        if (pe.CatalogPackage.LastCommitTimestamp < pl.CatalogPackage.LastCommitTimestamp)
+                        {
+                            pe.CatalogPackage.Deleted = pl.CatalogPackage.Deleted;
+                            pe.CatalogPackage.Listed = pl.CatalogPackage.Listed;
+                        }
 
                         pe.CatalogPackage.FirstCommitTimestamp = Math.Min(
                             pe.CatalogPackage.FirstCommitTimestamp,
@@ -476,6 +542,21 @@ namespace Knapcode.ExplorePackages.Logic
                             pl.CatalogPackage.LastCommitTimestamp);
                     }
                 });
+        }
+
+        private async Task<bool> IsListedAsync(CatalogEntry entry)
+        {
+            var details = await entry.GetPackageDetailsAsync();
+
+            var listedProperty = details.Property("listed");
+            if (listedProperty != null)
+            {
+                return (bool)listedProperty.Value;
+            }
+
+            var publishedProperty = details.Property("published");
+            var published = DateTimeOffset.Parse((string)publishedProperty.Value);
+            return published.ToUniversalTime().Year != 1900;
         }
     }
 }

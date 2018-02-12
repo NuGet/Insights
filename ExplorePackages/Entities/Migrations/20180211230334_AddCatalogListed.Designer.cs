@@ -10,60 +10,14 @@ using System;
 namespace Knapcode.ExplorePackages.Entities.Migrations
 {
     [DbContext(typeof(EntityContext))]
-    partial class EntityContextModelSnapshot : ModelSnapshot
+    [Migration("20180211230334_AddCatalogListed")]
+    partial class AddCatalogListed
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "2.0.1-rtm-125");
-
-            modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CatalogCommitEntity", b =>
-                {
-                    b.Property<long>("CatalogCommitKey")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<long>("CatalogPageKey");
-
-                    b.Property<string>("CommitId")
-                        .IsRequired();
-
-                    b.Property<long>("CommitTimestamp");
-
-                    b.Property<int>("Count");
-
-                    b.HasKey("CatalogCommitKey");
-
-                    b.HasIndex("CatalogPageKey");
-
-                    b.HasIndex("CommitId")
-                        .IsUnique();
-
-                    b.HasIndex("CommitTimestamp")
-                        .IsUnique();
-
-                    b.ToTable("CatalogCommits");
-                });
-
-            modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CatalogLeafEntity", b =>
-                {
-                    b.Property<long>("CatalogLeafKey")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<long>("CatalogCommitKey");
-
-                    b.Property<long>("PackageKey");
-
-                    b.Property<int>("Type");
-
-                    b.HasKey("CatalogLeafKey");
-
-                    b.HasIndex("CatalogCommitKey");
-
-                    b.HasIndex("PackageKey");
-
-                    b.ToTable("CatalogLeaves");
-                });
 
             modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CatalogPackageEntity", b =>
                 {
@@ -82,22 +36,6 @@ namespace Knapcode.ExplorePackages.Entities.Migrations
                     b.HasIndex("LastCommitTimestamp");
 
                     b.ToTable("CatalogPackages");
-                });
-
-            modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CatalogPageEntity", b =>
-                {
-                    b.Property<long>("CatalogPageKey")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Url")
-                        .IsRequired();
-
-                    b.HasKey("CatalogPageKey");
-
-                    b.HasIndex("Url")
-                        .IsUnique();
-
-                    b.ToTable("CatalogPages");
                 });
 
             modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CursorEntity", b =>
@@ -366,27 +304,6 @@ namespace Knapcode.ExplorePackages.Entities.Migrations
                     b.HasIndex("LastEditedTimestamp");
 
                     b.ToTable("V2Packages");
-                });
-
-            modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CatalogCommitEntity", b =>
-                {
-                    b.HasOne("Knapcode.ExplorePackages.Entities.CatalogPageEntity", "CatalogPage")
-                        .WithMany("CatalogCommits")
-                        .HasForeignKey("CatalogPageKey")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CatalogLeafEntity", b =>
-                {
-                    b.HasOne("Knapcode.ExplorePackages.Entities.CatalogCommitEntity", "CatalogCommit")
-                        .WithMany("CatalogLeaves")
-                        .HasForeignKey("CatalogCommitKey")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("Knapcode.ExplorePackages.Entities.CatalogPackageEntity", "CatalogPackage")
-                        .WithMany("CatalogLeaves")
-                        .HasForeignKey("PackageKey")
-                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CatalogPackageEntity", b =>
