@@ -38,6 +38,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TestSupport\DatabaseCollection.cs" />
     <Compile Include="Logic\NuspecUtilityTest.cs" />
     <Compile Include="Logic\PackageDownloadsToDatabaseProcessorTest.cs" />
     <Compile Include="Logic\PackageServiceTest.cs" />

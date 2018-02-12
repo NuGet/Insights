@@ -5,12 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
+using Knapcode.ExplorePackages.TestSupport;
 using Knapcode.MiniZip;
 using NuGet.Common;
 using Xunit;
 
 namespace Knapcode.ExplorePackages.Logic
 {
+    [Collection(DatabaseCollection.Name)]
     public class PackageServiceTest
     {
         public class AddOrUpdatePackagesAsync_PackageArchiveMetadata : IDisposable

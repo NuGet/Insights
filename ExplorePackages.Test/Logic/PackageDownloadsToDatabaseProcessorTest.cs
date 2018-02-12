@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.TestSupport;
@@ -57,7 +56,7 @@ namespace Knapcode.ExplorePackages.Logic
             public async Task EmitsOlderDownloadRecordIfNotPresentInNewFile()
             {
                 // Arrange
-                File.WriteAllLines(_settings.DownloadsV1Path, new[] { "A,1.0.0,10", "B,2.0.0,20", "C,3.0.0,30" });
+                File.WriteAllLines(_settings.DownloadsV1Path, new[] { "[\"A\",\"1.0.0\",10]", "[\"B\",\"2.0.0\",20]", "[\"C\",\"3.0.0\",30]" });
 
                 _client
                     .Setup(x => x.GetPackageDownloadSetAsync(It.IsAny<string>()))
@@ -82,7 +81,7 @@ namespace Knapcode.ExplorePackages.Logic
             public async Task EmitsNewerDownloadRecordIfNotPresentInOldFile()
             {
                 // Arrange
-                File.WriteAllLines(_settings.DownloadsV1Path, new[] { "A,1.0.0,10", "C,3.0.0,30" });
+                File.WriteAllLines(_settings.DownloadsV1Path, new[] { "[\"A\",\"1.0.0\",10]", "[\"C\",\"3.0.0\",30]" });
 
                 _client
                     .Setup(x => x.GetPackageDownloadSetAsync(It.IsAny<string>()))
@@ -108,7 +107,7 @@ namespace Knapcode.ExplorePackages.Logic
             public async Task EmitsNewerDownloadRecordIfDownloadsIncreased()
             {
                 // Arrange
-                File.WriteAllLines(_settings.DownloadsV1Path, new[] { "A,1.0.0,10", "B,2.0.0,20" });
+                File.WriteAllLines(_settings.DownloadsV1Path, new[] { "[\"A\",\"1.0.0\",10]", "[\"B\",\"2.0.0\",20]" });
 
                 _client
                     .Setup(x => x.GetPackageDownloadSetAsync(It.IsAny<string>()))
@@ -133,7 +132,7 @@ namespace Knapcode.ExplorePackages.Logic
             public async Task EmitsNewerDownloadRecordIfDownloadsDecreased()
             {
                 // Arrange
-                File.WriteAllLines(_settings.DownloadsV1Path, new[] { "A,1.0.0,10", "B,2.0.0,20" });
+                File.WriteAllLines(_settings.DownloadsV1Path, new[] { "[\"A\",\"1.0.0\",10]", "[\"B\",\"2.0.0\",20]" });
 
                 _client
                     .Setup(x => x.GetPackageDownloadSetAsync(It.IsAny<string>()))
@@ -158,7 +157,7 @@ namespace Knapcode.ExplorePackages.Logic
             public async Task EmitsNothingIfNothingChanged()
             {
                 // Arrange
-                File.WriteAllLines(_settings.DownloadsV1Path, new[] { "A,1.0.0,10", "B,2.0.0,20" });
+                File.WriteAllLines(_settings.DownloadsV1Path, new[] { "[\"A\",\"1.0.0\",10]", "[\"B\",\"2.0.0\",20]" });
 
                 _client
                     .Setup(x => x.GetPackageDownloadSetAsync(It.IsAny<string>()))
@@ -205,7 +204,7 @@ namespace Knapcode.ExplorePackages.Logic
             public async Task EmitsAllOldRecordsIfNewFileIsEmpty()
             {
                 // Arrange
-                File.WriteAllLines(_settings.DownloadsV1Path, new[] { "A,1.0.0,10", "B,2.0.0,20" });
+                File.WriteAllLines(_settings.DownloadsV1Path, new[] { "[\"A\",\"1.0.0\",10]", "[\"B\",\"2.0.0\",20]" });
 
                 _client
                     .Setup(x => x.GetPackageDownloadSetAsync(It.IsAny<string>()))

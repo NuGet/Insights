@@ -71,6 +71,7 @@
       <DependentUpon>20180212003124_AddCatalogEntities.cs</DependentUpon>
     </Compile>
     <Compile Include="Entities\PackageEntryEntity.cs" />
+    <Compile Include="Logic\CatalogService.cs" />
     <Compile Include="Logic\IETagService.cs" />
     <Compile Include="Logic\IPackageService.cs" />
     <Compile Include="Logic\PackageArchiveMetadata.cs" />
