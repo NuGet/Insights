@@ -26,9 +26,9 @@ namespace Knapcode.ExplorePackages.Logic
              CursorNames.NuGetOrg.FlatContainer,
         };
 
-        public async Task ProcessAsync(IReadOnlyList<CatalogEntry> entries)
+        public async Task ProcessAsync(CatalogPageEntry page, IReadOnlyList<CatalogEntry> leaves)
         {
-            var packageIdentities = entries
+            var packageIdentities = leaves
                 .Select(x => new PackageIdentity(x.Id, x.Version.ToNormalizedString()))
                 .Distinct()
                 .ToList();

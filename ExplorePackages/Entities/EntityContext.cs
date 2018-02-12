@@ -27,6 +27,9 @@ namespace Knapcode.ExplorePackages.Entities
         public DbSet<PackageDownloadsEntity> PackageDownloads { get; set; }
         public DbSet<PackageArchiveEntity> PackageArchives { get; set; }
         public DbSet<PackageEntryEntity> PackageEntries { get; set; }
+        public DbSet<CatalogPageEntity> CatalogPages { get; set; }
+        public DbSet<CatalogCommitEntity> CatalogCommits { get; set; }
+        public DbSet<CatalogLeafEntity> CatalogLeaves { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -39,16 +42,13 @@ namespace Knapcode.ExplorePackages.Entities
             modelBuilder
                 .Entity<CursorEntity>()
                 .ToTable("Cursors");
-
             modelBuilder
                 .Entity<CursorEntity>()
                 .HasKey(x => x.CursorKey);
-
             modelBuilder
                 .Entity<CursorEntity>()
                 .Property(x => x.Name)
                 .IsRequired();
-
             modelBuilder
                 .Entity<CursorEntity>()
                 .HasIndex(x => new { x.Name })
@@ -57,16 +57,13 @@ namespace Knapcode.ExplorePackages.Entities
             modelBuilder
                 .Entity<ETagEntity>()
                 .ToTable("ETags");
-
             modelBuilder
                 .Entity<ETagEntity>()
                 .HasKey(x => x.ETagKey);
-
             modelBuilder
                 .Entity<ETagEntity>()
                 .Property(x => x.Name)
                 .IsRequired();
-
             modelBuilder
                 .Entity<ETagEntity>()
                 .HasIndex(x => new { x.Name })
@@ -75,17 +72,14 @@ namespace Knapcode.ExplorePackages.Entities
             modelBuilder
                 .Entity<PackageRegistrationEntity>()
                 .ToTable("PackageRegistrations");
-
             modelBuilder
                 .Entity<PackageRegistrationEntity>()
                 .HasKey(x => x.PackageRegistrationKey);
-
             modelBuilder
                 .Entity<PackageRegistrationEntity>()
                 .Property(x => x.Id)
                 .HasColumnType("TEXT COLLATE NOCASE")
                 .IsRequired();
-
             modelBuilder
                 .Entity<PackageRegistrationEntity>()
                 .HasIndex(x => new { x.Id })
@@ -94,28 +88,23 @@ namespace Knapcode.ExplorePackages.Entities
             modelBuilder
                 .Entity<PackageEntity>()
                 .ToTable("Packages");
-
             modelBuilder
                 .Entity<PackageEntity>()
                 .HasKey(x => x.PackageKey);
-
             modelBuilder
                 .Entity<PackageEntity>()
                 .Property(x => x.Version)
                 .HasColumnType("TEXT COLLATE NOCASE")
                 .IsRequired();
-
             modelBuilder
                 .Entity<PackageEntity>()
                 .Property(x => x.Identity)
                 .HasColumnType("TEXT COLLATE NOCASE")
                 .IsRequired();
-
             modelBuilder
                 .Entity<PackageEntity>()
                 .HasIndex(x => new { x.Identity })
                 .IsUnique();
-
             modelBuilder
                 .Entity<PackageEntity>()
                 .HasIndex(x => new { x.PackageRegistrationKey, x.Version })
@@ -124,29 +113,23 @@ namespace Knapcode.ExplorePackages.Entities
             modelBuilder
                 .Entity<PackageQueryEntity>()
                 .ToTable("PackageQueries");
-
             modelBuilder
                 .Entity<PackageQueryEntity>()
                 .Property(x => x.Name)
                 .IsRequired();
-
             modelBuilder
                 .Entity<PackageQueryEntity>()
-                .HasKey(x => x.PackageQueryKey);
-            
+                .HasKey(x => x.PackageQueryKey);            
             modelBuilder
                 .Entity<PackageQueryEntity>()
                 .HasIndex(x => new { x.Name })
                 .IsUnique();
-
             modelBuilder
                 .Entity<PackageQueryMatchEntity>()
                 .ToTable("PackageQueryMatches");
-
             modelBuilder
                 .Entity<PackageQueryMatchEntity>()
-                .HasKey(x => x.PackageQueryMatchKey);
-            
+                .HasKey(x => x.PackageQueryMatchKey);            
             modelBuilder
                 .Entity<PackageQueryMatchEntity>()
                 .HasIndex(x => new { x.PackageQueryKey, x.PackageKey })
@@ -155,19 +138,15 @@ namespace Knapcode.ExplorePackages.Entities
             modelBuilder
                 .Entity<V2PackageEntity>()
                 .ToTable("V2Packages");
-
             modelBuilder
                 .Entity<V2PackageEntity>()
-                .HasKey(x => x.PackageKey);
-            
+                .HasKey(x => x.PackageKey);            
             modelBuilder
                 .Entity<V2PackageEntity>()
                 .HasIndex(x => new { x.CreatedTimestamp });
-
             modelBuilder
                 .Entity<V2PackageEntity>()
                 .HasIndex(x => new { x.LastEditedTimestamp });
-
             modelBuilder
                 .Entity<V2PackageEntity>()
                 .HasOne(x => x.Package)
@@ -177,15 +156,12 @@ namespace Knapcode.ExplorePackages.Entities
             modelBuilder
                 .Entity<CatalogPackageEntity>()
                 .ToTable("CatalogPackages");
-
             modelBuilder
                 .Entity<CatalogPackageEntity>()
                 .HasKey(x => x.PackageKey);
-
             modelBuilder
                 .Entity<CatalogPackageEntity>()
                 .HasIndex(x => new { x.LastCommitTimestamp });
-
             modelBuilder
                 .Entity<CatalogPackageEntity>()
                 .HasOne(x => x.Package)
@@ -195,11 +171,9 @@ namespace Knapcode.ExplorePackages.Entities
             modelBuilder
                 .Entity<PackageDownloadsEntity>()
                 .ToTable("PackageDownloads");
-
             modelBuilder
                 .Entity<PackageDownloadsEntity>()
                 .HasKey(x => x.PackageKey);
-
             modelBuilder
                 .Entity<PackageDownloadsEntity>()
                 .HasOne(x => x.Package)
@@ -209,17 +183,14 @@ namespace Knapcode.ExplorePackages.Entities
             modelBuilder
                 .Entity<PackageArchiveEntity>()
                 .ToTable("PackageArchives");
-
             modelBuilder
                 .Entity<PackageArchiveEntity>()
                 .HasKey(x => x.PackageKey);
-
             modelBuilder
                 .Entity<PackageArchiveEntity>()
                 .HasOne(x => x.Package)
                 .WithOne(x => x.PackageArchive)
                 .HasForeignKey<PackageArchiveEntity>(x => x.PackageKey);
-
             modelBuilder
                 .Entity<PackageArchiveEntity>()
                 .Property(x => x.Comment)
@@ -228,36 +199,86 @@ namespace Knapcode.ExplorePackages.Entities
             modelBuilder
                 .Entity<PackageEntryEntity>()
                 .ToTable("PackageEntries");
-
             modelBuilder
                 .Entity<PackageEntryEntity>()
                 .HasKey(x => x.PackageEntryKey);
-
             modelBuilder
                 .Entity<PackageEntryEntity>()
                 .HasOne(x => x.PackageArchive)
                 .WithMany(x => x.PackageEntries)
                 .HasForeignKey(x => x.PackageKey);
-
             modelBuilder
                 .Entity<PackageEntryEntity>()
                 .Property(x => x.Comment)
                 .IsRequired();
-
             modelBuilder
                 .Entity<PackageEntryEntity>()
                 .Property(x => x.ExtraField)
                 .IsRequired();
-
             modelBuilder
                 .Entity<PackageEntryEntity>()
                 .Property(x => x.Name)
                 .IsRequired();
-
             modelBuilder
                 .Entity<PackageEntryEntity>()
                 .HasIndex(x => new { x.PackageKey, x.Index })
                 .IsUnique();
+
+            modelBuilder
+                .Entity<CatalogPageEntity>()
+                .ToTable("CatalogPages");
+            modelBuilder
+                .Entity<CatalogPageEntity>()
+                .HasKey(x => x.CatalogPageKey);
+            modelBuilder
+                .Entity<CatalogPageEntity>()
+                .Property(x => x.Url)
+                .IsRequired();
+            modelBuilder
+                .Entity<CatalogPageEntity>()
+                .HasIndex(x => new { x.Url })
+                .IsUnique();
+
+            modelBuilder
+                .Entity<CatalogCommitEntity>()
+                .ToTable("CatalogCommits");
+            modelBuilder
+                .Entity<CatalogCommitEntity>()
+                .HasKey(x => x.CatalogCommitKey);
+            modelBuilder
+                .Entity<CatalogCommitEntity>()
+                .HasOne(x => x.CatalogPage)
+                .WithMany(x => x.CatalogCommits)
+                .HasForeignKey(x => x.CatalogPageKey);
+            modelBuilder
+                .Entity<CatalogCommitEntity>()
+                .Property(x => x.CommitId)
+                .IsRequired();
+            modelBuilder
+                .Entity<CatalogCommitEntity>()
+                .HasIndex(x => new { x.CommitId })
+                .IsUnique();
+            modelBuilder
+                .Entity<CatalogCommitEntity>()
+                .HasIndex(x => new { x.CommitTimestamp })
+                .IsUnique();
+
+            modelBuilder
+                .Entity<CatalogLeafEntity>()
+                .ToTable("CatalogLeaves");
+            modelBuilder
+                .Entity<CatalogLeafEntity>()
+                .HasKey(x => x.CatalogLeafKey);
+            modelBuilder
+                .Entity<CatalogLeafEntity>()
+                .HasOne(x => x.CatalogCommit)
+                .WithMany(x => x.CatalogLeaves)
+                .HasForeignKey(x => x.CatalogCommitKey);
+            modelBuilder
+                .Entity<CatalogLeafEntity>()
+                .HasOne(x => x.CatalogPackage)
+                .WithMany(x => x.CatalogLeaves)
+                .HasForeignKey(x => x.PackageKey);
         }
     }
 }

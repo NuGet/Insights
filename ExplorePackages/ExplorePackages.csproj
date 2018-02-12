@@ -66,6 +66,10 @@
     <Compile Include="Entities\Migrations\20180211230334_AddCatalogListed.designer.cs">
       <DependentUpon>20180211230334_AddCatalogListed.cs</DependentUpon>
     </Compile>
+    <Compile Include="Entities\Migrations\20180212003124_AddCatalogEntities.cs" />
+    <Compile Include="Entities\Migrations\20180212003124_AddCatalogEntities.designer.cs">
+      <DependentUpon>20180212003124_AddCatalogEntities.cs</DependentUpon>
+    </Compile>
     <Compile Include="Entities\PackageEntryEntity.cs" />
     <Compile Include="Logic\IETagService.cs" />
     <Compile Include="Logic\IPackageService.cs" />

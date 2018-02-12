@@ -8,7 +8,7 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public interface IPackageService
     {
-        Task AddOrUpdatePackagesAsync(IEnumerable<CatalogEntry> entries);
+        Task<IReadOnlyDictionary<string, long>> AddOrUpdatePackagesAsync(IEnumerable<CatalogEntry> entries);
         Task AddOrUpdatePackagesAsync(IEnumerable<PackageArchiveMetadata> metadataSequence);
         Task AddOrUpdatePackagesAsync(IEnumerable<PackageDownloads> packageDownloads);
         Task AddOrUpdatePackagesAsync(IEnumerable<V2Package> v2Packages);

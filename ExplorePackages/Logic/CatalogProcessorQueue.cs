@@ -11,7 +11,7 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class CatalogProcessorQueue
     {
-        private readonly TaskQueue<IReadOnlyList<CatalogEntry>> _taskQueue;
+        private readonly TaskQueue<Work> _taskQueue;
         private readonly CatalogReader _catalogReader;
         private readonly ICatalogEntriesProcessor _processor;
         private readonly ILogger _log;
@@ -24,7 +24,7 @@ namespace Knapcode.ExplorePackages.Logic
             _catalogReader = catalogReader;
             _processor = processor;
             _log = log;
-            _taskQueue = new TaskQueue<IReadOnlyList<CatalogEntry>>(
+            _taskQueue = new TaskQueue<Work>(
                 workerCount: 1,
                 workAsync: WorkAsync);
         }
@@ -64,17 +64,17 @@ namespace Knapcode.ExplorePackages.Logic
             await _taskQueue.CompleteAsync();
         }
 
-        private async Task WorkAsync(IReadOnlyList<CatalogEntry> entries)
+        private async Task WorkAsync(Work work)
         {
-            if (!entries.Any())
+            if (!work.Leaves.Any())
             {
                 return;
             }
 
-            await _processor.ProcessAsync(entries);
+            await _processor.ProcessAsync(work.Page, work.Leaves);
 
             var cursorService = new CursorService();
-            await cursorService.SetValueAsync(_processor.CursorName, entries.Last().CommitTimeStamp);
+            await cursorService.SetValueAsync(_processor.CursorName, work.Leaves.Last().CommitTimeStamp);
         }
 
         private async Task ProduceAsync(DateTimeOffset start, DateTimeOffset end, CancellationToken token)
@@ -96,13 +96,25 @@ namespace Knapcode.ExplorePackages.Logic
                     .ThenBy(x => x.Version)
                     .ToList();
 
-                _taskQueue.Enqueue(entries);
+                _taskQueue.Enqueue(new Work(currentPage, entries));
 
                 while (_taskQueue.Count > 10)
                 {
                     await Task.Delay(TimeSpan.FromSeconds(1));
                 }
             }
+        }
+
+        private class Work
+        {
+            public Work(CatalogPageEntry page, IReadOnlyList<CatalogEntry> leaves)
+            {
+                Page = page;
+                Leaves = leaves;
+            }
+
+            public CatalogPageEntry Page { get; }
+            public IReadOnlyList<CatalogEntry> Leaves { get; }
         }
     }
 }

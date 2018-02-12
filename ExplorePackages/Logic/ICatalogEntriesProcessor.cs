@@ -8,6 +8,6 @@ namespace Knapcode.ExplorePackages.Logic
     {
         string CursorName { get; }
         IReadOnlyList<string> DependencyCursorNames { get; }
-        Task ProcessAsync(IReadOnlyList<CatalogEntry> entries);
+        Task ProcessAsync(CatalogPageEntry page, IReadOnlyList<CatalogEntry> leaves);
     }
 }

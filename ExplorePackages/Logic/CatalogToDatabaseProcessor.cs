@@ -18,9 +18,9 @@ namespace Knapcode.ExplorePackages.Logic
 
         public string CursorName => CursorNames.CatalogToDatabase;
 
-        public async Task ProcessAsync(IReadOnlyList<CatalogEntry> entries)
+        public async Task ProcessAsync(CatalogPageEntry page, IReadOnlyList<CatalogEntry> leaves)
         {
-            await _packageService.AddOrUpdatePackagesAsync(entries);
+            await _packageService.AddOrUpdatePackagesAsync(leaves);
         }
     }
 }

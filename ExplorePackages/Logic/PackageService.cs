@@ -108,7 +108,7 @@ namespace Knapcode.ExplorePackages.Logic
                 .ToDictionary(x => x.Id, x => x, StringComparer.OrdinalIgnoreCase);
         }
 
-        private async Task AddOrUpdatePackagesAsync<T>(
+        private async Task<IReadOnlyDictionary<string, long>>  AddOrUpdatePackagesAsync<T>(
             IEnumerable<T> foreignPackages,
             Func<IEnumerable<T>, IEnumerable<T>> sort,
             Func<T, string> getId,
@@ -164,6 +164,9 @@ namespace Knapcode.ExplorePackages.Logic
 
                 _log.LogInformation($"Got {existingPackages.Count} existing. {getExistingStopwatch.ElapsedMilliseconds}ms");
 
+                // Keep track of the resulting package keys.
+                var identityToPackageKey = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+
                 // Update existing records.
                 foreach (var existingPackage in existingPackages)
                 {
@@ -171,15 +174,25 @@ namespace Knapcode.ExplorePackages.Logic
                     identityToLatest.Remove(existingPackage.Identity);
 
                     updateExistingPackage(entityContext, existingPackage, latestPackage);
+
+                    identityToPackageKey.Add(existingPackage.Identity, existingPackage.PackageKey);
                 }
 
                 // Add new records.
                 await entityContext.Packages.AddRangeAsync(identityToLatest.Values);
 
+                // Add the new package keys.
+                foreach (var pair in identityToLatest)
+                {
+                    identityToPackageKey.Add(pair.Key, pair.Value.PackageKey);
+                }
+
                 // Commit the changes.
                 var commitStopwatch = Stopwatch.StartNew();
                 var changes = await entityContext.SaveChangesAsync();
                 _log.LogInformation($"Committed {changes} changes. {commitStopwatch.ElapsedMilliseconds}ms");
+
+                return identityToPackageKey;
             }
         }
 
@@ -456,7 +469,7 @@ namespace Knapcode.ExplorePackages.Logic
         /// <summary>
         /// Adds the provided catalog entries to the database. Catalog entries are processed in the order provided.
         /// </summary>
-        public async Task AddOrUpdatePackagesAsync(IEnumerable<CatalogEntry> entries)
+        public async Task<IReadOnlyDictionary<string, long>> AddOrUpdatePackagesAsync(IEnumerable<CatalogEntry> entries)
         {
             // Determine the listed status of all of the packages.
             var entryBag = new ConcurrentBag<CatalogEntry>(entries);
@@ -484,7 +497,7 @@ namespace Knapcode.ExplorePackages.Logic
                 .ToArray();
             await Task.WhenAll(workerTasks);
 
-            await AddOrUpdatePackagesAsync(
+            return await AddOrUpdatePackagesAsync(
                 entryToListed.Keys,
                 x => x.OrderBy(c => c.CommitTimeStamp),
                 c => c.Id,
