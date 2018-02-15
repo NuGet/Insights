@@ -473,7 +473,7 @@ namespace Knapcode.ExplorePackages.Logic
         {
             // Determine the listed status of all of the packages.
             var entryBag = new ConcurrentBag<CatalogEntry>(entries);
-            var entryToListed = new ConcurrentDictionary<CatalogEntry, bool>();
+            var entryToListed = new ConcurrentDictionary<CatalogEntry, bool>(new CatalogEntryComparer());
             var workerTasks = Enumerable
                 .Range(0, 16)
                 .Select(async _ =>
@@ -570,6 +570,19 @@ namespace Knapcode.ExplorePackages.Logic
             var publishedProperty = details.Property("published");
             var published = DateTimeOffset.Parse((string)publishedProperty.Value);
             return published.ToUniversalTime().Year != 1900;
+        }
+
+        private class CatalogEntryComparer : IEqualityComparer<CatalogEntry>
+        {
+            public bool Equals(CatalogEntry x, CatalogEntry y)
+            {
+                return x?.Uri == y?.Uri;
+            }
+
+            public int GetHashCode(CatalogEntry obj)
+            {
+                return obj?.Uri.GetHashCode() ?? 0;
+            }
         }
     }
 }

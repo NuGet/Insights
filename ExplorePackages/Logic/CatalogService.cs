@@ -1,20 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Microsoft.EntityFrameworkCore;
 using NuGet.CatalogReader;
+using NuGet.Common;
 
 namespace Knapcode.ExplorePackages.Logic
 {
     public class CatalogService
     {
+        private readonly ILogger _log;
+
+        public CatalogService(ILogger log)
+        {
+            _log = log ?? throw new ArgumentNullException(nameof(log));
+        }
+
         public async Task AddOrUpdateAsync(
             CatalogPageEntry page,
             IReadOnlyList<CatalogEntry> leaves,
             IReadOnlyDictionary<string, long> identityToPackageKey)
         {
+            _log.LogInformation($"Adding or updating catalog page {page.Uri.OriginalString}.");
             using (var context = new EntityContext())
             {
                 var pageUrl = page.Uri.OriginalString;
@@ -28,6 +38,10 @@ namespace Knapcode.ExplorePackages.Logic
                 var latest = Initialize(pageUrl, leaves, identityToPackageKey);
 
                 Merge(context, existing, latest);
+
+                var commitStopwatch = Stopwatch.StartNew();
+                var changes = await context.SaveChangesAsync();
+                _log.LogInformation($"Committed {changes} changes. {commitStopwatch.ElapsedMilliseconds}ms");
             }
         }
 

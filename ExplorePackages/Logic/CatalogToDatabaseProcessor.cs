@@ -25,7 +25,7 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var identityToPackageKey = await _packageService.AddOrUpdatePackagesAsync(leaves);
 
-            // await _catalogService.AddOrUpdateAsync(page, leaves, identityToPackageKey);
+            await _catalogService.AddOrUpdateAsync(page, leaves, identityToPackageKey);
         }
     }
 }
