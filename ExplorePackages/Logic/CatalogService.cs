@@ -103,34 +103,24 @@ namespace Knapcode.ExplorePackages.Logic
             };
 
             var commits = leaves
-                .GroupBy(x => new
-                {
-                    CommitTimestamp = x.CommitTimeStamp.ToUniversalTime(),
-                    CommitId = x.CommitId,
-                });
-
-            var uniqueCommitTimestamps = new HashSet<DateTimeOffset>();
-            var uniqueCommitIds = new HashSet<Guid>();
+                .GroupBy(x => x.CommitTimeStamp.ToUniversalTime());
 
             foreach (var commit in commits)
             {
-                if (!uniqueCommitTimestamps.Add(commit.Key.CommitTimestamp))
-                {
-                    throw new InvalidOperationException("A duplicate commit timestamp was found.");
-                }
-
-                if (!uniqueCommitIds.Add(Guid.Parse(commit.Key.CommitId)))
-                {
-                    throw new InvalidOperationException("A duplicate commit ID was found.");
-                }
-
                 var commitLeaves = commit.ToList();
+
+                // This really only every be one, but there is an oddball:
+                // https://api.nuget.org/v3/catalog0/page868.json, timestamp: 2015-04-17T23:24:26.0796162Z
+                var commitId = string.Join(" ", commit
+                    .Select(x => Guid.Parse(x.CommitId))
+                    .Distinct()
+                    .ToList());
 
                 var commitEntity = new CatalogCommitEntity
                 {
                     CatalogPage = pageEntity,
-                    CommitId = commit.Key.CommitId,
-                    CommitTimestamp = commit.Key.CommitTimestamp.UtcTicks,
+                    CommitId = commitId,
+                    CommitTimestamp = commit.Key.UtcTicks,
                     CatalogLeaves = new List<CatalogLeafEntity>(),
                     Count = commitLeaves.Count,
                 };
