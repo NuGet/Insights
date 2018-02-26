@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -12,10 +13,16 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class CatalogService
     {
+        private static readonly Regex PagePathPattern = new Regex(@"page(?<PageIndex>[0-9]|[1-9][0-9]+)\.json");
+
+        private readonly ServiceIndexCache _serviceIndexCache;
         private readonly ILogger _log;
 
-        public CatalogService(ILogger log)
+        public CatalogService(
+            ServiceIndexCache serviceIndexCache,
+            ILogger log)
         {
+            _serviceIndexCache = serviceIndexCache ?? throw new ArgumentNullException(nameof(serviceIndexCache));
             _log = log ?? throw new ArgumentNullException(nameof(log));
         }
 
@@ -35,7 +42,7 @@ namespace Knapcode.ExplorePackages.Logic
                     .Where(x => x.Url == pageUrl)
                     .FirstOrDefaultAsync();
 
-                var latest = Initialize(pageUrl, leaves, identityToPackageKey);
+                var latest = await InitializeAsync(pageUrl, leaves, identityToPackageKey);
 
                 Merge(context, existing, latest);
 
@@ -87,15 +94,19 @@ namespace Knapcode.ExplorePackages.Logic
                     {
                         throw new InvalidOperationException("The type of a catalog leaf cannot change.");
                     }
+
+                    existingLeaf.RelativePath = latestLeaf.RelativePath;
                 }
             }
         }
 
-        private CatalogPageEntity Initialize(
+        private async Task<CatalogPageEntity> InitializeAsync(
             string pageUrl,
             IReadOnlyList<CatalogEntry> leaves,
             IReadOnlyDictionary<string, long> identityToPackageKey)
         {
+            await VerifyExpectedPageUrlAsync(pageUrl);
+
             var pageEntity = new CatalogPageEntity
             {
                 Url = pageUrl,
@@ -113,6 +124,7 @@ namespace Knapcode.ExplorePackages.Logic
                 // https://api.nuget.org/v3/catalog0/page868.json, timestamp: 2015-04-17T23:24:26.0796162Z
                 var commitId = string.Join(" ", commit
                     .Select(x => Guid.Parse(x.CommitId))
+                    .OrderBy(x => x)
                     .Distinct()
                     .ToList());
 
@@ -158,11 +170,82 @@ namespace Knapcode.ExplorePackages.Logic
                         Type = type,
                     };
 
+                    await VerifyExpectedLeafUrlAsync(leaf, leafEntity);
+
                     commitEntity.CatalogLeaves.Add(leafEntity);
                 }
             }
 
             return pageEntity;
+        }
+
+        private async Task VerifyExpectedPageUrlAsync(string pageUrl)
+        {
+            var catalogBaseUrl = await GetCatalogBaseUrlAsync();
+
+            if (!pageUrl.StartsWith(catalogBaseUrl))
+            {
+                throw new InvalidOperationException("The catalog page URL should start with the catalog base URL.");
+            }
+
+            var path = pageUrl.Substring(catalogBaseUrl.Length);
+
+            if (!PagePathPattern.IsMatch(path))
+            {
+                throw new InvalidOperationException("The catalog page URL relative path does not have the expected pattern.");
+            }
+        }
+
+        private async Task VerifyExpectedLeafUrlAsync(CatalogEntry entry, CatalogLeafEntity leafEntity)
+        {
+            var entryUrl = entry.Uri.OriginalString;
+            var catalogBaseUrl = await GetCatalogBaseUrlAsync();
+
+            if (!entryUrl.StartsWith(catalogBaseUrl))
+            {
+                throw new InvalidOperationException("The catalog leaf URL should start with the catalog base URL.");
+            }
+
+            var actualPath = entryUrl.Substring(catalogBaseUrl.Length);
+            var expectedPath = string.Join("/", new[]
+            {
+                "data",
+                entry.CommitTimeStamp.ToString("yyyy.MM.dd.HH.mm.ss"),
+                $"{Uri.EscapeDataString(entry.Id.ToLowerInvariant())}.{entry.Version.ToNormalizedString().ToLowerInvariant()}.json",
+            });
+
+            // This should always be true, but we have an oddball:
+            // https://api.nuget.org/v3/catalog0/page848.json
+            // https://api.nuget.org/v3/catalog0/data/2015.04.03.23.35.56/xunit.core.2.0.0.json
+            // Timestamp is 2015-04-03T23:14:16.0340591Z
+            if (actualPath != expectedPath)
+            {
+                leafEntity.RelativePath = actualPath;
+            }
+            else
+            {
+                leafEntity.RelativePath = null;
+            }
+        }
+
+        private async Task<string> GetCatalogBaseUrlAsync()
+        {
+            var catalogIndexUrl = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.Catalog);
+            var lastSlashIndex = catalogIndexUrl.LastIndexOf('/');
+            if (lastSlashIndex < 0)
+            {
+                throw new InvalidOperationException("No slashes were found in the catalog index URL.");
+            }
+
+            var catalogBaseUrl = catalogIndexUrl.Substring(0, lastSlashIndex + 1);
+
+            var indexPath = catalogIndexUrl.Substring(catalogBaseUrl.Length);
+            if (indexPath != "index.json")
+            {
+                throw new InvalidOperationException("The catalog index does not have the expected relative path.");
+            }
+
+            return catalogBaseUrl;
         }
     }
 }

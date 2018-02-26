@@ -6,6 +6,7 @@
         public long CatalogLeafKey { get; set; }
         public long PackageKey { get; set; }
         public CatalogLeafType Type { get; set; }
+        public string RelativePath { get; set; }
 
         public CatalogCommitEntity CatalogCommit { get; set; }
         public CatalogPackageEntity CatalogPackage { get; set; }

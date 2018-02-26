@@ -70,6 +70,10 @@
     <Compile Include="Entities\Migrations\20180212003124_AddCatalogEntities.designer.cs">
       <DependentUpon>20180212003124_AddCatalogEntities.cs</DependentUpon>
     </Compile>
+    <Compile Include="Entities\Migrations\20180223161313_AddCatalogLeafRelativePath.cs" />
+    <Compile Include="Entities\Migrations\20180223161313_AddCatalogLeafRelativePath.designer.cs">
+      <DependentUpon>20180223161313_AddCatalogLeafRelativePath.cs</DependentUpon>
+    </Compile>
     <Compile Include="Entities\PackageEntryEntity.cs" />
     <Compile Include="Logic\CatalogService.cs" />
     <Compile Include="Logic\IETagService.cs" />
