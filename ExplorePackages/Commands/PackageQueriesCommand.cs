@@ -15,8 +15,9 @@ namespace Knapcode.ExplorePackages.Commands
         private readonly List<IPackageQuery> _queries;
         private readonly ILogger _log;
 
-        private CommandOption _reprocessAllOption;
+        private CommandOption _reprocessOption;
         private CommandOption _resumeOption;
+        private CommandOption _queriesOption;
 
         public PackageQueriesCommand(
             CursorService cursorService,
@@ -32,27 +33,41 @@ namespace Knapcode.ExplorePackages.Commands
 
         public void Configure(CommandLineApplication app)
         {
-            _reprocessAllOption = app.Option(
-                "--reprocess-all",
-                "Reprocess all package query results.",
+            _reprocessOption = app.Option(
+                "--reprocess",
+                "Reprocess package query results.",
                 CommandOptionType.NoValue);
             _resumeOption = app.Option(
                 "--resume",
                 "Resume the current reprocess operation.",
                 CommandOptionType.NoValue);
+            _queriesOption = app.Option(
+                "--query",
+                "The query or queries to process.",
+                CommandOptionType.MultipleValue);
         }
 
-        private bool ReprocessAll => _reprocessAllOption?.HasValue() ?? false;
+        private bool Reprocess => _reprocessOption?.HasValue() ?? false;
         private bool Resume => _resumeOption?.HasValue() ?? false;
+        private IReadOnlyList<string> QueryNames => _queriesOption?.Values ?? new List<string>();
 
         public async Task ExecuteAsync(CancellationToken token)
         {
-            if (ReprocessAll && !Resume)
+            if (Reprocess && !Resume)
             {
                 await _cursorService.ResetValueAsync(CursorNames.ReprocessPackageQueries);
             }
 
-            await _processor.ProcessAsync(_queries.ToList(), ReprocessAll, token);
+            var queries = _queries.ToList();
+
+            if (QueryNames.Any())
+            {
+                queries = queries
+                    .Where(x => QueryNames.Contains(x.Name))
+                    .ToList();
+            }
+
+            await _processor.ProcessAsync(queries, Reprocess, token);
         }
 
         public bool IsDatabaseRequired()

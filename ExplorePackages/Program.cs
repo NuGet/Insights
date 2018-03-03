@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Threading;
@@ -77,10 +78,21 @@ namespace Knapcode.ExplorePackages
                 x =>
                 {
                     x.HelpOption();
+
+                    var debugOption = x.Option(
+                        "--debug",
+                        "Launch the debugger.",
+                        CommandOptionType.NoValue);
+
                     command.Configure(x);
 
                     x.OnExecute(async () =>
                     {
+                        if (debugOption.HasValue())
+                        {
+                            Debugger.Launch();
+                        }
+
                         await InitializeGlobalState(
                             serviceProvider.GetRequiredService<ExplorePackagesSettings>(),
                             command.IsDatabaseRequired(),
