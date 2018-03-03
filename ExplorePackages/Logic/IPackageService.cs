@@ -15,5 +15,6 @@ namespace Knapcode.ExplorePackages.Logic
         Task<IReadOnlyList<PackageEntity>> GetBatchAsync(IReadOnlyList<PackageIdentity> identities);
         Task<PackageEntity> GetPackageAsync(string id, string version);
         Task<IReadOnlyList<PackageCommit>> GetPackageCommitsAsync(DateTimeOffset start, DateTimeOffset end);
+        Task SetDeletedPackagesAsUnlistedInV2Async(IEnumerable<CatalogEntry> entries);
     }
 }

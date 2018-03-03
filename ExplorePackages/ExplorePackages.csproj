@@ -282,6 +282,7 @@
     <Compile Include="Support\PortTester.cs" />
     <Compile Include="Support\SafeFileWriter.cs" />
     <Compile Include="Support\SimplePortDiscoverer.cs" />
+    <Compile Include="Support\TaskProcessor.cs" />
     <Compile Include="Support\TaskQueue.cs" />
   </ItemGroup>
   <ItemGroup>

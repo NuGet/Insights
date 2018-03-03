@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Knapcode.ExplorePackages.Entities;
+using Knapcode.ExplorePackages.Support;
 using Knapcode.MiniZip;
 using Microsoft.EntityFrameworkCore;
 using NuGet.CatalogReader;
@@ -466,36 +467,66 @@ namespace Knapcode.ExplorePackages.Logic
             };
         }
 
+        public async Task SetDeletedPackagesAsUnlistedInV2Async(IEnumerable<CatalogEntry> entries)
+        {
+            var identities = entries
+                .Where(x => x.IsDelete)
+                .Select(x => $"{x.Id}/{x.Version.ToNormalizedString()}")
+                .Distinct()
+                .ToList();
+            _log.LogInformation($"Found {identities.Count} catalog leaves containing deleted packages.");
+
+            if (!identities.Any())
+            {
+                _log.LogInformation($"No updates necessary.");
+                return;
+            }
+
+            using (var entityContext = new EntityContext())
+            {
+                var selectStopwatch = Stopwatch.StartNew();
+                var existingPackages = await entityContext
+                    .Packages
+                    .Include(x => x.V2Package)
+                    .Where(p => identities.Contains(p.Identity))
+                    .ToListAsync();
+                _log.LogInformation($"Found {existingPackages.Count} corresponding V2 packages. {selectStopwatch.ElapsedMilliseconds}ms");
+
+                foreach (var existingPackage in existingPackages)
+                {
+                    existingPackage.V2Package.Listed = false;
+                }
+
+                var commitStopwatch = Stopwatch.StartNew();
+                var changeCount = await entityContext.SaveChangesAsync();
+                _log.LogInformation($"Committed {changeCount} changes. {commitStopwatch.ElapsedMilliseconds}ms");
+            }
+        }
+
         /// <summary>
         /// Adds the provided catalog entries to the database. Catalog entries are processed in the order provided.
         /// </summary>
         public async Task<IReadOnlyDictionary<string, long>> AddOrUpdatePackagesAsync(IEnumerable<CatalogEntry> entries)
         {
             // Determine the listed status of all of the packages.
-            var entryBag = new ConcurrentBag<CatalogEntry>(entries);
-            var entryToListed = new ConcurrentDictionary<CatalogEntry, bool>(new CatalogEntryComparer());
-            var workerTasks = Enumerable
-                .Range(0, 16)
-                .Select(async _ =>
+            var entryToListed = (await TaskProcessor.ExecuteAsync(
+                entries,
+                async x =>
                 {
-                    await Task.Yield();
-                    while (entryBag.TryTake(out var entry))
+                    bool listed;
+                    if (x.IsDelete)
                     {
-                        bool listed;
-                        if (entry.IsDelete)
-                        {
-                            listed = false;
-                        }
-                        else
-                        {
-                            listed = await IsListedAsync(entry);
-                        }
-
-                        entryToListed.TryAdd(entry, listed);
+                        listed = false;
                     }
-                })
-                .ToArray();
-            await Task.WhenAll(workerTasks);
+                    else
+                    {
+                        listed = await IsListedAsync(x);
+                    }
+
+                    return KeyValuePair.Create(x, listed);
+                }))
+                .GroupBy(x => x.Key, new CatalogEntryComparer())
+                .ToDictionary(x => x.Key, x => x.First().Value, new CatalogEntryComparer());
 
             return await AddOrUpdatePackagesAsync(
                 entryToListed.Keys,
