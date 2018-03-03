@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
+using McMaster.Extensions.CommandLineUtils;
 using NuGet.Common;
 
 namespace Knapcode.ExplorePackages.Commands
@@ -14,6 +14,9 @@ namespace Knapcode.ExplorePackages.Commands
         private readonly PackageQueryProcessor _processor;
         private readonly List<IPackageQuery> _queries;
         private readonly ILogger _log;
+
+        private CommandOption _reprocessAllOption;
+        private CommandOption _resumeOption;
 
         public PackageQueriesCommand(
             CursorService cursorService,
@@ -27,32 +30,32 @@ namespace Knapcode.ExplorePackages.Commands
             _log = log;
         }
 
-        public async Task ExecuteAsync(IReadOnlyList<string> args, CancellationToken token)
+        public void Configure(CommandLineApplication app)
         {
-            var argList = args.ToList();
-            var queries = _queries.ToList();
+            _reprocessAllOption = app.Option(
+                "--reprocess-all",
+                "Reprocess all package query results.",
+                CommandOptionType.NoValue);
+            _resumeOption = app.Option(
+                "--resume",
+                "Resume the current reprocess operation.",
+                CommandOptionType.NoValue);
+        }
 
-            var reprocessAll = HasReprocessAllArg(argList);
-            var resume = HasResumeArg(argList);
-            if (reprocessAll && !resume)
+        private bool ReprocessAll => _reprocessAllOption?.HasValue() ?? false;
+        private bool Resume => _resumeOption?.HasValue() ?? false;
+
+        public async Task ExecuteAsync(CancellationToken token)
+        {
+            if (ReprocessAll && !Resume)
             {
                 await _cursorService.ResetValueAsync(CursorNames.ReprocessPackageQueries);
             }
 
-            await _processor.ProcessAsync(queries, reprocessAll, token);
+            await _processor.ProcessAsync(_queries.ToList(), ReprocessAll, token);
         }
 
-        private bool HasReprocessAllArg(List<string> argList)
-        {
-            return ArgsUtility.HasArg(argList, "-reprocessall");
-        }
-
-        private bool HasResumeArg(List<string> argList)
-        {
-            return ArgsUtility.HasArg(argList, "-resume");
-        }
-
-        public bool IsDatabaseRequired(IReadOnlyList<string> args)
+        public bool IsDatabaseRequired()
         {
             return true;
         }

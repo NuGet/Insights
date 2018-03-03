@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Commands;
 using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Support;
+using McMaster.Extensions.CommandLineUtils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
@@ -18,12 +18,25 @@ namespace Knapcode.ExplorePackages
 {
     public class Program
     {
-        public static void Main(string[] args)
+        private static IReadOnlyDictionary<string, Type> Commands = new Dictionary<string, Type>
         {
-            MainAsync(args, CancellationToken.None).GetAwaiter().GetResult();
-        }
+            { "catalogtodatabase", typeof(CatalogToDatabaseCommand) },
+            { "catalogtonuspecs", typeof(CatalogToNuspecsCommand) },
+            { "checkpackage", typeof(CheckPackageCommand) },
+            { "downloadstodatabase", typeof(DownloadsToDatabaseCommand) },
+            { "fetchcursors", typeof(FetchCursorsCommand) },
+            { "mzip", typeof(MZipCommand) },
+            { "mziptodatabase", typeof(MZipToDatabaseCommand) },
+            { "packagequeries", typeof(PackageQueriesCommand) },
+            { "sandbox", typeof(SandboxCommand) },
+            { "showqueryresults", typeof(ShowQueryResultsCommand) },
+            { "showrepositories", typeof(ShowRepositoriesCommand) },
+            { "showweirddependencies", typeof(ShowWeirdDependenciesCommand) },
+            { "update", typeof(UpdateCommand) },
+            { "v2todatabase", typeof(V2ToDatabaseCommand) },
+        };
 
-        private static async Task MainAsync(string[] args, CancellationToken token)
+        public static void Main(string[] args)
         {
             // Read and show the settings
             Console.WriteLine("===== settings =====");
@@ -39,105 +52,55 @@ namespace Knapcode.ExplorePackages
             var serviceCollection = InitializeServiceCollection(settings);
             using (var serviceProvider = serviceCollection.BuildServiceProvider())
             {
-                // Determine the commands to run.
-                var log = serviceProvider.GetRequiredService<ILogger>();
-                if (args.Length == 0)
+                var app = new CommandLineApplication();
+                app.HelpOption();
+
+                foreach (var pair in Commands)
                 {
-                    log.LogError("You must provide a parameter.");
-                    return;
+                    AddCommand(pair.Value, serviceProvider, app, pair.Key);
                 }
 
-                var commands = new List<ICommand>();
-                switch (args[0].Trim().ToLowerInvariant())
-                {
-                    case "packagequeries":
-                        commands.Add(serviceProvider.GetRequiredService<PackageQueriesCommand>());
-                        break;
-                    case "fetchcursors":
-                        commands.Add(serviceProvider.GetRequiredService<FetchCursorsCommand>());
-                        break;
-                    case "catalogtodatabase":
-                        commands.Add(serviceProvider.GetRequiredService<CatalogToDatabaseCommand>());
-                        break;
-                    case "catalogtonuspecs":
-                        commands.Add(serviceProvider.GetRequiredService<CatalogToNuspecsCommand>());
-                        break;
-                    case "showqueryresults":
-                        commands.Add(serviceProvider.GetRequiredService<ShowQueryResultsCommand>());
-                        break;
-                    case "showrepositories":
-                        commands.Add(serviceProvider.GetRequiredService<ShowRepositoriesCommand>());
-                        break;
-                    case "checkpackage":
-                        commands.Add(serviceProvider.GetRequiredService<CheckPackageCommand>());
-                        break;
-                    case "v2todatabase":
-                        commands.Add(serviceProvider.GetRequiredService<V2ToDatabaseCommand>());
-                        break;
-                    case "downloadstodatabase":
-                        commands.Add(serviceProvider.GetRequiredService<DownloadsToDatabaseCommand>());
-                        break;
-                    case "showweirddependencies":
-                        commands.Add(serviceProvider.GetRequiredService<ShowWeirdDependenciesCommand>());
-                        break;
-                    case "mzip":
-                        commands.Add(serviceProvider.GetRequiredService<MZipCommand>());
-                        break;
-                    case "mziptodatabase":
-                        commands.Add(serviceProvider.GetRequiredService<MZipToDatabaseCommand>());
-                        break;
-                    case "sandbox":
-                        commands.Add(serviceProvider.GetRequiredService<SandboxCommand>());
-                        break;
-                    case "update":
-                        commands.Add(serviceProvider.GetRequiredService<V2ToDatabaseCommand>());
-                        commands.Add(serviceProvider.GetRequiredService<FetchCursorsCommand>());
-                        commands.Add(serviceProvider.GetRequiredService<CatalogToDatabaseCommand>());
-                        commands.Add(serviceProvider.GetRequiredService<CatalogToNuspecsCommand>());
-                        commands.Add(serviceProvider.GetRequiredService<MZipCommand>());
-                        commands.Add(serviceProvider.GetRequiredService<MZipToDatabaseCommand>());
-                        if (settings.DownloadsV1Url != null)
-                        {
-                            commands.Add(serviceProvider.GetRequiredService<DownloadsToDatabaseCommand>());
-                        }
-                        commands.Add(serviceProvider.GetRequiredService<PackageQueriesCommand>());
-                        break;
-                    default:
-                        log.LogError("Unknown command.");
-                        return;
-                }
-                
-                // Execute.
-                var initializeDatabase = commands.Any(x => x.IsDatabaseRequired(args));
-                await InitializeGlobalState(settings, initializeDatabase, log);
-                
-                foreach (var command in commands)
-                {
-                    var commandName = command.GetType().Name;
-                    var suffix = "Command";
-                    if (commandName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
-                    {
-                        commandName = commandName.Substring(0, commandName.Length - suffix.Length);
-                    }
-                    var heading = $"===== {commandName.ToLowerInvariant()} =====";
-                    Console.WriteLine(heading);
-                    try
-                    {
-                        await command.ExecuteAsync(args, token);
-                    }
-                    catch (Exception e)
-                    {
-                        log.LogError("An exception occurred." + Environment.NewLine + e);
-                    }
-                    Console.WriteLine(new string('=', heading.Length));
-                    Console.WriteLine();
-                }
+                app.Execute(args);
             }
+        }
+
+        private static void AddCommand(
+            Type commandType,
+            IServiceProvider serviceProvider,
+            CommandLineApplication app,
+            string commandName)
+        {
+            var command = (ICommand)serviceProvider.GetRequiredService(commandType);
+
+            app.Command(
+                commandName,
+                x =>
+                {
+                    x.HelpOption();
+                    command.Configure(x);
+
+                    x.OnExecute(async () =>
+                    {
+                        await InitializeGlobalState(
+                            serviceProvider.GetRequiredService<ExplorePackagesSettings>(),
+                            command.IsDatabaseRequired(),
+                            serviceProvider.GetRequiredService<ILogger>());
+
+                        var commandRunner = new CommandExecutor(
+                            command,
+                            serviceProvider.GetRequiredService<ILogger>());
+
+                        await commandRunner.ExecuteAsync(CancellationToken.None);
+
+                        return 0;
+                    });
+                });
         }
         
         private static async Task InitializeGlobalState(ExplorePackagesSettings settings, bool initializeDatabase, ILogger log)
         {
             Console.WriteLine("===== initialize =====");
+
             // Initialize the database.
             EntityContext.ConnectionString = "Data Source=" + settings.DatabasePath;
             EntityContext.Enabled = initializeDatabase;
@@ -158,6 +121,7 @@ namespace Knapcode.ExplorePackages
             var userAgentStringBuilder = new UserAgentStringBuilder("Knapcode.ExplorePackages.Bot");
             UserAgent.SetUserAgentString(userAgentStringBuilder);
             log.LogInformation($"The following user agent will be used: {UserAgent.UserAgentString}");
+
             Console.WriteLine("======================");
             Console.WriteLine();
         }
@@ -187,19 +151,10 @@ namespace Knapcode.ExplorePackages
 
             serviceCollection.AddSingleton<ILogger, ConsoleLogger>();
 
-            serviceCollection.AddTransient<SandboxCommand>();
-            serviceCollection.AddTransient<PackageQueriesCommand>();
-            serviceCollection.AddTransient<FetchCursorsCommand>();
-            serviceCollection.AddTransient<CatalogToDatabaseCommand>();
-            serviceCollection.AddTransient<CatalogToNuspecsCommand>();
-            serviceCollection.AddTransient<ShowQueryResultsCommand>();
-            serviceCollection.AddTransient<ShowRepositoriesCommand>();
-            serviceCollection.AddTransient<CheckPackageCommand>();
-            serviceCollection.AddTransient<V2ToDatabaseCommand>();
-            serviceCollection.AddTransient<DownloadsToDatabaseCommand>();
-            serviceCollection.AddTransient<ShowWeirdDependenciesCommand>();
-            serviceCollection.AddTransient<MZipCommand>();
-            serviceCollection.AddTransient<MZipToDatabaseCommand>();
+            foreach (var pair in Commands)
+            {
+                serviceCollection.AddTransient(pair.Value);
+            }
 
             return serviceCollection;
         }

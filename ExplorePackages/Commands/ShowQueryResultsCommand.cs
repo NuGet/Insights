@@ -1,38 +1,41 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
-using NuGet.Common;
+using McMaster.Extensions.CommandLineUtils;
 
 namespace Knapcode.ExplorePackages.Commands
 {
     public class ShowQueryResultsCommand : ICommand
     {
         private readonly PackageQueryService _queryService;
+        private CommandArgument _queryNameArgument;
 
         public ShowQueryResultsCommand(PackageQueryService queryService)
         {
             _queryService = queryService;
         }
 
-        public async Task ExecuteAsync(IReadOnlyList<string> args, CancellationToken token)
+        public void Configure(CommandLineApplication app)
         {
-            if (args.Count < 2)
-            {
-                Console.WriteLine("A second argument (the query name) is required.");
-                return;
-            }
+            _queryNameArgument = app.Argument(
+                "query name",
+                "The name of the query to show results for.",
+                x => x.IsRequired());
+        }
 
+        private string QueryName => _queryNameArgument?.Value;
 
+        public async Task ExecuteAsync(CancellationToken token)
+        {
             Console.WriteLine("ID\tVersion\tFirst Commit Timestamp\tLast Commit Timestamp");
             
             int count;
             long lastKey = 0;
             do
             {
-                var matches = await _queryService.GetMatchedPackagesAsync(args[1], lastKey);
+                var matches = await _queryService.GetMatchedPackagesAsync(QueryName, lastKey);
                 count = matches.Packages.Count;
                 lastKey = matches.LastKey;
 
@@ -62,7 +65,7 @@ namespace Knapcode.ExplorePackages.Commands
             return dateTimeOffset.ToString("G", CultureInfo.InvariantCulture);
         }
 
-        public bool IsDatabaseRequired(IReadOnlyList<string> args)
+        public bool IsDatabaseRequired()
         {
             return true;
         }

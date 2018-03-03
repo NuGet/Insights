@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Logic;
 using Knapcode.MiniZip;
+using McMaster.Extensions.CommandLineUtils;
 using NuGet.Common;
 
 namespace Knapcode.ExplorePackages.Commands
@@ -30,7 +31,11 @@ namespace Knapcode.ExplorePackages.Commands
             _log = log;
         }
 
-        public async Task ExecuteAsync(IReadOnlyList<string> args, CancellationToken token)
+        public void Configure(CommandLineApplication app)
+        {
+        }
+
+        public async Task ExecuteAsync(CancellationToken token)
         {
             var start = await _cursorService.GetValueAsync(CursorNames.MZipToDatabase);
             var end = await _cursorService.GetMinimumAsync(new[]
@@ -131,7 +136,7 @@ namespace Knapcode.ExplorePackages.Commands
             return metadata;
         }
 
-        public bool IsDatabaseRequired(IReadOnlyList<string> args)
+        public bool IsDatabaseRequired()
         {
             return true;
         }

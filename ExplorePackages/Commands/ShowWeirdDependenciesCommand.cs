@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Logic;
+using McMaster.Extensions.CommandLineUtils;
 
 namespace Knapcode.ExplorePackages.Commands
 {
@@ -23,7 +24,11 @@ namespace Knapcode.ExplorePackages.Commands
             _pathProvider = pathProvider;
         }
 
-        public async Task ExecuteAsync(IReadOnlyList<string> args, CancellationToken token)
+        public void Configure(CommandLineApplication app)
+        {
+        }
+
+        public async Task ExecuteAsync(CancellationToken token)
         {
             await ShowMatchedStringCounts(
                 PackageQueryNames.FindMixedDependencyGroupStylesNuspecQuery,
@@ -129,7 +134,7 @@ namespace Knapcode.ExplorePackages.Commands
             while (count > 0);
         }
 
-        public bool IsDatabaseRequired(IReadOnlyList<string> args)
+        public bool IsDatabaseRequired()
         {
             return true;
         }

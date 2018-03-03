@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Knapcode.ExplorePackages.Logic;
+using McMaster.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using NuGet.Common;
@@ -18,6 +17,13 @@ namespace Knapcode.ExplorePackages.Commands
         private readonly PackageQueryContextBuilder _contextBuilder;
         private readonly ILogger _log;
 
+        private CommandArgument _idArgument;
+        private CommandArgument _versionArgument;
+        private CommandOption _semVer2Option;
+        private CommandOption _deletedOption;
+        private CommandOption _gallery;
+        private CommandOption _database;
+
         public CheckPackageCommand(PackageConsistencyService service, PackageQueryContextBuilder contextBuilder, ILogger log)
         {
             _service = service;
@@ -25,53 +31,74 @@ namespace Knapcode.ExplorePackages.Commands
             _log = log;
         }
 
-        public async Task ExecuteAsync(IReadOnlyList<string> args, CancellationToken token)
+        public void Configure(CommandLineApplication app)
         {
-            var argList = args.ToList();
-            var hasSemVer2Arg = HasSemVer2Arg(argList);
-            var hasDeletedArg = HasDeletedArg(argList);
-            var hasGalleryArg = HasGalleryArg(argList);
-            var hasDatabaseArg = HasDatabaseArg(argList);
+            _idArgument = app.Argument(
+                "package ID",
+                "The package ID to check.",
+                x => x.IsRequired());
+            _versionArgument = app.Argument(
+                "package version",
+                "The package version to check.",
+                x => x.IsRequired());
 
-            if (argList.Count < 3)
+            _semVer2Option = app.Option(
+                "--semver2",
+                "Consider the package to be SemVer 2.0.0.",
+                CommandOptionType.NoValue);
+            _deletedOption = app.Option(
+                "--deleted",
+                "Consider the package to be deleted.",
+                CommandOptionType.NoValue);
+            _gallery = app.Option(
+                "--gallery",
+                "Use details from the gallery as a baseline.",
+                CommandOptionType.NoValue);
+            _database = app.Option(
+                "--database",
+                "Use details from the ExplorePackages database as a baseline.",
+                CommandOptionType.NoValue);
+        }
+
+        private string Id => _idArgument?.Value;
+        private string Version => _versionArgument?.Value;
+        private bool SemVer2 => _semVer2Option?.HasValue() ?? false;
+        private bool Deleted => _deletedOption?.HasValue() ?? false;
+        private bool Gallery => _gallery?.HasValue() ?? false;
+        private bool Database => _database?.HasValue() ?? false;
+
+        public async Task ExecuteAsync(CancellationToken token)
+        {
+            if (!NuGetVersion.TryParse(Version, out var parsedVersion))
             {
-                _log.LogError("The second and third parameters should be the package ID then the package version.");
+                _log.LogError($"The version '{Version}' could not be parsed.");
                 return;
             }
 
-            var id = argList[1].Trim();
-            var version = argList[2].Trim();
-
-            if (!NuGetVersion.TryParse(version, out var parsedVersion))
-            {
-                _log.LogError($"The version '{version}' could not be parsed.");
-                return;
-            }
-
-            var isSemVer2 = parsedVersion.IsSemVer2 || hasSemVer2Arg;
+            var isSemVer2 = parsedVersion.IsSemVer2 || SemVer2;
 
             var state = new PackageConsistencyState();
             PackageQueryContext context;
-            if (hasGalleryArg)
+            if (Gallery)
             {
-                context = await _contextBuilder.GetPackageQueryContextFromGalleryAsync(id, version, state);
+                context = await _contextBuilder.GetPackageQueryContextFromGalleryAsync(Id, Version, state);
             }
-            else if (hasDatabaseArg)
+            else if (Database)
             {
-                context = await _contextBuilder.GetPackageQueryContextFromDatabaseAsync(id, version);
+                context = await _contextBuilder.GetPackageQueryContextFromDatabaseAsync(Id, Version);
                 if (context == null)
                 {
-                    _log.LogError($"The package {id} {version} could not be found in the database.");
+                    _log.LogError($"The package {Id} {Version} could not be found in the database.");
                     return;
                 }
             }
-            else if (hasDeletedArg)
+            else if (Deleted)
             {
-                context = _contextBuilder.CreateDeletedPackageQueryContext(id, version);
+                context = _contextBuilder.CreateDeletedPackageQueryContext(Id, Version);
             }
             else
             {
-                context = _contextBuilder.CreateAvailablePackageQueryContext(id, version, isSemVer2);
+                context = _contextBuilder.CreateAvailablePackageQueryContext(Id, Version, isSemVer2);
             }
 
             var report = await _service.GetReportAsync(context, state, NullProgressReport.Instance);
@@ -89,31 +116,11 @@ namespace Knapcode.ExplorePackages.Commands
             Console.WriteLine(reportJson);
         }
 
-        private bool HasGalleryArg(List<string> argList)
+        public bool IsDatabaseRequired()
         {
-            return ArgsUtility.HasArg(argList, "-gallery");
+            return Database;
         }
 
-        private bool HasDatabaseArg(List<string> argList)
-        {
-            return ArgsUtility.HasArg(argList, "-database");
-        }
-
-        private bool HasDeletedArg(List<string> argList)
-        {
-            return ArgsUtility.HasArg(argList, "-deleted");
-        }
-
-        private bool HasSemVer2Arg(List<string> argList)
-        {
-            return ArgsUtility.HasArg(argList, "-semver2");
-        }
-
-        public bool IsDatabaseRequired(IReadOnlyList<string> args)
-        {
-            return HasDatabaseArg(args.ToList());
-        }
-        
         private class NuspecJsonConverter : JsonConverter
         {
             public override bool CanConvert(Type objectType)

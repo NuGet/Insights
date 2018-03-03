@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
+using McMaster.Extensions.CommandLineUtils;
 using NuGet.Common;
 
 namespace Knapcode.ExplorePackages.Commands
@@ -17,12 +17,16 @@ namespace Knapcode.ExplorePackages.Commands
             _log = log;
         }
 
-        public async Task ExecuteAsync(IReadOnlyList<string> args, CancellationToken token)
+        public void Configure(CommandLineApplication app)
+        {
+        }
+
+        public async Task ExecuteAsync(CancellationToken token)
         {
             await _service.UpdateNuGetOrgCursors(token);
         }
 
-        public bool IsDatabaseRequired(IReadOnlyList<string> args)
+        public bool IsDatabaseRequired()
         {
             return true;
         }

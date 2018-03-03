@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using McMaster.Extensions.CommandLineUtils;
 
 namespace Knapcode.ExplorePackages.Commands
 {
     public interface ICommand
     {
-        Task ExecuteAsync(IReadOnlyList<string> args, CancellationToken token);
-        bool IsDatabaseRequired(IReadOnlyList<string> args);
+        void Configure(CommandLineApplication app);
+        Task ExecuteAsync(CancellationToken token);
+        bool IsDatabaseRequired();
     }
 }

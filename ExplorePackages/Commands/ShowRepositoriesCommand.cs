@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Knapcode.ExplorePackages.Logic;
-using NuGet.Common;
+using McMaster.Extensions.CommandLineUtils;
 
 namespace Knapcode.ExplorePackages.Commands
 {
@@ -23,7 +22,11 @@ namespace Knapcode.ExplorePackages.Commands
             _pathProvider = pathProvider;
         }
 
-        public async Task ExecuteAsync(IReadOnlyList<string> args, CancellationToken token)
+        public void Configure(CommandLineApplication app)
+        {
+        }
+
+        public async Task ExecuteAsync(CancellationToken token)
         {
             Console.Write("Package Key");
             Console.Write('\t');
@@ -116,7 +119,7 @@ namespace Knapcode.ExplorePackages.Commands
             return dateTimeOffset.ToString("G", CultureInfo.InvariantCulture);
         }
 
-        public bool IsDatabaseRequired(IReadOnlyList<string> args)
+        public bool IsDatabaseRequired()
         {
             return true;
         }

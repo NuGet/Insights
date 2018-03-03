@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
 using Knapcode.MiniZip;
+using McMaster.Extensions.CommandLineUtils;
 
 namespace Knapcode.ExplorePackages.Commands
 {
@@ -24,7 +24,11 @@ namespace Knapcode.ExplorePackages.Commands
             _mZipFormat = mZipFormat;
         }
 
-        public async Task ExecuteAsync(IReadOnlyList<string> args, CancellationToken token)
+        public void Configure(CommandLineApplication app)
+        {
+        }
+
+        public async Task ExecuteAsync(CancellationToken token)
         {
             await Task.Yield();
 
@@ -56,7 +60,7 @@ namespace Knapcode.ExplorePackages.Commands
 
         }
 
-        public bool IsDatabaseRequired(IReadOnlyList<string> args)
+        public bool IsDatabaseRequired()
         {
             return true;
         }
