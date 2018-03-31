@@ -10,6 +10,7 @@ namespace Knapcode.ExplorePackages.TestData
             public const string DependencyGroups = NuGet_Versioning_4_3_0;
             public const string DuplicateDependencies = "DuplicateDependencies.nuspec";
             public const string DuplicateDependencyTargetFrameworks = "DuplicateDependencyTargetFrameworks.nuspec";
+            public const string DuplicateMetadataElements = "DuplicateMetadataElements.nuspec";
             public const string FloatingDependencyVersions = "FloatingDependencyVersions.nuspec";
             public const string InvalidDependencyIds = "InvalidDependencyIds.nuspec";
             public const string InvalidDependencyTargetFrameworks = "InvalidDependencyTargetFrameworks.nuspec";
@@ -17,6 +18,7 @@ namespace Knapcode.ExplorePackages.TestData
             public const string LegacyDependencies = NuGet_Core_2_14_0;
             public const string MixedDependencyGroupStyles = "MixedDependencyGroupStyles.nuspec";
             public const string NoDependencies = NuGet_Versioning_1_0_0;
+            public const string NonAlphabetMetadataElements = "NonAlphabetMetadataElements.nuspec";
             public const string UnsupportedDependencyTargetFrameworks = "UnsupportedDependencyTargetFrameworks.nuspec";
             public const string WhitespaceDependencyTargetFrameworks = "WhitespaceDependencyTargetFrameworks.nuspec";
 

@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>NuGet.Versioning</id>
+    <version>4.3.0</version>
+    <author_>Joel</author_>
+    <author.2>Joel</author.2>
+    <description>This is a package.</description>
+    <DESCRIPTION>This is a package.</DESCRIPTION>
+    <Description>This is a package.</Description>
+    <files-1>
+      <file src="a.txt" />
+      <file src="b.txt" />
+    </files-1>
+  </metadata>
+</package>

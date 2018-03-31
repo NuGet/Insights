@@ -28,6 +28,9 @@
         public const string FindWhitespaceDependencyIdsNuspecQuery = CursorNames.FindWhitespaceDependencyIdsNuspecQuery;
         public const string FindEmptyDependencyIdsNuspecQuery = CursorNames.FindEmptyDependencyIdsNuspecQuery;
         public const string FindWhitespaceDependencyVersionsNuspecQuery = CursorNames.FindWhitespaceDependencyVersionsNuspecQuery;
+        public const string FindCaseSensitiveDuplicateMetadataElementsNuspecQuery = CursorNames.FindCaseSensitiveDuplicateMetadataElementsNuspecQuery;
+        public const string FindCaseInsensitiveDuplicateMetadataElementsNuspecQuery = CursorNames.FindCaseInsensitiveDuplicateMetadataElementsNuspecQuery;
+        public const string FindNonAlphabetMetadataElementsNuspecQuery = CursorNames.FindNonAlphabetMetadataElementsNuspecQuery;
 
         public const string HasRegistrationDiscrepancyInOriginalHivePackageQuery = CursorNames.HasRegistrationDiscrepancyInOriginalHivePackageQuery;
         public const string HasRegistrationDiscrepancyInGzippedHivePackageQuery = CursorNames.HasRegistrationDiscrepancyInGzippedHivePackageQuery;

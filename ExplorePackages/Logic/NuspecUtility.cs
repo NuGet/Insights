@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using NuGet.Frameworks;
 using NuGet.Versioning;
@@ -9,6 +10,7 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public static class NuspecUtility
     {
+        private static readonly Regex IsAlphabet = new Regex(@"^[a-zA-Z]+$", RegexOptions.Compiled);
         private static readonly NuGetFrameworkNameComparer NuGetFrameworkNameComparer = new NuGetFrameworkNameComparer();
 
         public static XElement GetRepository(XDocument nuspec)
@@ -224,6 +226,37 @@ namespace Knapcode.ExplorePackages.Logic
                     TargetFramework = y
                 }))
                 .ToLookup(x => x.ParsedTargetFramework, x => x.TargetFramework);
+        }
+
+        public static IDictionary<string, int> GetDuplicateMetadataElements(XDocument nuspec, bool caseSensitive)
+        {
+            var comparer = caseSensitive ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase;
+
+            return GetMetadataElementNames(nuspec)
+                .GroupBy(x => x, comparer)
+                .Where(x => x.Count() > 1)
+                .ToDictionary(x => x.Key, x => x.Count(), comparer);
+        }
+
+        public static IReadOnlyList<string> GetNonAlphabetMetadataElements(XDocument nuspec)
+        {
+            return GetMetadataElementNames(nuspec)
+                .Distinct()
+                .Where(x => !IsAlphabet.IsMatch(x))
+                .ToList();
+        }
+
+        private static IEnumerable<string> GetMetadataElementNames(XDocument nuspec)
+        {
+            var metadataEl = GetMetadata(nuspec);
+            if (metadataEl == null)
+            {
+                return Enumerable.Empty<string>();
+            }
+
+            return metadataEl
+                .Elements()
+                .Select(x => x.Name.LocalName);
         }
 
         public static ILookup<string, string> GetDuplicateDependencyTargetFrameworks(XDocument nuspec)

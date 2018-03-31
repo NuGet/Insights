@@ -33,6 +33,7 @@ namespace Knapcode.ExplorePackages
             { "showqueryresults", typeof(ShowQueryResultsCommand) },
             { "showrepositories", typeof(ShowRepositoriesCommand) },
             { "showweirddependencies", typeof(ShowWeirdDependenciesCommand) },
+            { "showweirdmetadata", typeof(ShowWeirdMetadataCommand) },
             { "update", typeof(UpdateCommand) },
             { "v2todatabase", typeof(V2ToDatabaseCommand) },
         };

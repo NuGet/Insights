@@ -93,5 +93,11 @@
   <ItemGroup>
     <EmbeddedResource Include="TestData\FloatingDependencyVersions.nuspec" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestData\DuplicateMetadataElements.nuspec" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestData\NonAlphabetMetadataElements.nuspec" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

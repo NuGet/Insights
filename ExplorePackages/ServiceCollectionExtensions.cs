@@ -162,6 +162,9 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<FindWhitespaceDependencyIdsNuspecQuery>();
             serviceCollection.AddTransient<FindWhitespaceDependencyVersionsNuspecQuery>();
             serviceCollection.AddTransient<FindDuplicateDependenciesNuspecQuery>();
+            serviceCollection.AddTransient<FindCaseSensitiveDuplicateMetadataElementsNuspecQuery>();
+            serviceCollection.AddTransient<FindCaseInsensitiveDuplicateMetadataElementsNuspecQuery>();
+            serviceCollection.AddTransient<FindNonAlphabetMetadataElementsNuspecQuery>();
 
             if (settings.RunBoringQueries)
             {

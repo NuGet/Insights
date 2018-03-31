@@ -10,6 +10,56 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class NuspecUtilityTest
     {
+        [Fact]
+        public void HasDuplicateMetadataElementsCaseSensitive()
+        {
+            // Arrange
+            var nuspec = Resources.LoadXml(Resources.Nuspecs.DuplicateMetadataElements);
+
+            // Act
+            var output = NuspecUtility.GetDuplicateMetadataElements(nuspec, caseSensitive: true);
+
+            // Assert
+            Assert.NotEmpty(output);
+            Assert.Equal(new[] { "authors", "dependencies", "owners" }, output.Keys.OrderBy(x => x));
+            Assert.Equal(3, output["authors"]);
+            Assert.Equal(2, output["dependencies"]);
+            Assert.Equal(2, output["owners"]);
+        }
+
+        [Fact]
+        public void HasDuplicateMetadataElementsCaseInsensitive()
+        {
+            // Arrange
+            var nuspec = Resources.LoadXml(Resources.Nuspecs.DuplicateMetadataElements);
+
+            // Act
+            var output = NuspecUtility.GetDuplicateMetadataElements(nuspec, caseSensitive: false);
+
+            // Assert
+            Assert.NotEmpty(output);
+            Assert.Equal(new[] { "authors", "dependencies", "description", "owners" }, output.Keys.OrderBy(x => x));
+            Assert.Equal(3, output["authors"]);
+            Assert.Equal(2, output["dependencies"]);
+            Assert.Equal(3, output["description"]);
+            Assert.Equal(2, output["owners"]);
+        }
+
+        [Fact]
+        public void HasNonAlphabetMetadataElements()
+        {
+            // Arrange
+            var nuspec = Resources.LoadXml(Resources.Nuspecs.NonAlphabetMetadataElements);
+
+            // Act
+            var output = NuspecUtility.GetNonAlphabetMetadataElements(nuspec);
+
+            // Assert
+            Assert.Equal(
+                new[] { "author_", "author.2", "files-1" },
+                output);
+        }
+
         public static IEnumerable<object[]> HasMixedDependencyGroupStylesTestData =>
             new TestDataBuilder<bool>(
                 new Dictionary<string, bool>

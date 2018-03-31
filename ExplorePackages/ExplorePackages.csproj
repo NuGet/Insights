@@ -47,6 +47,7 @@
     <Compile Include="Commands\MZipCommand.cs" />
     <Compile Include="Commands\DownloadsToDatabaseCommand.cs" />
     <Compile Include="Commands\MZipToDatabaseCommand.cs" />
+    <Compile Include="Commands\ShowWeirdMetadataCommand.cs" />
     <Compile Include="Commands\UpdateCommand.cs" />
     <Compile Include="Entities\CatalogCommitEntity.cs" />
     <Compile Include="Entities\CatalogLeafEntity.cs" />
@@ -152,6 +153,8 @@
     <Compile Include="Logic\NullUrlReport.cs" />
     <Compile Include="Logic\PackageCommitEnumerator.cs" />
     <Compile Include="Logic\PackageDownloadsToDatabaseProcessor.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\FindCaseInsensitiveDuplicateMetadataElementsNuspecQuery.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\FindCaseSensitiveDuplicateMetadataElementsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindDuplicateDependenciesNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindDuplicateDependencyTargetFrameworksNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindDuplicateNormalizedDependencyTargetFrameworksNuspecQuery.cs" />
@@ -161,6 +164,7 @@
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindInvalidDependencyTargetFrameworkNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindEmptyDependencyIdsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindMixedDependencyGroupStylesNuspecQuery.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\FindNonAlphabetMetadataElementsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindNonNormalizedPackageVersionsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindInvalidPackageVersionsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindInvalidPackageIdsNuspecQuery.cs" />

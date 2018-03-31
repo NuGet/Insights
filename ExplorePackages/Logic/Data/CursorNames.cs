@@ -46,6 +46,9 @@
         public const string FindWhitespaceDependencyIdsNuspecQuery = "FindWhitespaceDependencyIdsNuspecQuery";
         public const string FindEmptyDependencyIdsNuspecQuery = "FindEmptyDependencyIdsNuspecQuery";
         public const string FindWhitespaceDependencyVersionsNuspecQuery = "FindWhitespaceDependencyVersionsNuspecQuery";
+        public const string FindCaseSensitiveDuplicateMetadataElementsNuspecQuery = "FindCaseSensitiveDuplicateMetadataElementsNuspecQuery";
+        public const string FindCaseInsensitiveDuplicateMetadataElementsNuspecQuery = "FindCaseInsensitiveDuplicateMetadataElementsNuspecQuery";
+        public const string FindNonAlphabetMetadataElementsNuspecQuery = "FindNonAlphabetMetadataElementsNuspecQuery";
 
         public const string HasRegistrationDiscrepancyInOriginalHivePackageQuery = "HasRegistrationDiscrepancyInOriginalHivePackageQuery";
         public const string HasRegistrationDiscrepancyInGzippedHivePackageQuery = "HasRegistrationDiscrepancyInGzippedHivePackageQuery";
