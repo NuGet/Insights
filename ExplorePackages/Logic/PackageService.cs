@@ -182,16 +182,16 @@ namespace Knapcode.ExplorePackages.Logic
                 // Add new records.
                 await entityContext.Packages.AddRangeAsync(identityToLatest.Values);
 
+                // Commit the changes.
+                var commitStopwatch = Stopwatch.StartNew();
+                var changes = await entityContext.SaveChangesAsync();
+                _log.LogInformation($"Committed {changes} changes. {commitStopwatch.ElapsedMilliseconds}ms");
+
                 // Add the new package keys.
                 foreach (var pair in identityToLatest)
                 {
                     identityToPackageKey.Add(pair.Key, pair.Value.PackageKey);
                 }
-
-                // Commit the changes.
-                var commitStopwatch = Stopwatch.StartNew();
-                var changes = await entityContext.SaveChangesAsync();
-                _log.LogInformation($"Committed {changes} changes. {commitStopwatch.ElapsedMilliseconds}ms");
 
                 return identityToPackageKey;
             }
