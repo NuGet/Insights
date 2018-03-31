@@ -74,6 +74,10 @@ namespace Knapcode.ExplorePackages.Website
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
+
+                routes.MapRoute(
+                    name: "explore",
+                    template: "{controller=Home}/{action=Explore}/{id}/{version}");
             });
         }
     }

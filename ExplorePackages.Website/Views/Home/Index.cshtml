@@ -1,4 +1,5 @@
-﻿@using Knapcode.ExplorePackages.Website.Logic;
+﻿@model ExploreViewModel
+@using Knapcode.ExplorePackages.Website.Logic;
 @{
     ViewData["Title"] = "Home";
 }
@@ -11,11 +12,11 @@
         <form id="getReportForm">
             <div class="form-group">
                 <label for="packageId">Package ID</label>
-                <input type="text" class="form-control" name="id" id="packageId" value="">
+                <input type="text" class="form-control" name="id" id="packageId" value="@Model.Id">
             </div>
             <div class="form-group">
                 <label for="packageVersion">Package Version</label>
-                <input type="text" class="form-control" name="version" id="packageVersion" value="">
+                <input type="text" class="form-control" name="version" id="packageVersion" value="@Model.Version">
             </div>
             <button type="submit" id="getReport" class="btn btn-primary">Explore</button>
             <button type="button" id="getLatestV2" class="btn btn-default">Find Latest V2 Package</button>
@@ -301,6 +302,10 @@
             return a;
         }
 
+        function pushExploreUrl(id, version) {
+            history.pushState({}, "", "/Home/Explore/" + id + "/" + version);
+        }
+
         function HttpSession() {
             this.method = null;
             this.requestUri = null;
@@ -575,6 +580,8 @@
                     $packageId.val(data.id);
                     $packageVersion.val(data.version);
 
+                    pushExploreUrl(data.id, data.version);
+
                     $pre = $("<pre></pre>");
                     $pre.html(JSON.stringify(data, null, 2));
                     $reportData.append($pre);
@@ -645,6 +652,8 @@
                 var packageId = $packageId.val();
                 var packageVersion = $packageVersion.val();
 
+                pushExploreUrl(packageId, packageVersion);
+
                 if (connection == null) {
                     connection = initializeConnection(function () {
                         connection.invoke('Start', packageId, packageVersion);
@@ -657,6 +666,10 @@
 
                 return false;
             });
+
+            if (@Json.Serialize(Model.ImmediatelyStart)) {
+                $("#getReportForm").submit();
+            }
         });
     </script>
 }
