@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using NuGet.Common;
 using NuGet.Protocol;
 using NuGet.Versioning;
@@ -11,6 +12,8 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class V2Client
     {
+        private const string Projection = "Id,Version,Created,LastEdited,LastUpdated,Published";
+
         private readonly HttpSource _httpSource;
         private readonly V2Parser _parser;
         private readonly ILogger _log;
@@ -46,8 +49,36 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task<IReadOnlyList<V2Package>> GetPackagesAsync(string baseUrl, string filter, string orderBy, int top)
         {
             filter = filter ?? "1 eq 1";
-            var url = $"{baseUrl.TrimEnd('/')}/Packages?$select=Id,Version,Created,LastEdited,LastUpdated,Published&semVerLevel=2.0.0&$top={top}&$orderby={Uri.EscapeDataString(orderBy)}&$filter={Uri.EscapeDataString(filter)}";
 
+            var url = $"{baseUrl.TrimEnd('/')}/Packages?$select={Projection}&semVerLevel=2.0.0&$top={top}&$orderby={Uri.EscapeDataString(orderBy)}&$filter={Uri.EscapeDataString(filter)}";
+
+            return await ParseV2PageAsync(url);
+        }
+
+        public async Task<bool> HasPackageAsync(string baseUrl, string id, string version, bool semVer2)
+        {
+            var semVerLevel = semVer2 ? "2.0.0" : "1.0.0";
+            var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
+            var filter = $"Id eq '{id}' and NormalizedVersion eq '{normalizedVersion}' and 1 eq 1";
+
+            var url = $"{baseUrl.TrimEnd('/')}/Packages?$select={Projection}&$filter={Uri.EscapeDataString(filter)}&semVerLevel={semVerLevel}";
+
+            var page = await ParseV2PageAsync(url);
+            
+            if (page.Count == 0)
+            {
+                return false;
+            }
+            else if (page.Count == 1)
+            {
+                return true;
+            }
+
+            throw new InvalidDataException("V2 should eiterh  returned by V2 should be either 0 or 1.");
+        }
+
+        private async Task<IReadOnlyList<V2Package>> ParseV2PageAsync(string url)
+        {
             return await _httpSource.ProcessStreamAsync(
                 new HttpSourceRequest(url, _log),
                 stream =>
@@ -58,34 +89,6 @@ namespace Knapcode.ExplorePackages.Logic
                 },
                 _log,
                 CancellationToken.None);
-        }
-
-        public async Task<bool> HasPackageAsync(string baseUrl, string id, string version, bool semVer2)
-        {
-            var semVerLevel = semVer2 ? "2.0.0" : "1.0.0";
-            var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
-            var filter = $"Id eq '{id}' and NormalizedVersion eq '{normalizedVersion}' and 1 eq 1";
-            var url = $"{baseUrl.TrimEnd('/')}/Packages/$count?$filter={Uri.EscapeDataString(filter)}&semVerLevel={semVerLevel}";
-            var count = await _httpSource.ProcessResponseAsync(
-                new HttpSourceRequest(url, _log),
-                async response =>
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    return int.Parse(content);
-                },
-                _log,
-                CancellationToken.None);
-            
-            if (count == 0)
-            {
-                return false;
-            }
-            else if (count == 1)
-            {
-                return true;
-            }
-
-            throw new InvalidDataException("The count returned by V2 should be either 0 or 1.");
         }
     }
 }
