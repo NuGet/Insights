@@ -153,6 +153,7 @@
     <Compile Include="Logic\NullUrlReport.cs" />
     <Compile Include="Logic\PackageCommitEnumerator.cs" />
     <Compile Include="Logic\PackageDownloadsToDatabaseProcessor.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\FindCollidingMetadataElementsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindCaseInsensitiveDuplicateMetadataElementsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindCaseSensitiveDuplicateMetadataElementsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindDuplicateDependenciesNuspecQuery.cs" />
@@ -172,6 +173,7 @@
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindIdsEndingInDotNumberNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindNonAsciiIdsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindPackageVersionsContainingWhitespaceNuspecQuery.cs" />
+    <Compile Include="Logic\PackageQueries\NuspecQueries\FindUnexpectedValuesForBooleanMetadataNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindUnsupportedDependencyTargetFrameworkNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindWhitespaceDependencyTargetFrameworkNuspecQuery.cs" />
     <Compile Include="Logic\PackageIdValidator.cs" />

@@ -1,0 +1,32 @@
+﻿<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <authors>Joel Verhagen</authors>
+    <contentFiles>contentFiles</contentFiles>
+    <created>created</created>
+    <dependencies>dependencies</dependencies>
+    <dependencyGroups>dependencyGroups</dependencyGroups>
+    <description>CollideWithCatalog</description>
+    <developmentDependency>developmentDependency</developmentDependency>
+    <frameworkAssemblies>frameworkAssemblies</frameworkAssemblies>
+    <id>CollideWithCatalog</id>
+    <isPrerelease>isPrerelease</isPrerelease>
+    <lastEdited>lastEdited</lastEdited>
+    <listed>listed</listed>
+    <minClientVersion>minClientVersion</minClientVersion>
+    <owners>Joel Verhagen</owners>
+    <packageEntries>packageEntries</packageEntries>
+    <packageHash>packageHash</packageHash>
+    <packageHashAlgorithm>packageHashAlgorithm</packageHashAlgorithm>
+    <packageSize>packageSize</packageSize>
+    <packageTypes>packageTypes</packageTypes>
+    <published>published</published>
+    <references>references</references>
+    <repository>repository</repository>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <supportedFrameworks>supportedFrameworks</supportedFrameworks>
+    <tags><tag>foo</tag><tag>bar</tag></tags>
+    <verbatimVersion>verbatimVersion</verbatimVersion>
+    <version>4.0.0</version>
+  </metadata>
+</package>

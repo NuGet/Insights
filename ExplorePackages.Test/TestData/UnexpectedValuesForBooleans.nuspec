@@ -1,0 +1,17 @@
+﻿<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>UnexpectedValuesForBooleans</id>
+    <version>4.0.0</version>
+    <requireLicenseAcceptance>0</requireLicenseAcceptance>
+    <requireLicenseAcceptance>
+      1
+    </requireLicenseAcceptance>
+    <developmentDependency>true</developmentDependency>
+    <developmentDependency>
+      false
+    </developmentDependency>
+    <serviceable></serviceable>
+    <serviceable />
+  </metadata>
+</package>

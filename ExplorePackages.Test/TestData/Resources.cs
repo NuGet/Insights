@@ -7,6 +7,7 @@ namespace Knapcode.ExplorePackages.TestData
     {
         public static class Nuspecs
         {
+            public const string CollidingMetadataElements = "CollidingMetadataElements.nuspec";
             public const string DependencyGroups = NuGet_Versioning_4_3_0;
             public const string DuplicateDependencies = "DuplicateDependencies.nuspec";
             public const string DuplicateDependencyTargetFrameworks = "DuplicateDependencyTargetFrameworks.nuspec";
@@ -19,6 +20,7 @@ namespace Knapcode.ExplorePackages.TestData
             public const string MixedDependencyGroupStyles = "MixedDependencyGroupStyles.nuspec";
             public const string NoDependencies = NuGet_Versioning_1_0_0;
             public const string NonAlphabetMetadataElements = "NonAlphabetMetadataElements.nuspec";
+            public const string UnexpectedValuesForBooleans = "UnexpectedValuesForBooleans.nuspec";
             public const string UnsupportedDependencyTargetFrameworks = "UnsupportedDependencyTargetFrameworks.nuspec";
             public const string WhitespaceDependencyTargetFrameworks = "WhitespaceDependencyTargetFrameworks.nuspec";
 

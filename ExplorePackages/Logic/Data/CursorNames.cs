@@ -49,6 +49,8 @@
         public const string FindCaseSensitiveDuplicateMetadataElementsNuspecQuery = "FindCaseSensitiveDuplicateMetadataElementsNuspecQuery";
         public const string FindCaseInsensitiveDuplicateMetadataElementsNuspecQuery = "FindCaseInsensitiveDuplicateMetadataElementsNuspecQuery";
         public const string FindNonAlphabetMetadataElementsNuspecQuery = "FindNonAlphabetMetadataElementsNuspecQuery";
+        public const string FindCollidingMetadataElementsNuspecQuery = "FindCollidingMetadataElementsNuspecQuery";
+        public const string FindUnexpectedValuesForBooleanMetadataNuspecQuery = "FindUnexpectedValuesForBooleanMetadataNuspecQuery";
 
         public const string HasRegistrationDiscrepancyInOriginalHivePackageQuery = "HasRegistrationDiscrepancyInOriginalHivePackageQuery";
         public const string HasRegistrationDiscrepancyInGzippedHivePackageQuery = "HasRegistrationDiscrepancyInGzippedHivePackageQuery";

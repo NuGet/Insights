@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using Knapcode.ExplorePackages.Support;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 
@@ -12,6 +13,16 @@ namespace Knapcode.ExplorePackages.Logic
     {
         private static readonly Regex IsAlphabet = new Regex(@"^[a-zA-Z]+$", RegexOptions.Compiled);
         private static readonly NuGetFrameworkNameComparer NuGetFrameworkNameComparer = new NuGetFrameworkNameComparer();
+        private static readonly HashSet<string> CollidingMetadataElementNames = new HashSet<string>
+        {
+            "listed", "packageHash", "packageHashAlgorithm", "packageSize", "verbatimVersion", "created", "lastEdited",
+            "packageEntries", "published", "supportedFrameworks", "dependencyGroups"
+        };
+        private static readonly HashSet<string> BooleanMetadataElementNames = new HashSet<string>
+        {
+            "requireLicenseAcceptance", "developmentDependency", "serviceable"
+        };
+
 
         public static XElement GetRepository(XDocument nuspec)
         {
@@ -228,6 +239,23 @@ namespace Knapcode.ExplorePackages.Logic
                 .ToLookup(x => x.ParsedTargetFramework, x => x.TargetFramework);
         }
 
+        public static IReadOnlyList<string> GetCollidingMetadataElements(XDocument nuspec)
+        {
+            return GetMetadataElementNames(nuspec)
+                .Distinct()
+                .Intersect(CollidingMetadataElementNames)
+                .ToList();
+        }
+
+        public static ILookup<string, string> GetMetadataLookup(XDocument nuspec)
+        {
+            var metadataEl = GetMetadata(nuspec) ?? new XElement("metadata");
+
+            return metadataEl
+                .Elements()
+                .ToLookup(x => x.Name.LocalName, x => x.Value);
+        }
+
         public static IDictionary<string, int> GetDuplicateMetadataElements(XDocument nuspec, bool caseSensitive)
         {
             var comparer = caseSensitive ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase;
@@ -257,6 +285,15 @@ namespace Knapcode.ExplorePackages.Logic
             return metadataEl
                 .Elements()
                 .Select(x => x.Name.LocalName);
+        }
+
+        public static ILookup<string, string> GetUnexpectedValuesForBooleanMetadata(XDocument nuspec)
+        {
+            return GetMetadataLookup(nuspec)
+                .Where(x => BooleanMetadataElementNames.Contains(x.Key))
+                .SelectMany(x => x.Select(y => KeyValuePair.Create(x.Key, y?.Trim())))
+                .Where(x => x.Value != "true" && x.Value != "false")
+                .ToLookup(x => x.Key, x => x.Value);
         }
 
         public static ILookup<string, string> GetDuplicateDependencyTargetFrameworks(XDocument nuspec)

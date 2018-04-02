@@ -99,5 +99,11 @@
   <ItemGroup>
     <EmbeddedResource Include="TestData\NonAlphabetMetadataElements.nuspec" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestData\CollidingMetadataElements.nuspec" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestData\UnexpectedValuesForBooleans.nuspec" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

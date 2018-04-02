@@ -11,6 +11,40 @@ namespace Knapcode.ExplorePackages.Logic
     public class NuspecUtilityTest
     {
         [Fact]
+        public void HasCollidingMetadataElements()
+        {
+            // Arrange
+            var nuspec = Resources.LoadXml(Resources.Nuspecs.CollidingMetadataElements);
+
+            // Act
+            var output = NuspecUtility.GetCollidingMetadataElements(nuspec);
+
+            // Assert
+            Assert.Equal(
+                new[]
+                {
+                    "created", "dependencyGroups", "lastEdited", "listed", "packageEntries", "packageHash",
+                    "packageHashAlgorithm", "packageSize", "published", "supportedFrameworks", "verbatimVersion"
+                },
+                output);
+        }
+
+        [Fact]
+        public void GetUnexpectedValuesForBooleanMetadata()
+        {
+            // Arrange
+            var nuspec = Resources.LoadXml(Resources.Nuspecs.UnexpectedValuesForBooleans);
+
+            // Act
+            var output = NuspecUtility.GetUnexpectedValuesForBooleanMetadata(nuspec);
+
+            // Assert
+            Assert.Equal(2, output.Count);
+            Assert.Equal(output["requireLicenseAcceptance"], new[] { "0", "1" });
+            Assert.Equal(output["serviceable"], new[] { string.Empty, string.Empty });
+        }
+
+        [Fact]
         public void HasDuplicateMetadataElementsCaseSensitive()
         {
             // Arrange

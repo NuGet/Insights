@@ -165,6 +165,8 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<FindCaseSensitiveDuplicateMetadataElementsNuspecQuery>();
             serviceCollection.AddTransient<FindCaseInsensitiveDuplicateMetadataElementsNuspecQuery>();
             serviceCollection.AddTransient<FindNonAlphabetMetadataElementsNuspecQuery>();
+            serviceCollection.AddTransient<FindCollidingMetadataElementsNuspecQuery>();
+            serviceCollection.AddTransient<FindUnexpectedValuesForBooleanMetadataNuspecQuery>();
 
             if (settings.RunBoringQueries)
             {
