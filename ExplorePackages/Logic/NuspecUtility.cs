@@ -15,12 +15,24 @@ namespace Knapcode.ExplorePackages.Logic
         private static readonly NuGetFrameworkNameComparer NuGetFrameworkNameComparer = new NuGetFrameworkNameComparer();
         private static readonly HashSet<string> CollidingMetadataElementNames = new HashSet<string>
         {
-            "listed", "packageHash", "packageHashAlgorithm", "packageSize", "verbatimVersion", "created", "lastEdited",
-            "packageEntries", "published", "supportedFrameworks", "dependencyGroups"
+            "created",
+            "dependencyGroups",
+            "isPrerelease",
+            "lastEdited",
+            "listed",
+            "packageEntries",
+            "packageHash",
+            "packageHashAlgorithm",
+            "packageSize",
+            "published",
+            "supportedFrameworks",
+            "verbatimVersion",
         };
         private static readonly HashSet<string> BooleanMetadataElementNames = new HashSet<string>
         {
-            "requireLicenseAcceptance", "developmentDependency", "serviceable"
+            "developmentDependency",
+            "requireLicenseAcceptance",
+            "serviceable",
         };
 
 
