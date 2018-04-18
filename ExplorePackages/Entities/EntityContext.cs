@@ -30,6 +30,8 @@ namespace Knapcode.ExplorePackages.Entities
         public DbSet<CatalogPageEntity> CatalogPages { get; set; }
         public DbSet<CatalogCommitEntity> CatalogCommits { get; set; }
         public DbSet<CatalogLeafEntity> CatalogLeaves { get; set; }
+        public DbSet<FrameworkEntity> Frameworks { get; set; }
+        public DbSet<PackageDependencyEntity> PackageDependencies { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -279,6 +281,58 @@ namespace Knapcode.ExplorePackages.Entities
                 .HasOne(x => x.CatalogPackage)
                 .WithMany(x => x.CatalogLeaves)
                 .HasForeignKey(x => x.PackageKey);
+
+            modelBuilder
+                .Entity<FrameworkEntity>()
+                .ToTable("Frameworks");
+            modelBuilder
+                .Entity<FrameworkEntity>()
+                .HasKey(x => x.FrameworkKey);
+            modelBuilder
+                .Entity<FrameworkEntity>()
+                .Property(x => x.Value)
+                .IsRequired();
+            modelBuilder
+                .Entity<FrameworkEntity>()
+                .Property(x => x.OriginalValue)
+                .IsRequired();
+            modelBuilder
+                .Entity<FrameworkEntity>()
+                .HasIndex(x => new { x.OriginalValue })
+                .IsUnique();
+
+            modelBuilder
+                .Entity<PackageDependencyEntity>()
+                .ToTable("PackageDependencies");
+            modelBuilder
+                .Entity<PackageDependencyEntity>()
+                .HasKey(x => x.PackageDependencyKey);
+            modelBuilder
+                .Entity<PackageDependencyEntity>()
+                .Property(x => x.VersionRange)
+                .IsRequired();
+            modelBuilder
+                .Entity<PackageDependencyEntity>()
+                .Property(x => x.OriginalVersionRange);
+            modelBuilder
+                .Entity<PackageDependencyEntity>()
+                .HasOne(x => x.DependencyPackageRegistration)
+                .WithMany(x => x.PackageDependencies)
+                .HasForeignKey(x => x.DependencyPackageRegistrationKey);
+            modelBuilder
+                .Entity<PackageDependencyEntity>()
+                .HasOne(x => x.ParentPackage)
+                .WithMany(x => x.PackageDependencies)
+                .HasForeignKey(x => x.ParentPackageKey);
+            modelBuilder
+                .Entity<PackageDependencyEntity>()
+                .HasOne(x => x.Framework)
+                .WithMany(x => x.PackageDependencies)
+                .HasForeignKey(x => x.FrameworkKey);
+            modelBuilder
+                .Entity<PackageDependencyEntity>()
+                .HasIndex(x => new { x.ParentPackageKey, x.DependencyPackageRegistrationKey, x.FrameworkKey })
+                .IsUnique();
         }
     }
 }

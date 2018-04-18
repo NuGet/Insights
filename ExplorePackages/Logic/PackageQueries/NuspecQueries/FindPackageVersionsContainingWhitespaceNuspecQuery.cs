@@ -12,13 +12,13 @@ namespace Knapcode.ExplorePackages.Logic
 
         public bool IsMatch(XDocument nuspec)
         {
-            var orignalVersion = NuspecUtility.GetOriginalVersion(nuspec);
-            if (orignalVersion == null)
+            var originalVersion = NuspecUtility.GetOriginalVersion(nuspec);
+            if (originalVersion == null)
             {
                 return false;
             }
 
-            return ContainsWhitespace.IsMatch(orignalVersion);
+            return ContainsWhitespace.IsMatch(originalVersion);
         }
     }
 }

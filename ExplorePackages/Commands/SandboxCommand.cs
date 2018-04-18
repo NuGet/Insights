@@ -10,18 +10,15 @@ namespace Knapcode.ExplorePackages.Commands
 {
     public class SandboxCommand : ICommand
     {
-        private readonly PackageService _packageService;
-        private readonly PackagePathProvider _pathProvider;
-        private readonly MZipFormat _mZipFormat;
+        private readonly PackageDependencyService _packageDependencyService;
+        private readonly NuspecProvider _nuspecProvider;
 
         public SandboxCommand(
-            PackageService packageService,
-            PackagePathProvider pathProvider,
-            MZipFormat mZipFormat)
+            PackageDependencyService packageDependencyService,
+            NuspecProvider nuspecProvider)
         {
-            _packageService = packageService;
-            _pathProvider = pathProvider;
-            _mZipFormat = mZipFormat;
+            _packageDependencyService = packageDependencyService;
+            _nuspecProvider = nuspecProvider;
         }
 
         public void Configure(CommandLineApplication app)
@@ -30,34 +27,14 @@ namespace Knapcode.ExplorePackages.Commands
 
         public async Task ExecuteAsync(CancellationToken token)
         {
-            await Task.Yield();
+            var packageIdentity = new PackageIdentity("NuGet.Packaging", "4.6.2");
+            var nuspec = _nuspecProvider.GetNuspec(packageIdentity.Id, packageIdentity.Version);
+            var dependencyGroups = NuspecUtility.GetParsedDependencyGroups(nuspec.Document);
+            var packageDependencyGroups = new PackageDependencyGroups(
+                packageIdentity,
+                dependencyGroups);
 
-            int commitCount;
-            do
-            {
-                var commits = await _packageService.GetPackageCommitsAsync(
-                    DateTimeOffset.MinValue,
-                    DateTimeOffset.MaxValue);
-                commitCount = commits.Count;
-                
-                foreach (var commit in commits)
-                {
-                    foreach (var package in commit.Packages)
-                    {
-                        var path = _pathProvider.GetLatestMZipPath(
-                            package.PackageRegistration.Id,
-                            package.Version);
-
-                        using (var fileStream = new FileStream(path, FileMode.Open))
-                        {
-                            var zipStream = await _mZipFormat.ReadAsync(fileStream);
-                            Console.WriteLine($"{package.PackageRegistration.Id} {package.Version} {zipStream.Length}");
-                        }
-                    }
-                }
-            }
-            while (commitCount > 0);
-
+            await _packageDependencyService.AddDependenciesAsync(new[] { packageDependencyGroups });
         }
 
         public bool IsDatabaseRequired()

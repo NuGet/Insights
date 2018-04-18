@@ -77,10 +77,15 @@
     <Compile Include="Entities\Migrations\20180223161313_AddCatalogLeafRelativePath.designer.cs">
       <DependentUpon>20180223161313_AddCatalogLeafRelativePath.cs</DependentUpon>
     </Compile>
+    <Compile Include="Entities\Migrations\20180416015055_AddPackageDependencies.cs" />
+    <Compile Include="Entities\Migrations\20180416015055_AddPackageDependencies.designer.cs">
+      <DependentUpon>20180416015055_AddPackageDependencies.cs</DependentUpon>
+    </Compile>
     <Compile Include="Entities\PackageEntryEntity.cs" />
     <Compile Include="Logic\CatalogService.cs" />
     <Compile Include="Logic\IETagService.cs" />
     <Compile Include="Logic\IPackageService.cs" />
+    <Compile Include="Logic\NuspecProvider.cs" />
     <Compile Include="Logic\PackageArchiveMetadata.cs" />
     <Compile Include="Commands\SandboxCommand.cs" />
     <Compile Include="Commands\ShowWeirdDependenciesCommand.cs" />
@@ -93,6 +98,7 @@
     <Compile Include="Commands\ShowRepositoriesCommand.cs" />
     <Compile Include="Entities\CatalogPackageEntity.cs" />
     <Compile Include="Entities\ETagEntity.cs" />
+    <Compile Include="Entities\FrameworkEntity.cs" />
     <Compile Include="Entities\Migrations\20171124002059_Initial.cs" />
     <Compile Include="Entities\Migrations\20171124002059_Initial.designer.cs">
       <DependentUpon>20171124002059_Initial.cs</DependentUpon>
@@ -107,6 +113,7 @@
     </Compile>
     <Compile Include="Entities\Migrations\EntityContextModelSnapshot.cs" />
     <Compile Include="Entities\PackageArchiveEntity.cs" />
+    <Compile Include="Entities\PackageDependencyEntity.cs" />
     <Compile Include="Entities\PackageDownloadsEntity.cs" />
     <Compile Include="Entities\PackageQueryEntity.cs" />
     <Compile Include="Entities\PackageQueryMatchEntity.cs" />
@@ -152,6 +159,8 @@
     <Compile Include="Logic\Consistency\Services\V2ConsistencyService.cs" />
     <Compile Include="Logic\NullUrlReport.cs" />
     <Compile Include="Logic\PackageCommitEnumerator.cs" />
+    <Compile Include="Logic\PackageDependencyGroups.cs" />
+    <Compile Include="Logic\PackageDependencyService.cs" />
     <Compile Include="Logic\PackageDownloadsToDatabaseProcessor.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindCollidingMetadataElementsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindCaseInsensitiveDuplicateMetadataElementsNuspecQuery.cs" />
@@ -176,7 +185,6 @@
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindUnexpectedValuesForBooleanMetadataNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindUnsupportedDependencyTargetFrameworkNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindWhitespaceDependencyTargetFrameworkNuspecQuery.cs" />
-    <Compile Include="Logic\PackageIdValidator.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindWhitespaceDependencyIdsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\NuspecQueries\FindWhitespaceDependencyVersionsNuspecQuery.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueries\HasMissingNuspecPackageQuery.cs" />
@@ -227,6 +235,7 @@
     <Compile Include="Logic\SearchServiceUrlCache.cs" />
     <Compile Include="Logic\SearchServiceUrlDiscoverer.cs" />
     <Compile Include="Logic\SearchServiceCursorReader.cs" />
+    <Compile Include="Logic\StrictPackageIdValidator.cs" />
     <Compile Include="Logic\UrlReportHandler.cs" />
     <Compile Include="Logic\UrlReportProvider.cs" />
     <Compile Include="Logic\V2ToDatabaseProcessor.cs" />

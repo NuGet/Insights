@@ -8,12 +8,14 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public interface IPackageService
     {
+        Task<IReadOnlyDictionary<string, PackageRegistrationEntity>> AddPackageRegistrationsAsync(IEnumerable<string> ids);
         Task<IReadOnlyDictionary<string, long>> AddOrUpdatePackagesAsync(IEnumerable<CatalogEntry> entries);
         Task AddOrUpdatePackagesAsync(IEnumerable<PackageArchiveMetadata> metadataSequence);
         Task AddOrUpdatePackagesAsync(IEnumerable<PackageDownloads> packageDownloads);
         Task AddOrUpdatePackagesAsync(IEnumerable<V2Package> v2Packages);
         Task<IReadOnlyList<PackageEntity>> GetBatchAsync(IReadOnlyList<PackageIdentity> identities);
         Task<PackageEntity> GetPackageAsync(string id, string version);
+        Task<IReadOnlyList<PackageEntity>> GetPackagesWithDependenciesAsync(IReadOnlyList<PackageIdentity> identities);
         Task<IReadOnlyList<PackageCommit>> GetPackageCommitsAsync(DateTimeOffset start, DateTimeOffset end);
         Task SetDeletedPackagesAsUnlistedInV2Async(IEnumerable<CatalogEntry> entries);
     }

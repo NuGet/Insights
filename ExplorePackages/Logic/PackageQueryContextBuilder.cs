@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+﻿using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using NuGet.Common;
 using NuGet.Versioning;
@@ -10,20 +7,20 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class PackageQueryContextBuilder
     {
-        private readonly PackagePathProvider _pathProvider;
+        private readonly NuspecProvider _nuspecProvider;
         private readonly PackageService _packageService;
         private readonly GalleryConsistencyService _galleryConsistencyService;
         private readonly ExplorePackagesSettings _settings;
         private readonly ILogger _log;
 
         public PackageQueryContextBuilder(
-            PackagePathProvider pathProvider,
+            NuspecProvider nuspecProvider,
             PackageService packageService,
             GalleryConsistencyService galleryConsistencyService,
             ExplorePackagesSettings settings,
             ILogger log)
         {
-            _pathProvider = pathProvider;
+            _nuspecProvider = nuspecProvider;
             _packageService = packageService;
             _galleryConsistencyService = galleryConsistencyService;
             _settings = settings;
@@ -113,37 +110,14 @@ namespace Knapcode.ExplorePackages.Logic
 
         private NuspecQueryContext GetNuspecQueryContext(PackageEntity package)
         {
-            var path = _pathProvider.GetLatestNuspecPath(package.PackageRegistration.Id, package.Version);
-            var exists = false;
-            XDocument document = null;
-            try
-            {
-                if (File.Exists(path))
-                {
-                    exists = true;
-                    using (var stream = File.OpenRead(path))
-                    {
-                        document = XmlUtility.LoadXml(stream);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                _log.LogError($"Could not parse .nuspec for {package.PackageRegistration} {package.Version}: {path}"
-                    + Environment.NewLine
-                    + "  "
-                    + e.Message);
+            var nuspecContext = _nuspecProvider.GetNuspec(package.PackageRegistration.Id, package.Version);
 
-                throw;
+            if (!nuspecContext.Exists && !package.CatalogPackage.Deleted)
+            {
+                _log.LogWarning($"Could not find .nuspec for {package.PackageRegistration} {package.Version}: {nuspecContext.Path}");
             }
 
-            if (!exists && !package.CatalogPackage.Deleted)
-            {
-                _log.LogWarning($"Could not find .nuspec for {package.PackageRegistration} {package.Version}: {path}");
-            }
-
-            return new NuspecQueryContext(path, exists, document);
+            return nuspecContext;
         }
-
     }
 }

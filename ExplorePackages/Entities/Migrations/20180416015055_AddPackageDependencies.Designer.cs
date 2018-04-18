@@ -10,9 +10,10 @@ using System;
 namespace Knapcode.ExplorePackages.Entities.Migrations
 {
     [DbContext(typeof(EntityContext))]
-    partial class EntityContextModelSnapshot : ModelSnapshot
+    [Migration("20180416015055_AddPackageDependencies")]
+    partial class AddPackageDependencies
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

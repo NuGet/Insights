@@ -11,11 +11,11 @@ namespace Knapcode.ExplorePackages.Logic
         
         public bool IsMatch(XDocument nuspec)
         {
-            var orignalVersion = NuspecUtility.GetOriginalVersion(nuspec);
-            if (NuGetVersion.TryParse(orignalVersion, out var parsedVersion))
+            var originalVersion = NuspecUtility.GetOriginalVersion(nuspec);
+            if (NuGetVersion.TryParse(originalVersion, out var parsedVersion))
             {
                 var normalizedVersion = parsedVersion.ToFullString();
-                return !StringComparer.OrdinalIgnoreCase.Equals(orignalVersion, normalizedVersion);
+                return !StringComparer.OrdinalIgnoreCase.Equals(originalVersion, normalizedVersion);
             }
 
             return false;

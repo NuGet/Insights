@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -46,6 +45,20 @@ namespace Knapcode.ExplorePackages.Logic
         {
             _enumerator = enumerator;
             _log = log;
+        }
+
+        public async Task<IReadOnlyDictionary<string, PackageRegistrationEntity>> AddPackageRegistrationsAsync(IEnumerable<string> ids)
+        {
+            using (var entityContext = new EntityContext())
+            {
+                var registrations = await AddPackageRegistrationsAsync(
+                    entityContext,
+                    ids);
+
+                await entityContext.SaveChangesAsync();
+
+                return registrations;
+            }
         }
 
         public async Task<PackageEntity> GetPackageAsync(string id, string version)
@@ -502,6 +515,35 @@ namespace Knapcode.ExplorePackages.Logic
                 _log.LogInformation($"Committed {changeCount} changes. {commitStopwatch.ElapsedMilliseconds}ms");
             }
         }
+
+        public async Task<IReadOnlyList<PackageEntity>> GetPackagesWithDependenciesAsync(IReadOnlyList<PackageIdentity> identities)
+        {
+            using (var entityContext = new EntityContext())
+            {
+                var identityValues = identities
+                    .Select(x => x.Value)
+                    .ToList();
+
+                var packages = await entityContext
+                    .Packages
+                    .Include(x => x.PackageDependencies)
+                    .Where(x => identityValues.Contains(x.Identity))
+                    .ToListAsync();
+
+                var missingIdentityValues = identityValues
+                    .Except(packages.Select(x => x.Identity), StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(x => x);
+
+                if (missingIdentityValues.Any())
+                {
+                    _log.LogError($"The following package identities do not exist: {missingIdentityValues}");
+                    throw new InvalidOperationException("Some packages do not exist.");
+                }
+
+                return packages;
+            }
+        }
+
 
         /// <summary>
         /// Adds the provided catalog entries to the database. Catalog entries are processed in the order provided.
