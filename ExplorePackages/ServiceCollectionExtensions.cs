@@ -90,11 +90,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<MZipFormat>();
 
             serviceCollection.AddTransient(x => settings.Clone());
-            serviceCollection.AddTransient<PackageQueryProcessor>();
-            serviceCollection.AddTransient<CatalogToDatabaseProcessor>();
-            serviceCollection.AddTransient<CatalogToNuspecsProcessor>();
             serviceCollection.AddTransient<NuspecDownloader>();
-            serviceCollection.AddTransient<MZipStore>();
             serviceCollection.AddTransient<RemoteCursorService>();
             serviceCollection.AddTransient<IPortTester, PortTester>();
             serviceCollection.AddTransient<IPortDiscoverer, SimplePortDiscoverer>();
@@ -104,9 +100,15 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<IProgressReport, NullProgressReport>();
             serviceCollection.AddTransient<LatestV2PackageFetcher>();
             serviceCollection.AddTransient<LatestCatalogCommitFetcher>();
+
+            serviceCollection.AddTransient<MZipStore>();
+            serviceCollection.AddTransient<PackageQueryProcessor>();
+            serviceCollection.AddTransient<CatalogToDatabaseProcessor>();
+            serviceCollection.AddTransient<CatalogToNuspecsProcessor>();
             serviceCollection.AddTransient<V2ToDatabaseProcessor>();
             serviceCollection.AddTransient<PackageDownloadsToDatabaseProcessor>();
             serviceCollection.AddTransient<MZipCollector>();
+            serviceCollection.AddTransient<DependenciesToDatabaseProcessor>();
 
             serviceCollection.AddTransient<PackageCommitEnumerator>();
             serviceCollection.AddTransient<CursorService>();
@@ -117,6 +119,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<CatalogService>();
             serviceCollection.AddTransient<PackageDependencyService>();
             serviceCollection.AddTransient<NuspecProvider>();
+            serviceCollection.AddTransient<PackageCommitCollector>();
 
             serviceCollection.AddTransient<V2Parser>();
             serviceCollection.AddSingleton<ServiceIndexCache>();

@@ -133,7 +133,11 @@ namespace Knapcode.ExplorePackages.Logic
 
             foreach (var group in package.DependencyGroups.Groups)
             {
-                originalValueToFramework.TryGetValue(group.TargetFramework, out var framework);
+                FrameworkEntity framework = null;
+                if (!string.IsNullOrEmpty(group.TargetFramework))
+                {
+                    originalValueToFramework.TryGetValue(group.TargetFramework, out framework);
+                }
 
                 InitializePackageDependencies(
                     output,
