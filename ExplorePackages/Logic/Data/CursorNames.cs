@@ -17,6 +17,7 @@
         public const string V2ToDatabaseLastEdited = "V2ToDatabaseLastEdited";
         public const string MZip = "MZip";
         public const string MZipToDatabase = "MZipToDatabase";
+        public const string DependenciesToDatabase = "DependenciesToDatabase";
 
         public const string ReprocessPackageQueries = "ReprocessPackageQueries";
 

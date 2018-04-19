@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="CommandExecutor.cs" />
     <Compile Include="Commands\ArgsUtility.cs" />
+    <Compile Include="Commands\DependenciesToDatabaseCommand.cs" />
     <Compile Include="Commands\MZipCommand.cs" />
     <Compile Include="Commands\DownloadsToDatabaseCommand.cs" />
     <Compile Include="Commands\MZipToDatabaseCommand.cs" />
