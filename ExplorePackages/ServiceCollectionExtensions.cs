@@ -109,6 +109,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<PackageDownloadsToDatabaseProcessor>();
             serviceCollection.AddTransient<MZipCollector>();
             serviceCollection.AddTransient<DependenciesToDatabaseProcessor>();
+            serviceCollection.AddTransient<MZipToDatabaseProcessor>();
 
             serviceCollection.AddTransient<PackageCommitEnumerator>();
             serviceCollection.AddTransient<CursorService>();

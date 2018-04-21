@@ -45,6 +45,7 @@
     <Compile Include="CommandExecutor.cs" />
     <Compile Include="Commands\ArgsUtility.cs" />
     <Compile Include="Commands\DependenciesToDatabaseCommand.cs" />
+    <Compile Include="Logic\MZipToDatabaseProcessor.cs" />
     <Compile Include="Logic\DependenciesToDatabaseProcessor.cs" />
     <Compile Include="Logic\IPackageCommitProcessor.cs" />
     <Compile Include="Commands\MZipCommand.cs" />

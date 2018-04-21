@@ -11,8 +11,8 @@ namespace Knapcode.ExplorePackages.Commands
         private readonly DependenciesToDatabaseProcessor _processor;
 
         public DependenciesToDatabaseCommand(
-            PackageCommitCollector collector,
-            DependenciesToDatabaseProcessor processor)
+            DependenciesToDatabaseProcessor processor,
+            PackageCommitCollector collector)
         {
             _collector = collector;
             _processor = processor;
