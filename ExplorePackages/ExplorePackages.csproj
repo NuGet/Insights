@@ -45,6 +45,10 @@
     <Compile Include="CommandExecutor.cs" />
     <Compile Include="Commands\ArgsUtility.cs" />
     <Compile Include="Commands\DependenciesToDatabaseCommand.cs" />
+    <Compile Include="Entities\Migrations\20180421171913_AddPackageDependencies.cs" />
+    <Compile Include="Entities\Migrations\20180421171913_AddPackageDependencies.designer.cs">
+      <DependentUpon>20180421171913_AddPackageDependencies.cs</DependentUpon>
+    </Compile>
     <Compile Include="Logic\MZipProcessor.cs" />
     <Compile Include="Logic\MZipToDatabaseProcessor.cs" />
     <Compile Include="Logic\DependenciesToDatabaseProcessor.cs" />
@@ -82,10 +86,6 @@
     <Compile Include="Entities\Migrations\20180223161313_AddCatalogLeafRelativePath.cs" />
     <Compile Include="Entities\Migrations\20180223161313_AddCatalogLeafRelativePath.designer.cs">
       <DependentUpon>20180223161313_AddCatalogLeafRelativePath.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Entities\Migrations\20180416015055_AddPackageDependencies.cs" />
-    <Compile Include="Entities\Migrations\20180416015055_AddPackageDependencies.designer.cs">
-      <DependentUpon>20180416015055_AddPackageDependencies.cs</DependentUpon>
     </Compile>
     <Compile Include="Entities\PackageEntryEntity.cs" />
     <Compile Include="Logic\CatalogService.cs" />

@@ -32,7 +32,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations
                     FrameworkKey = table.Column<long>(nullable: true),
                     OriginalVersionRange = table.Column<string>(nullable: true),
                     ParentPackageKey = table.Column<long>(nullable: false),
-                    VersionRange = table.Column<string>(nullable: false)
+                    VersionRange = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {

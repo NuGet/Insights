@@ -228,8 +228,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations
 
                     b.Property<long>("ParentPackageKey");
 
-                    b.Property<string>("VersionRange")
-                        .IsRequired();
+                    b.Property<string>("VersionRange");
 
                     b.HasKey("PackageDependencyKey");
 

@@ -10,7 +10,7 @@ using System;
 namespace Knapcode.ExplorePackages.Entities.Migrations
 {
     [DbContext(typeof(EntityContext))]
-    [Migration("20180416015055_AddPackageDependencies")]
+    [Migration("20180421171913_AddPackageDependencies")]
     partial class AddPackageDependencies
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -229,8 +229,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations
 
                     b.Property<long>("ParentPackageKey");
 
-                    b.Property<string>("VersionRange")
-                        .IsRequired();
+                    b.Property<string>("VersionRange");
 
                     b.HasKey("PackageDependencyKey");
 

@@ -309,8 +309,7 @@ namespace Knapcode.ExplorePackages.Entities
                 .HasKey(x => x.PackageDependencyKey);
             modelBuilder
                 .Entity<PackageDependencyEntity>()
-                .Property(x => x.VersionRange)
-                .IsRequired();
+                .Property(x => x.VersionRange);
             modelBuilder
                 .Entity<PackageDependencyEntity>()
                 .Property(x => x.OriginalVersionRange);
