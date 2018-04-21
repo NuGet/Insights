@@ -45,6 +45,7 @@
     <Compile Include="CommandExecutor.cs" />
     <Compile Include="Commands\ArgsUtility.cs" />
     <Compile Include="Commands\DependenciesToDatabaseCommand.cs" />
+    <Compile Include="Logic\MZipProcessor.cs" />
     <Compile Include="Logic\MZipToDatabaseProcessor.cs" />
     <Compile Include="Logic\DependenciesToDatabaseProcessor.cs" />
     <Compile Include="Logic\IPackageCommitProcessor.cs" />
@@ -134,7 +135,6 @@
     <Compile Include="Logic\Consistency\Services\GalleryConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Services\IConsistencyService.cs" />
     <Compile Include="Logic\Consistency\Reports\PackageConsistencyReport.cs" />
-    <Compile Include="Logic\MZipCollector.cs" />
     <Compile Include="Logic\Data\Dependency.cs" />
     <Compile Include="Logic\Data\DependencyGroup.cs" />
     <Compile Include="Logic\Data\DependencyGroups.cs" />
@@ -217,6 +217,7 @@
     <Compile Include="Logic\Consistency\Services\RegistrationConsistencyService.cs" />
     <Compile Include="Logic\PackageQueryContextBuilder.cs" />
     <Compile Include="Logic\PartialProgressReport.cs" />
+    <Compile Include="Logic\ProcessMode.cs" />
     <Compile Include="Logic\Protocol\AutocompleteClient.cs" />
     <Compile Include="Logic\Protocol\AutocompleteIdResults.cs" />
     <Compile Include="Logic\Protocol\AutocompleteVersionResults.cs" />

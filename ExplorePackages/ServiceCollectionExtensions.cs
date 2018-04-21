@@ -107,7 +107,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<CatalogToNuspecsProcessor>();
             serviceCollection.AddTransient<V2ToDatabaseProcessor>();
             serviceCollection.AddTransient<PackageDownloadsToDatabaseProcessor>();
-            serviceCollection.AddTransient<MZipCollector>();
+            serviceCollection.AddTransient<MZipProcessor>();
             serviceCollection.AddTransient<DependenciesToDatabaseProcessor>();
             serviceCollection.AddTransient<MZipToDatabaseProcessor>();
 

@@ -24,7 +24,7 @@ namespace Knapcode.ExplorePackages.Commands
 
         public async Task ExecuteAsync(CancellationToken token)
         {
-            await _collector.ProcessAsync(_processor, token);
+            await _collector.ProcessAsync(_processor, ProcessMode.Sequentially, token);
         }
 
         public bool IsDatabaseRequired()

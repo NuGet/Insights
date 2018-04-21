@@ -7,11 +7,15 @@ namespace Knapcode.ExplorePackages.Commands
 {
     public class MZipCommand : ICommand
     {
-        private readonly MZipCollector _processor;
+        private readonly MZipProcessor _processor;
+        private readonly PackageCommitCollector _collector;
 
-        public MZipCommand(MZipCollector processor)
+        public MZipCommand(
+            MZipProcessor processor,
+            PackageCommitCollector collector)
         {
             _processor = processor;
+            _collector = collector;
         }
 
         public void Configure(CommandLineApplication app)
@@ -20,7 +24,7 @@ namespace Knapcode.ExplorePackages.Commands
 
         public async Task ExecuteAsync(CancellationToken token)
         {
-            await _processor.ExecuteAsync(token);
+            await _collector.ProcessAsync(_processor, ProcessMode.TaskQueue, token);
         }
 
         public bool IsDatabaseRequired()

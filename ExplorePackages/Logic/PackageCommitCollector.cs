@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Support;
 using NuGet.Common;
 
 namespace Knapcode.ExplorePackages.Logic
@@ -22,8 +24,11 @@ namespace Knapcode.ExplorePackages.Logic
             _packageService = packageService;
             _log = log;
         }
-
-        public async Task ProcessAsync<T>(IPackageCommitProcessor<T> processor, CancellationToken token)
+        
+        public async Task ProcessAsync<T>(
+            IPackageCommitProcessor<T> processor,
+            ProcessMode processMode,
+            CancellationToken token)
         {
             var start = await _cursorService.GetValueAsync(processor.CursorName);
             var end = await _cursorService.GetMinimumAsync(processor.DependencyCursorNames);
@@ -47,30 +52,16 @@ namespace Knapcode.ExplorePackages.Logic
                     _log.LogInformation("No more commits were found within the bounds.");
                 }
 
-
-                var stopwatch = Stopwatch.StartNew();
-
-                var batch = new List<T>();
-                foreach (var commit in commits)
+                switch (processMode)
                 {
-                    foreach (var package in commit.Packages)
-                    {
-                        var item = await processor.InitializeItemAsync(package, token);
-                        if (item == null)
-                        {
-                            continue;
-                        }
-
-                        batch.Add(item);
-                    }
-                }
-
-                if (batch.Any())
-                {
-                    _log.LogInformation($"Initialized batch of {batch.Count} packages. {stopwatch.ElapsedMilliseconds}ms");
-                    stopwatch.Restart();
-                    await processor.ProcessBatchAsync(batch);
-                    _log.LogInformation($"Done processing batch of {batch.Count} packages. {stopwatch.ElapsedMilliseconds}ms");
+                    case ProcessMode.Sequentially:
+                        await ProcessSequentiallyAsync(processor, commits, token);
+                        break;
+                    case ProcessMode.TaskQueue:
+                        await ProcessTaskQueueAsync(processor, commits, token);
+                        break;
+                    default:
+                        throw new NotImplementedException();
                 }
 
                 if (commits.Any())
@@ -80,6 +71,60 @@ namespace Knapcode.ExplorePackages.Logic
                 }
             }
             while (commitCount > 0);
+        }
+
+        private async Task ProcessTaskQueueAsync<T>(
+            IPackageCommitProcessor<T> processor,
+            IReadOnlyList<PackageCommit> commits,
+            CancellationToken token)
+        {
+            var taskQueue = new TaskQueue<IReadOnlyList<T>>(
+                workerCount: 32,
+                workAsync: x => processor.ProcessBatchAsync(x));
+
+            taskQueue.Start();
+
+            foreach (var commit in commits)
+            {
+                foreach (var package in commit.Packages)
+                {
+                    var item = await processor.InitializeItemAsync(package, token);
+                    taskQueue.Enqueue(new List<T> { item });
+                }
+            }
+
+            await taskQueue.CompleteAsync();
+        }
+
+        private async Task ProcessSequentiallyAsync<T>(
+            IPackageCommitProcessor<T> processor,
+            IReadOnlyList<PackageCommit> commits,
+            CancellationToken token)
+        {
+            var stopwatch = Stopwatch.StartNew();
+
+            var batch = new List<T>();
+            foreach (var commit in commits)
+            {
+                foreach (var package in commit.Packages)
+                {
+                    var item = await processor.InitializeItemAsync(package, token);
+                    if (item == null)
+                    {
+                        continue;
+                    }
+
+                    batch.Add(item);
+                }
+            }
+
+            if (batch.Any())
+            {
+                _log.LogInformation($"Initialized batch of {batch.Count} packages. {stopwatch.ElapsedMilliseconds}ms");
+                stopwatch.Restart();
+                await processor.ProcessBatchAsync(batch);
+                _log.LogInformation($"Done processing batch of {batch.Count} packages. {stopwatch.ElapsedMilliseconds}ms");
+            }
         }
     }
 }
