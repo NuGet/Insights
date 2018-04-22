@@ -108,13 +108,20 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 foreach (var package in commit.Packages)
                 {
-                    var item = await processor.InitializeItemAsync(package, token);
-                    if (item == null)
+                    try
                     {
-                        continue;
-                    }
+                        var item = await processor.InitializeItemAsync(package, token);
+                        if (item == null)
+                        {
+                            continue;
+                        }
 
-                    batch.Add(item);
+                        batch.Add(item);
+                    }
+                    catch
+                    {
+                        throw;
+                    }
                 }
             }
 

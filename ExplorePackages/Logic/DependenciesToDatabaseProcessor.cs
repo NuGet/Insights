@@ -31,7 +31,7 @@ namespace Knapcode.ExplorePackages.Logic
             var nuspec = _nuspecProvider.GetNuspec(package.PackageRegistration.Id, package.Version);
             if (nuspec.Document == null)
             {
-                return null;
+                return Task.FromResult<PackageDependencyGroups>(null);
             }
 
             var identity = new PackageIdentity(package.PackageRegistration.Id, package.Version);

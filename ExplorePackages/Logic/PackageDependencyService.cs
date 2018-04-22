@@ -122,7 +122,7 @@ namespace Knapcode.ExplorePackages.Logic
             IReadOnlyDictionary<string, FrameworkEntity> originalValueToFramework,
             IReadOnlyDictionary<string, PackageRegistrationEntity> idToPackageRegistration)
         {
-            var output = new List<PackageDependencyEntity>();
+            var output = new Dictionary<UniqueDependency, PackageDependencyEntity>();
 
             InitializePackageDependencies(
                 output,
@@ -147,11 +147,11 @@ namespace Knapcode.ExplorePackages.Logic
                     framework);
             }
 
-            return output;
+            return output.Values.ToList();
         }
 
         private void InitializePackageDependencies(
-            List<PackageDependencyEntity> output,
+            Dictionary<UniqueDependency, PackageDependencyEntity> output,
             IReadOnlyList<Dependency> dependencies,
             long packageKey,
             IReadOnlyDictionary<string, PackageRegistrationEntity> idToPackageRegistration,
@@ -169,7 +169,7 @@ namespace Knapcode.ExplorePackages.Logic
         }
 
         private void InitializePackageDependency(
-            List<PackageDependencyEntity> output,
+            Dictionary<UniqueDependency, PackageDependencyEntity> output,
             Dependency dependency,
             long packageKey,
             IReadOnlyDictionary<string, PackageRegistrationEntity> idToPackageRegistration,
@@ -193,7 +193,21 @@ namespace Knapcode.ExplorePackages.Logic
                 DependencyPackageRegistrationKey = packageRegistration.PackageRegistrationKey,
             };
 
-            output.Add(dependencyEntity);
+            var key = new UniqueDependency(
+                dependencyEntity.DependencyPackageRegistrationKey,
+                dependencyEntity.FrameworkKey);
+
+            if (!output.TryGetValue(key, out var existingDependencyEntity))
+            {
+                output.Add(key, dependencyEntity);
+            }
+            else
+            {
+                _log.LogWarning(
+                    $"Dependency {dependency.Id} (framework '{framework.OriginalValue}') is a duplicate. The " +
+                    $"version range that will be used is '{existingDependencyEntity.OriginalVersionRange}'. The " +
+                    $"version range '{dependency.Version}' will be skipped.");
+            }
         }
 
         private async Task<IReadOnlyDictionary<string, FrameworkEntity>> AddOrUpdateFrameworksAsync(IReadOnlyList<ParsedFramework> parsedFrameworks)
@@ -251,6 +265,42 @@ namespace Knapcode.ExplorePackages.Logic
 
             public string Value { get; }
             public string OriginalValue { get; }
+        }
+
+        private class UniqueDependency : IEquatable<UniqueDependency>
+        {
+            public UniqueDependency(long dependencyPackageRegistrationKey, long? frameworkKey)
+            {
+                DependencyPackageRegistrationKey = dependencyPackageRegistrationKey;
+                FrameworkKey = frameworkKey;
+            }
+
+            public long DependencyPackageRegistrationKey { get; }
+            public long? FrameworkKey { get; }
+
+            public override bool Equals(object obj)
+            {
+                return Equals(obj as UniqueDependency);
+            }
+
+            public bool Equals(UniqueDependency other)
+            {
+                if (other == null)
+                {
+                    return false;
+                }
+
+                return DependencyPackageRegistrationKey == other.DependencyPackageRegistrationKey
+                    && FrameworkKey == other.FrameworkKey;
+            }
+
+            public override int GetHashCode()
+            {
+                var hashCode = 2107211798;
+                hashCode = hashCode * -1521134295 + DependencyPackageRegistrationKey.GetHashCode();
+                hashCode = hashCode * -1521134295 + EqualityComparer<long?>.Default.GetHashCode(FrameworkKey);
+                return hashCode;
+            }
         }
     }
 }
