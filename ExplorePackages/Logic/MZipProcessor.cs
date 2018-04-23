@@ -24,6 +24,11 @@ namespace Knapcode.ExplorePackages.Logic
 
         public Task<PackageEntity> InitializeItemAsync(PackageEntity package, CancellationToken token)
         {
+            if (package.CatalogPackage.Deleted)
+            {
+                return Task.FromResult<PackageEntity>(null);
+            }
+
             return Task.FromResult(package);
         }
 

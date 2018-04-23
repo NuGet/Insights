@@ -89,6 +89,11 @@ namespace Knapcode.ExplorePackages.Logic
                 foreach (var package in commit.Packages)
                 {
                     var item = await processor.InitializeItemAsync(package, token);
+                    if (item == null)
+                    {
+                        continue;
+                    }
+
                     taskQueue.Enqueue(new List<T> { item });
                 }
             }
