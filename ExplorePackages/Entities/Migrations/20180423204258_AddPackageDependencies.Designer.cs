@@ -10,7 +10,7 @@ using System;
 namespace Knapcode.ExplorePackages.Entities.Migrations
 {
     [DbContext(typeof(EntityContext))]
-    [Migration("20180421171913_AddPackageDependencies")]
+    [Migration("20180423204258_AddPackageDependencies")]
     partial class AddPackageDependencies
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -225,6 +225,8 @@ namespace Knapcode.ExplorePackages.Entities.Migrations
 
                     b.Property<long?>("FrameworkKey");
 
+                    b.Property<long?>("MinimumDependencyPackageKey");
+
                     b.Property<string>("OriginalVersionRange");
 
                     b.Property<long>("ParentPackageKey");
@@ -236,6 +238,8 @@ namespace Knapcode.ExplorePackages.Entities.Migrations
                     b.HasIndex("DependencyPackageRegistrationKey");
 
                     b.HasIndex("FrameworkKey");
+
+                    b.HasIndex("MinimumDependencyPackageKey");
 
                     b.HasIndex("ParentPackageKey", "DependencyPackageRegistrationKey", "FrameworkKey")
                         .IsUnique();
@@ -464,6 +468,10 @@ namespace Knapcode.ExplorePackages.Entities.Migrations
                     b.HasOne("Knapcode.ExplorePackages.Entities.FrameworkEntity", "Framework")
                         .WithMany("PackageDependencies")
                         .HasForeignKey("FrameworkKey");
+
+                    b.HasOne("Knapcode.ExplorePackages.Entities.PackageEntity", "MinimumDependencyPackage")
+                        .WithMany("MinimumPackageDependents")
+                        .HasForeignKey("MinimumDependencyPackageKey");
 
                     b.HasOne("Knapcode.ExplorePackages.Entities.PackageEntity", "ParentPackage")
                         .WithMany("PackageDependencies")

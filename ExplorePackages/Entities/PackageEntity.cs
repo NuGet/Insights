@@ -17,5 +17,6 @@ namespace Knapcode.ExplorePackages.Entities
 
         public List<PackageQueryMatchEntity> PackageQueryMatches { get; set; }
         public List<PackageDependencyEntity> PackageDependencies { get; set; }
+        public List<PackageDependencyEntity> MinimumPackageDependents { get; set; }
     }
 }

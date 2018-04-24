@@ -45,9 +45,9 @@
     <Compile Include="CommandExecutor.cs" />
     <Compile Include="Commands\ArgsUtility.cs" />
     <Compile Include="Commands\DependenciesToDatabaseCommand.cs" />
-    <Compile Include="Entities\Migrations\20180421171913_AddPackageDependencies.cs" />
-    <Compile Include="Entities\Migrations\20180421171913_AddPackageDependencies.designer.cs">
-      <DependentUpon>20180421171913_AddPackageDependencies.cs</DependentUpon>
+    <Compile Include="Entities\Migrations\20180423204258_AddPackageDependencies.cs" />
+    <Compile Include="Entities\Migrations\20180423204258_AddPackageDependencies.designer.cs">
+      <DependentUpon>20180423204258_AddPackageDependencies.cs</DependentUpon>
     </Compile>
     <Compile Include="Logic\MZipProcessor.cs" />
     <Compile Include="Logic\MZipToDatabaseProcessor.cs" />

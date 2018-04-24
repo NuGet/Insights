@@ -30,6 +30,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     DependencyPackageRegistrationKey = table.Column<long>(nullable: false),
                     FrameworkKey = table.Column<long>(nullable: true),
+                    MinimumDependencyPackageKey = table.Column<long>(nullable: true),
                     OriginalVersionRange = table.Column<string>(nullable: true),
                     ParentPackageKey = table.Column<long>(nullable: false),
                     VersionRange = table.Column<string>(nullable: true)
@@ -48,6 +49,12 @@ namespace Knapcode.ExplorePackages.Entities.Migrations
                         column: x => x.FrameworkKey,
                         principalTable: "Frameworks",
                         principalColumn: "FrameworkKey",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_PackageDependencies_Packages_MinimumDependencyPackageKey",
+                        column: x => x.MinimumDependencyPackageKey,
+                        principalTable: "Packages",
+                        principalColumn: "PackageKey",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_PackageDependencies_Packages_ParentPackageKey",
@@ -72,6 +79,11 @@ namespace Knapcode.ExplorePackages.Entities.Migrations
                 name: "IX_PackageDependencies_FrameworkKey",
                 table: "PackageDependencies",
                 column: "FrameworkKey");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PackageDependencies_MinimumDependencyPackageKey",
+                table: "PackageDependencies",
+                column: "MinimumDependencyPackageKey");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PackageDependencies_ParentPackageKey_DependencyPackageRegistrationKey_FrameworkKey",

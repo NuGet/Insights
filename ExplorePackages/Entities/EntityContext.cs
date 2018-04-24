@@ -316,7 +316,7 @@ namespace Knapcode.ExplorePackages.Entities
             modelBuilder
                 .Entity<PackageDependencyEntity>()
                 .HasOne(x => x.DependencyPackageRegistration)
-                .WithMany(x => x.PackageDependencies)
+                .WithMany(x => x.PackageDependents)
                 .HasForeignKey(x => x.DependencyPackageRegistrationKey);
             modelBuilder
                 .Entity<PackageDependencyEntity>()
@@ -332,6 +332,11 @@ namespace Knapcode.ExplorePackages.Entities
                 .Entity<PackageDependencyEntity>()
                 .HasIndex(x => new { x.ParentPackageKey, x.DependencyPackageRegistrationKey, x.FrameworkKey })
                 .IsUnique();
+            modelBuilder
+                .Entity<PackageDependencyEntity>()
+                .HasOne(x => x.MinimumDependencyPackage)
+                .WithMany(x => x.MinimumPackageDependents)
+                .HasForeignKey(x => x.MinimumDependencyPackageKey);
         }
     }
 }

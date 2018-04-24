@@ -8,7 +8,6 @@ namespace Knapcode.ExplorePackages.Entities
         public string Id { get; set; }
 
         public List<PackageEntity> Packages { get; set; }
-
-        public List<PackageDependencyEntity> PackageDependencies { get; set; }
+        public List<PackageDependencyEntity> PackageDependents { get; set; }
     }
 }
