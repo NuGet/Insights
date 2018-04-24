@@ -23,8 +23,9 @@ namespace Knapcode.ExplorePackages.Logic
             Assert.Equal(
                 new[]
                 {
-                    "created", "dependencyGroups", "lastEdited", "listed", "packageEntries", "packageHash",
-                    "packageHashAlgorithm", "packageSize", "published", "supportedFrameworks", "verbatimVersion"
+                    "created", "dependencyGroups", "isPrerelease", "lastEdited", "listed", "packageEntries",
+                    "packageHash", "packageHashAlgorithm", "packageSize", "published", "supportedFrameworks",
+                    "verbatimVersion",
                 },
                 output);
         }
