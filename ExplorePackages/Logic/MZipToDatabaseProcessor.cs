@@ -28,7 +28,27 @@ namespace Knapcode.ExplorePackages.Logic
             CursorNames.MZip,
         };
 
-        public async Task<PackageArchiveMetadata> InitializeItemAsync(PackageEntity package, CancellationToken token)
+        public int BatchSize => 5000;
+
+        public async Task<IReadOnlyList<PackageArchiveMetadata>> InitializeItemsAsync(IReadOnlyList<PackageEntity> packages, CancellationToken token)
+        {
+            var output = new List<PackageArchiveMetadata>();
+
+            foreach (var package in packages)
+            {
+                var item = await InitializeItemAsync(package, token);
+                if (item == null)
+                {
+                    continue;
+                }
+
+                output.Add(item);
+            }
+
+            return output;
+        }
+
+        private async Task<PackageArchiveMetadata> InitializeItemAsync(PackageEntity package, CancellationToken token)
         {
             // Read the .zip directory.
             ZipDirectory zipDirectory;

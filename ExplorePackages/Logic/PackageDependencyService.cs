@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Common;
+using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -18,6 +19,24 @@ namespace Knapcode.ExplorePackages.Logic
         {
             _packageService = packageService;
             _log = log;
+        }
+
+        public async Task<IReadOnlyList<PackageEntity>> GetDependentPackagesAsync(IReadOnlyList<long> packageRegistrationKeys)
+        {
+            using (var entityContext = new EntityContext())
+            {
+                var dependents = await entityContext
+                    .PackageDependencies
+                    .Include(x => x.DependencyPackageRegistration)
+                    .Include(x => x.ParentPackage)
+                    .ThenInclude(x => x.PackageRegistration)
+                    .Where(x => packageRegistrationKeys.Contains(x.DependencyPackageRegistration.PackageRegistrationKey))
+                    .ToListAsync();
+
+                return dependents
+                    .Select(x => x.ParentPackage)
+                    .ToList();
+            }
         }
 
         public async Task AddDependenciesAsync(IReadOnlyList<PackageDependencyGroups> packages)
@@ -47,7 +66,7 @@ namespace Knapcode.ExplorePackages.Logic
                 .Where(x => StrictPackageIdValidator.IsValid(x))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
-            var idToPackageRegistration = await _packageService.AddPackageRegistrationsAsync(ids);
+            var idToPackageRegistration = await _packageService.AddPackageRegistrationsAsync(ids, includePackages: true);
 
             using (var entityContext = new EntityContext())
             {
@@ -85,10 +104,13 @@ namespace Knapcode.ExplorePackages.Logic
                         {
                             // Existing dependency.
                             var existing = existingDependencies[i];
+                            entityContext.PackageDependencies.Attach(existing);
                             existing.DependencyPackageRegistrationKey = latest.DependencyPackageRegistrationKey;
                             existing.FrameworkKey = latest.FrameworkKey;
                             existing.OriginalVersionRange = latest.OriginalVersionRange;
                             existing.VersionRange = latest.VersionRange;
+                            existing.MinimumDependencyPackageKey = latest.MinimumDependencyPackageKey;
+                            existing.BestDependencyPackageKey = latest.BestDependencyPackageKey;
                         }
                     }
 
@@ -97,6 +119,7 @@ namespace Knapcode.ExplorePackages.Logic
                         // Dependencies removed from the end.
                         var existing = existingDependencies[i];
                         existingDependencies.RemoveAt(i);
+                        entityContext.PackageDependencies.Attach(existing);
                         entityContext.PackageDependencies.Remove(existing);
                     }
                 }
@@ -184,6 +207,22 @@ namespace Knapcode.ExplorePackages.Logic
                 return;
             }
 
+            var parsedVersionRange = dependency.ParsedVersionRange ?? VersionRange.All;
+            var versionToPackage = packageRegistration
+                .Packages
+                .ToDictionary(x => NuGetVersion.Parse(x.Version));
+
+            var minimumMatch = versionToPackage
+                .Keys
+                .Where(x => parsedVersionRange.Satisfies(x))
+                .OrderBy(x => x)
+                .FirstOrDefault();
+            var bestMatch = parsedVersionRange
+                .FindBestMatch(versionToPackage.Keys);
+
+            var minimumDependentPackageKey = minimumMatch != null ? versionToPackage[minimumMatch].PackageKey : (long?)null;
+            var bestDependentPackageKey = bestMatch != null ? versionToPackage[bestMatch].PackageKey : (long?)null;
+
             var dependencyEntity = new PackageDependencyEntity
             {
                 ParentPackageKey = packageKey,
@@ -191,6 +230,8 @@ namespace Knapcode.ExplorePackages.Logic
                 OriginalVersionRange = dependency.Version,
                 VersionRange = dependency.ParsedVersionRange?.ToNormalizedString(),
                 DependencyPackageRegistrationKey = packageRegistration.PackageRegistrationKey,
+                MinimumDependencyPackageKey = minimumDependentPackageKey,
+                BestDependencyPackageKey = bestDependentPackageKey,
             };
 
             var key = new UniqueDependency(

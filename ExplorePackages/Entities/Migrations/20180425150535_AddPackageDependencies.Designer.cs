@@ -10,14 +10,14 @@ using System;
 namespace Knapcode.ExplorePackages.Entities.Migrations
 {
     [DbContext(typeof(EntityContext))]
-    [Migration("20180423204258_AddPackageDependencies")]
+    [Migration("20180425150535_AddPackageDependencies")]
     partial class AddPackageDependencies
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.0.1-rtm-125");
+                .HasAnnotation("ProductVersion", "2.0.2-rtm-10011");
 
             modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CatalogCommitEntity", b =>
                 {
@@ -221,6 +221,8 @@ namespace Knapcode.ExplorePackages.Entities.Migrations
                     b.Property<long>("PackageDependencyKey")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<long?>("BestDependencyPackageKey");
+
                     b.Property<long>("DependencyPackageRegistrationKey");
 
                     b.Property<long?>("FrameworkKey");
@@ -234,6 +236,8 @@ namespace Knapcode.ExplorePackages.Entities.Migrations
                     b.Property<string>("VersionRange");
 
                     b.HasKey("PackageDependencyKey");
+
+                    b.HasIndex("BestDependencyPackageKey");
 
                     b.HasIndex("DependencyPackageRegistrationKey");
 
@@ -460,8 +464,12 @@ namespace Knapcode.ExplorePackages.Entities.Migrations
 
             modelBuilder.Entity("Knapcode.ExplorePackages.Entities.PackageDependencyEntity", b =>
                 {
+                    b.HasOne("Knapcode.ExplorePackages.Entities.PackageEntity", "BestDependencyPackage")
+                        .WithMany("BestPackageDependents")
+                        .HasForeignKey("BestDependencyPackageKey");
+
                     b.HasOne("Knapcode.ExplorePackages.Entities.PackageRegistrationEntity", "DependencyPackageRegistration")
-                        .WithMany("PackageDependencies")
+                        .WithMany("PackageDependents")
                         .HasForeignKey("DependencyPackageRegistrationKey")
                         .OnDelete(DeleteBehavior.Cascade);
 

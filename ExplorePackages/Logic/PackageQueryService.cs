@@ -60,7 +60,8 @@ namespace Knapcode.ExplorePackages.Logic
                         .PackageQueryMatches
                         .Any(pqm => queryNames.Contains(pqm.PackageQuery.Name))),
                 start,
-                end);
+                end,
+                batchSize: 5000);
         }
 
         private static async Task<PackageQueryEntity> GetQueryAsync(string queryName, EntityContext entityContext)

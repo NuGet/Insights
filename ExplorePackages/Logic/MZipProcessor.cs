@@ -22,14 +22,23 @@ namespace Knapcode.ExplorePackages.Logic
             CursorNames.CatalogToDatabase,
         };
 
-        public Task<PackageEntity> InitializeItemAsync(PackageEntity package, CancellationToken token)
+        public int BatchSize => 5000;
+
+        public Task<IReadOnlyList<PackageEntity>> InitializeItemsAsync(IReadOnlyList<PackageEntity> packages, CancellationToken token)
         {
-            if (package.CatalogPackage.Deleted)
+            var output = new List<PackageEntity>();
+
+            foreach (var package in packages)
             {
-                return Task.FromResult<PackageEntity>(null);
+                if (package.CatalogPackage.Deleted)
+                {
+                    continue;
+                }
+
+                output.Add(package);
             }
 
-            return Task.FromResult(package);
+            return Task.FromResult<IReadOnlyList<PackageEntity>>(output);
         }
 
         public async Task ProcessBatchAsync(IReadOnlyList<PackageEntity> batch)

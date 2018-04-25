@@ -14,20 +14,20 @@ namespace Knapcode.ExplorePackages.Logic
     {
         private readonly PackageQueryContextBuilder _contextBuilder;
         private readonly CursorService _cursorService;
-        private readonly PackageService _packageService;
+        private readonly PackageCommitEnumerator _packageCommitEnumerator;
         private readonly PackageQueryService _queryService;
         private readonly ILogger _log;
 
         public PackageQueryProcessor(
             PackageQueryContextBuilder contextBuilder,
             CursorService cursorService,
-            PackageService packageService,
+            PackageCommitEnumerator packageCommitEnumerator,
             PackageQueryService queryService,
             ILogger log)
         {
             _contextBuilder = contextBuilder;
             _cursorService = cursorService;
-            _packageService = packageService;
+            _packageCommitEnumerator = packageCommitEnumerator;
             _queryService = queryService;
             _log = log;
         }
@@ -71,7 +71,11 @@ namespace Knapcode.ExplorePackages.Logic
         {
             if (!reprocess)
             {
-                return await _packageService.GetPackageCommitsAsync(bounds.Start, bounds.End);
+                return await _packageCommitEnumerator.GetPackageCommitsAsync(
+                    x => x.Packages,
+                    bounds.Start,
+                    bounds.End,
+                    5000);
             }
             else
             {

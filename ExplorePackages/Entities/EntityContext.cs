@@ -337,6 +337,11 @@ namespace Knapcode.ExplorePackages.Entities
                 .HasOne(x => x.MinimumDependencyPackage)
                 .WithMany(x => x.MinimumPackageDependents)
                 .HasForeignKey(x => x.MinimumDependencyPackageKey);
+            modelBuilder
+                .Entity<PackageDependencyEntity>()
+                .HasOne(x => x.BestDependencyPackage)
+                .WithMany(x => x.BestPackageDependents)
+                .HasForeignKey(x => x.BestDependencyPackageKey);
         }
     }
 }

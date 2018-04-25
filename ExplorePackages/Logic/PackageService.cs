@@ -47,13 +47,16 @@ namespace Knapcode.ExplorePackages.Logic
             _log = log;
         }
 
-        public async Task<IReadOnlyDictionary<string, PackageRegistrationEntity>> AddPackageRegistrationsAsync(IEnumerable<string> ids)
+        public async Task<IReadOnlyDictionary<string, PackageRegistrationEntity>> AddPackageRegistrationsAsync(
+            IEnumerable<string> ids,
+            bool includePackages)
         {
             using (var entityContext = new EntityContext())
             {
                 var registrations = await AddPackageRegistrationsAsync(
                     entityContext,
-                    ids);
+                    ids,
+                    includePackages);
 
                 await entityContext.SaveChangesAsync();
 
@@ -90,29 +93,34 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
-        public Task<IReadOnlyList<PackageCommit>> GetPackageCommitsAsync(DateTimeOffset start, DateTimeOffset end)
-        {
-            return _enumerator.GetPackageCommitsAsync(
-                e => e.Packages,
-                start,
-                end);
-        }
-
         private async Task<IReadOnlyDictionary<string, PackageRegistrationEntity>> AddPackageRegistrationsAsync(
             EntityContext entityContext,
-            IEnumerable<string> ids)
+            IEnumerable<string> ids,
+            bool includePackages)
         {
             var idSet = new HashSet<string>(ids, StringComparer.OrdinalIgnoreCase);
 
-            var existingRegistrations = await entityContext
-                .PackageRegistrations
+            IQueryable<PackageRegistrationEntity> existingRegistrationsQueryable = entityContext
+                .PackageRegistrations;
+
+            if (includePackages)
+            {
+                existingRegistrationsQueryable = existingRegistrationsQueryable
+                    .Include(x => x.Packages);
+            }
+
+            var existingRegistrations = await existingRegistrationsQueryable
                 .Where(x => idSet.Contains(x.Id))
                 .ToListAsync();
 
             idSet.ExceptWith(existingRegistrations.Select(x => x.Id));
 
             var newRegistrations = idSet
-                .Select(x => new PackageRegistrationEntity { Id = x })
+                .Select(x => new PackageRegistrationEntity
+                {
+                    Id = x,
+                    Packages = new List<PackageEntity>(),
+                })
                 .ToList();
 
             await entityContext.AddRangeAsync(newRegistrations);
@@ -135,7 +143,8 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 var packageRegistrations = await AddPackageRegistrationsAsync(
                     entityContext,
-                    foreignPackages.Select(getId));
+                    foreignPackages.Select(getId),
+                    includePackages: false);
 
                 // Create a mapping from package identity to latest package.
                 var identityToLatest = new Dictionary<string, PackageEntity>(StringComparer.OrdinalIgnoreCase);

@@ -12,16 +12,16 @@ namespace Knapcode.ExplorePackages.Logic
     public class PackageCommitCollector
     {
         private readonly CursorService _cursorService;
-        private readonly PackageService _packageService;
+        private readonly PackageCommitEnumerator _packageCommitEnumerator;
         private readonly ILogger _log;
 
         public PackageCommitCollector(
             CursorService cursorService,
-            PackageService packageService,
+            PackageCommitEnumerator packageCommitEnumerator,
             ILogger log)
         {
             _cursorService = cursorService;
-            _packageService = packageService;
+            _packageCommitEnumerator = packageCommitEnumerator;
             _log = log;
         }
         
@@ -36,7 +36,12 @@ namespace Knapcode.ExplorePackages.Logic
             int commitCount;
             do
             {
-                var commits = await _packageService.GetPackageCommitsAsync(start, end);
+                var commits = await _packageCommitEnumerator.GetPackageCommitsAsync(
+                    x => x.Packages,
+                    start,
+                    end,
+                    processor.BatchSize);
+
                 var packageCount = commits.Sum(x => x.Packages.Count);
                 commitCount = commits.Count;
 
@@ -86,14 +91,9 @@ namespace Knapcode.ExplorePackages.Logic
 
             foreach (var commit in commits)
             {
-                foreach (var package in commit.Packages)
+                var items = await processor.InitializeItemsAsync(commit.Packages, token);
+                foreach (var item in items)
                 {
-                    var item = await processor.InitializeItemAsync(package, token);
-                    if (item == null)
-                    {
-                        continue;
-                    }
-
                     taskQueue.Enqueue(new List<T> { item });
                 }
             }
@@ -108,27 +108,12 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var stopwatch = Stopwatch.StartNew();
 
-            var batch = new List<T>();
-            foreach (var commit in commits)
-            {
-                foreach (var package in commit.Packages)
-                {
-                    try
-                    {
-                        var item = await processor.InitializeItemAsync(package, token);
-                        if (item == null)
-                        {
-                            continue;
-                        }
 
-                        batch.Add(item);
-                    }
-                    catch
-                    {
-                        throw;
-                    }
-                }
-            }
+            var packages = commits
+                .SelectMany(x => x.Packages)
+                .ToList();
+
+            var batch = await processor.InitializeItemsAsync(packages, token);
 
             if (batch.Any())
             {
