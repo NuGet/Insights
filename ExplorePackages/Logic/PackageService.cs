@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -131,6 +132,7 @@ namespace Knapcode.ExplorePackages.Logic
         }
 
         private async Task<IReadOnlyDictionary<string, long>>  AddOrUpdatePackagesAsync<T>(
+            GetPackages getPackages,
             IEnumerable<T> foreignPackages,
             Func<IEnumerable<T>, IEnumerable<T>> sort,
             Func<T, string> getId,
@@ -175,13 +177,8 @@ namespace Knapcode.ExplorePackages.Logic
 
                 var getExistingStopwatch = Stopwatch.StartNew();
                 var identities = identityToLatest.Keys.ToList();
-                var existingPackages = await entityContext
-                    .Packages
-                    .Include(x => x.V2Package)
-                    .Include(x => x.CatalogPackage)
-                    .Include(x => x.PackageDownloads)
-                    .Include(x => x.PackageArchive)
-                    .ThenInclude(x => x.PackageEntries)
+
+                var existingPackages = await getPackages(entityContext)
                     .Where(p => identities.Contains(p.Identity))
                     .ToListAsync();
 
@@ -222,6 +219,10 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task AddOrUpdatePackagesAsync(IEnumerable<PackageArchiveMetadata> metadataSequence)
         {
             await AddOrUpdatePackagesAsync(
+                x => x
+                    .Packages
+                    .Include(y => y.PackageArchive)
+                    .ThenInclude(y => y.PackageEntries),
                 metadataSequence,
                 x => x,
                 d => d.Id,
@@ -396,45 +397,82 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task AddOrUpdatePackagesAsync(IEnumerable<PackageDownloads> packageDownloads)
         {
-            await AddOrUpdatePackagesAsync(
-                packageDownloads,
-                x => x.OrderBy(d => d.Downloads),
-                d => d.Id,
-                d => d.Version,
-                (p, d) =>
-                {
-                    p.PackageDownloads = new PackageDownloadsEntity
-                    {
-                        Downloads = d.Downloads,
-                    };
-                    return Task.CompletedTask;
-                },
-                (p, d) =>
-                {
-                    p.PackageDownloads.Downloads = Math.Max(
-                        p.PackageDownloads.Downloads,
-                        d.Downloads);
-                    return Task.CompletedTask;
+            var identityToPackageDownloads = packageDownloads
+                .GroupBy(x => new PackageIdentity(x.Id, x.Version))
+                .ToDictionary(x => x.Key, x => x.OrderByDescending(y => y.Downloads).First());
 
-                },
-                (c, pe, pl) =>
+            var identityToPackageKey = await AddOrUpdatePackagesAsync(identityToPackageDownloads.Keys);
+
+            var packageKeyDownloadPairs = identityToPackageDownloads
+                .Select(x => KeyValuePair.Create(identityToPackageKey[x.Key.Value], x.Value.Downloads))
+                .OrderBy(x => x.Key)
+                .ToList();
+
+            var changeCount = 0;
+            var stopwatch = Stopwatch.StartNew();
+
+            using (var entityContext = new EntityContext())
+            {
+                var connection = entityContext.Database.GetDbConnection();
+                await connection.OpenAsync();
+                
+                using (var transaction = connection.BeginTransaction())
                 {
-                    if (pe.PackageDownloads == null)
+                    var command = connection.CreateCommand();
+
+                    command.CommandText = @"
+                        INSERT OR REPLACE INTO PackageDownloads (PackageKey, Downloads)
+                        VALUES (@PackageKey, @Downloads)";
+
+                    var packageKeyParameter = command.CreateParameter();
+                    packageKeyParameter.ParameterName = "PackageKey";
+                    packageKeyParameter.DbType = DbType.Int64;
+                    command.Parameters.Add(packageKeyParameter);
+
+                    var downloadsParameter = command.CreateParameter();
+                    downloadsParameter.ParameterName = "Downloads";
+                    downloadsParameter.DbType = DbType.Int64;
+                    command.Parameters.Add(downloadsParameter);
+
+                    foreach (var pair in packageKeyDownloadPairs)
                     {
-                        pe.PackageDownloads = pl.PackageDownloads;
+                        packageKeyParameter.Value = pair.Key;
+                        downloadsParameter.Value = pair.Value;
+                        changeCount += command.ExecuteNonQuery();
                     }
-                    else
-                    {
-                        pe.PackageDownloads.Downloads = Math.Max(
-                            pe.PackageDownloads.Downloads,
-                            pl.PackageDownloads.Downloads);
-                    }
-                });
+
+                    transaction.Commit();
+                }
+            }
+
+            _log.LogInformation($"Committed {changeCount} changes. {stopwatch.ElapsedMilliseconds}ms.");
+        }
+
+        public async Task<IReadOnlyDictionary<string, long>> AddOrUpdatePackagesAsync(IEnumerable<PackageIdentity> identities)
+        {
+            return await AddOrUpdatePackagesAsync(
+                x => x.Packages,
+                identities,
+                x => x.OrderBy(y => y.Id).ThenBy(y => y.Version),
+                x => x.Id,
+                x => x.Version,
+                (p, i) =>
+                {
+                    return Task.CompletedTask;
+                },
+                (p, i) =>
+                {
+                    return Task.CompletedTask;
+                },
+                (c, pe, pl) => {});
         }
 
         public async Task AddOrUpdatePackagesAsync(IEnumerable<V2Package> v2Packages)
         {
             await AddOrUpdatePackagesAsync(
+                x => x
+                    .Packages
+                    .Include(y => y.V2Package),
                 v2Packages,
                 x => x.OrderBy(v2 => v2.Created),
                 v2 => v2.Id,
@@ -580,6 +618,9 @@ namespace Knapcode.ExplorePackages.Logic
                 .ToDictionary(x => x.Key, x => x.First().Value, new CatalogEntryComparer());
 
             return await AddOrUpdatePackagesAsync(
+                x => x
+                    .Packages
+                    .Include(y => y.CatalogPackage),
                 entryToListed.Keys,
                 x => x.OrderBy(c => c.CommitTimeStamp),
                 c => c.Id,
