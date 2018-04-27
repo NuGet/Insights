@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
+using Knapcode.ExplorePackages.Support;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Common;
 using NuGet.Versioning;
@@ -36,6 +38,88 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task UpdateDependencyPackagesAsync(IReadOnlyList<PackageDependencyEntity> dependencies)
         {
+            var updates = PrepareUpdates(dependencies);
+
+            await CommitUpdates(updates);
+        }
+
+        private async Task CommitUpdates(DependencyPackageUpdates updates)
+        {
+            using (var entityContext = new EntityContext())
+            using (var connection = entityContext.Database.GetDbConnection())
+            {
+                await connection.OpenAsync();
+
+                var changes = 0;
+                using (var transaction = connection.BeginTransaction())
+                using (var minimumCommand = connection.CreateCommand())
+                using (var bestCommand = connection.CreateCommand())
+                using (var minimumAndBestCommand = connection.CreateCommand())
+                {
+                    minimumCommand.CommandText = @"
+                        UPDATE PackageDependencies
+                        SET MinimumDependencyPackageKey = @Minimum
+                        WHERE PackageDependencyKey = @Key";
+                    bestCommand.CommandText = @"
+                        UPDATE PackageDependencies
+                        SET BestDependencyPackageKey = @Best
+                        WHERE PackageDependencyKey = @Key";
+                    minimumAndBestCommand.CommandText = @"
+                        UPDATE PackageDependencies
+                        SET MinimumDependencyPackageKey = @Minimum, BestDependencyPackageKey = @Best
+                        WHERE PackageDependencyKey = @Key";
+
+                    var minimumParameter = minimumCommand.CreateParameter();
+                    minimumParameter.ParameterName = "Minimum";
+                    minimumParameter.DbType = DbType.Int64;
+                    minimumCommand.Parameters.Add(minimumParameter);
+                    minimumAndBestCommand.Parameters.Add(minimumParameter);
+
+                    var bestParameter = bestCommand.CreateParameter();
+                    bestParameter.ParameterName = "Best";
+                    bestParameter.DbType = DbType.Int64;
+                    bestCommand.Parameters.Add(bestParameter);
+                    minimumAndBestCommand.Parameters.Add(bestParameter);
+
+                    var keyParameter = minimumAndBestCommand.CreateParameter();
+                    keyParameter.ParameterName = "Key";
+                    keyParameter.DbType = DbType.Int64;
+                    minimumCommand.Parameters.Add(keyParameter);
+                    bestCommand.Parameters.Add(keyParameter);
+                    minimumAndBestCommand.Parameters.Add(keyParameter);
+
+                    foreach (var update in updates.MinimumUpdates)
+                    {
+                        keyParameter.Value = update.Key;
+                        minimumParameter.Value = update.Value;
+                        changes += await minimumCommand.ExecuteNonQueryAsync();
+                    }
+
+                    foreach (var update in updates.BestUpdates)
+                    {
+                        keyParameter.Value = update.Key;
+                        bestParameter.Value = update.Value;
+                        changes += await bestCommand.ExecuteNonQueryAsync();
+                    }
+
+                    foreach (var update in updates.MinimumAndBestUpdates)
+                    {
+                        keyParameter.Value = update.Key;
+                        minimumParameter.Value = update.Value.Item1;
+                        bestParameter.Value = update.Value.Item2;
+                        changes += await minimumAndBestCommand.ExecuteNonQueryAsync();
+                    }
+
+                    var commitStopwatch = Stopwatch.StartNew();
+                    transaction.Commit();
+                    _log.LogInformation($"Committed package dependency {changes} changes. {commitStopwatch.ElapsedMilliseconds}ms");
+                }
+            }
+        }
+
+        private DependencyPackageUpdates PrepareUpdates(IReadOnlyList<PackageDependencyEntity> dependencies)
+        {
+            var prepareStopwatch = Stopwatch.StartNew();
             var packageRegistrationKeyToVersionToPackage = dependencies
                 .Select(x => x.DependencyPackageRegistration)
                 .GroupBy(x => x.PackageRegistrationKey)
@@ -46,53 +130,85 @@ namespace Knapcode.ExplorePackages.Logic
                         .Packages
                         .ToDictionary(y => NuGetVersion.Parse(y.Version)));
 
-            using (var entityContext = new EntityContext())
+            var minimumUpdates = new List<KeyValuePair<long, long?>>();
+            var bestUpdates = new List<KeyValuePair<long, long?>>();
+            var minimumAndBestUpdates = new List<KeyValuePair<long, Tuple<long?, long?>>>();
+
+            foreach (var dependency in dependencies)
             {
-                foreach (var dependency in dependencies)
+                var versionToPackage = packageRegistrationKeyToVersionToPackage[dependency.DependencyPackageRegistrationKey];
+
+                VersionRange parsedVersionRange;
+                if (dependency.VersionRange != null)
                 {
-                    var versionToPackage = packageRegistrationKeyToVersionToPackage[dependency.DependencyPackageRegistrationKey];
-
-                    VersionRange parsedVersionRange;
-                    if (dependency.VersionRange != null)
-                    {
-                        parsedVersionRange = VersionRange.Parse(dependency.VersionRange);
-                    }
-                    else
-                    {
-                        parsedVersionRange = VersionRange.All;
-                    }
-
-                    var minimumMatch = versionToPackage
-                        .Keys
-                        .Where(x => parsedVersionRange.Satisfies(x))
-                        .OrderBy(x => x)
-                        .FirstOrDefault();
-                    var bestMatch = parsedVersionRange
-                        .FindBestMatch(versionToPackage.Keys);
-
-                    var minimumDependentPackageKey = minimumMatch != null ? versionToPackage[minimumMatch].PackageKey : (long?)null;
-                    var bestDependentPackageKey = bestMatch != null ? versionToPackage[bestMatch].PackageKey : (long?)null;
-
-                    if (dependency.MinimumDependencyPackageKey != minimumDependentPackageKey
-                        || dependency.BestDependencyPackageKey != bestDependentPackageKey)
-                    {
-                        // Clear the relationships to prevent recursive attaching.
-                        dependency.ParentPackage = null;
-                        dependency.DependencyPackageRegistration = null;
-                        dependency.Framework = null;
-                        dependency.BestDependencyPackage = null;
-                        dependency.MinimumDependencyPackage = null;
-
-                        entityContext.PackageDependencies.Attach(dependency);
-                        dependency.MinimumDependencyPackageKey = minimumDependentPackageKey;
-                        dependency.BestDependencyPackageKey = bestDependentPackageKey;
-                    }
+                    parsedVersionRange = VersionRange.Parse(dependency.VersionRange);
+                }
+                else
+                {
+                    parsedVersionRange = VersionRange.All;
                 }
 
-                var commitStopwatch = Stopwatch.StartNew();
-                var changes = await entityContext.SaveChangesAsync();
-                _log.LogInformation($"Committed package dependency {changes} changes. {commitStopwatch.ElapsedMilliseconds}ms");
+                var minimumMatch = versionToPackage
+                    .Keys
+                    .Where(x => parsedVersionRange.Satisfies(x))
+                    .OrderBy(x => x)
+                    .FirstOrDefault();
+                var bestMatch = parsedVersionRange
+                    .FindBestMatch(versionToPackage.Keys);
+
+                var minimumDependentPackageKey = minimumMatch != null ? versionToPackage[minimumMatch].PackageKey : (long?)null;
+                var bestDependentPackageKey = bestMatch != null ? versionToPackage[bestMatch].PackageKey : (long?)null;
+
+                if (dependency.MinimumDependencyPackageKey != minimumDependentPackageKey
+                    && dependency.BestDependencyPackageKey != bestDependentPackageKey)
+                {
+                    minimumAndBestUpdates.Add(KeyValuePair.Create(
+                        dependency.PackageDependencyKey,
+                        Tuple.Create(minimumDependentPackageKey, bestDependentPackageKey)));
+                }
+                else if (dependency.MinimumDependencyPackageKey != minimumDependentPackageKey)
+                {
+                    minimumUpdates.Add(KeyValuePair.Create(
+                        dependency.PackageDependencyKey,
+                        minimumDependentPackageKey));
+                }
+                else if (dependency.BestDependencyPackageKey != bestDependentPackageKey)
+                {
+                    bestUpdates.Add(KeyValuePair.Create(
+                        dependency.PackageDependencyKey,
+                        bestDependentPackageKey));
+                }
             }
+
+            minimumUpdates.Sort((a, b) => a.Key.CompareTo(b.Key));
+            bestUpdates.Sort((a, b) => a.Key.CompareTo(b.Key));
+            minimumAndBestUpdates.Sort((a, b) => a.Key.CompareTo(b.Key));
+
+            var changes = minimumUpdates.Count + bestUpdates.Count + minimumAndBestUpdates.Count;
+
+            _log.LogInformation($"Prepared package dependency {changes} changes. {prepareStopwatch.ElapsedMilliseconds}ms");
+
+            return new DependencyPackageUpdates(
+                minimumUpdates,
+                bestUpdates,
+                minimumAndBestUpdates);
+        }
+
+        private class DependencyPackageUpdates
+        {
+            public DependencyPackageUpdates(
+                IReadOnlyList<KeyValuePair<long, long?>> minimumUpdates,
+                IReadOnlyList<KeyValuePair<long, long?>> bestUpdates,
+                IReadOnlyList<KeyValuePair<long, Tuple<long?, long?>>> minimumAndBestUpdates)
+            {
+                MinimumUpdates = minimumUpdates;
+                BestUpdates = bestUpdates;
+                MinimumAndBestUpdates = minimumAndBestUpdates;
+            }
+
+            public IReadOnlyList<KeyValuePair<long, long?>> MinimumUpdates { get; }
+            public IReadOnlyList<KeyValuePair<long, long?>> BestUpdates { get; }
+            public IReadOnlyList<KeyValuePair<long, Tuple<long?, long?>>> MinimumAndBestUpdates { get; }
         }
 
         public async Task AddDependenciesAsync(IReadOnlyList<PackageDependencyGroups> packages)
