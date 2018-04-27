@@ -21,21 +21,17 @@ namespace Knapcode.ExplorePackages.Logic
             _log = log;
         }
 
-        public async Task<IReadOnlyList<PackageEntity>> GetDependentPackagesAsync(IReadOnlyList<long> packageRegistrationKeys)
+        public async Task<IReadOnlyList<PackageDependencyEntity>> GetDependentPackagesAsync(IReadOnlyList<long> packageRegistrationKeys)
         {
             using (var entityContext = new EntityContext())
             {
-                var dependents = await entityContext
+                return await entityContext
                     .PackageDependencies
                     .Include(x => x.DependencyPackageRegistration)
                     .Include(x => x.ParentPackage)
                     .ThenInclude(x => x.PackageRegistration)
                     .Where(x => packageRegistrationKeys.Contains(x.DependencyPackageRegistration.PackageRegistrationKey))
                     .ToListAsync();
-
-                return dependents
-                    .Select(x => x.ParentPackage)
-                    .ToList();
             }
         }
 

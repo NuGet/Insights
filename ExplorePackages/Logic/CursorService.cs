@@ -34,10 +34,10 @@ namespace Knapcode.ExplorePackages.Logic
             using (var entityContext = new EntityContext())
             {
                 var cursors = await entityContext
-                       .Cursors
-                       .Where(x => names.Contains(x.Name))
-                       .OrderBy(x => x.Value)
-                       .ToListAsync();
+                    .Cursors
+                    .Where(x => names.Contains(x.Name))
+                    .OrderBy(x => x.Value)
+                    .ToListAsync();
 
                 if (cursors.Count < names.Count)
                 {
@@ -51,6 +51,37 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task ResetValueAsync(string name)
         {
             await SetValueAsync(name, DefaultCursor);
+        }
+
+        public async Task SetValuesAsync(IReadOnlyList<string> names, DateTimeOffset value)
+        {
+            using (var entityContext = new EntityContext())
+            {
+                var existingCursors = await entityContext
+                    .Cursors
+                    .Where(x => names.Contains(x.Name))
+                    .OrderBy(x => x.Value)
+                    .ToListAsync();
+
+                foreach (var existingCursor in existingCursors)
+                {
+                    existingCursor.Value = value.UtcTicks;
+                }
+
+                var newNames = names.Except(existingCursors.Select(x => x.Name));
+                foreach (var newName in newNames)
+                {
+                    var newCursor = new CursorEntity
+                    {
+                        Name = newName,
+                        Value = value.UtcTicks,
+                    };
+
+                    entityContext.Cursors.Add(newCursor);
+
+                    await entityContext.SaveChangesAsync();
+                }
+            }
         }
 
         public async Task SetValueAsync(string name, DateTimeOffset value)

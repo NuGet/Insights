@@ -212,6 +212,7 @@ namespace Knapcode.ExplorePackages.Logic
                 .ToLookup(x => x.Value, x => x.Key)
                 .ToDictionary(x => x.Key, x => new HashSet<string>(x));
 
+            var cursorNames = new List<string>();
             foreach (var queryGroup in queryGroups)
             {
                 var query = queryGroup.Key;
@@ -238,10 +239,12 @@ namespace Knapcode.ExplorePackages.Logic
                     && bounds.CursorNameToStart[cursorName] < bounds.Start)
                 {
                     _log.LogInformation($"Cursor {cursorName} moving to {bounds.Start:O}.");
-                    await _cursorService.SetValueAsync(cursorName, bounds.Start);
+                    cursorNames.Add(cursorName);
                     bounds.CursorNameToStart[cursorName] = bounds.Start;
                 }
             }
+
+            await _cursorService.SetValuesAsync(cursorNames, bounds.Start);
         }
 
         private class Work
