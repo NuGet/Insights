@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Logic;
 using Knapcode.ExplorePackages.Support;
 using Knapcode.MiniZip;
@@ -107,11 +108,19 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<CatalogToNuspecsProcessor>();
             serviceCollection.AddTransient<V2ToDatabaseProcessor>();
             serviceCollection.AddTransient<PackageDownloadsToDatabaseProcessor>();
-            serviceCollection.AddTransient<MZipProcessor>();
-            serviceCollection.AddTransient<DependenciesToDatabaseProcessor>();
-            serviceCollection.AddTransient<MZipToDatabaseProcessor>();
+
+            serviceCollection.AddTransient<MZipCommitProcessor>();
+            serviceCollection.AddTransient<MZipCommitCollector>();
+            serviceCollection.AddTransient<MZipToDatabaseCommitProcessor>();
+            serviceCollection.AddTransient<MZipToDatabaseCommitCollector>();
+            serviceCollection.AddTransient<DependenciesToDatabaseCommitProcessor>();
+            serviceCollection.AddTransient<DependenciesToDatabaseCommitCollector>();
+            serviceCollection.AddTransient<DependencyPackagesToDatabaseCommitProcessor>();
+            serviceCollection.AddTransient<DependencyPackagesToDatabaseCommitCollector>();
 
             serviceCollection.AddTransient<PackageCommitEnumerator>();
+            serviceCollection.AddTransient<ICommitEnumerator<PackageEntity>, PackageCommitEnumerator>();
+            serviceCollection.AddTransient<ICommitEnumerator<PackageRegistrationEntity>, PackageRegistrationCommitEnumerator>();
             serviceCollection.AddTransient<CursorService>();
             serviceCollection.AddTransient<IETagService, ETagService>();
             serviceCollection.AddTransient<PackageService>();
@@ -120,7 +129,6 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<CatalogService>();
             serviceCollection.AddTransient<PackageDependencyService>();
             serviceCollection.AddTransient<NuspecProvider>();
-            serviceCollection.AddTransient<PackageCommitCollector>();
 
             serviceCollection.AddTransient<V2Parser>();
             serviceCollection.AddSingleton<ServiceIndexCache>();

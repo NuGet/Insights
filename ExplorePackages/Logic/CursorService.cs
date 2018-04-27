@@ -78,9 +78,9 @@ namespace Knapcode.ExplorePackages.Logic
                     };
 
                     entityContext.Cursors.Add(newCursor);
-
-                    await entityContext.SaveChangesAsync();
                 }
+
+                await entityContext.SaveChangesAsync();
             }
         }
 

@@ -5,11 +5,12 @@ using McMaster.Extensions.CommandLineUtils;
 
 namespace Knapcode.ExplorePackages.Commands
 {
-    public class MZipCommand : ICommand
+    public class DependencyPackagesToDatabaseCommand : ICommand
     {
-        private readonly MZipCommitCollector _collector;
+        private readonly DependencyPackagesToDatabaseCommitCollector _collector;
 
-        public MZipCommand(MZipCommitCollector collector)
+        public DependencyPackagesToDatabaseCommand(
+            DependencyPackagesToDatabaseCommitCollector collector)
         {
             _collector = collector;
         }
@@ -20,7 +21,7 @@ namespace Knapcode.ExplorePackages.Commands
 
         public async Task ExecuteAsync(CancellationToken token)
         {
-            await _collector.ProcessAsync(ProcessMode.TaskQueue, token);
+            await _collector.ProcessAsync(ProcessMode.Sequentially, token);
         }
 
         public bool IsDatabaseRequired()

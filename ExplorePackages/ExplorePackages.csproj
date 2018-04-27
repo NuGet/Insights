@@ -45,18 +45,27 @@
     <Compile Include="CommandExecutor.cs" />
     <Compile Include="Commands\ArgsUtility.cs" />
     <Compile Include="Commands\DependenciesToDatabaseCommand.cs" />
+    <Compile Include="Commands\DependencyPackagesToDatabaseCommand.cs" />
     <Compile Include="Entities\Migrations\20180425150535_AddPackageDependencies.cs" />
     <Compile Include="Entities\Migrations\20180425150535_AddPackageDependencies.designer.cs">
       <DependentUpon>20180425150535_AddPackageDependencies.cs</DependentUpon>
     </Compile>
-    <Compile Include="Logic\MZipProcessor.cs" />
+    <Compile Include="Logic\CommitCollector.cs" />
+    <Compile Include="Logic\Data\EntityCommit.cs" />
+    <Compile Include="Logic\DependenciesToDatabaseCommitCollector.cs" />
+    <Compile Include="Logic\DependenciesToDatabaseCommitProcessor.cs" />
+    <Compile Include="Logic\DependencyPackagesToDatabaseCommitCollector.cs" />
+    <Compile Include="Logic\DependencyPackagesToDatabaseCommitProcessor.cs" />
+    <Compile Include="Logic\EnumeratorUtility.cs" />
+    <Compile Include="Logic\ICommitEnumerator.cs" />
+    <Compile Include="Logic\ICommitProcessor.cs" />
+    <Compile Include="Logic\MZipCommitCollector.cs" />
+    <Compile Include="Logic\MZipCommitProcessor.cs" />
+    <Compile Include="Logic\MZipToDatabaseCommitCollector.cs" />
     <Compile Include="Logic\MZipToDatabaseProcessor.cs" />
-    <Compile Include="Logic\DependenciesToDatabaseProcessor.cs" />
-    <Compile Include="Logic\IPackageCommitProcessor.cs" />
     <Compile Include="Commands\MZipCommand.cs" />
     <Compile Include="Commands\DownloadsToDatabaseCommand.cs" />
     <Compile Include="Commands\MZipToDatabaseCommand.cs" />
-    <Compile Include="Logic\PackageCommitCollector.cs" />
     <Compile Include="Commands\ShowWeirdMetadataCommand.cs" />
     <Compile Include="Commands\UpdateCommand.cs" />
     <Compile Include="Entities\CatalogCommitEntity.cs" />
@@ -216,6 +225,7 @@
     <Compile Include="Logic\PackageQueries\PackageQueries\HasRegistrationDiscrepancyPackageQuery.cs" />
     <Compile Include="Logic\Consistency\Services\RegistrationConsistencyService.cs" />
     <Compile Include="Logic\PackageQueryContextBuilder.cs" />
+    <Compile Include="Logic\PackageRegistrationCommitEnumerator.cs" />
     <Compile Include="Logic\PartialProgressReport.cs" />
     <Compile Include="Logic\ProcessMode.cs" />
     <Compile Include="Logic\Protocol\AutocompleteClient.cs" />
@@ -276,7 +286,6 @@
     <Compile Include="Logic\PackageQueries\PackageQueryProcessor.cs" />
     <Compile Include="Logic\PackageQueries\PackageQueryContext.cs" />
     <Compile Include="Logic\NuspecUtility.cs" />
-    <Compile Include="Logic\Data\PackageCommit.cs" />
     <Compile Include="Logic\Data\PackageIdentity.cs" />
     <Compile Include="Logic\PackagePathProvider.cs" />
     <Compile Include="Logic\CatalogToDatabaseProcessor.cs" />

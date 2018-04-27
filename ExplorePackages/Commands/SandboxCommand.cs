@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Logic;
 using Knapcode.MiniZip;
 using McMaster.Extensions.CommandLineUtils;
@@ -10,15 +11,12 @@ namespace Knapcode.ExplorePackages.Commands
 {
     public class SandboxCommand : ICommand
     {
-        private readonly PackageDependencyService _packageDependencyService;
-        private readonly NuspecProvider _nuspecProvider;
+        private readonly ICommitEnumerator<PackageRegistrationEntity> _packageRegistrationCommitEnumerator;
 
         public SandboxCommand(
-            PackageDependencyService packageDependencyService,
-            NuspecProvider nuspecProvider)
+            ICommitEnumerator<PackageRegistrationEntity> packageRegistrationCommitEnumerator)
         {
-            _packageDependencyService = packageDependencyService;
-            _nuspecProvider = nuspecProvider;
+            _packageRegistrationCommitEnumerator = packageRegistrationCommitEnumerator;
         }
 
         public void Configure(CommandLineApplication app)
@@ -27,14 +25,10 @@ namespace Knapcode.ExplorePackages.Commands
 
         public async Task ExecuteAsync(CancellationToken token)
         {
-            var packageIdentity = new PackageIdentity("NuGet.Packaging", "4.6.2");
-            var nuspec = _nuspecProvider.GetNuspec(packageIdentity.Id, packageIdentity.Version);
-            var dependencyGroups = NuspecUtility.GetParsedDependencyGroups(nuspec.Document);
-            var packageDependencyGroups = new PackageDependencyGroups(
-                packageIdentity,
-                dependencyGroups);
-
-            await _packageDependencyService.AddDependenciesAsync(new[] { packageDependencyGroups });
+            var r = await _packageRegistrationCommitEnumerator.GetCommitsAsync(
+                DateTimeOffset.MinValue,
+                DateTimeOffset.MaxValue,
+                21);
         }
 
         public bool IsDatabaseRequired()

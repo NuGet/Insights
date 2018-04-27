@@ -7,12 +7,12 @@ using Knapcode.MiniZip;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class MZipToDatabaseProcessor : IPackageCommitProcessor<PackageArchiveMetadata>
+    public class MZipToDatabaseCommitProcessor : ICommitProcessor<PackageEntity, PackageArchiveMetadata>
     {
         private readonly MZipStore _mZipStore;
         private readonly IPackageService _packageService;
 
-        public MZipToDatabaseProcessor(
+        public MZipToDatabaseCommitProcessor(
             MZipStore mZipStore,
             IPackageService packageService)
         {

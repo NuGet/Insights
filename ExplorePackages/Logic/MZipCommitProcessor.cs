@@ -5,11 +5,11 @@ using Knapcode.ExplorePackages.Entities;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class MZipProcessor : IPackageCommitProcessor<PackageEntity>
+    public class MZipCommitProcessor : ICommitProcessor<PackageEntity, PackageEntity>
     {
         private readonly MZipStore _mZipStore;
 
-        public MZipProcessor(MZipStore mZipStore)
+        public MZipCommitProcessor(MZipStore mZipStore)
         {
             _mZipStore = mZipStore;
         }

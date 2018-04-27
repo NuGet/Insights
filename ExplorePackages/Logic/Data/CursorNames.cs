@@ -18,6 +18,7 @@
         public const string MZip = "MZip";
         public const string MZipToDatabase = "MZipToDatabase";
         public const string DependenciesToDatabase = "DependenciesToDatabase";
+        public const string DependencyPackagesToDatabase = "DependencyPackagesToDatabase";
 
         public const string ReprocessPackageQueries = "ReprocessPackageQueries";
 

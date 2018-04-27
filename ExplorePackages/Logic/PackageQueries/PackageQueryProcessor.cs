@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Support;
 using NuGet.Common;
 
@@ -42,7 +43,7 @@ namespace Knapcode.ExplorePackages.Logic
             do
             {
                 var commits = await GetCommitsAsync(bounds, reprocess);
-                var packageCount = commits.Sum(x => x.Packages.Count);
+                var packageCount = commits.Sum(x => x.Entities.Count);
                 commitCount = commits.Count;
 
                 if (commits.Any())
@@ -67,22 +68,27 @@ namespace Knapcode.ExplorePackages.Logic
             while (commitCount > 0);
         }
 
-        private async Task<IReadOnlyList<PackageCommit>> GetCommitsAsync(Bounds bounds, bool reprocess)
+        private async Task<IReadOnlyList<EntityCommit<PackageEntity>>> GetCommitsAsync(Bounds bounds, bool reprocess)
         {
             if (!reprocess)
             {
-                return await _packageCommitEnumerator.GetPackageCommitsAsync(
-                    x => x.Packages,
+                return await _packageCommitEnumerator.GetCommitsAsync(
                     bounds.Start,
                     bounds.End,
                     5000);
             }
             else
             {
-                return await _queryService.GetMatchedPackageCommitsAsync(
+                var queryNames = bounds.QueryNameToCursorName.Keys.ToList();
+                return await _packageCommitEnumerator.GetCommitsAsync(
+                    e => e
+                        .Packages
+                        .Where(x => x
+                            .PackageQueryMatches
+                            .Any(pqm => queryNames.Contains(pqm.PackageQuery.Name))),
                     bounds.Start,
                     bounds.End,
-                    bounds.QueryNameToCursorName.Keys.ToList());
+                    5000);
             }
         }
 
@@ -132,7 +138,7 @@ namespace Knapcode.ExplorePackages.Logic
     private async Task<ConcurrentBag<Result>> ProcessCommitsAsync(
             IReadOnlyList<IPackageQuery> queries,
             Bounds bounds,
-            IReadOnlyList<PackageCommit> commits)
+            IReadOnlyList<EntityCommit<PackageEntity>> commits)
         {
             var results = new ConcurrentBag<Result>();
 
@@ -150,12 +156,12 @@ namespace Knapcode.ExplorePackages.Logic
         private void ProduceWork(
             IReadOnlyList<IPackageQuery> queries,
             Bounds bounds,
-            IReadOnlyList<PackageCommit> commits,
+            IReadOnlyList<EntityCommit<PackageEntity>> commits,
             TaskQueue<Work> taskQueue)
         {
             foreach (var commit in commits)
             {
-                foreach (var package in commit.Packages)
+                foreach (var package in commit.Entities)
                 {
                     var applicableQueries = queries
                         .Where(x => commit.CommitTimestamp > bounds.CursorNameToStart[bounds.QueryNameToCursorName[x.Name]])

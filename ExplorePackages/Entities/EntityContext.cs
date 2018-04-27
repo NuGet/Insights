@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Entities
 {
@@ -111,6 +112,9 @@ namespace Knapcode.ExplorePackages.Entities
                 .Entity<PackageEntity>()
                 .HasIndex(x => new { x.PackageRegistrationKey, x.Version })
                 .IsUnique();
+            modelBuilder
+                .Entity<PackageEntity>()
+                .Ignore(x => x.Id);
 
             modelBuilder
                 .Entity<PackageQueryEntity>()

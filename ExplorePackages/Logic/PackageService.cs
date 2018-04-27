@@ -132,7 +132,7 @@ namespace Knapcode.ExplorePackages.Logic
         }
 
         private async Task<IReadOnlyDictionary<string, long>>  AddOrUpdatePackagesAsync<T>(
-            GetPackages getPackages,
+            QueryEntities<PackageEntity> getPackages,
             IEnumerable<T> foreignPackages,
             Func<IEnumerable<T>, IEnumerable<T>> sort,
             Func<T, string> getId,
@@ -412,10 +412,10 @@ namespace Knapcode.ExplorePackages.Logic
             var stopwatch = Stopwatch.StartNew();
 
             using (var entityContext = new EntityContext())
+            using (var connection = entityContext.Database.GetDbConnection())
             {
-                var connection = entityContext.Database.GetDbConnection();
                 await connection.OpenAsync();
-                
+
                 using (var transaction = connection.BeginTransaction())
                 {
                     var command = connection.CreateCommand();
@@ -574,6 +574,7 @@ namespace Knapcode.ExplorePackages.Logic
                 var packages = await entityContext
                     .Packages
                     .Include(x => x.PackageDependencies)
+                    .ThenInclude(x => x.DependencyPackageRegistration)
                     .Where(x => identityValues.Contains(x.Identity))
                     .ToListAsync();
 

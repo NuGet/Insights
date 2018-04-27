@@ -7,15 +7,11 @@ namespace Knapcode.ExplorePackages.Commands
 {
     public class DependenciesToDatabaseCommand : ICommand
     {
-        private readonly PackageCommitCollector _collector;
-        private readonly DependenciesToDatabaseProcessor _processor;
+        private readonly DependenciesToDatabaseCommitCollector _collector;
 
-        public DependenciesToDatabaseCommand(
-            DependenciesToDatabaseProcessor processor,
-            PackageCommitCollector collector)
+        public DependenciesToDatabaseCommand(DependenciesToDatabaseCommitCollector collector)
         {
             _collector = collector;
-            _processor = processor;
         }
 
         public void Configure(CommandLineApplication app)
@@ -24,7 +20,7 @@ namespace Knapcode.ExplorePackages.Commands
 
         public async Task ExecuteAsync(CancellationToken token)
         {
-            await _collector.ProcessAsync(_processor, ProcessMode.Sequentially, token);
+            await _collector.ProcessAsync(ProcessMode.Sequentially, token);
         }
 
         public bool IsDatabaseRequired()

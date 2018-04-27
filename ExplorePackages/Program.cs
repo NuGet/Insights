@@ -25,6 +25,7 @@ namespace Knapcode.ExplorePackages
             { "catalogtonuspecs", typeof(CatalogToNuspecsCommand) },
             { "checkpackage", typeof(CheckPackageCommand) },
             { "dependenciestodatabase", typeof(DependenciesToDatabaseCommand) },
+            { "dependencypackagestodatabase", typeof(DependencyPackagesToDatabaseCommand) },
             { "downloadstodatabase", typeof(DownloadsToDatabaseCommand) },
             { "fetchcursors", typeof(FetchCursorsCommand) },
             { "mzip", typeof(MZipCommand) },

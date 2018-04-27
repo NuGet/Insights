@@ -28,21 +28,80 @@ namespace Knapcode.ExplorePackages.Logic
                 return await entityContext
                     .PackageDependencies
                     .Include(x => x.DependencyPackageRegistration)
-                    .Include(x => x.ParentPackage)
-                    .ThenInclude(x => x.PackageRegistration)
+                    .ThenInclude(x => x.Packages)
                     .Where(x => packageRegistrationKeys.Contains(x.DependencyPackageRegistration.PackageRegistrationKey))
                     .ToListAsync();
+            }
+        }
+
+        public async Task UpdateDependencyPackagesAsync(IReadOnlyList<PackageDependencyEntity> dependencies)
+        {
+            var packageRegistrationKeyToVersionToPackage = dependencies
+                .Select(x => x.DependencyPackageRegistration)
+                .GroupBy(x => x.PackageRegistrationKey)
+                .Select(x => x.First())
+                .ToDictionary(
+                    x => x.PackageRegistrationKey,
+                    x => x
+                        .Packages
+                        .ToDictionary(y => NuGetVersion.Parse(y.Version)));
+
+            using (var entityContext = new EntityContext())
+            {
+                foreach (var dependency in dependencies)
+                {
+                    var versionToPackage = packageRegistrationKeyToVersionToPackage[dependency.DependencyPackageRegistrationKey];
+
+                    VersionRange parsedVersionRange;
+                    if (dependency.VersionRange != null)
+                    {
+                        parsedVersionRange = VersionRange.Parse(dependency.VersionRange);
+                    }
+                    else
+                    {
+                        parsedVersionRange = VersionRange.All;
+                    }
+
+                    var minimumMatch = versionToPackage
+                        .Keys
+                        .Where(x => parsedVersionRange.Satisfies(x))
+                        .OrderBy(x => x)
+                        .FirstOrDefault();
+                    var bestMatch = parsedVersionRange
+                        .FindBestMatch(versionToPackage.Keys);
+
+                    var minimumDependentPackageKey = minimumMatch != null ? versionToPackage[minimumMatch].PackageKey : (long?)null;
+                    var bestDependentPackageKey = bestMatch != null ? versionToPackage[bestMatch].PackageKey : (long?)null;
+
+                    if (dependency.MinimumDependencyPackageKey != minimumDependentPackageKey
+                        || dependency.BestDependencyPackageKey != bestDependentPackageKey)
+                    {
+                        // Clear the relationships to prevent recursive attaching.
+                        dependency.ParentPackage = null;
+                        dependency.DependencyPackageRegistration = null;
+                        dependency.Framework = null;
+                        dependency.BestDependencyPackage = null;
+                        dependency.MinimumDependencyPackage = null;
+
+                        entityContext.PackageDependencies.Attach(dependency);
+                        dependency.MinimumDependencyPackageKey = minimumDependentPackageKey;
+                        dependency.BestDependencyPackageKey = bestDependentPackageKey;
+                    }
+                }
+
+                var commitStopwatch = Stopwatch.StartNew();
+                var changes = await entityContext.SaveChangesAsync();
+                _log.LogInformation($"Committed package dependency {changes} changes. {commitStopwatch.ElapsedMilliseconds}ms");
             }
         }
 
         public async Task AddDependenciesAsync(IReadOnlyList<PackageDependencyGroups> packages)
         {
             // Fetch the package entities.
-            var packageEntities = await _packageService.GetPackagesWithDependenciesAsync(packages
+            var identities = packages
                 .Select(x => x.Identity)
-                .ToList());
-            var identityToPackage = packageEntities
-                .ToDictionary(x => x.Identity, StringComparer.OrdinalIgnoreCase);
+                .ToList();
+            var identityToPackage = await GetIdentityToPackage(identities);
 
             // Fetch the framework entities.
             var parsedFrameworks = packages
@@ -62,7 +121,7 @@ namespace Knapcode.ExplorePackages.Logic
                 .Where(x => StrictPackageIdValidator.IsValid(x))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
-            var idToPackageRegistration = await _packageService.AddPackageRegistrationsAsync(ids, includePackages: true);
+            var idToPackageRegistration = await _packageService.AddPackageRegistrationsAsync(ids, includePackages: false);
 
             using (var entityContext = new EntityContext())
             {
@@ -105,8 +164,6 @@ namespace Knapcode.ExplorePackages.Logic
                             existing.FrameworkKey = latest.FrameworkKey;
                             existing.OriginalVersionRange = latest.OriginalVersionRange;
                             existing.VersionRange = latest.VersionRange;
-                            existing.MinimumDependencyPackageKey = latest.MinimumDependencyPackageKey;
-                            existing.BestDependencyPackageKey = latest.BestDependencyPackageKey;
                         }
                     }
 
@@ -124,6 +181,15 @@ namespace Knapcode.ExplorePackages.Logic
                 var changes = await entityContext.SaveChangesAsync();
                 _log.LogInformation($"Committed package dependency {changes} changes. {commitStopwatch.ElapsedMilliseconds}ms");
             }
+        }
+
+        private async Task<IReadOnlyDictionary<string, PackageEntity>> GetIdentityToPackage(
+            IReadOnlyList<PackageIdentity> identities)
+        {
+            var packageEntities = await _packageService.GetPackagesWithDependenciesAsync(identities);
+
+            return packageEntities
+                .ToDictionary(x => x.Identity, StringComparer.OrdinalIgnoreCase);
         }
 
         private List<PackageDependencyEntity> SortEntities(IEnumerable<PackageDependencyEntity> entities)
@@ -203,22 +269,6 @@ namespace Knapcode.ExplorePackages.Logic
                 return;
             }
 
-            var parsedVersionRange = dependency.ParsedVersionRange ?? VersionRange.All;
-            var versionToPackage = packageRegistration
-                .Packages
-                .ToDictionary(x => NuGetVersion.Parse(x.Version));
-
-            var minimumMatch = versionToPackage
-                .Keys
-                .Where(x => parsedVersionRange.Satisfies(x))
-                .OrderBy(x => x)
-                .FirstOrDefault();
-            var bestMatch = parsedVersionRange
-                .FindBestMatch(versionToPackage.Keys);
-
-            var minimumDependentPackageKey = minimumMatch != null ? versionToPackage[minimumMatch].PackageKey : (long?)null;
-            var bestDependentPackageKey = bestMatch != null ? versionToPackage[bestMatch].PackageKey : (long?)null;
-
             var dependencyEntity = new PackageDependencyEntity
             {
                 ParentPackageKey = packageKey,
@@ -226,8 +276,6 @@ namespace Knapcode.ExplorePackages.Logic
                 OriginalVersionRange = dependency.Version,
                 VersionRange = dependency.ParsedVersionRange?.ToNormalizedString(),
                 DependencyPackageRegistrationKey = packageRegistration.PackageRegistrationKey,
-                MinimumDependencyPackageKey = minimumDependentPackageKey,
-                BestDependencyPackageKey = bestDependentPackageKey,
             };
 
             var key = new UniqueDependency(

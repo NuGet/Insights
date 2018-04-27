@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Knapcode.ExplorePackages.Entities
 {
+    [DebuggerDisplay("PackageRegistration {Id}")]
     public class PackageRegistrationEntity
     {
         public long PackageRegistrationKey { get; set; }

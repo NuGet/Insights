@@ -12,13 +12,11 @@ namespace Knapcode.ExplorePackages.Logic
     {
         private const int PageSize = 1000;
         private readonly PackageService _packageService;
-        private readonly PackageCommitEnumerator _enumerator;
         private readonly ILogger _log;
 
-        public PackageQueryService(PackageService packageService, PackageCommitEnumerator enumerator, ILogger log)
+        public PackageQueryService(PackageService packageService, ILogger log)
         {
             _packageService = packageService;
-            _enumerator = enumerator;
             _log = log;
         }
 
@@ -49,19 +47,6 @@ namespace Knapcode.ExplorePackages.Logic
                     throw new ArgumentException($"The query {queryName} is not using cursor {cursorName}.");
                 }
             }
-        }
-
-        public Task<IReadOnlyList<PackageCommit>> GetMatchedPackageCommitsAsync(DateTimeOffset start, DateTimeOffset end, IReadOnlyList<string> queryNames)
-        {
-            return _enumerator.GetPackageCommitsAsync(
-                e => e
-                    .Packages
-                    .Where(x => x
-                        .PackageQueryMatches
-                        .Any(pqm => queryNames.Contains(pqm.PackageQuery.Name))),
-                start,
-                end,
-                batchSize: 5000);
         }
 
         private static async Task<PackageQueryEntity> GetQueryAsync(string queryName, EntityContext entityContext)
