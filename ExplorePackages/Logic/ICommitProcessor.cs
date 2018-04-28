@@ -9,7 +9,7 @@ namespace Knapcode.ExplorePackages.Logic
         string CursorName { get; }
         IReadOnlyList<string> DependencyCursorNames { get; }
         int BatchSize { get; }
-        Task<IReadOnlyList<TItem>> InitializeItemsAsync(IReadOnlyList<TEntity> entities, CancellationToken token);
+        Task<ItemBatch<TItem>> InitializeItemsAsync(IReadOnlyList<TEntity> entities, int skip, CancellationToken token);
         Task ProcessBatchAsync(IReadOnlyList<TItem> batch);
     }
 }

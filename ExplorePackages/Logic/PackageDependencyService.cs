@@ -23,7 +23,10 @@ namespace Knapcode.ExplorePackages.Logic
             _log = log;
         }
 
-        public async Task<IReadOnlyList<PackageDependencyEntity>> GetDependentPackagesAsync(IReadOnlyList<long> packageRegistrationKeys)
+        public async Task<IReadOnlyList<PackageDependencyEntity>> GetDependentPackagesAsync(
+            IReadOnlyList<long> packageRegistrationKeys,
+            int skip,
+            int take)
         {
             using (var entityContext = new EntityContext())
             {
@@ -32,6 +35,9 @@ namespace Knapcode.ExplorePackages.Logic
                     .Include(x => x.DependencyPackageRegistration)
                     .ThenInclude(x => x.Packages)
                     .Where(x => packageRegistrationKeys.Contains(x.DependencyPackageRegistration.PackageRegistrationKey))
+                    .OrderBy(x => x.PackageDependencyKey)
+                    .Skip(skip)
+                    .Take(take)
                     .ToListAsync();
             }
         }

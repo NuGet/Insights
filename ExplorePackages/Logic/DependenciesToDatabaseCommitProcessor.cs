@@ -28,7 +28,10 @@ namespace Knapcode.ExplorePackages.Logic
 
         public int BatchSize => 5000;
 
-        public Task<IReadOnlyList<PackageDependencyGroups>> InitializeItemsAsync(IReadOnlyList<PackageEntity> packages, CancellationToken token)
+        public Task<ItemBatch<PackageDependencyGroups>> InitializeItemsAsync(
+            IReadOnlyList<PackageEntity> packages,
+            int skip,
+            CancellationToken token)
         {
             var output = new List<PackageDependencyGroups>();
 
@@ -37,7 +40,9 @@ namespace Knapcode.ExplorePackages.Logic
                 InitializeItem(output, package);
             }
 
-            return Task.FromResult<IReadOnlyList<PackageDependencyGroups>>(output);
+            return Task.FromResult(new ItemBatch<PackageDependencyGroups>(
+                output,
+                hasMoreItems: false));
         }
 
         private void InitializeItem(List<PackageDependencyGroups> output, PackageEntity package)

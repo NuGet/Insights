@@ -10,6 +10,7 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class DependencyPackagesToDatabaseCommitProcessor : ICommitProcessor<PackageRegistrationEntity, PackageDependencyEntity>
     {
+        private const int ItemBatchSize = 10000;
         private readonly PackageDependencyService _packageDependencyService;
         private readonly ILogger _log;
 
@@ -30,8 +31,9 @@ namespace Knapcode.ExplorePackages.Logic
 
         public int BatchSize => 100;
 
-        public async Task<IReadOnlyList<PackageDependencyEntity>> InitializeItemsAsync(
+        public async Task<ItemBatch<PackageDependencyEntity>> InitializeItemsAsync(
             IReadOnlyList<PackageRegistrationEntity> entities,
+            int skip,
             CancellationToken token)
         {
             var packageRegistrationKeyToId = entities
@@ -39,7 +41,10 @@ namespace Knapcode.ExplorePackages.Logic
 
             var packageRegistrationKeys = packageRegistrationKeyToId.Keys.ToList();
 
-            var dependents = await _packageDependencyService.GetDependentPackagesAsync(packageRegistrationKeys);
+            var dependents = await _packageDependencyService.GetDependentPackagesAsync(
+                packageRegistrationKeys,
+                skip,
+                take: ItemBatchSize);
 
             var topDependencyPairs = dependents
                 .GroupBy(x => x.DependencyPackageRegistrationKey)
@@ -61,7 +66,7 @@ namespace Knapcode.ExplorePackages.Logic
                         topDependencyPairs.Select((x, i) => $"  {x.Value.ToString().PadLeft(width)} {x.Key}")));
             }
 
-            return dependents;
+            return new ItemBatch<PackageDependencyEntity>(dependents, dependents.Count >= ItemBatchSize);
         }
 
         public async Task ProcessBatchAsync(IReadOnlyList<PackageDependencyEntity> batch)

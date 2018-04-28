@@ -89,10 +89,18 @@ namespace Knapcode.ExplorePackages.Logic
 
             foreach (var commit in commits)
             {
-                var items = await _processor.InitializeItemsAsync(commit.Entities, token);
-                foreach (var item in items)
+                var skip = 0;
+                var hasMore = true;
+                while (hasMore)
                 {
-                    taskQueue.Enqueue(new List<TItem> { item });
+                    var batch = await _processor.InitializeItemsAsync(commit.Entities, skip, token);
+                    skip += batch.Items.Count;
+                    hasMore = batch.HasMoreItems;
+
+                    foreach (var item in batch.Items)
+                    {
+                        taskQueue.Enqueue(new List<TItem> { item });
+                    }
                 }
             }
 
@@ -109,14 +117,21 @@ namespace Knapcode.ExplorePackages.Logic
                 .SelectMany(x => x.Entities)
                 .ToList();
 
-            var batch = await _processor.InitializeItemsAsync(entities, token);
-
-            if (batch.Any())
+            var skip = 0;
+            var hasMore = true;
+            while (hasMore)
             {
-                _log.LogInformation($"Initialized batch of {batch.Count} {typeof(TItem).Name}. {stopwatch.ElapsedMilliseconds}ms");
-                stopwatch.Restart();
-                await _processor.ProcessBatchAsync(batch);
-                _log.LogInformation($"Done processing batch of {batch.Count} {typeof(TItem).Name}. {stopwatch.ElapsedMilliseconds}ms");
+                var batch = await _processor.InitializeItemsAsync(entities, skip, token);
+                skip += batch.Items.Count;
+                hasMore = batch.HasMoreItems;
+
+                if (batch.Items.Any())
+                {
+                    _log.LogInformation($"Initialized batch of {batch.Items.Count} {typeof(TItem).Name}. {stopwatch.ElapsedMilliseconds}ms");
+                    stopwatch.Restart();
+                    await _processor.ProcessBatchAsync(batch.Items);
+                    _log.LogInformation($"Done processing batch of {batch.Items.Count} {typeof(TItem).Name}. {stopwatch.ElapsedMilliseconds}ms");
+                }
             }
         }
     }

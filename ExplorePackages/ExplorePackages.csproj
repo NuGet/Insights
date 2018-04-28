@@ -59,6 +59,7 @@
     <Compile Include="Logic\EnumeratorUtility.cs" />
     <Compile Include="Logic\ICommitEnumerator.cs" />
     <Compile Include="Logic\ICommitProcessor.cs" />
+    <Compile Include="Logic\ItemBatch.cs" />
     <Compile Include="Logic\MZipCommitCollector.cs" />
     <Compile Include="Logic\MZipCommitProcessor.cs" />
     <Compile Include="Logic\MZipToDatabaseCommitCollector.cs" />
