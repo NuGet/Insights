@@ -107,7 +107,8 @@ namespace Knapcode.ExplorePackages.Logic
             if (includePackages)
             {
                 existingRegistrationsQueryable = existingRegistrationsQueryable
-                    .Include(x => x.Packages);
+                    .Include(x => x.Packages)
+                    .ThenInclude(x => x.CatalogPackage);
             }
 
             var existingRegistrations = await existingRegistrationsQueryable

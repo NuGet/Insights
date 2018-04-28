@@ -21,6 +21,7 @@ namespace Knapcode.ExplorePackages.Commands
             MZipCommand mzip,
             MZipToDatabaseCommand mzipToDatabase,
             DependenciesToDatabaseCommand dependenciesToDatabase,
+            DependencyPackagesToDatabaseCommand dependencyPackagesToDatabase,
             DownloadsToDatabaseCommand downloadsToDatabase,
             PackageQueriesCommand packageQueries,
             ExplorePackagesSettings settings,
@@ -35,6 +36,7 @@ namespace Knapcode.ExplorePackages.Commands
                 mzip,
                 mzipToDatabase,
                 dependenciesToDatabase,
+                dependencyPackagesToDatabase,
             };
 
             if (settings.DownloadsV1Url != null)
