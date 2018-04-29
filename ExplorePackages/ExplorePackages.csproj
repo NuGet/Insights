@@ -328,6 +328,9 @@
     <PackageReference Include="AutoMapper">
       <Version>6.2.2</Version>
     </PackageReference>
+    <PackageReference Include="Dapper">
+      <Version>1.50.4</Version>
+    </PackageReference>
     <PackageReference Include="Knapcode.MiniZip">
       <Version>0.4.0</Version>
     </PackageReference>

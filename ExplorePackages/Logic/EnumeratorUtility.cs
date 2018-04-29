@@ -71,7 +71,7 @@ namespace Knapcode.ExplorePackages.Logic
                 {
                     // We've gotten a whole page but can't confidently move the start commit timestamp forward.
                     throw new InvalidOperationException(
-                        "Only one commit timestamp was encountered. A large page size is required to proceed.");
+                        "Only one commit timestamp was encountered. A larger page size is required to proceed.");
                 }
                 else if (fetched < batchSize)
                 {

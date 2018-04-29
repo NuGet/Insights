@@ -4,6 +4,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Dapper;
 using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Support;
 using Microsoft.EntityFrameworkCore;
@@ -29,17 +30,51 @@ namespace Knapcode.ExplorePackages.Logic
             int take)
         {
             using (var entityContext = new EntityContext())
+            using (var connection = entityContext.Database.GetDbConnection())
             {
-                return await entityContext
-                    .PackageDependencies
-                    .Include(x => x.DependencyPackageRegistration)
-                    .ThenInclude(x => x.Packages)
-                    .ThenInclude(x => x.CatalogPackage)
-                    .Where(x => packageRegistrationKeys.Contains(x.DependencyPackageRegistration.PackageRegistrationKey))
-                    .OrderBy(x => x.PackageDependencyKey)
-                    .Skip(skip)
-                    .Take(take)
-                    .ToListAsync();
+                await connection.OpenAsync();
+
+                var result = await connection.QueryAsync<
+                    PackageDependencyEntity,
+                    PackageRegistrationEntity,
+                    PackageEntity,
+                    CatalogPackageEntity,
+                    PackageDependencyEntity>(
+                    @"SELECT *
+                      FROM PackageDependencies pd
+                      INNER JOIN PackageRegistrations pr ON pd.DependencyPackageRegistrationKey = pr.PackageRegistrationKey
+                      INNER JOIN Packages p ON pr.PackageRegistrationKey = p.PackageRegistrationKey
+                      INNER JOIN CatalogPackages cp ON p.PackageKey = cp.PackageKey
+                      WHERE pd.DependencyPackageRegistrationKey IN @Keys AND cp.Deleted = 0
+                      ORDER BY pd.PackageDependencyKey
+                      LIMIT @Skip, @Take",
+                    map: (pd, pr, p, cp) =>
+                    {
+                        pd.DependencyPackageRegistration = pr;
+                        p.PackageRegistration = pr;
+                        p.CatalogPackage = cp;
+                        cp.Package = p;
+
+                        if (pr.Packages == null)
+                        {
+                            pr.Packages = new List<PackageEntity> { p };
+                        }
+                        else
+                        {
+                            pr.Packages.Add(p);
+                        }
+
+                        return pd;
+                    },
+                    param: new
+                    {
+                        Keys = packageRegistrationKeys,
+                        Skip = skip,
+                        Take = take,
+                    },
+                    splitOn: "PackageRegistrationKey,PackageKey,PackageKey");
+
+                return result.ToList();
             }
         }
 
@@ -196,22 +231,22 @@ namespace Knapcode.ExplorePackages.Logic
                     foreach (var update in updates.MinimumUpdates)
                     {
                         keyParameter.Value = update.Key;
-                        minimumParameter.Value = update.Value;
+                        minimumParameter.Value = (object)update.Value ?? DBNull.Value;
                         changes += await minimumCommand.ExecuteNonQueryAsync();
                     }
 
                     foreach (var update in updates.BestUpdates)
                     {
                         keyParameter.Value = update.Key;
-                        bestParameter.Value = update.Value;
+                        bestParameter.Value = (object)update.Value ?? DBNull.Value;
                         changes += await bestCommand.ExecuteNonQueryAsync();
                     }
 
                     foreach (var update in updates.MinimumAndBestUpdates)
                     {
                         keyParameter.Value = update.Key;
-                        minimumParameter.Value = update.Value.MinimumDependencyPackageKey;
-                        bestParameter.Value = update.Value.BestDependencyPackageKey;
+                        minimumParameter.Value = (object)update.Value.MinimumDependencyPackageKey ?? DBNull.Value;
+                        bestParameter.Value = (object)update.Value.BestDependencyPackageKey ?? DBNull.Value;
                         changes += await minimumAndBestCommand.ExecuteNonQueryAsync();
                     }
 
