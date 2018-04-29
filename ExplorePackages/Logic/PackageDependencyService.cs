@@ -34,6 +34,7 @@ namespace Knapcode.ExplorePackages.Logic
                     .PackageDependencies
                     .Include(x => x.DependencyPackageRegistration)
                     .ThenInclude(x => x.Packages)
+                    .ThenInclude(x => x.CatalogPackage)
                     .Where(x => packageRegistrationKeys.Contains(x.DependencyPackageRegistration.PackageRegistrationKey))
                     .OrderBy(x => x.PackageDependencyKey)
                     .Skip(skip)
@@ -110,6 +111,7 @@ namespace Knapcode.ExplorePackages.Logic
         {
             return packageRegistration
                 .Packages
+                .Where(x => x.CatalogPackage != null && !x.CatalogPackage.Deleted)
                 .ToDictionary(y => NuGetVersion.Parse(y.Version));
         }
 
