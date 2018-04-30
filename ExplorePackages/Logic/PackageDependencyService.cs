@@ -4,7 +4,6 @@ using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Dapper;
 using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Support;
 using Microsoft.EntityFrameworkCore;
@@ -30,51 +29,33 @@ namespace Knapcode.ExplorePackages.Logic
             int take)
         {
             using (var entityContext = new EntityContext())
-            using (var connection = entityContext.Database.GetDbConnection())
             {
-                await connection.OpenAsync();
+                var dependencies = await entityContext
+                    .PackageDependencies
+                    .Where(x => packageRegistrationKeys.Contains(x.DependencyPackageRegistrationKey))
+                    .Skip(skip)
+                    .Take(take)
+                    .ToListAsync();
 
-                var result = await connection.QueryAsync<
-                    PackageDependencyEntity,
-                    PackageRegistrationEntity,
-                    PackageEntity,
-                    CatalogPackageEntity,
-                    PackageDependencyEntity>(
-                    @"SELECT *
-                      FROM PackageDependencies pd
-                      INNER JOIN PackageRegistrations pr ON pd.DependencyPackageRegistrationKey = pr.PackageRegistrationKey
-                      INNER JOIN Packages p ON pr.PackageRegistrationKey = p.PackageRegistrationKey
-                      INNER JOIN CatalogPackages cp ON p.PackageKey = cp.PackageKey
-                      WHERE pd.DependencyPackageRegistrationKey IN @Keys AND cp.Deleted = 0
-                      ORDER BY pd.PackageDependencyKey
-                      LIMIT @Skip, @Take",
-                    map: (pd, pr, p, cp) =>
-                    {
-                        pd.DependencyPackageRegistration = pr;
-                        p.PackageRegistration = pr;
-                        p.CatalogPackage = cp;
-                        cp.Package = p;
+                var foundPackageRegistrationKeys = dependencies
+                    .Select(x => x.DependencyPackageRegistrationKey)
+                    .Distinct()
+                    .ToList();
 
-                        if (pr.Packages == null)
-                        {
-                            pr.Packages = new List<PackageEntity> { p };
-                        }
-                        else
-                        {
-                            pr.Packages.Add(p);
-                        }
+                var packageRegistrationKeyToPackageRegistration = await entityContext
+                    .PackageRegistrations
+                    .Include(x => x.Packages)
+                    .ThenInclude(x => x.CatalogPackage)
+                    .Where(x => foundPackageRegistrationKeys.Contains(x.PackageRegistrationKey))
+                    .ToDictionaryAsync(x => x.PackageRegistrationKey);
 
-                        return pd;
-                    },
-                    param: new
-                    {
-                        Keys = packageRegistrationKeys,
-                        Skip = skip,
-                        Take = take,
-                    },
-                    splitOn: "PackageRegistrationKey,PackageKey,PackageKey");
+                foreach (var dependency in dependencies)    
+                {
+                    dependency.DependencyPackageRegistration =
+                        packageRegistrationKeyToPackageRegistration[dependency.DependencyPackageRegistrationKey];
+                }
 
-                return result.ToList();
+                return dependencies;
             }
         }
 

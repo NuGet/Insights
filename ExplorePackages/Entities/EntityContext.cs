@@ -1,42 +1,10 @@
 ﻿using System;
-using System.Data;
-using Dapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Entities
 {
     public class EntityContext : DbContext
     {
-        static EntityContext()
-        {
-            SqlMapper.AddTypeHandler(new NullableLongTypeHandler());
-        }
-
-        private class NullableLongTypeHandler : SqlMapper.TypeHandler<long?>
-        {
-            public override void SetValue(IDbDataParameter parameter, long? value)
-            {
-                throw new NotSupportedException();
-            }
-
-            public override long? Parse(object value)
-            {
-                if (value == DBNull.Value || value == null)
-                {
-                    return null;
-                }
-
-                switch (value)
-                {
-                    case long longValue:
-                        return longValue;
-                    default:
-                        throw new DataException();
-                }
-            }
-        }
-
         public static string ConnectionString { get; set; } = "Data Source=ExplorePackages.sqlite3";
         public static bool Enabled { get; set; } = true;
 
@@ -55,7 +23,7 @@ namespace Knapcode.ExplorePackages.Entities
         public DbSet<PackageQueryEntity> PackageQueries { get; set; }
         public DbSet<PackageQueryMatchEntity> PackageQueryMatches { get; set; }
         public DbSet<V2PackageEntity> V2PackageEntities { get; set; }
-        public DbSet<CatalogPackageEntity> CatalogPackageEntities { get; set; }
+        public DbSet<CatalogPackageEntity> CatalogPackages { get; set; }
         public DbSet<PackageDownloadsEntity> PackageDownloads { get; set; }
         public DbSet<PackageArchiveEntity> PackageArchives { get; set; }
         public DbSet<PackageEntryEntity> PackageEntries { get; set; }
