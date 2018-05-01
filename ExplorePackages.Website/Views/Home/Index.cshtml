@@ -303,6 +303,7 @@
         }
 
         function pushExploreUrl(id, version) {
+            document.title = id + " " + version + "- ExplorePackages";
             history.pushState({}, "", "/Home/Explore/" + id + "/" + version);
         }
 
