@@ -31,23 +31,18 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task ProcessAsync(CatalogPageEntry page, IReadOnlyList<CatalogEntry> leaves)
         {
-            var identityToPackageKey = await _packageService.AddOrUpdatePackagesAsync(leaves);
+            var latestLeaves = leaves
+                .GroupBy(x => new PackageIdentity(x.Id, x.Version.ToNormalizedString()))
+                .Select(x => x
+                    .OrderByDescending(y => y.CommitTimeStamp)
+                    .First())
+                .ToList();
+
+            var identityToPackageKey = await _packageService.AddOrUpdatePackagesAsync(latestLeaves);
             
             await _catalogService.AddOrUpdateAsync(page, leaves, identityToPackageKey);
 
-            var unavailableInV2 = (await TaskProcessor.ExecuteAsync(
-                leaves.Where(x => x.IsDelete),
-                async x =>
-                {
-                    var exists = await _v2Client.HasPackageAsync(
-                        _settings.V2BaseUrl,
-                        x.Id,
-                        x.Version.ToNormalizedString(),
-                        semVer2: true);
-
-                    return exists ? x : null;
-                })).Where(x => x != null).ToList();
-            await _packageService.SetDeletedPackagesAsUnlistedInV2Async(unavailableInV2);
+            await _packageService.SetDeletedPackagesAsUnlistedInV2Async(latestLeaves.Where(x => x.IsDelete));
         }
     }
 }
