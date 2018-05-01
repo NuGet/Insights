@@ -549,6 +549,7 @@ namespace Knapcode.ExplorePackages.Logic
                 var existingPackages = await entityContext
                     .Packages
                     .Include(x => x.V2Package)
+                    .Where(x => x.V2Package != null)
                     .Where(p => identities.Contains(p.Identity))
                     .ToListAsync();
                 _log.LogInformation($"Found {existingPackages.Count} corresponding V2 packages. {selectStopwatch.ElapsedMilliseconds}ms");
@@ -616,8 +617,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                     return KeyValuePair.Create(x, listed);
                 }))
-                .GroupBy(x => x.Key, new CatalogEntryComparer())
-                .ToDictionary(x => x.Key, x => x.First().Value, new CatalogEntryComparer());
+                .ToDictionary(x => x.Key, x => x.Value, new CatalogEntryComparer());
 
             return await AddOrUpdatePackagesAsync(
                 x => x
