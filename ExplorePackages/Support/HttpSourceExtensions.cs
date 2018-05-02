@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -70,6 +71,7 @@ namespace Knapcode.ExplorePackages.Support
                 {
                     IgnoreNotFounds = ignoreNotFounds,
                     MaxTries = maxTries,
+                    RequestTimeout = TimeSpan.FromSeconds(30),
                 },
                 stream =>
                 {

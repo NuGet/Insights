@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NuGet.Common;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -8,13 +9,16 @@ namespace Knapcode.ExplorePackages.Logic
     {
         private readonly SearchServiceUrlDiscoverer _discoverer;
         private readonly SearchClient _client;
+        private readonly ILogger _log;
 
         public SearchServiceCursorReader(
             SearchServiceUrlDiscoverer discoverer,
-            SearchClient client)
+            SearchClient client,
+            ILogger log)
         {
             _discoverer = discoverer;
             _client = client;
+            _log = log;
         }
 
         public async Task<DateTimeOffset> GetCursorAsync()
@@ -26,16 +30,31 @@ namespace Knapcode.ExplorePackages.Logic
 
             // Get all commit timestamps.
             var commitTimestampTasks = baseUrls
-                .Select(x => _client.GetDiagnosticsAsync(x))
+                .Select(GetTimestampAsync)
                 .ToList();
             await Task.WhenAll(commitTimestampTasks);
 
             // Return the minimum.
             var commitTimestamp = commitTimestampTasks
-                .Select(x => x.Result.CommitUserData.CommitTimestamp)
-                .Min();
+                .Where(x => x.Result.HasValue)
+                .Min(x => x.Result.Value);
 
             return commitTimestamp;
+        }
+
+        private async Task<DateTimeOffset?> GetTimestampAsync(string baseUrl)
+        {
+            try
+            {
+                var diagnostics = await _client.GetDiagnosticsAsync(baseUrl);
+
+                return diagnostics.CommitUserData.CommitTimestamp;
+            }
+            catch (TimeoutException)
+            {
+                _log.LogWarning($"A timeout occurred when getting the timestamp from {baseUrl}.");
+                return null;
+            }
         }
     }
 }
