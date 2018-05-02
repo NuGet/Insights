@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -56,7 +55,6 @@ namespace Knapcode.ExplorePackages.Logic
                 result = await _httpSource.DeserializeUrlAsync<V2SearchResult>(
                     url,
                     ignoreNotFounds: false,
-                    maxTries: 1,
                     log: _log);
             }
             catch
