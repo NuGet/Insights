@@ -264,7 +264,6 @@
     <Compile Include="Support\AssumeUniversalDateTimeOffsetConverter.cs" />
     <Compile Include="Logic\Data\BlobMetadata.cs" />
     <Compile Include="Support\EnumerableExtensions.cs" />
-    <Compile Include="Support\HttpClientExtensions.cs" />
     <Compile Include="Support\IIncrementalHash.cs" />
     <Compile Include="Support\InitializeServicePointHandler.cs" />
     <Compile Include="Support\IPortDiscoverer.cs" />
