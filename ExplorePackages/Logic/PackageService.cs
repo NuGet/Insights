@@ -73,6 +73,8 @@ namespace Knapcode.ExplorePackages.Logic
                 return await entityContext
                     .Packages
                     .Include(x => x.PackageRegistration)
+                    .Include(x => x.V2Package)
+                    .Include(x => x.CatalogPackage)
                     .Where(x => x.PackageRegistration.Id == id && x.Version == normalizedVersion)
                     .FirstOrDefaultAsync();
             }

@@ -26,12 +26,13 @@ namespace Knapcode.ExplorePackages.Logic
             PackageConsistencyState state,
             IProgressReport progressReport)
         {
-            var report = await GetReportAsync(context, state, progressReport, 
-                allowPartial: false);
+            var report = await GetReportAsync(context, state, progressReport, allowPartial: false);
             return new RegistrationConsistencyReport(
                 report.IsConsistent,
                 report.IsInIndex.Value,
-                report.HasLeaf.Value);
+                report.HasLeaf.Value,
+                report.IsListedInIndex.Value,
+                report.IsListedInLeaf.Value);
         }
 
         public async Task<bool> IsConsistentAsync(
@@ -63,12 +64,13 @@ namespace Knapcode.ExplorePackages.Logic
 
             var shouldExist = !context.Package.Deleted && (_hasSemVer2 || !context.IsSemVer2);
 
-            var isInIndex = await _client.HasPackageInIndexAsync(
+            var registrationLeafItem = await _client.GetRegistrationLeafItemOrNullAsync(
                 baseUrl,
                 context.Package.Id,
                 context.Package.Version);
-            report.IsInIndex = isInIndex;
-            report.IsConsistent &= shouldExist == isInIndex;
+            report.IsInIndex = registrationLeafItem != null;
+            report.IsListedInIndex = registrationLeafItem?.CatalogEntry.Listed ?? false;
+            report.IsConsistent &= shouldExist == report.IsInIndex && context.IsListed == report.IsListedInIndex;
             await incrementalProgress.ReportProgressAsync("Checked for the package in the registration index.");
 
             if (allowPartial && !report.IsConsistent)
@@ -76,12 +78,13 @@ namespace Knapcode.ExplorePackages.Logic
                 return report;
             }
 
-            var hasLeaf = await _client.HasLeafAsync(
+            var registrationLeaf = await _client.GetRegistrationLeafOrNullAsync(
                 baseUrl,
                 context.Package.Id,
                 context.Package.Version);
-            report.HasLeaf = hasLeaf;
-            report.IsConsistent &= shouldExist == hasLeaf;
+            report.HasLeaf = registrationLeaf != null;
+            report.IsListedInLeaf = registrationLeaf?.Listed ?? false;
+            report.IsConsistent &= shouldExist == report.HasLeaf && context.IsListed == report.IsListedInLeaf;
             await incrementalProgress.ReportProgressAsync("Checked for the package's registration leaf.");
 
             if (allowPartial && !report.IsConsistent)
@@ -97,6 +100,8 @@ namespace Knapcode.ExplorePackages.Logic
             public bool IsConsistent { get; set; }
             public bool? IsInIndex { get; set; }
             public bool? HasLeaf { get; set; }
+            public bool? IsListedInIndex { get; set; }
+            public bool? IsListedInLeaf { get; set; }
         }
     }
 }

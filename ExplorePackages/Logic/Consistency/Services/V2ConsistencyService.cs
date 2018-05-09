@@ -24,7 +24,9 @@ namespace Knapcode.ExplorePackages.Logic
             return new V2ConsistencyReport(
                 report.IsConsistent,
                 report.HasPackageSemVer1.Value,
-                report.HasPackageSemVer2.Value);
+                report.HasPackageSemVer2.Value,
+                report.IsListedSemVer1.Value,
+                report.IsListedSemVer2.Value);
         }
 
         public async Task<bool> IsConsistentAsync(
@@ -56,13 +58,14 @@ namespace Knapcode.ExplorePackages.Logic
 
             var report = new MutableReport { IsConsistent = true };
 
-            var hasPackageSemVer1 = await _client.HasPackageAsync(
+            var packageSemVer1 = await _client.GetPackageOrNullAsync(
                 _settings.V2BaseUrl,
                 context.Package.Id,
                 context.Package.Version,
                 semVer2: false);
-            report.HasPackageSemVer1 = hasPackageSemVer1;
-            report.IsConsistent &= shouldExistSemVer1 == hasPackageSemVer1;
+            report.HasPackageSemVer1 = packageSemVer1 != null;
+            report.IsListedSemVer1 = packageSemVer1?.Listed ?? false;
+            report.IsConsistent &= shouldExistSemVer1 == report.HasPackageSemVer1 && context.IsListed == report.IsListedSemVer1;
             await incrementalProgress.ReportProgressAsync("Checked for the package in V2, SemVer 1.0.0.");
 
             if (allowPartial && !report.IsConsistent)
@@ -70,13 +73,14 @@ namespace Knapcode.ExplorePackages.Logic
                 return report;
             }
 
-            var hasPackageSemVer2 = await _client.HasPackageAsync(
+            var packageSemVer2 = await _client.GetPackageOrNullAsync(
                 _settings.V2BaseUrl,
                 context.Package.Id,
                 context.Package.Version,
                 semVer2: true);
-            report.HasPackageSemVer2 = hasPackageSemVer2;
-            report.IsConsistent &= shouldExistSemVer2 == hasPackageSemVer2;
+            report.HasPackageSemVer2 = packageSemVer2 != null;
+            report.IsListedSemVer2 = packageSemVer2?.Listed ?? false;
+            report.IsConsistent &= shouldExistSemVer2 == report.HasPackageSemVer2 && context.IsListed == report.IsListedSemVer2;
             await incrementalProgress.ReportProgressAsync("Checked for the package in V2, SemVer 2.0.0.");
 
             if (allowPartial && !report.IsConsistent)
@@ -92,6 +96,8 @@ namespace Knapcode.ExplorePackages.Logic
             public bool IsConsistent { get; set; }
             public bool? HasPackageSemVer1 { get; set; }
             public bool? HasPackageSemVer2 { get; set; }
+            public bool? IsListedSemVer1 { get; set; }
+            public bool? IsListedSemVer2 { get; set; }
         }
     }
 }

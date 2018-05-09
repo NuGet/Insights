@@ -27,7 +27,8 @@ namespace Knapcode.ExplorePackages.Logic
 
             var isConsistent = shouldExist == actuallyExists
                 && ((shouldExist && state.Gallery.PackageState.IsSemVer2 == context.IsSemVer2)
-                    || !shouldExist);
+                    || !shouldExist)
+                && state.Gallery.PackageState.IsListed == context.IsListed;
 
             return new GalleryConsistencyReport(
                 isConsistent,

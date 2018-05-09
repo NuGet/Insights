@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Support;
+using Microsoft.EntityFrameworkCore;
 using NuGet.Common;
 
 namespace Knapcode.ExplorePackages.Logic
@@ -73,6 +74,9 @@ namespace Knapcode.ExplorePackages.Logic
             if (!reprocess)
             {
                 return await _packageCommitEnumerator.GetCommitsAsync(
+                    e => e
+                        .Packages
+                        .Include(x => x.V2Package),
                     bounds.Start,
                     bounds.End,
                     5000);

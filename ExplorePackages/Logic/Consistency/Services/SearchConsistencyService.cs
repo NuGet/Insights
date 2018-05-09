@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using NuGet.Common;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -7,15 +10,18 @@ namespace Knapcode.ExplorePackages.Logic
     {
         private readonly SearchServiceUrlDiscoverer _discoverer;
         private readonly SearchClient _searchClient;
+        private readonly ILogger _log;
         private readonly bool _specificInstances;
 
         public SearchConsistencyService(
             SearchServiceUrlDiscoverer discoverer,
             SearchClient searchClient,
+            ILogger log,
             bool specificInstances)
         {
             _discoverer = discoverer;
             _searchClient = searchClient;
+            _log = log;
             _specificInstances = specificInstances;
         }
 
@@ -28,7 +34,9 @@ namespace Knapcode.ExplorePackages.Logic
             return new SearchConsistencyReport(
                 report.IsConsistent,
                 report.BaseUrlHasPackageSemVer1,
-                report.BaseUrlHasPackageSemVer2);
+                report.BaseUrlHasPackageSemVer2,
+                report.BaseUrlIsListedSemVer1,
+                report.BaseUrlIsListedSemVer2);
         }
 
         public async Task<bool> IsConsistentAsync(
@@ -55,48 +63,76 @@ namespace Knapcode.ExplorePackages.Logic
             bool allowPartial)
         {
             var baseUrls = await _discoverer.GetUrlsAsync(ServiceIndexTypes.V2Search, _specificInstances);
+            var maxTries = _specificInstances ? 1 : 3;
             var incrementalProgress = new IncrementalProgress(progressReport, baseUrls.Count * 2);
             var baseUrlHasPackageSemVer1 = new Dictionary<string, bool>();
             var baseUrlHasPackageSemVer2 = new Dictionary<string, bool>();
+            var baseUrlIsListedSemVer1 = new Dictionary<string, bool>();
+            var baseUrlIsListedSemVer2 = new Dictionary<string, bool>();
 
             var report = new MutableReport
             {
                 IsConsistent = true,
                 BaseUrlHasPackageSemVer1 = baseUrlHasPackageSemVer1,
                 BaseUrlHasPackageSemVer2 = baseUrlHasPackageSemVer2,
+                BaseUrlIsListedSemVer1 = baseUrlIsListedSemVer1,
+                BaseUrlIsListedSemVer2 = baseUrlIsListedSemVer2,
             };
 
             var shouldExistSemVer1 = !context.Package.Deleted && !context.IsSemVer2;
             var shouldExistSemVer2 = !context.Package.Deleted;
 
-            foreach (var baseUrl in baseUrls)
+            for (var i = 0; i < baseUrls.Count; i++)
             {
-                var hasPackageSemVer1 = await _searchClient.HasPackageAsync(
-                    baseUrl,
-                    context.Package.Id,
-                    context.Package.Version,
-                    semVer2: false);
-                baseUrlHasPackageSemVer1[baseUrl] = hasPackageSemVer1;
-                report.IsConsistent &= hasPackageSemVer1 == shouldExistSemVer1;
-                await incrementalProgress.ReportProgressAsync($"Searched for the package on search {baseUrl}, SemVer 1.0.0.");
+                var baseUrl = baseUrls[i];
+                var isLastBaseUrl = i == baseUrls.Count - 1;
 
-                if (allowPartial && !report.IsConsistent)
+                try
                 {
-                    return report;
+                    var packageSemVer1 = await _searchClient.GetPackageOrNullAsync(
+                        baseUrl,
+                        context.Package.Id,
+                        context.Package.Version,
+                        semVer2: false,
+                        maxTries: maxTries);
+                    var hasPackageSemVer1 = packageSemVer1 != null;
+                    var isListedSemVer1 = packageSemVer1?.Listed ?? false;
+                    baseUrlHasPackageSemVer1[baseUrl] = hasPackageSemVer1;
+                    baseUrlIsListedSemVer1[baseUrl] = isListedSemVer1;
+                    report.IsConsistent &= hasPackageSemVer1 == shouldExistSemVer1 && context.IsListed == isListedSemVer1;
+                    await incrementalProgress.ReportProgressAsync($"Searched for the package on search {baseUrl}, SemVer 1.0.0.");
+
+                    if (allowPartial && !report.IsConsistent)
+                    {
+                        return report;
+                    }
+
+                    var packageSemVer2 = await _searchClient.GetPackageOrNullAsync(
+                        baseUrl,
+                        context.Package.Id,
+                        context.Package.Version,
+                        semVer2: true,
+                        maxTries: maxTries);
+                    var hasPackageSemVer2 = packageSemVer2 != null;
+                    var isListedSemVer2 = packageSemVer2?.Listed ?? false;
+                    baseUrlHasPackageSemVer2[baseUrl] = hasPackageSemVer2;
+                    baseUrlIsListedSemVer2[baseUrl] = isListedSemVer2;
+                    report.IsConsistent &= hasPackageSemVer2 == shouldExistSemVer2 && context.IsListed == isListedSemVer2;
+                    await incrementalProgress.ReportProgressAsync($"Searched for the package on search {baseUrl}, SemVer 2.0.0.");
+
+                    if (allowPartial && !report.IsConsistent)
+                    {
+                        return report;
+                    }
                 }
-
-                var hasPackageSemVer2 = await _searchClient.HasPackageAsync(
-                    baseUrl,
-                    context.Package.Id,
-                    context.Package.Version,
-                    semVer2: true);
-                baseUrlHasPackageSemVer2[baseUrl] = hasPackageSemVer2;
-                report.IsConsistent &= hasPackageSemVer2 == shouldExistSemVer2;
-                await incrementalProgress.ReportProgressAsync($"Searched for the package on search {baseUrl}, SemVer 2.0.0.");
-
-                if (allowPartial && !report.IsConsistent)
+                catch (Exception ex)
                 {
-                    return report;
+                    if (isLastBaseUrl && (!baseUrlHasPackageSemVer1.Any() || !baseUrlHasPackageSemVer2.Any()))
+                    {
+                        throw;
+                    }
+
+                    _log.LogWarning($"Failed to check the consistency of search base URL {baseUrl}. Exception message: {ex.Message}");
                 }
             }
 
@@ -108,6 +144,8 @@ namespace Knapcode.ExplorePackages.Logic
             public bool IsConsistent { get; set; }
             public IReadOnlyDictionary<string, bool> BaseUrlHasPackageSemVer1 { get; set; }
             public IReadOnlyDictionary<string, bool> BaseUrlHasPackageSemVer2 { get; set; }
+            public IReadOnlyDictionary<string, bool> BaseUrlIsListedSemVer1 { get; set; }
+            public IReadOnlyDictionary<string, bool> BaseUrlIsListedSemVer2 { get; set; }
         }
     }
 }

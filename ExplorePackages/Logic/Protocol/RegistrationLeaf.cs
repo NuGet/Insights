@@ -2,11 +2,8 @@
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class RegistrationCatalogEntry
+    public class RegistrationLeaf
     {
-        [JsonProperty("version")]
-        public string Version { get; set; }
-
         [JsonProperty("listed")]
         public bool Listed { get; set; }
     }

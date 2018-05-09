@@ -43,7 +43,7 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
-        public async Task<bool> HasPackageAsync(string baseUrl, string id, string version, bool semVer2)
+        public async Task<V2SearchResultItem> GetPackageOrNullAsync(string baseUrl, string id, string version, bool semVer2, int maxTries)
         {
             var semVerLevel = semVer2 ? "2.0.0" : "1.0.0";
             var query = $"packageid:{id} version:{version}";
@@ -55,6 +55,7 @@ namespace Knapcode.ExplorePackages.Logic
                 result = await _httpSource.DeserializeUrlAsync<V2SearchResult>(
                     url,
                     ignoreNotFounds: false,
+                    maxTries: maxTries,
                     log: _log);
             }
             catch
@@ -65,11 +66,11 @@ namespace Knapcode.ExplorePackages.Logic
 
             if (result.TotalHits == 0)
             {
-                return false;
+                return null;
             }
             else if (result.TotalHits == 1)
             {
-                return true;
+                return result.Data[0];
             }
 
             // Account for ToLower normalization (used instead of ToLowerInvariant in this case).
@@ -78,12 +79,12 @@ namespace Knapcode.ExplorePackages.Logic
                 .Select(x => x.PackageRegistration.Id.ToLower())
                 .Distinct()
                 .Count();
-            var hasExactId = result
+            var exactMatch = result
                 .Data
-                .Any(x => x.PackageRegistration.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
-            if (idCount == 1 && hasExactId)
+                .FirstOrDefault(x => x.PackageRegistration.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+            if (idCount == 1 && exactMatch != null)
             {
-                return true;
+                return exactMatch;
             }
 
             throw new InvalidDataException("The count returned by V2 search should be either 0 or 1.");

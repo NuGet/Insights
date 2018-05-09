@@ -24,20 +24,36 @@ namespace Knapcode.ExplorePackages.Logic
             _log = log;
         }
 
-        public async Task<bool> HasLeafAsync(string baseUrl, string id, string version)
+        public async Task<RegistrationLeaf> GetRegistrationLeafOrNullAsync(string baseUrl, string id, string version)
         {
             var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
             var leafUrl = $"{baseUrl.TrimEnd('/')}/{id.ToLowerInvariant()}/{normalizedVersion.ToLowerInvariant()}.json";
-            return await _httpSource.UrlExistsAsync(leafUrl, _log);
+            return await _httpSource.DeserializeUrlAsync<RegistrationLeaf>(leafUrl, ignoreNotFounds: true, log: _log);
+        }
+
+        public async Task<RegistrationLeafItem> GetRegistrationLeafItemOrNullAsync(string baseUrl, string id, string version)
+        {
+            var result = await GetRegistrationLeafItemResultAsync(baseUrl, id, version, justExists: false);
+            return result.Result;
         }
 
         public async Task<bool> HasPackageInIndexAsync(string baseUrl, string id, string version)
+        {
+            var result = await GetRegistrationLeafItemResultAsync(baseUrl, id, version, justExists: true);
+            return result.Exists;
+        }
+
+        private async Task<RegistrationLeafItemResult> GetRegistrationLeafItemResultAsync(
+            string baseUrl,
+            string id,
+            string version,
+            bool justExists)
         {
             var parsedVersion = NuGetVersion.Parse(version);
             var registrationIndex = await GetRegistrationIndex(baseUrl, id);
             if (registrationIndex == null)
             {
-                return false;
+                return new RegistrationLeafItemResult(exists: false, result: null);
             }
 
             foreach (var pageItem in registrationIndex.Items)
@@ -45,9 +61,9 @@ namespace Knapcode.ExplorePackages.Logic
                 var lower = NuGetVersion.Parse(pageItem.Lower);
                 var upper = NuGetVersion.Parse(pageItem.Upper);
 
-                if (lower == parsedVersion || upper == parsedVersion)
+                if ((lower == parsedVersion || upper == parsedVersion) && justExists)
                 {
-                    return true;
+                    return new RegistrationLeafItemResult(exists: true, result: null);
                 }
 
                 if (parsedVersion < lower || parsedVersion > upper)
@@ -62,13 +78,14 @@ namespace Knapcode.ExplorePackages.Logic
                     leaves = page.Items;
                 }
 
-                if (leaves.Any(x => NuGetVersion.Parse(x.CatalogEntry.Version) == parsedVersion))
+                var leaf = leaves.FirstOrDefault(x => NuGetVersion.Parse(x.CatalogEntry.Version) == parsedVersion);
+                if (leaf != null)
                 {
-                    return true;
+                    return new RegistrationLeafItemResult(exists: true, result: leaf);
                 }
             }
 
-            return false;
+            return new RegistrationLeafItemResult(exists: false, result: null);
         }
 
         public async Task<RegistrationIndex> GetRegistrationIndex(string baseUrl, string id)
@@ -80,6 +97,18 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task<RegistrationPage> GetRegistrationPage(string pageUrl)
         {
             return await _httpSource.DeserializeUrlAsync<RegistrationPage>(pageUrl, ignoreNotFounds: false, log: _log);
+        }
+
+        private class RegistrationLeafItemResult
+        {
+            public RegistrationLeafItemResult(bool exists, RegistrationLeafItem result)
+            {
+                Exists = exists;
+                Result = result;
+            }
+
+            public bool Exists { get; }
+            public RegistrationLeafItem Result { get; }
         }
     }
 }

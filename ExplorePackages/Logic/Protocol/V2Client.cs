@@ -55,7 +55,7 @@ namespace Knapcode.ExplorePackages.Logic
             return await ParseV2PageAsync(url);
         }
 
-        public async Task<bool> HasPackageAsync(string baseUrl, string id, string version, bool semVer2)
+        public async Task<V2Package> GetPackageOrNullAsync(string baseUrl, string id, string version, bool semVer2)
         {
             var semVerLevel = semVer2 ? "2.0.0" : "1.0.0";
             var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
@@ -64,17 +64,17 @@ namespace Knapcode.ExplorePackages.Logic
             var url = $"{baseUrl.TrimEnd('/')}/Packages?$select={Projection}&$filter={Uri.EscapeDataString(filter)}&semVerLevel={semVerLevel}";
 
             var page = await ParseV2PageAsync(url);
-            
+
             if (page.Count == 0)
             {
-                return false;
+                return null;
             }
             else if (page.Count == 1)
             {
-                return true;
+                return page[0];
             }
 
-            throw new InvalidDataException("V2 should eiterh  returned by V2 should be either 0 or 1.");
+            throw new InvalidDataException("The number of packages returned by V2 should be either 0 or 1.");
         }
 
         private async Task<IReadOnlyList<V2Package>> ParseV2PageAsync(string url)

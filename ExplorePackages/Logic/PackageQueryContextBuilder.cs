@@ -29,15 +29,15 @@ namespace Knapcode.ExplorePackages.Logic
 
         public PackageQueryContext CreateDeletedPackageQueryContext(string id, string version)
         {
-            return CreatePackageQueryContext(id, version, isSemVer2: false, deleted: true);
+            return CreatePackageQueryContext(id, version, isSemVer2: false, isListed: false, deleted: true);
         }
 
-        public PackageQueryContext CreateAvailablePackageQueryContext(string id, string version, bool isSemVer2)
+        public PackageQueryContext CreateAvailablePackageQueryContext(string id, string version, bool isSemVer2, bool isListed)
         {
-            return CreatePackageQueryContext(id, version, isSemVer2, deleted: false);
+            return CreatePackageQueryContext(id, version, isSemVer2, isListed, deleted: false);
         }
 
-        private PackageQueryContext CreatePackageQueryContext(string id, string version, bool isSemVer2, bool deleted)
+        private PackageQueryContext CreatePackageQueryContext(string id, string version, bool isSemVer2, bool isListed, bool deleted)
         {
             var parsedVersion = NuGetVersion.Parse(version);
             var normalizedVersion = parsedVersion.ToNormalizedString();
@@ -64,13 +64,13 @@ namespace Knapcode.ExplorePackages.Logic
                 exists: false,
                 document: null);
 
-            return new PackageQueryContext(immutablePackage, nuspecQueryContext, isSemVer2, fullVersion);
+            return new PackageQueryContext(immutablePackage, nuspecQueryContext, isSemVer2, fullVersion, isListed);
         }
         public async Task<PackageQueryContext> GetPackageQueryContextFromGalleryAsync(string id, string version, PackageConsistencyState state)
         {
             var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
 
-            var initialContext = CreateAvailablePackageQueryContext(id, version, isSemVer2: false);
+            var initialContext = CreateAvailablePackageQueryContext(id, version, isSemVer2: false, isListed: true);
 
             await _galleryConsistencyService.PopulateStateAsync(initialContext, state, NullProgressReport.Instance);
             
@@ -78,7 +78,8 @@ namespace Knapcode.ExplorePackages.Logic
                 state.Gallery.PackageState.PackageId,
                 state.Gallery.PackageState.PackageVersion,
                 state.Gallery.PackageState.IsSemVer2,
-                state.Gallery.PackageState.PackageDeletedStatus != PackageDeletedStatus.NotDeleted);
+                state.Gallery.PackageState.PackageDeletedStatus != PackageDeletedStatus.NotDeleted,
+                state.Gallery.PackageState.IsListed);
         }
 
         public async Task<PackageQueryContext> GetPackageQueryContextFromDatabaseAsync(string id, string version)
@@ -105,7 +106,12 @@ namespace Knapcode.ExplorePackages.Logic
                 fullVersion = parsedVersion.ToFullString();
             }
 
-            return new PackageQueryContext(immutablePackage, nuspecQueryContext, isSemVer2, fullVersion);
+            return new PackageQueryContext(
+                immutablePackage,
+                nuspecQueryContext,
+                isSemVer2,
+                fullVersion,
+                package.V2Package?.Listed ?? package.CatalogPackage?.Listed ?? true);
         }
 
         private NuspecQueryContext GetNuspecQueryContext(PackageEntity package)

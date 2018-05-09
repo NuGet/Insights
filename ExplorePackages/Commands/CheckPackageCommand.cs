@@ -21,6 +21,7 @@ namespace Knapcode.ExplorePackages.Commands
         private CommandArgument _versionArgument;
         private CommandOption _semVer2Option;
         private CommandOption _deletedOption;
+        private CommandOption _unlistedOption;
         private CommandOption _gallery;
         private CommandOption _database;
 
@@ -50,6 +51,10 @@ namespace Knapcode.ExplorePackages.Commands
                 "--deleted",
                 "Consider the package to be deleted.",
                 CommandOptionType.NoValue);
+            _unlistedOption = app.Option(
+                "--unlisted",
+                "Consider the package to be unlisted.",
+                CommandOptionType.NoValue);
             _gallery = app.Option(
                 "--gallery",
                 "Use details from the gallery as a baseline.",
@@ -64,6 +69,7 @@ namespace Knapcode.ExplorePackages.Commands
         private string Version => _versionArgument?.Value;
         private bool SemVer2 => _semVer2Option?.HasValue() ?? false;
         private bool Deleted => _deletedOption?.HasValue() ?? false;
+        private bool Unlisted => _unlistedOption?.HasValue() ?? false;
         private bool Gallery => _gallery?.HasValue() ?? false;
         private bool Database => _database?.HasValue() ?? false;
 
@@ -98,7 +104,7 @@ namespace Knapcode.ExplorePackages.Commands
             }
             else
             {
-                context = _contextBuilder.CreateAvailablePackageQueryContext(Id, Version, isSemVer2);
+                context = _contextBuilder.CreateAvailablePackageQueryContext(Id, Version, isSemVer2, !Unlisted);
             }
 
             var report = await _service.GetReportAsync(context, state, NullProgressReport.Instance);
