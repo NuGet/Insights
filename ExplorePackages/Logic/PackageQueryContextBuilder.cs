@@ -78,8 +78,8 @@ namespace Knapcode.ExplorePackages.Logic
                 state.Gallery.PackageState.PackageId,
                 state.Gallery.PackageState.PackageVersion,
                 state.Gallery.PackageState.IsSemVer2,
-                state.Gallery.PackageState.PackageDeletedStatus != PackageDeletedStatus.NotDeleted,
-                state.Gallery.PackageState.IsListed);
+                state.Gallery.PackageState.IsListed,
+                state.Gallery.PackageState.PackageDeletedStatus != PackageDeletedStatus.NotDeleted);
         }
 
         public async Task<PackageQueryContext> GetPackageQueryContextFromDatabaseAsync(string id, string version)

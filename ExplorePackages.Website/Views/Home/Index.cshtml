@@ -146,6 +146,14 @@
                 <th>In SemVer 2.0.0 results?</th>
                 <td>{{yesno v2.hasPackageSemVer2}}</td>
             </tr>
+            <tr>
+                <th>Listed in SemVer 1.0.0 results?</th>
+                <td>{{yesno v2.isListedSemVer1}}</td>
+            </tr>
+            <tr>
+                <th>Listed in SemVer 2.0.0 results?</th>
+                <td>{{yesno v2.isListedSemVer2}}</td>
+            </tr>
         </tbody>
     </table>
 
@@ -234,6 +242,18 @@
                 <td>{{yesno registrationGzipped.hasLeaf}}</td>
                 <td>{{yesno registrationSemVer2.hasLeaf}}</td>
             </tr>
+            <tr>
+                <th>Listed in index?</th>
+                <td>{{yesno registrationOriginal.isListedInIndex}}</td>
+                <td>{{yesno registrationGzipped.isListedInIndex}}</td>
+                <td>{{yesno registrationSemVer2.isListedInIndex}}</td>
+            </tr>
+            <tr>
+                <th>Listed in leaf?</th>
+                <td>{{yesno registrationOriginal.isListedInLeaf}}</td>
+                <td>{{yesno registrationGzipped.isListedInLeaf}}</td>
+                <td>{{yesno registrationSemVer2.isListedInLeaf}}</td>
+            </tr>
         </tbody>
     </table>
 
@@ -255,13 +275,25 @@
             <tr>
                 <th>In SemVer 1.0.0 results?</th>
                 {{#each search.statuses}}
-                <td>{{semVer1}}</td>
+                <td>{{hasPackageSemVer1}}</td>
                 {{/each}}
             </tr>
             <tr>
                 <th>In SemVer 2.0.0 results?</th>
                 {{#each search.statuses}}
-                <td>{{semVer2}}</td>
+                <td>{{hasPackageSemVer2}}</td>
+                {{/each}}
+            </tr>
+            <tr>
+                <th>Listed in SemVer 1.0.0 results?</th>
+                {{#each search.statuses}}
+                <td>{{isListedSemVer1}}</td>
+                {{/each}}
+            </tr>
+            <tr>
+                <th>Listed in SemVer 2.0.0 results?</th>
+                {{#each search.statuses}}
+                <td>{{isListedSemVer2}}</td>
                 {{/each}}
             </tr>
         </tbody>
@@ -343,15 +375,15 @@
                 }
             }
 
-            function getSearchHostStatuses(baseUrlHasPackage) {
+            function getSearchHostStatuses(baseUrlToFlag) {
                 var searchHostCounts = {};
-                $.each(baseUrlHasPackage, function (baseUrl, hasPackage) {
+                $.each(baseUrlToFlag, function (baseUrl, flag) {
                     var hostName = parseUrl(baseUrl).hostname;
                     if (!(hostName in searchHostCounts)) {
                         searchHostCounts[hostName] = { true: 0, false: 0 };
                     }
 
-                    searchHostCounts[hostName][hasPackage]++;
+                    searchHostCounts[hostName][flag]++;
                 });
                 var searchHostStatuses = {};
                 $.each(searchHostCounts, function (hostName, counts) {
@@ -371,16 +403,19 @@
             }
 
             function groupSearchHostStatus(search) {
-                var semVer1 = getSearchHostStatuses(search.baseUrlHasPackageSemVer1);
-                var semVer2 = getSearchHostStatuses(search.baseUrlHasPackageSemVer2);
+                var hasPackageSemVer1 = getSearchHostStatuses(search.baseUrlHasPackageSemVer1);
+                var hasPackageSemVer2 = getSearchHostStatuses(search.baseUrlHasPackageSemVer2);
+                var isListedSemVer1 = getSearchHostStatuses(search.baseUrlIsListedSemVer1);
+                var isListedSemVer2 = getSearchHostStatuses(search.baseUrlIsListedSemVer2);
                 var statuses = [];
 
-                $.each(semVer1, function (hostName, semVer1Status) {
-                    var semVer2Status = semVer2[hostName];
+                $.each(hasPackageSemVer1, function (hostName, value) {
                     statuses.push({
                         hostName: hostName,
-                        semVer1: semVer1Status,
-                        semVer2: semVer2Status
+                        hasPackageSemVer1: value,
+                        hasPackageSemVer2: hasPackageSemVer2[hostName],
+                        isListedSemVer1: isListedSemVer1[hostName],
+                        isListedSemVer2: isListedSemVer2[hostName]
                     });
                 });
 
