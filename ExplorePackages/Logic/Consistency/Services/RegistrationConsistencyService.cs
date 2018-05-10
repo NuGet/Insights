@@ -4,6 +4,12 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class RegistrationConsistencyService : IConsistencyService<RegistrationConsistencyReport>
     {
+        /// <summary>
+        /// It would make sense that the leaf should not exist if the package was deleted. This is not case because of
+        /// bug: https://github.com/NuGet/NuGetGallery/issues/4475.
+        /// </summary>
+        private const bool DeletedPackagesShouldHaveNoLeaves = false;
+
         private readonly ServiceIndexCache _serviceIndexCache;
         private readonly RegistrationClient _client;
         private readonly string _type;
@@ -84,7 +90,10 @@ namespace Knapcode.ExplorePackages.Logic
                 context.Package.Version);
             report.HasLeaf = registrationLeaf != null;
             report.IsListedInLeaf = registrationLeaf?.Listed ?? false;
-            report.IsConsistent &= shouldExist == report.HasLeaf && context.IsListed == report.IsListedInLeaf;
+            if ((!DeletedPackagesShouldHaveNoLeaves && !context.Package.Deleted) || DeletedPackagesShouldHaveNoLeaves)
+            {
+                report.IsConsistent &= shouldExist == report.HasLeaf && context.IsListed == report.IsListedInLeaf;
+            }
             await incrementalProgress.ReportProgressAsync("Checked for the package's registration leaf.");
 
             if (allowPartial && !report.IsConsistent)
