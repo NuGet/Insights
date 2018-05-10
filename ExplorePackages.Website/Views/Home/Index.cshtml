@@ -121,7 +121,7 @@
                 <td>{{package.deletedStatus}}</td>
             </tr>
             <tr>
-                <th>SemVer 2.0.0?</th>
+                <th>SemVer 2?</th>
                 <td>{{yesno package.isSemVer2}}</td>
             </tr>
             <tr>
@@ -139,19 +139,19 @@
                 <td>{{yesno v2.isConsistent}}</td>
             </tr>
             <tr>
-                <th>In SemVer 1.0.0 results?</th>
+                <th>In SemVer 1?</th>
                 <td>{{yesno v2.hasPackageSemVer1}}</td>
             </tr>
             <tr>
-                <th>In SemVer 2.0.0 results?</th>
+                <th>In SemVer 2?</th>
                 <td>{{yesno v2.hasPackageSemVer2}}</td>
             </tr>
             <tr>
-                <th>Listed in SemVer 1.0.0 results?</th>
+                <th>Listed in SemVer 1?</th>
                 <td>{{yesno v2.isListedSemVer1}}</td>
             </tr>
             <tr>
-                <th>Listed in SemVer 2.0.0 results?</th>
+                <th>Listed in SemVer 2?</th>
                 <td>{{yesno v2.isListedSemVer2}}</td>
             </tr>
         </tbody>
@@ -273,25 +273,25 @@
         </thead>
         <tbody>
             <tr>
-                <th>In SemVer 1.0.0 results?</th>
+                <th>In SemVer 1?</th>
                 {{#each search.statuses}}
                 <td>{{hasPackageSemVer1}}</td>
                 {{/each}}
             </tr>
             <tr>
-                <th>In SemVer 2.0.0 results?</th>
+                <th>In SemVer 2?</th>
                 {{#each search.statuses}}
                 <td>{{hasPackageSemVer2}}</td>
                 {{/each}}
             </tr>
             <tr>
-                <th>Listed in SemVer 1.0.0 results?</th>
+                <th>Listed in SemVer 1?</th>
                 {{#each search.statuses}}
                 <td>{{isListedSemVer1}}</td>
                 {{/each}}
             </tr>
             <tr>
-                <th>Listed in SemVer 2.0.0 results?</th>
+                <th>Listed in SemVer 2?</th>
                 {{#each search.statuses}}
                 <td>{{isListedSemVer2}}</td>
                 {{/each}}
