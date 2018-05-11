@@ -69,6 +69,7 @@ namespace Knapcode.ExplorePackages.Logic
             var baseUrl = await _serviceIndexCache.GetUrlAsync(_type);
 
             var shouldExist = !context.Package.Deleted && (_hasSemVer2 || !context.IsSemVer2);
+            var shouldBeListed = shouldExist && context.IsListed;
 
             var registrationLeafItem = await _client.GetRegistrationLeafItemOrNullAsync(
                 baseUrl,
@@ -76,7 +77,7 @@ namespace Knapcode.ExplorePackages.Logic
                 context.Package.Version);
             report.IsInIndex = registrationLeafItem != null;
             report.IsListedInIndex = registrationLeafItem?.CatalogEntry.Listed ?? false;
-            report.IsConsistent &= shouldExist == report.IsInIndex && context.IsListed == report.IsListedInIndex;
+            report.IsConsistent &= shouldExist == report.IsInIndex && shouldBeListed == report.IsListedInIndex;
             await incrementalProgress.ReportProgressAsync("Checked for the package in the registration index.");
 
             if (allowPartial && !report.IsConsistent)
@@ -92,7 +93,7 @@ namespace Knapcode.ExplorePackages.Logic
             report.IsListedInLeaf = registrationLeaf?.Listed ?? false;
             if ((!DeletedPackagesShouldHaveNoLeaves && !context.Package.Deleted) || DeletedPackagesShouldHaveNoLeaves)
             {
-                report.IsConsistent &= shouldExist == report.HasLeaf && context.IsListed == report.IsListedInLeaf;
+                report.IsConsistent &= shouldExist == report.HasLeaf && shouldBeListed == report.IsListedInLeaf;
             }
             await incrementalProgress.ReportProgressAsync("Checked for the package's registration leaf.");
 

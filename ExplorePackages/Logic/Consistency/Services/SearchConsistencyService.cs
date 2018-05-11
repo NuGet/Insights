@@ -80,7 +80,9 @@ namespace Knapcode.ExplorePackages.Logic
             };
 
             var shouldExistSemVer1 = !context.Package.Deleted && !context.IsSemVer2;
+            var shouldBeListedSemVer1 = shouldExistSemVer1 && context.IsListed;
             var shouldExistSemVer2 = !context.Package.Deleted;
+            var shouldBeListedSemVer2 = shouldExistSemVer2 && context.IsListed;
 
             for (var i = 0; i < baseUrls.Count; i++)
             {
@@ -99,7 +101,7 @@ namespace Knapcode.ExplorePackages.Logic
                     var isListedSemVer1 = packageSemVer1?.Listed ?? false;
                     baseUrlHasPackageSemVer1[baseUrl] = hasPackageSemVer1;
                     baseUrlIsListedSemVer1[baseUrl] = isListedSemVer1;
-                    report.IsConsistent &= hasPackageSemVer1 == shouldExistSemVer1 && context.IsListed == isListedSemVer1;
+                    report.IsConsistent &= hasPackageSemVer1 == shouldExistSemVer1 && shouldBeListedSemVer1 == isListedSemVer1;
                     await incrementalProgress.ReportProgressAsync($"Searched for the package on search {baseUrl}, SemVer 1.0.0.");
 
                     if (allowPartial && !report.IsConsistent)
@@ -117,7 +119,7 @@ namespace Knapcode.ExplorePackages.Logic
                     var isListedSemVer2 = packageSemVer2?.Listed ?? false;
                     baseUrlHasPackageSemVer2[baseUrl] = hasPackageSemVer2;
                     baseUrlIsListedSemVer2[baseUrl] = isListedSemVer2;
-                    report.IsConsistent &= hasPackageSemVer2 == shouldExistSemVer2 && context.IsListed == isListedSemVer2;
+                    report.IsConsistent &= hasPackageSemVer2 == shouldExistSemVer2 && shouldBeListedSemVer2 == isListedSemVer2;
                     await incrementalProgress.ReportProgressAsync($"Searched for the package on search {baseUrl}, SemVer 2.0.0.");
 
                     if (allowPartial && !report.IsConsistent)
