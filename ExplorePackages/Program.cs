@@ -11,9 +11,11 @@ using Knapcode.ExplorePackages.Support;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
+using INuGetLogger = NuGet.Common.ILogger;
 
 namespace Knapcode.ExplorePackages
 {
@@ -99,11 +101,11 @@ namespace Knapcode.ExplorePackages
                         await InitializeGlobalState(
                             serviceProvider.GetRequiredService<ExplorePackagesSettings>(),
                             command.IsDatabaseRequired(),
-                            serviceProvider.GetRequiredService<ILogger>());
+                            serviceProvider.GetRequiredService<INuGetLogger>());
 
                         var commandRunner = new CommandExecutor(
                             command,
-                            serviceProvider.GetRequiredService<ILogger>());
+                            serviceProvider.GetRequiredService<INuGetLogger>());
 
                         await commandRunner.ExecuteAsync(CancellationToken.None);
 
@@ -112,7 +114,7 @@ namespace Knapcode.ExplorePackages
                 });
         }
         
-        private static async Task InitializeGlobalState(ExplorePackagesSettings settings, bool initializeDatabase, ILogger log)
+        private static async Task InitializeGlobalState(ExplorePackagesSettings settings, bool initializeDatabase, INuGetLogger log)
         {
             Console.WriteLine("===== initialize =====");
 
@@ -164,7 +166,9 @@ namespace Knapcode.ExplorePackages
 
             serviceCollection.AddExplorePackages(settings);
 
-            serviceCollection.AddSingleton<ILogger, ConsoleLogger>();
+            serviceCollection.AddSingleton<INuGetLogger, StandardToNuGetLogger>();
+            serviceCollection.AddSingleton(new LoggerFactory().AddMinimalConsole());
+            serviceCollection.AddLogging();
 
             foreach (var pair in Commands)
             {
