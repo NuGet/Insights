@@ -15,7 +15,7 @@ namespace Knapcode.ExplorePackages.Logic
         Task AddOrUpdatePackagesAsync(IEnumerable<PackageDownloads> packageDownloads);
         Task AddOrUpdatePackagesAsync(IEnumerable<V2Package> v2Packages);
         Task<IReadOnlyList<PackageEntity>> GetBatchAsync(IReadOnlyList<PackageIdentity> identities);
-        Task<PackageEntity> GetPackageAsync(string id, string version);
+        Task<PackageEntity> GetPackageOrNullAsync(string id, string version);
         Task<IReadOnlyList<PackageEntity>> GetPackagesWithDependenciesAsync(IReadOnlyList<PackageIdentity> identities);
         Task SetDeletedPackagesAsUnlistedInV2Async(IEnumerable<CatalogEntry> entries);
     }

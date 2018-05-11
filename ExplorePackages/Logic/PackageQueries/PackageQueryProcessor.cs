@@ -18,6 +18,7 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly CursorService _cursorService;
         private readonly PackageCommitEnumerator _packageCommitEnumerator;
         private readonly PackageQueryService _queryService;
+        private readonly IPackageService _packageService;
         private readonly ILogger _log;
 
         public PackageQueryProcessor(
@@ -25,13 +26,46 @@ namespace Knapcode.ExplorePackages.Logic
             CursorService cursorService,
             PackageCommitEnumerator packageCommitEnumerator,
             PackageQueryService queryService,
+            IPackageService packageService,
             ILogger log)
         {
             _contextBuilder = contextBuilder;
             _cursorService = cursorService;
             _packageCommitEnumerator = packageCommitEnumerator;
             _queryService = queryService;
+            _packageService = packageService;
             _log = log;
+        }
+
+        public async Task ProcessPackageAsync(IReadOnlyList<IPackageQuery> queries, IReadOnlyList<PackageIdentity> identities, CancellationToken token)
+        {
+            var results = new ConcurrentBag<Result>();
+
+            var taskQueue = new TaskQueue<Work>(
+                workerCount: 32,
+                workAsync: w => ConsumeWorkAsync(w, results));
+
+            taskQueue.Start();
+
+            foreach (var identity in identities)
+            {
+                var package = await _packageService.GetPackageOrNullAsync(identity.Id, identity.Version);
+
+                if (package == null)
+                {
+                    _log.LogWarning($"Package {identity.Id} {identity.Version} does not exist.");
+                    continue;
+                }
+
+                var context = _contextBuilder.GetPackageQueryFromDatabasePackageContext(package);
+                var state = new PackageConsistencyState();
+                var work = new Work(queries, context, state);
+                taskQueue.Enqueue(work);
+            }
+
+            await taskQueue.CompleteAsync();
+
+            await PersistResults(results);
         }
 
         public async Task ProcessAsync(IReadOnlyList<IPackageQuery> queries, bool reprocess, CancellationToken token)
@@ -87,6 +121,7 @@ namespace Knapcode.ExplorePackages.Logic
                 return await _packageCommitEnumerator.GetCommitsAsync(
                     e => e
                         .Packages
+                        .Include(x => x.V2Package)
                         .Where(x => x
                             .PackageQueryMatches
                             .Any(pqm => queryNames.Contains(pqm.PackageQuery.Name))),
@@ -212,17 +247,48 @@ namespace Knapcode.ExplorePackages.Logic
                 }
             }
         }
-        
 
         private async Task PersistResultsAndCursorsAsync(Bounds bounds, ConcurrentBag<Result> results)
         {
-            var queryGroups = results.GroupBy(x => x.Query);
+            await PersistResults(results);
+
+            var queries = results
+                .Select(x => x.Query)
+                .Distinct()
+                .ToList();
+
+            await PersistCursorsAsync(bounds, queries);
+        }
+
+        private async Task PersistCursorsAsync(Bounds bounds, IReadOnlyList<IPackageQuery> queries)
+        {
             var cursorNameToQueryNames = bounds
                 .QueryNameToCursorName
                 .ToLookup(x => x.Value, x => x.Key)
                 .ToDictionary(x => x.Key, x => new HashSet<string>(x));
 
             var cursorNames = new List<string>();
+            foreach (var query in queries)
+            {
+                var cursorName = bounds.QueryNameToCursorName[query.Name];
+                cursorNameToQueryNames[cursorName].Remove(query.Name);
+
+                if (!cursorNameToQueryNames[cursorName].Any()
+                    && bounds.CursorNameToStart[cursorName] < bounds.Start)
+                {
+                    _log.LogInformation($"Cursor {cursorName} moving to {bounds.Start:O}.");
+                    cursorNames.Add(cursorName);
+                    bounds.CursorNameToStart[cursorName] = bounds.Start;
+                }
+            }
+
+            await _cursorService.SetValuesAsync(cursorNames, bounds.Start);
+        }
+
+        private async Task PersistResults(ConcurrentBag<Result> results)
+        {
+            var queryGroups = results.GroupBy(x => x.Query);
+
             foreach (var queryGroup in queryGroups)
             {
                 var query = queryGroup.Key;
@@ -241,20 +307,30 @@ namespace Knapcode.ExplorePackages.Logic
                 {
                     await _queryService.RemoveMatchesAsync(query.Name, resultGroups[false].ToList());
                 }
+            }
+        }
 
-                var cursorName = bounds.QueryNameToCursorName[query.Name];
-                cursorNameToQueryNames[cursorName].Remove(query.Name);
+        private async Task PersistResults(IEnumerable<IGrouping<IPackageQuery, Result>> queryGroups)
+        {
+            foreach (var queryGroup in queryGroups)
+            {
+                var query = queryGroup.Key;
 
-                if (!cursorNameToQueryNames[cursorName].Any()
-                    && bounds.CursorNameToStart[cursorName] < bounds.Start)
+                var resultGroups = queryGroup.ToLookup(
+                    x => x.IsMatch,
+                    x => x.PackageIdentity);
+
+                if (resultGroups[true].Any())
                 {
-                    _log.LogInformation($"Cursor {cursorName} moving to {bounds.Start:O}.");
-                    cursorNames.Add(cursorName);
-                    bounds.CursorNameToStart[cursorName] = bounds.Start;
+                    await _queryService.AddQueryAsync(query.Name, query.CursorName);
+                    await _queryService.AddMatchesAsync(query.Name, resultGroups[true].ToList());
+                }
+
+                if (resultGroups[false].Any())
+                {
+                    await _queryService.RemoveMatchesAsync(query.Name, resultGroups[false].ToList());
                 }
             }
-
-            await _cursorService.SetValuesAsync(cursorNames, bounds.Start);
         }
 
         private class Work

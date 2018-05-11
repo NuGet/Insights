@@ -18,6 +18,8 @@ namespace Knapcode.ExplorePackages.Commands
         private CommandOption _reprocessOption;
         private CommandOption _resumeOption;
         private CommandOption _queriesOption;
+        private CommandOption _idsOption;
+        private CommandOption _versionsOption;
 
         public PackageQueriesCommand(
             CursorService cursorService,
@@ -33,6 +35,9 @@ namespace Knapcode.ExplorePackages.Commands
 
         public void Configure(CommandLineApplication app)
         {
+            const string idTemplate = "--id";
+            const string versionTemplate = "--version";
+
             _reprocessOption = app.Option(
                 "--reprocess",
                 "Reprocess package query results.",
@@ -45,11 +50,21 @@ namespace Knapcode.ExplorePackages.Commands
                 "--query",
                 "The query or queries to process.",
                 CommandOptionType.MultipleValue);
+            _idsOption = app.Option(
+                idTemplate,
+                $"The IDs of the specific packages to process. This must have the same number of values specified as the {versionTemplate} option.",
+                CommandOptionType.MultipleValue);
+            _versionsOption = app.Option(
+                "--version",
+                $"The versions of the specific package to process. This must have the same number of values specified as the {idTemplate} option.",
+                CommandOptionType.MultipleValue);
         }
 
         private bool Reprocess => _reprocessOption?.HasValue() ?? false;
         private bool Resume => _resumeOption?.HasValue() ?? false;
         private IReadOnlyList<string> QueryNames => _queriesOption?.Values ?? new List<string>();
+        private IReadOnlyList<string> Ids => _idsOption?.Values ?? new List<string>();
+        private IReadOnlyList<string> Versions => _versionsOption?.Values ?? new List<string>();
 
         public async Task ExecuteAsync(CancellationToken token)
         {
@@ -67,7 +82,26 @@ namespace Knapcode.ExplorePackages.Commands
                     .ToList();
             }
 
-            await _processor.ProcessAsync(queries, Reprocess, token);
+            if (Ids.Any() || Versions.Any())
+            {
+                if (Ids.Count != Versions.Count)
+                {
+                    _log.LogError(
+                        $"There are {Ids.Count} {_idsOption.Template} values specified but {Versions.Count} " +
+                        $"{_versionsOption.Template} values specified. There must be the same number.");
+                    return;
+                }
+
+                var identities = Ids
+                    .Zip(Versions, (id, version) => new PackageIdentity(id.Trim(), version.Trim()))
+                    .ToList();
+
+                await _processor.ProcessPackageAsync(queries, identities, token);
+            }
+            else
+            {
+                await _processor.ProcessAsync(queries, Reprocess, token);
+            }
         }
 
         public bool IsDatabaseRequired()

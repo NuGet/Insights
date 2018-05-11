@@ -65,7 +65,7 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
-        public async Task<PackageEntity> GetPackageAsync(string id, string version)
+        public async Task<PackageEntity> GetPackageOrNullAsync(string id, string version)
         {
             var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
             using (var entityContext = new EntityContext())

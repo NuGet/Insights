@@ -84,7 +84,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task<PackageQueryContext> GetPackageQueryContextFromDatabaseAsync(string id, string version)
         {
-            var package = await _packageService.GetPackageAsync(id, version);
+            var package = await _packageService.GetPackageOrNullAsync(id, version);
             if (package == null)
             {
                 return null;
