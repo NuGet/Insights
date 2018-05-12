@@ -129,6 +129,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<CatalogService>();
             serviceCollection.AddTransient<PackageDependencyService>();
             serviceCollection.AddTransient<NuspecProvider>();
+            serviceCollection.AddTransient<ProblemService>();
 
             serviceCollection.AddTransient<V2Parser>();
             serviceCollection.AddSingleton<ServiceIndexCache>();

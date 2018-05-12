@@ -32,6 +32,7 @@ namespace Knapcode.ExplorePackages
             { "mziptodatabase", typeof(MZipToDatabaseCommand) },
             { "packagequeries", typeof(PackageQueriesCommand) },
             { "sandbox", typeof(SandboxCommand) },
+            { "showproblems", typeof(ShowProblemsCommand) },
             { "showqueryresults", typeof(ShowQueryResultsCommand) },
             { "showrepositories", typeof(ShowRepositoriesCommand) },
             { "showweirddependencies", typeof(ShowWeirdDependenciesCommand) },
@@ -40,14 +41,15 @@ namespace Knapcode.ExplorePackages
             { "v2todatabase", typeof(V2ToDatabaseCommand) },
         };
 
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
+            var logger = new LoggerFactory().AddMinimalConsole().CreateLogger<Program>();
+
             // Read and show the settings
-            Console.WriteLine("===== settings =====");
-            var settings = ReadSettingsFromDisk() ?? new ExplorePackagesSettings();
-            Console.WriteLine(JsonConvert.SerializeObject(settings, Formatting.Indented));
-            Console.WriteLine("====================");
-            Console.WriteLine();
+            logger.LogInformation("===== settings =====");
+            var settings = ReadSettingsFromDisk(logger) ?? new ExplorePackagesSettings();
+            logger.LogInformation(JsonConvert.SerializeObject(settings, Formatting.Indented));
+            logger.LogInformation("====================" + Environment.NewLine);
 
             // Allow 32 concurrent outgoing connections.
             ServicePointManager.DefaultConnectionLimit = 32;
@@ -56,6 +58,8 @@ namespace Knapcode.ExplorePackages
             var serviceCollection = InitializeServiceCollection(settings);
             using (var serviceProvider = serviceCollection.BuildServiceProvider())
             {
+                logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+
                 var app = new CommandLineApplication();
                 app.HelpOption();
 
@@ -64,21 +68,29 @@ namespace Knapcode.ExplorePackages
                     AddCommand(pair.Value, serviceProvider, app, pair.Key);
                 }
 
-                app.Execute(args);
+                try
+                {
+                    return app.Execute(args);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "An unexpected exception occured.");
+                    return 1;
+                }
             }
         }
 
-        private static ExplorePackagesSettings ReadSettingsFromDisk()
+        private static ExplorePackagesSettings ReadSettingsFromDisk(ILogger logger)
         {
             var settingsDirectory = Environment.GetEnvironmentVariable("USERPROFILE") ?? Directory.GetCurrentDirectory();
             var settingsPath = Path.Combine(settingsDirectory, "Knapcode.ExplorePackages.Settings.json");
             if (!File.Exists(settingsPath))
             {
-                Console.WriteLine($"No settings existed at {settingsPath}.");
+                logger.LogInformation("No settings existed at {SettingsPath}.", settingsPath);
                 return null;
             }
 
-            Console.WriteLine($"Settings will be read from {settingsPath}.");
+            logger.LogInformation("Settings will be read from {SettingsPath}.", settingsPath);
             var content = File.ReadAllText(settingsPath);
             var settings = JsonConvert.DeserializeObject<ExplorePackagesSettings>(content);
 

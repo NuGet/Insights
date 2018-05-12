@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -80,6 +79,23 @@ namespace Knapcode.ExplorePackages.Logic
                     matches.Max(x => x.PackageQueryMatchKey),
                     matches.Select(x => x.Package).ToList());
             }
+        }
+
+        public async Task<IReadOnlyList<PackageEntity>> GetAllMatchedPackagesAsync(string queryName)
+        {
+            var output = new List<PackageEntity>();
+            int count;
+            long lastKey = 0;
+            do
+            {
+                var matches = await GetMatchedPackagesAsync(queryName, lastKey);
+                count = matches.Packages.Count;
+                lastKey = matches.LastKey;
+                output.AddRange(matches.Packages);
+            }
+            while (count > 0);
+
+            return output;
         }
 
         public async Task RemoveMatchesAsync(string queryName, IReadOnlyList<PackageIdentity> identities)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
 
@@ -15,7 +16,15 @@ namespace Knapcode.ExplorePackages.Support
 
         public override void WriteMessage(LogLevel logLevel, string logName, int eventId, string message, Exception exception)
         {
-            ConsoleUtility.LogToConsole(logLevel, message);
+            var messageBuilder = new StringBuilder();
+            messageBuilder.Append(message);
+            if (exception != null)
+            {
+                messageBuilder.AppendLine();
+                messageBuilder.Append(exception);
+            }
+
+            ConsoleUtility.LogToConsole(logLevel, messageBuilder.ToString());
         }
     }
 }
