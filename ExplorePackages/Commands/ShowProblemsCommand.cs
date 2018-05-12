@@ -67,12 +67,12 @@ namespace Knapcode.ExplorePackages.Commands
             {
                 foreach (var problemId in group.Key)
                 {
-                    _logger.LogInformation("{ProblemId}", problemId);
+                    _logger.LogInformation("  {ProblemId}", problemId);
                 }
 
                 foreach (var identity in group.Value)
                 {
-                    _logger.LogInformation("  {Id} {Version}", identity.Id, identity.Version);
+                    _logger.LogInformation("    {Id} {Version}", identity.Id, identity.Version);
                 }
                 Console.WriteLine();
             }
