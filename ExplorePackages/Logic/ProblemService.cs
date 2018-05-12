@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
@@ -41,7 +42,7 @@ namespace Knapcode.ExplorePackages.Logic
             INNER JOIN PackageRegistrations pr ON pr.PackageRegistrationKey = p.PackageRegistrationKey
             INNER JOIN Packages p ON v2.PackageKey = p.PackageKey
             LEFT OUTER JOIN CatalogPackages cp ON v2.PackageKey = cp.PackageKey
-            WHERE cp.PackageKey IS NULL";
+            WHERE cp.PackageKey IS NULL AND v2.CreatedTimestamp < @MaximumCreatedTimestamp";
 
         private readonly PackageQueryService _packageQueryService;
         private readonly ILogger<ProblemService> _logger;
@@ -68,6 +69,7 @@ namespace Knapcode.ExplorePackages.Logic
             _logger.LogInformation("Getting mismatched listed status.");
             var mismatchingListedStatusRecords = await ReadQueryResultsAsync(
                 MismatchingListedStatusQuery,
+                x => { },
                 x => new MismatchingListedStatusRecord(
                     x.GetString(0),
                     x.GetString(1),
@@ -83,6 +85,15 @@ namespace Knapcode.ExplorePackages.Logic
             _logger.LogInformation("Getting packages missing from catalog.");
             var missingFromCatalogIdentities = await ReadQueryResultsAsync(
                 MissingFromCatalogQuery,
+                x =>
+                {
+                    // Limit results older than 1 hour since there is a little lag between V2 and catalog.
+                    var parameter = x.CreateParameter();
+                    parameter.ParameterName = "MaximumCreatedTimestamp";
+                    parameter.Value = DateTimeOffset.UtcNow.AddHours(-1).Ticks;
+                    parameter.DbType = DbType.Int64;
+                    x.Parameters.Add(parameter);
+                },
                 x => new PackageIdentity(
                     x.GetString(0),
                     x.GetString(1)));
@@ -94,14 +105,19 @@ namespace Knapcode.ExplorePackages.Logic
             return problems;
         }
 
-        private static async Task<IReadOnlyList<T>> ReadQueryResultsAsync<T>(string query, Func<DbDataReader, T> readRecord)
+        private static async Task<IReadOnlyList<T>> ReadQueryResultsAsync<T>(
+            string query,
+            Action<DbCommand> configureCommand,
+            Func<DbDataReader, T> readRecord)
         {
             using (var context = new EntityContext())
             using (var connection = context.Database.GetDbConnection())
             using (var command = connection.CreateCommand())
             {
                 await connection.OpenAsync();
+
                 command.CommandText = query;
+                configureCommand(command);
 
                 using (var reader = await command.ExecuteReaderAsync())
                 {
