@@ -6,8 +6,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NuGet.CatalogReader;
-using NuGet.Common;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -16,14 +16,14 @@ namespace Knapcode.ExplorePackages.Logic
         private static readonly Regex PagePathPattern = new Regex(@"page(?<PageIndex>[0-9]|[1-9][0-9]+)\.json");
 
         private readonly ServiceIndexCache _serviceIndexCache;
-        private readonly ILogger _log;
+        private readonly ILogger<CatalogService> _logger;
 
         public CatalogService(
             ServiceIndexCache serviceIndexCache,
-            ILogger log)
+            ILogger<CatalogService> logger)
         {
             _serviceIndexCache = serviceIndexCache ?? throw new ArgumentNullException(nameof(serviceIndexCache));
-            _log = log ?? throw new ArgumentNullException(nameof(log));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task AddOrUpdateAsync(
@@ -31,7 +31,7 @@ namespace Knapcode.ExplorePackages.Logic
             IReadOnlyList<CatalogEntry> leaves,
             IReadOnlyDictionary<string, long> identityToPackageKey)
         {
-            _log.LogInformation($"Adding or updating catalog page {page.Uri.OriginalString}.");
+            _logger.LogInformation("Adding or updating catalog page {PageUri}.", page.Uri.OriginalString);
             using (var context = new EntityContext())
             {
                 var pageUrl = page.Uri.OriginalString;
@@ -48,7 +48,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                 var commitStopwatch = Stopwatch.StartNew();
                 var changes = await context.SaveChangesAsync();
-                _log.LogInformation($"Committed {changes} changes. {commitStopwatch.ElapsedMilliseconds}ms");
+                _logger.LogInformation("Committed {Changes} changes. {ElapsedMilliseconds}ms", changes, commitStopwatch.ElapsedMilliseconds);
             }
         }
 

@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.TestSupport;
 using Knapcode.MiniZip;
-using NuGet.Common;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -17,11 +17,13 @@ namespace Knapcode.ExplorePackages.Logic
     {
         public class AddOrUpdatePackagesAsync_PackageArchiveMetadata : IDisposable
         {
+            private readonly ITestOutputHelper _output;
             private readonly string _databasePath;
 
-            public AddOrUpdatePackagesAsync_PackageArchiveMetadata()
+            public AddOrUpdatePackagesAsync_PackageArchiveMetadata(ITestOutputHelper output)
             {
                 _databasePath = Path.GetTempFileName();
+                _output = output;
             }
 
             public void Dispose()
@@ -57,7 +59,7 @@ namespace Knapcode.ExplorePackages.Logic
                 }
 
                 var packageEnumerator = new PackageCommitEnumerator();
-                var target = new PackageService(packageEnumerator, NullLogger.Instance);
+                var target = new PackageService(packageEnumerator, _output.GetLogger<PackageService>());
                 
                 var a = await CreateArchiveAsync(id, ver, new ZipEntry("a.txt"));
                 var b = await CreateArchiveAsync(id, ver, new ZipEntry("a.txt"), new ZipEntry("b.txt"));
@@ -108,7 +110,7 @@ namespace Knapcode.ExplorePackages.Logic
                 }
 
                 var packageEnumerator = new PackageCommitEnumerator();
-                var target = new PackageService(packageEnumerator, NullLogger.Instance);
+                var target = new PackageService(packageEnumerator, _output.GetLogger<PackageService>());
                 
                 var a = await CreateArchiveAsync(id, ver, new ZipEntry("a.txt"), new ZipEntry("b.txt"));
                 var b = await CreateArchiveAsync(id, ver, new ZipEntry("b.txt"), new ZipEntry("a.txt"));
@@ -158,7 +160,7 @@ namespace Knapcode.ExplorePackages.Logic
                 }
 
                 var packageEnumerator = new PackageCommitEnumerator();
-                var target = new PackageService(packageEnumerator, NullLogger.Instance);
+                var target = new PackageService(packageEnumerator, _output.GetLogger<PackageService>());
 
                 var a = await CreateArchiveAsync(id, ver, new ZipEntry("a.txt"), new ZipEntry("b.txt"));
                 var b = await CreateArchiveAsync(id, ver, new ZipEntry("a.txt"));

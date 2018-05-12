@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using System.Web;
 using Knapcode.ExplorePackages.Support;
-using NuGet.Common;
+using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
 
 namespace Knapcode.ExplorePackages.Logic
@@ -10,13 +10,13 @@ namespace Knapcode.ExplorePackages.Logic
     {
         private readonly ServiceIndexCache _serviceIndexCache;
         private readonly HttpSource _httpSource;
-        private readonly ILogger _log;
+        private readonly ILogger<AutocompleteClient> _logger;
 
-        public AutocompleteClient(ServiceIndexCache serviceIndexCache, HttpSource httpSource, ILogger log)
+        public AutocompleteClient(ServiceIndexCache serviceIndexCache, HttpSource httpSource, ILogger<AutocompleteClient> logger)
         {
             _serviceIndexCache = serviceIndexCache;
             _httpSource = httpSource;
-            _log = log;
+            _logger = logger;
         }
 
         public async Task<AutocompleteIdResults> GetIdsAsync(string q, int? skip, int? take, bool? prerelease, string semVerLevel)
@@ -54,7 +54,7 @@ namespace Knapcode.ExplorePackages.Logic
             return await _httpSource.DeserializeUrlAsync<AutocompleteIdResults>(
                 url,
                 ignoreNotFounds: false,
-                log: _log);
+                logger: _logger);
         }
 
         public async Task<AutocompleteVersionResults> GetVersionsAsync(string id, bool? prerelease, string semVerLevel)
@@ -78,7 +78,7 @@ namespace Knapcode.ExplorePackages.Logic
             return await _httpSource.DeserializeUrlAsync<AutocompleteVersionResults>(
                 url,
                 ignoreNotFounds: false,
-                log: _log);
+                logger: _logger);
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
-using NuGet.Common;
+using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Logic
@@ -11,20 +11,20 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly PackageService _packageService;
         private readonly GalleryConsistencyService _galleryConsistencyService;
         private readonly ExplorePackagesSettings _settings;
-        private readonly ILogger _log;
+        private readonly ILogger<PackageQueryContextBuilder> _logger;
 
         public PackageQueryContextBuilder(
             NuspecProvider nuspecProvider,
             PackageService packageService,
             GalleryConsistencyService galleryConsistencyService,
             ExplorePackagesSettings settings,
-            ILogger log)
+            ILogger<PackageQueryContextBuilder> logger)
         {
             _nuspecProvider = nuspecProvider;
             _packageService = packageService;
             _galleryConsistencyService = galleryConsistencyService;
             _settings = settings;
-            _log = log;
+            _logger = logger;
         }
 
         public PackageQueryContext CreateDeletedPackageQueryContext(string id, string version)
@@ -120,7 +120,11 @@ namespace Knapcode.ExplorePackages.Logic
 
             if (!nuspecContext.Exists && !package.CatalogPackage.Deleted)
             {
-                _log.LogWarning($"Could not find .nuspec for {package.PackageRegistration} {package.Version}: {nuspecContext.Path}");
+                _logger.LogWarning(
+                    "Could not find .nuspec for {Id} {Version}: {Path}",
+                    package.PackageRegistration.Id,
+                    package.Version,
+                    nuspecContext.Path);
             }
 
             return nuspecContext;

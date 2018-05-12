@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Knapcode.ExplorePackages.Logic;
 using McMaster.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using NuGet.Common;
 using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Commands
@@ -15,7 +15,7 @@ namespace Knapcode.ExplorePackages.Commands
     {
         private readonly PackageConsistencyService _service;
         private readonly PackageQueryContextBuilder _contextBuilder;
-        private readonly ILogger _log;
+        private readonly ILogger<CheckPackageCommand> _logger;
 
         private CommandArgument _idArgument;
         private CommandArgument _versionArgument;
@@ -25,11 +25,11 @@ namespace Knapcode.ExplorePackages.Commands
         private CommandOption _gallery;
         private CommandOption _database;
 
-        public CheckPackageCommand(PackageConsistencyService service, PackageQueryContextBuilder contextBuilder, ILogger log)
+        public CheckPackageCommand(PackageConsistencyService service, PackageQueryContextBuilder contextBuilder, ILogger<CheckPackageCommand> logger)
         {
             _service = service;
             _contextBuilder = contextBuilder;
-            _log = log;
+            _logger = logger;
         }
 
         public void Configure(CommandLineApplication app)
@@ -77,7 +77,7 @@ namespace Knapcode.ExplorePackages.Commands
         {
             if (!NuGetVersion.TryParse(Version, out var parsedVersion))
             {
-                _log.LogError($"The version '{Version}' could not be parsed.");
+                _logger.LogError("The version '{Version}' could not be parsed.", Version);
                 return;
             }
 
@@ -94,7 +94,7 @@ namespace Knapcode.ExplorePackages.Commands
                 context = await _contextBuilder.GetPackageQueryContextFromDatabaseAsync(Id, Version);
                 if (context == null)
                 {
-                    _log.LogError($"The package {Id} {Version} could not be found in the database.");
+                    _logger.LogError("The package {Id} {Version} could not be found in the database.", Id, Version);
                     return;
                 }
             }
@@ -119,7 +119,7 @@ namespace Knapcode.ExplorePackages.Commands
                     },
                     Formatting = Formatting.Indented,
                 });
-            Console.WriteLine(reportJson);
+            _logger.LogInformation(reportJson);
         }
 
         public bool IsDatabaseRequired()

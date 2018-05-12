@@ -2,19 +2,19 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Commands;
-using NuGet.Common;
+using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages
 {
     public class CommandExecutor
     {
         private readonly ICommand _command;
-        private readonly ILogger _log;
+        private readonly ILogger<CommandExecutor> _logger;
 
-        public CommandExecutor(ICommand command, ILogger log)
+        public CommandExecutor(ICommand command, ILogger<CommandExecutor> logger)
         {
             _command = command;
-            _log = log;
+            _logger = logger;
         }
 
         public async Task ExecuteAsync(CancellationToken token)
@@ -26,17 +26,16 @@ namespace Knapcode.ExplorePackages
                 commandName = commandName.Substring(0, commandName.Length - suffix.Length);
             }
             var heading = $"===== {commandName.ToLowerInvariant()} =====";
-            Console.WriteLine(heading);
+            _logger.LogInformation(heading);
             try
             {
                 await _command.ExecuteAsync(token);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                _log.LogError("An exception occurred." + Environment.NewLine + e);
+                _logger.LogError(ex, "An exception occurred.");
             }
-            Console.WriteLine(new string('=', heading.Length));
-            Console.WriteLine();
+            _logger.LogInformation(new string('=', heading.Length) + Environment.NewLine);
         }
     }
 }

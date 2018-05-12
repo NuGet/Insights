@@ -13,9 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using NuGet.Common;
 using NuGet.Protocol.Core.Types;
-using INuGetLogger = NuGet.Common.ILogger;
 
 namespace Knapcode.ExplorePackages
 {
@@ -70,6 +68,23 @@ namespace Knapcode.ExplorePackages
             }
         }
 
+        private static ExplorePackagesSettings ReadSettingsFromDisk()
+        {
+            var settingsDirectory = Environment.GetEnvironmentVariable("USERPROFILE") ?? Directory.GetCurrentDirectory();
+            var settingsPath = Path.Combine(settingsDirectory, "Knapcode.ExplorePackages.Settings.json");
+            if (!File.Exists(settingsPath))
+            {
+                Console.WriteLine($"No settings existed at {settingsPath}.");
+                return null;
+            }
+
+            Console.WriteLine($"Settings will be read from {settingsPath}.");
+            var content = File.ReadAllText(settingsPath);
+            var settings = JsonConvert.DeserializeObject<ExplorePackagesSettings>(content);
+
+            return settings;
+        }
+
         private static void AddCommand(
             Type commandType,
             IServiceProvider serviceProvider,
@@ -101,11 +116,11 @@ namespace Knapcode.ExplorePackages
                         await InitializeGlobalState(
                             serviceProvider.GetRequiredService<ExplorePackagesSettings>(),
                             command.IsDatabaseRequired(),
-                            serviceProvider.GetRequiredService<INuGetLogger>());
+                            serviceProvider.GetRequiredService<ILogger<Program>>());
 
                         var commandRunner = new CommandExecutor(
                             command,
-                            serviceProvider.GetRequiredService<INuGetLogger>());
+                            serviceProvider.GetRequiredService<ILogger<CommandExecutor>>());
 
                         await commandRunner.ExecuteAsync(CancellationToken.None);
 
@@ -114,9 +129,9 @@ namespace Knapcode.ExplorePackages
                 });
         }
         
-        private static async Task InitializeGlobalState(ExplorePackagesSettings settings, bool initializeDatabase, INuGetLogger log)
+        private static async Task InitializeGlobalState(ExplorePackagesSettings settings, bool initializeDatabase, ILogger logger)
         {
-            Console.WriteLine("===== initialize =====");
+            logger.LogInformation("===== initialize =====");
 
             // Initialize the database.
             EntityContext.ConnectionString = "Data Source=" + settings.DatabasePath;
@@ -126,38 +141,20 @@ namespace Knapcode.ExplorePackages
                 using (var entityContext = new EntityContext())
                 {
                     await entityContext.Database.MigrateAsync();
-                    log.LogInformation("The database schema is up to date.");
+                    logger.LogInformation("The database schema is up to date.");
                 }
             }
             else
             {
-                log.LogInformation("The database will not be used.");
+                logger.LogInformation("The database will not be used.");
             }
 
             // Set the user agent.
             var userAgentStringBuilder = new UserAgentStringBuilder("Knapcode.ExplorePackages.Bot");
             UserAgent.SetUserAgentString(userAgentStringBuilder);
-            log.LogInformation($"The following user agent will be used: {UserAgent.UserAgentString}");
+            logger.LogInformation("The following user agent will be used: {UserAgent}", UserAgent.UserAgentString);
 
-            Console.WriteLine("======================");
-            Console.WriteLine();
-        }
-
-        private static ExplorePackagesSettings ReadSettingsFromDisk()
-        {
-            var settingsDirectory = Environment.GetEnvironmentVariable("USERPROFILE") ?? Directory.GetCurrentDirectory();
-            var settingsPath = Path.Combine(settingsDirectory, "Knapcode.ExplorePackages.Settings.json");
-            if (!File.Exists(settingsPath))
-            {
-                Console.WriteLine($"No settings existed at {settingsPath}.");
-                return null;
-            }
-
-            Console.WriteLine($"Settings will be read from {settingsPath}.");
-            var content = File.ReadAllText(settingsPath);
-            var settings = JsonConvert.DeserializeObject<ExplorePackagesSettings>(content);
-
-            return settings;
+            logger.LogInformation("======================" + Environment.NewLine);
         }
 
         private static ServiceCollection InitializeServiceCollection(ExplorePackagesSettings settings)
@@ -165,8 +162,7 @@ namespace Knapcode.ExplorePackages
             var serviceCollection = new ServiceCollection();
 
             serviceCollection.AddExplorePackages(settings);
-
-            serviceCollection.AddSingleton<INuGetLogger, StandardToNuGetLogger>();
+            
             serviceCollection.AddSingleton(new LoggerFactory().AddMinimalConsole());
             serviceCollection.AddLogging();
 

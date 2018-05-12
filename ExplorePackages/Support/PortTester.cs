@@ -1,26 +1,25 @@
 ﻿using System;
-using System.IO;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using NuGet.Common;
+using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Support
 {
     public class PortTester : IPortTester
     {
-        private readonly ILogger _log;
+        private readonly ILogger<PortTester> _logger;
 
-        public PortTester(ILogger log)
+        public PortTester(ILogger<PortTester> logger)
         {
-            _log = log;
+            _logger = logger;
         }
 
         public async Task<bool> IsPortOpenAsync(string host, int port, TimeSpan connectTimeout)
         {
             var isPortOpen = await IsPortOpenInternalAsync(host, port, connectTimeout);
-            _log.LogInformation($"Port {port} on {host} is {(isPortOpen ? "open" : "closed")}.");
+            _logger.LogInformation("Port {Port} on {Host} is {PortStatus}.", port, host, isPortOpen ? "open" : "closed");
             return isPortOpen;
         }
 

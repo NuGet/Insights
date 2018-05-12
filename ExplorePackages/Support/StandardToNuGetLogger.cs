@@ -7,9 +7,9 @@ namespace Knapcode.ExplorePackages.Support
 {
     public class StandardToNuGetLogger : LoggerBase
     {
-        private readonly Microsoft.Extensions.Logging.ILogger<StandardToNuGetLogger> _logger;
+        private readonly Microsoft.Extensions.Logging.ILogger _logger;
 
-        public StandardToNuGetLogger(Microsoft.Extensions.Logging.ILogger<StandardToNuGetLogger> logger) : base(LogLevel.Debug)
+        public StandardToNuGetLogger(Microsoft.Extensions.Logging.ILogger logger) : base(LogLevel.Debug)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }

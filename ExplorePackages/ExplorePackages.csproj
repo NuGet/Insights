@@ -271,12 +271,12 @@
     <Compile Include="Support\IPortTester.cs" />
     <Compile Include="Support\JsonReaderExtensions.cs" />
     <Compile Include="Support\KeyValuePair.cs" />
+    <Compile Include="Support\LoggerExtensions.cs" />
     <Compile Include="Support\LoggingHandler.cs" />
     <Compile Include="Support\MD5IncrementalHash.cs" />
     <Compile Include="Support\MinimalConsoleLogger.cs" />
     <Compile Include="Support\MinimalConsoleLoggerFactoryExtensions.cs" />
     <Compile Include="Support\MinimalConsoleLoggerProvider.cs" />
-    <Compile Include="Support\NuGetLogger.cs" />
     <Compile Include="Logic\Protocol\FlatContainerClient.cs" />
     <Compile Include="Logic\Protocol\FlatContainerIndex.cs" />
     <Compile Include="Logic\Protocol\PackagesContainerClient.cs" />

@@ -5,27 +5,27 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Support;
-using NuGet.Common;
+using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class CommitCollector<TEntity, TItem>
+    public abstract class CommitCollector<TEntity, TItem>
     {
         private readonly CursorService _cursorService;
         private readonly ICommitEnumerator<TEntity> _enumerator;
         private readonly ICommitProcessor<TEntity, TItem> _processor;
-        private readonly ILogger _log;
+        private readonly ILogger _logger;
 
         public CommitCollector(
             CursorService cursorService,
             ICommitEnumerator<TEntity> enumerator,
             ICommitProcessor<TEntity, TItem> processor,
-            ILogger log)
+            ILogger logger)
         {
             _cursorService = cursorService;
             _enumerator = enumerator;
             _processor = processor;
-            _log = log;
+            _logger = logger;
         }
         
         public async Task ProcessAsync(ProcessMode processMode, CancellationToken token)
@@ -49,11 +49,17 @@ namespace Knapcode.ExplorePackages.Logic
                     var min = commits.Min(x => x.CommitTimestamp);
                     var max = commits.Max(x => x.CommitTimestamp);
                     start = max;
-                    _log.LogInformation($"Fetched {commits.Count} commits ({entityCount} {typeof(TEntity).Name}) between {min:O} and {max:O}.");
+                    _logger.LogInformation(
+                        "Fetched {CommitCount} commits ({EntityCount} {EntityName}) between {Min:O} and {Max:O}.",
+                        commitCount,
+                        entityCount,
+                        typeof(TEntity).Name,
+                        min,
+                        max);
                 }
                 else
                 {
-                    _log.LogInformation("No more commits were found within the bounds.");
+                    _logger.LogInformation("No more commits were found within the bounds.");
                 }
 
                 switch (processMode)
@@ -70,7 +76,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                 if (commits.Any())
                 {
-                    _log.LogInformation($"Cursor {_processor.CursorName} moving to {start:O}.");
+                    _logger.LogInformation("Cursor {CursorName} moving to {Start:O}.", _processor.CursorName, start);
                     await _cursorService.SetValueAsync(_processor.CursorName, start);
                 }
             }
@@ -127,10 +133,18 @@ namespace Knapcode.ExplorePackages.Logic
 
                 if (batch.Items.Any())
                 {
-                    _log.LogInformation($"Initialized batch of {batch.Items.Count} {typeof(TItem).Name}. {stopwatch.ElapsedMilliseconds}ms");
+                    _logger.LogInformation(
+                        "Initialized batch of {BatchItemCount} {ItemTypeName}. {ElapsedMilliseconds}ms",
+                        batch.Items.Count,
+                        typeof(TItem).Name,
+                        stopwatch.ElapsedMilliseconds);
                     stopwatch.Restart();
                     await _processor.ProcessBatchAsync(batch.Items);
-                    _log.LogInformation($"Done processing batch of {batch.Items.Count} {typeof(TItem).Name}. {stopwatch.ElapsedMilliseconds}ms");
+                    _logger.LogInformation(
+                        "Done processing batch of {BatchItemCount} {ItemTypeName}. {ElapsedMilliseconds}ms",
+                        batch.Items.Count,
+                        typeof(TItem).Name,
+                        stopwatch.ElapsedMilliseconds);
                 }
             }
         }

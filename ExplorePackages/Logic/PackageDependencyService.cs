@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Support;
 using Microsoft.EntityFrameworkCore;
-using NuGet.Common;
+using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Logic
@@ -15,12 +15,12 @@ namespace Knapcode.ExplorePackages.Logic
     public class PackageDependencyService
     {
         private readonly IPackageService _packageService;
-        private readonly ILogger _log;
+        private readonly ILogger<PackageDependencyService> _logger;
 
-        public PackageDependencyService(IPackageService packageService, ILogger log)
+        public PackageDependencyService(IPackageService packageService, ILogger<PackageDependencyService> logger)
         {
             _packageService = packageService;
-            _log = log;
+            _logger = logger;
         }
 
         public async Task<IReadOnlyList<PackageDependencyEntity>> GetDependentPackagesAsync(
@@ -115,7 +115,10 @@ namespace Knapcode.ExplorePackages.Logic
 
             var changes = minimumUpdates.Count + bestUpdates.Count + minimumAndBestUpdates.Count;
 
-            _log.LogInformation($"Prepared package dependency {changes} changes. {prepareStopwatch.ElapsedMilliseconds}ms");
+            _logger.LogInformation(
+                "Prepared package dependency {Changes} changes. {ElapsedMilliseconds}ms",
+                changes,
+                prepareStopwatch.ElapsedMilliseconds);
 
             return new DependencyPackageUpdates(
                 minimumUpdates,
@@ -233,7 +236,10 @@ namespace Knapcode.ExplorePackages.Logic
 
                     var commitStopwatch = Stopwatch.StartNew();
                     transaction.Commit();
-                    _log.LogInformation($"Committed package dependency {changes} changes. {commitStopwatch.ElapsedMilliseconds}ms");
+                    _logger.LogInformation(
+                        "Committed package dependency {Changes} changes. {commitStopwatch.ElapsedMilliseconds}ms",
+                        changes,
+                        commitStopwatch.ElapsedMilliseconds);
                 }
             }
         }
@@ -322,7 +328,10 @@ namespace Knapcode.ExplorePackages.Logic
 
                 var commitStopwatch = Stopwatch.StartNew();
                 var changes = await entityContext.SaveChangesAsync();
-                _log.LogInformation($"Committed package dependency {changes} changes. {commitStopwatch.ElapsedMilliseconds}ms");
+                _logger.LogInformation(
+                    "Committed package dependency {Changes} changes. {ElapsedMilliseconds}ms",
+                    changes,
+                    commitStopwatch.ElapsedMilliseconds);
             }
         }
 
@@ -405,9 +414,10 @@ namespace Knapcode.ExplorePackages.Logic
         {
             if (!idToPackageRegistration.TryGetValue(dependency.Id, out var packageRegistration))
             {
-                _log.LogWarning(
-                    $"Skipping dependency '{dependency.Id}' '{dependency.Version}' since no such package " +
-                    $"registration exists.");
+                _logger.LogWarning(
+                    "Skipping dependency {Id} {Version} since no such package registration exists.",
+                    dependency.Id,
+                    dependency.Version);
 
                 return;
             }
@@ -431,10 +441,14 @@ namespace Knapcode.ExplorePackages.Logic
             }
             else
             {
-                _log.LogWarning(
-                    $"Dependency {dependency.Id} (framework '{framework.OriginalValue}') is a duplicate. The " +
-                    $"version range that will be used is '{existingDependencyEntity.OriginalVersionRange}'. The " +
-                    $"version range '{dependency.Version}' will be skipped.");
+                _logger.LogWarning(
+                    "Dependency {Id} (framework '{OriginalFrameworkValue}') is a duplicate. The " +
+                    "version range that will be used is '{OriginalVersionRange}'. The " +
+                    "version range '{VersionRange}' will be skipped.",
+                    dependency.Id,
+                    framework.OriginalValue,
+                    existingDependencyEntity.OriginalVersionRange,
+                    dependency.Version);
             }
         }
 
@@ -452,7 +466,7 @@ namespace Knapcode.ExplorePackages.Logic
                     .Where(x => allOriginalValues.Contains(x.OriginalValue))
                     .ToListAsync();
 
-                _log.LogInformation($"Found {existingEntities.Count} existing frameworks.");
+                _logger.LogInformation("Found {ExistingCount} existing frameworks.", existingEntities.Count);
 
                 var newOriginalValues = allOriginalValues
                     .Except(existingEntities.Select(x => x.OriginalValue))
@@ -471,11 +485,14 @@ namespace Knapcode.ExplorePackages.Logic
                     newEntities.Add(newEntity);
                 }
 
-                _log.LogInformation($"Adding {newEntities.Count} new frameworks.");
+                _logger.LogInformation("Adding {NewCount} new frameworks.", newEntities.Count);
 
                 var commitStopwatch = Stopwatch.StartNew();
                 var changes = await entityContext.SaveChangesAsync();
-                _log.LogInformation($"Committed {changes} framework changes. {commitStopwatch.ElapsedMilliseconds}ms");
+                _logger.LogInformation(
+                    "Committed {Changes} framework changes. {ElapsedMilliseconds}ms",
+                    changes,
+                    commitStopwatch.ElapsedMilliseconds);
 
                 return existingEntities
                     .Concat(newEntities)

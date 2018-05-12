@@ -1,7 +1,7 @@
-﻿using NuGet.Common;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -9,16 +9,16 @@ namespace Knapcode.ExplorePackages.Logic
     {
         private readonly SearchServiceUrlDiscoverer _discoverer;
         private readonly SearchClient _client;
-        private readonly ILogger _log;
+        private readonly ILogger<SearchServiceCursorReader> _logger;
 
         public SearchServiceCursorReader(
             SearchServiceUrlDiscoverer discoverer,
             SearchClient client,
-            ILogger log)
+            ILogger<SearchServiceCursorReader> logger)
         {
             _discoverer = discoverer;
             _client = client;
-            _log = log;
+            _logger = logger;
         }
 
         public async Task<DateTimeOffset> GetCursorAsync()
@@ -50,9 +50,9 @@ namespace Knapcode.ExplorePackages.Logic
 
                 return diagnostics.CommitUserData.CommitTimestamp;
             }
-            catch (TimeoutException)
+            catch (TimeoutException ex)
             {
-                _log.LogWarning($"A timeout occurred when getting the timestamp from {baseUrl}.");
+                _logger.LogWarning(ex, "A timeout occurred when getting the timestamp from {BaseUrl}.", baseUrl);
                 return null;
             }
         }

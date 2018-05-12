@@ -41,7 +41,6 @@ namespace Knapcode.ExplorePackages.Website
 
             // Add stuff specific to the website.
             services.AddLogging();
-            services.AddTransient<NuGet.Common.ILogger, NuGetLogger>();
             services.AddSingleton<IHostedService, SearchSearchUrlCacheRefresher>();
             services.AddMvc();
             services.AddSignalR(o =>

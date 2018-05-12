@@ -2,26 +2,26 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using NuGet.Common;
+using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class SearchConsistencyService : IConsistencyService<SearchConsistencyReport>
+    public abstract class SearchConsistencyService : IConsistencyService<SearchConsistencyReport>
     {
         private readonly SearchServiceUrlDiscoverer _discoverer;
         private readonly SearchClient _searchClient;
-        private readonly ILogger _log;
+        private readonly ILogger _logger;
         private readonly bool _specificInstances;
 
         public SearchConsistencyService(
             SearchServiceUrlDiscoverer discoverer,
             SearchClient searchClient,
-            ILogger log,
+            ILogger logger,
             bool specificInstances)
         {
             _discoverer = discoverer;
             _searchClient = searchClient;
-            _log = log;
+            _logger = logger;
             _specificInstances = specificInstances;
         }
 
@@ -134,7 +134,7 @@ namespace Knapcode.ExplorePackages.Logic
                         throw;
                     }
 
-                    _log.LogWarning($"Failed to check the consistency of search base URL {baseUrl}. Exception message: {ex.Message}");
+                    _logger.LogWarning(ex, "Failed to check the consistency of search base URL {BaseUrl}.", baseUrl);
                 }
             }
 

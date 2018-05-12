@@ -1,19 +1,19 @@
 ﻿using System;
 using System.IO;
 using System.Xml.Linq;
-using NuGet.Common;
+using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic
 {
     public class NuspecProvider
     {
         private readonly PackagePathProvider _pathProvider;
-        private readonly ILogger _log;
+        private readonly ILogger<NuspecProvider> _logger;
 
-        public NuspecProvider(PackagePathProvider pathProvider, ILogger log)
+        public NuspecProvider(PackagePathProvider pathProvider, ILogger<NuspecProvider> logger)
         {
             _pathProvider = pathProvider;
-            _log = log;
+            _logger = logger;
         }
 
         public NuspecQueryContext GetNuspec(string id, string version)
@@ -32,13 +32,9 @@ namespace Knapcode.ExplorePackages.Logic
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                _log.LogError($"Could not parse .nuspec for {id} {version}: {path}"
-                    + Environment.NewLine
-                    + "  "
-                    + e.Message);
-
+                _logger.LogError(ex, "Could not parse .nuspec for {Id} {Version}: {Path}", id, version, path);
                 throw;
             }
 

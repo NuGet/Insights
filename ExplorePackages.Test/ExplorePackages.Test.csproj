@@ -45,6 +45,10 @@
     <Compile Include="TestData\Resources.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestSupport\TestDirectory.cs" />
+    <Compile Include="TestSupport\TestOutputHelperExtensions.cs" />
+    <Compile Include="TestSupport\XunitLogger.cs" />
+    <Compile Include="TestSupport\XunitLoggerFactoryExtensions.cs" />
+    <Compile Include="TestSupport\XunitLoggerProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Moq">

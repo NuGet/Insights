@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
-using NuGet.Common;
+using Knapcode.ExplorePackages.Support;
+using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
 using NuGet.Versioning;
 
@@ -16,13 +16,13 @@ namespace Knapcode.ExplorePackages.Logic
 
         private readonly HttpSource _httpSource;
         private readonly V2Parser _parser;
-        private readonly ILogger _log;
+        private readonly ILogger<V2Client> _logger;
 
-        public V2Client(HttpSource httpSource, V2Parser parser, ILogger log)
+        public V2Client(HttpSource httpSource, V2Parser parser, ILogger<V2Client> logger)
         {
             _httpSource = httpSource;
             _parser = parser;
-            _log = log;
+            _logger = logger;
         }
 
         public async Task<IReadOnlyList<V2Package>> GetPackagesAsync(string baseUrl, V2OrderByTimestamp orderBy, DateTimeOffset start, int top)
@@ -79,15 +79,16 @@ namespace Knapcode.ExplorePackages.Logic
 
         private async Task<IReadOnlyList<V2Package>> ParseV2PageAsync(string url)
         {
+            var nuGetLogger = _logger.ToNuGetLogger();
             return await _httpSource.ProcessStreamAsync(
-                new HttpSourceRequest(url, _log),
+                new HttpSourceRequest(url, nuGetLogger),
                 stream =>
                 {
                     var document = XmlUtility.LoadXml(stream);
                     var page = _parser.ParsePage(document);
                     return Task.FromResult(page);
                 },
-                _log,
+                nuGetLogger,
                 CancellationToken.None);
         }
     }

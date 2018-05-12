@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Support;
-using NuGet.Common;
+using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
 
 namespace Knapcode.ExplorePackages.Logic
@@ -17,20 +17,20 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly ServiceIndexCache _serviceIndexCache;
         private readonly FlatContainerClient _flatContainerClient;
         private readonly HttpSource _httpSource;
-        private readonly ILogger _log;
+        private readonly ILogger<NuspecDownloader> _logger;
 
         public NuspecDownloader(
             PackagePathProvider pathProvider,
             ServiceIndexCache serviceIndexCache,
             FlatContainerClient flatContainerClient,
             HttpSource httpSource,
-            ILogger log)
+            ILogger<NuspecDownloader> logger)
         {
             _pathProvider = pathProvider;
             _serviceIndexCache = serviceIndexCache;
             _flatContainerClient = flatContainerClient;
             _httpSource = httpSource;
-            _log = log;
+            _logger = logger;
         }
 
         public async Task<bool> StoreNuspecAsync(string id, string version, CancellationToken token)
@@ -59,8 +59,9 @@ namespace Knapcode.ExplorePackages.Logic
                 BufferSize,
                 FileOptions.DeleteOnClose | FileOptions.Asynchronous))
             {
+                var nuGetLogger = _logger.ToNuGetLogger();
                 var success = await _httpSource.ProcessStreamAsync(
-                    new HttpSourceRequest(url, _log)
+                    new HttpSourceRequest(url, nuGetLogger)
                     {
                         IgnoreNotFounds = true,
                     },
@@ -74,7 +75,7 @@ namespace Knapcode.ExplorePackages.Logic
                         await networkStream.CopyToAsync(tempStream);
                         return true;
                     },
-                    _log,
+                    nuGetLogger,
                     token);
 
                 if (!success)
@@ -86,7 +87,7 @@ namespace Knapcode.ExplorePackages.Logic
                 var lockPath = _pathProvider.GetPackageSpecificPath(id, version);
                 var uniquePath = _pathProvider.GetUniqueNuspecPath(id, version, hash);
 
-                return await ConcurrencyUtilities.ExecuteWithFileLockedAsync(
+                return await NuGet.Common.ConcurrencyUtilities.ExecuteWithFileLockedAsync(
                     lockPath,
                     async innerToken =>
                     {

@@ -2,19 +2,16 @@
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
 using McMaster.Extensions.CommandLineUtils;
-using NuGet.Common;
 
 namespace Knapcode.ExplorePackages.Commands
 {
     public class FetchCursorsCommand : ICommand
     {
         private readonly RemoteCursorService _service;
-        private readonly ILogger _log;
 
-        public FetchCursorsCommand(RemoteCursorService service, ILogger log)
+        public FetchCursorsCommand(RemoteCursorService service)
         {
             _service = service;
-            _log = log;
         }
 
         public void Configure(CommandLineApplication app)

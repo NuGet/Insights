@@ -9,8 +9,8 @@ using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Support;
 using Knapcode.MiniZip;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NuGet.CatalogReader;
-using NuGet.Common;
 using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Logic
@@ -19,7 +19,7 @@ namespace Knapcode.ExplorePackages.Logic
     {
         private static readonly IMapper Mapper;
         private readonly PackageCommitEnumerator _enumerator;
-        private readonly ILogger _log;
+        private readonly ILogger<PackageService> _logger;
 
         static PackageService()
         {
@@ -42,10 +42,10 @@ namespace Knapcode.ExplorePackages.Logic
             Mapper = mapperConfiguration.CreateMapper();
         }
 
-        public PackageService(PackageCommitEnumerator enumerator, ILogger log)
+        public PackageService(PackageCommitEnumerator enumerator, ILogger<PackageService> logger)
         {
             _enumerator = enumerator;
-            _log = log;
+            _logger = logger;
         }
 
         public async Task<IReadOnlyDictionary<string, PackageRegistrationEntity>> AddPackageRegistrationsAsync(
@@ -185,7 +185,10 @@ namespace Knapcode.ExplorePackages.Logic
                     .Where(p => identities.Contains(p.Identity))
                     .ToListAsync();
 
-                _log.LogInformation($"Got {existingPackages.Count} existing. {getExistingStopwatch.ElapsedMilliseconds}ms");
+                _logger.LogInformation(
+                    "Got {ExistingCount} existing. {ElapsedMilliseconds}ms",
+                    existingPackages.Count,
+                    getExistingStopwatch.ElapsedMilliseconds);
 
                 // Keep track of the resulting package keys.
                 var identityToPackageKey = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
@@ -207,7 +210,10 @@ namespace Knapcode.ExplorePackages.Logic
                 // Commit the changes.
                 var commitStopwatch = Stopwatch.StartNew();
                 var changes = await entityContext.SaveChangesAsync();
-                _log.LogInformation($"Committed {changes} changes. {commitStopwatch.ElapsedMilliseconds}ms");
+                _logger.LogInformation(
+                    "Committed {Changes} changes. {ElapsedMilliseconds}ms",
+                    changes,
+                    commitStopwatch.ElapsedMilliseconds);
 
                 // Add the new package keys.
                 foreach (var pair in identityToLatest)
@@ -448,7 +454,10 @@ namespace Knapcode.ExplorePackages.Logic
                 }
             }
 
-            _log.LogInformation($"Committed {changeCount} changes. {stopwatch.ElapsedMilliseconds}ms.");
+            _logger.LogInformation(
+                "Committed {ChangeCount} changes. {ElapsedMilliseconds}ms.",
+                changeCount,
+                stopwatch.ElapsedMilliseconds);
         }
 
         public async Task<IReadOnlyDictionary<string, long>> AddOrUpdatePackagesAsync(IEnumerable<PackageIdentity> identities)
@@ -537,11 +546,11 @@ namespace Knapcode.ExplorePackages.Logic
                 .Select(x => $"{x.Id}/{x.Version.ToNormalizedString()}")
                 .Distinct()
                 .ToList();
-            _log.LogInformation($"Found {identities.Count} catalog leaves containing deleted packages.");
+            _logger.LogInformation("Found {Count} catalog leaves containing deleted packages.", identities.Count);
 
             if (!identities.Any())
             {
-                _log.LogInformation($"No updates necessary.");
+                _logger.LogInformation("No updates necessary.");
                 return;
             }
 
@@ -554,7 +563,10 @@ namespace Knapcode.ExplorePackages.Logic
                     .Where(x => x.V2Package != null)
                     .Where(p => identities.Contains(p.Identity))
                     .ToListAsync();
-                _log.LogInformation($"Found {existingPackages.Count} corresponding V2 packages. {selectStopwatch.ElapsedMilliseconds}ms");
+                _logger.LogInformation(
+                    "Found {Count} corresponding V2 packages. {ElapsedMilliseconds}ms",
+                    existingPackages.Count,
+                    selectStopwatch.ElapsedMilliseconds);
 
                 foreach (var existingPackage in existingPackages)
                 {
@@ -563,7 +575,10 @@ namespace Knapcode.ExplorePackages.Logic
 
                 var commitStopwatch = Stopwatch.StartNew();
                 var changeCount = await entityContext.SaveChangesAsync();
-                _log.LogInformation($"Committed {changeCount} changes. {commitStopwatch.ElapsedMilliseconds}ms");
+                _logger.LogInformation(
+                    "Committed {Count} changes. {ElapsedMilliseconds}ms",
+                    changeCount,
+                    commitStopwatch.ElapsedMilliseconds);
             }
         }
 
@@ -588,7 +603,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                 if (missingIdentityValues.Any())
                 {
-                    _log.LogError($"The following package identities do not exist: {missingIdentityValues}");
+                    _logger.LogError("The following package identities do not exist: {MissingIdentityValues}", missingIdentityValues);
                     throw new InvalidOperationException("Some packages do not exist.");
                 }
 

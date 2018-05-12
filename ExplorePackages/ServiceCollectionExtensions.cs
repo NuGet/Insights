@@ -8,8 +8,8 @@ using Knapcode.ExplorePackages.Logic;
 using Knapcode.ExplorePackages.Support;
 using Knapcode.MiniZip;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NuGet.CatalogReader;
-using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -78,7 +78,7 @@ namespace Knapcode.ExplorePackages
                     x.GetRequiredService<HttpSource>(),
                     cacheContext: null,
                     cacheTimeout: TimeSpan.Zero,
-                    log: x.GetRequiredService<ILogger>()));
+                    log: x.GetRequiredService<ILogger<CatalogReader>>().ToNuGetLogger()));
 
             serviceCollection.AddTransient(
                 x => new HttpZipProvider(

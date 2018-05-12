@@ -1,7 +1,7 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Support;
-using NuGet.Common;
+using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
 using NuGet.Versioning;
 
@@ -10,18 +10,18 @@ namespace Knapcode.ExplorePackages.Logic
     public class FlatContainerClient
     {
         private readonly HttpSource _httpSource;
-        private readonly ILogger _log;
+        private readonly ILogger<FlatContainerClient> _logger;
 
-        public FlatContainerClient(HttpSource httpSource, ILogger log)
+        public FlatContainerClient(HttpSource httpSource, ILogger<FlatContainerClient> logger)
         {
             _httpSource = httpSource;
-            _log = log;
+            _logger = logger;
         }
 
         public async Task<BlobMetadata> GetPackageContentMetadataAsync(string baseUrl, string id, string version)
         {
             var packageUrl = GetPackageContentUrl(baseUrl, id, version);
-            return await _httpSource.GetBlobMetadataAsync(packageUrl, _log);
+            return await _httpSource.GetBlobMetadataAsync(packageUrl, _logger);
         }
 
         public string GetPackageContentUrl(string baseUrl, string id, string version)
@@ -43,7 +43,7 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task<bool> HasPackageManifestAsync(string baseUrl, string id, string version)
         {
             var packageUrl = GetPackageManifestUrl(baseUrl, id, version);
-            return await _httpSource.UrlExistsAsync(packageUrl, _log);
+            return await _httpSource.UrlExistsAsync(packageUrl, _logger);
         }
 
         public async Task<bool> HasPackageInIndexAsync(string baseUrl, string id, string version)
@@ -62,7 +62,7 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var lowerId = id.ToLowerInvariant();
             var packageUrl = $"{baseUrl.TrimEnd('/')}/{lowerId}/index.json";
-            return await _httpSource.DeserializeUrlAsync<FlatContainerIndex>(packageUrl, ignoreNotFounds: true, log: _log);
+            return await _httpSource.DeserializeUrlAsync<FlatContainerIndex>(packageUrl, ignoreNotFounds: true, logger: _logger);
         }
     }
 }

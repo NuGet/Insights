@@ -1,5 +1,5 @@
 ﻿using Knapcode.ExplorePackages.Entities;
-using NuGet.Common;
+using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -9,7 +9,7 @@ namespace Knapcode.ExplorePackages.Logic
             CursorService cursorService,
             ICommitEnumerator<PackageEntity> enumerator,
             MZipToDatabaseCommitProcessor processor,
-            ILogger log) : base(cursorService, enumerator, processor, log)
+            ILogger<MZipToDatabaseCommitCollector> logger) : base(cursorService, enumerator, processor, logger)
         {
         }
     }

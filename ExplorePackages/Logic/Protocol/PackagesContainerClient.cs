@@ -1,7 +1,6 @@
-﻿using System.Net.Http;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Support;
-using NuGet.Common;
+using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
 using NuGet.Versioning;
 
@@ -10,18 +9,18 @@ namespace Knapcode.ExplorePackages.Logic
     public class PackagesContainerClient
     {
         private readonly HttpSource _httpSource;
-        private readonly ILogger _log;
+        private readonly ILogger<PackagesContainerClient> _logger;
 
-        public PackagesContainerClient(HttpSource httpSource, ILogger log)
+        public PackagesContainerClient(HttpSource httpSource, ILogger<PackagesContainerClient> logger)
         {
             _httpSource = httpSource;
-            _log = log;
+            _logger = logger;
         }
 
         public async Task<BlobMetadata> GetPackageContentMetadataAsync(string baseUrl, string id, string version)
         {
             var packageUrl = GetPackageContentUrl(baseUrl, id, version);
-            return await _httpSource.GetBlobMetadataAsync(packageUrl, _log);
+            return await _httpSource.GetBlobMetadataAsync(packageUrl, _logger);
         }
 
         private static string GetPackageContentUrl(string baseUrl, string id, string version)

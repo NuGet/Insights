@@ -5,8 +5,8 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using NuGet.Common;
 using NuGet.Protocol;
 
 namespace Knapcode.ExplorePackages.Support
@@ -22,10 +22,11 @@ namespace Knapcode.ExplorePackages.Support
             },
         };
 
-        public static async Task<bool> UrlExistsAsync(this HttpSource httpSource, string url, ILogger log)
+        public static async Task<bool> UrlExistsAsync(this HttpSource httpSource, string url, ILogger logger)
         {
+            var nuGetLogger = logger.ToNuGetLogger();
             return await httpSource.ProcessResponseAsync(
-                new HttpSourceRequest(() => HttpRequestMessageFactory.Create(HttpMethod.Head, url, log))
+                new HttpSourceRequest(() => HttpRequestMessageFactory.Create(HttpMethod.Head, url, nuGetLogger))
                 {
                     IgnoreNotFounds = true,
                 },
@@ -43,7 +44,7 @@ namespace Knapcode.ExplorePackages.Support
                     throw new HttpRequestException(
                         $"The request to {url} return HTTP {(int)response.StatusCode} {response.ReasonPhrase}.");
                 },
-                log,
+                nuGetLogger,
                 CancellationToken.None);
         }
 
@@ -51,13 +52,13 @@ namespace Knapcode.ExplorePackages.Support
             this HttpSource httpSource,
             string url,
             bool ignoreNotFounds,
-            ILogger log)
+            ILogger logger)
         {
             return httpSource.DeserializeUrlAsync<T>(
                 url,
                 ignoreNotFounds,
                 maxTries: 3,
-                log: log);
+                logger: logger);
         }
 
         public static async Task<T> DeserializeUrlAsync<T>(
@@ -65,10 +66,11 @@ namespace Knapcode.ExplorePackages.Support
             string url,
             bool ignoreNotFounds,
             int maxTries,
-            ILogger log)
+            ILogger logger)
         {
+            var nuGetLogger = logger.ToNuGetLogger();
             return await httpSource.ProcessStreamAsync(
-                new HttpSourceRequest(url, log)
+                new HttpSourceRequest(url, nuGetLogger)
                 {
                     IgnoreNotFounds = ignoreNotFounds,
                     MaxTries = maxTries,
@@ -88,15 +90,17 @@ namespace Knapcode.ExplorePackages.Support
                         return Task.FromResult(result);
                     }
                 },
-                log,
+                nuGetLogger,
                 CancellationToken.None);
         }
 
-        public static async Task<BlobMetadata> GetBlobMetadataAsync(this HttpSource httpSource, string url, ILogger log)
+        public static async Task<BlobMetadata> GetBlobMetadataAsync(this HttpSource httpSource, string url, ILogger logger)
         {
+            var nuGetLogger = logger.ToNuGetLogger();
+
             // Try to get all of the information using a HEAD request.
             var blobMetadata = await httpSource.ProcessResponseAsync(
-                new HttpSourceRequest(() => HttpRequestMessageFactory.Create(HttpMethod.Head, url, log)),
+                new HttpSourceRequest(() => HttpRequestMessageFactory.Create(HttpMethod.Head, url, nuGetLogger)),
                 response =>
                 {
                     if (response.StatusCode == HttpStatusCode.NotFound)
@@ -121,7 +125,7 @@ namespace Knapcode.ExplorePackages.Support
 
                     return Task.FromResult<BlobMetadata>(null);
                 },
-                log,
+                nuGetLogger,
                 CancellationToken.None);
 
             if (blobMetadata != null)
@@ -132,7 +136,7 @@ namespace Knapcode.ExplorePackages.Support
             // If no Content-MD5 header was found in the response, calculate the package hash by downloading the
             // package.
             return await httpSource.ProcessStreamAsync(
-                new HttpSourceRequest(url, log),
+                new HttpSourceRequest(url, nuGetLogger),
                 async stream =>
                 {
                     var buffer = new byte[16 * 1024];
@@ -154,7 +158,7 @@ namespace Knapcode.ExplorePackages.Support
                             contentMD5: contentMD5);
                     }
                 },
-                log,
+                nuGetLogger,
                 CancellationToken.None);
         }
 

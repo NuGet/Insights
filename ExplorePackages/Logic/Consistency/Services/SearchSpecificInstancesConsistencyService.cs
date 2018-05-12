@@ -1,4 +1,4 @@
-﻿using NuGet.Common;
+﻿using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -7,10 +7,10 @@ namespace Knapcode.ExplorePackages.Logic
         public SearchSpecificInstancesConsistencyService(
             SearchServiceUrlDiscoverer discoverer,
             SearchClient searchClient,
-            ILogger log) : base(
+            ILogger<SearchSpecificInstancesConsistencyService> logger) : base(
                 discoverer,
                 searchClient,
-                log,
+                logger,
                 specificInstances: true)
         {
         }

@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
 using McMaster.Extensions.CommandLineUtils;
-using NuGet.Common;
+using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Commands
 {
@@ -13,7 +13,7 @@ namespace Knapcode.ExplorePackages.Commands
         private readonly CursorService _cursorService;
         private readonly PackageQueryProcessor _processor;
         private readonly List<IPackageQuery> _queries;
-        private readonly ILogger _log;
+        private readonly ILogger<PackageQueriesCommand> _logger;
 
         private CommandOption _reprocessOption;
         private CommandOption _resumeOption;
@@ -25,12 +25,12 @@ namespace Knapcode.ExplorePackages.Commands
             CursorService cursorService,
             PackageQueryProcessor processor,
             IEnumerable<IPackageQuery> queries,
-            ILogger log)
+            ILogger<PackageQueriesCommand> logger)
         {
             _cursorService = cursorService;
             _processor = processor;
             _queries = queries.ToList();
-            _log = log;
+            _logger = logger;
         }
 
         public void Configure(CommandLineApplication app)
@@ -86,9 +86,11 @@ namespace Knapcode.ExplorePackages.Commands
             {
                 if (Ids.Count != Versions.Count)
                 {
-                    _log.LogError(
-                        $"There are {Ids.Count} {_idsOption.Template} values specified but {Versions.Count} " +
-                        $"{_versionsOption.Template} values specified. There must be the same number.");
+                    _logger.LogError(
+                        $"There are {{IdsCount}} {_idsOption.Template} values specified but {{VersionsCount}} " +
+                        $"{_versionsOption.Template} values specified. There must be the same number.",
+                        Ids.Count,
+                        Versions.Count);
                     return;
                 }
 

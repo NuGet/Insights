@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Microsoft.EntityFrameworkCore;
-using NuGet.Common;
+using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -12,12 +12,10 @@ namespace Knapcode.ExplorePackages.Logic
     {
         private const int PageSize = 1000;
         private readonly PackageService _packageService;
-        private readonly ILogger _log;
 
-        public PackageQueryService(PackageService packageService, ILogger log)
+        public PackageQueryService(PackageService packageService)
         {
             _packageService = packageService;
-            _log = log;
         }
 
         public async Task AddQueryAsync(string queryName, string cursorName)

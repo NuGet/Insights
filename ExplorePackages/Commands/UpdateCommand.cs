@@ -3,14 +3,14 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
-using NuGet.Common;
+using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Commands
 {
     public class UpdateCommand : ICommand
     {
         private readonly IReadOnlyList<ICommand> _commands;
-        private readonly ILogger _log;
+        private readonly ILogger<CommandExecutor> _logger;
         private CommandOption _skipDownloadsOption;
 
         public UpdateCommand(
@@ -25,7 +25,7 @@ namespace Knapcode.ExplorePackages.Commands
             DownloadsToDatabaseCommand downloadsToDatabase,
             PackageQueriesCommand packageQueries,
             ExplorePackagesSettings settings,
-            ILogger log)
+            ILogger<CommandExecutor> logger)
         {
             var commands = new List<ICommand>
             {
@@ -50,7 +50,7 @@ namespace Knapcode.ExplorePackages.Commands
             });
 
             _commands = commands;
-            _log = log;
+            _logger = logger;
         }
 
         public void Configure(CommandLineApplication app)
@@ -72,7 +72,7 @@ namespace Knapcode.ExplorePackages.Commands
                     continue;
                 }
 
-                var commandExecutor = new CommandExecutor(command, _log);
+                var commandExecutor = new CommandExecutor(command, _logger);
                 await commandExecutor.ExecuteAsync(token);
             }
         }

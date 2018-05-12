@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Support;
-using NuGet.Common;
+using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
 
 namespace Knapcode.ExplorePackages.Logic
@@ -12,16 +12,16 @@ namespace Knapcode.ExplorePackages.Logic
     {
         private readonly HttpSource _httpSource;
         private readonly ISearchServiceUrlCacheInvalidator _invalidator;
-        private readonly ILogger _log;
+        private readonly ILogger<SearchClient> _logger;
 
         public SearchClient(
             HttpSource httpSource,
             ISearchServiceUrlCacheInvalidator invalidator,
-            ILogger log)
+            ILogger<SearchClient> logger)
         {
             _httpSource = httpSource;
             _invalidator = invalidator;
-            _log = log;
+            _logger = logger;
         }
 
         public async Task<SearchDiagnostics> GetDiagnosticsAsync(string baseUrl)
@@ -34,7 +34,7 @@ namespace Knapcode.ExplorePackages.Logic
                     url,
                     ignoreNotFounds: false,
                     maxTries: 1,
-                    log: _log);
+                    logger: _logger);
             }
             catch
             {
@@ -56,7 +56,7 @@ namespace Knapcode.ExplorePackages.Logic
                     url,
                     ignoreNotFounds: false,
                     maxTries: maxTries,
-                    log: _log);
+                    logger: _logger);
             }
             catch
             {

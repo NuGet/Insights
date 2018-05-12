@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
-using NuGet.Common;
+using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -12,14 +12,14 @@ namespace Knapcode.ExplorePackages.Logic
     {
         private const int ItemBatchSize = 10000;
         private readonly PackageDependencyService _packageDependencyService;
-        private readonly ILogger _log;
+        private readonly ILogger<DependencyPackagesToDatabaseCommitProcessor> _logger;
 
         public DependencyPackagesToDatabaseCommitProcessor(
             PackageDependencyService packageDependencyService,
-            ILogger log)
+            ILogger<DependencyPackagesToDatabaseCommitProcessor> logger)
         {
             _packageDependencyService = packageDependencyService;
-            _log = log;
+            _logger = logger;
         }
 
         public string CursorName => CursorNames.DependencyPackagesToDatabase;
@@ -59,7 +59,7 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 var width = topDependencyPairs.Max(x => x.Value.ToString().Length);
 
-                _log.LogInformation(
+                _logger.LogInformation(
                     $"Top dependencies:{Environment.NewLine}" +
                     string.Join(
                         Environment.NewLine,

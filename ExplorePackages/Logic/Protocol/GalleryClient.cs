@@ -4,7 +4,8 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using AngleSharp.Parser.Html;
-using NuGet.Common;
+using Knapcode.ExplorePackages.Support;
+using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
 using NuGet.Versioning;
 
@@ -14,12 +15,12 @@ namespace Knapcode.ExplorePackages.Logic
     {
         private static readonly Regex FlattenWhitespace = new Regex(@"\s+");
         private readonly HttpSource _httpSource;
-        private readonly ILogger _log;
+        private readonly ILogger<GalleryClient> _logger;
 
-        public GalleryClient(HttpSource httpSource, ILogger log)
+        public GalleryClient(HttpSource httpSource, ILogger<GalleryClient> logger)
         {
             _httpSource = httpSource;
-            _log = log;
+            _logger = logger;
         }
 
         public async Task<GalleryPackageState> GetPackageStateAsync(string baseUrl, string id, string version)
@@ -29,8 +30,9 @@ namespace Knapcode.ExplorePackages.Logic
             var packageIdentity = new PackageIdentity(id, normalizedVersion);
             var url = $"{baseUrl.TrimEnd('/')}/packages/{id}/{normalizedVersion}";
 
+            var nuGetLogger = _logger.ToNuGetLogger();
             return await _httpSource.ProcessStreamAsync(
-                new HttpSourceRequest(url, _log)
+                new HttpSourceRequest(url, nuGetLogger)
                 {
                     IgnoreNotFounds = true,
                 },
@@ -77,7 +79,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                     throw new InvalidDataException($"The package state could not be determined at {url}.");
                 },
-                _log,
+                nuGetLogger,
                 CancellationToken.None);
         }
 

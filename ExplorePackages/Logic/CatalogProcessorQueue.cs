@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Support;
 using NuGet.CatalogReader;
-using NuGet.Common;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -14,16 +13,13 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly TaskQueue<Work> _taskQueue;
         private readonly CatalogReader _catalogReader;
         private readonly ICatalogEntriesProcessor _processor;
-        private readonly ILogger _log;
 
         public CatalogProcessorQueue(
             CatalogReader catalogReader,
-            ICatalogEntriesProcessor processor,
-            ILogger log)
+            ICatalogEntriesProcessor processor)
         {
             _catalogReader = catalogReader;
             _processor = processor;
-            _log = log;
             _taskQueue = new TaskQueue<Work>(
                 workerCount: 1,
                 workAsync: WorkAsync);

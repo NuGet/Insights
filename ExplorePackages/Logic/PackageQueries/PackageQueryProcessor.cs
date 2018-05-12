@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Support;
 using Microsoft.EntityFrameworkCore;
-using NuGet.Common;
+using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -19,7 +19,7 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly PackageCommitEnumerator _packageCommitEnumerator;
         private readonly PackageQueryService _queryService;
         private readonly IPackageService _packageService;
-        private readonly ILogger _log;
+        private readonly ILogger<PackageQueryProcessor> _logger;
 
         public PackageQueryProcessor(
             PackageQueryContextBuilder contextBuilder,
@@ -27,14 +27,14 @@ namespace Knapcode.ExplorePackages.Logic
             PackageCommitEnumerator packageCommitEnumerator,
             PackageQueryService queryService,
             IPackageService packageService,
-            ILogger log)
+            ILogger<PackageQueryProcessor> logger)
         {
             _contextBuilder = contextBuilder;
             _cursorService = cursorService;
             _packageCommitEnumerator = packageCommitEnumerator;
             _queryService = queryService;
             _packageService = packageService;
-            _log = log;
+            _logger = logger;
         }
 
         public async Task ProcessPackageAsync(IReadOnlyList<IPackageQuery> queries, IReadOnlyList<PackageIdentity> identities, CancellationToken token)
@@ -53,7 +53,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                 if (package == null)
                 {
-                    _log.LogWarning($"Package {identity.Id} {identity.Version} does not exist.");
+                    _logger.LogWarning("Package {Id} {Version} does not exist.", identity.Id, identity.Version);
                     continue;
                 }
 
@@ -86,17 +86,25 @@ namespace Knapcode.ExplorePackages.Logic
                     var min = commits.Min(x => x.CommitTimestamp);
                     var max = commits.Max(x => x.CommitTimestamp);
                     bounds.Start = max;
-                    _log.LogInformation($"Fetched {commits.Count} commits ({packageCount} packages) between {min:O} and {max:O}.");
+                    _logger.LogInformation(
+                        "Fetched {CommitCount} commits ({PackageCount} packages) between {Min:O} and {Max:O}.",
+                        commitCount,
+                        packageCount,
+                        min,
+                        max);
                 }
                 else
                 {
-                    _log.LogInformation("No more commits were found within the bounds.");
+                    _logger.LogInformation("No more commits were found within the bounds.");
                 }
 
                 var results = await ProcessCommitsAsync(queries, bounds, commits);
 
                 complete += packageCount;
-                _log.LogInformation($"{complete} completed ({Math.Round(complete / stopwatch.Elapsed.TotalSeconds)} per second).");
+                _logger.LogInformation(
+                    "{CompleteCount} completed ({PerSecond} per second).",
+                    complete,
+                    Math.Round(complete / stopwatch.Elapsed.TotalSeconds));
 
                 await PersistResultsAndCursorsAsync(bounds, results);
             }
@@ -227,12 +235,9 @@ namespace Knapcode.ExplorePackages.Logic
                 {
                     isMatch = await query.IsMatchAsync(work.Context, work.State);
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    _log.LogError($"Query failure {name}: {id} {version}"
-                        + Environment.NewLine
-                        + "  "
-                        + e.Message);
+                    _logger.LogError(ex, "Query failure {Name}: {Id} {Version}", name, id, version);
                     throw;
                 }
 
@@ -243,7 +248,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                 if (isMatch)
                 {
-                    _log.LogInformation($"Query match {name}: {id} {version}");
+                    _logger.LogInformation("Query match {Name}: {Id} {Version}", name, id, version);
                 }
             }
         }
@@ -276,7 +281,7 @@ namespace Knapcode.ExplorePackages.Logic
                 if (!cursorNameToQueryNames[cursorName].Any()
                     && bounds.CursorNameToStart[cursorName] < bounds.Start)
                 {
-                    _log.LogInformation($"Cursor {cursorName} moving to {bounds.Start:O}.");
+                    _logger.LogInformation("Cursor {CursorName} moving to {Start:O}.", cursorName, bounds.Start);
                     cursorNames.Add(cursorName);
                     bounds.CursorNameToStart[cursorName] = bounds.Start;
                 }

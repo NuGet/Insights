@@ -4,8 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Support;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using NuGet.Common;
 using NuGet.Protocol;
 
 namespace Knapcode.ExplorePackages.Logic
@@ -16,20 +16,20 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly HttpSource _httpSource;
         private readonly SearchServiceCursorReader _searchServiceCursorReader;
         private readonly CursorService _cursorService;
-        private readonly ILogger _log;
+        private readonly ILogger<RemoteCursorService> _logger;
 
         public RemoteCursorService(
             ServiceIndexCache serviceIndexCache,
             HttpSource httpSource,
             SearchServiceCursorReader searchServiceCursorReader,
             CursorService cursorService,
-            ILogger log)
+            ILogger<RemoteCursorService> logger)
         {
             _serviceIndexCache = serviceIndexCache;
             _httpSource = httpSource;
             _searchServiceCursorReader = searchServiceCursorReader;
             _cursorService = cursorService;
-            _log = log;
+            _logger = logger;
         }
 
         public async Task UpdateNuGetOrgCursors(CancellationToken token)
@@ -61,7 +61,7 @@ namespace Knapcode.ExplorePackages.Logic
             var cursor = await _httpSource.DeserializeUrlAsync<JsonCursor>(
                 url,
                 ignoreNotFounds: false,
-                log: _log);
+                logger: _logger);
 
             return cursor.Value;
         }

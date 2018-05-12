@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using NuGet.CatalogReader;
-using NuGet.Common;
 
 namespace Knapcode.ExplorePackages.Logic
 {
     public class CatalogToNuspecsProcessor : ICatalogEntriesProcessor
     {
         private readonly NuspecDownloader _downloader;
-        private readonly ILogger _log;
+        private readonly ILogger<CatalogToNuspecsProcessor> _logger;
 
-        public CatalogToNuspecsProcessor(NuspecDownloader downloader, ILogger log)
+        public CatalogToNuspecsProcessor(NuspecDownloader downloader, ILogger<CatalogToNuspecsProcessor> logger)
         {
             _downloader = downloader;
-            _log = log;
+            _logger = logger;
         }
 
         public string CursorName => CursorNames.CatalogToNuspecs;
@@ -54,7 +54,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                 if (!success)
                 {
-                    _log.LogWarning($"The .nuspec for package {packageIdentity.Id} {packageIdentity.Version} could not be found.");
+                    _logger.LogWarning("The .nuspec for package {Id} {Version} could not be found.", packageIdentity.Id, packageIdentity.Version);
                 }
             }
         }

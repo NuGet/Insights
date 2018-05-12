@@ -1,13 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Support;
-using Newtonsoft.Json;
-using NuGet.Common;
+using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
 using NuGet.Versioning;
 
@@ -16,19 +11,19 @@ namespace Knapcode.ExplorePackages.Logic
     public class RegistrationClient
     {
         private readonly HttpSource _httpSource;
-        private readonly ILogger _log;
+        private readonly ILogger<RegistrationClient> _logger;
 
-        public RegistrationClient(HttpSource httpSource, ILogger log)
+        public RegistrationClient(HttpSource httpSource, ILogger<RegistrationClient> logger)
         {
             _httpSource = httpSource;
-            _log = log;
+            _logger = logger;
         }
 
         public async Task<RegistrationLeaf> GetRegistrationLeafOrNullAsync(string baseUrl, string id, string version)
         {
             var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
             var leafUrl = $"{baseUrl.TrimEnd('/')}/{id.ToLowerInvariant()}/{normalizedVersion.ToLowerInvariant()}.json";
-            return await _httpSource.DeserializeUrlAsync<RegistrationLeaf>(leafUrl, ignoreNotFounds: true, log: _log);
+            return await _httpSource.DeserializeUrlAsync<RegistrationLeaf>(leafUrl, ignoreNotFounds: true, logger: _logger);
         }
 
         public async Task<RegistrationLeafItem> GetRegistrationLeafItemOrNullAsync(string baseUrl, string id, string version)
@@ -91,12 +86,12 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task<RegistrationIndex> GetRegistrationIndex(string baseUrl, string id)
         {
             var indexUrl = $"{baseUrl.TrimEnd('/')}/{id.ToLowerInvariant()}/index.json";
-            return await _httpSource.DeserializeUrlAsync<RegistrationIndex>(indexUrl, ignoreNotFounds: true, log: _log);
+            return await _httpSource.DeserializeUrlAsync<RegistrationIndex>(indexUrl, ignoreNotFounds: true, logger: _logger);
         }
 
         public async Task<RegistrationPage> GetRegistrationPage(string pageUrl)
         {
-            return await _httpSource.DeserializeUrlAsync<RegistrationPage>(pageUrl, ignoreNotFounds: false, log: _log);
+            return await _httpSource.DeserializeUrlAsync<RegistrationPage>(pageUrl, ignoreNotFounds: false, logger: _logger);
         }
 
         private class RegistrationLeafItemResult
