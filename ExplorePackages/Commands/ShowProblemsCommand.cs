@@ -30,51 +30,54 @@ namespace Knapcode.ExplorePackages.Commands
         {
             var problems = await _problemService.GetProblemsAsync();
             _logger.LogInformation("Found {TotalProblemCount} total problems." + Environment.NewLine, problems.Count);
-            
-            // Show count per problem ID.
-            var problemIdToCount = problems
-                .GroupBy(x => x.ProblemId)
-                .Select(x => KeyValuePair.Create(x.Key, x.Count()))
-                .OrderByDescending(x => x.Value)
-                .ThenBy(x => x.Key)
-                .ToList();
-            var maxCountWidth = problemIdToCount.Max(x => x.Value.ToString().Length);
 
-            _logger.LogInformation("The following problem IDs and their counts were found:" + Environment.NewLine);
-            foreach (var pair in problemIdToCount)
+            if (problems.Any())
             {
-                _logger.LogInformation("  {Count} {ProblemId}", pair.Value.ToString().PadLeft(maxCountWidth), pair.Key);
-            }
-            Console.WriteLine();
+                // Show count per problem ID.
+                var problemIdToCount = problems
+                    .GroupBy(x => x.ProblemId)
+                    .Select(x => KeyValuePair.Create(x.Key, x.Count()))
+                    .OrderByDescending(x => x.Value)
+                    .ThenBy(x => x.Key)
+                    .ToList();
+                var maxCountWidth = problemIdToCount.Max(x => x.Value.ToString().Length);
 
-            // Group packages by their set of problem IDs.
-            var groups = problems
-                .GroupBy(x => x.PackageIdentity)
-                .Select(x => KeyValuePair.Create(new List<string>(x.Select(y => y.ProblemId).OrderBy(y => y)), x.Key))
-                .GroupBy(x => x.Key, new ListEqualityComparer<string>())
-                .Select(x => KeyValuePair.Create(
-                    x.Key,
-                    x
-                        .Select(y => y.Value)
-                        .OrderBy(y => y.Id, StringComparer.OrdinalIgnoreCase)
-                        .ThenBy(y => NuGetVersion.Parse(y.Version))
-                        .ToList()))
-                .OrderByDescending(x => x.Value.Count)
-                .ThenBy(x => string.Join(Environment.NewLine, x.Key))
-                .ToList();
-            _logger.LogInformation("The following packages have problems, grouped by their set of problem IDs:" + Environment.NewLine);
-            foreach (var group in groups)
-            {
-                foreach (var problemId in group.Key)
+                _logger.LogInformation("The following problem IDs and their counts were found:" + Environment.NewLine);
+                foreach (var pair in problemIdToCount)
                 {
-                    _logger.LogInformation("  {ProblemId}", problemId);
-                }
-
-                foreach (var identity in group.Value)
-                {
-                    _logger.LogInformation("    {Id} {Version}", identity.Id, identity.Version);
+                    _logger.LogInformation("  {Count} {ProblemId}", pair.Value.ToString().PadLeft(maxCountWidth), pair.Key);
                 }
                 Console.WriteLine();
+
+                // Group packages by their set of problem IDs.
+                var groups = problems
+                    .GroupBy(x => x.PackageIdentity)
+                    .Select(x => KeyValuePair.Create(new List<string>(x.Select(y => y.ProblemId).OrderBy(y => y)), x.Key))
+                    .GroupBy(x => x.Key, new ListEqualityComparer<string>())
+                    .Select(x => KeyValuePair.Create(
+                        x.Key,
+                        x
+                            .Select(y => y.Value)
+                            .OrderBy(y => y.Id, StringComparer.OrdinalIgnoreCase)
+                            .ThenBy(y => NuGetVersion.Parse(y.Version))
+                            .ToList()))
+                    .OrderByDescending(x => x.Value.Count)
+                    .ThenBy(x => string.Join(Environment.NewLine, x.Key))
+                    .ToList();
+                _logger.LogInformation("The following packages have problems, grouped by their set of problem IDs:" + Environment.NewLine);
+                foreach (var group in groups)
+                {
+                    foreach (var problemId in group.Key)
+                    {
+                        _logger.LogInformation("  {ProblemId}", problemId);
+                    }
+
+                    foreach (var identity in group.Value)
+                    {
+                        _logger.LogInformation("    {Id} {Version}", identity.Id, identity.Version);
+                    }
+                    Console.WriteLine();
+                }
             }
         }
 
