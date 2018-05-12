@@ -1,5 +1,5 @@
 ﻿using System;
-using NuGet.Common;
+using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Support
 {
@@ -40,7 +40,7 @@ namespace Knapcode.ExplorePackages.Support
         /// <summary>
         /// Colorize warnings and errors.
         /// </summary>
-        internal static ConsoleColor? GetColor(LogLevel level)
+        private static ConsoleColor? GetColor(LogLevel level)
         {
             switch (level)
             {
