@@ -1,6 +1,7 @@
-﻿using System.Threading.Tasks;
-using System.Web;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Support;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
 
@@ -21,7 +22,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task<AutocompleteIdResults> GetIdsAsync(string q, int? skip, int? take, bool? prerelease, string semVerLevel)
         {
-            var queryString = HttpUtility.ParseQueryString(string.Empty);
+            var queryString = new Dictionary<string, string>();
 
             if (q != null)
             {
@@ -49,7 +50,7 @@ namespace Knapcode.ExplorePackages.Logic
             }
 
             var baseUrl = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.Autocomplete);
-            var url = $"{baseUrl}?{queryString}";
+            var url = QueryHelpers.AddQueryString(baseUrl, queryString);
 
             return await _httpSource.DeserializeUrlAsync<AutocompleteIdResults>(
                 url,
@@ -59,7 +60,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task<AutocompleteVersionResults> GetVersionsAsync(string id, bool? prerelease, string semVerLevel)
         {
-            var queryString = HttpUtility.ParseQueryString(string.Empty);
+            var queryString = new Dictionary<string, string>();
             queryString["id"] = id;
 
             if (prerelease.HasValue)
@@ -73,7 +74,7 @@ namespace Knapcode.ExplorePackages.Logic
             }
 
             var baseUrl = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.Autocomplete);
-            var url = $"{baseUrl}?{queryString}";
+            var url = QueryHelpers.AddQueryString(baseUrl, queryString);
 
             return await _httpSource.DeserializeUrlAsync<AutocompleteVersionResults>(
                 url,

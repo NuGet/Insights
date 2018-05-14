@@ -1,110 +1,19 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{77D818A0-CAE8-4C68-8464-3DCE3D5BE90E}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Knapcode.ExplorePackages</RootNamespace>
+    <TargetFramework>net461</TargetFramework>
     <AssemblyName>Knapcode.ExplorePackages.Test</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <OutputPath Condition="'$(OutputPath)' == ''">bin\$(Configuration)</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <RootNamespace>Knapcode.ExplorePackages</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <EmbeddedResource Include="TestData\*.nuspec" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TestSupport\DatabaseCollection.cs" />
-    <Compile Include="Logic\NuspecUtilityTest.cs" />
-    <Compile Include="Logic\PackageDownloadsToDatabaseProcessorTest.cs" />
-    <Compile Include="Logic\PackageServiceTest.cs" />
-    <Compile Include="TestData\Resources.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestSupport\TestDirectory.cs" />
-    <Compile Include="TestSupport\TestOutputHelperExtensions.cs" />
-    <Compile Include="TestSupport\XunitLogger.cs" />
-    <Compile Include="TestSupport\XunitLoggerFactoryExtensions.cs" />
-    <Compile Include="TestSupport\XunitLoggerProvider.cs" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
+    <PackageReference Include="xunit" Version="2.3.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
+    <PackageReference Include="Moq" Version="4.8.2" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Moq">
-      <Version>4.8.2</Version>
-    </PackageReference>
-    <PackageReference Include="xunit">
-      <Version>2.3.1</Version>
-    </PackageReference>
-    <PackageReference Include="xunit.runner.visualstudio">
-      <Version>2.3.1</Version>
-    </PackageReference>
+    <ProjectReference Include="..\ExplorePackages\ExplorePackages.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ExplorePackages\ExplorePackages.csproj">
-      <Project>{38eedb97-1fe7-408d-a930-796961b6c2c9}</Project>
-      <Name>ExplorePackages</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestData\MixedDependencyGroupStyles.nuspec" />
-    <EmbeddedResource Include="TestData\NuGet.Core.2.14.0.nuspec" />
-    <EmbeddedResource Include="TestData\NuGet.Versioning.4.3.0.nuspec" />
-    <EmbeddedResource Include="TestData\NuGet.Versioning.1.0.0.nuspec" />
-    <EmbeddedResource Include="TestData\InvalidDependencyTargetFrameworks.nuspec" />
-    <EmbeddedResource Include="TestData\WhitespaceDependencyTargetFrameworks.nuspec" />
-    <EmbeddedResource Include="TestData\InvalidDependencyVersions.nuspec" />
-    <EmbeddedResource Include="TestData\DuplicateDependencyTargetFrameworks.nuspec" />
-    <EmbeddedResource Include="TestData\UnsupportedDependencyTargetFrameworks.nuspec" />
-    <EmbeddedResource Include="TestData\InvalidDependencyIds.nuspec" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestData\Microsoft.AspNetCore.1.1.2.nuspec" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestData\Newtonsoft.Json.10.0.3.nuspec" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestData\DuplicateDependencies.nuspec" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestData\FloatingDependencyVersions.nuspec" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestData\DuplicateMetadataElements.nuspec" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestData\NonAlphabetMetadataElements.nuspec" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestData\CollidingMetadataElements.nuspec" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestData\UnexpectedValuesForBooleans.nuspec" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
