@@ -96,10 +96,10 @@ namespace Knapcode.ExplorePackages.Logic
                         }
 
                         tempStream.Position = 0;
-                        await SafeFileWriter.WriteAsync(uniquePath, tempStream);
+                        await SafeFileWriter.WriteAsync(uniquePath, tempStream, _logger);
 
                         tempStream.Position = 0;
-                        await SafeFileWriter.WriteAsync(latestPath, tempStream);
+                        await SafeFileWriter.WriteAsync(latestPath, tempStream, _logger);
 
                         return true;
                     },

@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.MiniZip;
+using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -13,19 +14,22 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly FlatContainerClient _flatContainerClient;
         private readonly HttpZipProvider _httpZipProvider;
         private readonly MZipFormat _mZipFormat;
+        private readonly ILogger<MZipStore> _logger;
 
         public MZipStore(
             PackagePathProvider pathProvider,
             ServiceIndexCache serviceIndexCache,
             FlatContainerClient flatContainerClient,
             HttpZipProvider httpZipProvider,
-            MZipFormat mZipFormat)
+            MZipFormat mZipFormat,
+            ILogger<MZipStore> logger)
         {
             _pathProvider = pathProvider;
             _serviceIndexCache = serviceIndexCache;
             _flatContainerClient = flatContainerClient;
             _httpZipProvider = httpZipProvider;
             _mZipFormat = mZipFormat;
+            _logger = logger;
         }
 
         public async Task StoreMZipAsync(string id, string version, CancellationToken token)
@@ -44,7 +48,8 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 await SafeFileWriter.WriteAsync(
                     latestPath,
-                    destStream => _mZipFormat.WriteAsync(reader.Stream, destStream));
+                    destStream => _mZipFormat.WriteAsync(reader.Stream, destStream),
+                    _logger);
             }
         }
 

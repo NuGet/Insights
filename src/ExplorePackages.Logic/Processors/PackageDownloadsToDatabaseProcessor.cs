@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -14,17 +15,20 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly IPackageService _service;
         private readonly IETagService _etagService;
         private readonly ExplorePackagesSettings _settings;
+        private readonly ILogger<PackageDownloadsToDatabaseProcessor> _logger;
 
         public PackageDownloadsToDatabaseProcessor(
             IPackageDownloadsClient client,
             IPackageService service,
             IETagService etagService,
-            ExplorePackagesSettings settings)
+            ExplorePackagesSettings settings,
+            ILogger<PackageDownloadsToDatabaseProcessor> logger)
         {
             _client = client;
             _service = service;
             _etagService = etagService;
             _settings = settings;
+            _logger = logger;
         }
 
         public async Task UpdateAsync()
@@ -47,7 +51,7 @@ namespace Knapcode.ExplorePackages.Logic
                 await _etagService.SetValueAsync(ETagNames.DownloadsV1, newETag);
 
                 var oldPath = _settings.DownloadsV1Path + ".old";
-                SafeFileWriter.Replace(_settings.DownloadsV1Path, newPath, oldPath);
+                SafeFileWriter.Replace(_settings.DownloadsV1Path, newPath, oldPath, _logger);
             }
         }
 
@@ -153,7 +157,7 @@ namespace Knapcode.ExplorePackages.Logic
                         newRecord = ParseLine(await newReader.ReadLineAsync());
                     }
                     
-                    if (batch.Count >= 5000)
+                    if (batch.Count >= 20000)
                     {
                         taskQueue.Enqueue(batch);
                         batch = new List<PackageDownloads>();

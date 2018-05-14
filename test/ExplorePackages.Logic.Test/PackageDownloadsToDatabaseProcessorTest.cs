@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic.TestSupport;
 using Moq;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -14,6 +15,7 @@ namespace Knapcode.ExplorePackages.Logic
     {
         public class UpdateAsync : IDisposable
         {
+            private readonly ITestOutputHelper _output;
             private readonly TestDirectory _testDirectory;
             private readonly List<List<PackageDownloads>> _batches;
             private readonly Mock<IPackageDownloadsClient> _client;
@@ -22,8 +24,9 @@ namespace Knapcode.ExplorePackages.Logic
             private readonly ExplorePackagesSettings _settings;
             private readonly PackageDownloadsToDatabaseProcessor _target;
 
-            public UpdateAsync()
+            public UpdateAsync(ITestOutputHelper output)
             {
+                _output = output;
                 _testDirectory = TestDirectory.Create();
                 _batches = new List<List<PackageDownloads>>();
 
@@ -44,7 +47,8 @@ namespace Knapcode.ExplorePackages.Logic
                     _client.Object,
                     _service.Object,
                     _etagService.Object,
-                    _settings);
+                    _settings,
+                    output.GetLogger< PackageDownloadsToDatabaseProcessor>());
             }
 
             public void Dispose()
