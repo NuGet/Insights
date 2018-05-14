@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
 using McMaster.Extensions.CommandLineUtils;
-using Microsoft.Extensions.Logging;
 using NuGet.CatalogReader;
 
 namespace Knapcode.ExplorePackages.Commands

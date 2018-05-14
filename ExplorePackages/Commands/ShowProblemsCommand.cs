@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
-using Knapcode.ExplorePackages.Support;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using NuGet.Versioning;

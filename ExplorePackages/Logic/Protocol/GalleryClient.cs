@@ -4,7 +4,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using AngleSharp.Parser.Html;
-using Knapcode.ExplorePackages.Support;
 using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
 using NuGet.Versioning;

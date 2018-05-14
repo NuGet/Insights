@@ -3,7 +3,6 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Support;
 using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
 

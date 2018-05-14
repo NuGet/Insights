@@ -5,7 +5,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Logic;
-using Knapcode.ExplorePackages.Support;
 using Knapcode.MiniZip;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

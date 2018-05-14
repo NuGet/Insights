@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
-using Knapcode.ExplorePackages.Support;
+using Knapcode.ExplorePackages.Logic;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 

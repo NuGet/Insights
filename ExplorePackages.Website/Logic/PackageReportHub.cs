@@ -4,7 +4,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
 using Microsoft.AspNetCore.SignalR;
-using NuGet.Packaging;
 using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Website.Logic

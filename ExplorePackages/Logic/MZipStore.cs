@@ -2,7 +2,6 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Support;
 using Knapcode.MiniZip;
 
 namespace Knapcode.ExplorePackages.Logic

@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Support;
 using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
 

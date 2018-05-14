@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Support;
 
 namespace Knapcode.ExplorePackages.Logic
 {
