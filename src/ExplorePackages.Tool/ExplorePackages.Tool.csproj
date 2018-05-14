@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <AssemblyName>Knapcode.ExplorePackages.Tool</AssemblyName>
+    <RootNamespace>Knapcode.ExplorePackages.Tool</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.2.3" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.0.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ExplorePackages.Entities\ExplorePackages.Entities.csproj" />
+    <ProjectReference Include="..\ExplorePackages.Logic\ExplorePackages.Logic.csproj" />
+  </ItemGroup>
+</Project>

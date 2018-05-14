@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Knapcode.ExplorePackages.Logic</AssemblyName>
+    <RootNamespace>Knapcode.ExplorePackages.Logic</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="AngleSharp" Version="0.9.9.2" />
+    <PackageReference Include="AutoMapper" Version="6.2.2" />
+    <PackageReference Include="Knapcode.MiniZip" Version="0.4.0" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.0.3" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
+    <PackageReference Include="NuGet.CatalogReader" Version="1.6.6" />
+    <PackageReference Include="NuGet.Protocol" Version="4.7.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ExplorePackages.Entities\ExplorePackages.Entities.csproj" />
+  </ItemGroup>
+</Project>
