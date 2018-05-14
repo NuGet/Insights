@@ -52,6 +52,7 @@ namespace Knapcode.ExplorePackages.Logic
                     catch (FileNotFoundException)
                     {
                         File.Move(newPath, destinationPath);
+                        return;
                     }
                 }
                 catch (UnauthorizedAccessException ex)

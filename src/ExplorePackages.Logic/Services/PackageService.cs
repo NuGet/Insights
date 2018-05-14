@@ -378,7 +378,7 @@ namespace Knapcode.ExplorePackages.Logic
             return entity;
         }
 
-        private PackageEntryEntity Initialize(PackageEntryEntity entity, ZipEntry metadata)
+        private PackageEntryEntity Initialize(PackageEntryEntity entity, CentralDirectoryHeader metadata)
         {
             entity.Comment = metadata.Comment;
             entity.CommentSize = metadata.CommentSize;
