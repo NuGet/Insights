@@ -685,8 +685,8 @@
 
                 resetForm();
 
-                var packageId = $packageId.val();
-                var packageVersion = $packageVersion.val();
+                var packageId = $packageId.val().trim();
+                var packageVersion = $packageVersion.val().trim();
 
                 pushExploreUrl(packageId, packageVersion);
 
