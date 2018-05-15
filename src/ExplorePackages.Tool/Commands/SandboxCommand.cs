@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
@@ -9,12 +11,12 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 {
     public class SandboxCommand : ICommand
     {
-        private readonly ICommitEnumerator<PackageRegistrationEntity> _packageRegistrationCommitEnumerator;
+        private readonly ExplorePackagesSettings _settings;
 
         public SandboxCommand(
-            ICommitEnumerator<PackageRegistrationEntity> packageRegistrationCommitEnumerator)
+            ExplorePackagesSettings settings)
         {
-            _packageRegistrationCommitEnumerator = packageRegistrationCommitEnumerator;
+            _settings = settings;
         }
 
         public void Configure(CommandLineApplication app)
@@ -23,10 +25,23 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 
         public async Task ExecuteAsync(CancellationToken token)
         {
-            var r = await _packageRegistrationCommitEnumerator.GetCommitsAsync(
-                DateTimeOffset.MinValue,
-                DateTimeOffset.MaxValue,
-                21);
+            foreach (var idDir in Directory.EnumerateDirectories(_settings.PackagePath, "*", SearchOption.TopDirectoryOnly))
+            {
+                foreach (var versionDir in Directory.EnumerateDirectories(idDir, "*", SearchOption.TopDirectoryOnly))
+                {
+                    var nuspecsDir = Path.Combine(versionDir, "nuspecs");
+                    Console.Write(nuspecsDir + "...");
+                    if (Directory.Exists(nuspecsDir))
+                    {
+                        Directory.Delete(nuspecsDir, recursive: true);
+                        Console.WriteLine(" deleted.");
+                    }
+                    else
+                    {
+                        Console.WriteLine(" does not exist.");
+                    }
+                }
+            }
         }
 
         public bool IsDatabaseRequired()

@@ -12,14 +12,14 @@ namespace Knapcode.ExplorePackages.Tool.Commands
     public class ShowRepositoriesCommand : ICommand
     {
         private readonly PackageQueryService _queryService;
-        private readonly PackagePathProvider _pathProvider;
+        private readonly NuspecStore _nuspecStore;
 
         public ShowRepositoriesCommand(
             PackageQueryService queryService,
-            PackagePathProvider pathProvider)
+            NuspecStore nuspecStore)
         {
             _queryService = queryService;
-            _pathProvider = pathProvider;
+            _nuspecStore = nuspecStore;
         }
 
         public void Configure(CommandLineApplication app)
@@ -65,14 +65,8 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 
                 foreach (var match in matches.Packages)
                 {
-                    var path = _pathProvider.GetLatestNuspecPath(match.PackageRegistration.Id, match.Version);
-                    XDocument nuspec;
-                    using (var stream = File.OpenRead(path))
-                    {
-                        nuspec = XmlUtility.LoadXml(stream);
-                    }
-
-                    var repositoryEl = NuspecUtility.GetRepository(nuspec);
+                    var nuspecContext = _nuspecStore.GetNuspecContext(match.PackageRegistration.Id, match.Version);
+                    var repositoryEl = NuspecUtility.GetRepository(nuspecContext.Document);
                     var typeAttr = repositoryEl.Attribute("type");
                     var hasType = typeAttr != null;
                     var urlAttr = repositoryEl.Attribute("url");

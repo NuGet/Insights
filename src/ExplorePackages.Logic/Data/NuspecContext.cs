@@ -2,9 +2,9 @@
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class NuspecQueryContext
+    public class NuspecContext
     {
-        public NuspecQueryContext(string path, bool exists, XDocument document)
+        public NuspecContext(string path, bool exists, XDocument document)
         {
             Path = path;
             Exists = exists;

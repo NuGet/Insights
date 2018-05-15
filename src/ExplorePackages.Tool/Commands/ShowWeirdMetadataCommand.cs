@@ -14,14 +14,14 @@ namespace Knapcode.ExplorePackages.Tool.Commands
     public class ShowWeirdMetadataCommand : ICommand
     {
         private readonly PackageQueryService _queryService;
-        private readonly PackagePathProvider _pathProvider;
+        private readonly NuspecStore _nuspecStore;
 
         public ShowWeirdMetadataCommand(
             PackageQueryService queryService,
-            PackagePathProvider pathProvider)
+            NuspecStore nuspecStore)
         {
             _queryService = queryService;
-            _pathProvider = pathProvider;
+            _nuspecStore = nuspecStore;
         }
 
         public void Configure(CommandLineApplication app)
@@ -100,14 +100,8 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 
                 foreach (var match in matches.Packages)
                 {
-                    var path = _pathProvider.GetLatestNuspecPath(match.PackageRegistration.Id, match.Version);
-                    XDocument nuspec;
-                    using (var stream = File.OpenRead(path))
-                    {
-                        nuspec = XmlUtility.LoadXml(stream);
-                    }
-
-                    processNuspec(match, nuspec);
+                    var nuspecContext = _nuspecStore.GetNuspecContext(match.Id, match.Version);
+                    processNuspec(match, nuspecContext.Document);
                 }
             }
             while (count > 0);

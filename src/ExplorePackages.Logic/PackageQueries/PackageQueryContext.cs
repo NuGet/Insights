@@ -2,7 +2,7 @@
 {
     public class PackageQueryContext
     {
-        public PackageQueryContext(ImmutablePackage package, NuspecQueryContext nuspec, bool isSemVer2, string fullVersion, bool isListed)
+        public PackageQueryContext(ImmutablePackage package, NuspecContext nuspec, bool isSemVer2, string fullVersion, bool isListed)
         {
             Package = package;
             Nuspec = nuspec;
@@ -12,7 +12,7 @@
         }
 
         public ImmutablePackage Package { get; }
-        public NuspecQueryContext Nuspec { get; }
+        public NuspecContext Nuspec { get; }
         public bool IsSemVer2 { get; }
         public string FullVersion { get; }
         public bool IsListed { get;  }

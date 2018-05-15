@@ -10,10 +10,10 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class CatalogToNuspecsProcessor : ICatalogEntriesProcessor
     {
-        private readonly NuspecDownloader _downloader;
+        private readonly NuspecStore _downloader;
         private readonly ILogger<CatalogToNuspecsProcessor> _logger;
 
-        public CatalogToNuspecsProcessor(NuspecDownloader downloader, ILogger<CatalogToNuspecsProcessor> logger)
+        public CatalogToNuspecsProcessor(NuspecStore downloader, ILogger<CatalogToNuspecsProcessor> logger)
         {
             _downloader = downloader;
             _logger = logger;

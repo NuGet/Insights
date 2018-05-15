@@ -90,7 +90,7 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<MZipFormat>();
 
             serviceCollection.AddTransient(x => settings.Clone());
-            serviceCollection.AddTransient<NuspecDownloader>();
+            serviceCollection.AddTransient<NuspecStore>();
             serviceCollection.AddTransient<RemoteCursorService>();
             serviceCollection.AddTransient<IPortTester, PortTester>();
             serviceCollection.AddTransient<IPortDiscoverer, SimplePortDiscoverer>();
@@ -127,7 +127,6 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<PackageQueryService>();
             serviceCollection.AddTransient<CatalogService>();
             serviceCollection.AddTransient<PackageDependencyService>();
-            serviceCollection.AddTransient<NuspecProvider>();
             serviceCollection.AddTransient<ProblemService>();
 
             serviceCollection.AddTransient<V2Parser>();

@@ -7,20 +7,20 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class PackageQueryContextBuilder
     {
-        private readonly NuspecProvider _nuspecProvider;
+        private readonly NuspecStore _nuspecStore;
         private readonly PackageService _packageService;
         private readonly GalleryConsistencyService _galleryConsistencyService;
         private readonly ExplorePackagesSettings _settings;
         private readonly ILogger<PackageQueryContextBuilder> _logger;
 
         public PackageQueryContextBuilder(
-            NuspecProvider nuspecProvider,
+            NuspecStore nuspecStore,
             PackageService packageService,
             GalleryConsistencyService galleryConsistencyService,
             ExplorePackagesSettings settings,
             ILogger<PackageQueryContextBuilder> logger)
         {
-            _nuspecProvider = nuspecProvider;
+            _nuspecStore = nuspecStore;
             _packageService = packageService;
             _galleryConsistencyService = galleryConsistencyService;
             _settings = settings;
@@ -59,12 +59,12 @@ namespace Knapcode.ExplorePackages.Logic
                 },                
             });
 
-            var nuspecQueryContext = new NuspecQueryContext(
+            var nuspecContext = new NuspecContext(
                 path: null,
                 exists: false,
                 document: null);
 
-            return new PackageQueryContext(immutablePackage, nuspecQueryContext, isSemVer2, fullVersion, isListed);
+            return new PackageQueryContext(immutablePackage, nuspecContext, isSemVer2, fullVersion, isListed);
         }
         public async Task<PackageQueryContext> GetPackageQueryContextFromGalleryAsync(string id, string version, PackageConsistencyState state)
         {
@@ -114,9 +114,9 @@ namespace Knapcode.ExplorePackages.Logic
                 package.V2Package?.Listed ?? package.CatalogPackage?.Listed ?? true);
         }
 
-        private NuspecQueryContext GetNuspecQueryContext(PackageEntity package)
+        private NuspecContext GetNuspecQueryContext(PackageEntity package)
         {
-            var nuspecContext = _nuspecProvider.GetNuspec(package.PackageRegistration.Id, package.Version);
+            var nuspecContext = _nuspecStore.GetNuspecContext(package.PackageRegistration.Id, package.Version);
 
             if (!nuspecContext.Exists && !package.CatalogPackage.Deleted)
             {

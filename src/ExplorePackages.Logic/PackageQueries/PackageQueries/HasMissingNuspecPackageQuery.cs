@@ -6,9 +6,9 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class HasMissingNuspecPackageQuery : IPackageQuery
     {
-        private readonly NuspecDownloader _nuspecDownloader;
+        private readonly NuspecStore _nuspecDownloader;
 
-        public HasMissingNuspecPackageQuery(NuspecDownloader nuspecDownloader)
+        public HasMissingNuspecPackageQuery(NuspecStore nuspecDownloader)
         {
             _nuspecDownloader = nuspecDownloader;
         }

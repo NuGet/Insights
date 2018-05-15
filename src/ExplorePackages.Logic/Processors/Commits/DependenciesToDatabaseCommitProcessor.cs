@@ -7,14 +7,14 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class DependenciesToDatabaseCommitProcessor : ICommitProcessor<PackageEntity, PackageDependencyGroups>
     {
-        private readonly NuspecProvider _nuspecProvider;
+        private readonly NuspecStore _nuspecStore;
         private readonly PackageDependencyService _packageDependencyService;
 
         public DependenciesToDatabaseCommitProcessor(
-            NuspecProvider nuspecProvider,
+            NuspecStore nuspecStore,
             PackageDependencyService packageDependencyService)
         {
-            _nuspecProvider = nuspecProvider;
+            _nuspecStore = nuspecStore;
             _packageDependencyService = packageDependencyService;
         }
 
@@ -47,7 +47,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         private void InitializeItem(List<PackageDependencyGroups> output, PackageEntity package)
         {
-            var nuspec = _nuspecProvider.GetNuspec(package.PackageRegistration.Id, package.Version);
+            var nuspec = _nuspecStore.GetNuspecContext(package.PackageRegistration.Id, package.Version);
             if (nuspec.Document == null)
             {
                 return;

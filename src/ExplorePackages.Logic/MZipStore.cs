@@ -34,20 +34,15 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task StoreMZipAsync(string id, string version, CancellationToken token)
         {
-            var latestPath = _pathProvider.GetLatestMZipPath(id, version);
-
-            if (File.Exists(latestPath))
-            {
-                return;
-            }
-
             var baseUrl = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.FlatContainer);
-            var contentUrl = _flatContainerClient.GetPackageContentUrl(baseUrl, id, version);
+            var url = _flatContainerClient.GetPackageContentUrl(baseUrl, id, version);
 
-            using (var reader = await _httpZipProvider.GetReaderAsync(new Uri(contentUrl)))
+            using (var reader = await _httpZipProvider.GetReaderAsync(new Uri(url)))
             {
+                var path = _pathProvider.GetLatestMZipPath(id, version);
+
                 await SafeFileWriter.WriteAsync(
-                    latestPath,
+                    path,
                     destStream => _mZipFormat.WriteAsync(reader.Stream, destStream),
                     _logger);
             }
@@ -55,13 +50,13 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task<Stream> GetMZipStreamAsync(string id, string version, CancellationToken token)
         {
-            var latestPath = _pathProvider.GetLatestMZipPath(id, version);
+            var path = _pathProvider.GetLatestMZipPath(id, version);
 
-            Stream fileStream = null;
+            Stream stream = null;
             try
             {
-                fileStream = new FileStream(latestPath, FileMode.Open);
-                return await _mZipFormat.ReadAsync(fileStream);
+                stream = new FileStream(path, FileMode.Open);
+                return await _mZipFormat.ReadAsync(stream);
             }
             catch (FileNotFoundException)
             {
@@ -73,7 +68,7 @@ namespace Knapcode.ExplorePackages.Logic
             }
             catch
             {
-                fileStream?.Dispose();
+                stream?.Dispose();
                 throw;
             }
         }
