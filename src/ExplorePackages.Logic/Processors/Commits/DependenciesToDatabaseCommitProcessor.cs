@@ -28,7 +28,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public int BatchSize => 5000;
 
-        public Task<ItemBatch<PackageDependencyGroups>> InitializeItemsAsync(
+        public async Task<ItemBatch<PackageDependencyGroups>> InitializeItemsAsync(
             IReadOnlyList<PackageEntity> packages,
             int skip,
             CancellationToken token)
@@ -37,17 +37,15 @@ namespace Knapcode.ExplorePackages.Logic
 
             foreach (var package in packages)
             {
-                InitializeItem(output, package);
+                await InitializeItemAsync(output, package);
             }
 
-            return Task.FromResult(new ItemBatch<PackageDependencyGroups>(
-                output,
-                hasMoreItems: false));
+            return new ItemBatch<PackageDependencyGroups>(output, hasMoreItems: false);
         }
 
-        private void InitializeItem(List<PackageDependencyGroups> output, PackageEntity package)
+        private async Task InitializeItemAsync(List<PackageDependencyGroups> output, PackageEntity package)
         {
-            var nuspec = _nuspecStore.GetNuspecContext(package.PackageRegistration.Id, package.Version);
+            var nuspec = await _nuspecStore.GetNuspecContextAsync(package.PackageRegistration.Id, package.Version);
             if (nuspec.Document == null)
             {
                 return;

@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
-using Knapcode.ExplorePackages.Logic.TestSupport;
 using Knapcode.MiniZip;
 using Xunit;
 using Xunit.Abstractions;

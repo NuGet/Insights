@@ -60,7 +60,6 @@ namespace Knapcode.ExplorePackages.Logic
             });
 
             var nuspecContext = new NuspecContext(
-                path: null,
                 exists: false,
                 document: null);
 
@@ -90,13 +89,13 @@ namespace Knapcode.ExplorePackages.Logic
                 return null;
             }
 
-            return GetPackageQueryFromDatabasePackageContext(package);
+            return await GetPackageQueryFromDatabasePackageContextAsync(package);
         }
 
-        public PackageQueryContext GetPackageQueryFromDatabasePackageContext(PackageEntity package)
+        public async Task<PackageQueryContext> GetPackageQueryFromDatabasePackageContextAsync(PackageEntity package)
         {
             var immutablePackage = new ImmutablePackage(package);
-            var nuspecQueryContext = GetNuspecQueryContext(package);
+            var nuspecQueryContext = await GetNuspecQueryContextAsync(package);
             var isSemVer2 = NuspecUtility.IsSemVer2(nuspecQueryContext.Document);
 
             var originalVersion = NuspecUtility.GetOriginalVersion(nuspecQueryContext.Document);
@@ -114,17 +113,16 @@ namespace Knapcode.ExplorePackages.Logic
                 package.V2Package?.Listed ?? package.CatalogPackage?.Listed ?? true);
         }
 
-        private NuspecContext GetNuspecQueryContext(PackageEntity package)
+        private async Task<NuspecContext> GetNuspecQueryContextAsync(PackageEntity package)
         {
-            var nuspecContext = _nuspecStore.GetNuspecContext(package.PackageRegistration.Id, package.Version);
+            var nuspecContext = await _nuspecStore.GetNuspecContextAsync(package.PackageRegistration.Id, package.Version);
 
             if (!nuspecContext.Exists && !package.CatalogPackage.Deleted)
             {
                 _logger.LogWarning(
-                    "Could not find .nuspec for {Id} {Version}: {Path}",
+                    "Could not find .nuspec for {Id} {Version}.",
                     package.PackageRegistration.Id,
-                    package.Version,
-                    nuspecContext.Path);
+                    package.Version);
             }
 
             return nuspecContext;

@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Logic.TestSupport;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;

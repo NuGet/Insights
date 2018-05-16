@@ -12,6 +12,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
     <PackageReference Include="NuGet.CatalogReader" Version="1.6.6" />
     <PackageReference Include="NuGet.Protocol" Version="4.7.0" />
+    <PackageReference Include="WindowsAzure.Storage" Version="9.1.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ExplorePackages.Entities\ExplorePackages.Entities.csproj" />

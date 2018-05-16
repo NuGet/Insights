@@ -1,4 +1,4 @@
-﻿namespace Knapcode.ExplorePackages.Logic.TestSupport
+﻿namespace Knapcode.ExplorePackages.Logic
 {
     public static class DatabaseCollection
     {

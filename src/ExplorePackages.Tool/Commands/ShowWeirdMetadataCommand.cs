@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -100,7 +99,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 
                 foreach (var match in matches.Packages)
                 {
-                    var nuspecContext = _nuspecStore.GetNuspecContext(match.Id, match.Version);
+                    var nuspecContext = await _nuspecStore.GetNuspecContextAsync(match.Id, match.Version);
                     processNuspec(match, nuspecContext.Document);
                 }
             }

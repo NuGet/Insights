@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Knapcode.ExplorePackages.Logic.TestSupport
+namespace Knapcode.ExplorePackages.Logic
 {
     /// <summary>
     /// Sources:

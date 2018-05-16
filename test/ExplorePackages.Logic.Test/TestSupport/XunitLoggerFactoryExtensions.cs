@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Logic.TestSupport
+namespace Knapcode.ExplorePackages.Logic
 {
     /// <summary>
     /// Source:

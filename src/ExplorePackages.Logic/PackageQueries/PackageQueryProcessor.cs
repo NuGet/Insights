@@ -57,7 +57,7 @@ namespace Knapcode.ExplorePackages.Logic
                     continue;
                 }
 
-                var context = _contextBuilder.GetPackageQueryFromDatabasePackageContext(package);
+                var context = await _contextBuilder.GetPackageQueryFromDatabasePackageContextAsync(package);
                 var state = new PackageConsistencyState();
                 var work = new Work(queries, context, state);
                 taskQueue.Enqueue(work);
@@ -194,13 +194,13 @@ namespace Knapcode.ExplorePackages.Logic
                 workAsync: w => ConsumeWorkAsync(w, results));
 
             taskQueue.Start();
-            ProduceWork(queries, bounds, commits, taskQueue);
+            await ProduceWorkAsync(queries, bounds, commits, taskQueue);
             await taskQueue.CompleteAsync();
 
             return results;
         }
 
-        private void ProduceWork(
+        private async Task ProduceWorkAsync(
             IReadOnlyList<IPackageQuery> queries,
             Bounds bounds,
             IReadOnlyList<EntityCommit<PackageEntity>> commits,
@@ -214,7 +214,7 @@ namespace Knapcode.ExplorePackages.Logic
                         .Where(x => commit.CommitTimestamp > bounds.CursorNameToStart[bounds.QueryNameToCursorName[x.Name]])
                         .ToList();
 
-                    var context = _contextBuilder.GetPackageQueryFromDatabasePackageContext(package);
+                    var context = await _contextBuilder.GetPackageQueryFromDatabasePackageContextAsync(package);
                     var state = new PackageConsistencyState();
 
                     taskQueue.Enqueue(new Work(applicableQueries, context, state));

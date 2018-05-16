@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Globalization;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using Knapcode.ExplorePackages.Logic;
 using McMaster.Extensions.CommandLineUtils;
 
@@ -65,7 +63,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 
                 foreach (var match in matches.Packages)
                 {
-                    var nuspecContext = _nuspecStore.GetNuspecContext(match.PackageRegistration.Id, match.Version);
+                    var nuspecContext = await _nuspecStore.GetNuspecContextAsync(match.PackageRegistration.Id, match.Version);
                     var repositoryEl = NuspecUtility.GetRepository(nuspecContext.Document);
                     var typeAttr = repositoryEl.Attribute("type");
                     var hasType = typeAttr != null;

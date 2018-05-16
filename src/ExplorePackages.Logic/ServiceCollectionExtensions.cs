@@ -4,7 +4,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
-using Knapcode.ExplorePackages.Logic;
 using Knapcode.MiniZip;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -65,8 +64,6 @@ namespace Knapcode.ExplorePackages.Logic
                             httpMessageHandler));
                     },
                     NullThrottle.Instance));
-            serviceCollection.AddTransient(
-                x => new PackagePathProvider(settings.PackagePath));
 
             var searchServiceUrlCache = new SearchServiceUrlCache();
             serviceCollection.AddSingleton(searchServiceUrlCache);
@@ -100,6 +97,11 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<IProgressReport, NullProgressReport>();
             serviceCollection.AddTransient<LatestV2PackageFetcher>();
             serviceCollection.AddTransient<LatestCatalogCommitFetcher>();
+            serviceCollection.AddTransient(x => new PackageFilePathProvider(
+                x.GetRequiredService<ExplorePackagesSettings>(),
+                style: PackageFilePathStyle.FourIdLetters));
+            serviceCollection.AddTransient<PackageBlobNameProvider>();
+            serviceCollection.AddTransient<FileStorageService>();
 
             serviceCollection.AddTransient<MZipStore>();
             serviceCollection.AddTransient<PackageQueryProcessor>();

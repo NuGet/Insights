@@ -1,7 +1,6 @@
 ﻿using System.Xml.Linq;
-using Knapcode.ExplorePackages.Logic;
 
-namespace Knapcode.ExplorePackages.Logic.TestData
+namespace Knapcode.ExplorePackages.Logic
 {
     public static class Resources
     {
@@ -35,7 +34,7 @@ namespace Knapcode.ExplorePackages.Logic.TestData
         {
             var resourceStream = typeof(Resources)
                 .Assembly
-                .GetManifestResourceStream(typeof(Resources).Namespace + "."  + resourceName);
+                .GetManifestResourceStream(typeof(Resources).Namespace + ".TestData."  + resourceName);
 
             if (resourceName == null)
             {

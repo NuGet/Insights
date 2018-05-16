@@ -56,7 +56,7 @@ namespace Knapcode.ExplorePackages.Logic
             // Read the .zip directory.
             ZipDirectory zipDirectory;
             long size;
-            using (var stream = await _mZipStore.GetMZipStreamAsync(
+            using (var stream = await _mZipStore.GetMZipStreamOrNullAsync(
                 package.PackageRegistration.Id,
                 package.Version,
                 token))

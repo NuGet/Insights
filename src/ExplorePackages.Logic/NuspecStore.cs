@@ -1,8 +1,6 @@
 ﻿using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
 
@@ -12,20 +10,20 @@ namespace Knapcode.ExplorePackages.Logic
     {
         private const int BufferSize = 8192;
         
-        private readonly PackagePathProvider _pathProvider;
+        private readonly FileStorageService _fileStorageService;
         private readonly ServiceIndexCache _serviceIndexCache;
         private readonly FlatContainerClient _flatContainerClient;
         private readonly HttpSource _httpSource;
         private readonly ILogger<NuspecStore> _logger;
 
         public NuspecStore(
-            PackagePathProvider pathProvider,
+            FileStorageService fileStorageService,
             ServiceIndexCache serviceIndexCache,
             FlatContainerClient flatContainerClient,
             HttpSource httpSource,
             ILogger<NuspecStore> logger)
         {
-            _pathProvider = pathProvider;
+            _fileStorageService = fileStorageService;
             _serviceIndexCache = serviceIndexCache;
             _flatContainerClient = flatContainerClient;
             _httpSource = httpSource;
@@ -50,46 +48,34 @@ namespace Knapcode.ExplorePackages.Logic
                         return false;
                     }
 
-                    var latestPath = _pathProvider.GetLatestNuspecPath(id, version);
-                    await SafeFileWriter.WriteAsync(
-                        latestPath,
-                        networkStream,
-                        _logger);
+                    await _fileStorageService.StoreNuspecStreamAsync(
+                        id,
+                        version,
+                        destStream => networkStream.CopyToAsync(destStream));
+
                     return true;
                 },
                 nuGetLogger,
                 token);
         }
 
-        public NuspecContext GetNuspecContext(string id, string version)
+        public async Task<NuspecContext> GetNuspecContextAsync(string id, string version)
         {
-            var path = _pathProvider.GetLatestNuspecPath(id, version);
+            using (var stream = await _fileStorageService.GetNuspecStreamOrNullAsync(id, version))
+            {
+                if (stream == null)
+                {
+                    return new NuspecContext(exists: false, document: null);
+                }
 
-            Stream stream = null;
-            try
-            {
-                stream = new FileStream(path, FileMode.Open);
-            }
-            catch (Exception ex) when (ex is FileNotFoundException || ex is DirectoryNotFoundException)
-            {
-                return new NuspecContext(path, exists: false, document: null);
-            }
-            catch
-            {
-                stream?.Dispose();
-                throw;
-            }
-
-            using (stream)
-            {
                 try
                 {
                     var document = XmlUtility.LoadXml(stream);
-                    return new NuspecContext(path, exists: true, document: document);
+                    return new NuspecContext(exists: true, document: document);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Could not parse .nuspec for {Id} {Version}: {Path}", id, version, path);
+                    _logger.LogError(ex, "Could not parse .nuspec for {Id} {Version}.", id, version);
                     throw;
                 }
             }
