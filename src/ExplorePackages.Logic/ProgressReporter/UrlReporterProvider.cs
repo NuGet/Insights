@@ -4,21 +4,21 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class UrlReporterProvider
     {
-        private readonly AsyncLocal<IUrlReporter> _currentUrlReport;
+        private readonly AsyncLocal<IUrlReporter> _currentUrlReporter;
 
         public UrlReporterProvider()
         {
-             _currentUrlReport = new AsyncLocal<IUrlReporter>();
+             _currentUrlReporter = new AsyncLocal<IUrlReporter>();
         }
 
-        public void SetUrlReport(IUrlReporter urlReport)
+        public void SetUrlReporter(IUrlReporter urlReporter)
         {
-            _currentUrlReport.Value = urlReport;
+            _currentUrlReporter.Value = urlReporter;
         }
 
-        public IUrlReporter GetUrlReport()
+        public IUrlReporter GetUrlReporter()
         {
-            return _currentUrlReport.Value ?? NullUrlReporter.Instance;
+            return _currentUrlReporter.Value ?? NullUrlReporter.Instance;
         }
     }
 }

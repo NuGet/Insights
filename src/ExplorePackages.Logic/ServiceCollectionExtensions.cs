@@ -34,12 +34,12 @@ namespace Knapcode.ExplorePackages.Logic
                 {
                     var httpClientHandler = x.GetRequiredService<HttpClientHandler>();
                     var initializeServicePointerHander = x.GetRequiredService<InitializeServicePointHandler>();
-                    var urlReportHandler = x.GetRequiredService<UrlReporterHandler>();
+                    var urlReporterHandler = x.GetRequiredService<UrlReporterHandler>();
 
                     initializeServicePointerHander.InnerHandler = httpClientHandler;
-                    urlReportHandler.InnerHandler = initializeServicePointerHander;
+                    urlReporterHandler.InnerHandler = initializeServicePointerHander;
 
-                    return urlReportHandler;
+                    return urlReporterHandler;
                 });
             serviceCollection.AddSingleton(
                 x =>

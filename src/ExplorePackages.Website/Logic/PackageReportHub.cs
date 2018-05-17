@@ -16,29 +16,29 @@ namespace Knapcode.ExplorePackages.Website.Logic
         private readonly PackageQueryContextBuilder _packageQueryContextBuilder;
         private readonly LatestV2PackageFetcher _latestV2PackageFetcher;
         private readonly LatestCatalogCommitFetcher _latestCatalogCommitFetcher;
-        private readonly UrlReporterProvider _urlReportProvider;
+        private readonly UrlReporterProvider _urlReporterProvider;
 
         public PackageReportHub(
             PackageConsistencyService packageConsistencyService,
             PackageQueryContextBuilder packageQueryContextBuilder,
             LatestV2PackageFetcher latestV2PackageFetcher,
             LatestCatalogCommitFetcher latestCatalogCommitFetcher,
-            UrlReporterProvider urlReportProvider)
+            UrlReporterProvider urlReporterProvider)
         {
             _packageConsistencyService = packageConsistencyService;
             _packageQueryContextBuilder = packageQueryContextBuilder;
             _latestV2PackageFetcher = latestV2PackageFetcher;
             _latestCatalogCommitFetcher = latestCatalogCommitFetcher;
-            _urlReportProvider = urlReportProvider;
+            _urlReporterProvider = urlReporterProvider;
         }
 
         private async Task ExecuteAndReportErrorAsync(Func<Task> executeAsync)
         {
             try
             {
-                _urlReportProvider.SetUrlReport(new UrlReport(this));
+                _urlReporterProvider.SetUrlReporter(new UrlReporter(this));
                 await executeAsync();
-                _urlReportProvider.SetUrlReport(null);
+                _urlReporterProvider.SetUrlReporter(null);
             }
             catch
             {
@@ -182,11 +182,11 @@ namespace Knapcode.ExplorePackages.Website.Logic
                 .InvokeAsync(method, args);
         }
 
-        private class UrlReport : IUrlReporter
+        private class UrlReporter : IUrlReporter
         {
             private readonly PackageReportHub _hub;
 
-            public UrlReport(PackageReportHub hub)
+            public UrlReporter(PackageReportHub hub)
             {
                 _hub = hub;
             }

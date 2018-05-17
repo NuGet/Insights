@@ -17,12 +17,12 @@ namespace Knapcode.ExplorePackages.Logic
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var urlReport = _provider.GetUrlReport();
+            var urlReporter = _provider.GetUrlReporter();
             var id = Guid.NewGuid();
-            await urlReport.ReportRequestAsync(id, request);
+            await urlReporter.ReportRequestAsync(id, request);
             var stopwatch = Stopwatch.StartNew();
             var response = await base.SendAsync(request, cancellationToken);
-            await urlReport.ReportResponseAsync(id, response, stopwatch.Elapsed);
+            await urlReporter.ReportResponseAsync(id, response, stopwatch.Elapsed);
             return response;
         }
     }
