@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class NullUrlReport : IUrlReport
+    public class NullUrlReporter : IUrlReporter
     {
-        public static readonly Lazy<NullUrlReport> _instance = new Lazy<NullUrlReport>(() => new NullUrlReport());
+        public static readonly Lazy<NullUrlReporter> _instance = new Lazy<NullUrlReporter>(() => new NullUrlReporter());
 
-        public static NullUrlReport Instance => _instance.Value;
+        public static NullUrlReporter Instance => _instance.Value;
 
         public Task ReportRequestAsync(Guid id, HttpRequestMessage request)
         {

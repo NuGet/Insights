@@ -2,7 +2,7 @@
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public interface IProgressReport
+    public interface IProgressReporter
     {
         Task ReportProgressAsync(decimal percent, string message);
     }

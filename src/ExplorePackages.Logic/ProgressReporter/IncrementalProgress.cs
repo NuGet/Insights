@@ -4,13 +4,13 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class IncrementalProgress
     {
-        private readonly IProgressReport _progressReport;
+        private readonly IProgressReporter _progressReporter;
         private int _current;
         private readonly decimal _total;
 
-        public IncrementalProgress(IProgressReport progressReport, int total)
+        public IncrementalProgress(IProgressReporter progressReporter, int total)
         {
-            _progressReport = progressReport;
+            _progressReporter = progressReporter;
             _current = 0;
             _total = total;
         }
@@ -22,7 +22,7 @@ namespace Knapcode.ExplorePackages.Logic
                 _current++;
             }
 
-            return _progressReport.ReportProgressAsync(_current / _total, message);
+            return _progressReporter.ReportProgressAsync(_current / _total, message);
         }
     }
 }

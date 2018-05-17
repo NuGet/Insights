@@ -28,9 +28,9 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task<SearchConsistencyReport> GetReportAsync(
             PackageQueryContext context,
             PackageConsistencyState state,
-            IProgressReport progressReport)
+            IProgressReporter progressReporter)
         {
-            var report = await GetReportAsync(context, state, progressReport, allowPartial: false);
+            var report = await GetReportAsync(context, state, progressReporter, allowPartial: false);
             return new SearchConsistencyReport(
                 report.IsConsistent,
                 report.BaseUrlHasPackageSemVer1,
@@ -42,16 +42,16 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task<bool> IsConsistentAsync(
             PackageQueryContext context,
             PackageConsistencyState state,
-            IProgressReport progressReport)
+            IProgressReporter progressReporter)
         {
-            var report = await GetReportAsync(context, state, progressReport, allowPartial: true);
+            var report = await GetReportAsync(context, state, progressReporter, allowPartial: true);
             return report.IsConsistent;
         }
 
         public Task PopulateStateAsync(
             PackageQueryContext context,
             PackageConsistencyState state,
-            IProgressReport progressReport)
+            IProgressReporter progressReporter)
         {
             return Task.CompletedTask;
         }
@@ -59,12 +59,12 @@ namespace Knapcode.ExplorePackages.Logic
         private async Task<MutableReport> GetReportAsync(
             PackageQueryContext context,
             PackageConsistencyState state,
-            IProgressReport progressReport,
+            IProgressReporter progressReporter,
             bool allowPartial)
         {
             var baseUrls = await _discoverer.GetUrlsAsync(ServiceIndexTypes.V2Search, _specificInstances);
             var maxTries = _specificInstances ? 1 : 3;
-            var incrementalProgress = new IncrementalProgress(progressReport, baseUrls.Count * 2);
+            var incrementalProgress = new IncrementalProgress(progressReporter, baseUrls.Count * 2);
             var baseUrlHasPackageSemVer1 = new Dictionary<string, bool>();
             var baseUrlHasPackageSemVer2 = new Dictionary<string, bool>();
             var baseUrlIsListedSemVer1 = new Dictionary<string, bool>();

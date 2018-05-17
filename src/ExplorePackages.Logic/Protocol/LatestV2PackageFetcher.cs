@@ -14,7 +14,7 @@ namespace Knapcode.ExplorePackages.Logic
             _settings = settings;
         }
 
-        public async Task<V2Package> GetLatestPackageAsync(IProgressReport progressReport)
+        public async Task<V2Package> GetLatestPackageAsync(IProgressReporter progressReporter)
         {
             var packages = await _client.GetPackagesAsync(
                 _settings.V2BaseUrl,
@@ -25,11 +25,11 @@ namespace Knapcode.ExplorePackages.Logic
 
             if (package == null)
             {
-                await progressReport.ReportProgressAsync(1m, $"Found no latest packages.");
+                await progressReporter.ReportProgressAsync(1m, $"Found no latest packages.");
             }
             else
             {
-                await progressReport.ReportProgressAsync(1m, $"Found one latest package {package.Id} {package.Version}, created at {package.Created:O}.");
+                await progressReporter.ReportProgressAsync(1m, $"Found one latest package {package.Id} {package.Version}, created at {package.Created:O}.");
             }
 
             return package;

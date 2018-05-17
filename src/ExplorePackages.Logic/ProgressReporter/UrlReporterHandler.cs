@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class UrlReportHandler : DelegatingHandler
+    public class UrlReporterHandler : DelegatingHandler
     {
-        private readonly UrlReportProvider _provider;
+        private readonly UrlReporterProvider _provider;
 
-        public UrlReportHandler(UrlReportProvider provider)
+        public UrlReporterHandler(UrlReporterProvider provider)
         {
             _provider = provider;
         }

@@ -30,9 +30,9 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task<RegistrationConsistencyReport> GetReportAsync(
             PackageQueryContext context,
             PackageConsistencyState state,
-            IProgressReport progressReport)
+            IProgressReporter progressReporter)
         {
-            var report = await GetReportAsync(context, state, progressReport, allowPartial: false);
+            var report = await GetReportAsync(context, state, progressReporter, allowPartial: false);
             return new RegistrationConsistencyReport(
                 report.IsConsistent,
                 report.IsInIndex.Value,
@@ -44,16 +44,16 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task<bool> IsConsistentAsync(
             PackageQueryContext context,
             PackageConsistencyState state,
-            IProgressReport progressReport)
+            IProgressReporter progressReporter)
         {
-            var report = await GetReportAsync(context, state, progressReport, allowPartial: true);
+            var report = await GetReportAsync(context, state, progressReporter, allowPartial: true);
             return report.IsConsistent;
         }
 
         public Task PopulateStateAsync(
             PackageQueryContext context,
             PackageConsistencyState state,
-            IProgressReport progressReport)
+            IProgressReporter progressReporter)
         {
             return Task.CompletedTask;
         }
@@ -61,11 +61,11 @@ namespace Knapcode.ExplorePackages.Logic
         private async Task<MutableReport> GetReportAsync(
             PackageQueryContext context,
             PackageConsistencyState state,
-            IProgressReport progressReport,
+            IProgressReporter progressReporter,
             bool allowPartial)
         {
             var report = new MutableReport { IsConsistent = true };
-            var incrementalProgress = new IncrementalProgress(progressReport, 2);
+            var incrementalProgress = new IncrementalProgress(progressReporter, 2);
             var baseUrl = await _serviceIndexCache.GetUrlAsync(_type);
 
             var shouldExist = !context.Package.Deleted && (_hasSemVer2 || !context.IsSemVer2);

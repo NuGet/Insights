@@ -2,15 +2,15 @@
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class PartialProgressReport : IProgressReport
+    public class PartialProgressReporter : IProgressReporter
     {
-        private readonly IProgressReport _innerProgressReport;
+        private readonly IProgressReporter _innerProgressReporter;
         private readonly decimal _min;
         private readonly decimal _difference;
 
-        public PartialProgressReport(IProgressReport innerProgressReport, decimal min, decimal max)
+        public PartialProgressReporter(IProgressReporter innerProgressReporter, decimal min, decimal max)
         {
-            _innerProgressReport = innerProgressReport;
+            _innerProgressReporter = innerProgressReporter;
             _min = min;
             _difference = max - min;
         }
@@ -18,7 +18,7 @@ namespace Knapcode.ExplorePackages.Logic
         public Task ReportProgressAsync(decimal percent, string message)
         {
             var partialPercent = _min + (percent * _difference);
-            return _innerProgressReport.ReportProgressAsync(partialPercent, message);
+            return _innerProgressReporter.ReportProgressAsync(partialPercent, message);
         }
     }
 }

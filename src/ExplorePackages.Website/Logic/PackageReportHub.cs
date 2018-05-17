@@ -16,14 +16,14 @@ namespace Knapcode.ExplorePackages.Website.Logic
         private readonly PackageQueryContextBuilder _packageQueryContextBuilder;
         private readonly LatestV2PackageFetcher _latestV2PackageFetcher;
         private readonly LatestCatalogCommitFetcher _latestCatalogCommitFetcher;
-        private readonly UrlReportProvider _urlReportProvider;
+        private readonly UrlReporterProvider _urlReportProvider;
 
         public PackageReportHub(
             PackageConsistencyService packageConsistencyService,
             PackageQueryContextBuilder packageQueryContextBuilder,
             LatestV2PackageFetcher latestV2PackageFetcher,
             LatestCatalogCommitFetcher latestCatalogCommitFetcher,
-            UrlReportProvider urlReportProvider)
+            UrlReporterProvider urlReportProvider)
         {
             _packageConsistencyService = packageConsistencyService;
             _packageQueryContextBuilder = packageQueryContextBuilder;
@@ -55,7 +55,7 @@ namespace Knapcode.ExplorePackages.Website.Logic
         {
             await InvokeProgressAsync(0, "Fetching the latest catalog commit...");
 
-            var commit = await _latestCatalogCommitFetcher.GetLatestCommitAsync(new ProgressReport(this));
+            var commit = await _latestCatalogCommitFetcher.GetLatestCommitAsync(new ProgressReporter(this));
             
             var catalogItem = commit.First();
             await InvokeProgressAsync(1, $"Using package {catalogItem.Id} {catalogItem.Version}.");
@@ -72,7 +72,7 @@ namespace Knapcode.ExplorePackages.Website.Logic
         {
             await InvokeProgressAsync(0, "Fetching the latest V2 package...");
 
-            var package = await _latestV2PackageFetcher.GetLatestPackageAsync(new ProgressReport(this));
+            var package = await _latestV2PackageFetcher.GetLatestPackageAsync(new ProgressReporter(this));
             
             await InvokeProgressAsync(1, $"Using package {package.Id} {package.Version}.");
 
@@ -140,7 +140,7 @@ namespace Knapcode.ExplorePackages.Website.Logic
                 $"{(isAvailable && context.IsSemVer2 ? " and is SemVer 2.0.0" : string.Empty)}. " +
                 $"The consistency report will now be generated.");
 
-            var report = await _packageConsistencyService.GetReportAsync(context, state, new ProgressReport(this));
+            var report = await _packageConsistencyService.GetReportAsync(context, state, new ProgressReporter(this));
 
             await InvokeCompleteAsync(report);
         }
@@ -182,7 +182,7 @@ namespace Knapcode.ExplorePackages.Website.Logic
                 .InvokeAsync(method, args);
         }
 
-        private class UrlReport : IUrlReport
+        private class UrlReport : IUrlReporter
         {
             private readonly PackageReportHub _hub;
 
@@ -209,11 +209,11 @@ namespace Knapcode.ExplorePackages.Website.Logic
             }
         }
 
-        private class ProgressReport : IProgressReport
+        private class ProgressReporter : IProgressReporter
         {
             private readonly PackageReportHub _hub;
 
-            public ProgressReport(PackageReportHub hub)
+            public ProgressReporter(PackageReportHub hub)
             {
                 _hub = hub;
             }

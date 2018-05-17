@@ -21,9 +21,9 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task<FlatContainerConsistencyReport> GetReportAsync(
             PackageQueryContext context,
             PackageConsistencyState state,
-            IProgressReport progressReport)
+            IProgressReporter progressReporter)
         {
-            var report = await GetReportAsync(context, state, progressReport, allowPartial: false);
+            var report = await GetReportAsync(context, state, progressReporter, allowPartial: false);
             return new FlatContainerConsistencyReport(
                 report.IsConsistent,
                 report.PackageContentMetadata,
@@ -34,16 +34,16 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task<bool> IsConsistentAsync(
             PackageQueryContext context,
             PackageConsistencyState state,
-            IProgressReport progressReport)
+            IProgressReporter progressReporter)
         {
-            var report = await GetReportAsync(context, state, progressReport, allowPartial: true);
+            var report = await GetReportAsync(context, state, progressReporter, allowPartial: true);
             return report.IsConsistent;
         }
 
         public async Task PopulateStateAsync(
             PackageQueryContext context,
             PackageConsistencyState state,
-            IProgressReport progressReport)
+            IProgressReporter progressReporter)
         {
             if (state.FlatContainer.PackageContentMetadata != null)
             {
@@ -63,16 +63,16 @@ namespace Knapcode.ExplorePackages.Logic
         private async Task<MutableReport> GetReportAsync(
             PackageQueryContext context,
             PackageConsistencyState state,
-            IProgressReport progressReport,
+            IProgressReporter progressReporter,
             bool allowPartial)
         {
             var report = new MutableReport { IsConsistent = true };
-            var incrementalProgress = new IncrementalProgress(progressReport, 3);
+            var incrementalProgress = new IncrementalProgress(progressReporter, 3);
             var baseUrl = await GetBaseUrlAsync();
 
             var shouldExist = !context.Package.Deleted;
 
-            await PopulateStateAsync(context, state, progressReport);
+            await PopulateStateAsync(context, state, progressReporter);
             report.PackageContentMetadata = state.FlatContainer.PackageContentMetadata;
             report.IsConsistent &= shouldExist == report.PackageContentMetadata.Exists;
             await incrementalProgress.ReportProgressAsync("Check for the package content in flat container.");

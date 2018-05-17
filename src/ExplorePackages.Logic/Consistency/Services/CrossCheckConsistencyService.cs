@@ -15,9 +15,9 @@ namespace Knapcode.ExplorePackages.Logic
             _flatContainer = flatContainer;
         }
 
-        public async Task<CrossCheckConsistencyReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state, IProgressReport progressReport)
+        public async Task<CrossCheckConsistencyReport> GetReportAsync(PackageQueryContext context, PackageConsistencyState state, IProgressReporter progressReporter)
         {
-            await PopulateStateAsync(context, state, progressReport);
+            await PopulateStateAsync(context, state, progressReporter);
 
             var doPackageContentsMatch = state.PackagesContainer.PackageContentMetadata?.ContentMD5 == state.FlatContainer.PackageContentMetadata?.ContentMD5;
 
@@ -28,17 +28,17 @@ namespace Knapcode.ExplorePackages.Logic
                 doPackageContentsMatch);
         }
 
-        public async Task<bool> IsConsistentAsync(PackageQueryContext context, PackageConsistencyState state, IProgressReport progressReport)
+        public async Task<bool> IsConsistentAsync(PackageQueryContext context, PackageConsistencyState state, IProgressReporter progressReporter)
         {
-            var report = await GetReportAsync(context, state, progressReport);
+            var report = await GetReportAsync(context, state, progressReporter);
 
             return report.IsConsistent;
         }
 
-        public async Task PopulateStateAsync(PackageQueryContext context, PackageConsistencyState state, IProgressReport progressReport)
+        public async Task PopulateStateAsync(PackageQueryContext context, PackageConsistencyState state, IProgressReporter progressReporter)
         {
-            await _packagesContainer.PopulateStateAsync(context, state, progressReport);
-            await _flatContainer.PopulateStateAsync(context, state, progressReport);
+            await _packagesContainer.PopulateStateAsync(context, state, progressReporter);
+            await _flatContainer.PopulateStateAsync(context, state, progressReporter);
         }
     }
 }

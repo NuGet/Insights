@@ -18,8 +18,8 @@ namespace Knapcode.ExplorePackages.Logic
     {
         public static IServiceCollection AddExplorePackages(this IServiceCollection serviceCollection, ExplorePackagesSettings settings)
         {
-            serviceCollection.AddSingleton<UrlReportProvider>();
-            serviceCollection.AddTransient<UrlReportHandler>();
+            serviceCollection.AddSingleton<UrlReporterProvider>();
+            serviceCollection.AddTransient<UrlReporterHandler>();
             serviceCollection.AddTransient<LoggingHandler>();
             serviceCollection.AddSingleton(
                 x => new HttpClientHandler
@@ -34,7 +34,7 @@ namespace Knapcode.ExplorePackages.Logic
                 {
                     var httpClientHandler = x.GetRequiredService<HttpClientHandler>();
                     var initializeServicePointerHander = x.GetRequiredService<InitializeServicePointHandler>();
-                    var urlReportHandler = x.GetRequiredService<UrlReportHandler>();
+                    var urlReportHandler = x.GetRequiredService<UrlReporterHandler>();
 
                     initializeServicePointerHander.InnerHandler = httpClientHandler;
                     urlReportHandler.InnerHandler = initializeServicePointerHander;
@@ -94,7 +94,7 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<SearchServiceUrlDiscoverer>();
             serviceCollection.AddTransient<SearchServiceCursorReader>();
             serviceCollection.AddTransient<PackageQueryContextBuilder>();
-            serviceCollection.AddTransient<IProgressReport, NullProgressReport>();
+            serviceCollection.AddTransient<IProgressReporter, NullProgressReporter>();
             serviceCollection.AddTransient<LatestV2PackageFetcher>();
             serviceCollection.AddTransient<LatestCatalogCommitFetcher>();
             serviceCollection.AddTransient(x => new PackageFilePathProvider(

@@ -15,24 +15,24 @@ namespace Knapcode.ExplorePackages.Logic
             _catalogReader = catalogReader;
         }
 
-        public async Task<IReadOnlyList<CatalogEntry>> GetLatestCommitAsync(IProgressReport progressReport)
+        public async Task<IReadOnlyList<CatalogEntry>> GetLatestCommitAsync(IProgressReporter progressReporter)
         {
             var pages = await _catalogReader.GetPageEntriesAsync(CancellationToken.None);
-            await progressReport.ReportProgressAsync(0.5m, $"Found {pages.Count} catalog pages.");
+            await progressReporter.ReportProgressAsync(0.5m, $"Found {pages.Count} catalog pages.");
 
             var lastPage = pages
                 .OrderBy(x => x.CommitTimeStamp)
                 .Last();
 
             var entries = await _catalogReader.GetEntriesAsync(new[] { lastPage }, CancellationToken.None);
-            await progressReport.ReportProgressAsync(1, $"Found {entries.Count} catalog items in the latest page.");
+            await progressReporter.ReportProgressAsync(1, $"Found {entries.Count} catalog items in the latest page.");
 
             var commit = entries
                 .GroupBy(x => x.CommitTimeStamp)
                 .OrderBy(x => x.Key)
                 .Last()
                 .ToList();
-            await progressReport.ReportProgressAsync(1, $"Found catalog commit {commit.First().CommitTimeStamp:O} containing {commit.Count} items.");
+            await progressReporter.ReportProgressAsync(1, $"Found catalog commit {commit.First().CommitTimeStamp:O} containing {commit.Count} items.");
 
             return commit;
         }

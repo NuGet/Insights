@@ -107,7 +107,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
                 context = _contextBuilder.CreateAvailablePackageQueryContext(Id, Version, isSemVer2, !Unlisted);
             }
 
-            var report = await _service.GetReportAsync(context, state, NullProgressReport.Instance);
+            var report = await _service.GetReportAsync(context, state, NullProgressReporter.Instance);
             var reportJson = JsonConvert.SerializeObject(
                 report,
                 new JsonSerializerSettings

@@ -18,9 +18,9 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task<V2ConsistencyReport> GetReportAsync(
             PackageQueryContext context,
             PackageConsistencyState state,
-            IProgressReport progressReport)
+            IProgressReporter progressReporter)
         {
-            var report = await GetReportAsync(context, state, progressReport, allowPartial: false);
+            var report = await GetReportAsync(context, state, progressReporter, allowPartial: false);
             return new V2ConsistencyReport(
                 report.IsConsistent,
                 report.HasPackageSemVer1.Value,
@@ -32,16 +32,16 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task<bool> IsConsistentAsync(
             PackageQueryContext context,
             PackageConsistencyState state,
-            IProgressReport progressReport)
+            IProgressReporter progressReporter)
         {
-            var report = await GetReportAsync(context, state, progressReport, allowPartial: true);
+            var report = await GetReportAsync(context, state, progressReporter, allowPartial: true);
             return report.IsConsistent;
         }
 
         public Task PopulateStateAsync(
             PackageQueryContext context,
             PackageConsistencyState state,
-            IProgressReport progressReport)
+            IProgressReporter progressReporter)
         {
             return Task.CompletedTask;
         }
@@ -49,10 +49,10 @@ namespace Knapcode.ExplorePackages.Logic
         private async Task<MutableReport> GetReportAsync(
             PackageQueryContext context,
             PackageConsistencyState state,
-            IProgressReport progressReport,
+            IProgressReporter progressReporter,
             bool allowPartial)
         {
-            var incrementalProgress = new IncrementalProgress(progressReport, 2);
+            var incrementalProgress = new IncrementalProgress(progressReporter, 2);
             var shouldExistSemVer1 = !context.Package.Deleted && !context.IsSemVer2;
             var shouldBeListedSemVer1 = shouldExistSemVer1 && context.IsListed;
             var shouldExistSemVer2 = !context.Package.Deleted;

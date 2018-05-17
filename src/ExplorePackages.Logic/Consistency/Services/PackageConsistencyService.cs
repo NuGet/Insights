@@ -49,25 +49,25 @@ namespace Knapcode.ExplorePackages.Logic
             var childReport = await service.GetReportAsync(
                 report.Context,
                 report.State,
-                new PartialProgressReport(report.ProgressReport, min, max));
+                new PartialProgressReporter(report.ProgressReporter, min, max));
 
             report.Processed++;
             addPartialReport(report, childReport);
             report.IsConsistent &= childReport.IsConsistent;
 
-            await report.ProgressReport.ReportProgressAsync(max, message);
+            await report.ProgressReporter.ReportProgressAsync(max, message);
         }
         
         public async Task<PackageConsistencyReport> GetReportAsync(
             PackageQueryContext context,
             PackageConsistencyState state,
-            IProgressReport progressReport)
+            IProgressReporter progressReporter)
         {
             var report = new MutableReport
             {
                 Context = context,
                 State = state,
-                ProgressReport = progressReport,
+                ProgressReporter = progressReporter,
                 Processed = 0,
                 IsConsistent = true,
             };
@@ -99,49 +99,49 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task<bool> IsConsistentAsync(
             PackageQueryContext context,
             PackageConsistencyState state,
-            IProgressReport progressReport)
+            IProgressReporter progressReporter)
         {
-            if (!(await _gallery.IsConsistentAsync(context, state, progressReport)))
+            if (!(await _gallery.IsConsistentAsync(context, state, progressReporter)))
             {
                 return false;
             }
 
-            if (!(await _v2.IsConsistentAsync(context, state, progressReport)))
+            if (!(await _v2.IsConsistentAsync(context, state, progressReporter)))
             {
                 return false;
             }
 
-            if (!(await _packagesContainer.IsConsistentAsync(context, state, progressReport)))
+            if (!(await _packagesContainer.IsConsistentAsync(context, state, progressReporter)))
             {
                 return false;
             }
 
-            if (!(await _flatContainer.IsConsistentAsync(context, state, progressReport)))
+            if (!(await _flatContainer.IsConsistentAsync(context, state, progressReporter)))
             {
                 return false;
             }
 
-            if (!(await _registrationOriginal.IsConsistentAsync(context, state, progressReport)))
+            if (!(await _registrationOriginal.IsConsistentAsync(context, state, progressReporter)))
             {
                 return false;
             }
 
-            if (!(await _registrationGzipped.IsConsistentAsync(context, state, progressReport)))
+            if (!(await _registrationGzipped.IsConsistentAsync(context, state, progressReporter)))
             {
                 return false;
             }
 
-            if (!(await _registrationOriginal.IsConsistentAsync(context, state, progressReport)))
+            if (!(await _registrationOriginal.IsConsistentAsync(context, state, progressReporter)))
             {
                 return false;
             }
 
-            if (!(await _search.IsConsistentAsync(context, state, progressReport)))
+            if (!(await _search.IsConsistentAsync(context, state, progressReporter)))
             {
                 return false;
             }
 
-            if (!(await _crossCheck.IsConsistentAsync(context, state, progressReport)))
+            if (!(await _crossCheck.IsConsistentAsync(context, state, progressReporter)))
             {
                 return false;
             }
@@ -152,24 +152,24 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task PopulateStateAsync(
             PackageQueryContext context,
             PackageConsistencyState state,
-            IProgressReport progressReport)
+            IProgressReporter progressReporter)
         {
-            await _gallery.PopulateStateAsync(context, state, progressReport);
-            await _v2.PopulateStateAsync(context, state, progressReport);
-            await _packagesContainer.PopulateStateAsync(context, state, progressReport);
-            await _flatContainer.PopulateStateAsync(context, state, progressReport);
-            await _registrationOriginal.PopulateStateAsync(context, state, progressReport);
-            await _registrationGzipped.PopulateStateAsync(context, state, progressReport);
-            await _registrationSemVer2.PopulateStateAsync(context, state, progressReport);
-            await _search.PopulateStateAsync(context, state, progressReport);
-            await _crossCheck.PopulateStateAsync(context, state, progressReport);
+            await _gallery.PopulateStateAsync(context, state, progressReporter);
+            await _v2.PopulateStateAsync(context, state, progressReporter);
+            await _packagesContainer.PopulateStateAsync(context, state, progressReporter);
+            await _flatContainer.PopulateStateAsync(context, state, progressReporter);
+            await _registrationOriginal.PopulateStateAsync(context, state, progressReporter);
+            await _registrationGzipped.PopulateStateAsync(context, state, progressReporter);
+            await _registrationSemVer2.PopulateStateAsync(context, state, progressReporter);
+            await _search.PopulateStateAsync(context, state, progressReporter);
+            await _crossCheck.PopulateStateAsync(context, state, progressReporter);
         }
 
         private class MutableReport
         {
             public PackageQueryContext Context { get; set; }
             public PackageConsistencyState State { get; set; }
-            public IProgressReport ProgressReport { get; set; }
+            public IProgressReporter ProgressReporter { get; set; }
             public int Processed { get; set; }
             public int Total => 9;
             
