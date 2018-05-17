@@ -10,14 +10,14 @@ namespace Knapcode.ExplorePackages.Logic
     {
         private const int BufferSize = 8192;
         
-        private readonly FileStorageService _fileStorageService;
+        private readonly IFileStorageService _fileStorageService;
         private readonly ServiceIndexCache _serviceIndexCache;
         private readonly FlatContainerClient _flatContainerClient;
         private readonly HttpSource _httpSource;
         private readonly ILogger<NuspecStore> _logger;
 
         public NuspecStore(
-            FileStorageService fileStorageService,
+            IFileStorageService fileStorageService,
             ServiceIndexCache serviceIndexCache,
             FlatContainerClient flatContainerClient,
             HttpSource httpSource,

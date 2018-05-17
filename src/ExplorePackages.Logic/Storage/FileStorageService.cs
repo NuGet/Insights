@@ -7,7 +7,7 @@ using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class FileStorageService
+    public class FileStorageService : IFileStorageService
     {
         private readonly PackageFilePathProvider _filePathProvider;
         private readonly PackageBlobNameProvider _blobNameProvider;
@@ -36,9 +36,13 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var filePath = _filePathProvider.GetLatestMZipFilePath(id, version);
             await SafeFileWriter.WriteAsync(filePath, writeAsync, _logger);
+            await CopyMZipFileToBlobAsync(id, version, filePath);
+        }
 
-            var blobName = _blobNameProvider.GetLatestMZipBlobName(id, version);
-            await StoreFileToBlobAsync(filePath, blobName);
+        public async Task CopyMZipFileToBlobAsync(string id, string version)
+        {
+            var filePath = _filePathProvider.GetLatestMZipFilePath(id, version);
+            await CopyMZipFileToBlobAsync(id, version, filePath);
         }
 
         public Task<Stream> GetMZipStreamOrNullAsync(string id, string version)
@@ -58,9 +62,13 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var filePath = _filePathProvider.GetLatestNuspecFilePath(id, version);
             await SafeFileWriter.WriteAsync(filePath, writeAsync, _logger);
+            await CopyNuspecFileToBlobAsync(id, version, filePath);
+        }
 
-            var blobName = _blobNameProvider.GetLatestNuspecPath(id, version);
-            await StoreFileToBlobAsync(filePath, blobName);
+        public async Task CopyNuspecFileToBlobAsync(string id, string version)
+        {
+            var filePath = _filePathProvider.GetLatestNuspecFilePath(id, version);
+            await CopyNuspecFileToBlobAsync(id, version, filePath);
         }
 
         public Task<Stream> GetNuspecStreamOrNullAsync(string id, string version)
@@ -76,7 +84,19 @@ namespace Knapcode.ExplorePackages.Logic
             return Task.CompletedTask;
         }
 
-        private async Task StoreFileToBlobAsync(string filePath, string blobName)
+        private async Task CopyMZipFileToBlobAsync(string id, string version, string filePath)
+        {
+            var blobName = _blobNameProvider.GetLatestMZipBlobName(id, version);
+            await CopyFileToBlobAsync(filePath, blobName);
+        }
+
+        private async Task CopyNuspecFileToBlobAsync(string id, string version, string filePath)
+        {
+            var blobName = _blobNameProvider.GetLatestNuspecPath(id, version);
+            await CopyFileToBlobAsync(filePath, blobName);
+        }
+
+        private async Task CopyFileToBlobAsync(string filePath, string blobName)
         {
             if (BlobContainer == null)
             {

@@ -9,7 +9,7 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class MZipStore
     {
-        private readonly FileStorageService _fileStorageService;
+        private readonly IFileStorageService _fileStorageService;
         private readonly ServiceIndexCache _serviceIndexCache;
         private readonly FlatContainerClient _flatContainerClient;
         private readonly HttpZipProvider _httpZipProvider;
@@ -17,7 +17,7 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly ILogger<MZipStore> _logger;
 
         public MZipStore(
-            FileStorageService fileStorageService,
+            IFileStorageService fileStorageService,
             ServiceIndexCache serviceIndexCache,
             FlatContainerClient flatContainerClient,
             HttpZipProvider httpZipProvider,

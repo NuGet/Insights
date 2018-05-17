@@ -101,7 +101,7 @@ namespace Knapcode.ExplorePackages.Logic
                 x.GetRequiredService<ExplorePackagesSettings>(),
                 style: PackageFilePathStyle.TwoByteIdentityHash));
             serviceCollection.AddTransient<PackageBlobNameProvider>();
-            serviceCollection.AddTransient<FileStorageService>();
+            serviceCollection.AddTransient<IFileStorageService, FileStorageService>();
 
             serviceCollection.AddTransient<MZipStore>();
             serviceCollection.AddTransient<PackageQueryProcessor>();

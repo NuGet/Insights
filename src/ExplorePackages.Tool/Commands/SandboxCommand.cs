@@ -5,19 +5,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
 using McMaster.Extensions.CommandLineUtils;
-using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Tool.Commands
 {
     public class SandboxCommand : ICommand
     {
         private readonly ExplorePackagesSettings _settings;
-        private readonly ILogger<FileStorageService> _logger;
 
-        public SandboxCommand(ExplorePackagesSettings settings, ILogger<FileStorageService> logger)
+        public SandboxCommand(ExplorePackagesSettings settings)
         {
             _settings = settings;
-            _logger = logger;
         }
 
         public void Configure(CommandLineApplication app)
