@@ -6,8 +6,8 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public interface IFileStorageService
     {
-        Task CopyMZipFileToBlobAsync(string id, string version);
-        Task CopyNuspecFileToBlobAsync(string id, string version);
+        Task CopyMZipFileToBlobIfExistsAsync(string id, string version);
+        Task CopyNuspecFileToBlobIfExistsAsync(string id, string version);
         Task DeleteMZipStreamAsync(string id, string version);
         Task DeleteNuspecStreamAsync(string id, string version);
         Task<Stream> GetMZipStreamOrNullAsync(string id, string version);

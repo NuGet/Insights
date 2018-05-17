@@ -36,13 +36,18 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var filePath = _filePathProvider.GetLatestMZipFilePath(id, version);
             await SafeFileWriter.WriteAsync(filePath, writeAsync, _logger);
-            await CopyMZipFileToBlobAsync(id, version, filePath);
+            await CopyMZipFileToBlobAsync(id, version, filePath, required: false);
         }
 
-        public async Task CopyMZipFileToBlobAsync(string id, string version)
+        public async Task CopyMZipFileToBlobIfExistsAsync(string id, string version)
         {
             var filePath = _filePathProvider.GetLatestMZipFilePath(id, version);
-            await CopyMZipFileToBlobAsync(id, version, filePath);
+            if (!File.Exists(filePath))
+            {
+                return;
+            }
+
+            await CopyMZipFileToBlobAsync(id, version, filePath, required: true);
         }
 
         public Task<Stream> GetMZipStreamOrNullAsync(string id, string version)
@@ -62,13 +67,18 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var filePath = _filePathProvider.GetLatestNuspecFilePath(id, version);
             await SafeFileWriter.WriteAsync(filePath, writeAsync, _logger);
-            await CopyNuspecFileToBlobAsync(id, version, filePath);
+            await CopyNuspecFileToBlobAsync(id, version, filePath, required: false);
         }
 
-        public async Task CopyNuspecFileToBlobAsync(string id, string version)
+        public async Task CopyNuspecFileToBlobIfExistsAsync(string id, string version)
         {
             var filePath = _filePathProvider.GetLatestNuspecFilePath(id, version);
-            await CopyNuspecFileToBlobAsync(id, version, filePath);
+            if (!File.Exists(filePath))
+            {
+                return;
+            }
+
+            await CopyNuspecFileToBlobAsync(id, version, filePath, required: true);
         }
 
         public Task<Stream> GetNuspecStreamOrNullAsync(string id, string version)
@@ -84,28 +94,39 @@ namespace Knapcode.ExplorePackages.Logic
             return Task.CompletedTask;
         }
 
-        private async Task CopyMZipFileToBlobAsync(string id, string version, string filePath)
+        private async Task CopyMZipFileToBlobAsync(string id, string version, string filePath, bool required)
         {
             var blobName = _blobNameProvider.GetLatestMZipBlobName(id, version);
-            await CopyFileToBlobAsync(filePath, blobName);
+            await CopyFileToBlobAsync(filePath, blobName, "application/octet-stream", required);
         }
 
-        private async Task CopyNuspecFileToBlobAsync(string id, string version, string filePath)
+        private async Task CopyNuspecFileToBlobAsync(string id, string version, string filePath, bool required)
         {
             var blobName = _blobNameProvider.GetLatestNuspecPath(id, version);
-            await CopyFileToBlobAsync(filePath, blobName);
+            await CopyFileToBlobAsync(filePath, blobName, "application/xml", required);
         }
 
-        private async Task CopyFileToBlobAsync(string filePath, string blobName)
+        private async Task CopyFileToBlobAsync(
+            string filePath,
+            string blobName,
+            string contentType,
+            bool required)
         {
             if (BlobContainer == null)
             {
-                return;
+                if (!required)
+                {
+                    return;
+                }
+                else
+                {
+                    throw new InvalidOperationException("No Azure Blob Storage connection details are configured.");
+                }
             }
 
             var blob = BlobContainer.GetBlockBlobReference(blobName);
-
             _logger.LogInformation("  PUT {BlobUri}", blob.Uri);
+            blob.Properties.ContentType = contentType;
             await blob.UploadFromFileAsync(filePath);
         }
 

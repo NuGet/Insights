@@ -10,10 +10,20 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 {
     public class SandboxCommand : ICommand
     {
+        private readonly IFileStorageService _fileStorageService;
+        private readonly CursorService _cursorService;
+        private readonly PackageCommitEnumerator _packageCommitEnumerator;
         private readonly ExplorePackagesSettings _settings;
 
-        public SandboxCommand(ExplorePackagesSettings settings)
+        public SandboxCommand(
+            IFileStorageService fileStorageService,
+            CursorService cursorService,
+            PackageCommitEnumerator packageCommitEnumerator,
+            ExplorePackagesSettings settings)
         {
+            _fileStorageService = fileStorageService;
+            _cursorService = cursorService;
+            _packageCommitEnumerator = packageCommitEnumerator;
             _settings = settings;
         }
 
@@ -23,19 +33,16 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 
         public async Task ExecuteAsync(CancellationToken token)
         {
-            var oldProvider = new PackageFilePathProvider(_settings, style: PackageFilePathStyle.FourIdLetters);
-            var newProvider = new PackageFilePathProvider(_settings, style: PackageFilePathStyle.TwoByteIdentityHash);
+            const string cursorName = "TEMP_CopyFileToBlob";
 
-            var packageCommitEnumerator = new PackageCommitEnumerator();
-
-            var start = DateTimeOffset.Parse("2018-05-16T18:20:19.9174542+00:00");
+            var start = await _cursorService.GetValueAsync(cursorName);
             var end = DateTimeOffset.MaxValue;
 
             var commitCount = 1;
             do
             {
                 Console.Write($"Start: {start:O}...");
-                var commits = await packageCommitEnumerator.GetCommitsAsync(
+                var commits = await _packageCommitEnumerator.GetCommitsAsync(
                     start,
                     end,
                     batchSize: 5000);
@@ -44,58 +51,24 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 
                 await TaskProcessor.ExecuteAsync(
                     commits.SelectMany(x => x.Entities),
-                    package =>
+                    async package =>
                     {
-                        Console.WriteLine($" - {package.Id} {package.Version}");
+                        Console.WriteLine($"{package.Id} {package.Version}");
 
-                        var packageSpecificDir = oldProvider.GetPackageSpecificDirectory(package.Id, package.Version);
-                        if (!Directory.Exists(packageSpecificDir))
-                        {
-                            return Task.FromResult(true);
-                        }
+                        await _fileStorageService.CopyMZipFileToBlobIfExistsAsync(package.Id, package.Version);
+                        await _fileStorageService.CopyNuspecFileToBlobIfExistsAsync(package.Id, package.Version);
 
-                        try
-                        {
-                            var oldPath = oldProvider.GetLatestMZipFilePath(package.Id, package.Version);
-                            var newPath = newProvider.GetLatestMZipFilePath(package.Id, package.Version);
-                            Directory.CreateDirectory(Path.GetDirectoryName(newPath));
-                            File.Move(oldPath, newPath);
-                        }
-                        catch (IOException)
-                        {
-                        }
-
-                        try
-                        {
-                            var oldPath = oldProvider.GetLatestNuspecFilePath(package.Id, package.Version);
-                            var newPath = newProvider.GetLatestNuspecFilePath(package.Id, package.Version);
-                            Directory.CreateDirectory(Path.GetDirectoryName(newPath));
-                            File.Move(oldPath, newPath);
-                        }
-                        catch (IOException)
-                        {
-                        }
-
-                        return Task.FromResult(true);
+                        return true;
                     },
-                    workerCount: 4);
+                    workerCount: 32);
 
                 if (commits.Any())
                 {
                     start = commits.Max(x => x.CommitTimestamp);
+                    await _cursorService.SetValueAsync(cursorName, start);
                 }
             }
             while (commitCount > 0);
-
-            Console.WriteLine("Deleting empty directories...");
-            foreach (var dir in Directory.EnumerateDirectories(_settings.PackagePath).Reverse())
-            {
-                if (Path.GetFileName(dir).Length == 1)
-                {
-                    FileUtility.DeleteEmptyDirectories(dir);
-                    FileUtility.DeleteDirectoryIfEmpty(dir);
-                }
-            }
         }
 
         public bool IsDatabaseRequired()
