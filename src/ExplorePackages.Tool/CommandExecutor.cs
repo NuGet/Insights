@@ -17,7 +17,7 @@ namespace Knapcode.ExplorePackages.Tool
             _logger = logger;
         }
 
-        public async Task ExecuteAsync(CancellationToken token)
+        public async Task<bool> ExecuteAsync(CancellationToken token)
         {
             var commandName = _command.GetType().Name;
             var suffix = "Command";
@@ -27,15 +27,19 @@ namespace Knapcode.ExplorePackages.Tool
             }
             var heading = $"===== {commandName.ToLowerInvariant()} =====";
             _logger.LogInformation(heading);
+            bool success;
             try
             {
                 await _command.ExecuteAsync(token);
+                success = true;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An exception occurred.");
+                success = false;
             }
             _logger.LogInformation(new string('=', heading.Length) + Environment.NewLine);
+            return success;
         }
     }
 }

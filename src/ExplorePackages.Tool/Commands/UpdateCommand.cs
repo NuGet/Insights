@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,6 +67,8 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 
         public async Task ExecuteAsync(CancellationToken token)
         {
+            var success = true;
+
             foreach (var command in _commands)
             {
                 if (command is DownloadsToDatabaseCommand && SkipDownloads)
@@ -74,7 +77,12 @@ namespace Knapcode.ExplorePackages.Tool.Commands
                 }
 
                 var commandExecutor = new CommandExecutor(command, _logger);
-                await commandExecutor.ExecuteAsync(token);
+                success &= await commandExecutor.ExecuteAsync(token);
+            }
+
+            if (!success)
+            {
+                throw new InvalidOperationException("One or more of the update steps failed.");
             }
         }
 

@@ -65,7 +65,7 @@ namespace Knapcode.ExplorePackages.Tool
 
                 foreach (var pair in Commands)
                 {
-                    AddCommand(pair.Value, serviceProvider, app, pair.Key);
+                    AddCommand(pair.Value, serviceProvider, app, pair.Key, logger);
                 }
 
                 try
@@ -101,7 +101,8 @@ namespace Knapcode.ExplorePackages.Tool
             Type commandType,
             IServiceProvider serviceProvider,
             CommandLineApplication app,
-            string commandName)
+            string commandName,
+            ILogger logger)
         {
             var command = (ICommand)serviceProvider.GetRequiredService(commandType);
 
@@ -115,6 +116,18 @@ namespace Knapcode.ExplorePackages.Tool
                         "--debug",
                         "Launch the debugger.",
                         CommandOptionType.NoValue);
+                    var daemonOption = x.Option(
+                        "--daemon",
+                        "Run the command over and over, forever.",
+                        CommandOptionType.NoValue);
+                    var successSleepOption = x.Option<ushort>(
+                        "--success-sleep",
+                        "The number of seconds to sleep when the command executed successfully and running as a daemon. Defaults to 1 second.",
+                        CommandOptionType.SingleValue);
+                    var failureSleepOption = x.Option<ushort>(
+                        "--failure-sleep",
+                        "The number of seconds to sleep when the command failed and running as a daemon. Defaults to 30 seconds.",
+                        CommandOptionType.SingleValue);
 
                     command.Configure(x);
 
@@ -125,16 +138,41 @@ namespace Knapcode.ExplorePackages.Tool
                             Debugger.Launch();
                         }
 
+                        var successSleepDuration = TimeSpan.FromSeconds(successSleepOption.HasValue() ? successSleepOption.ParsedValue : 1);
+                        var failureSleepDuration = TimeSpan.FromSeconds(failureSleepOption.HasValue() ? failureSleepOption.ParsedValue : 30);
+
                         await InitializeGlobalState(
                             serviceProvider.GetRequiredService<ExplorePackagesSettings>(),
                             command.IsDatabaseRequired(),
                             serviceProvider.GetRequiredService<ILogger<Program>>());
 
-                        var commandRunner = new CommandExecutor(
-                            command,
-                            serviceProvider.GetRequiredService<ILogger<CommandExecutor>>());
+                        do
+                        {
+                            var commandRunner = new CommandExecutor(
+                                command,
+                                serviceProvider.GetRequiredService<ILogger<CommandExecutor>>());
 
-                        await commandRunner.ExecuteAsync(CancellationToken.None);
+                            var success = await commandRunner.ExecuteAsync(CancellationToken.None);
+
+                            if (daemonOption.HasValue())
+                            {
+                                if (success)
+                                {
+                                    logger.LogInformation(
+                                        "Waiting for {SuccessSleepDuration} since the command completed successfully." + Environment.NewLine,
+                                        successSleepDuration);
+                                    await Task.Delay(successSleepDuration);
+                                }
+                                else
+                                {
+                                    logger.LogInformation("Waiting for {FailureSleepDuration} since the command failed." + Environment.NewLine,
+                                        failureSleepDuration);
+                                    await Task.Delay(failureSleepDuration);
+                                }
+                            }
+                            
+                        }
+                        while (daemonOption.HasValue());
 
                         return 0;
                     });
