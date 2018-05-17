@@ -26,25 +26,12 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 
         public async Task ExecuteAsync(CancellationToken token)
         {
-            var oldProvider = new PackageFilePathProvider(_settings, style: PackageFilePathStyle.IdVersion);
-            var newProvider = new PackageFilePathProvider(_settings, style: PackageFilePathStyle.FourIdLetters);
-
-            var blobNameProvider = new PackageBlobNameProvider();
-
-            var oldService = new FileStorageService(
-                oldProvider,
-                blobNameProvider,
-                _settings,
-                _logger);
-            var newService = new FileStorageService(
-                newProvider,
-                blobNameProvider,
-                _settings,
-                _logger);
+            var oldProvider = new PackageFilePathProvider(_settings, style: PackageFilePathStyle.FourIdLetters);
+            var newProvider = new PackageFilePathProvider(_settings, style: PackageFilePathStyle.TwoByteIdentityHash);
 
             var packageCommitEnumerator = new PackageCommitEnumerator();
 
-            var start = DateTimeOffset.Parse("2018-01-15T03:25:03.2918890+00:00");
+            var start = DateTimeOffset.Parse("2018-05-16T18:20:19.9174542+00:00");
             var end = DateTimeOffset.MaxValue;
 
             var commitCount = 1;
@@ -54,65 +41,64 @@ namespace Knapcode.ExplorePackages.Tool.Commands
                 var commits = await packageCommitEnumerator.GetCommitsAsync(
                     start,
                     end,
-                    batchSize: 2000);
+                    batchSize: 5000);
                 commitCount = commits.Count;
                 Console.WriteLine($" {commitCount} commits.");
 
-                foreach (var commit in commits)
-                {
-                    foreach (var package in commit.Entities)
+                await TaskProcessor.ExecuteAsync(
+                    commits.SelectMany(x => x.Entities),
+                    package =>
                     {
                         Console.WriteLine($" - {package.Id} {package.Version}");
 
                         var packageSpecificDir = oldProvider.GetPackageSpecificDirectory(package.Id, package.Version);
-                        var idSpecificDir = Path.GetDirectoryName(packageSpecificDir);
-
-                        if (!Directory.Exists(idSpecificDir))
-                        {
-                            continue;
-                        }
-
                         if (!Directory.Exists(packageSpecificDir))
                         {
-                            FileUtility.DeleteDirectoryIfEmpty(idSpecificDir);
-                            continue;
+                            return Task.FromResult(true);
                         }
 
-                        using (var srcStream = await oldService.GetMZipStreamOrNullAsync(package.Id, package.Version))
+                        try
                         {
-                            if (srcStream != null)
-                            {
-                                await newService.StoreMZipStreamAsync(
-                                    package.Id,
-                                    package.Version,
-                                    destStream => srcStream.CopyToAsync(destStream));
-                            }
+                            var oldPath = oldProvider.GetLatestMZipFilePath(package.Id, package.Version);
+                            var newPath = newProvider.GetLatestMZipFilePath(package.Id, package.Version);
+                            Directory.CreateDirectory(Path.GetDirectoryName(newPath));
+                            File.Move(oldPath, newPath);
                         }
-
-                        await oldService.DeleteMZipStreamAsync(package.Id, package.Version);
-
-                        using (var srcStream = await oldService.GetNuspecStreamOrNullAsync(package.Id, package.Version))
+                        catch (IOException)
                         {
-                            if (srcStream != null)
-                            {
-                                await newService.StoreNuspecStreamAsync(
-                                    package.Id,
-                                    package.Version,
-                                    destStream => srcStream.CopyToAsync(destStream));
-                            }
                         }
 
-                        await oldService.DeleteNuspecStreamAsync(package.Id, package.Version);
+                        try
+                        {
+                            var oldPath = oldProvider.GetLatestNuspecFilePath(package.Id, package.Version);
+                            var newPath = newProvider.GetLatestNuspecFilePath(package.Id, package.Version);
+                            Directory.CreateDirectory(Path.GetDirectoryName(newPath));
+                            File.Move(oldPath, newPath);
+                        }
+                        catch (IOException)
+                        {
+                        }
 
-                        FileUtility.DeleteEmptyDirectories(packageSpecificDir);
-                        FileUtility.DeleteDirectoryIfEmpty(packageSpecificDir);
-                        FileUtility.DeleteDirectoryIfEmpty(idSpecificDir);
-                    }
+                        return Task.FromResult(true);
+                    },
+                    workerCount: 4);
+
+                if (commits.Any())
+                {
+                    start = commits.Max(x => x.CommitTimestamp);
                 }
-
-                start = commits.Max(x => x.CommitTimestamp);
             }
             while (commitCount > 0);
+
+            Console.WriteLine("Deleting empty directories...");
+            foreach (var dir in Directory.EnumerateDirectories(_settings.PackagePath).Reverse())
+            {
+                if (Path.GetFileName(dir).Length == 1)
+                {
+                    FileUtility.DeleteEmptyDirectories(dir);
+                    FileUtility.DeleteDirectoryIfEmpty(dir);
+                }
+            }
         }
 
         public bool IsDatabaseRequired()

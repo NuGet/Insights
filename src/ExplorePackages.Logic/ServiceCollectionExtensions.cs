@@ -99,7 +99,7 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<LatestCatalogCommitFetcher>();
             serviceCollection.AddTransient(x => new PackageFilePathProvider(
                 x.GetRequiredService<ExplorePackagesSettings>(),
-                style: PackageFilePathStyle.FourIdLetters));
+                style: PackageFilePathStyle.TwoByteIdentityHash));
             serviceCollection.AddTransient<PackageBlobNameProvider>();
             serviceCollection.AddTransient<FileStorageService>();
 

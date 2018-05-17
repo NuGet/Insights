@@ -632,7 +632,8 @@ namespace Knapcode.ExplorePackages.Logic
                     }
 
                     return KeyValuePair.Create(x, listed);
-                }))
+                },
+                workerCount: 16))
                 .ToDictionary(x => x.Key, x => x.Value, new CatalogEntryComparer());
 
             return await AddOrUpdatePackagesAsync(

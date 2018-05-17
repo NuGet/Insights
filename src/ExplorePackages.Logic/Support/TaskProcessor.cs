@@ -10,12 +10,13 @@ namespace Knapcode.ExplorePackages.Logic
     {
         public static async Task<ConcurrentBag<TOutput>> ExecuteAsync<TInput, TOutput>(
             IEnumerable<TInput> input,
-            Func<TInput, Task<TOutput>> executeAsync)
+            Func<TInput, Task<TOutput>> executeAsync,
+            int workerCount)
         {
             var work = new ConcurrentBag<TInput>(input);
             var output = new ConcurrentBag<TOutput>();
             var tasks = Enumerable
-                .Range(0, 16)
+                .Range(0, workerCount)
                 .Select(async _ =>
                 {
                     await Task.Yield();
