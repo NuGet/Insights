@@ -18,45 +18,64 @@ namespace Knapcode.ExplorePackages.Logic
             _style = style;
         }
 
-        public string GetLatestNuspecFilePath(string id, string version)
-        {
-            string fileName;
-            switch (_style)
-            {
-                case PackageFilePathStyle.TwoByteIdentityHash:
-                    fileName = "latest.nuspec";
-                    break;
-                default:
-                    fileName = $"{id.ToLowerInvariant()}.nuspec";
-                    break;
-            }
-
-            var packageSpecificPath = GetPackageSpecificDirectory(id, version);
-            return Path.Combine(packageSpecificPath, fileName);
-        }
-
-        public string GetLatestMZipFilePath(string id, string version)
-        {
-            string fileName;
-            switch (_style)
-            {
-                case PackageFilePathStyle.TwoByteIdentityHash:
-                    fileName = "latest.mzip";
-                    break;
-                default:
-                    fileName = $"{id.ToLowerInvariant()}.{version.ToLowerInvariant()}.mzip";
-                    break;
-            }
-
-            var packageSpecificPath = GetPackageSpecificDirectory(id, version);
-            return Path.Combine(packageSpecificPath, fileName);
-        }
-
-        public string GetPackageSpecificDirectory(string id, string version)
+        public string GetLatestFilePath(string id, string version, FileArtifactType type)
         {
             var lowerId = id.ToLowerInvariant();
             var lowerVersion = version.ToLowerInvariant();
 
+            var fileName = GetFileName(lowerId, lowerVersion, type);
+
+            var packageSpecificPath = GetPackageSpecificDirectory(lowerId, lowerVersion);
+
+            return Path.Combine(packageSpecificPath, fileName);
+        }
+
+        private string GetFileName(string lowerId, string lowerVersion, FileArtifactType type)
+        {
+            var extension = GetExtension(type);
+
+            string fileName;
+            switch (_style)
+            {
+                case PackageFilePathStyle.TwoByteIdentityHash:
+                    fileName = $"latest.{extension}";
+                    break;
+                default:
+                    switch (type)
+                    {
+                        case FileArtifactType.Nuspec:
+                            fileName = $"{lowerId}.{extension}";
+                            break;
+                        default:
+                            fileName = $"{lowerId}.{lowerVersion}.{extension}";
+                            break;
+                    }
+                    break;
+            }
+
+            return fileName;
+        }
+
+        private static string GetExtension(FileArtifactType type)
+        {
+            string extension;
+            switch (type)
+            {
+                case FileArtifactType.Nuspec:
+                    extension = "nuspec";
+                    break;
+                case FileArtifactType.MZip:
+                    extension = "mzip";
+                    break;
+                default:
+                    throw new NotSupportedException($"The file artifact type {type} is not supported.");
+            }
+
+            return extension;
+        }
+
+        private string GetPackageSpecificDirectory(string lowerId, string lowerVersion)
+        {
             string[] pieces;
             switch (_style)
             {

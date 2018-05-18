@@ -1,30 +1,36 @@
-﻿namespace Knapcode.ExplorePackages.Logic
+﻿using System;
+
+namespace Knapcode.ExplorePackages.Logic
 {
     public class PackageBlobNameProvider
     {
-        public string GetLatestNuspecPath(string id, string version)
-        {
-            var packageSpecificPath = GetPackageSpecificPath(id, version);
-            var lowerId = id.ToLowerInvariant();
-
-            return $"{packageSpecificPath}/{lowerId}.nuspec";
-        }
-
-        public string GetLatestMZipBlobName(string id, string version)
-        {
-            var packageSpecificPath = GetPackageSpecificPath(id, version);
-            var lowerId = id.ToLowerInvariant();
-            var lowerVersion = version.ToLowerInvariant();
-
-            return $"{packageSpecificPath}/{lowerId}.{lowerVersion}.mzip";
-        }
-
-        private string GetPackageSpecificPath(string id, string version)
+        public string GetLatestBlobName(string id, string version, FileArtifactType type)
         {
             var lowerId = id.ToLowerInvariant();
             var lowerVersion = version.ToLowerInvariant();
+            var extension = GetExtension(type);
 
-            return $"{lowerId}/{lowerVersion}";
+            var blobName = $"{lowerId}/{lowerVersion}/latest.{extension}";
+
+            return blobName;
+        }
+
+        private static string GetExtension(FileArtifactType type)
+        {
+            string extension;
+            switch (type)
+            {
+                case FileArtifactType.Nuspec:
+                    extension = "nuspec";
+                    break;
+                case FileArtifactType.MZip:
+                    extension = "mzip";
+                    break;
+                default:
+                    throw new NotSupportedException($"The file artifact type {type} is not supported.");
+            }
+
+            return extension;
         }
     }
 }

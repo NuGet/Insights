@@ -39,16 +39,21 @@ namespace Knapcode.ExplorePackages.Logic
 
             using (var reader = await _httpZipProvider.GetReaderAsync(new Uri(url)))
             {
-                await _fileStorageService.StoreMZipStreamAsync(
+                await _fileStorageService.StoreStreamAsync(
                     id,
                     version,
+                    FileArtifactType.MZip,
                     destStream => _mZipFormat.WriteAsync(reader.Stream, destStream));
             }
         }
 
         public async Task<Stream> GetMZipStreamOrNullAsync(string id, string version, CancellationToken token)
         {
-            var stream = await _fileStorageService.GetMZipStreamOrNullAsync(id, version);
+            var stream = await _fileStorageService.GetStreamOrNullAsync(
+                id,
+                version,
+                FileArtifactType.MZip);
+
             if (stream == null)
             {
                 return null;

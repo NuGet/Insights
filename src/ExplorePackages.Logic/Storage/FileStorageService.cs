@@ -32,84 +32,58 @@ namespace Knapcode.ExplorePackages.Logic
 
         private CloudBlobContainer BlobContainer => _lazyBlobContainer.Value;
 
-        public async Task StoreMZipStreamAsync(string id, string version, Func<Stream, Task> writeAsync)
+        public async Task StoreStreamAsync(string id, string version, FileArtifactType type, Func<Stream, Task> writeAsync)
         {
-            var filePath = _filePathProvider.GetLatestMZipFilePath(id, version);
+            var filePath = _filePathProvider.GetLatestFilePath(id, version, type);
+
             await SafeFileWriter.WriteAsync(filePath, writeAsync, _logger);
-            await CopyMZipFileToBlobAsync(id, version, filePath, required: false);
+
+            await CopyFileToBlobAsync(id, version, type, filePath, required: false);
         }
 
-        public async Task CopyMZipFileToBlobIfExistsAsync(string id, string version)
+        public async Task CopyFileToBlobIfExistsAsync(string id, string version, FileArtifactType type)
         {
-            var filePath = _filePathProvider.GetLatestMZipFilePath(id, version);
+            var filePath = _filePathProvider.GetLatestFilePath(id, version, type);
             if (!File.Exists(filePath))
             {
                 return;
             }
 
-            await CopyMZipFileToBlobAsync(id, version, filePath, required: true);
+            await CopyFileToBlobAsync(id, version, type, filePath, required: true);
         }
 
-        public Task<Stream> GetMZipStreamOrNullAsync(string id, string version)
+        public Task<Stream> GetStreamOrNullAsync(string id, string version, FileArtifactType type)
         {
-            var filePath = _filePathProvider.GetLatestMZipFilePath(id, version);
-            return Task.FromResult(GetStreamOrNull(filePath));
+            var filePath = _filePathProvider.GetLatestFilePath(id, version, type);
+
+            var stream = GetStreamOrNull(filePath);
+
+            return Task.FromResult(stream);
         }
 
-        public Task DeleteMZipStreamAsync(string id, string version)
+        public Task DeleteStreamAsync(string id, string version, FileArtifactType type)
         {
-            var filePath = _filePathProvider.GetLatestMZipFilePath(id, version);
-            DeleteFile(filePath);
-            return Task.CompletedTask;
-        }
+            var filePath = _filePathProvider.GetLatestFilePath(id, version, type);
 
-        public async Task StoreNuspecStreamAsync(string id, string version, Func<Stream, Task> writeAsync)
-        {
-            var filePath = _filePathProvider.GetLatestNuspecFilePath(id, version);
-            await SafeFileWriter.WriteAsync(filePath, writeAsync, _logger);
-            await CopyNuspecFileToBlobAsync(id, version, filePath, required: false);
-        }
-
-        public async Task CopyNuspecFileToBlobIfExistsAsync(string id, string version)
-        {
-            var filePath = _filePathProvider.GetLatestNuspecFilePath(id, version);
-            if (!File.Exists(filePath))
+            try
             {
-                return;
+                File.Delete(filePath);
+            }
+            catch (FileNotFoundException)
+            {
+            }
+            catch (DirectoryNotFoundException)
+            {
             }
 
-            await CopyNuspecFileToBlobAsync(id, version, filePath, required: true);
-        }
-
-        public Task<Stream> GetNuspecStreamOrNullAsync(string id, string version)
-        {
-            var filePath = _filePathProvider.GetLatestNuspecFilePath(id, version);
-            return Task.FromResult(GetStreamOrNull(filePath));
-        }
-
-        public Task DeleteNuspecStreamAsync(string id, string version)
-        {
-            var filePath = _filePathProvider.GetLatestNuspecFilePath(id, version);
-            DeleteFile(filePath);
             return Task.CompletedTask;
-        }
-
-        private async Task CopyMZipFileToBlobAsync(string id, string version, string filePath, bool required)
-        {
-            var blobName = _blobNameProvider.GetLatestMZipBlobName(id, version);
-            await CopyFileToBlobAsync(filePath, blobName, "application/octet-stream", required);
-        }
-
-        private async Task CopyNuspecFileToBlobAsync(string id, string version, string filePath, bool required)
-        {
-            var blobName = _blobNameProvider.GetLatestNuspecPath(id, version);
-            await CopyFileToBlobAsync(filePath, blobName, "application/xml", required);
         }
 
         private async Task CopyFileToBlobAsync(
+            string id,
+            string version,
+            FileArtifactType type,
             string filePath,
-            string blobName,
-            string contentType,
             bool required)
         {
             if (BlobContainer == null)
@@ -124,9 +98,24 @@ namespace Knapcode.ExplorePackages.Logic
                 }
             }
 
+            var blobName = _blobNameProvider.GetLatestBlobName(id, version, type);
             var blob = BlobContainer.GetBlockBlobReference(blobName);
-            _logger.LogInformation("  PUT {BlobUri}", blob.Uri);
+
+            string contentType;
+            switch (type)
+            {
+                case FileArtifactType.Nuspec:
+                    contentType = "application/xml";
+                    break;
+                case FileArtifactType.MZip:
+                    contentType = "application/octet-stream";
+                    break;
+                default:
+                    throw new NotSupportedException($"The file artifact type {type} is not supported.");
+            }
             blob.Properties.ContentType = contentType;
+
+            _logger.LogInformation("  PUT {BlobUri}", blob.Uri);
             await blob.UploadFromFileAsync(filePath);
         }
 
@@ -142,20 +131,6 @@ namespace Knapcode.ExplorePackages.Logic
             var container = client.GetContainerReference(_settings.StorageContainerName);
 
             return container;
-        }
-
-        private static void DeleteFile(string filePath)
-        {
-            try
-            {
-                File.Delete(filePath);
-            }
-            catch (FileNotFoundException)
-            {
-            }
-            catch (DirectoryNotFoundException)
-            {
-            }
         }
 
         private static Stream GetStreamOrNull(string filePath)

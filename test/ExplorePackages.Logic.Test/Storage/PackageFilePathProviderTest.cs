@@ -34,7 +34,7 @@ namespace Knapcode.ExplorePackages.Logic
             var target = new PackageFilePathProvider(_settings, PackageFilePathStyle.FourIdLetters);
 
             // Act
-            var actual = target.GetLatestNuspecFilePath(id, Version);
+            var actual = target.GetLatestFilePath(id, Version, FileArtifactType.Nuspec);
 
             // Assert
             Assert.Equal(expected, actual);
@@ -63,7 +63,7 @@ namespace Knapcode.ExplorePackages.Logic
             var target = new PackageFilePathProvider(_settings, PackageFilePathStyle.TwoByteIdentityHash);
 
             // Act
-            var actual = target.GetLatestNuspecFilePath(id, version);
+            var actual = target.GetLatestFilePath(id, version, FileArtifactType.Nuspec);
 
             // Assert
             Assert.Equal(expected, actual);

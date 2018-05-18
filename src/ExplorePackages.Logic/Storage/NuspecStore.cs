@@ -48,9 +48,10 @@ namespace Knapcode.ExplorePackages.Logic
                         return false;
                     }
 
-                    await _fileStorageService.StoreNuspecStreamAsync(
+                    await _fileStorageService.StoreStreamAsync(
                         id,
                         version,
+                        FileArtifactType.Nuspec,
                         destStream => networkStream.CopyToAsync(destStream));
 
                     return true;
@@ -61,7 +62,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task<NuspecContext> GetNuspecContextAsync(string id, string version)
         {
-            using (var stream = await _fileStorageService.GetNuspecStreamOrNullAsync(id, version))
+            using (var stream = await _fileStorageService.GetStreamOrNullAsync(id, version, FileArtifactType.Nuspec))
             {
                 if (stream == null)
                 {
