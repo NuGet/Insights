@@ -2,8 +2,6 @@
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -11,26 +9,20 @@ namespace Knapcode.ExplorePackages.Logic
     {
         private readonly PackageFilePathProvider _filePathProvider;
         private readonly PackageBlobNameProvider _blobNameProvider;
-        private readonly ExplorePackagesSettings _settings;
+        private readonly IBlobStorageService _blobStorageService;
         private readonly ILogger<FileStorageService> _logger;
-
-        private readonly Lazy<CloudBlobContainer> _lazyBlobContainer;
 
         public FileStorageService(
             PackageFilePathProvider filePathProvider,
             PackageBlobNameProvider blobNameProvider,
-            ExplorePackagesSettings settings,
+            IBlobStorageService blobStorageService,
             ILogger<FileStorageService> logger)
         {
             _filePathProvider = filePathProvider;
             _blobNameProvider = blobNameProvider;
-            _settings = settings;
+            _blobStorageService = blobStorageService;
             _logger = logger;
-
-            _lazyBlobContainer = new Lazy<CloudBlobContainer>(GetBlobContainer);
         }
-
-        private CloudBlobContainer BlobContainer => _lazyBlobContainer.Value;
 
         public async Task StoreStreamAsync(string id, string version, FileArtifactType type, Func<Stream, Task> writeAsync)
         {
@@ -86,7 +78,7 @@ namespace Knapcode.ExplorePackages.Logic
             string filePath,
             bool required)
         {
-            if (BlobContainer == null)
+            if (!_blobStorageService.IsEnabled)
             {
                 if (!required)
                 {
@@ -99,7 +91,6 @@ namespace Knapcode.ExplorePackages.Logic
             }
 
             var blobName = _blobNameProvider.GetLatestBlobName(id, version, type);
-            var blob = BlobContainer.GetBlockBlobReference(blobName);
 
             string contentType;
             switch (type)
@@ -113,24 +104,11 @@ namespace Knapcode.ExplorePackages.Logic
                 default:
                     throw new NotSupportedException($"The file artifact type {type} is not supported.");
             }
-            blob.Properties.ContentType = contentType;
 
-            _logger.LogInformation("  PUT {BlobUri}", blob.Uri);
-            await blob.UploadFromFileAsync(filePath);
-        }
-
-        private CloudBlobContainer GetBlobContainer()
-        {
-            if (_settings.StorageConnectionString == null || _settings.StorageContainerName == null)
+            using (var fileStream = new FileStream(filePath, FileMode.Open))
             {
-                return null;
+                await _blobStorageService.UploadStreamAsync(blobName, contentType, fileStream);
             }
-
-            var account = CloudStorageAccount.Parse(_settings.StorageConnectionString);
-            var client = account.CreateCloudBlobClient();
-            var container = client.GetContainerReference(_settings.StorageContainerName);
-
-            return container;
         }
 
         private static Stream GetStreamOrNull(string filePath)

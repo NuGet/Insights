@@ -1,4 +1,5 @@
-﻿using System.Xml.Linq;
+﻿using System.IO;
+using System.Xml.Linq;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -30,20 +31,30 @@ namespace Knapcode.ExplorePackages.Logic
             public const string NuGet_Versioning_4_3_0 = "NuGet.Versioning.4.3.0.nuspec";
         }
 
+        public static MemoryStream LoadMemoryStream(string resourceName)
+        {
+            using (var resourceStream = typeof(Resources)
+                .Assembly
+                .GetManifestResourceStream(typeof(Resources).Namespace + ".TestData." + resourceName))
+            {
+                if (resourceName == null)
+                {
+                    return null;
+                }
+
+                var memoryStream = new MemoryStream();
+                resourceStream.CopyTo(memoryStream);
+                memoryStream.Position = 0;
+
+                return memoryStream;
+            }   
+        }
+
         public static XDocument LoadXml(string resourceName)
         {
-            var resourceStream = typeof(Resources)
-                .Assembly
-                .GetManifestResourceStream(typeof(Resources).Namespace + ".TestData."  + resourceName);
-
-            if (resourceName == null)
+            using (var stream = LoadMemoryStream(resourceName))
             {
-                return null;
-            }
-
-            using (resourceStream)
-            {
-                return XmlUtility.LoadXml(resourceStream);
+                return XmlUtility.LoadXml(stream);
             }
         }
     }

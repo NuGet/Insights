@@ -88,6 +88,7 @@ namespace Knapcode.ExplorePackages.Logic
 
             serviceCollection.AddTransient(x => settings.Clone());
             serviceCollection.AddTransient<NuspecStore>();
+            serviceCollection.AddTransient<MZipStore>();
             serviceCollection.AddTransient<RemoteCursorService>();
             serviceCollection.AddTransient<IPortTester, PortTester>();
             serviceCollection.AddTransient<IPortDiscoverer, SimplePortDiscoverer>();
@@ -102,8 +103,8 @@ namespace Knapcode.ExplorePackages.Logic
                 style: PackageFilePathStyle.TwoByteIdentityHash));
             serviceCollection.AddTransient<PackageBlobNameProvider>();
             serviceCollection.AddTransient<IFileStorageService, FileStorageService>();
+            serviceCollection.AddTransient<IBlobStorageService, BlobStorageService>();
 
-            serviceCollection.AddTransient<MZipStore>();
             serviceCollection.AddTransient<PackageQueryProcessor>();
             serviceCollection.AddTransient<CatalogToDatabaseProcessor>();
             serviceCollection.AddTransient<CatalogToNuspecsProcessor>();
