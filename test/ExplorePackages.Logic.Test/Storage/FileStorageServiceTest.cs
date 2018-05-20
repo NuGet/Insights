@@ -2,6 +2,8 @@
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Moq;
@@ -20,6 +22,7 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly ExplorePackagesSettings _settings;
         private readonly PackageBlobNameProvider _blobNameProvider;
         private readonly Mock<BlobStorageService> _blobStorageService;
+        private readonly MemoryCache _memoryCache;
         private readonly FileStorageService _target;
 
         public FileStorageServiceTest(ITestOutputHelper output)
@@ -38,10 +41,12 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 CallBase = true,
             };
+            _memoryCache = new MemoryCache(Options.Create(new MemoryCacheOptions()));
 
             _target = new FileStorageService(
                 _blobNameProvider,
                 _blobStorageService.Object,
+                _memoryCache,
                 _output.GetLogger<FileStorageService>());
         }
 
@@ -97,9 +102,18 @@ namespace Knapcode.ExplorePackages.Logic
                 x => x.GetStreamOrNullAsync(It.IsAny<string>()),
                 Times.Never);
 
+            _blobStorageService.ResetCalls();
+
             using (var actual = await _target.GetStreamOrNullAsync(Id, Version, type))
             {
                 AssertSameStreams(expected, actual);
+
+                _blobStorageService.Verify(
+                    x => x.UploadStreamAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>()),
+                    Times.Never);
+                _blobStorageService.Verify(
+                    x => x.GetStreamOrNullAsync(It.IsAny<string>()),
+                    Times.Never);
             }
         }
 
@@ -136,7 +150,7 @@ namespace Knapcode.ExplorePackages.Logic
                     Times.Never);
                 _blobStorageService.Verify(
                     x => x.GetStreamOrNullAsync(It.IsAny<string>()),
-                    Times.Once);
+                    Times.Never);
             }
         }
 

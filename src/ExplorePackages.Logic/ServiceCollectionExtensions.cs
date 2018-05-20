@@ -18,6 +18,8 @@ namespace Knapcode.ExplorePackages.Logic
     {
         public static IServiceCollection AddExplorePackages(this IServiceCollection serviceCollection, ExplorePackagesSettings settings)
         {
+            serviceCollection.AddMemoryCache();
+
             serviceCollection.AddSingleton<UrlReporterProvider>();
             serviceCollection.AddTransient<UrlReporterHandler>();
             serviceCollection.AddTransient<LoggingHandler>();

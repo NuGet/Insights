@@ -9,6 +9,7 @@
     <PackageReference Include="AutoMapper" Version="6.2.2" />
     <PackageReference Include="Knapcode.MiniZip" Version="0.6.0" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.0.2" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
     <PackageReference Include="NuGet.CatalogReader" Version="1.6.6" />
     <PackageReference Include="NuGet.Protocol" Version="4.7.0" />
