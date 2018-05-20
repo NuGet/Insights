@@ -44,10 +44,14 @@ namespace Knapcode.ExplorePackages.Tool
         {
             switch (level)
             {
-                case LogLevel.Error:
-                    return ConsoleColor.Red;
+                case LogLevel.Trace:
+                case LogLevel.Debug:
+                    return ConsoleColor.DarkGray;
                 case LogLevel.Warning:
                     return ConsoleColor.Yellow;
+                case LogLevel.Error:
+                case LogLevel.Critical:
+                    return ConsoleColor.Red;
             }
 
             return null;

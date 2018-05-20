@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Threading;
@@ -39,7 +40,7 @@ namespace Knapcode.ExplorePackages.Logic
 
             try
             {
-                _logger.LogInformation("  {Method} {BlobUri}", "GET", blob.Uri);
+                _logger.LogDebug("  {Method} {BlobUri}", "GET", blob.Uri);
                 return await blob.OpenReadAsync(
                     accessCondition: null,
                     options: null,
@@ -56,6 +57,7 @@ namespace Knapcode.ExplorePackages.Logic
             var operationContext = new OperationContext();
 
             var receivedCount = 0;
+            var stopwatch = Stopwatch.StartNew();
             operationContext.ResponseReceived += (object sender, RequestEventArgs e) =>
             {
                 // For some reason this event handler is being used again... keep getting HTTP 206 responses.
@@ -64,7 +66,12 @@ namespace Knapcode.ExplorePackages.Logic
                     return;
                 }
 
-                _logger.LogInformation("  {StatusCode} {RequestUri}", (HttpStatusCode)e.RequestInformation.HttpStatusCode, e.RequestUri);
+                var duration = e.RequestInformation.EndTime - e.RequestInformation.StartTime;
+                _logger.LogDebug(
+                    "  {StatusCode} {RequestUri} {Milliseconds}ms",
+                    (HttpStatusCode)e.RequestInformation.HttpStatusCode,
+                    e.RequestUri,
+                    stopwatch.ElapsedMilliseconds);
             };
 
             return operationContext;
@@ -74,7 +81,7 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var blob = GetBlob(blobName);
             blob.Properties.ContentType = contentType;
-            _logger.LogInformation("  {Method} {BlobUri}", "PUT", blob.Uri);
+            _logger.LogDebug("  {Method} {BlobUri}", "PUT", blob.Uri);
             await blob.UploadFromStreamAsync(
                 stream,
                 accessCondition: null,
