@@ -18,7 +18,6 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly TestDirectory _directory;
         private readonly ITestOutputHelper _output;
         private readonly ExplorePackagesSettings _settings;
-        private readonly PackageFilePathProvider _filePathProvider;
         private readonly PackageBlobNameProvider _blobNameProvider;
         private readonly Mock<BlobStorageService> _blobStorageService;
         private readonly FileStorageService _target;
@@ -34,7 +33,6 @@ namespace Knapcode.ExplorePackages.Logic
                 StorageConnectionString = "UseDevelopmentStorage=true",
                 StorageContainerName = Guid.NewGuid().ToString("N"),
             };
-            _filePathProvider = new PackageFilePathProvider(_settings, PackageFilePathStyle.TwoByteIdentityHash);
             _blobNameProvider = new PackageBlobNameProvider();
             _blobStorageService = new Mock<BlobStorageService>(_settings, _output.GetLogger<BlobStorageService>())
             {
@@ -42,7 +40,6 @@ namespace Knapcode.ExplorePackages.Logic
             };
 
             _target = new FileStorageService(
-                _filePathProvider,
                 _blobNameProvider,
                 _blobStorageService.Object,
                 _output.GetLogger<FileStorageService>());
@@ -51,7 +48,65 @@ namespace Knapcode.ExplorePackages.Logic
         [Theory]
         [InlineData(FileArtifactType.Nuspec)]
         [InlineData(FileArtifactType.MZip)]
-        public async Task CanWriteAndReadANuspec(FileArtifactType type)
+        public async Task ReturnsNullWithNonExistentFile(FileArtifactType type)
+        {
+            // Arrange & Act
+            using (var actual = await _target.GetStreamOrNullAsync(Id, Version, type))
+            {
+                // Assert
+                Assert.Null(actual);
+
+                _blobStorageService.Verify(
+                    x => x.UploadStreamAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>()),
+                    Times.Never);
+                _blobStorageService.Verify(
+                    x => x.GetStreamOrNullAsync(It.IsAny<string>()),
+                    Times.Once);
+            }
+        }
+
+        [Theory]
+        [InlineData(FileArtifactType.Nuspec)]
+        [InlineData(FileArtifactType.MZip)]
+        public async Task CanReplaceExistingFile(FileArtifactType type)
+        {
+            // Arrange
+            var initial = new MemoryStream(Encoding.UTF8.GetBytes("Initial!"));
+            var expected = new MemoryStream(Encoding.UTF8.GetBytes("Hello, world!"));
+
+            await _target.StoreStreamAsync(
+                Id,
+                Version,
+                type,
+                dest => initial.CopyToAsync(dest));
+
+            _blobStorageService.ResetCalls();
+
+            // Act
+            await _target.StoreStreamAsync(
+                Id,
+                Version,
+                type,
+                dest => expected.CopyToAsync(dest));
+
+            // Assert
+            _blobStorageService.Verify(
+                x => x.UploadStreamAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>()),
+                Times.Once);
+            _blobStorageService.Verify(
+                x => x.GetStreamOrNullAsync(It.IsAny<string>()),
+                Times.Never);
+
+            using (var actual = await _target.GetStreamOrNullAsync(Id, Version, type))
+            {
+                AssertSameStreams(expected, actual);
+            }
+        }
+
+        [Theory]
+        [InlineData(FileArtifactType.Nuspec)]
+        [InlineData(FileArtifactType.MZip)]
+        public async Task CanWriteAndReadAFile(FileArtifactType type)
         {
             // Arrange
             var expected = new MemoryStream(Encoding.UTF8.GetBytes("Hello, world!"));
@@ -81,7 +136,7 @@ namespace Knapcode.ExplorePackages.Logic
                     Times.Never);
                 _blobStorageService.Verify(
                     x => x.GetStreamOrNullAsync(It.IsAny<string>()),
-                    Times.Never);
+                    Times.Once);
             }
         }
 

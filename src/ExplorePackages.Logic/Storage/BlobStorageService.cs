@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage;
@@ -38,7 +39,11 @@ namespace Knapcode.ExplorePackages.Logic
 
             try
             {
-                return await blob.OpenReadAsync();
+                _logger.LogInformation("  {Method} {BlobUri}", "GET", blob.Uri);
+                return await blob.OpenReadAsync(
+                    accessCondition: null,
+                    options: null,
+                    operationContext: GetLoggingOperationContext());
             }
             catch (StorageException ex) when (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.NotFound)
             {
@@ -46,12 +51,35 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
+        private OperationContext GetLoggingOperationContext()
+        {
+            var operationContext = new OperationContext();
+
+            var receivedCount = 0;
+            operationContext.ResponseReceived += (object sender, RequestEventArgs e) =>
+            {
+                // For some reason this event handler is being used again... keep getting HTTP 206 responses.
+                if (Interlocked.Increment(ref receivedCount) != 1)
+                {
+                    return;
+                }
+
+                _logger.LogInformation("  {StatusCode} {RequestUri}", (HttpStatusCode)e.RequestInformation.HttpStatusCode, e.RequestUri);
+            };
+
+            return operationContext;
+        }
+
         public virtual async Task UploadStreamAsync(string blobName, string contentType, Stream stream)
         {
             var blob = GetBlob(blobName);
             blob.Properties.ContentType = contentType;
-            _logger.LogInformation("  PUT {BlobUri}", blob.Uri);
-            await blob.UploadFromStreamAsync(stream);
+            _logger.LogInformation("  {Method} {BlobUri}", "PUT", blob.Uri);
+            await blob.UploadFromStreamAsync(
+                stream,
+                accessCondition: null,
+                options: null,
+                operationContext: GetLoggingOperationContext());
         }
 
         private CloudBlockBlob GetBlob(string blobName)

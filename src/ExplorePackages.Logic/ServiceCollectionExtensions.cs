@@ -98,9 +98,6 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<IProgressReporter, NullProgressReporter>();
             serviceCollection.AddTransient<LatestV2PackageFetcher>();
             serviceCollection.AddTransient<LatestCatalogCommitFetcher>();
-            serviceCollection.AddTransient(x => new PackageFilePathProvider(
-                x.GetRequiredService<ExplorePackagesSettings>(),
-                style: PackageFilePathStyle.TwoByteIdentityHash));
             serviceCollection.AddTransient<PackageBlobNameProvider>();
             serviceCollection.AddTransient<IFileStorageService, FileStorageService>();
             serviceCollection.AddTransient<IBlobStorageService, BlobStorageService>();
