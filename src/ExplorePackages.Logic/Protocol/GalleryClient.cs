@@ -58,7 +58,8 @@ namespace Knapcode.ExplorePackages.Logic
                         responseBody.Position = 0;
 
                         var state = DetermineState(packageIdentity, responseBody);
-                        if (state.PackageId != null
+                        if (state != null
+                            && state.PackageId != null
                             && state.PackageVersion != null
                             && state.PackageDeletedStatus.HasValue
                             && state.IsSemVer2.HasValue

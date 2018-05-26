@@ -237,7 +237,7 @@
                 <td>{{yesno registrationSemVer2.isInIndex}}</td>
             </tr>
             <tr>
-                <th>Has leaf?</th>
+                <th>Has leaf? <a target="_blank" href="https://github.com/NuGet/NuGetGallery/issues/4475">*</a></th>
                 <td>{{yesno registrationOriginal.hasLeaf}}</td>
                 <td>{{yesno registrationGzipped.hasLeaf}}</td>
                 <td>{{yesno registrationSemVer2.hasLeaf}}</td>
@@ -484,6 +484,16 @@
             var $urls = $("#urls");
 
             var httpSessions = {};
+
+            $packageId.add($packageVersion).on("paste", function (e) {
+                var pastedText = (e.originalEvent.clipboardData.getData("text") || "").trim();
+                var pieces = pastedText.split(/[ \/]/, 2);
+                if (pieces.length > 1) {
+                    $packageId.val(pieces[0].trim());
+                    $packageVersion.val(pieces[1].trim());
+                    return false;
+                }
+            });
 
             $reportTab.click(function () {
                 if ($reportTab.parent().hasClass("disabled")) {

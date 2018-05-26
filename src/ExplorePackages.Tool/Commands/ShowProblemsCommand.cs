@@ -73,7 +73,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 
                     foreach (var identity in group.Value)
                     {
-                        _logger.LogInformation("    {Id} {Version}", identity.Id, identity.Version);
+                        _logger.LogInformation("    {Id}/{Version}", identity.Id, identity.Version);
                     }
                     Console.WriteLine();
                 }
