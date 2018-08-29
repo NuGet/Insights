@@ -22,7 +22,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
         private CommandOption _semVer2Option;
         private CommandOption _deletedOption;
         private CommandOption _unlistedOption;
-        private CommandOption _gallery;
+        private CommandOption _noGallery;
         private CommandOption _database;
 
         public CheckPackageCommand(PackageConsistencyService service, PackageQueryContextBuilder contextBuilder, ILogger<CheckPackageCommand> logger)
@@ -55,9 +55,9 @@ namespace Knapcode.ExplorePackages.Tool.Commands
                 "--unlisted",
                 "Consider the package to be unlisted.",
                 CommandOptionType.NoValue);
-            _gallery = app.Option(
-                "--gallery",
-                "Use details from the gallery as a baseline.",
+            _noGallery = app.Option(
+                "--no-gallery",
+                "Don't use details from the gallery as a baseline. Instead, use explicit command-line options.",
                 CommandOptionType.NoValue);
             _database = app.Option(
                 "--database",
@@ -70,7 +70,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
         private bool SemVer2 => _semVer2Option?.HasValue() ?? false;
         private bool Deleted => _deletedOption?.HasValue() ?? false;
         private bool Unlisted => _unlistedOption?.HasValue() ?? false;
-        private bool Gallery => _gallery?.HasValue() ?? false;
+        private bool NoGallery => _noGallery?.HasValue() ?? false;
         private bool Database => _database?.HasValue() ?? false;
 
         public async Task ExecuteAsync(CancellationToken token)
@@ -85,7 +85,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 
             var state = new PackageConsistencyState();
             PackageQueryContext context;
-            if (Gallery)
+            if (!NoGallery)
             {
                 context = await _contextBuilder.GetPackageQueryContextFromGalleryAsync(Id, Version, state);
             }
