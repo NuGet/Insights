@@ -15,21 +15,23 @@ namespace Knapcode.ExplorePackages.Logic
     {
         private static readonly Regex PagePathPattern = new Regex(@"page(?<PageIndex>[0-9]|[1-9][0-9]+)\.json");
 
-        private readonly ServiceIndexCache _serviceIndexCache;
+        private readonly CatalogClient _catalogClient;
         private readonly ILogger<CatalogService> _logger;
 
         public CatalogService(
             ServiceIndexCache serviceIndexCache,
+            CatalogClient catalogClient,
             ILogger<CatalogService> logger)
         {
-            _serviceIndexCache = serviceIndexCache ?? throw new ArgumentNullException(nameof(serviceIndexCache));
+            _catalogClient = catalogClient ?? throw new ArgumentNullException(nameof(catalogClient));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task AddOrUpdateAsync(
             CatalogPageEntry page,
             IReadOnlyList<CatalogEntry> leaves,
-            IReadOnlyDictionary<string, long> identityToPackageKey)
+            IReadOnlyDictionary<string, long> identityToPackageKey,
+            IReadOnlyDictionary<CatalogEntry, bool> entryToListed)
         {
             _logger.LogInformation("Adding or updating catalog page {PageUri}.", page.Uri.OriginalString);
             using (var context = new EntityContext())
@@ -42,7 +44,7 @@ namespace Knapcode.ExplorePackages.Logic
                     .Where(x => x.Url == pageUrl)
                     .FirstOrDefaultAsync();
 
-                var latest = await InitializeAsync(pageUrl, leaves, identityToPackageKey);
+                var latest = await InitializeAsync(pageUrl, leaves, identityToPackageKey, entryToListed);
 
                 Merge(context, existing, latest);
 
@@ -96,6 +98,7 @@ namespace Knapcode.ExplorePackages.Logic
                     }
 
                     existingLeaf.RelativePath = latestLeaf.RelativePath;
+                    existingLeaf.IsListed = latestLeaf.IsListed;
                 }
             }
         }
@@ -103,7 +106,8 @@ namespace Knapcode.ExplorePackages.Logic
         private async Task<CatalogPageEntity> InitializeAsync(
             string pageUrl,
             IReadOnlyList<CatalogEntry> leaves,
-            IReadOnlyDictionary<string, long> identityToPackageKey)
+            IReadOnlyDictionary<string, long> identityToPackageKey,
+            IReadOnlyDictionary<CatalogEntry, bool> entryToListed)
         {
             await VerifyExpectedPageUrlAsync(pageUrl);
 
@@ -120,7 +124,7 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 var commitLeaves = commit.ToList();
 
-                // This really only every be one, but there is an oddball:
+                // This really only ever be one commit ID per timestamp, but there is an oddball:
                 // https://api.nuget.org/v3/catalog0/page868.json, timestamp: 2015-04-17T23:24:26.0796162Z
                 var commitId = string.Join(" ", commit
                     .Select(x => Guid.Parse(x.CommitId))
@@ -168,6 +172,7 @@ namespace Knapcode.ExplorePackages.Logic
                         CatalogCommit = commitEntity,
                         PackageKey = packageKey,
                         Type = type,
+                        IsListed = entryToListed[leaf],
                     };
 
                     await VerifyExpectedLeafUrlAsync(leaf, leafEntity);
@@ -181,7 +186,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         private async Task VerifyExpectedPageUrlAsync(string pageUrl)
         {
-            var catalogBaseUrl = await GetCatalogBaseUrlAsync();
+            var catalogBaseUrl = await _catalogClient.GetCatalogBaseUrlAsync();
 
             if (!pageUrl.StartsWith(catalogBaseUrl))
             {
@@ -199,7 +204,8 @@ namespace Knapcode.ExplorePackages.Logic
         private async Task VerifyExpectedLeafUrlAsync(CatalogEntry entry, CatalogLeafEntity leafEntity)
         {
             var entryUrl = entry.Uri.OriginalString;
-            var catalogBaseUrl = await GetCatalogBaseUrlAsync();
+
+            var catalogBaseUrl = await _catalogClient.GetCatalogBaseUrlAsync();
 
             if (!entryUrl.StartsWith(catalogBaseUrl))
             {
@@ -207,12 +213,10 @@ namespace Knapcode.ExplorePackages.Logic
             }
 
             var actualPath = entryUrl.Substring(catalogBaseUrl.Length);
-            var expectedPath = string.Join("/", new[]
-            {
-                "data",
-                entry.CommitTimeStamp.ToString("yyyy.MM.dd.HH.mm.ss"),
-                $"{Uri.EscapeDataString(entry.Id.ToLowerInvariant())}.{entry.Version.ToNormalizedString().ToLowerInvariant()}.json",
-            });
+            var expectedPath = _catalogClient.GetExpectedCatalogLeafRelativePath(
+                entry.Id,
+                entry.Version.ToNormalizedString(),
+                entry.CommitTimeStamp);
 
             // This should always be true, but we have an oddball:
             // https://api.nuget.org/v3/catalog0/page848.json
@@ -226,26 +230,6 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 leafEntity.RelativePath = null;
             }
-        }
-
-        private async Task<string> GetCatalogBaseUrlAsync()
-        {
-            var catalogIndexUrl = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.Catalog);
-            var lastSlashIndex = catalogIndexUrl.LastIndexOf('/');
-            if (lastSlashIndex < 0)
-            {
-                throw new InvalidOperationException("No slashes were found in the catalog index URL.");
-            }
-
-            var catalogBaseUrl = catalogIndexUrl.Substring(0, lastSlashIndex + 1);
-
-            var indexPath = catalogIndexUrl.Substring(catalogBaseUrl.Length);
-            if (indexPath != "index.json")
-            {
-                throw new InvalidOperationException("The catalog index does not have the expected relative path.");
-            }
-
-            return catalogBaseUrl;
         }
     }
 }

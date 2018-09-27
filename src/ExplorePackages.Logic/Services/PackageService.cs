@@ -614,28 +614,10 @@ namespace Knapcode.ExplorePackages.Logic
         /// <summary>
         /// Adds the provided catalog entries to the database. Catalog entries are processed in the order provided.
         /// </summary>
-        public async Task<IReadOnlyDictionary<string, long>> AddOrUpdatePackagesAsync(IEnumerable<CatalogEntry> entries)
+        public async Task<IReadOnlyDictionary<string, long>> AddOrUpdatePackagesAsync(
+            IEnumerable<CatalogEntry> entries,
+            IReadOnlyDictionary<CatalogEntry, bool> entryToListed)
         {
-            // Determine the listed status of all of the packages.
-            var entryToListed = (await TaskProcessor.ExecuteAsync(
-                entries,
-                async x =>
-                {
-                    bool listed;
-                    if (x.IsDelete)
-                    {
-                        listed = false;
-                    }
-                    else
-                    {
-                        listed = await IsListedAsync(x);
-                    }
-
-                    return KeyValuePair.Create(x, listed);
-                },
-                workerCount: 16))
-                .ToDictionary(x => x.Key, x => x.Value, new CatalogEntryComparer());
-
             return await AddOrUpdatePackagesAsync(
                 x => x
                     .Packages
@@ -697,34 +679,6 @@ namespace Knapcode.ExplorePackages.Logic
                             pl.CatalogPackage.LastCommitTimestamp);
                     }
                 });
-        }
-
-        private async Task<bool> IsListedAsync(CatalogEntry entry)
-        {
-            var details = await entry.GetPackageDetailsAsync();
-
-            var listedProperty = details.Property("listed");
-            if (listedProperty != null)
-            {
-                return (bool)listedProperty.Value;
-            }
-
-            var publishedProperty = details.Property("published");
-            var published = DateTimeOffset.Parse((string)publishedProperty.Value);
-            return published.ToUniversalTime().Year != 1900;
-        }
-
-        private class CatalogEntryComparer : IEqualityComparer<CatalogEntry>
-        {
-            public bool Equals(CatalogEntry x, CatalogEntry y)
-            {
-                return x?.Uri == y?.Uri;
-            }
-
-            public int GetHashCode(CatalogEntry obj)
-            {
-                return obj?.Uri.GetHashCode() ?? 0;
-            }
         }
     }
 }

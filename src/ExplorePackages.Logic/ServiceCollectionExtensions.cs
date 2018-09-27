@@ -141,6 +141,7 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<SearchClient>();
             serviceCollection.AddTransient<AutocompleteClient>();
             serviceCollection.AddTransient<IPackageDownloadsClient, PackageDownloadsClient>();
+            serviceCollection.AddTransient<CatalogClient>();
 
             serviceCollection.AddTransient<GalleryConsistencyService>();
             serviceCollection.AddTransient<V2ConsistencyService>();

@@ -12,6 +12,8 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public static class HttpSourceExtensions
     {
+        private const int DefaultMaxTries = 3;
+
         private static readonly JsonSerializer Serializer = new JsonSerializer
         {
             DateParseHandling = DateParseHandling.None,
@@ -56,7 +58,23 @@ namespace Knapcode.ExplorePackages.Logic
             return httpSource.DeserializeUrlAsync<T>(
                 url,
                 ignoreNotFounds,
-                maxTries: 3,
+                maxTries: DefaultMaxTries,
+                serializer: Serializer,
+                logger: logger);
+        }
+
+        public static Task<T> DeserializeUrlAsync<T>(
+            this HttpSource httpSource,
+            string url,
+            bool ignoreNotFounds,
+            int maxTries,
+            ILogger logger)
+        {
+            return httpSource.DeserializeUrlAsync<T>(
+                url,
+                ignoreNotFounds,
+                maxTries,
+                serializer: Serializer,
                 logger: logger);
         }
 
@@ -65,6 +83,7 @@ namespace Knapcode.ExplorePackages.Logic
             string url,
             bool ignoreNotFounds,
             int maxTries,
+            JsonSerializer serializer,
             ILogger logger)
         {
             var nuGetLogger = logger.ToNuGetLogger();
@@ -85,7 +104,7 @@ namespace Knapcode.ExplorePackages.Logic
                     using (var textReader = new StreamReader(stream))
                     using (var jsonReader = new JsonTextReader(textReader))
                     {
-                        var result = Serializer.Deserialize<T>(jsonReader);
+                        var result = serializer.Deserialize<T>(jsonReader);
                         return Task.FromResult(result);
                     }
                 },
