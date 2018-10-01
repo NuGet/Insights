@@ -53,6 +53,8 @@ namespace Knapcode.ExplorePackages.Logic
             _logger = logger;
         }
 
+        public IReadOnlyList<string> ProblemQueryNames => QueryNames;
+
         public async Task<IReadOnlyList<Problem>> GetProblemsAsync()
         {
             var problems = new List<Problem>();

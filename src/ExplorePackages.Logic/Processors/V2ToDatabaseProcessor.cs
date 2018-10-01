@@ -26,6 +26,24 @@ namespace Knapcode.ExplorePackages.Logic
             _settings = settings;
         }
 
+        public async Task UpdateAsync(IReadOnlyList<PackageIdentity> identities)
+        {
+            var packages = new List<V2Package>();
+
+            foreach (var identity in identities)
+            {
+                var package = await _v2Client.GetPackageOrNullAsync(
+                    _settings.V2BaseUrl,
+                    identity.Id,
+                    identity.Version,
+                    semVer2: true);
+
+                packages.Add(package);
+            }
+
+            await _service.AddOrUpdatePackagesAsync(packages);
+        }
+
         public async Task UpdateAsync(V2OrderByTimestamp orderBy)
         {
             switch (orderBy)
@@ -124,12 +142,12 @@ namespace Knapcode.ExplorePackages.Logic
             string cursorName,
             Func<V2Package, DateTimeOffset> getTimestamp)
         {
-            var oldCUrsor = await _cursorService.GetValueAsync(cursorName);
+            var oldCursor = await _cursorService.GetValueAsync(cursorName);
 
             await _service.AddOrUpdatePackagesAsync(packages);
 
             var newCursor = packages.Max(getTimestamp);
-            if (newCursor > oldCUrsor)
+            if (newCursor > oldCursor)
             {
                 await _cursorService.SetValueAsync(cursorName, newCursor);
             }
