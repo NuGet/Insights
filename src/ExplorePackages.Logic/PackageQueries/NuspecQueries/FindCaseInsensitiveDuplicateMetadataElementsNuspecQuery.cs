@@ -11,7 +11,7 @@ namespace Knapcode.ExplorePackages.Logic
         public bool IsMatch(XDocument nuspec)
         {
             return NuspecUtility
-                .GetDuplicateMetadataElements(nuspec, caseSensitive: false)
+                .GetDuplicateMetadataElements(nuspec, caseSensitive: false, onlyText: false)
                 .Any();
         }
     }

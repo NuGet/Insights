@@ -180,6 +180,8 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<FindDuplicateDependenciesNuspecQuery>();
             serviceCollection.AddTransient<FindCaseSensitiveDuplicateMetadataElementsNuspecQuery>();
             serviceCollection.AddTransient<FindCaseInsensitiveDuplicateMetadataElementsNuspecQuery>();
+            serviceCollection.AddTransient<FindCaseSensitiveDuplicateTextMetadataElementsNuspecQuery>();
+            serviceCollection.AddTransient<FindCaseInsensitiveDuplicateTextMetadataElementsNuspecQuery>();
             serviceCollection.AddTransient<FindNonAlphabetMetadataElementsNuspecQuery>();
             serviceCollection.AddTransient<FindCollidingMetadataElementsNuspecQuery>();
             serviceCollection.AddTransient<FindUnexpectedValuesForBooleanMetadataNuspecQuery>();

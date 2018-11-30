@@ -50,7 +50,7 @@ namespace Knapcode.ExplorePackages.Logic
             var nuspec = Resources.LoadXml(Resources.Nuspecs.DuplicateMetadataElements);
 
             // Act
-            var output = NuspecUtility.GetDuplicateMetadataElements(nuspec, caseSensitive: true);
+            var output = NuspecUtility.GetDuplicateMetadataElements(nuspec, caseSensitive: true, onlyText: true);
 
             // Assert
             Assert.NotEmpty(output);
@@ -67,7 +67,7 @@ namespace Knapcode.ExplorePackages.Logic
             var nuspec = Resources.LoadXml(Resources.Nuspecs.DuplicateMetadataElements);
 
             // Act
-            var output = NuspecUtility.GetDuplicateMetadataElements(nuspec, caseSensitive: false);
+            var output = NuspecUtility.GetDuplicateMetadataElements(nuspec, caseSensitive: false, onlyText: true);
 
             // Assert
             Assert.NotEmpty(output);

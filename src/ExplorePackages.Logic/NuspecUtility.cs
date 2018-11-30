@@ -253,7 +253,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public static IReadOnlyList<string> GetCollidingMetadataElements(XDocument nuspec)
         {
-            return GetMetadataElementNames(nuspec)
+            return GetMetadataElementNames(nuspec, onlyText: false)
                 .Distinct()
                 .Intersect(CollidingMetadataElementNames)
                 .ToList();
@@ -268,11 +268,11 @@ namespace Knapcode.ExplorePackages.Logic
                 .ToLookup(x => x.Name.LocalName, x => x.Value);
         }
 
-        public static IDictionary<string, int> GetDuplicateMetadataElements(XDocument nuspec, bool caseSensitive)
+        public static IDictionary<string, int> GetDuplicateMetadataElements(XDocument nuspec, bool caseSensitive, bool onlyText)
         {
             var comparer = caseSensitive ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase;
 
-            return GetMetadataElementNames(nuspec)
+            return GetMetadataElementNames(nuspec, onlyText)
                 .GroupBy(x => x, comparer)
                 .Where(x => x.Count() > 1)
                 .ToDictionary(x => x.Key, x => x.Count(), comparer);
@@ -280,13 +280,13 @@ namespace Knapcode.ExplorePackages.Logic
 
         public static IReadOnlyList<string> GetNonAlphabetMetadataElements(XDocument nuspec)
         {
-            return GetMetadataElementNames(nuspec)
+            return GetMetadataElementNames(nuspec, onlyText: false)
                 .Distinct()
                 .Where(x => !IsAlphabet.IsMatch(x))
                 .ToList();
         }
 
-        private static IEnumerable<string> GetMetadataElementNames(XDocument nuspec)
+        private static IEnumerable<string> GetMetadataElementNames(XDocument nuspec, bool onlyText)
         {
             var metadataEl = GetMetadata(nuspec);
             if (metadataEl == null)
@@ -294,9 +294,14 @@ namespace Knapcode.ExplorePackages.Logic
                 return Enumerable.Empty<string>();
             }
 
-            return metadataEl
-                .Elements()
-                .Select(x => x.Name.LocalName);
+            var elements = metadataEl.Elements();
+
+            if (onlyText)
+            {
+                elements = elements.Where(e => !e.HasElements && !string.IsNullOrEmpty(e.Value));
+            }
+
+            return elements.Select(x => x.Name.LocalName);
         }
 
         public static ILookup<string, string> GetUnexpectedValuesForBooleanMetadata(XDocument nuspec)

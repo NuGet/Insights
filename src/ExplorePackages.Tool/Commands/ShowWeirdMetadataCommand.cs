@@ -31,11 +31,19 @@ namespace Knapcode.ExplorePackages.Tool.Commands
         {
             await ShowMatchedStringCounts(
                 PackageQueryNames.FindCaseSensitiveDuplicateMetadataElementsNuspecQuery,
-                (package, nuspec) => NuspecUtility.GetDuplicateMetadataElements(nuspec, caseSensitive: true).Keys);
+                (package, nuspec) => NuspecUtility.GetDuplicateMetadataElements(nuspec, caseSensitive: true, onlyText: false).Keys);
+
+            await ShowMatchedStringCounts(
+                PackageQueryNames.FindCaseSensitiveDuplicateTextMetadataElementsNuspecQuery,
+                (package, nuspec) => NuspecUtility.GetDuplicateMetadataElements(nuspec, caseSensitive: false, onlyText: true).Keys);
 
             await ShowMatchedStringCounts(
                 PackageQueryNames.FindCaseInsensitiveDuplicateMetadataElementsNuspecQuery,
-                (package, nuspec) => NuspecUtility.GetDuplicateMetadataElements(nuspec, caseSensitive: false).Keys);
+                (package, nuspec) => NuspecUtility.GetDuplicateMetadataElements(nuspec, caseSensitive: false, onlyText: false).Keys);
+
+            await ShowMatchedStringCounts(
+                PackageQueryNames.FindCaseInsensitiveDuplicateTextMetadataElementsNuspecQuery,
+                (package, nuspec) => NuspecUtility.GetDuplicateMetadataElements(nuspec, caseSensitive: false, onlyText: true).Keys);
 
             await ShowMatchedStringCounts(
                 PackageQueryNames.FindNonAlphabetMetadataElementsNuspecQuery,

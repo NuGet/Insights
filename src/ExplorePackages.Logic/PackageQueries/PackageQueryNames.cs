@@ -33,6 +33,8 @@
         public const string FindNonAlphabetMetadataElementsNuspecQuery = CursorNames.FindNonAlphabetMetadataElementsNuspecQuery;
         public const string FindCollidingMetadataElementsNuspecQuery = CursorNames.FindCollidingMetadataElementsNuspecQuery;
         public const string FindUnexpectedValuesForBooleanMetadataNuspecQuery = CursorNames.FindUnexpectedValuesForBooleanMetadataNuspecQuery;
+        public const string FindCaseInsensitiveDuplicateTextMetadataElementsNuspecQuery = CursorNames.FindCaseInsensitiveDuplicateTextMetadataElementsNuspecQuery;
+        public const string FindCaseSensitiveDuplicateTextMetadataElementsNuspecQuery = CursorNames.FindCaseSensitiveDuplicateTextMetadataElementsNuspecQuery;
 
         public const string HasRegistrationDiscrepancyInOriginalHivePackageQuery = CursorNames.HasRegistrationDiscrepancyInOriginalHivePackageQuery;
         public const string HasRegistrationDiscrepancyInGzippedHivePackageQuery = CursorNames.HasRegistrationDiscrepancyInGzippedHivePackageQuery;
