@@ -50,7 +50,7 @@ namespace Knapcode.ExplorePackages.Logic
             var nuspec = Resources.LoadXml(Resources.Nuspecs.DuplicateMetadataElements);
 
             // Act
-            var output = NuspecUtility.GetDuplicateMetadataElements(nuspec, caseSensitive: true, onlyText: true);
+            var output = NuspecUtility.GetDuplicateMetadataElements(nuspec, caseSensitive: true, onlyText: false);
 
             // Assert
             Assert.NotEmpty(output);
@@ -61,7 +61,40 @@ namespace Knapcode.ExplorePackages.Logic
         }
 
         [Fact]
+        public void HasDuplicateTextMetadataElementsCaseSensitive()
+        {
+            // Arrange
+            var nuspec = Resources.LoadXml(Resources.Nuspecs.DuplicateMetadataElements);
+
+            // Act
+            var output = NuspecUtility.GetDuplicateMetadataElements(nuspec, caseSensitive: true, onlyText: true);
+
+            // Assert
+            Assert.NotEmpty(output);
+            Assert.Equal(new[] { "authors" }, output.Keys.OrderBy(x => x));
+            Assert.Equal(3, output["authors"]);
+        }
+
+        [Fact]
         public void HasDuplicateMetadataElementsCaseInsensitive()
+        {
+            // Arrange
+            var nuspec = Resources.LoadXml(Resources.Nuspecs.DuplicateMetadataElements);
+
+            // Act
+            var output = NuspecUtility.GetDuplicateMetadataElements(nuspec, caseSensitive: false, onlyText: false);
+
+            // Assert
+            Assert.NotEmpty(output);
+            Assert.Equal(new[] { "authors", "dependencies", "description", "owners" }, output.Keys.OrderBy(x => x));
+            Assert.Equal(3, output["authors"]);
+            Assert.Equal(2, output["dependencies"]);
+            Assert.Equal(3, output["description"]);
+            Assert.Equal(2, output["owners"]);
+        }
+
+        [Fact]
+        public void HasDuplicateTextMetadataElementsCaseInsensitive()
         {
             // Arrange
             var nuspec = Resources.LoadXml(Resources.Nuspecs.DuplicateMetadataElements);
@@ -71,11 +104,9 @@ namespace Knapcode.ExplorePackages.Logic
 
             // Assert
             Assert.NotEmpty(output);
-            Assert.Equal(new[] { "authors", "dependencies", "description", "owners" }, output.Keys.OrderBy(x => x));
+            Assert.Equal(new[] { "authors", "description" }, output.Keys.OrderBy(x => x));
             Assert.Equal(3, output["authors"]);
-            Assert.Equal(2, output["dependencies"]);
             Assert.Equal(3, output["description"]);
-            Assert.Equal(2, output["owners"]);
         }
 
         [Fact]
