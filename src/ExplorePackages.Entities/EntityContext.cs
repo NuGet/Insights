@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading.Tasks;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
 namespace Knapcode.ExplorePackages.Entities
@@ -13,6 +15,21 @@ namespace Knapcode.ExplorePackages.Entities
             if (!Enabled)
             {
                 throw new NotSupportedException("Using the database is not enabled.");
+            }
+        }
+
+        public async Task BackupDatabaseAsync(string destinationDataSource)
+        {
+            var builder = new SqliteConnectionStringBuilder();
+            builder.DataSource = destinationDataSource;
+            var connectionString = builder.ConnectionString;
+
+            using (var sourceConnection = (SqliteConnection)Database.GetDbConnection())
+            using (var destinationConnection = new SqliteConnection(connectionString))
+            {
+                await sourceConnection.OpenAsync();
+                await destinationConnection.OpenAsync();
+                sourceConnection.BackupDatabase(destinationConnection);
             }
         }
 

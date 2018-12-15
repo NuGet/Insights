@@ -92,7 +92,7 @@ namespace Knapcode.ExplorePackages.Logic
                 type,
                 dest => initial.CopyToAsync(dest));
 
-            _blobStorageService.ResetCalls();
+            _blobStorageService.Invocations.Clear();
 
             // Act
             await _target.StoreStreamAsync(
@@ -109,7 +109,7 @@ namespace Knapcode.ExplorePackages.Logic
                 x => x.TryDownloadStreamAsync(It.IsAny<string>(), It.IsAny<Stream>()),
                 Times.Never);
 
-            _blobStorageService.ResetCalls();
+            _blobStorageService.Invocations.Clear();
 
             using (var actual = await _target.GetStreamOrNullAsync(Id, Version, type))
             {
@@ -146,7 +146,7 @@ namespace Knapcode.ExplorePackages.Logic
                 x => x.TryDownloadStreamAsync(It.IsAny<string>(), It.IsAny<Stream>()),
                 Times.Never);
 
-            _blobStorageService.ResetCalls();
+            _blobStorageService.Invocations.Clear();
 
             using (var actual = await _target.GetStreamOrNullAsync(Id, Version, type))
             {
@@ -183,7 +183,7 @@ namespace Knapcode.ExplorePackages.Logic
                 x => x.TryDownloadStreamAsync(It.IsAny<string>(), It.IsAny<Stream>()),
                 Times.Never);
 
-            _blobStorageService.ResetCalls();
+            _blobStorageService.Invocations.Clear();
             _memoryCache.Remove($"{Id}/{Version}/{type}".ToLowerInvariant());
 
             using (var actual = await _target.GetStreamOrNullAsync(Id, Version, type))

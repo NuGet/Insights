@@ -5,7 +5,9 @@ using Microsoft.Extensions.Logging.Console;
 
 namespace Knapcode.ExplorePackages.Tool
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     public class MinimalConsoleLogger : ConsoleLogger
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         private static readonly Func<string, LogLevel, bool> _trueFilter = (c, l) => true;
 
