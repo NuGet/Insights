@@ -170,11 +170,15 @@
             </tr>
             <tr>
                 <th>Package MD5</th>
-                <td>{{packagesContainer.packageContentMetadata.contentMD5}}</td>
+                <td>
+                    <code>{{packagesContainer.packageContentMetadata.contentMD5}}</code>
+                    (<code>{{hextobase64 packagesContainer.packageContentMetadata.contentMD5}}</code>)
+                </td>
             </tr>
             <tr>
                 <th>Has MD5 header?</th>
-                <td>{{yesno packagesContainer.packageContentMetadata.hasContentMD5Header}}</td>
+                <td>{{yesno packagesContainer.packageContentMetadata.hasContentMD5Header}}
+                </td>
             </tr>
         </tbody>
     </table>
@@ -200,11 +204,15 @@
             </tr>
             <tr>
                 <th>Package MD5</th>
-                <td>{{flatContainer.packageContentMetadata.contentMD5}}</td>
+                <td>
+                    <code>{{flatContainer.packageContentMetadata.contentMD5}}</code>
+                    (<code>{{hextobase64 flatContainer.packageContentMetadata.contentMD5}}</code>)
+                </td>
             </tr>
             <tr>
                 <th>Has MD5 header?</th>
-                <td>{{yesno flatContainer.packageContentMetadata.hasContentMD5Header}}</td>
+                <td>{{yesno flatContainer.packageContentMetadata.hasContentMD5Header}}
+                </td>
             </tr>
         </tbody>
     </table>
@@ -320,6 +328,10 @@
             return value ? "Yes" : "No";
         });
 
+        Handlebars.registerHelper('hextobase64', function (value) {
+            return hexToBase64(value);
+        });
+
         Handlebars.registerHelper('consistentclass', function (report) {
             return report.isConsistent ? "success" : "danger";
         });
@@ -332,6 +344,13 @@
             var a = document.createElement('a');
             a.href = url;
             return a;
+        }
+
+        // Source: https://stackoverflow.com/a/41797377
+        function hexToBase64(hexstring) {
+            return btoa(hexstring.match(/\w{2}/g).map(function (a) {
+                return String.fromCharCode(parseInt(a, 16));
+            }).join(""));
         }
 
         function pushExploreUrl(id, version) {
