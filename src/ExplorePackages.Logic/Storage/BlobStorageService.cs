@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -12,12 +13,17 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class BlobStorageService : IBlobStorageService
     {
+        private readonly HttpClient _httpClient;
         private readonly ExplorePackagesSettings _settings;
         private readonly ILogger<BlobStorageService> _logger;
         private readonly Lazy<CloudBlobContainer> _lazyContainer;
 
-        public BlobStorageService(ExplorePackagesSettings settings, ILogger<BlobStorageService> logger)
+        public BlobStorageService(
+            HttpClient httpClient,
+            ExplorePackagesSettings settings,
+            ILogger<BlobStorageService> logger)
         {
+            _httpClient = httpClient;
             _settings = settings;
             _logger = logger;
             _lazyContainer = new Lazy<CloudBlobContainer>(() =>
@@ -34,21 +40,48 @@ namespace Knapcode.ExplorePackages.Logic
 
         public virtual bool IsEnabled => _settings.StorageConnectionString != null && _settings.StorageContainerName != null;
 
-        public virtual async Task<Stream> GetStreamOrNullAsync(string blobName)
+        public virtual async Task<bool> TryDownloadStreamAsync(string blobName, Stream destinationStream)
         {
             var blob = GetBlob(blobName);
 
-            try
+            if (_settings.IsStorageContainerPublic)
             {
-                _logger.LogDebug("  {Method} {BlobUri}", "GET", blob.Uri);
-                return await blob.OpenReadAsync(
-                    accessCondition: null,
-                    options: null,
-                    operationContext: GetLoggingOperationContext());
+                using (var response = await _httpClient.GetAsync(blob.Uri, HttpCompletionOption.ResponseHeadersRead))
+                {
+                    if (response.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        return false;
+                    }
+
+                    response.EnsureSuccessStatusCode();
+
+                    using (var responseStream = await response.Content.ReadAsStreamAsync())
+                    {
+                        await responseStream.CopyToAsync(destinationStream);
+                    }
+
+                    return true;
+                }
             }
-            catch (StorageException ex) when (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.NotFound)
+            else
             {
-                return null;
+                try
+                {
+                    _logger.LogDebug("  {Method} {BlobUri}", "GET", blob.Uri);
+                    using (var responseStream = await blob.OpenReadAsync(
+                        accessCondition: null,
+                        options: null,
+                        operationContext: GetLoggingOperationContext()))
+                    {
+                        await responseStream.CopyToAsync(destinationStream);
+                    }
+
+                    return true;
+                }
+                catch (StorageException ex) when (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.NotFound)
+                {
+                    return false;
+                }
             }
         }
 

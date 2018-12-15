@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
@@ -17,7 +20,7 @@ namespace Knapcode.ExplorePackages.Logic
         private const string Id = "Newtonsoft.Json";
         private const string Version = "9.0.1";
 
-        private readonly TestDirectory _directory;
+        private readonly HttpClient _httpClient;
         private readonly ITestOutputHelper _output;
         private readonly ExplorePackagesSettings _settings;
         private readonly PackageBlobNameProvider _blobNameProvider;
@@ -27,17 +30,19 @@ namespace Knapcode.ExplorePackages.Logic
 
         public FileStorageServiceTest(ITestOutputHelper output)
         {
-            _directory = TestDirectory.Create();
+            _httpClient = new HttpClient();
 
             _output = output;
             _settings = new ExplorePackagesSettings
             {
-                PackagePath = _directory,
                 StorageConnectionString = "UseDevelopmentStorage=true",
                 StorageContainerName = Guid.NewGuid().ToString("N"),
             };
             _blobNameProvider = new PackageBlobNameProvider();
-            _blobStorageService = new Mock<BlobStorageService>(_settings, _output.GetLogger<BlobStorageService>())
+            _blobStorageService = new Mock<BlobStorageService>(
+                _httpClient,
+                _settings,
+                _output.GetLogger<BlobStorageService>())
             {
                 CallBase = true,
             };
@@ -51,11 +56,13 @@ namespace Knapcode.ExplorePackages.Logic
         }
 
         [Theory]
-        [InlineData(FileArtifactType.Nuspec)]
-        [InlineData(FileArtifactType.MZip)]
-        public async Task ReturnsNullWithNonExistentFile(FileArtifactType type)
+        [MemberData(nameof(Combinations))]
+        public async Task ReturnsNullWithNonExistentFile(bool isStorageContainerPublic, FileArtifactType type)
         {
-            // Arrange & Act
+            // Arrange
+            _settings.IsStorageContainerPublic = isStorageContainerPublic;
+
+            // Act
             using (var actual = await _target.GetStreamOrNullAsync(Id, Version, type))
             {
                 // Assert
@@ -65,17 +72,17 @@ namespace Knapcode.ExplorePackages.Logic
                     x => x.UploadStreamAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>()),
                     Times.Never);
                 _blobStorageService.Verify(
-                    x => x.GetStreamOrNullAsync(It.IsAny<string>()),
+                    x => x.TryDownloadStreamAsync(It.IsAny<string>(), It.IsAny<Stream>()),
                     Times.Once);
             }
         }
 
         [Theory]
-        [InlineData(FileArtifactType.Nuspec)]
-        [InlineData(FileArtifactType.MZip)]
-        public async Task CanReplaceExistingFile(FileArtifactType type)
+        [MemberData(nameof(Combinations))]
+        public async Task CanReplaceExistingFile(bool isStorageContainerPublic, FileArtifactType type)
         {
             // Arrange
+            _settings.IsStorageContainerPublic = isStorageContainerPublic;
             var initial = new MemoryStream(Encoding.UTF8.GetBytes("Initial!"));
             var expected = new MemoryStream(Encoding.UTF8.GetBytes("Hello, world!"));
 
@@ -99,7 +106,7 @@ namespace Knapcode.ExplorePackages.Logic
                 x => x.UploadStreamAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>()),
                 Times.Once);
             _blobStorageService.Verify(
-                x => x.GetStreamOrNullAsync(It.IsAny<string>()),
+                x => x.TryDownloadStreamAsync(It.IsAny<string>(), It.IsAny<Stream>()),
                 Times.Never);
 
             _blobStorageService.ResetCalls();
@@ -112,17 +119,17 @@ namespace Knapcode.ExplorePackages.Logic
                     x => x.UploadStreamAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>()),
                     Times.Never);
                 _blobStorageService.Verify(
-                    x => x.GetStreamOrNullAsync(It.IsAny<string>()),
+                    x => x.TryDownloadStreamAsync(It.IsAny<string>(), It.IsAny<Stream>()),
                     Times.Never);
             }
         }
 
         [Theory]
-        [InlineData(FileArtifactType.Nuspec)]
-        [InlineData(FileArtifactType.MZip)]
-        public async Task CanWriteAndReadAFile(FileArtifactType type)
+        [MemberData(nameof(Combinations))]
+        public async Task CanWriteAndReadAFileFromCache(bool isStorageContainerPublic, FileArtifactType type)
         {
             // Arrange
+            _settings.IsStorageContainerPublic = isStorageContainerPublic;
             var expected = new MemoryStream(Encoding.UTF8.GetBytes("Hello, world!"));
 
             // Act & Assert
@@ -136,7 +143,7 @@ namespace Knapcode.ExplorePackages.Logic
                 x => x.UploadStreamAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>()),
                 Times.Once);
             _blobStorageService.Verify(
-                x => x.GetStreamOrNullAsync(It.IsAny<string>()),
+                x => x.TryDownloadStreamAsync(It.IsAny<string>(), It.IsAny<Stream>()),
                 Times.Never);
 
             _blobStorageService.ResetCalls();
@@ -149,20 +156,76 @@ namespace Knapcode.ExplorePackages.Logic
                     x => x.UploadStreamAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>()),
                     Times.Never);
                 _blobStorageService.Verify(
-                    x => x.GetStreamOrNullAsync(It.IsAny<string>()),
+                    x => x.TryDownloadStreamAsync(It.IsAny<string>(), It.IsAny<Stream>()),
                     Times.Never);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(Combinations))]
+        public async Task CanWriteAndReadAFileWithoutCache(bool isStorageContainerPublic, FileArtifactType type)
+        {
+            // Arrange
+            _settings.IsStorageContainerPublic = isStorageContainerPublic;
+            var expected = new MemoryStream(Encoding.UTF8.GetBytes("Hello, world!"));
+
+            // Act & Assert
+            await _target.StoreStreamAsync(
+                Id,
+                Version,
+                type,
+                dest => expected.CopyToAsync(dest));
+
+            _blobStorageService.Verify(
+                x => x.UploadStreamAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>()),
+                Times.Once);
+            _blobStorageService.Verify(
+                x => x.TryDownloadStreamAsync(It.IsAny<string>(), It.IsAny<Stream>()),
+                Times.Never);
+
+            _blobStorageService.ResetCalls();
+            _memoryCache.Remove($"{Id}/{Version}/{type}".ToLowerInvariant());
+
+            using (var actual = await _target.GetStreamOrNullAsync(Id, Version, type))
+            {
+                AssertSameStreams(expected, actual);
+
+                _blobStorageService.Verify(
+                    x => x.UploadStreamAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>()),
+                    Times.Never);
+                _blobStorageService.Verify(
+                    x => x.TryDownloadStreamAsync(It.IsAny<string>(), It.IsAny<Stream>()),
+                    Times.Once);
+            }
+        }
+
+        public static IEnumerable<object[]> Combinations
+        {
+            get
+            {
+                foreach (var isStorageContainerPublic in new[] { false, true })
+                {
+                    foreach (var type in Enum.GetValues(typeof(FileArtifactType)).Cast<FileArtifactType>())
+                    {
+                        yield return new object[] { isStorageContainerPublic, type };
+                    }
+                }
             }
         }
 
         public async Task DisposeAsync()
         {
-            _directory.Dispose();
             await GetContainer().DeleteIfExistsAsync();
         }
 
         public async Task InitializeAsync()
         {
-            await GetContainer().CreateIfNotExistsAsync();
+            var container = GetContainer();
+            await container.CreateIfNotExistsAsync();
+            await container.SetPermissionsAsync(new BlobContainerPermissions
+            {
+                PublicAccess = BlobContainerPublicAccessType.Blob,
+            });
         }
 
         private CloudBlobContainer GetContainer()

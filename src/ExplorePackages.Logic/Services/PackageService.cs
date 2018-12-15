@@ -515,7 +515,7 @@ namespace Knapcode.ExplorePackages.Logic
                     {
                         pe.V2Package = pl.V2Package;
                     }
-                    else if (pe.V2Package.LastUpdatedTimestamp < pl.V2Package.LastUpdatedTimestamp)
+                    else if (pe.V2Package.LastUpdatedTimestamp <= pl.V2Package.LastUpdatedTimestamp)
                     {
                         pe.V2Package.CreatedTimestamp = pl.V2Package.CreatedTimestamp;
                         pe.V2Package.LastEditedTimestamp = pl.V2Package.LastEditedTimestamp;

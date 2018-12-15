@@ -5,9 +5,9 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Tool.Commands;
 using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Logic;
+using Knapcode.ExplorePackages.Tool.Commands;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,6 +31,7 @@ namespace Knapcode.ExplorePackages.Tool
             { "mzip", typeof(MZipCommand) },
             { "mziptodatabase", typeof(MZipToDatabaseCommand) },
             { "packagequeries", typeof(PackageQueriesCommand) },
+            { "reprocesscrosscheckdiscrepancies", typeof(ReprocessCrossCheckDiscrepanciesCommand) },
             { "sandbox", typeof(SandboxCommand) },
             { "showproblems", typeof(ShowProblemsCommand) },
             { "showqueryresults", typeof(ShowQueryResultsCommand) },

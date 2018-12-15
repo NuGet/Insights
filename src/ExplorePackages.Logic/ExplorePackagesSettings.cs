@@ -19,6 +19,7 @@ namespace Knapcode.ExplorePackages.Logic
             DownloadsV1Path = Path.Combine(currentDirectory, "downloads.txt");
             StorageConnectionString = null;
             StorageContainerName = null;
+            IsStorageContainerPublic = false;
         }
 
         public string DatabasePath { get; set; }
@@ -33,6 +34,7 @@ namespace Knapcode.ExplorePackages.Logic
         public string DownloadsV1Path { get; set; }
         public string StorageConnectionString { get; set; }
         public string StorageContainerName { get; set; }
+        public bool IsStorageContainerPublic { get; set; }
 
         public ExplorePackagesSettings Clone()
         {
@@ -50,6 +52,7 @@ namespace Knapcode.ExplorePackages.Logic
                 DownloadsV1Path = DownloadsV1Path,
                 StorageConnectionString = StorageConnectionString,
                 StorageContainerName = StorageContainerName,
+                IsStorageContainerPublic = IsStorageContainerPublic,
             };
         }
     }

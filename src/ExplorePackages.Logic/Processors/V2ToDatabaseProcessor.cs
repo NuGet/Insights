@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -13,34 +14,43 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly V2Client _v2Client;
         private readonly PackageService _service;
         private readonly ExplorePackagesSettings _settings;
+        private readonly ILogger<V2ToDatabaseProcessor> _logger;
 
         public V2ToDatabaseProcessor(
             CursorService cursorService,
             V2Client v2Client,
             PackageService service,
-            ExplorePackagesSettings settings)
+            ExplorePackagesSettings settings,
+            ILogger<V2ToDatabaseProcessor> logger)
         {
             _cursorService = cursorService;
             _v2Client = v2Client;
             _service = service;
             _settings = settings;
+            _logger = logger;
         }
 
         public async Task UpdateAsync(IReadOnlyList<PackageIdentity> identities)
         {
-            var packages = new List<V2Package>();
+            var packagesOrNull = await TaskProcessor.ExecuteAsync(
+                identities,
+                async identity =>
+                {
+                    var package = await _v2Client.GetPackageOrNullAsync(
+                        _settings.V2BaseUrl,
+                        identity.Id,
+                        identity.Version,
+                        semVer2: true);
 
-            foreach (var identity in identities)
-            {
-                var package = await _v2Client.GetPackageOrNullAsync(
-                    _settings.V2BaseUrl,
-                    identity.Id,
-                    identity.Version,
-                    semVer2: true);
+                    if (package == null)
+                    {
+                        _logger.LogWarning("Package {Id} {Version} does not exist on V2.", identity.Id, identity.Version);
+                    }
 
-                packages.Add(package);
-            }
-
+                    return package;
+                },
+                32);
+            var packages = packagesOrNull.Where(x => x != null).ToList();
             await _service.AddOrUpdatePackagesAsync(packages);
         }
 

@@ -63,14 +63,9 @@ namespace Knapcode.ExplorePackages.Logic
 
             var blobName = _blobNameProvider.GetLatestBlobName(id, version, type);
             var outputStream = new MemoryStream();
-            using (var blobStream = await _blobStorageService.GetStreamOrNullAsync(blobName))
+            if (!await _blobStorageService.TryDownloadStreamAsync(blobName, outputStream))
             {
-                if (blobStream == null)
-                {
-                    return null;
-                }
-
-                await blobStream.CopyToAsync(outputStream);
+                return null;
             }
 
             CacheMemoryStream(cacheKey, outputStream);

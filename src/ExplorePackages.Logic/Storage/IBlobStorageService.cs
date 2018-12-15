@@ -6,7 +6,7 @@ namespace Knapcode.ExplorePackages.Logic
     public interface IBlobStorageService
     {
         bool IsEnabled { get; }
-        Task<Stream> GetStreamOrNullAsync(string blobName);
+        Task<bool> TryDownloadStreamAsync(string blobName, Stream destinationStream);
         Task UploadStreamAsync(string blobName, string contentType, Stream stream);
     }
 }
