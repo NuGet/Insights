@@ -5,15 +5,14 @@
     <RootNamespace>Knapcode.ExplorePackages.Logic</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AngleSharp" Version="0.9.9.2" />
-    <PackageReference Include="AutoMapper" Version="6.2.2" />
+    <PackageReference Include="AngleSharp" Version="0.9.11" />
+    <PackageReference Include="AutoMapper" Version="8.0.0" />
     <PackageReference Include="Knapcode.MiniZip" Version="0.6.0" />
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.0.3" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.0.2" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
-    <PackageReference Include="NuGet.CatalogReader" Version="1.6.6" />
-    <PackageReference Include="NuGet.Protocol" Version="4.7.0" />
-    <PackageReference Include="WindowsAzure.Storage" Version="9.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
+    <PackageReference Include="NuGet.CatalogReader" Version="1.6.9" />
+    <PackageReference Include="NuGet.Protocol" Version="4.9.2" />
+    <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ExplorePackages.Entities\ExplorePackages.Entities.csproj" />

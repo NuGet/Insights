@@ -10,7 +10,7 @@ namespace Knapcode.ExplorePackages.Website.Logic
 {
     public class PackageReportHub : Hub
     {
-        public const string Path = "Hubs/PackageReport";
+        public const string Path = "/Hubs/PackageReport";
 
         private readonly PackageConsistencyService _packageConsistencyService;
         private readonly PackageQueryContextBuilder _packageQueryContextBuilder;
@@ -179,7 +179,7 @@ namespace Knapcode.ExplorePackages.Website.Logic
         {
             await Clients
                 .Client(Context.ConnectionId)
-                .InvokeAsync(method, args);
+                .SendCoreAsync(method, args);
         }
 
         private class UrlReporter : IUrlReporter

@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Converters;
 using NuGet.Protocol.Core.Types;
+using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
 namespace Knapcode.ExplorePackages.Website
 {
@@ -42,10 +43,12 @@ namespace Knapcode.ExplorePackages.Website
             services.AddLogging();
             services.AddSingleton<IHostedService, SearchSearchUrlCacheRefresher>();
             services.AddMvc();
-            services.AddSignalR(o =>
-            {
-                o.JsonSerializerSettings.Converters.Add(new StringEnumConverter());
-            });
+            services
+                .AddSignalR()
+                .AddJsonProtocol(o =>
+                {
+                    o.PayloadSerializerSettings.Converters.Add(new StringEnumConverter());
+                });
         }
         
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)

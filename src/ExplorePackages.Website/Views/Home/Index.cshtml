@@ -560,9 +560,11 @@
             }
 
             function initializeConnection(callback) {
-                var logger = new signalR.ConsoleLogger(signalR.LogLevel.Trace);
-                var hub = new signalR.HttpConnection(@Json.Serialize(PackageReportHub.Path), { logger: logger });
-                var connection = new signalR.HubConnection(hub, logger);
+                var connection = new signalR
+                    .HubConnectionBuilder()
+                    .configureLogging(signalR.LogLevel.Information)
+                    .withUrl(@Json.Serialize(PackageReportHub.Path))
+                    .build();
 
                 connection.on('Progress', function (percent, message) {
                     setProgress(percent);
