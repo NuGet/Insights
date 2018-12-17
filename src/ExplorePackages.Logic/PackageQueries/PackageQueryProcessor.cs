@@ -68,7 +68,7 @@ namespace Knapcode.ExplorePackages.Logic
             await PersistResults(results);
         }
 
-        public async Task ProcessAsync(IReadOnlyList<IPackageQuery> queries, bool reprocess, CancellationToken token)
+        public async Task ProcessAsync(IReadOnlyList<IPackageQuery> queries, bool reprocess, int batchSize, CancellationToken token)
         {
             var bounds = await GetBoundsAsync(queries, reprocess);
             var complete = 0;
@@ -77,7 +77,7 @@ namespace Knapcode.ExplorePackages.Logic
             int commitCount;
             do
             {
-                var commits = await GetCommitsAsync(bounds, reprocess);
+                var commits = await GetCommitsAsync(bounds, reprocess, batchSize);
                 var packageCount = commits.Sum(x => x.Entities.Count);
                 commitCount = commits.Count;
 
@@ -111,7 +111,7 @@ namespace Knapcode.ExplorePackages.Logic
             while (commitCount > 0);
         }
 
-        private async Task<IReadOnlyList<EntityCommit<PackageEntity>>> GetCommitsAsync(Bounds bounds, bool reprocess)
+        private async Task<IReadOnlyList<EntityCommit<PackageEntity>>> GetCommitsAsync(Bounds bounds, bool reprocess, int batchSize)
         {
             if (!reprocess)
             {
@@ -121,7 +121,7 @@ namespace Knapcode.ExplorePackages.Logic
                         .Include(x => x.V2Package),
                     bounds.Start,
                     bounds.End,
-                    5000);
+                    batchSize);
             }
             else
             {
@@ -135,7 +135,7 @@ namespace Knapcode.ExplorePackages.Logic
                             .Any(pqm => queryNames.Contains(pqm.PackageQuery.Name))),
                     bounds.Start,
                     bounds.End,
-                    5000);
+                    batchSize);
             }
         }
 

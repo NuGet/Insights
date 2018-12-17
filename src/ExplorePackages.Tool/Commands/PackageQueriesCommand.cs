@@ -23,6 +23,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
         private CommandOption _idsOption;
         private CommandOption _versionsOption;
         private CommandOption _problemQueries;
+        private CommandOption _batchSize;
 
         public PackageQueriesCommand(
             CursorService cursorService,
@@ -67,6 +68,10 @@ namespace Knapcode.ExplorePackages.Tool.Commands
                 "--problem-queries",
                 $"Process only queries related to the {nameof(ProblemService)}.",
                 CommandOptionType.NoValue);
+            _batchSize = app.Option(
+                "--batch-size",
+                $"The number of packages to process before committing the cursor.",
+                CommandOptionType.SingleValue);
         }
 
         private bool Reprocess => _reprocessOption?.HasValue() ?? false;
@@ -75,6 +80,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
         private IReadOnlyList<string> Ids => _idsOption?.Values ?? new List<string>();
         private IReadOnlyList<string> Versions => _versionsOption?.Values ?? new List<string>();
         private bool ProblemQueries => _problemQueries?.HasValue() ?? false;
+        private int BatchSize => _batchSize.HasValue() ? int.Parse(_batchSize.Value()) : 5000;
 
         public async Task ExecuteAsync(CancellationToken token)
         {
@@ -129,7 +135,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             }
             else
             {
-                await _processor.ProcessAsync(queries, Reprocess, token);
+                await _processor.ProcessAsync(queries, Reprocess, BatchSize, token);
             }
         }
 

@@ -32,7 +32,7 @@ namespace Knapcode.ExplorePackages.Tool
         {
             await _cursorService.ResetValueAsync(CursorNames.ReprocessPackageQueries);
             var queries = _queries.Where(x => x.Name == PackageQueryNames.HasCrossCheckDiscrepancyPackageQuery).ToList();
-            await _processor.ProcessAsync(queries, reprocess: true, token: token);
+            await _processor.ProcessAsync(queries, reprocess: true, batchSize: 5000, token: token);
         }
 
         public bool IsDatabaseRequired()
