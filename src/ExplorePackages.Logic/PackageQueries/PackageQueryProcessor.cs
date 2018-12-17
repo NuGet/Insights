@@ -207,20 +207,22 @@ namespace Knapcode.ExplorePackages.Logic
             IReadOnlyList<EntityCommit<PackageEntity>> commits,
             TaskQueue<Work> taskQueue)
         {
-            foreach (var commit in commits)
-            {
-                foreach (var package in commit.Entities)
+            await TaskProcessor.ExecuteAsync(
+                commits.SelectMany(c => c.Entities.Select(p => new { Commit = c, Package = p })),
+                async p =>
                 {
                     var applicableQueries = queries
-                        .Where(x => commit.CommitTimestamp > bounds.CursorNameToStart[bounds.QueryNameToCursorName[x.Name]])
+                        .Where(x => p.Commit.CommitTimestamp > bounds.CursorNameToStart[bounds.QueryNameToCursorName[x.Name]])
                         .ToList();
 
-                    var context = await _contextBuilder.GetPackageQueryFromDatabasePackageContextAsync(package);
+                    var context = await _contextBuilder.GetPackageQueryFromDatabasePackageContextAsync(p.Package);
                     var state = new PackageConsistencyState();
 
                     taskQueue.Enqueue(new Work(applicableQueries, context, state));
-                }
-            }
+
+                    return 0;
+                },
+                workerCount: 32);
         }
 
         private async Task ConsumeWorkAsync(Work work, ConcurrentBag<Result> results)
