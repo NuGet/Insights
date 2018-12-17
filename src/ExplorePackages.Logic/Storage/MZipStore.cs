@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.MiniZip;
@@ -47,19 +46,30 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
-        public async Task<Stream> GetMZipStreamOrNullAsync(string id, string version, CancellationToken token)
+        public async Task<MZipContext> GetMZipContextAsync(string id, string version)
         {
-            var stream = await _fileStorageService.GetStreamOrNullAsync(
-                id,
-                version,
-                FileArtifactType.MZip);
-
-            if (stream == null)
+            using (var stream = await _fileStorageService.GetStreamOrNullAsync(id, version, FileArtifactType.MZip))
             {
-                return null;
-            }
+                if (stream == null)
+                {
+                    return new MZipContext(exists: false, size: null, zipDirectory: null);
+                }
 
-            return await _mZipFormat.ReadAsync(stream);
+                try
+                {
+                    using (var zipStream = await _mZipFormat.ReadAsync(stream))
+                    using (var reader = new ZipDirectoryReader(zipStream))
+                    {
+                        var zipDirectory = await reader.ReadAsync();
+                        return new MZipContext(exists: true, size: stream.Length, zipDirectory: zipDirectory);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Could not parse .mzip for {Id} {Version}.", id, version);
+                    throw;
+                }
+            }
         }
     }
 }

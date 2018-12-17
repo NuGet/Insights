@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
-using Knapcode.MiniZip;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -54,28 +53,18 @@ namespace Knapcode.ExplorePackages.Logic
         private async Task<PackageArchiveMetadata> InitializeItemAsync(PackageEntity package, CancellationToken token)
         {
             // Read the .zip directory.
-            ZipDirectory zipDirectory;
-            long size;
-            using (var stream = await _mZipStore.GetMZipStreamOrNullAsync(
+            var context = await _mZipStore.GetMZipContextAsync(
                 package.PackageRegistration.Id,
-                package.Version,
-                token))
+                package.Version);
+
+            if (!context.Exists)
             {
-                if (stream == null)
+                if (!package.CatalogPackage.Deleted)
                 {
-                    if (!package.CatalogPackage.Deleted)
-                    {
-                        throw new InvalidOperationException($"Could not find .mzip for {package.PackageRegistration.Id} {package.Version}.");
-                    }
-
-                    return null;
+                    throw new InvalidOperationException($"Could not find .mzip for {package.PackageRegistration.Id} {package.Version}.");
                 }
 
-                using (var reader = new ZipDirectoryReader(stream))
-                {
-                    zipDirectory = await reader.ReadAsync();
-                    size = stream.Length;
-                }
+                return null;
             }
 
             // Gather the metadata.
@@ -83,8 +72,8 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 Id = package.PackageRegistration.Id,
                 Version = package.Version,
-                Size = size,
-                ZipDirectory = zipDirectory,
+                Size = context.Size.Value,
+                ZipDirectory = context.ZipDirectory,
             };
 
             return metadata;

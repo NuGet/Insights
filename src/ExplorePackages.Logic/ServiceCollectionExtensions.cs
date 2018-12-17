@@ -205,6 +205,7 @@ namespace Knapcode.ExplorePackages.Logic
                 serviceCollection.AddTransient<IPackageQuery, HasCrossCheckDiscrepancyPackageQuery>();
             }
 
+            serviceCollection.AddTransient<IPackageQuery, HasMissingMZipPackageQuery>();
             serviceCollection.AddTransient<IPackageQuery, HasMissingNuspecPackageQuery>();
 
             // Add all of the .nuspec queries as package queries.

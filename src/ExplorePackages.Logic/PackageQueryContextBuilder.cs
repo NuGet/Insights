@@ -8,6 +8,7 @@ namespace Knapcode.ExplorePackages.Logic
     public class PackageQueryContextBuilder
     {
         private readonly NuspecStore _nuspecStore;
+        private readonly MZipStore _mzipStore;
         private readonly PackageService _packageService;
         private readonly GalleryConsistencyService _galleryConsistencyService;
         private readonly ExplorePackagesSettings _settings;
@@ -15,12 +16,14 @@ namespace Knapcode.ExplorePackages.Logic
 
         public PackageQueryContextBuilder(
             NuspecStore nuspecStore,
+            MZipStore mzipStore,
             PackageService packageService,
             GalleryConsistencyService galleryConsistencyService,
             ExplorePackagesSettings settings,
             ILogger<PackageQueryContextBuilder> logger)
         {
             _nuspecStore = nuspecStore;
+            _mzipStore = mzipStore;
             _packageService = packageService;
             _galleryConsistencyService = galleryConsistencyService;
             _settings = settings;
@@ -63,7 +66,18 @@ namespace Knapcode.ExplorePackages.Logic
                 exists: false,
                 document: null);
 
-            return new PackageQueryContext(immutablePackage, nuspecContext, isSemVer2, fullVersion, isListed);
+            var mzipContext = new MZipContext(
+                exists: false,
+                size: null,
+                zipDirectory: null);
+
+            return new PackageQueryContext(
+                immutablePackage,
+                nuspecContext,
+                mzipContext,
+                isSemVer2,
+                fullVersion,
+                isListed);
         }
         public async Task<PackageQueryContext> GetPackageQueryContextFromGalleryAsync(string id, string version, PackageConsistencyState state)
         {
@@ -95,7 +109,8 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task<PackageQueryContext> GetPackageQueryFromDatabasePackageContextAsync(PackageEntity package)
         {
             var immutablePackage = new ImmutablePackage(package);
-            var nuspecQueryContext = await GetNuspecQueryContextAsync(package);
+            var nuspecQueryContext = await GetNuspecContextAsync(package);
+            var mzipContext = await GetMZipContextAsync(package);
             var isSemVer2 = NuspecUtility.IsSemVer2(nuspecQueryContext.Document);
 
             var originalVersion = NuspecUtility.GetOriginalVersion(nuspecQueryContext.Document);
@@ -108,16 +123,32 @@ namespace Knapcode.ExplorePackages.Logic
             return new PackageQueryContext(
                 immutablePackage,
                 nuspecQueryContext,
+                mzipContext,
                 isSemVer2,
                 fullVersion,
                 package.V2Package?.Listed ?? package.CatalogPackage?.Listed ?? true);
         }
 
-        private async Task<NuspecContext> GetNuspecQueryContextAsync(PackageEntity package)
+        private async Task<MZipContext> GetMZipContextAsync(PackageEntity package)
         {
-            var nuspecContext = await _nuspecStore.GetNuspecContextAsync(package.PackageRegistration.Id, package.Version);
+            var context = await _mzipStore.GetMZipContextAsync(package.PackageRegistration.Id, package.Version);
 
-            if (!nuspecContext.Exists && !package.CatalogPackage.Deleted)
+            if (!context.Exists && !package.CatalogPackage.Deleted)
+            {
+                _logger.LogWarning(
+                    "Could not find .mzip for {Id} {Version}.",
+                    package.PackageRegistration.Id,
+                    package.Version);
+            }
+
+            return context;
+        }
+
+        private async Task<NuspecContext> GetNuspecContextAsync(PackageEntity package)
+        {
+            var context = await _nuspecStore.GetNuspecContextAsync(package.PackageRegistration.Id, package.Version);
+
+            if (!context.Exists && !package.CatalogPackage.Deleted)
             {
                 _logger.LogWarning(
                     "Could not find .nuspec for {Id} {Version}.",
@@ -125,7 +156,7 @@ namespace Knapcode.ExplorePackages.Logic
                     package.Version);
             }
 
-            return nuspecContext;
+            return context;
         }
     }
 }

@@ -44,6 +44,7 @@
         public const string HasV2DiscrepancyPackageQuery = CursorNames.HasV2DiscrepancyPackageQuery;
         public const string HasSearchDiscrepancyPackageQuery = CursorNames.HasSearchDiscrepancyPackageQuery;
         public const string HasCrossCheckDiscrepancyPackageQuery = CursorNames.HasCrossCheckDiscrepancyPackageQuery;
-        public const string FindMissingNuspecPackageQuery = CursorNames.FindMissingNuspecPackageQuery;
+        public const string HasMissingNuspecPackageQuery = CursorNames.HasMissingNuspecPackageQuery;
+        public const string HasMissingMZipPackageQuery = CursorNames.HasMissingMZipPackageQuery;
     }
 }

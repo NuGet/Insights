@@ -13,8 +13,8 @@ namespace Knapcode.ExplorePackages.Logic
             _nuspecDownloader = nuspecDownloader;
         }
 
-        public string Name => PackageQueryNames.FindMissingNuspecPackageQuery;
-        public string CursorName => CursorNames.FindMissingNuspecPackageQuery;
+        public string Name => PackageQueryNames.HasMissingNuspecPackageQuery;
+        public string CursorName => CursorNames.HasMissingNuspecPackageQuery;
         
         public async Task<bool> IsMatchAsync(PackageQueryContext context, PackageConsistencyState state)
         {

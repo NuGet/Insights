@@ -64,6 +64,7 @@
         public const string HasV2DiscrepancyPackageQuery = "HasV2DiscrepancyPackageQuery";
         public const string HasSearchDiscrepancyPackageQuery = "HasSearchDiscrepancyPackageQuery";
         public const string HasCrossCheckDiscrepancyPackageQuery = "HasCrossCheckDiscrepancyPackageQuery";
-        public const string FindMissingNuspecPackageQuery = "FindMissingNuspecPackageQuery";
+        public const string HasMissingNuspecPackageQuery = "FindMissingNuspecPackageQuery";
+        public const string HasMissingMZipPackageQuery = "HasMissingMZipPackageQuery";
     }
 }
