@@ -8,22 +8,23 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
+using NuGet.Protocol;
 
 namespace Knapcode.ExplorePackages.Logic
 {
     public class BlobStorageService : IBlobStorageService
     {
-        private readonly HttpClient _httpClient;
+        private readonly HttpSource _httpSource;
         private readonly ExplorePackagesSettings _settings;
         private readonly ILogger<BlobStorageService> _logger;
         private readonly Lazy<CloudBlobContainer> _lazyContainer;
 
         public BlobStorageService(
-            HttpClient httpClient,
+            HttpSource httpSource,
             ExplorePackagesSettings settings,
             ILogger<BlobStorageService> logger)
         {
-            _httpClient = httpClient;
+            _httpSource = httpSource;
             _settings = settings;
             _logger = logger;
             _lazyContainer = new Lazy<CloudBlobContainer>(() =>
@@ -46,22 +47,24 @@ namespace Knapcode.ExplorePackages.Logic
 
             if (_settings.IsStorageContainerPublic)
             {
-                using (var response = await _httpClient.GetAsync(blob.Uri, HttpCompletionOption.ResponseHeadersRead))
-                {
-                    if (response.StatusCode == HttpStatusCode.NotFound)
+                var nuGetLogger = _logger.ToNuGetLogger();
+                return await _httpSource.ProcessStreamAsync(
+                    new HttpSourceRequest(blob.Uri, nuGetLogger)
                     {
-                        return false;
-                    }
-
-                    response.EnsureSuccessStatusCode();
-
-                    using (var responseStream = await response.Content.ReadAsStreamAsync())
+                        IgnoreNotFounds = true,
+                    },
+                    async responseStream =>
                     {
+                        if (responseStream == null)
+                        {
+                            return false;
+                        }
+
                         await responseStream.CopyToAsync(destinationStream);
-                    }
-
-                    return true;
-                }
+                        return true;
+                    },
+                    nuGetLogger,
+                    CancellationToken.None);
             }
             else
             {
