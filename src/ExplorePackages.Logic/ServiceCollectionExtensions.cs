@@ -103,6 +103,7 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<PackageBlobNameProvider>();
             serviceCollection.AddTransient<IFileStorageService, FileStorageService>();
             serviceCollection.AddTransient<IBlobStorageService, BlobStorageService>();
+            serviceCollection.AddTransient<BlobStorageMigrator>();
 
             serviceCollection.AddTransient<PackageQueryProcessor>();
             serviceCollection.AddTransient<CatalogToDatabaseProcessor>();
