@@ -87,7 +87,15 @@ namespace Knapcode.ExplorePackages.Logic
                 return;
             }
 
-            /*
+            if (parsedName.IsCanonical)
+            {
+                _logger.LogInformation("Missing from right: {Name}", parsedName.Canonical);
+            }
+            else
+            {
+                _logger.LogInformation("Missing from right: {Name} (originally {Original})", parsedName.Canonical, parsedName.Original);
+            }
+
             var package = await _packageService.GetPackageOrNullAsync(parsedName.Id, parsedName.Version);
 
             if (!package.CatalogPackage.Deleted)
@@ -98,16 +106,6 @@ namespace Knapcode.ExplorePackages.Logic
                     parsedName.Version,
                     parsedName.Original);
                 return;
-            }
-            */
-
-            if (parsedName.IsCanonical)
-            {
-                _logger.LogInformation("Missing from right: {Name}", parsedName.Canonical);
-            }
-            else
-            {
-                _logger.LogInformation("Missing from right: {Name} (originally {Original})", parsedName.Canonical, parsedName.Original);
             }
         }
 
