@@ -6,10 +6,14 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Moq;
+using NuGet.Configuration;
+using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -20,7 +24,8 @@ namespace Knapcode.ExplorePackages.Logic
         private const string Id = "Newtonsoft.Json";
         private const string Version = "9.0.1";
 
-        private readonly HttpClient _httpClient;
+        private readonly ILogger<LoggingHandler> _loggingHandlerLogger;
+        private readonly HttpSource _httpSource;
         private readonly ITestOutputHelper _output;
         private readonly ExplorePackagesSettings _settings;
         private readonly PackageBlobNameProvider _blobNameProvider;
@@ -30,8 +35,17 @@ namespace Knapcode.ExplorePackages.Logic
 
         public FileStorageServiceTest(ITestOutputHelper output)
         {
-            _httpClient = new HttpClient();
-
+            _loggingHandlerLogger = output.GetLogger<LoggingHandler>();
+            _httpSource = new HttpSource(
+                new PackageSource("http://example"),
+                () =>
+                {
+                    var clientHandler = new HttpClientHandler();
+                    return Task.FromResult<HttpHandlerResource>(new HttpHandlerResourceV3(
+                        clientHandler,
+                        new LoggingHandler(_loggingHandlerLogger) { InnerHandler = clientHandler }));
+                },
+                NullThrottle.Instance);
             _output = output;
             _settings = new ExplorePackagesSettings
             {
@@ -40,7 +54,7 @@ namespace Knapcode.ExplorePackages.Logic
             };
             _blobNameProvider = new PackageBlobNameProvider();
             _blobStorageService = new Mock<BlobStorageService>(
-                _httpClient,
+                _httpSource,
                 _settings,
                 _output.GetLogger<BlobStorageService>())
             {
@@ -69,7 +83,7 @@ namespace Knapcode.ExplorePackages.Logic
                 Assert.Null(actual);
 
                 _blobStorageService.Verify(
-                    x => x.UploadStreamAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>()),
+                    x => x.UploadStreamAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<AccessCondition>()),
                     Times.Never);
                 _blobStorageService.Verify(
                     x => x.TryDownloadStreamAsync(It.IsAny<string>(), It.IsAny<Stream>()),
@@ -90,7 +104,8 @@ namespace Knapcode.ExplorePackages.Logic
                 Id,
                 Version,
                 type,
-                dest => initial.CopyToAsync(dest));
+                dest => initial.CopyToAsync(dest),
+                accessCondition: AccessCondition.GenerateEmptyCondition());
 
             _blobStorageService.Invocations.Clear();
 
@@ -99,11 +114,12 @@ namespace Knapcode.ExplorePackages.Logic
                 Id,
                 Version,
                 type,
-                dest => expected.CopyToAsync(dest));
+                dest => expected.CopyToAsync(dest),
+                accessCondition: AccessCondition.GenerateEmptyCondition());
 
             // Assert
             _blobStorageService.Verify(
-                x => x.UploadStreamAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>()),
+                x => x.UploadStreamAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<AccessCondition>()),
                 Times.Once);
             _blobStorageService.Verify(
                 x => x.TryDownloadStreamAsync(It.IsAny<string>(), It.IsAny<Stream>()),
@@ -116,7 +132,7 @@ namespace Knapcode.ExplorePackages.Logic
                 AssertSameStreams(expected, actual);
 
                 _blobStorageService.Verify(
-                    x => x.UploadStreamAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>()),
+                    x => x.UploadStreamAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<AccessCondition>()),
                     Times.Never);
                 _blobStorageService.Verify(
                     x => x.TryDownloadStreamAsync(It.IsAny<string>(), It.IsAny<Stream>()),
@@ -137,10 +153,10 @@ namespace Knapcode.ExplorePackages.Logic
                 Id,
                 Version,
                 type,
-                dest => expected.CopyToAsync(dest));
+                dest => expected.CopyToAsync(dest), It.IsAny<AccessCondition>());
 
             _blobStorageService.Verify(
-                x => x.UploadStreamAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>()),
+                x => x.UploadStreamAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<AccessCondition>()),
                 Times.Once);
             _blobStorageService.Verify(
                 x => x.TryDownloadStreamAsync(It.IsAny<string>(), It.IsAny<Stream>()),
@@ -153,7 +169,7 @@ namespace Knapcode.ExplorePackages.Logic
                 AssertSameStreams(expected, actual);
 
                 _blobStorageService.Verify(
-                    x => x.UploadStreamAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>()),
+                    x => x.UploadStreamAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<AccessCondition>()),
                     Times.Never);
                 _blobStorageService.Verify(
                     x => x.TryDownloadStreamAsync(It.IsAny<string>(), It.IsAny<Stream>()),
@@ -174,10 +190,11 @@ namespace Knapcode.ExplorePackages.Logic
                 Id,
                 Version,
                 type,
-                dest => expected.CopyToAsync(dest));
+                dest => expected.CopyToAsync(dest),
+                accessCondition: AccessCondition.GenerateEmptyCondition());
 
             _blobStorageService.Verify(
-                x => x.UploadStreamAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>()),
+                x => x.UploadStreamAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<AccessCondition>()),
                 Times.Once);
             _blobStorageService.Verify(
                 x => x.TryDownloadStreamAsync(It.IsAny<string>(), It.IsAny<Stream>()),
@@ -191,7 +208,7 @@ namespace Knapcode.ExplorePackages.Logic
                 AssertSameStreams(expected, actual);
 
                 _blobStorageService.Verify(
-                    x => x.UploadStreamAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>()),
+                    x => x.UploadStreamAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<AccessCondition>()),
                     Times.Never);
                 _blobStorageService.Verify(
                     x => x.TryDownloadStreamAsync(It.IsAny<string>(), It.IsAny<Stream>()),
@@ -215,6 +232,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task DisposeAsync()
         {
+            _httpSource.Dispose();
             await GetContainer().DeleteIfExistsAsync();
         }
 

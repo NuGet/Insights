@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Knapcode.BlobDelta;
 using Microsoft.Extensions.Logging;
@@ -12,17 +14,20 @@ namespace Knapcode.ExplorePackages.Logic
     {
         private readonly PackageBlobNameProvider _nameProvider;
         private readonly IPackageService _packageService;
+        private readonly IFileStorageService _fileStorageService;
         private readonly ExplorePackagesSettings _settings;
         private readonly ILogger<BlobStorageService> _logger;
 
         public BlobStorageMigrator(
             PackageBlobNameProvider nameProvider,
             IPackageService packageService,
+            IFileStorageService fileStorageService,
             ExplorePackagesSettings settings,
             ILogger<BlobStorageService> logger)
         {
             _nameProvider = nameProvider;
             _packageService = packageService;
+            _fileStorageService = fileStorageService;
             _settings = settings;
             _logger = logger;
         }
@@ -101,12 +106,49 @@ namespace Knapcode.ExplorePackages.Logic
             if (!package.CatalogPackage.Deleted)
             {
                 _logger.LogError(
-                    "Could not migrate a file related to a non-deleted package: {Id} {Version} ({Original})",
+                    "Could not migrate a file related to a non-deleted package: {Id} {Version} {Type} ({Original})",
                     parsedName.Id,
                     parsedName.Version,
+                    parsedName.Type,
                     parsedName.Original);
                 return;
             }
+
+            var leftBlob = comparison.Left.Blob as CloudBlockBlob;
+            if (leftBlob == null)
+            {
+                _logger.LogError(
+                    "Could not migrate a blob that is not a block blob: {Id} {Version} {Type} ({Original})",
+                    parsedName.Id,
+                    parsedName.Version,
+                    parsedName.Type,
+                    parsedName.Original);
+                return;
+            }
+
+            await _fileStorageService.StoreStreamAsync(
+                parsedName.Id,
+                parsedName.Version,
+                parsedName.Type,
+                async destinationStream =>
+                {
+                    BlobStorageService.LogRequest(_logger, HttpMethod.Get, leftBlob);
+                    using (var sourceStream = await leftBlob.OpenReadAsync(
+                        accessCondition: null,
+                        options: null,
+                        operationContext: BlobStorageService.GetLoggingOperationContext(_logger)))
+                    {
+                        await sourceStream.CopyToAsync(destinationStream);
+                    }
+                },
+                accessCondition: AccessCondition.GenerateIfNotExistsCondition());
+
+            _logger.LogInformation(
+                "Done migrating blob {Id} {Version} {Type} ({Canonical}).",
+                parsedName.Id,
+                parsedName.Version,
+                parsedName.Type,
+                parsedName.Canonical);
         }
 
         private CloudBlobContainer GetDestinationContainer()
@@ -117,13 +159,18 @@ namespace Knapcode.ExplorePackages.Logic
             return container;
         }
 
-        private CloudBlobContainer GetSourceContainer(BlobStorageMigrationSource source)
+        private CloudStorageAccount GetSourceAccount(BlobStorageMigrationSource source)
         {
-            var account = new CloudStorageAccount(
+            return new CloudStorageAccount(
                 new StorageCredentials(source.SasToken),
                 source.AccountName,
                 source.EndpointSuffix,
                 useHttps: true);
+        }
+
+        private CloudBlobContainer GetSourceContainer(BlobStorageMigrationSource source)
+        {
+            var account = GetSourceAccount(source);
             var client = account.CreateCloudBlobClient();
             var container = client.GetContainerReference(source.ContainerName);
             return container;

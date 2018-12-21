@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using Microsoft.WindowsAzure.Storage;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -27,7 +28,7 @@ namespace Knapcode.ExplorePackages.Logic
             _logger = logger;
         }
 
-        public async Task StoreStreamAsync(string id, string version, FileArtifactType type, Func<Stream, Task> writeAsync)
+        public async Task StoreStreamAsync(string id, string version, FileArtifactType type, Func<Stream, Task> writeAsync, AccessCondition accessCondition)
         {
             using (var memoryStream = new MemoryStream())
             {
@@ -40,7 +41,7 @@ namespace Knapcode.ExplorePackages.Logic
                 var cacheKey = GetCacheKey(id, version, type);
                 try
                 {
-                    await _blobStorageService.UploadStreamAsync(blobName, contentType, memoryStream);
+                    await _blobStorageService.UploadStreamAsync(blobName, contentType, memoryStream, accessCondition);
                 }
                 catch
                 {

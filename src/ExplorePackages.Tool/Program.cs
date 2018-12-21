@@ -58,6 +58,7 @@ namespace Knapcode.ExplorePackages.Tool
 
             // Initialize the dependency injection container.
             var serviceCollection = InitializeServiceCollection(settings);
+            int output;
             using (var serviceProvider = serviceCollection.BuildServiceProvider())
             {
                 logger = serviceProvider.GetRequiredService<ILogger<Program>>();
@@ -72,14 +73,16 @@ namespace Knapcode.ExplorePackages.Tool
 
                 try
                 {
-                    return app.Execute(args);
+                    output = app.Execute(args);
                 }
                 catch (Exception ex)
                 {
                     logger.LogError(ex, "An unexpected exception occured.");
-                    return 1;
+                    output = 1;
                 }
             }
+
+            return output;
         }
 
         private static ExplorePackagesSettings ReadSettingsFromDisk(ILogger logger)

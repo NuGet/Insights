@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -69,11 +70,11 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 try
                 {
-                    _logger.LogDebug("  {Method} {BlobUri}", "GET", blob.Uri);
+                    LogRequest(_logger, HttpMethod.Get, blob);
                     using (var responseStream = await blob.OpenReadAsync(
                         accessCondition: null,
                         options: null,
-                        operationContext: GetLoggingOperationContext()))
+                        operationContext: GetLoggingOperationContext(_logger)))
                     {
                         await responseStream.CopyToAsync(destinationStream);
                     }
@@ -87,7 +88,33 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
-        private OperationContext GetLoggingOperationContext()
+        public virtual async Task UploadStreamAsync(
+            string blobName,
+            string contentType,
+            Stream stream,
+            AccessCondition accessCondition)
+        {
+            var blob = GetBlob(blobName);
+            blob.Properties.ContentType = contentType;
+            LogRequest(_logger, HttpMethod.Put, blob);
+            await blob.UploadFromStreamAsync(
+                stream,
+                accessCondition: accessCondition,
+                options: null,
+                operationContext: GetLoggingOperationContext(_logger));
+        }
+
+        private CloudBlockBlob GetBlob(string blobName)
+        {
+            return Container.GetBlockBlobReference(blobName);
+        }
+
+        public static void LogRequest(ILogger logger, HttpMethod method, CloudBlockBlob blob)
+        {
+            logger.LogDebug("  {Method} {BlobUri}", method, blob.Uri);
+        }
+
+        public static OperationContext GetLoggingOperationContext(ILogger logger)
         {
             var operationContext = new OperationContext();
 
@@ -101,32 +128,25 @@ namespace Knapcode.ExplorePackages.Logic
                     return;
                 }
 
+                // Remove the query string from the logged URI. It could contain a SAS token.
+                var requestUriBuilder = new UriBuilder(e.RequestUri);
+                requestUriBuilder.Query = null;
+                var sanitizedRequestUri = requestUriBuilder.Uri.AbsoluteUri;
+
                 var duration = e.RequestInformation.EndTime - e.RequestInformation.StartTime;
-                _logger.LogDebug(
+                logger.LogDebug(
                     "  {StatusCode} {RequestUri} {Milliseconds}ms",
                     (HttpStatusCode)e.RequestInformation.HttpStatusCode,
-                    e.RequestUri,
+                    sanitizedRequestUri,
                     stopwatch.ElapsedMilliseconds);
             };
 
             return operationContext;
         }
 
-        public virtual async Task UploadStreamAsync(string blobName, string contentType, Stream stream)
+        internal static void LogRequest(ILogger<BlobStorageService> logger, object httpMe)
         {
-            var blob = GetBlob(blobName);
-            blob.Properties.ContentType = contentType;
-            _logger.LogDebug("  {Method} {BlobUri}", "PUT", blob.Uri);
-            await blob.UploadFromStreamAsync(
-                stream,
-                accessCondition: null,
-                options: null,
-                operationContext: GetLoggingOperationContext());
-        }
-
-        private CloudBlockBlob GetBlob(string blobName)
-        {
-            return Container.GetBlockBlobReference(blobName);
+            throw new NotImplementedException();
         }
     }
 }

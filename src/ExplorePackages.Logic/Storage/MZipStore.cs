@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.MiniZip;
 using Microsoft.Extensions.Logging;
+using Microsoft.WindowsAzure.Storage;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -42,7 +43,8 @@ namespace Knapcode.ExplorePackages.Logic
                     id,
                     version,
                     FileArtifactType.MZip,
-                    destStream => _mZipFormat.WriteAsync(reader.Stream, destStream));
+                    destStream => _mZipFormat.WriteAsync(reader.Stream, destStream),
+                    accessCondition: AccessCondition.GenerateEmptyCondition());
             }
         }
 
