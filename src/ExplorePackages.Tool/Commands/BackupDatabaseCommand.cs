@@ -9,11 +9,15 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 {
     public class BackupDatabaseCommand : ICommand
     {
+        private readonly EntityContextFactory _entityContextFactory;
         private readonly ILogger<BackupDatabaseCommand> _logger;
         private CommandOption _destinationOption;
 
-        public BackupDatabaseCommand(ILogger<BackupDatabaseCommand> logger)
+        public BackupDatabaseCommand(
+            EntityContextFactory entityContextFactory,
+            ILogger<BackupDatabaseCommand> logger)
         {
+            _entityContextFactory = entityContextFactory;
             _logger = logger;
         }
 
@@ -28,12 +32,19 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 
         public async Task ExecuteAsync(CancellationToken token)
         {
-            using (var entityContext = new EntityContext())
+            using (var entityContext = _entityContextFactory.Get())
             {
+                var sqliteEntityContext = entityContext as SqliteEntityContext;
+                if (sqliteEntityContext == null)
+                {
+                    _logger.LogError("Backing up the database is only supported on SQLite databases.");
+                    return;
+                }
+
                 var destination = _destinationOption.Value();
                 _logger.LogInformation("Backing up the database to: {destination}", _destinationOption.Value());
                 var stopwatch = Stopwatch.StartNew();
-                await entityContext.BackupDatabaseAsync(destination);
+                await sqliteEntityContext.BackupDatabaseAsync(destination);
                 _logger.LogInformation("Done. Took {duration}.", stopwatch.Elapsed);
             }
         }

@@ -1,36 +1,11 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace Knapcode.ExplorePackages.Entities
 {
-    public class EntityContext : DbContext
+    public abstract class BaseEntityContext<T> : DbContext, IEntityContext where T : DbContext
     {
-        public static string ConnectionString { get; set; } = "Data Source=ExplorePackages.sqlite3";
-        public static bool Enabled { get; set; } = true;
-
-        public EntityContext()
+        public BaseEntityContext(DbContextOptions<T> options) : base(options)
         {
-            if (!Enabled)
-            {
-                throw new NotSupportedException("Using the database is not enabled.");
-            }
-        }
-
-        public async Task BackupDatabaseAsync(string destinationDataSource)
-        {
-            var builder = new SqliteConnectionStringBuilder();
-            builder.DataSource = destinationDataSource;
-            var connectionString = builder.ConnectionString;
-
-            using (var sourceConnection = (SqliteConnection)Database.GetDbConnection())
-            using (var destinationConnection = new SqliteConnection(connectionString))
-            {
-                await sourceConnection.OpenAsync();
-                await destinationConnection.OpenAsync();
-                sourceConnection.BackupDatabase(destinationConnection);
-            }
         }
 
         public DbSet<PackageRegistrationEntity> PackageRegistrations { get; set; }
@@ -49,12 +24,6 @@ namespace Knapcode.ExplorePackages.Entities
         public DbSet<CatalogLeafEntity> CatalogLeaves { get; set; }
         public DbSet<FrameworkEntity> Frameworks { get; set; }
         public DbSet<PackageDependencyEntity> PackageDependencies { get; set; }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder
-                .UseSqlite(ConnectionString);
-        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -97,7 +66,6 @@ namespace Knapcode.ExplorePackages.Entities
             modelBuilder
                 .Entity<PackageRegistrationEntity>()
                 .Property(x => x.Id)
-                .HasColumnType("TEXT COLLATE NOCASE")
                 .IsRequired();
             modelBuilder
                 .Entity<PackageRegistrationEntity>()
@@ -113,12 +81,10 @@ namespace Knapcode.ExplorePackages.Entities
             modelBuilder
                 .Entity<PackageEntity>()
                 .Property(x => x.Version)
-                .HasColumnType("TEXT COLLATE NOCASE")
                 .IsRequired();
             modelBuilder
                 .Entity<PackageEntity>()
                 .Property(x => x.Identity)
-                .HasColumnType("TEXT COLLATE NOCASE")
                 .IsRequired();
             modelBuilder
                 .Entity<PackageEntity>()

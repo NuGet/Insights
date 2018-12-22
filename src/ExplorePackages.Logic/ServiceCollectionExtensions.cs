@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Knapcode.MiniZip;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NuGet.CatalogReader;
@@ -19,6 +20,27 @@ namespace Knapcode.ExplorePackages.Logic
         public static IServiceCollection AddExplorePackages(this IServiceCollection serviceCollection, ExplorePackagesSettings settings)
         {
             serviceCollection.AddMemoryCache();
+
+            serviceCollection.AddTransient<IEntityContext>(x =>
+            {
+                var options = x.GetRequiredService<ExplorePackagesSettings>();
+                switch (options.DatabaseType)
+                {
+                    case DatabaseType.Sqlite:
+                        return x.GetRequiredService<SqliteEntityContext>();
+                    default:
+                        throw new NotImplementedException($"The database type '{options.DatabaseType}' is not supported.");
+                }
+            });
+            serviceCollection.AddTransient<Func<IEntityContext>>(x => () => x.GetRequiredService<IEntityContext>());
+            serviceCollection.AddTransient<EntityContextFactory>();
+
+            serviceCollection.AddDbContext<SqliteEntityContext>((x, dbContextOptionsBuilder) =>
+            {
+                var options = x.GetRequiredService<ExplorePackagesSettings>();
+                dbContextOptionsBuilder
+                    .UseSqlite(options.DatabaseConnectionString);
+            }, contextLifetime: ServiceLifetime.Transient);
 
             serviceCollection.AddSingleton<UrlReporterProvider>();
             serviceCollection.AddTransient<UrlReporterHandler>();

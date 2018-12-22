@@ -10,24 +10,30 @@ namespace Knapcode.ExplorePackages.Logic
     public class PackageQueryService
     {
         private const int PageSize = 1000;
-        private readonly PackageService _packageService;
+        private readonly EntityContextFactory _entityContextFactory;
+        private readonly CursorService _cursorService;
+        private readonly IPackageService _packageService;
 
-        public PackageQueryService(PackageService packageService)
+        public PackageQueryService(
+            EntityContextFactory entityContextFactory,
+            CursorService cursorService,
+            IPackageService packageService)
         {
+            _entityContextFactory = entityContextFactory;
+            _cursorService = cursorService;
             _packageService = packageService;
         }
 
         public async Task AddQueryAsync(string queryName, string cursorName)
         {
-            using (var entityContext = new EntityContext())
+            using (var entityContext = _entityContextFactory.Get())
             {
                 var query = await GetQueryAsync(queryName, entityContext);
 
                 if (query == null)
                 {
-                    var cursorService = new CursorService();
-                    await cursorService.EnsureExistsAsync(cursorName);
-                    var cursor = await cursorService.GetAsync(cursorName);
+                    await _cursorService.EnsureExistsAsync(cursorName);
+                    var cursor = await _cursorService.GetAsync(cursorName);
                     
                     query = new PackageQueryEntity
                     {
@@ -46,7 +52,7 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
-        private static async Task<PackageQueryEntity> GetQueryAsync(string queryName, EntityContext entityContext)
+        private static async Task<PackageQueryEntity> GetQueryAsync(string queryName, IEntityContext entityContext)
         {
             return await entityContext
                 .PackageQueries
@@ -57,7 +63,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task<PackageQueryMatches> GetMatchedPackagesAsync(string queryName, long lastKey)
         {
-            using (var entityContext = new EntityContext())
+            using (var entityContext = _entityContextFactory.Get())
             {
                 var matches = await entityContext
                     .PackageQueryMatches
@@ -100,7 +106,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task RemoveMatchesAsync(string queryName, IReadOnlyList<PackageIdentity> identities)
         {
-            using (var entityContext = new EntityContext())
+            using (var entityContext = _entityContextFactory.Get())
             {
                 var query = await GetQueryAsync(queryName, entityContext);
                 if (query == null)
@@ -118,7 +124,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task AddMatchesAsync(string queryName, IReadOnlyList<PackageIdentity> identities)
         {
-            using (var entityContext = new EntityContext())
+            using (var entityContext = _entityContextFactory.Get())
             {
                 // Find the query.
                 var query = await GetQueryAsync(queryName, entityContext);
@@ -167,7 +173,7 @@ namespace Knapcode.ExplorePackages.Logic
             return packages;
         }
 
-        private static async Task<List<PackageQueryMatchEntity>> GetExistingMatchesAsync(EntityContext entityContext, PackageQueryEntity query, IReadOnlyList<PackageIdentity> identities)
+        private static async Task<List<PackageQueryMatchEntity>> GetExistingMatchesAsync(IEntityContext entityContext, PackageQueryEntity query, IReadOnlyList<PackageIdentity> identities)
         {
             var identityStrings = new HashSet<string>(identities.Select(x => x.Value));
 

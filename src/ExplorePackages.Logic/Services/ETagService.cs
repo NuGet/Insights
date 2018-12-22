@@ -6,9 +6,17 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class ETagService : IETagService
     {
+        private readonly EntityContextFactory _entityContextFactory;
+
+        public ETagService(
+            EntityContextFactory entityContextFactory)
+        {
+            _entityContextFactory = entityContextFactory;
+        }
+
         public async Task<string> GetValueAsync(string name)
         {
-            using (var entityContext = new EntityContext())
+            using (var entityContext = _entityContextFactory.Get())
             {
                 var etag = await GetETagAsync(entityContext, name);
 
@@ -18,7 +26,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task SetValueAsync(string name, string value)
         {
-            using (var entityContext = new EntityContext())
+            using (var entityContext = _entityContextFactory.Get())
             {
                 var etag = await GetETagAsync(entityContext, name);
                 if (etag == null)
@@ -38,7 +46,7 @@ namespace Knapcode.ExplorePackages.Logic
             await SetValueAsync(name, value: null);
         }
 
-        private async Task<ETagEntity> GetETagAsync(EntityContext entityContext, string name)
+        private async Task<ETagEntity> GetETagAsync(IEntityContext entityContext, string name)
         {
             return await entityContext
                 .ETags

@@ -9,13 +9,16 @@ namespace Knapcode.ExplorePackages.Tool.Commands
     public class CatalogToDatabaseCommand : ICommand
     {
         private readonly CatalogReader _catalogReader;
+        private readonly CursorService _cursorService;
         private readonly CatalogToDatabaseProcessor _processor;
 
         public CatalogToDatabaseCommand(
             CatalogReader catalogReader,
+            CursorService cursorService,
             CatalogToDatabaseProcessor processor)
         {
             _catalogReader = catalogReader;
+            _cursorService = cursorService;
             _processor = processor;
         }
 
@@ -25,7 +28,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 
         public async Task ExecuteAsync(CancellationToken token)
         {
-            var catalogProcessor = new CatalogProcessorQueue(_catalogReader, _processor);
+            var catalogProcessor = new CatalogProcessorQueue(_catalogReader, _cursorService, _processor);
             await catalogProcessor.ProcessAsync(token);
         }
 

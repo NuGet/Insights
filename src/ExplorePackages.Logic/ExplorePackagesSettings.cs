@@ -7,7 +7,8 @@ namespace Knapcode.ExplorePackages.Logic
         public ExplorePackagesSettings()
         {
             var currentDirectory = Directory.GetCurrentDirectory();
-            DatabasePath = Path.Combine(currentDirectory, "Knapcode.ExplorePackages.sqlite3");
+            DatabaseType = DatabaseType.Sqlite;
+            DatabaseConnectionString = "Data Source=" + Path.Combine(currentDirectory, "Knapcode.ExplorePackages.sqlite3");
             PackagePath = Path.Combine(currentDirectory, "packages");
             RunConsistencyChecks = true;
             RunBoringQueries = false;
@@ -22,7 +23,8 @@ namespace Knapcode.ExplorePackages.Logic
             IsStorageContainerPublic = false;
         }
 
-        public string DatabasePath { get; set; }
+        public DatabaseType DatabaseType { get; set; }
+        public string DatabaseConnectionString { get; set; }
         public string PackagePath { get; set; }
         public bool RunConsistencyChecks { get; set; }
         public bool RunBoringQueries { get; set; }
@@ -40,7 +42,7 @@ namespace Knapcode.ExplorePackages.Logic
         {
             return new ExplorePackagesSettings
             {
-                DatabasePath = DatabasePath,
+                DatabaseConnectionString = DatabaseConnectionString,
                 PackagePath = PackagePath,
                 RunConsistencyChecks = RunConsistencyChecks,
                 RunBoringQueries = RunBoringQueries,

@@ -10,6 +10,14 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class PackageRegistrationCommitEnumerator : ICommitEnumerator<PackageRegistrationEntity>
     {
+        private readonly EntityContextFactory _entityContextFactory;
+
+        public PackageRegistrationCommitEnumerator(
+            EntityContextFactory entityContextFactory)
+        {
+            _entityContextFactory = entityContextFactory;
+        }
+
         public async Task<IReadOnlyList<EntityCommit<PackageRegistrationEntity>>> GetCommitsAsync(
             DateTimeOffset start,
             DateTimeOffset end,
@@ -44,7 +52,7 @@ namespace Knapcode.ExplorePackages.Logic
             long end,
             int batchSize)
         {
-            using (var entityContext = new EntityContext())
+            using (var entityContext = _entityContextFactory.Get())
             using (var connection = entityContext.Database.GetDbConnection())
             using (var command = connection.CreateCommand())
             {

@@ -45,11 +45,16 @@ namespace Knapcode.ExplorePackages.Logic
             WHERE cp.PackageKey IS NULL AND v2.CreatedTimestamp < @MaximumCreatedTimestamp";
 
         private readonly PackageQueryService _packageQueryService;
+        private readonly EntityContextFactory _entityContextFactory;
         private readonly ILogger<ProblemService> _logger;
 
-        public ProblemService(PackageQueryService packageQueryService, ILogger<ProblemService> logger)
+        public ProblemService(
+            PackageQueryService packageQueryService,
+            EntityContextFactory entityContextFactory,
+            ILogger<ProblemService> logger)
         {
             _packageQueryService = packageQueryService;
+            _entityContextFactory = entityContextFactory;
             _logger = logger;
         }
 
@@ -107,12 +112,12 @@ namespace Knapcode.ExplorePackages.Logic
             return problems;
         }
 
-        private static async Task<IReadOnlyList<T>> ReadQueryResultsAsync<T>(
+        private async Task<IReadOnlyList<T>> ReadQueryResultsAsync<T>(
             string query,
             Action<DbCommand> configureCommand,
             Func<DbDataReader, T> readRecord)
         {
-            using (var context = new EntityContext())
+            using (var context = _entityContextFactory.Get())
             using (var connection = context.Database.GetDbConnection())
             using (var command = connection.CreateCommand())
             {

@@ -7,10 +7,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public delegate IQueryable<T> QueryEntities<T>(EntityContext entities);
+    public delegate IQueryable<T> QueryEntities<T>(IEntityContext entities);
 
     public class PackageCommitEnumerator : ICommitEnumerator<PackageEntity>
     {
+        private readonly EntityContextFactory _entityContextFactory;
+
+        public PackageCommitEnumerator(
+            EntityContextFactory entityContextFactory)
+        {
+            _entityContextFactory = entityContextFactory;
+        }
+
         public async Task<IReadOnlyList<EntityCommit<PackageEntity>>> GetCommitsAsync(
             DateTimeOffset start,
             DateTimeOffset end,
@@ -44,7 +52,7 @@ namespace Knapcode.ExplorePackages.Logic
             long end,
             int batchSize)
         {
-            using (var entities = new EntityContext())
+            using (var entities = _entityContextFactory.Get())
             {
                 return await queryEntities(entities)
                     .Include(x => x.PackageRegistration)

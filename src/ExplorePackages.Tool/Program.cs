@@ -147,8 +147,9 @@ namespace Knapcode.ExplorePackages.Tool
                         var failureSleepDuration = TimeSpan.FromSeconds(failureSleepOption.HasValue() ? failureSleepOption.ParsedValue : 30);
 
                         await InitializeGlobalState(
-                            serviceProvider.GetRequiredService<ExplorePackagesSettings>(),
+                            serviceProvider,
                             command.IsDatabaseRequired(),
+                            serviceProvider.GetRequiredService<ExplorePackagesSettings>(),
                             serviceProvider.GetRequiredService<ILogger<Program>>());
 
                         do
@@ -184,16 +185,18 @@ namespace Knapcode.ExplorePackages.Tool
                 });
         }
         
-        private static async Task InitializeGlobalState(ExplorePackagesSettings settings, bool initializeDatabase, ILogger logger)
+        private static async Task InitializeGlobalState(
+            IServiceProvider serviceProvider,
+            bool initializeDatabase,
+            ExplorePackagesSettings settings,
+            ILogger logger)
         {
             logger.LogInformation("===== initialize =====");
 
             // Initialize the database.
-            EntityContext.ConnectionString = "Data Source=" + settings.DatabasePath;
-            EntityContext.Enabled = initializeDatabase;
             if (initializeDatabase)
             {
-                using (var entityContext = new EntityContext())
+                using (var entityContext = serviceProvider.GetRequiredService<IEntityContext>())
                 {
                     await entityContext.Database.MigrateAsync();
                     logger.LogInformation("The database schema is up to date.");
@@ -218,8 +221,11 @@ namespace Knapcode.ExplorePackages.Tool
 
             serviceCollection.AddExplorePackages(settings);
             
-            serviceCollection.AddSingleton(new LoggerFactory().AddMinimalConsole());
-            serviceCollection.AddLogging();
+            serviceCollection.AddLogging(o =>
+            {
+                o.AddFilter(DbLoggerCategory.Name, LogLevel.Warning);
+                o.AddMinimalConsole();
+            });
 
             foreach (var pair in Commands)
             {

@@ -1,17 +1,19 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Logic;
 using McMaster.Extensions.CommandLineUtils;
+using Microsoft.EntityFrameworkCore;
 
 namespace Knapcode.ExplorePackages.Tool.Commands
 {
     public class SandboxCommand : ICommand
     {
-        private readonly BlobStorageMigrator _migrator;
+        private readonly EntityContextFactory _entityContextFactory;
 
-        public SandboxCommand(BlobStorageMigrator migrator)
+        public SandboxCommand(EntityContextFactory entityContextFactory)
         {
-            _migrator = migrator;
+            _entityContextFactory = entityContextFactory;
         }
 
         public void Configure(CommandLineApplication app)
@@ -20,13 +22,10 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 
         public async Task ExecuteAsync(CancellationToken token)
         {
-            var source = new BlobStorageMigrationSource(
-                "core.windows.net",
-                "explorepackages",
-                "SAS_TOKEN",
-                "packages");
-
-            await _migrator.MigrateAsync(source);
+            using (var entityContext = _entityContextFactory.Get())
+            {
+                var package = await entityContext.Packages.FirstOrDefaultAsync();
+            }
         }
 
         public bool IsDatabaseRequired()

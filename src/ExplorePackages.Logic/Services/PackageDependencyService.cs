@@ -14,11 +14,16 @@ namespace Knapcode.ExplorePackages.Logic
     public class PackageDependencyService
     {
         private readonly IPackageService _packageService;
+        private readonly EntityContextFactory _entityContextFactory;
         private readonly ILogger<PackageDependencyService> _logger;
 
-        public PackageDependencyService(IPackageService packageService, ILogger<PackageDependencyService> logger)
+        public PackageDependencyService(
+            IPackageService packageService,
+            EntityContextFactory entityContextFactory,
+            ILogger<PackageDependencyService> logger)
         {
             _packageService = packageService;
+            _entityContextFactory = entityContextFactory;
             _logger = logger;
         }
 
@@ -27,7 +32,7 @@ namespace Knapcode.ExplorePackages.Logic
             int skip,
             int take)
         {
-            using (var entityContext = new EntityContext())
+            using (var entityContext = _entityContextFactory.Get())
             {
                 var dependencies = await entityContext
                     .PackageDependencies
@@ -168,7 +173,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         private async Task CommitUpdates(DependencyPackageUpdates updates)
         {
-            using (var entityContext = new EntityContext())
+            using (var entityContext = _entityContextFactory.Get())
             using (var connection = entityContext.Database.GetDbConnection())
             {
                 await connection.OpenAsync();
@@ -271,7 +276,7 @@ namespace Knapcode.ExplorePackages.Logic
                 .ToList();
             var idToPackageRegistration = await _packageService.AddPackageRegistrationsAsync(ids, includePackages: false);
 
-            using (var entityContext = new EntityContext())
+            using (var entityContext = _entityContextFactory.Get())
             {
                 foreach (var dependencyGroups in packages)
                 {
@@ -453,7 +458,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         private async Task<IReadOnlyDictionary<string, FrameworkEntity>> AddOrUpdateFrameworksAsync(IReadOnlyList<ParsedFramework> parsedFrameworks)
         {
-            using (var entityContext = new EntityContext())
+            using (var entityContext = _entityContextFactory.Get())
             {
                 var originalValueToValue = parsedFrameworks
                     .GroupBy(x => x.OriginalValue)

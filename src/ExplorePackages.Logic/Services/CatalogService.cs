@@ -16,15 +16,18 @@ namespace Knapcode.ExplorePackages.Logic
         private static readonly Regex PagePathPattern = new Regex(@"page(?<PageIndex>[0-9]|[1-9][0-9]+)\.json");
 
         private readonly CatalogClient _catalogClient;
+        private readonly EntityContextFactory _entityContextFactory;
         private readonly ILogger<CatalogService> _logger;
 
         public CatalogService(
             ServiceIndexCache serviceIndexCache,
             CatalogClient catalogClient,
+            EntityContextFactory entityContextFactory,
             ILogger<CatalogService> logger)
         {
-            _catalogClient = catalogClient ?? throw new ArgumentNullException(nameof(catalogClient));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _catalogClient = catalogClient;
+            _entityContextFactory = entityContextFactory;
+            _logger = logger;
         }
 
         public async Task AddOrUpdateAsync(
@@ -34,7 +37,7 @@ namespace Knapcode.ExplorePackages.Logic
             IReadOnlyDictionary<CatalogEntry, bool> entryToListed)
         {
             _logger.LogInformation("Adding or updating catalog page {PageUri}.", page.Uri.OriginalString);
-            using (var context = new EntityContext())
+            using (var context = _entityContextFactory.Get())
             {
                 var pageUrl = page.Uri.OriginalString;
                 var existing = await context
@@ -54,7 +57,7 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
-        private void Merge(EntityContext context, CatalogPageEntity existing, CatalogPageEntity latest)
+        private void Merge(IEntityContext context, CatalogPageEntity existing, CatalogPageEntity latest)
         {
             if (existing == null)
             {

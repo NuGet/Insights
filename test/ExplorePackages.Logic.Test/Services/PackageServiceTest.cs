@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Knapcode.MiniZip;
+using Microsoft.EntityFrameworkCore;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -18,11 +19,13 @@ namespace Knapcode.ExplorePackages.Logic
         {
             private readonly ITestOutputHelper _output;
             private readonly string _databasePath;
+            private readonly TestEntityContextFactory _entityContextFactory;
 
             public AddOrUpdatePackagesAsync_PackageArchiveMetadata(ITestOutputHelper output)
             {
-                _databasePath = Path.GetTempFileName();
                 _output = output;
+                _databasePath = Path.GetTempFileName();
+                _entityContextFactory = TestEntityContextFactory.Create(_databasePath);
             }
 
             public void Dispose()
@@ -37,10 +40,9 @@ namespace Knapcode.ExplorePackages.Logic
             public async Task SupportsAddingEntriesToExistingArchives()
             {
                 // Arrange
-                EntityContext.ConnectionString = "Data Source=" + _databasePath;
                 var id = "Knapcode.MiniZip";
                 var ver = "0.4.0";
-                using (var entityContext = new EntityContext())
+                using (var entityContext = _entityContextFactory.Get())
                 {
                     await entityContext.Database.EnsureCreatedAsync();
 
@@ -57,8 +59,11 @@ namespace Knapcode.ExplorePackages.Logic
                     await entityContext.SaveChangesAsync();
                 }
 
-                var packageEnumerator = new PackageCommitEnumerator();
-                var target = new PackageService(packageEnumerator, _output.GetLogger<PackageService>());
+                var packageEnumerator = new PackageCommitEnumerator(_entityContextFactory);
+                var target = new PackageService(
+                    packageEnumerator,
+                    _entityContextFactory,
+                    _output.GetLogger<PackageService>());
                 
                 var a = await CreateArchiveAsync(id, ver, new ZipEntry("a.txt"));
                 var b = await CreateArchiveAsync(id, ver, new ZipEntry("a.txt"), new ZipEntry("b.txt"));
@@ -68,7 +73,7 @@ namespace Knapcode.ExplorePackages.Logic
                 await target.AddOrUpdatePackagesAsync(new[] { b });
 
                 // Assert
-                using (var entityContext = new EntityContext())
+                using (var entityContext = _entityContextFactory.Get())
                 {
                     var archives = entityContext.PackageArchives.ToList();
                     Assert.Single(archives);
@@ -88,10 +93,9 @@ namespace Knapcode.ExplorePackages.Logic
             public async Task SupportsModifyingEntriesInExistingArchives()
             {
                 // Arrange
-                EntityContext.ConnectionString = "Data Source=" + _databasePath;
                 var id = "Knapcode.MiniZip";
                 var ver = "0.4.0";
-                using (var entityContext = new EntityContext())
+                using (var entityContext = _entityContextFactory.Get())
                 {
                     await entityContext.Database.EnsureCreatedAsync();
 
@@ -108,8 +112,11 @@ namespace Knapcode.ExplorePackages.Logic
                     await entityContext.SaveChangesAsync();
                 }
 
-                var packageEnumerator = new PackageCommitEnumerator();
-                var target = new PackageService(packageEnumerator, _output.GetLogger<PackageService>());
+                var packageEnumerator = new PackageCommitEnumerator(_entityContextFactory);
+                var target = new PackageService(
+                    packageEnumerator,
+                    _entityContextFactory,
+                    _output.GetLogger<PackageService>());
                 
                 var a = await CreateArchiveAsync(id, ver, new ZipEntry("a.txt"), new ZipEntry("b.txt"));
                 var b = await CreateArchiveAsync(id, ver, new ZipEntry("b.txt"), new ZipEntry("a.txt"));
@@ -119,7 +126,7 @@ namespace Knapcode.ExplorePackages.Logic
                 await target.AddOrUpdatePackagesAsync(new[] { b });
 
                 // Assert
-                using (var entityContext = new EntityContext())
+                using (var entityContext = _entityContextFactory.Get())
                 {
                     var archives = entityContext.PackageArchives.ToList();
                     Assert.Single(archives);
@@ -138,10 +145,9 @@ namespace Knapcode.ExplorePackages.Logic
             public async Task SupportsRemovingEntriesFromExistingArchives()
             {
                 // Arrange
-                EntityContext.ConnectionString = "Data Source=" + _databasePath;
                 var id = "Knapcode.MiniZip";
                 var ver = "0.4.0";
-                using (var entityContext = new EntityContext())
+                using (var entityContext = _entityContextFactory.Get())
                 {
                     await entityContext.Database.EnsureCreatedAsync();
 
@@ -158,8 +164,11 @@ namespace Knapcode.ExplorePackages.Logic
                     await entityContext.SaveChangesAsync();
                 }
 
-                var packageEnumerator = new PackageCommitEnumerator();
-                var target = new PackageService(packageEnumerator, _output.GetLogger<PackageService>());
+                var packageEnumerator = new PackageCommitEnumerator(_entityContextFactory);
+                var target = new PackageService(
+                    packageEnumerator,
+                    _entityContextFactory,
+                    _output.GetLogger<PackageService>());
 
                 var a = await CreateArchiveAsync(id, ver, new ZipEntry("a.txt"), new ZipEntry("b.txt"));
                 var b = await CreateArchiveAsync(id, ver, new ZipEntry("a.txt"));
@@ -169,7 +178,7 @@ namespace Knapcode.ExplorePackages.Logic
                 await target.AddOrUpdatePackagesAsync(new[] { b });
 
                 // Assert
-                using (var entityContext = new EntityContext())
+                using (var entityContext = _entityContextFactory.Get())
                 {
                     var archives = entityContext.PackageArchives.ToList();
                     Assert.Single(archives);

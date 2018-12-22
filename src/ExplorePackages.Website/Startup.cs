@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Logic;
 using Knapcode.ExplorePackages.Website.Logic;
 using Microsoft.AspNetCore.Builder;
@@ -24,9 +23,6 @@ namespace Knapcode.ExplorePackages.Website
         
         public void ConfigureServices(IServiceCollection services)
         {
-            // Completely disable the database.
-            EntityContext.Enabled = false;
-
             // Allow 32 concurrent outgoing connections.
             ServicePointManager.DefaultConnectionLimit = 32;
 
@@ -36,6 +32,7 @@ namespace Knapcode.ExplorePackages.Website
 
             // Enable ExplorePackages dependencies.
             var explorePackagesSettings = new ExplorePackagesSettings();
+            explorePackagesSettings.DatabaseType = DatabaseType.None;
             Configuration.Bind("ExplorePackages", explorePackagesSettings);
             services.AddExplorePackages(explorePackagesSettings);
 

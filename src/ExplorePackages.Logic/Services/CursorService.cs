@@ -9,11 +9,18 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class CursorService
     {
-        private static readonly DateTimeOffset DefaultCursor = DateTimeOffset.MinValue;
+        private static readonly DateTimeOffset DefaultCursor = new DateTimeOffset(2018, 12, 22, 22, 0, 0, TimeSpan.Zero);
+        private readonly EntityContextFactory _entityContextFactory;
+
+        public CursorService(
+            EntityContextFactory entityContextFactory)
+        {
+            _entityContextFactory = entityContextFactory;
+        }
 
         public async Task<CursorEntity> GetAsync(string name)
         {
-            using (var entityContext = new EntityContext())
+            using (var entityContext = _entityContextFactory.Get())
             {
                 return await GetCursorAsync(entityContext, name);
             }
@@ -21,7 +28,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task<DateTimeOffset> GetValueAsync(string name)
         {
-            using (var entityContext = new EntityContext())
+            using (var entityContext = _entityContextFactory.Get())
             {
                 var cursor = await GetCursorAsync(entityContext, name);
 
@@ -31,7 +38,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task<DateTimeOffset> GetMinimumAsync(IReadOnlyList<string> names)
         {
-            using (var entityContext = new EntityContext())
+            using (var entityContext = _entityContextFactory.Get())
             {
                 var cursors = await entityContext
                     .Cursors
@@ -55,7 +62,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task SetValuesAsync(IReadOnlyList<string> names, DateTimeOffset value)
         {
-            using (var entityContext = new EntityContext())
+            using (var entityContext = _entityContextFactory.Get())
             {
                 var existingCursors = await entityContext
                     .Cursors
@@ -86,7 +93,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task SetValueAsync(string name, DateTimeOffset value)
         {
-            using (var entityContext = new EntityContext())
+            using (var entityContext = _entityContextFactory.Get())
             {
                 var cursor = await GetCursorAsync(entityContext, name);
                 if (cursor == null)
@@ -103,7 +110,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task EnsureExistsAsync(string name)
         {
-            using (var entityContext = new EntityContext())
+            using (var entityContext = _entityContextFactory.Get())
             {
                 var cursor = await GetCursorAsync(entityContext, name);
                 if (cursor == null)
@@ -119,7 +126,7 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
-        private async Task<CursorEntity> GetCursorAsync(EntityContext entityContext, string name)
+        private async Task<CursorEntity> GetCursorAsync(IEntityContext entityContext, string name)
         {
             return await entityContext
                 .Cursors

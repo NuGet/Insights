@@ -11,13 +11,16 @@ namespace Knapcode.ExplorePackages.Logic
     {
         private readonly TaskQueue<Work> _taskQueue;
         private readonly CatalogReader _catalogReader;
+        private readonly CursorService _cursorService;
         private readonly ICatalogEntriesProcessor _processor;
 
         public CatalogProcessorQueue(
             CatalogReader catalogReader,
+            CursorService cursorService,
             ICatalogEntriesProcessor processor)
         {
             _catalogReader = catalogReader;
+            _cursorService = cursorService;
             _processor = processor;
             _taskQueue = new TaskQueue<Work>(
                 workerCount: 1,
@@ -26,13 +29,12 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task ProcessAsync(CancellationToken token)
         {
-            var cursorService = new CursorService();
-            var start = await cursorService.GetValueAsync(_processor.CursorName);
+            var start = await _cursorService.GetValueAsync(_processor.CursorName);
             DateTimeOffset end;
             var dependencyCursorNames = _processor.DependencyCursorNames;
             if (dependencyCursorNames.Any())
             {
-                end = await cursorService.GetMinimumAsync(dependencyCursorNames);
+                end = await _cursorService.GetMinimumAsync(dependencyCursorNames);
             }
             else
             {
@@ -68,8 +70,7 @@ namespace Knapcode.ExplorePackages.Logic
 
             await _processor.ProcessAsync(work.Page, work.Leaves);
 
-            var cursorService = new CursorService();
-            await cursorService.SetValueAsync(_processor.CursorName, work.Leaves.Last().CommitTimeStamp);
+            await _cursorService.SetValueAsync(_processor.CursorName, work.Leaves.Last().CommitTimeStamp);
         }
 
         private async Task ProduceAsync(DateTimeOffset start, DateTimeOffset end, CancellationToken token)
