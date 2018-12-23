@@ -220,9 +220,10 @@ namespace Knapcode.ExplorePackages.Tool
             var serviceCollection = new ServiceCollection();
 
             serviceCollection.AddExplorePackages(settings);
-            
+
             serviceCollection.AddLogging(o =>
             {
+                o.SetMinimumLevel(LogLevel.Trace);
                 o.AddFilter(DbLoggerCategory.Name, LogLevel.Warning);
                 o.AddMinimalConsole();
             });
