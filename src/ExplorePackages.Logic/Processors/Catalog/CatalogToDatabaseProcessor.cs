@@ -47,7 +47,7 @@ namespace Knapcode.ExplorePackages.Logic
                         listed = await IsListedAsync(x);
                     }
 
-                    return KeyValuePair.Create(x, listed);
+                    return KeyValuePairFactory.Create(x, listed);
                 },
                 workerCount: 16))
                 .ToDictionary(x => x.Key, x => x.Value, new CatalogEntryComparer());

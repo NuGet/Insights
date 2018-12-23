@@ -2,7 +2,7 @@
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    internal static class KeyValuePair
+    public static class KeyValuePairFactory
     {
         public static KeyValuePair<TKey, TValue> Create<TKey, TValue>(TKey key, TValue value)
         {

@@ -322,10 +322,10 @@ namespace Knapcode.ExplorePackages.Logic
                         Resources.Nuspecs.WhitespaceDependencyTargetFrameworks,
                         new List<KeyValuePair<NuGetFramework, IEnumerable<string>>>
                         {
-                            KeyValuePair.Create(
+                            KeyValuePairFactory.Create(
                                 (NuGetFramework) null,
                                 new[] { null, "" }.AsEnumerable()),
-                            KeyValuePair.Create(
+                            KeyValuePairFactory.Create(
                                 NuGetFramework.Parse("Unsupported,Version=v0.0"),
                                 new[] { "   ", " \n  ", " \r", "\t    " }.AsEnumerable()),
                         }.ToLookup()
@@ -356,28 +356,28 @@ namespace Knapcode.ExplorePackages.Logic
                         Resources.Nuspecs.DuplicateDependencies,
                         new List<KeyValuePair<NuGetFramework, IEnumerable<string>>>
                         {
-                            KeyValuePair.Create(
+                            KeyValuePairFactory.Create(
                                 NuGetFramework.Parse(".NETStandard,Version=v1.3"),
                                 new[]
                                 {
                                     ".NETStandard1.3",
                                     "netstandard1.3",
                                 }.AsEnumerable()),
-                            KeyValuePair.Create(
+                            KeyValuePairFactory.Create(
                                 NuGetFramework.AnyFramework,
                                 new[]
                                 {
                                     null,
                                     "",
                                 }.AsEnumerable()),
-                            KeyValuePair.Create(
+                            KeyValuePairFactory.Create(
                                 NuGetFramework.Parse("Unsupported,Version=v0.0"),
                                 new[]
                                 {
                                     "   ",
                                     "ZAMARIN",
                                 }.AsEnumerable()),
-                            KeyValuePair.Create(
+                            KeyValuePairFactory.Create(
                                 (NuGetFramework) null,
                                 new[]
                                 {
@@ -688,7 +688,7 @@ namespace Knapcode.ExplorePackages.Logic
                         Resources.Nuspecs.DuplicateDependencies,
                         new List<KeyValuePair<NuGetFramework, IEnumerable<string>>>
                         {
-                            KeyValuePair.Create(
+                            KeyValuePairFactory.Create(
                                 NuGetFramework.Parse(".NETStandard,Version=v1.1"),
                                 new[]
                                 {
@@ -696,26 +696,26 @@ namespace Knapcode.ExplorePackages.Logic
                                     "Microsoft.CSharp",
                                     "System.ComponentModel.TypeConverter",
                                 }.AsEnumerable()),
-                            KeyValuePair.Create(
+                            KeyValuePairFactory.Create(
                                 NuGetFramework.Parse(".NETStandard,Version=v1.3"),
                                 new[]
                                 {
                                     "NETStandard.Library",
                                     "Microsoft.CSharp",
                                 }.AsEnumerable()),
-                            KeyValuePair.Create(
+                            KeyValuePairFactory.Create(
                                 NuGetFramework.AnyFramework,
                                 new[]
                                 {
                                     "NETStandard.Library",
                                 }.AsEnumerable()),
-                            KeyValuePair.Create(
+                            KeyValuePairFactory.Create(
                                 NuGetFramework.UnsupportedFramework,
                                 new[]
                                 {
                                     "NETStandard.Library",
                                 }.AsEnumerable()),
-                            KeyValuePair.Create(
+                            KeyValuePairFactory.Create(
                                 (NuGetFramework) null,
                                 new[]
                                 {

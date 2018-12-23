@@ -308,7 +308,7 @@ namespace Knapcode.ExplorePackages.Logic
         {
             return GetMetadataLookup(nuspec)
                 .Where(x => BooleanMetadataElementNames.Contains(x.Key))
-                .SelectMany(x => x.Select(y => KeyValuePair.Create(x.Key, y?.Trim())))
+                .SelectMany(x => x.Select(y => KeyValuePairFactory.Create(x.Key, y?.Trim())))
                 .Where(x => x.Value != "true" && x.Value != "false")
                 .ToLookup(x => x.Key, x => x.Value);
         }

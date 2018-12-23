@@ -35,7 +35,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
                 // Show count per problem ID.
                 var problemIdToCount = problems
                     .GroupBy(x => x.ProblemId)
-                    .Select(x => KeyValuePair.Create(x.Key, x.Count()))
+                    .Select(x => KeyValuePairFactory.Create(x.Key, x.Count()))
                     .OrderByDescending(x => x.Value)
                     .ThenBy(x => x.Key)
                     .ToList();
@@ -51,9 +51,9 @@ namespace Knapcode.ExplorePackages.Tool.Commands
                 // Group packages by their set of problem IDs.
                 var groups = problems
                     .GroupBy(x => x.PackageIdentity)
-                    .Select(x => KeyValuePair.Create(new List<string>(x.Select(y => y.ProblemId).OrderBy(y => y)), x.Key))
+                    .Select(x => KeyValuePairFactory.Create(new List<string>(x.Select(y => y.ProblemId).OrderBy(y => y)), x.Key))
                     .GroupBy(x => x.Key, new ListEqualityComparer<string>())
-                    .Select(x => KeyValuePair.Create(
+                    .Select(x => KeyValuePairFactory.Create(
                         x.Key,
                         x
                             .Select(y => y.Value)

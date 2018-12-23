@@ -417,7 +417,7 @@ namespace Knapcode.ExplorePackages.Logic
             var identityToPackageKey = await AddOrUpdatePackagesAsync(identityToPackageDownloads.Keys);
 
             var packageKeyDownloadPairs = identityToPackageDownloads
-                .Select(x => KeyValuePair.Create(identityToPackageKey[x.Key.Value], x.Value.Downloads))
+                .Select(x => KeyValuePairFactory.Create(identityToPackageKey[x.Key.Value], x.Value.Downloads))
                 .OrderBy(x => x.Key)
                 .ToList();
 

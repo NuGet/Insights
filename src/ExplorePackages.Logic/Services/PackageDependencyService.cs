@@ -96,19 +96,19 @@ namespace Knapcode.ExplorePackages.Logic
                 if (dependency.MinimumDependencyPackageKey != keys.MinimumDependencyPackageKey
                     && dependency.BestDependencyPackageKey != keys.BestDependencyPackageKey)
                 {
-                    minimumAndBestUpdates.Add(KeyValuePair.Create(
+                    minimumAndBestUpdates.Add(KeyValuePairFactory.Create(
                         dependency.PackageDependencyKey,
                         keys));
                 }
                 else if (dependency.MinimumDependencyPackageKey != keys.MinimumDependencyPackageKey)
                 {
-                    minimumUpdates.Add(KeyValuePair.Create(
+                    minimumUpdates.Add(KeyValuePairFactory.Create(
                         dependency.PackageDependencyKey,
                         keys.MinimumDependencyPackageKey));
                 }
                 else if (dependency.BestDependencyPackageKey != keys.BestDependencyPackageKey)
                 {
-                    bestUpdates.Add(KeyValuePair.Create(
+                    bestUpdates.Add(KeyValuePairFactory.Create(
                         dependency.PackageDependencyKey,
                         keys.BestDependencyPackageKey));
                 }

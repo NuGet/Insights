@@ -9,7 +9,7 @@ namespace Knapcode.ExplorePackages.Logic
             this IEnumerable<KeyValuePair<TKey, IEnumerable<TValue>>> dictionary)
         {
             return dictionary
-                .SelectMany(p => p.Value, KeyValuePair.Create)
+                .SelectMany(p => p.Value, KeyValuePairFactory.Create)
                 .ToLookup(p => p.Key.Key, p => p.Value);
         }
     }
