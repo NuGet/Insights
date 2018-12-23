@@ -37,6 +37,7 @@ namespace Knapcode.ExplorePackages.Logic
                 var dependencies = await entityContext
                     .PackageDependencies
                     .Where(x => packageRegistrationKeys.Contains(x.DependencyPackageRegistrationKey))
+                    .OrderBy(x => x.PackageDependencyKey)
                     .Skip(skip)
                     .Take(take)
                     .ToListAsync();
