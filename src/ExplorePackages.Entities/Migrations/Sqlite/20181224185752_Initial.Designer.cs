@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
 {
     [DbContext(typeof(SqliteEntityContext))]
-    [Migration("20181224181200_AddLease")]
-    partial class AddLease
+    [Migration("20181224185752_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -174,6 +174,9 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                         .ValueGeneratedOnAddOrUpdate();
 
                     b.HasKey("LeaseKey");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("Leases");
                 });

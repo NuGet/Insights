@@ -173,6 +173,9 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
 
                     b.HasKey("LeaseKey");
 
+                    b.HasIndex("Name")
+                        .IsUnique();
+
                     b.ToTable("Leases");
                 });
 

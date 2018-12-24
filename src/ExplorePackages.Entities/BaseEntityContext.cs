@@ -41,6 +41,10 @@ namespace Knapcode.ExplorePackages.Entities
                 .Entity<LeaseEntity>()
                 .Property(x => x.RowVersion)
                 .IsRowVersion();
+            modelBuilder
+                .Entity<LeaseEntity>()
+                .HasIndex(x => new { x.Name })
+                .IsUnique();
 
             modelBuilder
                 .Entity<CursorEntity>()

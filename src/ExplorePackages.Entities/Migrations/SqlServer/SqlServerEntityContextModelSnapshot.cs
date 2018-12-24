@@ -183,6 +183,9 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
 
                     b.HasKey("LeaseKey");
 
+                    b.HasIndex("Name")
+                        .IsUnique();
+
                     b.ToTable("Leases");
                 });
 

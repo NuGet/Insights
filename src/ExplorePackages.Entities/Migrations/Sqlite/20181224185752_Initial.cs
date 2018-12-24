@@ -63,6 +63,21 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                 });
 
             migrationBuilder.CreateTable(
+                name: "Leases",
+                columns: table => new
+                {
+                    LeaseKey = table.Column<long>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(nullable: false),
+                    End = table.Column<DateTimeOffset>(nullable: true),
+                    RowVersion = table.Column<byte[]>(rowVersion: true, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Leases", x => x.LeaseKey);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PackageRegistrations",
                 columns: table => new
                 {
@@ -440,6 +455,12 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Leases_Name",
+                table: "Leases",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PackageDependencies_BestDependencyPackageKey",
                 table: "PackageDependencies",
                 column: "BestDependencyPackageKey");
@@ -529,6 +550,9 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
 
             migrationBuilder.DropTable(
                 name: "ETags");
+
+            migrationBuilder.DropTable(
+                name: "Leases");
 
             migrationBuilder.DropTable(
                 name: "PackageDependencies");

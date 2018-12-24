@@ -64,6 +64,21 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
                 });
 
             migrationBuilder.CreateTable(
+                name: "Leases",
+                columns: table => new
+                {
+                    LeaseKey = table.Column<long>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    Name = table.Column<string>(nullable: false),
+                    End = table.Column<DateTimeOffset>(nullable: true),
+                    RowVersion = table.Column<byte[]>(rowVersion: true, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Leases", x => x.LeaseKey);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PackageRegistrations",
                 columns: table => new
                 {
@@ -441,6 +456,12 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Leases_Name",
+                table: "Leases",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PackageDependencies_BestDependencyPackageKey",
                 table: "PackageDependencies",
                 column: "BestDependencyPackageKey");
@@ -531,6 +552,9 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
 
             migrationBuilder.DropTable(
                 name: "ETags");
+
+            migrationBuilder.DropTable(
+                name: "Leases");
 
             migrationBuilder.DropTable(
                 name: "PackageDependencies");
