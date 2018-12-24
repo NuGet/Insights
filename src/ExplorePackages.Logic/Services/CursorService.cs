@@ -9,7 +9,7 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class CursorService
     {
-        private static readonly DateTimeOffset DefaultCursor = new DateTimeOffset(2018, 12, 22, 22, 0, 0, TimeSpan.Zero);
+        private static readonly DateTimeOffset DefaultCursor = DateTimeOffset.MinValue;
         private readonly EntityContextFactory _entityContextFactory;
 
         public CursorService(
