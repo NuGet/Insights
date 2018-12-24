@@ -42,6 +42,7 @@ namespace Knapcode.ExplorePackages.Logic
         {
             return new ExplorePackagesSettings
             {
+                DatabaseType = DatabaseType,
                 DatabaseConnectionString = DatabaseConnectionString,
                 PackagePath = PackagePath,
                 RunConsistencyChecks = RunConsistencyChecks,

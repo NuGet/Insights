@@ -308,7 +308,8 @@ namespace Knapcode.ExplorePackages.Entities
                 .Entity<PackageDependencyEntity>()
                 .HasOne(x => x.ParentPackage)
                 .WithMany(x => x.PackageDependencies)
-                .HasForeignKey(x => x.ParentPackageKey);
+                .HasForeignKey(x => x.ParentPackageKey)
+                .OnDelete(DeleteBehavior.Restrict);
             modelBuilder
                 .Entity<PackageDependencyEntity>()
                 .HasOne(x => x.Framework)

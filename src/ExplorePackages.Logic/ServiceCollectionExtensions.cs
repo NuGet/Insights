@@ -28,6 +28,8 @@ namespace Knapcode.ExplorePackages.Logic
                 {
                     case DatabaseType.Sqlite:
                         return x.GetRequiredService<SqliteEntityContext>();
+                    case DatabaseType.SqlServer:
+                        return x.GetRequiredService<SqlServerEntityContext>();
                     default:
                         throw new NotImplementedException($"The database type '{options.DatabaseType}' is not supported.");
                 }
@@ -40,6 +42,13 @@ namespace Knapcode.ExplorePackages.Logic
                 var options = x.GetRequiredService<ExplorePackagesSettings>();
                 dbContextOptionsBuilder
                     .UseSqlite(options.DatabaseConnectionString);
+            }, contextLifetime: ServiceLifetime.Transient);
+
+            serviceCollection.AddDbContext<SqlServerEntityContext>((x, dbContextOptionsBuilder) =>
+            {
+                var options = x.GetRequiredService<ExplorePackagesSettings>();
+                dbContextOptionsBuilder
+                    .UseSqlServer(options.DatabaseConnectionString);
             }, contextLifetime: ServiceLifetime.Transient);
 
             serviceCollection.AddSingleton<UrlReporterProvider>();
@@ -77,17 +86,21 @@ namespace Knapcode.ExplorePackages.Logic
                     return httpClient;
                 });
             serviceCollection.AddSingleton(
-                x => new HttpSource(
-                    new PackageSource(settings.V3ServiceIndex),
-                    () =>
-                    {
-                        var httpClientHandler = x.GetRequiredService<HttpClientHandler>();
-                        var httpMessageHandler = x.GetRequiredService<HttpMessageHandler>();
-                        return Task.FromResult<HttpHandlerResource>(new HttpHandlerResourceV3(
-                            httpClientHandler,
-                            httpMessageHandler));
-                    },
-                    NullThrottle.Instance));
+                x =>
+                {
+                    var options = x.GetRequiredService<ExplorePackagesSettings>();
+                    return new HttpSource(
+                        new PackageSource(options.V3ServiceIndex),
+                        () =>
+                        {
+                            var httpClientHandler = x.GetRequiredService<HttpClientHandler>();
+                            var httpMessageHandler = x.GetRequiredService<HttpMessageHandler>();
+                            return Task.FromResult<HttpHandlerResource>(new HttpHandlerResourceV3(
+                                httpClientHandler,
+                                httpMessageHandler));
+                        },
+                        NullThrottle.Instance);
+                });
 
             var searchServiceUrlCache = new SearchServiceUrlCache();
             serviceCollection.AddSingleton(searchServiceUrlCache);

@@ -1,7 +1,8 @@
 ﻿using System;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
+namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
 {
     public partial class Initial : Migration
     {
@@ -12,7 +13,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                 columns: table => new
                 {
                     CatalogPageKey = table.Column<long>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     Url = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
@@ -25,7 +26,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                 columns: table => new
                 {
                     CursorKey = table.Column<long>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     Name = table.Column<string>(nullable: false),
                     Value = table.Column<long>(nullable: false)
                 },
@@ -39,7 +40,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                 columns: table => new
                 {
                     ETagKey = table.Column<long>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     Name = table.Column<string>(nullable: false),
                     Value = table.Column<string>(nullable: true)
                 },
@@ -53,7 +54,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                 columns: table => new
                 {
                     FrameworkKey = table.Column<long>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     Value = table.Column<string>(nullable: false),
                     OriginalValue = table.Column<string>(nullable: false)
                 },
@@ -67,8 +68,8 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                 columns: table => new
                 {
                     PackageRegistrationKey = table.Column<long>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Id = table.Column<string>(type: "TEXT COLLATE NOCASE", nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    Id = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -80,7 +81,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                 columns: table => new
                 {
                     CatalogCommitKey = table.Column<long>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     CatalogPageKey = table.Column<long>(nullable: false),
                     CommitId = table.Column<string>(nullable: false),
                     CommitTimestamp = table.Column<long>(nullable: false),
@@ -102,7 +103,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                 columns: table => new
                 {
                     PackageQueryKey = table.Column<long>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     CursorKey = table.Column<long>(nullable: false),
                     Name = table.Column<string>(nullable: false)
                 },
@@ -122,10 +123,10 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                 columns: table => new
                 {
                     PackageKey = table.Column<long>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     PackageRegistrationKey = table.Column<long>(nullable: false),
-                    Version = table.Column<string>(type: "TEXT COLLATE NOCASE", nullable: false),
-                    Identity = table.Column<string>(type: "TEXT COLLATE NOCASE", nullable: false)
+                    Version = table.Column<string>(nullable: false),
+                    Identity = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -166,28 +167,28 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                     PackageKey = table.Column<long>(nullable: false),
                     Size = table.Column<long>(nullable: false),
                     EntryCount = table.Column<int>(nullable: false),
-                    CentralDirectorySize = table.Column<uint>(nullable: false),
+                    CentralDirectorySize = table.Column<long>(nullable: false),
                     Comment = table.Column<byte[]>(nullable: false),
-                    CommentSize = table.Column<ushort>(nullable: false),
-                    DiskWithStartOfCentralDirectory = table.Column<ushort>(nullable: false),
-                    EntriesForWholeCentralDirectory = table.Column<ushort>(nullable: false),
-                    EntriesInThisDisk = table.Column<ushort>(nullable: false),
-                    NumberOfThisDisk = table.Column<ushort>(nullable: false),
+                    CommentSize = table.Column<int>(nullable: false),
+                    DiskWithStartOfCentralDirectory = table.Column<int>(nullable: false),
+                    EntriesForWholeCentralDirectory = table.Column<int>(nullable: false),
+                    EntriesInThisDisk = table.Column<int>(nullable: false),
+                    NumberOfThisDisk = table.Column<int>(nullable: false),
                     OffsetAfterEndOfCentralDirectory = table.Column<long>(nullable: false),
-                    OffsetOfCentralDirectory = table.Column<uint>(nullable: false),
-                    Zip64CentralDirectorySize = table.Column<ulong>(nullable: true),
-                    Zip64DiskWithStartOfCentralDirectory = table.Column<uint>(nullable: true),
-                    Zip64DiskWithStartOfEndOfCentralDirectory = table.Column<uint>(nullable: true),
-                    Zip64EndOfCentralDirectoryOffset = table.Column<ulong>(nullable: true),
-                    Zip64EntriesForWholeCentralDirectory = table.Column<ulong>(nullable: true),
-                    Zip64EntriesInThisDisk = table.Column<ulong>(nullable: true),
-                    Zip64NumberOfThisDisk = table.Column<uint>(nullable: true),
+                    OffsetOfCentralDirectory = table.Column<long>(nullable: false),
+                    Zip64CentralDirectorySize = table.Column<decimal>(nullable: true),
+                    Zip64DiskWithStartOfCentralDirectory = table.Column<long>(nullable: true),
+                    Zip64DiskWithStartOfEndOfCentralDirectory = table.Column<long>(nullable: true),
+                    Zip64EndOfCentralDirectoryOffset = table.Column<decimal>(nullable: true),
+                    Zip64EntriesForWholeCentralDirectory = table.Column<decimal>(nullable: true),
+                    Zip64EntriesInThisDisk = table.Column<decimal>(nullable: true),
+                    Zip64NumberOfThisDisk = table.Column<long>(nullable: true),
                     Zip64OffsetAfterEndOfCentralDirectoryLocator = table.Column<long>(nullable: true),
-                    Zip64OffsetOfCentralDirectory = table.Column<ulong>(nullable: true),
-                    Zip64TotalNumberOfDisks = table.Column<uint>(nullable: true),
-                    Zip64SizeOfCentralDirectoryRecord = table.Column<ulong>(nullable: true),
-                    Zip64VersionMadeBy = table.Column<ushort>(nullable: true),
-                    Zip64VersionToExtract = table.Column<ushort>(nullable: true)
+                    Zip64OffsetOfCentralDirectory = table.Column<decimal>(nullable: true),
+                    Zip64TotalNumberOfDisks = table.Column<long>(nullable: true),
+                    Zip64SizeOfCentralDirectoryRecord = table.Column<decimal>(nullable: true),
+                    Zip64VersionMadeBy = table.Column<int>(nullable: true),
+                    Zip64VersionToExtract = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -205,7 +206,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                 columns: table => new
                 {
                     PackageDependencyKey = table.Column<long>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     ParentPackageKey = table.Column<long>(nullable: false),
                     DependencyPackageRegistrationKey = table.Column<long>(nullable: false),
                     FrameworkKey = table.Column<long>(nullable: true),
@@ -246,7 +247,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                         column: x => x.ParentPackageKey,
                         principalTable: "Packages",
                         principalColumn: "PackageKey",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -272,7 +273,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                 columns: table => new
                 {
                     PackageQueryMatchKey = table.Column<long>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     PackageKey = table.Column<long>(nullable: false),
                     PackageQueryKey = table.Column<long>(nullable: false)
                 },
@@ -320,7 +321,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                 columns: table => new
                 {
                     CatalogLeafKey = table.Column<long>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     CatalogCommitKey = table.Column<long>(nullable: false),
                     PackageKey = table.Column<long>(nullable: false),
                     Type = table.Column<int>(nullable: false),
@@ -349,28 +350,28 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                 columns: table => new
                 {
                     PackageEntryKey = table.Column<long>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     PackageKey = table.Column<long>(nullable: false),
-                    Index = table.Column<ulong>(nullable: false),
+                    Index = table.Column<decimal>(nullable: false),
                     Comment = table.Column<byte[]>(nullable: false),
                     ExtraField = table.Column<byte[]>(nullable: false),
                     Name = table.Column<byte[]>(nullable: false),
-                    LocalHeaderOffset = table.Column<uint>(nullable: false),
-                    ExternalAttributes = table.Column<uint>(nullable: false),
-                    InternalAttributes = table.Column<ushort>(nullable: false),
-                    DiskNumberStart = table.Column<ushort>(nullable: false),
-                    CommentSize = table.Column<ushort>(nullable: false),
-                    ExtraFieldSize = table.Column<ushort>(nullable: false),
-                    NameSize = table.Column<ushort>(nullable: false),
-                    UncompressedSize = table.Column<uint>(nullable: false),
-                    CompressedSize = table.Column<uint>(nullable: false),
-                    Crc32 = table.Column<uint>(nullable: false),
-                    LastModifiedDate = table.Column<ushort>(nullable: false),
-                    LastModifiedTime = table.Column<ushort>(nullable: false),
-                    CompressionMethod = table.Column<ushort>(nullable: false),
-                    Flags = table.Column<ushort>(nullable: false),
-                    VersionToExtract = table.Column<ushort>(nullable: false),
-                    VersionMadeBy = table.Column<ushort>(nullable: false)
+                    LocalHeaderOffset = table.Column<long>(nullable: false),
+                    ExternalAttributes = table.Column<long>(nullable: false),
+                    InternalAttributes = table.Column<int>(nullable: false),
+                    DiskNumberStart = table.Column<int>(nullable: false),
+                    CommentSize = table.Column<int>(nullable: false),
+                    ExtraFieldSize = table.Column<int>(nullable: false),
+                    NameSize = table.Column<int>(nullable: false),
+                    UncompressedSize = table.Column<long>(nullable: false),
+                    CompressedSize = table.Column<long>(nullable: false),
+                    Crc32 = table.Column<long>(nullable: false),
+                    LastModifiedDate = table.Column<int>(nullable: false),
+                    LastModifiedTime = table.Column<int>(nullable: false),
+                    CompressionMethod = table.Column<int>(nullable: false),
+                    Flags = table.Column<int>(nullable: false),
+                    VersionToExtract = table.Column<int>(nullable: false),
+                    VersionMadeBy = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -463,7 +464,8 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                 name: "IX_PackageDependencies_ParentPackageKey_DependencyPackageRegistrationKey_FrameworkKey",
                 table: "PackageDependencies",
                 columns: new[] { "ParentPackageKey", "DependencyPackageRegistrationKey", "FrameworkKey" },
-                unique: true);
+                unique: true,
+                filter: "[FrameworkKey] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PackageEntries_PackageKey_Index",

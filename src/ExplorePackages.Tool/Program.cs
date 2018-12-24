@@ -13,12 +13,22 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using NuGet.Protocol.Core.Types;
 
 namespace Knapcode.ExplorePackages.Tool
 {
     public class Program
     {
+        private static JsonSerializerSettings SerializerSettings = new JsonSerializerSettings
+        {
+            Converters =
+            {
+                new StringEnumConverter(),
+            },
+            Formatting = Formatting.Indented,
+        };
+
         private static IReadOnlyDictionary<string, Type> Commands = new Dictionary<string, Type>
         {
             { "backupdatabase", typeof(BackupDatabaseCommand) },
@@ -50,7 +60,7 @@ namespace Knapcode.ExplorePackages.Tool
             // Read and show the settings
             logger.LogInformation("===== settings =====");
             var settings = ReadSettingsFromDisk(logger) ?? new ExplorePackagesSettings();
-            logger.LogInformation(JsonConvert.SerializeObject(settings, Formatting.Indented));
+            logger.LogInformation(JsonConvert.SerializeObject(settings, SerializerSettings));
             logger.LogInformation("====================" + Environment.NewLine);
 
             // Allow 32 concurrent outgoing connections.
@@ -97,7 +107,7 @@ namespace Knapcode.ExplorePackages.Tool
 
             logger.LogInformation("Settings will be read from {SettingsPath}.", settingsPath);
             var content = File.ReadAllText(settingsPath);
-            var settings = JsonConvert.DeserializeObject<ExplorePackagesSettings>(content);
+            var settings = JsonConvert.DeserializeObject<ExplorePackagesSettings>(content, SerializerSettings);
 
             return settings;
         }
