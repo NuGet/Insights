@@ -28,6 +28,21 @@ namespace Knapcode.ExplorePackages.Entities
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder
+                .Entity<LeaseEntity>()
+                .ToTable("Leases");
+            modelBuilder
+                .Entity<LeaseEntity>()
+                .HasKey(x => x.LeaseKey);
+            modelBuilder
+                .Entity<LeaseEntity>()
+                .Property(x => x.Name)
+                .IsRequired();
+            modelBuilder
+                .Entity<LeaseEntity>()
+                .Property(x => x.RowVersion)
+                .IsRowVersion();
+
+            modelBuilder
                 .Entity<CursorEntity>()
                 .ToTable("Cursors");
             modelBuilder

@@ -166,6 +166,26 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
                     b.ToTable("Frameworks");
                 });
 
+            modelBuilder.Entity("Knapcode.ExplorePackages.Entities.LeaseEntity", b =>
+                {
+                    b.Property<long>("LeaseKey")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTimeOffset?>("End");
+
+                    b.Property<string>("Name")
+                        .IsRequired();
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate();
+
+                    b.HasKey("LeaseKey");
+
+                    b.ToTable("Leases");
+                });
+
             modelBuilder.Entity("Knapcode.ExplorePackages.Entities.PackageArchiveEntity", b =>
                 {
                     b.Property<long>("PackageKey");
