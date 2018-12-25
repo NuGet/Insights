@@ -16,6 +16,7 @@ namespace Knapcode.ExplorePackages.Entities
         DbSet<CursorEntity> Cursors { get; }
         DbSet<ETagEntity> ETags { get; }
         DbSet<FrameworkEntity> Frameworks { get; }
+        DbSet<LeaseEntity> Leases { get; }
         DbSet<PackageArchiveEntity> PackageArchives { get; }
         DbSet<PackageDependencyEntity> PackageDependencies { get; }
         DbSet<PackageDownloadsEntity> PackageDownloads { get; }
@@ -29,5 +30,6 @@ namespace Knapcode.ExplorePackages.Entities
         DatabaseFacade Database { get; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken));
         Task AddRangeAsync(IEnumerable<object> entities, CancellationToken cancellationToken = default(CancellationToken));
+        bool IsUniqueConstraintViolationException(Exception exception);
     }
 }

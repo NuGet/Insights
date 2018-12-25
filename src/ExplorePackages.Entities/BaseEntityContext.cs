@@ -2,12 +2,13 @@
 
 namespace Knapcode.ExplorePackages.Entities
 {
-    public abstract class BaseEntityContext<T> : DbContext, IEntityContext where T : DbContext
+    public abstract class BaseEntityContext<T> : DbContext where T : DbContext
     {
         public BaseEntityContext(DbContextOptions<T> options) : base(options)
         {
         }
 
+        public DbSet<LeaseEntity> Leases { get; set; }
         public DbSet<PackageRegistrationEntity> PackageRegistrations { get; set; }
         public DbSet<PackageEntity> Packages { get; set; }
         public DbSet<CursorEntity> Cursors { get; set; }

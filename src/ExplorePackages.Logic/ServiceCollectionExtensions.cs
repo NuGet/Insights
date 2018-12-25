@@ -166,6 +166,7 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<CatalogService>();
             serviceCollection.AddTransient<PackageDependencyService>();
             serviceCollection.AddTransient<ProblemService>();
+            serviceCollection.AddTransient<LeaseService>();
 
             serviceCollection.AddTransient<V2Parser>();
             serviceCollection.AddSingleton<ServiceIndexCache>();

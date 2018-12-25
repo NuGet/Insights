@@ -1,10 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
 namespace Knapcode.ExplorePackages.Entities
 {
-    public class SqliteEntityContext : BaseEntityContext<SqliteEntityContext>
+    public class SqliteEntityContext : BaseEntityContext<SqliteEntityContext>, IEntityContext
     {
         public SqliteEntityContext(DbContextOptions<SqliteEntityContext> options) : base(options)
         {
@@ -23,6 +24,20 @@ namespace Knapcode.ExplorePackages.Entities
                 await destinationConnection.OpenAsync();
                 sourceConnection.BackupDatabase(destinationConnection);
             }
+        }
+
+        /// <summary>
+        /// Source: https://www.sqlite.org/c3ref/c_abort.html
+        /// </summary>
+        public bool IsUniqueConstraintViolationException(Exception exception)
+        {
+            var baseException = exception.GetBaseException();
+            if (baseException is SqliteException sqliteException)
+            {
+                return sqliteException.SqliteErrorCode == 19;
+            }
+
+            return false;
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
