@@ -11,7 +11,6 @@ using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    [Collection(DatabaseCollection.Name)]
     public class PackageServiceTest
     {
         public class AddOrUpdatePackagesAsync_PackageArchiveMetadata : IDisposable
