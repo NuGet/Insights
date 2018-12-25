@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class LeaseService
+    public class LeaseService : ILeaseService
     {
         private static readonly TimeSpan LeaseDuration = TimeSpan.FromMinutes(15);
 

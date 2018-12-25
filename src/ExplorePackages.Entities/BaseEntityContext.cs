@@ -2,7 +2,7 @@
 
 namespace Knapcode.ExplorePackages.Entities
 {
-    public abstract class BaseEntityContext<T> : DbContext where T : DbContext
+    public abstract class BaseEntityContext<T> : DbContext where T : DbContext, IEntityContext
     {
         public BaseEntityContext(DbContextOptions<T> options) : base(options)
         {
