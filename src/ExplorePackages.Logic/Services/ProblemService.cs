@@ -4,7 +4,6 @@ using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -117,7 +116,7 @@ namespace Knapcode.ExplorePackages.Logic
             Action<DbCommand> configureCommand,
             Func<DbDataReader, T> readRecord)
         {
-            using (var context = _entityContextFactory.Get())
+            using (var context = await _entityContextFactory.GetAsync())
             using (var connection = context.Database.GetDbConnection())
             using (var command = connection.CreateCommand())
             {

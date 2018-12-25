@@ -1,6 +1,5 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Logic;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +21,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 
         public async Task ExecuteAsync(CancellationToken token)
         {
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 var package = await entityContext.Packages.FirstOrDefaultAsync();
             }

@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Knapcode.MiniZip;
-using Microsoft.EntityFrameworkCore;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -42,7 +41,7 @@ namespace Knapcode.ExplorePackages.Logic
                 // Arrange
                 var id = "Knapcode.MiniZip";
                 var ver = "0.4.0";
-                using (var entityContext = _entityContextFactory.Get())
+                using (var entityContext = await _entityContextFactory.GetAsync())
                 {
                     await entityContext.Database.EnsureCreatedAsync();
 
@@ -73,7 +72,7 @@ namespace Knapcode.ExplorePackages.Logic
                 await target.AddOrUpdatePackagesAsync(new[] { b });
 
                 // Assert
-                using (var entityContext = _entityContextFactory.Get())
+                using (var entityContext = await _entityContextFactory.GetAsync())
                 {
                     var archives = entityContext.PackageArchives.ToList();
                     Assert.Single(archives);
@@ -95,7 +94,7 @@ namespace Knapcode.ExplorePackages.Logic
                 // Arrange
                 var id = "Knapcode.MiniZip";
                 var ver = "0.4.0";
-                using (var entityContext = _entityContextFactory.Get())
+                using (var entityContext = await _entityContextFactory.GetAsync())
                 {
                     await entityContext.Database.EnsureCreatedAsync();
 
@@ -126,7 +125,7 @@ namespace Knapcode.ExplorePackages.Logic
                 await target.AddOrUpdatePackagesAsync(new[] { b });
 
                 // Assert
-                using (var entityContext = _entityContextFactory.Get())
+                using (var entityContext = await _entityContextFactory.GetAsync())
                 {
                     var archives = entityContext.PackageArchives.ToList();
                     Assert.Single(archives);
@@ -147,7 +146,7 @@ namespace Knapcode.ExplorePackages.Logic
                 // Arrange
                 var id = "Knapcode.MiniZip";
                 var ver = "0.4.0";
-                using (var entityContext = _entityContextFactory.Get())
+                using (var entityContext = await _entityContextFactory.GetAsync())
                 {
                     await entityContext.Database.EnsureCreatedAsync();
 
@@ -178,7 +177,7 @@ namespace Knapcode.ExplorePackages.Logic
                 await target.AddOrUpdatePackagesAsync(new[] { b });
 
                 // Assert
-                using (var entityContext = _entityContextFactory.Get())
+                using (var entityContext = await _entityContextFactory.GetAsync())
                 {
                     var archives = entityContext.PackageArchives.ToList();
                     Assert.Single(archives);

@@ -16,7 +16,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task<string> GetValueAsync(string name)
         {
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 var etag = await GetETagAsync(entityContext, name);
 
@@ -26,7 +26,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task SetValueAsync(string name, string value)
         {
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 var etag = await GetETagAsync(entityContext, name);
                 if (etag == null)

@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
+using Knapcode.ExplorePackages.Logic;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 
@@ -32,7 +33,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 
         public async Task ExecuteAsync(CancellationToken token)
         {
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 var sqliteEntityContext = entityContext as SqliteEntityContext;
                 if (sqliteEntityContext == null)

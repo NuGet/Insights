@@ -8,8 +8,6 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class LeaseService : ILeaseService
     {
-        private static readonly TimeSpan LeaseDuration = TimeSpan.FromMinutes(15);
-
         private readonly EntityContextFactory _entityContextFactory;
 
         public LeaseService(
@@ -20,7 +18,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task<LeaseResult> GetAsync(string name)
         {
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 return await GetAsync(name, entityContext);
             }
@@ -36,9 +34,9 @@ namespace Knapcode.ExplorePackages.Logic
             return new LeaseResult(lease, acquired: false);
         }
 
-        public async Task<LeaseResult> TryAcquireAsync(string name)
+        public async Task<LeaseResult> TryAcquireAsync(string name, TimeSpan leaseDuration)
         {
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 var lease = await entityContext
                     .Leases
@@ -50,7 +48,7 @@ namespace Knapcode.ExplorePackages.Logic
                     entityContext.Leases.Add(new LeaseEntity
                     {
                         Name = name,
-                        End = DateTimeOffset.UtcNow.Add(LeaseDuration),
+                        End = DateTimeOffset.UtcNow.Add(leaseDuration),
                     });
 
                     try
@@ -70,7 +68,7 @@ namespace Knapcode.ExplorePackages.Logic
                         return new LeaseResult(lease, acquired: false);
                     }
 
-                    lease.End = DateTimeOffset.UtcNow.Add(LeaseDuration);
+                    lease.End = DateTimeOffset.UtcNow.Add(leaseDuration);
 
                     try
                     {

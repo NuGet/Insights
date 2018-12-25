@@ -52,7 +52,7 @@ namespace Knapcode.ExplorePackages.Logic
             long end,
             int batchSize)
         {
-            using (var entities = _entityContextFactory.Get())
+            using (var entities = await _entityContextFactory.GetAsync())
             {
                 return await queryEntities(entities)
                     .Include(x => x.PackageRegistration)

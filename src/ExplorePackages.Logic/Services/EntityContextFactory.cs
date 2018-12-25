@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Entities;
 
-namespace Knapcode.ExplorePackages.Entities
+namespace Knapcode.ExplorePackages.Logic
 {
     public class EntityContextFactory
     {
@@ -11,9 +13,9 @@ namespace Knapcode.ExplorePackages.Entities
             _getEntityContext = getEntityContext;
         }
 
-        public IEntityContext Get()
+        public Task<IEntityContext> GetAsync()
         {
-            return _getEntityContext();
+            return Task.FromResult(_getEntityContext());
         }
     }
 }

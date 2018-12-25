@@ -32,7 +32,7 @@ namespace Knapcode.ExplorePackages.Logic
             int skip,
             int take)
         {
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 var dependencies = await entityContext
                     .PackageDependencies
@@ -174,7 +174,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         private async Task CommitUpdates(DependencyPackageUpdates updates)
         {
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             using (var connection = entityContext.Database.GetDbConnection())
             {
                 await connection.OpenAsync();
@@ -277,7 +277,7 @@ namespace Knapcode.ExplorePackages.Logic
                 .ToList();
             var idToPackageRegistration = await _packageService.AddPackageRegistrationsAsync(ids, includePackages: false);
 
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 foreach (var dependencyGroups in packages)
                 {
@@ -459,7 +459,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         private async Task<IReadOnlyDictionary<string, FrameworkEntity>> AddOrUpdateFrameworksAsync(IReadOnlyList<ParsedFramework> parsedFrameworks)
         {
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 var originalValueToValue = parsedFrameworks
                     .GroupBy(x => x.OriginalValue)

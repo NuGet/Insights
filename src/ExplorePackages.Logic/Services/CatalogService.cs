@@ -37,7 +37,7 @@ namespace Knapcode.ExplorePackages.Logic
             IReadOnlyDictionary<CatalogEntry, bool> entryToListed)
         {
             _logger.LogInformation("Adding or updating catalog page {PageUri}.", page.Uri.OriginalString);
-            using (var context = _entityContextFactory.Get())
+            using (var context = await _entityContextFactory.GetAsync())
             {
                 var pageUrl = page.Uri.OriginalString;
                 var existing = await context

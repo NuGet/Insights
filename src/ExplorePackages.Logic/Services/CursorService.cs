@@ -20,7 +20,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task<CursorEntity> GetAsync(string name)
         {
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 return await GetCursorAsync(entityContext, name);
             }
@@ -28,7 +28,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task<DateTimeOffset> GetValueAsync(string name)
         {
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 var cursor = await GetCursorAsync(entityContext, name);
 
@@ -38,7 +38,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task<DateTimeOffset> GetMinimumAsync(IReadOnlyList<string> names)
         {
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 var cursors = await entityContext
                     .Cursors
@@ -62,7 +62,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task SetValuesAsync(IReadOnlyList<string> names, DateTimeOffset value)
         {
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 var existingCursors = await entityContext
                     .Cursors
@@ -93,7 +93,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task SetValueAsync(string name, DateTimeOffset value)
         {
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 var cursor = await GetCursorAsync(entityContext, name);
                 if (cursor == null)
@@ -110,7 +110,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task EnsureExistsAsync(string name)
         {
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 var cursor = await GetCursorAsync(entityContext, name);
                 if (cursor == null)

@@ -52,7 +52,7 @@ namespace Knapcode.ExplorePackages.Logic
             long end,
             int batchSize)
         {
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             using (var connection = entityContext.Database.GetDbConnection())
             using (var command = connection.CreateCommand())
             {

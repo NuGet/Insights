@@ -26,7 +26,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task AddQueryAsync(string queryName, string cursorName)
         {
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 var query = await GetQueryAsync(queryName, entityContext);
 
@@ -63,7 +63,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task<PackageQueryMatches> GetMatchedPackagesAsync(string queryName, long lastKey)
         {
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 var matches = await entityContext
                     .PackageQueryMatches
@@ -106,7 +106,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task RemoveMatchesAsync(string queryName, IReadOnlyList<PackageIdentity> identities)
         {
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 var query = await GetQueryAsync(queryName, entityContext);
                 if (query == null)
@@ -124,7 +124,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task AddMatchesAsync(string queryName, IReadOnlyList<PackageIdentity> identities)
         {
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 // Find the query.
                 var query = await GetQueryAsync(queryName, entityContext);

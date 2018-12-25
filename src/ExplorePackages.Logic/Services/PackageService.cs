@@ -56,7 +56,7 @@ namespace Knapcode.ExplorePackages.Logic
             IEnumerable<string> ids,
             bool includePackages)
         {
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 var registrations = await AddPackageRegistrationsAsync(
                     entityContext,
@@ -72,7 +72,7 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task<PackageEntity> GetPackageOrNullAsync(string id, string version)
         {
             var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 return await entityContext
                     .Packages
@@ -86,7 +86,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task<IReadOnlyList<PackageEntity>> GetBatchAsync(IReadOnlyList<PackageIdentity> identities)
         {
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 var identityStrings = identities
                     .Select(x => $"{x.Id}/{x.Version}")
@@ -148,7 +148,7 @@ namespace Knapcode.ExplorePackages.Logic
             Func<PackageEntity, T, Task> updatePackageFromForeignAsync,
             Action<IEntityContext, PackageEntity, PackageEntity> updateExistingPackage)
         {
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 var packageRegistrations = await AddPackageRegistrationsAsync(
                     entityContext,
@@ -424,7 +424,7 @@ namespace Knapcode.ExplorePackages.Logic
             var changeCount = 0;
             var stopwatch = Stopwatch.StartNew();
 
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             using (var connection = entityContext.Database.GetDbConnection())
             {
                 await connection.OpenAsync();
@@ -558,7 +558,7 @@ namespace Knapcode.ExplorePackages.Logic
                 return;
             }
 
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 var selectStopwatch = Stopwatch.StartNew();
                 var existingPackages = await entityContext
@@ -588,7 +588,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task<IReadOnlyList<PackageEntity>> GetPackagesWithDependenciesAsync(IReadOnlyList<PackageIdentity> identities)
         {
-            using (var entityContext = _entityContextFactory.Get())
+            using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 var identityValues = identities
                     .Select(x => x.Value)
