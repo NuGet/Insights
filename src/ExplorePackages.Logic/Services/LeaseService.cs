@@ -8,6 +8,10 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class LeaseService : ILeaseService
     {
+        private const string NotAcquiredAtAll = "The provided lease was not acquired in the first place.";
+        private const string AcquiredBySomeoneElse = "The lease has be acquired by someone else.";
+        private const string NotAvailable = "The lease is not available yet.";
+
         private readonly EntityContextFactory _entityContextFactory;
 
         public LeaseService(
@@ -27,8 +31,30 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
-        public async Task<LeaseResult> TryReleaseAsync(LeaseEntity lease)
+        public async Task ReleaseAsync(LeaseEntity lease)
         {
+            await TryReleaseAsync(lease, shouldThrow: true);
+        }
+
+        public async Task<bool> TryReleaseAsync(LeaseEntity lease)
+        {
+            return await TryReleaseAsync(lease, shouldThrow: false);
+        }
+
+        private async Task<bool> TryReleaseAsync(LeaseEntity lease, bool shouldThrow)
+        {
+            if (lease.End == null)
+            {
+                if (shouldThrow)
+                {
+                    throw new ArgumentException(NotAcquiredAtAll, nameof(lease));
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
             using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 entityContext.Leases.Attach(lease);
@@ -37,18 +63,46 @@ namespace Knapcode.ExplorePackages.Logic
                 try
                 {
                     await entityContext.SaveChangesAsync();
+                    return true;
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (DbUpdateConcurrencyException ex)
                 {
-                    // This means someone else has since acquired the lease. Ignore this failure.
+                    if (shouldThrow)
+                    {
+                        throw new InvalidOperationException(AcquiredBySomeoneElse, ex);
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
-
-                return LeaseResult.NotLeased();
             }
         }
 
-        public async Task<LeaseResult> RenewAsync(LeaseEntity lease, TimeSpan leaseDuration)
+        public async Task RenewAsync(LeaseEntity lease, TimeSpan leaseDuration)
         {
+            await TryRenewAsync(lease, leaseDuration, shouldThrow: true);
+        }
+
+        public async Task<bool> TryRenewAsync(LeaseEntity lease, TimeSpan leaseDuration)
+        {
+            return await TryRenewAsync(lease, leaseDuration, shouldThrow: false);
+        }
+
+        private async Task<bool> TryRenewAsync(LeaseEntity lease, TimeSpan leaseDuration, bool shouldThrow)
+        {
+            if (lease.End == null)
+            {
+                if (shouldThrow)
+                {
+                    throw new ArgumentException(NotAcquiredAtAll, nameof(lease));
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
             using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 entityContext.Leases.Attach(lease);
@@ -57,16 +111,34 @@ namespace Knapcode.ExplorePackages.Logic
                 try
                 {
                     await entityContext.SaveChangesAsync();
-                    return LeaseResult.Leased(lease);
+                    return true;
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (DbUpdateConcurrencyException ex)
                 {
-                    return LeaseResult.NotLeased();
+                    if (shouldThrow)
+                    {
+                        throw new InvalidOperationException(AcquiredBySomeoneElse, ex);
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
             }
         }
 
+        public async Task<LeaseEntity> AcquireAsync(string name, TimeSpan leaseDuration)
+        {
+            var result = await TryAcquireAsync(name, leaseDuration, shouldThrow: true);
+            return result.Lease;
+        }
+
         public async Task<LeaseResult> TryAcquireAsync(string name, TimeSpan leaseDuration)
+        {
+            return await TryAcquireAsync(name, leaseDuration, shouldThrow: false);
+        }
+
+        private async Task<LeaseResult> TryAcquireAsync(string name, TimeSpan leaseDuration, bool shouldThrow)
         {
             using (var entityContext = await _entityContextFactory.GetAsync())
             {
@@ -91,14 +163,28 @@ namespace Knapcode.ExplorePackages.Logic
                     }
                     catch (Exception ex) when (entityContext.IsUniqueConstraintViolationException(ex))
                     {
-                        return LeaseResult.NotLeased();
+                        if (shouldThrow)
+                        {
+                            throw new InvalidOperationException(NotAvailable, ex);
+                        }
+                        else
+                        {
+                            return LeaseResult.NotLeased();
+                        }
                     }
                 }
                 else
                 {
                     if (lease.End.HasValue && lease.End.Value > DateTimeOffset.UtcNow)
                     {
-                        return LeaseResult.NotLeased();
+                        if (shouldThrow)
+                        {
+                            throw new InvalidOperationException(NotAvailable);
+                        }
+                        else
+                        {
+                            return LeaseResult.NotLeased();
+                        }
                     }
 
                     lease.End = DateTimeOffset.UtcNow.Add(leaseDuration);
@@ -108,9 +194,16 @@ namespace Knapcode.ExplorePackages.Logic
                         await entityContext.SaveChangesAsync();
                         return LeaseResult.Leased(lease);
                     }
-                    catch (DbUpdateConcurrencyException)
+                    catch (DbUpdateConcurrencyException ex)
                     {
-                        return LeaseResult.NotLeased();
+                        if (shouldThrow)
+                        {
+                            throw new InvalidOperationException(NotAvailable, ex);
+                        }
+                        else
+                        {
+                            return LeaseResult.NotLeased();
+                        }
                     }
                 }
             }

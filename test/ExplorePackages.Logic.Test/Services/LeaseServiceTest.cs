@@ -10,9 +10,9 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class LeaseServiceTest
     {
-        public class GetAsync : BaseTest
+        public class GetOrNullAsync : BaseTest
         {
-            public GetAsync(ITestOutputHelper output) : base(output)
+            public GetOrNullAsync(ITestOutputHelper output) : base(output)
             {
             }
             
@@ -52,9 +52,9 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
-        public class ReleaseAsync : BaseTest
+        public class TryReleaseAsync : BaseTest
         {
-            public ReleaseAsync(ITestOutputHelper output) : base(output)
+            public TryReleaseAsync(ITestOutputHelper output) : base(output)
             {
             }
 
@@ -78,10 +78,10 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 var leaseResultA = await Target.TryAcquireAsync(LeaseName, Duration);
 
-                var leaseResultB = await Target.TryReleaseAsync(leaseResultA.Lease);
+                var released = await Target.TryReleaseAsync(leaseResultA.Lease);
 
-                Assert.False(leaseResultB.Acquired);
-                Assert.Null(leaseResultB.Lease);
+                Assert.True(released);
+                Assert.Null(leaseResultA.Lease.End);
             }
 
             [Fact]
@@ -95,10 +95,32 @@ namespace Knapcode.ExplorePackages.Logic
                     await entityContext.SaveChangesAsync();
                 }
 
-                var leaseResultB = await Target.TryReleaseAsync(leaseResultA.Lease);
+                var released = await Target.TryReleaseAsync(leaseResultA.Lease);
 
-                Assert.False(leaseResultB.Acquired);
-                Assert.NotSame(leaseResultA.Lease, leaseResultB.Lease);
+                Assert.False(released);
+            }
+        }
+
+        public class ReleaseAsync : BaseTest
+        {
+            public ReleaseAsync(ITestOutputHelper output) : base(output)
+            {
+            }
+
+            [Fact]
+            public async Task FailsToReleaseLostLease()
+            {
+                var leaseResultA = await Target.TryAcquireAsync(LeaseName, Duration);
+                using (var entityContext = await EntityContextFactory.GetAsync())
+                {
+                    var lease = await entityContext.Leases.SingleAsync(x => x.Name == LeaseName);
+                    lease.End = lease.End.Value.Add(Duration);
+                    await entityContext.SaveChangesAsync();
+                }
+
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => Target.ReleaseAsync(leaseResultA.Lease));
+                Assert.Equal("The lease has be acquired by someone else.", ex.Message);
             }
         }
 
@@ -109,14 +131,38 @@ namespace Knapcode.ExplorePackages.Logic
             }
 
             [Fact]
+            public async Task FailsToRenewLostLease()
+            {
+                var leaseResultA = await Target.TryAcquireAsync(LeaseName, Duration);
+                using (var entityContext = await EntityContextFactory.GetAsync())
+                {
+                    var lease = await entityContext.Leases.SingleAsync(x => x.Name == LeaseName);
+                    lease.End = lease.End.Value.Add(Duration);
+                    await entityContext.SaveChangesAsync();
+                }
+
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => Target.RenewAsync(leaseResultA.Lease, Duration));
+                Assert.Equal("The lease has be acquired by someone else.", ex.Message);
+            }
+        }
+
+        public class TryRenewAsync : BaseTest
+        {
+            public TryRenewAsync(ITestOutputHelper output) : base(output)
+            {
+            }
+
+            [Fact]
             public async Task RenewsWhenLeaseIsStillActive()
             {
                 var leaseResult = await Target.TryAcquireAsync(LeaseName, TimeSpan.Zero);
 
                 var before = DateTimeOffset.UtcNow;
-                await Target.RenewAsync(leaseResult.Lease, Duration);
+                var renewed = await Target.TryRenewAsync(leaseResult.Lease, Duration);
                 var after = DateTimeOffset.UtcNow;
 
+                Assert.True(renewed);
                 Assert.InRange(leaseResult.Lease.End.Value, before.Add(Duration), after.Add(Duration));
             }
 
@@ -131,10 +177,94 @@ namespace Knapcode.ExplorePackages.Logic
                     await entityContext.SaveChangesAsync();
                 }
 
-                var leaseResultB = await Target.RenewAsync(leaseResultA.Lease, Duration);
+                var renewed = await Target.TryRenewAsync(leaseResultA.Lease, Duration);
 
-                Assert.False(leaseResultB.Acquired);
-                Assert.NotSame(leaseResultA.Lease, leaseResultB.Lease);
+                Assert.False(renewed);
+            }
+        }
+
+        public class AcquireAsync : BaseTest
+        {
+            public AcquireAsync(ITestOutputHelper output) : base(output)
+            {
+            }
+
+            [Fact]
+            public async Task DoesNotAcquireWhenEndIsFuture()
+            {
+                var end = DateTimeOffset.UtcNow.AddHours(1);
+                LeaseEntity lease;
+                using (var entityContext = await EntityContextFactory.GetAsync())
+                {
+                    lease = new LeaseEntity
+                    {
+                        Name = LeaseName,
+                        End = end,
+                    };
+                    entityContext.Leases.Add(lease);
+                    await entityContext.SaveChangesAsync();
+                }
+
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => Target.AcquireAsync(LeaseName, Duration));
+                Assert.Equal("The lease is not available yet.", ex.Message);
+            }
+
+            [Fact]
+            public async Task DoesNotAcquireWhenSomeoneElseLeasesFirst()
+            {
+                using (var entityContext = await EntityContextFactory.GetAsync())
+                {
+                    var lease = new LeaseEntity
+                    {
+                        Name = LeaseName,
+                        End = DateTimeOffset.UtcNow.AddMinutes(-1),
+                    };
+                    entityContext.Leases.Add(lease);
+                    await entityContext.SaveChangesAsync();
+                }
+
+                var end = DateTimeOffset.UtcNow.AddHours(1);
+                ExecuteBeforeCommitAsync = async () =>
+                {
+                    using (var entityContext = await UnhookedEntityContextFactory.GetAsync())
+                    {
+                        var lease = await entityContext
+                            .Leases
+                            .Where(x => x.Name == LeaseName)
+                            .FirstAsync();
+                        lease.End = end;
+                        var changes = await entityContext.SaveChangesAsync();
+                    }
+                };
+
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => Target.AcquireAsync(LeaseName, Duration));
+                Assert.Equal("The lease is not available yet.", ex.Message);
+                Assert.IsType<DbUpdateConcurrencyException>(ex.InnerException);
+            }
+
+            [Fact]
+            public async Task DoesNotAcquireWhenSomeoneElseAddsTheLeaseFirst()
+            {
+                var end = DateTimeOffset.UtcNow.AddHours(1);
+                ExecuteBeforeCommitAsync = async () =>
+                {
+                    using (var entityContext = await UnhookedEntityContextFactory.GetAsync())
+                    {
+                        entityContext.Leases.Add(new LeaseEntity
+                        {
+                            Name = LeaseName,
+                            End = end,
+                        });
+                        await entityContext.SaveChangesAsync();
+                    }
+                };
+
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => Target.AcquireAsync(LeaseName, Duration));
+                Assert.Equal("The lease is not available yet.", ex.Message);
+                Assert.NotNull(ex.InnerException);
             }
         }
 
