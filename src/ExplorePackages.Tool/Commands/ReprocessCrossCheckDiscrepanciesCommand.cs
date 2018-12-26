@@ -3,10 +3,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
-using Knapcode.ExplorePackages.Tool.Commands;
 using McMaster.Extensions.CommandLineUtils;
 
-namespace Knapcode.ExplorePackages.Tool
+namespace Knapcode.ExplorePackages.Tool.Commands
 {
     public class ReprocessCrossCheckDiscrepanciesCommand : ICommand
     {
