@@ -70,7 +70,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(nullable: false),
                     End = table.Column<DateTimeOffset>(nullable: true),
-                    RowVersion = table.Column<byte[]>(rowVersion: true, nullable: true)
+                    RowVersion = table.Column<string>(rowVersion: true, nullable: true)
                 },
                 constraints: table =>
                 {

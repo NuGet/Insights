@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Knapcode.ExplorePackages.Entities
 {
@@ -58,6 +61,41 @@ namespace Knapcode.ExplorePackages.Entities
                 .Entity<PackageEntity>()
                 .Property(x => x.Identity)
                 .HasColumnType("TEXT COLLATE NOCASE");
+
+            // Source: https://stackoverflow.com/a/52738603
+            var timestampProperties = modelBuilder
+                .Model
+                .GetEntityTypes()
+                .SelectMany(t => t.GetProperties())
+                .Where(p => p.ClrType == typeof(byte[])
+                    && p.ValueGenerated == ValueGenerated.OnAddOrUpdate
+                    && p.IsConcurrencyToken);
+            foreach (var property in timestampProperties)
+            {
+                property.SetValueConverter(new SqliteTimestampConverter());
+            }
+        }
+
+        /// <summary>
+        /// Source: https://stackoverflow.com/a/52738603
+        /// </summary>
+        private class SqliteTimestampConverter : ValueConverter<byte[], string>
+        {
+            public SqliteTimestampConverter() : base(
+                v => v == null ? null : ToDb(v),
+                v => v == null ? null : FromDb(v))
+            {
+            }
+
+            private static byte[] FromDb(string v)
+            {
+                return v.Select(c => (byte)c).ToArray();
+            }
+
+            private static string ToDb(byte[] v)
+            {
+                return new string(v.Select(b => (char)b).ToArray());
+            }
         }
     }
 }

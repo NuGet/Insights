@@ -13,25 +13,10 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class PackageServiceTest
     {
-        public class AddOrUpdatePackagesAsync_PackageArchiveMetadata : IDisposable
+        public class AddOrUpdatePackagesAsync_PackageArchiveMetadata : BaseDatabaseTest
         {
-            private readonly ITestOutputHelper _output;
-            private readonly string _databasePath;
-            private readonly TestEntityContextFactory _entityContextFactory;
-
-            public AddOrUpdatePackagesAsync_PackageArchiveMetadata(ITestOutputHelper output)
+            public AddOrUpdatePackagesAsync_PackageArchiveMetadata(ITestOutputHelper output) : base(output)
             {
-                _output = output;
-                _databasePath = Path.GetTempFileName();
-                _entityContextFactory = TestEntityContextFactory.Create(_databasePath);
-            }
-
-            public void Dispose()
-            {
-                if (File.Exists(_databasePath))
-                {
-                    File.Delete(_databasePath);
-                }
             }
 
             [Fact]
@@ -40,10 +25,8 @@ namespace Knapcode.ExplorePackages.Logic
                 // Arrange
                 var id = "Knapcode.MiniZip";
                 var ver = "0.4.0";
-                using (var entityContext = await _entityContextFactory.GetAsync())
+                using (var entityContext = await EntityContextFactory.GetAsync())
                 {
-                    await entityContext.Database.EnsureCreatedAsync();
-
                     var packageRegistration = new PackageRegistrationEntity { Id = id };
                     entityContext.PackageRegistrations.Add(packageRegistration);
                     var package = new PackageEntity
@@ -57,11 +40,11 @@ namespace Knapcode.ExplorePackages.Logic
                     await entityContext.SaveChangesAsync();
                 }
 
-                var packageEnumerator = new PackageCommitEnumerator(_entityContextFactory);
+                var packageEnumerator = new PackageCommitEnumerator(EntityContextFactory);
                 var target = new PackageService(
                     packageEnumerator,
-                    _entityContextFactory,
-                    _output.GetLogger<PackageService>());
+                    EntityContextFactory,
+                    Output.GetLogger<PackageService>());
                 
                 var a = await CreateArchiveAsync(id, ver, new ZipEntry("a.txt"));
                 var b = await CreateArchiveAsync(id, ver, new ZipEntry("a.txt"), new ZipEntry("b.txt"));
@@ -71,7 +54,7 @@ namespace Knapcode.ExplorePackages.Logic
                 await target.AddOrUpdatePackagesAsync(new[] { b });
 
                 // Assert
-                using (var entityContext = await _entityContextFactory.GetAsync())
+                using (var entityContext = await EntityContextFactory.GetAsync())
                 {
                     var archives = entityContext.PackageArchives.ToList();
                     Assert.Single(archives);
@@ -93,10 +76,8 @@ namespace Knapcode.ExplorePackages.Logic
                 // Arrange
                 var id = "Knapcode.MiniZip";
                 var ver = "0.4.0";
-                using (var entityContext = await _entityContextFactory.GetAsync())
+                using (var entityContext = await EntityContextFactory.GetAsync())
                 {
-                    await entityContext.Database.EnsureCreatedAsync();
-
                     var packageRegistration = new PackageRegistrationEntity { Id = id };
                     entityContext.PackageRegistrations.Add(packageRegistration);
                     var package = new PackageEntity
@@ -110,11 +91,11 @@ namespace Knapcode.ExplorePackages.Logic
                     await entityContext.SaveChangesAsync();
                 }
 
-                var packageEnumerator = new PackageCommitEnumerator(_entityContextFactory);
+                var packageEnumerator = new PackageCommitEnumerator(EntityContextFactory);
                 var target = new PackageService(
                     packageEnumerator,
-                    _entityContextFactory,
-                    _output.GetLogger<PackageService>());
+                    EntityContextFactory,
+                    Output.GetLogger<PackageService>());
                 
                 var a = await CreateArchiveAsync(id, ver, new ZipEntry("a.txt"), new ZipEntry("b.txt"));
                 var b = await CreateArchiveAsync(id, ver, new ZipEntry("b.txt"), new ZipEntry("a.txt"));
@@ -124,7 +105,7 @@ namespace Knapcode.ExplorePackages.Logic
                 await target.AddOrUpdatePackagesAsync(new[] { b });
 
                 // Assert
-                using (var entityContext = await _entityContextFactory.GetAsync())
+                using (var entityContext = await EntityContextFactory.GetAsync())
                 {
                     var archives = entityContext.PackageArchives.ToList();
                     Assert.Single(archives);
@@ -145,10 +126,8 @@ namespace Knapcode.ExplorePackages.Logic
                 // Arrange
                 var id = "Knapcode.MiniZip";
                 var ver = "0.4.0";
-                using (var entityContext = await _entityContextFactory.GetAsync())
+                using (var entityContext = await EntityContextFactory.GetAsync())
                 {
-                    await entityContext.Database.EnsureCreatedAsync();
-
                     var packageRegistration = new PackageRegistrationEntity { Id = id };
                     entityContext.PackageRegistrations.Add(packageRegistration);
                     var package = new PackageEntity
@@ -162,11 +141,11 @@ namespace Knapcode.ExplorePackages.Logic
                     await entityContext.SaveChangesAsync();
                 }
 
-                var packageEnumerator = new PackageCommitEnumerator(_entityContextFactory);
+                var packageEnumerator = new PackageCommitEnumerator(EntityContextFactory);
                 var target = new PackageService(
                     packageEnumerator,
-                    _entityContextFactory,
-                    _output.GetLogger<PackageService>());
+                    EntityContextFactory,
+                    Output.GetLogger<PackageService>());
 
                 var a = await CreateArchiveAsync(id, ver, new ZipEntry("a.txt"), new ZipEntry("b.txt"));
                 var b = await CreateArchiveAsync(id, ver, new ZipEntry("a.txt"));
@@ -176,7 +155,7 @@ namespace Knapcode.ExplorePackages.Logic
                 await target.AddOrUpdatePackagesAsync(new[] { b });
 
                 // Assert
-                using (var entityContext = await _entityContextFactory.GetAsync())
+                using (var entityContext = await EntityContextFactory.GetAsync())
                 {
                     var archives = entityContext.PackageArchives.ToList();
                     Assert.Single(archives);

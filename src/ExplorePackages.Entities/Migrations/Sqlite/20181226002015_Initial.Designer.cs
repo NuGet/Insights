@@ -3,29 +3,25 @@ using System;
 using Knapcode.ExplorePackages.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
+namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
 {
-    [DbContext(typeof(SqlServerEntityContext))]
-    [Migration("20181224185807_Initial")]
+    [DbContext(typeof(SqliteEntityContext))]
+    [Migration("20181226002015_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.0-rtm-35687")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                .HasAnnotation("ProductVersion", "2.2.0-rtm-35687");
 
             modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CatalogCommitEntity", b =>
                 {
                     b.Property<long>("CatalogCommitKey")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<long>("CatalogPageKey");
 
@@ -52,8 +48,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
             modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CatalogLeafEntity", b =>
                 {
                     b.Property<long>("CatalogLeafKey")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<long>("CatalogCommitKey");
 
@@ -96,8 +91,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
             modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CatalogPageEntity", b =>
                 {
                     b.Property<long>("CatalogPageKey")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<string>("Url")
                         .IsRequired();
@@ -113,8 +107,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
             modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CursorEntity", b =>
                 {
                     b.Property<long>("CursorKey")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<string>("Name")
                         .IsRequired();
@@ -132,8 +125,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
             modelBuilder.Entity("Knapcode.ExplorePackages.Entities.ETagEntity", b =>
                 {
                     b.Property<long>("ETagKey")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<string>("Name")
                         .IsRequired();
@@ -151,8 +143,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
             modelBuilder.Entity("Knapcode.ExplorePackages.Entities.FrameworkEntity", b =>
                 {
                     b.Property<long>("FrameworkKey")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<string>("OriginalValue")
                         .IsRequired();
@@ -171,15 +162,14 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
             modelBuilder.Entity("Knapcode.ExplorePackages.Entities.LeaseEntity", b =>
                 {
                     b.Property<long>("LeaseKey")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<DateTimeOffset?>("End");
 
                     b.Property<string>("Name")
                         .IsRequired();
 
-                    b.Property<byte[]>("RowVersion")
+                    b.Property<string>("RowVersion")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate();
 
@@ -195,60 +185,54 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
                 {
                     b.Property<long>("PackageKey");
 
-                    b.Property<long>("CentralDirectorySize");
+                    b.Property<uint>("CentralDirectorySize");
 
                     b.Property<byte[]>("Comment")
                         .IsRequired();
 
-                    b.Property<int>("CommentSize");
+                    b.Property<ushort>("CommentSize");
 
-                    b.Property<int>("DiskWithStartOfCentralDirectory");
+                    b.Property<ushort>("DiskWithStartOfCentralDirectory");
 
-                    b.Property<int>("EntriesForWholeCentralDirectory");
+                    b.Property<ushort>("EntriesForWholeCentralDirectory");
 
-                    b.Property<int>("EntriesInThisDisk");
+                    b.Property<ushort>("EntriesInThisDisk");
 
                     b.Property<int>("EntryCount");
 
-                    b.Property<int>("NumberOfThisDisk");
+                    b.Property<ushort>("NumberOfThisDisk");
 
                     b.Property<long>("OffsetAfterEndOfCentralDirectory");
 
-                    b.Property<long>("OffsetOfCentralDirectory");
+                    b.Property<uint>("OffsetOfCentralDirectory");
 
                     b.Property<long>("Size");
 
-                    b.Property<decimal?>("Zip64CentralDirectorySize")
-                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+                    b.Property<ulong?>("Zip64CentralDirectorySize");
 
-                    b.Property<long?>("Zip64DiskWithStartOfCentralDirectory");
+                    b.Property<uint?>("Zip64DiskWithStartOfCentralDirectory");
 
-                    b.Property<long?>("Zip64DiskWithStartOfEndOfCentralDirectory");
+                    b.Property<uint?>("Zip64DiskWithStartOfEndOfCentralDirectory");
 
-                    b.Property<decimal?>("Zip64EndOfCentralDirectoryOffset")
-                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+                    b.Property<ulong?>("Zip64EndOfCentralDirectoryOffset");
 
-                    b.Property<decimal?>("Zip64EntriesForWholeCentralDirectory")
-                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+                    b.Property<ulong?>("Zip64EntriesForWholeCentralDirectory");
 
-                    b.Property<decimal?>("Zip64EntriesInThisDisk")
-                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+                    b.Property<ulong?>("Zip64EntriesInThisDisk");
 
-                    b.Property<long?>("Zip64NumberOfThisDisk");
+                    b.Property<uint?>("Zip64NumberOfThisDisk");
 
                     b.Property<long?>("Zip64OffsetAfterEndOfCentralDirectoryLocator");
 
-                    b.Property<decimal?>("Zip64OffsetOfCentralDirectory")
-                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+                    b.Property<ulong?>("Zip64OffsetOfCentralDirectory");
 
-                    b.Property<decimal?>("Zip64SizeOfCentralDirectoryRecord")
-                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+                    b.Property<ulong?>("Zip64SizeOfCentralDirectoryRecord");
 
-                    b.Property<long?>("Zip64TotalNumberOfDisks");
+                    b.Property<uint?>("Zip64TotalNumberOfDisks");
 
-                    b.Property<int?>("Zip64VersionMadeBy");
+                    b.Property<ushort?>("Zip64VersionMadeBy");
 
-                    b.Property<int?>("Zip64VersionToExtract");
+                    b.Property<ushort?>("Zip64VersionToExtract");
 
                     b.HasKey("PackageKey");
 
@@ -258,8 +242,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
             modelBuilder.Entity("Knapcode.ExplorePackages.Entities.PackageDependencyEntity", b =>
                 {
                     b.Property<long>("PackageDependencyKey")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<long?>("BestDependencyPackageKey");
 
@@ -286,8 +269,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
                     b.HasIndex("MinimumDependencyPackageKey");
 
                     b.HasIndex("ParentPackageKey", "DependencyPackageRegistrationKey", "FrameworkKey")
-                        .IsUnique()
-                        .HasFilter("[FrameworkKey] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("PackageDependencies");
                 });
@@ -306,16 +288,17 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
             modelBuilder.Entity("Knapcode.ExplorePackages.Entities.PackageEntity", b =>
                 {
                     b.Property<long>("PackageKey")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<string>("Identity")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("TEXT COLLATE NOCASE");
 
                     b.Property<long>("PackageRegistrationKey");
 
                     b.Property<string>("Version")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("TEXT COLLATE NOCASE");
 
                     b.HasKey("PackageKey");
 
@@ -331,54 +314,52 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
             modelBuilder.Entity("Knapcode.ExplorePackages.Entities.PackageEntryEntity", b =>
                 {
                     b.Property<long>("PackageEntryKey")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<byte[]>("Comment")
                         .IsRequired();
 
-                    b.Property<int>("CommentSize");
+                    b.Property<ushort>("CommentSize");
 
-                    b.Property<long>("CompressedSize");
+                    b.Property<uint>("CompressedSize");
 
-                    b.Property<int>("CompressionMethod");
+                    b.Property<ushort>("CompressionMethod");
 
-                    b.Property<long>("Crc32");
+                    b.Property<uint>("Crc32");
 
-                    b.Property<int>("DiskNumberStart");
+                    b.Property<ushort>("DiskNumberStart");
 
-                    b.Property<long>("ExternalAttributes");
+                    b.Property<uint>("ExternalAttributes");
 
                     b.Property<byte[]>("ExtraField")
                         .IsRequired();
 
-                    b.Property<int>("ExtraFieldSize");
+                    b.Property<ushort>("ExtraFieldSize");
 
-                    b.Property<int>("Flags");
+                    b.Property<ushort>("Flags");
 
-                    b.Property<decimal>("Index")
-                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+                    b.Property<ulong>("Index");
 
-                    b.Property<int>("InternalAttributes");
+                    b.Property<ushort>("InternalAttributes");
 
-                    b.Property<int>("LastModifiedDate");
+                    b.Property<ushort>("LastModifiedDate");
 
-                    b.Property<int>("LastModifiedTime");
+                    b.Property<ushort>("LastModifiedTime");
 
-                    b.Property<long>("LocalHeaderOffset");
+                    b.Property<uint>("LocalHeaderOffset");
 
                     b.Property<byte[]>("Name")
                         .IsRequired();
 
-                    b.Property<int>("NameSize");
+                    b.Property<ushort>("NameSize");
 
                     b.Property<long>("PackageKey");
 
-                    b.Property<long>("UncompressedSize");
+                    b.Property<uint>("UncompressedSize");
 
-                    b.Property<int>("VersionMadeBy");
+                    b.Property<ushort>("VersionMadeBy");
 
-                    b.Property<int>("VersionToExtract");
+                    b.Property<ushort>("VersionToExtract");
 
                     b.HasKey("PackageEntryKey");
 
@@ -391,8 +372,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
             modelBuilder.Entity("Knapcode.ExplorePackages.Entities.PackageQueryEntity", b =>
                 {
                     b.Property<long>("PackageQueryKey")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<long>("CursorKey");
 
@@ -412,8 +392,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
             modelBuilder.Entity("Knapcode.ExplorePackages.Entities.PackageQueryMatchEntity", b =>
                 {
                     b.Property<long>("PackageQueryMatchKey")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<long>("PackageKey");
 
@@ -432,11 +411,11 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
             modelBuilder.Entity("Knapcode.ExplorePackages.Entities.PackageRegistrationEntity", b =>
                 {
                     b.Property<long>("PackageRegistrationKey")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<string>("Id")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("TEXT COLLATE NOCASE");
 
                     b.HasKey("PackageRegistrationKey");
 

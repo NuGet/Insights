@@ -16,22 +16,54 @@ namespace Knapcode.ExplorePackages.Logic
             _entityContextFactory = entityContextFactory;
         }
 
-        public async Task<LeaseResult> GetAsync(string name)
+        public async Task<LeaseEntity> GetOrNullAsync(string name)
         {
             using (var entityContext = await _entityContextFactory.GetAsync())
             {
-                return await GetAsync(name, entityContext);
+                return await entityContext
+                    .Leases
+                    .Where(x => x.Name == name)
+                    .FirstOrDefaultAsync();
             }
         }
-        
-        private async Task<LeaseResult> GetAsync(string name, IEntityContext entityContext)
-        {
-            var lease = await entityContext
-                .Leases
-                .Where(x => x.Name == name)
-                .FirstOrDefaultAsync();
 
-            return new LeaseResult(lease, acquired: false);
+        public async Task<LeaseResult> TryReleaseAsync(LeaseEntity lease)
+        {
+            using (var entityContext = await _entityContextFactory.GetAsync())
+            {
+                entityContext.Leases.Attach(lease);
+                lease.End = null;
+
+                try
+                {
+                    await entityContext.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    // This means someone else has since acquired the lease. Ignore this failure.
+                }
+
+                return LeaseResult.NotLeased();
+            }
+        }
+
+        public async Task<LeaseResult> RenewAsync(LeaseEntity lease, TimeSpan leaseDuration)
+        {
+            using (var entityContext = await _entityContextFactory.GetAsync())
+            {
+                entityContext.Leases.Attach(lease);
+                lease.End = DateTimeOffset.UtcNow.Add(leaseDuration);
+
+                try
+                {
+                    await entityContext.SaveChangesAsync();
+                    return LeaseResult.Leased(lease);
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    return LeaseResult.NotLeased();
+                }
+            }
         }
 
         public async Task<LeaseResult> TryAcquireAsync(string name, TimeSpan leaseDuration)
@@ -45,27 +77,28 @@ namespace Knapcode.ExplorePackages.Logic
 
                 if (lease == null)
                 {
-                    entityContext.Leases.Add(new LeaseEntity
+                    lease = new LeaseEntity
                     {
                         Name = name,
                         End = DateTimeOffset.UtcNow.Add(leaseDuration),
-                    });
+                    };
+                    entityContext.Leases.Add(lease);
 
                     try
                     {
                         await entityContext.SaveChangesAsync();
-                        return new LeaseResult(lease, acquired: true);
+                        return LeaseResult.Leased(lease);
                     }
                     catch (Exception ex) when (entityContext.IsUniqueConstraintViolationException(ex))
                     {
-                        return await GetAsync(name, entityContext);
+                        return LeaseResult.NotLeased();
                     }
                 }
                 else
                 {
                     if (lease.End.HasValue && lease.End.Value > DateTimeOffset.UtcNow)
                     {
-                        return new LeaseResult(lease, acquired: false);
+                        return LeaseResult.NotLeased();
                     }
 
                     lease.End = DateTimeOffset.UtcNow.Add(leaseDuration);
@@ -73,11 +106,11 @@ namespace Knapcode.ExplorePackages.Logic
                     try
                     {
                         await entityContext.SaveChangesAsync();
-                        return new LeaseResult(lease, acquired: true);
+                        return LeaseResult.Leased(lease);
                     }
                     catch (DbUpdateConcurrencyException)
                     {
-                        return await GetAsync(name, entityContext);
+                        return LeaseResult.NotLeased();
                     }
                 }
             }
