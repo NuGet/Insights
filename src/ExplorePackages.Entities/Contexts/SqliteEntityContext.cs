@@ -10,7 +10,14 @@ namespace Knapcode.ExplorePackages.Entities
 {
     public class SqliteEntityContext : BaseEntityContext<SqliteEntityContext>, IEntityContext
     {
-        public SqliteEntityContext(DbContextOptions<SqliteEntityContext> options) : base(options)
+        public SqliteEntityContext(
+            DbContextOptions<SqliteEntityContext> options) : base(options)
+        {
+        }
+
+        public SqliteEntityContext(
+            ICommitCondition commitCondition,
+            DbContextOptions<SqliteEntityContext> options) : base(commitCondition, options)
         {
         }
 

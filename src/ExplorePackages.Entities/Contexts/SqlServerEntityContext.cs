@@ -7,7 +7,14 @@ namespace Knapcode.ExplorePackages.Entities
 {
     public class SqlServerEntityContext : BaseEntityContext<SqlServerEntityContext>, IEntityContext
     {
-        public SqlServerEntityContext(DbContextOptions<SqlServerEntityContext> options) : base(options)
+        public SqlServerEntityContext(
+            DbContextOptions<SqlServerEntityContext> options) : base(options)
+        {
+        }
+
+        public SqlServerEntityContext(
+            ICommitCondition commitCondition,
+            DbContextOptions<SqlServerEntityContext> options) : base(commitCondition, options)
         {
         }
 

@@ -1,11 +1,24 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Knapcode.ExplorePackages.Entities
 {
     public abstract class BaseEntityContext<T> : DbContext where T : DbContext, IEntityContext
     {
-        public BaseEntityContext(DbContextOptions<T> options) : base(options)
+        private readonly ICommitCondition _commitCondition;
+
+        public BaseEntityContext(
+            DbContextOptions<T> options) : this(NullCommitCondition.Instance, options)
         {
+        }
+
+        public BaseEntityContext(
+            ICommitCondition commitCondition, 
+            DbContextOptions<T> options) : base(options)
+        {
+            _commitCondition = commitCondition ?? throw new ArgumentNullException(nameof(commitCondition));
         }
 
         public DbSet<LeaseEntity> Leases { get; set; }
@@ -25,6 +38,12 @@ namespace Knapcode.ExplorePackages.Entities
         public DbSet<CatalogLeafEntity> CatalogLeaves { get; set; }
         public DbSet<FrameworkEntity> Frameworks { get; set; }
         public DbSet<PackageDependencyEntity> PackageDependencies { get; set; }
+
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            await _commitCondition.VerifyAsync();
+            return await base.SaveChangesAsync(cancellationToken);
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
