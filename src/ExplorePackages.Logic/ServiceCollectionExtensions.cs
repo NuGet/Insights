@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -231,73 +232,43 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<PackageConsistencyService>();
             serviceCollection.AddTransient<CrossCheckConsistencyService>();
 
-            serviceCollection.AddTransient<FindIdsEndingInDotNumberNuspecQuery>();
-            serviceCollection.AddTransient<FindRepositoriesNuspecQuery>();
-            serviceCollection.AddTransient<FindInvalidDependencyVersionsNuspecQuery>();
-            serviceCollection.AddTransient<FindMissingDependencyIdsNuspecQuery>();
-            serviceCollection.AddTransient<FindPackageTypesNuspecQuery>();
-            serviceCollection.AddTransient<FindSemVer2PackageVersionsNuspecQuery>();
-            serviceCollection.AddTransient<FindSemVer2DependencyVersionsNuspecQuery>();
-            serviceCollection.AddTransient<FindFloatingDependencyVersionsNuspecQuery>();
-            serviceCollection.AddTransient<FindNonAsciiIdsNuspecQuery>();
-            serviceCollection.AddTransient<FindInvalidPackageIdsNuspecQuery>();
-            serviceCollection.AddTransient<FindInvalidPackageVersionsNuspecQuery>();
-            serviceCollection.AddTransient<FindPackageVersionsContainingWhitespaceNuspecQuery>();
-            serviceCollection.AddTransient<FindInvalidDependencyIdNuspecQuery>();
-            serviceCollection.AddTransient<FindInvalidDependencyTargetFrameworkNuspecQuery>();
-            serviceCollection.AddTransient<FindMixedDependencyGroupStylesNuspecQuery>();
-            serviceCollection.AddTransient<FindWhitespaceDependencyTargetFrameworkNuspecQuery>();
-            serviceCollection.AddTransient<FindUnsupportedDependencyTargetFrameworkNuspecQuery>();
-            serviceCollection.AddTransient<FindDuplicateDependencyTargetFrameworksNuspecQuery>();
-            serviceCollection.AddTransient<FindDuplicateNormalizedDependencyTargetFrameworksNuspecQuery>();
-            serviceCollection.AddTransient<FindEmptyDependencyIdsNuspecQuery>();
-            serviceCollection.AddTransient<FindWhitespaceDependencyIdsNuspecQuery>();
-            serviceCollection.AddTransient<FindWhitespaceDependencyVersionsNuspecQuery>();
-            serviceCollection.AddTransient<FindDuplicateDependenciesNuspecQuery>();
-            serviceCollection.AddTransient<FindCaseSensitiveDuplicateMetadataElementsNuspecQuery>();
-            serviceCollection.AddTransient<FindCaseInsensitiveDuplicateMetadataElementsNuspecQuery>();
-            serviceCollection.AddTransient<FindCaseSensitiveDuplicateTextMetadataElementsNuspecQuery>();
-            serviceCollection.AddTransient<FindCaseInsensitiveDuplicateTextMetadataElementsNuspecQuery>();
-            serviceCollection.AddTransient<FindNonAlphabetMetadataElementsNuspecQuery>();
-            serviceCollection.AddTransient<FindCollidingMetadataElementsNuspecQuery>();
-            serviceCollection.AddTransient<FindUnexpectedValuesForBooleanMetadataNuspecQuery>();
+            serviceCollection.AddTransient(x => new PackageQueryFactory(
+                () => x.GetRequiredService<IEnumerable<IPackageQuery>>(),
+                x.GetRequiredService<ExplorePackagesSettings>()));
 
-            if (settings.RunBoringQueries)
+            // Add all of the .nuspec queries.
+            foreach (var serviceType in GetClassesImplementing<INuspecQuery>())
             {
-                serviceCollection.AddTransient<FindNonNormalizedPackageVersionsNuspecQuery>();
-                serviceCollection.AddTransient<FindMissingDependencyVersionsNuspecQuery>();
-                serviceCollection.AddTransient<FindEmptyDependencyVersionsNuspecQuery>();
-            }
-
-            if (settings.RunConsistencyChecks)
-            {
-                serviceCollection.AddTransient<IPackageQuery, HasV2DiscrepancyPackageQuery>();
-                serviceCollection.AddTransient<IPackageQuery, HasPackagesContainerDiscrepancyPackageQuery>();
-                serviceCollection.AddTransient<IPackageQuery, HasFlatContainerDiscrepancyPackageQuery>();
-                serviceCollection.AddTransient<IPackageQuery, HasRegistrationDiscrepancyInOriginalHivePackageQuery>();
-                serviceCollection.AddTransient<IPackageQuery, HasRegistrationDiscrepancyInGzippedHivePackageQuery>();
-                serviceCollection.AddTransient<IPackageQuery, HasRegistrationDiscrepancyInSemVer2HivePackageQuery>();
-                serviceCollection.AddTransient<IPackageQuery, HasSearchDiscrepancyPackageQuery>();
-                serviceCollection.AddTransient<IPackageQuery, HasCrossCheckDiscrepancyPackageQuery>();
-            }
-
-            serviceCollection.AddTransient<IPackageQuery, HasMissingMZipPackageQuery>();
-            serviceCollection.AddTransient<IPackageQuery, HasMissingNuspecPackageQuery>();
-
-            // Add all of the .nuspec queries as package queries.
-            var nuspecQueryDescriptors = serviceCollection
-                .Where(x => typeof(INuspecQuery).IsAssignableFrom(x.ServiceType))
-                .ToList();
-            foreach (var nuspecQueryDescriptor in nuspecQueryDescriptors)
-            {
+                serviceCollection.AddTransient(serviceType);
+                serviceCollection.AddTransient(typeof(INuspecQuery), serviceType);
                 serviceCollection.AddTransient<IPackageQuery>(x =>
                 {
-                    var nuspecQuery = (INuspecQuery)x.GetRequiredService(nuspecQueryDescriptor.ImplementationType);
+                    var nuspecQuery = (INuspecQuery)x.GetRequiredService(serviceType);
                     return new NuspecPackageQuery(nuspecQuery);
                 });
             }
 
+            // Add all of the package queries.
+            foreach (var serviceType in GetClassesImplementing<IPackageQuery>())
+            {
+                if (serviceType == typeof(NuspecPackageQuery))
+                {
+                    continue;
+                }
+
+                serviceCollection.AddTransient(typeof(IPackageQuery), serviceType);
+            }
+
             return serviceCollection;
+        }
+
+        private static IEnumerable<Type> GetClassesImplementing<T>()
+        {
+            return typeof(ServiceCollectionExtensions)
+                .Assembly
+                .GetTypes()
+                .Where(t => t.GetInterfaces().Contains(typeof(T)))
+                .Where(t => t.IsClass && !t.IsAbstract);
         }
     }
 }

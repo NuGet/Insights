@@ -430,6 +430,7 @@ namespace Knapcode.ExplorePackages.Logic
             using (var entityContext = await _entityContextFactory.GetAsync())
             using (var connection = entityContext.Database.GetDbConnection())
             {
+                await _commitCondition.VerifyAsync();
                 await connection.OpenAsync();
 
                 using (var transaction = connection.BeginTransaction())
@@ -457,7 +458,6 @@ namespace Knapcode.ExplorePackages.Logic
                         changeCount += command.ExecuteNonQuery();
                     }
 
-                    await _commitCondition.VerifyAsync();
                     transaction.Commit();
                 }
             }

@@ -159,12 +159,9 @@ namespace Knapcode.ExplorePackages.Tool
             }
             catch (Exception ex)
             {
+                await singletonService.ReleaseInAsync(ReleaseInDuration);
                 logger.LogError(ex, "An unexpected exception occured.");
                 return 1;
-            }
-            finally
-            {
-                await singletonService.ReleaseInAsync(ReleaseInDuration);
             }
         }
 

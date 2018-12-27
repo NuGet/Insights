@@ -180,6 +180,7 @@ namespace Knapcode.ExplorePackages.Logic
             using (var entityContext = await _entityContextFactory.GetAsync())
             using (var connection = entityContext.Database.GetDbConnection())
             {
+                await _commitCondition.VerifyAsync();
                 await connection.OpenAsync();
 
                 var changes = 0;
@@ -243,7 +244,6 @@ namespace Knapcode.ExplorePackages.Logic
                     }
 
                     var commitStopwatch = Stopwatch.StartNew();
-                    await _commitCondition.VerifyAsync();
                     transaction.Commit();
                     _logger.LogInformation(
                         "Committed package dependency {Changes} changes. {commitStopwatch.ElapsedMilliseconds}ms",

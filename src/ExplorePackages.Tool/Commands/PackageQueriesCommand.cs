@@ -14,7 +14,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
         private readonly CursorService _cursorService;
         private readonly PackageQueryProcessor _processor;
         private readonly ProblemService _problemService;
-        private readonly List<IPackageQuery> _queries;
+        private readonly PackageQueryFactory _packageQueryFactory;
         private readonly ILogger<PackageQueriesCommand> _logger;
 
         private CommandOption _reprocessOption;
@@ -29,13 +29,13 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             CursorService cursorService,
             PackageQueryProcessor processor,
             ProblemService problemService,
-            IEnumerable<IPackageQuery> queries,
+            PackageQueryFactory packageQueryFactory,
             ILogger<PackageQueriesCommand> logger)
         {
             _cursorService = cursorService;
             _processor = processor;
             _problemService = problemService;
-            _queries = queries.ToList();
+            _packageQueryFactory = packageQueryFactory;
             _logger = logger;
         }
 
@@ -89,7 +89,8 @@ namespace Knapcode.ExplorePackages.Tool.Commands
                 await _cursorService.ResetValueAsync(CursorNames.ReprocessPackageQueries);
             }
 
-            var queries = _queries.ToList();
+            var allQueries = _packageQueryFactory.Get();
+            var queries = allQueries;
             if (ProblemQueries)
             {
                 queries = queries
@@ -103,7 +104,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
                     .ToList();
             }
 
-            if (queries.Count != _queries.Count)
+            if (queries.Count != allQueries.Count)
             {
                 var queryNames = string.Join(
                     Environment.NewLine,

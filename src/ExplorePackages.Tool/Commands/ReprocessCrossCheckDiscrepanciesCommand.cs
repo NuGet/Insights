@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
@@ -10,16 +9,16 @@ namespace Knapcode.ExplorePackages.Tool.Commands
     public class ReprocessCrossCheckDiscrepanciesCommand : ICommand
     {
         private readonly CursorService _cursorService;
-        private readonly IEnumerable<IPackageQuery> _queries;
+        private readonly PackageQueryFactory _packageQueryFactory;
         private readonly PackageQueryProcessor _processor;
 
         public ReprocessCrossCheckDiscrepanciesCommand(
             CursorService cursorService,
-            IEnumerable<IPackageQuery> queries,
+            PackageQueryFactory packageQueryFactory,
             PackageQueryProcessor processor)
         {
             _cursorService = cursorService;
-            _queries = queries;
+            _packageQueryFactory = packageQueryFactory;
             _processor = processor;
         }
 
@@ -30,7 +29,10 @@ namespace Knapcode.ExplorePackages.Tool.Commands
         public async Task ExecuteAsync(CancellationToken token)
         {
             await _cursorService.ResetValueAsync(CursorNames.ReprocessPackageQueries);
-            var queries = _queries.Where(x => x.Name == PackageQueryNames.HasCrossCheckDiscrepancyPackageQuery).ToList();
+            var queries = _packageQueryFactory
+                .Get()
+                .Where(x => x.Name == PackageQueryNames.HasCrossCheckDiscrepancyPackageQuery)
+                .ToList();
             await _processor.ProcessAsync(queries, reprocess: true, batchSize: 5000, token: token);
         }
 
