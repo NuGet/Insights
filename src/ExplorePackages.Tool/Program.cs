@@ -21,7 +21,8 @@ namespace Knapcode.ExplorePackages.Tool
 {
     public class Program
     {
-        private static JsonSerializerSettings SerializerSettings = new JsonSerializerSettings
+        private static readonly TimeSpan ReleaseInDuration = TimeSpan.FromSeconds(15);
+        private static readonly JsonSerializerSettings SerializerSettings = new JsonSerializerSettings
         {
             Converters =
             {
@@ -122,7 +123,7 @@ namespace Knapcode.ExplorePackages.Tool
 
             try
             {
-                await singletonService.ReleaseAsync();
+                await singletonService.ReleaseInAsync(ReleaseInDuration);
             }
             catch (Exception ex)
             {
@@ -152,7 +153,9 @@ namespace Knapcode.ExplorePackages.Tool
 
             try
             {
-                return app.Execute(args);
+                var output = app.Execute(args);
+                await singletonService.ReleaseInAsync(TimeSpan.Zero);
+                return output;
             }
             catch (Exception ex)
             {
@@ -161,7 +164,7 @@ namespace Knapcode.ExplorePackages.Tool
             }
             finally
             {
-                await singletonService.ReleaseAsync();
+                await singletonService.ReleaseInAsync(ReleaseInDuration);
             }
         }
 

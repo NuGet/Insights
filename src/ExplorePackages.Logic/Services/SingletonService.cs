@@ -50,7 +50,7 @@ namespace Knapcode.ExplorePackages.Logic
                     }
                     else
                     {
-                        throw new InvalidOperationException("The provided lease was not acquired in the first place.");
+                        throw new InvalidOperationException("The singleton lease was not acquired in the first place.");
                     }
                 }
                 else
@@ -67,7 +67,7 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
-        public async Task ReleaseAsync()
+        public async Task ReleaseInAsync(TimeSpan duration)
         {
             var acquired = false;
             try
@@ -77,20 +77,32 @@ namespace Knapcode.ExplorePackages.Logic
 
                 if (_lease == null)
                 {
+                    _logger.LogWarning("The singleton lease was not acquired in the first place.");
                     return;
                 }
                 else
                 {
-                    var released = await _leaseService.TryReleaseAsync(_lease);
-                    _lease = null;
-
-                    if (released)
+                    if (duration <= TimeSpan.Zero)
                     {
-                        _logger.LogInformation("The singleton lease was released.");
+                        if (await _leaseService.TryReleaseAsync(_lease))
+                        {
+                            _logger.LogInformation("The singleton lease was released.");
+                        }
+                        else
+                        {
+                            _logger.LogWarning("The singleton lease was acquired by someone else and therefore couldn't be released.");
+                        }
                     }
                     else
                     {
-                        _logger.LogWarning("The singleton lease was acquired by someone else and therefore couldn't be released.");
+                        if (await _leaseService.TryRenewAsync(_lease, duration))
+                        {
+                            _logger.LogInformation("The singleton lease will be released in {Duration}.", duration);
+                        }
+                        else
+                        {
+                            _logger.LogWarning("The singleton lease was acquired by someone else and therefore couldn't be released.");
+                        }
                     }
                 }
             }
