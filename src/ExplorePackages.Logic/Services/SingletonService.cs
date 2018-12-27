@@ -24,6 +24,27 @@ namespace Knapcode.ExplorePackages.Logic
             _logger = logger;
         }
 
+        public async Task BreakAsync()
+        {
+            var lockAcquired = false;
+            try
+            {
+                await _lock.WaitAsync();
+                lockAcquired = true;
+
+                await _leaseService.BreakAsync(LeaseName);
+                _lease = null;
+                _logger.LogInformation("The singleton lease is now available.");
+            }
+            finally
+            {
+                if (lockAcquired)
+                {
+                    _lock.Release();
+                }
+            }
+        }
+
         public async Task AcquireOrRenewAsync()
         {
             await AcquireOrRenewAsync(acquire: true);
@@ -77,7 +98,6 @@ namespace Knapcode.ExplorePackages.Logic
 
                 if (_lease == null)
                 {
-                    _logger.LogWarning("The singleton lease was not acquired in the first place.");
                     return;
                 }
                 else

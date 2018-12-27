@@ -86,6 +86,7 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<EntityContextFactory>();
             serviceCollection.AddSingleton<ISingletonService>(x => new SingletonService(
                 new LeaseService(
+                    NullCommitCondition.Instance,
                     new EntityContextFactory(
                         () => x.GetRequiredService<Func<bool, IEntityContext>>()(false))),
                 x.GetRequiredService<ILogger<SingletonService>>()));
@@ -240,7 +241,6 @@ namespace Knapcode.ExplorePackages.Logic
             foreach (var serviceType in GetClassesImplementing<INuspecQuery>())
             {
                 serviceCollection.AddTransient(serviceType);
-                serviceCollection.AddTransient(typeof(INuspecQuery), serviceType);
                 serviceCollection.AddTransient<IPackageQuery>(x =>
                 {
                     var nuspecQuery = (INuspecQuery)x.GetRequiredService(serviceType);

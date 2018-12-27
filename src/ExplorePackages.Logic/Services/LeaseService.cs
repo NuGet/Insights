@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
@@ -9,14 +10,16 @@ namespace Knapcode.ExplorePackages.Logic
     public class LeaseService : ILeaseService
     {
         private const string NotAcquiredAtAll = "The provided lease was not acquired in the first place.";
-        private const string AcquiredBySomeoneElse = "The lease has be acquired by someone else.";
+        private const string AcquiredBySomeoneElse = "The lease has been acquired by someone else.";
         private const string NotAvailable = "The lease is not available yet.";
-
+        private readonly ICommitCondition _commitCondition;
         private readonly EntityContextFactory _entityContextFactory;
 
         public LeaseService(
+            ICommitCondition commitCondition,
             EntityContextFactory entityContextFactory)
         {
+            _commitCondition = commitCondition;
             _entityContextFactory = entityContextFactory;
         }
 
@@ -28,6 +31,28 @@ namespace Knapcode.ExplorePackages.Logic
                     .Leases
                     .Where(x => x.Name == name)
                     .FirstOrDefaultAsync();
+            }
+        }
+
+        public async Task BreakAsync(string name)
+        {
+            using (var entityContext = await _entityContextFactory.GetAsync())
+            using (var connection = entityContext.Database.GetDbConnection())
+            {
+                await _commitCondition.VerifyAsync();
+                await connection.OpenAsync();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "UPDATE Leases SET [End] = NULL WHERE Name = @Name";
+
+                    var nameParameter = command.CreateParameter();
+                    nameParameter.ParameterName = "Name";
+                    nameParameter.DbType = DbType.String;
+                    nameParameter.Value = name;
+                    command.Parameters.Add(nameParameter);
+
+                    await command.ExecuteNonQueryAsync();
+                }
             }
         }
 

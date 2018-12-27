@@ -7,6 +7,7 @@ namespace Knapcode.ExplorePackages.Logic
     public interface ILeaseService
     {
         Task<LeaseEntity> AcquireAsync(string name, TimeSpan leaseDuration);
+        Task BreakAsync(string name);
         Task<LeaseEntity> GetOrNullAsync(string name);
         Task ReleaseAsync(LeaseEntity lease);
         Task RenewAsync(LeaseEntity lease, TimeSpan leaseDuration);

@@ -52,6 +52,25 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
+        public class BreakAsync : BaseTest
+        {
+            public BreakAsync(ITestOutputHelper output) : base(output)
+            {
+            }
+
+            [Fact]
+            public async Task AllowsSomeoneElseToAcquire()
+            {
+                var leaseA = await Target.AcquireAsync(LeaseName, Duration);
+
+                await Target.BreakAsync(LeaseName);
+
+                var leaseB = await Target.AcquireAsync(LeaseName, Duration);
+                Assert.Equal(leaseA.LeaseKey, leaseB.LeaseKey);
+                Assert.NotEqual(leaseA.RowVersion, leaseB.RowVersion);
+            }
+        }
+
         public class TryReleaseAsync : BaseTest
         {
             public TryReleaseAsync(ITestOutputHelper output) : base(output)
@@ -120,7 +139,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(
                     () => Target.ReleaseAsync(leaseResultA.Lease));
-                Assert.Equal("The lease has be acquired by someone else.", ex.Message);
+                Assert.Equal("The lease has been acquired by someone else.", ex.Message);
             }
         }
 
@@ -143,7 +162,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(
                     () => Target.RenewAsync(leaseResultA.Lease, Duration));
-                Assert.Equal("The lease has be acquired by someone else.", ex.Message);
+                Assert.Equal("The lease has been acquired by someone else.", ex.Message);
             }
         }
 
@@ -411,7 +430,9 @@ namespace Knapcode.ExplorePackages.Logic
                 LeaseName = "test-lease";
                 Duration = TimeSpan.FromMinutes(10);
 
-                Target = new LeaseService(EntityContextFactory);
+                Target = new LeaseService(
+                    NullCommitCondition.Instance,
+                    EntityContextFactory);
             }
 
             public string LeaseName { get; }

@@ -34,6 +34,7 @@ namespace Knapcode.ExplorePackages.Tool
         private static IReadOnlyDictionary<string, Type> Commands = new Dictionary<string, Type>
         {
             { "backupdatabase", typeof(BackupDatabaseCommand) },
+            { "breaksingletonlease", typeof(BreakSingletonLeaseCommand) },
             { "catalogtodatabase", typeof(CatalogToDatabaseCommand) },
             { "catalogtonuspecs", typeof(CatalogToNuspecsCommand) },
             { "checkpackage", typeof(CheckPackageCommand) },
