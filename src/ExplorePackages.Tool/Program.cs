@@ -98,7 +98,7 @@ namespace Knapcode.ExplorePackages.Tool
             // Sanitize the DB connection string
             sanitized.DatabaseConnectionString = Regex.Replace(
                 sanitized.DatabaseConnectionString,
-                "(Password)=[^;]*",
+                "(User ID|UID|Password|PWD)=[^;]*",
                 "$1=(redacted)",
                 RegexOptions.IgnoreCase);
 
