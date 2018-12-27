@@ -7,6 +7,7 @@ namespace Knapcode.ExplorePackages.Logic
         public ExplorePackagesSettings()
         {
             var currentDirectory = Directory.GetCurrentDirectory();
+
             DatabaseType = DatabaseType.Sqlite;
             DatabaseConnectionString = "Data Source=" + Path.Combine(currentDirectory, "Knapcode.ExplorePackages.sqlite3");
             PackagePath = Path.Combine(currentDirectory, "packages");
@@ -18,8 +19,8 @@ namespace Knapcode.ExplorePackages.Logic
             V3ServiceIndex = "https://api.nuget.org/v3/index.json";
             DownloadsV1Url = null;
             DownloadsV1Path = Path.Combine(currentDirectory, "downloads.txt");
-            StorageConnectionString = null;
-            StorageContainerName = null;
+            StorageConnectionString = "UseDevelopmentStorage=true";
+            StorageContainerName = "packages";
             IsStorageContainerPublic = false;
         }
 

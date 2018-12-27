@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
@@ -58,51 +59,110 @@ namespace Knapcode.ExplorePackages.Tool
             return MainAsync(args).GetAwaiter().GetResult();
         }
 
-        public static async Task<int> MainAsync(string[] args)
+        private static async Task<int> MainAsync(string[] args)
         {
+            // Initialize a logger just for bootstrapping.
             var logger = new LoggerFactory().AddMinimalConsole().CreateLogger<Program>();
 
             // Read and show the settings
             logger.LogInformation("===== settings =====");
             var settings = ReadSettingsFromDisk(logger) ?? new ExplorePackagesSettings();
-            logger.LogInformation(JsonConvert.SerializeObject(settings, SerializerSettings));
+            LogSettings(logger, settings);
             logger.LogInformation("====================" + Environment.NewLine);
-
-            // Allow 32 concurrent outgoing connections.
-            ServicePointManager.DefaultConnectionLimit = 32;
 
             // Initialize the dependency injection container.
             var serviceCollection = InitializeServiceCollection(settings);
-            int output;
             using (var serviceProvider = serviceCollection.BuildServiceProvider())
             {
-                logger = serviceProvider.GetRequiredService<ILogger<Program>>();
-                var singletonService = serviceProvider.GetRequiredService<ISingletonService>();
+                // Set up the cancel event to release the lease if someone hits Ctrl + C while the program is running.
+                var cancelEvent = new SemaphoreSlim(0);
+                Console.CancelKeyPress += (sender, eventArgs) =>
+                {
+                    eventArgs.Cancel = true;
+                    cancelEvent.Release();
+                };
 
-                var app = new CommandLineApplication();
-                app.HelpOption();
+                // Wait for cancellation and execute the program in parallel.
+                var cancelTask = WaitForCancellationAsync(cancelEvent, serviceProvider);
+                var executeTask = ExecuteAsync(args, serviceProvider);
 
-                foreach (var pair in Commands)
-                {
-                    AddCommand(pair.Value, serviceProvider, app, pair.Key, logger);
-                }
+                return await await Task.WhenAny(cancelTask, executeTask);
+            }
+        }
 
-                try
-                {
-                    output = app.Execute(args);
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex, "An unexpected exception occured.");
-                    output = 1;
-                }
-                finally
-                {
-                    await singletonService.ReleaseAsync();
-                }
+        private static void LogSettings(ILogger<Program> logger, ExplorePackagesSettings settings)
+        {
+            var sanitized = settings.Clone();
+
+            // Sanitize the DB connection string
+            sanitized.DatabaseConnectionString = Regex.Replace(
+                sanitized.DatabaseConnectionString,
+                "(Password)=[^;]*",
+                "$1=(redacted)",
+                RegexOptions.IgnoreCase);
+
+            // Sanitize the Azure Blob Storage connection string
+            sanitized.StorageConnectionString = Regex.Replace(
+                sanitized.StorageConnectionString,
+                "(SharedAccessSignature|AccountKey)=[^;]*",
+                "$1=(redacted)", 
+                RegexOptions.IgnoreCase);
+
+            logger.LogInformation(JsonConvert.SerializeObject(sanitized, SerializerSettings));
+        }
+
+        private static async Task<int> WaitForCancellationAsync(
+            SemaphoreSlim cancelEvent,
+            IServiceProvider serviceProvider)
+        {
+            var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+            var singletonService = serviceProvider.GetRequiredService<ISingletonService>();
+            await cancelEvent.WaitAsync();
+            logger.LogWarning("Cancelling...");
+
+            try
+            {
+                await singletonService.ReleaseAsync();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "An unexpected exception occured while cancelling.");
             }
 
-            return output;
+            return 1;
+        }
+
+        private static async Task<int> ExecuteAsync(
+            string[] args,
+            IServiceProvider serviceProvider)
+        {
+            await Task.Yield();
+
+            var app = new CommandLineApplication();
+            app.HelpOption();
+            app.OnExecute(() => app.ShowHelp());
+
+            var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+            var singletonService = serviceProvider.GetRequiredService<ISingletonService>();
+
+            foreach (var pair in Commands)
+            {
+                AddCommand(pair.Value, serviceProvider, app, pair.Key, logger);
+            }
+
+            try
+            {
+                return app.Execute(args);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "An unexpected exception occured.");
+                return 1;
+            }
+            finally
+            {
+                await singletonService.ReleaseAsync();
+            }
         }
 
         private static ExplorePackagesSettings ReadSettingsFromDisk(ILogger logger)
@@ -221,14 +281,6 @@ namespace Knapcode.ExplorePackages.Tool
         {
             logger.LogInformation("===== initialize =====");
 
-            // Acquire the singleton lease.
-            if (acquireSingletonLease)
-            {
-                logger.LogInformation("Ensuring that this job is a singleton.");
-                var singletonService = serviceProvider.GetRequiredService<ISingletonService>();
-                await singletonService.AcquireOrRenewAsync();
-            }
-
             // Initialize the database.
             if (initializeDatabase)
             {
@@ -243,10 +295,21 @@ namespace Knapcode.ExplorePackages.Tool
                 logger.LogInformation("The database will not be used.");
             }
 
+            // Acquire the singleton lease.
+            if (acquireSingletonLease)
+            {
+                logger.LogInformation("Ensuring that this job is a singleton.");
+                var singletonService = serviceProvider.GetRequiredService<ISingletonService>();
+                await singletonService.AcquireOrRenewAsync();
+            }
+
             // Set the user agent.
             var userAgentStringBuilder = new UserAgentStringBuilder("Knapcode.ExplorePackages.Bot");
             UserAgent.SetUserAgentString(userAgentStringBuilder);
             logger.LogInformation("The following user agent will be used: {UserAgent}", UserAgent.UserAgentString);
+
+            // Allow 32 concurrent outgoing connections.
+            ServicePointManager.DefaultConnectionLimit = 32;
 
             logger.LogInformation("======================" + Environment.NewLine);
         }
