@@ -122,10 +122,8 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             _logger.LogInformation(reportJson);
         }
 
-        public bool IsDatabaseRequired()
-        {
-            return Database;
-        }
+        public bool IsDatabaseRequired() => Database;
+        public bool IsReadOnly() => true;
 
         private class NuspecJsonConverter : JsonConverter
         {

@@ -13,7 +13,9 @@ namespace Knapcode.ExplorePackages.Entities
                 "Initial Catalog=Knapcode.ExplorePackages; " +
                 "Integrated Security=True; " +
                 "MultipleActiveResultSets=True");
-            return new SqlServerEntityContext(optionsBuilder.Options);
+            return new SqlServerEntityContext(
+                NullCommitCondition.Instance,
+                optionsBuilder.Options);
         }
     }
 }

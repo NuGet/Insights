@@ -90,9 +90,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             }
         }
 
-        public bool IsDatabaseRequired()
-        {
-            return _commands.Any(x => x.IsDatabaseRequired());
-        }
+        public bool IsDatabaseRequired() => _commands.Any(x => x.IsDatabaseRequired());
+        public bool IsReadOnly() => _commands.All(x => x.IsReadOnly());
     }
 }

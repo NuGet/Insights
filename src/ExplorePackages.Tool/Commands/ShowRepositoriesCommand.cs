@@ -111,9 +111,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             return dateTimeOffset.ToString("G", CultureInfo.InvariantCulture);
         }
 
-        public bool IsDatabaseRequired()
-        {
-            return true;
-        }
+        public bool IsDatabaseRequired() => true;
+        public bool IsReadOnly() => true;
     }
 }

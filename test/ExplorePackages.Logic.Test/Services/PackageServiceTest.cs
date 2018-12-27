@@ -43,6 +43,7 @@ namespace Knapcode.ExplorePackages.Logic
                 var packageEnumerator = new PackageCommitEnumerator(EntityContextFactory);
                 var target = new PackageService(
                     packageEnumerator,
+                    NullCommitCondition.Instance,
                     EntityContextFactory,
                     Output.GetLogger<PackageService>());
                 
@@ -94,6 +95,7 @@ namespace Knapcode.ExplorePackages.Logic
                 var packageEnumerator = new PackageCommitEnumerator(EntityContextFactory);
                 var target = new PackageService(
                     packageEnumerator,
+                    NullCommitCondition.Instance,
                     EntityContextFactory,
                     Output.GetLogger<PackageService>());
                 
@@ -144,6 +146,7 @@ namespace Knapcode.ExplorePackages.Logic
                 var packageEnumerator = new PackageCommitEnumerator(EntityContextFactory);
                 var target = new PackageService(
                     packageEnumerator,
+                    NullCommitCondition.Instance,
                     EntityContextFactory,
                     Output.GetLogger<PackageService>());
 

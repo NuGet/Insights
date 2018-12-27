@@ -18,6 +18,7 @@ namespace Knapcode.ExplorePackages.Logic
     {
         private static readonly IMapper Mapper;
         private readonly PackageCommitEnumerator _enumerator;
+        private readonly ICommitCondition _commitCondition;
         private readonly EntityContextFactory _entityContextFactory;
         private readonly ILogger<PackageService> _logger;
 
@@ -44,10 +45,12 @@ namespace Knapcode.ExplorePackages.Logic
 
         public PackageService(
             PackageCommitEnumerator enumerator,
+            ICommitCondition commitCondition,
             EntityContextFactory entityContextFactory,
             ILogger<PackageService> logger)
         {
             _enumerator = enumerator;
+            _commitCondition = commitCondition;
             _entityContextFactory = entityContextFactory;
             _logger = logger;
         }
@@ -454,6 +457,7 @@ namespace Knapcode.ExplorePackages.Logic
                         changeCount += command.ExecuteNonQuery();
                     }
 
+                    await _commitCondition.VerifyAsync();
                     transaction.Commit();
                 }
             }

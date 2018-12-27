@@ -19,6 +19,7 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly PackageCommitEnumerator _packageCommitEnumerator;
         private readonly PackageQueryService _queryService;
         private readonly IPackageService _packageService;
+        private readonly ISingletonService _singletonService;
         private readonly ILogger<PackageQueryProcessor> _logger;
 
         public PackageQueryProcessor(
@@ -27,6 +28,7 @@ namespace Knapcode.ExplorePackages.Logic
             PackageCommitEnumerator packageCommitEnumerator,
             PackageQueryService queryService,
             IPackageService packageService,
+            ISingletonService singletonService,
             ILogger<PackageQueryProcessor> logger)
         {
             _contextBuilder = contextBuilder;
@@ -34,6 +36,7 @@ namespace Knapcode.ExplorePackages.Logic
             _packageCommitEnumerator = packageCommitEnumerator;
             _queryService = queryService;
             _packageService = packageService;
+            _singletonService = singletonService;
             _logger = logger;
         }
 
@@ -77,6 +80,8 @@ namespace Knapcode.ExplorePackages.Logic
             int commitCount;
             do
             {
+                await _singletonService.RenewAsync();
+
                 var commits = await GetCommitsAsync(bounds, reprocess, batchSize);
                 var packageCount = commits.Sum(x => x.Entities.Count);
                 commitCount = commits.Count;

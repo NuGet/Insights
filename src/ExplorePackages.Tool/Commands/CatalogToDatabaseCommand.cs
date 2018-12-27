@@ -11,15 +11,18 @@ namespace Knapcode.ExplorePackages.Tool.Commands
         private readonly CatalogReader _catalogReader;
         private readonly CursorService _cursorService;
         private readonly CatalogToDatabaseProcessor _processor;
+        private readonly ISingletonService _singletonService;
 
         public CatalogToDatabaseCommand(
             CatalogReader catalogReader,
             CursorService cursorService,
-            CatalogToDatabaseProcessor processor)
+            CatalogToDatabaseProcessor processor,
+            ISingletonService singletonService)
         {
             _catalogReader = catalogReader;
             _cursorService = cursorService;
             _processor = processor;
+            _singletonService = singletonService;
         }
 
         public void Configure(CommandLineApplication app)
@@ -28,13 +31,15 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 
         public async Task ExecuteAsync(CancellationToken token)
         {
-            var catalogProcessor = new CatalogProcessorQueue(_catalogReader, _cursorService, _processor);
+            var catalogProcessor = new CatalogProcessorQueue(
+                _catalogReader,
+                _cursorService,
+                _processor,
+                _singletonService);
             await catalogProcessor.ProcessAsync(token);
         }
 
-        public bool IsDatabaseRequired()
-        {
-            return true;
-        }
+        public bool IsDatabaseRequired() => true;
+        public bool IsReadOnly() => false;
     }
 }

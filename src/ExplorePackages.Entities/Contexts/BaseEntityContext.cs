@@ -10,11 +10,6 @@ namespace Knapcode.ExplorePackages.Entities
         private readonly ICommitCondition _commitCondition;
 
         public BaseEntityContext(
-            DbContextOptions<T> options) : this(NullCommitCondition.Instance, options)
-        {
-        }
-
-        public BaseEntityContext(
             ICommitCondition commitCondition, 
             DbContextOptions<T> options) : base(options)
         {

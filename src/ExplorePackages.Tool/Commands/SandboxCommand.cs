@@ -27,9 +27,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             }
         }
 
-        public bool IsDatabaseRequired()
-        {
-            return true;
-        }
+        public bool IsDatabaseRequired() => true;
+        public bool IsReadOnly() => false;
     }
 }

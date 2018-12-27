@@ -21,7 +21,9 @@ namespace Knapcode.ExplorePackages.Logic
                     o => o.MigrationsAssembly(typeof(SqliteEntityContext).Assembly.FullName));
 
             Func<IEntityContext> getEntityContext = () => new TestSqliteEntityContext(
-                new SqliteEntityContext(builder.Options),
+                new SqliteEntityContext(
+                    NullCommitCondition.Instance,
+                    builder.Options),
                 builder.Options,
                 executeBeforeCommitAsync);
 

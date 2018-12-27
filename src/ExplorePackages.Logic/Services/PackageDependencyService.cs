@@ -14,15 +14,18 @@ namespace Knapcode.ExplorePackages.Logic
     public class PackageDependencyService
     {
         private readonly IPackageService _packageService;
+        private readonly ICommitCondition _commitCondition;
         private readonly EntityContextFactory _entityContextFactory;
         private readonly ILogger<PackageDependencyService> _logger;
 
         public PackageDependencyService(
             IPackageService packageService,
+            ICommitCondition commitCondition,
             EntityContextFactory entityContextFactory,
             ILogger<PackageDependencyService> logger)
         {
             _packageService = packageService;
+            _commitCondition = commitCondition;
             _entityContextFactory = entityContextFactory;
             _logger = logger;
         }
@@ -240,6 +243,7 @@ namespace Knapcode.ExplorePackages.Logic
                     }
 
                     var commitStopwatch = Stopwatch.StartNew();
+                    await _commitCondition.VerifyAsync();
                     transaction.Commit();
                     _logger.LogInformation(
                         "Committed package dependency {Changes} changes. {commitStopwatch.ElapsedMilliseconds}ms",

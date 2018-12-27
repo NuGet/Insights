@@ -34,9 +34,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             await _processor.ProcessAsync(queries, reprocess: true, batchSize: 5000, token: token);
         }
 
-        public bool IsDatabaseRequired()
-        {
-            return true;
-        }
+        public bool IsDatabaseRequired() => true;
+        public bool IsReadOnly() => false;
     }
 }

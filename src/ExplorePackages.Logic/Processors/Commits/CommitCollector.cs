@@ -13,17 +13,20 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly CursorService _cursorService;
         private readonly ICommitEnumerator<TEntity> _enumerator;
         private readonly ICommitProcessor<TEntity, TItem> _processor;
+        private readonly ISingletonService _singletonService;
         private readonly ILogger _logger;
 
         public CommitCollector(
             CursorService cursorService,
             ICommitEnumerator<TEntity> enumerator,
             ICommitProcessor<TEntity, TItem> processor,
+            ISingletonService singletonService,
             ILogger logger)
         {
             _cursorService = cursorService;
             _enumerator = enumerator;
             _processor = processor;
+            _singletonService = singletonService;
             _logger = logger;
         }
         
@@ -35,6 +38,8 @@ namespace Knapcode.ExplorePackages.Logic
             int commitCount;
             do
             {
+                await _singletonService.RenewAsync();
+
                 var commits = await _enumerator.GetCommitsAsync(
                     start,
                     end,

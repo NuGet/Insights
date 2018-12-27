@@ -13,15 +13,18 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly CatalogReader _catalogReader;
         private readonly CursorService _cursorService;
         private readonly ICatalogEntriesProcessor _processor;
+        private readonly ISingletonService _singletonService;
 
         public CatalogProcessorQueue(
             CatalogReader catalogReader,
             CursorService cursorService,
-            ICatalogEntriesProcessor processor)
+            ICatalogEntriesProcessor processor,
+            ISingletonService singletonService)
         {
             _catalogReader = catalogReader;
             _cursorService = cursorService;
             _processor = processor;
+            _singletonService = singletonService;
             _taskQueue = new TaskQueue<Work>(
                 workerCount: 1,
                 workAsync: WorkAsync);
@@ -79,6 +82,8 @@ namespace Knapcode.ExplorePackages.Logic
 
             while (remainingPages.Any())
             {
+                await _singletonService.RenewAsync();
+
                 var currentPage = remainingPages.Dequeue();
                 var currentPages = new[] { currentPage };
 

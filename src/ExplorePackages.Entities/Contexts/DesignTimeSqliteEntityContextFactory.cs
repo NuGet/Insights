@@ -10,7 +10,9 @@ namespace Knapcode.ExplorePackages.Entities
             var optionsBuilder = new DbContextOptionsBuilder<SqliteEntityContext>();
             optionsBuilder.UseSqlite(
                 "Data Source=Knapcode.ExplorePackages.sqlite3");
-            return new SqliteEntityContext(optionsBuilder.Options);
+            return new SqliteEntityContext(
+                NullCommitCondition.Instance,
+                optionsBuilder.Options);
         }
     }
 }

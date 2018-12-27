@@ -127,9 +127,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             while (count > 0);
         }
 
-        public bool IsDatabaseRequired()
-        {
-            return true;
-        }
+        public bool IsDatabaseRequired() => true;
+        public bool IsReadOnly() => true;
     }
 }

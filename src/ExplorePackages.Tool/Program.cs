@@ -55,6 +55,11 @@ namespace Knapcode.ExplorePackages.Tool
 
         public static int Main(string[] args)
         {
+            return MainAsync(args).GetAwaiter().GetResult();
+        }
+
+        public static async Task<int> MainAsync(string[] args)
+        {
             var logger = new LoggerFactory().AddMinimalConsole().CreateLogger<Program>();
 
             // Read and show the settings
@@ -72,6 +77,7 @@ namespace Knapcode.ExplorePackages.Tool
             using (var serviceProvider = serviceCollection.BuildServiceProvider())
             {
                 logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+                var singletonService = serviceProvider.GetRequiredService<ISingletonService>();
 
                 var app = new CommandLineApplication();
                 app.HelpOption();
@@ -89,6 +95,10 @@ namespace Knapcode.ExplorePackages.Tool
                 {
                     logger.LogError(ex, "An unexpected exception occured.");
                     output = 1;
+                }
+                finally
+                {
+                    await singletonService.ReleaseAsync();
                 }
             }
 
@@ -120,6 +130,7 @@ namespace Knapcode.ExplorePackages.Tool
             ILogger logger)
         {
             var command = (ICommand)serviceProvider.GetRequiredService(commandType);
+            var singletonService = serviceProvider.GetRequiredService<ISingletonService>();
 
             app.Command(
                 commandName,
@@ -159,6 +170,7 @@ namespace Knapcode.ExplorePackages.Tool
                         await InitializeGlobalState(
                             serviceProvider,
                             command.IsDatabaseRequired(),
+                            !command.IsReadOnly(),
                             serviceProvider.GetRequiredService<ExplorePackagesSettings>(),
                             serviceProvider.GetRequiredService<ILogger<Program>>());
 
@@ -167,6 +179,11 @@ namespace Knapcode.ExplorePackages.Tool
                             var commandRunner = new CommandExecutor(
                                 command,
                                 serviceProvider.GetRequiredService<ILogger<CommandExecutor>>());
+
+                            if (!command.IsReadOnly())
+                            {
+                                await singletonService.RenewAsync();
+                            }
 
                             var success = await commandRunner.ExecuteAsync(CancellationToken.None);
 
@@ -198,10 +215,19 @@ namespace Knapcode.ExplorePackages.Tool
         private static async Task InitializeGlobalState(
             IServiceProvider serviceProvider,
             bool initializeDatabase,
+            bool acquireSingletonLease,
             ExplorePackagesSettings settings,
             ILogger logger)
         {
             logger.LogInformation("===== initialize =====");
+
+            // Acquire the singleton lease.
+            if (acquireSingletonLease)
+            {
+                logger.LogInformation("Ensuring that this job is a singleton.");
+                var singletonService = serviceProvider.GetRequiredService<ISingletonService>();
+                await singletonService.AcquireOrRenewAsync();
+            }
 
             // Initialize the database.
             if (initializeDatabase)

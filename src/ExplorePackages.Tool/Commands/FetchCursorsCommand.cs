@@ -23,9 +23,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             await _service.UpdateNuGetOrgCursors(token);
         }
 
-        public bool IsDatabaseRequired()
-        {
-            return true;
-        }
+        public bool IsDatabaseRequired() => true;
+        public bool IsReadOnly() => false;
     }
 }

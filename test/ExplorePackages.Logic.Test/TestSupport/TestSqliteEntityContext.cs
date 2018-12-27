@@ -15,7 +15,9 @@ namespace Knapcode.ExplorePackages.Logic
         public TestSqliteEntityContext(
             SqliteEntityContext inner,
             DbContextOptions<SqliteEntityContext> options,
-            Func<Task> executeBeforeCommitAsync) : base(options)
+            Func<Task> executeBeforeCommitAsync) : base(
+                NullCommitCondition.Instance,
+                options)
         {
             _inner = inner;
             _executeBeforeCommitAsync = executeBeforeCommitAsync;

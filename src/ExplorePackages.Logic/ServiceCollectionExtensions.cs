@@ -21,28 +21,28 @@ namespace Knapcode.ExplorePackages.Logic
         {
             serviceCollection.AddMemoryCache();
 
-            serviceCollection.AddTransient<IEntityContext>(x =>
-            {
-                var options = x.GetRequiredService<ExplorePackagesSettings>();
-                switch (options.DatabaseType)
-                {
-                    case DatabaseType.Sqlite:
-                        return x.GetRequiredService<SqliteEntityContext>();
-                    case DatabaseType.SqlServer:
-                        return x.GetRequiredService<SqlServerEntityContext>();
-                    default:
-                        throw new NotImplementedException($"The database type '{options.DatabaseType}' is not supported.");
-                }
-            });
-            serviceCollection.AddTransient<Func<IEntityContext>>(x => () => x.GetRequiredService<IEntityContext>());
-            serviceCollection.AddTransient<EntityContextFactory>();
-
             serviceCollection.AddDbContext<SqliteEntityContext>((x, dbContextOptionsBuilder) =>
             {
                 var options = x.GetRequiredService<ExplorePackagesSettings>();
                 dbContextOptionsBuilder
                     .UseSqlite(options.DatabaseConnectionString);
             }, contextLifetime: ServiceLifetime.Transient);
+            serviceCollection.Remove(serviceCollection.Single(x => x.ServiceType == typeof(SqliteEntityContext)));
+            serviceCollection.AddTransient<Func<bool, SqliteEntityContext>>(x => includeCommitCondition =>
+            {
+                if (includeCommitCondition)
+                {
+                    return new SqliteEntityContext(
+                        x.GetRequiredService<ICommitCondition>(),
+                        x.GetRequiredService<DbContextOptions<SqliteEntityContext>>());
+                }
+                else
+                {
+                    return new SqliteEntityContext(
+                        NullCommitCondition.Instance,
+                        x.GetRequiredService<DbContextOptions<SqliteEntityContext>>());
+                }
+            });
 
             serviceCollection.AddDbContext<SqlServerEntityContext>((x, dbContextOptionsBuilder) =>
             {
@@ -50,6 +50,45 @@ namespace Knapcode.ExplorePackages.Logic
                 dbContextOptionsBuilder
                     .UseSqlServer(options.DatabaseConnectionString);
             }, contextLifetime: ServiceLifetime.Transient);
+            serviceCollection.Remove(serviceCollection.Single(x => x.ServiceType == typeof(SqlServerEntityContext)));
+            serviceCollection.AddTransient<Func<bool, SqlServerEntityContext>>(x => includeCommitCondition =>
+            {
+                if (includeCommitCondition)
+                {
+                    return new SqlServerEntityContext(
+                        x.GetRequiredService<ICommitCondition>(),
+                        x.GetRequiredService<DbContextOptions<SqlServerEntityContext>>());
+                }
+                else
+                {
+                    return new SqlServerEntityContext(
+                        NullCommitCondition.Instance,
+                        x.GetRequiredService<DbContextOptions<SqlServerEntityContext>>());
+                }
+            });
+
+            serviceCollection.AddTransient<Func<bool, IEntityContext>>(x => includeCommitCondition =>
+            {
+                var options = x.GetRequiredService<ExplorePackagesSettings>();
+                switch (options.DatabaseType)
+                {
+                    case DatabaseType.Sqlite:
+                        return x.GetRequiredService<Func<bool, SqliteEntityContext>>()(includeCommitCondition);
+                    case DatabaseType.SqlServer:
+                        return x.GetRequiredService<Func<bool, SqlServerEntityContext>>()(includeCommitCondition);
+                    default:
+                        throw new NotImplementedException($"The database type '{options.DatabaseType}' is not supported.");
+                }
+            });
+            serviceCollection.AddTransient(x => x.GetRequiredService<Func<bool, IEntityContext>>()(true));
+            serviceCollection.AddTransient<Func<IEntityContext>>(x => () => x.GetRequiredService<Func<bool, IEntityContext>>()(true));
+            serviceCollection.AddTransient<EntityContextFactory>();
+            serviceCollection.AddSingleton<ISingletonService>(x => new SingletonService(
+                new LeaseService(
+                    new EntityContextFactory(
+                        () => x.GetRequiredService<Func<bool, IEntityContext>>()(false))),
+                x.GetRequiredService<ILogger<SingletonService>>()));
+            serviceCollection.AddTransient<ICommitCondition, LeaseCommitCondition>();
 
             serviceCollection.AddSingleton<UrlReporterProvider>();
             serviceCollection.AddTransient<UrlReporterHandler>();
