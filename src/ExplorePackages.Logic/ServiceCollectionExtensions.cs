@@ -130,7 +130,7 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddSingleton(
                 x =>
                 {
-                    var options = x.GetRequiredService<IOptionsSnapshot<ExplorePackagesSettings>>();
+                    var options = x.GetRequiredService<IOptions<ExplorePackagesSettings>>();
                     return new HttpSource(
                         new PackageSource(options.Value.V3ServiceIndex),
                         () =>
@@ -150,7 +150,7 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddSingleton(
                 x =>
                 {
-                    var options = x.GetRequiredService<IOptionsSnapshot<ExplorePackagesSettings>>();
+                    var options = x.GetRequiredService<IOptions<ExplorePackagesSettings>>();
                     return new CatalogReader(
                         new Uri(options.Value.V3ServiceIndex, UriKind.Absolute),
                         x.GetRequiredService<HttpSource>(),

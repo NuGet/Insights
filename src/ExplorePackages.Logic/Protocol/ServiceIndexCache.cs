@@ -11,13 +11,13 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class ServiceIndexCache
     {
-        private readonly IOptionsSnapshot<ExplorePackagesSettings> _settings;
+        private readonly IOptions<ExplorePackagesSettings> _settings;
         private readonly Lazy<Task<ServiceIndexResourceV3>> _lazyServiceIndexResource;
         private readonly ConcurrentDictionary<string, IReadOnlyList<string>> _urls
             = new ConcurrentDictionary<string, IReadOnlyList<string>>();
 
         public ServiceIndexCache(
-            IOptionsSnapshot<ExplorePackagesSettings> settings)
+            IOptions<ExplorePackagesSettings> settings)
         {
             _settings = settings;
             _lazyServiceIndexResource = new Lazy<Task<ServiceIndexResourceV3>>(async () =>
