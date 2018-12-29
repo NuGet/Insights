@@ -270,11 +270,17 @@ namespace Knapcode.ExplorePackages.Tool
 
             serviceCollection.AddExplorePackages();
 
-            var settingsDirectory = Environment.GetEnvironmentVariable("USERPROFILE") ?? Directory.GetCurrentDirectory();
-            var settingsPath = Path.Combine(settingsDirectory, "Knapcode.ExplorePackages.Settings.json");
+            var userProfile = Environment.GetEnvironmentVariable("USERPROFILE") ?? Directory.GetCurrentDirectory();
+            var userProfilePath = Path.Combine(userProfile, "Knapcode.ExplorePackages.Settings.json");
+
+            var local = Path.GetDirectoryName(typeof(Program).Assembly.Location);
+            var localPath = Path.Combine(local, "Knapcode.ExplorePackages.Settings.json");
+
             var configurationBuilder = new ConfigurationBuilder()
-                .AddJsonFile(settingsPath, optional: false, reloadOnChange: false);
+                .AddJsonFile(userProfilePath, optional: true, reloadOnChange: false)
+                .AddJsonFile(localPath, optional: true, reloadOnChange: false);
             var configuration = configurationBuilder.Build();
+
             serviceCollection.Configure<ExplorePackagesSettings>(configuration.GetSection("Knapcode.ExplorePackages"));
 
             serviceCollection.AddLogging(o =>
