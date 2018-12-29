@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Logic

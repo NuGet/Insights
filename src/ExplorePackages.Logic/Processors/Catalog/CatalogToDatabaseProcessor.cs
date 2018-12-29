@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
 using NuGet.CatalogReader;
 
 namespace Knapcode.ExplorePackages.Logic
