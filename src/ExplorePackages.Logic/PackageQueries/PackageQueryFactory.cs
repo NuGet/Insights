@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -28,11 +29,11 @@ namespace Knapcode.ExplorePackages.Logic
         };
 
         private readonly Func<IEnumerable<IPackageQuery>> _getPackageQueries;
-        private readonly ExplorePackagesSettings _settings;
+        private readonly IOptionsSnapshot<ExplorePackagesSettings> _settings;
 
         public PackageQueryFactory(
             Func<IEnumerable<IPackageQuery>> getPackageQueries,
-            ExplorePackagesSettings settings)
+            IOptionsSnapshot<ExplorePackagesSettings> settings)
         {
             _getPackageQueries = getPackageQueries;
             _settings = settings;
@@ -46,12 +47,12 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 var type = packageQuery.GetType();
 
-                if (!_settings.RunBoringQueries && BoringQueries.Contains(type))
+                if (!_settings.Value.RunBoringQueries && BoringQueries.Contains(type))
                 {
                     continue;
                 }
 
-                if (!_settings.RunConsistencyChecks && ConsistencyChecks.Contains(type))
+                if (!_settings.Value.RunConsistencyChecks && ConsistencyChecks.Contains(type))
                 {
                     continue;
                 }

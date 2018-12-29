@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using NuGet.Protocol;
@@ -15,13 +16,13 @@ namespace Knapcode.ExplorePackages.Logic
     public class BlobStorageService : IBlobStorageService
     {
         private readonly HttpSource _httpSource;
-        private readonly ExplorePackagesSettings _settings;
+        private readonly IOptionsSnapshot<ExplorePackagesSettings> _settings;
         private readonly ILogger<BlobStorageService> _logger;
         private readonly Lazy<CloudBlobContainer> _lazyContainer;
 
         public BlobStorageService(
             HttpSource httpSource,
-            ExplorePackagesSettings settings,
+            IOptionsSnapshot<ExplorePackagesSettings> settings,
             ILogger<BlobStorageService> logger)
         {
             _httpSource = httpSource;
@@ -29,9 +30,9 @@ namespace Knapcode.ExplorePackages.Logic
             _logger = logger;
             _lazyContainer = new Lazy<CloudBlobContainer>(() =>
             {
-                var account = CloudStorageAccount.Parse(_settings.StorageConnectionString);
+                var account = CloudStorageAccount.Parse(_settings.Value.StorageConnectionString);
                 var client = account.CreateCloudBlobClient();
-                var container = client.GetContainerReference(_settings.StorageContainerName);
+                var container = client.GetContainerReference(_settings.Value.StorageContainerName);
 
                 return container;
             });
@@ -39,13 +40,11 @@ namespace Knapcode.ExplorePackages.Logic
 
         private CloudBlobContainer Container => _lazyContainer.Value;
 
-        public virtual bool IsEnabled => _settings.StorageConnectionString != null && _settings.StorageContainerName != null;
-
         public virtual async Task<bool> TryDownloadStreamAsync(string blobName, Stream destinationStream)
         {
             var blob = GetBlob(blobName);
 
-            if (_settings.IsStorageContainerPublic)
+            if (_settings.Value.IsStorageContainerPublic)
             {
                 var nuGetLogger = _logger.ToNuGetLogger();
                 return await _httpSource.ProcessStreamAsync(

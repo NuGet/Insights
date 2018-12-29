@@ -1,15 +1,16 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Logic
 {
     public class PackagesContainerConsistencyService : IConsistencyService<PackagesContainerConsistencyReport>
     {
         private readonly PackagesContainerClient _client;
-        private readonly ExplorePackagesSettings _settings;
+        private readonly IOptionsSnapshot<ExplorePackagesSettings> _settings;
 
         public PackagesContainerConsistencyService(
             PackagesContainerClient client,
-            ExplorePackagesSettings settings)
+            IOptionsSnapshot<ExplorePackagesSettings> settings)
         {
             _client = client;
             _settings = settings;
@@ -51,7 +52,7 @@ namespace Knapcode.ExplorePackages.Logic
             }
 
             var packageContentMetadata = await _client.GetPackageContentMetadataAsync(
-                   _settings.PackagesContainerBaseUrl,
+                   _settings.Value.PackagesContainerBaseUrl,
                    context.Package.Id,
                    context.Package.Version);
 

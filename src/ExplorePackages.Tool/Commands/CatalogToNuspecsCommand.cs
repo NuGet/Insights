@@ -39,6 +39,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             await catalogProcessor.ProcessAsync(token);
         }
 
+        public bool IsInitializationRequired() => true;
         public bool IsDatabaseRequired() => true;
         public bool IsReadOnly() => false;
     }

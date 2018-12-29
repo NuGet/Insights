@@ -1,15 +1,16 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Logic
 {
     public class V2ConsistencyService : IConsistencyService<V2ConsistencyReport>
     {
         private readonly V2Client _client;
-        private readonly ExplorePackagesSettings _settings;
+        private readonly IOptionsSnapshot<ExplorePackagesSettings> _settings;
 
         public V2ConsistencyService(
             V2Client client,
-            ExplorePackagesSettings settings)
+            IOptionsSnapshot<ExplorePackagesSettings> settings)
         {
             _client = client;
             _settings = settings;
@@ -61,7 +62,7 @@ namespace Knapcode.ExplorePackages.Logic
             var report = new MutableReport { IsConsistent = true };
 
             var packageSemVer1 = await _client.GetPackageOrNullAsync(
-                _settings.V2BaseUrl,
+                _settings.Value.V2BaseUrl,
                 context.Package.Id,
                 context.Package.Version,
                 semVer2: false);
@@ -76,7 +77,7 @@ namespace Knapcode.ExplorePackages.Logic
             }
 
             var packageSemVer2 = await _client.GetPackageOrNullAsync(
-                _settings.V2BaseUrl,
+                _settings.Value.V2BaseUrl,
                 context.Package.Id,
                 context.Package.Version,
                 semVer2: true);

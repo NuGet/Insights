@@ -10,6 +10,7 @@
     <PackageReference Include="Knapcode.BlobDelta" Version="0.3.0" />
     <PackageReference Include="Knapcode.MiniZip" Version="0.6.0" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
     <PackageReference Include="NuGet.CatalogReader" Version="1.6.9" />
     <PackageReference Include="NuGet.Protocol" Version="4.9.2" />

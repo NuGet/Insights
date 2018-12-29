@@ -1,15 +1,16 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Logic
 {
     public class GalleryConsistencyService : IConsistencyService<GalleryConsistencyReport>
     {
         private readonly GalleryClient _client;
-        private readonly ExplorePackagesSettings _settings;
+        private readonly IOptionsSnapshot<ExplorePackagesSettings> _settings;
 
         public GalleryConsistencyService(
             GalleryClient client,
-            ExplorePackagesSettings settings)
+            IOptionsSnapshot<ExplorePackagesSettings> settings)
         {
             _client = client;
             _settings = settings;
@@ -55,7 +56,7 @@ namespace Knapcode.ExplorePackages.Logic
             }
 
             var packageState = await _client.GetPackageStateAsync(
-                _settings.GalleryBaseUrl,
+                _settings.Value.GalleryBaseUrl,
                 context.Package.Id,
                 context.Package.Version);
 

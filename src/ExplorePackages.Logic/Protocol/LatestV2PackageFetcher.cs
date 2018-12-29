@@ -1,14 +1,17 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Logic
 {
     public class LatestV2PackageFetcher
     {
         private readonly V2Client _client;
-        private readonly ExplorePackagesSettings _settings;
+        private readonly IOptionsSnapshot<ExplorePackagesSettings> _settings;
 
-        public LatestV2PackageFetcher(V2Client client, ExplorePackagesSettings settings)
+        public LatestV2PackageFetcher(
+            V2Client client,
+            IOptionsSnapshot<ExplorePackagesSettings> settings)
         {
             _client = client;
             _settings = settings;
@@ -17,7 +20,7 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task<V2Package> GetLatestPackageAsync(IProgressReporter progressReporter)
         {
             var packages = await _client.GetPackagesAsync(
-                _settings.V2BaseUrl,
+                _settings.Value.V2BaseUrl,
                 filter: null,
                 orderBy: "Created desc",
                 top: 1);

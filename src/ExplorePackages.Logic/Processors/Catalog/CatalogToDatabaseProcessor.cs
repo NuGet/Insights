@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using NuGet.CatalogReader;
 
 namespace Knapcode.ExplorePackages.Logic
@@ -12,18 +13,15 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly IPackageService _packageService;
         private readonly CatalogService _catalogService;
         private readonly V2Client _v2Client;
-        private readonly ExplorePackagesSettings _settings;
 
         public CatalogToDatabaseProcessor(
             IPackageService packageService,
             CatalogService catalogService,
-            V2Client v2Client,
-            ExplorePackagesSettings settings)
+            V2Client v2Client)
         {
             _packageService = packageService;
             _catalogService = catalogService;
             _v2Client = v2Client;
-            _settings = settings;
         }
 
         public IReadOnlyList<string> DependencyCursorNames => new List<string>();

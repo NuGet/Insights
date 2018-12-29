@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Knapcode.BlobDelta;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Auth;
 using Microsoft.WindowsAzure.Storage.Blob;
@@ -14,14 +15,14 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly PackageBlobNameProvider _nameProvider;
         private readonly IPackageService _packageService;
         private readonly IFileStorageService _fileStorageService;
-        private readonly ExplorePackagesSettings _settings;
+        private readonly IOptionsSnapshot<ExplorePackagesSettings> _settings;
         private readonly ILogger<BlobStorageService> _logger;
 
         public BlobStorageMigrator(
             PackageBlobNameProvider nameProvider,
             IPackageService packageService,
             IFileStorageService fileStorageService,
-            ExplorePackagesSettings settings,
+            IOptionsSnapshot<ExplorePackagesSettings> settings,
             ILogger<BlobStorageService> logger)
         {
             _nameProvider = nameProvider;
@@ -152,9 +153,9 @@ namespace Knapcode.ExplorePackages.Logic
 
         private CloudBlobContainer GetDestinationContainer()
         {
-            var account = CloudStorageAccount.Parse(_settings.StorageConnectionString);
+            var account = CloudStorageAccount.Parse(_settings.Value.StorageConnectionString);
             var client = account.CreateCloudBlobClient();
-            var container = client.GetContainerReference(_settings.StorageContainerName);
+            var container = client.GetContainerReference(_settings.Value.StorageContainerName);
             return container;
         }
 

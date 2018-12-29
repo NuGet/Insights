@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Logic
@@ -11,7 +12,6 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly MZipStore _mzipStore;
         private readonly PackageService _packageService;
         private readonly GalleryConsistencyService _galleryConsistencyService;
-        private readonly ExplorePackagesSettings _settings;
         private readonly ILogger<PackageQueryContextBuilder> _logger;
 
         public PackageQueryContextBuilder(
@@ -19,14 +19,12 @@ namespace Knapcode.ExplorePackages.Logic
             MZipStore mzipStore,
             PackageService packageService,
             GalleryConsistencyService galleryConsistencyService,
-            ExplorePackagesSettings settings,
             ILogger<PackageQueryContextBuilder> logger)
         {
             _nuspecStore = nuspecStore;
             _mzipStore = mzipStore;
             _packageService = packageService;
             _galleryConsistencyService = galleryConsistencyService;
-            _settings = settings;
             _logger = logger;
         }
 

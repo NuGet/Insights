@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;
@@ -21,6 +22,7 @@ namespace Knapcode.ExplorePackages.Logic
             private readonly Mock<IPackageService> _service;
             private readonly Mock<IETagService> _etagService;
             private readonly ExplorePackagesSettings _settings;
+            private readonly Mock<IOptionsSnapshot<ExplorePackagesSettings>> _settingsMock;
             private readonly PackageDownloadsToDatabaseProcessor _target;
 
             public UpdateAsync(ITestOutputHelper output)
@@ -36,6 +38,10 @@ namespace Knapcode.ExplorePackages.Logic
                 {
                     DownloadsV1Path = Path.Combine(_testDirectory, "downloads.txt"),
                 };
+                _settingsMock = new Mock<IOptionsSnapshot<ExplorePackagesSettings>>();
+                _settingsMock
+                    .Setup(x => x.Value)
+                    .Returns(() => _settings);
 
                 _service
                     .Setup(x => x.AddOrUpdatePackagesAsync(It.IsAny<IEnumerable<PackageDownloads>>()))
@@ -46,7 +52,7 @@ namespace Knapcode.ExplorePackages.Logic
                     _client.Object,
                     _service.Object,
                     _etagService.Object,
-                    _settings,
+                    _settingsMock.Object,
                     output.GetLogger< PackageDownloadsToDatabaseProcessor>());
             }
 

@@ -24,6 +24,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             await _singletonService.BreakAsync();
         }
 
+        public bool IsInitializationRequired() => true;
         public bool IsDatabaseRequired() => true;
         public bool IsReadOnly() => true;
     }

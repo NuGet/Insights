@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -14,14 +15,14 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly IPackageDownloadsClient _client;
         private readonly IPackageService _service;
         private readonly IETagService _etagService;
-        private readonly ExplorePackagesSettings _settings;
+        private readonly IOptionsSnapshot<ExplorePackagesSettings> _settings;
         private readonly ILogger<PackageDownloadsToDatabaseProcessor> _logger;
 
         public PackageDownloadsToDatabaseProcessor(
             IPackageDownloadsClient client,
             IPackageService service,
             IETagService etagService,
-            ExplorePackagesSettings settings,
+            IOptionsSnapshot<ExplorePackagesSettings> settings,
             ILogger<PackageDownloadsToDatabaseProcessor> logger)
         {
             _client = client;
@@ -41,7 +42,7 @@ namespace Knapcode.ExplorePackages.Logic
 
             taskQueue.Start();
 
-            var newPath = _settings.DownloadsV1Path + ".new";
+            var newPath = _settings.Value.DownloadsV1Path + ".new";
             var newETag = await ProduceAsync(newPath, previousETag, taskQueue);
 
             await taskQueue.CompleteAsync();
@@ -50,8 +51,8 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 await _etagService.SetValueAsync(ETagNames.DownloadsV1, newETag);
 
-                var oldPath = _settings.DownloadsV1Path + ".old";
-                SafeFileWriter.Replace(_settings.DownloadsV1Path, newPath, oldPath, _logger);
+                var oldPath = _settings.Value.DownloadsV1Path + ".old";
+                SafeFileWriter.Replace(_settings.Value.DownloadsV1Path, newPath, oldPath, _logger);
             }
         }
 
@@ -112,15 +113,15 @@ namespace Knapcode.ExplorePackages.Logic
                 return newETag;
             }
 
-            if (!File.Exists(_settings.DownloadsV1Path))
+            if (!File.Exists(_settings.Value.DownloadsV1Path))
             {
-                File.WriteAllText(_settings.DownloadsV1Path, string.Empty);
+                File.WriteAllText(_settings.Value.DownloadsV1Path, string.Empty);
             }
 
             var comparer = new PackageDownloadsComparer(considerDownloads: false);
             var batch = new List<PackageDownloads>();
 
-            using (var existingStream = new FileStream(_settings.DownloadsV1Path, FileMode.Open))
+            using (var existingStream = new FileStream(_settings.Value.DownloadsV1Path, FileMode.Open))
             using (var existingReader = new StreamReader(existingStream))
             using (var newStream = new FileStream(newPath, FileMode.Open))
             using (var newReader = new StreamReader(newStream))

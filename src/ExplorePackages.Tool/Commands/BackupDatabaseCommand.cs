@@ -50,6 +50,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             }
         }
 
+        public bool IsInitializationRequired() => true;
         public bool IsDatabaseRequired() => true;
         public bool IsReadOnly() => true;
     }

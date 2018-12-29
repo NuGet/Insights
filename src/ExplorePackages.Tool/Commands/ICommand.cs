@@ -8,6 +8,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
     {
         void Configure(CommandLineApplication app);
         Task ExecuteAsync(CancellationToken token);
+        bool IsInitializationRequired();
         bool IsDatabaseRequired();
         bool IsReadOnly();
     }

@@ -23,6 +23,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             await _processor.UpdateAsync();
         }
 
+        public bool IsInitializationRequired() => true;
         public bool IsDatabaseRequired() => true;
         public bool IsReadOnly() => false;
     }

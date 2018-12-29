@@ -9,6 +9,7 @@ using Knapcode.MiniZip;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NuGet.CatalogReader;
 using NuGet.Configuration;
 using NuGet.Protocol;
@@ -18,15 +19,15 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddExplorePackages(this IServiceCollection serviceCollection, ExplorePackagesSettings settings)
+        public static IServiceCollection AddExplorePackages(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddMemoryCache();
 
             serviceCollection.AddDbContext<SqliteEntityContext>((x, dbContextOptionsBuilder) =>
             {
-                var options = x.GetRequiredService<ExplorePackagesSettings>();
+                var options = x.GetRequiredService<IOptionsSnapshot<ExplorePackagesSettings>>();
                 dbContextOptionsBuilder
-                    .UseSqlite(options.DatabaseConnectionString);
+                    .UseSqlite(options.Value.DatabaseConnectionString);
             }, contextLifetime: ServiceLifetime.Transient);
             serviceCollection.Remove(serviceCollection.Single(x => x.ServiceType == typeof(SqliteEntityContext)));
             serviceCollection.AddTransient<Func<bool, SqliteEntityContext>>(x => includeCommitCondition =>
@@ -47,9 +48,9 @@ namespace Knapcode.ExplorePackages.Logic
 
             serviceCollection.AddDbContext<SqlServerEntityContext>((x, dbContextOptionsBuilder) =>
             {
-                var options = x.GetRequiredService<ExplorePackagesSettings>();
+                var options = x.GetRequiredService<IOptionsSnapshot<ExplorePackagesSettings>>();
                 dbContextOptionsBuilder
-                    .UseSqlServer(options.DatabaseConnectionString);
+                    .UseSqlServer(options.Value.DatabaseConnectionString);
             }, contextLifetime: ServiceLifetime.Transient);
             serviceCollection.Remove(serviceCollection.Single(x => x.ServiceType == typeof(SqlServerEntityContext)));
             serviceCollection.AddTransient<Func<bool, SqlServerEntityContext>>(x => includeCommitCondition =>
@@ -70,15 +71,15 @@ namespace Knapcode.ExplorePackages.Logic
 
             serviceCollection.AddTransient<Func<bool, IEntityContext>>(x => includeCommitCondition =>
             {
-                var options = x.GetRequiredService<ExplorePackagesSettings>();
-                switch (options.DatabaseType)
+                var options = x.GetRequiredService<IOptionsSnapshot<ExplorePackagesSettings>>();
+                switch (options.Value.DatabaseType)
                 {
                     case DatabaseType.Sqlite:
                         return x.GetRequiredService<Func<bool, SqliteEntityContext>>()(includeCommitCondition);
                     case DatabaseType.SqlServer:
                         return x.GetRequiredService<Func<bool, SqlServerEntityContext>>()(includeCommitCondition);
                     default:
-                        throw new NotImplementedException($"The database type '{options.DatabaseType}' is not supported.");
+                        throw new NotImplementedException($"The database type '{options.Value.DatabaseType}' is not supported.");
                 }
             });
             serviceCollection.AddTransient(x => x.GetRequiredService<Func<bool, IEntityContext>>()(true));
@@ -129,9 +130,9 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddSingleton(
                 x =>
                 {
-                    var options = x.GetRequiredService<ExplorePackagesSettings>();
+                    var options = x.GetRequiredService<IOptionsSnapshot<ExplorePackagesSettings>>();
                     return new HttpSource(
-                        new PackageSource(options.V3ServiceIndex),
+                        new PackageSource(options.Value.V3ServiceIndex),
                         () =>
                         {
                             var httpClientHandler = x.GetRequiredService<HttpClientHandler>();
@@ -147,12 +148,16 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddSingleton(searchServiceUrlCache);
             serviceCollection.AddSingleton<ISearchServiceUrlCacheInvalidator>(searchServiceUrlCache);
             serviceCollection.AddSingleton(
-                x => new CatalogReader(
-                    new Uri(x.GetRequiredService<ExplorePackagesSettings>().V3ServiceIndex, UriKind.Absolute),
-                    x.GetRequiredService<HttpSource>(),
-                    cacheContext: null,
-                    cacheTimeout: TimeSpan.Zero,
-                    log: x.GetRequiredService<ILogger<CatalogReader>>().ToNuGetLogger()));
+                x =>
+                {
+                    var options = x.GetRequiredService<IOptionsSnapshot<ExplorePackagesSettings>>();
+                    return new CatalogReader(
+                        new Uri(options.Value.V3ServiceIndex, UriKind.Absolute),
+                        x.GetRequiredService<HttpSource>(),
+                        cacheContext: null,
+                        cacheTimeout: TimeSpan.Zero,
+                        log: x.GetRequiredService<ILogger<CatalogReader>>().ToNuGetLogger());
+                });
 
             serviceCollection.AddTransient(
                 x => new HttpZipProvider(
@@ -164,7 +169,6 @@ namespace Knapcode.ExplorePackages.Logic
                 });
             serviceCollection.AddTransient<MZipFormat>();
 
-            serviceCollection.AddTransient(x => settings.Clone());
             serviceCollection.AddTransient<NuspecStore>();
             serviceCollection.AddTransient<MZipStore>();
             serviceCollection.AddTransient<RemoteCursorService>();
@@ -235,7 +239,7 @@ namespace Knapcode.ExplorePackages.Logic
 
             serviceCollection.AddTransient(x => new PackageQueryFactory(
                 () => x.GetRequiredService<IEnumerable<IPackageQuery>>(),
-                x.GetRequiredService<ExplorePackagesSettings>()));
+                x.GetRequiredService<IOptionsSnapshot<ExplorePackagesSettings>>()));
 
             // Add all of the .nuspec queries.
             foreach (var serviceType in GetClassesImplementing<INuspecQuery>())

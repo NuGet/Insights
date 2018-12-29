@@ -11,8 +11,10 @@ using Knapcode.ExplorePackages.Logic;
 using Knapcode.ExplorePackages.Tool.Commands;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using NuGet.Protocol.Core.Types;
@@ -22,14 +24,6 @@ namespace Knapcode.ExplorePackages.Tool
     public class Program
     {
         private static readonly TimeSpan ReleaseInDuration = TimeSpan.FromSeconds(15);
-        private static readonly JsonSerializerSettings SerializerSettings = new JsonSerializerSettings
-        {
-            Converters =
-            {
-                new StringEnumConverter(),
-            },
-            Formatting = Formatting.Indented,
-        };
 
         private static IReadOnlyDictionary<string, Type> Commands = new Dictionary<string, Type>
         {
@@ -42,6 +36,7 @@ namespace Knapcode.ExplorePackages.Tool
             { "dependency-packages-to-database", typeof(DependencyPackagesToDatabaseCommand) },
             { "downloads-to-database", typeof(DownloadsToDatabaseCommand) },
             { "fetch-cursors", typeof(FetchCursorsCommand) },
+            { "migrate", typeof(MigrateCommand) },
             { "mzip", typeof(MZipCommand) },
             { "mzip-to-database", typeof(MZipToDatabaseCommand) },
             { "package-queries", typeof(PackageQueriesCommand) },
@@ -63,17 +58,8 @@ namespace Knapcode.ExplorePackages.Tool
 
         private static async Task<int> MainAsync(string[] args)
         {
-            // Initialize a logger just for bootstrapping.
-            var logger = new LoggerFactory().AddMinimalConsole().CreateLogger<Program>();
-
-            // Read and show the settings
-            logger.LogInformation("===== settings =====");
-            var settings = ReadSettingsFromDisk(logger) ?? new ExplorePackagesSettings();
-            LogSettings(logger, settings);
-            logger.LogInformation("====================" + Environment.NewLine);
-
             // Initialize the dependency injection container.
-            var serviceCollection = InitializeServiceCollection(settings);
+            var serviceCollection = InitializeServiceCollection();
             using (var serviceProvider = serviceCollection.BuildServiceProvider())
             {
                 // Set up the cancel event to release the lease if someone hits Ctrl + C while the program is running.
@@ -90,27 +76,6 @@ namespace Knapcode.ExplorePackages.Tool
 
                 return await await Task.WhenAny(cancelTask, executeTask);
             }
-        }
-
-        private static void LogSettings(ILogger<Program> logger, ExplorePackagesSettings settings)
-        {
-            var sanitized = settings.Clone();
-
-            // Sanitize the DB connection string
-            sanitized.DatabaseConnectionString = Regex.Replace(
-                sanitized.DatabaseConnectionString,
-                "(User ID|UID|Password|PWD)=[^;]*",
-                "$1=(redacted)",
-                RegexOptions.IgnoreCase);
-
-            // Sanitize the Azure Blob Storage connection string
-            sanitized.StorageConnectionString = Regex.Replace(
-                sanitized.StorageConnectionString,
-                "(SharedAccessSignature|AccountKey)=[^;]*",
-                "$1=(redacted)", 
-                RegexOptions.IgnoreCase);
-
-            logger.LogInformation(JsonConvert.SerializeObject(sanitized, SerializerSettings));
         }
 
         private static async Task<int> WaitForCancellationAsync(
@@ -166,23 +131,6 @@ namespace Knapcode.ExplorePackages.Tool
             }
         }
 
-        private static ExplorePackagesSettings ReadSettingsFromDisk(ILogger logger)
-        {
-            var settingsDirectory = Environment.GetEnvironmentVariable("USERPROFILE") ?? Directory.GetCurrentDirectory();
-            var settingsPath = Path.Combine(settingsDirectory, "Knapcode.ExplorePackages.Settings.json");
-            if (!File.Exists(settingsPath))
-            {
-                logger.LogInformation("No settings existed at {SettingsPath}.", settingsPath);
-                return null;
-            }
-
-            logger.LogInformation("Settings will be read from {SettingsPath}.", settingsPath);
-            var content = File.ReadAllText(settingsPath);
-            var settings = JsonConvert.DeserializeObject<ExplorePackagesSettings>(content, SerializerSettings);
-
-            return settings;
-        }
-
         private static void AddCommand(
             Type commandType,
             IServiceProvider serviceProvider,
@@ -228,18 +176,19 @@ namespace Knapcode.ExplorePackages.Tool
                         var successSleepDuration = TimeSpan.FromSeconds(successSleepOption.HasValue() ? successSleepOption.ParsedValue : 1);
                         var failureSleepDuration = TimeSpan.FromSeconds(failureSleepOption.HasValue() ? failureSleepOption.ParsedValue : 30);
 
-                        await InitializeGlobalState(
-                            serviceProvider,
-                            command.IsDatabaseRequired(),
-                            !command.IsReadOnly(),
-                            serviceProvider.GetRequiredService<ExplorePackagesSettings>(),
-                            serviceProvider.GetRequiredService<ILogger<Program>>());
+                        if (command.IsInitializationRequired())
+                        {
+                            await InitializeGlobalState(
+                                serviceProvider,
+                                command.IsDatabaseRequired(),
+                                !command.IsReadOnly());
+                        }
 
                         do
                         {
                             var commandRunner = new CommandExecutor(
-                                command,
-                                serviceProvider.GetRequiredService<ILogger<CommandExecutor>>());
+                                   command,
+                                   serviceProvider.GetRequiredService<ILogger<CommandExecutor>>());
 
                             if (!command.IsReadOnly())
                             {
@@ -264,7 +213,6 @@ namespace Knapcode.ExplorePackages.Tool
                                     await Task.Delay(failureSleepDuration);
                                 }
                             }
-                            
                         }
                         while (daemonOption.HasValue());
 
@@ -276,11 +224,16 @@ namespace Knapcode.ExplorePackages.Tool
         private static async Task InitializeGlobalState(
             IServiceProvider serviceProvider,
             bool initializeDatabase,
-            bool acquireSingletonLease,
-            ExplorePackagesSettings settings,
-            ILogger logger)
+            bool acquireSingletonLease)
         {
+            var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
             logger.LogInformation("===== initialize =====");
+
+            // Log the settings
+            using (var loggingScope = serviceProvider.CreateScope())
+            {
+                loggingScope.ServiceProvider.SanitizeAndLogSettings();
+            }
 
             // Initialize the database.
             if (initializeDatabase)
@@ -315,11 +268,18 @@ namespace Knapcode.ExplorePackages.Tool
             logger.LogInformation("======================" + Environment.NewLine);
         }
 
-        private static ServiceCollection InitializeServiceCollection(ExplorePackagesSettings settings)
+        private static ServiceCollection InitializeServiceCollection()
         {
             var serviceCollection = new ServiceCollection();
 
-            serviceCollection.AddExplorePackages(settings);
+            serviceCollection.AddExplorePackages();
+
+            var settingsDirectory = Environment.GetEnvironmentVariable("USERPROFILE") ?? Directory.GetCurrentDirectory();
+            var settingsPath = Path.Combine(settingsDirectory, "Knapcode.ExplorePackages.Settings.json");
+            var configurationBuilder = new ConfigurationBuilder()
+                .AddJsonFile(settingsPath, optional: false, reloadOnChange: false);
+            var configuration = configurationBuilder.Build();
+            serviceCollection.Configure<ExplorePackagesSettings>(configuration.GetSection("Knapcode.ExplorePackages"));
 
             serviceCollection.AddLogging(o =>
             {

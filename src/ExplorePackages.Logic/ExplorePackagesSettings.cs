@@ -38,26 +38,5 @@ namespace Knapcode.ExplorePackages.Logic
         public string StorageConnectionString { get; set; }
         public string StorageContainerName { get; set; }
         public bool IsStorageContainerPublic { get; set; }
-
-        public ExplorePackagesSettings Clone()
-        {
-            return new ExplorePackagesSettings
-            {
-                DatabaseType = DatabaseType,
-                DatabaseConnectionString = DatabaseConnectionString,
-                PackagePath = PackagePath,
-                RunConsistencyChecks = RunConsistencyChecks,
-                RunBoringQueries = RunBoringQueries,
-                GalleryBaseUrl = GalleryBaseUrl,
-                PackagesContainerBaseUrl = PackagesContainerBaseUrl,
-                V2BaseUrl = V2BaseUrl,
-                V3ServiceIndex = V3ServiceIndex,
-                DownloadsV1Url = DownloadsV1Url,
-                DownloadsV1Path = DownloadsV1Path,
-                StorageConnectionString = StorageConnectionString,
-                StorageContainerName = StorageContainerName,
-                IsStorageContainerPublic = IsStorageContainerPublic,
-            };
-        }
     }
 }

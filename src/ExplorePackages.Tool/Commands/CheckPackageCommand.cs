@@ -122,6 +122,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             _logger.LogInformation(reportJson);
         }
 
+        public bool IsInitializationRequired() => true;
         public bool IsDatabaseRequired() => Database;
         public bool IsReadOnly() => true;
 

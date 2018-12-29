@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Tool.Commands
 {
@@ -28,7 +29,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             PackageQueriesCommand packageQueries,
             ReprocessCrossCheckDiscrepanciesCommand reprocessCrossCheckDiscrepancies,
             ShowProblemsCommand showProblems,
-            ExplorePackagesSettings settings,
+            IOptionsSnapshot<ExplorePackagesSettings> settings,
             ILogger<CommandExecutor> logger)
         {
             var commands = new List<ICommand>
@@ -43,7 +44,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
                 dependencyPackagesToDatabase,
             };
 
-            if (settings.DownloadsV1Url != null)
+            if (settings.Value.DownloadsV1Url != null)
             {
                 commands.Add(downloadsToDatabase);
             }
@@ -90,6 +91,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             }
         }
 
+        public bool IsInitializationRequired() => _commands.Any(x => x.IsInitializationRequired());
         public bool IsDatabaseRequired() => _commands.Any(x => x.IsDatabaseRequired());
         public bool IsReadOnly() => _commands.All(x => x.IsReadOnly());
     }

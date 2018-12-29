@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -13,14 +14,14 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly CursorService _cursorService;
         private readonly V2Client _v2Client;
         private readonly PackageService _service;
-        private readonly ExplorePackagesSettings _settings;
+        private readonly IOptionsSnapshot<ExplorePackagesSettings> _settings;
         private readonly ILogger<V2ToDatabaseProcessor> _logger;
 
         public V2ToDatabaseProcessor(
             CursorService cursorService,
             V2Client v2Client,
             PackageService service,
-            ExplorePackagesSettings settings,
+            IOptionsSnapshot<ExplorePackagesSettings> settings,
             ILogger<V2ToDatabaseProcessor> logger)
         {
             _cursorService = cursorService;
@@ -37,7 +38,7 @@ namespace Knapcode.ExplorePackages.Logic
                 async identity =>
                 {
                     var package = await _v2Client.GetPackageOrNullAsync(
-                        _settings.V2BaseUrl,
+                        _settings.Value.V2BaseUrl,
                         identity.Id,
                         identity.Version,
                         semVer2: true);
@@ -107,7 +108,7 @@ namespace Knapcode.ExplorePackages.Logic
             do
             {
                 var packages = await _v2Client.GetPackagesAsync(
-                   _settings.V2BaseUrl,
+                   _settings.Value.V2BaseUrl,
                    orderBy,
                    start,
                    PageSize);
