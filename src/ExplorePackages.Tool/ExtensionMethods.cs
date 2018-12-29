@@ -23,26 +23,26 @@ namespace Knapcode.ExplorePackages.Tool
         public static void SanitizeAndLogSettings(this IServiceProvider serviceProvider)
         {
             var logger = serviceProvider.GetRequiredService<ILogger<ExplorePackagesSettings>>();
-            var settings = serviceProvider.GetRequiredService<IOptionsSnapshot<ExplorePackagesSettings>>();
-            var settingsValue = settings.Value;
+            var options = serviceProvider.GetRequiredService<IOptionsSnapshot<ExplorePackagesSettings>>();
+            var settings = options.Value;
 
             logger.LogInformation("===== settings =====");
 
             // Sanitize the DB connection string
-            settingsValue.DatabaseConnectionString = Regex.Replace(
-                settingsValue.DatabaseConnectionString,
+            settings.DatabaseConnectionString = Regex.Replace(
+                settings.DatabaseConnectionString,
                 "(User ID|UID|Password|PWD)=[^;]*",
                 "$1=(redacted)",
                 RegexOptions.IgnoreCase);
 
             // Sanitize the Azure Blob Storage connection string
-            settingsValue.StorageConnectionString = Regex.Replace(
-                settingsValue.StorageConnectionString,
+            settings.StorageConnectionString = Regex.Replace(
+                settings.StorageConnectionString,
                 "(SharedAccessSignature|AccountKey)=[^;]*",
                 "$1=(redacted)",
                 RegexOptions.IgnoreCase);
 
-            logger.LogInformation(JsonConvert.SerializeObject(settingsValue, SerializerSettings));
+            logger.LogInformation(JsonConvert.SerializeObject(settings, SerializerSettings));
 
             logger.LogInformation("====================" + Environment.NewLine);
         }
