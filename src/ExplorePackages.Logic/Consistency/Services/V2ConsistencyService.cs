@@ -6,14 +6,14 @@ namespace Knapcode.ExplorePackages.Logic
     public class V2ConsistencyService : IConsistencyService<V2ConsistencyReport>
     {
         private readonly V2Client _client;
-        private readonly IOptionsSnapshot<ExplorePackagesSettings> _settings;
+        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
 
         public V2ConsistencyService(
             V2Client client,
-            IOptionsSnapshot<ExplorePackagesSettings> settings)
+            IOptionsSnapshot<ExplorePackagesSettings> options)
         {
             _client = client;
-            _settings = settings;
+            _options = options;
         }
 
         public async Task<V2ConsistencyReport> GetReportAsync(
@@ -62,7 +62,7 @@ namespace Knapcode.ExplorePackages.Logic
             var report = new MutableReport { IsConsistent = true };
 
             var packageSemVer1 = await _client.GetPackageOrNullAsync(
-                _settings.Value.V2BaseUrl,
+                _options.Value.V2BaseUrl,
                 context.Package.Id,
                 context.Package.Version,
                 semVer2: false);
@@ -77,7 +77,7 @@ namespace Knapcode.ExplorePackages.Logic
             }
 
             var packageSemVer2 = await _client.GetPackageOrNullAsync(
-                _settings.Value.V2BaseUrl,
+                _options.Value.V2BaseUrl,
                 context.Package.Id,
                 context.Package.Version,
                 semVer2: true);

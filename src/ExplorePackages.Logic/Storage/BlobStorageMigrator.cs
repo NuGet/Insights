@@ -15,20 +15,20 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly PackageBlobNameProvider _nameProvider;
         private readonly IPackageService _packageService;
         private readonly IFileStorageService _fileStorageService;
-        private readonly IOptionsSnapshot<ExplorePackagesSettings> _settings;
+        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
         private readonly ILogger<BlobStorageService> _logger;
 
         public BlobStorageMigrator(
             PackageBlobNameProvider nameProvider,
             IPackageService packageService,
             IFileStorageService fileStorageService,
-            IOptionsSnapshot<ExplorePackagesSettings> settings,
+            IOptionsSnapshot<ExplorePackagesSettings> options,
             ILogger<BlobStorageService> logger)
         {
             _nameProvider = nameProvider;
             _packageService = packageService;
             _fileStorageService = fileStorageService;
-            _settings = settings;
+            _options = options;
             _logger = logger;
         }
 
@@ -153,9 +153,9 @@ namespace Knapcode.ExplorePackages.Logic
 
         private CloudBlobContainer GetDestinationContainer()
         {
-            var account = CloudStorageAccount.Parse(_settings.Value.StorageConnectionString);
+            var account = CloudStorageAccount.Parse(_options.Value.StorageConnectionString);
             var client = account.CreateCloudBlobClient();
-            var container = client.GetContainerReference(_settings.Value.StorageContainerName);
+            var container = client.GetContainerReference(_options.Value.StorageContainerName);
             return container;
         }
 

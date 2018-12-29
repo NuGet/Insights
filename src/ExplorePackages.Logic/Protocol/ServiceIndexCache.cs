@@ -11,18 +11,18 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class ServiceIndexCache
     {
-        private readonly IOptions<ExplorePackagesSettings> _settings;
+        private readonly IOptions<ExplorePackagesSettings> _options;
         private readonly Lazy<Task<ServiceIndexResourceV3>> _lazyServiceIndexResource;
         private readonly ConcurrentDictionary<string, IReadOnlyList<string>> _urls
             = new ConcurrentDictionary<string, IReadOnlyList<string>>();
 
         public ServiceIndexCache(
-            IOptions<ExplorePackagesSettings> settings)
+            IOptions<ExplorePackagesSettings> options)
         {
-            _settings = settings;
+            _options = options;
             _lazyServiceIndexResource = new Lazy<Task<ServiceIndexResourceV3>>(async () =>
             {
-                var sourceRepository = Repository.Factory.GetCoreV3(_settings.Value.V3ServiceIndex, FeedType.HttpV3);
+                var sourceRepository = Repository.Factory.GetCoreV3(_options.Value.V3ServiceIndex, FeedType.HttpV3);
                 var serviceIndexResource = await sourceRepository.GetResourceAsync<ServiceIndexResourceV3>();
                 return serviceIndexResource;
             });

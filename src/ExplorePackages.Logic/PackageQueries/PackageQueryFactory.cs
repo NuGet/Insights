@@ -29,14 +29,14 @@ namespace Knapcode.ExplorePackages.Logic
         };
 
         private readonly Func<IEnumerable<IPackageQuery>> _getPackageQueries;
-        private readonly IOptionsSnapshot<ExplorePackagesSettings> _settings;
+        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
 
         public PackageQueryFactory(
             Func<IEnumerable<IPackageQuery>> getPackageQueries,
-            IOptionsSnapshot<ExplorePackagesSettings> settings)
+            IOptionsSnapshot<ExplorePackagesSettings> options)
         {
             _getPackageQueries = getPackageQueries;
-            _settings = settings;
+            _options = options;
         }
 
         public IReadOnlyList<IPackageQuery> Get()
@@ -47,12 +47,12 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 var type = packageQuery.GetType();
 
-                if (!_settings.Value.RunBoringQueries && BoringQueries.Contains(type))
+                if (!_options.Value.RunBoringQueries && BoringQueries.Contains(type))
                 {
                     continue;
                 }
 
-                if (!_settings.Value.RunConsistencyChecks && ConsistencyChecks.Contains(type))
+                if (!_options.Value.RunConsistencyChecks && ConsistencyChecks.Contains(type))
                 {
                     continue;
                 }

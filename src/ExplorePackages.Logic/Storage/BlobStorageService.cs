@@ -16,23 +16,23 @@ namespace Knapcode.ExplorePackages.Logic
     public class BlobStorageService : IBlobStorageService
     {
         private readonly HttpSource _httpSource;
-        private readonly IOptionsSnapshot<ExplorePackagesSettings> _settings;
+        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
         private readonly ILogger<BlobStorageService> _logger;
         private readonly Lazy<CloudBlobContainer> _lazyContainer;
 
         public BlobStorageService(
             HttpSource httpSource,
-            IOptionsSnapshot<ExplorePackagesSettings> settings,
+            IOptionsSnapshot<ExplorePackagesSettings> options,
             ILogger<BlobStorageService> logger)
         {
             _httpSource = httpSource;
-            _settings = settings;
+            _options = options;
             _logger = logger;
             _lazyContainer = new Lazy<CloudBlobContainer>(() =>
             {
-                var account = CloudStorageAccount.Parse(_settings.Value.StorageConnectionString);
+                var account = CloudStorageAccount.Parse(_options.Value.StorageConnectionString);
                 var client = account.CreateCloudBlobClient();
-                var container = client.GetContainerReference(_settings.Value.StorageContainerName);
+                var container = client.GetContainerReference(_options.Value.StorageContainerName);
 
                 return container;
             });
@@ -44,7 +44,7 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var blob = GetBlob(blobName);
 
-            if (_settings.Value.IsStorageContainerPublic)
+            if (_options.Value.IsStorageContainerPublic)
             {
                 var nuGetLogger = _logger.ToNuGetLogger();
                 return await _httpSource.ProcessStreamAsync(

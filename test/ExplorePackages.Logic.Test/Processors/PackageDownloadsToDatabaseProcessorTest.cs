@@ -22,7 +22,7 @@ namespace Knapcode.ExplorePackages.Logic
             private readonly Mock<IPackageService> _service;
             private readonly Mock<IETagService> _etagService;
             private readonly ExplorePackagesSettings _settings;
-            private readonly Mock<IOptionsSnapshot<ExplorePackagesSettings>> _settingsMock;
+            private readonly Mock<IOptionsSnapshot<ExplorePackagesSettings>> _options;
             private readonly PackageDownloadsToDatabaseProcessor _target;
 
             public UpdateAsync(ITestOutputHelper output)
@@ -38,8 +38,8 @@ namespace Knapcode.ExplorePackages.Logic
                 {
                     DownloadsV1Path = Path.Combine(_testDirectory, "downloads.txt"),
                 };
-                _settingsMock = new Mock<IOptionsSnapshot<ExplorePackagesSettings>>();
-                _settingsMock
+                _options = new Mock<IOptionsSnapshot<ExplorePackagesSettings>>();
+                _options
                     .Setup(x => x.Value)
                     .Returns(() => _settings);
 
@@ -52,7 +52,7 @@ namespace Knapcode.ExplorePackages.Logic
                     _client.Object,
                     _service.Object,
                     _etagService.Object,
-                    _settingsMock.Object,
+                    _options.Object,
                     output.GetLogger< PackageDownloadsToDatabaseProcessor>());
             }
 

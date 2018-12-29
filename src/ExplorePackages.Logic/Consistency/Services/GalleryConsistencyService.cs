@@ -6,14 +6,14 @@ namespace Knapcode.ExplorePackages.Logic
     public class GalleryConsistencyService : IConsistencyService<GalleryConsistencyReport>
     {
         private readonly GalleryClient _client;
-        private readonly IOptionsSnapshot<ExplorePackagesSettings> _settings;
+        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
 
         public GalleryConsistencyService(
             GalleryClient client,
             IOptionsSnapshot<ExplorePackagesSettings> settings)
         {
             _client = client;
-            _settings = settings;
+            _options = settings;
         }
 
         public async Task<GalleryConsistencyReport> GetReportAsync(
@@ -56,7 +56,7 @@ namespace Knapcode.ExplorePackages.Logic
             }
 
             var packageState = await _client.GetPackageStateAsync(
-                _settings.Value.GalleryBaseUrl,
+                _options.Value.GalleryBaseUrl,
                 context.Package.Id,
                 context.Package.Version);
 

@@ -14,20 +14,20 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly CursorService _cursorService;
         private readonly V2Client _v2Client;
         private readonly PackageService _service;
-        private readonly IOptionsSnapshot<ExplorePackagesSettings> _settings;
+        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
         private readonly ILogger<V2ToDatabaseProcessor> _logger;
 
         public V2ToDatabaseProcessor(
             CursorService cursorService,
             V2Client v2Client,
             PackageService service,
-            IOptionsSnapshot<ExplorePackagesSettings> settings,
+            IOptionsSnapshot<ExplorePackagesSettings> options,
             ILogger<V2ToDatabaseProcessor> logger)
         {
             _cursorService = cursorService;
             _v2Client = v2Client;
             _service = service;
-            _settings = settings;
+            _options = options;
             _logger = logger;
         }
 
@@ -38,7 +38,7 @@ namespace Knapcode.ExplorePackages.Logic
                 async identity =>
                 {
                     var package = await _v2Client.GetPackageOrNullAsync(
-                        _settings.Value.V2BaseUrl,
+                        _options.Value.V2BaseUrl,
                         identity.Id,
                         identity.Version,
                         semVer2: true);
@@ -108,7 +108,7 @@ namespace Knapcode.ExplorePackages.Logic
             do
             {
                 var packages = await _v2Client.GetPackagesAsync(
-                   _settings.Value.V2BaseUrl,
+                   _options.Value.V2BaseUrl,
                    orderBy,
                    start,
                    PageSize);

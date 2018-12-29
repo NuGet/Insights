@@ -7,20 +7,20 @@ namespace Knapcode.ExplorePackages.Logic
     public class LatestV2PackageFetcher
     {
         private readonly V2Client _client;
-        private readonly IOptionsSnapshot<ExplorePackagesSettings> _settings;
+        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
 
         public LatestV2PackageFetcher(
             V2Client client,
-            IOptionsSnapshot<ExplorePackagesSettings> settings)
+            IOptionsSnapshot<ExplorePackagesSettings> options)
         {
             _client = client;
-            _settings = settings;
+            _options = options;
         }
 
         public async Task<V2Package> GetLatestPackageAsync(IProgressReporter progressReporter)
         {
             var packages = await _client.GetPackagesAsync(
-                _settings.Value.V2BaseUrl,
+                _options.Value.V2BaseUrl,
                 filter: null,
                 orderBy: "Created desc",
                 top: 1);

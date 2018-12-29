@@ -14,19 +14,19 @@ namespace Knapcode.ExplorePackages.Logic
     public class PackageDownloadsClient : IPackageDownloadsClient
     {
         private readonly HttpClient _httpClient;
-        private readonly IOptionsSnapshot<ExplorePackagesSettings> _settings;
+        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
 
         public PackageDownloadsClient(
             HttpClient httpClient,
-            IOptionsSnapshot<ExplorePackagesSettings> settings)
+            IOptionsSnapshot<ExplorePackagesSettings> options)
         {
             _httpClient = httpClient;
-            _settings = settings;
+            _options = options;
         }
 
         public async Task<PackageDownloadSet> GetPackageDownloadSetAsync(string etag)
         {
-            if (_settings.Value.DownloadsV1Url == null)
+            if (_options.Value.DownloadsV1Url == null)
             {
                 throw new InvalidOperationException("The downloads.v1.json URL is required.");
             }
@@ -34,7 +34,7 @@ namespace Knapcode.ExplorePackages.Logic
             var disposables = new Stack<IDisposable>();
             try
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, _settings.Value.DownloadsV1Url);
+                var request = new HttpRequestMessage(HttpMethod.Get, _options.Value.DownloadsV1Url);
                 disposables.Push(request);
 
                 // Prior to this version, Azure Blob Storage did not put quotes around etag headers...
