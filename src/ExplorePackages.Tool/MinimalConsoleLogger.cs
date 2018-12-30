@@ -1,25 +1,29 @@
 ﻿using System;
 using System.Text;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
 
 namespace Knapcode.ExplorePackages.Tool
 {
-#pragma warning disable CS0618 // Type or member is obsolete
-    public class MinimalConsoleLogger : ConsoleLogger
-#pragma warning restore CS0618 // Type or member is obsolete
+    public class MinimalConsoleLogger : ILogger
     {
-        private static readonly Func<string, LogLevel, bool> _trueFilter = (c, l) => true;
-
         public MinimalConsoleLogger(string name)
-            : base(name, _trueFilter, includeScopes: true)
         {
         }
 
-        public override void WriteMessage(LogLevel logLevel, string logName, int eventId, string message, Exception exception)
+        public IDisposable BeginScope<TState>(TState state)
+        {
+            return NullDisposable.Instance;
+        }
+
+        public bool IsEnabled(LogLevel logLevel)
+        {
+            return true;
+        }
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             var messageBuilder = new StringBuilder();
-            messageBuilder.Append(message);
+            messageBuilder.Append(formatter(state, exception));
             if (exception != null)
             {
                 messageBuilder.AppendLine();
@@ -27,6 +31,15 @@ namespace Knapcode.ExplorePackages.Tool
             }
 
             ConsoleUtility.LogToConsole(logLevel, messageBuilder.ToString());
+        }
+
+        private class NullDisposable : IDisposable
+        {
+            public static NullDisposable Instance { get; } = new NullDisposable();
+
+            public void Dispose()
+            {
+            }
         }
     }
 }
