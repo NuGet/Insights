@@ -116,7 +116,7 @@ namespace Knapcode.ExplorePackages.Tool
             try
             {
                 var output = app.Execute(args);
-                await singletonService.ReleaseInAsync(TimeSpan.Zero);
+                await singletonService.ReleaseInAsync(output == 0 ? TimeSpan.Zero : ReleaseInDuration);
                 return output;
             }
             catch (Exception ex)
@@ -180,6 +180,7 @@ namespace Knapcode.ExplorePackages.Tool
                                 !command.IsReadOnly());
                         }
 
+                        bool success;
                         do
                         {
                             var commandRunner = new CommandExecutor(
@@ -191,7 +192,7 @@ namespace Knapcode.ExplorePackages.Tool
                                 await singletonService.RenewAsync();
                             }
 
-                            var success = await commandRunner.ExecuteAsync(CancellationToken.None);
+                            success = await commandRunner.ExecuteAsync(CancellationToken.None);
 
                             if (daemonOption.HasValue())
                             {
@@ -212,7 +213,7 @@ namespace Knapcode.ExplorePackages.Tool
                         }
                         while (daemonOption.HasValue());
 
-                        return 0;
+                        return success ? 0 : 1;
                     });
                 });
         }

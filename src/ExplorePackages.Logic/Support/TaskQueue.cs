@@ -27,7 +27,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public int Count => _workQueue.Count;
 
-        public Task<Task> FailureTask => _failureTcs.Task;
+        private Task<Task> FailureTask => _failureTcs.Task;
 
         public void Start()
         {
@@ -45,7 +45,30 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
-        public async Task CompleteAsync()
+        public async Task ProduceThenCompleteAsync(Func<Task> getProduceTask)
+        {
+            var failureTask = FailureTask;
+            var produceThenCompleteTask = ProduceThenCompleteInternalAsync(getProduceTask);
+            var firstTask = await Task.WhenAny(failureTask, produceThenCompleteTask);
+            if (firstTask == failureTask)
+            {
+                await await failureTask;
+                throw new InvalidOperationException("The task queue has failed.");
+            }
+            else
+            {
+                await produceThenCompleteTask;
+            }
+        }
+
+        private async Task ProduceThenCompleteInternalAsync(Func<Task> getProduceTask)
+        {
+            await Task.Yield();
+            await getProduceTask();
+            await CompleteAsync();
+        }
+
+        private async Task CompleteAsync()
         {
             var consumers = _consumers;
 
@@ -110,7 +133,7 @@ namespace Knapcode.ExplorePackages.Logic
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(0, ex, "A worker in the task queue encountered an exception.");
+                    _logger.LogWarning(ex, "A worker in the task queue encountered an exception.");
                     _failureTcs.TrySetResult(workTask);
                     throw;
                 }

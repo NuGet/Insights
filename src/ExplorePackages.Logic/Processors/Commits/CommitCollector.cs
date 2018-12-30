@@ -98,6 +98,12 @@ namespace Knapcode.ExplorePackages.Logic
 
             taskQueue.Start();
 
+            await taskQueue.ProduceThenCompleteAsync(
+                () => ProduceAsync(commits, taskQueue, token));
+        }
+
+        private async Task ProduceAsync(IReadOnlyList<EntityCommit<TEntity>> commits, TaskQueue<IReadOnlyList<TItem>> taskQueue, CancellationToken token)
+        {
             foreach (var commit in commits)
             {
                 var skip = 0;
@@ -114,8 +120,6 @@ namespace Knapcode.ExplorePackages.Logic
                     }
                 }
             }
-
-            await taskQueue.CompleteAsync();
         }
 
         private async Task ProcessSequentiallyAsync(

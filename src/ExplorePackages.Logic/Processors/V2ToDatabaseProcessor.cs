@@ -88,9 +88,8 @@ namespace Knapcode.ExplorePackages.Logic
 
             taskQueue.Start();
 
-            await ProduceAsync(taskQueue, cursorName, orderBy, getTimestamp);
-
-            await taskQueue.CompleteAsync();
+            await taskQueue.ProduceThenCompleteAsync(
+                () => ProduceAsync(taskQueue, cursorName, orderBy, getTimestamp));
         }
 
         private async Task ProduceAsync(
@@ -155,11 +154,6 @@ namespace Knapcode.ExplorePackages.Logic
             Func<V2Package, DateTimeOffset> getTimestamp)
         {
             var oldCursor = await _cursorService.GetValueAsync(cursorName);
-
-            if (Guid.NewGuid().ToByteArray().Last() % 10 == 0)
-            {
-                throw new InvalidOperationException("Random failure!");
-            }
 
             await _service.AddOrUpdatePackagesAsync(packages);
 

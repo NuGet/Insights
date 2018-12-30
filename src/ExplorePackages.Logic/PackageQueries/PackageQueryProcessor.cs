@@ -51,6 +51,14 @@ namespace Knapcode.ExplorePackages.Logic
 
             taskQueue.Start();
 
+            await taskQueue.ProduceThenCompleteAsync(
+                () => ProduceAsync(taskQueue, queries, identities));
+
+            await PersistResults(results);
+        }
+
+        private async Task ProduceAsync(TaskQueue<Work> taskQueue, IReadOnlyList<IPackageQuery> queries, IReadOnlyList<PackageIdentity> identities)
+        {
             foreach (var identity in identities)
             {
                 var package = await _packageService.GetPackageOrNullAsync(identity.Id, identity.Version);
@@ -66,10 +74,6 @@ namespace Knapcode.ExplorePackages.Logic
                 var work = new Work(queries, context, state);
                 taskQueue.Enqueue(work);
             }
-
-            await taskQueue.CompleteAsync();
-
-            await PersistResults(results);
         }
 
         public async Task ProcessAsync(IReadOnlyList<IPackageQuery> queries, bool reprocess, int batchSize, CancellationToken token)
@@ -189,7 +193,7 @@ namespace Knapcode.ExplorePackages.Logic
             return new Bounds(queryNameToCursorName, cursorNameToStart, end);
         }
 
-    private async Task<ConcurrentBag<Result>> ProcessCommitsAsync(
+        private async Task<ConcurrentBag<Result>> ProcessCommitsAsync(
             IReadOnlyList<IPackageQuery> queries,
             Bounds bounds,
             IReadOnlyList<EntityCommit<PackageEntity>> commits)
@@ -202,17 +206,18 @@ namespace Knapcode.ExplorePackages.Logic
                 logger: _logger);
 
             taskQueue.Start();
-            await ProduceWorkAsync(queries, bounds, commits, taskQueue);
-            await taskQueue.CompleteAsync();
+
+            await taskQueue.ProduceThenCompleteAsync(
+                () => ProduceWorkAsync(taskQueue, queries, bounds, commits));
 
             return results;
         }
 
         private async Task ProduceWorkAsync(
+            TaskQueue<Work> taskQueue,
             IReadOnlyList<IPackageQuery> queries,
             Bounds bounds,
-            IReadOnlyList<EntityCommit<PackageEntity>> commits,
-            TaskQueue<Work> taskQueue)
+            IReadOnlyList<EntityCommit<PackageEntity>> commits)
         {
             await TaskProcessor.ExecuteAsync(
                 commits.SelectMany(c => c.Entities.Select(p => new { Commit = c, Package = p })),

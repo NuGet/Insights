@@ -44,9 +44,12 @@ namespace Knapcode.ExplorePackages.Logic
             taskQueue.Start();
 
             var newPath = _options.Value.DownloadsV1Path + ".new";
-            var newETag = await ProduceAsync(newPath, previousETag, taskQueue);
 
-            await taskQueue.CompleteAsync();
+            string newETag = null;
+            await taskQueue.ProduceThenCompleteAsync(async () =>
+            {
+                newETag = await ProduceAsync(taskQueue, newPath, previousETag);
+            });
 
             if (newETag != previousETag)
             {
@@ -100,7 +103,7 @@ namespace Knapcode.ExplorePackages.Logic
                 array[2].ToObject<long>());
         }
 
-        private async Task<string> ProduceAsync(string newPath, string previousETag, TaskQueue<IReadOnlyList<PackageDownloads>> taskQueue)
+        private async Task<string> ProduceAsync(TaskQueue<IReadOnlyList<PackageDownloads>> taskQueue, string newPath, string previousETag)
         {
             string newETag;
             using (var packageDownloadSet = await _client.GetPackageDownloadSetAsync(previousETag))

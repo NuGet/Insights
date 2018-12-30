@@ -10,7 +10,6 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class CatalogProcessorQueue
     {
-        private readonly TaskQueue<Work> _taskQueue;
         private readonly CatalogReader _catalogReader;
         private readonly CursorService _cursorService;
         private readonly ICatalogEntriesProcessor _processor;
@@ -29,10 +28,6 @@ namespace Knapcode.ExplorePackages.Logic
             _processor = processor;
             _singletonService = singletonService;
             _logger = logger;
-            _taskQueue = new TaskQueue<Work>(
-                workerCount: 1,
-                workAsync: WorkAsync,
-                logger: _logger);
         }
 
         public async Task ProcessAsync(CancellationToken token)
@@ -49,24 +44,15 @@ namespace Knapcode.ExplorePackages.Logic
                 end = DateTimeOffset.UtcNow;
             }
 
-            _taskQueue.Start();
-            var failureTask = _taskQueue.FailureTask;
-            var produceThenCompleteTask = ProduceThenCompleteAsync(start, end, token);
-            var firstTask = await Task.WhenAny(failureTask, produceThenCompleteTask);
-            if (firstTask == failureTask)
-            {
-                await await failureTask;
-            }
-            else
-            {
-                await produceThenCompleteTask;
-            }
-        }
+            var taskQueue = new TaskQueue<Work>(
+                workerCount: 1,
+                workAsync: WorkAsync,
+                logger: _logger);
 
-        private async Task ProduceThenCompleteAsync(DateTimeOffset start, DateTimeOffset end, CancellationToken token)
-        {
-            await ProduceAsync(start, end, token);
-            await _taskQueue.CompleteAsync();
+            taskQueue.Start();
+
+            await taskQueue.ProduceThenCompleteAsync(
+                () => ProduceAsync(taskQueue, start, end, token));
         }
 
         private async Task WorkAsync(Work work)
@@ -81,7 +67,7 @@ namespace Knapcode.ExplorePackages.Logic
             await _cursorService.SetValueAsync(_processor.CursorName, work.Leaves.Last().CommitTimeStamp);
         }
 
-        private async Task ProduceAsync(DateTimeOffset start, DateTimeOffset end, CancellationToken token)
+        private async Task ProduceAsync(TaskQueue<Work> taskQueue, DateTimeOffset start, DateTimeOffset end, CancellationToken token)
         {
             var remainingPages = new Queue<CatalogPageEntry>(await _catalogReader.GetPageEntriesAsync(start, end, token));
 
@@ -102,9 +88,9 @@ namespace Knapcode.ExplorePackages.Logic
                     .ThenBy(x => x.Version)
                     .ToList();
 
-                _taskQueue.Enqueue(new Work(currentPage, entries));
+                taskQueue.Enqueue(new Work(currentPage, entries));
 
-                while (_taskQueue.Count > 10)
+                while (taskQueue.Count > 10)
                 {
                     await Task.Delay(TimeSpan.FromSeconds(1));
                 }
