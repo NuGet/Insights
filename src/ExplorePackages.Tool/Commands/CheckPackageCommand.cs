@@ -122,10 +122,6 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             _logger.LogInformation(reportJson);
         }
 
-        public bool IsInitializationRequired() => true;
-        public bool IsDatabaseRequired() => Database;
-        public bool IsReadOnly() => true;
-
         private class NuspecJsonConverter : JsonConverter
         {
             public override bool CanConvert(Type objectType)
@@ -142,5 +138,9 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             {
             }
         }
+
+        public bool IsInitializationRequired() => true;
+        public bool IsDatabaseRequired() => Database;
+        public bool IsSingleton() => false;
     }
 }

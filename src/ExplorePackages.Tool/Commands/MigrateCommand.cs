@@ -86,6 +86,6 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 
         public bool IsInitializationRequired() => false;
         public bool IsDatabaseRequired() => false;
-        public bool IsReadOnly() => true;
+        public bool IsSingleton() => false;
     }
 }

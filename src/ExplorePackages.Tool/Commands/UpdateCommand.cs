@@ -93,6 +93,6 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 
         public bool IsInitializationRequired() => _commands.Any(x => x.IsInitializationRequired());
         public bool IsDatabaseRequired() => _commands.Any(x => x.IsDatabaseRequired());
-        public bool IsReadOnly() => _commands.All(x => x.IsReadOnly());
+        public bool IsSingleton() => _commands.Any(x => x.IsSingleton());
     }
 }

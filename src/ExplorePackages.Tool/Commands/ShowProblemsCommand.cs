@@ -80,10 +80,6 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             }
         }
 
-        public bool IsInitializationRequired() => true;
-        public bool IsDatabaseRequired() => true;
-        public bool IsReadOnly() => true;
-
         private class ListEqualityComparer<T> : IEqualityComparer<List<T>>
         {
             public bool Equals(List<T> x, List<T> y)
@@ -102,5 +98,9 @@ namespace Knapcode.ExplorePackages.Tool.Commands
                 return combiner.CombinedHash;
             }
         }
+
+        public bool IsInitializationRequired() => true;
+        public bool IsDatabaseRequired() => true;
+        public bool IsSingleton() => false;
     }
 }

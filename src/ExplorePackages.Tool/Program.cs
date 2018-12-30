@@ -177,7 +177,7 @@ namespace Knapcode.ExplorePackages.Tool
                             await InitializeGlobalState(
                                 serviceProvider,
                                 command.IsDatabaseRequired(),
-                                !command.IsReadOnly());
+                                command.IsSingleton());
                         }
 
                         bool success;
@@ -187,7 +187,7 @@ namespace Knapcode.ExplorePackages.Tool
                                    command,
                                    serviceProvider.GetRequiredService<ILogger<CommandExecutor>>());
 
-                            if (!command.IsReadOnly())
+                            if (command.IsSingleton())
                             {
                                 await singletonService.RenewAsync();
                             }
@@ -221,7 +221,7 @@ namespace Knapcode.ExplorePackages.Tool
         private static async Task InitializeGlobalState(
             IServiceProvider serviceProvider,
             bool initializeDatabase,
-            bool acquireSingletonLease)
+            bool isSingleton)
         {
             var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
             logger.LogInformation("===== initialize =====");
@@ -247,7 +247,7 @@ namespace Knapcode.ExplorePackages.Tool
             }
 
             // Acquire the singleton lease.
-            if (acquireSingletonLease)
+            if (isSingleton)
             {
                 logger.LogInformation("Ensuring that this job is a singleton.");
                 var singletonService = serviceProvider.GetRequiredService<ISingletonService>();

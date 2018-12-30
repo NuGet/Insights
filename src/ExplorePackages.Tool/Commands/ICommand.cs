@@ -10,6 +10,6 @@ namespace Knapcode.ExplorePackages.Tool.Commands
         Task ExecuteAsync(CancellationToken token);
         bool IsInitializationRequired();
         bool IsDatabaseRequired();
-        bool IsReadOnly();
+        bool IsSingleton();
     }
 }
