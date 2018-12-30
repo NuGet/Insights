@@ -47,7 +47,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                     return KeyValuePairFactory.Create(x, listed);
                 },
-                workerCount: 16,
+                workerCount: 32,
                 token: CancellationToken.None))
                 .ToDictionary(x => x.Key, x => x.Value, new CatalogEntryComparer());
 

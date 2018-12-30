@@ -100,6 +100,7 @@ namespace Knapcode.ExplorePackages.Logic
                 x => new HttpClientHandler
                 {
                     AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                    MaxConnectionsPerServer = 32,
                 });
             serviceCollection.AddTransient(
                 x => new InitializeServicePointHandler(
