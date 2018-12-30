@@ -13,6 +13,8 @@ namespace Knapcode.ExplorePackages.Tool.Commands
     public class UpdateCommand : ICommand
     {
         private readonly IReadOnlyList<ICommand> _commands;
+        private readonly ISingletonService _singletonService;
+        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
         private readonly ILogger<CommandExecutor> _logger;
         private CommandOption _skipDownloadsOption;
 
@@ -29,7 +31,8 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             PackageQueriesCommand packageQueries,
             ReprocessCrossCheckDiscrepanciesCommand reprocessCrossCheckDiscrepancies,
             ShowProblemsCommand showProblems,
-            IOptionsSnapshot<ExplorePackagesSettings> settings,
+            ISingletonService singletonService,
+            IOptionsSnapshot<ExplorePackagesSettings> options,
             ILogger<CommandExecutor> logger)
         {
             var commands = new List<ICommand>
@@ -44,7 +47,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
                 dependencyPackagesToDatabase,
             };
 
-            if (settings.Value.DownloadsV1Url != null)
+            if (options.Value.DownloadsV1Url != null)
             {
                 commands.Add(downloadsToDatabase);
             }
@@ -57,6 +60,8 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             });
 
             _commands = commands;
+            _singletonService = singletonService;
+            _options = options;
             _logger = logger;
         }
 
@@ -81,7 +86,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
                     continue;
                 }
 
-                var commandExecutor = new CommandExecutor(command, _logger);
+                var commandExecutor = new CommandExecutor(command, _singletonService, _logger);
                 success &= await commandExecutor.ExecuteAsync(token);
             }
 

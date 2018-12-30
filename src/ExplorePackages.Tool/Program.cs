@@ -176,8 +176,7 @@ namespace Knapcode.ExplorePackages.Tool
                         {
                             await InitializeGlobalState(
                                 serviceProvider,
-                                command.IsDatabaseRequired(),
-                                command.IsSingleton());
+                                command.IsDatabaseRequired());
                         }
 
                         bool success;
@@ -185,12 +184,8 @@ namespace Knapcode.ExplorePackages.Tool
                         {
                             var commandRunner = new CommandExecutor(
                                    command,
+                                   singletonService,
                                    serviceProvider.GetRequiredService<ILogger<CommandExecutor>>());
-
-                            if (command.IsSingleton())
-                            {
-                                await singletonService.RenewAsync();
-                            }
 
                             success = await commandRunner.ExecuteAsync(CancellationToken.None);
 
@@ -220,8 +215,7 @@ namespace Knapcode.ExplorePackages.Tool
         
         private static async Task InitializeGlobalState(
             IServiceProvider serviceProvider,
-            bool initializeDatabase,
-            bool isSingleton)
+            bool initializeDatabase)
         {
             var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
             logger.LogInformation("===== initialize =====");
@@ -244,14 +238,6 @@ namespace Knapcode.ExplorePackages.Tool
             else
             {
                 logger.LogInformation("The database will not be used.");
-            }
-
-            // Acquire the singleton lease.
-            if (isSingleton)
-            {
-                logger.LogInformation("Ensuring that this job is a singleton.");
-                var singletonService = serviceProvider.GetRequiredService<ISingletonService>();
-                await singletonService.AcquireOrRenewAsync();
             }
 
             // Set the user agent.

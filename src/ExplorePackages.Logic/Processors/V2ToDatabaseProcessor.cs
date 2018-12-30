@@ -139,9 +139,21 @@ namespace Knapcode.ExplorePackages.Logic
                     complete = true;
                 }
 
+                var logged = false;
                 while (taskQueue.Count > 50)
                 {
+                    if (!logged)
+                    {
+                        _logger.LogInformation("There are {Count} batches of packages to be persisted. Waiting till the queue size decreases.");
+                        logged = true;
+                    }
+
                     await Task.Delay(TimeSpan.FromSeconds(1), token);
+                }
+
+                if (logged)
+                {
+                    _logger.LogInformation("There are now {Count} batches of packages to be persisted. Proceeding with enqueueing.");
                 }
                 
                 if (packages.Count > 0)
