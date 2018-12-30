@@ -81,6 +81,8 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 
             foreach (var command in _commands)
             {
+                token.ThrowIfCancellationRequested();
+
                 if (command is DownloadsToDatabaseCommand && SkipDownloads)
                 {
                     continue;

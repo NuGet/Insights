@@ -60,15 +60,17 @@ namespace Knapcode.ExplorePackages.Tool
             {
                 // Set up the cancel event to release the lease if someone hits Ctrl + C while the program is running.
                 var cancelEvent = new SemaphoreSlim(0);
+                var cancellationTokenSource = new CancellationTokenSource();
                 Console.CancelKeyPress += (sender, eventArgs) =>
                 {
                     eventArgs.Cancel = true;
+                    cancellationTokenSource.Cancel();
                     cancelEvent.Release();
                 };
 
                 // Wait for cancellation and execute the program in parallel.
                 var cancelTask = WaitForCancellationAsync(cancelEvent, serviceProvider);
-                var executeTask = ExecuteAsync(args, serviceProvider);
+                var executeTask = ExecuteAsync(args, serviceProvider, cancellationTokenSource.Token);
 
                 return await await Task.WhenAny(cancelTask, executeTask);
             }
@@ -97,7 +99,8 @@ namespace Knapcode.ExplorePackages.Tool
 
         private static async Task<int> ExecuteAsync(
             string[] args,
-            IServiceProvider serviceProvider)
+            IServiceProvider serviceProvider,
+            CancellationToken token)
         {
             await Task.Yield();
 
@@ -110,7 +113,7 @@ namespace Knapcode.ExplorePackages.Tool
 
             foreach (var pair in Commands)
             {
-                AddCommand(pair.Value, serviceProvider, app, pair.Key, logger);
+                AddCommand(pair.Value, serviceProvider, app, pair.Key, logger, token);
             }
 
             try
@@ -132,7 +135,8 @@ namespace Knapcode.ExplorePackages.Tool
             IServiceProvider serviceProvider,
             CommandLineApplication app,
             string commandName,
-            ILogger logger)
+            ILogger logger,
+            CancellationToken token)
         {
             var command = (ICommand)serviceProvider.GetRequiredService(commandType);
             var singletonService = serviceProvider.GetRequiredService<ISingletonService>();
@@ -182,12 +186,14 @@ namespace Knapcode.ExplorePackages.Tool
                         bool success;
                         do
                         {
+                            token.ThrowIfCancellationRequested();
+
                             var commandRunner = new CommandExecutor(
                                    command,
                                    singletonService,
                                    serviceProvider.GetRequiredService<ILogger<CommandExecutor>>());
 
-                            success = await commandRunner.ExecuteAsync(CancellationToken.None);
+                            success = await commandRunner.ExecuteAsync(token);
 
                             if (daemonOption.HasValue())
                             {
