@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Logic
@@ -11,7 +12,8 @@ namespace Knapcode.ExplorePackages.Logic
         public static async Task<ConcurrentBag<TOutput>> ExecuteAsync<TInput, TOutput>(
             IEnumerable<TInput> input,
             Func<TInput, Task<TOutput>> executeAsync,
-            int workerCount)
+            int workerCount,
+            CancellationToken token)
         {
             var work = new ConcurrentBag<TInput>(input);
             var output = new ConcurrentBag<TOutput>();
@@ -22,6 +24,8 @@ namespace Knapcode.ExplorePackages.Logic
                     await Task.Yield();
                     while (work.TryTake(out var item))
                     {
+                        token.ThrowIfCancellationRequested();
+
                         var result = await executeAsync(item);
                         output.Add(result);
                     }

@@ -93,13 +93,13 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var taskQueue = new TaskQueue<IReadOnlyList<TItem>>(
                 workerCount: 32,
-                workAsync: x => _processor.ProcessBatchAsync(x),
+                workAsync: (x, t) => _processor.ProcessBatchAsync(x),
                 logger: _logger);
 
             taskQueue.Start();
 
             await taskQueue.ProduceThenCompleteAsync(
-                () => ProduceAsync(commits, taskQueue, token));
+                t => ProduceAsync(commits, taskQueue, t));
         }
 
         private async Task ProduceAsync(IReadOnlyList<EntityCommit<TEntity>> commits, TaskQueue<IReadOnlyList<TItem>> taskQueue, CancellationToken token)
@@ -110,6 +110,8 @@ namespace Knapcode.ExplorePackages.Logic
                 var hasMore = true;
                 while (hasMore)
                 {
+                    token.ThrowIfCancellationRequested();
+
                     var batch = await _processor.InitializeItemsAsync(commit.Entities, skip, token);
                     skip += batch.Items.Count;
                     hasMore = batch.HasMoreItems;

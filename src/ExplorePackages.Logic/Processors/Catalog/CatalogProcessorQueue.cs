@@ -52,10 +52,10 @@ namespace Knapcode.ExplorePackages.Logic
             taskQueue.Start();
 
             await taskQueue.ProduceThenCompleteAsync(
-                () => ProduceAsync(taskQueue, start, end, token));
+                t => ProduceAsync(taskQueue, start, end, t));
         }
 
-        private async Task WorkAsync(Work work)
+        private async Task WorkAsync(Work work, CancellationToken token)
         {
             if (!work.Leaves.Any())
             {
@@ -73,6 +73,8 @@ namespace Knapcode.ExplorePackages.Logic
 
             while (remainingPages.Any())
             {
+                token.ThrowIfCancellationRequested();
+
                 await _singletonService.RenewAsync();
 
                 var currentPage = remainingPages.Dequeue();
@@ -92,7 +94,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                 while (taskQueue.Count > 10)
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(1));
+                    await Task.Delay(TimeSpan.FromSeconds(1), token);
                 }
             }
         }

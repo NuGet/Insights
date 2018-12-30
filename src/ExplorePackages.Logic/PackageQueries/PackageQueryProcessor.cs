@@ -46,21 +46,30 @@ namespace Knapcode.ExplorePackages.Logic
 
             var taskQueue = new TaskQueue<Work>(
                 workerCount: 32,
-                workAsync: w => ConsumeWorkAsync(w, results),
+                workAsync: (w, t) => ConsumeWorkAsync(w, results),
                 logger: _logger);
 
             taskQueue.Start();
 
             await taskQueue.ProduceThenCompleteAsync(
-                () => ProduceAsync(taskQueue, queries, identities));
+                t => ProduceAsync(taskQueue, queries, identities, t));
 
             await PersistResults(results);
         }
 
-        private async Task ProduceAsync(TaskQueue<Work> taskQueue, IReadOnlyList<IPackageQuery> queries, IReadOnlyList<PackageIdentity> identities)
+        private async Task ProduceAsync(
+            TaskQueue<Work> taskQueue,
+            IReadOnlyList<IPackageQuery> queries,
+            IReadOnlyList<PackageIdentity> identities,
+            CancellationToken token)
         {
             foreach (var identity in identities)
             {
+                if (token.IsCancellationRequested)
+                {
+                    break;
+                }
+
                 var package = await _packageService.GetPackageOrNullAsync(identity.Id, identity.Version);
 
                 if (package == null)
@@ -202,13 +211,13 @@ namespace Knapcode.ExplorePackages.Logic
 
             var taskQueue = new TaskQueue<Work>(
                 workerCount: 32,
-                workAsync: w => ConsumeWorkAsync(w, results),
+                workAsync: (w, t) => ConsumeWorkAsync(w, results),
                 logger: _logger);
 
             taskQueue.Start();
 
             await taskQueue.ProduceThenCompleteAsync(
-                () => ProduceWorkAsync(taskQueue, queries, bounds, commits));
+                token => ProduceWorkAsync(taskQueue, queries, bounds, commits, token));
 
             return results;
         }
@@ -217,7 +226,8 @@ namespace Knapcode.ExplorePackages.Logic
             TaskQueue<Work> taskQueue,
             IReadOnlyList<IPackageQuery> queries,
             Bounds bounds,
-            IReadOnlyList<EntityCommit<PackageEntity>> commits)
+            IReadOnlyList<EntityCommit<PackageEntity>> commits,
+            CancellationToken token)
         {
             await TaskProcessor.ExecuteAsync(
                 commits.SelectMany(c => c.Entities.Select(p => new { Commit = c, Package = p })),
@@ -234,7 +244,8 @@ namespace Knapcode.ExplorePackages.Logic
 
                     return 0;
                 },
-                workerCount: 32);
+                workerCount: 32,
+                token: token);
         }
 
         private async Task ConsumeWorkAsync(Work work, ConcurrentBag<Result> results)

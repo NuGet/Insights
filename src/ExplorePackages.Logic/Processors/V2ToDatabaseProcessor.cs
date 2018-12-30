@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -50,7 +51,8 @@ namespace Knapcode.ExplorePackages.Logic
 
                     return package;
                 },
-                32);
+                workerCount: 32,
+                token: CancellationToken.None);
             var packages = packagesOrNull.Where(x => x != null).ToList();
             await _service.AddOrUpdatePackagesAsync(packages);
         }
@@ -83,20 +85,21 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var taskQueue = new TaskQueue<IReadOnlyList<V2Package>>(
                 workerCount: 1,
-                workAsync: x => ConsumeAsync(x, cursorName, getTimestamp),
+                workAsync: (x, t) => ConsumeAsync(x, cursorName, getTimestamp),
                 logger: _logger);
 
             taskQueue.Start();
 
             await taskQueue.ProduceThenCompleteAsync(
-                () => ProduceAsync(taskQueue, cursorName, orderBy, getTimestamp));
+                t => ProduceAsync(taskQueue, cursorName, orderBy, getTimestamp, t));
         }
 
         private async Task ProduceAsync(
             TaskQueue<IReadOnlyList<V2Package>> taskQueue,
             string cursorName,
             V2OrderByTimestamp orderBy,
-            Func<V2Package, DateTimeOffset> getTimestamp)
+            Func<V2Package, DateTimeOffset> getTimestamp,
+            CancellationToken token)
         {
             var start = await _cursorService.GetValueAsync(cursorName);
             if (start > DateTimeOffset.MinValue.Add(FuzzFactor))
@@ -107,6 +110,8 @@ namespace Knapcode.ExplorePackages.Logic
             var complete = false;
             do
             {
+                token.ThrowIfCancellationRequested();
+
                 var packages = await _v2Client.GetPackagesAsync(
                    _options.Value.V2BaseUrl,
                    orderBy,
@@ -136,7 +141,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                 while (taskQueue.Count > 50)
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(1));
+                    await Task.Delay(TimeSpan.FromSeconds(1), token);
                 }
                 
                 if (packages.Count > 0)
@@ -154,6 +159,11 @@ namespace Knapcode.ExplorePackages.Logic
             Func<V2Package, DateTimeOffset> getTimestamp)
         {
             var oldCursor = await _cursorService.GetValueAsync(cursorName);
+
+            if (Guid.NewGuid().ToByteArray().Last() % 10 == 0)
+            {
+                throw new InvalidOperationException("Random failure!");
+            }
 
             await _service.AddOrUpdatePackagesAsync(packages);
 

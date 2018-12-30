@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using NuGet.CatalogReader;
 
@@ -46,7 +47,8 @@ namespace Knapcode.ExplorePackages.Logic
 
                     return KeyValuePairFactory.Create(x, listed);
                 },
-                workerCount: 16))
+                workerCount: 16,
+                token: CancellationToken.None))
                 .ToDictionary(x => x.Key, x => x.Value, new CatalogEntryComparer());
 
             // Only add Package entities based on the latest commit timestamp.

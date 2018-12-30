@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -46,9 +47,9 @@ namespace Knapcode.ExplorePackages.Logic
             var newPath = _options.Value.DownloadsV1Path + ".new";
 
             string newETag = null;
-            await taskQueue.ProduceThenCompleteAsync(async () =>
+            await taskQueue.ProduceThenCompleteAsync(async t =>
             {
-                newETag = await ProduceAsync(taskQueue, newPath, previousETag);
+                newETag = await ProduceAsync(taskQueue, newPath, previousETag, t);
             });
 
             if (newETag != previousETag)
@@ -103,7 +104,11 @@ namespace Knapcode.ExplorePackages.Logic
                 array[2].ToObject<long>());
         }
 
-        private async Task<string> ProduceAsync(TaskQueue<IReadOnlyList<PackageDownloads>> taskQueue, string newPath, string previousETag)
+        private async Task<string> ProduceAsync(
+            TaskQueue<IReadOnlyList<PackageDownloads>> taskQueue,
+            string newPath,
+            string previousETag,
+            CancellationToken token)
         {
             string newETag;
             using (var packageDownloadSet = await _client.GetPackageDownloadSetAsync(previousETag))
@@ -135,6 +140,8 @@ namespace Knapcode.ExplorePackages.Logic
 
                 do
                 {
+                    token.ThrowIfCancellationRequested();
+
                     var comparison = comparer.Compare(existingRecord, newRecord);
                     if (comparison == 0)
                     {
@@ -179,7 +186,7 @@ namespace Knapcode.ExplorePackages.Logic
             return newETag;
         }
 
-        private async Task ConsumeAsync(IReadOnlyList<PackageDownloads> packages)
+        private async Task ConsumeAsync(IReadOnlyList<PackageDownloads> packages, CancellationToken token)
         {
             await _service.AddOrUpdatePackagesAsync(packages);
         }
