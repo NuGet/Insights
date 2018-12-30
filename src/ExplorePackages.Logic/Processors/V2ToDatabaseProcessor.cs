@@ -160,11 +160,6 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var oldCursor = await _cursorService.GetValueAsync(cursorName);
 
-            if (Guid.NewGuid().ToByteArray().Last() % 10 == 0)
-            {
-                throw new InvalidOperationException("Random failure!");
-            }
-
             await _service.AddOrUpdatePackagesAsync(packages);
 
             var newCursor = packages.Max(getTimestamp);
