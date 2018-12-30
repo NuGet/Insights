@@ -93,7 +93,8 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var taskQueue = new TaskQueue<IReadOnlyList<TItem>>(
                 workerCount: 32,
-                workAsync: x => _processor.ProcessBatchAsync(x));
+                workAsync: x => _processor.ProcessBatchAsync(x),
+                logger: _logger);
 
             taskQueue.Start();
 

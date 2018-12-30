@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
 using McMaster.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Logging;
 using NuGet.CatalogReader;
 
 namespace Knapcode.ExplorePackages.Tool.Commands
@@ -12,17 +13,20 @@ namespace Knapcode.ExplorePackages.Tool.Commands
         private readonly CursorService _cursorService;
         private readonly CatalogToDatabaseProcessor _processor;
         private readonly ISingletonService _singletonService;
+        private readonly ILogger<CatalogProcessorQueue> _logger;
 
         public CatalogToDatabaseCommand(
             CatalogReader catalogReader,
             CursorService cursorService,
             CatalogToDatabaseProcessor processor,
-            ISingletonService singletonService)
+            ISingletonService singletonService,
+            ILogger<CatalogProcessorQueue> logger)
         {
             _catalogReader = catalogReader;
             _cursorService = cursorService;
             _processor = processor;
             _singletonService = singletonService;
+            _logger = logger;
         }
 
         public void Configure(CommandLineApplication app)
@@ -35,7 +39,8 @@ namespace Knapcode.ExplorePackages.Tool.Commands
                 _catalogReader,
                 _cursorService,
                 _processor,
-                _singletonService);
+                _singletonService,
+                _logger);
             await catalogProcessor.ProcessAsync(token);
         }
 

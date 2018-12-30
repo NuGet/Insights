@@ -46,7 +46,8 @@ namespace Knapcode.ExplorePackages.Logic
 
             var taskQueue = new TaskQueue<Work>(
                 workerCount: 32,
-                workAsync: w => ConsumeWorkAsync(w, results));
+                workAsync: w => ConsumeWorkAsync(w, results),
+                logger: _logger);
 
             taskQueue.Start();
 
@@ -197,7 +198,8 @@ namespace Knapcode.ExplorePackages.Logic
 
             var taskQueue = new TaskQueue<Work>(
                 workerCount: 32,
-                workAsync: w => ConsumeWorkAsync(w, results));
+                workAsync: w => ConsumeWorkAsync(w, results),
+                logger: _logger);
 
             taskQueue.Start();
             await ProduceWorkAsync(queries, bounds, commits, taskQueue);

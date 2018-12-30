@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using NuGet.CatalogReader;
 
 namespace Knapcode.ExplorePackages.Logic
@@ -14,20 +15,24 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly CursorService _cursorService;
         private readonly ICatalogEntriesProcessor _processor;
         private readonly ISingletonService _singletonService;
+        private readonly ILogger<CatalogProcessorQueue> _logger;
 
         public CatalogProcessorQueue(
             CatalogReader catalogReader,
             CursorService cursorService,
             ICatalogEntriesProcessor processor,
-            ISingletonService singletonService)
+            ISingletonService singletonService,
+            ILogger<CatalogProcessorQueue> logger)
         {
             _catalogReader = catalogReader;
             _cursorService = cursorService;
             _processor = processor;
             _singletonService = singletonService;
+            _logger = logger;
             _taskQueue = new TaskQueue<Work>(
                 workerCount: 1,
-                workAsync: WorkAsync);
+                workAsync: WorkAsync,
+                logger: _logger);
         }
 
         public async Task ProcessAsync(CancellationToken token)

@@ -38,7 +38,8 @@ namespace Knapcode.ExplorePackages.Logic
 
             var taskQueue = new TaskQueue<IReadOnlyList<PackageDownloads>>(
                 workerCount: 1,
-                workAsync: ConsumeAsync);
+                workAsync: ConsumeAsync,
+                logger: _logger);
 
             taskQueue.Start();
 

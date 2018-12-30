@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -12,13 +13,15 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly Queue<Work> _workQueue = new Queue<Work>();
         private readonly int _workerCount;
         private readonly Func<T, Task> _workAsync;
+        private readonly ILogger _logger;
         private readonly TaskCompletionSource<Task> _failureTcs;
         private IReadOnlyList<Task> _consumers;
 
-        public TaskQueue(int workerCount, Func<T, Task> workAsync)
+        public TaskQueue(int workerCount, Func<T, Task> workAsync, ILogger logger)
         {
             _workerCount = workerCount;
             _workAsync = workAsync;
+            _logger = logger;
             _failureTcs = new TaskCompletionSource<Task>();
         }
 
@@ -105,8 +108,9 @@ namespace Knapcode.ExplorePackages.Logic
                 {
                     await workTask;
                 }
-                catch
+                catch (Exception ex)
                 {
+                    _logger.LogError(0, ex, "A worker in the task queue encountered an exception.");
                     _failureTcs.TrySetResult(workTask);
                     throw;
                 }
