@@ -61,11 +61,15 @@ namespace Knapcode.ExplorePackages.Tool
                 // Set up the cancel event to release the lease if someone hits Ctrl + C while the program is running.
                 var cancelEvent = new SemaphoreSlim(0);
                 var cancellationTokenSource = new CancellationTokenSource();
+                var cancelled = 0;
                 Console.CancelKeyPress += (sender, eventArgs) =>
                 {
-                    eventArgs.Cancel = true;
-                    cancellationTokenSource.Cancel();
-                    cancelEvent.Release();
+                    if (Interlocked.CompareExchange(ref cancelled, 1, 0) == 0)
+                    {
+                        eventArgs.Cancel = true;
+                        cancellationTokenSource.Cancel();
+                        cancelEvent.Release();
+                    }
                 };
 
                 // Wait for cancellation and execute the program in parallel.
