@@ -64,7 +64,9 @@ namespace Knapcode.ExplorePackages.Logic
 
             await _processor.ProcessAsync(work.Page, work.Leaves);
 
-            await _cursorService.SetValueAsync(_processor.CursorName, work.Leaves.Last().CommitTimeStamp);
+            var newCursorValue = work.Leaves.Last().CommitTimeStamp;
+            _logger.LogInformation("Cursor {CursorName} moving to {Start:O}.", _processor.CursorName, newCursorValue);
+            await _cursorService.SetValueAsync(_processor.CursorName, newCursorValue);
         }
 
         private async Task ProduceAsync(TaskQueue<Work> taskQueue, DateTimeOffset start, DateTimeOffset end, CancellationToken token)
@@ -92,10 +94,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                 taskQueue.Enqueue(new Work(currentPage, entries));
 
-                while (taskQueue.Count > 10)
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(1), token);
-                }
+                await taskQueue.WaitForCountToBeLessThanAsync(10, token);
             }
         }
 

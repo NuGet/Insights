@@ -29,6 +29,31 @@ namespace Knapcode.ExplorePackages.Logic
 
         public int Count => _workQueue.Count;
 
+        public async Task WaitForCountToBeLessThanAsync(int lessThan, CancellationToken token)
+        {
+            var logged = false;
+            while (Count >= lessThan)
+            {
+                if (!logged)
+                {
+                    _logger.LogInformation(
+                        "There are {Count} units of work in the queue. Waiting till the queue size decreases below {LessThan}.",
+                        Count,
+                        lessThan);
+                    logged = true;
+                }
+
+                await Task.Delay(TimeSpan.FromSeconds(1), token);
+            }
+
+            if (logged)
+            {
+                _logger.LogInformation(
+                    "There are now {Count} batches of packages to be persisted. Proceeding with enqueueing.",
+                    Count);
+            }
+        }
+
         public void Start()
         {
             lock (_lock)
