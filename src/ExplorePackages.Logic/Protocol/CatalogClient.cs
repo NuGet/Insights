@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Microsoft.Extensions.Logging;
@@ -30,6 +34,87 @@ namespace Knapcode.ExplorePackages.Logic
                 leaf.CatalogPackage.Package.Id,
                 leaf.CatalogPackage.Package.Version,
                 new DateTimeOffset(leaf.CatalogCommit.CommitTimestamp, TimeSpan.Zero));
+        }
+
+        public async Task<CatalogIndex> GetCatalogIndexAsync()
+        {
+            var url = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.Catalog);
+            return await _httpSource.DeserializeUrlAsync<CatalogIndex>(
+                url,
+                ignoreNotFounds: false,
+                maxTries: 3,
+                serializer: CatalogJsonSerialization.Serializer,
+                logger: _logger);
+        }
+
+        public async Task<CatalogPage> GetCatalogPageAsync(string url)
+        {
+            return await _httpSource.DeserializeUrlAsync<CatalogPage>(
+                url,
+                ignoreNotFounds: false,
+                maxTries: 3,
+                serializer: CatalogJsonSerialization.Serializer,
+                logger: _logger);
+        }
+
+        public async Task<IReadOnlyList<CatalogPageItem>> GetCatalogPageItemsAsync(
+            DateTimeOffset minCommitTimestamp,
+            DateTimeOffset maxCommitTimestamp)
+        {
+            var catalogIndex = await GetCatalogIndexAsync();
+            return catalogIndex.GetPagesInBounds(minCommitTimestamp, maxCommitTimestamp);
+        }
+
+        public async Task<IReadOnlyList<CatalogLeafItem>> GetCatalogLeafItemsAsync(
+            IEnumerable<CatalogPageItem> pageItems,
+            DateTimeOffset minCommitTimestamp,
+            DateTimeOffset maxCommitTimestamp,
+            CancellationToken token)
+        {
+            var leafItemBatches = await TaskProcessor.ExecuteAsync(
+                pageItems,
+                async pageItem =>
+                {
+                    var page = await GetCatalogPageAsync(pageItem.Url);
+                    return page.GetLeavesInBounds(
+                        minCommitTimestamp,
+                        maxCommitTimestamp,
+                        excludeRedundantLeaves: false);
+                },
+                workerCount: 32,
+                token: token);
+
+            // Each consumer should ensure values are sorted in an appropriate fashion, but for consistency we
+            // sort here as well.
+            return leafItemBatches
+                .SelectMany(x => x)
+                .OrderBy(x => x.CommitTimestamp)
+                .ThenBy(x => x.PackageId, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(x => x.ParsePackageVersion())
+                .ToList();
+        }
+
+        public async Task<CatalogLeaf> GetCatalogLeafAsync(CatalogLeafItem leaf)
+        {
+            switch (leaf.Type)
+            {
+                case CatalogLeafType.PackageDelete:
+                    return await _httpSource.DeserializeUrlAsync<PackageDeleteCatalogLeaf>(
+                        leaf.Url,
+                        ignoreNotFounds: false,
+                        maxTries: 3,
+                        serializer: CatalogJsonSerialization.Serializer,
+                        logger: _logger);
+                case CatalogLeafType.PackageDetails:
+                    return await _httpSource.DeserializeUrlAsync<PackageDetailsCatalogLeaf>(
+                        leaf.Url,
+                        ignoreNotFounds: false,
+                        maxTries: 3,
+                        serializer: CatalogJsonSerialization.Serializer,
+                        logger: _logger);
+                default:
+                    throw new NotImplementedException($"Catalog leaf type {leaf.Type} is not supported.");
+            }
         }
 
         public async Task<CatalogLeaf> GetCatalogLeafAsync(CatalogLeafEntity leaf)

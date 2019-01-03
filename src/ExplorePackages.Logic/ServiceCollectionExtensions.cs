@@ -10,7 +10,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NuGet.CatalogReader;
 using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -145,20 +144,9 @@ namespace Knapcode.ExplorePackages.Logic
                         NullThrottle.Instance);
                 });
 
-            var searchServiceUrlCache = new SearchServiceUrlCache();
-            serviceCollection.AddSingleton(searchServiceUrlCache);
-            serviceCollection.AddSingleton<ISearchServiceUrlCacheInvalidator>(searchServiceUrlCache);
-            serviceCollection.AddSingleton(
-                x =>
-                {
-                    var options = x.GetRequiredService<IOptions<ExplorePackagesSettings>>();
-                    return new CatalogReader(
-                        new Uri(options.Value.V3ServiceIndex, UriKind.Absolute),
-                        x.GetRequiredService<HttpSource>(),
-                        cacheContext: null,
-                        cacheTimeout: TimeSpan.Zero,
-                        log: x.GetRequiredService<ILogger<CatalogReader>>().ToNuGetLogger());
-                });
+            serviceCollection.AddSingleton(x => new SearchServiceUrlCache());
+            serviceCollection.AddSingleton<ISearchServiceUrlCacheInvalidator>(
+                x => x.GetRequiredService<SearchServiceUrlCache>());
 
             serviceCollection.AddTransient(
                 x => new HttpZipProvider(

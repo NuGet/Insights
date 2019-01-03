@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using NuGet.CatalogReader;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -31,15 +30,15 @@ namespace Knapcode.ExplorePackages.Logic
         }
 
         public async Task AddOrUpdateAsync(
-            CatalogPageEntry page,
-            IReadOnlyList<CatalogEntry> leaves,
+            CatalogPageItem page,
+            IReadOnlyList<CatalogLeafItem> leaves,
             IReadOnlyDictionary<string, long> identityToPackageKey,
-            IReadOnlyDictionary<CatalogEntry, bool> entryToListed)
+            IReadOnlyDictionary<CatalogLeafItem, bool> entryToListed)
         {
-            _logger.LogInformation("Adding or updating catalog page {PageUri}.", page.Uri.OriginalString);
+            _logger.LogInformation("Adding or updating catalog page {PageUri}.", page.Url);
             using (var context = await _entityContextFactory.GetAsync())
             {
-                var pageUrl = page.Uri.OriginalString;
+                var pageUrl = page.Url;
                 var existing = await context
                     .CatalogPages
                     .Include(x => x.CatalogCommits)
@@ -108,9 +107,9 @@ namespace Knapcode.ExplorePackages.Logic
 
         private async Task<CatalogPageEntity> InitializeAsync(
             string pageUrl,
-            IReadOnlyList<CatalogEntry> leaves,
+            IReadOnlyList<CatalogLeafItem> leaves,
             IReadOnlyDictionary<string, long> identityToPackageKey,
-            IReadOnlyDictionary<CatalogEntry, bool> entryToListed)
+            IReadOnlyDictionary<CatalogLeafItem, bool> entryToListed)
         {
             await VerifyExpectedPageUrlAsync(pageUrl);
 
@@ -121,7 +120,7 @@ namespace Knapcode.ExplorePackages.Logic
             };
 
             var commits = leaves
-                .GroupBy(x => x.CommitTimeStamp.ToUniversalTime());
+                .GroupBy(x => x.CommitTimestamp.ToUniversalTime());
 
             foreach (var commit in commits)
             {
@@ -148,33 +147,14 @@ namespace Knapcode.ExplorePackages.Logic
 
                 foreach (var leaf in commitLeaves)
                 {
-                    var identity = $"{leaf.Id}/{leaf.Version.ToNormalizedString()}";
+                    var identity = $"{leaf.PackageId}/{leaf.ParsePackageVersion().ToNormalizedString()}";
                     var packageKey = identityToPackageKey[identity];
-
-                    if (leaf.Types.Count != 1)
-                    {
-                        throw new InvalidOperationException($"Found a catalog leaf with {leaf.Types.Count} types instead of 1.");
-                    }
-
-                    CatalogLeafType type;
-                    if (leaf.IsAddOrUpdate)
-                    {
-                        type = CatalogLeafType.PackageDetails;
-                    }
-                    else if (leaf.IsDelete)
-                    {
-                        type = CatalogLeafType.PackageDelete;
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException("Unexpected catalog leaf type.");
-                    }
 
                     var leafEntity = new CatalogLeafEntity
                     {
                         CatalogCommit = commitEntity,
                         PackageKey = packageKey,
-                        Type = type,
+                        Type = leaf.Type,
                         IsListed = entryToListed[leaf],
                     };
 
@@ -204,9 +184,9 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
-        private async Task VerifyExpectedLeafUrlAsync(CatalogEntry entry, CatalogLeafEntity leafEntity)
+        private async Task VerifyExpectedLeafUrlAsync(CatalogLeafItem entry, CatalogLeafEntity leafEntity)
         {
-            var entryUrl = entry.Uri.OriginalString;
+            var entryUrl = entry.Url;
 
             var catalogBaseUrl = await _catalogClient.GetCatalogBaseUrlAsync();
 
@@ -217,9 +197,9 @@ namespace Knapcode.ExplorePackages.Logic
 
             var actualPath = entryUrl.Substring(catalogBaseUrl.Length);
             var expectedPath = _catalogClient.GetExpectedCatalogLeafRelativePath(
-                entry.Id,
-                entry.Version.ToNormalizedString(),
-                entry.CommitTimeStamp);
+                entry.PackageId,
+                entry.ParsePackageVersion().ToNormalizedString(),
+                entry.CommitTimestamp);
 
             // This should always be true, but we have an oddball:
             // https://api.nuget.org/v3/catalog0/page848.json

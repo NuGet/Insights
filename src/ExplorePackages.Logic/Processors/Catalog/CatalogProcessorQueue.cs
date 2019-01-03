@@ -4,26 +4,25 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using NuGet.CatalogReader;
 
 namespace Knapcode.ExplorePackages.Logic
 {
     public class CatalogProcessorQueue
     {
-        private readonly CatalogReader _catalogReader;
+        private readonly CatalogClient _catalogClient;
         private readonly CursorService _cursorService;
         private readonly ICatalogEntriesProcessor _processor;
         private readonly ISingletonService _singletonService;
         private readonly ILogger<CatalogProcessorQueue> _logger;
 
         public CatalogProcessorQueue(
-            CatalogReader catalogReader,
+            CatalogClient catalogClient,
             CursorService cursorService,
             ICatalogEntriesProcessor processor,
             ISingletonService singletonService,
             ILogger<CatalogProcessorQueue> logger)
         {
-            _catalogReader = catalogReader;
+            _catalogClient = catalogClient;
             _cursorService = cursorService;
             _processor = processor;
             _singletonService = singletonService;
@@ -64,14 +63,14 @@ namespace Knapcode.ExplorePackages.Logic
 
             await _processor.ProcessAsync(work.Page, work.Leaves);
 
-            var newCursorValue = work.Leaves.Last().CommitTimeStamp;
+            var newCursorValue = work.Leaves.Max(x => x.CommitTimestamp);
             _logger.LogInformation("Cursor {CursorName} moving to {Start:O}.", _processor.CursorName, newCursorValue);
             await _cursorService.SetValueAsync(_processor.CursorName, newCursorValue);
         }
 
         private async Task ProduceAsync(TaskQueue<Work> taskQueue, DateTimeOffset start, DateTimeOffset end, CancellationToken token)
         {
-            var remainingPages = new Queue<CatalogPageEntry>(await _catalogReader.GetPageEntriesAsync(start, end, token));
+            var remainingPages = new Queue<CatalogPageItem>(await _catalogClient.GetCatalogPageItemsAsync(start, end));
 
             while (remainingPages.Any())
             {
@@ -82,15 +81,7 @@ namespace Knapcode.ExplorePackages.Logic
                 var currentPage = remainingPages.Dequeue();
                 var currentPages = new[] { currentPage };
 
-                var entries = await _catalogReader.GetEntriesAsync(currentPages, start, end, token);
-
-                // Each processor should ensure values are sorted in an appropriate fashion, but for consistency we
-                // sort here as well.
-                entries = entries
-                    .OrderBy(x => x.CommitTimeStamp)
-                    .ThenBy(x => x.Id)
-                    .ThenBy(x => x.Version)
-                    .ToList();
+                var entries = await _catalogClient.GetCatalogLeafItemsAsync(currentPages, start, end, token);
 
                 taskQueue.Enqueue(new Work(currentPage, entries));
 
@@ -100,14 +91,14 @@ namespace Knapcode.ExplorePackages.Logic
 
         private class Work
         {
-            public Work(CatalogPageEntry page, IReadOnlyList<CatalogEntry> leaves)
+            public Work(CatalogPageItem page, IReadOnlyList<CatalogLeafItem> leaves)
             {
                 Page = page;
                 Leaves = leaves;
             }
 
-            public CatalogPageEntry Page { get; }
-            public IReadOnlyList<CatalogEntry> Leaves { get; }
+            public CatalogPageItem Page { get; }
+            public IReadOnlyList<CatalogLeafItem> Leaves { get; }
         }
     }
 }

@@ -12,6 +12,7 @@ namespace Knapcode.ExplorePackages.Logic
             typeof(FindNonNormalizedPackageVersionsNuspecQuery),
             typeof(FindMissingDependencyVersionsNuspecQuery),
             typeof(FindEmptyDependencyVersionsNuspecQuery),
+            typeof(HasCrossCheckDiscrepancyPackageQuery),
         };
 
         private static readonly HashSet<Type> ConsistencyChecks = new HashSet<Type>

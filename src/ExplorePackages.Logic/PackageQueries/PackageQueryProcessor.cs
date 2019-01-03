@@ -96,6 +96,8 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 await _singletonService.RenewAsync();
 
+                _logger.LogInformation("Using bounds between {Min:O} and {Max:O}.", bounds.Start, bounds.End);
+
                 var commits = await GetCommitsAsync(bounds, reprocess, batchSize);
                 var packageCount = commits.Sum(x => x.Entities.Count);
                 commitCount = commits.Count;

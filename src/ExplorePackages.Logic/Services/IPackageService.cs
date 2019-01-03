@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
-using NuGet.CatalogReader;
 
 namespace Knapcode.ExplorePackages.Logic
 {
     public interface IPackageService
     {
         Task<IReadOnlyDictionary<string, PackageRegistrationEntity>> AddPackageRegistrationsAsync(IEnumerable<string> ids, bool includePackages);
-        Task<IReadOnlyDictionary<string, long>> AddOrUpdatePackagesAsync(IEnumerable<CatalogEntry> entries, IReadOnlyDictionary<CatalogEntry, bool> entryToListed);
+        Task<IReadOnlyDictionary<string, long>> AddOrUpdatePackagesAsync(IEnumerable<CatalogLeafItem> entries, IReadOnlyDictionary<CatalogLeafItem, bool> entryToListed);
         Task<IReadOnlyDictionary<string, long>> AddOrUpdatePackagesAsync(IEnumerable<PackageIdentity> identities);
         Task AddOrUpdatePackagesAsync(IEnumerable<PackageArchiveMetadata> metadataSequence);
         Task AddOrUpdatePackagesAsync(IEnumerable<PackageDownloads> packageDownloads);
@@ -16,6 +15,6 @@ namespace Knapcode.ExplorePackages.Logic
         Task<IReadOnlyList<PackageEntity>> GetBatchAsync(IReadOnlyList<PackageIdentity> identities);
         Task<PackageEntity> GetPackageOrNullAsync(string id, string version);
         Task<IReadOnlyList<PackageEntity>> GetPackagesWithDependenciesAsync(IReadOnlyList<PackageIdentity> identities);
-        Task SetDeletedPackagesAsUnlistedInV2Async(IEnumerable<CatalogEntry> entries);
+        Task SetDeletedPackagesAsUnlistedInV2Async(IEnumerable<CatalogLeafItem> entries);
     }
 }

@@ -33,16 +33,23 @@ namespace Knapcode.ExplorePackages.Logic
                 types = new List<object> { reader.Value };
             }
 
+            var foundTypes = new List<CatalogLeafType>();
+
             foreach (var type in types.OfType<string>())
             {
-                CatalogLeafType output;
-                if (FromString.TryGetValue(type, out output))
+                CatalogLeafType foundType;
+                if (FromString.TryGetValue(type, out foundType))
                 {
-                    return output;
+                    foundTypes.Add(foundType);
                 }
             }
 
-            throw new JsonSerializationException($"Unexpected value for a {nameof(CatalogLeafType)}.");
+            if (foundTypes.Count != 1)
+            {
+                throw new JsonSerializationException($"Unexpected value for a {nameof(CatalogLeafType)}.");
+            }
+
+            return foundTypes[0];
         }
     }
 }

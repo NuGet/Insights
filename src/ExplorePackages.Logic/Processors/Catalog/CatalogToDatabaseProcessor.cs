@@ -1,25 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.CatalogReader;
 
 namespace Knapcode.ExplorePackages.Logic
 {
     public class CatalogToDatabaseProcessor : ICatalogEntriesProcessor
     {
         private readonly IPackageService _packageService;
+        private readonly CatalogClient _catalogClient;
         private readonly CatalogService _catalogService;
         private readonly V2Client _v2Client;
 
         public CatalogToDatabaseProcessor(
             IPackageService packageService,
+            CatalogClient catalogClient,
             CatalogService catalogService,
             V2Client v2Client)
         {
             _packageService = packageService;
+            _catalogClient = catalogClient;
             _catalogService = catalogService;
             _v2Client = v2Client;
         }
@@ -28,7 +28,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public string CursorName => CursorNames.CatalogToDatabase;
 
-        public async Task ProcessAsync(CatalogPageEntry page, IReadOnlyList<CatalogEntry> leaves)
+        public async Task ProcessAsync(CatalogPageItem page, IReadOnlyList<CatalogLeafItem> leaves)
         {
             // Determine the listed status of all of the packages.
             var entryToListed = (await TaskProcessor.ExecuteAsync(
@@ -36,7 +36,7 @@ namespace Knapcode.ExplorePackages.Logic
                 async x =>
                 {
                     bool listed;
-                    if (x.IsDelete)
+                    if (x.IsPackageDelete())
                     {
                         listed = false;
                     }
@@ -49,13 +49,13 @@ namespace Knapcode.ExplorePackages.Logic
                 },
                 workerCount: 32,
                 token: CancellationToken.None))
-                .ToDictionary(x => x.Key, x => x.Value, new CatalogEntryComparer());
+                .ToDictionary(x => x.Key, x => x.Value, new CatalogLeafItemComparer());
 
             // Only add Package entities based on the latest commit timestamp.
             var latestLeaves = leaves
-                .GroupBy(x => new PackageIdentity(x.Id, x.Version.ToNormalizedString()))
+                .GroupBy(x => new PackageIdentity(x.PackageId, x.ParsePackageVersion().ToNormalizedString()))
                 .Select(x => x
-                    .OrderByDescending(y => y.CommitTimeStamp)
+                    .OrderByDescending(y => y.CommitTimestamp)
                     .First())
                 .ToList();
 
@@ -63,38 +63,25 @@ namespace Knapcode.ExplorePackages.Logic
             
             await _catalogService.AddOrUpdateAsync(page, leaves, identityToPackageKey, entryToListed);
 
-            await _packageService.SetDeletedPackagesAsUnlistedInV2Async(latestLeaves.Where(x => x.IsDelete));
+            await _packageService.SetDeletedPackagesAsUnlistedInV2Async(latestLeaves.Where(x => x.IsPackageDelete()));
         }
 
-        private async Task<bool> IsListedAsync(CatalogEntry entry)
+        private async Task<bool> IsListedAsync(CatalogLeafItem entry)
         {
-            var details = await entry.GetPackageDetailsAsync();
-
-            var listedProperty = details.Property("listed");
-            if (listedProperty != null)
-            {
-                return (bool)listedProperty.Value;
-            }
-
-            var publishedProperty = details.Property("published");
-            var published = DateTimeOffset.Parse(
-                (string)publishedProperty.Value,
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.AssumeUniversal);
-
-            return published.ToUniversalTime().Year != 1900;
+            var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(entry);
+            return leaf.IsListed();
         }
 
-        private class CatalogEntryComparer : IEqualityComparer<CatalogEntry>
+        private class CatalogLeafItemComparer : IEqualityComparer<CatalogLeafItem>
         {
-            public bool Equals(CatalogEntry x, CatalogEntry y)
+            public bool Equals(CatalogLeafItem x, CatalogLeafItem y)
             {
-                return x?.Uri == y?.Uri;
+                return x?.Url == y?.Url;
             }
 
-            public int GetHashCode(CatalogEntry obj)
+            public int GetHashCode(CatalogLeafItem obj)
             {
-                return obj?.Uri.GetHashCode() ?? 0;
+                return obj?.Url.GetHashCode() ?? 0;
             }
         }
     }

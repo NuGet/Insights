@@ -3,26 +3,25 @@ using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
-using NuGet.CatalogReader;
 
 namespace Knapcode.ExplorePackages.Tool.Commands
 {
     public class CatalogToDatabaseCommand : ICommand
     {
-        private readonly CatalogReader _catalogReader;
+        private readonly CatalogClient _catalogClient;
         private readonly CursorService _cursorService;
         private readonly CatalogToDatabaseProcessor _processor;
         private readonly ISingletonService _singletonService;
         private readonly ILogger<CatalogProcessorQueue> _logger;
 
         public CatalogToDatabaseCommand(
-            CatalogReader catalogReader,
+            CatalogClient catalogClient,
             CursorService cursorService,
             CatalogToDatabaseProcessor processor,
             ISingletonService singletonService,
             ILogger<CatalogProcessorQueue> logger)
         {
-            _catalogReader = catalogReader;
+            _catalogClient = catalogClient;
             _cursorService = cursorService;
             _processor = processor;
             _singletonService = singletonService;
@@ -36,7 +35,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
         public async Task ExecuteAsync(CancellationToken token)
         {
             var catalogProcessor = new CatalogProcessorQueue(
-                _catalogReader,
+                _catalogClient,
                 _cursorService,
                 _processor,
                 _singletonService,

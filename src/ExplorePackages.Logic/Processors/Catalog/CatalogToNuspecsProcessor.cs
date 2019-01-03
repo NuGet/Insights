@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using NuGet.CatalogReader;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -26,10 +25,10 @@ namespace Knapcode.ExplorePackages.Logic
              CursorNames.NuGetOrg.FlatContainer,
         };
 
-        public async Task ProcessAsync(CatalogPageEntry page, IReadOnlyList<CatalogEntry> leaves)
+        public async Task ProcessAsync(CatalogPageItem page, IReadOnlyList<CatalogLeafItem> leaves)
         {
             var packageIdentities = leaves
-                .Select(x => new PackageIdentity(x.Id, x.Version.ToNormalizedString()))
+                .Select(x => new PackageIdentity(x.PackageId, x.ParsePackageVersion().ToNormalizedString()))
                 .Distinct()
                 .ToList();
 

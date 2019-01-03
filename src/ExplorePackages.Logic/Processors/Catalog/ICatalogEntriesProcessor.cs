@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using NuGet.CatalogReader;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -8,6 +7,6 @@ namespace Knapcode.ExplorePackages.Logic
     {
         string CursorName { get; }
         IReadOnlyList<string> DependencyCursorNames { get; }
-        Task ProcessAsync(CatalogPageEntry page, IReadOnlyList<CatalogEntry> leaves);
+        Task ProcessAsync(CatalogPageItem page, IReadOnlyList<CatalogLeafItem> leaves);
     }
 }

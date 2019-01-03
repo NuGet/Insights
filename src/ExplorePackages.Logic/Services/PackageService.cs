@@ -9,7 +9,6 @@ using Knapcode.ExplorePackages.Entities;
 using Knapcode.MiniZip;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using NuGet.CatalogReader;
 using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Logic
@@ -547,11 +546,11 @@ namespace Knapcode.ExplorePackages.Logic
             };
         }
 
-        public async Task SetDeletedPackagesAsUnlistedInV2Async(IEnumerable<CatalogEntry> entries)
+        public async Task SetDeletedPackagesAsUnlistedInV2Async(IEnumerable<CatalogLeafItem> entries)
         {
             var identities = entries
-                .Where(x => x.IsDelete)
-                .Select(x => $"{x.Id}/{x.Version.ToNormalizedString()}")
+                .Where(x => x.IsPackageDelete())
+                .Select(x => $"{x.PackageId}/{x.ParsePackageVersion().ToNormalizedString()}")
                 .Distinct()
                 .ToList();
             _logger.LogInformation("Found {Count} catalog leaves containing deleted packages.", identities.Count);
@@ -624,24 +623,24 @@ namespace Knapcode.ExplorePackages.Logic
         /// Adds the provided catalog entries to the database. Catalog entries are processed in the order provided.
         /// </summary>
         public async Task<IReadOnlyDictionary<string, long>> AddOrUpdatePackagesAsync(
-            IEnumerable<CatalogEntry> entries,
-            IReadOnlyDictionary<CatalogEntry, bool> entryToListed)
+            IEnumerable<CatalogLeafItem> entries,
+            IReadOnlyDictionary<CatalogLeafItem, bool> entryToListed)
         {
             return await AddOrUpdatePackagesAsync(
                 x => x
                     .Packages
                     .Include(y => y.CatalogPackage),
                 entryToListed.Keys,
-                x => x.OrderBy(c => c.CommitTimeStamp),
-                c => c.Id,
-                c => c.Version.ToNormalizedString(),
+                x => x.OrderBy(c => c.CommitTimestamp),
+                c => c.PackageId,
+                c => c.ParsePackageVersion().ToNormalizedString(),
                 (p, cp) =>
                 {
                     p.CatalogPackage = new CatalogPackageEntity
                     {
-                        Deleted = cp.IsDelete,
-                        FirstCommitTimestamp = cp.CommitTimeStamp.UtcTicks,
-                        LastCommitTimestamp = cp.CommitTimeStamp.UtcTicks,
+                        Deleted = cp.IsPackageDelete(),
+                        FirstCommitTimestamp = cp.CommitTimestamp.UtcTicks,
+                        LastCommitTimestamp = cp.CommitTimestamp.UtcTicks,
                         Listed = entryToListed[cp],
                     };
 
@@ -649,19 +648,19 @@ namespace Knapcode.ExplorePackages.Logic
                 },
                 (p, cp) =>
                 {
-                    if (p.CatalogPackage.LastCommitTimestamp < cp.CommitTimeStamp.UtcTicks)
+                    if (p.CatalogPackage.LastCommitTimestamp < cp.CommitTimestamp.UtcTicks)
                     {
-                        p.CatalogPackage.Deleted = cp.IsDelete;
+                        p.CatalogPackage.Deleted = cp.IsPackageDelete();
                         p.CatalogPackage.Listed = entryToListed[cp];
                     }
 
                     p.CatalogPackage.FirstCommitTimestamp = Math.Min(
                         p.CatalogPackage.FirstCommitTimestamp,
-                        cp.CommitTimeStamp.UtcTicks);
+                        cp.CommitTimestamp.UtcTicks);
 
                     p.CatalogPackage.LastCommitTimestamp = Math.Max(
                         p.CatalogPackage.LastCommitTimestamp,
-                        cp.CommitTimeStamp.UtcTicks);
+                        cp.CommitTimestamp.UtcTicks);
 
                     return Task.CompletedTask;
                 },

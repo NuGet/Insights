@@ -58,9 +58,9 @@ namespace Knapcode.ExplorePackages.Website.Logic
             var commit = await _latestCatalogCommitFetcher.GetLatestCommitAsync(new ProgressReporter(this));
             
             var catalogItem = commit.First();
-            await InvokeProgressAsync(1, $"Using package {catalogItem.Id} {catalogItem.Version}.");
+            await InvokeProgressAsync(1, $"Using package {catalogItem.PackageId} {catalogItem.PackageVersion}.");
 
-            await InvokeFoundLatestAsync(catalogItem.Id, catalogItem.Version.ToFullString());
+            await InvokeFoundLatestAsync(catalogItem.PackageId, catalogItem.ParsePackageVersion().ToFullString());
         }
 
         public async Task GetLatestV2()
