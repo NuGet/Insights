@@ -53,8 +53,6 @@ namespace Knapcode.ExplorePackages.Logic
                 newETag = await ProduceAsync(taskQueue, newPath, previousETag, t);
             });
 
-            File.Delete(ProgressFileName);
-
             if (newETag != previousETag)
             {
                 await _etagService.SetValueAsync(ETagNames.DownloadsV1, newETag);
@@ -62,6 +60,8 @@ namespace Knapcode.ExplorePackages.Logic
                 var oldPath = _options.Value.DownloadsV1Path + ".old";
                 SafeFileWriter.Replace(_options.Value.DownloadsV1Path, newPath, oldPath, _logger);
             }
+
+            File.Delete(ProgressFileName);
         }
 
         private async Task WriteDownloadsAsync(string path, IAsyncEnumerator<PackageDownloads> enumerator)
