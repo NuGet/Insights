@@ -192,8 +192,9 @@ namespace Knapcode.ExplorePackages.Logic
                     .ToListAsync();
 
                 _logger.LogInformation(
-                    "Got {ExistingCount} existing. {ElapsedMilliseconds}ms",
+                    "Got {ExistingCount} existing {TypeName} instances. {ElapsedMilliseconds}ms",
                     existingPackages.Count,
+                    typeof(T).Name,
                     getExistingStopwatch.ElapsedMilliseconds);
 
                 // Keep track of the resulting package keys.
@@ -217,8 +218,9 @@ namespace Knapcode.ExplorePackages.Logic
                 var commitStopwatch = Stopwatch.StartNew();
                 var changes = await entityContext.SaveChangesAsync();
                 _logger.LogInformation(
-                    "Committed {Changes} changes. {ElapsedMilliseconds}ms",
+                    "Committed {Changes} {TypeName} changes. {ElapsedMilliseconds}ms",
                     changes,
+                    typeof(T).Name,
                     commitStopwatch.ElapsedMilliseconds);
 
                 // Add the new package keys.
@@ -436,9 +438,29 @@ namespace Knapcode.ExplorePackages.Logic
                 {
                     var command = connection.CreateCommand();
 
-                    command.CommandText = @"
-                        INSERT OR REPLACE INTO PackageDownloads (PackageKey, Downloads)
-                        VALUES (@PackageKey, @Downloads)";
+                    command.Transaction = transaction;
+
+                    if (entityContext is SqlServerEntityContext)
+                    {
+                        command.CommandText = @"
+                            MERGE PackageDownloads pd
+                            USING (VALUES (@PackageKey, @Downloads)) AS i(PackageKey, Downloads)
+                            ON pd.PackageKey = i.PackageKey
+                            WHEN MATCHED THEN
+                                UPDATE SET pd.Downloads = i.Downloads
+                            WHEN NOT MATCHED THEN
+                                INSERT (PackageKey, Downloads) VALUES (i.PackageKey, i.Downloads);";
+                    }
+                    else if (entityContext is SqliteEntityContext)
+                    {
+                        command.CommandText = @"
+                            INSERT OR REPLACE INTO PackageDownloads (PackageKey, Downloads)
+                            VALUES (@PackageKey, @Downloads)";
+                    }
+                    else
+                    {
+                        throw new NotImplementedException();
+                    }
 
                     var packageKeyParameter = command.CreateParameter();
                     packageKeyParameter.ParameterName = "PackageKey";
@@ -454,7 +476,7 @@ namespace Knapcode.ExplorePackages.Logic
                     {
                         packageKeyParameter.Value = pair.Key;
                         downloadsParameter.Value = pair.Value;
-                        changeCount += command.ExecuteNonQuery();
+                        changeCount += await command.ExecuteNonQueryAsync();
                     }
 
                     transaction.Commit();
@@ -462,7 +484,7 @@ namespace Knapcode.ExplorePackages.Logic
             }
 
             _logger.LogInformation(
-                "Committed {ChangeCount} changes. {ElapsedMilliseconds}ms.",
+                "Committed {ChangeCount} package download changes. {ElapsedMilliseconds}ms.",
                 changeCount,
                 stopwatch.ElapsedMilliseconds);
         }

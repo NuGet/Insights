@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -52,6 +53,8 @@ namespace Knapcode.ExplorePackages.Logic
                 newETag = await ProduceAsync(taskQueue, newPath, previousETag, t);
             });
 
+            File.Delete(ProgressFileName);
+
             if (newETag != previousETag)
             {
                 await _etagService.SetValueAsync(ETagNames.DownloadsV1, newETag);
@@ -79,10 +82,20 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 foreach (var record in records)
                 {
-                    var line = JsonConvert.SerializeObject(new object[] { record.Id, record.Version, record.Downloads });
-                    await writer.WriteLineAsync(line);
+                    // Skip package IDs that are not valid.
+                    if (!StrictPackageIdValidator.IsValid(record.Id))
+                    {
+                        continue;
+                    }
+
+                    await writer.WriteLineAsync(SerializeLine(record));
                 }
             }
+        }
+
+        private static string SerializeLine(PackageDownloads record)
+        {
+            return JsonConvert.SerializeObject(new object[] { record.Id, record.Version, record.Downloads });
         }
 
         private PackageDownloads ParseLine(string line)
@@ -117,14 +130,23 @@ namespace Knapcode.ExplorePackages.Logic
                 newETag = packageDownloadSet.ETag;
             }
 
+            _logger.LogInformation("Done downloading the new downloads file.");
+
             if (newETag == previousETag)
             {
+                _logger.LogInformation("The etag has not changed from the last time the file was processed. No work is necessary.");
                 return newETag;
             }
 
             if (!File.Exists(_options.Value.DownloadsV1Path))
             {
                 File.WriteAllText(_options.Value.DownloadsV1Path, string.Empty);
+            }
+
+            PackageDownloads completedUpTo = null;
+            if (File.Exists(ProgressFileName))
+            {
+                completedUpTo = ParseLine(File.ReadAllText(ProgressFileName));
             }
 
             var comparer = new PackageDownloadsComparer(considerDownloads: false);
@@ -135,8 +157,8 @@ namespace Knapcode.ExplorePackages.Logic
             using (var newStream = new FileStream(newPath, FileMode.Open))
             using (var newReader = new StreamReader(newStream))
             {
-                var existingRecord = ParseLine(await existingReader.ReadLineAsync());
-                var newRecord = ParseLine(await newReader.ReadLineAsync());
+                var existingRecord = await ReadLineUpToAsync(existingReader, completedUpTo, comparer);
+                var newRecord = await ReadLineUpToAsync(newReader, completedUpTo, comparer);
 
                 do
                 {
@@ -169,7 +191,7 @@ namespace Knapcode.ExplorePackages.Logic
                         newRecord = ParseLine(await newReader.ReadLineAsync());
                     }
                     
-                    if (batch.Count >= 20000)
+                    if (batch.Count >= 1000)
                     {
                         taskQueue.Enqueue(batch);
                         batch = new List<PackageDownloads>();
@@ -186,10 +208,44 @@ namespace Knapcode.ExplorePackages.Logic
             return newETag;
         }
 
+        private async Task<PackageDownloads> ReadLineUpToAsync(
+            StreamReader reader,
+            PackageDownloads upTo,
+            PackageDownloadsComparer comparer)
+        {
+            PackageDownloads current;
+            do
+            {
+                current = ParseLine(await reader.ReadLineAsync());
+            }
+            while (upTo != null && comparer.Compare(current, upTo) <= 0);
+
+            return current;
+        }
+
         private async Task ConsumeAsync(IReadOnlyList<PackageDownloads> packages, CancellationToken token)
         {
+            if (!packages.Any())
+            {
+                return;
+            }
+
             await _service.AddOrUpdatePackagesAsync(packages);
+
+            var lastPackage = packages.Last();
+            var progressContent = SerializeLine(packages.Last());
+            await SafeFileWriter.WriteAsync(
+                ProgressFileName,
+                new MemoryStream(Encoding.UTF8.GetBytes(progressContent)),
+                _logger);
+            _logger.LogInformation(
+                "Got up to {Id} {Version} with {Downloads} downloads.",
+                lastPackage.Id,
+                lastPackage.Version,
+                lastPackage.Downloads);
         }
+
+        private string ProgressFileName => _options.Value.DownloadsV1Path + ".progress";
 
         private class PackageDownloadsComparer : IComparer<PackageDownloads>
         {

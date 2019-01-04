@@ -58,15 +58,33 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 await connection.OpenAsync();
 
-                command.CommandText = @"
-                    SELECT pr.PackageRegistrationKey, pr.Id, MAX(cp.LastCommitTimestamp) AS CommitTimestamp
-                    FROM PackageRegistrations pr
-                    INNER JOIN Packages p ON pr.PackageRegistrationKey = p.PackageRegistrationKey
-                    INNER JOIN CatalogPackages cp ON p.PackageKey = cp.PackageKey
-                    WHERE cp.LastCommitTimestamp > @Start AND cp.LastCommitTimestamp <= @End
-                    GROUP BY pr.PackageRegistrationKey
-                    ORDER BY MAX(cp.LastCommitTimestamp) ASC
-                    LIMIT @BatchSize";
+                if (entityContext is SqlServerEntityContext)
+                {
+                    command.CommandText = @"
+                        SELECT MAX(pr.PackageRegistrationKey), MAX(pr.Id), MAX(cp.LastCommitTimestamp) AS CommitTimestamp
+                        FROM PackageRegistrations pr
+                        INNER JOIN Packages p ON pr.PackageRegistrationKey = p.PackageRegistrationKey
+                        INNER JOIN CatalogPackages cp ON p.PackageKey = cp.PackageKey
+                        WHERE cp.LastCommitTimestamp > @Start AND cp.LastCommitTimestamp <= @End
+                        GROUP BY pr.PackageRegistrationKey
+                        ORDER BY MAX(cp.LastCommitTimestamp) ASC";
+                }
+                else if (entityContext is SqliteEntityContext)
+                {
+                    command.CommandText = @"
+                        SELECT MAX(pr.PackageRegistrationKey), MAX(pr.Id), MAX(cp.LastCommitTimestamp) AS CommitTimestamp
+                        FROM PackageRegistrations pr
+                        INNER JOIN Packages p ON pr.PackageRegistrationKey = p.PackageRegistrationKey
+                        INNER JOIN CatalogPackages cp ON p.PackageKey = cp.PackageKey
+                        WHERE cp.LastCommitTimestamp > @Start AND cp.LastCommitTimestamp <= @End
+                        GROUP BY pr.PackageRegistrationKey
+                        ORDER BY MAX(cp.LastCommitTimestamp) ASC
+                        LIMIT @BatchSize";
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
 
                 var startParameter = command.CreateParameter();
                 startParameter.ParameterName = "Start";
