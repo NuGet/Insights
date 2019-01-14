@@ -171,8 +171,10 @@
             <tr>
                 <th>Package MD5</th>
                 <td>
-                    <code>{{packagesContainer.packageContentMetadata.contentMD5}}</code>
-                    (<code>{{hextobase64 packagesContainer.packageContentMetadata.contentMD5}}</code>)
+                    {{#if packagesContainer.packageContentMetadata.contentMD5}}
+                        <code>{{packagesContainer.packageContentMetadata.contentMD5}}</code>
+                        (<code>{{hextobase64 packagesContainer.packageContentMetadata.contentMD5}}</code>)
+                    {{/if}}
                 </td>
             </tr>
             <tr>
@@ -205,8 +207,10 @@
             <tr>
                 <th>Package MD5</th>
                 <td>
-                    <code>{{flatContainer.packageContentMetadata.contentMD5}}</code>
-                    (<code>{{hextobase64 flatContainer.packageContentMetadata.contentMD5}}</code>)
+                    {{#if flatContainer.packageContentMetadata.contentMD5}}
+                        <code>{{flatContainer.packageContentMetadata.contentMD5}}</code>
+                        (<code>{{hextobase64 flatContainer.packageContentMetadata.contentMD5}}</code>)
+                    {{/if}}
                 </td>
             </tr>
             <tr>
