@@ -27,7 +27,7 @@ namespace Knapcode.ExplorePackages.Logic
             CursorNames.MZip,
         };
 
-        public int BatchSize => 5000;
+        public int BatchSize => 1000;
 
         public async Task<ItemBatch<PackageArchiveMetadata>> InitializeItemsAsync(
             IReadOnlyList<PackageEntity> packages,
