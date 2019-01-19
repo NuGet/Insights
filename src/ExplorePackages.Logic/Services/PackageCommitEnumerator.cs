@@ -57,6 +57,7 @@ namespace Knapcode.ExplorePackages.Logic
                 return await queryEntities(entities)
                     .Include(x => x.PackageRegistration)
                     .Include(x => x.CatalogPackage)
+                    .Where(x => x.PackageRegistration != null) // https://github.com/aspnet/EntityFrameworkCore/issues/14324
                     .Where(x => x.CatalogPackage != null)
                     .Where(x => x.CatalogPackage.LastCommitTimestamp > start && x.CatalogPackage.LastCommitTimestamp <= end)
                     .OrderBy(x => x.CatalogPackage.LastCommitTimestamp)
