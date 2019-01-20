@@ -17,7 +17,7 @@ namespace Knapcode.ExplorePackages.Logic
         }
 
         public async Task<PackagesContainerConsistencyReport> GetReportAsync(
-            PackageQueryContext context,
+            PackageConsistencyContext context,
             PackageConsistencyState state,
             IProgressReporter progressReporter)
         {
@@ -33,7 +33,7 @@ namespace Knapcode.ExplorePackages.Logic
         }
 
         public async Task<bool> IsConsistentAsync(
-            PackageQueryContext context,
+            PackageConsistencyContext context,
             PackageConsistencyState state,
             IProgressReporter progressReporter)
         {
@@ -42,7 +42,7 @@ namespace Knapcode.ExplorePackages.Logic
         }
 
         public async Task PopulateStateAsync(
-            PackageQueryContext context,
+            PackageConsistencyContext context,
             PackageConsistencyState state,
             IProgressReporter progressReporter)
         {

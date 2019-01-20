@@ -113,7 +113,7 @@ namespace Knapcode.ExplorePackages.Website.Logic
             await InvokeProgressAsync(0, $"Initializing package report for {id} {version}.");
 
             var state = new PackageConsistencyState();
-            var context = await _packageQueryContextBuilder.GetPackageQueryContextFromGalleryAsync(id, version, state);
+            var context = await _packageQueryContextBuilder.GetPackageConsistencyContextFromGalleryAsync(id, version, state);
 
             var packageDeletedStatus = state.Gallery.PackageState.PackageDeletedStatus;
             var isAvailable = packageDeletedStatus == PackageDeletedStatus.NotDeleted;

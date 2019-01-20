@@ -2,7 +2,7 @@
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class HasCrossCheckDiscrepancyPackageQuery : IPackageQuery
+    public class HasCrossCheckDiscrepancyPackageQuery : IPackageConsistencyQuery
     {
         private readonly CrossCheckConsistencyService _service;
 
@@ -14,7 +14,7 @@ namespace Knapcode.ExplorePackages.Logic
         public string Name => PackageQueryNames.HasCrossCheckDiscrepancyPackageQuery;
         public string CursorName => CursorNames.HasCrossCheckDiscrepancyPackageQuery;
 
-        public async Task<bool> IsMatchAsync(PackageQueryContext context, PackageConsistencyState state)
+        public async Task<bool> IsMatchAsync(PackageConsistencyContext context, PackageConsistencyState state)
         {
             var isConsistent = await _service.IsConsistentAsync(context, state, NullProgressReporter.Instance);
             return !isConsistent;

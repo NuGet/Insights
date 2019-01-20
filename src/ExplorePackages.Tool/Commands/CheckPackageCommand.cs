@@ -84,14 +84,14 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             var isSemVer2 = parsedVersion.IsSemVer2 || SemVer2;
 
             var state = new PackageConsistencyState();
-            PackageQueryContext context;
+            PackageConsistencyContext context;
             if (!NoGallery)
             {
-                context = await _contextBuilder.GetPackageQueryContextFromGalleryAsync(Id, Version, state);
+                context = await _contextBuilder.GetPackageConsistencyContextFromGalleryAsync(Id, Version, state);
             }
             else if (Database)
             {
-                context = await _contextBuilder.GetPackageQueryContextFromDatabaseAsync(Id, Version);
+                context = await _contextBuilder.GetPackageConsistencyContextFromDatabaseAsync(Id, Version);
                 if (context == null)
                 {
                     _logger.LogError("The package {Id} {Version} could not be found in the database.", Id, Version);
@@ -100,11 +100,11 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             }
             else if (Deleted)
             {
-                context = _contextBuilder.CreateDeletedPackageQueryContext(Id, Version);
+                context = _contextBuilder.CreateDeletedPackageConsistencyContext(Id, Version);
             }
             else
             {
-                context = _contextBuilder.CreateAvailablePackageQueryContext(Id, Version, isSemVer2, !Unlisted);
+                context = _contextBuilder.CreateAvailablePackageConsistencyContext(Id, Version, isSemVer2, !Unlisted);
             }
 
             var report = await _service.GetReportAsync(context, state, NullProgressReporter.Instance);

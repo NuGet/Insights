@@ -17,7 +17,7 @@ namespace Knapcode.ExplorePackages.Logic
         }
 
         public async Task<GalleryConsistencyReport> GetReportAsync(
-            PackageQueryContext context,
+            PackageConsistencyContext context,
             PackageConsistencyState state,
             IProgressReporter progressReporter)
         {
@@ -37,7 +37,7 @@ namespace Knapcode.ExplorePackages.Logic
         }
 
         public async Task<bool> IsConsistentAsync(
-            PackageQueryContext context,
+            PackageConsistencyContext context,
             PackageConsistencyState state,
             IProgressReporter progressReporter)
         {
@@ -46,7 +46,7 @@ namespace Knapcode.ExplorePackages.Logic
         }
 
         public async Task PopulateStateAsync(
-            PackageQueryContext context,
+            PackageConsistencyContext context,
             PackageConsistencyState state,
             IProgressReporter progressReporter)
         {

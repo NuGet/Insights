@@ -3,7 +3,7 @@
     public class PackageConsistencyReport : IConsistencyReport
     {
         public PackageConsistencyReport(
-            PackageQueryContext context,
+            PackageConsistencyContext context,
             bool isConsistent,
             GalleryConsistencyReport gallery,
             V2ConsistencyReport v2,
@@ -28,7 +28,7 @@
             CrossCheck = crossCheck;
         }
 
-        public PackageQueryContext Context { get; }
+        public PackageConsistencyContext Context { get; }
         public bool IsConsistent { get; }
         public GalleryConsistencyReport Gallery { get; }
         public V2ConsistencyReport V2 { get; }

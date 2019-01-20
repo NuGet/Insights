@@ -2,7 +2,7 @@
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public abstract class HasRegistrationDiscrepancyPackageQuery : IPackageQuery
+    public abstract class HasRegistrationDiscrepancyPackageQuery : IPackageConsistencyQuery
     {
         private readonly RegistrationConsistencyService _service;
 
@@ -19,7 +19,7 @@ namespace Knapcode.ExplorePackages.Logic
         public string Name { get; }
         public string CursorName { get; }
 
-        public async Task<bool> IsMatchAsync(PackageQueryContext context, PackageConsistencyState state)
+        public async Task<bool> IsMatchAsync(PackageConsistencyContext context, PackageConsistencyState state)
         {
             var isConsistent = await _service.IsConsistentAsync(context, state, NullProgressReporter.Instance);
             return !isConsistent;

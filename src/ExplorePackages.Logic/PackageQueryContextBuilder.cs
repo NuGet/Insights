@@ -27,21 +27,20 @@ namespace Knapcode.ExplorePackages.Logic
             _logger = logger;
         }
 
-        public PackageQueryContext CreateDeletedPackageQueryContext(string id, string version)
+        public PackageConsistencyContext CreateDeletedPackageConsistencyContext(string id, string version)
         {
-            return CreatePackageQueryContext(id, version, isSemVer2: false, isListed: false, deleted: true);
+            return CreatePackageConsistencyContext(id, version, isSemVer2: false, isListed: false, deleted: true);
         }
 
-        public PackageQueryContext CreateAvailablePackageQueryContext(string id, string version, bool isSemVer2, bool isListed)
+        public PackageConsistencyContext CreateAvailablePackageConsistencyContext(string id, string version, bool isSemVer2, bool isListed)
         {
-            return CreatePackageQueryContext(id, version, isSemVer2, isListed, deleted: false);
+            return CreatePackageConsistencyContext(id, version, isSemVer2, isListed, deleted: false);
         }
 
-        private PackageQueryContext CreatePackageQueryContext(string id, string version, bool isSemVer2, bool isListed, bool deleted)
+        private PackageConsistencyContext CreatePackageConsistencyContext(string id, string version, bool isSemVer2, bool isListed, bool deleted)
         {
             var parsedVersion = NuGetVersion.Parse(version);
             var normalizedVersion = parsedVersion.ToNormalizedString();
-            var fullVersion = parsedVersion.ToFullString();
             var immutablePackage = new ImmutablePackage(new PackageEntity
             {
                 PackageKey = 0,
@@ -59,32 +58,21 @@ namespace Knapcode.ExplorePackages.Logic
                 },                
             });
 
-            var nuspecContext = new NuspecContext(
-                exists: false,
-                document: null);
-
-            var mzipContext = new MZipContext(
-                exists: false,
-                size: null,
-                zipDirectory: null);
-
-            return new PackageQueryContext(
+            return new PackageConsistencyContext(
                 immutablePackage,
-                nuspecContext,
-                mzipContext,
                 isSemVer2,
-                fullVersion,
                 isListed);
         }
-        public async Task<PackageQueryContext> GetPackageQueryContextFromGalleryAsync(string id, string version, PackageConsistencyState state)
+
+        public async Task<PackageConsistencyContext> GetPackageConsistencyContextFromGalleryAsync(string id, string version, PackageConsistencyState state)
         {
             var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
 
-            var initialContext = CreateAvailablePackageQueryContext(id, version, isSemVer2: false, isListed: true);
+            var initialContext = CreateAvailablePackageConsistencyContext(id, version, isSemVer2: false, isListed: true);
 
             await _galleryConsistencyService.PopulateStateAsync(initialContext, state, NullProgressReporter.Instance);
             
-            return CreatePackageQueryContext(
+            return CreatePackageConsistencyContext(
                 state.Gallery.PackageState.PackageId,
                 state.Gallery.PackageState.PackageVersion,
                 state.Gallery.PackageState.IsSemVer2,
@@ -92,7 +80,7 @@ namespace Knapcode.ExplorePackages.Logic
                 state.Gallery.PackageState.PackageDeletedStatus != PackageDeletedStatus.NotDeleted);
         }
 
-        public async Task<PackageQueryContext> GetPackageQueryContextFromDatabaseAsync(string id, string version)
+        public async Task<PackageConsistencyContext> GetPackageConsistencyContextFromDatabaseAsync(string id, string version)
         {
             var package = await _packageService.GetPackageOrNullAsync(id, version);
             if (package == null)
@@ -100,7 +88,14 @@ namespace Knapcode.ExplorePackages.Logic
                 return null;
             }
 
-            return await GetPackageQueryFromDatabasePackageContextAsync(package);
+            var immutablePackage = new ImmutablePackage(package);
+            var nuspecQueryContext = await GetNuspecContextAsync(package);
+            var isSemVer2 = NuspecUtility.IsSemVer2(nuspecQueryContext.Document);
+
+            return new PackageConsistencyContext(
+                immutablePackage,
+                isSemVer2,
+                package.V2Package?.Listed ?? package.CatalogPackage?.Listed ?? true);
         }
 
         public async Task<PackageQueryContext> GetPackageQueryFromDatabasePackageContextAsync(PackageEntity package)

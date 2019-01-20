@@ -1,32 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Logic
 {
     public class PackageQueryFactory
     {
-        private static readonly HashSet<Type> BoringQueries = new HashSet<Type>
+        private static readonly HashSet<string> BoringQueries = new HashSet<string>
         {
-            typeof(FindNonNormalizedPackageVersionsNuspecQuery),
-            typeof(FindMissingDependencyVersionsNuspecQuery),
-            typeof(FindEmptyDependencyVersionsNuspecQuery),
-            typeof(HasCrossCheckDiscrepancyPackageQuery),
-        };
-
-        private static readonly HashSet<Type> ConsistencyChecks = new HashSet<Type>
-        {
-            typeof(HasV2DiscrepancyPackageQuery),
-            typeof(HasPackagesContainerDiscrepancyPackageQuery),
-            typeof(HasFlatContainerDiscrepancyPackageQuery),
-            typeof(HasRegistrationDiscrepancyInOriginalHivePackageQuery),
-            typeof(HasRegistrationDiscrepancyInGzippedHivePackageQuery),
-            typeof(HasRegistrationDiscrepancyInSemVer2HivePackageQuery),
-            typeof(HasSearchDiscrepancyPackageQuery),
-            typeof(HasCrossCheckDiscrepancyPackageQuery),
-            typeof(HasFlatContainerDiscrepancyPackageQuery),
-            typeof(HasFlatContainerDiscrepancyPackageQuery),
+            PackageQueryNames.FindNonNormalizedPackageVersionsNuspecQuery,
+            PackageQueryNames.FindMissingDependencyVersionsNuspecQuery,
+            PackageQueryNames.FindEmptyDependencyVersionsNuspecQuery,
         };
 
         private readonly Func<IEnumerable<IPackageQuery>> _getPackageQueries;
@@ -46,24 +30,18 @@ namespace Knapcode.ExplorePackages.Logic
 
             foreach (var packageQuery in _getPackageQueries())
             {
-                var type = packageQuery.GetType();
-
-                if (!_options.Value.RunBoringQueries && BoringQueries.Contains(type))
+                if (!_options.Value.RunBoringQueries && BoringQueries.Contains(packageQuery.Name))
                 {
                     continue;
                 }
 
-                if (!_options.Value.RunConsistencyChecks && ConsistencyChecks.Contains(type))
+                if (!_options.Value.RunConsistencyChecks && packageQuery is PackageConsistencyPackageQuery)
                 {
                     continue;
                 }
 
                 queries.Add(packageQuery);
             }
-
-            var cursorNameGroups = queries
-                .GroupBy(x => x.CursorName)
-                .Where(x => x.Count() > 1);
 
             return queries;
         }

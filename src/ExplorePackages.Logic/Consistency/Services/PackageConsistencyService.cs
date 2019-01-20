@@ -59,7 +59,7 @@ namespace Knapcode.ExplorePackages.Logic
         }
         
         public async Task<PackageConsistencyReport> GetReportAsync(
-            PackageQueryContext context,
+            PackageConsistencyContext context,
             PackageConsistencyState state,
             IProgressReporter progressReporter)
         {
@@ -97,7 +97,7 @@ namespace Knapcode.ExplorePackages.Logic
         }
 
         public async Task<bool> IsConsistentAsync(
-            PackageQueryContext context,
+            PackageConsistencyContext context,
             PackageConsistencyState state,
             IProgressReporter progressReporter)
         {
@@ -150,7 +150,7 @@ namespace Knapcode.ExplorePackages.Logic
         }
 
         public async Task PopulateStateAsync(
-            PackageQueryContext context,
+            PackageConsistencyContext context,
             PackageConsistencyState state,
             IProgressReporter progressReporter)
         {
@@ -167,7 +167,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         private class MutableReport
         {
-            public PackageQueryContext Context { get; set; }
+            public PackageConsistencyContext Context { get; set; }
             public PackageConsistencyState State { get; set; }
             public IProgressReporter ProgressReporter { get; set; }
             public int Processed { get; set; }

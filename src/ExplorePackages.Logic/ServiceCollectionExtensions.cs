@@ -241,10 +241,22 @@ namespace Knapcode.ExplorePackages.Logic
                 });
             }
 
+            // Add all of the package consistency queries.
+            foreach (var serviceType in GetClassesImplementing<IPackageConsistencyQuery>())
+            {
+                serviceCollection.AddTransient(serviceType);
+                serviceCollection.AddTransient<IPackageQuery>(x =>
+                {
+                    var nuspecQuery = (IPackageConsistencyQuery)x.GetRequiredService(serviceType);
+                    return new PackageConsistencyPackageQuery(nuspecQuery);
+                });
+            }
+
             // Add all of the package queries.
             foreach (var serviceType in GetClassesImplementing<IPackageQuery>())
             {
-                if (serviceType == typeof(NuspecPackageQuery))
+                if (serviceType == typeof(NuspecPackageQuery)
+                    || serviceType == typeof(PackageConsistencyPackageQuery))
                 {
                     continue;
                 }
