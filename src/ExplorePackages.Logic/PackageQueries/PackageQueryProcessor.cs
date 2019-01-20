@@ -63,6 +63,9 @@ namespace Knapcode.ExplorePackages.Logic
             IReadOnlyList<PackageIdentity> identities,
             CancellationToken token)
         {
+            var includeNuspec = queries.Any(x => x.NeedsNuspec);
+            var includeMZip = queries.Any(x => x.NeedsMZip);
+
             foreach (var identity in identities)
             {
                 if (token.IsCancellationRequested)
@@ -71,16 +74,19 @@ namespace Knapcode.ExplorePackages.Logic
                 }
 
                 var package = await _packageService.GetPackageOrNullAsync(identity.Id, identity.Version);
-
                 if (package == null)
                 {
                     _logger.LogWarning("Package {Id} {Version} does not exist.", identity.Id, identity.Version);
                     continue;
                 }
 
-                var context = await _contextBuilder.GetPackageQueryFromDatabasePackageContextAsync(package);
+                var context = await _contextBuilder.GetPackageQueryContextFromDatabaseAsync(
+                    package,
+                    includeNuspec,
+                    includeMZip);
                 var state = new PackageConsistencyState();
                 var work = new Work(queries, context, state);
+
                 taskQueue.Enqueue(work);
             }
         }
@@ -113,21 +119,21 @@ namespace Knapcode.ExplorePackages.Logic
                         packageCount,
                         min,
                         max);
+
+                    var results = await ProcessCommitsAsync(queries, bounds, commits);
+
+                    complete += packageCount;
+                    _logger.LogInformation(
+                        "{CompleteCount} completed ({PerSecond} per second).",
+                        complete,
+                        Math.Round(complete / stopwatch.Elapsed.TotalSeconds));
+
+                    await PersistResultsAndCursorsAsync(bounds, results);
                 }
                 else
                 {
                     _logger.LogInformation("No more commits were found within the bounds.");
                 }
-
-                var results = await ProcessCommitsAsync(queries, bounds, commits);
-
-                complete += packageCount;
-                _logger.LogInformation(
-                    "{CompleteCount} completed ({PerSecond} per second).",
-                    complete,
-                    Math.Round(complete / stopwatch.Elapsed.TotalSeconds));
-
-                await PersistResultsAndCursorsAsync(bounds, results);
             }
             while (commitCount > 0);
         }
@@ -239,14 +245,19 @@ namespace Knapcode.ExplorePackages.Logic
                         .Where(x => p.Commit.CommitTimestamp > bounds.CursorNameToStart[bounds.QueryNameToCursorName[x.Name]])
                         .ToList();
 
-                    var context = await _contextBuilder.GetPackageQueryFromDatabasePackageContextAsync(p.Package);
-                    var state = new PackageConsistencyState();
+                    var includeNuspec = applicableQueries.Any(x => x.NeedsNuspec);
+                    var includeMZip = applicableQueries.Any(x => x.NeedsMZip);
 
+                    var context = await _contextBuilder.GetPackageQueryContextFromDatabaseAsync(
+                        p.Package,
+                        includeNuspec,
+                        includeMZip);
+                    var state = new PackageConsistencyState();
                     taskQueue.Enqueue(new Work(applicableQueries, context, state));
 
                     return 0;
                 },
-                workerCount: 32,
+                workerCount: 1,
                 token: token);
         }
 
@@ -257,6 +268,16 @@ namespace Knapcode.ExplorePackages.Logic
                 var name = query.Name;
                 var id = work.Context.Package.Id;
                 var version = work.Context.Package.Version;
+
+                if (query.NeedsMZip && work.Context.MZip == null)
+                {
+                    throw new InvalidOperationException("An .mzip is required to execute this query.");
+                }
+
+                if (query.NeedsNuspec && work.Context.Nuspec == null)
+                {
+                    throw new InvalidOperationException("An .nuspec is required to execute this query.");
+                }
 
                 var isMatch = false;
                 try

@@ -98,18 +98,25 @@ namespace Knapcode.ExplorePackages.Logic
                 package.V2Package?.Listed ?? package.CatalogPackage?.Listed ?? true);
         }
 
-        public async Task<PackageQueryContext> GetPackageQueryFromDatabasePackageContextAsync(PackageEntity package)
+        public async Task<PackageQueryContext> GetPackageQueryContextFromDatabaseAsync(
+            PackageEntity package,
+            bool includeNuspec,
+            bool includeMZip)
         {
             var immutablePackage = new ImmutablePackage(package);
-            var nuspecQueryContext = await GetNuspecContextAsync(package);
-            var mzipContext = await GetMZipContextAsync(package);
-            var isSemVer2 = NuspecUtility.IsSemVer2(nuspecQueryContext.Document);
 
-            var originalVersion = NuspecUtility.GetOriginalVersion(nuspecQueryContext.Document);
-            string fullVersion = null;
-            if (NuGetVersion.TryParse(originalVersion, out var parsedVersion))
+            // TODO: Determine SemVer 2.0.0 from the database instead of the .nuspec
+            NuspecContext nuspecQueryContext = await GetNuspecContextAsync(package);
+            var isSemVer2 = NuspecUtility.IsSemVer2(nuspecQueryContext.Document);
+            if (!includeNuspec)
             {
-                fullVersion = parsedVersion.ToFullString();
+                nuspecQueryContext = null;
+            }
+
+            MZipContext mzipContext = null;
+            if (includeMZip)
+            {
+                mzipContext = await GetMZipContextAsync(package);
             }
 
             return new PackageQueryContext(
@@ -117,7 +124,6 @@ namespace Knapcode.ExplorePackages.Logic
                 nuspecQueryContext,
                 mzipContext,
                 isSemVer2,
-                fullVersion,
                 package.V2Package?.Listed ?? package.CatalogPackage?.Listed ?? true);
         }
 
