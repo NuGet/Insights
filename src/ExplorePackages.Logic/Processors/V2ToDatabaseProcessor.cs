@@ -12,7 +12,7 @@ namespace Knapcode.ExplorePackages.Logic
     public class V2ToDatabaseProcessor
     {
         private static readonly TimeSpan FuzzFactor = TimeSpan.FromHours(1);
-        private const int PageSize = BatchSizes.V2ToDatabase;
+
         private readonly CursorService _cursorService;
         private readonly V2Client _v2Client;
         private readonly PackageService _service;
@@ -116,10 +116,10 @@ namespace Knapcode.ExplorePackages.Logic
                    _options.Value.V2BaseUrl,
                    orderBy,
                    start,
-                   PageSize);
+                   BatchSizes.V2ToDatabase);
 
                 // If we have a full page, take only packages with a created timestamp less than the max.
-                if (packages.Count == PageSize)
+                if (packages.Count == BatchSizes.V2ToDatabase)
                 {
                     var max = packages.Max(getTimestamp);
                     var packagesBeforeMax = packages
