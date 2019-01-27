@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Knapcode.Delta.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -37,21 +38,19 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task UpdateAsync()
         {
             var previousETag = await _etagService.GetValueAsync(ETagNames.DownloadsV1);
+            string newETag = null;
+            var newPath = _options.Value.DownloadsV1Path + ".new";
 
             var taskQueue = new TaskQueue<IReadOnlyList<PackageDownloads>>(
                 workerCount: 1,
-                workAsync: ConsumeAsync,
+                produceAsync: async (ctx, t) =>
+                {
+                    newETag = await ProduceAsync(ctx, newPath, previousETag, t);
+                },
+                consumeAsync: ConsumeAsync,
                 logger: _logger);
 
-            taskQueue.Start();
-
-            var newPath = _options.Value.DownloadsV1Path + ".new";
-
-            string newETag = null;
-            await taskQueue.ProduceThenCompleteAsync(async t =>
-            {
-                newETag = await ProduceAsync(taskQueue, newPath, previousETag, t);
-            });
+            await taskQueue.RunAsync();
 
             if (newETag != previousETag)
             {
@@ -64,7 +63,9 @@ namespace Knapcode.ExplorePackages.Logic
             File.Delete(ProgressFileName);
         }
 
-        private async Task WriteDownloadsAsync(string path, IAsyncEnumerator<PackageDownloads> enumerator)
+        private async Task WriteDownloadsAsync(
+            string path,
+            System.Collections.Generic.IAsyncEnumerator<PackageDownloads> enumerator)
         {
             var records = new List<PackageDownloads>();
             using (enumerator)
@@ -118,7 +119,7 @@ namespace Knapcode.ExplorePackages.Logic
         }
 
         private async Task<string> ProduceAsync(
-            TaskQueue<IReadOnlyList<PackageDownloads>> taskQueue,
+            IProducerContext<IReadOnlyList<PackageDownloads>> producer,
             string newPath,
             string previousETag,
             CancellationToken token)
@@ -193,7 +194,7 @@ namespace Knapcode.ExplorePackages.Logic
                     
                     if (batch.Count >= 1000)
                     {
-                        taskQueue.Enqueue(batch);
+                        await producer.EnqueueAsync(batch, token);
                         batch = new List<PackageDownloads>();
                     }
                 }
@@ -201,7 +202,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                 if (batch.Any())
                 {
-                    taskQueue.Enqueue(batch);
+                    await producer.EnqueueAsync(batch, token);
                 }
             }
 

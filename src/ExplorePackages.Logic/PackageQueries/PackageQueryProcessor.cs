@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Knapcode.Delta.Common;
 using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Logic;
 using Microsoft.EntityFrameworkCore;
@@ -46,19 +47,17 @@ namespace Knapcode.ExplorePackages.Logic
 
             var taskQueue = new TaskQueue<Work>(
                 workerCount: 32,
-                workAsync: (w, t) => ConsumeWorkAsync(w, results),
+                produceAsync: (p, t) => ProduceAsync(p, queries, identities, t),
+                consumeAsync: (w, t) => ConsumeWorkAsync(w, results),
                 logger: _logger);
 
-            taskQueue.Start();
-
-            await taskQueue.ProduceThenCompleteAsync(
-                t => ProduceAsync(taskQueue, queries, identities, t));
+            await taskQueue.RunAsync();
 
             await PersistResults(results);
         }
 
         private async Task ProduceAsync(
-            TaskQueue<Work> taskQueue,
+            IProducerContext<Work> producer,
             IReadOnlyList<IPackageQuery> queries,
             IReadOnlyList<PackageIdentity> identities,
             CancellationToken token)
@@ -87,7 +86,7 @@ namespace Knapcode.ExplorePackages.Logic
                 var state = new PackageConsistencyState();
                 var work = new Work(queries, context, state);
 
-                taskQueue.Enqueue(work);
+                await producer.EnqueueAsync(work, token);
             }
         }
 
@@ -119,21 +118,21 @@ namespace Knapcode.ExplorePackages.Logic
                         packageCount,
                         min,
                         max);
-
-                    var results = await ProcessCommitsAsync(queries, bounds, commits);
-
-                    complete += packageCount;
-                    _logger.LogInformation(
-                        "{CompleteCount} completed ({PerSecond} per second).",
-                        complete,
-                        Math.Round(complete / stopwatch.Elapsed.TotalSeconds));
-
-                    await PersistResultsAndCursorsAsync(bounds, results);
                 }
                 else
                 {
                     _logger.LogInformation("No more commits were found within the bounds.");
                 }
+
+                var results = await ProcessCommitsAsync(queries, bounds, commits);
+
+                complete += packageCount;
+                _logger.LogInformation(
+                    "{CompleteCount} completed ({PerSecond} per second).",
+                    complete,
+                    Math.Round(complete / stopwatch.Elapsed.TotalSeconds));
+
+                await PersistResultsAndCursorsAsync(bounds, results);
             }
             while (commitCount > 0);
         }
@@ -219,19 +218,17 @@ namespace Knapcode.ExplorePackages.Logic
 
             var taskQueue = new TaskQueue<Work>(
                 workerCount: 32,
-                workAsync: (w, t) => ConsumeWorkAsync(w, results),
+                produceAsync: (p, t) => ProduceWorkAsync(p, queries, bounds, commits, t),
+                consumeAsync: (w, t) => ConsumeWorkAsync(w, results),
                 logger: _logger);
 
-            taskQueue.Start();
-
-            await taskQueue.ProduceThenCompleteAsync(
-                token => ProduceWorkAsync(taskQueue, queries, bounds, commits, token));
+            await taskQueue.RunAsync();
 
             return results;
         }
 
         private async Task ProduceWorkAsync(
-            TaskQueue<Work> taskQueue,
+            IProducerContext<Work> producer,
             IReadOnlyList<IPackageQuery> queries,
             Bounds bounds,
             IReadOnlyList<EntityCommit<PackageEntity>> commits,
@@ -253,7 +250,7 @@ namespace Knapcode.ExplorePackages.Logic
                         includeNuspec,
                         includeMZip);
                     var state = new PackageConsistencyState();
-                    taskQueue.Enqueue(new Work(applicableQueries, context, state));
+                    await producer.EnqueueAsync(new Work(applicableQueries, context, state), token);
 
                     return 0;
                 },

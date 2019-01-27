@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Knapcode.Delta.Common;
 using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic
@@ -93,16 +94,17 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var taskQueue = new TaskQueue<IReadOnlyList<TItem>>(
                 workerCount: 32,
-                workAsync: (x, t) => _processor.ProcessBatchAsync(x),
+                produceAsync: (ctx, t) => ProduceAsync(ctx, commits, t),
+                consumeAsync: (x, t) => _processor.ProcessBatchAsync(x),
                 logger: _logger);
 
-            taskQueue.Start();
-
-            await taskQueue.ProduceThenCompleteAsync(
-                t => ProduceAsync(commits, taskQueue, t));
+            await taskQueue.RunAsync();
         }
 
-        private async Task ProduceAsync(IReadOnlyList<EntityCommit<TEntity>> commits, TaskQueue<IReadOnlyList<TItem>> taskQueue, CancellationToken token)
+        private async Task ProduceAsync(
+            IProducerContext<IReadOnlyList<TItem>> producer,
+            IReadOnlyList<EntityCommit<TEntity>> commits,
+            CancellationToken token)
         {
             foreach (var commit in commits)
             {
@@ -118,7 +120,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                     foreach (var item in batch.Items)
                     {
-                        taskQueue.Enqueue(new List<TItem> { item });
+                        await producer.EnqueueAsync(new List<TItem> { item }, token);
                     }
                 }
             }

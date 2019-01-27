@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Knapcode.Delta.Common;
 using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic
@@ -45,30 +46,19 @@ namespace Knapcode.ExplorePackages.Logic
 
             var taskQueue = new TaskQueue<Work>(
                 workerCount: 1,
-                workAsync: WorkAsync,
+                maxQueueSize: 10,
+                produceAsync: (p, t) => ProduceAsync(p, start, end, t),
+                consumeAsync: WorkAsync,
                 logger: _logger);
 
-            taskQueue.Start();
-
-            await taskQueue.ProduceThenCompleteAsync(
-                t => ProduceAsync(taskQueue, start, end, t));
+            await taskQueue.RunAsync();
         }
 
-        private async Task WorkAsync(Work work, CancellationToken token)
-        {
-            if (!work.Leaves.Any())
-            {
-                return;
-            }
-
-            await _processor.ProcessAsync(work.Page, work.Leaves);
-
-            var newCursorValue = work.Leaves.Max(x => x.CommitTimestamp);
-            _logger.LogInformation("Cursor {CursorName} moving to {Start:O}.", _processor.CursorName, newCursorValue);
-            await _cursorService.SetValueAsync(_processor.CursorName, newCursorValue);
-        }
-
-        private async Task ProduceAsync(TaskQueue<Work> taskQueue, DateTimeOffset start, DateTimeOffset end, CancellationToken token)
+        private async Task ProduceAsync(
+            IProducerContext<Work> producer,
+            DateTimeOffset start,
+            DateTimeOffset end,
+            CancellationToken token)
         {
             var remainingPages = new Queue<CatalogPageItem>(await _catalogClient.GetCatalogPageItemsAsync(start, end));
 
@@ -83,10 +73,22 @@ namespace Knapcode.ExplorePackages.Logic
 
                 var entries = await _catalogClient.GetCatalogLeafItemsAsync(currentPages, start, end, token);
 
-                taskQueue.Enqueue(new Work(currentPage, entries));
-
-                await taskQueue.WaitForCountToBeLessThanAsync(10, token);
+                await producer.EnqueueAsync(new Work(currentPage, entries), token);
             }
+        }
+
+        private async Task WorkAsync(Work work, CancellationToken token)
+        {
+            if (!work.Leaves.Any())
+            {
+                return;
+            }
+
+            await _processor.ProcessAsync(work.Page, work.Leaves);
+
+            var newCursorValue = work.Leaves.Max(x => x.CommitTimestamp);
+            _logger.LogInformation("Cursor {CursorName} moving to {Start:O}.", _processor.CursorName, newCursorValue);
+            await _cursorService.SetValueAsync(_processor.CursorName, newCursorValue);
         }
 
         private class Work

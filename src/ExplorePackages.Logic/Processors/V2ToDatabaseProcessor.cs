@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Knapcode.Delta.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -85,17 +86,16 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var taskQueue = new TaskQueue<IReadOnlyList<V2Package>>(
                 workerCount: 1,
-                workAsync: (x, t) => ConsumeAsync(x, cursorName, getTimestamp),
+                maxQueueSize: 50,
+                produceAsync: (ctx, t) => ProduceAsync(ctx, cursorName, orderBy, getTimestamp, t),
+                consumeAsync: (x, t) => ConsumeAsync(x, cursorName, getTimestamp),
                 logger: _logger);
 
-            taskQueue.Start();
-
-            await taskQueue.ProduceThenCompleteAsync(
-                t => ProduceAsync(taskQueue, cursorName, orderBy, getTimestamp, t));
+            await taskQueue.RunAsync();
         }
 
         private async Task ProduceAsync(
-            TaskQueue<IReadOnlyList<V2Package>> taskQueue,
+            IProducerContext<IReadOnlyList<V2Package>> taskQueue,
             string cursorName,
             V2OrderByTimestamp orderBy,
             Func<V2Package, DateTimeOffset> getTimestamp,
@@ -139,11 +139,9 @@ namespace Knapcode.ExplorePackages.Logic
                     complete = true;
                 }
 
-                await taskQueue.WaitForCountToBeLessThanAsync(50, token);
-                
                 if (packages.Count > 0)
                 {
-                    taskQueue.Enqueue(packages);
+                    await taskQueue.EnqueueAsync(packages, token);
                     start = packages.Max(getTimestamp);
                 }
             }
