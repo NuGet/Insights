@@ -192,7 +192,7 @@ namespace Knapcode.ExplorePackages.Logic
                         newRecord = ParseLine(await newReader.ReadLineAsync());
                     }
                     
-                    if (batch.Count >= 1000)
+                    if (batch.Count >= BatchSizes.PackageDownloadsToDatabase)
                     {
                         await producer.EnqueueAsync(batch, token);
                         batch = new List<PackageDownloads>();

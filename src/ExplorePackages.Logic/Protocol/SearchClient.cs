@@ -46,7 +46,11 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var semVerLevel = semVer2 ? "2.0.0" : "1.0.0";
             var query = $"packageid:{id} version:{version}";
-            var url = $"{baseUrl.TrimEnd('/')}/search/query?q={Uri.EscapeDataString(query)}&take=100&ignoreFilter=true&semVerLevel={semVerLevel}";
+            var url = $"{baseUrl.TrimEnd('/')}/search/query?" +
+                $"q={Uri.EscapeDataString(query)}&" +
+                $"take={BatchSizes.SearchClient_GetPackageOrNull}&" +
+                $"ignoreFilter=true&" +
+                $"semVerLevel={semVerLevel}";
 
             V2SearchResult result;
             try

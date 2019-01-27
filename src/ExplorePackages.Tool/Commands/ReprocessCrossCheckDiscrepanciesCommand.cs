@@ -33,7 +33,12 @@ namespace Knapcode.ExplorePackages.Tool.Commands
                 .Get()
                 .Where(x => x.Name == PackageQueryNames.HasCrossCheckDiscrepancyPackageQuery)
                 .ToList();
-            await _processor.ProcessAsync(queries, reprocess: true, batchSize: 5000, token: token);
+
+            await _processor.ProcessAsync(
+                queries,
+                reprocess: true,
+                batchSize: BatchSizes.ReprocessCrossCheckDiscrepancies,
+                token: token);
         }
 
         public bool IsInitializationRequired() => true;

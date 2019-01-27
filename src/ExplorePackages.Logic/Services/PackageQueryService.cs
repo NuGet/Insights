@@ -9,7 +9,6 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class PackageQueryService
     {
-        private const int PageSize = 1000;
         private readonly EntityContextFactory _entityContextFactory;
         private readonly CursorService _cursorService;
         private readonly IPackageService _packageService;
@@ -73,7 +72,7 @@ namespace Knapcode.ExplorePackages.Logic
                     .ThenInclude(x => x.CatalogPackage)
                     .Where(x => x.PackageQuery.Name == queryName && x.PackageQueryMatchKey > lastKey)
                     .OrderBy(x => x.PackageQueryMatchKey)
-                    .Take(PageSize)
+                    .Take(BatchSizes.PackageQueryService_MatchedPackages)
                     .ToListAsync();
 
                 if (!matches.Any())

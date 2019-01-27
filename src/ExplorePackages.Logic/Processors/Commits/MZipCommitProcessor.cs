@@ -22,7 +22,7 @@ namespace Knapcode.ExplorePackages.Logic
             CursorNames.CatalogToDatabase,
         };
 
-        public int BatchSize => 1000;
+        public int BatchSize => BatchSizes.MZip;
 
         public Task<ItemBatch<PackageEntity>> InitializeItemsAsync(
             IReadOnlyList<PackageEntity> packages,

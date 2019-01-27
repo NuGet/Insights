@@ -26,7 +26,7 @@ namespace Knapcode.ExplorePackages.Logic
             CursorNames.CatalogToDatabase,
         };
 
-        public int BatchSize => 1000;
+        public int BatchSize => BatchSizes.DependenciesToDatabase;
 
         public async Task<ItemBatch<PackageDependencyGroups>> InitializeItemsAsync(
             IReadOnlyList<PackageEntity> packages,

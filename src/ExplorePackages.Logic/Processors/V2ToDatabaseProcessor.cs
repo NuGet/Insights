@@ -12,7 +12,7 @@ namespace Knapcode.ExplorePackages.Logic
     public class V2ToDatabaseProcessor
     {
         private static readonly TimeSpan FuzzFactor = TimeSpan.FromHours(1);
-        private const int PageSize = 100;
+        private const int PageSize = BatchSizes.V2ToDatabase;
         private readonly CursorService _cursorService;
         private readonly V2Client _v2Client;
         private readonly PackageService _service;

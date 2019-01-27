@@ -80,7 +80,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
         private IReadOnlyList<string> Ids => _idsOption?.Values ?? new List<string>();
         private IReadOnlyList<string> Versions => _versionsOption?.Values ?? new List<string>();
         private bool ProblemQueries => _problemQueries?.HasValue() ?? false;
-        private int BatchSize => _batchSize != null && _batchSize.HasValue() ? int.Parse(_batchSize.Value()) : 5000;
+        private int BatchSize => _batchSize != null && _batchSize.HasValue() ? int.Parse(_batchSize.Value()) : BatchSizes.PackageQueries;
 
         public async Task ExecuteAsync(CancellationToken token)
         {
