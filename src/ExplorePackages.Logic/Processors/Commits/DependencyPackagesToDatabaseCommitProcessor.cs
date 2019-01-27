@@ -11,13 +11,16 @@ namespace Knapcode.ExplorePackages.Logic
     public class DependencyPackagesToDatabaseCommitProcessor : ICommitProcessor<PackageRegistrationEntity, PackageDependencyEntity>
     {
         private readonly PackageDependencyService _packageDependencyService;
+        private readonly IBatchSizeProvider _batchSizeProvider;
         private readonly ILogger<DependencyPackagesToDatabaseCommitProcessor> _logger;
 
         public DependencyPackagesToDatabaseCommitProcessor(
             PackageDependencyService packageDependencyService,
+            IBatchSizeProvider batchSizeProvider,
             ILogger<DependencyPackagesToDatabaseCommitProcessor> logger)
         {
             _packageDependencyService = packageDependencyService;
+            _batchSizeProvider = batchSizeProvider;
             _logger = logger;
         }
 
@@ -28,7 +31,7 @@ namespace Knapcode.ExplorePackages.Logic
             CursorNames.DependenciesToDatabase,
         };
 
-        public int BatchSize => BatchSizes.DependencyPackagesToDatabase_PackageRegistrations;
+        public int BatchSize => _batchSizeProvider.Get(BatchSizeType.DependencyPackagesToDatabase_PackageRegistrations);
 
         public async Task<ItemBatch<PackageDependencyEntity>> InitializeItemsAsync(
             IReadOnlyList<PackageRegistrationEntity> entities,
@@ -40,10 +43,12 @@ namespace Knapcode.ExplorePackages.Logic
 
             var packageRegistrationKeys = packageRegistrationKeyToId.Keys.ToList();
 
+            var packagesBatchSize = _batchSizeProvider.Get(BatchSizeType.DependencyPackagesToDatabase_Packages);
+
             var dependents = await _packageDependencyService.GetDependentPackagesAsync(
                 packageRegistrationKeys,
                 skip,
-                take: BatchSizes.DependencyPackagesToDatabase_Packages);
+                take: packagesBatchSize);
 
             var topDependencyPairs = dependents
                 .GroupBy(x => x.DependencyPackageRegistrationKey)
@@ -67,7 +72,7 @@ namespace Knapcode.ExplorePackages.Logic
 
             return new ItemBatch<PackageDependencyEntity>(
                 dependents,
-                dependents.Count >= BatchSizes.DependencyPackagesToDatabase_Packages);
+                dependents.Count >= packagesBatchSize);
         }
 
         public async Task ProcessBatchAsync(IReadOnlyList<PackageDependencyEntity> batch)

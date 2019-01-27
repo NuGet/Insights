@@ -15,6 +15,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
         private readonly PackageQueryProcessor _processor;
         private readonly ProblemService _problemService;
         private readonly PackageQueryFactory _packageQueryFactory;
+        private readonly IBatchSizeProvider _batchSizeProvider;
         private readonly ILogger<PackageQueriesCommand> _logger;
 
         private CommandOption _reprocessOption;
@@ -30,12 +31,14 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             PackageQueryProcessor processor,
             ProblemService problemService,
             PackageQueryFactory packageQueryFactory,
+            IBatchSizeProvider batchSizeProvider,
             ILogger<PackageQueriesCommand> logger)
         {
             _cursorService = cursorService;
             _processor = processor;
             _problemService = problemService;
             _packageQueryFactory = packageQueryFactory;
+            _batchSizeProvider = batchSizeProvider;
             _logger = logger;
         }
 
@@ -80,7 +83,19 @@ namespace Knapcode.ExplorePackages.Tool.Commands
         private IReadOnlyList<string> Ids => _idsOption?.Values ?? new List<string>();
         private IReadOnlyList<string> Versions => _versionsOption?.Values ?? new List<string>();
         private bool ProblemQueries => _problemQueries?.HasValue() ?? false;
-        private int BatchSize => _batchSize != null && _batchSize.HasValue() ? int.Parse(_batchSize.Value()) : BatchSizes.PackageQueries;
+
+        private int BatchSize
+        {
+            get
+            {
+                if (_batchSize != null && _batchSize.HasValue())
+                {
+                    return int.Parse(_batchSize.Value());
+                }
+
+                return _batchSizeProvider.Get(BatchSizeType.PackageQueries);
+            }
+        }
 
         public async Task ExecuteAsync(CancellationToken token)
         {

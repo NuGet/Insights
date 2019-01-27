@@ -11,15 +11,18 @@ namespace Knapcode.ExplorePackages.Tool.Commands
         private readonly CursorService _cursorService;
         private readonly PackageQueryFactory _packageQueryFactory;
         private readonly PackageQueryProcessor _processor;
+        private readonly IBatchSizeProvider _batchSizeProvider;
 
         public ReprocessCrossCheckDiscrepanciesCommand(
             CursorService cursorService,
             PackageQueryFactory packageQueryFactory,
-            PackageQueryProcessor processor)
+            PackageQueryProcessor processor,
+            IBatchSizeProvider batchSizeProvider)
         {
             _cursorService = cursorService;
             _packageQueryFactory = packageQueryFactory;
             _processor = processor;
+            _batchSizeProvider = batchSizeProvider;
         }
 
         public void Configure(CommandLineApplication app)
@@ -37,7 +40,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             await _processor.ProcessAsync(
                 queries,
                 reprocess: true,
-                batchSize: BatchSizes.ReprocessCrossCheckDiscrepancies,
+                batchSize: _batchSizeProvider.Get(BatchSizeType.ReprocessCrossCheckDiscrepancies),
                 token: token);
         }
 

@@ -9,13 +9,16 @@ namespace Knapcode.ExplorePackages.Logic
     {
         private readonly NuspecStore _nuspecStore;
         private readonly PackageDependencyService _packageDependencyService;
+        private readonly IBatchSizeProvider _batchSizeProvider;
 
         public DependenciesToDatabaseCommitProcessor(
             NuspecStore nuspecStore,
-            PackageDependencyService packageDependencyService)
+            PackageDependencyService packageDependencyService,
+            IBatchSizeProvider batchSizeProvider)
         {
             _nuspecStore = nuspecStore;
             _packageDependencyService = packageDependencyService;
+            _batchSizeProvider = batchSizeProvider;
         }
 
         public string CursorName => CursorNames.DependenciesToDatabase;
@@ -26,7 +29,7 @@ namespace Knapcode.ExplorePackages.Logic
             CursorNames.CatalogToDatabase,
         };
 
-        public int BatchSize => BatchSizes.DependenciesToDatabase;
+        public int BatchSize => _batchSizeProvider.Get(BatchSizeType.DependenciesToDatabase);
 
         public async Task<ItemBatch<PackageDependencyGroups>> InitializeItemsAsync(
             IReadOnlyList<PackageEntity> packages,

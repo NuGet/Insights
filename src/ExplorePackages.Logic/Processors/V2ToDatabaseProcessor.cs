@@ -16,6 +16,7 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly CursorService _cursorService;
         private readonly V2Client _v2Client;
         private readonly PackageService _service;
+        private readonly IBatchSizeProvider _batchSizeProvider;
         private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
         private readonly ILogger<V2ToDatabaseProcessor> _logger;
 
@@ -23,12 +24,14 @@ namespace Knapcode.ExplorePackages.Logic
             CursorService cursorService,
             V2Client v2Client,
             PackageService service,
+            IBatchSizeProvider batchSizeProvider,
             IOptionsSnapshot<ExplorePackagesSettings> options,
             ILogger<V2ToDatabaseProcessor> logger)
         {
             _cursorService = cursorService;
             _v2Client = v2Client;
             _service = service;
+            _batchSizeProvider = batchSizeProvider;
             _options = options;
             _logger = logger;
         }
@@ -112,14 +115,16 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 token.ThrowIfCancellationRequested();
 
+                var batchSize = _batchSizeProvider.Get(BatchSizeType.V2ToDatabase);
+
                 var packages = await _v2Client.GetPackagesAsync(
                    _options.Value.V2BaseUrl,
                    orderBy,
                    start,
-                   BatchSizes.V2ToDatabase);
+                   batchSize);
 
                 // If we have a full page, take only packages with a created timestamp less than the max.
-                if (packages.Count == BatchSizes.V2ToDatabase)
+                if (packages.Count == batchSize)
                 {
                     var max = packages.Max(getTimestamp);
                     var packagesBeforeMax = packages

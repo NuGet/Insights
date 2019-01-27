@@ -21,6 +21,7 @@ namespace Knapcode.ExplorePackages.Logic
             private readonly Mock<IPackageDownloadsClient> _client;
             private readonly Mock<IPackageService> _service;
             private readonly Mock<IETagService> _etagService;
+            private readonly Mock<IBatchSizeProvider> _batchSizeProvider;
             private readonly ExplorePackagesSettings _settings;
             private readonly Mock<IOptionsSnapshot<ExplorePackagesSettings>> _options;
             private readonly PackageDownloadsToDatabaseProcessor _target;
@@ -34,6 +35,10 @@ namespace Knapcode.ExplorePackages.Logic
                 _client = new Mock<IPackageDownloadsClient>();
                 _service = new Mock<IPackageService>();
                 _etagService = new Mock<IETagService>();
+                _batchSizeProvider = new Mock<IBatchSizeProvider>();
+                _batchSizeProvider
+                    .Setup(x => x.Get(It.IsAny<BatchSizeType>()))
+                    .Returns(1000);
                 _settings = new ExplorePackagesSettings
                 {
                     DownloadsV1Path = Path.Combine(_testDirectory, "downloads.txt"),
@@ -52,6 +57,7 @@ namespace Knapcode.ExplorePackages.Logic
                     _client.Object,
                     _service.Object,
                     _etagService.Object,
+                    _batchSizeProvider.Object,
                     _options.Object,
                     output.GetLogger< PackageDownloadsToDatabaseProcessor>());
             }

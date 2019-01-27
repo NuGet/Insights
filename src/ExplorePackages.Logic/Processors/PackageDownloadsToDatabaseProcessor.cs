@@ -18,6 +18,7 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly IPackageDownloadsClient _client;
         private readonly IPackageService _service;
         private readonly IETagService _etagService;
+        private readonly IBatchSizeProvider _batchSizeProvider;
         private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
         private readonly ILogger<PackageDownloadsToDatabaseProcessor> _logger;
 
@@ -25,12 +26,14 @@ namespace Knapcode.ExplorePackages.Logic
             IPackageDownloadsClient client,
             IPackageService service,
             IETagService etagService,
+            IBatchSizeProvider batchSizeProvider,
             IOptionsSnapshot<ExplorePackagesSettings> options,
             ILogger<PackageDownloadsToDatabaseProcessor> logger)
         {
             _client = client;
             _service = service;
             _etagService = etagService;
+            _batchSizeProvider = batchSizeProvider;
             _options = options;
             _logger = logger;
         }
@@ -192,7 +195,7 @@ namespace Knapcode.ExplorePackages.Logic
                         newRecord = ParseLine(await newReader.ReadLineAsync());
                     }
                     
-                    if (batch.Count >= BatchSizes.PackageDownloadsToDatabase)
+                    if (batch.Count >= _batchSizeProvider.Get(BatchSizeType.PackageDownloadsToDatabase))
                     {
                         await producer.EnqueueAsync(batch, token);
                         batch = new List<PackageDownloads>();

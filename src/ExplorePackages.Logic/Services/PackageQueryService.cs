@@ -12,15 +12,18 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly EntityContextFactory _entityContextFactory;
         private readonly CursorService _cursorService;
         private readonly IPackageService _packageService;
+        private readonly IBatchSizeProvider _batchSizeProvider;
 
         public PackageQueryService(
             EntityContextFactory entityContextFactory,
             CursorService cursorService,
-            IPackageService packageService)
+            IPackageService packageService,
+            IBatchSizeProvider batchSizeProvider)
         {
             _entityContextFactory = entityContextFactory;
             _cursorService = cursorService;
             _packageService = packageService;
+            _batchSizeProvider = batchSizeProvider;
         }
 
         public async Task AddQueryAsync(string queryName, string cursorName)
@@ -72,7 +75,7 @@ namespace Knapcode.ExplorePackages.Logic
                     .ThenInclude(x => x.CatalogPackage)
                     .Where(x => x.PackageQuery.Name == queryName && x.PackageQueryMatchKey > lastKey)
                     .OrderBy(x => x.PackageQueryMatchKey)
-                    .Take(BatchSizes.PackageQueryService_MatchedPackages)
+                    .Take(_batchSizeProvider.Get(BatchSizeType.PackageQueryService_MatchedPackages))
                     .ToListAsync();
 
                 if (!matches.Any())

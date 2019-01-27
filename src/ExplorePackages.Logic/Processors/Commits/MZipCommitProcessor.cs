@@ -8,10 +8,14 @@ namespace Knapcode.ExplorePackages.Logic
     public class MZipCommitProcessor : ICommitProcessor<PackageEntity, PackageEntity>
     {
         private readonly MZipStore _mZipStore;
+        private readonly IBatchSizeProvider _batchSizeProvider;
 
-        public MZipCommitProcessor(MZipStore mZipStore)
+        public MZipCommitProcessor(
+            MZipStore mZipStore,
+            IBatchSizeProvider batchSizeProvider)
         {
             _mZipStore = mZipStore;
+            _batchSizeProvider = batchSizeProvider;
         }
 
         public string CursorName => CursorNames.MZip;
@@ -22,7 +26,7 @@ namespace Knapcode.ExplorePackages.Logic
             CursorNames.CatalogToDatabase,
         };
 
-        public int BatchSize => BatchSizes.MZip;
+        public int BatchSize => _batchSizeProvider.Get(BatchSizeType.MZip);
 
         public Task<ItemBatch<PackageEntity>> InitializeItemsAsync(
             IReadOnlyList<PackageEntity> packages,

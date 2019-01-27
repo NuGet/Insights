@@ -48,7 +48,7 @@ namespace Knapcode.ExplorePackages.Logic
             var query = $"packageid:{id} version:{version}";
             var url = $"{baseUrl.TrimEnd('/')}/search/query?" +
                 $"q={Uri.EscapeDataString(query)}&" +
-                $"take={BatchSizes.SearchClient_GetPackageOrNull}&" +
+                $"take=100&" +
                 $"ignoreFilter=true&" +
                 $"semVerLevel={semVerLevel}";
 
