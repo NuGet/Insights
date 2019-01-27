@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic
 {
     public class BatchSizeProvider : IBatchSizeProvider
     {
         private const int MinimumForCatalog = 21;
-
         private static readonly IReadOnlyDictionary<BatchSizeType, Bounds> DefaultBatchSizes = new Dictionary<BatchSizeType, Bounds>
         {
             {
@@ -52,6 +52,45 @@ namespace Knapcode.ExplorePackages.Logic
             },
         };
 
+        private readonly ILogger<BatchSizeProvider> _logger;
+        private decimal _currentPercent = 1;
+
+        public BatchSizeProvider(ILogger<BatchSizeProvider> logger)
+        {
+            _logger = logger;
+        }
+
+        public void Decrease()
+        {
+            SetPercent(_currentPercent / 2);
+        }
+
+        public void Increase()
+        {
+            SetPercent(_currentPercent * 2);
+        }
+
+        public void Reset()
+        {
+            SetPercent(1);
+        }
+
+        private void SetPercent(decimal newPercent)
+        {
+            if (newPercent > 1)
+            {
+                newPercent = 1;
+            }
+
+            if (newPercent == _currentPercent)
+            {
+                return;
+            }
+
+            _logger.LogInformation($"Batch sizes will now be {newPercent * 100}% of their configured value or their configured minimum, whichever is higher.");
+            _currentPercent = newPercent;
+        }
+
         public int Get(BatchSizeType type)
         {
             if (!DefaultBatchSizes.TryGetValue(type, out var bounds))
@@ -59,7 +98,13 @@ namespace Knapcode.ExplorePackages.Logic
                 throw new NotSupportedException($"The batch size type '{type}' is not supported.");
             }
 
-            return bounds.Initial;
+            var current = (int)Math.Round(bounds.Initial * _currentPercent);
+            if (current < bounds.Minimum)
+            {
+                return bounds.Minimum;
+            }
+
+            return current;
         }
 
         private class Bounds

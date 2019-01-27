@@ -144,6 +144,7 @@ namespace Knapcode.ExplorePackages.Tool
         {
             var command = (ICommand)serviceProvider.GetRequiredService(commandType);
             var singletonService = serviceProvider.GetRequiredService<ISingletonService>();
+            var batchSizeProvider = serviceProvider.GetRequiredService<IBatchSizeProvider>();
 
             app.Command(
                 commandName,
@@ -203,6 +204,7 @@ namespace Knapcode.ExplorePackages.Tool
                             {
                                 if (success)
                                 {
+                                    batchSizeProvider.Increase();
                                     logger.LogInformation(
                                         "Waiting for {SuccessSleepDuration} since the command completed successfully." + Environment.NewLine,
                                         successSleepDuration);
@@ -210,6 +212,7 @@ namespace Knapcode.ExplorePackages.Tool
                                 }
                                 else
                                 {
+                                    batchSizeProvider.Decrease();
                                     logger.LogInformation("Waiting for {FailureSleepDuration} since the command failed." + Environment.NewLine,
                                         failureSleepDuration);
                                     await Task.Delay(failureSleepDuration);
