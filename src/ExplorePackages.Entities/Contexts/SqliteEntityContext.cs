@@ -64,6 +64,11 @@ namespace Knapcode.ExplorePackages.Entities
                 .Property(x => x.Identity)
                 .HasColumnType("TEXT COLLATE NOCASE");
 
+            modelBuilder
+                .Entity<FrameworkEntity>()
+                .Property(x => x.OriginalValue)
+                .HasColumnType("TEXT COLLATE NOCASE");
+
             // Source: https://stackoverflow.com/a/52738603
             var timestampProperties = modelBuilder
                 .Model

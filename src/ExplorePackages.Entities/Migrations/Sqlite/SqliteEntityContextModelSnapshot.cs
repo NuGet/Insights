@@ -144,7 +144,8 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                         .ValueGeneratedOnAdd();
 
                     b.Property<string>("OriginalValue")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("TEXT COLLATE NOCASE");
 
                     b.Property<string>("Value")
                         .IsRequired();

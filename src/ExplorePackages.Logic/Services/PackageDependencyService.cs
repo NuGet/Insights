@@ -466,8 +466,8 @@ namespace Knapcode.ExplorePackages.Logic
             using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 var originalValueToValue = parsedFrameworks
-                    .GroupBy(x => x.OriginalValue)
-                    .ToDictionary(x => x.Key, x => x.First().Value);
+                    .GroupBy(x => x.OriginalValue, StringComparer.OrdinalIgnoreCase)
+                    .ToDictionary(x => x.Key, x => x.First().Value, StringComparer.OrdinalIgnoreCase);
                 var allOriginalValues = originalValueToValue.Keys.ToList();
 
                 var existingEntities = await entityContext
@@ -478,7 +478,7 @@ namespace Knapcode.ExplorePackages.Logic
                 _logger.LogInformation("Found {ExistingCount} existing frameworks.", existingEntities.Count);
 
                 var newOriginalValues = allOriginalValues
-                    .Except(existingEntities.Select(x => x.OriginalValue))
+                    .Except(existingEntities.Select(x => x.OriginalValue), StringComparer.OrdinalIgnoreCase)
                     .ToList();
 
                 var newEntities = new List<FrameworkEntity>();
@@ -505,7 +505,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                 return existingEntities
                     .Concat(newEntities)
-                    .ToDictionary(x => x.OriginalValue);
+                    .ToDictionary(x => x.OriginalValue, StringComparer.OrdinalIgnoreCase);
             }
         }
 

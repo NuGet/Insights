@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
@@ -36,29 +37,30 @@ namespace Knapcode.ExplorePackages.Logic
             int skip,
             CancellationToken token)
         {
-            var output = new List<PackageDependencyGroups>();
+            var output = await TaskProcessor.ExecuteAsync(
+                packages,
+                x => InitializeItemAsync(x),
+                workerCount: 32,
+                token: token);
 
-            foreach (var package in packages)
-            {
-                await InitializeItemAsync(output, package);
-            }
+            var list = output.Where(x => x != null).ToList();
 
-            return new ItemBatch<PackageDependencyGroups>(output, hasMoreItems: false);
+            return new ItemBatch<PackageDependencyGroups>(list, hasMoreItems: false);
         }
 
-        private async Task InitializeItemAsync(List<PackageDependencyGroups> output, PackageEntity package)
+        private async Task<PackageDependencyGroups> InitializeItemAsync(PackageEntity package)
         {
             var nuspec = await _nuspecStore.GetNuspecContextAsync(package.PackageRegistration.Id, package.Version);
             if (nuspec.Document == null)
             {
-                return;
+                return null;
             }
 
             var identity = new PackageIdentity(package.PackageRegistration.Id, package.Version);
             var dependencyGroups = NuspecUtility.GetParsedDependencyGroups(nuspec.Document);
             var packageDependencyGroups = new PackageDependencyGroups(identity, dependencyGroups);
 
-            output.Add(packageDependencyGroups);
+            return packageDependencyGroups;
         }
 
         public async Task ProcessBatchAsync(IReadOnlyList<PackageDependencyGroups> batch)

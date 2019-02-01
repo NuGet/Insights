@@ -55,7 +55,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                     FrameworkKey = table.Column<long>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Value = table.Column<string>(nullable: false),
-                    OriginalValue = table.Column<string>(nullable: false)
+                    OriginalValue = table.Column<string>(type: "TEXT COLLATE NOCASE", nullable: false)
                 },
                 constraints: table =>
                 {

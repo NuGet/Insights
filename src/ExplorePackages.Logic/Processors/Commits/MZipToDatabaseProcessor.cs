@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
@@ -37,20 +38,15 @@ namespace Knapcode.ExplorePackages.Logic
             int skip,
             CancellationToken token)
         {
-            var output = new List<PackageArchiveMetadata>();
+            var output = await TaskProcessor.ExecuteAsync(
+                packages,
+                x => InitializeItemAsync(x, token),
+                workerCount: 32,
+                token: token);
 
-            foreach (var package in packages)
-            {
-                var item = await InitializeItemAsync(package, token);
-                if (item == null)
-                {
-                    continue;
-                }
+            var list = output.Where(x => x != null).ToList();
 
-                output.Add(item);
-            }
-
-            return new ItemBatch<PackageArchiveMetadata>(output, hasMoreItems: false);
+            return new ItemBatch<PackageArchiveMetadata>(list, hasMoreItems: false);
         }
 
         private async Task<PackageArchiveMetadata> InitializeItemAsync(PackageEntity package, CancellationToken token)

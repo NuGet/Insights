@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
 {
     [DbContext(typeof(SqliteEntityContext))]
-    [Migration("20181226002015_Initial")]
+    [Migration("20190201171419_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -146,7 +146,8 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                         .ValueGeneratedOnAdd();
 
                     b.Property<string>("OriginalValue")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("TEXT COLLATE NOCASE");
 
                     b.Property<string>("Value")
                         .IsRequired();
