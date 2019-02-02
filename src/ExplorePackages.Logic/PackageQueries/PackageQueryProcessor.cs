@@ -20,6 +20,7 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly PackageCommitEnumerator _packageCommitEnumerator;
         private readonly PackageQueryService _queryService;
         private readonly IPackageService _packageService;
+        private readonly IBatchSizeProvider _batchSizeProvider;
         private readonly ISingletonService _singletonService;
         private readonly ILogger<PackageQueryProcessor> _logger;
 
@@ -29,6 +30,7 @@ namespace Knapcode.ExplorePackages.Logic
             PackageCommitEnumerator packageCommitEnumerator,
             PackageQueryService queryService,
             IPackageService packageService,
+            IBatchSizeProvider batchSizeProvider,
             ISingletonService singletonService,
             ILogger<PackageQueryProcessor> logger)
         {
@@ -37,6 +39,7 @@ namespace Knapcode.ExplorePackages.Logic
             _packageCommitEnumerator = packageCommitEnumerator;
             _queryService = queryService;
             _packageService = packageService;
+            _batchSizeProvider = batchSizeProvider;
             _singletonService = singletonService;
             _logger = logger;
         }
@@ -90,7 +93,7 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
-        public async Task ProcessAsync(IReadOnlyList<IPackageQuery> queries, bool reprocess, int batchSize, CancellationToken token)
+        public async Task ProcessAsync(IReadOnlyList<IPackageQuery> queries, bool reprocess, CancellationToken token)
         {
             var bounds = await GetBoundsAsync(queries, reprocess);
             var complete = 0;
@@ -103,7 +106,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                 _logger.LogInformation("Using bounds between {Min:O} and {Max:O}.", bounds.Start, bounds.End);
 
-                var commits = await GetCommitsAsync(bounds, reprocess, batchSize);
+                var commits = await GetCommitsAsync(bounds, reprocess);
                 var packageCount = commits.Sum(x => x.Entities.Count);
                 commitCount = commits.Count;
 
@@ -137,7 +140,7 @@ namespace Knapcode.ExplorePackages.Logic
             while (commitCount > 0);
         }
 
-        private async Task<IReadOnlyList<EntityCommit<PackageEntity>>> GetCommitsAsync(Bounds bounds, bool reprocess, int batchSize)
+        private async Task<IReadOnlyList<EntityCommit<PackageEntity>>> GetCommitsAsync(Bounds bounds, bool reprocess)
         {
             if (!reprocess)
             {
@@ -147,7 +150,7 @@ namespace Knapcode.ExplorePackages.Logic
                         .Include(x => x.V2Package),
                     bounds.Start,
                     bounds.End,
-                    batchSize);
+                    _batchSizeProvider.Get(BatchSizeType.PackageQueries));
             }
             else
             {
@@ -161,7 +164,7 @@ namespace Knapcode.ExplorePackages.Logic
                             .Any(pqm => queryNames.Contains(pqm.PackageQuery.Name))),
                     bounds.Start,
                     bounds.End,
-                    batchSize);
+                    _batchSizeProvider.Get(BatchSizeType.PackageQueries));
             }
         }
 

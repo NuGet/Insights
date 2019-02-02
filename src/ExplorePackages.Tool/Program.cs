@@ -168,6 +168,10 @@ namespace Knapcode.ExplorePackages.Tool
                         "--failure-sleep",
                         "The number of seconds to sleep when the command failed and running as a daemon. Defaults to 30 seconds.",
                         CommandOptionType.SingleValue);
+                    var batchSizeOption = x.Option<int>(
+                        "--batch-size",
+                        "The batch size to use. This overrides the default batch size specific to each operation.",
+                        CommandOptionType.SingleValue);
 
                     command.Configure(x);
 
@@ -186,6 +190,11 @@ namespace Knapcode.ExplorePackages.Tool
                             await InitializeGlobalState(
                                 serviceProvider,
                                 command.IsDatabaseRequired());
+                        }
+
+                        if (batchSizeOption.HasValue())
+                        {
+                            batchSizeProvider.Set(batchSizeOption.ParsedValue);
                         }
 
                         bool success;

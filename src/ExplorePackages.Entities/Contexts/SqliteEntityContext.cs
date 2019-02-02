@@ -69,6 +69,10 @@ namespace Knapcode.ExplorePackages.Entities
                 .Property(x => x.OriginalValue)
                 .HasColumnType("TEXT COLLATE NOCASE");
 
+            modelBuilder
+                .Entity<CatalogPackageEntity>()
+                .HasIndex(x => new { x.LastCommitTimestamp });
+
             // Source: https://stackoverflow.com/a/52738603
             var timestampProperties = modelBuilder
                 .Model

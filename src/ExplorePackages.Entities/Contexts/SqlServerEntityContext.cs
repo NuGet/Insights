@@ -29,5 +29,33 @@ namespace Knapcode.ExplorePackages.Entities
 
             return false;
         }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder
+                .Entity<PackageDependencyEntity>()
+                .ForSqlServerHasIndex(x => x.ParentPackageKey)
+                .ForSqlServerInclude(x => new
+                {
+                    x.BestDependencyPackageKey,
+                    x.DependencyPackageRegistrationKey,
+                    x.FrameworkKey,
+                    x.MinimumDependencyPackageKey,
+                    x.OriginalVersionRange,
+                    x.VersionRange,
+                });
+
+            modelBuilder
+                .Entity<CatalogPackageEntity>()
+                .ForSqlServerHasIndex(x => x.LastCommitTimestamp)
+                .ForSqlServerInclude(x => new
+                {
+                    x.Deleted,
+                    x.FirstCommitTimestamp,
+                    x.Listed,
+                });
+        }
     }
 }

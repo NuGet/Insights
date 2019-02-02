@@ -6,5 +6,6 @@
         int Get(BatchSizeType type);
         void Increase();
         void Reset();
+        void Set(int batchSize);
     }
 }

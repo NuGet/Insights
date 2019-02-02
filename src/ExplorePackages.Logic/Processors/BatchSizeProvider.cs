@@ -31,7 +31,7 @@ namespace Knapcode.ExplorePackages.Logic
             },
             {
                 BatchSizeType.PackageDownloadsToDatabase,
-                new Bounds(1, 1000)
+                new Bounds(50, 1000) // 50 is not a strict minimum but it's too slow if the batch size is much lower.
             },
             {
                 BatchSizeType.PackageQueries,
@@ -54,6 +54,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         private readonly ILogger<BatchSizeProvider> _logger;
         private decimal _currentPercent = 1;
+        private int? _override;
 
         public BatchSizeProvider(ILogger<BatchSizeProvider> logger)
         {
@@ -98,13 +99,20 @@ namespace Knapcode.ExplorePackages.Logic
                 throw new NotSupportedException($"The batch size type '{type}' is not supported.");
             }
 
-            var current = (int)Math.Round(bounds.Initial * _currentPercent);
+            var initial = _override ?? bounds.Initial;
+
+            var current = (int)Math.Round(initial * _currentPercent);
             if (current < bounds.Minimum)
             {
                 return bounds.Minimum;
             }
 
             return current;
+        }
+
+        public void Set(int batchSize)
+        {
+            _override = batchSize;
         }
 
         private class Bounds

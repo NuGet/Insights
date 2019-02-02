@@ -183,9 +183,6 @@ namespace Knapcode.ExplorePackages.Entities
                 .HasKey(x => x.PackageKey);
             modelBuilder
                 .Entity<CatalogPackageEntity>()
-                .HasIndex(x => new { x.LastCommitTimestamp });
-            modelBuilder
-                .Entity<CatalogPackageEntity>()
                 .HasOne(x => x.Package)
                 .WithOne(x => x.CatalogPackage)
                 .HasForeignKey<CatalogPackageEntity>(x => x.PackageKey);
