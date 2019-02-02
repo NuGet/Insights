@@ -268,7 +268,7 @@ namespace Knapcode.ExplorePackages.Tool
             logger.LogInformation("The following user agent will be used: {UserAgent}", UserAgent.UserAgentString);
 
             // Allow 32 concurrent outgoing connections.
-            ServicePointManager.DefaultConnectionLimit = 32;
+            ServicePointManager.DefaultConnectionLimit = 64;
 
             logger.LogInformation("======================" + Environment.NewLine);
         }
