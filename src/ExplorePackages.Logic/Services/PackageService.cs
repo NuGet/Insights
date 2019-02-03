@@ -589,6 +589,7 @@ namespace Knapcode.ExplorePackages.Logic
                 var existingPackages = await entityContext
                     .Packages
                     .Include(x => x.V2Package)
+                    .Include(x => x.CatalogPackage)
                     .Where(x => x.V2Package != null)
                     .Where(p => identities.Contains(p.Identity))
                     .ToListAsync();
@@ -599,7 +600,14 @@ namespace Knapcode.ExplorePackages.Logic
 
                 foreach (var existingPackage in existingPackages)
                 {
-                    existingPackage.V2Package.Listed = false;
+                    // Only unlist the V2 package if the catalog package is deleted. It's possible that we are
+                    // processing an old delete entry in the catalog that was superceded by the package being
+                    // re -pushed. This is the "delete then recreate" flow which should be very rare but does happen
+                    // in practice.
+                    if (existingPackage.CatalogPackage.Deleted)
+                    {
+                        existingPackage.V2Package.Listed = false;
+                    }
                 }
 
                 var commitStopwatch = Stopwatch.StartNew();
