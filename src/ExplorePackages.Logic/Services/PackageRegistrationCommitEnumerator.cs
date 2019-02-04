@@ -61,7 +61,7 @@ namespace Knapcode.ExplorePackages.Logic
                 if (entityContext is SqlServerEntityContext)
                 {
                     command.CommandText = @"
-                        SELECT MAX(pr.PackageRegistrationKey), MAX(pr.Id), MAX(cp.LastCommitTimestamp) AS CommitTimestamp
+                        SELECT TOP(@BatchSize) MAX(pr.PackageRegistrationKey), MAX(pr.Id), MAX(cp.LastCommitTimestamp) AS CommitTimestamp
                         FROM PackageRegistrations pr
                         INNER JOIN Packages p ON pr.PackageRegistrationKey = p.PackageRegistrationKey
                         INNER JOIN CatalogPackages cp ON p.PackageKey = cp.PackageKey
