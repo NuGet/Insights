@@ -38,8 +38,8 @@ namespace Knapcode.ExplorePackages.Logic
         private const string MissingFromCatalogQuery = @"
             SELECT pr.Id, p.Version
             FROM V2Packages v2
-            INNER JOIN PackageRegistrations pr ON pr.PackageRegistrationKey = p.PackageRegistrationKey
             INNER JOIN Packages p ON v2.PackageKey = p.PackageKey
+            INNER JOIN PackageRegistrations pr ON pr.PackageRegistrationKey = p.PackageRegistrationKey
             LEFT OUTER JOIN CatalogPackages cp ON v2.PackageKey = cp.PackageKey
             WHERE cp.PackageKey IS NULL AND v2.CreatedTimestamp < @MaximumCreatedTimestamp";
 
