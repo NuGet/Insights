@@ -71,41 +71,45 @@ namespace Knapcode.ExplorePackages.Logic
                 problems.AddRange(matches.Select(x => new Problem(new PackageIdentity(x.Id, x.Version), queryName)));
             }
 
-            // Find listed status inconsistencies.
-            _logger.LogInformation("Getting mismatched listed status.");
-            var mismatchingListedStatusRecords = await ReadQueryResultsAsync(
-                MismatchingListedStatusQuery,
-                x => { },
-                x => new MismatchingListedStatusRecord(
-                    x.GetString(0),
-                    x.GetString(1),
-                    x.GetBoolean(2),
-                    x.GetBoolean(3)));
-            foreach (var record in mismatchingListedStatusRecords)
+            // TODO: improve SQL Server performance of these queries
+            if (false)
             {
-                var identity = new PackageIdentity(record.Id, record.Version);
-                problems.Add(new Problem(identity, record.V2Listed ? ListedInV2 : ListedInCatalog));
-            }
-
-            // Find packages missing from the catalog.
-            _logger.LogInformation("Getting packages missing from catalog.");
-            var missingFromCatalogIdentities = await ReadQueryResultsAsync(
-                MissingFromCatalogQuery,
-                x =>
+                // Find listed status inconsistencies.
+                _logger.LogInformation("Getting mismatched listed status.");
+                var mismatchingListedStatusRecords = await ReadQueryResultsAsync(
+                    MismatchingListedStatusQuery,
+                    x => { },
+                    x => new MismatchingListedStatusRecord(
+                        x.GetString(0),
+                        x.GetString(1),
+                        x.GetBoolean(2),
+                        x.GetBoolean(3)));
+                foreach (var record in mismatchingListedStatusRecords)
                 {
+                    var identity = new PackageIdentity(record.Id, record.Version);
+                    problems.Add(new Problem(identity, record.V2Listed ? ListedInV2 : ListedInCatalog));
+                }
+
+                // Find packages missing from the catalog.
+                _logger.LogInformation("Getting packages missing from catalog.");
+                var missingFromCatalogIdentities = await ReadQueryResultsAsync(
+                    MissingFromCatalogQuery,
+                    x =>
+                    {
                     // Limit results older than 1 hour since there is a little lag between V2 and catalog.
                     var parameter = x.CreateParameter();
-                    parameter.ParameterName = "MaximumCreatedTimestamp";
-                    parameter.Value = DateTimeOffset.UtcNow.AddHours(-1).Ticks;
-                    parameter.DbType = DbType.Int64;
-                    x.Parameters.Add(parameter);
-                },
-                x => new PackageIdentity(
-                    x.GetString(0),
-                    x.GetString(1)));
-            foreach (var identity in missingFromCatalogIdentities)
-            {
-                problems.Add(new Problem(identity, MissingFromCatalog));
+                        parameter.ParameterName = "MaximumCreatedTimestamp";
+                        parameter.Value = DateTimeOffset.UtcNow.AddHours(-1).Ticks;
+                        parameter.DbType = DbType.Int64;
+                        x.Parameters.Add(parameter);
+                    },
+                    x => new PackageIdentity(
+                        x.GetString(0),
+                        x.GetString(1)));
+                foreach (var identity in missingFromCatalogIdentities)
+                {
+                    problems.Add(new Problem(identity, MissingFromCatalog));
+                }
             }
 
             return problems;
