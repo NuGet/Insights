@@ -56,6 +56,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task<IReadOnlyDictionary<string, PackageRegistrationEntity>> AddPackageRegistrationsAsync(
             IEnumerable<string> ids,
+            bool includeCatalogPackageRegistrations,
             bool includePackages)
         {
             using (var entityContext = await _entityContextFactory.GetAsync())
@@ -63,6 +64,7 @@ namespace Knapcode.ExplorePackages.Logic
                 var registrations = await AddPackageRegistrationsAsync(
                     entityContext,
                     ids,
+                    includeCatalogPackageRegistrations,
                     includePackages);
 
                 await entityContext.SaveChangesAsync();
@@ -105,12 +107,19 @@ namespace Knapcode.ExplorePackages.Logic
         private async Task<IReadOnlyDictionary<string, PackageRegistrationEntity>> AddPackageRegistrationsAsync(
             IEntityContext entityContext,
             IEnumerable<string> ids,
+            bool includeCatalogPackageRegistrations,
             bool includePackages)
         {
             var idSet = new HashSet<string>(ids, StringComparer.OrdinalIgnoreCase);
 
             IQueryable<PackageRegistrationEntity> existingRegistrationsQueryable = entityContext
                 .PackageRegistrations;
+
+            if (includeCatalogPackageRegistrations)
+            {
+                existingRegistrationsQueryable = existingRegistrationsQueryable
+                    .Include(x => x.CatalogPackageRegistration);
+            }
 
             if (includePackages)
             {
@@ -148,13 +157,15 @@ namespace Knapcode.ExplorePackages.Logic
             Func<T, string> getVersion,
             Func<PackageEntity, T, Task> initializePackageFromForeignAsync,
             Func<PackageEntity, T, Task> updatePackageFromForeignAsync,
-            Action<IEntityContext, PackageEntity, PackageEntity> updateExistingPackage)
+            Action<IEntityContext, PackageEntity, PackageEntity> updateExistingPackage,
+            bool includeCatalogPackageRegistrations)
         {
             using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 var packageRegistrations = await AddPackageRegistrationsAsync(
                     entityContext,
                     foreignPackages.Select(getId),
+                    includeCatalogPackageRegistrations: includeCatalogPackageRegistrations,
                     includePackages: false);
 
                 // Create a mapping from package identity to latest package.
@@ -180,6 +191,7 @@ namespace Knapcode.ExplorePackages.Logic
                     }
                     else
                     {
+                        // TODO: remove this step and only use updateExistingPackage, somehow.
                         await updatePackageFromForeignAsync(latestPackage, foreignPackage);
                     }
                 }
@@ -264,7 +276,8 @@ namespace Knapcode.ExplorePackages.Logic
                     {
                         Update(c, pe.PackageArchive, pl.PackageArchive);
                     }
-                });
+                },
+                includeCatalogPackageRegistrations: false);
         }
 
         private void Update(IEntityContext entityContext, PackageArchiveEntity existing, PackageArchiveEntity latest)
@@ -505,7 +518,8 @@ namespace Knapcode.ExplorePackages.Logic
                 {
                     return Task.CompletedTask;
                 },
-                (c, pe, pl) => {});
+                (c, pe, pl) => {},
+                includeCatalogPackageRegistrations: false);
         }
 
         public async Task AddOrUpdatePackagesAsync(IEnumerable<V2Package> v2Packages)
@@ -553,7 +567,8 @@ namespace Knapcode.ExplorePackages.Logic
                         pe.V2Package.LastUpdatedTimestamp = pl.V2Package.LastUpdatedTimestamp;
                         pe.V2Package.Listed = pl.V2Package.Listed;
                     }
-                });
+                },
+                includeCatalogPackageRegistrations: false);
         }
 
         private static V2PackageEntity ToEntity(V2Package v2)
@@ -666,6 +681,18 @@ namespace Knapcode.ExplorePackages.Logic
                 c => c.ParsePackageVersion().ToNormalizedString(),
                 (p, cp) =>
                 {
+                    // Initialize the catalog package registration.
+                    if (p.PackageRegistration.CatalogPackageRegistration == null)
+                    {
+                        p.PackageRegistration.CatalogPackageRegistration = new CatalogPackageRegistrationEntity
+                        {
+                            PackageRegistrationKey = p.PackageRegistration.PackageRegistrationKey,
+                            FirstCommitTimestamp = cp.CommitTimestamp.UtcTicks,
+                            LastCommitTimestamp = cp.CommitTimestamp.UtcTicks,
+                        };
+                    }
+
+                    // Initialize the catalog package.
                     p.CatalogPackage = new CatalogPackageEntity
                     {
                         Deleted = cp.IsPackageDelete(),
@@ -673,11 +700,20 @@ namespace Knapcode.ExplorePackages.Logic
                         LastCommitTimestamp = cp.CommitTimestamp.UtcTicks,
                         Listed = entryToListed[cp],
                     };
-
                     return Task.CompletedTask;
                 },
                 (p, cp) =>
                 {
+                    // Update the catalog package registration.
+                    p.PackageRegistration.CatalogPackageRegistration.FirstCommitTimestamp = Math.Min(
+                        p.PackageRegistration.CatalogPackageRegistration.FirstCommitTimestamp,
+                        cp.CommitTimestamp.UtcTicks);
+
+                    p.PackageRegistration.CatalogPackageRegistration.FirstCommitTimestamp = Math.Max(
+                        p.PackageRegistration.CatalogPackageRegistration.LastCommitTimestamp,
+                        cp.CommitTimestamp.UtcTicks);
+
+                    // Update the catalog package.
                     if (p.CatalogPackage.LastCommitTimestamp < cp.CommitTimestamp.UtcTicks)
                     {
                         p.CatalogPackage.Deleted = cp.IsPackageDelete();
@@ -696,6 +732,23 @@ namespace Knapcode.ExplorePackages.Logic
                 },
                 (c, pe, pl) =>
                 {
+                    // Update the catalog package registration.
+                    if (pe.PackageRegistration.CatalogPackageRegistration == null)
+                    {
+                        pe.PackageRegistration.CatalogPackageRegistration = pl.PackageRegistration.CatalogPackageRegistration;
+                    }
+                    else
+                    {
+                        pe.PackageRegistration.CatalogPackageRegistration.FirstCommitTimestamp = Math.Min(
+                           pe.PackageRegistration.CatalogPackageRegistration.FirstCommitTimestamp,
+                           pl.CatalogPackage.FirstCommitTimestamp);
+
+                        pe.PackageRegistration.CatalogPackageRegistration.LastCommitTimestamp = Math.Max(
+                            pe.PackageRegistration.CatalogPackageRegistration.LastCommitTimestamp,
+                            pl.CatalogPackage.LastCommitTimestamp);
+                    }
+
+                    // Update the catalog package.
                     if (pe.CatalogPackage == null)
                     {
                         pe.CatalogPackage = pl.CatalogPackage;
@@ -716,7 +769,8 @@ namespace Knapcode.ExplorePackages.Logic
                             pe.CatalogPackage.LastCommitTimestamp,
                             pl.CatalogPackage.LastCommitTimestamp);
                     }
-                });
+                },
+                includeCatalogPackageRegistrations: true);
         }
     }
 }

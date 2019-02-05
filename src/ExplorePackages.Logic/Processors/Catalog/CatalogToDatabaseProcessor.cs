@@ -63,7 +63,7 @@ namespace Knapcode.ExplorePackages.Logic
             
             await _catalogService.AddOrUpdateAsync(page, leaves, identityToPackageKey, entryToListed);
 
-            await _packageService.SetDeletedPackagesAsUnlistedInV2Async(latestLeaves.Where(x => x.IsPackageDelete()));
+            await _packageService.SetDeletedPackagesAsUnlistedInV2Async(latestLeaves);
         }
 
         private async Task<bool> IsListedAsync(CatalogLeafItem entry)

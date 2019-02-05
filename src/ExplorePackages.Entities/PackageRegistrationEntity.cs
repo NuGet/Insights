@@ -9,6 +9,7 @@ namespace Knapcode.ExplorePackages.Entities
         public long PackageRegistrationKey { get; set; }
         public string Id { get; set; }
 
+        public CatalogPackageRegistrationEntity CatalogPackageRegistration { get; set; }
         public List<PackageEntity> Packages { get; set; }
         public List<PackageDependencyEntity> PackageDependents { get; set; }
     }

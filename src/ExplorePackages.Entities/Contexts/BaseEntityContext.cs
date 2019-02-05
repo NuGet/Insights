@@ -24,6 +24,7 @@ namespace Knapcode.ExplorePackages.Entities
         public DbSet<PackageQueryEntity> PackageQueries { get; set; }
         public DbSet<PackageQueryMatchEntity> PackageQueryMatches { get; set; }
         public DbSet<V2PackageEntity> V2PackageEntities { get; set; }
+        public DbSet<CatalogPackageRegistrationEntity> CatalogPackageRegistrations { get; set; }
         public DbSet<CatalogPackageEntity> CatalogPackages { get; set; }
         public DbSet<PackageDownloadsEntity> PackageDownloads { get; set; }
         public DbSet<PackageArchiveEntity> PackageArchives { get; set; }
@@ -174,6 +175,18 @@ namespace Knapcode.ExplorePackages.Entities
                 .HasOne(x => x.Package)
                 .WithOne(x => x.V2Package)
                 .HasForeignKey<V2PackageEntity>(x => x.PackageKey);
+
+            modelBuilder
+                .Entity<CatalogPackageRegistrationEntity>()
+                .ToTable("CatalogPackageRegistrations");
+            modelBuilder
+                .Entity<CatalogPackageRegistrationEntity>()
+                .HasKey(x => x.PackageRegistrationKey);
+            modelBuilder
+                .Entity<CatalogPackageRegistrationEntity>()
+                .HasOne(x => x.PackageRegistration)
+                .WithOne(x => x.CatalogPackageRegistration)
+                .HasForeignKey<CatalogPackageRegistrationEntity>(x => x.PackageRegistrationKey);
 
             modelBuilder
                 .Entity<CatalogPackageEntity>()

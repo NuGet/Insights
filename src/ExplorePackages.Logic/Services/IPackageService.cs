@@ -6,7 +6,7 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public interface IPackageService
     {
-        Task<IReadOnlyDictionary<string, PackageRegistrationEntity>> AddPackageRegistrationsAsync(IEnumerable<string> ids, bool includePackages);
+        Task<IReadOnlyDictionary<string, PackageRegistrationEntity>> AddPackageRegistrationsAsync(IEnumerable<string> ids, bool includeCatalogPackageRegistrations, bool includePackages);
         Task<IReadOnlyDictionary<string, long>> AddOrUpdatePackagesAsync(IEnumerable<CatalogLeafItem> entries, IReadOnlyDictionary<CatalogLeafItem, bool> entryToListed);
         Task<IReadOnlyDictionary<string, long>> AddOrUpdatePackagesAsync(IEnumerable<PackageIdentity> identities);
         Task AddOrUpdatePackagesAsync(IEnumerable<PackageArchiveMetadata> metadataSequence);

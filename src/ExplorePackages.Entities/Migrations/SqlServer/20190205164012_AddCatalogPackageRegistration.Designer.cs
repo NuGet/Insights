@@ -4,14 +4,16 @@ using Knapcode.ExplorePackages.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
 {
     [DbContext(typeof(SqlServerEntityContext))]
-    partial class SqlServerEntityContextModelSnapshot : ModelSnapshot
+    [Migration("20190205164012_AddCatalogPackageRegistration")]
+    partial class AddCatalogPackageRegistration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

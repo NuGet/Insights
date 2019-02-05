@@ -279,7 +279,10 @@ namespace Knapcode.ExplorePackages.Logic
                 .Where(x => StrictPackageIdValidator.IsValid(x))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
-            var idToPackageRegistration = await _packageService.AddPackageRegistrationsAsync(ids, includePackages: false);
+            var idToPackageRegistration = await _packageService.AddPackageRegistrationsAsync(
+                ids,
+                includePackages: false,
+                includeCatalogPackageRegistrations: false);
 
             using (var entityContext = await _entityContextFactory.GetAsync())
             {

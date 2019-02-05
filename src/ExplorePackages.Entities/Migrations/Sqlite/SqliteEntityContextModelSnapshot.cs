@@ -86,6 +86,19 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                     b.ToTable("CatalogPackages");
                 });
 
+            modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CatalogPackageRegistrationEntity", b =>
+                {
+                    b.Property<long>("PackageRegistrationKey");
+
+                    b.Property<long>("FirstCommitTimestamp");
+
+                    b.Property<long>("LastCommitTimestamp");
+
+                    b.HasKey("PackageRegistrationKey");
+
+                    b.ToTable("CatalogPackageRegistrations");
+                });
+
             modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CatalogPageEntity", b =>
                 {
                     b.Property<long>("CatalogPageKey")
@@ -473,6 +486,14 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                     b.HasOne("Knapcode.ExplorePackages.Entities.PackageEntity", "Package")
                         .WithOne("CatalogPackage")
                         .HasForeignKey("Knapcode.ExplorePackages.Entities.CatalogPackageEntity", "PackageKey")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CatalogPackageRegistrationEntity", b =>
+                {
+                    b.HasOne("Knapcode.ExplorePackages.Entities.PackageRegistrationEntity", "PackageRegistration")
+                        .WithOne("CatalogPackageRegistration")
+                        .HasForeignKey("Knapcode.ExplorePackages.Entities.CatalogPackageRegistrationEntity", "PackageRegistrationKey")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
