@@ -73,6 +73,10 @@ namespace Knapcode.ExplorePackages.Entities
                 .Entity<CatalogPackageEntity>()
                 .HasIndex(x => new { x.LastCommitTimestamp });
 
+            modelBuilder
+                .Entity<CatalogPackageRegistrationEntity>()
+                .HasIndex(x => new { x.LastCommitTimestamp });
+
             // Source: https://stackoverflow.com/a/52738603
             var timestampProperties = modelBuilder
                 .Model

@@ -56,6 +56,14 @@ namespace Knapcode.ExplorePackages.Entities
                     x.FirstCommitTimestamp,
                     x.Listed,
                 });
+
+            modelBuilder
+                .Entity<CatalogPackageRegistrationEntity>()
+                .ForSqlServerHasIndex(x => x.LastCommitTimestamp)
+                .ForSqlServerInclude(x => new
+                {
+                    x.FirstCommitTimestamp,
+                });
         }
     }
 }

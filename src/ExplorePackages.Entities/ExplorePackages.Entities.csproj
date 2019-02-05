@@ -5,6 +5,10 @@
     <RootNamespace>Knapcode.ExplorePackages.Entities</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Migrations\Sqlite\20190205163932_AddCatalogPackageRegistration.cs" />
+    <Compile Remove="Migrations\SqlServer\20190205164012_AddCatalogPackageRegistration.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.0" />

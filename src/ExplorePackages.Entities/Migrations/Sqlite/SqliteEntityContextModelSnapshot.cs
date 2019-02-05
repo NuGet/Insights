@@ -96,6 +96,8 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
 
                     b.HasKey("PackageRegistrationKey");
 
+                    b.HasIndex("LastCommitTimestamp");
+
                     b.ToTable("CatalogPackageRegistrations");
                 });
 

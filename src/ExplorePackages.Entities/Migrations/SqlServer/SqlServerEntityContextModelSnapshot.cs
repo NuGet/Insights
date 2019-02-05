@@ -102,6 +102,9 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
 
                     b.HasKey("PackageRegistrationKey");
 
+                    b.HasIndex("LastCommitTimestamp")
+                        .HasAnnotation("SqlServer:Include", new[] { "FirstCommitTimestamp" });
+
                     b.ToTable("CatalogPackageRegistrations");
                 });
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
 {
@@ -24,6 +25,12 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
                         principalColumn: "PackageRegistrationKey",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CatalogPackageRegistrations_LastCommitTimestamp",
+                table: "CatalogPackageRegistrations",
+                column: "LastCommitTimestamp")
+                .Annotation("SqlServer:Include", new[] { "FirstCommitTimestamp" });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

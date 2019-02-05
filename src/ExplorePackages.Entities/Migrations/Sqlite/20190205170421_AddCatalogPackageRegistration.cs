@@ -24,6 +24,11 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                         principalColumn: "PackageRegistrationKey",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CatalogPackageRegistrations_LastCommitTimestamp",
+                table: "CatalogPackageRegistrations",
+                column: "LastCommitTimestamp");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

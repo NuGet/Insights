@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
 {
     [DbContext(typeof(SqlServerEntityContext))]
-    [Migration("20190205164012_AddCatalogPackageRegistration")]
+    [Migration("20190205170433_AddCatalogPackageRegistration")]
     partial class AddCatalogPackageRegistration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -103,6 +103,9 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
                     b.Property<long>("LastCommitTimestamp");
 
                     b.HasKey("PackageRegistrationKey");
+
+                    b.HasIndex("LastCommitTimestamp")
+                        .HasAnnotation("SqlServer:Include", new[] { "FirstCommitTimestamp" });
 
                     b.ToTable("CatalogPackageRegistrations");
                 });

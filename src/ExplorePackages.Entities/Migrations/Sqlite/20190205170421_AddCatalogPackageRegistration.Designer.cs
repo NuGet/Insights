@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
 {
     [DbContext(typeof(SqliteEntityContext))]
-    [Migration("20190205163932_AddCatalogPackageRegistration")]
+    [Migration("20190205170421_AddCatalogPackageRegistration")]
     partial class AddCatalogPackageRegistration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -97,6 +97,8 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                     b.Property<long>("LastCommitTimestamp");
 
                     b.HasKey("PackageRegistrationKey");
+
+                    b.HasIndex("LastCommitTimestamp");
 
                     b.ToTable("CatalogPackageRegistrations");
                 });
