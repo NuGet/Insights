@@ -104,8 +104,16 @@ namespace Knapcode.ExplorePackages.Logic
                     using (var textReader = new StreamReader(stream))
                     using (var jsonReader = new JsonTextReader(textReader))
                     {
-                        var result = serializer.Deserialize<T>(jsonReader);
-                        return Task.FromResult(result);
+                        try
+                        {
+                            var result = serializer.Deserialize<T>(jsonReader);
+                            return Task.FromResult(result);
+                        }
+                        catch
+                        {
+                            logger.LogWarning("Unable to deserialize {Url} as type {TypeName}.", url, typeof(T).Name);
+                            throw;
+                        }
                     }
                 },
                 nuGetLogger,
