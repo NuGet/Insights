@@ -146,6 +146,7 @@ namespace Knapcode.ExplorePackages.Logic
                 _processor.CursorName,
                 firstCommitTimetamp,
                 lastCommitTimestamp);
+            _logger.LogInformation("Starting with skip value {Skip}.", skip);
 
             var hasMore = true;
             while (hasMore)
@@ -168,6 +169,7 @@ namespace Knapcode.ExplorePackages.Logic
                         firstCommitTimetamp,
                         lastCommitTimestamp,
                         skip);
+                    _logger.LogInformation("Setting skip value to {Skip}.", skip);
                     _logger.LogInformation(
                         "Done processing batch of {BatchItemCount} {ItemTypeName}. {ElapsedMilliseconds}ms",
                         batch.Items.Count,
