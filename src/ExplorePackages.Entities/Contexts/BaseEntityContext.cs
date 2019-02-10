@@ -34,6 +34,7 @@ namespace Knapcode.ExplorePackages.Entities
         public DbSet<CatalogLeafEntity> CatalogLeaves { get; set; }
         public DbSet<FrameworkEntity> Frameworks { get; set; }
         public DbSet<PackageDependencyEntity> PackageDependencies { get; set; }
+        public DbSet<CommitCollectorSequentialProgressEntity> CommitCollectorSequentialProgress { get; set; }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -373,6 +374,21 @@ namespace Knapcode.ExplorePackages.Entities
                 .HasOne(x => x.BestDependencyPackage)
                 .WithMany(x => x.BestPackageDependents)
                 .HasForeignKey(x => x.BestDependencyPackageKey);
+
+            modelBuilder
+                .Entity<CommitCollectorSequentialProgressEntity>()
+                .ToTable("CommitCollectorSequentialProgress");
+            modelBuilder
+                .Entity<CommitCollectorSequentialProgressEntity>()
+                .HasKey(x => x.CommitCollectorSequentialProgressKey);
+            modelBuilder
+                .Entity<CommitCollectorSequentialProgressEntity>()
+                .Property(x => x.Name)
+                .IsRequired();
+            modelBuilder
+                .Entity<CommitCollectorSequentialProgressEntity>()
+                .HasIndex(x => new { x.Name })
+                .IsUnique();
         }
     }
 }

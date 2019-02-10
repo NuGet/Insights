@@ -125,6 +125,29 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
                     b.ToTable("CatalogPages");
                 });
 
+            modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CommitCollectorSequentialProgressEntity", b =>
+                {
+                    b.Property<long>("CommitCollectorSequentialProgressKey")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<long>("FirstCommitTimestamp");
+
+                    b.Property<long>("LastCommitTimestamp");
+
+                    b.Property<string>("Name")
+                        .IsRequired();
+
+                    b.Property<int>("Skip");
+
+                    b.HasKey("CommitCollectorSequentialProgressKey");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("CommitCollectorSequentialProgress");
+                });
+
             modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CursorEntity", b =>
                 {
                     b.Property<long>("CursorKey")

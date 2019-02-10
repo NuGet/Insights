@@ -14,6 +14,7 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly CursorService _cursorService;
         private readonly ICommitEnumerator<TEntity> _enumerator;
         private readonly ICommitProcessor<TEntity, TItem> _processor;
+        private readonly CommitCollectorSequentialProgressService _sequentialProgressService;
         private readonly ISingletonService _singletonService;
         private readonly ILogger _logger;
 
@@ -21,12 +22,14 @@ namespace Knapcode.ExplorePackages.Logic
             CursorService cursorService,
             ICommitEnumerator<TEntity> enumerator,
             ICommitProcessor<TEntity, TItem> processor,
+            CommitCollectorSequentialProgressService sequentialProgressService,
             ISingletonService singletonService,
             ILogger logger)
         {
             _cursorService = cursorService;
             _enumerator = enumerator;
             _processor = processor;
+            _sequentialProgressService = sequentialProgressService;
             _singletonService = singletonService;
             _logger = logger;
         }
@@ -61,28 +64,28 @@ namespace Knapcode.ExplorePackages.Logic
                         typeof(TEntity).Name,
                         min,
                         max);
+
+                    switch (processMode)
+                    {
+                        case ProcessMode.Sequentially:
+                            await ProcessSequentiallyAsync(commits, token);
+                            break;
+                        case ProcessMode.TaskQueue:
+                            await ProcessTaskQueueAsync(commits, token);
+                            break;
+                        default:
+                            throw new NotImplementedException();
+                    }
+
+                    if (commits.Any())
+                    {
+                        _logger.LogInformation("Cursor {CursorName} moving to {Start:O}.", _processor.CursorName, start);
+                        await _cursorService.SetValueAsync(_processor.CursorName, start);
+                    }
                 }
                 else
                 {
                     _logger.LogInformation("No more commits were found within the bounds.");
-                }
-
-                switch (processMode)
-                {
-                    case ProcessMode.Sequentially:
-                        await ProcessSequentiallyAsync(commits, token);
-                        break;
-                    case ProcessMode.TaskQueue:
-                        await ProcessTaskQueueAsync(commits, token);
-                        break;
-                    default:
-                        throw new NotImplementedException();
-                }
-
-                if (commits.Any())
-                {
-                    _logger.LogInformation("Cursor {CursorName} moving to {Start:O}.", _processor.CursorName, start);
-                    await _cursorService.SetValueAsync(_processor.CursorName, start);
                 }
             }
             while (commitCount > 0);
@@ -136,7 +139,14 @@ namespace Knapcode.ExplorePackages.Logic
                 .SelectMany(x => x.Entities)
                 .ToList();
 
-            var skip = 0;
+            var firstCommitTimetamp = commits.Min(x => x.CommitTimestamp);
+            var lastCommitTimestamp = commits.Max(x => x.CommitTimestamp);
+
+            var skip = await _sequentialProgressService.GetSkipAsync(
+                _processor.CursorName,
+                firstCommitTimetamp,
+                lastCommitTimestamp);
+
             var hasMore = true;
             while (hasMore)
             {
@@ -153,6 +163,11 @@ namespace Knapcode.ExplorePackages.Logic
                         stopwatch.ElapsedMilliseconds);
                     stopwatch.Restart();
                     await _processor.ProcessBatchAsync(batch.Items);
+                    await _sequentialProgressService.SetSkipAsync(
+                        _processor.CursorName,
+                        firstCommitTimetamp,
+                        lastCommitTimestamp,
+                        skip);
                     _logger.LogInformation(
                         "Done processing batch of {BatchItemCount} {ItemTypeName}. {ElapsedMilliseconds}ms",
                         batch.Items.Count,

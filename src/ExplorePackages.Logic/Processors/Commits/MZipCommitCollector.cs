@@ -9,11 +9,13 @@ namespace Knapcode.ExplorePackages.Logic
             CursorService cursorService,
             ICommitEnumerator<PackageEntity> enumerator,
             MZipCommitProcessor processor,
+            CommitCollectorSequentialProgressService sequentialProgressService,
             ISingletonService singletonService,
             ILogger<MZipCommitCollector> logger) : base(
                 cursorService,
                 enumerator,
                 processor,
+                sequentialProgressService,
                 singletonService,
                 logger)
         {
