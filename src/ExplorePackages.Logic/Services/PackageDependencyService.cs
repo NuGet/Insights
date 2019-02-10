@@ -189,6 +189,10 @@ namespace Knapcode.ExplorePackages.Logic
                 using (var bestCommand = connection.CreateCommand())
                 using (var minimumAndBestCommand = connection.CreateCommand())
                 {
+                    minimumCommand.Transaction = transaction;
+                    bestCommand.Transaction = transaction;
+                    minimumAndBestCommand.Transaction = transaction;
+
                     minimumCommand.CommandText = @"
                         UPDATE PackageDependencies
                         SET MinimumDependencyPackageKey = @Minimum
@@ -202,44 +206,60 @@ namespace Knapcode.ExplorePackages.Logic
                         SET MinimumDependencyPackageKey = @Minimum, BestDependencyPackageKey = @Best
                         WHERE PackageDependencyKey = @Key";
 
-                    var minimumParameter = minimumCommand.CreateParameter();
-                    minimumParameter.ParameterName = "Minimum";
-                    minimumParameter.DbType = DbType.Int64;
-                    minimumCommand.Parameters.Add(minimumParameter);
-                    minimumAndBestCommand.Parameters.Add(minimumParameter);
+                    var keyForMinimumParameter = minimumCommand.CreateParameter();
+                    keyForMinimumParameter.ParameterName = "Key";
+                    keyForMinimumParameter.DbType = DbType.Int64;
+                    minimumCommand.Parameters.Add(keyForMinimumParameter);
 
-                    var bestParameter = bestCommand.CreateParameter();
-                    bestParameter.ParameterName = "Best";
-                    bestParameter.DbType = DbType.Int64;
-                    bestCommand.Parameters.Add(bestParameter);
-                    minimumAndBestCommand.Parameters.Add(bestParameter);
+                    var minimumForMinimumParameter = minimumCommand.CreateParameter();
+                    minimumForMinimumParameter.ParameterName = "Minimum";
+                    minimumForMinimumParameter.DbType = DbType.Int64;
+                    minimumCommand.Parameters.Add(minimumForMinimumParameter);
 
-                    var keyParameter = minimumAndBestCommand.CreateParameter();
-                    keyParameter.ParameterName = "Key";
-                    keyParameter.DbType = DbType.Int64;
-                    minimumCommand.Parameters.Add(keyParameter);
-                    bestCommand.Parameters.Add(keyParameter);
-                    minimumAndBestCommand.Parameters.Add(keyParameter);
+                    var keyForBestParameter = bestCommand.CreateParameter();
+                    keyForBestParameter.ParameterName = "Key";
+                    keyForBestParameter.DbType = DbType.Int64;
+                    bestCommand.Parameters.Add(keyForBestParameter);
+
+                    var bestForBestParameter = bestCommand.CreateParameter();
+                    bestForBestParameter.ParameterName = "Best";
+                    bestForBestParameter.DbType = DbType.Int64;
+                    bestCommand.Parameters.Add(bestForBestParameter);
+
+                    var keyForMinimumAndBestParameter = minimumAndBestCommand.CreateParameter();
+                    keyForMinimumAndBestParameter.ParameterName = "Key";
+                    keyForMinimumAndBestParameter.DbType = DbType.Int64;
+                    minimumAndBestCommand.Parameters.Add(keyForMinimumAndBestParameter);
+
+                    var minimumForMinimumAndBestParameter = minimumAndBestCommand.CreateParameter();
+                    minimumForMinimumAndBestParameter.ParameterName = "Minimum";
+                    minimumForMinimumAndBestParameter.DbType = DbType.Int64;
+                    minimumAndBestCommand.Parameters.Add(minimumForMinimumAndBestParameter);
+
+                    var bestForMinimumAndBestParameter = minimumAndBestCommand.CreateParameter();
+                    bestForMinimumAndBestParameter.ParameterName = "Best";
+                    bestForMinimumAndBestParameter.DbType = DbType.Int64;
+                    minimumAndBestCommand.Parameters.Add(bestForMinimumAndBestParameter);
 
                     foreach (var update in updates.MinimumUpdates)
                     {
-                        keyParameter.Value = update.Key;
-                        minimumParameter.Value = (object)update.Value ?? DBNull.Value;
+                        keyForMinimumParameter.Value = update.Key;
+                        minimumForMinimumParameter.Value = (object)update.Value ?? DBNull.Value;
                         changes += await minimumCommand.ExecuteNonQueryAsync();
                     }
 
                     foreach (var update in updates.BestUpdates)
                     {
-                        keyParameter.Value = update.Key;
-                        bestParameter.Value = (object)update.Value ?? DBNull.Value;
+                        keyForBestParameter.Value = update.Key;
+                        bestForBestParameter.Value = (object)update.Value ?? DBNull.Value;
                         changes += await bestCommand.ExecuteNonQueryAsync();
                     }
 
                     foreach (var update in updates.MinimumAndBestUpdates)
                     {
-                        keyParameter.Value = update.Key;
-                        minimumParameter.Value = (object)update.Value.MinimumDependencyPackageKey ?? DBNull.Value;
-                        bestParameter.Value = (object)update.Value.BestDependencyPackageKey ?? DBNull.Value;
+                        keyForMinimumAndBestParameter.Value = update.Key;
+                        minimumForMinimumAndBestParameter.Value = (object)update.Value.MinimumDependencyPackageKey ?? DBNull.Value;
+                        bestForMinimumAndBestParameter.Value = (object)update.Value.BestDependencyPackageKey ?? DBNull.Value;
                         changes += await minimumAndBestCommand.ExecuteNonQueryAsync();
                     }
 

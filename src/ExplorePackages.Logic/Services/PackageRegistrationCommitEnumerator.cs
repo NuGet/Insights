@@ -61,24 +61,20 @@ namespace Knapcode.ExplorePackages.Logic
                 if (entityContext is SqlServerEntityContext)
                 {
                     command.CommandText = @"
-                        SELECT TOP(@BatchSize) MAX(pr.PackageRegistrationKey), MAX(pr.Id), MAX(cp.LastCommitTimestamp) AS CommitTimestamp
+                        SELECT TOP(@BatchSize) pr.PackageRegistrationKey, pr.Id, cpr.LastCommitTimestamp
                         FROM PackageRegistrations pr
-                        INNER JOIN Packages p ON pr.PackageRegistrationKey = p.PackageRegistrationKey
-                        INNER JOIN CatalogPackages cp ON p.PackageKey = cp.PackageKey
-                        WHERE cp.LastCommitTimestamp > @Start AND cp.LastCommitTimestamp <= @End
-                        GROUP BY pr.PackageRegistrationKey
-                        ORDER BY MAX(cp.LastCommitTimestamp) ASC";
+                        INNER JOIN CatalogPackageRegistrations cpr ON cpr.PackageRegistrationKey = pr.PackageRegistrationKey
+                        WHERE cpr.LastCommitTimestamp > @Start AND cpr.LastCommitTimestamp <= @End
+                        ORDER BY cpr.LastCommitTimestamp ASC";
                 }
                 else if (entityContext is SqliteEntityContext)
                 {
                     command.CommandText = @"
-                        SELECT MAX(pr.PackageRegistrationKey), MAX(pr.Id), MAX(cp.LastCommitTimestamp) AS CommitTimestamp
+                        SELECT pr.PackageRegistrationKey, pr.Id, cpr.LastCommitTimestamp
                         FROM PackageRegistrations pr
-                        INNER JOIN Packages p ON pr.PackageRegistrationKey = p.PackageRegistrationKey
-                        INNER JOIN CatalogPackages cp ON p.PackageKey = cp.PackageKey
-                        WHERE cp.LastCommitTimestamp > @Start AND cp.LastCommitTimestamp <= @End
-                        GROUP BY pr.PackageRegistrationKey
-                        ORDER BY MAX(cp.LastCommitTimestamp) ASC
+                        INNER JOIN CatalogPackageRegistrations cpr ON cpr.PackageRegistrationKey = pr.PackageRegistrationKey
+                        WHERE cpr.LastCommitTimestamp > @Start AND cpr.LastCommitTimestamp <= @End
+                        ORDER BY cpr.LastCommitTimestamp ASC
                         LIMIT @BatchSize";
                 }
                 else
