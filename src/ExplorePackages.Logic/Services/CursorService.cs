@@ -36,6 +36,18 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
+        public async Task<IReadOnlyList<string>> GetAllNamesAsync()
+        {
+            using (var entityContext = await _entityContextFactory.GetAsync())
+            {
+                return await entityContext
+                    .Cursors
+                    .OrderBy(x => x.Name)
+                    .Select(x => x.Name)
+                    .ToListAsync();
+            }
+        }
+
         public async Task<DateTimeOffset> GetMinimumAsync(IReadOnlyList<string> names)
         {
             using (var entityContext = await _entityContextFactory.GetAsync())

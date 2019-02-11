@@ -37,6 +37,7 @@ namespace Knapcode.ExplorePackages.Tool
             { "mzip-to-database", typeof(MZipToDatabaseCommand) },
             { "package-queries", typeof(PackageQueriesCommand) },
             { "reprocess-cross-check-discrepancies", typeof(ReprocessCrossCheckDiscrepanciesCommand) },
+            { "reset-cursor", typeof(ResetCursorCommand) },
             { "sandbox", typeof(SandboxCommand) },
             { "show-problems", typeof(ShowProblemsCommand) },
             { "show-query-results", typeof(ShowQueryResultsCommand) },
