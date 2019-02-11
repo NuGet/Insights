@@ -119,12 +119,17 @@ namespace Knapcode.ExplorePackages.Logic
         /// <returns>The version range.</returns>
         public static VersionRange ParseRange(this CatalogPackageDependency packageDependency)
         {
-            if (string.IsNullOrEmpty(packageDependency.Range))
+            // Server side treats invalid version ranges as empty strings.
+            // Source: https://github.com/NuGet/NuGet.Services.Metadata/blob/382c214c60993edfd7158bc6d223fafeebbc920c/src/Catalog/Helpers/NuGetVersionUtility.cs#L25-L34
+            // Client side treats empty string version ranges as the "all" range.
+            // Source: https://github.com/NuGet/NuGet.Client/blob/849063018d8ee08625774a2dcd07ab84224dabb9/src/NuGet.Core/NuGet.Protocol/DependencyInfo/RegistrationUtility.cs#L20-L30
+            // Example: https://api.nuget.org/v3/catalog0/data/2016.03.14.21.19.28/servicestack.extras.serilog.2.0.1.json
+            if (!VersionRange.TryParse(packageDependency.Range, out var parsed))
             {
                 return VersionRange.All;
             }
 
-            return VersionRange.Parse(packageDependency.Range);
+            return parsed;
         }
 
         /// <summary>
