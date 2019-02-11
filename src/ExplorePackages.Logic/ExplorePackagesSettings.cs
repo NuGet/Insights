@@ -10,7 +10,6 @@ namespace Knapcode.ExplorePackages.Logic
 
             DatabaseType = DatabaseType.Sqlite;
             DatabaseConnectionString = "Data Source=" + Path.Combine(currentDirectory, "Knapcode.ExplorePackages.sqlite3");
-            PackagePath = Path.Combine(currentDirectory, "packages");
             RunConsistencyChecks = true;
             RunBoringQueries = false;
             GalleryBaseUrl = "https://www.nuget.org";
@@ -26,7 +25,6 @@ namespace Knapcode.ExplorePackages.Logic
 
         public DatabaseType DatabaseType { get; set; }
         public string DatabaseConnectionString { get; set; }
-        public string PackagePath { get; set; }
         public bool RunConsistencyChecks { get; set; }
         public bool RunBoringQueries { get; set; }
         public string GalleryBaseUrl { get; set; }
