@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
 {
     [DbContext(typeof(SqlServerEntityContext))]
-    [Migration("20190210195646_AddCommitCollectorSequentialProgress")]
-    partial class AddCommitCollectorSequentialProgress
+    [Migration("20190210231206_AddCommitCollectorProgressTokens")]
+    partial class AddCommitCollectorProgressTokens
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -127,9 +127,9 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
                     b.ToTable("CatalogPages");
                 });
 
-            modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CommitCollectorSequentialProgressEntity", b =>
+            modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CommitCollectorProgressTokenEntity", b =>
                 {
-                    b.Property<long>("CommitCollectorSequentialProgressKey")
+                    b.Property<long>("CommitCollectorProgressTokenKey")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -140,14 +140,14 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
                     b.Property<string>("Name")
                         .IsRequired();
 
-                    b.Property<int>("Skip");
+                    b.Property<string>("SerializedProgressToken");
 
-                    b.HasKey("CommitCollectorSequentialProgressKey");
+                    b.HasKey("CommitCollectorProgressTokenKey");
 
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("CommitCollectorSequentialProgress");
+                    b.ToTable("CommitCollectorProgressTokens");
                 });
 
             modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CursorEntity", b =>

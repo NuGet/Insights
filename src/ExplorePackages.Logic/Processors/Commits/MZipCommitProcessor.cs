@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class MZipCommitProcessor : ICommitProcessor<PackageEntity, PackageEntity>
+    public class MZipCommitProcessor : ICommitProcessor<PackageEntity, PackageEntity, object>
     {
         private readonly MZipStore _mZipStore;
         private readonly IBatchSizeProvider _batchSizeProvider;
@@ -28,9 +29,19 @@ namespace Knapcode.ExplorePackages.Logic
 
         public int BatchSize => _batchSizeProvider.Get(BatchSizeType.MZip);
 
-        public Task<ItemBatch<PackageEntity>> InitializeItemsAsync(
+        public object DeserializeProgressToken(string serializedProgressToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string SerializeProgressToken(object progressToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ItemBatch<PackageEntity, object>> InitializeItemsAsync(
             IReadOnlyList<PackageEntity> packages,
-            int skip,
+            object progressToken,
             CancellationToken token)
         {
             var output = new List<PackageEntity>();
@@ -45,9 +56,7 @@ namespace Knapcode.ExplorePackages.Logic
                 output.Add(package);
             }
 
-            return Task.FromResult(new ItemBatch<PackageEntity>(
-                output,
-                hasMoreItems: false));
+            return Task.FromResult(new ItemBatch<PackageEntity, object>(output));
         }
 
         public async Task ProcessBatchAsync(IReadOnlyList<PackageEntity> batch)

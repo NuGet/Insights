@@ -2,29 +2,29 @@
 
 namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
 {
-    public partial class AddCommitCollectorSequentialProgress : Migration
+    public partial class AddCommitCollectorProgressTokens : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "CommitCollectorSequentialProgress",
+                name: "CommitCollectorProgressTokens",
                 columns: table => new
                 {
-                    CommitCollectorSequentialProgressKey = table.Column<long>(nullable: false)
+                    CommitCollectorProgressTokenKey = table.Column<long>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(nullable: false),
                     FirstCommitTimestamp = table.Column<long>(nullable: false),
                     LastCommitTimestamp = table.Column<long>(nullable: false),
-                    Skip = table.Column<int>(nullable: false)
+                    SerializedProgressToken = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CommitCollectorSequentialProgress", x => x.CommitCollectorSequentialProgressKey);
+                    table.PrimaryKey("PK_CommitCollectorProgressTokens", x => x.CommitCollectorProgressTokenKey);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_CommitCollectorSequentialProgress_Name",
-                table: "CommitCollectorSequentialProgress",
+                name: "IX_CommitCollectorProgressTokens_Name",
+                table: "CommitCollectorProgressTokens",
                 column: "Name",
                 unique: true);
         }
@@ -32,7 +32,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "CommitCollectorSequentialProgress");
+                name: "CommitCollectorProgressTokens");
         }
     }
 }

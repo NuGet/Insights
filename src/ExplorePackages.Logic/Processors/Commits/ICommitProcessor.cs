@@ -4,12 +4,14 @@ using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public interface ICommitProcessor<TEntity, TItem>
+    public interface ICommitProcessor<TEntity, TItem, TProgressToken>
     {
         string CursorName { get; }
         IReadOnlyList<string> DependencyCursorNames { get; }
         int BatchSize { get; }
-        Task<ItemBatch<TItem>> InitializeItemsAsync(IReadOnlyList<TEntity> entities, int skip, CancellationToken token);
+        Task<ItemBatch<TItem, TProgressToken>> InitializeItemsAsync(IReadOnlyList<TEntity> entities, TProgressToken progressToken, CancellationToken token);
+        string SerializeProgressToken(TProgressToken progressToken);
+        TProgressToken DeserializeProgressToken(string serializedProgressToken);
         Task ProcessBatchAsync(IReadOnlyList<TItem> batch);
     }
 }

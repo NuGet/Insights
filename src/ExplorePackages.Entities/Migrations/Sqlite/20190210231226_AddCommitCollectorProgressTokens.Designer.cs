@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
 {
     [DbContext(typeof(SqliteEntityContext))]
-    [Migration("20190210195558_AddCommitCollectorSequentialProgress")]
-    partial class AddCommitCollectorSequentialProgress
+    [Migration("20190210231226_AddCommitCollectorProgressTokens")]
+    partial class AddCommitCollectorProgressTokens
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -119,9 +119,9 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                     b.ToTable("CatalogPages");
                 });
 
-            modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CommitCollectorSequentialProgressEntity", b =>
+            modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CommitCollectorProgressTokenEntity", b =>
                 {
-                    b.Property<long>("CommitCollectorSequentialProgressKey")
+                    b.Property<long>("CommitCollectorProgressTokenKey")
                         .ValueGeneratedOnAdd();
 
                     b.Property<long>("FirstCommitTimestamp");
@@ -131,14 +131,14 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                     b.Property<string>("Name")
                         .IsRequired();
 
-                    b.Property<int>("Skip");
+                    b.Property<string>("SerializedProgressToken");
 
-                    b.HasKey("CommitCollectorSequentialProgressKey");
+                    b.HasKey("CommitCollectorProgressTokenKey");
 
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("CommitCollectorSequentialProgress");
+                    b.ToTable("CommitCollectorProgressTokens");
                 });
 
             modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CursorEntity", b =>

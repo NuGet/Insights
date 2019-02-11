@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,7 +7,7 @@ using Knapcode.ExplorePackages.Entities;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class DependenciesToDatabaseCommitProcessor : ICommitProcessor<PackageEntity, PackageDependencyGroups>
+    public class DependenciesToDatabaseCommitProcessor : ICommitProcessor<PackageEntity, PackageDependencyGroups, object>
     {
         private readonly NuspecStore _nuspecStore;
         private readonly PackageDependencyService _packageDependencyService;
@@ -32,9 +33,19 @@ namespace Knapcode.ExplorePackages.Logic
 
         public int BatchSize => _batchSizeProvider.Get(BatchSizeType.DependenciesToDatabase);
 
-        public async Task<ItemBatch<PackageDependencyGroups>> InitializeItemsAsync(
+        public string SerializeProgressToken(object progressToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public object DeserializeProgressToken(string serializedProgressToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<ItemBatch<PackageDependencyGroups, object>> InitializeItemsAsync(
             IReadOnlyList<PackageEntity> packages,
-            int skip,
+            object progressToken,
             CancellationToken token)
         {
             var output = await TaskProcessor.ExecuteAsync(
@@ -45,7 +56,7 @@ namespace Knapcode.ExplorePackages.Logic
 
             var list = output.Where(x => x != null).ToList();
 
-            return new ItemBatch<PackageDependencyGroups>(list, hasMoreItems: false);
+            return new ItemBatch<PackageDependencyGroups, object>(list);
         }
 
         private async Task<PackageDependencyGroups> InitializeItemAsync(PackageEntity package)

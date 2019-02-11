@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class MZipCommitCollector : CommitCollector<PackageEntity, PackageEntity>
+    public class MZipCommitCollector : CommitCollector<PackageEntity, PackageEntity, object>
     {
         public MZipCommitCollector(
             CursorService cursorService,

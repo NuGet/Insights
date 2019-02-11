@@ -117,9 +117,9 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                     b.ToTable("CatalogPages");
                 });
 
-            modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CommitCollectorSequentialProgressEntity", b =>
+            modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CommitCollectorProgressTokenEntity", b =>
                 {
-                    b.Property<long>("CommitCollectorSequentialProgressKey")
+                    b.Property<long>("CommitCollectorProgressTokenKey")
                         .ValueGeneratedOnAdd();
 
                     b.Property<long>("FirstCommitTimestamp");
@@ -129,14 +129,14 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                     b.Property<string>("Name")
                         .IsRequired();
 
-                    b.Property<int>("Skip");
+                    b.Property<string>("SerializedProgressToken");
 
-                    b.HasKey("CommitCollectorSequentialProgressKey");
+                    b.HasKey("CommitCollectorProgressTokenKey");
 
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("CommitCollectorSequentialProgress");
+                    b.ToTable("CommitCollectorProgressTokens");
                 });
 
             modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CursorEntity", b =>

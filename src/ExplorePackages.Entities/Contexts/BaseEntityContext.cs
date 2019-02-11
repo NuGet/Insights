@@ -34,7 +34,7 @@ namespace Knapcode.ExplorePackages.Entities
         public DbSet<CatalogLeafEntity> CatalogLeaves { get; set; }
         public DbSet<FrameworkEntity> Frameworks { get; set; }
         public DbSet<PackageDependencyEntity> PackageDependencies { get; set; }
-        public DbSet<CommitCollectorSequentialProgressEntity> CommitCollectorSequentialProgress { get; set; }
+        public DbSet<CommitCollectorProgressTokenEntity> CommitCollectorProgressTokens { get; set; }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -376,17 +376,17 @@ namespace Knapcode.ExplorePackages.Entities
                 .HasForeignKey(x => x.BestDependencyPackageKey);
 
             modelBuilder
-                .Entity<CommitCollectorSequentialProgressEntity>()
-                .ToTable("CommitCollectorSequentialProgress");
+                .Entity<CommitCollectorProgressTokenEntity>()
+                .ToTable("CommitCollectorProgressTokens");
             modelBuilder
-                .Entity<CommitCollectorSequentialProgressEntity>()
-                .HasKey(x => x.CommitCollectorSequentialProgressKey);
+                .Entity<CommitCollectorProgressTokenEntity>()
+                .HasKey(x => x.CommitCollectorProgressTokenKey);
             modelBuilder
-                .Entity<CommitCollectorSequentialProgressEntity>()
+                .Entity<CommitCollectorProgressTokenEntity>()
                 .Property(x => x.Name)
                 .IsRequired();
             modelBuilder
-                .Entity<CommitCollectorSequentialProgressEntity>()
+                .Entity<CommitCollectorProgressTokenEntity>()
                 .HasIndex(x => new { x.Name })
                 .IsUnique();
         }

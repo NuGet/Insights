@@ -9,11 +9,11 @@ using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public abstract class CommitCollector<TEntity, TItem>
+    public abstract class CommitCollector<TEntity, TItem, TProgressToken>
     {
         private readonly CursorService _cursorService;
         private readonly ICommitEnumerator<TEntity> _enumerator;
-        private readonly ICommitProcessor<TEntity, TItem> _processor;
+        private readonly ICommitProcessor<TEntity, TItem, TProgressToken> _processor;
         private readonly CommitCollectorSequentialProgressService _sequentialProgressService;
         private readonly ISingletonService _singletonService;
         private readonly ILogger _logger;
@@ -21,7 +21,7 @@ namespace Knapcode.ExplorePackages.Logic
         public CommitCollector(
             CursorService cursorService,
             ICommitEnumerator<TEntity> enumerator,
-            ICommitProcessor<TEntity, TItem> processor,
+            ICommitProcessor<TEntity, TItem, TProgressToken> processor,
             CommitCollectorSequentialProgressService sequentialProgressService,
             ISingletonService singletonService,
             ILogger logger)
@@ -111,15 +111,15 @@ namespace Knapcode.ExplorePackages.Logic
         {
             foreach (var commit in commits)
             {
-                var skip = 0;
-                var hasMore = true;
-                while (hasMore)
+                var progressToken = default(TProgressToken);
+                var hasMoreItems = true;
+                while (hasMoreItems)
                 {
                     token.ThrowIfCancellationRequested();
 
-                    var batch = await _processor.InitializeItemsAsync(commit.Entities, skip, token);
-                    skip += batch.Items.Count;
-                    hasMore = batch.HasMoreItems;
+                    var batch = await _processor.InitializeItemsAsync(commit.Entities, progressToken, token);
+                    progressToken = batch.NextProgressToken;
+                    hasMoreItems = batch.HasMoreItems;
 
                     foreach (var item in batch.Items)
                     {
@@ -142,18 +142,19 @@ namespace Knapcode.ExplorePackages.Logic
             var firstCommitTimetamp = commits.Min(x => x.CommitTimestamp);
             var lastCommitTimestamp = commits.Max(x => x.CommitTimestamp);
 
-            var skip = await _sequentialProgressService.GetSkipAsync(
+            var serializedProgressToken = await _sequentialProgressService.GetSerializedProgressTokenAsync(
                 _processor.CursorName,
                 firstCommitTimetamp,
                 lastCommitTimestamp);
-            _logger.LogInformation("Starting with skip value {Skip}.", skip);
+            var progressToken = _processor.DeserializeProgressToken(serializedProgressToken);
+            _logger.LogInformation("Starting with progress token {ProgressToken}.", progressToken);
 
-            var hasMore = true;
-            while (hasMore)
+            var hasMoreItems = true;
+            while (hasMoreItems)
             {
-                var batch = await _processor.InitializeItemsAsync(entities, skip, token);
-                skip += batch.Items.Count;
-                hasMore = batch.HasMoreItems;
+                var batch = await _processor.InitializeItemsAsync(entities, progressToken, token);
+                progressToken = batch.NextProgressToken;
+                hasMoreItems = batch.HasMoreItems;
 
                 if (batch.Items.Any())
                 {
@@ -164,12 +165,18 @@ namespace Knapcode.ExplorePackages.Logic
                         stopwatch.ElapsedMilliseconds);
                     stopwatch.Restart();
                     await _processor.ProcessBatchAsync(batch.Items);
-                    await _sequentialProgressService.SetSkipAsync(
-                        _processor.CursorName,
-                        firstCommitTimetamp,
-                        lastCommitTimestamp,
-                        skip);
-                    _logger.LogInformation("Setting skip value to {Skip}.", skip);
+
+                    if (hasMoreItems)
+                    {
+                        _logger.LogInformation("Setting next progress token to {ProgressToken}.", progressToken);
+                        var serializedNextProgressToken = _processor.SerializeProgressToken(progressToken);
+                        await _sequentialProgressService.SetSerializedProgressTokenAsync(
+                            _processor.CursorName,
+                            firstCommitTimetamp,
+                            lastCommitTimestamp,
+                            serializedNextProgressToken);
+                    }
+
                     _logger.LogInformation(
                         "Done processing batch of {BatchItemCount} {ItemTypeName}. {ElapsedMilliseconds}ms",
                         batch.Items.Count,

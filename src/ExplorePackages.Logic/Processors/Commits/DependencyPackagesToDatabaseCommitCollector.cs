@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class DependencyPackagesToDatabaseCommitCollector : CommitCollector<PackageRegistrationEntity, PackageDependencyEntity>
+    public class DependencyPackagesToDatabaseCommitCollector : CommitCollector<PackageRegistrationEntity, PackageDependencyEntity, long?>
     {
         public DependencyPackagesToDatabaseCommitCollector(
             CursorService cursorService,

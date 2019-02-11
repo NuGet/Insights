@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class DependencyPackagesToDatabaseCommitProcessor : ICommitProcessor<PackageRegistrationEntity, PackageDependencyEntity>
+    public class DependencyPackagesToDatabaseCommitProcessor : ICommitProcessor<PackageRegistrationEntity, PackageDependencyEntity, long?>
     {
         private readonly PackageDependencyService _packageDependencyService;
         private readonly IBatchSizeProvider _batchSizeProvider;
@@ -33,9 +34,29 @@ namespace Knapcode.ExplorePackages.Logic
 
         public int BatchSize => _batchSizeProvider.Get(BatchSizeType.DependencyPackagesToDatabase_PackageRegistrations);
 
-        public async Task<ItemBatch<PackageDependencyEntity>> InitializeItemsAsync(
+        public string SerializeProgressToken(long? progressToken)
+        {
+            if (!progressToken.HasValue)
+            {
+                return null;
+            }
+
+            return progressToken.Value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        public long? DeserializeProgressToken(string serializedProgressToken)
+        {
+            if (serializedProgressToken == null)
+            {
+                return null;
+            }
+
+            return long.Parse(serializedProgressToken);
+        }
+
+        public async Task<ItemBatch<PackageDependencyEntity, long?>> InitializeItemsAsync(
             IReadOnlyList<PackageRegistrationEntity> entities,
-            int skip,
+            long? progressToken,
             CancellationToken token)
         {
             var packageRegistrationKeyToId = entities
@@ -47,7 +68,7 @@ namespace Knapcode.ExplorePackages.Logic
 
             var dependents = await _packageDependencyService.GetDependentPackagesAsync(
                 packageRegistrationKeys,
-                skip,
+                progressToken,
                 take: packagesBatchSize);
 
             var topDependencyPairs = dependents
@@ -70,9 +91,13 @@ namespace Knapcode.ExplorePackages.Logic
                         topDependencyPairs.Select((x, i) => $"  {x.Value.ToString().PadLeft(width)} {x.Key}")));
             }
 
-            return new ItemBatch<PackageDependencyEntity>(
-                dependents,
-                dependents.Count >= packagesBatchSize);
+            long? nextAfterKey = null;
+            if (dependents.Any())
+            {
+                nextAfterKey = dependents.Max(x => x.PackageDependencyKey);
+            }
+
+            return new ItemBatch<PackageDependencyEntity, long?>(dependents, nextAfterKey.HasValue, nextAfterKey);
         }
 
         public async Task ProcessBatchAsync(IReadOnlyList<PackageDependencyEntity> batch)

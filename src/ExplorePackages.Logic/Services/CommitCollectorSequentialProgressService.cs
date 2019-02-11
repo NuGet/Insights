@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +15,7 @@ namespace Knapcode.ExplorePackages.Logic
             _entityContextFactory = entityContextFactory;
         }
 
-        public async Task<int> GetSkipAsync(
+        public async Task<string> GetSerializedProgressTokenAsync(
             string name,
             DateTimeOffset firstCommitTimestamp,
             DateTimeOffset lastCommitTimestamp)
@@ -28,39 +27,18 @@ namespace Knapcode.ExplorePackages.Logic
                 if (entity.FirstCommitTimestamp != firstCommitTimestamp.UtcTicks
                     || entity.LastCommitTimestamp != lastCommitTimestamp.UtcTicks)
                 {
-                    return 0;
+                    return null;
                 }
 
-                return entity.Skip;
+                return entity.SerializedProgressToken;
             }
         }
 
-        private static async Task<CommitCollectorSequentialProgressEntity> GetOrInitializeAsync(
-            IEntityContext entityContext,
-            string name)
-        {
-            var entity = await entityContext
-                .CommitCollectorSequentialProgress
-                .SingleOrDefaultAsync(x => x.Name == name);
-
-            if (entity == null)
-            {
-                entity = new CommitCollectorSequentialProgressEntity
-                {
-                    Name = name,
-                };
-
-                await entityContext.CommitCollectorSequentialProgress.AddAsync(entity);
-            }
-
-            return entity;
-        }
-
-        public async Task SetSkipAsync(
+        public async Task SetSerializedProgressTokenAsync(
             string name,
             DateTimeOffset firstCommitTimestamp,
             DateTimeOffset lastCommitTimestamp,
-            int skip)
+            string serializedProgressToken)
         {
             using (var entityContext = await _entityContextFactory.GetAsync())
             {
@@ -68,10 +46,31 @@ namespace Knapcode.ExplorePackages.Logic
 
                 entity.FirstCommitTimestamp = firstCommitTimestamp.UtcTicks;
                 entity.LastCommitTimestamp = lastCommitTimestamp.UtcTicks;
-                entity.Skip = skip;
+                entity.SerializedProgressToken = serializedProgressToken;
 
                 await entityContext.SaveChangesAsync();
             }
+        }
+
+        private static async Task<CommitCollectorProgressTokenEntity> GetOrInitializeAsync(
+            IEntityContext entityContext,
+            string name)
+        {
+            var entity = await entityContext
+                .CommitCollectorProgressTokens
+                .SingleOrDefaultAsync(x => x.Name == name);
+
+            if (entity == null)
+            {
+                entity = new CommitCollectorProgressTokenEntity
+                {
+                    Name = name,
+                };
+
+                await entityContext.CommitCollectorProgressTokens.AddAsync(entity);
+            }
+
+            return entity;
         }
     }
 }

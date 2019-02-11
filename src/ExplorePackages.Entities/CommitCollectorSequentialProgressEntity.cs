@@ -1,11 +1,11 @@
 ﻿namespace Knapcode.ExplorePackages.Entities
 {
-    public class CommitCollectorSequentialProgressEntity
+    public class CommitCollectorProgressTokenEntity
     {
-        public long CommitCollectorSequentialProgressKey { get; set; }
+        public long CommitCollectorProgressTokenKey { get; set; }
         public string Name { get; set; }
         public long FirstCommitTimestamp { get; set; }
         public long LastCommitTimestamp { get; set; }
-        public int Skip { get; set; }
+        public string SerializedProgressToken { get; set; }
     }
 }

@@ -14,7 +14,7 @@ namespace Knapcode.ExplorePackages.Entities
         DbSet<CatalogPackageRegistrationEntity> CatalogPackageRegistrations { get; }
         DbSet<CatalogPackageEntity> CatalogPackages { get; }
         DbSet<CatalogPageEntity> CatalogPages { get; }
-        DbSet<CommitCollectorSequentialProgressEntity> CommitCollectorSequentialProgress { get; }
+        DbSet<CommitCollectorProgressTokenEntity> CommitCollectorProgressTokens { get; }
         DbSet<CursorEntity> Cursors { get; }
         DbSet<ETagEntity> ETags { get; }
         DbSet<FrameworkEntity> Frameworks { get; }

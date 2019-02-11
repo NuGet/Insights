@@ -7,7 +7,7 @@ using Knapcode.ExplorePackages.Entities;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class MZipToDatabaseCommitProcessor : ICommitProcessor<PackageEntity, PackageArchiveMetadata>
+    public class MZipToDatabaseCommitProcessor : ICommitProcessor<PackageEntity, PackageArchiveMetadata, object>
     {
         private readonly MZipStore _mZipStore;
         private readonly IPackageService _packageService;
@@ -33,9 +33,19 @@ namespace Knapcode.ExplorePackages.Logic
 
         public int BatchSize => _batchSizeProvider.Get(BatchSizeType.MZipToDatabase);
 
-        public async Task<ItemBatch<PackageArchiveMetadata>> InitializeItemsAsync(
+        public string SerializeProgressToken(object progressToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public object DeserializeProgressToken(string serializedProgressToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<ItemBatch<PackageArchiveMetadata, object>> InitializeItemsAsync(
             IReadOnlyList<PackageEntity> packages,
-            int skip,
+            object progressToken,
             CancellationToken token)
         {
             var output = await TaskProcessor.ExecuteAsync(
@@ -46,7 +56,7 @@ namespace Knapcode.ExplorePackages.Logic
 
             var list = output.Where(x => x != null).ToList();
 
-            return new ItemBatch<PackageArchiveMetadata>(list, hasMoreItems: false);
+            return new ItemBatch<PackageArchiveMetadata, object>(list);
         }
 
         private async Task<PackageArchiveMetadata> InitializeItemAsync(PackageEntity package, CancellationToken token)
