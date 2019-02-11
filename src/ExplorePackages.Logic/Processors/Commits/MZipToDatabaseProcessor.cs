@@ -32,16 +32,8 @@ namespace Knapcode.ExplorePackages.Logic
         };
 
         public int BatchSize => _batchSizeProvider.Get(BatchSizeType.MZipToDatabase);
-
-        public string SerializeProgressToken(object progressToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public object DeserializeProgressToken(string serializedProgressToken)
-        {
-            throw new NotImplementedException();
-        }
+        public string SerializeProgressToken(object progressToken) => null;
+        public object DeserializeProgressToken(string serializedProgressToken) => null;
 
         public async Task<ItemBatch<PackageArchiveMetadata, object>> InitializeItemsAsync(
             IReadOnlyList<PackageEntity> packages,
