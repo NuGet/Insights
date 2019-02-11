@@ -51,7 +51,7 @@ namespace Knapcode.ExplorePackages.Logic
                 return null;
             }
 
-            return long.Parse(serializedProgressToken);
+            return long.Parse(serializedProgressToken, CultureInfo.InvariantCulture);
         }
 
         public async Task<ItemBatch<PackageDependencyEntity, long?>> InitializeItemsAsync(
