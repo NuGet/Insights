@@ -21,6 +21,22 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                 });
 
             migrationBuilder.CreateTable(
+                name: "CommitCollectorProgressTokens",
+                columns: table => new
+                {
+                    CommitCollectorProgressTokenKey = table.Column<long>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(nullable: false),
+                    FirstCommitTimestamp = table.Column<long>(nullable: false),
+                    LastCommitTimestamp = table.Column<long>(nullable: false),
+                    SerializedProgressToken = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CommitCollectorProgressTokens", x => x.CommitCollectorProgressTokenKey);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Cursors",
                 columns: table => new
                 {
@@ -133,6 +149,25 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                 });
 
             migrationBuilder.CreateTable(
+                name: "CatalogPackageRegistrations",
+                columns: table => new
+                {
+                    PackageRegistrationKey = table.Column<long>(nullable: false),
+                    FirstCommitTimestamp = table.Column<long>(nullable: false),
+                    LastCommitTimestamp = table.Column<long>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CatalogPackageRegistrations", x => x.PackageRegistrationKey);
+                    table.ForeignKey(
+                        name: "FK_CatalogPackageRegistrations_PackageRegistrations_PackageRegistrationKey",
+                        column: x => x.PackageRegistrationKey,
+                        principalTable: "PackageRegistrations",
+                        principalColumn: "PackageRegistrationKey",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Packages",
                 columns: table => new
                 {
@@ -161,7 +196,8 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                     Deleted = table.Column<bool>(nullable: false),
                     FirstCommitTimestamp = table.Column<long>(nullable: false),
                     LastCommitTimestamp = table.Column<long>(nullable: false),
-                    Listed = table.Column<bool>(nullable: false)
+                    Listed = table.Column<bool>(nullable: true),
+                    SemVer2 = table.Column<bool>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -340,7 +376,8 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                     PackageKey = table.Column<long>(nullable: false),
                     Type = table.Column<int>(nullable: false),
                     RelativePath = table.Column<string>(nullable: true),
-                    IsListed = table.Column<bool>(nullable: false)
+                    IsListed = table.Column<bool>(nullable: true),
+                    IsSemVer2 = table.Column<bool>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -426,6 +463,11 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                 column: "PackageKey");
 
             migrationBuilder.CreateIndex(
+                name: "IX_CatalogPackageRegistrations_LastCommitTimestamp",
+                table: "CatalogPackageRegistrations",
+                column: "LastCommitTimestamp");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CatalogPackages_LastCommitTimestamp",
                 table: "CatalogPackages",
                 column: "LastCommitTimestamp");
@@ -434,6 +476,12 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                 name: "IX_CatalogPages_Url",
                 table: "CatalogPages",
                 column: "Url",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CommitCollectorProgressTokens_Name",
+                table: "CommitCollectorProgressTokens",
+                column: "Name",
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -547,6 +595,12 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
         {
             migrationBuilder.DropTable(
                 name: "CatalogLeaves");
+
+            migrationBuilder.DropTable(
+                name: "CatalogPackageRegistrations");
+
+            migrationBuilder.DropTable(
+                name: "CommitCollectorProgressTokens");
 
             migrationBuilder.DropTable(
                 name: "ETags");

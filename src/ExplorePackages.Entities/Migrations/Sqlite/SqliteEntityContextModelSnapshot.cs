@@ -50,7 +50,9 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
 
                     b.Property<long>("CatalogCommitKey");
 
-                    b.Property<bool>("IsListed");
+                    b.Property<bool?>("IsListed");
+
+                    b.Property<bool?>("IsSemVer2");
 
                     b.Property<long>("PackageKey");
 
@@ -77,7 +79,9 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
 
                     b.Property<long>("LastCommitTimestamp");
 
-                    b.Property<bool>("Listed");
+                    b.Property<bool?>("Listed");
+
+                    b.Property<bool?>("SemVer2");
 
                     b.HasKey("PackageKey");
 

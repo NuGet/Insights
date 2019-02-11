@@ -669,13 +669,13 @@ namespace Knapcode.ExplorePackages.Logic
         /// </summary>
         public async Task<IReadOnlyDictionary<string, long>> AddOrUpdatePackagesAsync(
             IEnumerable<CatalogLeafItem> entries,
-            IReadOnlyDictionary<CatalogLeafItem, bool> entryToListed)
+            IReadOnlyDictionary<CatalogLeafItem, PackageVisibilityState> entryToVisibilityState)
         {
             return await AddOrUpdatePackagesAsync(
                 x => x
                     .Packages
                     .Include(y => y.CatalogPackage),
-                entryToListed.Keys,
+                entryToVisibilityState.Keys,
                 x => x.OrderBy(c => c.CommitTimestamp),
                 c => c.PackageId,
                 c => c.ParsePackageVersion().ToNormalizedString(),
@@ -698,7 +698,8 @@ namespace Knapcode.ExplorePackages.Logic
                         Deleted = cp.IsPackageDelete(),
                         FirstCommitTimestamp = cp.CommitTimestamp.UtcTicks,
                         LastCommitTimestamp = cp.CommitTimestamp.UtcTicks,
-                        Listed = entryToListed[cp],
+                        Listed = entryToVisibilityState[cp].Listed,
+                        SemVer2 = entryToVisibilityState[cp].SemVer2,
                     };
                     return Task.CompletedTask;
                 },
@@ -717,7 +718,16 @@ namespace Knapcode.ExplorePackages.Logic
                     if (p.CatalogPackage.LastCommitTimestamp < cp.CommitTimestamp.UtcTicks)
                     {
                         p.CatalogPackage.Deleted = cp.IsPackageDelete();
-                        p.CatalogPackage.Listed = entryToListed[cp];
+
+                        if (entryToVisibilityState[cp].Listed.HasValue)
+                        {
+                            p.CatalogPackage.Listed = entryToVisibilityState[cp].Listed;
+                        }
+
+                        if (entryToVisibilityState[cp].SemVer2.HasValue)
+                        {
+                            p.CatalogPackage.SemVer2 = entryToVisibilityState[cp].SemVer2;
+                        }
                     }
 
                     p.CatalogPackage.FirstCommitTimestamp = Math.Min(
@@ -758,7 +768,16 @@ namespace Knapcode.ExplorePackages.Logic
                         if (pe.CatalogPackage.LastCommitTimestamp < pl.CatalogPackage.LastCommitTimestamp)
                         {
                             pe.CatalogPackage.Deleted = pl.CatalogPackage.Deleted;
-                            pe.CatalogPackage.Listed = pl.CatalogPackage.Listed;
+
+                            if (pl.CatalogPackage.Listed.HasValue)
+                            {
+                                pe.CatalogPackage.Listed = pl.CatalogPackage.Listed;
+                            }
+
+                            if (pl.CatalogPackage.SemVer2.HasValue)
+                            {
+                                pe.CatalogPackage.SemVer2 = pl.CatalogPackage.SemVer2;
+                            }
                         }
 
                         pe.CatalogPackage.FirstCommitTimestamp = Math.Min(

@@ -163,5 +163,53 @@ namespace Knapcode.ExplorePackages.Logic
             // not present (legacy behavior).
             return leaf.Published.Year != 1900;
         }
+
+        /// <summary>
+        /// Determines if the provied package details leaf represents a SemVer 2.0.0 package. A package is considered
+        /// SemVer 2.0.0 if it's version is SemVer 2.0.0 or one of its dependency version ranges is SemVer 2.0.0.
+        /// </summary>
+        /// <param name="leaf">The catalog leaf.</param>
+        /// <returns>True if the package is SemVer 2.0.0.</returns>
+        public static bool IsSemVer2(this PackageDetailsCatalogLeaf leaf)
+        {
+            var parsedPackageVersion = leaf.ParsePackageVersion();
+            if (parsedPackageVersion.IsSemVer2)
+            {
+                return true;
+            }
+
+            if (leaf.VerbatimVersion != null)
+            {
+                var parsedVerbatimVersion = NuGetVersion.Parse(leaf.VerbatimVersion);
+                if (parsedVerbatimVersion.IsSemVer2)
+                {
+                    return true;
+                }
+            }
+
+            if (leaf.DependencyGroups != null)
+            {
+                foreach (var dependencyGroup in leaf.DependencyGroups)
+                {
+                    // Example: https://api.nuget.org/v3/catalog0/data/2018.10.28.07.42.42/mvcsitemapprovider.3.3.0-pre1.json
+                    if (dependencyGroup.Dependencies == null)
+                    {
+                        continue;
+                    }
+
+                    foreach (var dependency in dependencyGroup.Dependencies)
+                    {
+                        var versionRange = dependency.ParseRange();
+                        if ((versionRange.MaxVersion != null && versionRange.MaxVersion.IsSemVer2)
+                            || (versionRange.MinVersion != null && versionRange.MinVersion.IsSemVer2))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
     }
 }

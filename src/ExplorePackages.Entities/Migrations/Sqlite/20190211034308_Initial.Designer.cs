@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
 {
     [DbContext(typeof(SqliteEntityContext))]
-    [Migration("20190201171419_Initial")]
+    [Migration("20190211034308_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -52,7 +52,9 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
 
                     b.Property<long>("CatalogCommitKey");
 
-                    b.Property<bool>("IsListed");
+                    b.Property<bool?>("IsListed");
+
+                    b.Property<bool?>("IsSemVer2");
 
                     b.Property<long>("PackageKey");
 
@@ -79,13 +81,30 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
 
                     b.Property<long>("LastCommitTimestamp");
 
-                    b.Property<bool>("Listed");
+                    b.Property<bool?>("Listed");
+
+                    b.Property<bool?>("SemVer2");
 
                     b.HasKey("PackageKey");
 
                     b.HasIndex("LastCommitTimestamp");
 
                     b.ToTable("CatalogPackages");
+                });
+
+            modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CatalogPackageRegistrationEntity", b =>
+                {
+                    b.Property<long>("PackageRegistrationKey");
+
+                    b.Property<long>("FirstCommitTimestamp");
+
+                    b.Property<long>("LastCommitTimestamp");
+
+                    b.HasKey("PackageRegistrationKey");
+
+                    b.HasIndex("LastCommitTimestamp");
+
+                    b.ToTable("CatalogPackageRegistrations");
                 });
 
             modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CatalogPageEntity", b =>
@@ -102,6 +121,28 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                         .IsUnique();
 
                     b.ToTable("CatalogPages");
+                });
+
+            modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CommitCollectorProgressTokenEntity", b =>
+                {
+                    b.Property<long>("CommitCollectorProgressTokenKey")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<long>("FirstCommitTimestamp");
+
+                    b.Property<long>("LastCommitTimestamp");
+
+                    b.Property<string>("Name")
+                        .IsRequired();
+
+                    b.Property<string>("SerializedProgressToken");
+
+                    b.HasKey("CommitCollectorProgressTokenKey");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("CommitCollectorProgressTokens");
                 });
 
             modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CursorEntity", b =>
@@ -475,6 +516,14 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                     b.HasOne("Knapcode.ExplorePackages.Entities.PackageEntity", "Package")
                         .WithOne("CatalogPackage")
                         .HasForeignKey("Knapcode.ExplorePackages.Entities.CatalogPackageEntity", "PackageKey")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Knapcode.ExplorePackages.Entities.CatalogPackageRegistrationEntity", b =>
+                {
+                    b.HasOne("Knapcode.ExplorePackages.Entities.PackageRegistrationEntity", "PackageRegistration")
+                        .WithOne("CatalogPackageRegistration")
+                        .HasForeignKey("Knapcode.ExplorePackages.Entities.CatalogPackageRegistrationEntity", "PackageRegistrationKey")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

@@ -33,7 +33,7 @@ namespace Knapcode.ExplorePackages.Logic
             CatalogPageItem page,
             IReadOnlyList<CatalogLeafItem> leaves,
             IReadOnlyDictionary<string, long> identityToPackageKey,
-            IReadOnlyDictionary<CatalogLeafItem, bool> entryToListed)
+            IReadOnlyDictionary<CatalogLeafItem, PackageVisibilityState> entryToVisibilityState)
         {
             _logger.LogInformation("Adding or updating catalog page {PageUri}.", page.Url);
             using (var context = await _entityContextFactory.GetAsync())
@@ -46,7 +46,7 @@ namespace Knapcode.ExplorePackages.Logic
                     .Where(x => x.Url == pageUrl)
                     .FirstOrDefaultAsync();
 
-                var latest = await InitializeAsync(pageUrl, leaves, identityToPackageKey, entryToListed);
+                var latest = await InitializeAsync(pageUrl, leaves, identityToPackageKey, entryToVisibilityState);
 
                 Merge(context, existing, latest);
 
@@ -101,6 +101,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                     existingLeaf.RelativePath = latestLeaf.RelativePath;
                     existingLeaf.IsListed = latestLeaf.IsListed;
+                    existingLeaf.IsSemVer2 = latestLeaf.IsSemVer2;
                 }
             }
         }
@@ -109,7 +110,7 @@ namespace Knapcode.ExplorePackages.Logic
             string pageUrl,
             IReadOnlyList<CatalogLeafItem> leaves,
             IReadOnlyDictionary<string, long> identityToPackageKey,
-            IReadOnlyDictionary<CatalogLeafItem, bool> entryToListed)
+            IReadOnlyDictionary<CatalogLeafItem, PackageVisibilityState> entryToVisibilityState)
         {
             await VerifyExpectedPageUrlAsync(pageUrl);
 
@@ -155,7 +156,8 @@ namespace Knapcode.ExplorePackages.Logic
                         CatalogCommit = commitEntity,
                         PackageKey = packageKey,
                         Type = leaf.Type,
-                        IsListed = entryToListed[leaf],
+                        IsListed = entryToVisibilityState[leaf].Listed,
+                        IsSemVer2 = entryToVisibilityState[leaf].SemVer2,
                     };
 
                     await VerifyExpectedLeafUrlAsync(leaf, leafEntity);

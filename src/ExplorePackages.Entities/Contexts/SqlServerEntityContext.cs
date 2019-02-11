@@ -55,6 +55,7 @@ namespace Knapcode.ExplorePackages.Entities
                     x.Deleted,
                     x.FirstCommitTimestamp,
                     x.Listed,
+                    x.SemVer2,
                 });
 
             modelBuilder

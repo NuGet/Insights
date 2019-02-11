@@ -31,21 +31,21 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task ProcessAsync(CatalogPageItem page, IReadOnlyList<CatalogLeafItem> leaves)
         {
             // Determine the listed status of all of the packages.
-            var entryToListed = (await TaskProcessor.ExecuteAsync(
+            var entryToVisibilityState = (await TaskProcessor.ExecuteAsync(
                 leaves,
                 async x =>
                 {
-                    bool listed;
+                    PackageVisibilityState visiblityState;
                     if (x.IsPackageDelete())
                     {
-                        listed = false;
+                        visiblityState = new PackageVisibilityState(listed: null, semVer2: null);
                     }
                     else
                     {
-                        listed = await IsListedAsync(x);
+                        visiblityState = await DetermineVisibilityStateAsync(x);
                     }
 
-                    return KeyValuePairFactory.Create(x, listed);
+                    return KeyValuePairFactory.Create(x, visiblityState);
                 },
                 workerCount: 32,
                 token: CancellationToken.None))
@@ -59,17 +59,21 @@ namespace Knapcode.ExplorePackages.Logic
                     .First())
                 .ToList();
 
-            var identityToPackageKey = await _packageService.AddOrUpdatePackagesAsync(latestLeaves, entryToListed);
+            var identityToPackageKey = await _packageService.AddOrUpdatePackagesAsync(latestLeaves, entryToVisibilityState);
             
-            await _catalogService.AddOrUpdateAsync(page, leaves, identityToPackageKey, entryToListed);
+            await _catalogService.AddOrUpdateAsync(page, leaves, identityToPackageKey, entryToVisibilityState);
 
             await _packageService.SetDeletedPackagesAsUnlistedInV2Async(latestLeaves);
         }
 
-        private async Task<bool> IsListedAsync(CatalogLeafItem entry)
+        private async Task<PackageVisibilityState> DetermineVisibilityStateAsync(CatalogLeafItem entry)
         {
             var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(entry);
-            return leaf.IsListed();
+
+            var listed = leaf.IsListed();
+            var semVer2 = leaf.IsSemVer2();
+
+            return new PackageVisibilityState(listed, semVer2);
         }
 
         private class CatalogLeafItemComparer : IEqualityComparer<CatalogLeafItem>
