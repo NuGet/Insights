@@ -109,7 +109,7 @@ namespace Knapcode.ExplorePackages.Logic
                             var result = serializer.Deserialize<T>(jsonReader);
                             return Task.FromResult(result);
                         }
-                        catch
+                        catch (JsonException)
                         {
                             logger.LogWarning("Unable to deserialize {Url} as type {TypeName}.", url, typeof(T).Name);
                             throw;

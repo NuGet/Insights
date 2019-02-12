@@ -56,6 +56,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 
                 var identities = Ids
                     .Zip(Versions, (id, version) => new PackageIdentity(id.Trim(), NuGetVersion.Parse(version).ToNormalizedString()))
+                    .Distinct()
                     .ToList();
 
                 await _processor.UpdateAsync(identities);

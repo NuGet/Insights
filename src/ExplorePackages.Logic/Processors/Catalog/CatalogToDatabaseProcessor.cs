@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -51,19 +52,35 @@ namespace Knapcode.ExplorePackages.Logic
                 token: CancellationToken.None))
                 .ToDictionary(x => x.Key, x => x.Value, new CatalogLeafItemComparer());
 
-            // Only add Package entities based on the latest commit timestamp.
-            var latestLeaves = leaves
-                .GroupBy(x => new PackageIdentity(x.PackageId, x.ParsePackageVersion().ToNormalizedString()))
-                .Select(x => x
-                    .OrderByDescending(y => y.CommitTimestamp)
-                    .First())
+            // Group the leaves by package identity
+            var groups = leaves
+                .GroupBy(x => new PackageIdentity(x.PackageId, x.ParsePackageVersion().ToNormalizedString()));
+
+            // Determine the first commit timestamp per latest catalog leaf.
+            var latestEntryToFirstCommitTimestamp = groups
+                .ToDictionary(
+                    x => x.OrderByDescending(y => y.CommitTimestamp).First(),
+                    x => x.Min(y => y.CommitTimestamp));
+
+            // Determine the latest entries, sorted.
+            var latestEntries = latestEntryToFirstCommitTimestamp
+                .Keys
+                .OrderBy(x => x.CommitTimestamp)
+                .OrderBy(x => x.PackageId, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(x => x.ParsePackageVersion())
                 .ToList();
 
-            var identityToPackageKey = await _packageService.AddOrUpdatePackagesAsync(latestLeaves, entryToVisibilityState);
+            // Add the CatalogPackage instances.
+            var identityToPackageKey = await _packageService.AddOrUpdatePackagesAsync(
+                latestEntries,
+                latestEntryToFirstCommitTimestamp,
+                entryToVisibilityState);
             
+            // Add the CatalogPackageLeaf instances and their parent classes.
             await _catalogService.AddOrUpdateAsync(page, leaves, identityToPackageKey, entryToVisibilityState);
 
-            await _packageService.SetDeletedPackagesAsUnlistedInV2Async(latestLeaves);
+            // Consider deleted packages as unlisted in V2. This is so that listed status between V2 and the catalog is the same.
+            await _packageService.SetDeletedPackagesAsUnlistedInV2Async(latestEntries);
         }
 
         private async Task<PackageVisibilityState> DetermineVisibilityStateAsync(CatalogLeafItem entry)

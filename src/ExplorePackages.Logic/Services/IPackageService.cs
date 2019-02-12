@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 
@@ -7,8 +8,10 @@ namespace Knapcode.ExplorePackages.Logic
     public interface IPackageService
     {
         Task<IReadOnlyDictionary<string, PackageRegistrationEntity>> AddPackageRegistrationsAsync(IEnumerable<string> ids, bool includeCatalogPackageRegistrations, bool includePackages);
-        Task<IReadOnlyDictionary<string, long>> AddOrUpdatePackagesAsync(IEnumerable<CatalogLeafItem> entries, IReadOnlyDictionary<CatalogLeafItem, PackageVisibilityState> entryToVisibilityState);
-        Task<IReadOnlyDictionary<string, long>> AddOrUpdatePackagesAsync(IEnumerable<PackageIdentity> identities);
+        Task<IReadOnlyDictionary<string, long>> AddOrUpdatePackagesAsync(
+            IEnumerable<CatalogLeafItem> latestEntries,
+            IReadOnlyDictionary<CatalogLeafItem, DateTimeOffset> latestEntryToFirstCommitTimestamp,
+            IReadOnlyDictionary<CatalogLeafItem, PackageVisibilityState> latestEntryToVisibilityState);
         Task AddOrUpdatePackagesAsync(IEnumerable<PackageArchiveMetadata> metadataSequence);
         Task AddOrUpdatePackagesAsync(IEnumerable<PackageDownloads> packageDownloads);
         Task AddOrUpdatePackagesAsync(IEnumerable<V2Package> v2Packages);

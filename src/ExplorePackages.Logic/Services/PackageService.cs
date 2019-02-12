@@ -152,11 +152,9 @@ namespace Knapcode.ExplorePackages.Logic
         private async Task<IReadOnlyDictionary<string, long>>  AddOrUpdatePackagesAsync<T>(
             QueryEntities<PackageEntity> getPackages,
             IEnumerable<T> foreignPackages,
-            Func<IEnumerable<T>, IEnumerable<T>> sort,
             Func<T, string> getId,
             Func<T, string> getVersion,
             Func<PackageEntity, T, Task> initializePackageFromForeignAsync,
-            Func<PackageEntity, T, Task> updatePackageFromForeignAsync,
             Action<IEntityContext, PackageEntity, PackageEntity> updateExistingPackage,
             bool includeCatalogPackageRegistrations)
         {
@@ -191,8 +189,8 @@ namespace Knapcode.ExplorePackages.Logic
                     }
                     else
                     {
-                        // TODO: remove this step and only use updateExistingPackage, somehow.
-                        await updatePackageFromForeignAsync(latestPackage, foreignPackage);
+                        _logger.LogWarning("Multiple packages with identity {Identity} were provided.", identity);
+                        throw new InvalidOperationException("The packages provided must be unique by package identity.");
                     }
                 }
 
@@ -253,17 +251,11 @@ namespace Knapcode.ExplorePackages.Logic
                     .Include(y => y.PackageArchive)
                     .ThenInclude(y => y.PackageEntries),
                 metadataSequence,
-                x => x,
                 d => d.Id,
                 d => d.Version,
                 (p, f) =>
                 {
                     p.PackageArchive = Initialize(new PackageArchiveEntity(), f);
-                    return Task.CompletedTask;
-                },
-                (p, f) =>
-                {
-                    Initialize(p.PackageArchive, f);
                     return Task.CompletedTask;
                 },
                 (c, pe, pl) =>
@@ -502,18 +494,13 @@ namespace Knapcode.ExplorePackages.Logic
                 stopwatch.ElapsedMilliseconds);
         }
 
-        public async Task<IReadOnlyDictionary<string, long>> AddOrUpdatePackagesAsync(IEnumerable<PackageIdentity> identities)
+        private async Task<IReadOnlyDictionary<string, long>> AddOrUpdatePackagesAsync(IEnumerable<PackageIdentity> identities)
         {
             return await AddOrUpdatePackagesAsync(
                 x => x.Packages,
                 identities,
-                x => x.OrderBy(y => y.Id).ThenBy(y => y.Version),
                 x => x.Id,
                 x => x.Version,
-                (p, i) =>
-                {
-                    return Task.CompletedTask;
-                },
                 (p, i) =>
                 {
                     return Task.CompletedTask;
@@ -529,28 +516,11 @@ namespace Knapcode.ExplorePackages.Logic
                     .Packages
                     .Include(y => y.V2Package),
                 v2Packages,
-                x => x.OrderBy(v2 => v2.Created),
                 v2 => v2.Id,
                 v2 => v2.Version,
                 (p, v2) =>
                 {
                     p.V2Package = ToEntity(v2);
-                    return Task.CompletedTask;
-                },
-                (p, v2) =>
-                {
-                    var e = ToEntity(v2);
-                    if (e.LastUpdatedTimestamp < p.V2Package.LastUpdatedTimestamp)
-                    {
-                        return Task.CompletedTask;
-                    }
-
-                    p.V2Package.CreatedTimestamp = e.CreatedTimestamp;
-                    p.V2Package.LastEditedTimestamp = e.LastEditedTimestamp;
-                    p.V2Package.PublishedTimestamp = e.PublishedTimestamp;
-                    p.V2Package.LastUpdatedTimestamp = e.LastUpdatedTimestamp;
-                    p.V2Package.Listed = e.Listed;
-
                     return Task.CompletedTask;
                 },
                 (c, pe, pl) =>
@@ -663,20 +633,19 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
-
         /// <summary>
         /// Adds the provided catalog entries to the database. Catalog entries are processed in the order provided.
         /// </summary>
         public async Task<IReadOnlyDictionary<string, long>> AddOrUpdatePackagesAsync(
-            IEnumerable<CatalogLeafItem> entries,
-            IReadOnlyDictionary<CatalogLeafItem, PackageVisibilityState> entryToVisibilityState)
+            IEnumerable<CatalogLeafItem> latestEntries,
+            IReadOnlyDictionary<CatalogLeafItem, DateTimeOffset> latestEntryToFirstCommitTimestamp,
+            IReadOnlyDictionary<CatalogLeafItem, PackageVisibilityState> latestEntryToVisibilityState)
         {
             return await AddOrUpdatePackagesAsync(
                 x => x
                     .Packages
                     .Include(y => y.CatalogPackage),
-                entryToVisibilityState.Keys,
-                x => x.OrderBy(c => c.CommitTimestamp),
+                latestEntries,
                 c => c.PackageId,
                 c => c.ParsePackageVersion().ToNormalizedString(),
                 (p, cp) =>
@@ -687,7 +656,7 @@ namespace Knapcode.ExplorePackages.Logic
                         p.PackageRegistration.CatalogPackageRegistration = new CatalogPackageRegistrationEntity
                         {
                             PackageRegistrationKey = p.PackageRegistration.PackageRegistrationKey,
-                            FirstCommitTimestamp = cp.CommitTimestamp.UtcTicks,
+                            FirstCommitTimestamp = latestEntryToFirstCommitTimestamp[cp].UtcTicks,
                             LastCommitTimestamp = cp.CommitTimestamp.UtcTicks,
                         };
                     }
@@ -696,48 +665,11 @@ namespace Knapcode.ExplorePackages.Logic
                     p.CatalogPackage = new CatalogPackageEntity
                     {
                         Deleted = cp.IsPackageDelete(),
-                        FirstCommitTimestamp = cp.CommitTimestamp.UtcTicks,
+                        FirstCommitTimestamp = latestEntryToFirstCommitTimestamp[cp].UtcTicks,
                         LastCommitTimestamp = cp.CommitTimestamp.UtcTicks,
-                        Listed = entryToVisibilityState[cp].Listed,
-                        SemVer2 = entryToVisibilityState[cp].SemVer2,
+                        Listed = latestEntryToVisibilityState[cp].Listed,
+                        SemVer2 = latestEntryToVisibilityState[cp].SemVer2,
                     };
-                    return Task.CompletedTask;
-                },
-                (p, cp) =>
-                {
-                    // Update the catalog package registration.
-                    p.PackageRegistration.CatalogPackageRegistration.FirstCommitTimestamp = Math.Min(
-                        p.PackageRegistration.CatalogPackageRegistration.FirstCommitTimestamp,
-                        cp.CommitTimestamp.UtcTicks);
-
-                    p.PackageRegistration.CatalogPackageRegistration.FirstCommitTimestamp = Math.Max(
-                        p.PackageRegistration.CatalogPackageRegistration.LastCommitTimestamp,
-                        cp.CommitTimestamp.UtcTicks);
-
-                    // Update the catalog package.
-                    if (p.CatalogPackage.LastCommitTimestamp < cp.CommitTimestamp.UtcTicks)
-                    {
-                        p.CatalogPackage.Deleted = cp.IsPackageDelete();
-
-                        if (entryToVisibilityState[cp].Listed.HasValue)
-                        {
-                            p.CatalogPackage.Listed = entryToVisibilityState[cp].Listed;
-                        }
-
-                        if (entryToVisibilityState[cp].SemVer2.HasValue)
-                        {
-                            p.CatalogPackage.SemVer2 = entryToVisibilityState[cp].SemVer2;
-                        }
-                    }
-
-                    p.CatalogPackage.FirstCommitTimestamp = Math.Min(
-                        p.CatalogPackage.FirstCommitTimestamp,
-                        cp.CommitTimestamp.UtcTicks);
-
-                    p.CatalogPackage.LastCommitTimestamp = Math.Max(
-                        p.CatalogPackage.LastCommitTimestamp,
-                        cp.CommitTimestamp.UtcTicks);
-
                     return Task.CompletedTask;
                 },
                 (c, pe, pl) =>

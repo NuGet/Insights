@@ -105,12 +105,10 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var immutablePackage = new ImmutablePackage(package);
 
-            // TODO: Determine SemVer 2.0.0 from the database instead of the .nuspec
-            NuspecContext nuspecQueryContext = await GetNuspecContextAsync(package);
-            var isSemVer2 = NuspecUtility.IsSemVer2(nuspecQueryContext.Document);
+            NuspecContext nuspecQueryContext = null;
             if (!includeNuspec)
             {
-                nuspecQueryContext = null;
+                nuspecQueryContext = await GetNuspecContextAsync(package);
             }
 
             MZipContext mzipContext = null;
@@ -123,7 +121,7 @@ namespace Knapcode.ExplorePackages.Logic
                 immutablePackage,
                 nuspecQueryContext,
                 mzipContext,
-                isSemVer2,
+                package.CatalogPackage?.SemVer2 ?? false,
                 package.V2Package?.Listed ?? package.CatalogPackage?.Listed ?? true);
         }
 
