@@ -23,7 +23,7 @@ namespace Knapcode.ExplorePackages.Entities
         public DbSet<ETagEntity> ETags { get; set; }
         public DbSet<PackageQueryEntity> PackageQueries { get; set; }
         public DbSet<PackageQueryMatchEntity> PackageQueryMatches { get; set; }
-        public DbSet<V2PackageEntity> V2PackageEntities { get; set; }
+        public DbSet<V2PackageEntity> V2Packages { get; set; }
         public DbSet<CatalogPackageRegistrationEntity> CatalogPackageRegistrations { get; set; }
         public DbSet<CatalogPackageEntity> CatalogPackages { get; set; }
         public DbSet<PackageDownloadsEntity> PackageDownloads { get; set; }

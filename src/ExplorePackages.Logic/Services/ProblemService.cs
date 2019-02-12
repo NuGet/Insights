@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -33,15 +34,22 @@ namespace Knapcode.ExplorePackages.Logic
             INNER JOIN PackageRegistrations pr ON pr.PackageRegistrationKey = p.PackageRegistrationKey
             INNER JOIN V2Packages v2 ON p.PackageKey = v2.PackageKey
             INNER JOIN CatalogPackages cp ON cp.PackageKey = v2.PackageKey
-            WHERE v2.Listed <> cp.Listed";
+            WHERE v2.Listed <> cp.Listed
+              AND v2.LastEditedTimestamp < @MaxTimestamp
+              AND cp.LastCommitTimestamp < @MaxTimestamp
+              AND p.PackageKey > @MinPackageKey
+              AND p.PackageKey <= @MaxPackageKey";
 
         private const string MissingFromCatalogQuery = @"
             SELECT pr.Id, p.Version
-            FROM V2Packages v2
-            INNER JOIN Packages p ON v2.PackageKey = p.PackageKey
+            FROM Packages p
+            INNER JOIN V2Packages v2 ON v2.PackageKey = p.PackageKey
             INNER JOIN PackageRegistrations pr ON pr.PackageRegistrationKey = p.PackageRegistrationKey
             LEFT OUTER JOIN CatalogPackages cp ON v2.PackageKey = cp.PackageKey
-            WHERE cp.PackageKey IS NULL AND v2.CreatedTimestamp < @MaximumCreatedTimestamp";
+            WHERE cp.PackageKey IS NULL
+              AND v2.CreatedTimestamp < @MaxTimestamp
+              AND p.PackageKey > @MinPackageKey
+              AND p.PackageKey <= @MaxPackageKey";
 
         private readonly PackageQueryService _packageQueryService;
         private readonly EntityContextFactory _entityContextFactory;
@@ -71,61 +79,96 @@ namespace Knapcode.ExplorePackages.Logic
                 problems.AddRange(matches.Select(x => new Problem(new PackageIdentity(x.Id, x.Version), queryName)));
             }
 
-            // TODO: improve SQL Server performance of these queries
-            if (false)
+            // Execute other consistency check queries.
+            _logger.LogInformation("Getting packages missing from catalog.");
+            using (var context = await _entityContextFactory.GetAsync())
+            using (var connection = context.Database.GetDbConnection())
             {
-                // Find listed status inconsistencies.
-                _logger.LogInformation("Getting mismatched listed status.");
-                var mismatchingListedStatusRecords = await ReadQueryResultsAsync(
-                    MismatchingListedStatusQuery,
-                    x => { },
-                    x => new MismatchingListedStatusRecord(
-                        x.GetString(0),
-                        x.GetString(1),
-                        x.GetBoolean(2),
-                        x.GetBoolean(3)));
-                foreach (var record in mismatchingListedStatusRecords)
-                {
-                    var identity = new PackageIdentity(record.Id, record.Version);
-                    problems.Add(new Problem(identity, record.V2Listed ? ListedInV2 : ListedInCatalog));
-                }
+                await connection.OpenAsync();
 
-                // Find packages missing from the catalog.
-                _logger.LogInformation("Getting packages missing from catalog.");
-                var missingFromCatalogIdentities = await ReadQueryResultsAsync(
-                    MissingFromCatalogQuery,
-                    x =>
-                    {
-                    // Limit results older than 1 hour since there is a little lag between V2 and catalog.
-                    var parameter = x.CreateParameter();
-                        parameter.ParameterName = "MaximumCreatedTimestamp";
-                        parameter.Value = DateTimeOffset.UtcNow.AddHours(-1).Ticks;
-                        parameter.DbType = DbType.Int64;
-                        x.Parameters.Add(parameter);
-                    },
-                    x => new PackageIdentity(
-                        x.GetString(0),
-                        x.GetString(1)));
-                foreach (var identity in missingFromCatalogIdentities)
+                long minPackageKey = 0;
+                var batchSize = 10000;
+                var hasMoreRows = true;
+                var maxTimestamp = DateTimeOffset.UtcNow.AddHours(-1);
+                while (hasMoreRows)
                 {
-                    problems.Add(new Problem(identity, MissingFromCatalog));
+                    var maxPackageKey = minPackageKey + batchSize;
+                    var stopwatch = Stopwatch.StartNew();
+
+                    hasMoreRows = await context
+                        .Packages
+                        .Where(x => x.PackageKey > maxPackageKey)
+                        .AnyAsync();
+
+                    // Find mismatch listed status.
+                    var mismatchingListedStatusRecords = await ReadQueryResultsAsync(
+                        connection,
+                        MismatchingListedStatusQuery,
+                        x => AddBoundParameters(x, minPackageKey, batchSize, maxTimestamp),
+                        x => new MismatchingListedStatusRecord(
+                            x.GetString(0),
+                            x.GetString(1),
+                            x.GetBoolean(2),
+                            x.GetBoolean(3)));
+                    foreach (var record in mismatchingListedStatusRecords)
+                    {
+                        var identity = new PackageIdentity(record.Id, record.Version);
+                        problems.Add(new Problem(identity, record.V2Listed ? ListedInV2 : ListedInCatalog));
+                    }
+
+                    // Find packages missing from the catalog.
+                    var missingFromCatalogIdentities = await ReadQueryResultsAsync(
+                        connection,
+                        MissingFromCatalogQuery,
+                        x => AddBoundParameters(x, minPackageKey, batchSize, maxTimestamp),
+                        x => new PackageIdentity(x.GetString(0), x.GetString(1)));
+                    foreach (var identity in missingFromCatalogIdentities)
+                    {
+                        problems.Add(new Problem(identity, MissingFromCatalog));
+                    }
+
+                    minPackageKey += batchSize;
+
+                    _logger.LogInformation(
+                        "Checked package keys > {MinPackageKey} and <= {MaxPackageKey}. Took {Duration}ms.",
+                        minPackageKey,
+                        maxPackageKey,
+                        stopwatch.ElapsedMilliseconds);
                 }
             }
 
             return problems;
         }
 
+        private static void AddBoundParameters(DbCommand command, long minPackageKey, int batchSize, DateTimeOffset maxTimestamp)
+        {
+            var maxTimestampParameter = command.CreateParameter();
+            maxTimestampParameter.ParameterName = "MaxTimestamp";
+            maxTimestampParameter.Value = maxTimestamp.UtcTicks;
+            maxTimestampParameter.DbType = DbType.Int64;
+            command.Parameters.Add(maxTimestampParameter);
+
+            var minPackageKeyParameter = command.CreateParameter();
+            minPackageKeyParameter.ParameterName = "MinPackageKey";
+            minPackageKeyParameter.Value = minPackageKey;
+            minPackageKeyParameter.DbType = DbType.Int64;
+            command.Parameters.Add(minPackageKeyParameter);
+
+            var maxPackageKeyParameter = command.CreateParameter();
+            maxPackageKeyParameter.ParameterName = "MaxPackageKey";
+            maxPackageKeyParameter.Value = minPackageKey + batchSize;
+            maxPackageKeyParameter.DbType = DbType.Int64;
+            command.Parameters.Add(maxPackageKeyParameter);
+        }
+
         private async Task<IReadOnlyList<T>> ReadQueryResultsAsync<T>(
+            DbConnection connection,
             string query,
             Action<DbCommand> configureCommand,
             Func<DbDataReader, T> readRecord)
         {
-            using (var context = await _entityContextFactory.GetAsync())
-            using (var connection = context.Database.GetDbConnection())
             using (var command = connection.CreateCommand())
             {
-                await connection.OpenAsync();
-
                 command.CommandText = query;
                 configureCommand(command);
 

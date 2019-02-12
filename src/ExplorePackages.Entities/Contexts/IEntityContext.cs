@@ -27,7 +27,7 @@ namespace Knapcode.ExplorePackages.Entities
         DbSet<PackageQueryMatchEntity> PackageQueryMatches { get; }
         DbSet<PackageRegistrationEntity> PackageRegistrations { get; }
         DbSet<PackageEntity> Packages { get; set; }
-        DbSet<V2PackageEntity> V2PackageEntities { get; set; }
+        DbSet<V2PackageEntity> V2Packages { get; set; }
 
         DatabaseFacade Database { get; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken));
