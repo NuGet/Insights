@@ -117,12 +117,20 @@ namespace Knapcode.ExplorePackages.Logic
                 mzipContext = await GetMZipContextAsync(package);
             }
 
+            var semVer2 = false;
+            if (package.CatalogPackage?.SemVerType != null)
+            {
+                semVer2 = package.CatalogPackage.SemVerType.Value != SemVerType.SemVer1;
+            }
+
+            var listed = package.V2Package?.Listed ?? package.CatalogPackage?.Listed ?? true;
+
             return new PackageQueryContext(
                 immutablePackage,
                 nuspecQueryContext,
                 mzipContext,
-                package.CatalogPackage?.SemVer2 ?? false,
-                package.V2Package?.Listed ?? package.CatalogPackage?.Listed ?? true);
+                semVer2,
+                listed);
         }
 
         private async Task<MZipContext> GetMZipContextAsync(PackageEntity package)

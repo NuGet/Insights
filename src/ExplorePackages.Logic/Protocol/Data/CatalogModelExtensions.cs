@@ -153,7 +153,7 @@ namespace Knapcode.ExplorePackages.Logic
         }
 
         /// <summary>
-        /// Determines if the provided package details list represents a listed package.
+        /// Determines if the provided package details leaf represents a listed package.
         /// </summary>
         /// <param name="leaf">The catalog leaf.</param>
         /// <returns>True if the package is listed.</returns>
@@ -166,6 +166,7 @@ namespace Knapcode.ExplorePackages.Logic
 
             // A published year of 1900 indicates that this package is unlisted, when the listed property itself is
             // not present (legacy behavior).
+            // Example: https://api.nuget.org/v3/catalog0/data/2015.02.01.06.22.45/antixss.4.0.1.json
             return leaf.Published.Year != 1900;
         }
 
@@ -175,21 +176,18 @@ namespace Knapcode.ExplorePackages.Logic
         /// </summary>
         /// <param name="leaf">The catalog leaf.</param>
         /// <returns>True if the package is SemVer 2.0.0.</returns>
-        public static bool IsSemVer2(this PackageDetailsCatalogLeaf leaf)
+        public static SemVerType GetSemVerType(this PackageDetailsCatalogLeaf leaf)
         {
+            var semVerType = SemVerType.SemVer1;
+
             var parsedPackageVersion = leaf.ParsePackageVersion();
-            if (parsedPackageVersion.IsSemVer2)
-            {
-                return true;
-            }
+            semVerType |= DetermineVersionSemVerType(parsedPackageVersion);
 
             if (leaf.VerbatimVersion != null)
             {
+                // Example: https://api.nuget.org/v3/catalog0/data/2018.12.11.04.58.41/http.query.filter.3.0.0-build.18.json
                 var parsedVerbatimVersion = NuGetVersion.Parse(leaf.VerbatimVersion);
-                if (parsedVerbatimVersion.IsSemVer2)
-                {
-                    return true;
-                }
+                semVerType |= DetermineVersionSemVerType(parsedVerbatimVersion);
             }
 
             if (leaf.DependencyGroups != null)
@@ -205,16 +203,51 @@ namespace Knapcode.ExplorePackages.Logic
                     foreach (var dependency in dependencyGroup.Dependencies)
                     {
                         var versionRange = dependency.ParseRange();
-                        if ((versionRange.MaxVersion != null && versionRange.MaxVersion.IsSemVer2)
-                            || (versionRange.MinVersion != null && versionRange.MinVersion.IsSemVer2))
+
+                        if (versionRange.MinVersion != null)
                         {
-                            return true;
+                            // Example: https://api.nuget.org/v3/catalog0/data/2016.11.25.02.50.34/snowflake.framework.services.0.2.0-pre-alpha-build1038.json
+                            semVerType |= DetermineSemVerType(
+                                versionRange.MinVersion,
+                                SemVerType.DependencyMinHasPrereleaseDots,
+                                SemVerType.DependencyMinHasBuildMetadata);
+                        }
+
+                        if (versionRange.MaxVersion != null)
+                        {
+                            // Example: https://api.nuget.org/v3/catalog0/data/2019.02.12.17.44.39/semvertest.1.3.4.json
+                            semVerType |= DetermineSemVerType(
+                                versionRange.MaxVersion,
+                                SemVerType.DependencyMaxHasPrereleaseDots,
+                                SemVerType.DependencyMaxHasBuildMetadata);
                         }
                     }
                 }
             }
 
-            return false;
+            return semVerType;
+        }
+
+        private static SemVerType DetermineVersionSemVerType(NuGetVersion version)
+        {
+            return DetermineSemVerType(version, SemVerType.VersionHasPrereleaseDots, SemVerType.VersionHasBuildMetadata);
+        }
+
+        private static SemVerType DetermineSemVerType(NuGetVersion version, SemVerType hasPrereleaseDots, SemVerType hasBuildMetadata)
+        {
+            var semVerType = SemVerType.SemVer1;
+
+            if (version.ReleaseLabels != null && version.ReleaseLabels.Count() > 1)
+            {
+                semVerType |= hasPrereleaseDots;
+            }
+
+            if (version.HasMetadata)
+            {
+                semVerType |= hasBuildMetadata;
+            }
+
+            return semVerType;
         }
     }
 }

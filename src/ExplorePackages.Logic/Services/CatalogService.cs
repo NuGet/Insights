@@ -101,7 +101,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                     existingLeaf.RelativePath = latestLeaf.RelativePath;
                     existingLeaf.IsListed = latestLeaf.IsListed;
-                    existingLeaf.IsSemVer2 = latestLeaf.IsSemVer2;
+                    existingLeaf.SemVerType = latestLeaf.SemVerType;
                 }
             }
         }
@@ -157,7 +157,7 @@ namespace Knapcode.ExplorePackages.Logic
                         PackageKey = packageKey,
                         Type = leaf.Type,
                         IsListed = entryToVisibilityState[leaf].Listed,
-                        IsSemVer2 = entryToVisibilityState[leaf].SemVer2,
+                        SemVerType = entryToVisibilityState[leaf].SemVerType,
                     };
 
                     await VerifyExpectedLeafUrlAsync(leaf, leafEntity);

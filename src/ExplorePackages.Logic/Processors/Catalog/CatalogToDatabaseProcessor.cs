@@ -39,7 +39,7 @@ namespace Knapcode.ExplorePackages.Logic
                     PackageVisibilityState visiblityState;
                     if (x.IsPackageDelete())
                     {
-                        visiblityState = new PackageVisibilityState(listed: null, semVer2: null);
+                        visiblityState = new PackageVisibilityState(listed: null, semVerType: null);
                     }
                     else
                     {
@@ -88,9 +88,9 @@ namespace Knapcode.ExplorePackages.Logic
             var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(entry);
 
             var listed = leaf.IsListed();
-            var semVer2 = leaf.IsSemVer2();
+            var semVerType = leaf.GetSemVerType();
 
-            return new PackageVisibilityState(listed, semVer2);
+            return new PackageVisibilityState(listed, semVerType);
         }
 
         private class CatalogLeafItemComparer : IEqualityComparer<CatalogLeafItem>

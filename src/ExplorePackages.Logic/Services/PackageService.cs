@@ -668,7 +668,7 @@ namespace Knapcode.ExplorePackages.Logic
                         FirstCommitTimestamp = latestEntryToFirstCommitTimestamp[cp].UtcTicks,
                         LastCommitTimestamp = cp.CommitTimestamp.UtcTicks,
                         Listed = latestEntryToVisibilityState[cp].Listed,
-                        SemVer2 = latestEntryToVisibilityState[cp].SemVer2,
+                        SemVerType = latestEntryToVisibilityState[cp].SemVerType,
                     };
                     return Task.CompletedTask;
                 },
@@ -697,7 +697,7 @@ namespace Knapcode.ExplorePackages.Logic
                     }
                     else
                     {
-                        if (pe.CatalogPackage.LastCommitTimestamp < pl.CatalogPackage.LastCommitTimestamp)
+                        if (pe.CatalogPackage.LastCommitTimestamp <= pl.CatalogPackage.LastCommitTimestamp)
                         {
                             pe.CatalogPackage.Deleted = pl.CatalogPackage.Deleted;
 
@@ -706,9 +706,9 @@ namespace Knapcode.ExplorePackages.Logic
                                 pe.CatalogPackage.Listed = pl.CatalogPackage.Listed;
                             }
 
-                            if (pl.CatalogPackage.SemVer2.HasValue)
+                            if (pl.CatalogPackage.SemVerType.HasValue)
                             {
-                                pe.CatalogPackage.SemVer2 = pl.CatalogPackage.SemVer2;
+                                pe.CatalogPackage.SemVerType = pl.CatalogPackage.SemVerType;
                             }
                         }
 

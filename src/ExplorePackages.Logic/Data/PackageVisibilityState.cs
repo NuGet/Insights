@@ -1,14 +1,16 @@
-﻿namespace Knapcode.ExplorePackages.Logic
+﻿using Knapcode.ExplorePackages.Entities;
+
+namespace Knapcode.ExplorePackages.Logic
 {
     public class PackageVisibilityState
     {
-        public PackageVisibilityState(bool? listed, bool? semVer2)
+        public PackageVisibilityState(bool? listed, SemVerType? semVerType)
         {
             Listed = listed;
-            SemVer2 = semVer2;
+            SemVerType = semVerType;
         }
 
         public bool? Listed { get; }
-        public bool? SemVer2 { get; }
+        public SemVerType? SemVerType { get; }
     }
 }

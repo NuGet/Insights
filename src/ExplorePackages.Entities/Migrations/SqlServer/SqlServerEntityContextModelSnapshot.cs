@@ -57,11 +57,11 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
 
                     b.Property<bool?>("IsListed");
 
-                    b.Property<bool?>("IsSemVer2");
-
                     b.Property<long>("PackageKey");
 
                     b.Property<string>("RelativePath");
+
+                    b.Property<int?>("SemVerType");
 
                     b.Property<int>("Type");
 
@@ -86,12 +86,12 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
 
                     b.Property<bool?>("Listed");
 
-                    b.Property<bool?>("SemVer2");
+                    b.Property<int?>("SemVerType");
 
                     b.HasKey("PackageKey");
 
                     b.HasIndex("LastCommitTimestamp")
-                        .HasAnnotation("SqlServer:Include", new[] { "Deleted", "FirstCommitTimestamp", "Listed", "SemVer2" });
+                        .HasAnnotation("SqlServer:Include", new[] { "Deleted", "FirstCommitTimestamp", "Listed", "SemVerType" });
 
                     b.ToTable("CatalogPackages");
                 });

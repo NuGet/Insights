@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Knapcode.ExplorePackages.Entities
 {
@@ -9,7 +10,7 @@ namespace Knapcode.ExplorePackages.Entities
         public long FirstCommitTimestamp { get; set; }
         public long LastCommitTimestamp { get; set; }
         public bool? Listed { get; set; }
-        public bool? SemVer2 { get; set; }
+        public SemVerType? SemVerType { get; set; }
 
         public PackageEntity Package { get; set; }
         public List<CatalogLeafEntity> CatalogLeaves { get; set; }
