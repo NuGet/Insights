@@ -90,12 +90,11 @@ namespace Knapcode.ExplorePackages.Logic
 
             var immutablePackage = new ImmutablePackage(package);
             var nuspecQueryContext = await GetNuspecContextAsync(package);
-            var isSemVer2 = NuspecUtility.IsSemVer2(nuspecQueryContext.Document);
 
-            return new PackageConsistencyContext(
-                immutablePackage,
-                isSemVer2,
-                package.V2Package?.Listed ?? package.CatalogPackage?.Listed ?? true);
+            var isSemVer2 = IsSemVer2(package);
+            var isListed = IsListed(package);
+
+            return new PackageConsistencyContext(immutablePackage, isSemVer2, isListed);
         }
 
         public async Task<PackageQueryContext> GetPackageQueryContextFromDatabaseAsync(
@@ -105,10 +104,10 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var immutablePackage = new ImmutablePackage(package);
 
-            NuspecContext nuspecQueryContext = null;
-            if (!includeNuspec)
+            NuspecContext nuspecContext = null;
+            if (includeNuspec)
             {
-                nuspecQueryContext = await GetNuspecContextAsync(package);
+                nuspecContext = await GetNuspecContextAsync(package);
             }
 
             MZipContext mzipContext = null;
@@ -117,20 +116,31 @@ namespace Knapcode.ExplorePackages.Logic
                 mzipContext = await GetMZipContextAsync(package);
             }
 
+            var semVer2 = IsSemVer2(package);
+            var listed = IsListed(package);
+
+            return new PackageQueryContext(
+                immutablePackage,
+                nuspecContext,
+                mzipContext,
+                semVer2,
+                listed);
+        }
+
+        private static bool IsSemVer2(PackageEntity package)
+        {
             var semVer2 = false;
             if (package.CatalogPackage?.SemVerType != null)
             {
                 semVer2 = package.CatalogPackage.SemVerType.Value != SemVerType.SemVer1;
             }
 
-            var listed = package.V2Package?.Listed ?? package.CatalogPackage?.Listed ?? true;
+            return semVer2;
+        }
 
-            return new PackageQueryContext(
-                immutablePackage,
-                nuspecQueryContext,
-                mzipContext,
-                semVer2,
-                listed);
+        private static bool IsListed(PackageEntity package)
+        {
+            return package.V2Package?.Listed ?? package.CatalogPackage?.Listed ?? true;
         }
 
         private async Task<MZipContext> GetMZipContextAsync(PackageEntity package)
