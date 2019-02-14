@@ -39,7 +39,7 @@ namespace Knapcode.ExplorePackages.Logic
                     PackageVisibilityState visiblityState;
                     if (x.IsPackageDelete())
                     {
-                        visiblityState = new PackageVisibilityState(listed: null, semVerType: null);
+                        visiblityState = new PackageVisibilityState(listed: false, semVerType: null);
                     }
                     else
                     {

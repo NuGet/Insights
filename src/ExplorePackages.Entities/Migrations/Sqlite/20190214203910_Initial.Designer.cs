@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
 {
     [DbContext(typeof(SqliteEntityContext))]
-    [Migration("20190212184426_AddSemVerType")]
-    partial class AddSemVerType
+    [Migration("20190214203910_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -52,7 +52,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
 
                     b.Property<long>("CatalogCommitKey");
 
-                    b.Property<bool?>("IsListed");
+                    b.Property<bool>("IsListed");
 
                     b.Property<long>("PackageKey");
 
@@ -81,7 +81,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
 
                     b.Property<long>("LastCommitTimestamp");
 
-                    b.Property<bool?>("Listed");
+                    b.Property<bool>("Listed");
 
                     b.Property<int?>("SemVerType");
 

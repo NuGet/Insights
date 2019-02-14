@@ -700,11 +700,7 @@ namespace Knapcode.ExplorePackages.Logic
                         if (pe.CatalogPackage.LastCommitTimestamp <= pl.CatalogPackage.LastCommitTimestamp)
                         {
                             pe.CatalogPackage.Deleted = pl.CatalogPackage.Deleted;
-
-                            if (pl.CatalogPackage.Listed.HasValue)
-                            {
-                                pe.CatalogPackage.Listed = pl.CatalogPackage.Listed;
-                            }
+                            pe.CatalogPackage.Listed = pl.CatalogPackage.Listed;
 
                             if (pl.CatalogPackage.SemVerType.HasValue)
                             {

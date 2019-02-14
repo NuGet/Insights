@@ -196,8 +196,8 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                     Deleted = table.Column<bool>(nullable: false),
                     FirstCommitTimestamp = table.Column<long>(nullable: false),
                     LastCommitTimestamp = table.Column<long>(nullable: false),
-                    Listed = table.Column<bool>(nullable: true),
-                    SemVer2 = table.Column<bool>(nullable: true)
+                    Listed = table.Column<bool>(nullable: false),
+                    SemVerType = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -376,8 +376,8 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
                     PackageKey = table.Column<long>(nullable: false),
                     Type = table.Column<int>(nullable: false),
                     RelativePath = table.Column<string>(nullable: true),
-                    IsListed = table.Column<bool>(nullable: true),
-                    IsSemVer2 = table.Column<bool>(nullable: true)
+                    IsListed = table.Column<bool>(nullable: false),
+                    SemVerType = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
