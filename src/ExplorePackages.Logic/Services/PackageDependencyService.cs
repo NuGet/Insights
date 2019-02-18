@@ -54,7 +54,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                 sw.Stop();
                 _logger.LogInformation(
-                    "Fetched {Count} package dependencies. Took {Elapsed}ms",
+                    "Fetched {Count} package dependencies. {Elapsed}ms",
                     dependencies.Count,
                     sw.ElapsedMilliseconds);
 
@@ -77,7 +77,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                 sw.Stop();
                 _logger.LogInformation(
-                    "Fetched {Count} package registrations. Took {Elapsed}ms",
+                    "Fetched {Count} package registrations. {Elapsed}ms",
                     packageRegistrationKeyToPackageRegistration.Count,
                     sw.ElapsedMilliseconds);
 

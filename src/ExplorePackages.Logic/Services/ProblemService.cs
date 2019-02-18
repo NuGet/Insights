@@ -130,7 +130,7 @@ namespace Knapcode.ExplorePackages.Logic
                     minPackageKey += batchSize;
 
                     _logger.LogInformation(
-                        "Checked package keys > {MinPackageKey} and <= {MaxPackageKey}. Took {Duration}ms.",
+                        "Checked package keys > {MinPackageKey} and <= {MaxPackageKey}. {Duration}ms",
                         minPackageKey,
                         maxPackageKey,
                         stopwatch.ElapsedMilliseconds);

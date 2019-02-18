@@ -166,6 +166,7 @@ namespace Knapcode.ExplorePackages.Logic
             if (newCursor > oldCursor)
             {
                 await _cursorService.SetValueAsync(cursorName, newCursor);
+                _logger.LogInformation("[CHECKPOINT] Cursor {CursorName} moved to {Start:O}.", cursorName, newCursor);
             }
         }
     }

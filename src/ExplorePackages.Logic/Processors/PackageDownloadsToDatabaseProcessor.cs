@@ -58,6 +58,10 @@ namespace Knapcode.ExplorePackages.Logic
             if (newETag != previousETag)
             {
                 await _etagService.SetValueAsync(ETagNames.DownloadsV1, newETag);
+                _logger.LogInformation(
+                    "[CHECKPOINT] Updated {ETagName} etag to {ETagValue}.",
+                    ETagNames.DownloadsV1,
+                    newETag);
 
                 var oldPath = _options.Value.DownloadsV1Path + ".old";
                 SafeFileWriter.Replace(_options.Value.DownloadsV1Path, newPath, oldPath, _logger);
@@ -243,7 +247,7 @@ namespace Knapcode.ExplorePackages.Logic
                 new MemoryStream(Encoding.UTF8.GetBytes(progressContent)),
                 _logger);
             _logger.LogInformation(
-                "Got up to {Id} {Version} with {Downloads} downloads.",
+                "[CHECKPOINT] Got up to {Id} {Version} with {Downloads} downloads.",
                 lastPackage.Id,
                 lastPackage.Version,
                 lastPackage.Downloads);

@@ -87,8 +87,8 @@ namespace Knapcode.ExplorePackages.Logic
             await _processor.ProcessAsync(work.Page, work.Leaves);
 
             var newCursorValue = work.Leaves.Max(x => x.CommitTimestamp);
-            _logger.LogInformation("Cursor {CursorName} moving to {Start:O}.", _processor.CursorName, newCursorValue);
             await _cursorService.SetValueAsync(_processor.CursorName, newCursorValue);
+            _logger.LogInformation("[CHECKPOINT] Cursor {CursorName} moved to {Start:O}.", _processor.CursorName, newCursorValue);
         }
 
         private class Work

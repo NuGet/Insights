@@ -79,8 +79,8 @@ namespace Knapcode.ExplorePackages.Logic
 
                     if (commits.Any())
                     {
-                        _logger.LogInformation("Cursor {CursorName} moving to {Start:O}.", _processor.CursorName, start);
                         await _cursorService.SetValueAsync(_processor.CursorName, start);
+                        _logger.LogInformation("[CHECKPOINT] Cursor {CursorName} moved to {Start:O}.", _processor.CursorName, start);
                     }
                 }
                 else
@@ -169,12 +169,12 @@ namespace Knapcode.ExplorePackages.Logic
                     if (hasMoreItems)
                     {
                         var serializedNextProgressToken = _processor.SerializeProgressToken(progressToken);
-                        _logger.LogInformation("Setting next progress token to {ProgressToken}.", serializedNextProgressToken);
                         await _sequentialProgressService.SetSerializedProgressTokenAsync(
                             _processor.CursorName,
                             firstCommitTimetamp,
                             lastCommitTimestamp,
                             serializedNextProgressToken);
+                        _logger.LogInformation("[CHECKPOINT] Set next progress token to {ProgressToken}.", serializedNextProgressToken);
                     }
 
                     _logger.LogInformation(
