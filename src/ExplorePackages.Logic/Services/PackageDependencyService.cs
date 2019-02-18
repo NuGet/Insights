@@ -42,21 +42,30 @@ namespace Knapcode.ExplorePackages.Logic
                     take,
                     packageRegistrationKeys.Count,
                     afterKey);
-                var sw = Stopwatch.StartNew();
+                var stopwatch = Stopwatch.StartNew();
 
-                var dependencies = await entityContext
-                    .PackageDependencies
-                    .Where(x => packageRegistrationKeys.Contains(x.DependencyPackageRegistrationKey))
+                IQueryable<PackageDependencyEntity> dependenciesQuery = entityContext.PackageDependencies;
+                if (packageRegistrationKeys.Count == 1)
+                {
+                    var key = packageRegistrationKeys[0];
+                    dependenciesQuery = dependenciesQuery.Where(x => x.DependencyPackageRegistrationKey == key);
+                }
+                else
+                {
+                    dependenciesQuery = dependenciesQuery.Where(x => packageRegistrationKeys.Contains(x.DependencyPackageRegistrationKey));
+                }
+
+                var dependencies = await dependenciesQuery
                     .OrderBy(x => x.PackageDependencyKey)
                     .Where(x => x.PackageDependencyKey > afterKey)
                     .Take(take)
                     .ToListAsync();
 
-                sw.Stop();
+                stopwatch.Stop();
                 _logger.LogInformation(
                     "Fetched {Count} package dependencies. {Elapsed}ms",
                     dependencies.Count,
-                    sw.ElapsedMilliseconds);
+                    stopwatch.ElapsedMilliseconds);
 
                 var foundPackageRegistrationKeys = dependencies
                     .Select(x => x.DependencyPackageRegistrationKey)
@@ -66,7 +75,7 @@ namespace Knapcode.ExplorePackages.Logic
                 _logger.LogInformation(
                     "Fetching package registrations for the package dependencies.",
                     foundPackageRegistrationKeys.Count);
-                sw.Restart();
+                stopwatch.Restart();
 
                 var packageRegistrationKeyToPackageRegistration = await entityContext
                     .PackageRegistrations
@@ -75,11 +84,11 @@ namespace Knapcode.ExplorePackages.Logic
                     .Where(x => foundPackageRegistrationKeys.Contains(x.PackageRegistrationKey))
                     .ToDictionaryAsync(x => x.PackageRegistrationKey);
 
-                sw.Stop();
+                stopwatch.Stop();
                 _logger.LogInformation(
                     "Fetched {Count} package registrations. {Elapsed}ms",
                     packageRegistrationKeyToPackageRegistration.Count,
-                    sw.ElapsedMilliseconds);
+                    stopwatch.ElapsedMilliseconds);
 
                 foreach (var dependency in dependencies)    
                 {
@@ -201,6 +210,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         private async Task CommitUpdates(DependencyPackageUpdates updates)
         {
+            var stopwatch = Stopwatch.StartNew();
             using (var entityContext = await _entityContextFactory.GetAsync())
             using (var connection = entityContext.Database.GetDbConnection())
             {
@@ -287,12 +297,11 @@ namespace Knapcode.ExplorePackages.Logic
                         changes += await minimumAndBestCommand.ExecuteNonQueryAsync();
                     }
 
-                    var commitStopwatch = Stopwatch.StartNew();
                     transaction.Commit();
                     _logger.LogInformation(
                         "Committed package dependency {Changes} changes. {commitStopwatch.ElapsedMilliseconds}ms",
                         changes,
-                        commitStopwatch.ElapsedMilliseconds);
+                        stopwatch.ElapsedMilliseconds);
                 }
             }
         }

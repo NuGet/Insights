@@ -133,8 +133,6 @@ namespace Knapcode.ExplorePackages.Logic
             IReadOnlyList<EntityCommit<TEntity>> commits,
             CancellationToken token)
         {
-            var stopwatch = Stopwatch.StartNew();
-
             var entities = commits
                 .SelectMany(x => x.Entities)
                 .ToList();
@@ -152,6 +150,7 @@ namespace Knapcode.ExplorePackages.Logic
             var hasMoreItems = true;
             while (hasMoreItems)
             {
+                var stopwatch = Stopwatch.StartNew();
                 var batch = await _processor.InitializeItemsAsync(entities, progressToken, token);
                 progressToken = batch.NextProgressToken;
                 hasMoreItems = batch.HasMoreItems;
