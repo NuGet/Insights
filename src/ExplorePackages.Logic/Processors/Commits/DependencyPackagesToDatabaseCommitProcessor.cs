@@ -152,7 +152,7 @@ namespace Knapcode.ExplorePackages.Logic
                 .GroupBy(x => x.DependencyPackageRegistrationKey)
                 .ToDictionary(
                     x => packageRegistrationKeyToId[x.Key],
-                    x => x.Select(y => y.ParentPackageKey).Distinct().Count())
+                    x => x.Count())
                 .OrderByDescending(x => x.Value)
                 .Take(5)
                 .ToList();
