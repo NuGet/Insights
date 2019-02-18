@@ -15,7 +15,7 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.0-rtm-35687")
+                .HasAnnotation("ProductVersion", "2.2.2-servicing-10034")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -321,14 +321,14 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
 
                     b.HasIndex("BestDependencyPackageKey");
 
-                    b.HasIndex("DependencyPackageRegistrationKey");
-
                     b.HasIndex("FrameworkKey");
 
                     b.HasIndex("MinimumDependencyPackageKey");
 
                     b.HasIndex("ParentPackageKey")
                         .HasAnnotation("SqlServer:Include", new[] { "BestDependencyPackageKey", "DependencyPackageRegistrationKey", "FrameworkKey", "MinimumDependencyPackageKey", "OriginalVersionRange", "VersionRange" });
+
+                    b.HasIndex("DependencyPackageRegistrationKey", "ParentPackageKey");
 
                     b.HasIndex("ParentPackageKey", "DependencyPackageRegistrationKey", "FrameworkKey")
                         .IsUnique()

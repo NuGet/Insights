@@ -366,6 +366,9 @@ namespace Knapcode.ExplorePackages.Entities
                 .IsUnique();
             modelBuilder
                 .Entity<PackageDependencyEntity>()
+                .HasIndex(x => new { x.DependencyPackageRegistrationKey, x.ParentPackageKey });
+            modelBuilder
+                .Entity<PackageDependencyEntity>()
                 .HasOne(x => x.MinimumDependencyPackage)
                 .WithMany(x => x.MinimumPackageDependents)
                 .HasForeignKey(x => x.MinimumDependencyPackageKey);
