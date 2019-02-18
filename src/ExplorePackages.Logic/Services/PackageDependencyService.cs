@@ -37,6 +37,13 @@ namespace Knapcode.ExplorePackages.Logic
         {
             using (var entityContext = await _entityContextFactory.GetAsync())
             {
+                _logger.LogInformation(
+                    "Fetching up to {Take} dependent packages for {Count} package registrations after package dependency key {AfterKey}.",
+                    take,
+                    packageRegistrationKeys.Count,
+                    afterKey);
+                var sw = Stopwatch.StartNew();
+
                 var dependencies = await entityContext
                     .PackageDependencies
                     .Where(x => packageRegistrationKeys.Contains(x.DependencyPackageRegistrationKey))
@@ -45,10 +52,21 @@ namespace Knapcode.ExplorePackages.Logic
                     .Take(take)
                     .ToListAsync();
 
+                sw.Stop();
+                _logger.LogInformation(
+                    "Fetched {Count} package dependencies. Took {Elapsed}ms",
+                    dependencies.Count,
+                    sw.ElapsedMilliseconds);
+
                 var foundPackageRegistrationKeys = dependencies
                     .Select(x => x.DependencyPackageRegistrationKey)
                     .Distinct()
                     .ToList();
+
+                _logger.LogInformation(
+                    "Fetching package registrations for the package dependencies.",
+                    foundPackageRegistrationKeys.Count);
+                sw.Restart();
 
                 var packageRegistrationKeyToPackageRegistration = await entityContext
                     .PackageRegistrations
@@ -56,6 +74,12 @@ namespace Knapcode.ExplorePackages.Logic
                     .ThenInclude(x => x.CatalogPackage)
                     .Where(x => foundPackageRegistrationKeys.Contains(x.PackageRegistrationKey))
                     .ToDictionaryAsync(x => x.PackageRegistrationKey);
+
+                sw.Stop();
+                _logger.LogInformation(
+                    "Fetched {Count} package registrations. Took {Elapsed}ms",
+                    packageRegistrationKeyToPackageRegistration.Count,
+                    sw.ElapsedMilliseconds);
 
                 foreach (var dependency in dependencies)    
                 {
