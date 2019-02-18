@@ -95,13 +95,11 @@ namespace Knapcode.ExplorePackages.Logic
                 }
             }
 
-            var packagesBatchSize = _batchSizeProvider.Get(BatchSizeType.DependencyPackagesToDatabase_Packages);
-
             // Initialize the progress token, if necessary.
             if (progressToken == null)
             {
                 // If the batch size very small, process the package registrations one by one.
-                if (packagesBatchSize <= 20)
+                if (allPackageRegistrationKeys.Count <= 10)
                 {
                     progressToken = new ProgressToken(
                         allPackageRegistrationKeys,
@@ -129,6 +127,7 @@ namespace Knapcode.ExplorePackages.Logic
             }
 
             // Query for dependents.
+            var packagesBatchSize = _batchSizeProvider.Get(BatchSizeType.DependencyPackagesToDatabase_Packages);
             var dependents = await _packageDependencyService.GetDependentPackagesAsync(
                 packageRegistrationKeys,
                 progressToken.AfterKey,
