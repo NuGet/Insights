@@ -34,7 +34,7 @@ namespace Knapcode.ExplorePackages.Logic
             },
             {
                 BatchSizeType.MZipToDatabase,
-                new Bounds(MinimumForCatalog, 100)
+                new Bounds(MinimumForCatalog, 10)
             },
             {
                 BatchSizeType.PackageDownloadsToDatabase,
