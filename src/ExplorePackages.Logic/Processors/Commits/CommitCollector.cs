@@ -146,8 +146,8 @@ namespace Knapcode.ExplorePackages.Logic
                 _processor.CursorName,
                 firstCommitTimetamp,
                 lastCommitTimestamp);
+            _logger.LogInformation("Starting with progress token {ProgressToken}.", serializedProgressToken);
             var progressToken = _processor.DeserializeProgressToken(serializedProgressToken);
-            _logger.LogInformation("Starting with progress token {ProgressToken}.", progressToken);
 
             var hasMoreItems = true;
             while (hasMoreItems)

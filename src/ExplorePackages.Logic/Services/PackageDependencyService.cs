@@ -37,12 +37,6 @@ namespace Knapcode.ExplorePackages.Logic
         {
             using (var entityContext = await _entityContextFactory.GetAsync())
             {
-                _logger.LogInformation(
-                    "Fetching up to {Take} dependent packages for {Count} package registrations after package dependency key {AfterKey}.",
-                    take,
-                    packageRegistrationKeys.Count,
-                    afterKey);
-
                 var dependencies = await entityContext
                     .PackageDependencies
                     .Where(x => packageRegistrationKeys.Contains(x.DependencyPackageRegistrationKey))

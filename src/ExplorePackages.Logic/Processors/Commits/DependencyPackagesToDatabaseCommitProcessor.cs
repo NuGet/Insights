@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -128,10 +129,24 @@ namespace Knapcode.ExplorePackages.Logic
 
             // Query for dependents.
             var packagesBatchSize = _batchSizeProvider.Get(BatchSizeType.DependencyPackagesToDatabase_Packages);
+
+            _logger.LogInformation(
+                "Fetching up to {Take} dependent packages for {Count} package registrations after package dependency key {AfterKey}.",
+                packagesBatchSize,
+                packageRegistrationKeys.Count,
+                progressToken.AfterKey);
+
+            var sw = Stopwatch.StartNew();
             var dependents = await _packageDependencyService.GetDependentPackagesAsync(
                 packageRegistrationKeys,
                 progressToken.AfterKey,
                 take: packagesBatchSize);
+            sw.Stop();
+
+            _logger.LogInformation(
+                "Fetched {Count} dependent packages. Took {Elapsed}ms.",
+                dependents.Count,
+                sw.ElapsedMilliseconds);
 
             var topDependencyPairs = dependents
                 .GroupBy(x => x.DependencyPackageRegistrationKey)
