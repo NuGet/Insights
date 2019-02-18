@@ -32,18 +32,22 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task<IReadOnlyList<PackageDependencyEntity>> GetDependentPackagesAsync(
             IReadOnlyList<long> packageRegistrationKeys,
-            long? afterKey,
+            long afterKey,
             int take)
         {
             using (var entityContext = await _entityContextFactory.GetAsync())
             {
-                var afterKeyValue = afterKey.GetValueOrDefault(0);
+                _logger.LogInformation(
+                    "Fetching up to {Take} dependent packages for {Count} package registrations after package dependency key {AfterKey}.",
+                    take,
+                    packageRegistrationKeys.Count,
+                    afterKey);
 
                 var dependencies = await entityContext
                     .PackageDependencies
                     .Where(x => packageRegistrationKeys.Contains(x.DependencyPackageRegistrationKey))
                     .OrderBy(x => x.PackageDependencyKey)
-                    .Where(x => x.PackageDependencyKey > afterKeyValue)
+                    .Where(x => x.PackageDependencyKey > afterKey)
                     .Take(take)
                     .ToListAsync();
 

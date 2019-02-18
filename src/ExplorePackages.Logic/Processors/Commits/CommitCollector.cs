@@ -168,8 +168,8 @@ namespace Knapcode.ExplorePackages.Logic
 
                     if (hasMoreItems)
                     {
-                        _logger.LogInformation("Setting next progress token to {ProgressToken}.", progressToken);
                         var serializedNextProgressToken = _processor.SerializeProgressToken(progressToken);
+                        _logger.LogInformation("Setting next progress token to {ProgressToken}.", serializedNextProgressToken);
                         await _sequentialProgressService.SetSerializedProgressTokenAsync(
                             _processor.CursorName,
                             firstCommitTimetamp,

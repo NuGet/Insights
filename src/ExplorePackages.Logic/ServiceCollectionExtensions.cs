@@ -203,6 +203,7 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<ProblemService>();
             serviceCollection.AddTransient<ILeaseService, LeaseService>();
             serviceCollection.AddTransient<CommitCollectorSequentialProgressService>();
+            serviceCollection.AddTransient<CommitEnumerator>();
 
             serviceCollection.AddTransient<V2Parser>();
             serviceCollection.AddSingleton<ServiceIndexCache>();

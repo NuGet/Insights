@@ -6,7 +6,14 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class BatchSizeProvider : IBatchSizeProvider
     {
-        private const int MinimumForCatalog = 21;
+        /// <summary>
+        /// The minimum is 2 because a batch size less than this would not allow reliable commit timestamp traversal.
+        /// A cursor in the catalog is a timestamp representing up to what time in the catalog has been processed. If
+        /// the batch size was 1 then we would be unable to determine if the item in the catalog represents the whole
+        /// catalog commit (batch of items with the same commit timestamp).
+        /// </summary>
+        private const int MinimumForCatalog = 2;
+
         private static readonly IReadOnlyDictionary<BatchSizeType, Bounds> DefaultBatchSizes = new Dictionary<BatchSizeType, Bounds>
         {
             {
@@ -19,7 +26,7 @@ namespace Knapcode.ExplorePackages.Logic
             },
             {
                 BatchSizeType.DependencyPackagesToDatabase_Packages,
-                new Bounds(1, 10000)
+                new Bounds(1, 1000)
             },
             {
                 BatchSizeType.MZip,
