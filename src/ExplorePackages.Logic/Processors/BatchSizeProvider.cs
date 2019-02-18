@@ -22,7 +22,7 @@ namespace Knapcode.ExplorePackages.Logic
             },
             {
                 BatchSizeType.DependencyPackagesToDatabase_PackageRegistrations,
-                new Bounds(MinimumForCatalog, 100)
+                new Bounds(MinimumForCatalog, 10)
             },
             {
                 BatchSizeType.DependencyPackagesToDatabase_Packages,
