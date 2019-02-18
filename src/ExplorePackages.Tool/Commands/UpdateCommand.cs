@@ -29,8 +29,6 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             DependencyPackagesToDatabaseCommand dependencyPackagesToDatabase,
             DownloadsToDatabaseCommand downloadsToDatabase,
             PackageQueriesCommand packageQueries,
-            ReprocessCrossCheckDiscrepanciesCommand reprocessCrossCheckDiscrepancies,
-            ShowProblemsCommand showProblems,
             ISingletonService singletonService,
             IOptionsSnapshot<ExplorePackagesSettings> options,
             ILogger<CommandExecutor> logger)
@@ -55,8 +53,6 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             commands.AddRange(new ICommand[]
             {
                 packageQueries,
-                reprocessCrossCheckDiscrepancies,
-                showProblems,
             });
 
             _commands = commands;
