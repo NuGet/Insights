@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Dapper;
 using Knapcode.ExplorePackages.Entities;
 using Knapcode.MiniZip;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +15,8 @@ using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Logic
 {
+    public delegate Task<List<PackageEntity>> QueryPackagesAsync(IEntityContext entities, IReadOnlyList<string> identities);
+
     public class PackageService : IPackageService
     {
         private static readonly IMapper Mapper;
@@ -40,6 +44,35 @@ namespace Knapcode.ExplorePackages.Logic
             });
 
             Mapper = mapperConfiguration.CreateMapper();
+
+            SqlMapper.AddTypeHandler(new UintTypeHandler());
+            SqlMapper.AddTypeHandler(new UshortTypeHandler());
+        }
+
+        private class UintTypeHandler : SqlMapper.TypeHandler<uint>
+        {
+            public override uint Parse(object value)
+            {
+                return (uint)(long)value;
+            }
+
+            public override void SetValue(IDbDataParameter parameter, uint value)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private class UshortTypeHandler : SqlMapper.TypeHandler<ushort>
+        {
+            public override ushort Parse(object value)
+            {
+                return (ushort)(int)value;
+            }
+
+            public override void SetValue(IDbDataParameter parameter, ushort value)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         public PackageService(
@@ -150,7 +183,7 @@ namespace Knapcode.ExplorePackages.Logic
         }
 
         private async Task<IReadOnlyDictionary<string, long>>  AddOrUpdatePackagesAsync<T>(
-            QueryEntities<PackageEntity> getPackages,
+            QueryPackagesAsync queryPackagesAsync,
             IEnumerable<T> foreignPackages,
             Func<T, string> getId,
             Func<T, string> getVersion,
@@ -197,9 +230,7 @@ namespace Knapcode.ExplorePackages.Logic
                 var getExistingStopwatch = Stopwatch.StartNew();
                 var identities = identityToLatest.Keys.ToList();
 
-                var existingPackages = await getPackages(entityContext)
-                    .Where(p => identities.Contains(p.Identity))
-                    .ToListAsync();
+                var existingPackages = await queryPackagesAsync(entityContext, identities);
 
                 _logger.LogInformation(
                     "Got {ExistingCount} existing {TypeName} instances. {ElapsedMilliseconds}ms",
@@ -246,10 +277,49 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task AddOrUpdatePackagesAsync(IEnumerable<PackageArchiveMetadata> metadataSequence)
         {
             await AddOrUpdatePackagesAsync(
-                x => x
-                    .Packages
-                    .Include(y => y.PackageArchive)
-                    .ThenInclude(y => y.PackageEntries),
+                async (ctx, ids) =>
+                {
+                    var connection = ctx.Database.GetDbConnection();
+                    await connection.OpenAsync();
+
+                    var keyToPackage = new ConcurrentDictionary<long, PackageEntity>();
+                    var keyToPackageArchives = new ConcurrentDictionary<long, PackageArchiveEntity>();
+
+                    var records = (await connection
+                        .QueryAsync<PackageEntity, PackageArchiveEntity, PackageEntryEntity, PackageEntity>(
+                            @"SELECT p.*, pa.*, pe.*
+                              FROM Packages p
+                              LEFT OUTER JOIN PackageArchives pa ON p.PackageKey = pa.PackageKey
+                              LEFT OUTER JOIN PackageEntries pe ON pa.PackageKey = pe.PackageKey
+                              WHERE p.[Identity] IN @ids",
+                            (p, pa, pe) =>
+                            {
+                                p = keyToPackage.GetOrAdd(p.PackageKey, p);
+
+                                if (pa != null)
+                                {
+                                    pa = keyToPackageArchives.GetOrAdd(pa.PackageKey, pa);
+                                    p.PackageArchive = pa;
+                                    pa.PackageEntries = pa.PackageEntries ?? new List<PackageEntryEntity>();
+                                    pa.Package = p;
+
+                                    if (pe != null)
+                                    {
+                                        pa.PackageEntries.Add(pe);
+                                        pe.PackageArchive = pa;
+                                    }
+                                }
+
+                                return p;
+                            },
+                            new { ids },
+                            splitOn: "PackageKey, PackageEntryKey")).ToList();
+
+                    var packages = keyToPackage.Values.ToList();
+                    ctx.Packages.AttachRange(packages);
+
+                    return packages;
+                },
                 metadataSequence,
                 d => d.Id,
                 d => d.Version,
@@ -497,7 +567,10 @@ namespace Knapcode.ExplorePackages.Logic
         private async Task<IReadOnlyDictionary<string, long>> AddOrUpdatePackagesAsync(IEnumerable<PackageIdentity> identities)
         {
             return await AddOrUpdatePackagesAsync(
-                x => x.Packages,
+                (ctx, ids) => ctx
+                    .Packages
+                    .Where(x => ids.Contains(x.Identity))
+                    .ToListAsync(),
                 identities,
                 x => x.Id,
                 x => x.Version,
@@ -512,9 +585,11 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task AddOrUpdatePackagesAsync(IEnumerable<V2Package> v2Packages)
         {
             await AddOrUpdatePackagesAsync(
-                x => x
+                (ctx, ids) => ctx
                     .Packages
-                    .Include(y => y.V2Package),
+                    .Where(x => ids.Contains(x.Identity))
+                    .Include(y => y.V2Package)
+                    .ToListAsync(),
                 v2Packages,
                 v2 => v2.Id,
                 v2 => v2.Version,
@@ -642,9 +717,11 @@ namespace Knapcode.ExplorePackages.Logic
             IReadOnlyDictionary<CatalogLeafItem, PackageVisibilityState> latestEntryToVisibilityState)
         {
             return await AddOrUpdatePackagesAsync(
-                x => x
+                (ctx, ids) => ctx
                     .Packages
-                    .Include(y => y.CatalogPackage),
+                    .Where(x => ids.Contains(x.Identity))
+                    .Include(x => x.CatalogPackage)
+                    .ToListAsync(),
                 latestEntries,
                 c => c.PackageId,
                 c => c.ParsePackageVersion().ToNormalizedString(),
