@@ -35,12 +35,18 @@ namespace Knapcode.ExplorePackages.Logic
             long afterKey,
             int take)
         {
+            if (packageRegistrationKeys.Count == 0)
+            {
+                return new List<PackageDependencyEntity>();
+            }
+
             using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 _logger.LogInformation(
-                    "Fetching up to {Take} dependent packages for {Count} package registrations after package dependency key {AfterKey}.",
+                    "Fetching up to {Take} dependent packages for {Count} package registrations (first key is {First}) after package dependency key {AfterKey}.",
                     take,
                     packageRegistrationKeys.Count,
+                    packageRegistrationKeys[0],
                     afterKey);
                 var stopwatch = Stopwatch.StartNew();
 
