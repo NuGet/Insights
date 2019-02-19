@@ -3,14 +3,16 @@ using System;
 using Knapcode.ExplorePackages.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Knapcode.ExplorePackages.Entities.Migrations.Sqlite
 {
     [DbContext(typeof(SqliteEntityContext))]
-    partial class SqliteEntityContextModelSnapshot : ModelSnapshot
+    [Migration("20190219152452_IncludeInReverseDependencyIndex")]
+    partial class IncludeInReverseDependencyIndex
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

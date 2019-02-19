@@ -48,6 +48,19 @@ namespace Knapcode.ExplorePackages.Entities
                 });
 
             modelBuilder
+                .Entity<PackageDependencyEntity>()
+                .ForSqlServerHasIndex(x => new { x.DependencyPackageRegistrationKey, x.PackageDependencyKey })
+                .ForSqlServerInclude(x => new
+                {
+                    x.BestDependencyPackageKey,
+                    x.FrameworkKey,
+                    x.MinimumDependencyPackageKey,
+                    x.OriginalVersionRange,
+                    x.ParentPackageKey,
+                    x.VersionRange,
+                });
+
+            modelBuilder
                 .Entity<CatalogPackageEntity>()
                 .ForSqlServerHasIndex(x => x.LastCommitTimestamp)
                 .ForSqlServerInclude(x => new

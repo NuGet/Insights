@@ -328,6 +328,9 @@ namespace Knapcode.ExplorePackages.Entities.Migrations.SqlServer
                     b.HasIndex("ParentPackageKey")
                         .HasAnnotation("SqlServer:Include", new[] { "BestDependencyPackageKey", "DependencyPackageRegistrationKey", "FrameworkKey", "MinimumDependencyPackageKey", "OriginalVersionRange", "VersionRange" });
 
+                    b.HasIndex("DependencyPackageRegistrationKey", "PackageDependencyKey")
+                        .HasAnnotation("SqlServer:Include", new[] { "BestDependencyPackageKey", "FrameworkKey", "MinimumDependencyPackageKey", "OriginalVersionRange", "ParentPackageKey", "VersionRange" });
+
                     b.HasIndex("DependencyPackageRegistrationKey", "ParentPackageKey");
 
                     b.HasIndex("ParentPackageKey", "DependencyPackageRegistrationKey", "FrameworkKey")
