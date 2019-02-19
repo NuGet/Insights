@@ -4,6 +4,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Dapper;
 using Knapcode.ExplorePackages.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -61,11 +62,35 @@ namespace Knapcode.ExplorePackages.Logic
                     dependenciesQuery = dependenciesQuery.Where(x => packageRegistrationKeys.Contains(x.DependencyPackageRegistrationKey));
                 }
 
-                var dependencies = await dependenciesQuery
-                    .OrderBy(x => x.PackageDependencyKey)
-                    .Where(x => x.PackageDependencyKey > afterKey)
-                    .Take(take)
-                    .ToListAsync();
+                var connection = entityContext.Database.GetDbConnection();
+                await connection.OpenAsync();
+
+                string query;
+                if (entityContext is SqlServerEntityContext)
+                {
+                    query = @"
+                        SELECT TOP(@take) *
+                        FROM PackageDependencies
+                        WHERE DependencyPackageRegistrationKey IN @packageRegistrationKeys AND PackageDependencyKey > @afterKey
+                        ORDER BY PackageDependencyKey";
+                }
+                else if (entityContext is SqliteEntityContext)
+                {
+                    query = @"
+                        SELECT *
+                        FROM PackageDependencies
+                        WHERE DependencyPackageRegistrationKey IN @packageRegistrationKeys AND PackageDependencyKey > @afterKey
+                        ORDER BY PackageDependencyKey
+                        LIMIT @take";
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
+
+                var dependencies = (await connection.QueryAsync<PackageDependencyEntity>(
+                    query,
+                    new { take, packageRegistrationKeys, afterKey })).ToList();
 
                 stopwatch.Stop();
                 _logger.LogInformation(
