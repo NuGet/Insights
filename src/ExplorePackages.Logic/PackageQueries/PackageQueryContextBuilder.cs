@@ -41,25 +41,11 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var parsedVersion = NuGetVersion.Parse(version);
             var normalizedVersion = parsedVersion.ToNormalizedString();
-            var immutablePackage = new ImmutablePackage(new PackageEntity
-            {
-                PackageKey = 0,
-                PackageRegistration = new PackageRegistrationEntity
-                {
-                    Id = id
-                },
-                Version = normalizedVersion,
-                Identity = $"{id}/{normalizedVersion}",
-                CatalogPackage = new CatalogPackageEntity
-                {
-                    Deleted = deleted,
-                    FirstCommitTimestamp = 0,
-                    LastCommitTimestamp = 0,
-                },                
-            });
 
             return new PackageConsistencyContext(
-                immutablePackage,
+                id,
+                normalizedVersion,
+                deleted,
                 isSemVer2,
                 isListed);
         }
@@ -88,13 +74,15 @@ namespace Knapcode.ExplorePackages.Logic
                 return null;
             }
 
-            var immutablePackage = new ImmutablePackage(package);
-            var nuspecQueryContext = await GetNuspecContextAsync(package);
-
             var isSemVer2 = IsSemVer2(package);
             var isListed = IsListed(package);
 
-            return new PackageConsistencyContext(immutablePackage, isSemVer2, isListed);
+            return new PackageConsistencyContext(
+                package.PackageRegistration.Id,
+                package.Version,
+                package.CatalogPackage.Deleted,
+                isSemVer2,
+                isListed);
         }
 
         public async Task<PackageQueryContext> GetPackageQueryContextFromDatabaseAsync(
@@ -102,8 +90,6 @@ namespace Knapcode.ExplorePackages.Logic
             bool includeNuspec,
             bool includeMZip)
         {
-            var immutablePackage = new ImmutablePackage(package);
-
             NuspecContext nuspecContext = null;
             if (includeNuspec)
             {
@@ -116,15 +102,17 @@ namespace Knapcode.ExplorePackages.Logic
                 mzipContext = await GetMZipContextAsync(package);
             }
 
-            var semVer2 = IsSemVer2(package);
-            var listed = IsListed(package);
+            var isSemVer2 = IsSemVer2(package);
+            var isListed = IsListed(package);
 
             return new PackageQueryContext(
-                immutablePackage,
+                package.PackageRegistration.Id,
+                package.Version,
                 nuspecContext,
                 mzipContext,
-                semVer2,
-                listed);
+                package.CatalogPackage.Deleted,
+                isSemVer2,
+                isListed);
         }
 
         private static bool IsSemVer2(PackageEntity package)

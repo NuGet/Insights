@@ -20,7 +20,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task<bool> IsMatchAsync(PackageQueryContext context, PackageConsistencyState state)
         {
-            if (context.Package.Deleted)
+            if (context.IsDeleted)
             {
                 return false;
             }
@@ -29,11 +29,11 @@ namespace Knapcode.ExplorePackages.Logic
                 || context.MZip.ZipDirectory == null)
             {
                 await _mzipStore.StoreMZipAsync(
-                    context.Package.Id,
-                    context.Package.Version,
+                    context.Id,
+                    context.Version,
                     CancellationToken.None);
 
-                throw new InvalidOperationException($"The .mzip for {context.Package.Id} {context.Package.Version} could not be loaded.");
+                throw new InvalidOperationException($"The .mzip for {context.Id} {context.Version} could not be loaded.");
             }
 
             return false;

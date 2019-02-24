@@ -21,7 +21,7 @@ namespace Knapcode.ExplorePackages.Logic
             PackageConsistencyState state,
             IProgressReporter progressReporter)
         {
-            var shouldExist = !context.Package.Deleted;
+            var shouldExist = !context.IsDeleted;
 
             await PopulateStateAsync(context, state, progressReporter);
 
@@ -53,8 +53,8 @@ namespace Knapcode.ExplorePackages.Logic
 
             var packageContentMetadata = await _client.GetPackageContentMetadataAsync(
                    _options.Value.PackagesContainerBaseUrl,
-                   context.Package.Id,
-                   context.Package.Version);
+                   context.Id,
+                   context.Version);
 
             state.PackagesContainer.PackageContentMetadata = packageContentMetadata;
         }

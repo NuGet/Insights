@@ -3,22 +3,28 @@
     public class PackageQueryContext
     {
         public PackageQueryContext(
-            ImmutablePackage package,
+            string id,
+            string version,
             NuspecContext nuspec,
             MZipContext mzip,
+            bool isDeleted,
             bool isSemVer2,
             bool isListed)
         {
-            Package = package;
+            Id = id;
+            Version = version;
             Nuspec = nuspec;
             MZip = mzip;
+            IsDeleted = isDeleted;
             IsSemVer2 = isSemVer2;
             IsListed = isListed;
         }
 
-        public ImmutablePackage Package { get; }
+        public string Id { get; }
+        public string Version { get; }
         public NuspecContext Nuspec { get; }
         public MZipContext MZip { get; }
+        public bool IsDeleted { get; }
         public bool IsSemVer2 { get; }
         public bool IsListed { get;  }
     }

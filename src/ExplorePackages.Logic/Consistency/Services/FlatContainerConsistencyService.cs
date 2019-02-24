@@ -54,8 +54,8 @@ namespace Knapcode.ExplorePackages.Logic
 
             var packageContentMetadata = await _flatContainer.GetPackageContentMetadataAsync(
                    baseUrl,
-                   context.Package.Id,
-                   context.Package.Version);
+                   context.Id,
+                   context.Version);
 
             state.FlatContainer.PackageContentMetadata = packageContentMetadata;
         }
@@ -70,7 +70,7 @@ namespace Knapcode.ExplorePackages.Logic
             var incrementalProgress = new IncrementalProgress(progressReporter, 3);
             var baseUrl = await GetBaseUrlAsync();
 
-            var shouldExist = !context.Package.Deleted;
+            var shouldExist = !context.IsDeleted;
 
             await PopulateStateAsync(context, state, progressReporter);
             report.PackageContentMetadata = state.FlatContainer.PackageContentMetadata;
@@ -84,8 +84,8 @@ namespace Knapcode.ExplorePackages.Logic
 
             var hasPackageManifest = await _flatContainer.HasPackageManifestAsync(
                 baseUrl,
-                context.Package.Id,
-                context.Package.Version);
+                context.Id,
+                context.Version);
             report.HasPackageManifest = hasPackageManifest;
             report.IsConsistent &= shouldExist == hasPackageManifest;
             await incrementalProgress.ReportProgressAsync("Checked for the package manifest in flat container.");
@@ -97,8 +97,8 @@ namespace Knapcode.ExplorePackages.Logic
 
             var isInIndex = await _flatContainer.HasPackageInIndexAsync(
                 baseUrl,
-                context.Package.Id,
-                context.Package.Version);
+                context.Id,
+                context.Version);
             report.IsInIndex = isInIndex;
             report.IsConsistent &= shouldExist == isInIndex;
             await incrementalProgress.ReportProgressAsync("Checked for the package in flat container index.");

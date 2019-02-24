@@ -54,17 +54,17 @@ namespace Knapcode.ExplorePackages.Logic
             bool allowPartial)
         {
             var incrementalProgress = new IncrementalProgress(progressReporter, 2);
-            var shouldExistSemVer1 = !context.Package.Deleted && !context.IsSemVer2;
+            var shouldExistSemVer1 = !context.IsDeleted && !context.IsSemVer2;
             var shouldBeListedSemVer1 = shouldExistSemVer1 && context.IsListed;
-            var shouldExistSemVer2 = !context.Package.Deleted;
+            var shouldExistSemVer2 = !context.IsDeleted;
             var shouldBeListedSemVer2 = shouldExistSemVer2 && context.IsListed;
 
             var report = new MutableReport { IsConsistent = true };
 
             var packageSemVer1 = await _client.GetPackageOrNullAsync(
                 _options.Value.V2BaseUrl,
-                context.Package.Id,
-                context.Package.Version,
+                context.Id,
+                context.Version,
                 semVer2: false);
             report.HasPackageSemVer1 = packageSemVer1 != null;
             report.IsListedSemVer1 = packageSemVer1?.Listed ?? false;
@@ -78,8 +78,8 @@ namespace Knapcode.ExplorePackages.Logic
 
             var packageSemVer2 = await _client.GetPackageOrNullAsync(
                 _options.Value.V2BaseUrl,
-                context.Package.Id,
-                context.Package.Version,
+                context.Id,
+                context.Version,
                 semVer2: true);
             report.HasPackageSemVer2 = packageSemVer2 != null;
             report.IsListedSemVer2 = packageSemVer2?.Listed ?? false;

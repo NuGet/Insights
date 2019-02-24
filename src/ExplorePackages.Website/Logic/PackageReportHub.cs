@@ -136,7 +136,7 @@ namespace Knapcode.ExplorePackages.Website.Logic
 
             await InvokeProgressAsync(
                 0,
-                $"{context.Package.Id} {context.Package.Version} {availability}" +
+                $"{context.Id} {context.Version} {availability}" +
                 $"{(isAvailable && context.IsSemVer2 ? " and is SemVer 2.0.0" : string.Empty)}. " +
                 $"The consistency report will now be generated.");
 

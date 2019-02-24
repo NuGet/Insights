@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Dapper;
 using Knapcode.ExplorePackages.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -181,14 +183,34 @@ namespace Knapcode.ExplorePackages.Logic
 
             var queryKey = query.PackageQueryKey;
 
-            var existingIdentities = await entityContext
-                .PackageQueryMatches
-                .Include(x => x.Package)
-                .Include(x => x.Package.PackageRegistration)
-                .Where(x => identityStrings.Contains(x.Package.Identity) && x.PackageQueryKey == queryKey)
-                .ToListAsync();
+            var connection = entityContext.Database.GetDbConnection();
+            await connection.OpenAsync();
 
-            return existingIdentities;
+            var packageQueryKey = query.PackageQueryKey;
+            var packageRegistrations = new ConcurrentDictionary<long, PackageRegistrationEntity>();
+            var packages = new ConcurrentDictionary<long, PackageEntity>();
+            var existingMatches = (await connection.QueryAsync<PackageRegistrationEntity, PackageEntity, PackageQueryMatchEntity, PackageQueryMatchEntity>(
+                @"SELECT pr.*, p.*, pqm.*
+                  FROM PackageQueryMatches pqm
+                  INNER JOIN Packages p ON pqm.PackageKey = p.PackageKey
+                  INNER JOIN PackageRegistrations pr ON p.PackageRegistrationKey = pr.PackageRegistrationKey
+                  WHERE p.[Identity] IN @identityStrings AND pqm.PackageQueryKey = @packageQueryKey",
+                (pr, p, pqm) =>
+                {
+                    pr = packageRegistrations.GetOrAdd(pr.PackageRegistrationKey, pr);
+                    p = packages.GetOrAdd(p.PackageKey, p);
+
+                    pqm.Package = p;
+                    p.PackageRegistration = pr;
+
+                    return pqm;
+                },
+                new { identityStrings, packageQueryKey },
+                splitOn: "PackageKey, PackageQueryMatchKey")).ToList();
+
+            entityContext.PackageQueryMatches.AttachRange(existingMatches);
+
+            return existingMatches;
         }
     }
 }

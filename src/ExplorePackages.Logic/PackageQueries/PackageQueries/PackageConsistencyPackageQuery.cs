@@ -19,7 +19,9 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task<bool> IsMatchAsync(PackageQueryContext context, PackageConsistencyState state)
         {
             var packageConsistencyContext = new PackageConsistencyContext(
-                context.Package,
+                context.Id,
+                context.Version,
+                context.IsDeleted,
                 context.IsSemVer2,
                 context.IsListed);
 

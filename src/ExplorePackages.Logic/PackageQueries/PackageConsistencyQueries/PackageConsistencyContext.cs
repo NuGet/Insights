@@ -3,16 +3,22 @@
     public class PackageConsistencyContext
     {
         public PackageConsistencyContext(
-            ImmutablePackage package,
+            string id,
+            string version,
+            bool isDeleted,
             bool isSemVer2,
             bool isListed)
         {
-            Package = package;
+            Id = id;
+            Version = version;
+            IsDeleted = isDeleted;
             IsSemVer2 = isSemVer2;
             IsListed = isListed;
         }
 
-        public ImmutablePackage Package { get; }
+        public string Id { get; }
+        public string Version { get; }
+        public bool IsDeleted { get; }
         public bool IsSemVer2 { get; }
         public bool IsListed { get; }
     }

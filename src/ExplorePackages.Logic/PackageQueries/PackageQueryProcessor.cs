@@ -266,8 +266,8 @@ namespace Knapcode.ExplorePackages.Logic
             foreach (var query in work.Queries)
             {
                 var name = query.Name;
-                var id = work.Context.Package.Id;
-                var version = work.Context.Package.Version;
+                var id = work.Context.Id;
+                var version = work.Context.Version;
 
                 if (query.NeedsMZip && work.Context.MZip == null)
                 {
@@ -292,7 +292,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                 results.Add(new Result(
                     query,
-                    new PackageIdentity(work.Context.Package.Id, work.Context.Package.Version),
+                    new PackageIdentity(work.Context.Id, work.Context.Version),
                     isMatch));
 
                 if (isMatch)
@@ -353,12 +353,14 @@ namespace Knapcode.ExplorePackages.Logic
 
                 if (resultGroups[true].Any())
                 {
+                    _logger.LogInformation("Adding new results for package query {QueryName}.", queryGroup.Key.Name);
                     await _queryService.AddQueryAsync(query.Name, query.CursorName);
                     await _queryService.AddMatchesAsync(query.Name, resultGroups[true].ToList());
                 }
 
                 if (resultGroups[false].Any())
                 {
+                    _logger.LogInformation("Removing existing results for package query {QueryName}.", queryGroup.Key.Name);
                     await _queryService.RemoveMatchesAsync(query.Name, resultGroups[false].ToList());
                 }
             }

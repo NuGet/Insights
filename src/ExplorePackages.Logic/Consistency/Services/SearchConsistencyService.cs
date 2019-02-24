@@ -79,9 +79,9 @@ namespace Knapcode.ExplorePackages.Logic
                 BaseUrlIsListedSemVer2 = baseUrlIsListedSemVer2,
             };
 
-            var shouldExistSemVer1 = !context.Package.Deleted && !context.IsSemVer2;
+            var shouldExistSemVer1 = !context.IsDeleted && !context.IsSemVer2;
             var shouldBeListedSemVer1 = shouldExistSemVer1 && context.IsListed;
-            var shouldExistSemVer2 = !context.Package.Deleted;
+            var shouldExistSemVer2 = !context.IsDeleted;
             var shouldBeListedSemVer2 = shouldExistSemVer2 && context.IsListed;
 
             for (var i = 0; i < baseUrls.Count; i++)
@@ -93,8 +93,8 @@ namespace Knapcode.ExplorePackages.Logic
                 {
                     var packageSemVer1 = await _searchClient.GetPackageOrNullAsync(
                         baseUrl,
-                        context.Package.Id,
-                        context.Package.Version,
+                        context.Id,
+                        context.Version,
                         semVer2: false,
                         maxTries: maxTries);
                     var hasPackageSemVer1 = packageSemVer1 != null;
@@ -111,8 +111,8 @@ namespace Knapcode.ExplorePackages.Logic
 
                     var packageSemVer2 = await _searchClient.GetPackageOrNullAsync(
                         baseUrl,
-                        context.Package.Id,
-                        context.Package.Version,
+                        context.Id,
+                        context.Version,
                         semVer2: true,
                         maxTries: maxTries);
                     var hasPackageSemVer2 = packageSemVer2 != null;

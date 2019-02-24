@@ -68,13 +68,13 @@ namespace Knapcode.ExplorePackages.Logic
             var incrementalProgress = new IncrementalProgress(progressReporter, 2);
             var baseUrl = await _serviceIndexCache.GetUrlAsync(_type);
 
-            var shouldExist = !context.Package.Deleted && (_hasSemVer2 || !context.IsSemVer2);
+            var shouldExist = !context.IsDeleted && (_hasSemVer2 || !context.IsSemVer2);
             var shouldBeListed = shouldExist && context.IsListed;
 
             var registrationLeafItem = await _client.GetRegistrationLeafItemOrNullAsync(
                 baseUrl,
-                context.Package.Id,
-                context.Package.Version);
+                context.Id,
+                context.Version);
             report.IsInIndex = registrationLeafItem != null;
             report.IsListedInIndex = registrationLeafItem?.CatalogEntry.Listed ?? false;
             report.IsConsistent &= shouldExist == report.IsInIndex && shouldBeListed == report.IsListedInIndex;
@@ -87,11 +87,11 @@ namespace Knapcode.ExplorePackages.Logic
 
             var registrationLeaf = await _client.GetRegistrationLeafOrNullAsync(
                 baseUrl,
-                context.Package.Id,
-                context.Package.Version);
+                context.Id,
+                context.Version);
             report.HasLeaf = registrationLeaf != null;
             report.IsListedInLeaf = registrationLeaf?.Listed ?? false;
-            if ((!DeletedPackagesShouldHaveNoLeaves && !context.Package.Deleted) || DeletedPackagesShouldHaveNoLeaves)
+            if ((!DeletedPackagesShouldHaveNoLeaves && !context.IsDeleted) || DeletedPackagesShouldHaveNoLeaves)
             {
                 report.IsConsistent &= shouldExist == report.HasLeaf && shouldBeListed == report.IsListedInLeaf;
             }
