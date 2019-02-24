@@ -69,13 +69,28 @@ namespace Knapcode.ExplorePackages.Logic
 
         private class UintTypeHandler : SqlMapper.TypeHandler<uint>
         {
-            public override uint Parse(object value) => (uint)(long)value;
+            public override uint Parse(object value)
+            {
+                return (uint)(long)value;
+            }
+
             public override void SetValue(IDbDataParameter parameter, uint value) => throw new NotImplementedException();
         }
 
         private class UshortTypeHandler : SqlMapper.TypeHandler<ushort>
         {
-            public override ushort Parse(object value) => (ushort)(long)value;
+            public override ushort Parse(object value)
+            {
+                if (value is int)
+                {
+                    return (ushort)(int)value;
+                }
+                else
+                {
+                    return (ushort)(long)value;
+                }
+            }
+
             public override void SetValue(IDbDataParameter parameter, ushort value) => throw new NotImplementedException();
         }
 
