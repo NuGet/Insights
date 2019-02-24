@@ -71,7 +71,6 @@ namespace Knapcode.ExplorePackages.Logic
                 }
             }
 
-
             [Fact]
             public async Task SupportsModifyingEntriesInExistingArchives()
             {

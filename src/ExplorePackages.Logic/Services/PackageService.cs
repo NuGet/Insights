@@ -45,8 +45,26 @@ namespace Knapcode.ExplorePackages.Logic
 
             Mapper = mapperConfiguration.CreateMapper();
 
+            SqlMapper.AddTypeHandler(new UlongTypeHandler());
             SqlMapper.AddTypeHandler(new UintTypeHandler());
             SqlMapper.AddTypeHandler(new UshortTypeHandler());
+        }
+
+        private class UlongTypeHandler : SqlMapper.TypeHandler<ulong>
+        {
+            public override ulong Parse(object value)
+            {
+                if (value is decimal)
+                {
+                    return (ulong)(decimal)value;
+                }
+                else
+                {
+                    return (ulong)(long)value;
+                }
+            }
+
+            public override void SetValue(IDbDataParameter parameter, ulong value) => throw new NotImplementedException();
         }
 
         private class UintTypeHandler : SqlMapper.TypeHandler<uint>
@@ -57,7 +75,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         private class UshortTypeHandler : SqlMapper.TypeHandler<ushort>
         {
-            public override ushort Parse(object value) => (ushort)(int)value;
+            public override ushort Parse(object value) => (ushort)(long)value;
             public override void SetValue(IDbDataParameter parameter, ushort value) => throw new NotImplementedException();
         }
 

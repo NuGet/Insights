@@ -26,6 +26,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExplorePackages.Tool", "src\ExplorePackages.Tool\ExplorePackages.Tool.csproj", "{D9DDCBAE-4ECE-4C49-B2C3-52E011317838}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExplorePackages.Tool.Test", "test\ExplorePackages.Tool.Test\ExplorePackages.Tool.Test.csproj", "{EA63BB32-0706-4BB4-A795-AE2A5A0636BF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,6 +54,10 @@ Global
 		{D9DDCBAE-4ECE-4C49-B2C3-52E011317838}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9DDCBAE-4ECE-4C49-B2C3-52E011317838}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D9DDCBAE-4ECE-4C49-B2C3-52E011317838}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA63BB32-0706-4BB4-A795-AE2A5A0636BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA63BB32-0706-4BB4-A795-AE2A5A0636BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA63BB32-0706-4BB4-A795-AE2A5A0636BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA63BB32-0706-4BB4-A795-AE2A5A0636BF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -62,6 +68,7 @@ Global
 		{35B611A4-F1BE-4D7C-AA0D-EE07FB621B13} = {E875EFB7-FE35-4EF2-AC37-C81E696F4DEA}
 		{F8BBF131-7A37-4BC5-83D3-2D899808E124} = {CE6F8939-81A2-4BD4-9D9F-C1BF37DB1589}
 		{D9DDCBAE-4ECE-4C49-B2C3-52E011317838} = {E875EFB7-FE35-4EF2-AC37-C81E696F4DEA}
+		{EA63BB32-0706-4BB4-A795-AE2A5A0636BF} = {CE6F8939-81A2-4BD4-9D9F-C1BF37DB1589}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9D014703-53BC-4276-AAFF-F773AA86D208}

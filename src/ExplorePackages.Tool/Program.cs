@@ -102,7 +102,7 @@ namespace Knapcode.ExplorePackages.Tool
             return 1;
         }
 
-        private static async Task<int> ExecuteAsync(
+        public static async Task<int> ExecuteAsync(
             string[] args,
             IServiceProvider serviceProvider,
             CancellationToken token)
@@ -274,7 +274,7 @@ namespace Knapcode.ExplorePackages.Tool
             logger.LogInformation("======================" + Environment.NewLine);
         }
 
-        private static ServiceCollection InitializeServiceCollection()
+        public static ServiceCollection InitializeServiceCollection()
         {
             var serviceCollection = new ServiceCollection();
 

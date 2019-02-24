@@ -9,13 +9,21 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class CursorService
     {
-        private static readonly DateTimeOffset DefaultCursor = DateTimeOffset.MinValue;
         private readonly EntityContextFactory _entityContextFactory;
+        private readonly DateTimeOffset _defaultCursor;
+
+        public CursorService(EntityContextFactory entityContextFactory) : this(
+            entityContextFactory,
+            DateTimeOffset.MinValue)
+        {
+        }
 
         public CursorService(
-            EntityContextFactory entityContextFactory)
+            EntityContextFactory entityContextFactory,
+            DateTimeOffset defaultCursor)
         {
             _entityContextFactory = entityContextFactory;
+            _defaultCursor = defaultCursor;
         }
 
         public async Task<CursorEntity> GetAsync(string name)
@@ -60,7 +68,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                 if (cursors.Count < names.Count)
                 {
-                    return DefaultCursor;
+                    return _defaultCursor;
                 }
 
                 return GetDateTimeOffset(cursors.First());
@@ -69,7 +77,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task ResetValueAsync(string name)
         {
-            await SetValueAsync(name, DefaultCursor);
+            await SetValueAsync(name, _defaultCursor);
         }
 
         public async Task SetValuesAsync(IReadOnlyList<string> names, DateTimeOffset value)
@@ -130,7 +138,7 @@ namespace Knapcode.ExplorePackages.Logic
                     cursor = new CursorEntity
                     {
                         Name = name,
-                        Value = DefaultCursor.Ticks,
+                        Value = _defaultCursor.Ticks,
                     };
                     entityContext.Cursors.Add(cursor);
                     await entityContext.SaveChangesAsync();
@@ -145,11 +153,11 @@ namespace Knapcode.ExplorePackages.Logic
                 .FirstOrDefaultAsync(x => x.Name == name);
         }
 
-        private static DateTimeOffset GetDateTimeOffset(CursorEntity cursor)
+        private DateTimeOffset GetDateTimeOffset(CursorEntity cursor)
         {
             if (cursor == null)
             {
-                return DefaultCursor;
+                return _defaultCursor;
             }
 
             return new DateTimeOffset(cursor.Value, TimeSpan.Zero);

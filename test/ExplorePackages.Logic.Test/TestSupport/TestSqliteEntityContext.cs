@@ -25,6 +25,12 @@ namespace Knapcode.ExplorePackages.Logic
 
         public override DatabaseFacade Database => _inner.Database;
 
+        public override void Dispose()
+        {
+            _inner.Dispose();
+            base.Dispose();
+        }
+
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             await _executeBeforeCommitAsync();

@@ -44,7 +44,7 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 path = Path.Combine(
                     Path.GetTempPath(),
-                    "Knapcode.MiniZip.Test",
+                    "Knapcode.ExplorePackages",
                     Guid.NewGuid().ToString());
             }
 

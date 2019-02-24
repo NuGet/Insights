@@ -42,6 +42,11 @@ namespace Knapcode.ExplorePackages.Entities
             return await base.SaveChangesAsync(cancellationToken);
         }
 
+        public override void Dispose()
+        {
+            base.Dispose();
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder

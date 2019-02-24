@@ -193,7 +193,7 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<PackageCommitEnumerator>();
             serviceCollection.AddTransient<ICommitEnumerator<PackageEntity>, PackageCommitEnumerator>();
             serviceCollection.AddTransient<ICommitEnumerator<PackageRegistrationEntity>, PackageRegistrationCommitEnumerator>();
-            serviceCollection.AddTransient<CursorService>();
+            serviceCollection.AddTransient(x => new CursorService(x.GetRequiredService<EntityContextFactory>()));
             serviceCollection.AddTransient<IETagService, ETagService>();
             serviceCollection.AddTransient<PackageService>();
             serviceCollection.AddTransient<IPackageService, PackageService>();

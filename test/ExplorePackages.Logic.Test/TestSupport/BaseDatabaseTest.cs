@@ -9,10 +9,13 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public abstract class BaseDatabaseTest : IAsyncLifetime
     {
+        private readonly TestDirectory _testDirectory;
+
         public BaseDatabaseTest(ITestOutputHelper output)
         {
             Output = output;
-            DatabasePath = Path.GetTempFileName();
+            _testDirectory = TestDirectory.Create();
+            DatabasePath = Path.Combine(_testDirectory, "Knapcode.ExplorePackages.sqlite3");
             EntityContextFactory = TestEntityContextFactory.Create(
                 DatabasePath,
                 async () =>
@@ -37,11 +40,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public Task DisposeAsync()
         {
-            if (File.Exists(DatabasePath))
-            {
-                File.Delete(DatabasePath);
-            }
-
+            _testDirectory.Dispose();
             return Task.CompletedTask;
         }
 

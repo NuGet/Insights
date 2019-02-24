@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
@@ -90,6 +91,21 @@ namespace Knapcode.ExplorePackages.Logic
             bool includeNuspec,
             bool includeMZip)
         {
+            if (package == null)
+            {
+                throw new ArgumentNullException(nameof(package));
+            }
+
+            if (package.CatalogPackage == null)
+            {
+                throw new ArgumentException($"The {nameof(package.CatalogPackage)} property must not be null.", nameof(package));
+            }
+
+            if (package.V2Package == null)
+            {
+                throw new ArgumentException($"The {nameof(package.V2Package)} property must not be null.", nameof(package));
+            }
+
             NuspecContext nuspecContext = null;
             if (includeNuspec)
             {

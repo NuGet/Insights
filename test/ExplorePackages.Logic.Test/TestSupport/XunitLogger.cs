@@ -30,14 +30,12 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 return;
             }
-            var firstLinePrefix = $"| {_category} {logLevel}: ";
-            var lines = formatter(state, exception).Split('\n');
-            _output.WriteLine(firstLinePrefix + lines.First().TrimEnd(NewLineChars));
 
-            var additionalLinePrefix = "|" + new string(' ', firstLinePrefix.Length - 1);
-            foreach (var line in lines.Skip(1))
+            var message = formatter(state, exception);
+            _output.WriteLine(message);
+            if (exception != null)
             {
-                _output.WriteLine(additionalLinePrefix + line.TrimEnd(NewLineChars));
+                _output.WriteLine(exception.ToString());
             }
         }
 
