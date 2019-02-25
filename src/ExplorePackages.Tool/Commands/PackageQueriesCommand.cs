@@ -12,7 +12,8 @@ namespace Knapcode.ExplorePackages.Tool.Commands
     public class PackageQueriesCommand : ICommand
     {
         private readonly CursorService _cursorService;
-        private readonly PackageQueryCollector _processor;
+        private readonly PackageQueryExecutor _executor;
+        private readonly PackageQueryCatalogCollector _processor;
         private readonly ProblemService _problemService;
         private readonly PackageQueryFactory _packageQueryFactory;
         private readonly ILogger<PackageQueriesCommand> _logger;
@@ -26,12 +27,14 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 
         public PackageQueriesCommand(
             CursorService cursorService,
-            PackageQueryCollector processor,
+            PackageQueryExecutor executor,
+            PackageQueryCatalogCollector processor,
             ProblemService problemService,
             PackageQueryFactory packageQueryFactory,
             ILogger<PackageQueriesCommand> logger)
         {
             _cursorService = cursorService;
+            _executor = executor;
             _processor = processor;
             _problemService = problemService;
             _packageQueryFactory = packageQueryFactory;
@@ -126,7 +129,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
                     .Zip(Versions, (id, version) => new PackageIdentity(id.Trim(), version.Trim()))
                     .ToList();
 
-                await _processor.ProcessPackageAsync(queries, identities, token);
+                await _executor.ProcessPackageAsync(queries, identities, token);
             }
             else
             {

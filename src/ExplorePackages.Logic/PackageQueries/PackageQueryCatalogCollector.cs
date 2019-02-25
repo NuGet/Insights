@@ -13,53 +13,32 @@ using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class PackageQueryCollector
+    /// <summary>
+    /// Executes package queries on catalog commits.
+    /// </summary>
+    public class PackageQueryCatalogCollector
     {
-        private readonly PackageQueryProcessor _packageQueryProcessor;
-        private readonly PackageQueryContextBuilder _contextBuilder;
+        private readonly PackageQueryProcessor _processor;
         private readonly CursorService _cursorService;
         private readonly PackageCommitEnumerator _packageCommitEnumerator;
-        private readonly PackageQueryService _queryService;
-        private readonly IPackageService _packageService;
         private readonly IBatchSizeProvider _batchSizeProvider;
         private readonly ISingletonService _singletonService;
-        private readonly ILogger<PackageQueryCollector> _logger;
+        private readonly ILogger<PackageQueryCatalogCollector> _logger;
 
-        public PackageQueryCollector(
+        public PackageQueryCatalogCollector(
             PackageQueryProcessor packageQueryProcessor,
-            PackageQueryContextBuilder contextBuilder,
             CursorService cursorService,
             PackageCommitEnumerator packageCommitEnumerator,
-            PackageQueryService queryService,
-            IPackageService packageService,
             IBatchSizeProvider batchSizeProvider,
             ISingletonService singletonService,
-            ILogger<PackageQueryCollector> logger)
+            ILogger<PackageQueryCatalogCollector> logger)
         {
-            _packageQueryProcessor = packageQueryProcessor;
-            _contextBuilder = contextBuilder;
+            _processor = packageQueryProcessor;
             _cursorService = cursorService;
             _packageCommitEnumerator = packageCommitEnumerator;
-            _queryService = queryService;
-            _packageService = packageService;
             _batchSizeProvider = batchSizeProvider;
             _singletonService = singletonService;
             _logger = logger;
-        }
-
-        public async Task ProcessPackageAsync(IReadOnlyList<IPackageQuery> queries, IReadOnlyList<PackageIdentity> identities, CancellationToken token)
-        {
-            var results = new ConcurrentBag<PackageQueryResult>();
-
-            var taskQueue = new TaskQueue<PackageQueryWork>(
-                workerCount: 32,
-                produceAsync: (p, t) => ProduceAsync(p, queries, identities, t),
-                consumeAsync: (w, t) => _packageQueryProcessor.ConsumeWorkAsync(w, results),
-                logger: _logger);
-
-            await taskQueue.RunAsync();
-
-            await PersistResults(results);
         }
 
         public async Task ProcessAsync(IReadOnlyList<IPackageQuery> queries, bool reprocess, CancellationToken token)
@@ -104,7 +83,7 @@ namespace Knapcode.ExplorePackages.Logic
                     complete,
                     Math.Round(complete / stopwatch.Elapsed.TotalSeconds));
 
-                await PersistResults(results);
+                await _processor.PersistResults(results);
 
                 var queriesWithResults = results
                     .Select(x => x.Query)
@@ -116,42 +95,9 @@ namespace Knapcode.ExplorePackages.Logic
             while (commitCount > 0);
         }
 
-        private async Task ProduceAsync(
-            IProducerContext<PackageQueryWork> producer,
-            IReadOnlyList<IPackageQuery> queries,
-            IReadOnlyList<PackageIdentity> identities,
-            CancellationToken token)
-        {
-            var includeNuspec = queries.Any(x => x.NeedsNuspec);
-            var includeMZip = queries.Any(x => x.NeedsMZip);
-
-            foreach (var identity in identities)
-            {
-                if (token.IsCancellationRequested)
-                {
-                    break;
-                }
-
-                var package = await _packageService.GetPackageOrNullAsync(identity.Id, identity.Version);
-                if (package == null)
-                {
-                    _logger.LogWarning("Package {Id} {Version} does not exist.", identity.Id, identity.Version);
-                    continue;
-                }
-
-                await EnqueueAsync(
-                    producer,
-                    queries,
-                    package,
-                    includeNuspec,
-                    includeMZip,
-                    token);
-            }
-        }
-
         private async Task<ConcurrentBag<PackageQueryResult>> ProcessCommitsAsync(
             IReadOnlyList<IPackageQuery> queries,
-            Bounds bounds,
+            PackageQueryBounds bounds,
             IReadOnlyList<EntityCommit<PackageEntity>> commits)
         {
             var results = new ConcurrentBag<PackageQueryResult>();
@@ -159,7 +105,7 @@ namespace Knapcode.ExplorePackages.Logic
             var taskQueue = new TaskQueue<PackageQueryWork>(
                 workerCount: 32,
                 produceAsync: (p, t) => ProduceWorkAsync(p, queries, bounds, commits, t),
-                consumeAsync: (w, t) => _packageQueryProcessor.ConsumeWorkAsync(w, results),
+                consumeAsync: (w, t) => _processor.ConsumeWorkAsync(w, results),
                 logger: _logger);
 
             await taskQueue.RunAsync();
@@ -167,7 +113,7 @@ namespace Knapcode.ExplorePackages.Logic
             return results;
         }
 
-        private async Task<Bounds> GetBoundsAsync(IReadOnlyList<IPackageQuery> queries, bool reprocess)
+        private async Task<PackageQueryBounds> GetBoundsAsync(IReadOnlyList<IPackageQuery> queries, bool reprocess)
         {
             Dictionary<string, string> queryNameToCursorName;
             IReadOnlyList<string> dependentCursorNames;
@@ -208,10 +154,10 @@ namespace Knapcode.ExplorePackages.Logic
 
             var end = await _cursorService.GetMinimumAsync(dependentCursorNames);
 
-            return new Bounds(queryNameToCursorName, cursorNameToStart, end);
+            return new PackageQueryBounds(queryNameToCursorName, cursorNameToStart, end);
         }
 
-        private async Task<IReadOnlyList<EntityCommit<PackageEntity>>> GetCommitsAsync(Bounds bounds, bool reprocess)
+        private async Task<IReadOnlyList<EntityCommit<PackageEntity>>> GetCommitsAsync(PackageQueryBounds bounds, bool reprocess)
         {
             if (!reprocess)
             {
@@ -242,7 +188,7 @@ namespace Knapcode.ExplorePackages.Logic
         private async Task ProduceWorkAsync(
             IProducerContext<PackageQueryWork> producer,
             IReadOnlyList<IPackageQuery> queries,
-            Bounds bounds,
+            PackageQueryBounds bounds,
             IReadOnlyList<EntityCommit<PackageEntity>> commits,
             CancellationToken token)
         {
@@ -258,7 +204,7 @@ namespace Knapcode.ExplorePackages.Logic
                     var includeMZip = applicableQueries.Any(x => x.NeedsMZip);
                     var package = p.Package;
 
-                    await EnqueueAsync(producer, applicableQueries, package, includeNuspec, includeMZip, token);
+                    await _processor.EnqueueAsync(producer, applicableQueries, package, includeNuspec, includeMZip, token);
 
                     return 0;
                 },
@@ -266,25 +212,7 @@ namespace Knapcode.ExplorePackages.Logic
                 token: token);
         }
 
-        private async Task EnqueueAsync(
-            IProducerContext<PackageQueryWork> producer,
-            IReadOnlyList<IPackageQuery> applicableQueries,
-            PackageEntity package,
-            bool includeNuspec,
-            bool includeMZip,
-            CancellationToken token)
-        {
-            var context = await _contextBuilder.GetPackageQueryContextFromDatabaseAsync(
-                package,
-                includeNuspec,
-                includeMZip);
-
-            var state = new PackageConsistencyState();
-
-            await producer.EnqueueAsync(new PackageQueryWork(applicableQueries, context, state), token);
-        }
-
-        private async Task PersistCursorsAsync(Bounds bounds, IReadOnlyList<IPackageQuery> queries)
+        private async Task PersistCursorsAsync(PackageQueryBounds bounds, IReadOnlyList<IPackageQuery> queries)
         {
             var cursorNameToQueryNames = bounds
                 .QueryNameToCursorName
@@ -307,52 +235,6 @@ namespace Knapcode.ExplorePackages.Logic
             }
 
             await _cursorService.SetValuesAsync(cursorNames, bounds.Start);
-        }
-
-        private async Task PersistResults(ConcurrentBag<PackageQueryResult> results)
-        {
-            var queryGroups = results.GroupBy(x => x.Query);
-
-            foreach (var queryGroup in queryGroups)
-            {
-                var query = queryGroup.Key;
-
-                var resultGroups = queryGroup.ToLookup(
-                    x => x.IsMatch,
-                    x => x.PackageIdentity);
-
-                if (resultGroups[true].Any())
-                {
-                    _logger.LogInformation("Adding new results for package query {QueryName}.", queryGroup.Key.Name);
-                    await _queryService.AddQueryAsync(query.Name, query.CursorName);
-                    await _queryService.AddMatchesAsync(query.Name, resultGroups[true].ToList());
-                }
-
-                if (resultGroups[false].Any())
-                {
-                    _logger.LogInformation("Removing existing results for package query {QueryName}.", queryGroup.Key.Name);
-                    await _queryService.RemoveMatchesAsync(query.Name, resultGroups[false].ToList());
-                }
-            }
-        }
-
-        private class Bounds
-        {
-            public Bounds(
-                IReadOnlyDictionary<string, string> queryNameToCursorName,
-                Dictionary<string, DateTimeOffset> cursorNameToStart,
-                DateTimeOffset end)
-            {
-                QueryNameToCursorName = queryNameToCursorName;
-                CursorNameToStart = cursorNameToStart;
-                Start = cursorNameToStart.Values.Min();
-                End = end;
-            }
-
-            public IReadOnlyDictionary<string, string> QueryNameToCursorName { get; }
-            public Dictionary<string, DateTimeOffset> CursorNameToStart { get; }
-            public DateTimeOffset Start { get; set; }
-            public DateTimeOffset End { get; }
         }
     }
 }
