@@ -75,15 +75,7 @@ namespace Knapcode.ExplorePackages.Logic
                 return null;
             }
 
-            var isSemVer2 = IsSemVer2(package);
-            var isListed = IsListed(package);
-
-            return new PackageConsistencyContext(
-                package.PackageRegistration.Id,
-                package.Version,
-                package.CatalogPackage.Deleted,
-                isSemVer2,
-                isListed);
+            return new PackageConsistencyContext(package);
         }
 
         public async Task<PackageQueryContext> GetPackageQueryContextFromDatabaseAsync(
@@ -118,33 +110,10 @@ namespace Knapcode.ExplorePackages.Logic
                 mzipContext = await GetMZipContextAsync(package);
             }
 
-            var isSemVer2 = IsSemVer2(package);
-            var isListed = IsListed(package);
-
             return new PackageQueryContext(
-                package.PackageRegistration.Id,
-                package.Version,
+                package,
                 nuspecContext,
-                mzipContext,
-                package.CatalogPackage.Deleted,
-                isSemVer2,
-                isListed);
-        }
-
-        private static bool IsSemVer2(PackageEntity package)
-        {
-            var semVer2 = false;
-            if (package.CatalogPackage?.SemVerType != null)
-            {
-                semVer2 = package.CatalogPackage.SemVerType.Value != SemVerType.SemVer1;
-            }
-
-            return semVer2;
-        }
-
-        private static bool IsListed(PackageEntity package)
-        {
-            return package.V2Package?.Listed ?? package.CatalogPackage?.Listed ?? true;
+                mzipContext);
         }
 
         private async Task<MZipContext> GetMZipContextAsync(PackageEntity package)

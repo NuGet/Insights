@@ -1,31 +1,21 @@
-﻿namespace Knapcode.ExplorePackages.Logic
+﻿using Knapcode.ExplorePackages.Entities;
+
+namespace Knapcode.ExplorePackages.Logic
 {
-    public class PackageQueryContext
+    public class PackageQueryContext : PackageConsistencyContext
     {
         public PackageQueryContext(
-            string id,
-            string version,
+            PackageEntity package,
             NuspecContext nuspec,
-            MZipContext mzip,
-            bool isDeleted,
-            bool isSemVer2,
-            bool isListed)
+            MZipContext mzip) : base(package)
         {
-            Id = id;
-            Version = version;
+            Package = package;
             Nuspec = nuspec;
             MZip = mzip;
-            IsDeleted = isDeleted;
-            IsSemVer2 = isSemVer2;
-            IsListed = isListed;
         }
 
-        public string Id { get; }
-        public string Version { get; }
+        public PackageEntity Package { get; }
         public NuspecContext Nuspec { get; }
         public MZipContext MZip { get; }
-        public bool IsDeleted { get; }
-        public bool IsSemVer2 { get; }
-        public bool IsListed { get;  }
     }
 }

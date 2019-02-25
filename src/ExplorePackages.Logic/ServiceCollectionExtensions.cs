@@ -175,6 +175,7 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<BlobStorageMigrator>();
 
             serviceCollection.AddSingleton<IBatchSizeProvider, BatchSizeProvider>();
+            serviceCollection.AddTransient<PackageQueryCollector>();
             serviceCollection.AddTransient<PackageQueryProcessor>();
             serviceCollection.AddTransient<CatalogToDatabaseProcessor>();
             serviceCollection.AddTransient<CatalogToNuspecsProcessor>();
