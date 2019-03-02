@@ -7,9 +7,9 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 {
     public class MZipsCommand : ICommand
     {
-        private readonly MZipCommitCollector _collector;
+        private readonly MZipsCommitCollector _collector;
 
-        public MZipsCommand(MZipCommitCollector collector)
+        public MZipsCommand(MZipsCommitCollector collector)
         {
             _collector = collector;
         }
@@ -20,7 +20,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 
         public async Task ExecuteAsync(CancellationToken token)
         {
-            await _collector.ProcessAsync(ProcessMode.TaskQueue, token);
+            await _collector.ProcessAsync(token);
         }
 
         public bool IsInitializationRequired() => true;

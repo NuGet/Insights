@@ -9,6 +9,7 @@ namespace Knapcode.ExplorePackages.Logic
         string CursorName { get; }
         IReadOnlyList<string> DependencyCursorNames { get; }
         int BatchSize { get; }
+        ProcessMode ProcessMode { get; }
         Task<ItemBatch<TItem, TProgressToken>> InitializeItemsAsync(IReadOnlyList<TEntity> entities, TProgressToken progressToken, CancellationToken token);
         string SerializeProgressToken(TProgressToken progressToken);
         TProgressToken DeserializeProgressToken(string serializedProgressToken);

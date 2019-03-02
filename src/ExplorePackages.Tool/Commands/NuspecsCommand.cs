@@ -7,9 +7,9 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 {
     public class NuspecsCommand : ICommand
     {
-        private readonly NuspecCommitCollector _collector;
+        private readonly NuspecsCommitCollector _collector;
 
-        public NuspecsCommand(NuspecCommitCollector collector)
+        public NuspecsCommand(NuspecsCommitCollector collector)
         {
             _collector = collector;
         }
@@ -20,7 +20,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 
         public async Task ExecuteAsync(CancellationToken token)
         {
-            await _collector.ProcessAsync(ProcessMode.TaskQueue, token);
+            await _collector.ProcessAsync(token);
         }
 
         public bool IsInitializationRequired() => true;

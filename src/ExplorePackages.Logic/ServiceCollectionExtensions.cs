@@ -182,10 +182,10 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<V2ToDatabaseProcessor>();
             serviceCollection.AddTransient<PackageDownloadsToDatabaseProcessor>();
 
-            serviceCollection.AddTransient<NuspecCommitProcessor>();
-            serviceCollection.AddTransient<NuspecCommitCollector>();
-            serviceCollection.AddTransient<MZipCommitProcessor>();
-            serviceCollection.AddTransient<MZipCommitCollector>();
+            serviceCollection.AddTransient<NuspecsCommitProcessor>();
+            serviceCollection.AddTransient<NuspecsCommitCollector>();
+            serviceCollection.AddTransient<MZipsCommitProcessor>();
+            serviceCollection.AddTransient<MZipsCommitCollector>();
             serviceCollection.AddTransient<MZipToDatabaseCommitProcessor>();
             serviceCollection.AddTransient<MZipToDatabaseCommitCollector>();
             serviceCollection.AddTransient<DependenciesToDatabaseCommitProcessor>();

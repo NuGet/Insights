@@ -33,6 +33,8 @@ namespace Knapcode.ExplorePackages.Logic
             CursorNames.DependenciesToDatabase,
         };
 
+        public ProcessMode ProcessMode => ProcessMode.Sequentially;
+
         public int BatchSize => _batchSizeProvider.Get(BatchSizeType.DependencyPackagesToDatabase_PackageRegistrations);
 
         public string SerializeProgressToken(ProgressToken progressToken)

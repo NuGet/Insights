@@ -21,7 +21,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 
         public async Task ExecuteAsync(CancellationToken token)
         {
-            await _collector.ProcessAsync(ProcessMode.Sequentially, token);
+            await _collector.ProcessAsync(token);
         }
 
         public bool IsInitializationRequired() => true;

@@ -30,6 +30,7 @@ namespace Knapcode.ExplorePackages.Logic
             CursorNames.MZips,
         };
 
+        public ProcessMode ProcessMode => ProcessMode.Sequentially;
         public int BatchSize => _batchSizeProvider.Get(BatchSizeType.MZipToDatabase);
         public string SerializeProgressToken(object progressToken) => null;
         public object DeserializeProgressToken(string serializedProgressToken) => null;

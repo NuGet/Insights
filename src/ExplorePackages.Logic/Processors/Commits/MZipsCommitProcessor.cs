@@ -6,16 +6,16 @@ using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class MZipCommitProcessor : ICommitProcessor<PackageEntity, PackageEntity, object>
+    public class MZipsCommitProcessor : ICommitProcessor<PackageEntity, PackageEntity, object>
     {
         private readonly MZipStore _mZipStore;
         private readonly IBatchSizeProvider _batchSizeProvider;
-        private readonly ILogger<MZipCommitProcessor> _logger;
+        private readonly ILogger<MZipsCommitProcessor> _logger;
 
-        public MZipCommitProcessor(
+        public MZipsCommitProcessor(
             MZipStore mZipStore,
             IBatchSizeProvider batchSizeProvider,
-            ILogger<MZipCommitProcessor> logger)
+            ILogger<MZipsCommitProcessor> logger)
         {
             _mZipStore = mZipStore;
             _batchSizeProvider = batchSizeProvider;
@@ -29,6 +29,7 @@ namespace Knapcode.ExplorePackages.Logic
             CursorNames.NuGetOrg.FlatContainer,
         };
 
+        public ProcessMode ProcessMode => ProcessMode.TaskQueue;
         public int BatchSize => _batchSizeProvider.Get(BatchSizeType.MZips);
         public string SerializeProgressToken(object progressToken) => null;
         public object DeserializeProgressToken(string serializedProgressToken) => null;

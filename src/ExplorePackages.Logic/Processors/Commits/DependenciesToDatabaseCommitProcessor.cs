@@ -29,6 +29,7 @@ namespace Knapcode.ExplorePackages.Logic
             CursorNames.Nuspecs,
         };
 
+        public ProcessMode ProcessMode => ProcessMode.Sequentially;
         public int BatchSize => _batchSizeProvider.Get(BatchSizeType.DependenciesToDatabase);
         public string SerializeProgressToken(object progressToken) => null;
         public object DeserializeProgressToken(string serializedProgressToken) => null;

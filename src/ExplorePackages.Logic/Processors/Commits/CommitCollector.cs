@@ -34,7 +34,7 @@ namespace Knapcode.ExplorePackages.Logic
             _logger = logger;
         }
         
-        public async Task ProcessAsync(ProcessMode processMode, CancellationToken token)
+        public async Task ProcessAsync(CancellationToken token)
         {
             var start = await _cursorService.GetValueAsync(_processor.CursorName);
 
@@ -70,7 +70,7 @@ namespace Knapcode.ExplorePackages.Logic
                         min,
                         max);
 
-                    switch (processMode)
+                    switch (_processor.ProcessMode)
                     {
                         case ProcessMode.Sequentially:
                             await ProcessSequentiallyAsync(commits, token);

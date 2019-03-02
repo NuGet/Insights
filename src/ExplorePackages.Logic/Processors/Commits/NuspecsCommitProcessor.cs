@@ -6,16 +6,16 @@ using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class NuspecCommitProcessor : ICommitProcessor<PackageEntity, PackageEntity, object>
+    public class NuspecsCommitProcessor : ICommitProcessor<PackageEntity, PackageEntity, object>
     {
         private readonly IBatchSizeProvider _batchSizeProvider;
         private readonly NuspecStore _nuspecStore;
-        private readonly ILogger<NuspecCommitProcessor> _logger;
+        private readonly ILogger<NuspecsCommitProcessor> _logger;
 
-        public NuspecCommitProcessor(
+        public NuspecsCommitProcessor(
             IBatchSizeProvider batchSizeProvider,
             NuspecStore nuspecStore,
-            ILogger<NuspecCommitProcessor> logger)
+            ILogger<NuspecsCommitProcessor> logger)
         {
             _batchSizeProvider = batchSizeProvider;
             _nuspecStore = nuspecStore;
@@ -29,6 +29,7 @@ namespace Knapcode.ExplorePackages.Logic
             CursorNames.NuGetOrg.FlatContainer,
         };
 
+        public ProcessMode ProcessMode => ProcessMode.TaskQueue;
         public int BatchSize => _batchSizeProvider.Get(BatchSizeType.Nuspecs);
         public object DeserializeProgressToken(string serializedProgressToken) => null;
         public string SerializeProgressToken(object progressToken) => null;

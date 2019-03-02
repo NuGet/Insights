@@ -3,15 +3,15 @@ using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class NuspecCommitCollector : CommitCollector<PackageEntity, PackageEntity, object>
+    public class MZipsCommitCollector : CommitCollector<PackageEntity, PackageEntity, object>
     {
-        public NuspecCommitCollector(
+        public MZipsCommitCollector(
             CursorService cursorService,
             ICommitEnumerator<PackageEntity> enumerator,
-            NuspecCommitProcessor processor,
+            MZipsCommitProcessor processor,
             CommitCollectorSequentialProgressService sequentialProgressService,
             ISingletonService singletonService,
-            ILogger<NuspecCommitCollector> logger) : base(
+            ILogger<MZipsCommitCollector> logger) : base(
                 cursorService,
                 enumerator,
                 processor,
