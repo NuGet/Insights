@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -50,9 +52,9 @@ namespace Knapcode.ExplorePackages.Logic
 
                 return diagnostics.CommitUserData.CommitTimestamp;
             }
-            catch (TimeoutException ex)
+            catch (Exception ex) when (ex is TimeoutException || (ex is HttpRequestException hre && hre.InnerException is SocketException se))
             {
-                _logger.LogWarning(ex, "A timeout occurred when getting the timestamp from {BaseUrl}.", baseUrl);
+                _logger.LogWarning(ex, "A connection problem occurred when getting the timestamp from {BaseUrl}.", baseUrl);
                 return null;
             }
         }

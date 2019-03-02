@@ -37,7 +37,12 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task ProcessAsync(ProcessMode processMode, CancellationToken token)
         {
             var start = await _cursorService.GetValueAsync(_processor.CursorName);
-            var end = await _cursorService.GetMinimumAsync(_processor.DependencyCursorNames);
+
+            var dependencyCursorNames = _processor
+                .DependencyCursorNames
+                .Concat(new[] { CursorNames.CatalogToDatabase })
+                .ToList();
+            var end = await _cursorService.GetMinimumAsync(dependencyCursorNames);
 
             int commitCount;
             do

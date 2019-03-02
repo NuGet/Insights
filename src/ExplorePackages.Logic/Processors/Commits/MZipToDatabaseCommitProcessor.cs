@@ -27,8 +27,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         public IReadOnlyList<string> DependencyCursorNames { get; } = new[]
         {
-            CursorNames.CatalogToDatabase,
-            CursorNames.MZip,
+            CursorNames.MZips,
         };
 
         public int BatchSize => _batchSizeProvider.Get(BatchSizeType.MZipToDatabase);

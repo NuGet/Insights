@@ -11,11 +11,11 @@
         }
 
         public const string CatalogToDatabase = "CatalogToDatabase";
-        public const string CatalogToNuspecs = "CatalogToNuspecs";
+        public const string Nuspecs = "CatalogToNuspecs";
 
         public const string V2ToDatabaseCreated = "V2ToDatabase";
         public const string V2ToDatabaseLastEdited = "V2ToDatabaseLastEdited";
-        public const string MZip = "MZip";
+        public const string MZips = "MZip";
         public const string MZipToDatabase = "MZipToDatabase";
         public const string DependenciesToDatabase = "DependenciesToDatabase";
         public const string DependencyPackagesToDatabase = "DependencyPackagesToDatabase";

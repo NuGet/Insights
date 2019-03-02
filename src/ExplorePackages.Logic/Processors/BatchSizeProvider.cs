@@ -29,7 +29,7 @@ namespace Knapcode.ExplorePackages.Logic
                 new Bounds(1, 1000)
             },
             {
-                BatchSizeType.MZip,
+                BatchSizeType.MZips,
                 new Bounds(MinimumForCatalog, 1000)
             },
             {
@@ -56,6 +56,10 @@ namespace Knapcode.ExplorePackages.Logic
                 BatchSizeType.V2ToDatabase,
                 new Bounds(10, 100) // 10 for a minimum is just a guess. This number has to be higher than the maximum
                                     // number of V2 packages that have the same LastEdited or Created timestamp.
+            },
+            {
+                BatchSizeType.Nuspecs,
+                new Bounds(MinimumForCatalog, 1000)
             },
         };
 

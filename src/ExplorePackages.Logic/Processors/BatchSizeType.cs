@@ -5,12 +5,13 @@
         DependenciesToDatabase,
         DependencyPackagesToDatabase_PackageRegistrations,
         DependencyPackagesToDatabase_Packages,
-        MZip,
+        MZips,
         MZipToDatabase,
         PackageDownloadsToDatabase,
         PackageQueries,
         PackageQueryService_MatchedPackages,
         ReprocessCrossCheckDiscrepancies,
         V2ToDatabase,
+        Nuspecs,
     }
 }

@@ -6,32 +6,32 @@ using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class MZipCommitProcessor : ICommitProcessor<PackageEntity, PackageEntity, object>
+    public class NuspecCommitProcessor : ICommitProcessor<PackageEntity, PackageEntity, object>
     {
-        private readonly MZipStore _mZipStore;
         private readonly IBatchSizeProvider _batchSizeProvider;
-        private readonly ILogger<MZipCommitProcessor> _logger;
+        private readonly NuspecStore _nuspecStore;
+        private readonly ILogger<NuspecCommitProcessor> _logger;
 
-        public MZipCommitProcessor(
-            MZipStore mZipStore,
+        public NuspecCommitProcessor(
             IBatchSizeProvider batchSizeProvider,
-            ILogger<MZipCommitProcessor> logger)
+            NuspecStore nuspecStore,
+            ILogger<NuspecCommitProcessor> logger)
         {
-            _mZipStore = mZipStore;
             _batchSizeProvider = batchSizeProvider;
+            _nuspecStore = nuspecStore;
             _logger = logger;
         }
 
-        public string CursorName => CursorNames.MZips;
+        public string CursorName => CursorNames.Nuspecs;
 
         public IReadOnlyList<string> DependencyCursorNames { get; } = new[]
         {
             CursorNames.NuGetOrg.FlatContainer,
         };
 
-        public int BatchSize => _batchSizeProvider.Get(BatchSizeType.MZips);
-        public string SerializeProgressToken(object progressToken) => null;
+        public int BatchSize => _batchSizeProvider.Get(BatchSizeType.Nuspecs);
         public object DeserializeProgressToken(string serializedProgressToken) => null;
+        public string SerializeProgressToken(object progressToken) => null;
 
         public Task<ItemBatch<PackageEntity, object>> InitializeItemsAsync(
             IReadOnlyList<PackageEntity> entities,
@@ -45,7 +45,7 @@ namespace Knapcode.ExplorePackages.Logic
         {
             foreach (var package in batch)
             {
-                var success = await _mZipStore.StoreMZipAsync(
+                var success = await _nuspecStore.StoreNuspecAsync(
                    package.PackageRegistration.Id,
                    package.Version,
                    CancellationToken.None);
@@ -53,7 +53,7 @@ namespace Knapcode.ExplorePackages.Logic
                 if (!success)
                 {
                     _logger.LogWarning(
-                        "The .mzip for package {Id} {Version} could not be found.",
+                        "The .nuspec for package {Id} {Version} could not be found.",
                         package.PackageRegistration.Id,
                         package.Version);
                 }

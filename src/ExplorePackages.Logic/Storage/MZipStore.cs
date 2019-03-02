@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.MiniZip;
@@ -32,19 +33,28 @@ namespace Knapcode.ExplorePackages.Logic
             _logger = logger;
         }
 
-        public async Task StoreMZipAsync(string id, string version, CancellationToken token)
+        public async Task<bool> StoreMZipAsync(string id, string version, CancellationToken token)
         {
             var baseUrl = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.FlatContainer);
             var url = _flatContainerClient.GetPackageContentUrl(baseUrl, id, version);
 
-            using (var reader = await _httpZipProvider.GetReaderAsync(new Uri(url)))
+            try
             {
-                await _fileStorageService.StoreStreamAsync(
-                    id,
-                    version,
-                    FileArtifactType.MZip,
-                    destStream => _mZipFormat.WriteAsync(reader.Stream, destStream),
-                    accessCondition: AccessCondition.GenerateEmptyCondition());
+                using (var reader = await _httpZipProvider.GetReaderAsync(new Uri(url)))
+                {
+                    await _fileStorageService.StoreStreamAsync(
+                        id,
+                        version,
+                        FileArtifactType.MZip,
+                        destStream => _mZipFormat.WriteAsync(reader.Stream, destStream),
+                        accessCondition: AccessCondition.GenerateEmptyCondition());
+
+                    return true;
+                }
+            }
+            catch (MiniZipHttpStatusCodeException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+                return false;
             }
         }
 

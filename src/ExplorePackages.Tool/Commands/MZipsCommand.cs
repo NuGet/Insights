@@ -5,11 +5,11 @@ using McMaster.Extensions.CommandLineUtils;
 
 namespace Knapcode.ExplorePackages.Tool.Commands
 {
-    public class MZipCommand : ICommand
+    public class MZipsCommand : ICommand
     {
         private readonly MZipCommitCollector _collector;
 
-        public MZipCommand(MZipCommitCollector collector)
+        public MZipsCommand(MZipCommitCollector collector)
         {
             _collector = collector;
         }

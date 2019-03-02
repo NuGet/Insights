@@ -125,7 +125,7 @@ namespace Knapcode.ExplorePackages.Logic
                 dependentCursorNames = new[]
                 {
                     CursorNames.CatalogToDatabase,
-                    CursorNames.CatalogToNuspecs,
+                    CursorNames.Nuspecs,
                     CursorNames.MZipToDatabase,
                     CursorNames.NuGetOrg.FlatContainer,
                     CursorNames.NuGetOrg.Registration,

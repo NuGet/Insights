@@ -60,13 +60,15 @@ namespace Knapcode.ExplorePackages.Logic
         {
             using (var entityContext = await _entityContextFactory.GetAsync())
             {
+                var distinctNames = names.Distinct().ToList();
+
                 var cursors = await entityContext
                     .Cursors
-                    .Where(x => names.Contains(x.Name))
+                    .Where(x => distinctNames.Contains(x.Name))
                     .OrderBy(x => x.Value)
                     .ToListAsync();
 
-                if (cursors.Count < names.Count)
+                if (cursors.Count < distinctNames.Count)
                 {
                     return _defaultCursor;
                 }

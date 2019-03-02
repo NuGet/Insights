@@ -179,10 +179,11 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<PackageQueryProcessor>();
             serviceCollection.AddTransient<PackageQueryExecutor>();
             serviceCollection.AddTransient<CatalogToDatabaseProcessor>();
-            serviceCollection.AddTransient<CatalogToNuspecsProcessor>();
             serviceCollection.AddTransient<V2ToDatabaseProcessor>();
             serviceCollection.AddTransient<PackageDownloadsToDatabaseProcessor>();
 
+            serviceCollection.AddTransient<NuspecCommitProcessor>();
+            serviceCollection.AddTransient<NuspecCommitCollector>();
             serviceCollection.AddTransient<MZipCommitProcessor>();
             serviceCollection.AddTransient<MZipCommitCollector>();
             serviceCollection.AddTransient<MZipToDatabaseCommitProcessor>();
