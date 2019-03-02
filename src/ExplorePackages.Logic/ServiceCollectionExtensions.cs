@@ -182,16 +182,16 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<V2ToDatabaseProcessor>();
             serviceCollection.AddTransient<PackageDownloadsToDatabaseProcessor>();
 
+            serviceCollection.AddTransient<NuspecsCommitProcessor>();
             serviceCollection.AddTransient<NuspecsCommitCollector>();
-            serviceCollection.AddTransient<NuspecsCommitCollector.NuspecsCommitProcessor>();
+            serviceCollection.AddTransient<MZipsCommitProcessor>();
             serviceCollection.AddTransient<MZipsCommitCollector>();
-            serviceCollection.AddTransient<MZipsCommitCollector.MZipsCommitProcessor>();
+            serviceCollection.AddTransient<MZipToDatabaseCommitProcessor>();
             serviceCollection.AddTransient<MZipToDatabaseCommitCollector>();
-            serviceCollection.AddTransient<MZipToDatabaseCommitCollector.MZipToDatabaseCommitProcessor>();
+            serviceCollection.AddTransient<DependenciesToDatabaseCommitProcessor>();
             serviceCollection.AddTransient<DependenciesToDatabaseCommitCollector>();
-            serviceCollection.AddTransient<DependenciesToDatabaseCommitCollector.DependenciesToDatabaseCommitProcessor>();
+            serviceCollection.AddTransient<DependencyPackagesToDatabaseCommitProcessor>();
             serviceCollection.AddTransient<DependencyPackagesToDatabaseCommitCollector>();
-            serviceCollection.AddTransient<DependencyPackagesToDatabaseCommitCollector.DependencyPackagesToDatabaseCommitProcessor>();
 
             serviceCollection.AddTransient<PackageCommitEnumerator>();
             serviceCollection.AddTransient<ICommitEnumerator<PackageEntity>, PackageCommitEnumerator>();
