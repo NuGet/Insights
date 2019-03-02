@@ -7,9 +7,9 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 {
     public class MZipToDatabaseCommand : ICommand
     {
-        private readonly MZipToDatabaseCommitCollector _collector;
+        private readonly MZipToDatabaseCommitProcessor.Collector _collector;
 
-        public MZipToDatabaseCommand(MZipToDatabaseCommitCollector collector)
+        public MZipToDatabaseCommand(MZipToDatabaseCommitProcessor.Collector collector)
         {
             _collector = collector;
         }

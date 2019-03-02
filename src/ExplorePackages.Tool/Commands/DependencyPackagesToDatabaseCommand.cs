@@ -7,10 +7,10 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 {
     public class DependencyPackagesToDatabaseCommand : ICommand
     {
-        private readonly DependencyPackagesToDatabaseCommitCollector _collector;
+        private readonly DependencyPackagesToDatabaseCommitProcessor.Collector _collector;
 
         public DependencyPackagesToDatabaseCommand(
-            DependencyPackagesToDatabaseCommitCollector collector)
+            DependencyPackagesToDatabaseCommitProcessor.Collector collector)
         {
             _collector = collector;
         }

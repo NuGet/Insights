@@ -224,5 +224,24 @@ namespace Knapcode.ExplorePackages.Logic
             public int? PackageRegistrationKeyIndex { get; }
             public long AfterKey { get; }
         }
+
+        public class Collector : CommitCollector<PackageRegistrationEntity, PackageDependencyEntity, ProgressToken>
+        {
+            public Collector(
+                CursorService cursorService,
+                ICommitEnumerator<PackageRegistrationEntity> enumerator,
+                DependencyPackagesToDatabaseCommitProcessor processor,
+                CommitCollectorSequentialProgressService sequentialProgressService,
+                ISingletonService singletonService,
+                ILogger<Collector> logger) : base(
+                    cursorService,
+                    enumerator,
+                    processor,
+                    sequentialProgressService,
+                    singletonService,
+                    logger)
+            {
+            }
+        }
     }
 }

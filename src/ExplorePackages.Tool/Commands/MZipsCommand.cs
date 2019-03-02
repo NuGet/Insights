@@ -7,9 +7,9 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 {
     public class MZipsCommand : ICommand
     {
-        private readonly MZipsCommitCollector _collector;
+        private readonly MZipsCommitProcessor.Collector _collector;
 
-        public MZipsCommand(MZipsCommitCollector collector)
+        public MZipsCommand(MZipsCommitProcessor.Collector collector)
         {
             _collector = collector;
         }

@@ -7,9 +7,9 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 {
     public class DependenciesToDatabaseCommand : ICommand
     {
-        private readonly DependenciesToDatabaseCommitCollector _collector;
+        private readonly DependenciesToDatabaseCommitProcessor.Collector _collector;
 
-        public DependenciesToDatabaseCommand(DependenciesToDatabaseCommitCollector collector)
+        public DependenciesToDatabaseCommand(DependenciesToDatabaseCommitProcessor.Collector collector)
         {
             _collector = collector;
         }

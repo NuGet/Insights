@@ -7,9 +7,9 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 {
     public class NuspecsCommand : ICommand
     {
-        private readonly NuspecsCommitCollector _collector;
+        private readonly NuspecsCommitProcessor.Collector _collector;
 
-        public NuspecsCommand(NuspecsCommitCollector collector)
+        public NuspecsCommand(NuspecsCommitProcessor.Collector collector)
         {
             _collector = collector;
         }

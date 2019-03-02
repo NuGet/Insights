@@ -60,5 +60,24 @@ namespace Knapcode.ExplorePackages.Logic
                 }
             }
         }
+
+        public class Collector : CommitCollector<PackageEntity, PackageEntity, object>
+        {
+            public Collector(
+                CursorService cursorService,
+                ICommitEnumerator<PackageEntity> enumerator,
+                NuspecsCommitProcessor processor,
+                CommitCollectorSequentialProgressService sequentialProgressService,
+                ISingletonService singletonService,
+                ILogger<Collector> logger) : base(
+                    cursorService,
+                    enumerator,
+                    processor,
+                    sequentialProgressService,
+                    singletonService,
+                    logger)
+            {
+            }
+        }
     }
 }

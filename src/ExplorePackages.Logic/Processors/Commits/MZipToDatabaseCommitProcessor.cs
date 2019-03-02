@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -83,6 +84,25 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task ProcessBatchAsync(IReadOnlyList<PackageArchiveMetadata> batch)
         {
             await _packageService.AddOrUpdatePackagesAsync(batch);
+        }
+
+        public class Collector : CommitCollector<PackageEntity, PackageArchiveMetadata, object>
+        {
+            public Collector(
+                CursorService cursorService,
+                ICommitEnumerator<PackageEntity> enumerator,
+                MZipToDatabaseCommitProcessor processor,
+                CommitCollectorSequentialProgressService sequentialProgressService,
+                ISingletonService singletonService,
+                ILogger<Collector> logger) : base(
+                    cursorService,
+                    enumerator,
+                    processor,
+                    sequentialProgressService,
+                    singletonService,
+                    logger)
+            {
+            }
         }
     }
 }
