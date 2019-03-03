@@ -10,12 +10,12 @@ namespace Knapcode.ExplorePackages.Tool.Commands
     {
         private readonly CursorService _cursorService;
         private readonly PackageQueryFactory _packageQueryFactory;
-        private readonly PackageQueryCatalogCollector _processor;
+        private readonly PackageQueryCollector _processor;
 
         public ReprocessCrossCheckDiscrepanciesCommand(
             CursorService cursorService,
             PackageQueryFactory packageQueryFactory,
-            PackageQueryCatalogCollector processor)
+            PackageQueryCollector processor)
         {
             _cursorService = cursorService;
             _packageQueryFactory = packageQueryFactory;

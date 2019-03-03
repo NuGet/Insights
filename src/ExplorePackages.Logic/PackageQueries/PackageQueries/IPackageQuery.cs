@@ -8,6 +8,7 @@ namespace Knapcode.ExplorePackages.Logic
         string CursorName { get; }
         bool NeedsNuspec { get; }
         bool NeedsMZip { get; }
+        bool IsV2Query { get; }
         Task<bool> IsMatchAsync(PackageQueryContext context, PackageConsistencyState state);
     }
 }

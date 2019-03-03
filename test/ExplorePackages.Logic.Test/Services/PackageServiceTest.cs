@@ -41,7 +41,7 @@ namespace Knapcode.ExplorePackages.Logic
                 }
 
                 var commitEnumerator = new CommitEnumerator(Output.GetLogger<CommitEnumerator>());
-                var packageEnumerator = new PackageCommitEnumerator(EntityContextFactory, commitEnumerator);
+                var packageEnumerator = new PackageCatalogCommitEnumerator(EntityContextFactory, commitEnumerator);
                 var target = new PackageService(
                     packageEnumerator,
                     NullCommitCondition.Instance,
@@ -93,7 +93,7 @@ namespace Knapcode.ExplorePackages.Logic
                 }
 
                 var commitEnumerator = new CommitEnumerator(Output.GetLogger<CommitEnumerator>());
-                var packageEnumerator = new PackageCommitEnumerator(EntityContextFactory, commitEnumerator);
+                var packageEnumerator = new PackageCatalogCommitEnumerator(EntityContextFactory, commitEnumerator);
                 var target = new PackageService(
                     packageEnumerator,
                     NullCommitCondition.Instance,
@@ -145,7 +145,7 @@ namespace Knapcode.ExplorePackages.Logic
                 }
 
                 var commitEnumerator = new CommitEnumerator(Output.GetLogger<CommitEnumerator>());
-                var packageEnumerator = new PackageCommitEnumerator(EntityContextFactory, commitEnumerator);
+                var packageEnumerator = new PackageCatalogCommitEnumerator(EntityContextFactory, commitEnumerator);
                 var target = new PackageService(
                     packageEnumerator,
                     NullCommitCondition.Instance,

@@ -175,7 +175,7 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<BlobStorageMigrator>();
 
             serviceCollection.AddSingleton<IBatchSizeProvider, BatchSizeProvider>();
-            serviceCollection.AddTransient<PackageQueryCatalogCollector>();
+            serviceCollection.AddTransient<PackageQueryCollector>();
             serviceCollection.AddTransient<PackageQueryProcessor>();
             serviceCollection.AddTransient<PackageQueryExecutor>();
             serviceCollection.AddTransient<CatalogToDatabaseProcessor>();
@@ -193,8 +193,9 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<DependencyPackagesToDatabaseCommitProcessor>();
             serviceCollection.AddTransient<DependencyPackagesToDatabaseCommitProcessor.Collector>();
 
-            serviceCollection.AddTransient<PackageCommitEnumerator>();
-            serviceCollection.AddTransient<ICommitEnumerator<PackageEntity>, PackageCommitEnumerator>();
+            serviceCollection.AddTransient<PackageCatalogCommitEnumerator>();
+            serviceCollection.AddTransient<PackageV2CommitEnumerator>();
+            serviceCollection.AddTransient<ICommitEnumerator<PackageEntity>, PackageCatalogCommitEnumerator>();
             serviceCollection.AddTransient<ICommitEnumerator<PackageRegistrationEntity>, PackageRegistrationCommitEnumerator>();
             serviceCollection.AddTransient(x => new CursorService(x.GetRequiredService<EntityContextFactory>()));
             serviceCollection.AddTransient<IETagService, ETagService>();

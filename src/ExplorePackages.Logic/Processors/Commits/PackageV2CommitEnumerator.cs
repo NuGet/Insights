@@ -7,14 +7,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public delegate IQueryable<T> QueryEntities<T>(IEntityContext entities);
-
-    public class PackageCommitEnumerator : ICommitEnumerator<PackageEntity>
+    public class PackageV2CommitEnumerator : IPackageCommitEnumerator
     {
         private readonly EntityContextFactory _entityContextFactory;
         private readonly CommitEnumerator _commitEnumerator;
 
-        public PackageCommitEnumerator(
+        public PackageV2CommitEnumerator(
             EntityContextFactory entityContextFactory,
             CommitEnumerator commitEnumerator)
         {
@@ -42,7 +40,7 @@ namespace Knapcode.ExplorePackages.Logic
         {
             return await _commitEnumerator.GetCommitsAsync(
                 (s, e, b) => GetRangeAsync(queryEntities, s, e, b),
-                x => x.CatalogPackage.LastCommitTimestamp,
+                x => x.V2Package.LastUpdatedTimestamp,
                 InitializePackageCommit,
                 start,
                 end,
@@ -59,11 +57,11 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 return await queryEntities(entities)
                     .Include(x => x.PackageRegistration)
-                    .Include(x => x.CatalogPackage)
-                    .Where(x => x.PackageRegistration != null) // https://github.com/aspnet/EntityFrameworkCore/issues/14324
-                    .Where(x => x.CatalogPackage != null)
-                    .Where(x => x.CatalogPackage.LastCommitTimestamp > start && x.CatalogPackage.LastCommitTimestamp <= end)
-                    .OrderBy(x => x.CatalogPackage.LastCommitTimestamp)
+                    .Include(x => x.V2Package)
+                    .Where(x => x.PackageRegistration != null)
+                    .Where(x => x.V2Package != null)
+                    .Where(x => x.V2Package.LastEditedTimestamp > start && x.V2Package.LastEditedTimestamp <= end)
+                    .OrderBy(x => x.V2Package.LastEditedTimestamp)
                     .Take(batchSize)
                     .ToListAsync();
             }

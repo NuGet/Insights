@@ -17,6 +17,7 @@ namespace Knapcode.ExplorePackages.Logic
         public string CursorName => CursorNames.HasMissingMZipPackageQuery;
         public bool NeedsNuspec => false;
         public bool NeedsMZip => true;
+        public bool IsV2Query => false;
 
         public async Task<bool> IsMatchAsync(PackageQueryContext context, PackageConsistencyState state)
         {

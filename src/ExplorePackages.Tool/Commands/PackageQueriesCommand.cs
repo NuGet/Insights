@@ -13,7 +13,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
     {
         private readonly CursorService _cursorService;
         private readonly PackageQueryExecutor _executor;
-        private readonly PackageQueryCatalogCollector _processor;
+        private readonly PackageQueryCollector _processor;
         private readonly ProblemService _problemService;
         private readonly PackageQueryFactory _packageQueryFactory;
         private readonly ILogger<PackageQueriesCommand> _logger;
@@ -28,7 +28,7 @@ namespace Knapcode.ExplorePackages.Tool.Commands
         public PackageQueriesCommand(
             CursorService cursorService,
             PackageQueryExecutor executor,
-            PackageQueryCatalogCollector processor,
+            PackageQueryCollector processor,
             ProblemService problemService,
             PackageQueryFactory packageQueryFactory,
             ILogger<PackageQueriesCommand> logger)

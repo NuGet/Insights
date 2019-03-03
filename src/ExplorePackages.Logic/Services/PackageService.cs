@@ -20,7 +20,7 @@ namespace Knapcode.ExplorePackages.Logic
     public class PackageService : IPackageService
     {
         private static readonly IMapper Mapper;
-        private readonly PackageCommitEnumerator _enumerator;
+        private readonly PackageCatalogCommitEnumerator _enumerator;
         private readonly ICommitCondition _commitCondition;
         private readonly EntityContextFactory _entityContextFactory;
         private readonly ILogger<PackageService> _logger;
@@ -95,7 +95,7 @@ namespace Knapcode.ExplorePackages.Logic
         }
 
         public PackageService(
-            PackageCommitEnumerator enumerator,
+            PackageCatalogCommitEnumerator enumerator,
             ICommitCondition commitCondition,
             EntityContextFactory entityContextFactory,
             ILogger<PackageService> logger)

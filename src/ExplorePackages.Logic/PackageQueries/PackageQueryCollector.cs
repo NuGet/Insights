@@ -16,32 +16,55 @@ namespace Knapcode.ExplorePackages.Logic
     /// <summary>
     /// Executes package queries on catalog commits.
     /// </summary>
-    public class PackageQueryCatalogCollector
+    public class PackageQueryCollector
     {
         private readonly PackageQueryProcessor _processor;
         private readonly CursorService _cursorService;
-        private readonly PackageCommitEnumerator _packageCommitEnumerator;
+        private readonly PackageCatalogCommitEnumerator _packageCatalogCommitEnumerator;
+        private readonly PackageV2CommitEnumerator _packageV2CommitEnumerator;
         private readonly IBatchSizeProvider _batchSizeProvider;
         private readonly ISingletonService _singletonService;
-        private readonly ILogger<PackageQueryCatalogCollector> _logger;
+        private readonly ILogger<PackageQueryCollector> _logger;
 
-        public PackageQueryCatalogCollector(
+        public PackageQueryCollector(
             PackageQueryProcessor packageQueryProcessor,
             CursorService cursorService,
-            PackageCommitEnumerator packageCommitEnumerator,
+            PackageCatalogCommitEnumerator packageCatalogCommitEnumerator,
+            PackageV2CommitEnumerator packageV2CommitEnumerator,
             IBatchSizeProvider batchSizeProvider,
             ISingletonService singletonService,
-            ILogger<PackageQueryCatalogCollector> logger)
+            ILogger<PackageQueryCollector> logger)
         {
             _processor = packageQueryProcessor;
             _cursorService = cursorService;
-            _packageCommitEnumerator = packageCommitEnumerator;
+            _packageCatalogCommitEnumerator = packageCatalogCommitEnumerator;
+            _packageV2CommitEnumerator = packageV2CommitEnumerator;
             _batchSizeProvider = batchSizeProvider;
             _singletonService = singletonService;
             _logger = logger;
         }
 
         public async Task ProcessAsync(IReadOnlyList<IPackageQuery> queries, bool reprocess, CancellationToken token)
+        {
+            var isV2QueryToQueries = queries.ToLookup(x => x.IsV2Query);
+            
+            if (isV2QueryToQueries[false].Any())
+            {
+                _logger.LogInformation("Running package queries against the catalog.");
+                await ProcessAsync(_packageCatalogCommitEnumerator, queries, reprocess);
+            }
+
+            if (isV2QueryToQueries[true].Any())
+            {
+                _logger.LogInformation("Running package queries against V2.");
+                await ProcessAsync(_packageV2CommitEnumerator, queries, reprocess);
+            }
+        }
+
+        private async Task ProcessAsync(
+            IPackageCommitEnumerator packageCommitEnumerator,
+            IReadOnlyList<IPackageQuery> queries,
+            bool reprocess)
         {
             var bounds = await GetBoundsAsync(queries, reprocess);
             var complete = 0;
@@ -54,7 +77,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                 _logger.LogInformation("Using bounds between {Min:O} and {Max:O}.", bounds.Start, bounds.End);
 
-                var commits = await GetCommitsAsync(bounds, reprocess);
+                var commits = await GetCommitsAsync(packageCommitEnumerator, bounds, reprocess);
                 var packageCount = commits.Sum(x => x.Entities.Count);
                 commitCount = commits.Count;
 
@@ -157,14 +180,18 @@ namespace Knapcode.ExplorePackages.Logic
             return new PackageQueryBounds(queryNameToCursorName, cursorNameToStart, end);
         }
 
-        private async Task<IReadOnlyList<EntityCommit<PackageEntity>>> GetCommitsAsync(PackageQueryBounds bounds, bool reprocess)
+        private async Task<IReadOnlyList<EntityCommit<PackageEntity>>> GetCommitsAsync(
+            IPackageCommitEnumerator packageCommitEnumerator,
+            PackageQueryBounds bounds,
+            bool reprocess)
         {
             if (!reprocess)
             {
-                return await _packageCommitEnumerator.GetCommitsAsync(
+                return await packageCommitEnumerator.GetCommitsAsync(
                     e => e
                         .Packages
-                        .Include(x => x.V2Package),
+                        .Include(x => x.V2Package)
+                        .Include(x => x.CatalogPackage),
                     bounds.Start,
                     bounds.End,
                     _batchSizeProvider.Get(BatchSizeType.PackageQueries));
@@ -172,10 +199,11 @@ namespace Knapcode.ExplorePackages.Logic
             else
             {
                 var queryNames = bounds.QueryNameToCursorName.Keys.ToList();
-                return await _packageCommitEnumerator.GetCommitsAsync(
+                return await packageCommitEnumerator.GetCommitsAsync(
                     e => e
                         .Packages
                         .Include(x => x.V2Package)
+                        .Include(x => x.CatalogPackage)
                         .Where(x => x
                             .PackageQueryMatches
                             .Any(pqm => queryNames.Contains(pqm.PackageQuery.Name))),
