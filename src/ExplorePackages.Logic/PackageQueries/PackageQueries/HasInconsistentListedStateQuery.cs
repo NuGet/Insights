@@ -14,7 +14,9 @@ namespace Knapcode.ExplorePackages.Logic
 
         public Task<bool> IsMatchAsync(PackageQueryContext context, PackageConsistencyState state)
         {
-            if (context.Package.V2Package?.Listed != context.Package.CatalogPackage?.Listed)
+            if (context.Package.V2Package != null
+                && context.Package.CatalogPackage != null
+                && context.Package.V2Package.Listed != context.Package.CatalogPackage.Listed)
             {
                 return Task.FromResult(true);
             }
