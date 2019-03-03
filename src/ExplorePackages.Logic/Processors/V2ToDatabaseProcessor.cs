@@ -11,7 +11,7 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class V2ToDatabaseProcessor
     {
-        public static readonly TimeSpan FuzzFactor = TimeSpan.FromHours(0.25);
+        public static readonly TimeSpan FuzzFactor = TimeSpan.FromHours(1);
 
         private readonly CursorService _cursorService;
         private readonly V2Client _v2Client;
