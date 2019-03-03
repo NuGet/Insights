@@ -18,6 +18,7 @@ namespace Knapcode.ExplorePackages.Logic
         public bool NeedsNuspec => false;
         public bool NeedsMZip => true;
         public bool IsV2Query => false;
+        public TimeSpan Delay => TimeSpan.Zero;
 
         public async Task<bool> IsMatchAsync(PackageQueryContext context, PackageConsistencyState state)
         {

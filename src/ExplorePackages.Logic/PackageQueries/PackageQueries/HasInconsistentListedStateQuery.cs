@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -9,6 +10,7 @@ namespace Knapcode.ExplorePackages.Logic
         public bool NeedsNuspec => false;
         public bool NeedsMZip => false;
         public bool IsV2Query => false;
+        public TimeSpan Delay => TimeSpan.Zero;
 
         public Task<bool> IsMatchAsync(PackageQueryContext context, PackageConsistencyState state)
         {

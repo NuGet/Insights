@@ -47,17 +47,19 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task ProcessAsync(IReadOnlyList<IPackageQuery> queries, bool reprocess, CancellationToken token)
         {
             var isV2QueryToQueries = queries.ToLookup(x => x.IsV2Query);
-            
-            if (isV2QueryToQueries[false].Any())
+
+            var catalogQueries = isV2QueryToQueries[false].ToList();
+            if (catalogQueries.Any())
             {
                 _logger.LogInformation("Running package queries against the catalog.");
-                await ProcessAsync(_packageCatalogCommitEnumerator, queries, reprocess);
+                await ProcessAsync(_packageCatalogCommitEnumerator, catalogQueries, reprocess);
             }
 
-            if (isV2QueryToQueries[true].Any())
+            var v2Queries = isV2QueryToQueries[true].ToList();
+            if (v2Queries.Any())
             {
                 _logger.LogInformation("Running package queries against V2.");
-                await ProcessAsync(_packageV2CommitEnumerator, queries, reprocess);
+                await ProcessAsync(_packageV2CommitEnumerator, v2Queries, reprocess);
             }
         }
 
@@ -176,6 +178,14 @@ namespace Knapcode.ExplorePackages.Logic
             }
 
             var end = await _cursorService.GetMinimumAsync(dependentCursorNames);
+
+            var delay = TimeSpan.Zero;
+            if (queries.Any())
+            {
+                delay = queries.Max(x => x.Delay);
+            }
+
+            end -= delay;
 
             return new PackageQueryBounds(queryNameToCursorName, cursorNameToStart, end);
         }
