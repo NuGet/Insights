@@ -10,6 +10,7 @@ using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Logic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -24,6 +25,7 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly PackageV2CommitEnumerator _packageV2CommitEnumerator;
         private readonly IBatchSizeProvider _batchSizeProvider;
         private readonly ISingletonService _singletonService;
+        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
         private readonly ILogger<PackageQueryCollector> _logger;
 
         public PackageQueryCollector(
@@ -33,6 +35,7 @@ namespace Knapcode.ExplorePackages.Logic
             PackageV2CommitEnumerator packageV2CommitEnumerator,
             IBatchSizeProvider batchSizeProvider,
             ISingletonService singletonService,
+            IOptionsSnapshot<ExplorePackagesSettings> options,
             ILogger<PackageQueryCollector> logger)
         {
             _processor = packageQueryProcessor;
@@ -41,6 +44,7 @@ namespace Knapcode.ExplorePackages.Logic
             _packageV2CommitEnumerator = packageV2CommitEnumerator;
             _batchSizeProvider = batchSizeProvider;
             _singletonService = singletonService;
+            _options = options;
             _logger = logger;
         }
 
@@ -110,12 +114,12 @@ namespace Knapcode.ExplorePackages.Logic
 
                 await _processor.PersistResults(results);
 
-                var queriesWithResults = results
+                var executedQueries = results
                     .Select(x => x.Query)
                     .Distinct()
                     .ToList();
 
-                await PersistCursorsAsync(bounds, queriesWithResults);
+                await PersistCursorsAsync(bounds, executedQueries);
             }
             while (commitCount > 0);
         }
@@ -128,7 +132,7 @@ namespace Knapcode.ExplorePackages.Logic
             var results = new ConcurrentBag<PackageQueryResult>();
 
             var taskQueue = new TaskQueue<PackageQueryWork>(
-                workerCount: 32,
+                workerCount: _options.Value.WorkerCount,
                 produceAsync: (p, t) => ProduceWorkAsync(p, queries, bounds, commits, t),
                 consumeAsync: (w, t) => _processor.ConsumeWorkAsync(w, results),
                 logger: _logger);
@@ -230,24 +234,20 @@ namespace Knapcode.ExplorePackages.Logic
             IReadOnlyList<EntityCommit<PackageEntity>> commits,
             CancellationToken token)
         {
-            await TaskProcessor.ExecuteAsync(
-                commits.SelectMany(c => c.Entities.Select(p => new { Commit = c, Package = p })),
-                async p =>
+            foreach (var commit in commits)
+            {
+                foreach (var package in commit.Entities)
                 {
                     var applicableQueries = queries
-                        .Where(x => p.Commit.CommitTimestamp > bounds.CursorNameToStart[bounds.QueryNameToCursorName[x.Name]])
+                        .Where(x => commit.CommitTimestamp > bounds.CursorNameToStart[bounds.QueryNameToCursorName[x.Name]])
                         .ToList();
 
                     var includeNuspec = applicableQueries.Any(x => x.NeedsNuspec);
                     var includeMZip = applicableQueries.Any(x => x.NeedsMZip);
-                    var package = p.Package;
 
                     await _processor.EnqueueAsync(producer, applicableQueries, package, includeNuspec, includeMZip, token);
-
-                    return 0;
-                },
-                workerCount: 1,
-                token: token);
+                }
+            }
         }
 
         private async Task PersistCursorsAsync(PackageQueryBounds bounds, IReadOnlyList<IPackageQuery> queries)

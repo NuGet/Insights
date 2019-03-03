@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NuGet.Protocol;
 
 namespace Knapcode.ExplorePackages.Logic
@@ -13,12 +14,18 @@ namespace Knapcode.ExplorePackages.Logic
     {
         private readonly HttpSource _httpSource;
         private readonly ServiceIndexCache _serviceIndexCache;
+        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
         private readonly ILogger<CatalogClient> _logger;
 
-        public CatalogClient(HttpSource httpSource, ServiceIndexCache serviceIndexCache, ILogger<CatalogClient> logger)
+        public CatalogClient(
+            HttpSource httpSource,
+            ServiceIndexCache serviceIndexCache,
+            IOptionsSnapshot<ExplorePackagesSettings> options,
+            ILogger<CatalogClient> logger)
         {
             _httpSource = httpSource;
             _serviceIndexCache = serviceIndexCache;
+            _options = options;
             _logger = logger;
         }
 
@@ -80,7 +87,7 @@ namespace Knapcode.ExplorePackages.Logic
                         maxCommitTimestamp,
                         excludeRedundantLeaves: false);
                 },
-                workerCount: 32,
+                workerCount: _options.Value.WorkerCount,
                 token: token);
 
             // Each consumer should ensure values are sorted in an appropriate fashion, but for consistency we

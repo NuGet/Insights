@@ -68,5 +68,6 @@
         public const string HasMissingNuspecPackageQuery = "FindMissingNuspecPackageQuery";
         public const string HasMissingMZipPackageQuery = "HasMissingMZipPackageQuery";
         public const string HasInconsistentListedStateQuery = "HasInconsistentListedStateQuery";
+        public const string IsMissingFromCatalogQuery = "IsMissingFromCatalogQuery";
     }
 }

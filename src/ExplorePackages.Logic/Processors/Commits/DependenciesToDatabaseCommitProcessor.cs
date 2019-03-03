@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -12,15 +13,18 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly NuspecStore _nuspecStore;
         private readonly PackageDependencyService _packageDependencyService;
         private readonly IBatchSizeProvider _batchSizeProvider;
+        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
 
         public DependenciesToDatabaseCommitProcessor(
             NuspecStore nuspecStore,
             PackageDependencyService packageDependencyService,
-            IBatchSizeProvider batchSizeProvider)
+            IBatchSizeProvider batchSizeProvider,
+            IOptionsSnapshot<ExplorePackagesSettings> options)
         {
             _nuspecStore = nuspecStore;
             _packageDependencyService = packageDependencyService;
             _batchSizeProvider = batchSizeProvider;
+            _options = options;
         }
 
         public string CursorName => CursorNames.DependenciesToDatabase;
@@ -43,7 +47,7 @@ namespace Knapcode.ExplorePackages.Logic
             var output = await TaskProcessor.ExecuteAsync(
                 packages,
                 x => InitializeItemAsync(x),
-                workerCount: 32,
+                workerCount: _options.Value.WorkerCount,
                 token: token);
 
             var list = output.Where(x => x != null).ToList();
@@ -79,12 +83,14 @@ namespace Knapcode.ExplorePackages.Logic
                 DependenciesToDatabaseCommitProcessor processor,
                 CommitCollectorSequentialProgressService sequentialProgressService,
                 ISingletonService singletonService,
+                IOptionsSnapshot<ExplorePackagesSettings> options,
                 ILogger<Collector> logger) : base(
                     cursorService,
                     enumerator,
                     processor,
                     sequentialProgressService,
                     singletonService,
+                    options,
                     logger)
             {
             }

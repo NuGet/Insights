@@ -21,6 +21,7 @@ namespace Knapcode.ExplorePackages.Logic
             StorageConnectionString = "UseDevelopmentStorage=true";
             StorageContainerName = "packages";
             IsStorageContainerPublic = false;
+            WorkerCount = 32;
         }
 
         public DatabaseType DatabaseType { get; set; }
@@ -36,5 +37,6 @@ namespace Knapcode.ExplorePackages.Logic
         public string StorageConnectionString { get; set; }
         public string StorageContainerName { get; set; }
         public bool IsStorageContainerPublic { get; set; }
+        public int WorkerCount { get; set; }
     }
 }

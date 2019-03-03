@@ -84,6 +84,7 @@ namespace Knapcode.ExplorePackages.Tool
                 x.StorageContainerName = _storageContainerName;
                 x.IsStorageContainerPublic = true;
                 x.RunBoringQueries = true;
+                x.WorkerCount = 8;
             });
 
             using (var serviceProvider = serviceCollection.BuildServiceProvider())
@@ -105,7 +106,6 @@ namespace Knapcode.ExplorePackages.Tool
                     Assert.NotEqual(0, await entityContext.PackageArchives.CountAsync());
                     Assert.NotEqual(0, await entityContext.PackageDependencies.CountAsync());
                     Assert.NotEqual(0, await entityContext.PackageEntries.CountAsync());
-                    Assert.NotEqual(0, await entityContext.PackageQueries.CountAsync());
                     Assert.NotEqual(0, await entityContext.PackageRegistrations.CountAsync());
                     Assert.NotEqual(0, await entityContext.Packages.CountAsync());
                     Assert.NotEqual(0, await entityContext.V2Packages.CountAsync());

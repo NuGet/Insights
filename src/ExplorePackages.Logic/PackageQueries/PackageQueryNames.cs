@@ -48,5 +48,6 @@
         public const string HasMissingNuspecPackageQuery = CursorNames.HasMissingNuspecPackageQuery;
         public const string HasMissingMZipPackageQuery = CursorNames.HasMissingMZipPackageQuery;
         public const string HasInconsistentListedStateQuery = CursorNames.HasInconsistentListedStateQuery;
+        public const string IsMissingFromCatalogQuery = CursorNames.IsMissingFromCatalogQuery;
     }
 }

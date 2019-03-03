@@ -11,7 +11,7 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class V2ToDatabaseProcessor
     {
-        private static readonly TimeSpan FuzzFactor = TimeSpan.FromHours(1);
+        public static readonly TimeSpan FuzzFactor = TimeSpan.FromHours(0.25);
 
         private readonly CursorService _cursorService;
         private readonly V2Client _v2Client;
@@ -55,7 +55,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                     return package;
                 },
-                workerCount: 32,
+                workerCount: _options.Value.WorkerCount,
                 token: CancellationToken.None);
             var packages = packagesOrNull.Where(x => x != null).ToList();
             await _service.AddOrUpdatePackagesAsync(packages);

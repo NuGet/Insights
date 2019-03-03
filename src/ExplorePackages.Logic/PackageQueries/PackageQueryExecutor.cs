@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.Delta.Common;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -15,15 +16,18 @@ namespace Knapcode.ExplorePackages.Logic
     {
         private readonly PackageQueryProcessor _processor;
         private readonly IPackageService _packageService;
+        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
         private readonly ILogger<PackageQueryExecutor> _logger;
 
         public PackageQueryExecutor(
             PackageQueryProcessor processor,
             IPackageService packageService,
+            IOptionsSnapshot<ExplorePackagesSettings> options,
             ILogger<PackageQueryExecutor> logger)
         {
             _processor = processor;
             _packageService = packageService;
+            _options = options;
             _logger = logger;
         }
 
@@ -32,7 +36,7 @@ namespace Knapcode.ExplorePackages.Logic
             var results = new ConcurrentBag<PackageQueryResult>();
 
             var taskQueue = new TaskQueue<PackageQueryWork>(
-                workerCount: 32,
+                workerCount: _options.Value.WorkerCount,
                 produceAsync: (p, t) => ProduceAsync(p, queries, identities, t),
                 consumeAsync: (w, t) => _processor.ConsumeWorkAsync(w, results),
                 logger: _logger);

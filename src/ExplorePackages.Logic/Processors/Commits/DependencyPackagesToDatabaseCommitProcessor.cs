@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -233,12 +234,14 @@ namespace Knapcode.ExplorePackages.Logic
                 DependencyPackagesToDatabaseCommitProcessor processor,
                 CommitCollectorSequentialProgressService sequentialProgressService,
                 ISingletonService singletonService,
+                IOptionsSnapshot<ExplorePackagesSettings> options,
                 ILogger<Collector> logger) : base(
                     cursorService,
                     enumerator,
                     processor,
                     sequentialProgressService,
                     singletonService,
+                    options,
                     logger)
             {
             }

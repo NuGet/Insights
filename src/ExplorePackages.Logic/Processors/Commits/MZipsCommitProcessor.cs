@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -69,12 +70,14 @@ namespace Knapcode.ExplorePackages.Logic
                 MZipsCommitProcessor processor,
                 CommitCollectorSequentialProgressService sequentialProgressService,
                 ISingletonService singletonService,
+                IOptionsSnapshot<ExplorePackagesSettings> options,
                 ILogger<Collector> logger) : base(
                     cursorService,
                     enumerator,
                     processor,
                     sequentialProgressService,
                     singletonService,
+                    options,
                     logger)
             {
             }

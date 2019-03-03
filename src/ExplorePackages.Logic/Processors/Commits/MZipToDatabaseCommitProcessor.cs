@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -13,15 +14,18 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly MZipStore _mZipStore;
         private readonly IPackageService _packageService;
         private readonly IBatchSizeProvider _batchSizeProvider;
+        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
 
         public MZipToDatabaseCommitProcessor(
             MZipStore mZipStore,
             IPackageService packageService,
-            IBatchSizeProvider batchSizeProvider)
+            IBatchSizeProvider batchSizeProvider,
+            IOptionsSnapshot<ExplorePackagesSettings> options)
         {
             _mZipStore = mZipStore;
             _packageService = packageService;
             _batchSizeProvider = batchSizeProvider;
+            _options = options;
         }
 
         public string CursorName => CursorNames.MZipToDatabase;
@@ -44,7 +48,7 @@ namespace Knapcode.ExplorePackages.Logic
             var output = await TaskProcessor.ExecuteAsync(
                 packages,
                 x => InitializeItemAsync(x, token),
-                workerCount: 32,
+                workerCount: _options.Value.WorkerCount,
                 token: token);
 
             var list = output.Where(x => x != null).ToList();
@@ -94,12 +98,14 @@ namespace Knapcode.ExplorePackages.Logic
                 MZipToDatabaseCommitProcessor processor,
                 CommitCollectorSequentialProgressService sequentialProgressService,
                 ISingletonService singletonService,
+                IOptionsSnapshot<ExplorePackagesSettings> options,
                 ILogger<Collector> logger) : base(
                     cursorService,
                     enumerator,
                     processor,
                     sequentialProgressService,
                     singletonService,
+                    options,
                     logger)
             {
             }

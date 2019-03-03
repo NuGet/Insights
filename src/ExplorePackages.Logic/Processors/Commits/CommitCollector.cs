@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.Delta.Common;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -16,6 +17,7 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly ICommitProcessor<TEntity, TItem, TProgressToken> _processor;
         private readonly CommitCollectorSequentialProgressService _sequentialProgressService;
         private readonly ISingletonService _singletonService;
+        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
         private readonly ILogger _logger;
 
         public CommitCollector(
@@ -24,6 +26,7 @@ namespace Knapcode.ExplorePackages.Logic
             ICommitProcessor<TEntity, TItem, TProgressToken> processor,
             CommitCollectorSequentialProgressService sequentialProgressService,
             ISingletonService singletonService,
+            IOptionsSnapshot<ExplorePackagesSettings> options,
             ILogger logger)
         {
             _cursorService = cursorService;
@@ -31,6 +34,7 @@ namespace Knapcode.ExplorePackages.Logic
             _processor = processor;
             _sequentialProgressService = sequentialProgressService;
             _singletonService = singletonService;
+            _options = options;
             _logger = logger;
         }
         
@@ -101,7 +105,7 @@ namespace Knapcode.ExplorePackages.Logic
             CancellationToken token)
         {
             var taskQueue = new TaskQueue<IReadOnlyList<TItem>>(
-                workerCount: 32,
+                workerCount: _options.Value.WorkerCount,
                 produceAsync: (ctx, t) => ProduceAsync(ctx, commits, t),
                 consumeAsync: (x, t) => _processor.ProcessBatchAsync(x),
                 logger: _logger);

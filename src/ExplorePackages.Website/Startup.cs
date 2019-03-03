@@ -24,7 +24,7 @@ namespace Knapcode.ExplorePackages.Website
         
         public void ConfigureServices(IServiceCollection serviceCollection)
         {
-            // Allow 32 concurrent outgoing connections.
+            // Allow many concurrent outgoing connections.
             ServicePointManager.DefaultConnectionLimit = 64;
 
             // Set the user agent for the HTTP client.

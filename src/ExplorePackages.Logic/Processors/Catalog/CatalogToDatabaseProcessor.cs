@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -12,17 +13,20 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly CatalogClient _catalogClient;
         private readonly CatalogService _catalogService;
         private readonly V2Client _v2Client;
+        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
 
         public CatalogToDatabaseProcessor(
             IPackageService packageService,
             CatalogClient catalogClient,
             CatalogService catalogService,
-            V2Client v2Client)
+            V2Client v2Client,
+            IOptionsSnapshot<ExplorePackagesSettings> options)
         {
             _packageService = packageService;
             _catalogClient = catalogClient;
             _catalogService = catalogService;
             _v2Client = v2Client;
+            _options = options;
         }
 
         public IReadOnlyList<string> DependencyCursorNames => new List<string>();
@@ -48,7 +52,7 @@ namespace Knapcode.ExplorePackages.Logic
 
                     return KeyValuePairFactory.Create(x, visiblityState);
                 },
-                workerCount: 32,
+                workerCount: _options.Value.WorkerCount,
                 token: CancellationToken.None))
                 .ToDictionary(x => x.Key, x => x.Value, new CatalogLeafItemComparer());
 

@@ -40,7 +40,7 @@ namespace Knapcode.ExplorePackages.Logic
         {
             return await _commitEnumerator.GetCommitsAsync(
                 (s, e, b) => GetRangeAsync(queryEntities, s, e, b),
-                x => x.V2Package.LastUpdatedTimestamp,
+                x => x.V2Package.LastEditedTimestamp.Value,
                 InitializePackageCommit,
                 start,
                 end,
