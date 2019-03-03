@@ -83,6 +83,7 @@ namespace Knapcode.ExplorePackages.Tool
                 x.StorageConnectionString = _storageConnectionString;
                 x.StorageContainerName = _storageContainerName;
                 x.IsStorageContainerPublic = true;
+                x.RunBoringQueries = true;
             });
 
             using (var serviceProvider = serviceCollection.BuildServiceProvider())
