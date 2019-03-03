@@ -60,6 +60,7 @@ namespace Knapcode.ExplorePackages.Logic
                     .Include(x => x.V2Package)
                     .Where(x => x.PackageRegistration != null)
                     .Where(x => x.V2Package != null)
+                    .Where(x => x.V2Package.LastEditedTimestamp != null)
                     .Where(x => x.V2Package.LastEditedTimestamp > start && x.V2Package.LastEditedTimestamp <= end)
                     .OrderBy(x => x.V2Package.LastEditedTimestamp)
                     .Take(batchSize)
