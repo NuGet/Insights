@@ -155,7 +155,7 @@ namespace Knapcode.ExplorePackages.Logic
                 {
                     CursorNames.CatalogToDatabase,
                     CursorNames.Nuspecs,
-                    CursorNames.MZipToDatabase,
+                    CursorNames.MZips,
                     CursorNames.NuGetOrg.FlatContainer,
                     CursorNames.NuGetOrg.Registration,
                     CursorNames.NuGetOrg.Search,
