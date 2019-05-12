@@ -145,7 +145,7 @@ namespace Knapcode.ExplorePackages.Logic
             using (var entityContext = await _entityContextFactory.GetAsync())
             {
                 var identityStrings = identities
-                    .Select(x => $"{x.Id}/{x.Version}")
+                    .Select(x => GetIdentity(x.Id, x.Version))
                     .ToList();
 
                 return await entityContext
@@ -207,7 +207,7 @@ namespace Knapcode.ExplorePackages.Logic
             Func<T, string> getId,
             Func<T, string> getVersion,
             Func<PackageEntity, T, Task> initializePackageFromForeignAsync,
-            Action<IEntityContext, PackageEntity, PackageEntity> updateExistingPackage,
+            Action<IEntityContext, T, PackageEntity, PackageEntity> updateExistingPackage,
             bool includeCatalogPackageRegistrations)
         {
             using (var entityContext = await _entityContextFactory.GetAsync())
@@ -220,12 +220,14 @@ namespace Knapcode.ExplorePackages.Logic
 
                 // Create a mapping from package identity to latest package.
                 var identityToLatest = new Dictionary<string, PackageEntity>(StringComparer.OrdinalIgnoreCase);
+                var identityToForeign = new Dictionary<string, T>(StringComparer.OrdinalIgnoreCase);
                 foreach (var foreignPackage in foreignPackages)
                 {
                     var id = getId(foreignPackage);
                     var version = NuGetVersion.Parse(getVersion(foreignPackage)).ToNormalizedString();
-                    var identity = $"{id}/{version}";
-                    
+                    var identity = GetIdentity(id, version);
+                    identityToForeign[identity] = foreignPackage;
+
                     if (!identityToLatest.TryGetValue(identity, out var latestPackage))
                     {
                         latestPackage = new PackageEntity
@@ -264,9 +266,10 @@ namespace Knapcode.ExplorePackages.Logic
                 foreach (var existingPackage in existingPackages)
                 {
                     var latestPackage = identityToLatest[existingPackage.Identity];
+                    var foreignPackage = identityToForeign[existingPackage.Identity];
                     identityToLatest.Remove(existingPackage.Identity);
 
-                    updateExistingPackage(entityContext, existingPackage, latestPackage);
+                    updateExistingPackage(entityContext, foreignPackage, existingPackage, latestPackage);
 
                     identityToPackageKey.Add(existingPackage.Identity, existingPackage.PackageKey);
                 }
@@ -291,6 +294,11 @@ namespace Knapcode.ExplorePackages.Logic
 
                 return identityToPackageKey;
             }
+        }
+
+        private static string GetIdentity(string id, string version)
+        {
+            return $"{id}/{version}";
         }
 
         public async Task AddOrUpdatePackagesAsync(IEnumerable<PackageArchiveMetadata> metadataSequence)
@@ -347,7 +355,7 @@ namespace Knapcode.ExplorePackages.Logic
                     p.PackageArchive = Initialize(new PackageArchiveEntity(), f);
                     return Task.CompletedTask;
                 },
-                (c, pe, pl) =>
+                (c, f, pe, pl) =>
                 {
                     if (pe.PackageArchive == null)
                     {
@@ -597,7 +605,7 @@ namespace Knapcode.ExplorePackages.Logic
                 {
                     return Task.CompletedTask;
                 },
-                (c, pe, pl) => {},
+                (c, f, pe, pl) => {},
                 includeCatalogPackageRegistrations: false);
         }
 
@@ -617,8 +625,13 @@ namespace Knapcode.ExplorePackages.Logic
                     p.V2Package = ToEntity(v2);
                     return Task.CompletedTask;
                 },
-                (c, pe, pl) =>
+                (c, f, pe, pl) =>
                 {
+                    // Don't fix up the ID here due to:
+                    // https://github.com/NuGet/NuGetGallery/issues/3349
+                    pe.Version = f.Version;
+                    pe.Identity = GetIdentity(pe.PackageRegistration.Id, pe.Version);
+
                     if (pe.V2Package == null)
                     {
                         pe.V2Package = pl.V2Package;
@@ -651,7 +664,7 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var identities = entries
                 .Where(x => x.IsPackageDelete())
-                .Select(x => $"{x.PackageId}/{x.ParsePackageVersion().ToNormalizedString()}")
+                .Select(x => GetIdentity(x.PackageId, x.ParsePackageVersion().ToNormalizedString()))
                 .Distinct()
                 .ToList();
             _logger.LogInformation("Found {Count} catalog leaves containing deleted packages.", identities.Count);
@@ -768,8 +781,12 @@ namespace Knapcode.ExplorePackages.Logic
                     };
                     return Task.CompletedTask;
                 },
-                (c, pe, pl) =>
+                (c, f, pe, pl) =>
                 {
+                    pe.PackageRegistration.Id = f.PackageId;
+                    pe.Version = f.ParsePackageVersion().ToNormalizedString();
+                    pe.Identity = GetIdentity(pe.PackageRegistration.Id, pe.Version);
+
                     // Update the catalog package registration.
                     if (pe.PackageRegistration.CatalogPackageRegistration == null)
                     {
