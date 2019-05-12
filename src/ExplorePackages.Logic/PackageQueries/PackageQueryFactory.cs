@@ -11,6 +11,9 @@ namespace Knapcode.ExplorePackages.Logic
             PackageQueryNames.FindNonNormalizedPackageVersionsNuspecQuery,
             PackageQueryNames.FindMissingDependencyVersionsNuspecQuery,
             PackageQueryNames.FindEmptyDependencyVersionsNuspecQuery,
+            PackageQueryNames.FindRepositoriesNuspecQuery,
+            PackageQueryNames.FindSemVer2PackageVersionsNuspecQuery,
+            PackageQueryNames.FindSemVer2DependencyVersionsNuspecQuery,
         };
 
         private readonly Func<IEnumerable<IPackageQuery>> _getPackageQueries;
