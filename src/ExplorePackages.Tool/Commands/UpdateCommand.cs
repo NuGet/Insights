@@ -14,7 +14,6 @@ namespace Knapcode.ExplorePackages.Tool.Commands
     {
         private readonly IReadOnlyList<ICommand> _commands;
         private readonly ISingletonService _singletonService;
-        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
         private readonly ILogger<CommandExecutor> _logger;
         private CommandOption _skipDownloadsOption;
 
@@ -24,7 +23,6 @@ namespace Knapcode.ExplorePackages.Tool.Commands
             CatalogToDatabaseCommand catalogToDatabase,
             NuspecsCommand nuspecs,
             MZipsCommand mzips,
-            MZipToDatabaseCommand mzipToDatabase,
             DependenciesToDatabaseCommand dependenciesToDatabase,
             DependencyPackagesToDatabaseCommand dependencyPackagesToDatabase,
             DownloadsToDatabaseCommand downloadsToDatabase,
@@ -40,7 +38,6 @@ namespace Knapcode.ExplorePackages.Tool.Commands
                 catalogToDatabase,
                 nuspecs,
                 mzips,
-                mzipToDatabase,
                 dependenciesToDatabase,
                 dependencyPackagesToDatabase,
             };
@@ -57,7 +54,6 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 
             _commands = commands;
             _singletonService = singletonService;
-            _options = options;
             _logger = logger;
         }
 
