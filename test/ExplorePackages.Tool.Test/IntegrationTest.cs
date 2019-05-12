@@ -103,9 +103,7 @@ namespace Knapcode.ExplorePackages.Tool
                     Assert.NotEqual(0, await entityContext.CatalogPackageRegistrations.CountAsync());
                     Assert.NotEqual(0, await entityContext.CatalogPackages.CountAsync());
                     Assert.NotEqual(0, await entityContext.CatalogPages.CountAsync());
-                    Assert.NotEqual(0, await entityContext.PackageArchives.CountAsync());
                     Assert.NotEqual(0, await entityContext.PackageDependencies.CountAsync());
-                    Assert.NotEqual(0, await entityContext.PackageEntries.CountAsync());
                     Assert.NotEqual(0, await entityContext.PackageRegistrations.CountAsync());
                     Assert.NotEqual(0, await entityContext.Packages.CountAsync());
                     Assert.NotEqual(0, await entityContext.V2Packages.CountAsync());
