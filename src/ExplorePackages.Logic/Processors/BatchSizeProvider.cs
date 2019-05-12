@@ -42,7 +42,7 @@ namespace Knapcode.ExplorePackages.Logic
             },
             {
                 BatchSizeType.PackageQueries,
-                new Bounds(MinimumForCatalog, 5000)
+                new Bounds(MinimumForCatalog, 2000)
             },
             {
                 BatchSizeType.PackageQueryService_MatchedPackages,
@@ -50,7 +50,7 @@ namespace Knapcode.ExplorePackages.Logic
             },
             {
                 BatchSizeType.ReprocessCrossCheckDiscrepancies,
-                new Bounds(MinimumForCatalog, 5000)
+                new Bounds(MinimumForCatalog, 2000)
             },
             {
                 BatchSizeType.V2ToDatabase,
