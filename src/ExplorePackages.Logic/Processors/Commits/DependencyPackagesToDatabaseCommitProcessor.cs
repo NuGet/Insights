@@ -93,7 +93,8 @@ namespace Knapcode.ExplorePackages.Logic
                 // Verify the package registration keys match those stored in the progress token.
                 if (!progressToken.AllPackageRegistrationKeys.OrderBy(x => x).SequenceEqual(allPackageRegistrationKeys))
                 {
-                    throw new ArgumentException("The provided progress token does not match the provided package registration entites.");
+                    _logger.LogWarning("The provided progress token does not match the provided package registration entites.");
+                    progressToken = null;
                 }
             }
 
