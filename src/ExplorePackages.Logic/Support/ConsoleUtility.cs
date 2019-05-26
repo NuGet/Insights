@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.Logging;
 
-namespace Knapcode.ExplorePackages.Tool
+namespace Knapcode.ExplorePackages.Logic
 {
     public static class ConsoleUtility
     {

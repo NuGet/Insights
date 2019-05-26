@@ -2,7 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
-using Knapcode.ExplorePackages.Tool.Commands;
 using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Tool

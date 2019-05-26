@@ -1,18 +1,17 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Logic;
+﻿using Knapcode.ExplorePackages.Logic;
 using McMaster.Extensions.CommandLineUtils;
-using Microsoft.EntityFrameworkCore;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace Knapcode.ExplorePackages.Tool.Commands
+namespace Knapcode.ExplorePackages.Tool
 {
     public class SandboxCommand : ICommand
     {
-        private readonly EntityContextFactory _entityContextFactory;
+        private readonly BlobStorageMigrator _blobStorageMigrator;
 
-        public SandboxCommand(EntityContextFactory entityContextFactory)
+        public SandboxCommand(BlobStorageMigrator blobStorageMigrator)
         {
-            _entityContextFactory = entityContextFactory;
+            _blobStorageMigrator = blobStorageMigrator;
         }
 
         public void Configure(CommandLineApplication app)
@@ -21,10 +20,13 @@ namespace Knapcode.ExplorePackages.Tool.Commands
 
         public async Task ExecuteAsync(CancellationToken token)
         {
-            using (var entityContext = await _entityContextFactory.GetAsync())
-            {
-                var package = await entityContext.Packages.FirstOrDefaultAsync();
-            }
+            var source = new BlobStorageMigrationSource(
+                "core.windows.net",
+                "explorepackages",
+                "?st=2019-05-25T20%3A35%3A03Z&se=2019-05-26T20%3A35%3A03Z&sp=rl&sv=2018-03-28&sr=c&sig=lB%2FlkaB5fYixrQ0HTEZ%2BIX%2Foxmx%2Bi9yjd87UY8X8Er0%3D",
+                "packages2");
+
+            await _blobStorageMigrator.MigrateAsync(source);
         }
 
         public bool IsInitializationRequired() => true;

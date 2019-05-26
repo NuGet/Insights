@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26730.16
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.352
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E875EFB7-FE35-4EF2-AC37-C81E696F4DEA}"
 EndProject
@@ -26,7 +26,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExplorePackages.Tool", "src\ExplorePackages.Tool\ExplorePackages.Tool.csproj", "{D9DDCBAE-4ECE-4C49-B2C3-52E011317838}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExplorePackages.Tool.Test", "test\ExplorePackages.Tool.Test\ExplorePackages.Tool.Test.csproj", "{EA63BB32-0706-4BB4-A795-AE2A5A0636BF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExplorePackages.Tool.Test", "test\ExplorePackages.Tool.Test\ExplorePackages.Tool.Test.csproj", "{EA63BB32-0706-4BB4-A795-AE2A5A0636BF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExplorePackages.Worker", "src\ExplorePackages.Worker\ExplorePackages.Worker.csproj", "{A2AB8E23-B984-4436-AFD3-D627282944A4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -58,6 +60,10 @@ Global
 		{EA63BB32-0706-4BB4-A795-AE2A5A0636BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EA63BB32-0706-4BB4-A795-AE2A5A0636BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EA63BB32-0706-4BB4-A795-AE2A5A0636BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2AB8E23-B984-4436-AFD3-D627282944A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2AB8E23-B984-4436-AFD3-D627282944A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2AB8E23-B984-4436-AFD3-D627282944A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2AB8E23-B984-4436-AFD3-D627282944A4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -69,6 +75,7 @@ Global
 		{F8BBF131-7A37-4BC5-83D3-2D899808E124} = {CE6F8939-81A2-4BD4-9D9F-C1BF37DB1589}
 		{D9DDCBAE-4ECE-4C49-B2C3-52E011317838} = {E875EFB7-FE35-4EF2-AC37-C81E696F4DEA}
 		{EA63BB32-0706-4BB4-A795-AE2A5A0636BF} = {CE6F8939-81A2-4BD4-9D9F-C1BF37DB1589}
+		{A2AB8E23-B984-4436-AFD3-D627282944A4} = {E875EFB7-FE35-4EF2-AC37-C81E696F4DEA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9D014703-53BC-4276-AAFF-F773AA86D208}

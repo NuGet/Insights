@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
+using Knapcode.ExplorePackages.Logic.Worker;
 using Knapcode.MiniZip;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -18,6 +21,34 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public static class ServiceCollectionExtensions
     {
+        public static IServiceCollection AddExplorePackagesSettings<T>(this IServiceCollection serviceCollection)
+        {
+            var localDirectory = Path.GetDirectoryName(typeof(T).Assembly.Location);
+            return serviceCollection.AddExplorePackagesSettings(localDirectory);
+        }
+
+        public static IServiceCollection AddExplorePackagesSettings(
+            this IServiceCollection serviceCollection,
+            string localDirectory = null)
+        {
+            var userProfile = Environment.GetEnvironmentVariable("USERPROFILE") ?? Directory.GetCurrentDirectory();
+            var userProfilePath = Path.Combine(userProfile, "Knapcode.ExplorePackages.Settings.json");
+
+            var localPath = Path.Combine(
+                localDirectory ?? typeof(ServiceCollectionExtensions).Assembly.Location,
+                "Knapcode.ExplorePackages.Settings.json");
+
+            var configurationBuilder = new ConfigurationBuilder()
+                .AddJsonFile(userProfilePath, optional: true, reloadOnChange: false)
+                .AddJsonFile(localPath, optional: true, reloadOnChange: false);
+
+            var configuration = configurationBuilder.Build();
+
+            serviceCollection.Configure<ExplorePackagesSettings>(configuration.GetSection("Knapcode.ExplorePackages"));
+
+            return serviceCollection;
+        }
+
         public static IServiceCollection AddExplorePackages(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddMemoryCache();
@@ -232,6 +263,12 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<SearchSpecificInstancesConsistencyService>();
             serviceCollection.AddTransient<PackageConsistencyService>();
             serviceCollection.AddTransient<CrossCheckConsistencyService>();
+
+
+            serviceCollection.AddTransient<GenericMessageProcessor>();
+            serviceCollection.AddTransient<MessageSerializer>();
+            serviceCollection.AddTransient<IMessageProcessor<PackageQueryMessage>, PackageQueryMessageProcessor>();
+
 
             serviceCollection.AddTransient(x => new PackageQueryFactory(
                 () => x.GetRequiredService<IEnumerable<IPackageQuery>>(),

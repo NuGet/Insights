@@ -1,19 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Logic;
-using Knapcode.ExplorePackages.Tool.Commands;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NuGet.Protocol.Core.Types;
 
 namespace Knapcode.ExplorePackages.Tool
 {
@@ -188,8 +182,7 @@ namespace Knapcode.ExplorePackages.Tool
 
                         if (command.IsInitializationRequired())
                         {
-                            await InitializeGlobalState(
-                                serviceProvider,
+                            await serviceProvider.InitializeGlobalStateAsync<Program>(
                                 command.IsDatabaseRequired());
                         }
 
@@ -235,63 +228,13 @@ namespace Knapcode.ExplorePackages.Tool
                     });
                 });
         }
-        
-        private static async Task InitializeGlobalState(
-            IServiceProvider serviceProvider,
-            bool initializeDatabase)
-        {
-            var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
-            logger.LogInformation("===== initialize =====");
-
-            // Log the settings
-            using (var loggingScope = serviceProvider.CreateScope())
-            {
-                loggingScope.ServiceProvider.SanitizeAndLogSettings();
-            }
-
-            // Initialize the database.
-            if (initializeDatabase)
-            {
-                using (var entityContext = serviceProvider.GetRequiredService<IEntityContext>())
-                {
-                    await entityContext.Database.MigrateAsync();
-                    logger.LogInformation("The database schema is up to date.");
-                }
-            }
-            else
-            {
-                logger.LogInformation("The database will not be used.");
-            }
-
-            // Set the user agent.
-            var userAgentStringBuilder = new UserAgentStringBuilder("Knapcode.ExplorePackages.Bot");
-            UserAgent.SetUserAgentString(userAgentStringBuilder);
-            logger.LogInformation("The following user agent will be used: {UserAgent}", UserAgent.UserAgentString);
-
-            // Allow 32 concurrent outgoing connections.
-            ServicePointManager.DefaultConnectionLimit = 64;
-
-            logger.LogInformation("======================" + Environment.NewLine);
-        }
 
         public static ServiceCollection InitializeServiceCollection()
         {
             var serviceCollection = new ServiceCollection();
 
             serviceCollection.AddExplorePackages();
-
-            var userProfile = Environment.GetEnvironmentVariable("USERPROFILE") ?? Directory.GetCurrentDirectory();
-            var userProfilePath = Path.Combine(userProfile, "Knapcode.ExplorePackages.Settings.json");
-
-            var local = Path.GetDirectoryName(typeof(Program).Assembly.Location);
-            var localPath = Path.Combine(local, "Knapcode.ExplorePackages.Settings.json");
-
-            var configurationBuilder = new ConfigurationBuilder()
-                .AddJsonFile(userProfilePath, optional: true, reloadOnChange: false)
-                .AddJsonFile(localPath, optional: true, reloadOnChange: false);
-            var configuration = configurationBuilder.Build();
-
-            serviceCollection.Configure<ExplorePackagesSettings>(configuration.GetSection("Knapcode.ExplorePackages"));
+            serviceCollection.AddExplorePackagesSettings<Program>();
 
             serviceCollection.AddLogging(o =>
             {

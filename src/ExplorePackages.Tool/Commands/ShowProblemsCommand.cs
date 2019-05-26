@@ -8,7 +8,7 @@ using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
 
-namespace Knapcode.ExplorePackages.Tool.Commands
+namespace Knapcode.ExplorePackages.Tool
 {
     public class ShowProblemsCommand : ICommand
     {

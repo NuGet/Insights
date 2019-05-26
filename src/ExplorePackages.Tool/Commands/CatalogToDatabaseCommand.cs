@@ -4,7 +4,7 @@ using Knapcode.ExplorePackages.Logic;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 
-namespace Knapcode.ExplorePackages.Tool.Commands
+namespace Knapcode.ExplorePackages.Tool
 {
     public class CatalogToDatabaseCommand : ICommand
     {

@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using NuGet.Versioning;
 
-namespace Knapcode.ExplorePackages.Tool.Commands
+namespace Knapcode.ExplorePackages.Tool
 {
     public class CheckPackageCommand : ICommand
     {

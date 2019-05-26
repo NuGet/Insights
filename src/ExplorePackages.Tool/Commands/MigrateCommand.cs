@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages.Tool.Commands
+namespace Knapcode.ExplorePackages.Tool
 {
     public class MigrateCommand : ICommand
     {

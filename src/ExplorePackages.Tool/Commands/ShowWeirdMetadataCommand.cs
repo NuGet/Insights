@@ -8,7 +8,7 @@ using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Logic;
 using McMaster.Extensions.CommandLineUtils;
 
-namespace Knapcode.ExplorePackages.Tool.Commands
+namespace Knapcode.ExplorePackages.Tool
 {
     public class ShowWeirdMetadataCommand : ICommand
     {

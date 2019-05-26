@@ -2,7 +2,7 @@
 using System.Text;
 using Microsoft.Extensions.Logging;
 
-namespace Knapcode.ExplorePackages.Tool
+namespace Knapcode.ExplorePackages.Logic
 {
     public class MinimalConsoleLogger : ILogger
     {
