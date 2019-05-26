@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp2.0;net462</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.2;net462</TargetFrameworks>
     <AssemblyName>Knapcode.ExplorePackages.Tool</AssemblyName>
     <RootNamespace>Knapcode.ExplorePackages.Tool</RootNamespace>
   </PropertyGroup>
@@ -14,7 +14,7 @@
     Source:
     https://github.com/aspnet/EntityFrameworkCore/issues/9505#issuecomment-326438680
     -->
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.2.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.2.4" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ExplorePackages.Entities\ExplorePackages.Entities.csproj" />
