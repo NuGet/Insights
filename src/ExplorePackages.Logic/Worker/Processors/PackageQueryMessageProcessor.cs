@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -11,15 +12,18 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 
         private readonly EntityContextFactory _entityContextFactory;
         private readonly IMessageEnqueuer _messageEnqueuer;
+        private readonly IPerPackageQueryProcessor _perPackageQueryProcessor;
         private readonly ILogger<PackageQueryMessageProcessor> _logger;
 
         public PackageQueryMessageProcessor(
             EntityContextFactory entityContextFactory,
             IMessageEnqueuer messageEnqueuer,
+            IPerPackageQueryProcessor perPackageQueryProcessor,
             ILogger<PackageQueryMessageProcessor> logger)
         {
             _entityContextFactory = entityContextFactory;
             _messageEnqueuer = messageEnqueuer;
+            _perPackageQueryProcessor = perPackageQueryProcessor;
             _logger = logger;
         }
 
@@ -68,6 +72,25 @@ namespace Knapcode.ExplorePackages.Logic.Worker
                     packages.Count,
                     message.MinKey,
                     message.MaxKey);
+
+                foreach (var package in packages)
+                {
+                    try
+                    {
+                        await _perPackageQueryProcessor.ProcessAsync(package);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(
+                            ex,
+                            "Failed to process package {Id} {Version}. Enqueing a specific message for this package.",
+                            package.Id,
+                            package.Version);
+
+                        var specificMessage = new PackageQueryMessage(package.PackageKey, package.PackageKey);
+                        await _messageEnqueuer.EnqueueAsync(specificMessage);
+                    }
+                }
             }
         }
     }
