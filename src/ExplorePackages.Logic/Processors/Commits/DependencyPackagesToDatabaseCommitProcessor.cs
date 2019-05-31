@@ -101,9 +101,15 @@ namespace Knapcode.ExplorePackages.Logic
             // Initialize the progress token, if necessary.
             if (progressToken == null)
             {
-                // If the batch size very small, process the package registrations one by one.
-                if (allPackageRegistrationKeys.Count <= 10)
+                // If the number of package registration keys is greater than the desired batch size, process one by
+                // one.
+                if (allPackageRegistrationKeys.Count > BatchSize)
                 {
+                    _logger.LogInformation(
+                        "Desired batch size is {BatchSize} but there are {Count} package registration keys. " +
+                        "Processing one by one.",
+                        BatchSize,
+                        allPackageRegistrationKeys.Count);
                     progressToken = new ProgressToken(
                         allPackageRegistrationKeys,
                         packageRegistrationKeyIndex: 0,
