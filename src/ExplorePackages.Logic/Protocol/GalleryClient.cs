@@ -3,7 +3,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using AngleSharp.Parser.Html;
+using AngleSharp.Html.Parser;
 using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
 using NuGet.Versioning;
@@ -88,7 +88,7 @@ namespace Knapcode.ExplorePackages.Logic
             var state = new MutableState();
 
             var parser = new HtmlParser();
-            var document = parser.Parse(responseBody);
+            var document = parser.ParseDocument(responseBody);
 
             if (document.QuerySelector("nav") == null)
             {

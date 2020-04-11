@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Sockets;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -9,16 +7,16 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class SearchServiceCursorReader
     {
-        private readonly SearchServiceUrlDiscoverer _discoverer;
+        private readonly ServiceIndexCache _serviceIndexCache;
         private readonly SearchClient _client;
         private readonly ILogger<SearchServiceCursorReader> _logger;
 
         public SearchServiceCursorReader(
-            SearchServiceUrlDiscoverer discoverer,
+            ServiceIndexCache serviceIndexCache,
             SearchClient client,
             ILogger<SearchServiceCursorReader> logger)
         {
-            _discoverer = discoverer;
+            _serviceIndexCache = serviceIndexCache;
             _client = client;
             _logger = logger;
         }
@@ -26,9 +24,7 @@ namespace Knapcode.ExplorePackages.Logic
         public async Task<DateTimeOffset> GetCursorAsync()
         {
             // Get all V2 search URLs, including ports to specific instances.
-            var specificBaseUrls = await _discoverer.GetUrlsAsync(ServiceIndexTypes.V2Search, specificInstances: true);
-            var loadBalancerBaseUrls = await _discoverer.GetUrlsAsync(ServiceIndexTypes.V2Search, specificInstances: false);
-            var baseUrls = loadBalancerBaseUrls.Concat(specificBaseUrls);
+            var baseUrls = await _serviceIndexCache.GetUrlsAsync(ServiceIndexTypes.V2Search);
 
             // Get all commit timestamps.
             var commitTimestampTasks = baseUrls
@@ -38,25 +34,19 @@ namespace Knapcode.ExplorePackages.Logic
 
             // Return the minimum.
             var commitTimestamp = commitTimestampTasks
-                .Where(x => x.Result.HasValue)
-                .Min(x => x.Result.Value);
+                .Min(x => x.Result);
 
             return commitTimestamp;
         }
 
-        private async Task<DateTimeOffset?> GetTimestampAsync(string baseUrl)
+        private async Task<DateTimeOffset> GetTimestampAsync(string baseUrl)
         {
-            try
+            var diagnostics = await _client.GetDiagnosticsAsync(baseUrl);
+            return new[]
             {
-                var diagnostics = await _client.GetDiagnosticsAsync(baseUrl);
-
-                return diagnostics.CommitUserData.CommitTimestamp;
-            }
-            catch (Exception ex) when (ex is TimeoutException || (ex is HttpRequestException hre && hre.InnerException is SocketException se))
-            {
-                _logger.LogWarning(ex, "A connection problem occurred when getting the timestamp from {BaseUrl}.", baseUrl);
-                return null;
-            }
+                diagnostics.SearchIndex.LastCommitTimestamp,
+                diagnostics.HijackIndex.LastCommitTimestamp,
+            }.Min();
         }
     }
 }

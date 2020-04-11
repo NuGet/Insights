@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class PackageDownloadSet : IDisposable
+    public class PackageDownloadSet : IAsyncDisposable
     {
         public PackageDownloadSet(string etag, IAsyncEnumerator<PackageDownloads> downloads)
         {
@@ -14,9 +15,9 @@ namespace Knapcode.ExplorePackages.Logic
         public string ETag { get; }
         public IAsyncEnumerator<PackageDownloads> Downloads { get; }
 
-        public void Dispose()
+        public ValueTask DisposeAsync()
         {
-            Downloads?.Dispose();
+            return Downloads?.DisposeAsync() ?? default;
         }
     }
 }

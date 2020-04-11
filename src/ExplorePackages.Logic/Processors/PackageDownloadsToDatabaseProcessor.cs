@@ -75,9 +75,9 @@ namespace Knapcode.ExplorePackages.Logic
             System.Collections.Generic.IAsyncEnumerator<PackageDownloads> enumerator)
         {
             var records = new List<PackageDownloads>();
-            using (enumerator)
+            await using (enumerator)
             {
-                while (await enumerator.MoveNext())
+                while (await enumerator.MoveNextAsync())
                 {
                     records.Add(enumerator.Current);
                 }
@@ -132,7 +132,7 @@ namespace Knapcode.ExplorePackages.Logic
             CancellationToken token)
         {
             string newETag;
-            using (var packageDownloadSet = await _client.GetPackageDownloadSetAsync(previousETag))
+            await using (var packageDownloadSet = await _client.GetPackageDownloadSetAsync(previousETag))
             {
                 await WriteDownloadsAsync(newPath, packageDownloadSet.Downloads);
                 newETag = packageDownloadSet.ETag;

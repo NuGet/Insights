@@ -91,7 +91,7 @@ namespace Knapcode.ExplorePackages.Tool
             {
                 // Act
                 var exitCode = await Program.ExecuteAsync(
-                    new[] { "update" },
+                    new[] { "sandbox" },
                     serviceProvider,
                     CancellationToken.None);
 

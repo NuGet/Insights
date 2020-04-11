@@ -10,16 +10,13 @@ namespace Knapcode.ExplorePackages.Logic
     public class SearchClient
     {
         private readonly HttpSource _httpSource;
-        private readonly ISearchServiceUrlCacheInvalidator _invalidator;
         private readonly ILogger<SearchClient> _logger;
 
         public SearchClient(
             HttpSource httpSource,
-            ISearchServiceUrlCacheInvalidator invalidator,
             ILogger<SearchClient> logger)
         {
             _httpSource = httpSource;
-            _invalidator = invalidator;
             _logger = logger;
         }
 
@@ -27,19 +24,11 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var url = $"{baseUrl.TrimEnd('/')}/search/diag";
 
-            try
-            {
-                return await _httpSource.DeserializeUrlAsync<SearchDiagnostics>(
-                    url,
-                    ignoreNotFounds: false,
-                    maxTries: 1,
-                    logger: _logger);
-            }
-            catch
-            {
-                _invalidator.InvalidateCache();
-                throw;
-            }
+            return await _httpSource.DeserializeUrlAsync<SearchDiagnostics>(
+                url,
+                ignoreNotFounds: false,
+                maxTries: 1,
+                logger: _logger);
         }
 
         public async Task<V2SearchResultItem> GetPackageOrNullAsync(string baseUrl, string id, string version, bool semVer2, int maxTries)
@@ -52,20 +41,11 @@ namespace Knapcode.ExplorePackages.Logic
                 $"ignoreFilter=true&" +
                 $"semVerLevel={semVerLevel}";
 
-            V2SearchResult result;
-            try
-            {
-                result = await _httpSource.DeserializeUrlAsync<V2SearchResult>(
-                    url,
-                    ignoreNotFounds: false,
-                    maxTries: maxTries,
-                    logger: _logger);
-            }
-            catch
-            {
-                _invalidator.InvalidateCache();
-                throw;
-            }
+            var result = await _httpSource.DeserializeUrlAsync<V2SearchResult>(
+                url,
+                ignoreNotFounds: false,
+                maxTries: maxTries,
+                logger: _logger);
 
             if (result.TotalHits == 0)
             {

@@ -36,8 +36,8 @@ namespace Knapcode.ExplorePackages.Entities
 
             modelBuilder
                 .Entity<PackageDependencyEntity>()
-                .ForSqlServerHasIndex(x => x.ParentPackageKey)
-                .ForSqlServerInclude(x => new
+                .HasIndex(x => x.ParentPackageKey)
+                .IncludeProperties(x => new
                 {
                     x.BestDependencyPackageKey,
                     x.DependencyPackageRegistrationKey,
@@ -49,8 +49,8 @@ namespace Knapcode.ExplorePackages.Entities
 
             modelBuilder
                 .Entity<PackageDependencyEntity>()
-                .ForSqlServerHasIndex(x => new { x.DependencyPackageRegistrationKey, x.PackageDependencyKey })
-                .ForSqlServerInclude(x => new
+                .HasIndex(x => new { x.DependencyPackageRegistrationKey, x.PackageDependencyKey })
+                .IncludeProperties(x => new
                 {
                     x.BestDependencyPackageKey,
                     x.FrameworkKey,
@@ -62,8 +62,8 @@ namespace Knapcode.ExplorePackages.Entities
 
             modelBuilder
                 .Entity<CatalogPackageEntity>()
-                .ForSqlServerHasIndex(x => x.LastCommitTimestamp)
-                .ForSqlServerInclude(x => new
+                .HasIndex(x => x.LastCommitTimestamp)
+                .IncludeProperties(x => new
                 {
                     x.Deleted,
                     x.FirstCommitTimestamp,
@@ -73,8 +73,8 @@ namespace Knapcode.ExplorePackages.Entities
 
             modelBuilder
                 .Entity<CatalogPackageRegistrationEntity>()
-                .ForSqlServerHasIndex(x => x.LastCommitTimestamp)
-                .ForSqlServerInclude(x => new
+                .HasIndex(x => x.LastCommitTimestamp)
+                .IncludeProperties(x => new
                 {
                     x.FirstCommitTimestamp,
                 });

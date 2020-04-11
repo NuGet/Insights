@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -251,14 +250,15 @@ namespace Knapcode.ExplorePackages.Logic
 
             public T Current => _enumerator.Current;
 
-            public void Dispose()
+            public ValueTask DisposeAsync()
             {
                 _enumerator.Dispose();
+                return default;
             }
 
-            public Task<bool> MoveNext(CancellationToken cancellationToken)
+            public ValueTask<bool> MoveNextAsync()
             {
-                return Task.FromResult(_enumerator.MoveNext());
+                return new ValueTask<bool>(_enumerator.MoveNext());
             }
         }
     }

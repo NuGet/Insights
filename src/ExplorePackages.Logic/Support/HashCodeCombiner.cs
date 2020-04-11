@@ -97,7 +97,6 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
-#if !NET40
         public void AddSequence<T>(IReadOnlyList<T> list)
         {
             if (list != null)
@@ -110,7 +109,7 @@ namespace Knapcode.ExplorePackages.Logic
                 }
             }
         }
-#endif
+
         public void AddDictionary<TKey, TValue>(IEnumerable<KeyValuePair<TKey, TValue>> dictionary)
         {
             if (dictionary != null)

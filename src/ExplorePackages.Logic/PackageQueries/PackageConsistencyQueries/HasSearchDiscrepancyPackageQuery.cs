@@ -4,9 +4,9 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class HasSearchDiscrepancyPackageQuery : IPackageConsistencyQuery
     {
-        private readonly SearchLoadBalancerConsistencyService _service;
+        private readonly SearchConsistencyService _service;
 
-        public HasSearchDiscrepancyPackageQuery(SearchLoadBalancerConsistencyService service)
+        public HasSearchDiscrepancyPackageQuery(SearchConsistencyService service)
         {
             _service = service;
         }

@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -104,7 +103,6 @@ namespace Knapcode.ExplorePackages.Logic
 
             private State _state;
             private string _currentId;
-            private PackageDownloads _current;
 
             public PackageDownloadsAsyncEnumerator(
                 JsonReader jsonReader,
@@ -115,17 +113,23 @@ namespace Knapcode.ExplorePackages.Logic
                 _state = State.Uninitialized;
             }
 
-            public PackageDownloads Current => _current;
+            public PackageDownloads Current { get; private set; }
 
             public void Dispose()
             {
                 DisposeAll(_disposables);
             }
 
-            public async Task<bool> MoveNext(CancellationToken cancellationToken)
+            public ValueTask DisposeAsync()
             {
-                _current = null;
-                while (_current == null && _state != State.Complete)
+                DisposeAll(_disposables);
+                return default;
+            }
+
+            public async ValueTask<bool> MoveNextAsync()
+            {
+                Current = null;
+                while (Current == null && _state != State.Complete)
                 {
                     switch (_state)
                     {
@@ -163,7 +167,7 @@ namespace Knapcode.ExplorePackages.Logic
                                 var version = await _jsonReader.ReadAsStringAsync();
                                 var downloads = await _jsonReader.ReadAsInt64Async();
                                 await _jsonReader.ReadAsEndArrayAsync();
-                                _current = new PackageDownloads(_currentId, version, downloads);
+                                Current = new PackageDownloads(_currentId, version, downloads);
                             }
                             else
                             {
@@ -173,7 +177,7 @@ namespace Knapcode.ExplorePackages.Logic
                     }
                 }
 
-                return _current != null;
+                return Current != null;
             }
 
             private enum State

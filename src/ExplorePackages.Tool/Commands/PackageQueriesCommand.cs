@@ -118,8 +118,8 @@ namespace Knapcode.ExplorePackages.Tool
                 if (Ids.Count != Versions.Count)
                 {
                     _logger.LogError(
-                        $"There are {{IdsCount}} {_idsOption.Template} values specified but {{VersionsCount}} " +
-                        $"{_versionsOption.Template} values specified. There must be the same number.",
+                        $"There are {{IdsCount}} {_idsOption.LongName} values specified but {{VersionsCount}} " +
+                        $"{_versionsOption.LongName} values specified. There must be the same number.",
                         Ids.Count,
                         Versions.Count);
                     return;

@@ -175,17 +175,13 @@ namespace Knapcode.ExplorePackages.Logic
                         NullThrottle.Instance);
                 });
 
-            serviceCollection.AddSingleton(x => new SearchServiceUrlCache());
-            serviceCollection.AddSingleton<ISearchServiceUrlCacheInvalidator>(
-                x => x.GetRequiredService<SearchServiceUrlCache>());
-
             serviceCollection.AddTransient(
-                x => new HttpZipProvider(
-                    x.GetRequiredService<HttpClient>())
+                x => new HttpZipProvider(x.GetRequiredService<HttpClient>())
                 {
-                    FirstBufferSize = 4096,
-                    SecondBufferSize = 4096,
-                    BufferGrowthExponent = 2,
+                    BufferSizeProvider = new ZipBufferSizeProvider(
+                        firstBufferSize: 4096,
+                        secondBufferSize: 4096,
+                        exponent: 2)
                 });
             serviceCollection.AddTransient<MZipFormat>();
 
@@ -194,7 +190,6 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<RemoteCursorService>();
             serviceCollection.AddTransient<IPortTester, PortTester>();
             serviceCollection.AddTransient<IPortDiscoverer, SimplePortDiscoverer>();
-            serviceCollection.AddTransient<SearchServiceUrlDiscoverer>();
             serviceCollection.AddTransient<SearchServiceCursorReader>();
             serviceCollection.AddTransient<PackageQueryContextBuilder>();
             serviceCollection.AddTransient<IProgressReporter, NullProgressReporter>();
@@ -259,8 +254,7 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<RegistrationOriginalConsistencyService>();
             serviceCollection.AddTransient<RegistrationGzippedConsistencyService>();
             serviceCollection.AddTransient<RegistrationSemVer2ConsistencyService>();
-            serviceCollection.AddTransient<SearchLoadBalancerConsistencyService>();
-            serviceCollection.AddTransient<SearchSpecificInstancesConsistencyService>();
+            serviceCollection.AddTransient<SearchConsistencyService>();
             serviceCollection.AddTransient<PackageConsistencyService>();
             serviceCollection.AddTransient<CrossCheckConsistencyService>();
 

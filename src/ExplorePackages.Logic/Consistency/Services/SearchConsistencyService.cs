@@ -6,23 +6,20 @@ using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public abstract class SearchConsistencyService : IConsistencyService<SearchConsistencyReport>
+    public class SearchConsistencyService : IConsistencyService<SearchConsistencyReport>
     {
-        private readonly SearchServiceUrlDiscoverer _discoverer;
+        private readonly ServiceIndexCache _serviceIndexCache;
         private readonly SearchClient _searchClient;
-        private readonly ILogger _logger;
-        private readonly bool _specificInstances;
+        private readonly ILogger<SearchConsistencyService> _logger;
 
         public SearchConsistencyService(
-            SearchServiceUrlDiscoverer discoverer,
+            ServiceIndexCache serviceIndexCache,
             SearchClient searchClient,
-            ILogger logger,
-            bool specificInstances)
+            ILogger<SearchConsistencyService> logger)
         {
-            _discoverer = discoverer;
+            _serviceIndexCache = serviceIndexCache;
             _searchClient = searchClient;
             _logger = logger;
-            _specificInstances = specificInstances;
         }
 
         public async Task<SearchConsistencyReport> GetReportAsync(
@@ -62,8 +59,8 @@ namespace Knapcode.ExplorePackages.Logic
             IProgressReporter progressReporter,
             bool allowPartial)
         {
-            var baseUrls = await _discoverer.GetUrlsAsync(ServiceIndexTypes.V2Search, _specificInstances);
-            var maxTries = _specificInstances ? 1 : 3;
+            var baseUrls = await _serviceIndexCache.GetUrlsAsync(ServiceIndexTypes.V2Search);
+            var maxTries = 3;
             var incrementalProgress = new IncrementalProgress(progressReporter, baseUrls.Count * 2);
             var baseUrlHasPackageSemVer1 = new Dictionary<string, bool>();
             var baseUrlHasPackageSemVer2 = new Dictionary<string, bool>();

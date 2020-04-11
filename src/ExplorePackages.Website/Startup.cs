@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Net;
+using System.Text.Json.Serialization;
 using Knapcode.ExplorePackages.Logic;
 using Knapcode.ExplorePackages.Website.Logic;
 using Microsoft.AspNetCore.Builder;
@@ -7,9 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json.Converters;
 using NuGet.Protocol.Core.Types;
-using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
 namespace Knapcode.ExplorePackages.Website
 {
@@ -45,22 +44,20 @@ namespace Knapcode.ExplorePackages.Website
 
             // Add stuff specific to the website.
             serviceCollection.AddLogging();
-            serviceCollection.AddSingleton<IHostedService, SearchSearchUrlCacheRefresher>();
             serviceCollection.AddMvc();
             serviceCollection
                 .AddSignalR()
                 .AddJsonProtocol(o =>
                 {
-                    o.PayloadSerializerSettings.Converters.Add(new StringEnumConverter());
+                    o.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 });
         }
         
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseBrowserLink();
             }
             else
             {
@@ -69,20 +66,19 @@ namespace Knapcode.ExplorePackages.Website
 
             app.UseStaticFiles();
 
-            app.UseSignalR(routes =>
+            app.UseRouting();
+
+            app.UseEndpoints(routes =>
             {
                 routes.MapHub<PackageReportHub>(PackageReportHub.Path);
-            });
 
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute(
+                routes.MapControllerRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
 
-                routes.MapRoute(
+                routes.MapControllerRoute(
                     name: "explore",
-                    template: "{controller=Home}/{action=Explore}/{id}/{version}");
+                    pattern: "{controller=Home}/{action=Explore}/{id}/{version}");
             });
         }
     }

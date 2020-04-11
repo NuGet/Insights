@@ -138,6 +138,11 @@ namespace Knapcode.ExplorePackages.Entities
             modelBuilder
                 .Entity<PackageEntity>()
                 .Ignore(x => x.Id);
+            modelBuilder
+                .Entity<PackageEntity>()
+                .HasOne(x => x.PackageRegistration)
+                .WithMany(x => x.Packages)
+                .HasForeignKey(x => x.PackageRegistrationKey);
 
             modelBuilder
                 .Entity<PackageQueryEntity>()
@@ -153,6 +158,7 @@ namespace Knapcode.ExplorePackages.Entities
                 .Entity<PackageQueryEntity>()
                 .HasIndex(x => new { x.Name })
                 .IsUnique();
+
             modelBuilder
                 .Entity<PackageQueryMatchEntity>()
                 .ToTable("PackageQueryMatches");

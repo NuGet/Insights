@@ -1,20 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp2.2;net462</TargetFrameworks>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssemblyName>Knapcode.ExplorePackages.Tool</AssemblyName>
     <RootNamespace>Knapcode.ExplorePackages.Tool</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.2.5" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-    <!--
-    Source:
-    https://github.com/aspnet/EntityFrameworkCore/issues/9505#issuecomment-326438680
-    -->
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.2.4" />
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="3.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.1.3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ExplorePackages.Entities\ExplorePackages.Entities.csproj" />

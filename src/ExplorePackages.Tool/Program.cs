@@ -170,7 +170,7 @@ namespace Knapcode.ExplorePackages.Tool
 
                     command.Configure(x);
 
-                    x.OnExecute(async () =>
+                    x.OnExecuteAsync(async cancellationToken =>
                     {
                         if (debugOption.HasValue())
                         {
