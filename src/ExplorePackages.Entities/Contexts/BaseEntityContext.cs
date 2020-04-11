@@ -158,6 +158,11 @@ namespace Knapcode.ExplorePackages.Entities
                 .Entity<PackageQueryEntity>()
                 .HasIndex(x => new { x.Name })
                 .IsUnique();
+            modelBuilder
+                .Entity<PackageQueryEntity>()
+                .HasOne(x => x.Cursor)
+                .WithMany()
+                .HasForeignKey(x => x.CursorKey);
 
             modelBuilder
                 .Entity<PackageQueryMatchEntity>()
@@ -169,6 +174,16 @@ namespace Knapcode.ExplorePackages.Entities
                 .Entity<PackageQueryMatchEntity>()
                 .HasIndex(x => new { x.PackageQueryKey, x.PackageKey })
                 .IsUnique();
+            modelBuilder
+                .Entity<PackageQueryMatchEntity>()
+                .HasOne(x => x.PackageQuery)
+                .WithMany()
+                .HasForeignKey(x => x.PackageQueryKey);
+            modelBuilder
+                .Entity<PackageQueryMatchEntity>()
+                .HasOne(x => x.Package)
+                .WithMany(x => x.PackageQueryMatches)
+                .HasForeignKey(x => x.PackageKey);
 
             modelBuilder
                 .Entity<V2PackageEntity>()

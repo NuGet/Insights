@@ -18,6 +18,7 @@ namespace Knapcode.ExplorePackages.Logic
             DatabasePath = Path.Combine(_testDirectory, "Knapcode.ExplorePackages.sqlite3");
             EntityContextFactory = TestEntityContextFactory.Create(
                 DatabasePath,
+                output,
                 async () =>
                 {
                     var func = ExecuteBeforeCommitAsync;
@@ -28,6 +29,7 @@ namespace Knapcode.ExplorePackages.Logic
                 });
             UnhookedEntityContextFactory = TestEntityContextFactory.Create(
                 DatabasePath,
+                output,
                 () => Task.CompletedTask);
             ExecuteBeforeCommitAsync = () => Task.CompletedTask;
         }

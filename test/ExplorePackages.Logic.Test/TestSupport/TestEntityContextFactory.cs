@@ -2,6 +2,8 @@
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -13,9 +15,15 @@ namespace Knapcode.ExplorePackages.Logic
 
         public static TestEntityContextFactory Create(
             string databasePath,
+            ITestOutputHelper output,
             Func<Task> executeBeforeCommitAsync)
         {
+            var loggerFactory = LoggerFactory
+                .Create(b => b.SetMinimumLevel(LogLevel.Warning))
+                .AddXunit(output);
+
             var builder = new DbContextOptionsBuilder<SqliteEntityContext>()
+                .UseLoggerFactory(loggerFactory)
                 .UseSqlite(
                     "Data Source=" + databasePath,
                     o => o.MigrationsAssembly(typeof(SqliteEntityContext).Assembly.FullName));

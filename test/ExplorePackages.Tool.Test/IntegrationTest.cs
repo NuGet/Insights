@@ -91,7 +91,7 @@ namespace Knapcode.ExplorePackages.Tool
             {
                 // Act
                 var exitCode = await Program.ExecuteAsync(
-                    new[] { "sandbox" },
+                    new[] { "update" },
                     serviceProvider,
                     CancellationToken.None);
 
@@ -103,7 +103,17 @@ namespace Knapcode.ExplorePackages.Tool
                     Assert.NotEqual(0, await entityContext.CatalogPackageRegistrations.CountAsync());
                     Assert.NotEqual(0, await entityContext.CatalogPackages.CountAsync());
                     Assert.NotEqual(0, await entityContext.CatalogPages.CountAsync());
+                    // Assert.NotEqual(0, await entityContext.CommitCollectorProgressTokens.CountAsync());
+                    Assert.NotEqual(0, await entityContext.Cursors.CountAsync());
+                    // Assert.NotEqual(0, await entityContext.ETags.CountAsync());
+                    Assert.NotEqual(0, await entityContext.Frameworks.CountAsync());
+                    Assert.NotEqual(0, await entityContext.Leases.CountAsync());
+                    Assert.NotEqual(0, await entityContext.PackageArchives.CountAsync());
                     Assert.NotEqual(0, await entityContext.PackageDependencies.CountAsync());
+                    // Assert.NotEqual(0, await entityContext.PackageDownloads.CountAsync());
+                    Assert.NotEqual(0, await entityContext.PackageEntries.CountAsync());
+                    Assert.NotEqual(0, await entityContext.PackageQueries.CountAsync());
+                    Assert.NotEqual(0, await entityContext.PackageQueryMatches.CountAsync());
                     Assert.NotEqual(0, await entityContext.PackageRegistrations.CountAsync());
                     Assert.NotEqual(0, await entityContext.Packages.CountAsync());
                     Assert.NotEqual(0, await entityContext.V2Packages.CountAsync());

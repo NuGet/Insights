@@ -23,6 +23,7 @@ namespace Knapcode.ExplorePackages.Tool
             CatalogToDatabaseCommand catalogToDatabase,
             NuspecsCommand nuspecs,
             MZipsCommand mzips,
+            MZipToDatabaseCommand mzipToDatabase,
             DependenciesToDatabaseCommand dependenciesToDatabase,
             DependencyPackagesToDatabaseCommand dependencyPackagesToDatabase,
             DownloadsToDatabaseCommand downloadsToDatabase,
@@ -38,6 +39,7 @@ namespace Knapcode.ExplorePackages.Tool
                 catalogToDatabase,
                 nuspecs,
                 mzips,
+                mzipToDatabase,
                 dependenciesToDatabase,
                 dependencyPackagesToDatabase,
             };
