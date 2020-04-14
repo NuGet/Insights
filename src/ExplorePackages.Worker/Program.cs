@@ -23,9 +23,8 @@ namespace Knapcode.ExplorePackages.Worker
                     serviceCollection.AddExplorePackagesSettings<Program>();
 
                     serviceCollection.AddTransient<StorageAccountProvider, ExplorePackagesStorageAccountProvider>();
-                    serviceCollection.AddTransient<PackageQueryCommand>();
-                    serviceCollection.AddScoped<CollectorMessageEnqueuer>();
-                    serviceCollection.AddTransient<IMessageEnqueuer>(s => s.GetRequiredService<CollectorMessageEnqueuer>());
+                    serviceCollection.AddScoped<WebJobMessageEnqueuer>();
+                    serviceCollection.AddTransient<IMessageEnqueuer>(s => s.GetRequiredService<WebJobMessageEnqueuer>());
                 })
                 .ConfigureWebJobs(webJobsBuilder =>
                 {

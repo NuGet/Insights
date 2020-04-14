@@ -258,11 +258,10 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<PackageConsistencyService>();
             serviceCollection.AddTransient<CrossCheckConsistencyService>();
 
-
             serviceCollection.AddTransient<GenericMessageProcessor>();
             serviceCollection.AddTransient<MessageSerializer>();
-            serviceCollection.AddTransient<IMessageProcessor<PackageQueryMessage>, PackageQueryMessageProcessor>();
-
+            serviceCollection.AddTransient<IMessageProcessor<CatalogIndexScanMessage>, CatalogIndexScanMessageProcessor>();
+            serviceCollection.AddTransient<IMessageProcessor<CatalogPageScanMessage>, CatalogPageScanMessageProcessor>();
 
             serviceCollection.AddTransient(x => new PackageQueryFactory(
                 () => x.GetRequiredService<IEnumerable<IPackageQuery>>(),

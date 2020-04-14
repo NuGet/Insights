@@ -21,7 +21,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             using (var scope = _serviceProvider.CreateScope())
             {
-                var enqueuer = scope.ServiceProvider.GetRequiredService<CollectorMessageEnqueuer>();
+                var enqueuer = scope.ServiceProvider.GetRequiredService<WebJobMessageEnqueuer>();
                 enqueuer.SetCollector(collector);
 
                 var messageProcessor = scope.ServiceProvider.GetRequiredService<GenericMessageProcessor>();

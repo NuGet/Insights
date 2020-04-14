@@ -6,28 +6,31 @@ namespace Knapcode.ExplorePackages.Logic.Worker
     public class GenericMessageProcessor
     {
         private readonly MessageSerializer _messageSerializer;
-        private readonly IMessageProcessor<PackageQueryMessage> _packageQuery;
+        private readonly IServiceProvider _serviceProvider;
 
         public GenericMessageProcessor(
             MessageSerializer messageSerializer,
-            IMessageProcessor<PackageQueryMessage> packageQuery)
+            IServiceProvider serviceProvider)
         {
             _messageSerializer = messageSerializer;
-            _packageQuery = packageQuery;
+            _serviceProvider = serviceProvider;
         }
 
         public async Task ProcessAsync(byte[] message)
         {
             var deserializedMessage = _messageSerializer.Deserialize(message);
+            var messageType = deserializedMessage.GetType();
+            var processorType = typeof(IMessageProcessor<>).MakeGenericType(deserializedMessage.GetType());
+            var processor = _serviceProvider.GetService(processorType);
 
-            switch (deserializedMessage)
+            if (processor == null)
             {
-                case PackageQueryMessage packageQueryMessage:
-                    await _packageQuery.ProcessAsync(packageQueryMessage);
-                    break;
-                default:
-                    throw new NotSupportedException($"The message type '{deserializedMessage.GetType().FullName}' is not supported.");
+                throw new NotSupportedException($"The message type '{deserializedMessage.GetType().FullName}' is not supported.");
             }
+
+            var method = processorType.GetMethod(nameof(IMessageProcessor<object>.ProcessAsync), new Type[] { messageType });
+
+            await (Task)method.Invoke(processor, new object[] { deserializedMessage });
         }
     }
 }

@@ -9,12 +9,21 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class CursorService
     {
+        /// <summary>
+        /// This is the point in time that nuget.org started repository signing packages that had already been
+        /// published and includes all packages that were repository signed at push time. In other words, we can start
+        /// start cursors just before this time and still see all packages.
+        /// </summary>
+        public static readonly DateTimeOffset NuGetOrgMin = DateTimeOffset
+            .Parse("2018-08-08T16:29:16.4488298Z")
+            .Subtract(TimeSpan.FromTicks(1));
+
         private readonly EntityContextFactory _entityContextFactory;
         private readonly DateTimeOffset _defaultCursor;
 
         public CursorService(EntityContextFactory entityContextFactory) : this(
             entityContextFactory,
-            DateTimeOffset.MinValue)
+            NuGetOrgMin)
         {
         }
 

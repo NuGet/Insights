@@ -7,14 +7,24 @@ using Microsoft.Azure.WebJobs;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class CollectorMessageEnqueuer : IMessageEnqueuer
+    public class WebJobMessageEnqueuer : IMessageEnqueuer
     {
         private readonly MessageSerializer _messageSerializer;
         private ICollector<byte[]> _collector;
 
-        public CollectorMessageEnqueuer(MessageSerializer messageSerializer)
+        public WebJobMessageEnqueuer(MessageSerializer messageSerializer)
         {
             _messageSerializer = messageSerializer;
+        }
+
+        public async Task EnqueueAsync(IReadOnlyList<CatalogIndexScanMessage> messages)
+        {
+            await EnqueueAsync(messages, m => _messageSerializer.Serialize(m));
+        }
+
+        public async Task EnqueueAsync(IReadOnlyList<CatalogPageScanMessage> messages)
+        {
+            await EnqueueAsync(messages, m => _messageSerializer.Serialize(m));
         }
 
         public void SetCollector(ICollector<byte[]> collector)
@@ -24,11 +34,6 @@ namespace Knapcode.ExplorePackages.Worker
             {
                 throw new InvalidOperationException("The collector has already been set.");
             }
-        }
-
-        public async Task EnqueueAsync(IReadOnlyList<PackageQueryMessage> messages)
-        {
-            await EnqueueAsync(messages, m => _messageSerializer.Serialize(m));
         }
 
         private Task EnqueueAsync<T>(IReadOnlyList<T> messages, Func<T, byte[]> serialize)
