@@ -1,26 +1,24 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System;
-using System.Text;
 
 namespace Knapcode.ExplorePackages.Logic.Worker
 {
     public class SerializedMessage : ISerializedMessage
     {
         private readonly Lazy<JToken> _json;
-        private readonly Lazy<byte[]> _bytes;
+        private readonly Lazy<string> _string;
 
         public SerializedMessage(Func<JToken> getJson)
         {
             _json = new Lazy<JToken>(getJson);
-            _bytes = new Lazy<byte[]>(() =>
+            _string = new Lazy<string>(() =>
             {
-                var json = _json.Value.ToString(Formatting.None);
-                return Encoding.UTF8.GetBytes(json);
+                return _json.Value.ToString(Formatting.None);
             });
         }
 
-        public byte[] AsBytes() => _bytes.Value;
+        public string AsString() => _string.Value;
         public JToken AsJToken() => _json.Value;
     }
 }

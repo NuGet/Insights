@@ -1,27 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
 namespace Knapcode.ExplorePackages.Logic.Worker
 {
     public class MessageEnqueuer
     {
+        private const int MaximumMessageSize = 65536;
+
         private readonly MessageSerializer _messageSerializer;
         private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
+        private readonly ILogger<MessageEnqueuer> _logger;
 
-        /// <summary>
-        /// This is the effective maximum message size for a byte array message body. This is because the SDK encodes
-        /// bytes as base64 and 49,152 bytes becomes 65,536 bytes of base64 text (the actual maximum message size for
-        /// Azure Queue Storage).
-        /// </summary>
-        private const int MaximumMessageSize = 49152;
-
-        public MessageEnqueuer(MessageSerializer messageSerializer, IRawMessageEnqueuer rawMessageEnqueuer)
+        public MessageEnqueuer(
+            MessageSerializer messageSerializer,
+            IRawMessageEnqueuer rawMessageEnqueuer,
+            ILogger<MessageEnqueuer> logger)
         {
             _messageSerializer = messageSerializer;
             _rawMessageEnqueuer = rawMessageEnqueuer;
+            _logger = logger;
         }
 
         public async Task EnqueueAsync(IReadOnlyList<CatalogIndexScanMessage> messages)
@@ -41,31 +43,26 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 
         public async Task EnqueueAsync<T>(IReadOnlyList<T> messages, Func<T, ISerializedMessage> serialize)
         {
-            const int batchSize = 100;
-
-            await EnqueueAsync(messages, serialize, batchSize);
-        }
-
-        private async Task EnqueueAsync<T>(IReadOnlyList<T> messages, Func<T, ISerializedMessage> serialize, int batchThreshold)
-        {
+            const int batchThreshold = 2;
             if (messages.Count < batchThreshold)
             {
+                _logger.LogInformation("Enqueueing {Count} individual messages.", messages.Count);
                 foreach (var message in messages)
                 {
-                    await _rawMessageEnqueuer.AddAsync(serialize(message).AsBytes());
+                    await _rawMessageEnqueuer.AddAsync(serialize(message).AsString());
                 }
             }
             else
             {
                 var batch = new List<JToken>();
                 var batchMessage = new BulkEnqueueMessage { Messages = batch };
-                var emptyBatchMessageLength = GetMessageByteLength(batchMessage);
+                var emptyBatchMessageLength = GetMessageLength(batchMessage);
                 var batchMessageLength = emptyBatchMessageLength;
 
                 for (int i = 0; i < messages.Count; i++)
                 {
                     var innerMessage = serialize(messages[i]);
-                    var innerMessageLength = innerMessage.AsBytes().Length;
+                    var innerMessageLength = GetMessageLength(innerMessage);
 
                     if (!batch.Any())
                     {
@@ -75,7 +72,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
                     else
                     {
                         var newBatchMessageLength = batchMessageLength + ",".Length + innerMessageLength;
-                        if (ByteArrayLengthToBase64Length(newBatchMessageLength) > MaximumMessageSize)
+                        if (newBatchMessageLength > MaximumMessageSize)
                         {
                             await EnqueueBulkEnqueueMessageAsync(batchMessage, batchMessageLength);
                             batch.Clear();
@@ -99,7 +96,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 
         private async Task EnqueueBulkEnqueueMessageAsync(BulkEnqueueMessage batchMessage, int expectedLength)
         {
-            var bytes = _messageSerializer.Serialize(batchMessage).AsBytes();
+            var bytes = _messageSerializer.Serialize(batchMessage).AsString();
             if (bytes.Length != expectedLength)
             {
                 throw new InvalidOperationException(
@@ -108,17 +105,18 @@ namespace Knapcode.ExplorePackages.Logic.Worker
                     $"Actual: {bytes.Length}");
             }
 
+            _logger.LogInformation("Enqueueing a bulk enqueue message containing {Count} individual messages.", batchMessage.Messages.Count);
             await _rawMessageEnqueuer.AddAsync(bytes);
         }
 
-        private int GetMessageByteLength(BulkEnqueueMessage batchMessage)
+        private int GetMessageLength(BulkEnqueueMessage batchMessage)
         {
-            return _messageSerializer.Serialize(batchMessage).AsBytes().Length;
+            return GetMessageLength(_messageSerializer.Serialize(batchMessage));
         }
 
-        private static int ByteArrayLengthToBase64Length(int length)
+        private static int GetMessageLength(ISerializedMessage innerMessage)
         {
-            return ((length + 2) / 3) * 4;
+            return Encoding.UTF8.GetByteCount(innerMessage.AsString());
         }
     }
 }

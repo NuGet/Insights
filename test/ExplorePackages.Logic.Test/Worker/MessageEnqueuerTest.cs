@@ -10,8 +10,8 @@ namespace Knapcode.ExplorePackages.Logic.Worker
     public class MessageEnqueuerTest
     {
         [Theory]
-        [InlineData(98)]
-        [InlineData(99)]
+        [InlineData(0)]
+        [InlineData(1)]
         public async Task DoesNotBatchIfMessageCountIsLessThanThreshold(int messageCount)
         {
             await Target.EnqueueAsync(
@@ -34,7 +34,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
         public async Task BatchesIfMessageCountIsGreaterThanThreshold(int messageCount)
         {
             var byteCount = 10000;
-            var perBatch = 3;
+            var perBatch = 6;
 
             await Target.EnqueueAsync(
                 Enumerable.Range(0, messageCount).ToList(),
@@ -62,13 +62,16 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             RawMessageEnqueuer = new Mock<IRawMessageEnqueuer>();
 
             RawMessageEnqueuer
-                .Setup(x => x.AddAsync(It.IsAny<byte[]>()))
+                .Setup(x => x.AddAsync(It.IsAny<string>()))
                 .Returns(Task.CompletedTask)
-                .Callback<byte[]>(x => EnqueuedMessages.Add(MessageSerializer.Deserialize(x)));
+                .Callback<string>(x => EnqueuedMessages.Add(MessageSerializer.Deserialize(x)));
 
             EnqueuedMessages = new List<object>();
 
-            Target = new MessageEnqueuer(MessageSerializer, RawMessageEnqueuer.Object);
+            Target = new MessageEnqueuer(
+                MessageSerializer,
+                RawMessageEnqueuer.Object,
+                output.GetLogger<MessageEnqueuer>());
         }
 
         public MessageSerializer MessageSerializer { get; }

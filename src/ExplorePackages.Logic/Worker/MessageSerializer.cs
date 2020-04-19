@@ -5,6 +5,7 @@ using System.Text;
 using AngleSharp.Common;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 
 namespace Knapcode.ExplorePackages.Logic.Worker
@@ -43,19 +44,12 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             return schema.Serialize(message);
         }
 
-        public object Deserialize(byte[] message)
+        public object Deserialize(string message)
         {
-            var json = Encoding.UTF8.GetString(message);
-            var deserialized = JsonConvert.DeserializeObject<JObject>(json);
+            var deserialized = JsonConvert.DeserializeObject<JObject>(message);
 
             var schemaName = deserialized.Value<string>("n");
             var schemaVersion = deserialized.Value<int>("v");
-
-            _logger.LogInformation(
-                "Attempting to deserialize of schema {SchemaName} and version {SchemaVersion}.",
-                schemaName,
-                schemaVersion);
-
             var data = deserialized["d"];
 
             if (!NameToSchema.TryGetValue(schemaName, out var schema))
@@ -63,7 +57,14 @@ namespace Knapcode.ExplorePackages.Logic.Worker
                 throw new FormatException($"The schema '{schemaName}' is not supported.");
             }
 
-            return schema.Deserialize(schemaVersion, data);
+            var deserializedMessage = schema.Deserialize(schemaVersion, data);
+
+            _logger.LogInformation(
+                "Deserialized message with schema {SchemaName} and version {SchemaVersion}.",
+                schemaName,
+                schemaVersion);
+
+            return deserializedMessage;
         }
 
         private interface ISchema
@@ -79,7 +80,15 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             private const int V1 = 1;
             private const int Latest = V1;
 
-            private static readonly JsonSerializer JsonSerializer = new JsonSerializer();
+            private static readonly JsonSerializer JsonSerializer = new JsonSerializer
+            {
+                DateTimeZoneHandling = DateTimeZoneHandling.Utc,
+                DateParseHandling = DateParseHandling.DateTimeOffset,
+                Converters =
+                {
+                    new StringEnumConverter(),
+                },
+            };
 
             public SchemaV1()
             {
@@ -105,7 +114,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
                     throw new FormatException($"The only version for schema '{Name}' supported is {V1}.");
                 }
 
-                return data.ToObject<T>();
+                return data.ToObject<T>(JsonSerializer);
             }
 
             private static string GetName()

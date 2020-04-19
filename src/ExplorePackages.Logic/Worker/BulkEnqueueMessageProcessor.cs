@@ -21,7 +21,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             foreach (var innerMessage in message.Messages)
             {
                 var serializedMessage = new SerializedMessage(() => innerMessage);
-                await _messageEnqueuer.AddAsync(serializedMessage.AsBytes());
+                await _messageEnqueuer.AddAsync(serializedMessage.AsString());
             }
         }
     }

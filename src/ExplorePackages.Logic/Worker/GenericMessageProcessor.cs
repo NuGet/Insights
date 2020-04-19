@@ -17,7 +17,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             _serviceProvider = serviceProvider;
         }
 
-        public async Task ProcessAsync(byte[] message)
+        public async Task ProcessAsync(string message)
         {
             var deserializedMessage = _messageSerializer.Deserialize(message);
             var messageType = deserializedMessage.GetType();

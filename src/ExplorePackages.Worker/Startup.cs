@@ -11,19 +11,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    /*
-    public class UnencodedQueueProcessorFactory : IQueueProcessorFactory
-    {
-        public QueueProcessor Create(QueueProcessorFactoryContext context)
-        {
-            context.Queue.EncodeMessage = false;
-            context.PoisonQueue.EncodeMessage = false;
-
-            return new QueueProcessor(context);
-        }
-    }
-    */
-
     public class Startup : FunctionsStartup
     {
         public override void Configure(IFunctionsHostBuilder builder)
@@ -38,9 +25,9 @@ namespace Knapcode.ExplorePackages.Worker
 
             builder.Services.AddExplorePackages();
 
-            // builder.Services.AddSingleton<IQueueProcessorFactory, UnencodedQueueProcessorFactory>();
-            builder.Services.AddScoped<WebJobEnqueuer>();
-            builder.Services.AddTransient<IRawMessageEnqueuer>(s => s.GetRequiredService<WebJobEnqueuer>());
+            builder.Services.AddSingleton<IQueueProcessorFactory, UnencodedQueueProcessorFactory>();
+            builder.Services.AddScoped<UnencodedCloudQueueEnqueuer>();
+            builder.Services.AddTransient<IRawMessageEnqueuer>(s => s.GetRequiredService<UnencodedCloudQueueEnqueuer>());
         }
     }
 }
