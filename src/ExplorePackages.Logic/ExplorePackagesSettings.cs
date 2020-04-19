@@ -4,6 +4,8 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class ExplorePackagesSettings
     {
+        public const string DefaultSectionName = "Knapcode.ExplorePackages";
+
         public ExplorePackagesSettings()
         {
             var currentDirectory = Directory.GetCurrentDirectory();

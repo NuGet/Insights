@@ -21,6 +21,8 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public static class ServiceCollectionExtensions
     {
+        public const string HttpClientName = "Knapcode.Explorepackages";
+        
         public static IServiceCollection AddExplorePackagesSettings<T>(this IServiceCollection serviceCollection)
         {
             var localDirectory = Path.GetDirectoryName(typeof(T).Assembly.Location);
@@ -44,7 +46,7 @@ namespace Knapcode.ExplorePackages.Logic
 
             var configuration = configurationBuilder.Build();
 
-            serviceCollection.Configure<ExplorePackagesSettings>(configuration.GetSection("Knapcode.ExplorePackages"));
+            serviceCollection.Configure<ExplorePackagesSettings>(configuration.GetSection(ExplorePackagesSettings.DefaultSectionName));
 
             return serviceCollection;
         }
@@ -52,6 +54,21 @@ namespace Knapcode.ExplorePackages.Logic
         public static IServiceCollection AddExplorePackages(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddMemoryCache();
+
+            serviceCollection
+                .AddHttpClient(HttpClientName)
+                .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+                {
+                    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                    MaxConnectionsPerServer = 64,
+                })
+                .AddHttpMessageHandler<LoggingHandler>()
+                .AddHttpMessageHandler<UrlReporterHandler>()
+                .ConfigureHttpClient(httpClient =>
+                {
+                    UserAgent.SetUserAgent(httpClient);
+                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("x-ms-version", "2017-04-17");
+                });
 
             serviceCollection.AddDbContext<SqliteEntityContext>((x, dbContextOptionsBuilder) =>
             {
@@ -126,39 +143,7 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddSingleton<UrlReporterProvider>();
             serviceCollection.AddTransient<UrlReporterHandler>();
             serviceCollection.AddTransient<LoggingHandler>();
-            serviceCollection.AddSingleton(
-                x => new HttpClientHandler
-                {
-                    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
-                    MaxConnectionsPerServer = 64,
-                });
             serviceCollection.AddTransient(
-                x => new InitializeServicePointHandler(
-                    connectionLeaseTimeout: TimeSpan.FromMinutes(1)));
-            serviceCollection.AddTransient<HttpMessageHandler>(
-                x =>
-                {
-                    var httpClientHandler = x.GetRequiredService<HttpClientHandler>();
-                    var initializeServicePointerHander = x.GetRequiredService<InitializeServicePointHandler>();
-                    var urlReporterHandler = x.GetRequiredService<UrlReporterHandler>();
-
-                    initializeServicePointerHander.InnerHandler = httpClientHandler;
-                    urlReporterHandler.InnerHandler = initializeServicePointerHander;
-
-                    return urlReporterHandler;
-                });
-            serviceCollection.AddSingleton(
-                x =>
-                {
-                    var httpMessageHandler = x.GetRequiredService<HttpMessageHandler>();
-                    var loggingHandler = x.GetRequiredService<LoggingHandler>();
-                    loggingHandler.InnerHandler = httpMessageHandler;
-                    var httpClient = new HttpClient(loggingHandler);
-                    UserAgent.SetUserAgent(httpClient);
-                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("x-ms-version", "2017-04-17");
-                    return httpClient;
-                });
-            serviceCollection.AddSingleton(
                 x =>
                 {
                     var options = x.GetRequiredService<IOptions<ExplorePackagesSettings>>();
@@ -166,11 +151,10 @@ namespace Knapcode.ExplorePackages.Logic
                         new PackageSource(options.Value.V3ServiceIndex),
                         () =>
                         {
-                            var httpClientHandler = x.GetRequiredService<HttpClientHandler>();
-                            var httpMessageHandler = x.GetRequiredService<HttpMessageHandler>();
-                            return Task.FromResult<HttpHandlerResource>(new HttpHandlerResourceV3(
-                                httpClientHandler,
-                                httpMessageHandler));
+                            var factory = x.GetRequiredService<IHttpMessageHandlerFactory>();
+                            var httpMessageHandler = factory.CreateHandler(HttpClientName);
+
+                            return Task.FromResult<HttpHandlerResource>(new HttpMessageHandlerResource(httpMessageHandler));
                         },
                         NullThrottle.Instance);
                 });
@@ -260,8 +244,12 @@ namespace Knapcode.ExplorePackages.Logic
 
             serviceCollection.AddTransient<GenericMessageProcessor>();
             serviceCollection.AddTransient<MessageSerializer>();
+            serviceCollection.AddTransient<MessageEnqueuer>();
+
+            serviceCollection.AddTransient<IMessageProcessor<BulkEnqueueMessage>, BulkEnqueueMessageProcessor>();
             serviceCollection.AddTransient<IMessageProcessor<CatalogIndexScanMessage>, CatalogIndexScanMessageProcessor>();
             serviceCollection.AddTransient<IMessageProcessor<CatalogPageScanMessage>, CatalogPageScanMessageProcessor>();
+            serviceCollection.AddTransient<IMessageProcessor<CatalogLeafMessage>, CatalogLeafMessageProcessor>();
 
             serviceCollection.AddTransient(x => new PackageQueryFactory(
                 () => x.GetRequiredService<IEnumerable<IPackageQuery>>(),

@@ -1,80 +1,39 @@
-﻿using AngleSharp.Common;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using AngleSharp.Common;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Knapcode.ExplorePackages.Logic.Worker
 {
     public class MessageSerializer
     {
-        private interface ISchema
-        {
-            string Name { get; }
-            Type Type { get; }
-            byte[] Serialize(object message);
-            object Deserialize(int schemaVersion, JToken json);
-        }
-
-        private class SchemaV1<T> : ISchema
-        {
-            public SchemaV1()
-            {
-                Name = GetName();
-            }
-
-            private const int V1 = 1;
-            private const int Latest = V1;
-
-            public Type Type { get; } = typeof(T);
-            public string Name { get; }
-
-            public byte[] Serialize(T message)
-            {
-                return GetBytes(Name, Latest, message);
-            }
-
-            public T Deserialize(int schemaVersion, JToken json)
-            {
-                if (schemaVersion != V1)
-                {
-                    throw new FormatException($"The only version for schema '{Name}' supported is {V1}.");
-                }
-
-                return json.ToObject<T>();
-            }
-
-            private static string GetName()
-            {
-                const string suffix = "Message";
-                var typeName = typeof(T).Name;
-                if (!typeName.EndsWith(suffix))
-                {
-                    throw new ArgumentException($"The message type name must end with '{suffix}'.");
-                }
-
-                return typeName.Substring(0, typeName.Length - suffix.Length);
-            }
-
-            byte[] ISchema.Serialize(object message) => Serialize((T)message);
-            object ISchema.Deserialize(int schemaVersion, JToken json) => Deserialize(schemaVersion, json);
-        }
-
         private static readonly IReadOnlyList<ISchema> Schemas = new ISchema[]
         {
+            new SchemaV1<BulkEnqueueMessage>(),
             new SchemaV1<CatalogIndexScanMessage>(),
             new SchemaV1<CatalogPageScanMessage>(),
+            new SchemaV1<CatalogLeafMessage>(),
         };
 
         private static readonly IReadOnlyDictionary<string, ISchema> NameToSchema = Schemas.ToDictionary(x => x.Name);
         private static readonly IReadOnlyDictionary<Type, ISchema> TypeToSchema = Schemas.ToDictionary(x => x.Type);
+        private readonly ILogger<MessageSerializer> _logger;
 
-        public byte[] Serialize(CatalogIndexScanMessage message) => SerializeInternal(message);
-        public byte[] Serialize(CatalogPageScanMessage message) => SerializeInternal(message);
+        public MessageSerializer(ILogger<MessageSerializer> logger)
+        {
+            _logger = logger;
+        }
 
-        private byte[] SerializeInternal<T>(T message)
+        public ISerializedMessage Serialize(BulkEnqueueMessage message) => SerializeInternal(message);
+        public ISerializedMessage Serialize(CatalogIndexScanMessage message) => SerializeInternal(message);
+        public ISerializedMessage Serialize(CatalogPageScanMessage message) => SerializeInternal(message);
+        public ISerializedMessage Serialize(CatalogLeafMessage message) => SerializeInternal(message);
+
+        private ISerializedMessage SerializeInternal<T>(T message)
         {
             if (!TypeToSchema.TryGetValue(typeof(T), out var schema))
             {
@@ -89,40 +48,99 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             var json = Encoding.UTF8.GetString(message);
             var deserialized = JsonConvert.DeserializeObject<JObject>(json);
 
-            var schemaName = deserialized.Value<string>("SchemaName");
-            var schemaVersion = deserialized.Value<int>("SchemaVersion");
-            var value = deserialized["Value"];
+            var schemaName = deserialized.Value<string>("n");
+            var schemaVersion = deserialized.Value<int>("v");
+
+            _logger.LogInformation(
+                "Attempting to deserialize of schema {SchemaName} and version {SchemaVersion}.",
+                schemaName,
+                schemaVersion);
+
+            var data = deserialized["d"];
 
             if (!NameToSchema.TryGetValue(schemaName, out var schema))
             {
                 throw new FormatException($"The schema '{schemaName}' is not supported.");
             }
 
-            return schema.Deserialize(schemaVersion, value);
+            return schema.Deserialize(schemaVersion, data);
         }
 
-        private static byte[] GetBytes<T>(string schemaName, int schemaVersion, T message)
+        private interface ISchema
         {
-            var json = JsonConvert.SerializeObject(new DeserializedMessage<T>(
-                schemaName,
-                schemaVersion,
-                message));
+            string Name { get; }
+            Type Type { get; }
+            ISerializedMessage Serialize(object message);
+            object Deserialize(int schemaVersion, JToken data);
+        }
 
-            return Encoding.UTF8.GetBytes(json);
+        private class SchemaV1<T> : ISchema
+        {
+            private const int V1 = 1;
+            private const int Latest = V1;
+
+            private static readonly JsonSerializer JsonSerializer = new JsonSerializer();
+
+            public SchemaV1()
+            {
+                Name = GetName();
+            }
+
+            public Type Type { get; } = typeof(T);
+            public string Name { get; }
+
+            public ISerializedMessage Serialize(T message) => Serialize(Name, Latest, message);
+
+            private static ISerializedMessage Serialize(string schemaName, int schemaVersion, T message)
+            {
+                return new SerializedMessage(() => JToken.FromObject(
+                    new DeserializedMessage<T>(schemaName, schemaVersion, message),
+                    JsonSerializer));
+            }
+
+            public T Deserialize(int schemaVersion, JToken data)
+            {
+                if (schemaVersion != V1)
+                {
+                    throw new FormatException($"The only version for schema '{Name}' supported is {V1}.");
+                }
+
+                return data.ToObject<T>();
+            }
+
+            private static string GetName()
+            {
+                const string suffix = "Message";
+                var typeName = typeof(T).Name;
+                if (!typeName.EndsWith(suffix))
+                {
+                    throw new ArgumentException($"The message type name must end with '{suffix}'.");
+                }
+
+                return typeName.Substring(0, typeName.Length - suffix.Length);
+            }
+
+            ISerializedMessage ISchema.Serialize(object message) => Serialize((T)message);
+            object ISchema.Deserialize(int schemaVersion, JToken json) => Deserialize(schemaVersion, json);
         }
 
         private class DeserializedMessage<T>
         {
-            public DeserializedMessage(string schemaName, int schemaVersion, T value)
+            public DeserializedMessage(string schemaName, int schemaVersion, T data)
             {
                 SchemaName = schemaName ?? throw new ArgumentNullException(nameof(schemaName));
                 SchemaVersion = schemaVersion;
-                Value = value;
+                Data = data;
             }
 
+            [JsonProperty("n")]
             public string SchemaName { get; }
+
+            [JsonProperty("v")]
             public int SchemaVersion { get; }
-            public T Value { get; }
+
+            [JsonProperty("d")]
+            public T Data { get; }
         }
     }
 }

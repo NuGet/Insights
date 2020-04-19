@@ -37,7 +37,7 @@ namespace Knapcode.ExplorePackages.Website
                     { "Knapcode.ExplorePackages:DatabaseType", "None" }
                 });
             var configuration = configurationBuilder.Build();
-            serviceCollection.Configure<ExplorePackagesSettings>(configuration.GetSection("Knapcode.ExplorePackages"));
+            serviceCollection.Configure<ExplorePackagesSettings>(configuration.GetSection(ExplorePackagesSettings.DefaultSectionName));
 
             // Enable ExplorePackages dependencies.
             serviceCollection.AddExplorePackages();

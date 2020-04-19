@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.WindowsAzure.Storage.Blob;
 using NuGet.Protocol;
 
 namespace Knapcode.ExplorePackages.Logic
@@ -42,15 +43,20 @@ namespace Knapcode.ExplorePackages.Logic
                 new DateTimeOffset(leaf.CatalogCommit.CommitTimestamp, TimeSpan.Zero));
         }
 
-        public async Task<CatalogIndex> GetCatalogIndexAsync()
+        public async Task<CatalogIndex> GetCatalogIndexAsync(string url)
         {
-            var url = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.Catalog);
             return await _httpSource.DeserializeUrlAsync<CatalogIndex>(
                 url,
                 ignoreNotFounds: false,
                 maxTries: 3,
                 serializer: CatalogJsonSerialization.Serializer,
                 logger: _logger);
+        }
+
+        public async Task<CatalogIndex> GetCatalogIndexAsync()
+        {
+            var url = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.Catalog);
+            return await GetCatalogIndexAsync(url);
         }
 
         public async Task<CatalogPage> GetCatalogPageAsync(string url)
@@ -102,24 +108,29 @@ namespace Knapcode.ExplorePackages.Logic
 
         public async Task<CatalogLeaf> GetCatalogLeafAsync(CatalogLeafItem leaf)
         {
-            switch (leaf.Type)
+            return await GetCatalogLeafAsync(leaf.Type, leaf.Url);
+        }
+
+        public async Task<CatalogLeaf> GetCatalogLeafAsync(CatalogLeafType type, string url)
+        {
+            switch (type)
             {
                 case CatalogLeafType.PackageDelete:
                     return await _httpSource.DeserializeUrlAsync<PackageDeleteCatalogLeaf>(
-                        leaf.Url,
+                        url,
                         ignoreNotFounds: false,
                         maxTries: 3,
                         serializer: CatalogJsonSerialization.Serializer,
                         logger: _logger);
                 case CatalogLeafType.PackageDetails:
                     return await _httpSource.DeserializeUrlAsync<PackageDetailsCatalogLeaf>(
-                        leaf.Url,
+                        url,
                         ignoreNotFounds: false,
                         maxTries: 3,
                         serializer: CatalogJsonSerialization.Serializer,
                         logger: _logger);
                 default:
-                    throw new NotImplementedException($"Catalog leaf type {leaf.Type} is not supported.");
+                    throw new NotImplementedException($"Catalog leaf type {type} is not supported.");
             }
         }
 

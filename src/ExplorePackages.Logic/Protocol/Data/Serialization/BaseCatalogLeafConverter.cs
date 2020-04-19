@@ -25,6 +25,7 @@ namespace Knapcode.ExplorePackages.Logic
             if (_fromType.TryGetValue((CatalogLeafType)value, out output))
             {
                 writer.WriteValue(output);
+                return;
             }
 
             throw new NotSupportedException($"The catalog leaf type '{value}' is not supported.");
