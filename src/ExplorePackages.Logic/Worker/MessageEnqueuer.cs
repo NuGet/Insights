@@ -10,8 +10,6 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 {
     public class MessageEnqueuer
     {
-        private const int MaximumMessageSize = 65536;
-
         private readonly MessageSerializer _messageSerializer;
         private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
         private readonly ILogger<MessageEnqueuer> _logger;
@@ -43,14 +41,16 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 
         public async Task EnqueueAsync<T>(IReadOnlyList<T> messages, Func<T, ISerializedMessage> serialize)
         {
-            const int batchThreshold = 2;
-            if (messages.Count < batchThreshold)
+            if (messages.Count == 0)
             {
-                _logger.LogInformation("Enqueueing {Count} individual messages.", messages.Count);
-                foreach (var message in messages)
-                {
-                    await _rawMessageEnqueuer.AddAsync(serialize(message).AsString());
-                }
+                return;
+            }
+
+            var bulkEnqueueStrategy = _rawMessageEnqueuer.BulkEnqueueStrategy;
+            if (!bulkEnqueueStrategy.IsEnabled || messages.Count < bulkEnqueueStrategy.Threshold)
+            {
+                var serializedMessages = messages.Select(m => serialize(m).AsString()).ToList();
+                await _rawMessageEnqueuer.AddAsync(serializedMessages);
             }
             else
             {
@@ -72,7 +72,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
                     else
                     {
                         var newBatchMessageLength = batchMessageLength + ",".Length + innerMessageLength;
-                        if (newBatchMessageLength > MaximumMessageSize)
+                        if (newBatchMessageLength > bulkEnqueueStrategy.MaxSize)
                         {
                             await EnqueueBulkEnqueueMessageAsync(batchMessage, batchMessageLength);
                             batch.Clear();
@@ -106,7 +106,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             }
 
             _logger.LogInformation("Enqueueing a bulk enqueue message containing {Count} individual messages.", batchMessage.Messages.Count);
-            await _rawMessageEnqueuer.AddAsync(bytes);
+            await _rawMessageEnqueuer.AddAsync(new[] { bytes });
         }
 
         private int GetMessageLength(BulkEnqueueMessage batchMessage)

@@ -40,5 +40,6 @@ namespace Knapcode.ExplorePackages.Logic
         public string StorageContainerName { get; set; }
         public bool IsStorageContainerPublic { get; set; }
         public int WorkerCount { get; set; }
+        public string ServiceBusConnectionString { get; set; }
     }
 }

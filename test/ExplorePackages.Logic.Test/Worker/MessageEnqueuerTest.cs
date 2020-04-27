@@ -10,7 +10,6 @@ namespace Knapcode.ExplorePackages.Logic.Worker
     public class MessageEnqueuerTest
     {
         [Theory]
-        [InlineData(0)]
         [InlineData(1)]
         public async Task DoesNotBatchIfMessageCountIsLessThanThreshold(int messageCount)
         {
@@ -18,10 +17,10 @@ namespace Knapcode.ExplorePackages.Logic.Worker
                 Enumerable.Range(0, messageCount).ToList(),
                 i => MessageSerializer.Serialize(new CatalogPageScanMessage { Url = i.ToString() }));
 
-            Assert.Equal(messageCount, EnqueuedMessages.Count);
+            var messages = Assert.Single(EnqueuedMessages);
             for (var i = 0; i < messageCount; i++)
             {
-                var message = (CatalogPageScanMessage)EnqueuedMessages[i];
+                var message = (CatalogPageScanMessage)messages[i];
                 Assert.Equal(i.ToString(), message.Url);
             }
         }
@@ -43,7 +42,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             Assert.Equal((messageCount / perBatch) + (messageCount % perBatch > 0 ? 1 : 0), EnqueuedMessages.Count);
             for (var i = 0; i < messageCount; i++)
             {
-                var message = (BulkEnqueueMessage)EnqueuedMessages[i / perBatch];
+                var message = (BulkEnqueueMessage)Assert.Single(EnqueuedMessages[i / perBatch]);
                 Assert.StartsWith($"{i}_", message.Messages[i % perBatch].ToString());
             }
         }
@@ -62,11 +61,11 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             RawMessageEnqueuer = new Mock<IRawMessageEnqueuer>();
 
             RawMessageEnqueuer
-                .Setup(x => x.AddAsync(It.IsAny<string>()))
+                .Setup(x => x.AddAsync(It.IsAny<IReadOnlyList<string>>()))
                 .Returns(Task.CompletedTask)
-                .Callback<string>(x => EnqueuedMessages.Add(MessageSerializer.Deserialize(x)));
+                .Callback<IReadOnlyList<string>>(x => EnqueuedMessages.Add(x.Select(y => MessageSerializer.Deserialize(y)).ToList()));
 
-            EnqueuedMessages = new List<object>();
+            EnqueuedMessages = new List<List<object>>();
 
             Target = new MessageEnqueuer(
                 MessageSerializer,
@@ -76,7 +75,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 
         public MessageSerializer MessageSerializer { get; }
         public Mock<IRawMessageEnqueuer> RawMessageEnqueuer { get; }
-        public List<object> EnqueuedMessages { get; }
+        public List<List<object>> EnqueuedMessages { get; }
         public MessageEnqueuer Target { get; }
     }
 }

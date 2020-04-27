@@ -1,9 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Logic.Worker
 {
     public interface IRawMessageEnqueuer
     {
-        Task AddAsync(string message);
+        BulkEnqueueStrategy BulkEnqueueStrategy { get; }
+        Task AddAsync(IReadOnlyList<string> message);
     }
 }

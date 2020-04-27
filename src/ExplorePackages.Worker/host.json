@@ -2,8 +2,7 @@
   "version": "2.0",
   "logging": {
     "logLevel": {
-      "Knapcode.ExplorePackages.Logic.Worker": "Information",
-      "Knapcode.ExplorePackages.Worker": "Information"
+      "default": "Error"
     }
   }
 }
