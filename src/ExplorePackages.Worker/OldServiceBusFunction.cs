@@ -12,10 +12,10 @@ namespace Knapcode.ExplorePackages.Worker
         private const string Connection = ExplorePackagesSettings.DefaultSectionName + ":" + nameof(ExplorePackagesSettings.ServiceBusConnectionString);
 
         private readonly GenericMessageProcessor _messageProcessor;
-        private readonly RawMessageEnqueuer _enqueuer;
+        private readonly TargetableRawMessageEnqueuer _enqueuer;
         private readonly OldServiceBusEnqueuer _innerEnqueuer;
 
-        public OldServiceBusFunction(RawMessageEnqueuer enqueuer, OldServiceBusEnqueuer innerEnqueuer, GenericMessageProcessor messageProcessor)
+        public OldServiceBusFunction(TargetableRawMessageEnqueuer enqueuer, OldServiceBusEnqueuer innerEnqueuer, GenericMessageProcessor messageProcessor)
         {
             _enqueuer = enqueuer;
             _innerEnqueuer = innerEnqueuer;

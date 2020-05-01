@@ -2,27 +2,26 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic.Worker;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage.Queue;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace Knapcode.ExplorePackages.Logic
 {
-
-    public class UnencodedQueueStorageEnqueuer : IRawMessageEnqueuer
+    public class QueueStorageEnqueuer : IRawMessageEnqueuer
     {
-        private readonly IOptionsSnapshot<QueueStorageEnqueuerConfiguration> _options;
-        private readonly ILogger<UnencodedQueueStorageEnqueuer> _logger;
+        private readonly IWorkerQueueFactory _workerQueueFactory;
+        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
+        private readonly ILogger<QueueStorageEnqueuer> _logger;
 
-        private CloudQueue _target;
-
-        public UnencodedQueueStorageEnqueuer(
-            IOptionsSnapshot<QueueStorageEnqueuerConfiguration> options,
-            ILogger<UnencodedQueueStorageEnqueuer> logger)
+        public QueueStorageEnqueuer(
+            IWorkerQueueFactory workerQueueFactory,
+            IOptionsSnapshot<ExplorePackagesSettings> options,
+            ILogger<QueueStorageEnqueuer> logger)
         {
+            _workerQueueFactory = workerQueueFactory;
             _options = options;
             _logger = logger;
             BulkEnqueueStrategy = _options.Value.UseBulkEnqueueStrategy
@@ -32,24 +31,13 @@ namespace Knapcode.ExplorePackages.Worker
 
         public BulkEnqueueStrategy BulkEnqueueStrategy { get; }
 
-        public void SetTarget(CloudQueue target)
-        {
-            target.EncodeMessage = false;
-
-            var output = Interlocked.CompareExchange(ref _target, target, null);
-            if (output != null)
-            {
-                throw new InvalidOperationException("The target has already been set.");
-            }
-        }
-
         public async Task AddAsync(IReadOnlyList<string> messages)
         {
-            if (_target == null)
-            {
-                throw new InvalidOperationException("The target has not been set.");
-            }
+            await AddAsync(messages, TimeSpan.Zero);
+        }
 
+        public async Task AddAsync(IReadOnlyList<string> messages, TimeSpan visibilityDelay)
+        {
             if (messages.Count == 0)
             {
                 return;
@@ -59,9 +47,10 @@ namespace Knapcode.ExplorePackages.Worker
             if (workers < 2)
             {
                 _logger.LogInformation("Enqueueing {Count} individual messages.", messages.Count);
+                var queue = _workerQueueFactory.GetQueue();
                 foreach (var message in messages)
                 {
-                    await AddMessageAsync(message);
+                    await AddMessageAsync(queue, message, visibilityDelay);
                 }
             }
             else
@@ -77,9 +66,10 @@ namespace Knapcode.ExplorePackages.Worker
                     .Range(0, workers)
                     .Select(async i =>
                     {
+                        var queue = _workerQueueFactory.GetQueue();
                         while (work.TryDequeue(out var message))
                         {
-                            await AddMessageAsync(message);
+                            await AddMessageAsync(queue, message, visibilityDelay);
                         }
                     })
                     .ToList();
@@ -88,9 +78,14 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        private async Task AddMessageAsync(string message)
+        private async Task AddMessageAsync(CloudQueue queue, string message, TimeSpan initialVisibilityDelay)
         {
-            await _target.AddMessageAsync(new CloudQueueMessage(message));
+            await queue.AddMessageAsync(
+                new CloudQueueMessage(message),
+                timeToLive: null,
+                initialVisibilityDelay: initialVisibilityDelay > TimeSpan.Zero ? (TimeSpan?)initialVisibilityDelay : null,
+                options: null,
+                operationContext: null);
         }
     }
 }

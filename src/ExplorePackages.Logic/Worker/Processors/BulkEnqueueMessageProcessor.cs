@@ -20,7 +20,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             _logger.LogInformation("Processing bulk enqueue message with {Count} messages.", message.Messages.Count);
 
             var messages = message.Messages.Select(x => new SerializedMessage(() => x).AsString()).ToList();
-            await _messageEnqueuer.AddAsync(messages);
+            await _messageEnqueuer.AddAsync(messages, message.NotBefore);
         }
     }
 }

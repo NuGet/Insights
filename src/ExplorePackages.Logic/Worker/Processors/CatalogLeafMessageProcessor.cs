@@ -18,8 +18,11 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 
         public async Task ProcessAsync(CatalogLeafMessage message)
         {
-            _logger.LogInformation("Loading catalog {Type} leaf URL: {Url}", message.Type, message.Url);
-            await _catalogClient.GetCatalogLeafAsync(message.Type, message.Url);
+            if (message.ScanType == CatalogScanType.DownloadLeaves)
+            {
+                _logger.LogInformation("Loading catalog {Type} leaf URL: {Url}", message.LeafType, message.Url);
+                await _catalogClient.GetCatalogLeafAsync(message.LeafType, message.Url);
+            }
         }
     }
 }

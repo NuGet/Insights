@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.WindowsAzure.Storage;
 using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -69,6 +70,9 @@ namespace Knapcode.ExplorePackages.Logic
                     UserAgent.SetUserAgent(httpClient);
                     httpClient.DefaultRequestHeaders.TryAddWithoutValidation("x-ms-version", "2017-04-17");
                 });
+            serviceCollection.AddTransient(x => x
+                .GetRequiredService<IHttpClientFactory>()
+                .CreateClient(HttpClientName));
 
             serviceCollection.AddDbContext<SqliteEntityContext>((x, dbContextOptionsBuilder) =>
             {
@@ -140,6 +144,8 @@ namespace Knapcode.ExplorePackages.Logic
                 x.GetRequiredService<ILogger<SingletonService>>()));
             serviceCollection.AddTransient<ICommitCondition, LeaseCommitCondition>();
 
+            serviceCollection.AddSingleton<ServiceClientFactory>();
+
             serviceCollection.AddSingleton<UrlReporterProvider>();
             serviceCollection.AddTransient<UrlReporterHandler>();
             serviceCollection.AddTransient<LoggingHandler>();
@@ -183,6 +189,9 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<IFileStorageService, FileStorageService>();
             serviceCollection.AddTransient<IBlobStorageService, BlobStorageService>();
             serviceCollection.AddTransient<BlobStorageMigrator>();
+
+            serviceCollection.AddTransient<IRawMessageEnqueuer, QueueStorageEnqueuer>();
+            serviceCollection.AddTransient<IWorkerQueueFactory, UnencodedWorkerQueueFactory>();
 
             serviceCollection.AddSingleton<IBatchSizeProvider, BatchSizeProvider>();
             serviceCollection.AddTransient<PackageQueryCollector>();
@@ -250,6 +259,9 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<IMessageProcessor<CatalogIndexScanMessage>, CatalogIndexScanMessageProcessor>();
             serviceCollection.AddTransient<IMessageProcessor<CatalogPageScanMessage>, CatalogPageScanMessageProcessor>();
             serviceCollection.AddTransient<IMessageProcessor<CatalogLeafMessage>, CatalogLeafMessageProcessor>();
+
+            serviceCollection.AddTransient<CatalogScanStorageService>();
+            serviceCollection.AddTransient<LatestPackageLeafService>();
 
             serviceCollection.AddTransient(x => new PackageQueryFactory(
                 () => x.GetRequiredService<IEnumerable<IPackageQuery>>(),

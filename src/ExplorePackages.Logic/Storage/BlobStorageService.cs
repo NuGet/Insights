@@ -16,22 +16,24 @@ namespace Knapcode.ExplorePackages.Logic
     public class BlobStorageService : IBlobStorageService
     {
         private readonly HttpSource _httpSource;
+        private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
         private readonly ILogger<BlobStorageService> _logger;
         private readonly Lazy<CloudBlobContainer> _lazyContainer;
 
         public BlobStorageService(
             HttpSource httpSource,
+            ServiceClientFactory serviceClientFactory,
             IOptionsSnapshot<ExplorePackagesSettings> options,
             ILogger<BlobStorageService> logger)
         {
             _httpSource = httpSource;
+            _serviceClientFactory = serviceClientFactory;
             _options = options;
             _logger = logger;
             _lazyContainer = new Lazy<CloudBlobContainer>(() =>
             {
-                var account = CloudStorageAccount.Parse(_options.Value.StorageConnectionString);
-                var client = account.CreateCloudBlobClient();
+                var client = _serviceClientFactory.GetStorageAccount().CreateCloudBlobClient();
                 var container = client.GetContainerReference(_options.Value.StorageContainerName);
 
                 return container;

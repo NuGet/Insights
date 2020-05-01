@@ -15,13 +15,13 @@ namespace Knapcode.ExplorePackages.Logic.Worker
         {
             await Target.EnqueueAsync(
                 Enumerable.Range(0, messageCount).ToList(),
-                i => MessageSerializer.Serialize(new CatalogPageScanMessage { Url = i.ToString() }));
+                i => MessageSerializer.Serialize(new CatalogPageScanMessage { PageId = i.ToString() }));
 
             var messages = Assert.Single(EnqueuedMessages);
             for (var i = 0; i < messageCount; i++)
             {
                 var message = (CatalogPageScanMessage)messages[i];
-                Assert.Equal(i.ToString(), message.Url);
+                Assert.Equal(i.ToString(), message.PageId);
             }
         }
 

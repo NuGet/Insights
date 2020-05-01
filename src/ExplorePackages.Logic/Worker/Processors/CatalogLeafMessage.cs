@@ -6,7 +6,10 @@ namespace Knapcode.ExplorePackages.Logic.Worker
     public class CatalogLeafMessage
     {
         [JsonProperty("t")]
-        public CatalogLeafType Type { get; set; }
+        public CatalogScanType ScanType { get; set; }
+
+        [JsonProperty("l")]
+        public CatalogLeafType LeafType { get; set; }
 
         [JsonProperty("u")]
         public string Url { get; set; }

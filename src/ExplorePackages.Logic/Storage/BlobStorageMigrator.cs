@@ -16,6 +16,7 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly PackageBlobNameProvider _nameProvider;
         private readonly IPackageService _packageService;
         private readonly IFileStorageService _fileStorageService;
+        private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
         private readonly ILogger<BlobStorageService> _logger;
 
@@ -23,12 +24,14 @@ namespace Knapcode.ExplorePackages.Logic
             PackageBlobNameProvider nameProvider,
             IPackageService packageService,
             IFileStorageService fileStorageService,
+            ServiceClientFactory serviceClientFactory,
             IOptionsSnapshot<ExplorePackagesSettings> options,
             ILogger<BlobStorageService> logger)
         {
             _nameProvider = nameProvider;
             _packageService = packageService;
             _fileStorageService = fileStorageService;
+            _serviceClientFactory = serviceClientFactory;
             _options = options;
             _logger = logger;
         }
@@ -154,8 +157,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         private CloudBlobContainer GetDestinationContainer()
         {
-            var account = CloudStorageAccount.Parse(_options.Value.StorageConnectionString);
-            var client = account.CreateCloudBlobClient();
+            var client = _serviceClientFactory.GetStorageAccount().CreateCloudBlobClient();
             var container = client.GetContainerReference(_options.Value.StorageContainerName);
             return container;
         }

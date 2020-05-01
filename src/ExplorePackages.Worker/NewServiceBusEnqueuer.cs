@@ -24,22 +24,33 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task AddAsync(IReadOnlyList<string> messages)
         {
+            await AddAsync(messages, TimeSpan.Zero);
+        }
+
+        public async Task AddAsync(IReadOnlyList<string> messages, TimeSpan notBefore)
+        {
             if (messages.Count == 0)
             {
                 return;
+            }
+
+            DateTimeOffset? scheduledEnqueueTime = null;
+            if (notBefore > TimeSpan.Zero)
+            {
+                scheduledEnqueueTime = DateTimeOffset.UtcNow + notBefore;
             }
             
             if (messages.Count == 1)
             {
                 _logger.LogInformation("Enqueueing a single message.");
-                await _target.SendAsync(GetMessage(messages.Single()));
+                await _target.SendAsync(GetEncodedMessage(messages.Single(), scheduledEnqueueTime));
             }
             else
             {
                 var batch = await _target.CreateBatchAsync();
                 foreach (string message in messages)
                 {
-                    if (!batch.TryAdd(GetMessage(message)))
+                    if (!batch.TryAdd(GetEncodedMessage(message, scheduledEnqueueTime)))
                     {
                         if (batch.Count == 0)
                         {
@@ -64,9 +75,16 @@ namespace Knapcode.ExplorePackages.Worker
             await _target.SendBatchAsync(batch);
         }
 
-        private static ServiceBusMessage GetMessage(string message)
+        private static ServiceBusMessage GetEncodedMessage(string message, DateTimeOffset? scheduledEnqueueTime)
         {
-            return new ServiceBusMessage(Encoding.UTF8.GetBytes(message));
+            var encodedMessage = new ServiceBusMessage(Encoding.UTF8.GetBytes(message));
+
+            if (scheduledEnqueueTime.HasValue)
+            {
+                encodedMessage.ScheduledEnqueueTime = scheduledEnqueueTime.Value;
+            }
+
+            return encodedMessage;
         }
     }
 }

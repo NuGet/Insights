@@ -77,9 +77,14 @@ namespace Knapcode.ExplorePackages.Logic
                 "$1=(redacted)",
                 RegexOptions.IgnoreCase);
 
-            // Sanitize the Azure Blob Storage connection string
+            // Sanitize the Azure Blob Storage connection strings
             settings.StorageConnectionString = Regex.Replace(
                 settings.StorageConnectionString,
+                "(SharedAccessSignature|AccountKey)=[^;]*",
+                "$1=(redacted)",
+                RegexOptions.IgnoreCase);
+            settings.LatestPackageLeavesStorageConnectionString = Regex.Replace(
+                settings.LatestPackageLeavesStorageConnectionString,
                 "(SharedAccessSignature|AccountKey)=[^;]*",
                 "$1=(redacted)",
                 RegexOptions.IgnoreCase);

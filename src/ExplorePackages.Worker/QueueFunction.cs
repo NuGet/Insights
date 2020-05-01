@@ -11,13 +11,19 @@ namespace Knapcode.ExplorePackages.Worker
         private const string Connection = ExplorePackagesSettings.DefaultSectionName + ":" + nameof(ExplorePackagesSettings.StorageConnectionString);
 
         private readonly GenericMessageProcessor _messageProcessor;
-        private readonly RawMessageEnqueuer _enqueuer;
-        private readonly UnencodedQueueStorageEnqueuer _innerEnqueuer;
+        private readonly TargetableRawMessageEnqueuer _rawMessageEnqueuer;
+        private readonly ExternalWorkerQueueFactory _workerQueueFactory;
+        private readonly QueueStorageEnqueuer _queueStorageEnqueuer;
 
-        public QueueFunction(RawMessageEnqueuer enqueuer, UnencodedQueueStorageEnqueuer innerEnqueuer, GenericMessageProcessor messageProcessor)
+        public QueueFunction(
+            ExternalWorkerQueueFactory workerQueueFactory,
+            QueueStorageEnqueuer queueStorageEnqueuer,
+            TargetableRawMessageEnqueuer rawMessageEnqueuer,
+            GenericMessageProcessor messageProcessor)
         {
-            _enqueuer = enqueuer;
-            _innerEnqueuer = innerEnqueuer;
+            _workerQueueFactory = workerQueueFactory;
+            _queueStorageEnqueuer = queueStorageEnqueuer;
+            _rawMessageEnqueuer = rawMessageEnqueuer;
             _messageProcessor = messageProcessor;
         }
 
@@ -26,8 +32,9 @@ namespace Knapcode.ExplorePackages.Worker
             [QueueTrigger("queue", Connection = Connection)] string message,
             [Queue("queue", Connection = Connection)] CloudQueue target)
         {
-            _innerEnqueuer.SetTarget(target);
-            _enqueuer.SetTarget(_innerEnqueuer);
+            target.EncodeMessage = false;
+            _workerQueueFactory.SetTarget(target);
+            _rawMessageEnqueuer.SetTarget(_queueStorageEnqueuer);
             await _messageProcessor.ProcessAsync(message);
         }
     }

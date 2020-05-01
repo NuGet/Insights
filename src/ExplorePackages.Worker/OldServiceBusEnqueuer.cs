@@ -39,9 +39,20 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task AddAsync(IReadOnlyList<string> messages)
         {
+            await AddAsync(messages, TimeSpan.Zero);
+        }
+
+        public async Task AddAsync(IReadOnlyList<string> messages, TimeSpan notBefore)
+        {
             if (_target == null)
             {
                 throw new InvalidOperationException("The target has not been set.");
+            }
+
+            DateTime? scheduledEnqueueTimeUtc = null;
+            if (notBefore > TimeSpan.Zero)
+            {
+                scheduledEnqueueTimeUtc = DateTime.UtcNow + notBefore;
             }
 
             if (messages.Count == 0)
@@ -52,7 +63,7 @@ namespace Knapcode.ExplorePackages.Worker
             if (messages.Count == 1)
             {
                 _logger.LogInformation("Enqueueing a single message.");
-                await _target.SendAsync(GetEncodedMessage(messages.Single()));
+                await _target.SendAsync(GetEncodedMessage(messages.Single(), scheduledEnqueueTimeUtc));
             }
             else
             {
@@ -61,7 +72,7 @@ namespace Knapcode.ExplorePackages.Worker
 
                 foreach (string message in messages)
                 {
-                    var encodedMessage = GetEncodedMessage(message);
+                    var encodedMessage = GetEncodedMessage(message, scheduledEnqueueTimeUtc);
                     var encodedMessageSize = encodedMessage.Body.Length;
 
                     if (batchSize + encodedMessageSize > ServiceBusMaxMessageSize)
@@ -93,9 +104,16 @@ namespace Knapcode.ExplorePackages.Worker
             await _target.SendAsync(batch);
         }
 
-        private static Message GetEncodedMessage(string message)
+        private static Message GetEncodedMessage(string message, DateTime? scheduledEnqueueTimeUtc)
         {
-            return new Message(Encoding.UTF8.GetBytes(message));
+            var encodedMessage = new Message(Encoding.UTF8.GetBytes(message));
+
+            if (scheduledEnqueueTimeUtc.HasValue)
+            {
+                encodedMessage.ScheduledEnqueueTimeUtc = scheduledEnqueueTimeUtc.Value;
+            }
+
+            return encodedMessage;
         }
     }
 }

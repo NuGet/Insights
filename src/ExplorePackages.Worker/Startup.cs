@@ -29,10 +29,13 @@ namespace Knapcode.ExplorePackages.Worker
 
             builder.Services.AddSingleton<IQueueProcessorFactory, UnencodedQueueProcessorFactory>();
 
-            builder.Services.AddScoped<RawMessageEnqueuer>();
-            builder.Services.AddScoped<UnencodedQueueStorageEnqueuer>();
+            builder.Services.AddScoped<TargetableRawMessageEnqueuer>();
+            builder.Services.AddScoped<QueueStorageEnqueuer>();
             builder.Services.AddScoped<OldServiceBusEnqueuer>();
             builder.Services.AddScoped<NewServiceBusEnqueuer>();
+            builder.Services.AddScoped<ExternalWorkerQueueFactory>();
+            builder.Services.AddScoped<IWorkerQueueFactory>(x => x.GetRequiredService<ExternalWorkerQueueFactory>());
+            builder.Services.AddScoped<ServiceClientFactory>();
 
             builder.Services.AddSingleton(x =>
             {
@@ -46,7 +49,7 @@ namespace Knapcode.ExplorePackages.Worker
                 return client.CreateSender("queue");
             });
 
-            builder.Services.AddTransient<IRawMessageEnqueuer>(x => x.GetRequiredService<RawMessageEnqueuer>());
+            builder.Services.AddTransient<IRawMessageEnqueuer>(x => x.GetRequiredService<TargetableRawMessageEnqueuer>());
         }
     }
 }

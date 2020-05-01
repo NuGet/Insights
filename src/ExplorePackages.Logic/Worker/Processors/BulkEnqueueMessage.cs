@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -8,5 +9,8 @@ namespace Knapcode.ExplorePackages.Logic.Worker
     {
         [JsonProperty("m")]
         public List<JToken> Messages { get; set; }
+
+        [JsonProperty("d")]
+        public TimeSpan NotBefore { get; set; }
     }
 }

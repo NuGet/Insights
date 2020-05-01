@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Logic.Worker
@@ -7,5 +8,6 @@ namespace Knapcode.ExplorePackages.Logic.Worker
     {
         BulkEnqueueStrategy BulkEnqueueStrategy { get; }
         Task AddAsync(IReadOnlyList<string> message);
+        Task AddAsync(IReadOnlyList<string> messages, TimeSpan notBefore);
     }
 }

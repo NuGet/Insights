@@ -24,22 +24,30 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             _logger = logger;
         }
 
-        public async Task EnqueueAsync(IReadOnlyList<CatalogIndexScanMessage> messages)
+        public async Task EnqueueAsync(IReadOnlyList<CatalogIndexScanMessage> messages) => await EnqueueAsync(messages, TimeSpan.Zero);
+        public async Task EnqueueAsync(IReadOnlyList<CatalogIndexScanMessage> messages, TimeSpan notBefore)
         {
-            await EnqueueAsync(messages, m => _messageSerializer.Serialize(m));
+            await EnqueueAsync(messages, m => _messageSerializer.Serialize(m), notBefore);
         }
 
-        public async Task EnqueueAsync(IReadOnlyList<CatalogPageScanMessage> messages)
+        public async Task EnqueueAsync(IReadOnlyList<CatalogPageScanMessage> messages) => await EnqueueAsync(messages, TimeSpan.Zero);
+        public async Task EnqueueAsync(IReadOnlyList<CatalogPageScanMessage> messages, TimeSpan notBefore)
         {
-            await EnqueueAsync(messages, m => _messageSerializer.Serialize(m));
+            await EnqueueAsync(messages, m => _messageSerializer.Serialize(m), notBefore);
         }
 
-        public async Task EnqueueAsync(IReadOnlyList<CatalogLeafMessage> messages)
+        public async Task EnqueueAsync(IReadOnlyList<CatalogLeafMessage> messages) => await EnqueueAsync(messages, TimeSpan.Zero);
+        public async Task EnqueueAsync(IReadOnlyList<CatalogLeafMessage> messages, TimeSpan notBefore)
         {
-            await EnqueueAsync(messages, m => _messageSerializer.Serialize(m));
+            await EnqueueAsync(messages, m => _messageSerializer.Serialize(m), notBefore);
         }
 
         public async Task EnqueueAsync<T>(IReadOnlyList<T> messages, Func<T, ISerializedMessage> serialize)
+        {
+            await EnqueueAsync(messages, serialize, TimeSpan.Zero);
+        }
+
+        public async Task EnqueueAsync<T>(IReadOnlyList<T> messages, Func<T, ISerializedMessage> serialize, TimeSpan notBefore)
         {
             if (messages.Count == 0)
             {
@@ -50,12 +58,12 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             if (!bulkEnqueueStrategy.IsEnabled || messages.Count < bulkEnqueueStrategy.Threshold)
             {
                 var serializedMessages = messages.Select(m => serialize(m).AsString()).ToList();
-                await _rawMessageEnqueuer.AddAsync(serializedMessages);
+                await _rawMessageEnqueuer.AddAsync(serializedMessages, notBefore);
             }
             else
             {
                 var batch = new List<JToken>();
-                var batchMessage = new BulkEnqueueMessage { Messages = batch };
+                var batchMessage = new BulkEnqueueMessage { Messages = batch, NotBefore = notBefore };
                 var emptyBatchMessageLength = GetMessageLength(batchMessage);
                 var batchMessageLength = emptyBatchMessageLength;
 
