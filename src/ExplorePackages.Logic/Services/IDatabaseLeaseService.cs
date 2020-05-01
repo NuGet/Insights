@@ -4,7 +4,7 @@ using Knapcode.ExplorePackages.Entities;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public interface ILeaseService
+    public interface IDatabaseLeaseService
     {
         Task<LeaseEntity> AcquireAsync(string name, TimeSpan leaseDuration);
         Task BreakAsync(string name);

@@ -102,7 +102,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
                 {
                     _logger.LogInformation("There are at least {Count} page scans pending.", countLowerBound);
 
-                    await _messageEnqueuer.EnqueueAsync(new[] { message }, TimeSpan.FromSeconds(1));
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, TimeSpan.FromSeconds(5));
                 }
                 else
                 {

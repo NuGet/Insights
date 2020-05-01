@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class LeaseService : ILeaseService
+    public class DatabaseLeaseService : IDatabaseLeaseService
     {
         private const string NotAcquiredAtAll = "The provided lease was not acquired in the first place.";
         private const string AcquiredBySomeoneElse = "The lease has been acquired by someone else.";
@@ -15,7 +15,7 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly ICommitCondition _commitCondition;
         private readonly EntityContextFactory _entityContextFactory;
 
-        public LeaseService(
+        public DatabaseLeaseService(
             ICommitCondition commitCondition,
             EntityContextFactory entityContextFactory)
         {

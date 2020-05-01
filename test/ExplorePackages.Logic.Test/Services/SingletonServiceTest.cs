@@ -74,7 +74,7 @@ namespace Knapcode.ExplorePackages.Logic
             public BaseTest(ITestOutputHelper output) : base(output)
             {
                 Duration = TimeSpan.FromMinutes(10);
-                LeaseService = new LeaseService(
+                LeaseService = new DatabaseLeaseService(
                     NullCommitCondition.Instance,
                     EntityContextFactory);
                 Logger = output.GetLogger<SingletonService>();
@@ -84,7 +84,7 @@ namespace Knapcode.ExplorePackages.Logic
             }
 
             public TimeSpan Duration { get; set; }
-            public LeaseService LeaseService { get; }
+            public DatabaseLeaseService LeaseService { get; }
             public ILogger<SingletonService> Logger { get; }
             public SingletonService TargetA { get; }
             public SingletonService TargetB { get; }

@@ -12,12 +12,12 @@ namespace Knapcode.ExplorePackages.Logic
         private static readonly TimeSpan Duration = TimeSpan.FromHours(1);
 
         private static SemaphoreSlim _lock = new SemaphoreSlim(1);
-        private readonly ILeaseService _leaseService;
+        private readonly IDatabaseLeaseService _leaseService;
         private readonly ILogger<SingletonService> _logger;
         private LeaseEntity _lease;
 
         public SingletonService(
-            ILeaseService leaseService,
+            IDatabaseLeaseService leaseService,
             ILogger<SingletonService> logger)
         {
             _leaseService = leaseService;

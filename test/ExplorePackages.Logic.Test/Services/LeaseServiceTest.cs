@@ -430,14 +430,14 @@ namespace Knapcode.ExplorePackages.Logic
                 LeaseName = "test-lease";
                 Duration = TimeSpan.FromMinutes(10);
 
-                Target = new LeaseService(
+                Target = new DatabaseLeaseService(
                     NullCommitCondition.Instance,
                     EntityContextFactory);
             }
 
             public string LeaseName { get; }
             public TimeSpan Duration { get; set; }
-            public LeaseService Target { get; }
+            public DatabaseLeaseService Target { get; }
         }
     }
 }

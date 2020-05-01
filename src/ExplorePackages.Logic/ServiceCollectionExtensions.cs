@@ -137,7 +137,7 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<Func<IEntityContext>>(x => () => x.GetRequiredService<Func<bool, IEntityContext>>()(true));
             serviceCollection.AddTransient<EntityContextFactory>();
             serviceCollection.AddSingleton<ISingletonService>(x => new SingletonService(
-                new LeaseService(
+                new DatabaseLeaseService(
                     NullCommitCondition.Instance,
                     new EntityContextFactory(
                         () => x.GetRequiredService<Func<bool, IEntityContext>>()(false))),
@@ -224,7 +224,7 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<CatalogService>();
             serviceCollection.AddTransient<PackageDependencyService>();
             serviceCollection.AddTransient<ProblemService>();
-            serviceCollection.AddTransient<ILeaseService, LeaseService>();
+            serviceCollection.AddTransient<IDatabaseLeaseService, DatabaseLeaseService>();
             serviceCollection.AddTransient<CommitCollectorSequentialProgressService>();
             serviceCollection.AddTransient<CommitEnumerator>();
 
