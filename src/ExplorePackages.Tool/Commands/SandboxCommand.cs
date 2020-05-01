@@ -17,7 +17,7 @@ namespace Knapcode.ExplorePackages.Tool
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly MessageEnqueuer _messageEnqueuer;
         private readonly CatalogScanStorageService _catalogScanStorageService;
-        private readonly LatestPackageLeafService _latestPackageLeafService;
+        private readonly LatestPackageLeafStorageService _latestPackageLeafService;
         private readonly IMessageProcessor<CatalogIndexScanMessage> _catalogIndexScanMessageProcessor;
         private readonly ILogger<SandboxCommand> _logger;
 
@@ -25,7 +25,7 @@ namespace Knapcode.ExplorePackages.Tool
             ServiceClientFactory serviceClientFactory,
             MessageEnqueuer messageEnqueuer,
             CatalogScanStorageService catalogScanStorageService,
-            LatestPackageLeafService latestPackageLeafService,
+            LatestPackageLeafStorageService latestPackageLeafService,
             IMessageProcessor<CatalogIndexScanMessage> catalogIndexScanMessageProcessor,
             ILogger<SandboxCommand> logger)
         {

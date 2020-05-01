@@ -8,14 +8,14 @@ using static Knapcode.ExplorePackages.Logic.Worker.TableStorageConstants;
 
 namespace Knapcode.ExplorePackages.Logic.Worker
 {
-    public class LatestPackageLeafService
+    public class LatestPackageLeafStorageService
     {
         private readonly ServiceClientFactory _serviceClientFactory;
-        private readonly ILogger<LatestPackageLeafService> _logger;
+        private readonly ILogger<LatestPackageLeafStorageService> _logger;
 
-        public LatestPackageLeafService(
+        public LatestPackageLeafStorageService(
             ServiceClientFactory serviceClientFactory,
-            ILogger<LatestPackageLeafService> logger)
+            ILogger<LatestPackageLeafStorageService> logger)
         {
             _serviceClientFactory = serviceClientFactory;
             _logger = logger;

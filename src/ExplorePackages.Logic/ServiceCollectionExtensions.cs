@@ -261,7 +261,7 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<IMessageProcessor<CatalogLeafMessage>, CatalogLeafMessageProcessor>();
 
             serviceCollection.AddTransient<CatalogScanStorageService>();
-            serviceCollection.AddTransient<LatestPackageLeafService>();
+            serviceCollection.AddTransient<LatestPackageLeafStorageService>();
 
             serviceCollection.AddTransient(x => new PackageQueryFactory(
                 () => x.GetRequiredService<IEnumerable<IPackageQuery>>(),

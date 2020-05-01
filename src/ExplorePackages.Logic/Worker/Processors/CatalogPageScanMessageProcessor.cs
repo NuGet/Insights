@@ -9,14 +9,14 @@ namespace Knapcode.ExplorePackages.Logic.Worker
         private readonly CatalogClient _catalogClient;
         private readonly MessageEnqueuer _messageEnqueuer;
         private readonly CatalogScanStorageService _catalogScanStorageService;
-        private readonly LatestPackageLeafService _latestPackageLeafService;
+        private readonly LatestPackageLeafStorageService _latestPackageLeafService;
         private readonly ILogger<CatalogPageScanMessageProcessor> _logger;
 
         public CatalogPageScanMessageProcessor(
             CatalogClient catalogClient,
             MessageEnqueuer messageEnqueuer,
             CatalogScanStorageService catalogScanStorageService,
-            LatestPackageLeafService latestPackageLeafService,
+            LatestPackageLeafStorageService latestPackageLeafService,
             ILogger<CatalogPageScanMessageProcessor> logger)
         {
             _catalogClient = catalogClient;
