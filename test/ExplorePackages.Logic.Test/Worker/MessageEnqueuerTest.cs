@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Moq;
@@ -61,9 +62,17 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             RawMessageEnqueuer = new Mock<IRawMessageEnqueuer>();
 
             RawMessageEnqueuer
+                .Setup(x => x.BulkEnqueueStrategy)
+                .Returns(() => BulkEnqueueStrategy.Enabled(2, 64 * 1024));
+
+            RawMessageEnqueuer
                 .Setup(x => x.AddAsync(It.IsAny<IReadOnlyList<string>>()))
                 .Returns(Task.CompletedTask)
                 .Callback<IReadOnlyList<string>>(x => EnqueuedMessages.Add(x.Select(y => MessageSerializer.Deserialize(y)).ToList()));
+            RawMessageEnqueuer
+                .Setup(x => x.AddAsync(It.IsAny<IReadOnlyList<string>>(), It.IsAny<TimeSpan>()))
+                .Returns(Task.CompletedTask)
+                .Callback<IReadOnlyList<string>, TimeSpan>((x, ts) => EnqueuedMessages.Add(x.Select(y => MessageSerializer.Deserialize(y)).ToList()));
 
             EnqueuedMessages = new List<List<object>>();
 

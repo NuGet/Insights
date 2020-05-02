@@ -81,6 +81,8 @@ namespace Knapcode.ExplorePackages.Tool
                 x.DatabaseConnectionString = _databaseConnectionString;
                 x.DownloadsV1Path = Path.Combine(_testDirectory, "downloads.txt");
                 x.StorageConnectionString = _storageConnectionString;
+                x.LatestPackageLeavesStorageConnectionString = _storageConnectionString;
+                x.DownloadsV1Url = null;
                 x.StorageContainerName = _storageContainerName;
                 x.IsStorageContainerPublic = true;
                 x.RunBoringQueries = true;
