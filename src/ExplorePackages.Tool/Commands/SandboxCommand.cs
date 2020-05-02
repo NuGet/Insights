@@ -43,6 +43,7 @@ namespace Knapcode.ExplorePackages.Tool
             await _catalogScanStorageService.InitializeAsync();
             await _latestPackageLeafService.InitializeAsync();
 
+            /*
             _logger.LogInformation("Clearing queues and tables...");
             await _serviceClientFactory.GetStorageAccount().CreateCloudQueueClient().GetQueueReference("queue").ClearAsync();
             await _serviceClientFactory.GetStorageAccount().CreateCloudQueueClient().GetQueueReference("queue-poison").ClearAsync();
@@ -52,6 +53,7 @@ namespace Knapcode.ExplorePackages.Tool
             await DeleteAllRowsAsync(_serviceClientFactory.GetLatestPackageLeavesStorageAccount().CreateCloudTableClient().GetTableReference("catalogpagescans"));
             await DeleteAllRowsAsync(_serviceClientFactory.GetLatestPackageLeavesStorageAccount().CreateCloudTableClient().GetTableReference("catalogleafscans"));
             await DeleteAllRowsAsync(_serviceClientFactory.GetLatestPackageLeavesStorageAccount().CreateCloudTableClient().GetTableReference("latestleaves"));
+            */
 
             var descendingComponent = (long.MaxValue - DateTimeOffset.UtcNow.Ticks).ToString("D20");
             var uniqueComponent = Guid.NewGuid().ToString("N");
@@ -64,8 +66,8 @@ namespace Knapcode.ExplorePackages.Tool
             {
                 ParsedScanType = CatalogScanType.DownloadLeaves,
                 ParsedState = CatalogScanState.Created,
-                Min = DateTimeOffset.Parse("2020-04-01T00:00:00Z"),
-                Max = DateTimeOffset.Parse("2020-04-01T06:00:00Z"),
+                // Min = DateTimeOffset.Parse("2020-04-01T00:00:00Z"),
+                // Max = DateTimeOffset.Parse("2020-04-01T06:00:00Z"),
             });
         }
 

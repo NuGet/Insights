@@ -97,7 +97,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             await DeleteAsync(GetLeafScanTable(), leafScan);
         }
 
-        public async Task<IReadOnlyList<T>> GetScansAsync<T>(CloudTable table, string partitionKey) where T : ITableEntity, new()
+        private async Task<IReadOnlyList<T>> GetScansAsync<T>(CloudTable table, string partitionKey) where T : ITableEntity, new()
         {
             var scans = new List<T>();
             var query = new TableQuery<T>
@@ -146,7 +146,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             }
         }
 
-        public async Task<int> GetScanCountLowerBoundAsync<T>(CloudTable table, string partitionKey) where T : ITableEntity, new()
+        private async Task<int> GetScanCountLowerBoundAsync<T>(CloudTable table, string partitionKey) where T : ITableEntity, new()
         {
             var query = new TableQuery<T>
             {

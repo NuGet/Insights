@@ -29,8 +29,8 @@ namespace Knapcode.ExplorePackages.Worker
 
         [FunctionName("QueueFunction")]
         public async Task ProcessAsync(
-            [QueueTrigger("test", Connection = Connection)] string message,
-            [Queue("test", Connection = Connection)] CloudQueue target)
+            [QueueTrigger("queue", Connection = Connection)] string message,
+            [Queue("queue", Connection = Connection)] CloudQueue target)
         {
             target.EncodeMessage = false;
             _workerQueueFactory.SetTarget(target);
