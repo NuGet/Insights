@@ -18,7 +18,6 @@ namespace Knapcode.ExplorePackages.Tool
         private readonly MessageEnqueuer _messageEnqueuer;
         private readonly CatalogScanStorageService _catalogScanStorageService;
         private readonly LatestPackageLeafStorageService _latestPackageLeafService;
-        private readonly IMessageProcessor<CatalogIndexScanMessage> _catalogIndexScanMessageProcessor;
         private readonly ILogger<SandboxCommand> _logger;
 
         public SandboxCommand(
@@ -26,14 +25,12 @@ namespace Knapcode.ExplorePackages.Tool
             MessageEnqueuer messageEnqueuer,
             CatalogScanStorageService catalogScanStorageService,
             LatestPackageLeafStorageService latestPackageLeafService,
-            IMessageProcessor<CatalogIndexScanMessage> catalogIndexScanMessageProcessor,
             ILogger<SandboxCommand> logger)
         {
             _serviceClientFactory = serviceClientFactory;
             _messageEnqueuer = messageEnqueuer;
             _catalogScanStorageService = catalogScanStorageService;
             _latestPackageLeafService = latestPackageLeafService;
-            _catalogIndexScanMessageProcessor = catalogIndexScanMessageProcessor;
             _logger = logger;
         }
 
@@ -53,6 +50,7 @@ namespace Knapcode.ExplorePackages.Tool
             await _serviceClientFactory.GetStorageAccount().CreateCloudQueueClient().GetQueueReference("test-poison").ClearAsync();
             await DeleteAllRowsAsync(_serviceClientFactory.GetLatestPackageLeavesStorageAccount().CreateCloudTableClient().GetTableReference("catalogindexscans"));
             await DeleteAllRowsAsync(_serviceClientFactory.GetLatestPackageLeavesStorageAccount().CreateCloudTableClient().GetTableReference("catalogpagescans"));
+            await DeleteAllRowsAsync(_serviceClientFactory.GetLatestPackageLeavesStorageAccount().CreateCloudTableClient().GetTableReference("catalogleafscans"));
             await DeleteAllRowsAsync(_serviceClientFactory.GetLatestPackageLeavesStorageAccount().CreateCloudTableClient().GetTableReference("latestleaves"));
 
             var descendingComponent = (long.MaxValue - DateTimeOffset.UtcNow.Ticks).ToString("D20");
@@ -62,10 +60,12 @@ namespace Knapcode.ExplorePackages.Tool
             var catalogIndexScanMessage = new CatalogIndexScanMessage { ScanId = scanId };
             await _messageEnqueuer.EnqueueAsync(new[] { catalogIndexScanMessage });
 
-            await _catalogScanStorageService.CreateIndexScanAsync(new CatalogIndexScan(scanId)
+            await _catalogScanStorageService.InsertAsync(new CatalogIndexScan(scanId)
             {
-                ParsedScanType = CatalogScanType.FindLatestLeaves,
-                ParsedState = CatalogIndexScanState.Created,
+                ParsedScanType = CatalogScanType.DownloadLeaves,
+                ParsedState = CatalogScanState.Created,
+                Min = DateTimeOffset.Parse("2020-04-01T00:00:00Z"),
+                Max = DateTimeOffset.Parse("2020-04-01T06:00:00Z"),
             });
         }
 

@@ -10,17 +10,20 @@ namespace Knapcode.ExplorePackages.Logic.Worker
     public class CatalogIndexScanMessageProcessor : IMessageProcessor<CatalogIndexScanMessage>
     {
         private readonly CatalogClient _catalogClient;
+        private readonly CatalogScanDriverFactory _driverFactory;
         private readonly MessageEnqueuer _messageEnqueuer;
         private readonly CatalogScanStorageService _storageService;
         private readonly ILogger<CatalogIndexScanMessageProcessor> _logger;
 
         public CatalogIndexScanMessageProcessor(
             CatalogClient catalogClient,
+            CatalogScanDriverFactory driverFactory,
             MessageEnqueuer messageEnqueuer,
             CatalogScanStorageService storageService,
             ILogger<CatalogIndexScanMessageProcessor> logger)
         {
             _catalogClient = catalogClient;
+            _driverFactory = driverFactory;
             _messageEnqueuer = messageEnqueuer;
             _storageService = storageService;
             _logger = logger;
@@ -34,82 +37,81 @@ namespace Knapcode.ExplorePackages.Logic.Worker
                 throw new InvalidOperationException("The catalog index scan should have already been created.");
             }
 
-            var lazyCatalogIndexTask = new Lazy<Task<CatalogIndex>>(() => GetCatalogIndexAsync());
-            var lazyPageScansTask = new Lazy<Task<List<CatalogPageScan>>>(async () => GetPageScans(scan, await lazyCatalogIndexTask.Value));
+            var driver = _driverFactory.Create(scan.ParsedScanType);
 
-            // Created -> Scoped: determine the real time bounds that we'll be using
-            if (scan.ParsedState == CatalogIndexScanState.Created)
+            var result = await driver.ProcessIndexAsync(scan);
+
+            switch (result)
             {
-                var catalogIndex = await lazyCatalogIndexTask.Value;
-
-                scan.Min = scan.Min ?? CursorService.NuGetOrgMin;
-                scan.Max = new[] { scan.Max ?? DateTimeOffset.MaxValue, catalogIndex.CommitTimestamp }.Min();
-                scan.ParsedState = CatalogIndexScanState.Scoped;
-                await _storageService.UpdateIndexScanAsync(scan);
+                case CatalogIndexScanResult.Expand:
+                    await ExpandAsync(message, scan);
+                    break;
+                case CatalogIndexScanResult.Processed:
+                    break;
+                default:
+                    throw new NotSupportedException($"Catalog index scan result '{result}' is not supported.");
             }
+        }
 
-            // Scoped -> Expanded: create a scan entity for each page
-            if (scan.ParsedState == CatalogIndexScanState.Scoped)
+        private async Task ExpandAsync(CatalogIndexScanMessage message, CatalogIndexScan scan)
+        {
+            var lazyIndexTask = new Lazy<Task<CatalogIndex>>(() => GetCatalogIndexAsync());
+            var lazyPageScansTask = new Lazy<Task<List<CatalogPageScan>>>(async () => GetPageScans(scan, await lazyIndexTask.Value));
+
+            // Created: determine the real time bounds for the scan.
+            if (scan.ParsedState == CatalogScanState.Created)
             {
-                var createdPages = await _storageService.GetPageScansAsync(scan.ScanId);
-                var pageScans = await lazyPageScansTask.Value;
+                var catalogIndex = await lazyIndexTask.Value;
 
-                var allUrls = pageScans.Select(x => x.Url).ToHashSet();
-                var createdUrls = createdPages.Select(x => x.Url).ToHashSet();
-                var uncreatedUrls = allUrls.Except(createdUrls).ToHashSet();
-
-                if (createdUrls.Except(allUrls).Any())
+                var min = scan.Min ?? CursorService.NuGetOrgMin;
+                var max = new[] { scan.Max ?? DateTimeOffset.MaxValue, catalogIndex.CommitTimestamp }.Min();
+                if (scan.Min != min || scan.Max != max)
                 {
-                    throw new InvalidOperationException("There should not be any extra page scan entities.");
+                    scan.Min = min;
+                    scan.Max = max;
+                    await _storageService.ReplaceAsync(scan);
                 }
 
-                var uncreatedPages = pageScans
-                    .Where(x => uncreatedUrls.Contains(x.Url))
-                    .ToList();
-                await _storageService.AddPageScansAsync(uncreatedPages);
-
-                scan.ParsedState = CatalogIndexScanState.Expanded;
-                await _storageService.UpdateIndexScanAsync(scan);
+                scan.ParsedState = CatalogScanState.Expanding;
+                await _storageService.ReplaceAsync(scan);
             }
 
-            // Expanded -> Enqueued: enqueue a scan message for each page
-            if (scan.ParsedState == CatalogIndexScanState.Expanded)
+            // Expanding: create a record for each page
+            if (scan.ParsedState == CatalogScanState.Expanding)
             {
                 var pageScans = await lazyPageScansTask.Value;
+                await ExpandAsync(scan, pageScans);
 
-                _logger.LogInformation(
-                    "Starting {ScanType} scan of {PageCount} pages from ({Min:O}, {Max:O}].",
-                    scan.ScanType,
-                    pageScans.Count,
-                    scan.Min.Value,
-                    scan.Max.Value);
-
-                await _messageEnqueuer.EnqueueAsync(pageScans.Select(x => new CatalogPageScanMessage
-                {
-                    ScanId = x.ScanId,
-                    PageId = x.PageId,
-                }).ToList());
-
-                scan.ParsedState = CatalogIndexScanState.Enqueued;
-                await _storageService.UpdateIndexScanAsync(scan);
+                scan.ParsedState = CatalogScanState.Enqueuing;
+                await _storageService.ReplaceAsync(scan);
             }
 
-            // Enqueued -> Complete: check if all of the page scans are complete
-            if (scan.ParsedState == CatalogIndexScanState.Enqueued)
+            // Enqueueing: enqueue a maessage for each page
+            if (scan.ParsedState == CatalogScanState.Enqueuing)
+            {
+                var pageScans = await lazyPageScansTask.Value;
+                await EnqueueAsync(pageScans);
+
+                scan.ParsedState = CatalogScanState.Waiting;
+                await _storageService.ReplaceAsync(scan);
+            }
+
+            // Waiting: check if all of the page scans are complete
+            if (scan.ParsedState == CatalogScanState.Waiting)
             {
                 var countLowerBound = await _storageService.GetPageScanCountLowerBoundAsync(scan.ScanId);
                 if (countLowerBound > 0)
                 {
                     _logger.LogInformation("There are at least {Count} page scans pending.", countLowerBound);
 
-                    await _messageEnqueuer.EnqueueAsync(new[] { message }, TimeSpan.FromSeconds(5));
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, TimeSpan.FromSeconds(10));
                 }
                 else
                 {
                     _logger.LogInformation("The catalog scan is complete.");
 
-                    scan.ParsedState = CatalogIndexScanState.Complete;
-                    await _storageService.UpdateIndexScanAsync(scan);
+                    scan.ParsedState = CatalogScanState.Complete;
+                    await _storageService.ReplaceAsync(scan);
                 }
             }
         }
@@ -121,24 +123,60 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             return catalogIndex;
         }
 
-        private static List<CatalogPageScan> GetPageScans(CatalogIndexScan scan, CatalogIndex catalogIndex)
+        private List<CatalogPageScan> GetPageScans(CatalogIndexScan scan, CatalogIndex catalogIndex)
         {
             var pages = catalogIndex.GetPagesInBounds(scan.Min.Value, scan.Max.Value);
-            var maxRowKeyLength = (pages.Count - 1).ToString().Length;
+
+            _logger.LogInformation(
+                "Starting {ScanType} scan of {PageCount} pages from ({Min:O}, {Max:O}].",
+                scan.ScanType,
+                pages.Count,
+                scan.Min.Value,
+                scan.Max.Value);
+
+            var maxPageIdLength = (pages.Count - 1).ToString().Length;
 
             var pageScans = pages
                 .OrderBy(x => x.CommitTimestamp)
                 .Select((x, index) => new CatalogPageScan(
                     scan.ScanId,
-                    index.ToString(CultureInfo.InvariantCulture).PadLeft(maxRowKeyLength, '0'))
+                    index.ToString(CultureInfo.InvariantCulture).PadLeft(maxPageIdLength, '0'))
                 {
                     ParsedScanType = scan.ParsedScanType,
+                    ParsedState = CatalogScanState.Created,
                     Min = scan.Min.Value,
                     Max = scan.Max.Value,
                     Url = x.Url,
                 })
                 .ToList();
             return pageScans;
+        }
+
+        private async Task ExpandAsync(CatalogIndexScan scan, List<CatalogPageScan> allPageScans)
+        {
+            var createdPageScans = await _storageService.GetPageScansAsync(scan.ScanId);
+            var allUrls = allPageScans.Select(x => x.Url).ToHashSet();
+            var createdUrls = createdPageScans.Select(x => x.Url).ToHashSet();
+            var uncreatedUrls = allUrls.Except(createdUrls).ToHashSet();
+
+            if (createdUrls.Except(allUrls).Any())
+            {
+                throw new InvalidOperationException("There should not be any extra page scan entities.");
+            }
+
+            var uncreatedPageScans = allPageScans
+                .Where(x => uncreatedUrls.Contains(x.Url))
+                .ToList();
+            await _storageService.InsertAsync(uncreatedPageScans);
+        }
+
+        private async Task EnqueueAsync(List<CatalogPageScan> pageScans)
+        {
+            await _messageEnqueuer.EnqueueAsync(pageScans.Select(x => new CatalogPageScanMessage
+            {
+                ScanId = x.ScanId,
+                PageId = x.PageId,
+            }).ToList());
         }
     }
 }

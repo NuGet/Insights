@@ -19,9 +19,9 @@ namespace Knapcode.ExplorePackages.Logic.Worker
         public string ScanId => PartitionKey;
 
         [IgnoreProperty]
-        public CatalogIndexScanState ParsedState
+        public CatalogScanState ParsedState
         {
-            get => Enum.Parse<CatalogIndexScanState>(State);
+            get => Enum.Parse<CatalogScanState>(State);
             set => State = value.ToString();
         }
 

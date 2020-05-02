@@ -1,17 +1,16 @@
-﻿using Knapcode.ExplorePackages.Entities;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace Knapcode.ExplorePackages.Logic.Worker
 {
     public class CatalogLeafMessage
     {
-        [JsonProperty("t")]
-        public CatalogScanType ScanType { get; set; }
+        [JsonProperty("p0")]
+        public string ScanId { get; set; }
 
-        [JsonProperty("l")]
-        public CatalogLeafType LeafType { get; set; }
+        [JsonProperty("p1")]
+        public string PageId { get; set; }
 
-        [JsonProperty("u")]
-        public string Url { get; set; }
+        [JsonProperty("r")]
+        public string LeafId { get; set; }
     }
 }

@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.WindowsAzure.Storage.Blob;
 using NuGet.Protocol;
 
 namespace Knapcode.ExplorePackages.Logic

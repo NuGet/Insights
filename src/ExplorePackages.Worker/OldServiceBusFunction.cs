@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
 using Knapcode.ExplorePackages.Logic.Worker;
-using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Core;
 using Microsoft.Azure.WebJobs;
 

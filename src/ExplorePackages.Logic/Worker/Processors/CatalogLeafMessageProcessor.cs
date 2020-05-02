@@ -1,28 +1,33 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic.Worker
 {
     public class CatalogLeafMessageProcessor : IMessageProcessor<CatalogLeafMessage>
     {
-        private readonly CatalogClient _catalogClient;
-        private readonly ILogger<CatalogLeafMessageProcessor> _logger;
+        private readonly CatalogScanDriverFactory _driverFactory;
+        private readonly CatalogScanStorageService _storageService;
 
         public CatalogLeafMessageProcessor(
-            CatalogClient catalogClient,
-            ILogger<CatalogLeafMessageProcessor> logger)
+            CatalogScanDriverFactory driverFactory,
+            CatalogScanStorageService storageService)
         {
-            _catalogClient = catalogClient;
-            _logger = logger;
+            _driverFactory = driverFactory;
+            _storageService = storageService;
         }
 
         public async Task ProcessAsync(CatalogLeafMessage message)
         {
-            if (message.ScanType == CatalogScanType.DownloadLeaves)
+            var scan = await _storageService.GetLeafScanAsync(message.ScanId, message.PageId, message.LeafId);
+            if (scan == null)
             {
-                _logger.LogInformation("Loading catalog {Type} leaf URL: {Url}", message.LeafType, message.Url);
-                await _catalogClient.GetCatalogLeafAsync(message.LeafType, message.Url);
+                return;
             }
+
+            var driver = _driverFactory.Create(scan.ParsedScanType);
+
+            await driver.ProcessLeafAsync(scan);
+
+            await _storageService.DeleteAsync(scan);
         }
     }
 }

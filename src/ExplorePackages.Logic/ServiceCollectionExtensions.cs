@@ -13,7 +13,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.WindowsAzure.Storage;
 using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -262,6 +261,10 @@ namespace Knapcode.ExplorePackages.Logic
 
             serviceCollection.AddTransient<CatalogScanStorageService>();
             serviceCollection.AddTransient<LatestPackageLeafStorageService>();
+            serviceCollection.AddTransient<CatalogScanDriverFactory>();
+            serviceCollection.AddTransient<DownloadLeavesCatalogScanDriver>();
+            serviceCollection.AddTransient<DownloadPagesCatalogScanDriver>();
+            serviceCollection.AddTransient<FindLatestLeavesCatalogScanDriver>();
 
             serviceCollection.AddTransient(x => new PackageQueryFactory(
                 () => x.GetRequiredService<IEnumerable<IPackageQuery>>(),

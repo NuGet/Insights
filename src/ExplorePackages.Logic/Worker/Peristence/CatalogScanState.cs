@@ -1,11 +1,11 @@
 ﻿namespace Knapcode.ExplorePackages.Logic.Worker
 {
-    public enum CatalogIndexScanState
+    public enum CatalogScanState
     {
         Created,
-        Scoped,
-        Expanded,
-        Enqueued,
+        Expanding,
+        Enqueuing,
+        Waiting,
         Complete,
     }
 }
