@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Table;
-using static Knapcode.ExplorePackages.Logic.Worker.TableStorageConstants;
+using static Knapcode.ExplorePackages.Logic.Worker.TableStorageUtility;
 
 namespace Knapcode.ExplorePackages.Logic.Worker
 {

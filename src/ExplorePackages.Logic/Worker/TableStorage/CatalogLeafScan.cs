@@ -36,6 +36,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
         }
 
         public string ScanType { get; set; }
+        public string ScanParameters { get; set; }
         public string ScanId { get; set; }
         public string PageId { get; set; }
         public string LeafType { get; set; }

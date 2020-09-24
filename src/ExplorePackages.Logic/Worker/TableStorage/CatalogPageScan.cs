@@ -37,6 +37,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 
         public string State { get; set; }
         public string ScanType { get; set; }
+        public string ScanParameters { get; set; }
         public DateTimeOffset Min { get; set; }
         public DateTimeOffset Max { get; set; }
         public string Url { get; set; }

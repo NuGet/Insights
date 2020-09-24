@@ -13,6 +13,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
         private readonly CatalogScanDriverFactory _driverFactory;
         private readonly MessageEnqueuer _messageEnqueuer;
         private readonly CatalogScanStorageService _storageService;
+        private readonly CursorStorageService _cursorStorageService;
         private readonly ILogger<CatalogIndexScanMessageProcessor> _logger;
 
         public CatalogIndexScanMessageProcessor(
@@ -20,12 +21,14 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             CatalogScanDriverFactory driverFactory,
             MessageEnqueuer messageEnqueuer,
             CatalogScanStorageService storageService,
+            CursorStorageService cursorStorageService,
             ILogger<CatalogIndexScanMessageProcessor> logger)
         {
             _catalogClient = catalogClient;
             _driverFactory = driverFactory;
             _messageEnqueuer = messageEnqueuer;
             _storageService = storageService;
+            _cursorStorageService = cursorStorageService;
             _logger = logger;
         }
 
@@ -34,6 +37,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             var scan = await _storageService.GetIndexScanAsync(message.ScanId);
             if (scan == null)
             {
+                await Task.Delay(TimeSpan.FromSeconds(10));
                 throw new InvalidOperationException("The catalog index scan should have already been created.");
             }
 
@@ -108,6 +112,14 @@ namespace Knapcode.ExplorePackages.Logic.Worker
                 }
                 else
                 {
+                    // Update the cursor, now that the work is done.
+                    var cursor = await _cursorStorageService.GetOrCreateAsync(scan.CursorName);
+                    if (cursor.Value <= scan.Max.Value)
+                    {
+                        cursor.Value = scan.Max.Value;
+                        await _cursorStorageService.UpdateAsync(cursor);
+                    }
+
                     _logger.LogInformation("The catalog scan is complete.");
 
                     scan.ParsedState = CatalogScanState.Complete;
@@ -143,6 +155,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
                     index.ToString(CultureInfo.InvariantCulture).PadLeft(maxPageIdLength, '0'))
                 {
                     ParsedScanType = scan.ParsedScanType,
+                    ScanParameters = scan.ScanParameters,
                     ParsedState = CatalogScanState.Created,
                     Min = scan.Min.Value,
                     Max = scan.Max.Value,

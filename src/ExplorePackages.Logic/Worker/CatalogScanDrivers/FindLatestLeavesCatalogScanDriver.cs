@@ -7,13 +7,16 @@ namespace Knapcode.ExplorePackages.Logic.Worker
     {
         private readonly CatalogClient _catalogClient;
         private readonly LatestPackageLeafStorageService _storageService;
+        private readonly SchemaSerializer _schemaSerializer;
 
         public FindLatestLeavesCatalogScanDriver(
             CatalogClient catalogClient,
-            LatestPackageLeafStorageService storageService)
+            LatestPackageLeafStorageService storageService,
+            SchemaSerializer parameterSerializer)
         {
             _catalogClient = catalogClient;
             _storageService = storageService;
+            _schemaSerializer = parameterSerializer;
         }
 
         public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
@@ -23,9 +26,10 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 
         public async Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan)
         {
+            var parameters = (FindLatestLeavesParameters)_schemaSerializer.Deserialize(pageScan.ScanParameters);
             var page = await _catalogClient.GetCatalogPageAsync(pageScan.Url);
             var items = page.GetLeavesInBounds(pageScan.Min, pageScan.Max, excludeRedundantLeaves: true);
-            await _storageService.AddAsync(pageScan.ScanId, items);
+            await _storageService.AddAsync(parameters.Prefix, items);
             return CatalogPageScanResult.Processed;
         }
 

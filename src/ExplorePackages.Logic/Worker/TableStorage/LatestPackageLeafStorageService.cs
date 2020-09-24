@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage.Table;
-using static Knapcode.ExplorePackages.Logic.Worker.TableStorageConstants;
+using static Knapcode.ExplorePackages.Logic.Worker.TableStorageUtility;
 
 namespace Knapcode.ExplorePackages.Logic.Worker
 {
@@ -26,17 +26,17 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             await GetTable().CreateIfNotExistsAsync();
         }
 
-        public async Task AddAsync(string scanId, IReadOnlyList<CatalogLeafItem> items)
+        public async Task AddAsync(string prefix, IReadOnlyList<CatalogLeafItem> items)
         {
             var table = GetTable();
             var packageIdGroups = items.GroupBy(x => x.PackageId, StringComparer.OrdinalIgnoreCase);
             foreach (var group in packageIdGroups)
             {
-                await AddAsync(table, scanId, group.Key, group);
+                await AddAsync(table, prefix, group.Key, group);
             }
         }
 
-        public async Task AddAsync(CloudTable table, string scanId, string packageId, IEnumerable<CatalogLeafItem> items)
+        public async Task AddAsync(CloudTable table, string prefix, string packageId, IEnumerable<CatalogLeafItem> items)
         {
             // Sort items by lexicographical order, since this is what table storage does.
             var itemList = items
@@ -52,7 +52,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             // Query for all of the version data in Table Storage, determining what needs to be updated.
             var lowerId = packageId.ToLowerInvariant();
             var filterString = TableQuery.CombineFilters(
-                EqualScanIdAndPackageId(scanId, lowerId),
+                EqualPrefixAndPackageId(prefix, lowerId),
                 TableOperators.And,
                 TableQuery.CombineFilters(
                     GreaterThanOrEqualToVersion(itemList.First().LowerVersion),
@@ -106,7 +106,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 
                 var lowerVersion = versionsToUpsert[i];
                 var leaf = lowerVersionToItem[lowerVersion];
-                var entity = new LatestPackageLeaf(scanId, lowerId, lowerVersion)
+                var entity = new LatestPackageLeaf(prefix, lowerId, lowerVersion)
                 {
                     CommitTimestamp = leaf.CommitTimestamp,
                     ParsedType = leaf.Type,
@@ -136,12 +136,12 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             await table.ExecuteBatchAsync(batch);
         }
 
-        private static string EqualScanIdAndPackageId(string scanId, string lowerId)
+        private static string EqualPrefixAndPackageId(string prefix, string lowerId)
         {
             return TableQuery.GenerateFilterCondition(
                 PartitionKey,
                 QueryComparisons.Equal,
-                LatestPackageLeaf.GetPartitionKey(scanId, lowerId));
+                LatestPackageLeaf.GetPartitionKey(prefix, lowerId));
         }
 
         private static string GreaterThanOrEqualToVersion(string lowerVersion)

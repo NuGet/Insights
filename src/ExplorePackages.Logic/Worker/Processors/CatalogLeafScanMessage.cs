@@ -2,7 +2,7 @@
 
 namespace Knapcode.ExplorePackages.Logic.Worker
 {
-    public class CatalogLeafMessage
+    public class CatalogLeafScanMessage
     {
         [JsonProperty("p0")]
         public string ScanId { get; set; }

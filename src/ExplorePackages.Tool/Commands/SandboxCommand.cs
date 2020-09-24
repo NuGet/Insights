@@ -8,29 +8,32 @@ using Knapcode.ExplorePackages.Logic.Worker;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage.Table;
-using static Knapcode.ExplorePackages.Logic.Worker.TableStorageConstants;
+using static Knapcode.ExplorePackages.Logic.Worker.TableStorageUtility;
 
 namespace Knapcode.ExplorePackages.Tool
 {
     public class SandboxCommand : ICommand
     {
         private readonly ServiceClientFactory _serviceClientFactory;
-        private readonly MessageEnqueuer _messageEnqueuer;
+        private readonly CatalogScanService _catalogScanService;
+        private readonly CursorStorageService _cursorStorageService;
         private readonly CatalogScanStorageService _catalogScanStorageService;
-        private readonly LatestPackageLeafStorageService _latestPackageLeafService;
+        private readonly LatestPackageLeafStorageService _latestPackageLeafStorageService;
         private readonly ILogger<SandboxCommand> _logger;
 
         public SandboxCommand(
             ServiceClientFactory serviceClientFactory,
-            MessageEnqueuer messageEnqueuer,
+            CatalogScanService catalogScanService,
+            CursorStorageService cursorStorageService,
             CatalogScanStorageService catalogScanStorageService,
-            LatestPackageLeafStorageService latestPackageLeafService,
+            LatestPackageLeafStorageService latestPackageLeafStorageService,
             ILogger<SandboxCommand> logger)
         {
             _serviceClientFactory = serviceClientFactory;
-            _messageEnqueuer = messageEnqueuer;
+            _catalogScanService = catalogScanService;
+            _cursorStorageService = cursorStorageService;
             _catalogScanStorageService = catalogScanStorageService;
-            _latestPackageLeafService = latestPackageLeafService;
+            _latestPackageLeafStorageService = latestPackageLeafStorageService;
             _logger = logger;
         }
 
@@ -40,8 +43,9 @@ namespace Knapcode.ExplorePackages.Tool
 
         public async Task ExecuteAsync(CancellationToken token)
         {
+            await _cursorStorageService.InitializeAsync();
             await _catalogScanStorageService.InitializeAsync();
-            await _latestPackageLeafService.InitializeAsync();
+            await _latestPackageLeafStorageService.InitializeAsync();
 
             /*
             _logger.LogInformation("Clearing queues and tables...");
@@ -49,26 +53,14 @@ namespace Knapcode.ExplorePackages.Tool
             await _serviceClientFactory.GetStorageAccount().CreateCloudQueueClient().GetQueueReference("queue-poison").ClearAsync();
             await _serviceClientFactory.GetStorageAccount().CreateCloudQueueClient().GetQueueReference("test").ClearAsync();
             await _serviceClientFactory.GetStorageAccount().CreateCloudQueueClient().GetQueueReference("test-poison").ClearAsync();
+            await DeleteAllRowsAsync(_serviceClientFactory.GetStorageAccount().CreateCloudTableClient().GetTableReference("cursors"));
             await DeleteAllRowsAsync(_serviceClientFactory.GetLatestPackageLeavesStorageAccount().CreateCloudTableClient().GetTableReference("catalogindexscans"));
             await DeleteAllRowsAsync(_serviceClientFactory.GetLatestPackageLeavesStorageAccount().CreateCloudTableClient().GetTableReference("catalogpagescans"));
             await DeleteAllRowsAsync(_serviceClientFactory.GetLatestPackageLeavesStorageAccount().CreateCloudTableClient().GetTableReference("catalogleafscans"));
             await DeleteAllRowsAsync(_serviceClientFactory.GetLatestPackageLeavesStorageAccount().CreateCloudTableClient().GetTableReference("latestleaves"));
             */
 
-            var descendingComponent = (long.MaxValue - DateTimeOffset.UtcNow.Ticks).ToString("D20");
-            var uniqueComponent = Guid.NewGuid().ToString("N");
-            var scanId = descendingComponent + "-" + uniqueComponent;
-
-            var catalogIndexScanMessage = new CatalogIndexScanMessage { ScanId = scanId };
-            await _messageEnqueuer.EnqueueAsync(new[] { catalogIndexScanMessage });
-
-            await _catalogScanStorageService.InsertAsync(new CatalogIndexScan(scanId)
-            {
-                ParsedScanType = CatalogScanType.DownloadLeaves,
-                ParsedState = CatalogScanState.Created,
-                // Min = DateTimeOffset.Parse("2020-04-01T00:00:00Z"),
-                // Max = DateTimeOffset.Parse("2020-04-01T06:00:00Z"),
-            });
+            await _catalogScanService.UpdateAsync();
         }
 
         private async Task DeleteAllRowsAsync(CloudTable table)

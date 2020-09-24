@@ -2,7 +2,7 @@
 
 namespace Knapcode.ExplorePackages.Logic.Worker
 {
-    public interface ISerializedMessage
+    public interface ISerializedEntity
     {
         JToken AsJToken();
         string AsString();

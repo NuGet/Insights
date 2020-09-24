@@ -5,20 +5,20 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 {
     public class GenericMessageProcessor
     {
-        private readonly MessageSerializer _messageSerializer;
+        private readonly SchemaSerializer _serializer;
         private readonly IServiceProvider _serviceProvider;
 
         public GenericMessageProcessor(
-            MessageSerializer messageSerializer,
+            SchemaSerializer serializer,
             IServiceProvider serviceProvider)
         {
-            _messageSerializer = messageSerializer;
+            _serializer = serializer;
             _serviceProvider = serviceProvider;
         }
 
         public async Task ProcessAsync(string message)
         {
-            var deserializedMessage = _messageSerializer.Deserialize(message);
+            var deserializedMessage = _serializer.Deserialize(message);
             var messageType = deserializedMessage.GetType();
             var processorType = typeof(IMessageProcessor<>).MakeGenericType(deserializedMessage.GetType());
             var processor = _serviceProvider.GetService(processorType);

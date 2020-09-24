@@ -4,7 +4,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Knapcode.ExplorePackages.Logic.Worker
 {
-    public class SerializedMessage : ISerializedMessage
+    public class SerializedMessage : ISerializedEntity
     {
         private readonly Lazy<JToken> _json;
         private readonly Lazy<string> _string;

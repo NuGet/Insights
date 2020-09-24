@@ -2,12 +2,12 @@
 
 namespace Knapcode.ExplorePackages.Logic.Worker
 {
-    public class CatalogLeafMessageProcessor : IMessageProcessor<CatalogLeafMessage>
+    public class CatalogLeafScanMessageProcessor : IMessageProcessor<CatalogLeafScanMessage>
     {
         private readonly CatalogScanDriverFactory _driverFactory;
         private readonly CatalogScanStorageService _storageService;
 
-        public CatalogLeafMessageProcessor(
+        public CatalogLeafScanMessageProcessor(
             CatalogScanDriverFactory driverFactory,
             CatalogScanStorageService storageService)
         {
@@ -15,7 +15,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             _storageService = storageService;
         }
 
-        public async Task ProcessAsync(CatalogLeafMessage message)
+        public async Task ProcessAsync(CatalogLeafScanMessage message)
         {
             var scan = await _storageService.GetLeafScanAsync(message.ScanId, message.PageId, message.LeafId);
             if (scan == null)

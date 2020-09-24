@@ -10,16 +10,16 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 {
     public class MessageEnqueuer
     {
-        private readonly MessageSerializer _messageSerializer;
+        private readonly SchemaSerializer _serializer;
         private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
         private readonly ILogger<MessageEnqueuer> _logger;
 
         public MessageEnqueuer(
-            MessageSerializer messageSerializer,
+            SchemaSerializer serializer,
             IRawMessageEnqueuer rawMessageEnqueuer,
             ILogger<MessageEnqueuer> logger)
         {
-            _messageSerializer = messageSerializer;
+            _serializer = serializer;
             _rawMessageEnqueuer = rawMessageEnqueuer;
             _logger = logger;
         }
@@ -27,27 +27,27 @@ namespace Knapcode.ExplorePackages.Logic.Worker
         public async Task EnqueueAsync(IReadOnlyList<CatalogIndexScanMessage> messages) => await EnqueueAsync(messages, TimeSpan.Zero);
         public async Task EnqueueAsync(IReadOnlyList<CatalogIndexScanMessage> messages, TimeSpan notBefore)
         {
-            await EnqueueAsync(messages, m => _messageSerializer.Serialize(m), notBefore);
+            await EnqueueAsync(messages, m => _serializer.Serialize(m), notBefore);
         }
 
         public async Task EnqueueAsync(IReadOnlyList<CatalogPageScanMessage> messages) => await EnqueueAsync(messages, TimeSpan.Zero);
         public async Task EnqueueAsync(IReadOnlyList<CatalogPageScanMessage> messages, TimeSpan notBefore)
         {
-            await EnqueueAsync(messages, m => _messageSerializer.Serialize(m), notBefore);
+            await EnqueueAsync(messages, m => _serializer.Serialize(m), notBefore);
         }
 
-        public async Task EnqueueAsync(IReadOnlyList<CatalogLeafMessage> messages) => await EnqueueAsync(messages, TimeSpan.Zero);
-        public async Task EnqueueAsync(IReadOnlyList<CatalogLeafMessage> messages, TimeSpan notBefore)
+        public async Task EnqueueAsync(IReadOnlyList<CatalogLeafScanMessage> messages) => await EnqueueAsync(messages, TimeSpan.Zero);
+        public async Task EnqueueAsync(IReadOnlyList<CatalogLeafScanMessage> messages, TimeSpan notBefore)
         {
-            await EnqueueAsync(messages, m => _messageSerializer.Serialize(m), notBefore);
+            await EnqueueAsync(messages, m => _serializer.Serialize(m), notBefore);
         }
 
-        public async Task EnqueueAsync<T>(IReadOnlyList<T> messages, Func<T, ISerializedMessage> serialize)
+        public async Task EnqueueAsync<T>(IReadOnlyList<T> messages, Func<T, ISerializedEntity> serialize)
         {
             await EnqueueAsync(messages, serialize, TimeSpan.Zero);
         }
 
-        public async Task EnqueueAsync<T>(IReadOnlyList<T> messages, Func<T, ISerializedMessage> serialize, TimeSpan notBefore)
+        public async Task EnqueueAsync<T>(IReadOnlyList<T> messages, Func<T, ISerializedEntity> serialize, TimeSpan notBefore)
         {
             if (messages.Count == 0)
             {
@@ -104,7 +104,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 
         private async Task EnqueueBulkEnqueueMessageAsync(BulkEnqueueMessage batchMessage, int expectedLength)
         {
-            var bytes = _messageSerializer.Serialize(batchMessage).AsString();
+            var bytes = _serializer.Serialize(batchMessage).AsString();
             if (bytes.Length != expectedLength)
             {
                 throw new InvalidOperationException(
@@ -119,10 +119,10 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 
         private int GetMessageLength(BulkEnqueueMessage batchMessage)
         {
-            return GetMessageLength(_messageSerializer.Serialize(batchMessage));
+            return GetMessageLength(_serializer.Serialize(batchMessage));
         }
 
-        private static int GetMessageLength(ISerializedMessage innerMessage)
+        private static int GetMessageLength(ISerializedEntity innerMessage)
         {
             return Encoding.UTF8.GetByteCount(innerMessage.AsString());
         }

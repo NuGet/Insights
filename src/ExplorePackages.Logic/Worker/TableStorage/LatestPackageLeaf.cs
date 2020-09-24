@@ -6,11 +6,11 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 {
     public class LatestPackageLeaf : TableEntity
     {
-        public LatestPackageLeaf(string scanId, string lowerId, string lowerVersion)
+        public LatestPackageLeaf(string prefix, string lowerId, string lowerVersion)
         {
-            PartitionKey = GetPartitionKey(scanId, lowerId);
+            PartitionKey = GetPartitionKey(prefix, lowerId);
             RowKey = lowerVersion;
-            ScanId = scanId;
+            Prefix = prefix;
             LowerId = lowerId;
         }
 
@@ -28,15 +28,15 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             set => Type = value.ToString();
         }
 
-        public string ScanId { get; set; }
+        public string Prefix { get; set; }
         public string LowerId { get; set; }
         public DateTimeOffset CommitTimestamp { get; set; }
         public string Type { get; set; }
         public string Url { get; set; }
 
-        public static string GetPartitionKey(string scanId, string lowerId)
+        public static string GetPartitionKey(string prefix, string lowerId)
         {
-            return $"{scanId}-{lowerId}";
+            return $"{prefix}${lowerId}";
         }
     }
 }

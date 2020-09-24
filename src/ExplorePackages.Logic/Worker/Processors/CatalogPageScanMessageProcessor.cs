@@ -131,6 +131,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
                     index.ToString(CultureInfo.InvariantCulture).PadLeft(maxLeafIdLength, '0'))
                 {
                     ParsedScanType = scan.ParsedScanType,
+                    ScanParameters = scan.ScanParameters,
                     ParsedLeafType = x.Type,
                     Url = x.Url
                 })
@@ -160,7 +161,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
         {
             _logger.LogInformation("Enqueuing a scan of {LeafCount} leaves.", leafScans.Count);
             await _messageEnqueuer.EnqueueAsync(leafScans
-                .Select(x => new CatalogLeafMessage { ScanId = x.ScanId, PageId = x.PageId, LeafId = x.LeafId })
+                .Select(x => new CatalogLeafScanMessage { ScanId = x.ScanId, PageId = x.PageId, LeafId = x.LeafId })
                 .ToList());
         }
     }
