@@ -116,7 +116,7 @@ namespace Knapcode.ExplorePackages.Tool
         }
 
         public bool IsInitializationRequired() => true;
-        public bool IsDatabaseRequired() => true;
+        public bool IsDatabaseRequired() => false;
         public bool IsSingleton() => false;
 
     }

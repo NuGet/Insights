@@ -15,7 +15,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 
         public async Task InitializeAsync()
         {
-            await GetTable().CreateIfNotExistsAsync();
+            await GetTable().CreateIfNotExistsAsync(retry: true);
         }
 
         public async Task<CursorTableEntity> GetOrCreateAsync(string name)

@@ -18,9 +18,9 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 
         public async Task InitializeAsync()
         {
-            await GetIndexScanTable().CreateIfNotExistsAsync();
-            await GetPageScanTable().CreateIfNotExistsAsync();
-            await GetLeafScanTable().CreateIfNotExistsAsync();
+            await GetIndexScanTable().CreateIfNotExistsAsync(retry: true);
+            await GetPageScanTable().CreateIfNotExistsAsync(retry: true);
+            await GetLeafScanTable().CreateIfNotExistsAsync(retry: true);
         }
 
         public async Task InsertAsync(CatalogIndexScan indexScan)

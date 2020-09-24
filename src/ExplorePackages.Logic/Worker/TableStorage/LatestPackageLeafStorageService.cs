@@ -23,7 +23,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 
         public async Task InitializeAsync()
         {
-            await GetTable().CreateIfNotExistsAsync();
+            await GetTable().CreateIfNotExistsAsync(retry: true);
         }
 
         public async Task AddAsync(string prefix, IReadOnlyList<CatalogLeafItem> items)
