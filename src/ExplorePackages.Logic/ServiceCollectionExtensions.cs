@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Logic.Worker;
+using Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets;
 using Knapcode.MiniZip;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -267,6 +268,7 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<DownloadLeavesCatalogScanDriver>();
             serviceCollection.AddTransient<DownloadPagesCatalogScanDriver>();
             serviceCollection.AddTransient<FindLatestLeavesCatalogScanDriver>();
+            serviceCollection.AddTransient<FindPackageAssetsScanDriver>();
 
             serviceCollection.AddTransient<CatalogScanService>();
 

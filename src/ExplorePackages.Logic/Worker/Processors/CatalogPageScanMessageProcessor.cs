@@ -132,8 +132,12 @@ namespace Knapcode.ExplorePackages.Logic.Worker
                 {
                     ParsedScanType = scan.ParsedScanType,
                     ScanParameters = scan.ScanParameters,
+                    Url = x.Url,
                     ParsedLeafType = x.Type,
-                    Url = x.Url
+                    CommitId = x.CommitId,
+                    CommitTimestamp = x.CommitTimestamp,
+                    PackageId = x.PackageId,
+                    PackageVersion = x.PackageVersion,
                 })
                 .ToList();
         }

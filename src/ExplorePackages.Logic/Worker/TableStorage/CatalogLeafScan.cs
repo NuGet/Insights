@@ -39,8 +39,12 @@ namespace Knapcode.ExplorePackages.Logic.Worker
         public string ScanParameters { get; set; }
         public string ScanId { get; set; }
         public string PageId { get; set; }
-        public string LeafType { get; set; }
         public string Url { get; set; }
+        public string LeafType { get; set; }
+        public string CommitId { get; set; }
+        public DateTimeOffset CommitTimestamp { get; set; }
+        public string PackageId { get; set; }
+        public string PackageVersion { get; set; }
 
         public static string GetPartitionKey(string scanId, string pageId)
         {

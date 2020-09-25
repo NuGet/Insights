@@ -37,6 +37,8 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             var min = new[] { cursor.Value, CursorService.NuGetOrgMin }.Max();
             var max = index.CommitTimestamp;
 
+            // max = new[] { max, min.AddDays(30) }.Min();
+
             if (min == max)
             {
                 return null;
@@ -50,7 +52,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 
             var catalogIndexScan = new CatalogIndexScan(scanId)
             {
-                ParsedScanType = CatalogScanType.FindLatestLeaves,
+                ParsedScanType = CatalogScanType.FindPackageAssets,
                 ScanParameters = _serializer.Serialize(new FindLatestLeavesParameters { Prefix = string.Empty }).AsString(),
                 ParsedState = CatalogScanState.Created,
                 Min = min,

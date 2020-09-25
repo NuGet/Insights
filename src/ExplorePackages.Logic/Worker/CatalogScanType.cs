@@ -5,5 +5,6 @@
         DownloadPages,
         DownloadLeaves,
         FindLatestLeaves,
+        FindPackageAssets,
     }
 }
