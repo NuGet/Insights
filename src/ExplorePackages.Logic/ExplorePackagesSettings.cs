@@ -51,7 +51,5 @@ namespace Knapcode.ExplorePackages.Logic
         public int BulkEnqueueThreshold { get; set; }
         public int EnqueueWorkers { get; set; }
         public string WorkerQueueName { get; set; }
-
-        public string FindPackageAssetsSqlConnectionString { get; set; }
     }
 }

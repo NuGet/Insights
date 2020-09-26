@@ -1,20 +1,25 @@
-﻿using Knapcode.ExplorePackages.Entities;
+﻿using CsvHelper;
+using CsvHelper.TypeConversion;
+using Knapcode.ExplorePackages.Entities;
 using Knapcode.MiniZip;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.WindowsAzure.Storage;
 using NuGet.Client;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
-using SqlBulkTools;
-using SqlBulkTools.Enumeration;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
@@ -25,20 +30,20 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
         private readonly ServiceIndexCache _serviceIndexCache;
         private readonly FlatContainerClient _flatContainerClient;
         private readonly HttpZipProvider _httpZipProvider;
-        private readonly IOptions<ExplorePackagesSettings> _options;
+        private readonly ServiceClientFactory _serviceClientFactory;
 
         public FindPackageAssetsScanDriver(
             CatalogClient catalogClient,
             ServiceIndexCache serviceIndexCache,
             FlatContainerClient flatContainerClient,
             HttpZipProvider httpZipProvider,
-            IOptions<ExplorePackagesSettings> options)
+            ServiceClientFactory serviceClientFactory)
         {
             _catalogClient = catalogClient;
             _serviceIndexCache = serviceIndexCache;
             _flatContainerClient = flatContainerClient;
             _httpZipProvider = httpZipProvider;
-            _options = options;
+            _serviceClientFactory = serviceClientFactory;
         }
 
         public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
@@ -60,7 +65,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
                 return;
             }
 
-            var catalogLeaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.ParsedLeafType, leafScan.Url);
+            var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.ParsedLeafType, leafScan.Url);
 
             var flatContainerBaseUrl = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.FlatContainer);
             var normalizedVersion = NuGetVersion.Parse(leafScan.PackageVersion).ToNormalizedString();
@@ -86,35 +91,58 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
                 return;
             }
 
-            var assets = GetAssets(catalogLeaf, files);
+            var assets = GetAssets(leaf, files);
             if (assets.Count == 0)
             {
                 // Ignore packages with no assets.
                 return;
             }
 
-            var bulk = new BulkOperations();
-            using (var connection = new SqlConnection(_options.Value.FindPackageAssetsSqlConnectionString))
+            var storageAccount = _serviceClientFactory.GetStorageAccount();
+            var client = storageAccount.CreateCloudBlobClient();
+            var container = client.GetContainerReference("findpackageassets");
+            var lowerId = leafScan.PackageId.ToLowerInvariant();
+            var lowerVersion = NuGetVersion.Parse(leafScan.PackageVersion).ToNormalizedString().ToLowerInvariant();
+
+            int bucket;
+            using (var algorithm = SHA256.Create())
             {
-                bulk.Setup<PackageAsset>()
-                    .ForCollection(assets)
-                    .WithTable("PackageAssets")
-                    .AddColumn(x => x.PackageAssetKey)
-                    .AddColumn(x => x.Id)
-                    .AddColumn(x => x.Version)
-                    .AddColumn(x => x.Created)
-                    .AddColumn(x => x.PatternSet)
-                    .AddColumn(x => x.Framework)
-                    .AddColumn(x => x.Path)
-                    .BulkInsertOrUpdate()
-                    .SetIdentityColumn(x => x.PackageAssetKey, ColumnDirectionType.InputOutput)
-                    .MatchTargetOn(x => x.Id)
-                    .MatchTargetOn(x => x.Version)
-                    .MatchTargetOn(x => x.PatternSet)
-                    .MatchTargetOn(x => x.Framework)
-                    .MatchTargetOn(x => x.Path)
-                    .Commit(connection);
+                var hash = algorithm.ComputeHash(Encoding.UTF8.GetBytes($"{lowerId}/{lowerVersion}"));
+                bucket = (int)(BitConverter.ToUInt64(hash) % 1000);
             }
+
+            var blob = container.GetAppendBlobReference($"{bucket}.csv");
+            if (!await blob.ExistsAsync())
+            {
+                try
+                {
+                    await blob.CreateOrReplaceAsync(
+                        accessCondition: AccessCondition.GenerateIfNotExistsCondition(),
+                        options: null,
+                        operationContext: null);
+                }
+                catch (StorageException ex) when (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.Conflict)
+                {
+                    // Ignore this exception.
+                }
+
+                // Best effort, will not be re-executed on retry since the blob will exist at that point.
+                blob.Properties.ContentType = "text/plain";
+                await blob.SetPropertiesAsync();
+            }
+
+            using var writeMemoryStream = new MemoryStream();
+            using (var streamWriter = new StreamWriter(writeMemoryStream, Encoding.UTF8))
+            using (var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture))
+            {
+                var options = new TypeConverterOptions { Formats = new[] { "O" } };
+                csvWriter.Configuration.TypeConverterOptionsCache.AddOptions<DateTimeOffset>(options);
+                csvWriter.Configuration.HasHeaderRecord = false;
+                csvWriter.WriteRecords(assets);
+            }
+
+            using var readMemoryStream = new MemoryStream(writeMemoryStream.ToArray());
+            await blob.AppendBlockAsync(readMemoryStream);
         }
 
         private static List<PackageAsset> GetAssets(PackageDetailsCatalogLeaf leaf, List<string> files)

@@ -4,7 +4,6 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
 {
     public class PackageAsset
     {
-        public long PackageAssetKey { get; set; }
         public string Id { get; set; }
         public string Version { get; set; }
         public DateTimeOffset Created { get; set; }
