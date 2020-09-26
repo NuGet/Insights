@@ -33,5 +33,10 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
         public string TopLevelFolder { get; set; }
 
         public string RoundTripTargetFrameworkMoniker { get; set; }
+        public string FrameworkName { get; set; }
+        public string FrameworkVersion { get; set; }
+        public string FrameworkProfile { get; set; }
+        public string PlatformName { get; set; }
+        public string PlatformVersion { get; set; }
     }
 }

@@ -191,7 +191,8 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
                         return GetErrorResult(leaf, packageVersion, ex, "Package {Id} {Version} contains a portable framework missing a profile.");
                     }
 
-                    string roundTripTargetFrameworkMoniker = NuGetFramework.Parse(targetFrameworkMoniker).GetShortFolderName();
+                    var parsedFramework = NuGetFramework.Parse(targetFrameworkMoniker);
+                    string roundTripTargetFrameworkMoniker = parsedFramework.GetShortFolderName();
 
                     foreach (var item in group.Items)
                     {
@@ -213,6 +214,11 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
                             FileExtension = Path.GetExtension(item.Path),
 
                             RoundTripTargetFrameworkMoniker = roundTripTargetFrameworkMoniker,
+                            FrameworkName = parsedFramework.Framework,
+                            FrameworkVersion = parsedFramework.Version?.ToString(),
+                            FrameworkProfile = parsedFramework.Profile,
+                            PlatformName = parsedFramework.Platform,
+                            PlatformVersion = parsedFramework.PlatformVersion?.ToString(),
                         });
                     }
                 }
