@@ -5,6 +5,7 @@ using Knapcode.MiniZip;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
 using NuGet.Client;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
@@ -126,6 +127,11 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
                 await blob.SetPropertiesAsync();
             }
 
+            await WriteAsync(blob, assets);
+        }
+
+        private async Task WriteAsync(CloudAppendBlob blob, List<PackageAsset> assets)
+        {
             using var writeMemoryStream = new MemoryStream();
             using (var streamWriter = new StreamWriter(writeMemoryStream, Encoding.UTF8))
             using (var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture))
@@ -137,7 +143,20 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
             }
 
             using var readMemoryStream = new MemoryStream(writeMemoryStream.ToArray());
-            await blob.AppendBlockAsync(readMemoryStream);
+
+            try
+            {
+                await blob.AppendBlockAsync(readMemoryStream);
+            }
+            catch (StorageException ex) when (
+                assets.Count >= 2
+                && ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.RequestEntityTooLarge)
+            {
+                var firstHalf = assets.Take(assets.Count / 2).ToList();
+                var secondHalf = assets.Skip(assets.Count - firstHalf.Count).ToList();
+                await WriteAsync(blob, firstHalf);
+                await WriteAsync(blob, secondHalf);
+            }
         }
 
         private List<PackageAsset> GetAssets(PackageDetailsCatalogLeaf leaf, List<string> files)
