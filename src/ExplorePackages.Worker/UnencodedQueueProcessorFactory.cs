@@ -11,7 +11,10 @@ namespace Knapcode.ExplorePackages.Worker
         public QueueProcessor Create(QueueProcessorFactoryContext context)
         {
             context.Queue.EncodeMessage = false;
-            context.PoisonQueue.EncodeMessage = false;
+            if (context.PoisonQueue != null)
+            {
+                context.PoisonQueue.EncodeMessage = false;
+            }
 
             return new QueueProcessor(context);
         }

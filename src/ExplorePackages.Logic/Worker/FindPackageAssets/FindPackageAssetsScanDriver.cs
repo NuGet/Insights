@@ -3,6 +3,7 @@ using CsvHelper.TypeConversion;
 using Knapcode.ExplorePackages.Entities;
 using Knapcode.MiniZip;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using NuGet.Client;
@@ -31,19 +32,22 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
         private readonly FlatContainerClient _flatContainerClient;
         private readonly HttpZipProvider _httpZipProvider;
         private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly ILogger<FindPackageAssetsScanDriver> _logger;
 
         public FindPackageAssetsScanDriver(
             CatalogClient catalogClient,
             ServiceIndexCache serviceIndexCache,
             FlatContainerClient flatContainerClient,
             HttpZipProvider httpZipProvider,
-            ServiceClientFactory serviceClientFactory)
+            ServiceClientFactory serviceClientFactory,
+            ILogger<FindPackageAssetsScanDriver> logger)
         {
             _catalogClient = catalogClient;
             _serviceIndexCache = serviceIndexCache;
             _flatContainerClient = flatContainerClient;
             _httpZipProvider = httpZipProvider;
             _serviceClientFactory = serviceClientFactory;
+            _logger = logger;
         }
 
         public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
@@ -60,7 +64,6 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
         {
             if (leafScan.ParsedLeafType == CatalogLeafType.PackageDelete)
             {
-
                 // Ignore delete events.
                 return;
             }
@@ -145,7 +148,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
             await blob.AppendBlockAsync(readMemoryStream);
         }
 
-        private static List<PackageAsset> GetAssets(PackageDetailsCatalogLeaf leaf, List<string> files)
+        private List<PackageAsset> GetAssets(PackageDetailsCatalogLeaf leaf, List<string> files)
         {
             var packageVersion = leaf.ParsePackageVersion().ToNormalizedString();
 
@@ -165,10 +168,37 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
             var assets = new List<PackageAsset>();
             foreach (var pair in patternSets)
             {
-                var groups = contentItemCollection.FindItemGroups(pair.Value);
+                List<ContentItemGroup> groups;
+                try
+                {
+                    // We must enumerate the item groups here to force the exception to be thrown, if any.
+                    groups = contentItemCollection.FindItemGroups(pair.Value).ToList();
+                }
+                catch (ArgumentException ex) when (
+                    ex.Message.StartsWith("Invalid portable frameworks '")
+                    && ex.Message.EndsWith("'. A hyphen may not be in any of the portable framework names."))
+                {
+                    // Skip this package.
+                    _logger.LogWarning(ex, "Package {Id} {Version} contains an invalid portable framework.", leaf.PackageId, packageVersion);
+                    return new List<PackageAsset>();
+                }
+
                 foreach (var group in groups)
                 {
-                    var framework = ((NuGetFramework)group.Properties[ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker]).GetShortFolderName();
+                    string framework;
+                    try
+                    {
+                        framework = ((NuGetFramework)group.Properties[ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker]).GetShortFolderName();
+                    }
+                    catch (FrameworkException ex) when (
+                        ex.Message.StartsWith("Invalid portable frameworks for '")
+                        && ex.Message.EndsWith("'. A portable framework must have at least one framework in the profile."))
+                    {
+                        // Skip this package.
+                        _logger.LogWarning(ex, "Package {Id} {Version} contains an invalid portable framework.", leaf.PackageId, packageVersion);
+                        return new List<PackageAsset>();
+                    }
+
                     foreach (var item in group.Items)
                     {
                         assets.Add(new PackageAsset
