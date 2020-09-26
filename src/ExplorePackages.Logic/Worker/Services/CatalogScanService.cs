@@ -37,7 +37,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             var min = new[] { cursor.Value, CursorService.NuGetOrgMin }.Max();
             var max = index.CommitTimestamp;
 
-            max = new[] { max, min.AddDays(90) }.Min();
+            // max = new[] { max, min.AddHours(2) }.Min();
 
             if (min == max)
             {

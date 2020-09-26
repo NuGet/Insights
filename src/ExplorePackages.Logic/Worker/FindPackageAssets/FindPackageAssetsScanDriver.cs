@@ -111,7 +111,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
             using (var algorithm = SHA256.Create())
             {
                 var hash = algorithm.ComputeHash(Encoding.UTF8.GetBytes($"{lowerId}/{lowerVersion}"));
-                bucket = (int)(BitConverter.ToUInt64(hash) % 1000);
+                bucket = (int)(BitConverter.ToUInt64(hash) % 1000); // Azure Data Explorer only imports up to 1000 blobs.
             }
 
             var blob = container.GetAppendBlobReference($"{bucket}.csv");
@@ -162,7 +162,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
                 .Patterns
                 .GetType()
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty)
-                .Where(x => x.Name != nameof(ManagedCodeConventions.Patterns.AnyTargettedFile)) // This pattern is unused...
+                .Where(x => x.Name != nameof(ManagedCodeConventions.Patterns.AnyTargettedFile)) // This pattern is unused.
                 .ToDictionary(x => x.Name, x => (PatternSet)x.GetGetMethod().Invoke(conventions.Patterns, null));
 
             var assets = new List<PackageAsset>();
@@ -185,10 +185,18 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
 
                 foreach (var group in groups)
                 {
-                    string framework;
+                    group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.AnyValue, out var anyValue);
+                    group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.CodeLanguage, out var codeLanguage);
+                    group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.Locale, out var locale);
+                    group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.ManagedAssembly, out var managedAssembly);
+                    group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.MSBuild, out var msbuild);
+                    group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.RuntimeIdentifier, out var runtimeIdentifier);
+                    group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.SatelliteAssembly, out var satelliteAssembly);
+
+                    string targetFrameworkMoniker;
                     try
                     {
-                        framework = ((NuGetFramework)group.Properties[ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker]).GetShortFolderName();
+                        targetFrameworkMoniker = ((NuGetFramework)group.Properties[ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker]).GetShortFolderName();
                     }
                     catch (FrameworkException ex) when (
                         ex.Message.StartsWith("Invalid portable frameworks for '")
@@ -207,9 +215,20 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
                             Version = packageVersion,
                             Created = leaf.Created,
                             PatternSet = pair.Key,
-                            Framework = framework,
+
+                            PropertyAnyValue = (string)anyValue,
+                            PropertyCodeLanguage = (string)codeLanguage,
+                            PropertyTargetFrameworkMoniker = targetFrameworkMoniker,
+                            PropertyManagedAssembly = (string)managedAssembly,
+                            PropertyMSBuild = (string)msbuild,
+                            PropertyRuntimeIdentifier = (string)runtimeIdentifier,
+                            PropertySatelliteAssembly = (string)satelliteAssembly,
+
                             Path = item.Path,
-                        });
+                            TopLevelFolder = item.Path.Split('/')[0].ToLowerInvariant(),
+                            FileName = Path.GetFileName(item.Path),
+                            FileExtension = Path.GetExtension(item.Path),
+                        }); ;
                     }
                 }
             }
