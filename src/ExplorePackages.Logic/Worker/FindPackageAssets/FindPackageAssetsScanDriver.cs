@@ -4,7 +4,6 @@ using Knapcode.ExplorePackages.Entities;
 using Knapcode.MiniZip;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using NuGet.Client;
 using NuGet.ContentModel;
@@ -20,7 +19,6 @@ using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
@@ -95,12 +93,6 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
             }
 
             var assets = GetAssets(leaf, files);
-            if (assets.Count == 0)
-            {
-                // Ignore packages with no assets.
-                return;
-            }
-
             var storageAccount = _serviceClientFactory.GetStorageAccount();
             var client = storageAccount.CreateCloudBlobClient();
             var container = client.GetContainerReference("findpackageassets");
@@ -174,13 +166,9 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
                     // We must enumerate the item groups here to force the exception to be thrown, if any.
                     groups = contentItemCollection.FindItemGroups(pair.Value).ToList();
                 }
-                catch (ArgumentException ex) when (
-                    ex.Message.StartsWith("Invalid portable frameworks '")
-                    && ex.Message.EndsWith("'. A hyphen may not be in any of the portable framework names."))
+                catch (ArgumentException ex) when (IsInvalidDueToHyphenInPortal(ex))
                 {
-                    // Skip this package.
-                    _logger.LogWarning(ex, "Package {Id} {Version} contains an invalid portable framework.", leaf.PackageId, packageVersion);
-                    return new List<PackageAsset>();
+                    return GetErrorResult(leaf, packageVersion, ex, "Package {Id} {Version} contains a portable framework with a hyphen in the profile.");
                 }
 
                 foreach (var group in groups)
@@ -198,22 +186,17 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
                     {
                         targetFrameworkMoniker = ((NuGetFramework)group.Properties[ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker]).GetShortFolderName();
                     }
-                    catch (FrameworkException ex) when (
-                        ex.Message.StartsWith("Invalid portable frameworks for '")
-                        && ex.Message.EndsWith("'. A portable framework must have at least one framework in the profile."))
+                    catch (FrameworkException ex) when (IsInvalidDueMissingPortableProfile(ex))
                     {
-                        // Skip this package.
-                        _logger.LogWarning(ex, "Package {Id} {Version} contains an invalid portable framework.", leaf.PackageId, packageVersion);
-                        return new List<PackageAsset>();
+                        return GetErrorResult(leaf, packageVersion, ex, "Package {Id} {Version} contains a portable framework missing a profile.");
                     }
+
+                    string roundTripTargetFrameworkMoniker = NuGetFramework.Parse(targetFrameworkMoniker).GetShortFolderName();
 
                     foreach (var item in group.Items)
                     {
-                        assets.Add(new PackageAsset
+                        assets.Add(new PackageAsset(leaf, packageVersion, PackageAssetResultType.AvailableAssets)
                         {
-                            Id = leaf.PackageId,
-                            Version = packageVersion,
-                            Created = leaf.Created,
                             PatternSet = pair.Key,
 
                             PropertyAnyValue = (string)anyValue,
@@ -228,12 +211,39 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
                             TopLevelFolder = item.Path.Split('/')[0].ToLowerInvariant(),
                             FileName = Path.GetFileName(item.Path),
                             FileExtension = Path.GetExtension(item.Path),
-                        }); ;
+
+                            RoundTripTargetFrameworkMoniker = roundTripTargetFrameworkMoniker,
+                        });
                     }
                 }
             }
 
+            if (assets.Count == 0)
+            {
+                return new List<PackageAsset> { new PackageAsset(leaf, packageVersion, PackageAssetResultType.NoAssets) };
+            }
+
             return assets;
+        }
+
+        private List<PackageAsset> GetErrorResult(PackageDetailsCatalogLeaf leaf, string packageVersion, Exception ex, string message)
+        {
+            _logger.LogWarning(ex, message, leaf.PackageId, packageVersion);
+            return new List<PackageAsset> { new PackageAsset(leaf, packageVersion, PackageAssetResultType.Error) };
+        }
+
+        private static bool IsInvalidDueMissingPortableProfile(FrameworkException ex)
+        {
+            return
+                ex.Message.StartsWith("Invalid portable frameworks for '")
+                && ex.Message.EndsWith("'. A portable framework must have at least one framework in the profile.");
+        }
+
+        private static bool IsInvalidDueToHyphenInPortal(ArgumentException ex)
+        {
+            return
+                ex.Message.StartsWith("Invalid portable frameworks '")
+                && ex.Message.EndsWith("'. A hyphen may not be in any of the portable framework names.");
         }
     }
 }
