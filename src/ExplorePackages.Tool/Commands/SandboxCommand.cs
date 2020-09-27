@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
 using Knapcode.ExplorePackages.Logic.Worker;
+using Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage.Table;
@@ -16,24 +16,30 @@ namespace Knapcode.ExplorePackages.Tool
     {
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly CatalogScanService _catalogScanService;
+        private readonly IWorkerQueueFactory _workerQueueFactory;
         private readonly CursorStorageService _cursorStorageService;
         private readonly CatalogScanStorageService _catalogScanStorageService;
         private readonly LatestPackageLeafStorageService _latestPackageLeafStorageService;
+        private readonly FindPackageAssetsStorageService _findPackageAssetsStorageService;
         private readonly ILogger<SandboxCommand> _logger;
 
         public SandboxCommand(
             ServiceClientFactory serviceClientFactory,
             CatalogScanService catalogScanService,
+            IWorkerQueueFactory workerQueueFactory,
             CursorStorageService cursorStorageService,
             CatalogScanStorageService catalogScanStorageService,
             LatestPackageLeafStorageService latestPackageLeafStorageService,
+            FindPackageAssetsStorageService findPackageAssetsStorageService,
             ILogger<SandboxCommand> logger)
         {
             _serviceClientFactory = serviceClientFactory;
             _catalogScanService = catalogScanService;
+            _workerQueueFactory = workerQueueFactory;
             _cursorStorageService = cursorStorageService;
             _catalogScanStorageService = catalogScanStorageService;
             _latestPackageLeafStorageService = latestPackageLeafStorageService;
+            _findPackageAssetsStorageService = findPackageAssetsStorageService;
             _logger = logger;
         }
 
@@ -43,9 +49,11 @@ namespace Knapcode.ExplorePackages.Tool
 
         public async Task ExecuteAsync(CancellationToken token)
         {
+            await _workerQueueFactory.GetQueue().CreateIfNotExistsAsync(retry: true);
             await _cursorStorageService.InitializeAsync();
             await _catalogScanStorageService.InitializeAsync();
             await _latestPackageLeafStorageService.InitializeAsync();
+            await _findPackageAssetsStorageService.InitializeAsync();
 
             /*
             _logger.LogInformation("Clearing queues and tables...");

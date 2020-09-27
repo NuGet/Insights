@@ -1,11 +1,7 @@
-﻿using CsvHelper;
-using CsvHelper.TypeConversion;
-using Knapcode.ExplorePackages.Entities;
+﻿using Knapcode.ExplorePackages.Entities;
 using Knapcode.MiniZip;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
 using NuGet.Client;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
@@ -13,39 +9,42 @@ using NuGet.RuntimeModel;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
 {
     public class FindPackageAssetsScanDriver : ICatalogScanDriver
     {
+        private readonly SchemaSerializer _schemaSerializer;
         private readonly CatalogClient _catalogClient;
         private readonly ServiceIndexCache _serviceIndexCache;
         private readonly FlatContainerClient _flatContainerClient;
         private readonly HttpZipProvider _httpZipProvider;
-        private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly FindPackageAssetsStorageService _storageService;
+        private readonly MessageEnqueuer _messageEnqueuer;
         private readonly ILogger<FindPackageAssetsScanDriver> _logger;
 
         public FindPackageAssetsScanDriver(
+            SchemaSerializer schemaSerializer,
             CatalogClient catalogClient,
             ServiceIndexCache serviceIndexCache,
             FlatContainerClient flatContainerClient,
             HttpZipProvider httpZipProvider,
-            ServiceClientFactory serviceClientFactory,
+            FindPackageAssetsStorageService storageService,
+            MessageEnqueuer messageEnqueuer,
             ILogger<FindPackageAssetsScanDriver> logger)
         {
+            _schemaSerializer = schemaSerializer;
             _catalogClient = catalogClient;
             _serviceIndexCache = serviceIndexCache;
             _flatContainerClient = flatContainerClient;
             _httpZipProvider = httpZipProvider;
-            _serviceClientFactory = serviceClientFactory;
+            _storageService = storageService;
+            _messageEnqueuer = messageEnqueuer;
             _logger = logger;
         }
 
@@ -61,6 +60,8 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
 
         public async Task ProcessLeafAsync(CatalogLeafScan leafScan)
         {
+            var parameters = GetParameters(leafScan.ScanParameters);
+
             if (leafScan.ParsedLeafType == CatalogLeafType.PackageDelete)
             {
                 // Ignore delete events.
@@ -94,69 +95,12 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
             }
 
             var assets = GetAssets(leaf, files);
-            var storageAccount = _serviceClientFactory.GetStorageAccount();
-            var client = storageAccount.CreateCloudBlobClient();
-            var container = client.GetContainerReference("findpackageassets");
-            var lowerId = leafScan.PackageId.ToLowerInvariant();
-            var lowerVersion = NuGetVersion.Parse(leafScan.PackageVersion).ToNormalizedString().ToLowerInvariant();
-
-            int bucket;
-            using (var algorithm = SHA256.Create())
-            {
-                var hash = algorithm.ComputeHash(Encoding.UTF8.GetBytes($"{lowerId}/{lowerVersion}"));
-                bucket = (int)(BitConverter.ToUInt64(hash) % 1000); // Azure Data Explorer only imports up to 1000 blobs.
-            }
-
-            var blob = container.GetAppendBlobReference($"{bucket}.csv");
-            if (!await blob.ExistsAsync())
-            {
-                try
-                {
-                    await blob.CreateOrReplaceAsync(
-                        accessCondition: AccessCondition.GenerateIfNotExistsCondition(),
-                        options: null,
-                        operationContext: null);
-                }
-                catch (StorageException ex) when (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.Conflict)
-                {
-                    // Ignore this exception.
-                }
-
-                // Best effort, will not be re-executed on retry since the blob will exist at that point.
-                blob.Properties.ContentType = "text/plain";
-                await blob.SetPropertiesAsync();
-            }
-
-            await WriteAsync(blob, assets);
+            await _storageService.AppendAsync(parameters, leaf.PackageId, leaf.PackageVersion, assets);
         }
 
-        private async Task WriteAsync(CloudAppendBlob blob, List<PackageAsset> assets)
+        private FindPackageAssetsParameters GetParameters(string scanParameters)
         {
-            using var writeMemoryStream = new MemoryStream();
-            using (var streamWriter = new StreamWriter(writeMemoryStream, Encoding.UTF8))
-            using (var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture))
-            {
-                var options = new TypeConverterOptions { Formats = new[] { "O" } };
-                csvWriter.Configuration.TypeConverterOptionsCache.AddOptions<DateTimeOffset>(options);
-                csvWriter.Configuration.HasHeaderRecord = false;
-                csvWriter.WriteRecords(assets);
-            }
-
-            using var readMemoryStream = new MemoryStream(writeMemoryStream.ToArray());
-
-            try
-            {
-                await blob.AppendBlockAsync(readMemoryStream);
-            }
-            catch (StorageException ex) when (
-                assets.Count >= 2
-                && ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.RequestEntityTooLarge)
-            {
-                var firstHalf = assets.Take(assets.Count / 2).ToList();
-                var secondHalf = assets.Skip(assets.Count - firstHalf.Count).ToList();
-                await WriteAsync(blob, firstHalf);
-                await WriteAsync(blob, secondHalf);
-            }
+            return (FindPackageAssetsParameters)_schemaSerializer.Deserialize(scanParameters);
         }
 
         private List<PackageAsset> GetAssets(PackageDetailsCatalogLeaf leaf, List<string> files)
@@ -269,6 +213,24 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
             return
                 ex.Message.StartsWith("Invalid portable frameworks '")
                 && ex.Message.EndsWith("'. A hyphen may not be in any of the portable framework names.");
+        }
+
+        public async Task StartAggregateAsync(CatalogIndexScan indexScan)
+        {
+            var parameters = GetParameters(indexScan.ScanParameters);
+            var messages = Enumerable
+                .Range(0, parameters.BucketCount)
+                .Select(b => new FindPackageAssetsCompactMessage { Bucket = b })
+                .ToList();
+            await _messageEnqueuer.EnqueueAsync(messages);
+        }
+
+        public async Task<bool> IsAggregateCompleteAsync(CatalogIndexScan indexScan)
+        {
+            var parameters = GetParameters(indexScan.ScanParameters);
+            var compactBlobCount = await _storageService.CountCompactBlobsAsync();
+            _logger.LogInformation("There are currently {CurrentCount} compact blobs, out of {TotalCount}.", compactBlobCount, parameters.BucketCount);
+            return compactBlobCount < parameters.BucketCount;
         }
     }
 }

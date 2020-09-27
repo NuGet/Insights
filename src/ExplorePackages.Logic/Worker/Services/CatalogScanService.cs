@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets;
 using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic.Worker
@@ -37,7 +38,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             var min = new[] { cursor.Value, CursorService.NuGetOrgMin }.Max();
             var max = index.CommitTimestamp;
 
-            // max = new[] { max, min.AddDays(1) }.Min();
+            max = new[] { max, min.AddHours(2) }.Min();
 
             if (min == max)
             {
@@ -53,7 +54,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             var catalogIndexScan = new CatalogIndexScan(scanId)
             {
                 ParsedScanType = CatalogScanType.FindPackageAssets,
-                ScanParameters = _serializer.Serialize(new FindLatestLeavesParameters { Prefix = string.Empty }).AsString(),
+                ScanParameters = _serializer.Serialize(new FindPackageAssetsParameters { BucketCount = 5 }).AsString(),
                 ParsedState = CatalogScanState.Created,
                 Min = min,
                 Max = max,

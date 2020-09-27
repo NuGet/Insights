@@ -31,5 +31,8 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             _logger.LogInformation("Loading catalog {Type} leaf URL: {Url}", leafScan.LeafType, leafScan.Url);
             await _catalogClient.GetCatalogLeafAsync(leafScan.ParsedLeafType, leafScan.Url);
         }
+
+        public Task StartAggregateAsync(CatalogIndexScan indexScan) => Task.CompletedTask;
+        public Task<bool> IsAggregateCompleteAsync(CatalogIndexScan indexScan) => Task.FromResult(true);
     }
 }

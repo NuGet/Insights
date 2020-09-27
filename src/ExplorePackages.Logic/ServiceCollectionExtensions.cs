@@ -259,10 +259,13 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<IMessageProcessor<CatalogIndexScanMessage>, CatalogIndexScanMessageProcessor>();
             serviceCollection.AddTransient<IMessageProcessor<CatalogPageScanMessage>, CatalogPageScanMessageProcessor>();
             serviceCollection.AddTransient<IMessageProcessor<CatalogLeafScanMessage>, CatalogLeafScanMessageProcessor>();
+            serviceCollection.AddTransient<IMessageProcessor<FindPackageAssetsCompactMessage>, FindPackageAssetsCompactProcessor>();
 
             serviceCollection.AddTransient<CatalogScanStorageService>();
             serviceCollection.AddTransient<LatestPackageLeafStorageService>();
             serviceCollection.AddTransient<CursorStorageService>();
+
+            serviceCollection.AddTransient<FindPackageAssetsStorageService>();
 
             serviceCollection.AddTransient<CatalogScanDriverFactory>();
             serviceCollection.AddTransient<DownloadLeavesCatalogScanDriver>();

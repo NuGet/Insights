@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets;
+using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic.Worker
 {
@@ -10,8 +11,10 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             new SchemaV1<CatalogIndexScanMessage>("cis"),
             new SchemaV1<CatalogPageScanMessage>("cps"),
             new SchemaV1<CatalogLeafScanMessage>("cls"),
+            new SchemaV1<FindPackageAssetsCompactMessage>("fpa.c"),
 
             new SchemaV1<FindLatestLeavesParameters>("fll"),
+            new SchemaV1<FindPackageAssetsParameters>("fpa"),
         });
 
         private readonly ILogger<SchemaSerializer> _logger;
@@ -25,8 +28,10 @@ namespace Knapcode.ExplorePackages.Logic.Worker
         public ISerializedEntity Serialize(CatalogIndexScanMessage message) => Serializer.Serialize(message);
         public ISerializedEntity Serialize(CatalogPageScanMessage message) => Serializer.Serialize(message);
         public ISerializedEntity Serialize(CatalogLeafScanMessage message) => Serializer.Serialize(message);
+        public ISerializedEntity Serialize(FindPackageAssetsCompactMessage message) => Serializer.Serialize(message);
 
         public ISerializedEntity Serialize(FindLatestLeavesParameters parameters) => Serializer.Serialize(parameters);
+        public ISerializedEntity Serialize(FindPackageAssetsParameters parameters) => Serializer.Serialize(parameters);
 
         public object Deserialize(string message) => Serializer.Deserialize(message, _logger);
     }

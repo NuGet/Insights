@@ -7,5 +7,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
         Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan);
         Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan);
         Task ProcessLeafAsync(CatalogLeafScan leafScan);
+        Task StartAggregateAsync(CatalogIndexScan indexScan);
+        Task<bool> IsAggregateCompleteAsync(CatalogIndexScan indexScan);
     }
 }

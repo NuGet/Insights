@@ -48,7 +48,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             switch (result)
             {
                 case CatalogIndexScanResult.Expand:
-                    await ExpandAsync(message, scan);
+                    await ExpandAsync(message, scan, driver);
                     break;
                 case CatalogIndexScanResult.Processed:
                     break;
@@ -57,7 +57,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             }
         }
 
-        private async Task ExpandAsync(CatalogIndexScanMessage message, CatalogIndexScan scan)
+        private async Task ExpandAsync(CatalogIndexScanMessage message, CatalogIndexScan scan, ICatalogScanDriver driver)
         {
             var lazyIndexTask = new Lazy<Task<CatalogIndex>>(() => GetCatalogIndexAsync());
             var lazyPageScansTask = new Lazy<Task<List<CatalogPageScan>>>(async () => GetPageScans(scan, await lazyIndexTask.Value));
@@ -107,6 +107,24 @@ namespace Knapcode.ExplorePackages.Logic.Worker
                 if (countLowerBound > 0)
                 {
                     _logger.LogInformation("There are at least {Count} page scans pending.", countLowerBound);
+
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, TimeSpan.FromSeconds(10));
+                }
+                else
+                {
+                    await driver.StartAggregateAsync(scan);
+
+                    scan.ParsedState = CatalogScanState.Aggregating;
+                    await _storageService.ReplaceAsync(scan);
+                }
+            }
+
+            // Aggregating: check if the aggregation step is complete
+            if (scan.ParsedState == CatalogScanState.Aggregating)
+            {
+                if (!await driver.IsAggregateCompleteAsync(scan))
+                {
+                    _logger.LogInformation("The index scan is still aggregating.");
 
                     await _messageEnqueuer.EnqueueAsync(new[] { message }, TimeSpan.FromSeconds(10));
                 }
