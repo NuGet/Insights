@@ -38,7 +38,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             var min = new[] { cursor.Value, CursorService.NuGetOrgMin }.Max();
             var max = index.CommitTimestamp;
 
-            max = new[] { max, min.AddHours(2) }.Min();
+            // max = new[] { max, min.AddHours(2) }.Min();
 
             if (min == max)
             {
@@ -54,7 +54,10 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             var catalogIndexScan = new CatalogIndexScan(scanId)
             {
                 ParsedScanType = CatalogScanType.FindPackageAssets,
-                ScanParameters = _serializer.Serialize(new FindPackageAssetsParameters { BucketCount = 5 }).AsString(),
+                ScanParameters = _serializer.Serialize(new FindPackageAssetsParameters
+                {
+                    BucketCount = 1000, // Azure Data Explorer can only import up to 1000 blobs.
+                }).AsString(),
                 ParsedState = CatalogScanState.Created,
                 Min = min,
                 Max = max,
