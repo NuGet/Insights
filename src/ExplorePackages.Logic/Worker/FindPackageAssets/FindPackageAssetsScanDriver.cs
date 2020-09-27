@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using NuGet.Client;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
+using NuGet.Packaging.Signing;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
 using System;
@@ -60,6 +61,8 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
 
         public async Task ProcessLeafAsync(CatalogLeafScan leafScan)
         {
+            var scanId = Guid.NewGuid();
+            var scanTimestamp = DateTimeOffset.UtcNow;
             var parameters = GetParameters(leafScan.ScanParameters);
 
             if (leafScan.ParsedLeafType == CatalogLeafType.PackageDelete)
@@ -94,7 +97,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
                 return;
             }
 
-            var assets = GetAssets(leaf, files);
+            var assets = GetAssets(scanId, scanTimestamp, leaf, files);
             await _storageService.AppendAsync(parameters, leaf.PackageId, leaf.PackageVersion, assets);
         }
 
@@ -103,10 +106,8 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
             return (FindPackageAssetsParameters)_schemaSerializer.Deserialize(scanParameters);
         }
 
-        private List<PackageAsset> GetAssets(PackageDetailsCatalogLeaf leaf, List<string> files)
+        private List<PackageAsset> GetAssets(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf, List<string> files)
         {
-            var packageVersion = leaf.ParsePackageVersion().ToNormalizedString();
-
             var contentItemCollection = new ContentItemCollection();
             contentItemCollection.Load(files);
 
@@ -131,7 +132,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
                 }
                 catch (ArgumentException ex) when (IsInvalidDueToHyphenInPortal(ex))
                 {
-                    return GetErrorResult(leaf, packageVersion, ex, "Package {Id} {Version} contains a portable framework with a hyphen in the profile.");
+                    return GetErrorResult(scanId, scanTimestamp, leaf, ex, "Package {Id} {Version} contains a portable framework with a hyphen in the profile.");
                 }
 
                 foreach (var group in groups)
@@ -151,7 +152,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
                     }
                     catch (FrameworkException ex) when (IsInvalidDueMissingPortableProfile(ex))
                     {
-                        return GetErrorResult(leaf, packageVersion, ex, "Package {Id} {Version} contains a portable framework missing a profile.");
+                        return GetErrorResult(scanId, scanTimestamp, leaf, ex, "Package {Id} {Version} contains a portable framework missing a profile.");
                     }
 
                     var parsedFramework = NuGetFramework.Parse(targetFrameworkMoniker);
@@ -159,7 +160,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
 
                     foreach (var item in group.Items)
                     {
-                        assets.Add(new PackageAsset(leaf, packageVersion, PackageAssetResultType.AvailableAssets)
+                        assets.Add(new PackageAsset(scanId, scanTimestamp, leaf, PackageAssetResultType.AvailableAssets)
                         {
                             PatternSet = pair.Key,
 
@@ -189,16 +190,16 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
 
             if (assets.Count == 0)
             {
-                return new List<PackageAsset> { new PackageAsset(leaf, packageVersion, PackageAssetResultType.NoAssets) };
+                return new List<PackageAsset> { new PackageAsset(scanId, scanTimestamp, leaf, PackageAssetResultType.NoAssets) };
             }
 
             return assets;
         }
 
-        private List<PackageAsset> GetErrorResult(PackageDetailsCatalogLeaf leaf, string packageVersion, Exception ex, string message)
+        private List<PackageAsset> GetErrorResult(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf, Exception ex, string message)
         {
-            _logger.LogWarning(ex, message, leaf.PackageId, packageVersion);
-            return new List<PackageAsset> { new PackageAsset(leaf, packageVersion, PackageAssetResultType.Error) };
+            _logger.LogWarning(ex, message, leaf.PackageId, leaf.PackageVersion);
+            return new List<PackageAsset> { new PackageAsset(scanId, scanTimestamp, leaf, PackageAssetResultType.Error) };
         }
 
         private static bool IsInvalidDueMissingPortableProfile(FrameworkException ex)
@@ -230,7 +231,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
             var parameters = GetParameters(indexScan.ScanParameters);
             var compactBlobCount = await _storageService.CountCompactBlobsAsync();
             _logger.LogInformation("There are currently {CurrentCount} compact blobs, out of {TotalCount}.", compactBlobCount, parameters.BucketCount);
-            return compactBlobCount < parameters.BucketCount;
+            return compactBlobCount == parameters.BucketCount;
         }
     }
 }

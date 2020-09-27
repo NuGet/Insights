@@ -18,6 +18,8 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
     public class FindPackageAssetsStorageService
     {
         private const string ContentType = "text/plain";
+        private const string AppendPrefix = "append_";
+        private const string CompactPrefix = "compact_";
 
         private readonly ServiceClientFactory _serviceClientFactory;
 
@@ -59,36 +61,44 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
 
         private CloudAppendBlob GetAppendBlob(int bucket)
         {
-            return GetContainer().GetAppendBlobReference($"append/{bucket}.csv");
+            return GetContainer().GetAppendBlobReference($"{AppendPrefix}{bucket}.csv");
         }
 
         private CloudBlockBlob GetCompactlob(int bucket)
         {
-            return GetContainer().GetBlockBlobReference($"compact/{bucket}.csv");
+            return GetContainer().GetBlockBlobReference($"{CompactPrefix}{bucket}.csv");
         }
 
         public async Task CompactAsync(int bucket)
         {
             var appendBlob = GetAppendBlob(bucket);
-            var builder = new StringBuilder();
+            var bytes = Array.Empty<byte>();
             if (await appendBlob.ExistsAsync())
             {
                 var appendText = await appendBlob.DownloadTextAsync();
-                using var reader = new StringReader(appendText);
-                var lines = new HashSet<string>();
-                string line;
-                while ((line = reader.ReadLine()) != null)
+                List<PackageAsset> allAssets;
+                using (var reader = new StringReader(appendText))
+                using (var csvReader = new CsvReader(reader, CultureInfo.InvariantCulture))
                 {
-                    if (lines.Add(line))
-                    {
-                        builder.AppendLine(line);
-                    }
+                    csvReader.Configuration.HasHeaderRecord = false;
+                    allAssets = csvReader.GetRecords<PackageAsset>().ToList();
                 }
+
+                var prunedAssets = allAssets
+                    .GroupBy(x => new { Id = x.Id.ToLowerInvariant(), Version = x.Version.ToLowerInvariant() }) // Group by unique package version
+                    .Select(g => g
+                        .GroupBy(x => x.ScanId) // Group package version assets by scan
+                        .OrderByDescending(x => x.First().ScanTimestamp) // Ignore all but the most recent scan
+                        .First())
+                    .SelectMany(g => g)
+                    .ToList();
+
+                bytes = SerializeAssets(prunedAssets);
             }
 
             var compactBlob = GetCompactlob(bucket);
             compactBlob.Properties.ContentType = ContentType;
-            await compactBlob.UploadTextAsync(builder.ToString());
+            await compactBlob.UploadFromByteArrayAsync(bytes, 0, bytes.Length);
         }
 
         public async Task<int> CountCompactBlobsAsync()
@@ -98,7 +108,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
             BlobContinuationToken token = null;
             do
             {
-                var segment = await container.ListBlobsSegmentedAsync($"compact", token);
+                var segment = await container.ListBlobsSegmentedAsync(CompactPrefix, token);
                 token = segment.ContinuationToken;
                 blobCount += segment.Results.Count();
             }
@@ -108,21 +118,10 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
 
         private async Task AppendAsync(CloudAppendBlob blob, List<PackageAsset> assets)
         {
-            using var writeMemoryStream = new MemoryStream();
-            using (var streamWriter = new StreamWriter(writeMemoryStream, Encoding.UTF8))
-            using (var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture))
-            {
-                var options = new TypeConverterOptions { Formats = new[] { "O" } };
-                csvWriter.Configuration.TypeConverterOptionsCache.AddOptions<DateTimeOffset>(options);
-                csvWriter.Configuration.HasHeaderRecord = false;
-                csvWriter.WriteRecords(assets);
-            }
-
-            using var readMemoryStream = new MemoryStream(writeMemoryStream.ToArray());
-
+            using var memoryStream = new MemoryStream(SerializeAssets(assets));
             try
             {
-                await blob.AppendBlockAsync(readMemoryStream);
+                await blob.AppendBlockAsync(memoryStream);
             }
             catch (StorageException ex) when (
                 assets.Count >= 2
@@ -133,6 +132,21 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
                 await AppendAsync(blob, firstHalf);
                 await AppendAsync(blob, secondHalf);
             }
+        }
+
+        private static byte[] SerializeAssets(List<PackageAsset> assets)
+        {
+            using var writeMemoryStream = new MemoryStream();
+            using (var streamWriter = new StreamWriter(writeMemoryStream, new UTF8Encoding(false)))
+            using (var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture))
+            {
+                var options = new TypeConverterOptions { Formats = new[] { "O" } };
+                csvWriter.Configuration.TypeConverterOptionsCache.AddOptions<DateTimeOffset>(options);
+                csvWriter.Configuration.HasHeaderRecord = false;
+                csvWriter.WriteRecords(assets);
+            }
+
+            return writeMemoryStream.ToArray();
         }
 
         private static int GetBucket(int bucketCount, string id, string version)
