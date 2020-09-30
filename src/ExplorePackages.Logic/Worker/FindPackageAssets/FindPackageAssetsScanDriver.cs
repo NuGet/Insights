@@ -1,4 +1,5 @@
 ﻿using Knapcode.ExplorePackages.Entities;
+using Knapcode.ExplorePackages.Logic.Worker.BlobStorage;
 using Knapcode.MiniZip;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -24,7 +25,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
         private readonly ServiceIndexCache _serviceIndexCache;
         private readonly FlatContainerClient _flatContainerClient;
         private readonly HttpZipProvider _httpZipProvider;
-        private readonly FindPackageAssetsStorageService _storageService;
+        private readonly AppendResultStorageService _storageService;
         private readonly MessageEnqueuer _messageEnqueuer;
         private readonly ILogger<FindPackageAssetsScanDriver> _logger;
 
@@ -34,7 +35,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
             ServiceIndexCache serviceIndexCache,
             FlatContainerClient flatContainerClient,
             HttpZipProvider httpZipProvider,
-            FindPackageAssetsStorageService storageService,
+            AppendResultStorageService storageService,
             MessageEnqueuer messageEnqueuer,
             ILogger<FindPackageAssetsScanDriver> logger)
         {
@@ -97,7 +98,9 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
             }
 
             var assets = GetAssets(scanId, scanTimestamp, leaf, files);
-            await _storageService.AppendAsync(parameters, leaf.PackageId, leaf.PackageVersion, assets);
+            var storage = new AppendResultStorage(FindPackageAssetsConstants.ContainerName, parameters.BucketCount);
+            var bucketKey = $"{leaf.PackageId}/{leaf.PackageVersion}".ToLowerInvariant();
+            await _storageService.AppendAsync(storage, bucketKey, assets);
         }
 
         private FindPackageAssetsParameters GetParameters(string scanParameters)
@@ -228,7 +231,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
         public async Task<bool> IsAggregateCompleteAsync(CatalogIndexScan indexScan)
         {
             var parameters = GetParameters(indexScan.ScanParameters);
-            var compactBlobCount = await _storageService.CountCompactBlobsAsync();
+            var compactBlobCount = await _storageService.CountCompactBlobsAsync(FindPackageAssetsConstants.ContainerName);
             _logger.LogInformation("There are currently {CurrentCount} compact blobs, out of {TotalCount}.", compactBlobCount, parameters.BucketCount);
             return compactBlobCount == parameters.BucketCount;
         }

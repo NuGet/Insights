@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Logic.Worker;
+using Knapcode.ExplorePackages.Logic.Worker.BlobStorage;
 using Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets;
 using Knapcode.ExplorePackages.Logic.Worker.RunRealRestore;
 using Knapcode.MiniZip;
@@ -267,7 +268,7 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<LatestPackageLeafStorageService>();
             serviceCollection.AddTransient<CursorStorageService>();
 
-            serviceCollection.AddTransient<FindPackageAssetsStorageService>();
+            serviceCollection.AddTransient<AppendResultStorageService>();
 
             serviceCollection.AddTransient<ProjectHelper>();
 

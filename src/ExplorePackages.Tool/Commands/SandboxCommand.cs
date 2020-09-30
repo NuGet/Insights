@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
 using Knapcode.ExplorePackages.Logic.Worker;
+using Knapcode.ExplorePackages.Logic.Worker.BlobStorage;
 using Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets;
 using McMaster.Extensions.CommandLineUtils;
 
@@ -14,7 +15,7 @@ namespace Knapcode.ExplorePackages.Tool
         private readonly CursorStorageService _cursorStorageService;
         private readonly CatalogScanStorageService _catalogScanStorageService;
         private readonly LatestPackageLeafStorageService _latestPackageLeafStorageService;
-        private readonly FindPackageAssetsStorageService _findPackageAssetsStorageService;
+        private readonly AppendResultStorageService _findPackageAssetsStorageService;
 
         public SandboxCommand(
             CatalogScanService catalogScanService,
@@ -22,7 +23,7 @@ namespace Knapcode.ExplorePackages.Tool
             CursorStorageService cursorStorageService,
             CatalogScanStorageService catalogScanStorageService,
             LatestPackageLeafStorageService latestPackageLeafStorageService,
-            FindPackageAssetsStorageService findPackageAssetsStorageService)
+            AppendResultStorageService findPackageAssetsStorageService)
         {
             _catalogScanService = catalogScanService;
             _workerQueueFactory = workerQueueFactory;
@@ -42,7 +43,7 @@ namespace Knapcode.ExplorePackages.Tool
             await _cursorStorageService.InitializeAsync();
             await _catalogScanStorageService.InitializeAsync();
             await _latestPackageLeafStorageService.InitializeAsync();
-            await _findPackageAssetsStorageService.InitializeAsync();
+            await _findPackageAssetsStorageService.InitializeAsync(FindPackageAssetsConstants.ContainerName);
 
             await _catalogScanService.UpdateAsync();
         }

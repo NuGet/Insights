@@ -2,7 +2,6 @@
 using CsvHelper.TypeConversion;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
-using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,9 +12,9 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
+namespace Knapcode.ExplorePackages.Logic.Worker.BlobStorage
 {
-    public class FindPackageAssetsStorageService
+    public class AppendResultStorageService
     {
         private const string ContentType = "text/plain";
         private const string AppendPrefix = "append_";
@@ -23,20 +22,20 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
 
         private readonly ServiceClientFactory _serviceClientFactory;
 
-        public FindPackageAssetsStorageService(ServiceClientFactory serviceClientFactory)
+        public AppendResultStorageService(ServiceClientFactory serviceClientFactory)
         {
             _serviceClientFactory = serviceClientFactory;
         }
 
-        public async Task InitializeAsync()
+        public async Task InitializeAsync(string container)
         {
-            await GetContainer().CreateIfNotExistsAsync(retry: true);
+            await GetContainer(container).CreateIfNotExistsAsync(retry: true);
         }
 
-        public async Task AppendAsync(FindPackageAssetsParameters parameters, string id, string version, List<PackageAsset> assets)
+        public async Task AppendAsync<T>(AppendResultStorage storage, string bucketKey, IReadOnlyList<T> records)
         {
-            var bucket = GetBucket(parameters.BucketCount, id, version);
-            var blob = GetAppendBlob(bucket);
+            var bucket = GetBucket(storage.BucketCount, bucketKey);
+            var blob = GetAppendBlob(storage.Container, bucket);
             if (!await blob.ExistsAsync())
             {
                 try
@@ -56,59 +55,52 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
                 await blob.SetPropertiesAsync();
             }
 
-            await AppendAsync(blob, assets);
+            await AppendAsync(blob, records);
         }
 
-        private CloudAppendBlob GetAppendBlob(int bucket)
+        private CloudAppendBlob GetAppendBlob(string container, int bucket)
         {
-            return GetContainer().GetAppendBlobReference($"{AppendPrefix}{bucket}.csv");
+            return GetContainer(container).GetAppendBlobReference($"{AppendPrefix}{bucket}.csv");
         }
 
-        private CloudBlockBlob GetCompactlob(int bucket)
+        private CloudBlockBlob GetCompactlob(string container, int bucket)
         {
-            return GetContainer().GetBlockBlobReference($"{CompactPrefix}{bucket}.csv");
+            return GetContainer(container).GetBlockBlobReference($"{CompactPrefix}{bucket}.csv");
         }
 
-        public async Task CompactAsync(int bucket)
+        public async Task CompactAsync<T>(string container, int bucket, Func<IEnumerable<T>, IEnumerable<T>> prune)
         {
-            var appendBlob = GetAppendBlob(bucket);
+            var appendBlob = GetAppendBlob(container, bucket);
             var bytes = Array.Empty<byte>();
             if (await appendBlob.ExistsAsync())
             {
                 var appendText = await appendBlob.DownloadTextAsync();
-                List<PackageAsset> allAssets;
+                List<T> allRecords;
                 using (var reader = new StringReader(appendText))
                 using (var csvReader = new CsvReader(reader, CultureInfo.InvariantCulture))
                 {
                     csvReader.Configuration.HasHeaderRecord = false;
-                    allAssets = csvReader.GetRecords<PackageAsset>().ToList();
+                    allRecords = csvReader.GetRecords<T>().ToList();
                 }
 
-                var prunedAssets = allAssets
-                    .GroupBy(x => new { Id = x.Id.ToLowerInvariant(), Version = x.Version.ToLowerInvariant() }) // Group by unique package version
-                    .Select(g => g
-                        .GroupBy(x => x.ScanId) // Group package version assets by scan
-                        .OrderByDescending(x => x.First().ScanTimestamp) // Ignore all but the most recent scan
-                        .First())
-                    .SelectMany(g => g)
-                    .ToList();
+                var prunedRecords = prune(allRecords).ToList();
 
-                bytes = SerializeAssets(prunedAssets);
+                bytes = SerializeRecords(prunedRecords);
             }
 
-            var compactBlob = GetCompactlob(bucket);
+            var compactBlob = GetCompactlob(container, bucket);
             compactBlob.Properties.ContentType = ContentType;
             await compactBlob.UploadFromByteArrayAsync(bytes, 0, bytes.Length);
         }
 
-        public async Task<int> CountCompactBlobsAsync()
+        public async Task<int> CountCompactBlobsAsync(string container)
         {
-            var container = GetContainer();
+            var containerReference = GetContainer(container);
             var blobCount = 0;
             BlobContinuationToken token = null;
             do
             {
-                var segment = await container.ListBlobsSegmentedAsync(CompactPrefix, token);
+                var segment = await containerReference.ListBlobsSegmentedAsync(CompactPrefix, token);
                 token = segment.ContinuationToken;
                 blobCount += segment.Results.Count();
             }
@@ -116,25 +108,25 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
             return blobCount;
         }
 
-        private async Task AppendAsync(CloudAppendBlob blob, List<PackageAsset> assets)
+        private async Task AppendAsync<T>(CloudAppendBlob blob, IReadOnlyList<T> records)
         {
-            using var memoryStream = new MemoryStream(SerializeAssets(assets));
+            using var memoryStream = new MemoryStream(SerializeRecords(records));
             try
             {
                 await blob.AppendBlockAsync(memoryStream);
             }
             catch (StorageException ex) when (
-                assets.Count >= 2
+                records.Count >= 2
                 && ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.RequestEntityTooLarge)
             {
-                var firstHalf = assets.Take(assets.Count / 2).ToList();
-                var secondHalf = assets.Skip(assets.Count - firstHalf.Count).ToList();
+                var firstHalf = records.Take(records.Count / 2).ToList();
+                var secondHalf = records.Skip(records.Count - firstHalf.Count).ToList();
                 await AppendAsync(blob, firstHalf);
                 await AppendAsync(blob, secondHalf);
             }
         }
 
-        private static byte[] SerializeAssets(List<PackageAsset> assets)
+        private static byte[] SerializeRecords<T>(IReadOnlyList<T> records)
         {
             using var writeMemoryStream = new MemoryStream();
             using (var streamWriter = new StreamWriter(writeMemoryStream, new UTF8Encoding(false)))
@@ -143,32 +135,29 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
                 var options = new TypeConverterOptions { Formats = new[] { "O" } };
                 csvWriter.Configuration.TypeConverterOptionsCache.AddOptions<DateTimeOffset>(options);
                 csvWriter.Configuration.HasHeaderRecord = false;
-                csvWriter.WriteRecords(assets);
+                csvWriter.WriteRecords(records);
             }
 
             return writeMemoryStream.ToArray();
         }
 
-        private static int GetBucket(int bucketCount, string id, string version)
+        private static int GetBucket(int bucketCount, string bucketKey)
         {
-            var lowerId = id.ToLowerInvariant();
-            var lowerVersion = NuGetVersion.Parse(version).ToNormalizedString().ToLowerInvariant();
-
             int bucket;
             using (var algorithm = SHA256.Create())
             {
-                var hash = algorithm.ComputeHash(Encoding.UTF8.GetBytes($"{lowerId}/{lowerVersion}"));
+                var hash = algorithm.ComputeHash(Encoding.UTF8.GetBytes(bucketKey));
                 bucket = (int)(BitConverter.ToUInt64(hash) % (ulong)bucketCount);
             }
 
             return bucket;
         }
 
-        private CloudBlobContainer GetContainer()
+        private CloudBlobContainer GetContainer(string name)
         {
             var storageAccount = _serviceClientFactory.GetStorageAccount();
             var client = storageAccount.CreateCloudBlobClient();
-            var container = client.GetContainerReference("findpackageassets");
+            var container = client.GetContainerReference(name);
             return container;
         }
     }
