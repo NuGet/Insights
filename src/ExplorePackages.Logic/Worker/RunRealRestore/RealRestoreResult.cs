@@ -1,4 +1,5 @@
-﻿using NuGet.ProjectModel;
+﻿using CsvHelper.Configuration.Attributes;
+using NuGet.ProjectModel;
 using System;
 using NuGetPackageIdentity = NuGet.Packaging.Core.PackageIdentity;
 
@@ -51,32 +52,32 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
             EmbedAssemblyCount = library.EmbedAssemblies.Count;
         }
 
-        public DateTimeOffset Timestamp { get; }
-        public string DotnetVersion { get; }
+        [Index(0)] public DateTimeOffset Timestamp { get; }
+        [Index(1)] public string DotnetVersion { get; }
 
-        public string Id { get; set; }
-        public string Version { get; set; }
-        public string Framework { get; set; }
-        public string Template { get; }
+        [Index(2)] public string Id { get; set; }
+        [Index(3)] public string Version { get; set; }
+        [Index(4)] public string Framework { get; set; }
+        [Index(5)] public string Template { get; }
 
-        public bool RestoreSucceeded { get; set; }
-        public bool BuildSucceeded { get; set; }
+        [Index(6)] public bool RestoreSucceeded { get; set; }
+        [Index(7)] public bool BuildSucceeded { get; set; }
 
-        public int TargetCount { get; set; }
-        public int LibraryCount { get; set; }
+        [Index(8)] public int TargetCount { get; set; }
+        [Index(9)] public int LibraryCount { get; set; }
 
-        public int DependencyCount { get; set; }
-        public int FrameworkAssemblyCount { get; set; }
-        public int FrameworkReferenceCount { get; set; }
-        public int RuntimeAssemblyCount { get; set; }
-        public int ResourceAssemblyCount { get; set; }
-        public int CompileTimeAssemblyCount { get; set; }
-        public int NativeLibraryCount { get; set; }
-        public int BuildCount { get; set; }
-        public int BuildMultiTargetingCount { get; set; }
-        public int ContentFileCount { get; set; }
-        public int RuntimeTargetCount { get; set; }
-        public int ToolAssemblyCount { get; set; }
-        public int EmbedAssemblyCount { get; set; }
+        [Index(10)] public int DependencyCount { get; set; }
+        [Index(11)] public int FrameworkAssemblyCount { get; set; }
+        [Index(12)] public int FrameworkReferenceCount { get; set; }
+        [Index(13)] public int RuntimeAssemblyCount { get; set; }
+        [Index(14)] public int ResourceAssemblyCount { get; set; }
+        [Index(15)] public int CompileTimeAssemblyCount { get; set; }
+        [Index(16)] public int NativeLibraryCount { get; set; }
+        [Index(17)] public int BuildCount { get; set; }
+        [Index(18)] public int BuildMultiTargetingCount { get; set; }
+        [Index(19)] public int ContentFileCount { get; set; }
+        [Index(20)] public int RuntimeTargetCount { get; set; }
+        [Index(21)] public int ToolAssemblyCount { get; set; }
+        [Index(22)] public int EmbedAssemblyCount { get; set; }
     }
 }

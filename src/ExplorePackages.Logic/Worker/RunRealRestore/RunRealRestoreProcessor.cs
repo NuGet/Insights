@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Knapcode.ExplorePackages.Logic.Worker.BlobStorage;
+using Microsoft.Extensions.Logging;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 using System;
@@ -8,14 +9,24 @@ using NuGetPackageIdentity = NuGet.Packaging.Core.PackageIdentity;
 
 namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
 {
+    public static class RunRealRestoreConstants
+    {
+        public static readonly string ContainerName = "runrealrestore";
+    }
+
     public class RunRealRestoreProcessor : IMessageProcessor<RunRealRestoreMessage>
     {
         private readonly ProjectHelper _projectHelper;
+        private readonly AppendResultStorageService _storageService;
         private readonly ILogger<RunRealRestoreProcessor> _logger;
 
-        public RunRealRestoreProcessor(ProjectHelper projectHelper, ILogger<RunRealRestoreProcessor> logger)
+        public RunRealRestoreProcessor(
+            ProjectHelper projectHelper,
+            AppendResultStorageService storageService,
+            ILogger<RunRealRestoreProcessor> logger)
         {
             _projectHelper = projectHelper;
+            _storageService = storageService;
             _logger = logger;
         }
 
@@ -27,6 +38,10 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
             var templatePackageVersion = NuGetVersion.Parse(message.TemplatePackageVersion);
             var projectProfile = new ProjectProfile(framework, message.TemplateName, message.TemplatePackageId, templatePackageVersion);
             var result = GetRealRestoreResult(package, projectProfile);
+
+            var storage = new AppendResultStorage(RunRealRestoreConstants.ContainerName, bucketCount: 1);
+            var bucketKey = $"{package.Id}/{packageVersion.ToNormalizedString()}".ToLowerInvariant();
+            await _storageService.AppendAsync(storage, bucketKey, new[] { result });
         }
 
         private RealRestoreResult GetRealRestoreResult(NuGetPackageIdentity package, ProjectProfile projectProfile)
