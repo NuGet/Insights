@@ -1,4 +1,5 @@
 ﻿using Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets;
+using Knapcode.ExplorePackages.Logic.Worker.RunRealRestore;
 using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Logic.Worker
@@ -12,6 +13,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             new SchemaV1<CatalogPageScanMessage>("cps"),
             new SchemaV1<CatalogLeafScanMessage>("cls"),
             new SchemaV1<FindPackageAssetsCompactMessage>("fpa.c"),
+            new SchemaV1<RunRealRestoreMessage>("rrr"),
 
             new SchemaV1<FindLatestLeavesParameters>("fll"),
             new SchemaV1<FindPackageAssetsParameters>("fpa"),

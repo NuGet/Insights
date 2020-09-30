@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Logic.Worker;
 using Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets;
+using Knapcode.ExplorePackages.Logic.Worker.RunRealRestore;
 using Knapcode.MiniZip;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -260,12 +261,15 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<IMessageProcessor<CatalogPageScanMessage>, CatalogPageScanMessageProcessor>();
             serviceCollection.AddTransient<IMessageProcessor<CatalogLeafScanMessage>, CatalogLeafScanMessageProcessor>();
             serviceCollection.AddTransient<IMessageProcessor<FindPackageAssetsCompactMessage>, FindPackageAssetsCompactProcessor>();
+            serviceCollection.AddTransient<IMessageProcessor<RunRealRestoreMessage>, RunRealRestoreProcessor>();
 
             serviceCollection.AddTransient<CatalogScanStorageService>();
             serviceCollection.AddTransient<LatestPackageLeafStorageService>();
             serviceCollection.AddTransient<CursorStorageService>();
 
             serviceCollection.AddTransient<FindPackageAssetsStorageService>();
+
+            serviceCollection.AddTransient<ProjectHelper>();
 
             serviceCollection.AddTransient<CatalogScanDriverFactory>();
             serviceCollection.AddTransient<DownloadLeavesCatalogScanDriver>();

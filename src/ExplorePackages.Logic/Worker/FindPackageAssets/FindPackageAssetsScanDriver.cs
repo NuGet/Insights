@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using NuGet.Client;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
-using NuGet.Packaging.Signing;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
 using System;
