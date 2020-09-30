@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Logic.Worker
@@ -18,7 +20,17 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 
         public async Task ProcessAsync(string message)
         {
-            var deserializedMessage = _serializer.Deserialize(message);
+            object deserializedMessage;
+            try
+            {
+                deserializedMessage = _serializer.Deserialize(message);
+            }
+            catch (JsonException)
+            {
+                message = Encoding.UTF8.GetString(Convert.FromBase64String(message));
+                deserializedMessage = _serializer.Deserialize(message);
+            }
+
             var messageType = deserializedMessage.GetType();
             var processorType = typeof(IMessageProcessor<>).MakeGenericType(deserializedMessage.GetType());
             var processor = _serviceProvider.GetService(processorType);
