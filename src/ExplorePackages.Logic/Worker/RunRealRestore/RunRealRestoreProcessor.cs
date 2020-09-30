@@ -9,11 +9,6 @@ using NuGetPackageIdentity = NuGet.Packaging.Core.PackageIdentity;
 
 namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
 {
-    public static class RunRealRestoreConstants
-    {
-        public static readonly string ContainerName = "runrealrestore";
-    }
-
     public class RunRealRestoreProcessor : IMessageProcessor<RunRealRestoreMessage>
     {
         private readonly ProjectHelper _projectHelper;
