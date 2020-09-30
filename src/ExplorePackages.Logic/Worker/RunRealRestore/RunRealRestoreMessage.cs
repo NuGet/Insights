@@ -12,14 +12,5 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
 
         [JsonProperty("f")]
         public string Framework { get; set; }
-
-        [JsonProperty("tn")]
-        public string TemplateName { get; set; }
-
-        [JsonProperty("tpi")]
-        public string TemplatePackageId { get; set; }
-
-        [JsonProperty("tpv")]
-        public string TemplatePackageVersion { get; set; }
     }
 }

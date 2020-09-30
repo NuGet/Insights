@@ -1,21 +1,20 @@
 ﻿using NuGet.Frameworks;
 using NuGet.Versioning;
+using NuGetPackageIdentity = NuGet.Packaging.Core.PackageIdentity;
 
 namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
 {
     public class ProjectProfile
     {
-        public ProjectProfile(NuGetFramework framework, string templateName, string templatePackageId, NuGetVersion templatePackageVersion)
+        public ProjectProfile(NuGetFramework framework, string templateName, NuGetPackageIdentity templatePackage)
         {
             Framework = framework;
             TemplateName = templateName;
-            TemplatePackageId = templatePackageId;
-            TemplatePackageVersion = templatePackageVersion;
+            TemplatePackage = templatePackage;
         }
 
         public NuGetFramework Framework { get; }
         public string TemplateName { get; }
-        public string TemplatePackageId { get; }
-        public NuGetVersion TemplatePackageVersion { get; }
+        public NuGetPackageIdentity TemplatePackage { get; }
     }
 }

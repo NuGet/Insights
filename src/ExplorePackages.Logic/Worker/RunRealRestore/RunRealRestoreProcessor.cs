@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using NuGetPackageIdentity = NuGet.Packaging.Core.PackageIdentity;
@@ -14,6 +15,20 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
         private readonly ProjectHelper _projectHelper;
         private readonly AppendResultStorageService _storageService;
         private readonly ILogger<RunRealRestoreProcessor> _logger;
+
+        private const string ConsoleTemplate = "console";
+        private const string ClassLibTemplate = "classlib";
+        private static readonly IReadOnlyDictionary<string, string> FrameworkNameToTemplateName = new Dictionary<string, string>
+        {
+            { ".NETStandard", ClassLibTemplate },
+        };
+
+        private static readonly NuGetPackageIdentity CommonProjectTemplates31 = new NuGetPackageIdentity("Microsoft.DotNet.Common.ProjectTemplates.3.1", NuGetVersion.Parse("3.1.2"));
+        private static readonly IReadOnlyDictionary<string, NuGetPackageIdentity> TemplateNameToPackage = new Dictionary<string, NuGetPackageIdentity>
+        {
+            { ConsoleTemplate, CommonProjectTemplates31 },
+            { ClassLibTemplate, CommonProjectTemplates31 },
+        };
 
         public RunRealRestoreProcessor(
             ProjectHelper projectHelper,
@@ -30,8 +45,15 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
             var packageVersion = NuGetVersion.Parse(message.Version);
             var package = new NuGetPackageIdentity(message.Id, packageVersion);
             var framework = NuGetFramework.Parse(message.Framework);
-            var templatePackageVersion = NuGetVersion.Parse(message.TemplatePackageVersion);
-            var projectProfile = new ProjectProfile(framework, message.TemplateName, message.TemplatePackageId, templatePackageVersion);
+
+            if (!FrameworkNameToTemplateName.TryGetValue(framework.DotNetFrameworkName, out var templateName))
+            {
+                templateName = ConsoleTemplate;
+            }
+
+            var templatePackage = TemplateNameToPackage[templateName];
+
+            var projectProfile = new ProjectProfile(framework, templateName, templatePackage);
             var result = GetRealRestoreResult(package, projectProfile);
 
             var storage = new AppendResultStorage(RunRealRestoreConstants.ContainerName, bucketCount: 1);

@@ -39,7 +39,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
             var newResult = CreateProject(projectDir, projectProfile);
             if (newResult.Output.Contains("Couldn't find an installed template that matches the input, searching online for one that does..."))
             {
-                ExecuteDotnet("new", "-i", $"{projectProfile.TemplatePackageId}::{projectProfile.TemplatePackageVersion.ToNormalizedString()}");
+                ExecuteDotnet("new", "-i", $"{projectProfile.TemplatePackage.Id}::{projectProfile.TemplatePackage.Version.ToNormalizedString()}");
                 CreateProject(projectDir, projectProfile);
             }
 
@@ -138,10 +138,8 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
         {
             using var process = new Process();
 
+            // If we don't disable this, the .NET CLI fails with unauthorized errors in the Win32 registry.
             process.StartInfo.EnvironmentVariables.Add("DOTNET_ADD_GLOBAL_TOOLS_TO_PATH", "false");
-            // process.StartInfo.EnvironmentVariables.Add("DOTNET_CLI_TELEMETRY_OPTOUT", "true");
-            // process.StartInfo.EnvironmentVariables.Add("DOTNET_GENERATE_ASPNET_CERTIFICATE", "false");
-            // process.StartInfo.EnvironmentVariables.Add("DOTNET_NOLOGO", "true");
 
             process.StartInfo.FileName = "dotnet";
             process.StartInfo.RedirectStandardOutput = true;
