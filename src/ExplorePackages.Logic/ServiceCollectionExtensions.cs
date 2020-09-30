@@ -263,6 +263,7 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<IMessageProcessor<CatalogLeafScanMessage>, CatalogLeafScanMessageProcessor>();
             serviceCollection.AddTransient<IMessageProcessor<FindPackageAssetsCompactMessage>, FindPackageAssetsCompactProcessor>();
             serviceCollection.AddTransient<IMessageProcessor<RunRealRestoreMessage>, RunRealRestoreProcessor>();
+            serviceCollection.AddTransient<IMessageProcessor<RunRealRestoreCompactMessage>, RunRealRestoreCompactProcessor>();
 
             serviceCollection.AddTransient<CatalogScanStorageService>();
             serviceCollection.AddTransient<LatestPackageLeafStorageService>();

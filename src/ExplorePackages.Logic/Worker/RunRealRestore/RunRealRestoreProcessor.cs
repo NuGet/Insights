@@ -46,7 +46,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
             var package = new NuGetPackageIdentity(message.Id, packageVersion);
             var framework = NuGetFramework.Parse(message.Framework);
 
-            if (!FrameworkNameToTemplateName.TryGetValue(framework.DotNetFrameworkName, out var templateName))
+            if (!FrameworkNameToTemplateName.TryGetValue(framework.Framework, out var templateName))
             {
                 templateName = ConsoleTemplate;
             }

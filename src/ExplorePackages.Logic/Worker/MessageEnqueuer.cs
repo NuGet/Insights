@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets;
+using Knapcode.ExplorePackages.Logic.Worker.RunRealRestore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
@@ -45,6 +46,18 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 
         public async Task EnqueueAsync(IReadOnlyList<FindPackageAssetsCompactMessage> messages) => await EnqueueAsync(messages, TimeSpan.Zero);
         public async Task EnqueueAsync(IReadOnlyList<FindPackageAssetsCompactMessage> messages, TimeSpan notBefore)
+        {
+            await EnqueueAsync(messages, m => _serializer.Serialize(m), notBefore);
+        }
+
+        public async Task EnqueueAsync(IReadOnlyList<RunRealRestoreMessage> messages) => await EnqueueAsync(messages, TimeSpan.Zero);
+        public async Task EnqueueAsync(IReadOnlyList<RunRealRestoreMessage> messages, TimeSpan notBefore)
+        {
+            await EnqueueAsync(messages, m => _serializer.Serialize(m), notBefore);
+        }
+
+        public async Task EnqueueAsync(IReadOnlyList<RunRealRestoreCompactMessage> messages) => await EnqueueAsync(messages, TimeSpan.Zero);
+        public async Task EnqueueAsync(IReadOnlyList<RunRealRestoreCompactMessage> messages, TimeSpan notBefore)
         {
             await EnqueueAsync(messages, m => _serializer.Serialize(m), notBefore);
         }
