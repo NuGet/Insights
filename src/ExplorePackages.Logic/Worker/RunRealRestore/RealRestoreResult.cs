@@ -25,8 +25,8 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
         public RealRestoreResult(
             DateTimeOffset timestamp,
             string dotnetVersion,
-            NuGetPackageIdentity package,
             TimeSpan duration,
+            NuGetPackageIdentity package,
             ProjectProfile projectProfile,
             LockFile assetsFile,
             LockFileTarget target,

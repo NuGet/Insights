@@ -38,6 +38,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
             }
             Directory.CreateDirectory(projectDir);
 
+            // Execute this with a machine-wide lock since it has showed to have concurrency issues.
             var lockPath = Path.Combine(Path.GetTempPath(), "ExplorePackages.Knapcode", "install-template-lock");
             ConcurrencyUtilities.ExecuteWithFileLocked(
                 lockPath,
