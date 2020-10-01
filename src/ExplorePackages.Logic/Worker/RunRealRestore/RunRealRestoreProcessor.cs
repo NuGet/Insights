@@ -69,10 +69,11 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
                 result.ErrorBlobPath = $"errors/{StorageUtility.GenerateDescendingId()}_{package.Id}_{package.Version.ToNormalizedString()}_{framework.GetShortFolderName()}.json";
                 var blob = container.GetBlockBlobReference(result.ErrorBlobPath);
                 blob.Properties.ContentType = "application/json";
-                await blob.UploadTextAsync(JsonConvert.SerializeObject(_projectHelper.CommandResults));
+                var errorBlob = new { Result = result, CommandResults = _projectHelper.CommandResults };
+                await blob.UploadTextAsync(JsonConvert.SerializeObject(errorBlob));
             }
 
-            var storage = new AppendResultStorage(RunRealRestoreConstants.ContainerName, bucketCount: 1);
+            var storage = new AppendResultStorage(RunRealRestoreConstants.ContainerName, bucketCount: 1000);
             var bucketKey = $"{package.Id}/{packageVersion.ToNormalizedString()}".ToLowerInvariant();
             await _storageService.AppendAsync(storage, bucketKey, new[] { result });
         }

@@ -64,11 +64,33 @@ namespace Knapcode.ExplorePackages.Tool
         {
             var frameworks = new[]
             {
-                ".NETCoreApp,Version=v3.1",
-                ".NETStandard,Version=v2.0",
-                ".NETFramework,Version=v4.7.2",
-                ".NETCoreApp,Version=v2.2",
+                ".NETCoreApp,Version=v1.1",
+                ".NETCoreApp,Version=v2.0",
                 ".NETCoreApp,Version=v2.1",
+                ".NETCoreApp,Version=v2.2",
+                ".NETCoreApp,Version=v3.0",
+                ".NETCoreApp,Version=v3.1",
+                ".NETCoreApp,Version=v5.0",
+                ".NETFramework,Version=v2.0",
+                ".NETFramework,Version=v3.5",
+                ".NETFramework,Version=v4.0",
+                ".NETFramework,Version=v4.5.1",
+                ".NETFramework,Version=v4.5.2",
+                ".NETFramework,Version=v4.5",
+                ".NETFramework,Version=v4.6.1",
+                ".NETFramework,Version=v4.6.2",
+                ".NETFramework,Version=v4.6",
+                ".NETFramework,Version=v4.7.1",
+                ".NETFramework,Version=v4.7.2",
+                ".NETFramework,Version=v4.7",
+                ".NETFramework,Version=v4.8",
+                ".NETStandard,Version=v1.0",
+                ".NETStandard,Version=v1.1",
+                ".NETStandard,Version=v1.3",
+                ".NETStandard,Version=v1.4",
+                ".NETStandard,Version=v1.5",
+                ".NETStandard,Version=v1.6",
+                ".NETStandard,Version=v2.0",
             }
                 .Select(x => NuGetFramework.Parse(x))
                 .ToList();
@@ -79,7 +101,7 @@ namespace Knapcode.ExplorePackages.Tool
             var logger = NullLogger.Instance;
             var cancellationToken = CancellationToken.None;
 
-            var take = 2;
+            var take = 1000;
             Console.Write($"Searching for top {take} packages...");
             var results = await search.SearchAsync(
                 searchTerm: string.Empty,
