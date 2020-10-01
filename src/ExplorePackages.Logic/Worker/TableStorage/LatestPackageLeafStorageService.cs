@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage.Table;
-using static Knapcode.ExplorePackages.Logic.Worker.TableStorageUtility;
+using static Knapcode.ExplorePackages.Logic.Worker.StorageUtility;
 
 namespace Knapcode.ExplorePackages.Logic.Worker
 {

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
 using System;
@@ -22,10 +23,11 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
             _logger = logger;
         }
 
+        public List<CommandResult> CommandResults { get; } = new List<CommandResult>();
+
         public string GetDotnetVersion()
         {
-            var result = ExecuteDotnet("--version");
-            return result.Output.Trim();
+            return ExecuteDotnet("--version").Output.Trim();
         }
 
         public string ClearAndCreateProject(string projectDir, ProjectProfile projectProfile)
@@ -36,12 +38,18 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
             }
             Directory.CreateDirectory(projectDir);
 
-            var newResult = CreateProject(projectDir, projectProfile);
-            if (newResult.Output.Contains("Couldn't find an installed template that matches the input, searching online for one that does..."))
-            {
-                ExecuteDotnet("new", "-i", $"{projectProfile.TemplatePackage.Id}::{projectProfile.TemplatePackage.Version.ToNormalizedString()}");
-                CreateProject(projectDir, projectProfile);
-            }
+            var lockPath = Path.Combine(Path.GetTempPath(), "ExplorePackages.Knapcode", "install-template-lock");
+            ConcurrencyUtilities.ExecuteWithFileLocked(
+                lockPath,
+                () =>
+                {
+                    var newResult = CreateProject(projectDir, projectProfile);
+                    if (newResult.Output.Contains("Couldn't find an installed template that matches the input, searching online for one that does..."))
+                    {
+                        ExecuteDotnet("new", "-i", $"{projectProfile.TemplatePackage.Id}::{projectProfile.TemplatePackage.Version.ToNormalizedString()}");
+                        CreateProject(projectDir, projectProfile);
+                    }
+                });
 
             var projectPath = Path.Combine(projectDir, "TestProject.csproj");
             if (!File.Exists(projectPath))
@@ -155,43 +163,57 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
             process.OutputDataReceived += (s, e) => outputQueue.Enqueue(e.Data);
             process.ErrorDataReceived += (s, e) => outputQueue.Enqueue(e.Data);
 
+            var startTimestamp = DateTimeOffset.UtcNow;
+
             process.Start();
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
-            var exited = process.WaitForExit(milliseconds: 20 * 1000);
+            var exited = process.WaitForExit(milliseconds: (int)TimeSpan.FromMinutes(5).TotalMilliseconds);
+
+            var timeout = false;
             if (!exited)
             {
                 process.Kill();
-                throw new InvalidOperationException("The command took too long to complete.");  
+                timeout = true;
+            }
+            else
+            {
+                // We must call this to flush all asynchronous events.
+                process.WaitForExit();
             }
 
-            _logger.LogInformation("Exit code: {ExitCode}", process.ExitCode);
+            var endTimestamp = DateTimeOffset.UtcNow;
+
+            if (exited)
+            {
+                _logger.LogInformation("Exit code: {ExitCode}", process.ExitCode);
+            }
 
             var output = string.Join(Environment.NewLine, outputQueue);
             _logger.LogInformation("Output:" + Environment.NewLine + "{Output}", output);
+
+            var result = new CommandResult(
+                startTimestamp,
+                endTimestamp,
+                process.StartInfo.FileName,
+                process.StartInfo.ArgumentList.ToList(),
+                timeout ? (int?)null : process.ExitCode,
+                timeout,
+                output);
+
+            CommandResults.Add(result);
+
+            if (timeout)
+            {
+                throw new InvalidOperationException("The command took too long to complete.");
+            }
 
             if (process.ExitCode != 0)
             {
                 throw new InvalidOperationException($"The command failed with exit code {process.ExitCode}." + Environment.NewLine + output);
             }
 
-            return new CommandResult(process.StartInfo.FileName, process.StartInfo.ArgumentList.ToList(), process.ExitCode, output);
-        }
-
-        private class CommandResult
-        {
-            public CommandResult(string fileName, IReadOnlyList<string> arguments, int exitCode, string output)
-            {
-                FileName = fileName;
-                Arguments = arguments;
-                ExitCode = exitCode;
-                Output = output;
-            }
-
-            public string FileName { get; }
-            public IReadOnlyList<string> Arguments { get; }
-            public int ExitCode { get; }
-            public string Output { get; }
+            return result;
         }
     }
 }

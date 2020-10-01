@@ -4,5 +4,6 @@
     "logLevel": {
       "default": "Error"
     }
-  }
+  },
+  "functionTimeout": "00:10:00"
 }

@@ -1,5 +1,4 @@
 ﻿using NuGet.Frameworks;
-using NuGet.Versioning;
 using NuGetPackageIdentity = NuGet.Packaging.Core.PackageIdentity;
 
 namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore

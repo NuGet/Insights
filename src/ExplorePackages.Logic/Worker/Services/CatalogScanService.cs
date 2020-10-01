@@ -57,7 +57,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 
             // Start a new scan.
             _logger.LogInformation("Attempting to start a catalog index scan from ({Min}, {Max}].", min, max);
-            var scanId = TableStorageUtility.GenerateDescendingId();
+            var scanId = StorageUtility.GenerateDescendingId();
             var catalogIndexScanMessage = new CatalogIndexScanMessage { ScanId = scanId };
             await _messageEnqueuer.EnqueueAsync(new[] { catalogIndexScanMessage });
 
