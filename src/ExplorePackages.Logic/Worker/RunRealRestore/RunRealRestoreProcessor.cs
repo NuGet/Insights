@@ -33,6 +33,15 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
             { ClassLibTemplate, CommonProjectTemplates31 },
         };
 
+        private static HashSet<string> IgnorePackageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            // These packages are part of the SDK after netcoreapp3.0, therefore they will not appear in the assets
+            // file, which messes up the analysis in this class.
+            // https://github.com/dotnet/sdk/blob/44f381b62d466565639d51847c9127afbe7062a9/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Sdk.DefaultItems.targets#L120-L140
+            "Microsoft.AspNetCore.App",
+            "Microsoft.AspNetCore.All",
+        };
+
         public RunRealRestoreProcessor(
             ProjectHelper projectHelper,
             AppendResultStorageService storageService,
@@ -47,6 +56,12 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
 
         public async Task ProcessAsync(RunRealRestoreMessage message)
         {
+            if (IgnorePackageIds.Contains(message.Id))
+            {
+                _logger.LogWarning("Package {PackageId} ignored. No real restore will be run.", message.Id);
+                return;
+            }
+
             var packageVersion = NuGetVersion.Parse(message.Version);
             var package = new NuGetPackageIdentity(message.Id, packageVersion);
             var framework = NuGetFramework.Parse(message.Framework);
