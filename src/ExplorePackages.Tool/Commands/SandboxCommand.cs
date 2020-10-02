@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoMapper;
 using Knapcode.ExplorePackages.Logic;
 using Knapcode.ExplorePackages.Logic.Worker;
 using Knapcode.ExplorePackages.Logic.Worker.BlobStorage;
@@ -16,6 +18,7 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGetPackageIdentity = NuGet.Packaging.Core.PackageIdentity;
 
 namespace Knapcode.ExplorePackages.Tool
 {
@@ -119,38 +122,43 @@ namespace Knapcode.ExplorePackages.Tool
 
         private async Task EnqueueRunRealRestoreAsync()
         {
-            var frameworkCount = 1000;
-            var packageCount = 1;
+            var packageCount = 10000;
 
+            // Source: https://docs.microsoft.com/en-us/dotnet/standard/frameworks
             var frameworks = new[]
             {
+                ".NETCoreApp,Version=v1.0",
                 ".NETCoreApp,Version=v1.1",
                 ".NETCoreApp,Version=v2.0",
                 ".NETCoreApp,Version=v2.1",
                 ".NETCoreApp,Version=v2.2",
                 ".NETCoreApp,Version=v3.0",
                 ".NETCoreApp,Version=v3.1",
-                ".NETCoreApp,Version=v5.0",
+                // ".NETCoreApp,Version=v5.0", // Not yet supported in the .NET CLI installed on Azure Functions
+                // ".NETFramework,Version=v1.1", // Does not appear significantly in the telemetry
                 ".NETFramework,Version=v2.0",
                 ".NETFramework,Version=v3.5",
                 ".NETFramework,Version=v4.0",
+                // ".NETFramework,Version=v4.0.3", // Does not appear significantly in the telemetry
+                ".NETFramework,Version=v4.5",
                 ".NETFramework,Version=v4.5.1",
                 ".NETFramework,Version=v4.5.2",
-                ".NETFramework,Version=v4.5",
+                ".NETFramework,Version=v4.6",
                 ".NETFramework,Version=v4.6.1",
                 ".NETFramework,Version=v4.6.2",
-                ".NETFramework,Version=v4.6",
+                ".NETFramework,Version=v4.7",
                 ".NETFramework,Version=v4.7.1",
                 ".NETFramework,Version=v4.7.2",
-                ".NETFramework,Version=v4.7",
                 ".NETFramework,Version=v4.8",
                 ".NETStandard,Version=v1.0",
                 ".NETStandard,Version=v1.1",
+                ".NETStandard,Version=v1.2",
                 ".NETStandard,Version=v1.3",
                 ".NETStandard,Version=v1.4",
                 ".NETStandard,Version=v1.5",
                 ".NETStandard,Version=v1.6",
                 ".NETStandard,Version=v2.0",
+                ".NETStandard,Version=v2.1",
             }
                 .Select(x => NuGetFramework.Parse(x))
                 .ToList();
@@ -161,21 +169,39 @@ namespace Knapcode.ExplorePackages.Tool
             var logger = NullLogger.Instance;
             var cancellationToken = CancellationToken.None;
 
-            Console.Write($"Searching for top {packageCount} packages...");
-            var results = await search.SearchAsync(
-                searchTerm: string.Empty,
-                new SearchFilter(includePrerelease: true),
-                skip: 0,
-                take: packageCount,
-                log: logger,
-                cancellationToken: cancellationToken);
-            Console.WriteLine(" done.");
+            var packages = new HashSet<NuGetPackageIdentity>();
+            var skip = 0;
+            var hasMoreResults = true;
+            do
+            {
+                var take = Math.Min(1000, packageCount - packages.Count);
+
+                Console.Write($"Searching for packages, skip = {skip}, take = {take}...");
+                var results = await search.SearchAsync(
+                    searchTerm: string.Empty,
+                    new SearchFilter(includePrerelease: false),
+                    skip: skip,
+                    take: take,
+                    log: logger,
+                    cancellationToken: cancellationToken);
+                Console.WriteLine(" done.");
+
+                foreach (var result in results)
+                {
+                    packages.Add(result.Identity);
+                }
+
+                var resultCount = results.Count();
+                skip += resultCount;
+                hasMoreResults = resultCount >= take;
+            }
+            while (packages.Count < packageCount && hasMoreResults);
+
+            Console.WriteLine($"Found {packages.Count} packages.");
 
             Console.WriteLine("Enqueueing messages...");
-            var messages = results
-                .SelectMany(p => frameworks
-                    .Take(frameworkCount)
-                    .Select(f => new { Framework = f, Package = p.Identity }))
+            var messages = packages
+                .SelectMany(p => frameworks.Select(f => new { Framework = f, Package = p }))
                 .Select(m => new RunRealRestoreMessage
                 {
                     Id = m.Package.Id,

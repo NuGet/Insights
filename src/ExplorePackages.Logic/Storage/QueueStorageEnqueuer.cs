@@ -48,10 +48,17 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 _logger.LogInformation("Enqueueing {Count} individual messages.", messages.Count);
                 var queue = _workerQueueFactory.GetQueue();
+                var completedCount = 0;
                 foreach (var message in messages)
                 {
                     await AddMessageAsync(queue, message, visibilityDelay);
+                    completedCount++;
+                    if (completedCount % 500 == 0 && completedCount < messages.Count)
+                    {
+                        _logger.LogInformation("Enqueued {CompletedCount} of {TotalCount} messages.", completedCount, messages.Count);
+                    }
                 }
+                _logger.LogInformation("Done enqueueing {Count} individual messages.", messages.Count);
             }
             else
             {
