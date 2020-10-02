@@ -30,5 +30,6 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
         public int? ExitCode { get; }
         public bool Timeout { get; }
         public string Output { get; }
+        public bool Succeeded => ExitCode == 0 && !Timeout;
     }
 }

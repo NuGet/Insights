@@ -27,7 +27,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
 
         public string GetDotnetVersion()
         {
-            return ExecuteDotnet("--version").Output.Trim();
+            return ExecuteDotnet(new[] { "--version" }).Output.Trim();
         }
 
         public string ClearAndCreateProject(string projectDir, ProjectProfile projectProfile)
@@ -47,7 +47,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
                     var newResult = CreateProject(projectDir, projectProfile);
                     if (newResult.Output.Contains("Couldn't find an installed template that matches the input, searching online for one that does..."))
                     {
-                        ExecuteDotnet("new", "-i", $"{projectProfile.TemplatePackage.Id}::{projectProfile.TemplatePackage.Version.ToNormalizedString()}");
+                        ExecuteDotnet(new[] { "new", "-i", $"{projectProfile.TemplatePackage.Id}::{projectProfile.TemplatePackage.Version.ToNormalizedString()}" });
                         CreateProject(projectDir, projectProfile);
                     }
                 });
@@ -65,7 +65,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
 
         private CommandResult CreateProject(string projectDir, ProjectProfile projectProfile)
         {
-            return ExecuteDotnet("new", projectProfile.TemplateName, "-o", projectDir, "-n", "TestProject");
+            return ExecuteDotnet(new[] { "new", projectProfile.TemplateName, "-o", projectDir, "-n", "TestProject" });
         }
 
         public void SetFramework(string projectPath, NuGetFramework framework)
@@ -88,17 +88,17 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
 
         public void AddPackage(string projectPath, NuGetPackageIdentity identity)
         {
-            ExecuteDotnet("add", projectPath, "package", identity.Id, "-v", identity.Version.ToNormalizedString(), "-n");
+            ExecuteDotnet(new[] { "add", projectPath, "package", identity.Id, "-v", identity.Version.ToNormalizedString(), "-n" });
         }
 
-        public void Restore(string projectPath)
+        public CommandResult Restore(string projectPath)
         {
-            ExecuteDotnet("restore", projectPath);
+            return ExecuteDotnet(new[] { "restore", projectPath }, throwOnFailure: false);
         }
 
-        public void Build(string projectPath)
+        public CommandResult Build(string projectPath)
         {
-            ExecuteDotnet("build", projectPath);
+            return ExecuteDotnet(new[] { "build", projectPath }, throwOnFailure: false);
         }
 
         public LockFile ReadAssetsFileOrNull(string projectPath)
@@ -149,7 +149,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
             return library;
         }
 
-        private CommandResult ExecuteDotnet(params string[] arguments)
+        private CommandResult ExecuteDotnet(string[] arguments, bool throwOnFailure = true)
         {
             using var process = new Process();
 
@@ -210,12 +210,12 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
 
             CommandResults.Add(result);
 
-            if (timeout)
+            if (throwOnFailure && timeout)
             {
                 throw new InvalidOperationException("The command took too long to complete.");
             }
 
-            if (process.ExitCode != 0)
+            if (throwOnFailure && process.ExitCode != 0)
             {
                 throw new InvalidOperationException($"The command failed with exit code {process.ExitCode}." + Environment.NewLine + output);
             }

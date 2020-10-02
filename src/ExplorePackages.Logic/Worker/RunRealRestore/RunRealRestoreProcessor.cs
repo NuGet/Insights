@@ -1,7 +1,9 @@
 ﻿using Knapcode.ExplorePackages.Logic.Worker.BlobStorage;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NuGet.Frameworks;
+using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
 using System;
@@ -9,6 +11,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using NuGetPackageIdentity = NuGet.Packaging.Core.PackageIdentity;
 
@@ -79,7 +83,9 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
             var result = GetRealRestoreResult(package, projectProfile);
 
             var commandSucceeded = result.RestoreSucceeded && result.BuildSucceeded.GetValueOrDefault(false);
-            if (!commandSucceeded && !result.OnlyNU1202 && !result.OnlyNU1213)
+            var knownError = new[] { result.OnlyNU1202, result.OnlyNU1213, result.OnlyMSB3644 }.Any(x => x == true);
+
+            if (!commandSucceeded && !knownError)
             {
                 var account = _serviceClientFactory.GetStorageAccount();
                 var client = account.CreateCloudBlobClient();
@@ -110,30 +116,29 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
                 _projectHelper.SetFramework(projectPath, projectProfile.Framework);
                 _projectHelper.AddPackage(projectPath, package);
 
-                var restoreSucceeded = false;
-                try
-                {
-                    _projectHelper.Restore(projectPath);
-                    restoreSucceeded = true;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogInformation(ex, "Restore failed.");
-                }
+                var restoreResult = _projectHelper.Restore(projectPath);
+                var restoreSucceeded = restoreResult.Succeeded;
 
                 // A build requires a successful restore.
                 bool? buildSucceeded = null;
+                bool? onlyMSB3644 = null;
+                string buildErrorCodes = null;
                 if (restoreSucceeded)
                 {
-                    buildSucceeded = false;
-                    try
+                    var buildResult = _projectHelper.Build(projectPath);
+                    buildSucceeded = buildResult.Succeeded;
+
+                    var buildErrorCodeCounts = Regex
+                        .Matches(buildResult.Output, "error\\s+(\\w+\\d+)\\s*:", RegexOptions.IgnoreCase)
+                        .Cast<Match>()
+                        .GroupBy(x => x.Groups[1].Value.ToUpperInvariant())
+                        .ToDictionary(x => x.Key, x => x.Count());
+
+                    onlyMSB3644 = false;
+                    if (buildErrorCodeCounts.Any())
                     {
-                        _projectHelper.Build(projectPath);
-                        buildSucceeded = true;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogInformation(ex, "Build failed.");
+                        buildErrorCodes = JsonConvert.SerializeObject(buildErrorCodeCounts);
+                        onlyMSB3644 = !buildResult.Succeeded && buildErrorCodeCounts.Count == 1 && buildErrorCodeCounts.ContainsKey("MSB3644");
                     }
                 }
 
@@ -147,11 +152,19 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
                     library = _projectHelper.GetMatchingLibrary(target, package);
                 }
 
-                return new RealRestoreResult(timestamp, dotnetVersion, stopwatch.Elapsed, package, projectProfile, assetsFile, target, library)
-                {
-                    RestoreSucceeded = restoreSucceeded,
-                    BuildSucceeded = buildSucceeded,
-                };
+                return new RealRestoreResult(
+                    timestamp,
+                    dotnetVersion,
+                    stopwatch.Elapsed,
+                    package,
+                    projectProfile,
+                    restoreSucceeded,
+                    buildSucceeded,
+                    assetsFile,
+                    target,
+                    library,
+                    buildErrorCodes,
+                    onlyMSB3644);
             }
             finally
             {
