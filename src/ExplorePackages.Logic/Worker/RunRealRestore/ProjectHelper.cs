@@ -101,10 +101,16 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
             ExecuteDotnet("build", projectPath);
         }
 
-        public LockFile ReadAssetsFile(string projectPath)
+        public LockFile ReadAssetsFileOrNull(string projectPath)
         {
             var projectDir = Path.GetDirectoryName(projectPath);
             var assetsFilePath = Path.Combine(projectDir, "obj", LockFileFormat.AssetsFileName);
+
+            if (!File.Exists(assetsFilePath))
+            {
+                return null;
+            }
+
             var format = new LockFileFormat();
             return format.Read(assetsFilePath);
         }

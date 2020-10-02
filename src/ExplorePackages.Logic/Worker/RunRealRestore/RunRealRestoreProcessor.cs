@@ -2,11 +2,13 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NuGet.Frameworks;
+using NuGet.ProjectModel;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using NuGetPackageIdentity = NuGet.Packaging.Core.PackageIdentity;
 
@@ -33,7 +35,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
             { ClassLibTemplate, CommonProjectTemplates31 },
         };
 
-        private static HashSet<string> IgnorePackageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        private static HashSet<string> IgnoredPackageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             // These packages are part of the SDK after netcoreapp3.0, therefore they will not appear in the assets
             // file, which messes up the analysis in this class.
@@ -56,7 +58,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
 
         public async Task ProcessAsync(RunRealRestoreMessage message)
         {
-            if (IgnorePackageIds.Contains(message.Id))
+            if (IgnoredPackageIds.Contains(message.Id))
             {
                 _logger.LogWarning("Package {PackageId} ignored. No real restore will be run.", message.Id);
                 return;
@@ -76,7 +78,8 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
             var projectProfile = new ProjectProfile(framework, templateName, templatePackage);
             var result = GetRealRestoreResult(package, projectProfile);
 
-            if (!result.RestoreSucceeded || !result.BuildSucceeded)
+            var commandSucceeded = result.RestoreSucceeded && result.BuildSucceeded.GetValueOrDefault(false);
+            if (!commandSucceeded && !result.OnlyNU1202 && !result.OnlyNU1213)
             {
                 var account = _serviceClientFactory.GetStorageAccount();
                 var client = account.CreateCloudBlobClient();
@@ -84,7 +87,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
                 result.ErrorBlobPath = $"errors/{StorageUtility.GenerateDescendingId()}_{package.Id}_{package.Version.ToNormalizedString()}_{framework.GetShortFolderName()}.json";
                 var blob = container.GetBlockBlobReference(result.ErrorBlobPath);
                 blob.Properties.ContentType = "application/json";
-                var errorBlob = new { Result = result, CommandResults = _projectHelper.CommandResults };
+                var errorBlob = new RunRealRestoreErrorResult { Result = result, CommandResults = _projectHelper.CommandResults };
                 await blob.UploadTextAsync(JsonConvert.SerializeObject(errorBlob));
             }
 
@@ -107,34 +110,46 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
                 _projectHelper.SetFramework(projectPath, projectProfile.Framework);
                 _projectHelper.AddPackage(projectPath, package);
 
+                var restoreSucceeded = false;
                 try
                 {
                     _projectHelper.Restore(projectPath);
+                    restoreSucceeded = true;
                 }
                 catch (Exception ex)
                 {
                     _logger.LogInformation(ex, "Restore failed.");
-                    return new RealRestoreResult(timestamp, dotnetVersion, stopwatch.Elapsed, package, projectProfile);
                 }
 
-                var buildSucceeded = false;
-                try
+                // A build requires a successful restore.
+                bool? buildSucceeded = null;
+                if (restoreSucceeded)
                 {
-                    _projectHelper.Build(projectPath);
-                    buildSucceeded = true;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogInformation(ex, "Build failed.");
+                    buildSucceeded = false;
+                    try
+                    {
+                        _projectHelper.Build(projectPath);
+                        buildSucceeded = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogInformation(ex, "Build failed.");
+                    }
                 }
 
-                var assetsFile = _projectHelper.ReadAssetsFile(projectPath);
-                var target = _projectHelper.GetMatchingTarget(assetsFile, projectProfile.Framework);
-                var library = _projectHelper.GetMatchingLibrary(target, package);
+                // An assets file is sometimes still produces when restore fails (N1202, for example).
+                var assetsFile = _projectHelper.ReadAssetsFileOrNull(projectPath);
+                LockFileTarget target = null;
+                LockFileTargetLibrary library = null;
+                if (restoreSucceeded && assetsFile != null)
+                {
+                    target = _projectHelper.GetMatchingTarget(assetsFile, projectProfile.Framework);
+                    library = _projectHelper.GetMatchingLibrary(target, package);
+                }
 
                 return new RealRestoreResult(timestamp, dotnetVersion, stopwatch.Elapsed, package, projectProfile, assetsFile, target, library)
                 {
-                    RestoreSucceeded = true,
+                    RestoreSucceeded = restoreSucceeded,
                     BuildSucceeded = buildSucceeded,
                 };
             }
