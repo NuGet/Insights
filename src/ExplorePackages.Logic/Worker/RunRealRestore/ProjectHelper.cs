@@ -210,7 +210,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
 
             CommandResults.Add(result);
 
-            if (throwOnFailure && timeout)
+            if (timeout)
             {
                 throw new InvalidOperationException("The command took too long to complete.");
             }

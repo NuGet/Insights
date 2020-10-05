@@ -18,6 +18,7 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 using NuGetPackageIdentity = NuGet.Packaging.Core.PackageIdentity;
 
 namespace Knapcode.ExplorePackages.Tool
@@ -72,9 +73,10 @@ namespace Knapcode.ExplorePackages.Tool
             // MSB3644: { "n":"rrr","v":1,"d":{ "i":"Newtonsoft.Json","v":"12.0.3","f":"net35"} }
 
             // await _catalogScanService.UpdateGetPackageAssets();
-            await EnqueueRunRealRestoreAsync();
-            // await EnqueueRunRealRestoreCompactAsync();
+            // await EnqueueRunRealRestoreAsync();
+            await EnqueueRunRealRestoreCompactAsync();
             // await ReadErrorBlobsAsync();
+            // await RetryRunRealRestoreAsync();
         }
 
         private async Task ReadErrorBlobsAsync()
@@ -83,28 +85,33 @@ namespace Knapcode.ExplorePackages.Tool
             var baseUrl = "https://jverexplorepackages.blob.core.windows.net/runrealrestore/";
             using var httpClient = new HttpClient();
 
+            var i = 0;
             foreach (var line in lines)
             {
+                i++;
+                if (i % 500 == 0)
+                {
+                    Console.WriteLine(i);
+                }
+
                 var url = $"{baseUrl}{line.Trim()}";
-                Console.WriteLine(url);
                 var json = await httpClient.GetStringAsync(url);
                 var errorResult = JsonConvert.DeserializeObject<RunRealRestoreErrorResult>(json);
-                var restoreCommand = errorResult.CommandResults.FirstOrDefault(x => x.Arguments.Contains("restore"));
+                var restoreCommand = errorResult.CommandResults.FirstOrDefault(x => x.Arguments.FirstOrDefault() == "restore");
+                var buildCommand = errorResult.CommandResults.FirstOrDefault(x => x.Arguments.FirstOrDefault() == "build");
+
                 if (restoreCommand == null)
                 {
-                    Console.WriteLine("  No restore found!");
+                    Console.WriteLine($"{errorResult.Result.Id},{errorResult.Result.Version},{errorResult.Result.Framework}");
                     continue;
                 }
 
-                var matches = Regex.Matches(restoreCommand.Output, "(NU\\d+)");
-                var errors = matches
-                    .GroupBy(x => x.Groups[1].Value)
-                    .ToDictionary(x => x.Key, x => x.Count())
-                    .OrderByDescending(x => x.Value);
-                
-                foreach (var pair in errors)
+                if (restoreCommand.Timeout
+                    || restoreCommand.Output.Contains("There is not enough space on the disk.")
+                    || (buildCommand != null && (buildCommand.Timeout || buildCommand.Output.Contains("There is not enough space on the disk."))))
                 {
-                    Console.WriteLine($"  {pair.Key}: {pair.Value}");
+                    Console.WriteLine($"{errorResult.Result.Id},{errorResult.Result.Version},{errorResult.Result.Framework}");
+                    continue;
                 }
             }
         }
@@ -120,9 +127,22 @@ namespace Knapcode.ExplorePackages.Tool
             Console.WriteLine("Done.");
         }
 
+        private async Task RetryRunRealRestoreAsync()
+        {
+            var lines = File.ReadAllLines(@"C:\Users\jver\Desktop\IdVersionFramework.txt");
+            var messages = new List<RunRealRestoreMessage>();
+            foreach (var line in lines)
+            {
+                var pieces = line.Split('\t').Select(x => x.Trim()).ToList();
+                messages.Add(new RunRealRestoreMessage { Id = pieces[0], Version = pieces[1], Framework = pieces[2] });
+            }
+
+            await _messageEnqueuer.EnqueueAsync(messages);
+        }
+
         private async Task EnqueueRunRealRestoreAsync()
         {
-            var packageCount = 10000;
+            var packageCount = 5001;
 
             // Source: https://docs.microsoft.com/en-us/dotnet/standard/frameworks
             var frameworks = new[]
@@ -162,7 +182,7 @@ namespace Knapcode.ExplorePackages.Tool
             }
                 .Select(x => NuGetFramework.Parse(x))
                 .ToList();
-
+            /*
             var source = "https://api.nuget.org/v3/index.json";
             var repository = Repository.Factory.GetCoreV3(source);
             var search = await repository.GetResourceAsync<PackageSearchResource>();
@@ -170,6 +190,7 @@ namespace Knapcode.ExplorePackages.Tool
             var cancellationToken = CancellationToken.None;
 
             var packages = new HashSet<NuGetPackageIdentity>();
+            var existingPackageIds = new HashSet<string>(File.ReadAllLines(@"C:\Users\jver\Desktop\PackageIds.txt"), StringComparer.OrdinalIgnoreCase);
             var skip = 0;
             var hasMoreResults = true;
             do
@@ -188,7 +209,10 @@ namespace Knapcode.ExplorePackages.Tool
 
                 foreach (var result in results)
                 {
-                    packages.Add(result.Identity);
+                    if (!existingPackageIds.Contains(result.Identity.Id))
+                    {
+                        packages.Add(result.Identity);
+                    }
                 }
 
                 var resultCount = results.Count();
@@ -196,6 +220,9 @@ namespace Knapcode.ExplorePackages.Tool
                 hasMoreResults = resultCount >= take;
             }
             while (packages.Count < packageCount && hasMoreResults);
+            */
+            var packages = new HashSet<NuGetPackageIdentity>();
+            packages.Add(new NuGetPackageIdentity("Xam.Plugins.Android.ExoPlayer.MediaSession", NuGetVersion.Parse("2.11.8")));
 
             Console.WriteLine($"Found {packages.Count} packages.");
 

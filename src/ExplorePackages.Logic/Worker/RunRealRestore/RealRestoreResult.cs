@@ -49,6 +49,11 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
                     .GroupBy(x => x)
                     .ToDictionary(x => x.Key, x => x.Count());
 
+                if (!restoreSucceeded && !assetsFile.LogMessages.Any())
+                {
+                    throw new ArgumentException("The restore failed but did not have any log messages.");
+                }
+
                 if (logMessageCodes.Any())
                 {
                     RestoreLogMessageCodes = JsonConvert.SerializeObject(logMessageCodes.ToDictionary(x => x.Key.ToString(), x => x.Value));
