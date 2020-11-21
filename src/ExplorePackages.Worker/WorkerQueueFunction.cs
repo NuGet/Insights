@@ -6,16 +6,18 @@ using Microsoft.WindowsAzure.Storage.Queue;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class QueueFunction
+    public class WorkerQueueFunction
     {
-        private const string Connection = ExplorePackagesSettings.DefaultSectionName + ":" + nameof(ExplorePackagesSettings.StorageConnectionString);
+        private const string WorkerQueue = ExplorePackagesSettings.DefaultSectionName + ":" + nameof(ExplorePackagesSettings.WorkerQueueName);
+        private const string WorkerQueueVariable = "%" + WorkerQueue + "%";
+        private const string StorageConnection = ExplorePackagesSettings.DefaultSectionName + ":" + nameof(ExplorePackagesSettings.StorageConnectionString);
 
         private readonly GenericMessageProcessor _messageProcessor;
         private readonly TargetableRawMessageEnqueuer _rawMessageEnqueuer;
         private readonly ExternalWorkerQueueFactory _workerQueueFactory;
         private readonly QueueStorageEnqueuer _queueStorageEnqueuer;
 
-        public QueueFunction(
+        public WorkerQueueFunction(
             ExternalWorkerQueueFactory workerQueueFactory,
             QueueStorageEnqueuer queueStorageEnqueuer,
             TargetableRawMessageEnqueuer rawMessageEnqueuer,
@@ -27,10 +29,10 @@ namespace Knapcode.ExplorePackages.Worker
             _messageProcessor = messageProcessor;
         }
 
-        [FunctionName("QueueFunction")]
+        [FunctionName("WorkerQueueFunction")]
         public async Task ProcessAsync(
-            [QueueTrigger("queue", Connection = Connection)] string message,
-            [Queue("queue", Connection = Connection)] CloudQueue target)
+            [QueueTrigger(WorkerQueueVariable, Connection = StorageConnection)] string message,
+            [Queue(WorkerQueueVariable, Connection = StorageConnection)] CloudQueue target)
         {
             target.EncodeMessage = false;
             _workerQueueFactory.SetTarget(target);

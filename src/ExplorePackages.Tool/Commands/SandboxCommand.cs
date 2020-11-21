@@ -72,9 +72,9 @@ namespace Knapcode.ExplorePackages.Tool
             // NU1213: { "n":"rrr","v":1,"d":{ "i":"Microsoft.AspNetCore.App.Runtime.linux-x64","v":"5.0.0-rc.1.20451.17","f":"netstandard1.5"} }
             // MSB3644: { "n":"rrr","v":1,"d":{ "i":"Newtonsoft.Json","v":"12.0.3","f":"net35"} }
 
-            // await _catalogScanService.UpdateGetPackageAssets();
+            await _catalogScanService.UpdateGetPackageAssets();
             // await EnqueueRunRealRestoreAsync();
-            await EnqueueRunRealRestoreCompactAsync();
+            // await EnqueueRunRealRestoreCompactAsync();
             // await ReadErrorBlobsAsync();
             // await RetryRunRealRestoreAsync();
         }

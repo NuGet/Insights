@@ -24,11 +24,10 @@ namespace Knapcode.ExplorePackages.Logic
             StorageContainerName = "packages";
             IsStorageContainerPublic = false;
             WorkerCount = 32;
-            LatestPackageLeavesStorageConnectionString = "UseDevelopmentStorage=true";
             UseBulkEnqueueStrategy = false;
             BulkEnqueueThreshold = 1;
             EnqueueWorkers = 1;
-            WorkerQueueName = "queue";
+            WorkerQueueName = "worker-queue";
         }
 
         public DatabaseType DatabaseType { get; set; }
@@ -46,7 +45,6 @@ namespace Knapcode.ExplorePackages.Logic
         public bool IsStorageContainerPublic { get; set; }
         public int WorkerCount { get; set; }
         public string ServiceBusConnectionString { get; set; }
-        public string LatestPackageLeavesStorageConnectionString { get; set; }
         public bool UseBulkEnqueueStrategy { get; set; }
         public int BulkEnqueueThreshold { get; set; }
         public int EnqueueWorkers { get; set; }

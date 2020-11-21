@@ -83,11 +83,6 @@ namespace Knapcode.ExplorePackages.Logic
                 "(SharedAccessSignature|AccountKey)=[^;]*",
                 "$1=(redacted)",
                 RegexOptions.IgnoreCase);
-            settings.LatestPackageLeavesStorageConnectionString = Regex.Replace(
-                settings.LatestPackageLeavesStorageConnectionString,
-                "(SharedAccessSignature|AccountKey)=[^;]*",
-                "$1=(redacted)",
-                RegexOptions.IgnoreCase);
 
             logger.LogInformation(JsonConvert.SerializeObject(settings, SerializerSettings));
 

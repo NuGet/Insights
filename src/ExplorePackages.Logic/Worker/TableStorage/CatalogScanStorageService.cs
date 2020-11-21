@@ -193,7 +193,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
         private CloudTableClient GetClient()
         {
             return _serviceClientFactory
-                .GetLatestPackageLeavesStorageAccount()
+                .GetStorageAccount()
                 .CreateCloudTableClient();
         }
 
