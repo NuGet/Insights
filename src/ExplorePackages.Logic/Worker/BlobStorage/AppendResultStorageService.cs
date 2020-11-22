@@ -96,11 +96,13 @@ namespace Knapcode.ExplorePackages.Logic.Worker.BlobStorage
                 return;
             }
 
+            var accessCondition = AccessCondition.GenerateIfNotExistsCondition();
             if (mergeExisting && await compactBlob.ExistsAsync())
             {
                 var text = await compactBlob.DownloadTextAsync();
                 var records = DeserializeRecords<T>(text);
                 allRecords.AddRange(records);
+                accessCondition = AccessCondition.GenerateIfMatchCondition(compactBlob.Properties.ETag);
             }
 
             var bytes = Array.Empty<byte>();
@@ -111,7 +113,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.BlobStorage
             }
 
             compactBlob.Properties.ContentType = ContentType;
-            await compactBlob.UploadFromByteArrayAsync(bytes, 0, bytes.Length);
+            await compactBlob.UploadFromByteArrayAsync(bytes, 0, bytes.Length, accessCondition, options: null, operationContext: null);
         }
 
         private static List<T> DeserializeRecords<T>(string appendText)
