@@ -6,8 +6,9 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 {
     public class CatalogLeafScan : TableEntity
     {
-        public CatalogLeafScan(string scanId, string pageId, string leafId)
+        public CatalogLeafScan(string storageSuffix, string scanId, string pageId, string leafId)
         {
+            StorageSuffix = storageSuffix;
             PartitionKey = GetPartitionKey(scanId, pageId);
             RowKey = leafId;
             ScanId = scanId;
@@ -35,6 +36,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             set => LeafType = value.ToString();
         }
 
+        public string StorageSuffix { get; set; }
         public string ScanType { get; set; }
         public string ScanParameters { get; set; }
         public string ScanId { get; set; }

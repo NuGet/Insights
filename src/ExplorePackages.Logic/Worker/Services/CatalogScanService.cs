@@ -58,18 +58,19 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             // Start a new scan.
             _logger.LogInformation("Attempting to start a catalog index scan from ({Min}, {Max}].", min, max);
             var scanId = StorageUtility.GenerateDescendingId();
-            var catalogIndexScanMessage = new CatalogIndexScanMessage { ScanId = scanId };
+            var catalogIndexScanMessage = new CatalogIndexScanMessage { ScanId = scanId.ToString() };
             await _messageEnqueuer.EnqueueAsync(new[] { catalogIndexScanMessage });
 
-            var catalogIndexScan = new CatalogIndexScan(scanId)
+            var catalogIndexScan = new CatalogIndexScan(scanId.ToString(), scanId.Unique)
             {
-                ParsedScanType = CatalogScanType.FindPackageAssets,
+                ParsedScanType = type,
                 ScanParameters = parameters,
                 ParsedState = CatalogScanState.Created,
                 Min = min,
                 Max = max,
                 CursorName = cursor.Name,
             };
+            await _catalogScanStorageService.InitializeChildTablesAsync(catalogIndexScan.StorageSuffix);
             await _catalogScanStorageService.InsertAsync(catalogIndexScan);
 
             return catalogIndexScan;

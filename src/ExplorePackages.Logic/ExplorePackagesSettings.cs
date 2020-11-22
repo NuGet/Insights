@@ -24,8 +24,8 @@ namespace Knapcode.ExplorePackages.Logic
             StorageContainerName = "packages";
             IsStorageContainerPublic = false;
             WorkerCount = 32;
-            UseBulkEnqueueStrategy = false;
-            BulkEnqueueThreshold = 1;
+            UseBulkEnqueueStrategy = true;
+            BulkEnqueueThreshold = 10;
             EnqueueWorkers = 1;
             WorkerQueueName = "worker-queue";
         }

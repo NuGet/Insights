@@ -20,12 +20,15 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
 {
     public class FindPackageAssetsScanDriver : ICatalogScanDriver
     {
+        public static readonly string ContainerName = "findpackageassets";
+
         private readonly SchemaSerializer _schemaSerializer;
         private readonly CatalogClient _catalogClient;
         private readonly ServiceIndexCache _serviceIndexCache;
         private readonly FlatContainerClient _flatContainerClient;
         private readonly HttpZipProvider _httpZipProvider;
         private readonly AppendResultStorageService _storageService;
+        private readonly TaskStateStorageService _taskStateStorageService;
         private readonly MessageEnqueuer _messageEnqueuer;
         private readonly ILogger<FindPackageAssetsScanDriver> _logger;
 
@@ -36,6 +39,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
             FlatContainerClient flatContainerClient,
             HttpZipProvider httpZipProvider,
             AppendResultStorageService storageService,
+            TaskStateStorageService taskStateStorageService,
             MessageEnqueuer messageEnqueuer,
             ILogger<FindPackageAssetsScanDriver> logger)
         {
@@ -45,13 +49,18 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
             _flatContainerClient = flatContainerClient;
             _httpZipProvider = httpZipProvider;
             _storageService = storageService;
+            _taskStateStorageService = taskStateStorageService;
             _messageEnqueuer = messageEnqueuer;
             _logger = logger;
         }
 
-        public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
+        public async Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
         {
-            return Task.FromResult(CatalogIndexScanResult.Expand);
+            await _storageService.InitializeAsync(ContainerName);
+            await _storageService.InitializeAsync(GetContainerName(indexScan.StorageSuffix));
+            await _taskStateStorageService.InitializeAsync(indexScan.StorageSuffix);
+
+            return CatalogIndexScanResult.Expand;
         }
 
         public Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan)
@@ -98,7 +107,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
             }
 
             var assets = GetAssets(scanId, scanTimestamp, leaf, files);
-            var storage = new AppendResultStorage(FindPackageAssetsConstants.ContainerName, parameters.BucketCount);
+            var storage = new AppendResultStorage(GetContainerName(leafScan.StorageSuffix), parameters.BucketCount);
             var bucketKey = $"{leaf.PackageId}/{leaf.PackageVersion}".ToLowerInvariant();
             await _storageService.AppendAsync(storage, bucketKey, assets);
         }
@@ -220,20 +229,55 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
 
         public async Task StartAggregateAsync(CatalogIndexScan indexScan)
         {
-            var parameters = GetParameters(indexScan.ScanParameters);
-            var messages = Enumerable
-                .Range(0, parameters.BucketCount)
-                .Select(b => new FindPackageAssetsCompactMessage { Bucket = b })
+            var buckets = await _storageService.GetWrittenAppendBuckets(GetContainerName(indexScan.StorageSuffix));
+
+            var partitionKey = GetAggregateTasksPartitionKey(indexScan);
+
+            await _taskStateStorageService.InitializeAllAsync(
+                indexScan.StorageSuffix,
+                partitionKey,
+                buckets.Select(x => x.ToString()).ToList());
+
+            var messages = buckets
+                .Select(b => new FindPackageAssetsCompactMessage
+                {
+                    SourceContainer = GetContainerName(indexScan.StorageSuffix),
+                    DestinationContainer = ContainerName,
+                    Bucket = b,
+                    TaskStateStorageSuffix = indexScan.StorageSuffix,
+                    TaskStatePartitionKey = partitionKey,
+                    TaskStateRowKey = b.ToString(),
+                })
                 .ToList();
             await _messageEnqueuer.EnqueueAsync(messages);
         }
 
         public async Task<bool> IsAggregateCompleteAsync(CatalogIndexScan indexScan)
         {
-            var parameters = GetParameters(indexScan.ScanParameters);
-            var compactBlobCount = await _storageService.CountCompactBlobsAsync(FindPackageAssetsConstants.ContainerName);
-            _logger.LogInformation("There are currently {CurrentCount} compact blobs, out of {TotalCount}.", compactBlobCount, parameters.BucketCount);
-            return compactBlobCount == parameters.BucketCount;
+            var countLowerBound = await _taskStateStorageService.GetCountLowerBoundAsync(
+                indexScan.StorageSuffix,
+                GetAggregateTasksPartitionKey(indexScan));
+            _logger.LogInformation("There are at least {Count} compact tasks pending.", countLowerBound);
+            return countLowerBound == 0;
+        }
+
+        private static string GetAggregateTasksPartitionKey(CatalogIndexScan indexScan)
+        {
+            return $"{indexScan.ScanId}-aggregate";
+        }
+
+        public async Task FinalizeAsync(CatalogIndexScan indexScan)
+        {
+            if (!string.IsNullOrEmpty(indexScan.StorageSuffix))
+            {
+                await _taskStateStorageService.DeleteTableAsync(indexScan.StorageSuffix);
+                await _storageService.DeleteAsync(GetContainerName(indexScan.StorageSuffix));
+            }
+        }
+
+        private static string GetContainerName(string suffix)
+        {
+            return $"{ContainerName}{suffix}";
         }
     }
 }

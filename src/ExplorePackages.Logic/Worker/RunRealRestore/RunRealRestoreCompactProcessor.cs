@@ -1,4 +1,5 @@
 ﻿using Knapcode.ExplorePackages.Logic.Worker.BlobStorage;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,7 +17,12 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
 
         public async Task ProcessAsync(RunRealRestoreCompactMessage message)
         {
-            await _storageService.CompactAsync<RealRestoreResult>(RunRealRestoreConstants.ContainerName, message.Bucket, PruneAssets);
+            await _storageService.CompactAsync<RealRestoreResult>(
+                RunRealRestoreConstants.ContainerName,
+                RunRealRestoreConstants.ContainerName,
+                message.Bucket,
+                mergeExisting: true,
+                PruneAssets);
         }
         
         private static IEnumerable<RealRestoreResult> PruneAssets(IEnumerable<RealRestoreResult> allAssets)
@@ -26,6 +32,10 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
                 .Select(g => g
                     .OrderByDescending(x => x.Timestamp) // Ignore all but the most recent result
                     .First())
+                .OrderBy(x => x.Id, StringComparer.OrdinalIgnoreCase)
+                .OrderBy(x => x.Version, StringComparer.OrdinalIgnoreCase)
+                .OrderBy(x => x.Framework, StringComparer.OrdinalIgnoreCase)
+                .OrderBy(x => x.DotnetVersion, StringComparer.OrdinalIgnoreCase)
                 .ToList();
         }
     }

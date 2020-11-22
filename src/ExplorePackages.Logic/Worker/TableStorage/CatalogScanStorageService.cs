@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Table;
-using static Knapcode.ExplorePackages.Logic.Worker.StorageUtility;
 
 namespace Knapcode.ExplorePackages.Logic.Worker
 {
@@ -19,8 +17,18 @@ namespace Knapcode.ExplorePackages.Logic.Worker
         public async Task InitializeAsync()
         {
             await GetIndexScanTable().CreateIfNotExistsAsync(retry: true);
-            await GetPageScanTable().CreateIfNotExistsAsync(retry: true);
-            await GetLeafScanTable().CreateIfNotExistsAsync(retry: true);
+        }
+
+        public async Task InitializeChildTablesAsync(string storageSuffix)
+        {
+            await GetPageScanTable(storageSuffix).CreateIfNotExistsAsync(retry: true);
+            await GetLeafScanTable(storageSuffix).CreateIfNotExistsAsync(retry: true);
+        }
+
+        public async Task DeleteChildTablesAsync(string storageSuffix)
+        {
+            await GetLeafScanTable(storageSuffix).DeleteIfExistsAsync();
+            await GetPageScanTable(storageSuffix).DeleteIfExistsAsync();
         }
 
         public async Task InsertAsync(CatalogIndexScan indexScan)
@@ -29,165 +37,77 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             await table.ExecuteAsync(TableOperation.Insert(indexScan));
         }
 
-        public async Task<IReadOnlyList<CatalogPageScan>> GetPageScansAsync(string scanId)
+        public async Task<IReadOnlyList<CatalogPageScan>> GetPageScansAsync(string storageSuffix, string scanId)
         {
-            return await GetScansAsync<CatalogPageScan>(GetPageScanTable(), scanId);
+            return await GetPageScanTable(storageSuffix).GetEntitiesAsync<CatalogPageScan>(scanId);
         }
 
-        public async Task<IReadOnlyList<CatalogLeafScan>> GetLeafScansAsync(string scanId, string pageId)
+        public async Task<IReadOnlyList<CatalogLeafScan>> GetLeafScansAsync(string storageSuffix, string scanId, string pageId)
         {
-            return await GetScansAsync<CatalogLeafScan>(GetLeafScanTable(), CatalogLeafScan.GetPartitionKey(scanId, pageId));
+            return await GetLeafScanTable(storageSuffix).GetEntitiesAsync<CatalogLeafScan>(CatalogLeafScan.GetPartitionKey(scanId, pageId));
         }
 
         public async Task InsertAsync(IReadOnlyList<CatalogPageScan> pageScans)
         {
-            await InsertScansAsync(GetPageScanTable(), pageScans);
+            foreach (var group in pageScans.GroupBy(x => x.StorageSuffix))
+            {
+                await GetPageScanTable(group.Key).InsertEntitiesAsync(group.ToList());
+            }
         }
 
         public async Task InsertAsync(IReadOnlyList<CatalogLeafScan> leafScans)
         {
-            await InsertScansAsync(GetLeafScanTable(), leafScans);
+            foreach (var group in leafScans.GroupBy(x => x.StorageSuffix))
+            {
+                await GetLeafScanTable(group.Key).InsertEntitiesAsync(leafScans.ToList());
+            }
         }
 
         public async Task<CatalogIndexScan> GetIndexScanAsync(string scanId)
         {
-            return await RetrieveAsync<CatalogIndexScan>(GetIndexScanTable(), scanId, string.Empty);
+            return await GetIndexScanTable().RetrieveAsync<CatalogIndexScan>(scanId, string.Empty);
         }
 
-        public async Task<CatalogPageScan> GetPageScanAsync(string scanId, string pageId)
+        public async Task<CatalogPageScan> GetPageScanAsync(string storageSuffix, string scanId, string pageId)
         {
-            return await RetrieveAsync<CatalogPageScan>(GetPageScanTable(), scanId, pageId);
+            return await GetPageScanTable(storageSuffix).RetrieveAsync<CatalogPageScan>(scanId, pageId);
         }
 
-        public async Task<CatalogLeafScan> GetLeafScanAsync(string scanId, string pageId, string leafId)
+        public async Task<CatalogLeafScan> GetLeafScanAsync(string storageSuffix, string scanId, string pageId, string leafId)
         {
-            return await RetrieveAsync<CatalogLeafScan>(
-                GetLeafScanTable(),
+            return await GetLeafScanTable(storageSuffix).RetrieveAsync<CatalogLeafScan>(
                 CatalogLeafScan.GetPartitionKey(scanId, pageId),
                 leafId);
         }
 
         public async Task ReplaceAsync(CatalogIndexScan indexScan)
         {
-            await ReplaceAsync(GetIndexScanTable(), indexScan);
+            await GetIndexScanTable().ReplaceAsync(indexScan);
         }
 
         public async Task ReplaceAsync(CatalogPageScan pageScan)
         {
-            await ReplaceAsync(GetPageScanTable(), pageScan);
+            await GetPageScanTable(pageScan.StorageSuffix).ReplaceAsync(pageScan);
         }
 
-        public async Task<int> GetPageScanCountLowerBoundAsync(string scanId)
+        public async Task<int> GetPageScanCountLowerBoundAsync(string storageSuffix, string scanId)
         {
-            return await GetScanCountLowerBoundAsync<CatalogPageScan>(GetPageScanTable(), scanId);
+            return await GetPageScanTable(storageSuffix).GetEntityCountLowerBoundAsync<CatalogPageScan>(scanId);
         }
 
-        public async Task<int> GetLeafScanCountLowerBoundAsync(string scanId, string pageId)
+        public async Task<int> GetLeafScanCountLowerBoundAsync(string storageSuffix, string scanId, string pageId)
         {
-            return await GetScanCountLowerBoundAsync<CatalogLeafScan>(GetLeafScanTable(), CatalogLeafScan.GetPartitionKey(scanId, pageId));
+            return await GetLeafScanTable(storageSuffix).GetEntityCountLowerBoundAsync<CatalogLeafScan>(CatalogLeafScan.GetPartitionKey(scanId, pageId));
         }
 
         public async Task DeleteAsync(CatalogPageScan pageScan)
         {
-            await DeleteAsync(GetPageScanTable(), pageScan);
+            await GetPageScanTable(pageScan.StorageSuffix).DeleteAsync(pageScan);
         }
 
         public async Task DeleteAsync(CatalogLeafScan leafScan)
         {
-            await DeleteAsync(GetLeafScanTable(), leafScan);
-        }
-
-        private async Task<IReadOnlyList<T>> GetScansAsync<T>(CloudTable table, string partitionKey) where T : ITableEntity, new()
-        {
-            var scans = new List<T>();
-            var query = new TableQuery<T>
-            {
-                FilterString = TableQuery.GenerateFilterCondition(
-                    PartitionKey,
-                    QueryComparisons.Equal,
-                    partitionKey),
-                TakeCount = MaxTakeCount,
-            };
-
-            TableContinuationToken token = null;
-            do
-            {
-                var segment = await table.ExecuteQuerySegmentedAsync(query, token);
-                token = segment.ContinuationToken;
-                scans.AddRange(segment.Results);
-            }
-            while (token != null);
-
-            return scans;
-        }
-
-        private async Task InsertScansAsync<T>(CloudTable table, IReadOnlyList<T> scans) where T : ITableEntity
-        {
-            if (!scans.Any())
-            {
-                return;
-            }
-
-            var batch = new TableBatchOperation();
-            foreach (var scan in scans)
-            {
-                if (batch.Count >= MaxBatchSize)
-                {
-                    await table.ExecuteBatchAsync(batch);
-                    batch = new TableBatchOperation();
-                }
-
-                batch.Add(TableOperation.Insert(scan));
-            }
-
-            if (batch.Count > 0)
-            {
-                await table.ExecuteBatchAsync(batch);
-            }
-        }
-
-        private async Task<int> GetScanCountLowerBoundAsync<T>(CloudTable table, string partitionKey) where T : ITableEntity, new()
-        {
-            var query = new TableQuery<T>
-            {
-                FilterString = TableQuery.GenerateFilterCondition(
-                    PartitionKey,
-                    QueryComparisons.Equal,
-                    partitionKey),
-                TakeCount = MaxTakeCount,
-                SelectColumns = Array.Empty<string>(),
-            };
-
-            TableContinuationToken token = null;
-            do
-            {
-                var segment = await table.ExecuteQuerySegmentedAsync<T>(query, token);
-                token = segment.ContinuationToken;
-
-                if (segment.Results.Count > 0)
-                {
-                    return segment.Results.Count;
-                }
-            }
-            while (token != null);
-
-            return 0;
-        }
-
-        private async Task<T> RetrieveAsync<T>(CloudTable table, string partitionKey, string rowKey) where T : class, ITableEntity
-        {
-            var result = await table.ExecuteAsync(TableOperation.Retrieve<T>(partitionKey, rowKey));
-            return result.Result != null ? (T)result.Result : null;
-        }
-
-        private async Task ReplaceAsync<T>(CloudTable table, T scan) where T : ITableEntity
-        {
-            await table.ExecuteAsync(TableOperation.Replace(scan));
-        }
-
-        private async Task DeleteAsync<T>(CloudTable table, T scan) where T : ITableEntity
-        {
-            await table.ExecuteAsync(TableOperation.Delete(scan));
+            await GetLeafScanTable(leafScan.StorageSuffix).DeleteAsync(leafScan);
         }
 
         private CloudTableClient GetClient()
@@ -202,14 +122,14 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             return GetClient().GetTableReference("catalogindexscans");
         }
 
-        private CloudTable GetPageScanTable()
+        private CloudTable GetPageScanTable(string suffix)
         {
-            return GetClient().GetTableReference("catalogpagescans");
+            return GetClient().GetTableReference($"catalogpagescans{suffix}");
         }
 
-        private CloudTable GetLeafScanTable()
+        private CloudTable GetLeafScanTable(string suffix)
         {
-            return GetClient().GetTableReference("catalogleafscans");
+            return GetClient().GetTableReference($"catalogleafscans{suffix}");
         }
     }
 }

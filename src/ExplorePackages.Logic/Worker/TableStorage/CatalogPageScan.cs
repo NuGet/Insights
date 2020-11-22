@@ -5,8 +5,9 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 {
     public class CatalogPageScan : TableEntity
     {
-        public CatalogPageScan(string scanId, string pageId)
+        public CatalogPageScan(string storageSuffix, string scanId, string pageId)
         {
+            StorageSuffix = storageSuffix;
             PartitionKey = scanId;
             RowKey = pageId;
         }
@@ -35,6 +36,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             set => ScanType = value.ToString();
         }
 
+        public string StorageSuffix { get; set; }
         public string State { get; set; }
         public string ScanType { get; set; }
         public string ScanParameters { get; set; }

@@ -9,11 +9,11 @@ namespace Knapcode.ExplorePackages.Logic.Worker
         public const string PartitionKey = "PartitionKey";
         public const string RowKey = "RowKey";
 
-        public static string GenerateDescendingId()
+        public static StorageId GenerateDescendingId()
         {
             string descendingComponent = (long.MaxValue - DateTimeOffset.UtcNow.Ticks).ToString("D20");
             var uniqueComponent = Guid.NewGuid().ToString("N");
-            return descendingComponent + "-" + uniqueComponent;
+            return new StorageId(descendingComponent, uniqueComponent);
         }
     }
 }

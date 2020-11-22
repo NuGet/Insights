@@ -30,7 +30,7 @@ namespace Knapcode.ExplorePackages.Tool
         private readonly CursorStorageService _cursorStorageService;
         private readonly CatalogScanStorageService _catalogScanStorageService;
         private readonly LatestPackageLeafStorageService _latestPackageLeafStorageService;
-        private readonly AppendResultStorageService _findPackageAssetsStorageService;
+        private readonly AppendResultStorageService _appendResultStorageService;
         private readonly IMessageProcessor<RunRealRestoreMessage> _messageProcessor;
         private readonly MessageEnqueuer _messageEnqueuer;
 
@@ -40,7 +40,7 @@ namespace Knapcode.ExplorePackages.Tool
             CursorStorageService cursorStorageService,
             CatalogScanStorageService catalogScanStorageService,
             LatestPackageLeafStorageService latestPackageLeafStorageService,
-            AppendResultStorageService findPackageAssetsStorageService,
+            AppendResultStorageService appendResultStorageService,
             IMessageProcessor<RunRealRestoreMessage> messageProcessor,
             MessageEnqueuer messageEnqueuer)
         {
@@ -49,7 +49,7 @@ namespace Knapcode.ExplorePackages.Tool
             _cursorStorageService = cursorStorageService;
             _catalogScanStorageService = catalogScanStorageService;
             _latestPackageLeafStorageService = latestPackageLeafStorageService;
-            _findPackageAssetsStorageService = findPackageAssetsStorageService;
+            _appendResultStorageService = appendResultStorageService;
             _messageProcessor = messageProcessor;
             _messageEnqueuer = messageEnqueuer;
         }
@@ -63,9 +63,7 @@ namespace Knapcode.ExplorePackages.Tool
             await _workerQueueFactory.GetQueue().CreateIfNotExistsAsync(retry: true);
             await _cursorStorageService.InitializeAsync();
             await _catalogScanStorageService.InitializeAsync();
-            await _latestPackageLeafStorageService.InitializeAsync();
-            await _findPackageAssetsStorageService.InitializeAsync(FindPackageAssetsConstants.ContainerName);
-            await _findPackageAssetsStorageService.InitializeAsync(RunRealRestoreConstants.ContainerName);
+            await _appendResultStorageService.InitializeAsync(RunRealRestoreConstants.ContainerName);
 
             // Success: {"n":"rrr","v":1,"d":{"i":"Newtonsoft.Json","v":"12.0.3","f":"netcoreapp1.1"}}
             // NU1202: { "n":"rrr","v":1,"d":{ "i":"Aspose.Words","v":"20.9.0","f":"netstandard1.6"} }
@@ -142,7 +140,7 @@ namespace Knapcode.ExplorePackages.Tool
 
         private async Task EnqueueRunRealRestoreAsync()
         {
-            var packageCount = 5001;
+            // var packageCount = 5001;
 
             // Source: https://docs.microsoft.com/en-us/dotnet/standard/frameworks
             var frameworks = new[]

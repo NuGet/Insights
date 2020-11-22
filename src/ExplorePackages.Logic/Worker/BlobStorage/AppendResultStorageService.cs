@@ -32,6 +32,11 @@ namespace Knapcode.ExplorePackages.Logic.Worker.BlobStorage
             await GetContainer(container).CreateIfNotExistsAsync(retry: true);
         }
 
+        public async Task DeleteAsync(string container)
+        {
+            await GetContainer(container).DeleteIfExistsAsync();
+        }
+
         public async Task AppendAsync<T>(AppendResultStorage storage, string bucketKey, IReadOnlyList<T> records)
         {
             var bucket = GetBucket(storage.BucketCount, bucketKey);
@@ -68,44 +73,80 @@ namespace Knapcode.ExplorePackages.Logic.Worker.BlobStorage
             return GetContainer(container).GetBlockBlobReference($"{CompactPrefix}{bucket}.csv");
         }
 
-        public async Task CompactAsync<T>(string container, int bucket, Func<IEnumerable<T>, IEnumerable<T>> prune)
+        public async Task CompactAsync<T>(
+            string srcContainer,
+            string destContainer,
+            int bucket,
+            bool mergeExisting,
+            Func<IEnumerable<T>, IEnumerable<T>> prune)
         {
-            var appendBlob = GetAppendBlob(container, bucket);
-            var bytes = Array.Empty<byte>();
+            var appendBlob = GetAppendBlob(srcContainer, bucket);
+            var compactBlob = GetCompactlob(destContainer, bucket);
+
+            var allRecords = new List<T>();
             if (await appendBlob.ExistsAsync())
             {
-                var appendText = await appendBlob.DownloadTextAsync();
-                List<T> allRecords;
-                using (var reader = new StringReader(appendText))
-                using (var csvReader = new CsvReader(reader, CultureInfo.InvariantCulture))
-                {
-                    csvReader.Configuration.HasHeaderRecord = false;
-                    allRecords = csvReader.GetRecords<T>().ToList();
-                }
+                var text = await appendBlob.DownloadTextAsync();
+                var records = DeserializeRecords<T>(text);
+                allRecords.AddRange(records);
+            }
+            else
+            {
+                // If there is no append blob, then there's no new data. We can stop here.
+                return;
+            }
 
+            if (mergeExisting && await compactBlob.ExistsAsync())
+            {
+                var text = await compactBlob.DownloadTextAsync();
+                var records = DeserializeRecords<T>(text);
+                allRecords.AddRange(records);
+            }
+
+            var bytes = Array.Empty<byte>();
+            if (allRecords.Any())
+            {
                 var prunedRecords = prune(allRecords).ToList();
-
                 bytes = SerializeRecords(prunedRecords);
             }
 
-            var compactBlob = GetCompactlob(container, bucket);
             compactBlob.Properties.ContentType = ContentType;
             await compactBlob.UploadFromByteArrayAsync(bytes, 0, bytes.Length);
         }
 
-        public async Task<int> CountCompactBlobsAsync(string container)
+        private static List<T> DeserializeRecords<T>(string appendText)
+        {
+            List<T> allRecords;
+            using (var reader = new StringReader(appendText))
+            using (var csvReader = new CsvReader(reader, CultureInfo.InvariantCulture))
+            {
+                csvReader.Configuration.HasHeaderRecord = false;
+                allRecords = csvReader.GetRecords<T>().ToList();
+            }
+
+            return allRecords;
+        }
+
+        public async Task<List<int>> GetWrittenAppendBuckets(string container)
         {
             var containerReference = GetContainer(container);
-            var blobCount = 0;
+            var buckets = new List<int>();
             BlobContinuationToken token = null;
             do
             {
-                var segment = await containerReference.ListBlobsSegmentedAsync(CompactPrefix, token);
+                var segment = await containerReference.ListBlobsSegmentedAsync(AppendPrefix, token);
                 token = segment.ContinuationToken;
-                blobCount += segment.Results.Count();
+                var segmentBuckets = segment
+                    .Results
+                    .OfType<ICloudBlob>()
+                    .Select(x => Path.GetFileNameWithoutExtension(x.Name))
+                    .Select(x => x.Substring(x.LastIndexOf('_') + 1))
+                    .Select(int.Parse);
+                buckets.AddRange(segmentBuckets);
             }
             while (token != null);
-            return blobCount;
+
+            return buckets;
         }
 
         private async Task AppendAsync<T>(CloudAppendBlob blob, IReadOnlyList<T> records)

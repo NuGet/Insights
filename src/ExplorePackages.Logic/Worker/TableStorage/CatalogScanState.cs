@@ -6,7 +6,9 @@
         Expanding,
         Enqueuing,
         Waiting,
+        StartingAggregate,
         Aggregating,
+        Finalizing,
         Complete,
     }
 }

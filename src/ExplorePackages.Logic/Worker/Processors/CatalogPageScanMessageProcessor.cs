@@ -31,9 +31,10 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 
         public async Task ProcessAsync(CatalogPageScanMessage message)
         {
-            var scan = await _storageService.GetPageScanAsync(message.ScanId, message.PageId);
+            var scan = await _storageService.GetPageScanAsync(message.StorageSuffix, message.ScanId, message.PageId);
             if (scan == null)
             {
+                _logger.LogWarning("No matching page scan was found.");
                 return;
             }
 
@@ -91,7 +92,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             // Waiting: check if all of the leaf scans are complete
             if (scan.ParsedState == CatalogScanState.Waiting)
             {
-                var countLowerBound = await _storageService.GetLeafScanCountLowerBoundAsync(scan.ScanId, scan.PageId);
+                var countLowerBound = await _storageService.GetLeafScanCountLowerBoundAsync(scan.StorageSuffix, scan.ScanId, scan.PageId);
                 if (countLowerBound > 0)
                 {
                     _logger.LogInformation("There are at least {Count} leaf scans pending.", countLowerBound);
@@ -126,6 +127,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
                 .ThenBy(x => x.PackageId, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(x => x.ParsePackageVersion().ToNormalizedString(), StringComparer.OrdinalIgnoreCase)
                 .Select((x, index) => new CatalogLeafScan(
+                    scan.StorageSuffix,
                     scan.ScanId,
                     scan.PageId,
                     index.ToString(CultureInfo.InvariantCulture).PadLeft(maxLeafIdLength, '0'))
@@ -144,7 +146,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 
         private async Task ExpandAsync(CatalogPageScan scan, IReadOnlyList<CatalogLeafScan> leafScans)
         {
-            var createdLeaves = await _storageService.GetLeafScansAsync(scan.ScanId, scan.PageId);
+            var createdLeaves = await _storageService.GetLeafScansAsync(scan.StorageSuffix, scan.ScanId, scan.PageId);
 
             var allUrls = leafScans.Select(x => x.Url).ToHashSet();
             var createdUrls = createdLeaves.Select(x => x.Url).ToHashSet();
@@ -165,7 +167,13 @@ namespace Knapcode.ExplorePackages.Logic.Worker
         {
             _logger.LogInformation("Enqueuing a scan of {LeafCount} leaves.", leafScans.Count);
             await _messageEnqueuer.EnqueueAsync(leafScans
-                .Select(x => new CatalogLeafScanMessage { ScanId = x.ScanId, PageId = x.PageId, LeafId = x.LeafId })
+                .Select(x => new CatalogLeafScanMessage
+                {
+                    StorageSuffix = x.StorageSuffix,
+                    ScanId = x.ScanId,
+                    PageId = x.PageId,
+                    LeafId = x.LeafId,
+                })
                 .ToList());
         }
     }

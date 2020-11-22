@@ -103,7 +103,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             // Waiting: check if all of the page scans are complete
             if (scan.ParsedState == CatalogScanState.Waiting)
             {
-                var countLowerBound = await _storageService.GetPageScanCountLowerBoundAsync(scan.ScanId);
+                var countLowerBound = await _storageService.GetPageScanCountLowerBoundAsync(scan.StorageSuffix, scan.ScanId);
                 if (countLowerBound > 0)
                 {
                     _logger.LogInformation("There are at least {Count} page scans pending.", countLowerBound);
@@ -112,14 +112,21 @@ namespace Knapcode.ExplorePackages.Logic.Worker
                 }
                 else
                 {
-                    await driver.StartAggregateAsync(scan);
-
-                    scan.ParsedState = CatalogScanState.Aggregating;
+                    scan.ParsedState = CatalogScanState.StartingAggregate;
                     await _storageService.ReplaceAsync(scan);
                 }
             }
 
-            // Aggregating: check if the aggregation step is complete
+            // StartAggregating: call into the driver to start aggregating.
+            if (scan.ParsedState == CatalogScanState.StartingAggregate)
+            {
+                await driver.StartAggregateAsync(scan);
+
+                scan.ParsedState = CatalogScanState.Aggregating;
+                await _storageService.ReplaceAsync(scan);
+            }
+
+            // Aggregating: wait for the aggregation step is complete
             if (scan.ParsedState == CatalogScanState.Aggregating)
             {
                 if (!await driver.IsAggregateCompleteAsync(scan))
@@ -130,19 +137,36 @@ namespace Knapcode.ExplorePackages.Logic.Worker
                 }
                 else
                 {
-                    // Update the cursor, now that the work is done.
-                    var cursor = await _cursorStorageService.GetOrCreateAsync(scan.CursorName);
-                    if (cursor.Value <= scan.Max.Value)
-                    {
-                        cursor.Value = scan.Max.Value;
-                        await _cursorStorageService.UpdateAsync(cursor);
-                    }
-
-                    _logger.LogInformation("The catalog scan is complete.");
-
-                    scan.ParsedState = CatalogScanState.Complete;
+                    scan.ParsedState = CatalogScanState.Finalizing;
                     await _storageService.ReplaceAsync(scan);
                 }
+            }
+
+            // Finalizing: perform clean-up steps
+            if (scan.ParsedState == CatalogScanState.Finalizing)
+            {
+                // Finalize the driver.
+                await driver.FinalizeAsync(scan);
+
+                // Delete child tables, but only if a storage suffix is used.
+                if (!string.IsNullOrEmpty(scan.StorageSuffix))
+                {
+                    _logger.LogInformation("Deleting suffixed scan state tables.");
+                    await _storageService.DeleteChildTablesAsync(scan.StorageSuffix);
+                }
+
+                // Update the cursor, now that the work is done.
+                var cursor = await _cursorStorageService.GetOrCreateAsync(scan.CursorName);
+                if (cursor.Value <= scan.Max.Value)
+                {
+                    cursor.Value = scan.Max.Value;
+                    await _cursorStorageService.UpdateAsync(cursor);
+                }
+
+                _logger.LogInformation("The catalog scan is complete.");
+
+                scan.ParsedState = CatalogScanState.Complete;
+                await _storageService.ReplaceAsync(scan);
             }
         }
 
@@ -169,6 +193,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             var pageScans = pages
                 .OrderBy(x => x.CommitTimestamp)
                 .Select((x, index) => new CatalogPageScan(
+                    scan.StorageSuffix,
                     scan.ScanId,
                     index.ToString(CultureInfo.InvariantCulture).PadLeft(maxPageIdLength, '0'))
                 {
@@ -185,7 +210,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 
         private async Task ExpandAsync(CatalogIndexScan scan, List<CatalogPageScan> allPageScans)
         {
-            var createdPageScans = await _storageService.GetPageScansAsync(scan.ScanId);
+            var createdPageScans = await _storageService.GetPageScansAsync(scan.StorageSuffix, scan.ScanId);
             var allUrls = allPageScans.Select(x => x.Url).ToHashSet();
             var createdUrls = createdPageScans.Select(x => x.Url).ToHashSet();
             var uncreatedUrls = allUrls.Except(createdUrls).ToHashSet();
@@ -203,11 +228,15 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 
         private async Task EnqueueAsync(List<CatalogPageScan> pageScans)
         {
-            await _messageEnqueuer.EnqueueAsync(pageScans.Select(x => new CatalogPageScanMessage
-            {
-                ScanId = x.ScanId,
-                PageId = x.PageId,
-            }).ToList());
+            _logger.LogInformation("Enqueuing a scan of {PageCount} pages.", pageScans.Count);
+            await _messageEnqueuer.EnqueueAsync(pageScans
+                .Select(x => new CatalogPageScanMessage
+                {
+                    StorageSuffix = x.StorageSuffix,
+                    ScanId = x.ScanId,
+                    PageId = x.PageId,
+                })
+                .ToList());
         }
     }
 }

@@ -4,6 +4,9 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 {
     public class CatalogPageScanMessage
     {
+        [JsonProperty("s")]
+        public string StorageSuffix { get; set; }
+
         [JsonProperty("p")]
         public string ScanId { get; set; }
 

@@ -9,5 +9,6 @@ namespace Knapcode.ExplorePackages.Logic.Worker
         Task ProcessLeafAsync(CatalogLeafScan leafScan);
         Task StartAggregateAsync(CatalogIndexScan indexScan);
         Task<bool> IsAggregateCompleteAsync(CatalogIndexScan indexScan);
+        Task FinalizeAsync(CatalogIndexScan indexScan);
     }
 }

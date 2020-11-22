@@ -32,5 +32,6 @@ namespace Knapcode.ExplorePackages.Logic.Worker
         public Task ProcessLeafAsync(CatalogLeafScan leafScan) => throw new NotImplementedException();
         public Task StartAggregateAsync(CatalogIndexScan indexScan) => Task.CompletedTask;
         public Task<bool> IsAggregateCompleteAsync(CatalogIndexScan indexScan) => Task.FromResult(true);
+        public Task FinalizeAsync(CatalogIndexScan indexScan) => Task.CompletedTask;
     }
 }

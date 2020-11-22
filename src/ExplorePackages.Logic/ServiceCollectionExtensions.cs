@@ -270,6 +270,7 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<CursorStorageService>();
 
             serviceCollection.AddTransient<AppendResultStorageService>();
+            serviceCollection.AddTransient<TaskStateStorageService>();
 
             serviceCollection.AddTransient<ProjectHelper>();
 
