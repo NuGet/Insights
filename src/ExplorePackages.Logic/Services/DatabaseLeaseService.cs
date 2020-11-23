@@ -9,9 +9,9 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class DatabaseLeaseService : IDatabaseLeaseService
     {
-        private const string NotAcquiredAtAll = "The provided lease was not acquired in the first place.";
-        private const string AcquiredBySomeoneElse = "The lease has been acquired by someone else.";
-        private const string NotAvailable = "The lease is not available yet.";
+        public const string NotAcquiredAtAll = "The provided lease was not acquired in the first place.";
+        public const string AcquiredBySomeoneElse = "The lease has been acquired by someone else.";
+        public const string NotAvailable = "The lease is not available yet.";
         private readonly ICommitCondition _commitCondition;
         private readonly EntityContextFactory _entityContextFactory;
 
@@ -158,12 +158,12 @@ namespace Knapcode.ExplorePackages.Logic
             return result.Lease;
         }
 
-        public async Task<LeaseResult> TryAcquireAsync(string name, TimeSpan leaseDuration)
+        public async Task<DatabaseLeaseResult> TryAcquireAsync(string name, TimeSpan leaseDuration)
         {
             return await TryAcquireAsync(name, leaseDuration, shouldThrow: false);
         }
 
-        private async Task<LeaseResult> TryAcquireAsync(string name, TimeSpan leaseDuration, bool shouldThrow)
+        private async Task<DatabaseLeaseResult> TryAcquireAsync(string name, TimeSpan leaseDuration, bool shouldThrow)
         {
             using (var entityContext = await _entityContextFactory.GetAsync())
             {
@@ -184,7 +184,7 @@ namespace Knapcode.ExplorePackages.Logic
                     try
                     {
                         await entityContext.SaveChangesAsync();
-                        return LeaseResult.Leased(lease);
+                        return DatabaseLeaseResult.Leased(lease);
                     }
                     catch (Exception ex) when (entityContext.IsUniqueConstraintViolationException(ex))
                     {
@@ -194,7 +194,7 @@ namespace Knapcode.ExplorePackages.Logic
                         }
                         else
                         {
-                            return LeaseResult.NotLeased();
+                            return DatabaseLeaseResult.NotLeased();
                         }
                     }
                 }
@@ -208,7 +208,7 @@ namespace Knapcode.ExplorePackages.Logic
                         }
                         else
                         {
-                            return LeaseResult.NotLeased();
+                            return DatabaseLeaseResult.NotLeased();
                         }
                     }
 
@@ -217,7 +217,7 @@ namespace Knapcode.ExplorePackages.Logic
                     try
                     {
                         await entityContext.SaveChangesAsync();
-                        return LeaseResult.Leased(lease);
+                        return DatabaseLeaseResult.Leased(lease);
                     }
                     catch (DbUpdateConcurrencyException ex)
                     {
@@ -227,7 +227,7 @@ namespace Knapcode.ExplorePackages.Logic
                         }
                         else
                         {
-                            return LeaseResult.NotLeased();
+                            return DatabaseLeaseResult.NotLeased();
                         }
                     }
                 }

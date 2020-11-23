@@ -11,7 +11,7 @@ namespace Knapcode.ExplorePackages.Logic
         Task<LeaseEntity> GetOrNullAsync(string name);
         Task ReleaseAsync(LeaseEntity lease);
         Task RenewAsync(LeaseEntity lease, TimeSpan leaseDuration);
-        Task<LeaseResult> TryAcquireAsync(string name, TimeSpan leaseDuration);
+        Task<DatabaseLeaseResult> TryAcquireAsync(string name, TimeSpan leaseDuration);
         Task<bool> TryReleaseAsync(LeaseEntity lease);
         Task<bool> TryRenewAsync(LeaseEntity lease, TimeSpan leaseDuration);
     }

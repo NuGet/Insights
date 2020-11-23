@@ -1,11 +1,10 @@
 ﻿using System;
-using Knapcode.ExplorePackages.Entities;
 
 namespace Knapcode.ExplorePackages.Logic
 {
-    public class LeaseResult
+    public class BaseLeaseResult<T>
     {
-        private LeaseResult(LeaseEntity lease, bool acquired)
+        protected BaseLeaseResult(T lease, bool acquired)
         {
             if (acquired && lease == null)
             {
@@ -21,17 +20,7 @@ namespace Knapcode.ExplorePackages.Logic
             Acquired = acquired;
         }
 
-        public LeaseEntity Lease { get; }
+        public T Lease { get; }
         public bool Acquired { get; }
-
-        public static LeaseResult Leased(LeaseEntity lease)
-        {
-            return new LeaseResult(lease, acquired: true);
-        }
-
-        public static LeaseResult NotLeased()
-        {
-            return new LeaseResult(lease: null, acquired: false);
-        }
     }
 }

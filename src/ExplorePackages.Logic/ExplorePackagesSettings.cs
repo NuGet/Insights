@@ -22,6 +22,7 @@ namespace Knapcode.ExplorePackages.Logic
             DownloadsV1Path = Path.Combine(currentDirectory, "downloads.txt");
             StorageConnectionString = "UseDevelopmentStorage=true";
             StorageContainerName = "packages";
+            LeaseContainerName = "leases";
             IsStorageContainerPublic = false;
             WorkerCount = 32;
             UseBulkEnqueueStrategy = true;
@@ -42,6 +43,7 @@ namespace Knapcode.ExplorePackages.Logic
         public string DownloadsV1Path { get; set; }
         public string StorageConnectionString { get; set; }
         public string StorageContainerName { get; set; }
+        public string LeaseContainerName { get; set; }
         public bool IsStorageContainerPublic { get; set; }
         public int WorkerCount { get; set; }
         public string ServiceBusConnectionString { get; set; }
