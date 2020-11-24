@@ -43,10 +43,12 @@ namespace Knapcode.ExplorePackages
                 AppServicePlanId = workerPlan.Id,
                 StorageAccountName = storageAccount.Name,
                 StorageAccountAccessKey = storageAccount.PrimaryAccessKey,
+                Version = "~3",
                 AppSettings = new InputMap<string>
                 {
                     { "APPINSIGHTS_INSTRUMENTATIONKEY", appInsights.InstrumentationKey },
                     { "APPLICATIONINSIGHTS_CONNECTION_STRING", appInsights.ConnectionString },
+                    { "FUNCTIONS_WORKER_RUNTIME", "dotnet" },
                     { "Knapcode.ExplorePackages:StorageConnectionString", storageAccount.PrimaryConnectionString },
                 },
             });
