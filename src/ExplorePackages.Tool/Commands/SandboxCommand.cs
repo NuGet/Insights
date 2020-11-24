@@ -3,21 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
 using Knapcode.ExplorePackages.Logic;
 using Knapcode.ExplorePackages.Logic.Worker;
-using Knapcode.ExplorePackages.Logic.Worker.BlobStorage;
-using Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets;
 using Knapcode.ExplorePackages.Logic.Worker.RunRealRestore;
 using McMaster.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
-using NuGet.Common;
 using NuGet.Frameworks;
-using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGetPackageIdentity = NuGet.Packaging.Core.PackageIdentity;
 
@@ -63,7 +56,6 @@ namespace Knapcode.ExplorePackages.Tool
             await _workerQueueFactory.GetQueue().CreateIfNotExistsAsync(retry: true);
             await _cursorStorageService.InitializeAsync();
             await _catalogScanStorageService.InitializeAsync();
-            await _appendResultStorageService.InitializeAsync(RunRealRestoreConstants.ContainerName);
 
             // Success: {"n":"rrr","v":1,"d":{"i":"Newtonsoft.Json","v":"12.0.3","f":"netcoreapp1.1"}}
             // NU1202: { "n":"rrr","v":1,"d":{ "i":"Aspose.Words","v":"20.9.0","f":"netstandard1.6"} }

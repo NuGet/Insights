@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using Knapcode.ExplorePackages.Logic.Worker;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -29,6 +30,7 @@ namespace Knapcode.ExplorePackages.Logic
             BulkEnqueueThreshold = 10;
             EnqueueWorkers = 1;
             WorkerQueueName = "worker-queue";
+            AppendResultStorageMode = AppendResultStorageMode.Table;
         }
 
         public DatabaseType DatabaseType { get; set; }
@@ -51,5 +53,6 @@ namespace Knapcode.ExplorePackages.Logic
         public int BulkEnqueueThreshold { get; set; }
         public int EnqueueWorkers { get; set; }
         public string WorkerQueueName { get; set; }
+        public AppendResultStorageMode AppendResultStorageMode { get; set; }
     }
 }

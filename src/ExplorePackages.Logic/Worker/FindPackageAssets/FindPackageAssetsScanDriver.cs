@@ -1,5 +1,4 @@
 ﻿using Knapcode.ExplorePackages.Entities;
-using Knapcode.ExplorePackages.Logic.Worker.BlobStorage;
 using Knapcode.MiniZip;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -56,8 +55,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
 
         public async Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
         {
-            await _storageService.InitializeAsync(ContainerName);
-            await _storageService.InitializeAsync(GetContainerName(indexScan.StorageSuffix));
+            await _storageService.InitializeAsync(GetTableName(indexScan.StorageSuffix), ContainerName);
             await _taskStateStorageService.InitializeAsync(indexScan.StorageSuffix);
 
             return CatalogIndexScanResult.Expand;
@@ -107,9 +105,8 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
             }
 
             var assets = GetAssets(scanId, scanTimestamp, leaf, files);
-            var storage = new AppendResultStorage(GetContainerName(leafScan.StorageSuffix), parameters.BucketCount);
             var bucketKey = $"{leaf.PackageId}/{leaf.PackageVersion}".ToLowerInvariant();
-            await _storageService.AppendAsync(storage, bucketKey, assets);
+            await _storageService.AppendAsync(GetTableName(leafScan.StorageSuffix), parameters.BucketCount, bucketKey, assets);
         }
 
         private FindPackageAssetsParameters GetParameters(string scanParameters)
@@ -229,7 +226,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
 
         public async Task StartAggregateAsync(CatalogIndexScan indexScan)
         {
-            var buckets = await _storageService.GetWrittenAppendBuckets(GetContainerName(indexScan.StorageSuffix));
+            var buckets = await _storageService.GetWrittenBucketsAsync(GetTableName(indexScan.StorageSuffix));
 
             var partitionKey = GetAggregateTasksPartitionKey(indexScan);
 
@@ -241,7 +238,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
             var messages = buckets
                 .Select(b => new FindPackageAssetsCompactMessage
                 {
-                    SourceContainer = GetContainerName(indexScan.StorageSuffix),
+                    SourceContainer = GetTableName(indexScan.StorageSuffix),
                     DestinationContainer = ContainerName,
                     Bucket = b,
                     TaskStateStorageSuffix = indexScan.StorageSuffix,
@@ -271,11 +268,11 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
             if (!string.IsNullOrEmpty(indexScan.StorageSuffix))
             {
                 await _taskStateStorageService.DeleteTableAsync(indexScan.StorageSuffix);
-                await _storageService.DeleteAsync(GetContainerName(indexScan.StorageSuffix));
+                await _storageService.DeleteAsync(GetTableName(indexScan.StorageSuffix));
             }
         }
 
-        private static string GetContainerName(string suffix)
+        private static string GetTableName(string suffix)
         {
             return $"{ContainerName}{suffix}";
         }

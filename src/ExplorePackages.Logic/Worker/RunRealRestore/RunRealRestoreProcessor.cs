@@ -1,9 +1,7 @@
-﻿using Knapcode.ExplorePackages.Logic.Worker.BlobStorage;
-using Microsoft.EntityFrameworkCore.Internal;
+﻿using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NuGet.Frameworks;
-using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
 using System;
@@ -11,7 +9,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using NuGetPackageIdentity = NuGet.Packaging.Core.PackageIdentity;
@@ -97,9 +94,8 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
                 await blob.UploadTextAsync(JsonConvert.SerializeObject(errorBlob));
             }
 
-            var storage = new AppendResultStorage(RunRealRestoreConstants.ContainerName, bucketCount: 1000);
             var bucketKey = $"{package.Id}/{packageVersion.ToNormalizedString()}".ToLowerInvariant();
-            await _storageService.AppendAsync(storage, bucketKey, new[] { result });
+            await _storageService.AppendAsync(RunRealRestoreConstants.ContainerName, 1000, bucketKey, new[] { result });
         }
 
         private RealRestoreResult GetRealRestoreResult(NuGetPackageIdentity package, ProjectProfile projectProfile)
