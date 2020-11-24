@@ -1,0 +1,3 @@
+name: ExplorePackages
+runtime: dotnet
+description: Infrastructure for Knapcode.ExplorePackages
