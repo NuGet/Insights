@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
+using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using static Knapcode.ExplorePackages.Logic.Worker.StorageUtility;
 
@@ -9,7 +11,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 {
     public static class CloudTableExtensions
     {
-        public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(this CloudTable table, string partitionKey) where T : ITableEntity, new()
+        public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(this CloudTable table, string partitionKey, bool allow404 = false) where T : ITableEntity, new()
         {
             var entities = new List<T>();
             var query = new TableQuery<T>
@@ -21,14 +23,20 @@ namespace Knapcode.ExplorePackages.Logic.Worker
                 TakeCount = MaxTakeCount,
             };
 
-            TableContinuationToken token = null;
-            do
+            try
             {
-                var segment = await table.ExecuteQuerySegmentedAsync(query, token);
-                token = segment.ContinuationToken;
-                entities.AddRange(segment.Results);
+                TableContinuationToken token = null;
+                do
+                {
+                    var segment = await table.ExecuteQuerySegmentedAsync(query, token);
+                    token = segment.ContinuationToken;
+                    entities.AddRange(segment.Results);
+                }
+                while (token != null);
             }
-            while (token != null);
+            catch (StorageException ex) when (allow404 && ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.NotFound)
+            {
+            }
 
             return entities;
         }

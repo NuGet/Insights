@@ -214,16 +214,17 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             string srcContainer,
             string destContainer,
             int bucket,
+            bool force,
             bool mergeExisting,
             Func<IEnumerable<T>, IEnumerable<T>> prune)
         {
             switch (_options.Value.AppendResultStorageMode)
             {
                 case AppendResultStorageMode.AppendBlob:
-                    await CompactFromBlobAsync(srcContainer, destContainer, bucket, mergeExisting, prune);
+                    await CompactFromBlobAsync(srcContainer, destContainer, bucket, force, mergeExisting, prune);
                     break;
                 case AppendResultStorageMode.Table:
-                    await CompactFromTableAsync(srcContainer, destContainer, bucket, mergeExisting, prune);
+                    await CompactFromTableAsync(srcContainer, destContainer, bucket, force, mergeExisting, prune);
                     break;
                 default:
                     throw new NotImplementedException();
@@ -234,18 +235,19 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             string srcContainer,
             string destContainer,
             int bucket,
+            bool force,
             bool mergeExisting,
             Func<IEnumerable<T>, IEnumerable<T>> prune)
         {
-            var appendBlob = GetAppendBlob(srcContainer, bucket);
             var appendRecords = new List<T>();
+            var appendBlob = GetAppendBlob(srcContainer, bucket);
             if (await appendBlob.ExistsAsync())
             {
                 var text = await appendBlob.DownloadTextAsync();
                 var records = DeserializeRecords<T>(text);
                 appendRecords.AddRange(records);
             }
-            else
+            else if (!force)
             {
                 // If there is no append blob, then there's no new data. We can stop here.
                 return;
@@ -258,11 +260,12 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             string srcTable,
             string destContainer,
             int bucket,
+            bool force,
             bool mergeExisting,
             Func<IEnumerable<T>, IEnumerable<T>> prune)
         {
             var table = GetTable(srcTable);
-            var entities = await table.GetEntitiesAsync<AppendResultEntity>(bucket.ToString());
+            var entities = await table.GetEntitiesAsync<AppendResultEntity>(bucket.ToString(), allow404: force);
             var appendRecords = new List<T>();
             if (entities.Any())
             {
@@ -271,7 +274,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
                     appendRecords.AddRange(JsonConvert.DeserializeObject<List<T>>(entity.Data));
                 }
             }
-            else
+            else if (!force)
             {
                 // If there are no entities, then there's no new data. We can stop here.
                 return;

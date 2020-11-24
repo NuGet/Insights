@@ -26,6 +26,7 @@ namespace Knapcode.ExplorePackages.Tool
         private readonly AppendResultStorageService _appendResultStorageService;
         private readonly IMessageProcessor<RunRealRestoreMessage> _messageProcessor;
         private readonly MessageEnqueuer _messageEnqueuer;
+        private readonly ServiceClientFactory _serviceClientFactory;
 
         public SandboxCommand(
             CatalogScanService catalogScanService,
@@ -35,7 +36,8 @@ namespace Knapcode.ExplorePackages.Tool
             LatestPackageLeafStorageService latestPackageLeafStorageService,
             AppendResultStorageService appendResultStorageService,
             IMessageProcessor<RunRealRestoreMessage> messageProcessor,
-            MessageEnqueuer messageEnqueuer)
+            MessageEnqueuer messageEnqueuer,
+            ServiceClientFactory serviceClientFactory)
         {
             _catalogScanService = catalogScanService;
             _workerQueueFactory = workerQueueFactory;
@@ -45,6 +47,7 @@ namespace Knapcode.ExplorePackages.Tool
             _appendResultStorageService = appendResultStorageService;
             _messageProcessor = messageProcessor;
             _messageEnqueuer = messageEnqueuer;
+            _serviceClientFactory = serviceClientFactory;
         }
 
         public void Configure(CommandLineApplication app)

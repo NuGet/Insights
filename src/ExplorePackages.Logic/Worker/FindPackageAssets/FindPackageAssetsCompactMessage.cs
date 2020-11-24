@@ -21,5 +21,8 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
 
         [JsonProperty("tr")]
         public string TaskStateRowKey { get; set; }
+
+        [JsonProperty("f")]
+        public bool Force { get; set; }
     }
 }

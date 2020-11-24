@@ -28,7 +28,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
                 message.TaskStateStorageSuffix,
                 message.TaskStatePartitionKey,
                 message.TaskStateRowKey);
-            if (taskState == null)
+            if (!message.Force && taskState == null)
             {
                 _logger.LogWarning("No matching task state was found.");
                 return;
@@ -38,10 +38,14 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
                 message.SourceContainer,
                 message.DestinationContainer,
                 message.Bucket,
+                force: message.Force,
                 mergeExisting: true,
                 PruneAssets);
 
-            await _taskStateStorageService.DeleteAsync(taskState);
+            if (taskState != null)
+            {
+                await _taskStateStorageService.DeleteAsync(taskState);
+            }
         }
         
         private static IEnumerable<PackageAsset> PruneAssets(IEnumerable<PackageAsset> allAssets)

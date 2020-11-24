@@ -20,6 +20,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
                 RunRealRestoreConstants.ContainerName,
                 RunRealRestoreConstants.ContainerName,
                 message.Bucket,
+                force: true,
                 mergeExisting: true,
                 PruneAssets);
         }
