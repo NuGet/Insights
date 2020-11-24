@@ -24,10 +24,22 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
 
         public async Task ProcessAsync(FindPackageAssetsCompactMessage message)
         {
-            var taskState = await _taskStateStorageService.GetAsync(
-                message.TaskStateStorageSuffix,
-                message.TaskStatePartitionKey,
-                message.TaskStateRowKey);
+            TaskState taskState;
+            if (message.Force
+                && message.TaskStatePartitionKey == null
+                && message.TaskStateRowKey == null
+                && message.TaskStateStorageSuffix == null)
+            {
+                taskState = null;
+            }
+            else
+            {
+                taskState = await _taskStateStorageService.GetAsync(
+                    message.TaskStateStorageSuffix,
+                    message.TaskStatePartitionKey,
+                    message.TaskStateRowKey);
+            }
+
             if (!message.Force && taskState == null)
             {
                 _logger.LogWarning("No matching task state was found.");
