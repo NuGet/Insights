@@ -37,6 +37,8 @@ namespace Knapcode.ExplorePackages
                 },
             });
 
+            var config = new Config();
+
             var workerApp = new FunctionApp("ExplorePackagesWorker", new FunctionAppArgs
             {
                 ResourceGroupName = resourceGroup.Name,
@@ -52,6 +54,7 @@ namespace Knapcode.ExplorePackages
                     { "FUNCTIONS_WORKER_RUNTIME", "dotnet" },
                     { "Knapcode.ExplorePackages:StorageConnectionString", storageAccount.PrimaryConnectionString },
                     { "Knapcode.ExplorePackages:WorkerQueueName", "worker-queue" },
+                    { "Knapcode.ExplorePackages:AppendResultStorageMode", config.Require("AppendResultStorageMode") },
                 },
             });
         }

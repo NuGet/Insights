@@ -4,6 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Logic.Worker;
@@ -23,7 +26,7 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public static class ServiceCollectionExtensions
     {
-        public const string HttpClientName = "Knapcode.Explorepackages";
+        public const string HttpClientName = "Knapcode.ExplorePackages";
         
         public static IServiceCollection AddExplorePackagesSettings<T>(this IServiceCollection serviceCollection)
         {
@@ -53,9 +56,15 @@ namespace Knapcode.ExplorePackages.Logic
             return serviceCollection;
         }
 
-        public static IServiceCollection AddExplorePackages(this IServiceCollection serviceCollection)
+        public static IServiceCollection AddExplorePackages(
+            this IServiceCollection serviceCollection,
+            string programName = null,
+            string programVersion = null,
+            string programUrl = null)
         {
             serviceCollection.AddMemoryCache();
+
+            var userAgent = GetUserAgent(programName, programVersion, programUrl);
 
             serviceCollection
                 .AddHttpClient(HttpClientName)
@@ -68,8 +77,7 @@ namespace Knapcode.ExplorePackages.Logic
                 .AddHttpMessageHandler<UrlReporterHandler>()
                 .ConfigureHttpClient(httpClient =>
                 {
-                    UserAgent.SetUserAgent(httpClient);
-                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("x-ms-version", "2017-04-17");
+                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", userAgent);
                 });
             serviceCollection.AddTransient(x => x
                 .GetRequiredService<IHttpClientFactory>()
@@ -320,6 +328,63 @@ namespace Knapcode.ExplorePackages.Logic
             }
 
             return serviceCollection;
+        }
+
+        private static string GetUserAgent(string programName, string programVersion, string programUrl)
+        {
+            var builder = new StringBuilder();
+
+            builder.Append(new UserAgentStringBuilder("NuGet Test Client")
+                .WithOSDescription(RuntimeInformation.OSDescription)
+                .Build());
+
+            builder.Append(" ");
+            if (string.IsNullOrWhiteSpace(programName))
+            {
+                builder.Append("Knapcode.ExplorePackages");
+            }
+            else
+            {
+                builder.Append(programName);
+            }
+            builder.Append(".Bot");
+
+            if (string.IsNullOrWhiteSpace(programVersion))
+            {
+                var assemblyInformationalVersion = typeof(ServiceCollectionExtensions)
+                    .Assembly
+                    .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+                    .InformationalVersion;
+                if (assemblyInformationalVersion != null)
+                {
+                    builder.Append("/");
+                    builder.Append(assemblyInformationalVersion);
+                }
+            }
+            else
+            {
+                builder.Append("/");
+                builder.Append(programVersion);
+            }
+
+            builder.Append(" (");
+            builder.Append(RuntimeInformation.OSArchitecture);
+            builder.Append("; ");
+            builder.Append(RuntimeInformation.ProcessArchitecture);
+            builder.Append("; ");
+            builder.Append(RuntimeInformation.FrameworkDescription);
+            builder.Append("; +");
+            if (string.IsNullOrWhiteSpace(programUrl))
+            {
+                builder.Append("https://github.com/joelverhagen/ExplorePackages");
+            }
+            else
+            {
+                builder.Append(programUrl);
+            }
+            builder.Append(")");
+
+            return builder.ToString();
         }
 
         private static IEnumerable<Type> GetClassesImplementing<T>()

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets;
 using Microsoft.Extensions.Logging;
@@ -90,6 +91,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             var max = index.CommitTimestamp;
 
             // max = new[] { max, min.AddHours(2) }.Min();
+            max = DateTimeOffset.Parse("2020-11-24T19:33:47.846Z");
 
             if (min == max)
             {

@@ -23,7 +23,7 @@ namespace Knapcode.ExplorePackages.Worker
                     configuration.GetSection(ExplorePackagesSettings.DefaultSectionName).Bind(settings);
                 });
 
-            builder.Services.AddExplorePackages();
+            builder.Services.AddExplorePackages("Knapcode.ExplorePackages.Worker");
 
             builder.Services.AddSingleton<IQueueProcessorFactory, UnencodedQueueProcessorFactory>();
 

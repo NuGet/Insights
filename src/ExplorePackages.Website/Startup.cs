@@ -40,7 +40,7 @@ namespace Knapcode.ExplorePackages.Website
             serviceCollection.Configure<ExplorePackagesSettings>(configuration.GetSection(ExplorePackagesSettings.DefaultSectionName));
 
             // Enable ExplorePackages dependencies.
-            serviceCollection.AddExplorePackages();
+            serviceCollection.AddExplorePackages("Knapcode.ExplorePackages.Website");
 
             // Add stuff specific to the website.
             serviceCollection.AddLogging();

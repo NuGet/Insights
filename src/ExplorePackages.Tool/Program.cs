@@ -233,7 +233,7 @@ namespace Knapcode.ExplorePackages.Tool
         {
             var serviceCollection = new ServiceCollection();
 
-            serviceCollection.AddExplorePackages();
+            serviceCollection.AddExplorePackages("Knapcode.ExplorePackages.Tool");
             serviceCollection.AddExplorePackagesSettings<Program>();
 
             serviceCollection.AddLogging(o =>

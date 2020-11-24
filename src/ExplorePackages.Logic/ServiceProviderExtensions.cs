@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using NuGet.Protocol.Core.Types;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -50,11 +49,6 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 logger.LogInformation("The database will not be used.");
             }
-
-            // Set the user agent.
-            var userAgentStringBuilder = new UserAgentStringBuilder("Knapcode.ExplorePackages.Bot");
-            UserAgent.SetUserAgentString(userAgentStringBuilder);
-            logger.LogInformation("The following user agent will be used: {UserAgent}", UserAgent.UserAgentString);
 
             // Allow many concurrent outgoing connections.
             ServicePointManager.DefaultConnectionLimit = 64;
