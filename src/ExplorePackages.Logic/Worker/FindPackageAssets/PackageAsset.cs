@@ -1,6 +1,7 @@
 ﻿using CsvHelper.Configuration.Attributes;
 using NuGet.Versioning;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
 {
@@ -54,11 +55,14 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
             return Equals(obj as PackageAsset);
         }
 
-        public bool Equals(PackageAsset other)
+        public bool Equals([AllowNull] PackageAsset other)
         {
             return other != null &&
+                   ScanId.Equals(other.ScanId) &&
+                   ScanTimestamp.Equals(other.ScanTimestamp) &&
                    Id == other.Id &&
                    Version == other.Version &&
+                   Created.Equals(other.Created) &&
                    ResultType == other.ResultType &&
                    PatternSet == other.PatternSet &&
                    PropertyAnyValue == other.PropertyAnyValue &&
@@ -69,14 +73,26 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
                    PropertyMSBuild == other.PropertyMSBuild &&
                    PropertyRuntimeIdentifier == other.PropertyRuntimeIdentifier &&
                    PropertySatelliteAssembly == other.PropertySatelliteAssembly &&
-                   Path == other.Path;
+                   Path == other.Path &&
+                   FileName == other.FileName &&
+                   FileExtension == other.FileExtension &&
+                   TopLevelFolder == other.TopLevelFolder &&
+                   RoundTripTargetFrameworkMoniker == other.RoundTripTargetFrameworkMoniker &&
+                   FrameworkName == other.FrameworkName &&
+                   FrameworkVersion == other.FrameworkVersion &&
+                   FrameworkProfile == other.FrameworkProfile &&
+                   PlatformName == other.PlatformName &&
+                   PlatformVersion == other.PlatformVersion;
         }
 
         public override int GetHashCode()
         {
             HashCode hash = new HashCode();
+            hash.Add(ScanId);
+            hash.Add(ScanTimestamp);
             hash.Add(Id);
             hash.Add(Version);
+            hash.Add(Created);
             hash.Add(ResultType);
             hash.Add(PatternSet);
             hash.Add(PropertyAnyValue);
@@ -88,6 +104,15 @@ namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
             hash.Add(PropertyRuntimeIdentifier);
             hash.Add(PropertySatelliteAssembly);
             hash.Add(Path);
+            hash.Add(FileName);
+            hash.Add(FileExtension);
+            hash.Add(TopLevelFolder);
+            hash.Add(RoundTripTargetFrameworkMoniker);
+            hash.Add(FrameworkName);
+            hash.Add(FrameworkVersion);
+            hash.Add(FrameworkProfile);
+            hash.Add(PlatformName);
+            hash.Add(PlatformVersion);
             return hash.ToHashCode();
         }
     }
