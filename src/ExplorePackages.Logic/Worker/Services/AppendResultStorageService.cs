@@ -3,6 +3,7 @@ using CsvHelper.TypeConversion;
 using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
+using Microsoft.WindowsAzure.Storage.Shared.Protocol;
 using Microsoft.WindowsAzure.Storage.Table;
 using Microsoft.WindowsAzure.Storage.Table.Protocol;
 using Newtonsoft.Json;
@@ -23,7 +24,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
         private const string ContentType = "text/plain";
         private const string AppendPrefix = "append_";
         private const string CompactPrefix = "compact_";
-
+        private const int MaximumPropertyLength = 32 * 1024;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
 
@@ -132,35 +133,71 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             var table = GetTable(tableName);
 
             // Append the data.
-            await AppendToTableAsync(records, bucket, table);
+            await AppendToTableAsync(bucket, table, records);
 
             // Append a marker to show that this bucket has data.
             var markerEntity = new TableEntity(string.Empty, bucket.ToString());
             await table.ExecuteAsync(TableOperation.InsertOrReplace(markerEntity));
         }
 
-        private static async Task AppendToTableAsync<T>(IReadOnlyList<T> records, int bucket, CloudTable table)
+        private static async Task AppendToTableAsync<T>(int bucket, CloudTable table, IReadOnlyList<T> records)
         {
+            AppendResultEntity dataEntity = SerializeToTableEntity(records, bucket);
+
+            var entities = new List<AppendResultEntity>();
+            if (dataEntity.Data.Length >= MaximumPropertyLength)
+            {
+                var entityCount = Math.Min(
+                    records.Count,
+                    (int)(1.05 * ((dataEntity.Data.Length / MaximumPropertyLength) + 1)));
+
+                if (entityCount > 1)
+                {
+                    var minRecordCount = records.Count / entityCount;
+                    for (var i = 0; i < entityCount; i++)
+                    {
+                        var entityRecords = records.Skip(i * minRecordCount);
+                        if (i < entityCount - 1)
+                        {
+                            entityRecords = entityRecords.Take(minRecordCount);
+                        }
+
+                        entities.Add(SerializeToTableEntity(entityRecords.ToList(), bucket));
+                    }
+                }
+            }
+
+            if (!entities.Any())
+            {
+                entities.Add(dataEntity);
+            }
+
             try
             {
-                var dataEntity = new AppendResultEntity(bucket, StorageUtility.GenerateDescendingId().ToString())
-                {
-                    Data = JsonConvert.SerializeObject(records),
-                };
-
-                await table.InsertEntitiesAsync(new[] { dataEntity });
+                await table.InsertEntitiesAsync(entities);
             }
             catch (StorageException ex) when (
-                records.Count >= 2
-                && ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.BadRequest
-                && (ex.RequestInformation?.ExtendedErrorInformation?.ErrorCode == TableErrorCodeStrings.PropertyValueTooLarge
-                    || ex.RequestInformation?.ExtendedErrorInformation?.ErrorCode == TableErrorCodeStrings.EntityTooLarge))
+                records.Count >= 2 && (
+                    (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.BadRequest
+                     && (ex.RequestInformation?.ExtendedErrorInformation?.ErrorCode == TableErrorCodeStrings.PropertyValueTooLarge
+                         || ex.RequestInformation?.ExtendedErrorInformation?.ErrorCode == TableErrorCodeStrings.EntityTooLarge))
+                    ||
+                    (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.RequestEntityTooLarge
+                     && ex.RequestInformation?.ExtendedErrorInformation?.ErrorCode == StorageErrorCodeStrings.RequestBodyTooLarge)))
             {
                 var firstHalf = records.Take(records.Count / 2).ToList();
                 var secondHalf = records.Skip(records.Count - firstHalf.Count).ToList();
-                await AppendToTableAsync(firstHalf, bucket, table);
-                await AppendToTableAsync(secondHalf, bucket, table);
+                await AppendToTableAsync(bucket, table, firstHalf);
+                await AppendToTableAsync(bucket, table, secondHalf);
             }
+        }
+
+        private static AppendResultEntity SerializeToTableEntity<T>(IReadOnlyList<T> records, int bucket)
+        {
+            return new AppendResultEntity(bucket, StorageUtility.GenerateDescendingId().ToString())
+            {
+                Data = JsonConvert.SerializeObject(records),
+            };
         }
 
         private CloudAppendBlob GetAppendBlob(string container, int bucket)

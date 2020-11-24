@@ -63,6 +63,7 @@ namespace Knapcode.ExplorePackages.Tool
             // MSB3644: { "n":"rrr","v":1,"d":{ "i":"Newtonsoft.Json","v":"12.0.3","f":"net35"} }
 
             await _catalogScanService.UpdateGetPackageAssets();
+            // await _catalogScanService.RequeueAsync("08585954065972383328-9a556c36a70a48078031b866de666a4b");
             // await EnqueueRunRealRestoreAsync();
             // await EnqueueRunRealRestoreCompactAsync();
             // await ReadErrorBlobsAsync();

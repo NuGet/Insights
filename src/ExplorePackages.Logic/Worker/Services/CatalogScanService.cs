@@ -40,6 +40,47 @@ namespace Knapcode.ExplorePackages.Logic.Worker
                 }).AsString());
         }
 
+        public async Task RequeueAsync(string scanId)
+        {
+            var indexScan = await _catalogScanStorageService.GetIndexScanAsync(scanId);
+            if (indexScan.ParsedState != CatalogScanState.Waiting)
+            {
+                return;
+            }
+
+            var pageScans = await _catalogScanStorageService.GetPageScansAsync(indexScan.StorageSuffix, indexScan.ScanId);
+            foreach (var pageScan in pageScans)
+            {
+                var leafScans = await _catalogScanStorageService.GetLeafScansAsync(pageScan.StorageSuffix, pageScan.ScanId, pageScan.PageId);
+                await _messageEnqueuer.EnqueueAsync(leafScans
+                    .Select(x => new CatalogLeafScanMessage
+                    {
+                        StorageSuffix = x.StorageSuffix,
+                        ScanId = x.ScanId,
+                        PageId = x.PageId,
+                        LeafId = x.LeafId,
+                    })
+                    .ToList());
+            }
+
+            await _messageEnqueuer.EnqueueAsync(pageScans
+                .Select(x => new CatalogPageScanMessage
+                {
+                    StorageSuffix = x.StorageSuffix,
+                    ScanId = x.ScanId,
+                    PageId = x.PageId,
+                })
+                .ToList());
+
+            await _messageEnqueuer.EnqueueAsync(new[]
+            {
+                new CatalogIndexScanMessage
+                {
+                    ScanId = indexScan.ScanId,
+                },
+            });
+        }
+
         private async Task<CatalogIndexScan> UpdateAsync(CatalogScanType type, string parameters)
         {
             // Determine the bounds of the scan.
