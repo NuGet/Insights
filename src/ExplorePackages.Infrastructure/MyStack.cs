@@ -43,6 +43,7 @@ namespace Knapcode.ExplorePackages
                 AppServicePlanId = workerPlan.Id,
                 StorageAccountName = storageAccount.Name,
                 StorageAccountAccessKey = storageAccount.PrimaryAccessKey,
+                EnableBuiltinLogging = false,
                 Version = "~3",
                 AppSettings = new InputMap<string>
                 {
@@ -50,6 +51,7 @@ namespace Knapcode.ExplorePackages
                     { "APPLICATIONINSIGHTS_CONNECTION_STRING", appInsights.ConnectionString },
                     { "FUNCTIONS_WORKER_RUNTIME", "dotnet" },
                     { "Knapcode.ExplorePackages:StorageConnectionString", storageAccount.PrimaryConnectionString },
+                    { "Knapcode.ExplorePackages:WorkerQueueName", "worker-queue" },
                 },
             });
         }
