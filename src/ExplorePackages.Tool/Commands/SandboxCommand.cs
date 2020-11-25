@@ -5,8 +5,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Logic;
 using Knapcode.ExplorePackages.Logic.Worker;
+using Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets;
 using Knapcode.ExplorePackages.Logic.Worker.RunRealRestore;
 using McMaster.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
@@ -27,6 +29,8 @@ namespace Knapcode.ExplorePackages.Tool
         private readonly IMessageProcessor<RunRealRestoreMessage> _messageProcessor;
         private readonly MessageEnqueuer _messageEnqueuer;
         private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly FindPackageAssetsScanDriver _driver;
+        private readonly SchemaSerializer _serializer;
 
         public SandboxCommand(
             CatalogScanService catalogScanService,
@@ -37,7 +41,9 @@ namespace Knapcode.ExplorePackages.Tool
             AppendResultStorageService appendResultStorageService,
             IMessageProcessor<RunRealRestoreMessage> messageProcessor,
             MessageEnqueuer messageEnqueuer,
-            ServiceClientFactory serviceClientFactory)
+            ServiceClientFactory serviceClientFactory,
+            FindPackageAssetsScanDriver driver,
+            SchemaSerializer serializer)
         {
             _catalogScanService = catalogScanService;
             _workerQueueFactory = workerQueueFactory;
@@ -48,6 +54,8 @@ namespace Knapcode.ExplorePackages.Tool
             _messageProcessor = messageProcessor;
             _messageEnqueuer = messageEnqueuer;
             _serviceClientFactory = serviceClientFactory;
+            _driver = driver;
+            _serializer = serializer;
         }
 
         public void Configure(CommandLineApplication app)
@@ -60,12 +68,39 @@ namespace Knapcode.ExplorePackages.Tool
             await _cursorStorageService.InitializeAsync();
             await _catalogScanStorageService.InitializeAsync();
 
+            /*
+            await _messageEnqueuer.EnqueueAsync(Enumerable
+                .Range(0, 1000)
+                .Select(b => new FindPackageAssetsCompactMessage
+                {
+                    Bucket = b,
+                    Force = true,
+                    DestinationContainer = FindPackageAssetsScanDriver.ContainerName,
+                })
+                .ToList());
+            */
+
+            /*
+            await _driver.ProcessLeafAsync(new CatalogLeafScan
+            {
+                ScanParameters = _serializer.Serialize(new FindPackageAssetsParameters
+                {
+                    BucketCount = 1000, // Azure Data Explorer can only import up to 1000 blobs.
+                }).AsString(),
+                StorageSuffix = "foo",
+                PackageId = "Microsoft.VisualStudio.Threading",
+                PackageVersion = "15.5.24",
+                Url = "https://api.nuget.org/v3/catalog0/data/2018.10.07.05.56.23/microsoft.visualstudio.threading.15.5.24.json",
+                ParsedLeafType = CatalogLeafType.PackageDetails,
+            });
+            */
+
             // Success: {"n":"rrr","v":1,"d":{"i":"Newtonsoft.Json","v":"12.0.3","f":"netcoreapp1.1"}}
             // NU1202: { "n":"rrr","v":1,"d":{ "i":"Aspose.Words","v":"20.9.0","f":"netstandard1.6"} }
             // NU1213: { "n":"rrr","v":1,"d":{ "i":"Microsoft.AspNetCore.App.Runtime.linux-x64","v":"5.0.0-rc.1.20451.17","f":"netstandard1.5"} }
             // MSB3644: { "n":"rrr","v":1,"d":{ "i":"Newtonsoft.Json","v":"12.0.3","f":"net35"} }
 
-            await _catalogScanService.UpdateGetPackageAssets();
+            // await _catalogScanService.UpdateGetPackageAssets();
             // await _catalogScanService.RequeueAsync("08585954065972383328-9a556c36a70a48078031b866de666a4b");
             // await EnqueueRunRealRestoreAsync();
             // await EnqueueRunRealRestoreCompactAsync();
