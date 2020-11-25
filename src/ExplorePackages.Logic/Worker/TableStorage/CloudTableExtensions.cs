@@ -11,7 +11,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
 {
     public static class CloudTableExtensions
     {
-        public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(this CloudTable table, string partitionKey, bool allow404 = false) where T : ITableEntity, new()
+        public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(this CloudTable table, string partitionKey) where T : ITableEntity, new()
         {
             var entities = new List<T>();
             var query = new TableQuery<T>
@@ -23,20 +23,14 @@ namespace Knapcode.ExplorePackages.Logic.Worker
                 TakeCount = MaxTakeCount,
             };
 
-            try
+            TableContinuationToken token = null;
+            do
             {
-                TableContinuationToken token = null;
-                do
-                {
-                    var segment = await table.ExecuteQuerySegmentedAsync(query, token);
-                    token = segment.ContinuationToken;
-                    entities.AddRange(segment.Results);
-                }
-                while (token != null);
+                var segment = await table.ExecuteQuerySegmentedAsync(query, token);
+                token = segment.ContinuationToken;
+                entities.AddRange(segment.Results);
             }
-            catch (StorageException ex) when (allow404 && ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.NotFound)
-            {
-            }
+            while (token != null);
 
             return entities;
         }

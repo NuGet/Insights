@@ -121,7 +121,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
                 && ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.RequestEntityTooLarge)
             {
                 var firstHalf = records.Take(records.Count / 2).ToList();
-                var secondHalf = records.Skip(records.Count - firstHalf.Count).ToList();
+                var secondHalf = records.Skip(firstHalf.Count).ToList();
                 await AppendToBlobAsync(blob, firstHalf);
                 await AppendToBlobAsync(blob, secondHalf);
             }
@@ -149,7 +149,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             {
                 var entityCount = Math.Min(
                     records.Count,
-                    (int)(1.05 * ((dataEntity.Data.Length / MaximumPropertyLength) + 1)));
+                    (int)(1.5 * ((dataEntity.Data.Length / MaximumPropertyLength) + 1)));
 
                 if (entityCount > 1)
                 {
@@ -186,7 +186,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
                      && ex.RequestInformation?.ExtendedErrorInformation?.ErrorCode == StorageErrorCodeStrings.RequestBodyTooLarge)))
             {
                 var firstHalf = records.Take(records.Count / 2).ToList();
-                var secondHalf = records.Skip(records.Count - firstHalf.Count).ToList();
+                var secondHalf = records.Skip(firstHalf.Count).ToList();
                 await AppendToTableAsync(bucket, table, firstHalf);
                 await AppendToTableAsync(bucket, table, secondHalf);
             }
@@ -240,17 +240,21 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             Func<IEnumerable<T>, IEnumerable<T>> prune)
         {
             var appendRecords = new List<T>();
-            var appendBlob = GetAppendBlob(srcContainer, bucket);
-            if (await appendBlob.ExistsAsync())
+
+            if (!force || srcContainer != null)
             {
-                var text = await appendBlob.DownloadTextAsync();
-                var records = DeserializeRecords<T>(text);
-                appendRecords.AddRange(records);
-            }
-            else if (!force)
-            {
-                // If there is no append blob, then there's no new data. We can stop here.
-                return;
+                var appendBlob = GetAppendBlob(srcContainer, bucket);
+                if (await appendBlob.ExistsAsync())
+                {
+                    var text = await appendBlob.DownloadTextAsync();
+                    var records = DeserializeRecords<T>(text);
+                    appendRecords.AddRange(records);
+                }
+                else if (!force)
+                {
+                    // If there is no append blob, then there's no new data. We can stop here.
+                    return;
+                }
             }
 
             await CompactAsync(appendRecords, destContainer, bucket, mergeExisting, prune);
@@ -264,20 +268,24 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             bool mergeExisting,
             Func<IEnumerable<T>, IEnumerable<T>> prune)
         {
-            var table = GetTable(srcTable);
-            var entities = await table.GetEntitiesAsync<AppendResultEntity>(bucket.ToString(), allow404: force);
             var appendRecords = new List<T>();
-            if (entities.Any())
+
+            if (!force || srcTable != null)
             {
-                foreach (var entity in entities)
+                var table = GetTable(srcTable);
+                var entities = await table.GetEntitiesAsync<AppendResultEntity>(bucket.ToString());
+                if (entities.Any())
                 {
-                    appendRecords.AddRange(JsonConvert.DeserializeObject<List<T>>(entity.Data));
+                    foreach (var entity in entities)
+                    {
+                        appendRecords.AddRange(JsonConvert.DeserializeObject<List<T>>(entity.Data));
+                    }
                 }
-            }
-            else if (!force)
-            {
-                // If there are no entities, then there's no new data. We can stop here.
-                return;
+                else if (!force)
+                {
+                    // If there are no entities, then there's no new data. We can stop here.
+                    return;
+                }
             }
 
             await CompactAsync(appendRecords, destContainer, bucket, mergeExisting, prune);
