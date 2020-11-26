@@ -1,22 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Logic.Worker;
 using Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets;
 using Knapcode.ExplorePackages.Logic.Worker.RunRealRestore;
 using Knapcode.MiniZip;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NuGet.Configuration;
 using NuGet.Protocol;
@@ -83,76 +78,6 @@ namespace Knapcode.ExplorePackages.Logic
                 .GetRequiredService<IHttpClientFactory>()
                 .CreateClient(HttpClientName));
 
-            serviceCollection.AddDbContext<SqliteEntityContext>((x, dbContextOptionsBuilder) =>
-            {
-                var options = x.GetRequiredService<IOptionsSnapshot<ExplorePackagesSettings>>();
-                dbContextOptionsBuilder
-                    .UseSqlite(options.Value.DatabaseConnectionString);
-            }, contextLifetime: ServiceLifetime.Transient);
-            serviceCollection.Remove(serviceCollection.Single(x => x.ServiceType == typeof(SqliteEntityContext)));
-            serviceCollection.AddTransient<Func<bool, SqliteEntityContext>>(x => includeCommitCondition =>
-            {
-                if (includeCommitCondition)
-                {
-                    return new SqliteEntityContext(
-                        x.GetRequiredService<ICommitCondition>(),
-                        x.GetRequiredService<DbContextOptions<SqliteEntityContext>>());
-                }
-                else
-                {
-                    return new SqliteEntityContext(
-                        NullCommitCondition.Instance,
-                        x.GetRequiredService<DbContextOptions<SqliteEntityContext>>());
-                }
-            });
-
-            serviceCollection.AddDbContext<SqlServerEntityContext>((x, dbContextOptionsBuilder) =>
-            {
-                var options = x.GetRequiredService<IOptionsSnapshot<ExplorePackagesSettings>>();
-                dbContextOptionsBuilder
-                    .UseSqlServer(options.Value.DatabaseConnectionString);
-            }, contextLifetime: ServiceLifetime.Transient);
-            serviceCollection.Remove(serviceCollection.Single(x => x.ServiceType == typeof(SqlServerEntityContext)));
-            serviceCollection.AddTransient<Func<bool, SqlServerEntityContext>>(x => includeCommitCondition =>
-            {
-                if (includeCommitCondition)
-                {
-                    return new SqlServerEntityContext(
-                        x.GetRequiredService<ICommitCondition>(),
-                        x.GetRequiredService<DbContextOptions<SqlServerEntityContext>>());
-                }
-                else
-                {
-                    return new SqlServerEntityContext(
-                        NullCommitCondition.Instance,
-                        x.GetRequiredService<DbContextOptions<SqlServerEntityContext>>());
-                }
-            });
-
-            serviceCollection.AddTransient<Func<bool, IEntityContext>>(x => includeCommitCondition =>
-            {
-                var options = x.GetRequiredService<IOptionsSnapshot<ExplorePackagesSettings>>();
-                switch (options.Value.DatabaseType)
-                {
-                    case DatabaseType.Sqlite:
-                        return x.GetRequiredService<Func<bool, SqliteEntityContext>>()(includeCommitCondition);
-                    case DatabaseType.SqlServer:
-                        return x.GetRequiredService<Func<bool, SqlServerEntityContext>>()(includeCommitCondition);
-                    default:
-                        throw new NotImplementedException($"The database type '{options.Value.DatabaseType}' is not supported.");
-                }
-            });
-            serviceCollection.AddTransient(x => x.GetRequiredService<Func<bool, IEntityContext>>()(true));
-            serviceCollection.AddTransient<Func<IEntityContext>>(x => () => x.GetRequiredService<Func<bool, IEntityContext>>()(true));
-            serviceCollection.AddTransient<EntityContextFactory>();
-            serviceCollection.AddSingleton<ISingletonService>(x => new SingletonService(
-                new DatabaseLeaseService(
-                    NullCommitCondition.Instance,
-                    new EntityContextFactory(
-                        () => x.GetRequiredService<Func<bool, IEntityContext>>()(false))),
-                x.GetRequiredService<ILogger<SingletonService>>()));
-            serviceCollection.AddTransient<ICommitCondition, LeaseCommitCondition>();
-
             serviceCollection.AddSingleton<ServiceClientFactory>();
 
             serviceCollection.AddSingleton<UrlReporterProvider>();
@@ -186,55 +111,20 @@ namespace Knapcode.ExplorePackages.Logic
 
             serviceCollection.AddTransient<NuspecStore>();
             serviceCollection.AddTransient<MZipStore>();
-            serviceCollection.AddTransient<RemoteCursorService>();
             serviceCollection.AddTransient<IPortTester, PortTester>();
             serviceCollection.AddTransient<IPortDiscoverer, SimplePortDiscoverer>();
             serviceCollection.AddTransient<SearchServiceCursorReader>();
-            serviceCollection.AddTransient<PackageQueryContextBuilder>();
             serviceCollection.AddTransient<IProgressReporter, NullProgressReporter>();
             serviceCollection.AddTransient<LatestV2PackageFetcher>();
             serviceCollection.AddTransient<LatestCatalogCommitFetcher>();
             serviceCollection.AddTransient<PackageBlobNameProvider>();
             serviceCollection.AddTransient<IFileStorageService, FileStorageService>();
             serviceCollection.AddTransient<IBlobStorageService, BlobStorageService>();
-            serviceCollection.AddTransient<BlobStorageMigrator>();
 
             serviceCollection.AddTransient<IRawMessageEnqueuer, QueueStorageEnqueuer>();
             serviceCollection.AddTransient<IWorkerQueueFactory, UnencodedWorkerQueueFactory>();
 
             serviceCollection.AddSingleton<IBatchSizeProvider, BatchSizeProvider>();
-            serviceCollection.AddTransient<PackageQueryCollector>();
-            serviceCollection.AddTransient<PackageQueryProcessor>();
-            serviceCollection.AddTransient<PackageQueryExecutor>();
-            serviceCollection.AddTransient<CatalogToDatabaseProcessor>();
-            serviceCollection.AddTransient<V2ToDatabaseProcessor>();
-            serviceCollection.AddTransient<PackageDownloadsToDatabaseProcessor>();
-
-            serviceCollection.AddTransient<NuspecsCommitProcessor>();
-            serviceCollection.AddTransient<NuspecsCommitProcessor.Collector>();
-            serviceCollection.AddTransient<MZipsCommitProcessor>();
-            serviceCollection.AddTransient<MZipsCommitProcessor.Collector>();
-            serviceCollection.AddTransient<MZipToDatabaseCommitProcessor>();
-            serviceCollection.AddTransient<MZipToDatabaseCommitProcessor.Collector>();
-            serviceCollection.AddTransient<DependenciesToDatabaseCommitProcessor>();
-            serviceCollection.AddTransient<DependenciesToDatabaseCommitProcessor.Collector>();
-            serviceCollection.AddTransient<DependencyPackagesToDatabaseCommitProcessor>();
-            serviceCollection.AddTransient<DependencyPackagesToDatabaseCommitProcessor.Collector>();
-
-            serviceCollection.AddTransient<PackageCatalogCommitEnumerator>();
-            serviceCollection.AddTransient<PackageV2CommitEnumerator>();
-            serviceCollection.AddTransient<ICommitEnumerator<PackageEntity>, PackageCatalogCommitEnumerator>();
-            serviceCollection.AddTransient<ICommitEnumerator<PackageRegistrationEntity>, PackageRegistrationCommitEnumerator>();
-            serviceCollection.AddTransient(x => new CursorService(x.GetRequiredService<EntityContextFactory>()));
-            serviceCollection.AddTransient<IETagService, ETagService>();
-            serviceCollection.AddTransient<PackageService>();
-            serviceCollection.AddTransient<IPackageService, PackageService>();
-            serviceCollection.AddTransient<PackageQueryService>();
-            serviceCollection.AddTransient<CatalogService>();
-            serviceCollection.AddTransient<PackageDependencyService>();
-            serviceCollection.AddTransient<ProblemService>();
-            serviceCollection.AddTransient<IDatabaseLeaseService, DatabaseLeaseService>();
-            serviceCollection.AddTransient<CommitCollectorSequentialProgressService>();
             serviceCollection.AddTransient<CommitEnumerator>();
 
             serviceCollection.AddTransient<V2Parser>();
@@ -248,17 +138,6 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<AutocompleteClient>();
             serviceCollection.AddTransient<IPackageDownloadsClient, PackageDownloadsClient>();
             serviceCollection.AddTransient<CatalogClient>();
-
-            serviceCollection.AddTransient<GalleryConsistencyService>();
-            serviceCollection.AddTransient<V2ConsistencyService>();
-            serviceCollection.AddTransient<FlatContainerConsistencyService>();
-            serviceCollection.AddTransient<PackagesContainerConsistencyService>();
-            serviceCollection.AddTransient<RegistrationOriginalConsistencyService>();
-            serviceCollection.AddTransient<RegistrationGzippedConsistencyService>();
-            serviceCollection.AddTransient<RegistrationSemVer2ConsistencyService>();
-            serviceCollection.AddTransient<SearchConsistencyService>();
-            serviceCollection.AddTransient<PackageConsistencyService>();
-            serviceCollection.AddTransient<CrossCheckConsistencyService>();
 
             serviceCollection.AddTransient<GenericMessageProcessor>();
             serviceCollection.AddTransient<SchemaSerializer>();
@@ -288,44 +167,6 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<FindPackageAssetsScanDriver>();
 
             serviceCollection.AddTransient<CatalogScanService>();
-
-            serviceCollection.AddTransient(x => new PackageQueryFactory(
-                () => x.GetRequiredService<IEnumerable<IPackageQuery>>(),
-                x.GetRequiredService<IOptionsSnapshot<ExplorePackagesSettings>>()));
-
-            // Add all of the .nuspec queries.
-            foreach (var serviceType in GetClassesImplementing<INuspecQuery>())
-            {
-                serviceCollection.AddTransient(serviceType);
-                serviceCollection.AddTransient<IPackageQuery>(x =>
-                {
-                    var nuspecQuery = (INuspecQuery)x.GetRequiredService(serviceType);
-                    return new NuspecPackageQuery(nuspecQuery);
-                });
-            }
-
-            // Add all of the package consistency queries.
-            foreach (var serviceType in GetClassesImplementing<IPackageConsistencyQuery>())
-            {
-                serviceCollection.AddTransient(serviceType);
-                serviceCollection.AddTransient<IPackageQuery>(x =>
-                {
-                    var nuspecQuery = (IPackageConsistencyQuery)x.GetRequiredService(serviceType);
-                    return new PackageConsistencyPackageQuery(nuspecQuery);
-                });
-            }
-
-            // Add all of the package queries.
-            foreach (var serviceType in GetClassesImplementing<IPackageQuery>())
-            {
-                if (serviceType == typeof(NuspecPackageQuery)
-                    || serviceType == typeof(PackageConsistencyPackageQuery))
-                {
-                    continue;
-                }
-
-                serviceCollection.AddTransient(typeof(IPackageQuery), serviceType);
-            }
 
             return serviceCollection;
         }
@@ -385,15 +226,6 @@ namespace Knapcode.ExplorePackages.Logic
             builder.Append(")");
 
             return builder.ToString();
-        }
-
-        private static IEnumerable<Type> GetClassesImplementing<T>()
-        {
-            return typeof(ServiceCollectionExtensions)
-                .Assembly
-                .GetTypes()
-                .Where(t => t.GetInterfaces().Contains(typeof(T)))
-                .Where(t => t.IsClass && !t.IsAbstract);
         }
     }
 }

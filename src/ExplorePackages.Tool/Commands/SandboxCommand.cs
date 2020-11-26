@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Logic;
 using Knapcode.ExplorePackages.Logic.Worker;
 using Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets;

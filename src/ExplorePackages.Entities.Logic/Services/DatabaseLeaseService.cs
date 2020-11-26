@@ -9,9 +9,6 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class DatabaseLeaseService : IDatabaseLeaseService
     {
-        public const string NotAcquiredAtAll = "The provided lease was not acquired in the first place.";
-        public const string AcquiredBySomeoneElse = "The lease has been acquired by someone else.";
-        public const string NotAvailable = "The lease is not available yet.";
         private readonly ICommitCondition _commitCondition;
         private readonly EntityContextFactory _entityContextFactory;
 
@@ -72,7 +69,7 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 if (shouldThrow)
                 {
-                    throw new ArgumentException(NotAcquiredAtAll, nameof(lease));
+                    throw new ArgumentException(DatabaseLeaseResult.NotAcquiredAtAll, nameof(lease));
                 }
                 else
                 {
@@ -94,7 +91,7 @@ namespace Knapcode.ExplorePackages.Logic
                 {
                     if (shouldThrow)
                     {
-                        throw new InvalidOperationException(AcquiredBySomeoneElse, ex);
+                        throw new InvalidOperationException(DatabaseLeaseResult.AcquiredBySomeoneElse, ex);
                     }
                     else
                     {
@@ -120,7 +117,7 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 if (shouldThrow)
                 {
-                    throw new ArgumentException(NotAcquiredAtAll, nameof(lease));
+                    throw new ArgumentException(DatabaseLeaseResult.NotAcquiredAtAll, nameof(lease));
                 }
                 else
                 {
@@ -142,7 +139,7 @@ namespace Knapcode.ExplorePackages.Logic
                 {
                     if (shouldThrow)
                     {
-                        throw new InvalidOperationException(AcquiredBySomeoneElse, ex);
+                        throw new InvalidOperationException(DatabaseLeaseResult.AcquiredBySomeoneElse, ex);
                     }
                     else
                     {
@@ -190,7 +187,7 @@ namespace Knapcode.ExplorePackages.Logic
                     {
                         if (shouldThrow)
                         {
-                            throw new InvalidOperationException(NotAvailable, ex);
+                            throw new InvalidOperationException(DatabaseLeaseResult.NotAvailable, ex);
                         }
                         else
                         {
@@ -204,7 +201,7 @@ namespace Knapcode.ExplorePackages.Logic
                     {
                         if (shouldThrow)
                         {
-                            throw new InvalidOperationException(NotAvailable);
+                            throw new InvalidOperationException(DatabaseLeaseResult.NotAvailable);
                         }
                         else
                         {
@@ -223,7 +220,7 @@ namespace Knapcode.ExplorePackages.Logic
                     {
                         if (shouldThrow)
                         {
-                            throw new InvalidOperationException(NotAvailable, ex);
+                            throw new InvalidOperationException(DatabaseLeaseResult.NotAvailable, ex);
                         }
                         else
                         {

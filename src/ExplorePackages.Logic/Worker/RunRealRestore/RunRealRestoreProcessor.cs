@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Internal;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;

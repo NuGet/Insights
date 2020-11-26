@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Knapcode.ExplorePackages.Entities;
 using Newtonsoft.Json;
 
 namespace Knapcode.ExplorePackages.Logic

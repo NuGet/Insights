@@ -87,7 +87,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             // Determine the bounds of the scan.
             var cursor = await _cursorStorageService.GetOrCreateAsync($"CatalogScan-{type}");
             var index = await _catalogClient.GetCatalogIndexAsync();
-            var min = new[] { cursor.Value, CursorService.NuGetOrgMin }.Max();
+            var min = new[] { cursor.Value, CatalogClient.NuGetOrgMin }.Max();
             var max = index.CommitTimestamp;
 
             // max = new[] { max, min.AddHours(2) }.Min();

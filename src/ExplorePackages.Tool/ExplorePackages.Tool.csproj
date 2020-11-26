@@ -10,7 +10,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.1.3" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ExplorePackages.Entities\ExplorePackages.Entities.csproj" />
-    <ProjectReference Include="..\ExplorePackages.Logic\ExplorePackages.Logic.csproj" />
+    <ProjectReference Include="..\ExplorePackages.Entities.Logic\ExplorePackages.Entities.Logic.csproj" />
   </ItemGroup>
 </Project>

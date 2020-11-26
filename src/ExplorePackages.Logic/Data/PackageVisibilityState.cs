@@ -1,6 +1,4 @@
-﻿using Knapcode.ExplorePackages.Entities;
-
-namespace Knapcode.ExplorePackages.Logic
+﻿namespace Knapcode.ExplorePackages.Logic
 {
     public class PackageVisibilityState
     {

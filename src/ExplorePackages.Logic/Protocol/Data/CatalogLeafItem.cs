@@ -1,5 +1,4 @@
 ﻿using System;
-using Knapcode.ExplorePackages.Entities;
 using Newtonsoft.Json;
 
 namespace Knapcode.ExplorePackages.Logic

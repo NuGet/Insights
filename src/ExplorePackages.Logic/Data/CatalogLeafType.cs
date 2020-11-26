@@ -1,4 +1,4 @@
-﻿namespace Knapcode.ExplorePackages.Entities
+﻿namespace Knapcode.ExplorePackages.Logic
 {
     public enum CatalogLeafType
     {

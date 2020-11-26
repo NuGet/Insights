@@ -1,5 +1,4 @@
 ﻿using System;
-using Knapcode.ExplorePackages.Entities;
 using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Knapcode.ExplorePackages.Logic.Worker

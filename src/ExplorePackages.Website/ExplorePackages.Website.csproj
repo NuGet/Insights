@@ -6,6 +6,6 @@
     <UserSecretsId>fc241d56-9e3d-46f4-8c4b-40209befb209</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ExplorePackages.Logic\ExplorePackages.Logic.csproj" />
+    <ProjectReference Include="..\ExplorePackages.Entities.Logic\ExplorePackages.Entities.Logic.csproj" />
   </ItemGroup>
 </Project>

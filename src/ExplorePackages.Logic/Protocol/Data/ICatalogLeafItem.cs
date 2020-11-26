@@ -1,5 +1,4 @@
 ﻿using System;
-using Knapcode.ExplorePackages.Entities;
 
 namespace Knapcode.ExplorePackages.Logic
 {

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Knapcode.ExplorePackages.Entities;
 using Xunit;
 
 namespace Knapcode.ExplorePackages.Logic

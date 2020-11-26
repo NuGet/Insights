@@ -23,13 +23,6 @@ namespace Knapcode.ExplorePackages.Website
         
         public void ConfigureServices(IServiceCollection serviceCollection)
         {
-            // Allow many concurrent outgoing connections.
-            ServicePointManager.DefaultConnectionLimit = 64;
-
-            // Set the user agent for the HTTP client.
-            var userAgentStringBuilder = new UserAgentStringBuilder("Knapcode.ExplorePackages.Website.Bot");
-            UserAgent.SetUserAgentString(userAgentStringBuilder);
-
             // Add the base configuration.
             var configurationBuilder = new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string>
@@ -41,6 +34,8 @@ namespace Knapcode.ExplorePackages.Website
 
             // Enable ExplorePackages dependencies.
             serviceCollection.AddExplorePackages("Knapcode.ExplorePackages.Website");
+            serviceCollection.AddExplorePackagesEntities();
+            serviceCollection.AddScoped<ServiceClientFactory>();
 
             // Add stuff specific to the website.
             serviceCollection.AddLogging();

@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <IsPackable>false</IsPackable>
+    <AssemblyName>Knapcode.ExplorePackages.Tool.Test</AssemblyName>
     <RootNamespace>Knapcode.ExplorePackages.Tool</RootNamespace>
   </PropertyGroup>
   <ItemGroup>

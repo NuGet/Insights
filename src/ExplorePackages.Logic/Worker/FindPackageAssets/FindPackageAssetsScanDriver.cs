@@ -1,6 +1,4 @@
-﻿using Knapcode.ExplorePackages.Entities;
-using Knapcode.MiniZip;
-using Microsoft.EntityFrameworkCore;
+﻿using Knapcode.MiniZip;
 using Microsoft.Extensions.Logging;
 using NuGet.Client;
 using NuGet.ContentModel;

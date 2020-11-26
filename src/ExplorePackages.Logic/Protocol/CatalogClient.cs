@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Entities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NuGet.Protocol;
@@ -12,6 +11,15 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class CatalogClient
     {
+        /// <summary>
+        /// This is the point in time that nuget.org started repository signing packages that had already been
+        /// published and includes all packages that were repository signed at push time. In other words, we can start
+        /// start cursors just before this time and still see all packages.
+        /// </summary>
+        public static readonly DateTimeOffset NuGetOrgMin = DateTimeOffset
+            .Parse("2018-08-08T16:29:16.4488298Z")
+            .Subtract(TimeSpan.FromTicks(1));
+
         private readonly HttpSource _httpSource;
         private readonly ServiceIndexCache _serviceIndexCache;
         private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
@@ -29,6 +37,7 @@ namespace Knapcode.ExplorePackages.Logic
             _logger = logger;
         }
 
+        /*
         public string GetCatalogLeafRelativePath(CatalogLeafEntity leaf)
         {
             if (leaf.RelativePath != null)
@@ -41,6 +50,7 @@ namespace Knapcode.ExplorePackages.Logic
                 leaf.CatalogPackage.Package.Version,
                 new DateTimeOffset(leaf.CatalogCommit.CommitTimestamp, TimeSpan.Zero));
         }
+        */
 
         public async Task<CatalogIndex> GetCatalogIndexAsync(string url)
         {
@@ -133,6 +143,7 @@ namespace Knapcode.ExplorePackages.Logic
             }
         }
 
+        /*
         public async Task<CatalogLeaf> GetCatalogLeafAsync(CatalogLeafEntity leaf)
         {
             var baseUrl = await GetCatalogBaseUrlAsync();
@@ -159,6 +170,7 @@ namespace Knapcode.ExplorePackages.Logic
                     throw new NotImplementedException($"Catalog leaf type {leaf.Type} is not supported.");
             }
         }
+        */
 
         public string GetExpectedCatalogLeafRelativePath(string id, string version, DateTimeOffset commitTimestamp)
         {

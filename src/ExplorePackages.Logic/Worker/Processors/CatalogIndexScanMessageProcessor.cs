@@ -67,7 +67,7 @@ namespace Knapcode.ExplorePackages.Logic.Worker
             {
                 var catalogIndex = await lazyIndexTask.Value;
 
-                var min = scan.Min ?? CursorService.NuGetOrgMin;
+                var min = scan.Min ?? CatalogClient.NuGetOrgMin;
                 var max = new[] { scan.Max ?? DateTimeOffset.MaxValue, catalogIndex.CommitTimestamp }.Min();
                 if (scan.Min != min || scan.Max != max)
                 {

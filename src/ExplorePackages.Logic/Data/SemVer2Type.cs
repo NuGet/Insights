@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Knapcode.ExplorePackages.Entities
+namespace Knapcode.ExplorePackages.Logic
 {
     [Flags]
     public enum SemVerType

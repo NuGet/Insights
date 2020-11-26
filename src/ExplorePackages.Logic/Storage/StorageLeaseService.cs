@@ -64,7 +64,7 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 if (shouldThrow)
                 {
-                    throw new InvalidOperationException(DatabaseLeaseService.NotAvailable, ex);
+                    throw new InvalidOperationException(StorageLeaseResult.NotAvailable, ex);
                 }
                 else
                 {
@@ -96,7 +96,7 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 if (shouldThrow)
                 {
-                    throw new InvalidOperationException(DatabaseLeaseService.AcquiredBySomeoneElse, ex);
+                    throw new InvalidOperationException(StorageLeaseResult.AcquiredBySomeoneElse, ex);
                 }
                 else
                 {
@@ -134,7 +134,7 @@ namespace Knapcode.ExplorePackages.Logic
             {
                 if (shouldThrow)
                 {
-                    throw new InvalidOperationException(DatabaseLeaseService.AcquiredBySomeoneElse, ex);
+                    throw new InvalidOperationException(StorageLeaseResult.AcquiredBySomeoneElse, ex);
                 }
                 else
                 {
