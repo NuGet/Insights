@@ -10,13 +10,15 @@ namespace Knapcode.ExplorePackages.Logic
             string version,
             bool isDeleted,
             bool isSemVer2,
-            bool isListed)
+            bool isListed,
+            bool hasIcon)
         {
             Id = id;
             Version = version;
             IsDeleted = isDeleted;
             IsSemVer2 = isSemVer2;
             IsListed = isListed;
+            HasIcon = hasIcon;
         }
 
         public PackageConsistencyContext(PackageEntity package)
@@ -47,6 +49,7 @@ namespace Knapcode.ExplorePackages.Logic
         public string Version { get; }
         public bool IsDeleted { get; }
         public bool IsListed { get; }
+        public bool HasIcon { get; }
         public bool IsSemVer2 { get; }
     }
 }

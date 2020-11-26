@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Net;
 using System.Text.Json.Serialization;
 using Knapcode.ExplorePackages.Logic;
 using Knapcode.ExplorePackages.Website.Logic;
@@ -8,7 +7,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using NuGet.Protocol.Core.Types;
 
 namespace Knapcode.ExplorePackages.Website
 {

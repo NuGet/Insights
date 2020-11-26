@@ -123,6 +123,10 @@
                 <th>Listed?</th>
                 <td>{{yesno package.isListed}}</td>
             </tr>
+            <tr>
+                <th>Has icon?</th>
+                <td>{{yesno package.hasIcon}}</td>
+            </tr>
         </tbody>
     </table>
 
@@ -184,6 +188,10 @@
                 <td>{{yesno flatContainer.hasPackageManifest}}</td>
             </tr>
             <tr>
+                <th>Icon exists?</th>
+                <td>{{yesno flatContainer.hasPackageIcon}}</td>
+            </tr>
+            <tr>
                 <th>In index?</th>
                 <td>{{yesno flatContainer.isInIndex}}</td>
             </tr>
@@ -191,14 +199,15 @@
                 <th>Package MD5</th>
                 <td>
                     {{#if flatContainer.packageContentMetadata.contentMD5}}
-                        <code>{{flatContainer.packageContentMetadata.contentMD5}}</code>
-                        (<code>{{hextobase64 flatContainer.packageContentMetadata.contentMD5}}</code>)
+                    <code>{{flatContainer.packageContentMetadata.contentMD5}}</code>
+                    (<code>{{hextobase64 flatContainer.packageContentMetadata.contentMD5}}</code>)
                     {{/if}}
                 </td>
             </tr>
             <tr>
                 <th>Has MD5 header?</th>
-                <td>{{yesno flatContainer.packageContentMetadata.hasContentMD5Header}}
+                <td>
+                    {{yesno flatContainer.packageContentMetadata.hasContentMD5Header}}
                 </td>
             </tr>
         </tbody>
@@ -454,6 +463,7 @@
                 normalizedVersion: report.context.version,
                 isSemVer2: report.context.isSemVer2,
                 isListed: report.gallery.packageState.isListed,
+                hasIcon: report.context.hasIcon,
                 deletedStatus: getDeletedStatus(report.gallery.packageState.packageDeletedStatus)
             };
 

@@ -43,8 +43,8 @@ namespace Knapcode.ExplorePackages.Logic
                             packageId: id,
                             packageVersion: version,
                             packageDeletedStatus: PackageDeletedStatus.Unknown,
-                            isSemVer2: false,
-                            isListed: false);
+                            isListed: false,
+                            hasIcon: false);
                     }
 
                     var buffer = new byte[8 * 1024];
@@ -57,20 +57,20 @@ namespace Knapcode.ExplorePackages.Logic
                         responseBody.Write(buffer, 0, read);
                         responseBody.Position = 0;
 
-                        var state = DetermineState(packageIdentity, responseBody);
+                        var state = DetermineState(baseUrl, packageIdentity, responseBody);
                         if (state != null
                             && state.PackageId != null
                             && state.PackageVersion != null
                             && state.PackageDeletedStatus.HasValue
-                            && state.IsSemVer2.HasValue
-                            && state.IsListed.HasValue)
+                            && state.IsListed.HasValue
+                            && state.HasIcon.HasValue)
                         {
                             return new GalleryPackageState(
                                 state.PackageId,
                                 state.PackageVersion,
                                 state.PackageDeletedStatus.Value,
-                                state.IsSemVer2.Value,
-                                state.IsListed.Value);
+                                state.IsListed.Value,
+                                state.HasIcon.Value);
                         }
 
                         desiredBytes += buffer.Length;
@@ -83,7 +83,7 @@ namespace Knapcode.ExplorePackages.Logic
                 CancellationToken.None);
         }
 
-        private MutableState DetermineState(PackageIdentity packageIdentity, MemoryStream responseBody)
+        private MutableState DetermineState(string baseUrl, PackageIdentity packageIdentity, MemoryStream responseBody)
         {
             var state = new MutableState();
 
@@ -107,15 +107,15 @@ namespace Knapcode.ExplorePackages.Logic
                 return null;
             }
 
-            var pieces = metaTitle.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            if (pieces.Length < 2)
+            var titlePieces = metaTitle.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (titlePieces.Length < 2)
             {
                 return null;
             }
 
             var foundPackageIdentity = new PackageIdentity(
-                pieces[0].Trim(),
-                NuGetVersion.Parse(pieces[1]).ToNormalizedString());
+                titlePieces[0].Trim(),
+                NuGetVersion.Parse(titlePieces[1]).ToNormalizedString());
 
             // Use the found package ID.
             state.PackageId = foundPackageIdentity.Id;
@@ -130,11 +130,27 @@ namespace Knapcode.ExplorePackages.Logic
                 state.PackageVersion = packageIdentity.Version; 
 
                 state.PackageDeletedStatus = PackageDeletedStatus.Unknown;
-                state.IsSemVer2 = false;
                 state.IsListed = false;
                 return state;
             }
 
+            // Determine whether the package has an icon
+            var metaImageEl = document.Head.QuerySelector("meta[property='og:image']");
+            if (metaImageEl == null)
+            {
+                return null;
+            }
+
+            var metaImage = metaImageEl.GetAttribute("content");
+            if (metaImage == null)
+            {
+                return null;
+            }
+
+            var defaultIconUrl = baseUrl.TrimEnd('/') + "/Content/gallery/img/default-package-icon-256x256.png";
+            state.HasIcon = metaImage != defaultIconUrl;
+
+            // Determine the full version
             var fullVersionEl = document.QuerySelector(".package-details-main .package-title small");
             if (fullVersionEl != null)
             {
@@ -151,11 +167,6 @@ namespace Knapcode.ExplorePackages.Logic
                     state.PackageDeletedStatus = PackageDeletedStatus.SoftDeleted;
                 }
 
-                if (flattenedText.Contains("This package will only be available to download with SemVer 2.0.0 compatible NuGet clients"))
-                {
-                    state.IsSemVer2 = true;
-                }
-
                 if (flattenedText.Contains("The owner has unlisted this package."))
                 {
                     state.IsListed = false;
@@ -165,7 +176,6 @@ namespace Knapcode.ExplorePackages.Logic
             if (document.QuerySelector("#version-history") != null)
             {
                 state.PackageDeletedStatus = state.PackageDeletedStatus ?? PackageDeletedStatus.NotDeleted;
-                state.IsSemVer2 = state.IsSemVer2 ?? false;
                 state.IsListed = state.IsListed ?? state.PackageDeletedStatus.Value == PackageDeletedStatus.NotDeleted;
             }
 
@@ -177,8 +187,8 @@ namespace Knapcode.ExplorePackages.Logic
             public string PackageId { get; set; }
             public string PackageVersion { get; set; }
             public PackageDeletedStatus? PackageDeletedStatus { get; set; }
-            public bool? IsSemVer2 { get; set; }
             public bool? IsListed { get; set; }
+            public bool? HasIcon { get; set; }
         }
     }
 }

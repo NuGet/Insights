@@ -6,20 +6,20 @@
             string packageId,
             string packageVersion,
             PackageDeletedStatus packageDeletedStatus,
-            bool isSemVer2,
-            bool isListed)
+            bool isListed,
+            bool hasIcon)
         {
             PackageId = packageId;
             PackageVersion = packageVersion;
             PackageDeletedStatus = packageDeletedStatus;
-            IsSemVer2 = isSemVer2;
             IsListed = isListed;
+            HasIcon = hasIcon;
         }
 
         public string PackageId { get; }
         public string PackageVersion { get; }
         public PackageDeletedStatus PackageDeletedStatus { get; }
-        public bool IsSemVer2 { get; }
         public bool IsListed { get; }
+        public bool HasIcon { get; }
     }
 }

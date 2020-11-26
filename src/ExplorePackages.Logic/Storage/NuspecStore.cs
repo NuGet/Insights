@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage;
@@ -8,9 +7,7 @@ using NuGet.Protocol;
 namespace Knapcode.ExplorePackages.Logic
 {
     public class NuspecStore
-    {
-        private const int BufferSize = 8192;
-        
+    {        
         private readonly IFileStorageService _fileStorageService;
         private readonly ServiceIndexCache _serviceIndexCache;
         private readonly FlatContainerClient _flatContainerClient;
@@ -66,21 +63,7 @@ namespace Knapcode.ExplorePackages.Logic
         {
             using (var stream = await _fileStorageService.GetStreamOrNullAsync(id, version, FileArtifactType.Nuspec))
             {
-                if (stream == null)
-                {
-                    return new NuspecContext(exists: false, document: null);
-                }
-
-                try
-                {
-                    var document = XmlUtility.LoadXml(stream);
-                    return new NuspecContext(exists: true, document: document);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Could not parse .nuspec for {Id} {Version}.", id, version);
-                    throw;
-                }
+                return NuspecContext.FromStream(id, version, stream, _logger);
             }
         }
     }

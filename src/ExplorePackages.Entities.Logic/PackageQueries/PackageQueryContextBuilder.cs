@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
 using Microsoft.Extensions.Logging;
@@ -12,6 +13,7 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly MZipStore _mzipStore;
         private readonly PackageService _packageService;
         private readonly GalleryConsistencyService _galleryConsistencyService;
+        private readonly FlatContainerClient _flatContainerClient;
         private readonly ILogger<PackageQueryContextBuilder> _logger;
 
         public PackageQueryContextBuilder(
@@ -19,26 +21,39 @@ namespace Knapcode.ExplorePackages.Logic
             MZipStore mzipStore,
             PackageService packageService,
             GalleryConsistencyService galleryConsistencyService,
+            FlatContainerClient flatContainerClient,
             ILogger<PackageQueryContextBuilder> logger)
         {
             _nuspecStore = nuspecStore;
             _mzipStore = mzipStore;
             _packageService = packageService;
             _galleryConsistencyService = galleryConsistencyService;
+            _flatContainerClient = flatContainerClient;
             _logger = logger;
         }
 
         public PackageConsistencyContext CreateDeletedPackageConsistencyContext(string id, string version)
         {
-            return CreatePackageConsistencyContext(id, version, isSemVer2: false, isListed: false, deleted: true);
+            return CreatePackageConsistencyContext(id, version, isSemVer2: false, isListed: false, deleted: true, hasIcon: false);
         }
 
-        public PackageConsistencyContext CreateAvailablePackageConsistencyContext(string id, string version, bool isSemVer2, bool isListed)
+        public PackageConsistencyContext CreateAvailablePackageConsistencyContext(
+            string id,
+            string version,
+            bool isSemVer2,
+            bool isListed,
+            bool hasIcon)
         {
-            return CreatePackageConsistencyContext(id, version, isSemVer2, isListed, deleted: false);
+            return CreatePackageConsistencyContext(id, version, isSemVer2, isListed, deleted: false, hasIcon);
         }
 
-        private PackageConsistencyContext CreatePackageConsistencyContext(string id, string version, bool isSemVer2, bool isListed, bool deleted)
+        private PackageConsistencyContext CreatePackageConsistencyContext(
+            string id,
+            string version,
+            bool isSemVer2,
+            bool isListed,
+            bool deleted,
+            bool hasIcon)
         {
             var parsedVersion = NuGetVersion.Parse(version);
             var normalizedVersion = parsedVersion.ToNormalizedString();
@@ -48,23 +63,32 @@ namespace Knapcode.ExplorePackages.Logic
                 normalizedVersion,
                 deleted,
                 isSemVer2,
-                isListed);
+                isListed,
+                hasIcon);
         }
 
-        public async Task<PackageConsistencyContext> GetPackageConsistencyContextFromGalleryAsync(string id, string version, PackageConsistencyState state)
+        public async Task<PackageConsistencyContext> GetPackageConsistencyContextFromServerAsync(string id, string version, PackageConsistencyState state)
         {
-            var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
+            var initialContext = CreateAvailablePackageConsistencyContext(id, version, isSemVer2: false, isListed: true, hasIcon: false);
 
-            var initialContext = CreateAvailablePackageConsistencyContext(id, version, isSemVer2: false, isListed: true);
-
+            // Determine ID, version, listed, deleted, and icon state from the gallery (as much as possible).
             await _galleryConsistencyService.PopulateStateAsync(initialContext, state, NullProgressReporter.Instance);
-            
+
+            // Determine SemVer 2.0.0 status from the .nuspec itself since this is the next best source of truth.
+            var nuspecContext = await _flatContainerClient.GetNuspecContextAsync(id, version, CancellationToken.None);
+            var isSemVer2 = false;
+            if (nuspecContext.Exists)
+            {
+                isSemVer2 = NuspecUtility.IsSemVer2(nuspecContext.Document);
+            }
+
             return CreatePackageConsistencyContext(
                 state.Gallery.PackageState.PackageId,
                 state.Gallery.PackageState.PackageVersion,
-                state.Gallery.PackageState.IsSemVer2,
+                isSemVer2,
                 state.Gallery.PackageState.IsListed,
-                state.Gallery.PackageState.PackageDeletedStatus != PackageDeletedStatus.NotDeleted);
+                state.Gallery.PackageState.PackageDeletedStatus != PackageDeletedStatus.NotDeleted,
+                state.Gallery.PackageState.HasIcon);
         }
 
         public async Task<PackageConsistencyContext> GetPackageConsistencyContextFromDatabaseAsync(string id, string version)

@@ -5,16 +5,13 @@ namespace Knapcode.ExplorePackages.Logic
     public class FlatContainerConsistencyService : IConsistencyService<FlatContainerConsistencyReport>
     {
         private readonly ServiceIndexCache _serviceIndexCache;
-        private readonly PackagesContainerClient _packagesContainer;
         private readonly FlatContainerClient _flatContainer;
 
         public FlatContainerConsistencyService(
             ServiceIndexCache serviceIndexCache,
-            PackagesContainerClient packagesContainer,
             FlatContainerClient flatContainer)
         {
             _serviceIndexCache = serviceIndexCache;
-            _packagesContainer = packagesContainer;
             _flatContainer = flatContainer;
         }
 
@@ -28,6 +25,7 @@ namespace Knapcode.ExplorePackages.Logic
                 report.IsConsistent,
                 report.PackageContentMetadata,
                 report.HasPackageManifest.Value,
+                report.HasPackageIcon.Value,
                 report.IsInIndex.Value);
         }
 
@@ -71,6 +69,7 @@ namespace Knapcode.ExplorePackages.Logic
             var baseUrl = await GetBaseUrlAsync();
 
             var shouldExist = !context.IsDeleted;
+            var shouldHaveIcon = shouldExist && context.HasIcon;
 
             await PopulateStateAsync(context, state, progressReporter);
             report.PackageContentMetadata = state.FlatContainer.PackageContentMetadata;
@@ -89,6 +88,19 @@ namespace Knapcode.ExplorePackages.Logic
             report.HasPackageManifest = hasPackageManifest;
             report.IsConsistent &= shouldExist == hasPackageManifest;
             await incrementalProgress.ReportProgressAsync("Checked for the package manifest in flat container.");
+
+            if (allowPartial && !report.IsConsistent)
+            {
+                return report;
+            }
+
+            var hasPackageIcon = await _flatContainer.HasPackageIconAsync(
+                baseUrl,
+                context.Id,
+                context.Version);
+            report.HasPackageIcon = hasPackageIcon;
+            report.IsConsistent &= shouldHaveIcon == hasPackageIcon;
+            await incrementalProgress.ReportProgressAsync("Checked for the package icon in flat container.");
 
             if (allowPartial && !report.IsConsistent)
             {
@@ -121,6 +133,7 @@ namespace Knapcode.ExplorePackages.Logic
             public bool IsConsistent { get; set; }
             public BlobMetadata PackageContentMetadata { get; set; }
             public bool? HasPackageManifest { get; set; }
+            public bool? HasPackageIcon { get; set; }
             public bool? IsInIndex { get; set; }
         }
     }

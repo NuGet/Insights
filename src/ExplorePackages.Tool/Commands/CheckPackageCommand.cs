@@ -22,6 +22,7 @@ namespace Knapcode.ExplorePackages.Tool
         private CommandOption _semVer2Option;
         private CommandOption _deletedOption;
         private CommandOption _unlistedOption;
+        private CommandOption _hasIconOption;
         private CommandOption _noGallery;
         private CommandOption _database;
 
@@ -55,6 +56,10 @@ namespace Knapcode.ExplorePackages.Tool
                 "--unlisted",
                 "Consider the package to be unlisted.",
                 CommandOptionType.NoValue);
+            _hasIconOption = app.Option(
+                "--has-icon",
+                "Consider the package to have an icon.",
+                CommandOptionType.NoValue);
             _noGallery = app.Option(
                 "--no-gallery",
                 "Don't use details from the gallery as a baseline. Instead, use explicit command-line options.",
@@ -70,6 +75,7 @@ namespace Knapcode.ExplorePackages.Tool
         private bool SemVer2 => _semVer2Option?.HasValue() ?? false;
         private bool Deleted => _deletedOption?.HasValue() ?? false;
         private bool Unlisted => _unlistedOption?.HasValue() ?? false;
+        private bool HasIcon => _hasIconOption?.HasValue() ?? false;
         private bool NoGallery => _noGallery?.HasValue() ?? false;
         private bool Database => _database?.HasValue() ?? false;
 
@@ -87,7 +93,7 @@ namespace Knapcode.ExplorePackages.Tool
             PackageConsistencyContext context;
             if (!NoGallery)
             {
-                context = await _contextBuilder.GetPackageConsistencyContextFromGalleryAsync(Id, Version, state);
+                context = await _contextBuilder.GetPackageConsistencyContextFromServerAsync(Id, Version, state);
             }
             else if (Database)
             {
@@ -104,7 +110,7 @@ namespace Knapcode.ExplorePackages.Tool
             }
             else
             {
-                context = _contextBuilder.CreateAvailablePackageConsistencyContext(Id, Version, isSemVer2, !Unlisted);
+                context = _contextBuilder.CreateAvailablePackageConsistencyContext(Id, Version, isSemVer2, !Unlisted, HasIcon);
             }
 
             var report = await _service.GetReportAsync(context, state, NullProgressReporter.Instance);

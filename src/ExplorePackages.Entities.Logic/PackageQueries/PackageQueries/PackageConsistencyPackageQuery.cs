@@ -26,7 +26,8 @@ namespace Knapcode.ExplorePackages.Logic
                 context.Version,
                 context.IsDeleted,
                 context.IsSemVer2,
-                context.IsListed);
+                context.IsListed,
+                context.HasIcon);
 
             return await _packageConsistencyQuery.IsMatchAsync(packageConsistencyContext, state);
         }

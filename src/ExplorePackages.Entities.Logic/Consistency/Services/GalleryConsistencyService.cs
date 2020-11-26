@@ -26,10 +26,12 @@ namespace Knapcode.ExplorePackages.Logic
             await PopulateStateAsync(context, state, progressReporter);
             var actuallyExists = state.Gallery.PackageState.PackageDeletedStatus == PackageDeletedStatus.NotDeleted;
 
-            var isConsistent = shouldExist == actuallyExists
-                && ((shouldExist && state.Gallery.PackageState.IsSemVer2 == context.IsSemVer2)
-                    || !shouldExist)
-                && state.Gallery.PackageState.IsListed == context.IsListed;
+            var isConsistent = shouldExist == actuallyExists;
+            if (shouldExist)
+            {
+                isConsistent &= state.Gallery.PackageState.HasIcon == context.HasIcon;
+                isConsistent &= state.Gallery.PackageState.IsListed == context.IsListed;
+            }
 
             return new GalleryConsistencyReport(
                 isConsistent,

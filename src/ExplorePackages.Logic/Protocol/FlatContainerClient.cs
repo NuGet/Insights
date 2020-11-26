@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
 using NuGet.Versioning;
@@ -7,41 +8,78 @@ namespace Knapcode.ExplorePackages.Logic
 {
     public class FlatContainerClient
     {
+        private readonly ServiceIndexCache _serviceIndexCache;
         private readonly HttpSource _httpSource;
         private readonly ILogger<FlatContainerClient> _logger;
 
-        public FlatContainerClient(HttpSource httpSource, ILogger<FlatContainerClient> logger)
+        public FlatContainerClient(ServiceIndexCache serviceIndexCache, HttpSource httpSource, ILogger<FlatContainerClient> logger)
         {
+            _serviceIndexCache = serviceIndexCache;
             _httpSource = httpSource;
             _logger = logger;
         }
 
         public async Task<BlobMetadata> GetPackageContentMetadataAsync(string baseUrl, string id, string version)
         {
-            var packageUrl = GetPackageContentUrl(baseUrl, id, version);
-            return await _httpSource.GetBlobMetadataAsync(packageUrl, _logger);
+            var url = GetPackageContentUrl(baseUrl, id, version);
+            return await _httpSource.GetBlobMetadataAsync(url, _logger);
         }
 
         public string GetPackageContentUrl(string baseUrl, string id, string version)
         {
             var lowerId = id.ToLowerInvariant();
             var lowerVersion = NuGetVersion.Parse(version).ToNormalizedString().ToLowerInvariant();
-            var packageUrl = $"{baseUrl.TrimEnd('/')}/{lowerId}/{lowerVersion}/{lowerId}.{lowerVersion}.nupkg";
-            return packageUrl;
+            var url = $"{baseUrl.TrimEnd('/')}/{lowerId}/{lowerVersion}/{lowerId}.{lowerVersion}.nupkg";
+            return url;
         }
 
         public string GetPackageManifestUrl(string baseUrl, string id, string version)
         {
             var lowerId = id.ToLowerInvariant();
             var lowerVersion = NuGetVersion.Parse(version).ToNormalizedString().ToLowerInvariant();
-            var packageUrl = $"{baseUrl.TrimEnd('/')}/{lowerId}/{lowerVersion}/{lowerId}.nuspec";
-            return packageUrl;
+            var url = $"{baseUrl.TrimEnd('/')}/{lowerId}/{lowerVersion}/{lowerId}.nuspec";
+            return url;
+        }
+
+        public async Task<NuspecContext> GetNuspecContextAsync(string id, string version, CancellationToken token)
+        {
+            var baseUrl = await GetBaseUrlAsync();
+            return await GetNuspecContextAsync(baseUrl, id, version, token);
+        }
+
+        public async Task<NuspecContext> GetNuspecContextAsync(string baseUrl, string id, string version, CancellationToken token)
+        {
+            var url = GetPackageManifestUrl(baseUrl, id, version);
+
+            var nuGetLogger = _logger.ToNuGetLogger();
+            return await _httpSource.ProcessStreamAsync(
+                new HttpSourceRequest(url, nuGetLogger)
+                {
+                    IgnoreNotFounds = true,
+                },
+                networkStream => Task.FromResult(NuspecContext.FromStream(id, version, networkStream, _logger)),
+                nuGetLogger,
+                token);
+        }
+
+        public string GetPackageIconUrl(string baseUrl, string id, string version)
+        {
+            var lowerId = id.ToLowerInvariant();
+            var lowerVersion = NuGetVersion.Parse(version).ToNormalizedString().ToLowerInvariant();
+            var url = $"{baseUrl.TrimEnd('/')}/{lowerId}/{lowerVersion}/icon";
+            return url;
         }
 
         public async Task<bool> HasPackageManifestAsync(string baseUrl, string id, string version)
         {
-            var packageUrl = GetPackageManifestUrl(baseUrl, id, version);
-            return await _httpSource.UrlExistsAsync(packageUrl, _logger);
+            var url = GetPackageManifestUrl(baseUrl, id, version);
+            return await _httpSource.UrlExistsAsync(url, _logger);
+        }
+
+        public async Task<bool> HasPackageIconAsync(string baseUrl, string id, string version)
+        {
+            var url = GetPackageIconUrl(baseUrl, id, version);
+            return await _httpSource.UrlExistsAsync(url, _logger);
         }
 
         public async Task<bool> HasPackageInIndexAsync(string baseUrl, string id, string version)
@@ -61,6 +99,11 @@ namespace Knapcode.ExplorePackages.Logic
             var lowerId = id.ToLowerInvariant();
             var packageUrl = $"{baseUrl.TrimEnd('/')}/{lowerId}/index.json";
             return await _httpSource.DeserializeUrlAsync<FlatContainerIndex>(packageUrl, ignoreNotFounds: true, logger: _logger);
+        }
+
+        private async Task<string> GetBaseUrlAsync()
+        {
+            return await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.FlatContainer);
         }
     }
 }
