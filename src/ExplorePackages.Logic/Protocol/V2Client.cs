@@ -42,26 +42,15 @@ namespace Knapcode.ExplorePackages.Logic
             var filterValue = $"{filterField} gt DateTime'{start.UtcDateTime:O}'";
             var orderByValue = $"{filterField} asc";
 
-            return await GetPackagesAsync(baseUrl, filterValue, orderByValue, top);
-        }
-
-        public async Task<IReadOnlyList<V2Package>> GetPackagesAsync(string baseUrl, string filter, string orderBy, int top)
-        {
-            filter = filter ?? "1 eq 1";
-
-            var url = $"{baseUrl.TrimEnd('/')}/Packages?$select={Projection}&semVerLevel=2.0.0&$top={top}&$orderby={Uri.EscapeDataString(orderBy)}&$filter={Uri.EscapeDataString(filter)}";
+            var url = $"{baseUrl.TrimEnd('/')}/Packages?$select={Projection}&semVerLevel=2.0.0&$top={top}&$orderby={Uri.EscapeDataString(orderByValue)}&$filter={Uri.EscapeDataString(filterValue)}";
 
             return await ParseV2PageAsync(url);
         }
 
-        public async Task<V2Package> GetPackageOrNullAsync(string baseUrl, string id, string version, bool semVer2)
+        public async Task<V2Package> GetPackageOrNullAsync(string baseUrl, string id, string version)
         {
-            var semVerLevel = semVer2 ? "2.0.0" : "1.0.0";
             var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
-            var filter = $"Id eq '{id}' and NormalizedVersion eq '{normalizedVersion}' and 1 eq 1";
-
-            var url = $"{baseUrl.TrimEnd('/')}/Packages?$select={Projection}&$filter={Uri.EscapeDataString(filter)}&semVerLevel={semVerLevel}";
-
+            var url = $"{baseUrl.TrimEnd('/')}/Packages(Id='{id}',Version='{normalizedVersion}')?hijack=false";
             var page = await ParseV2PageAsync(url);
 
             if (page.Count == 0)

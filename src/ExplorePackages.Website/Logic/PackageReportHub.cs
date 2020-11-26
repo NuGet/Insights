@@ -14,20 +14,17 @@ namespace Knapcode.ExplorePackages.Website.Logic
 
         private readonly PackageConsistencyService _packageConsistencyService;
         private readonly PackageQueryContextBuilder _packageQueryContextBuilder;
-        private readonly LatestV2PackageFetcher _latestV2PackageFetcher;
         private readonly LatestCatalogCommitFetcher _latestCatalogCommitFetcher;
         private readonly UrlReporterProvider _urlReporterProvider;
 
         public PackageReportHub(
             PackageConsistencyService packageConsistencyService,
             PackageQueryContextBuilder packageQueryContextBuilder,
-            LatestV2PackageFetcher latestV2PackageFetcher,
             LatestCatalogCommitFetcher latestCatalogCommitFetcher,
             UrlReporterProvider urlReporterProvider)
         {
             _packageConsistencyService = packageConsistencyService;
             _packageQueryContextBuilder = packageQueryContextBuilder;
-            _latestV2PackageFetcher = latestV2PackageFetcher;
             _latestCatalogCommitFetcher = latestCatalogCommitFetcher;
             _urlReporterProvider = urlReporterProvider;
         }
@@ -61,22 +58,6 @@ namespace Knapcode.ExplorePackages.Website.Logic
             await InvokeProgressAsync(1, $"Using package {catalogItem.PackageId} {catalogItem.PackageVersion}.");
 
             await InvokeFoundLatestAsync(catalogItem.PackageId, catalogItem.ParsePackageVersion().ToFullString());
-        }
-
-        public async Task GetLatestV2()
-        {
-            await ExecuteAndReportErrorAsync(GetLatestV2InternalAsync);
-        }
-
-        private async Task GetLatestV2InternalAsync()
-        {
-            await InvokeProgressAsync(0, "Fetching the latest V2 package...");
-
-            var package = await _latestV2PackageFetcher.GetLatestPackageAsync(new ProgressReporter(this));
-            
-            await InvokeProgressAsync(1, $"Using package {package.Id} {package.Version}.");
-
-            await InvokeFoundLatestAsync(package.Id, package.Version);
         }
 
         public async Task Start(string id, string version)

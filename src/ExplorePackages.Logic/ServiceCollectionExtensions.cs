@@ -115,7 +115,6 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<IPortDiscoverer, SimplePortDiscoverer>();
             serviceCollection.AddTransient<SearchServiceCursorReader>();
             serviceCollection.AddTransient<IProgressReporter, NullProgressReporter>();
-            serviceCollection.AddTransient<LatestV2PackageFetcher>();
             serviceCollection.AddTransient<LatestCatalogCommitFetcher>();
             serviceCollection.AddTransient<PackageBlobNameProvider>();
             serviceCollection.AddTransient<IFileStorageService, FileStorageService>();

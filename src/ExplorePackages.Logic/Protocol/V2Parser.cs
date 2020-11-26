@@ -28,11 +28,18 @@ namespace Knapcode.ExplorePackages.Logic
 
         public IReadOnlyList<V2Package> ParsePage(XDocument doc)
         {
-            return doc
-                .Root
-                .Elements(_xnameEntry)
-                .Select(x => ParsePackage(x))
-                .ToList();
+            if (doc.Root.Name == _xnameEntry)
+            {
+                return new[] { ParsePackage(doc.Root) };
+            }
+            else
+            {
+                return doc
+                    .Root
+                    .Elements(_xnameEntry)
+                    .Select(x => ParsePackage(x))
+                    .ToList();
+            }
         }
 
         private V2Package ParsePackage(XElement element)

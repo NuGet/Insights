@@ -45,8 +45,7 @@ namespace Knapcode.ExplorePackages.Logic
                     var package = await _v2Client.GetPackageOrNullAsync(
                         _options.Value.V2BaseUrl,
                         identity.Id,
-                        identity.Version,
-                        semVer2: true);
+                        identity.Version);
 
                     if (package == null)
                     {
