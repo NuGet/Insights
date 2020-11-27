@@ -138,6 +138,7 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<IPackageDownloadsClient, PackageDownloadsClient>();
             serviceCollection.AddTransient<CatalogClient>();
 
+            serviceCollection.AddTransient<PackageConsistencyContextBuilder>();
             serviceCollection.AddTransient<GalleryConsistencyService>();
             serviceCollection.AddTransient<V2ConsistencyService>();
             serviceCollection.AddTransient<FlatContainerConsistencyService>();

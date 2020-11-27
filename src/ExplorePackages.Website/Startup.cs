@@ -32,7 +32,6 @@ namespace Knapcode.ExplorePackages.Website
 
             // Enable ExplorePackages dependencies.
             serviceCollection.AddExplorePackages("Knapcode.ExplorePackages.Website");
-            serviceCollection.AddExplorePackagesEntities();
             serviceCollection.AddScoped<ServiceClientFactory>();
 
             // Add stuff specific to the website.
