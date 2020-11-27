@@ -138,6 +138,17 @@ namespace Knapcode.ExplorePackages.Logic
             serviceCollection.AddTransient<IPackageDownloadsClient, PackageDownloadsClient>();
             serviceCollection.AddTransient<CatalogClient>();
 
+            serviceCollection.AddTransient<GalleryConsistencyService>();
+            serviceCollection.AddTransient<V2ConsistencyService>();
+            serviceCollection.AddTransient<FlatContainerConsistencyService>();
+            serviceCollection.AddTransient<PackagesContainerConsistencyService>();
+            serviceCollection.AddTransient<RegistrationOriginalConsistencyService>();
+            serviceCollection.AddTransient<RegistrationGzippedConsistencyService>();
+            serviceCollection.AddTransient<RegistrationSemVer2ConsistencyService>();
+            serviceCollection.AddTransient<SearchConsistencyService>();
+            serviceCollection.AddTransient<PackageConsistencyService>();
+            serviceCollection.AddTransient<CrossCheckConsistencyService>();
+
             serviceCollection.AddTransient<GenericMessageProcessor>();
             serviceCollection.AddTransient<SchemaSerializer>();
             serviceCollection.AddTransient<MessageEnqueuer>();
