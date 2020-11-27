@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Entities;
+using Knapcode.ExplorePackages.Worker;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -236,6 +237,7 @@ namespace Knapcode.ExplorePackages.Tool
             var serviceCollection = new ServiceCollection();
 
             serviceCollection.AddExplorePackages("Knapcode.ExplorePackages.Tool");
+            serviceCollection.AddExplorePackagesWorker();
             serviceCollection.AddExplorePackagesEntities();
             AddExplorePackagesSettings<Program>(serviceCollection);
 
@@ -277,8 +279,9 @@ namespace Knapcode.ExplorePackages.Tool
 
             var configuration = configurationBuilder.Build();
 
-            serviceCollection.Configure<ExplorePackagesEntitiesSettings>(configuration.GetSection(ExplorePackagesSettings.DefaultSectionName));
             serviceCollection.Configure<ExplorePackagesSettings>(configuration.GetSection(ExplorePackagesSettings.DefaultSectionName));
+            serviceCollection.Configure<ExplorePackagesWorkerSettings>(configuration.GetSection(ExplorePackagesSettings.DefaultSectionName));
+            serviceCollection.Configure<ExplorePackagesEntitiesSettings>(configuration.GetSection(ExplorePackagesSettings.DefaultSectionName));
 
             return serviceCollection;
         }

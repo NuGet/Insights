@@ -9,16 +9,19 @@ using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage.Queue;
 using System.IO;
 using Newtonsoft.Json;
+using System.Linq;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class FindPackageAssetsIntegrationTest
+    public class FindPackageAssetsIntegrationTest : IAsyncLifetime
     {
         private const string Step1 = "Step1";
         private const string Step2 = "Step2";
 
         public FindPackageAssetsIntegrationTest(ITestOutputHelper output)
         {
+            StoragePrefix = "t" + StorageUtility.GenerateUniqueId();
+
             var startup = new Startup();
             Host = new HostBuilder()
                 .ConfigureWebJobs(startup.Configure)
@@ -37,16 +40,15 @@ namespace Knapcode.ExplorePackages.Worker
                         x.AppendResultStorageBucketCount = 3;
                         x.AppendResultUniqueIds = false;
 
-                        var prefix = StorageUtility.GenerateUniqueId();
-                        x.WorkerQueueName = $"t{prefix}1wq1";
-                        x.CursorTableName = $"t{prefix}1c1";
-                        x.CatalogIndexScanTableName = $"t{prefix}1cis1";
-                        x.CatalogPageScanTableName = $"t{prefix}1cps1";
-                        x.CatalogLeafScanTableName = $"t{prefix}1cls1";
-                        x.TaskStateTableName = $"t{prefix}1ts1";
-                        x.LatestLeavesTableName = $"t{prefix}1ll1";
-                        x.FindPackageAssetsContainerName = $"t{prefix}1fpa1";
-                        x.RunRealRestoreContainerName = $"t{prefix}1rrr1";
+                        x.WorkerQueueName = $"{StoragePrefix}1wq1";
+                        x.CursorTableName = $"{StoragePrefix}1c1";
+                        x.CatalogIndexScanTableName = $"{StoragePrefix}1cis1";
+                        x.CatalogPageScanTableName = $"{StoragePrefix}1cps1";
+                        x.CatalogLeafScanTableName = $"{StoragePrefix}1cls1";
+                        x.TaskStateTableName = $"{StoragePrefix}1ts1";
+                        x.LatestLeavesTableName = $"{StoragePrefix}1ll1";
+                        x.FindPackageAssetsContainerName = $"{StoragePrefix}1fpa1";
+                        x.RunRealRestoreContainerName = $"{StoragePrefix}1rrr1";
                     });
                 })
                 .Build();
@@ -62,6 +64,7 @@ namespace Knapcode.ExplorePackages.Worker
             Target = Host.Services.GetRequiredService<WorkerQueueFunction>();
         }
 
+        public string StoragePrefix { get; }
         public IHost Host { get; }
         public IOptionsSnapshot<ExplorePackagesWorkerSettings> Options { get; }
         public ServiceClientFactory ServiceClientFactory { get; }
@@ -107,7 +110,27 @@ namespace Knapcode.ExplorePackages.Worker
             await AssertFindPackageAssetsOutputAsync(Step1, 1); // This file is unchanged.
             await AssertFindPackageAssetsOutputAsync(Step2, 2);
 
-            
+            await VerifyExpectedContainers();
+        }
+
+        private async Task VerifyExpectedContainers()
+        {
+            var account = ServiceClientFactory.GetStorageAccount();
+
+            var containers = await account.CreateCloudBlobClient().ListContainersAsync(StoragePrefix);
+            Assert.Equal(
+                new[] { Options.Value.FindPackageAssetsContainerName },
+                containers.Select(x => x.Name).ToArray());
+
+            var queues = await account.CreateCloudQueueClient().ListQueuesAsync(StoragePrefix);
+            Assert.Equal(
+                new[] { Options.Value.WorkerQueueName },
+                queues.Select(x => x.Name).ToArray());
+
+            var tables = await account.CreateCloudTableClient().ListTablesAsync(StoragePrefix);
+            Assert.Equal(
+                new[] { Options.Value.CursorTableName, Options.Value.CatalogIndexScanTableName },
+                tables.Select(x => x.Name).ToArray());
         }
 
         private async Task UpdateFindPackageAssetsAsync(DateTimeOffset max)
@@ -144,6 +167,31 @@ namespace Knapcode.ExplorePackages.Worker
             var actual = await blob.DownloadTextAsync();
             var expected = File.ReadAllText(Path.Combine("TestData", "FindPackageAssets", stepName, blob.Name));
             Assert.Equal(expected, actual);
+        }
+
+        public Task InitializeAsync() => Task.CompletedTask;
+
+        public async Task DisposeAsync()
+        {
+            var account = ServiceClientFactory.GetStorageAccount();
+
+            var containers = await account.CreateCloudBlobClient().ListContainersAsync(StoragePrefix);
+            foreach (var container in containers)
+            {
+                await container.DeleteAsync();
+            }
+
+            var queues = await account.CreateCloudQueueClient().ListQueuesAsync(StoragePrefix);
+            foreach (var queue in queues)
+            {
+                await queue.DeleteAsync();
+            }
+
+            var tables = await account.CreateCloudTableClient().ListTablesAsync(StoragePrefix);
+            foreach (var table in tables)
+            {
+                await table.DeleteAsync();
+            }
         }
     }
 }
