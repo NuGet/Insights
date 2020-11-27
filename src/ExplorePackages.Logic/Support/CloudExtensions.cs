@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
@@ -13,6 +14,8 @@ namespace Knapcode.ExplorePackages
 {
     public static class CloudExtensions
     {
+        private static readonly TimeSpan MaxRetryDuration = TimeSpan.FromMinutes(5);
+
         public static async Task CreateIfNotExistsAsync(this CloudBlobContainer table, bool retry)
         {
             await CreateIfNotExistsAsync(
@@ -39,6 +42,7 @@ namespace Knapcode.ExplorePackages
 
         public static async Task CreateIfNotExistsAsync(Func<Task> createIfNotExistsAsync, bool retry, string errorCode)
         {
+            var stopwatch = Stopwatch.StartNew();
             do
             {
                 try
@@ -53,7 +57,7 @@ namespace Knapcode.ExplorePackages
                     // Retry in this case.
                 }
             }
-            while (retry);
+            while (retry && stopwatch.Elapsed < MaxRetryDuration);
         }
     }
 }

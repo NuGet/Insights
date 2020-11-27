@@ -76,10 +76,10 @@ namespace Knapcode.ExplorePackages.Worker
             });
         }
 
-        public async Task<CatalogIndexScan> UpdateGetPackageAssets() => await UpdateGetPackageAssets(max: null);
-        public async Task<CatalogIndexScan> UpdateGetPackageAssets(DateTimeOffset max) => await UpdateGetPackageAssets((DateTimeOffset?)max);
+        public async Task<CatalogIndexScan> UpdateFindPackageAssets() => await UpdateFindPackageAssets(max: null);
+        public async Task<CatalogIndexScan> UpdateFindPackageAssetsAsync(DateTimeOffset max) => await UpdateFindPackageAssets((DateTimeOffset?)max);
 
-        private async Task<CatalogIndexScan> UpdateGetPackageAssets(DateTimeOffset? max)
+        private async Task<CatalogIndexScan> UpdateFindPackageAssets(DateTimeOffset? max)
         {
             return await UpdateAsync(
                 CatalogScanType.FindPackageAssets,
