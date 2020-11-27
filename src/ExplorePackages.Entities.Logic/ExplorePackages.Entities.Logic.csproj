@@ -1,13 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssemblyName>Knapcode.ExplorePackages.Entities.Logic</AssemblyName>
     <RootNamespace>Knapcode.ExplorePackages.Logic</RootNamespace>
   </PropertyGroup>
-
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="9.0.0" />
+    <PackageReference Include="Dapper" Version="2.0.78" />
+    <PackageReference Include="Knapcode.BlobDelta" Version="0.7.0" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ExplorePackages.Entities\ExplorePackages.Entities.csproj" />
   </ItemGroup>
-
 </Project>
