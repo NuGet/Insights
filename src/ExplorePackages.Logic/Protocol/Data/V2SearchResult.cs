@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages
 {
     public class V2SearchResult
     {

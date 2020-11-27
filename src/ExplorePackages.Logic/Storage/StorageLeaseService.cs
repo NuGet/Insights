@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages
 {
     public class StorageLeaseService
     {

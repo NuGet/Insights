@@ -3,7 +3,7 @@ using NuGet.Versioning;
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
+namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
 {
     public class PackageAsset : IEquatable<PackageAsset>
     {

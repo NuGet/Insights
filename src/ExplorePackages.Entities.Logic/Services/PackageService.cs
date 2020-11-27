@@ -7,13 +7,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Dapper;
-using Knapcode.ExplorePackages.Entities;
 using Knapcode.MiniZip;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages.Entities
 {
     public delegate Task<List<PackageEntity>> QueryPackagesAsync(IEntityContext entities, IReadOnlyList<string> identities);
 

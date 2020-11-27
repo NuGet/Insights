@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages
 {
     public class UrlReporterProvider
     {

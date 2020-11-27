@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Knapcode.ExplorePackages.Logic.Worker
+namespace Knapcode.ExplorePackages.Worker
 {
     public class StorageUtility
     {

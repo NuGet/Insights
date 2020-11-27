@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages
 {
     public class ServiceIndexCache
     {

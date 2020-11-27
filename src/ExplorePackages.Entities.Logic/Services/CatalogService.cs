@@ -4,11 +4,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages.Entities
 {
     public class CatalogService
     {

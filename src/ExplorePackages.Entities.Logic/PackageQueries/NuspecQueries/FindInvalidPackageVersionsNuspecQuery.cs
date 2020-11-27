@@ -1,7 +1,7 @@
 ﻿using System.Xml.Linq;
 using NuGet.Versioning;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages.Entities
 {
     public class FindInvalidPackageVersionsNuspecQuery : INuspecQuery
     {

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets;
+using Knapcode.ExplorePackages.Worker.FindPackageAssets;
 using Microsoft.Extensions.Logging;
 
-namespace Knapcode.ExplorePackages.Logic.Worker
+namespace Knapcode.ExplorePackages.Worker
 {
     public class CatalogScanService
     {

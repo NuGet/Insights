@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages
 {
     /// <summary>
     /// This is necessary because of this odd-ball:

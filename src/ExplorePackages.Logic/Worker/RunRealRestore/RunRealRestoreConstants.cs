@@ -1,4 +1,4 @@
-﻿namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
+﻿namespace Knapcode.ExplorePackages.Worker.RunRealRestore
 {
     public static class RunRealRestoreConstants
     {

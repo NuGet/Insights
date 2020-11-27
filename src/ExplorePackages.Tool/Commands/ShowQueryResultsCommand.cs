@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Logic;
+using Knapcode.ExplorePackages.Entities;
 using McMaster.Extensions.CommandLineUtils;
 
 namespace Knapcode.ExplorePackages.Tool

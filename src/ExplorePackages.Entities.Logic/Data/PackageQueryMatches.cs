@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
-using Knapcode.ExplorePackages.Entities;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages.Entities
 {
     public class PackageQueryMatches
     {

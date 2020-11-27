@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage.Queue;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages
 {
     public class UnencodedWorkerQueueFactory : IWorkerQueueFactory
     {

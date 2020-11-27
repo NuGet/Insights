@@ -4,9 +4,9 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Logic.Worker;
-using Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets;
-using Knapcode.ExplorePackages.Logic.Worker.RunRealRestore;
+using Knapcode.ExplorePackages.Worker;
+using Knapcode.ExplorePackages.Worker.FindPackageAssets;
+using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using Knapcode.MiniZip;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -14,7 +14,7 @@ using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages
 {
     public static class ServiceCollectionExtensions
     {

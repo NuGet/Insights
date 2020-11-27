@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Knapcode.ExplorePackages.Entities;
-using Knapcode.ExplorePackages.Logic;
 using McMaster.Extensions.CommandLineUtils;
 
 namespace Knapcode.ExplorePackages.Tool

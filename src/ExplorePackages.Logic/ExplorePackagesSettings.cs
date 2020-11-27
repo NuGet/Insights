@@ -1,6 +1,6 @@
-﻿using Knapcode.ExplorePackages.Logic.Worker;
+﻿using Knapcode.ExplorePackages.Worker;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages
 {
     public class ExplorePackagesSettings
     {

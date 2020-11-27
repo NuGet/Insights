@@ -12,7 +12,7 @@ using System.Xml.Linq;
 using System.Xml.XPath;
 using NuGetPackageIdentity = NuGet.Packaging.Core.PackageIdentity;
 
-namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
+namespace Knapcode.ExplorePackages.Worker.RunRealRestore
 {
     public class ProjectHelper
     {

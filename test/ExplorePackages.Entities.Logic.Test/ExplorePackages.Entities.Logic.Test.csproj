@@ -3,7 +3,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <IsPackable>false</IsPackable>
     <AssemblyName>Knapcode.ExplorePackages.Entities.Logic.Test</AssemblyName>
-    <RootNamespace>Knapcode.ExplorePackages.Logic</RootNamespace>
+    <RootNamespace>Knapcode.ExplorePackages.Entities</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.0" />

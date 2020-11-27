@@ -4,9 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage.Table;
-using static Knapcode.ExplorePackages.Logic.Worker.StorageUtility;
+using static Knapcode.ExplorePackages.Worker.StorageUtility;
 
-namespace Knapcode.ExplorePackages.Logic.Worker
+namespace Knapcode.ExplorePackages.Worker
 {
     public class LatestPackageLeafStorageService
     {

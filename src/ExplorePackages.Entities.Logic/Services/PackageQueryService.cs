@@ -4,10 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
-using Knapcode.ExplorePackages.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages.Entities
 {
     public class PackageQueryService
     {

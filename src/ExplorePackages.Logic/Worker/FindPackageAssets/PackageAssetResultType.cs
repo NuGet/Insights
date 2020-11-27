@@ -1,4 +1,4 @@
-﻿namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
+﻿namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
 {
     public static class PackageAssetResultType
     {

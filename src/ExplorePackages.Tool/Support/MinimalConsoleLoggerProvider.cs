@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages.Tool
 {
     public class MinimalConsoleLoggerProvider : ILoggerProvider
     {

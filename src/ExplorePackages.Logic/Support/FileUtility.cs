@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages
 {
     public static class FileUtility
     {

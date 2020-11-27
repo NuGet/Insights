@@ -17,7 +17,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Knapcode.ExplorePackages.Logic.Worker
+namespace Knapcode.ExplorePackages.Worker
 {
     public class AppendResultStorageService
     {

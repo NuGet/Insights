@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Table;
 
-namespace Knapcode.ExplorePackages.Logic.Worker
+namespace Knapcode.ExplorePackages.Worker
 {
     public class CatalogScanStorageService
     {

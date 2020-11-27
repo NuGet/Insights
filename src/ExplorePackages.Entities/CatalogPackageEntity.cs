@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Knapcode.ExplorePackages.Logic;
 
 namespace Knapcode.ExplorePackages.Entities
 {

@@ -6,7 +6,7 @@ using System;
 using System.Linq;
 using NuGetPackageIdentity = NuGet.Packaging.Core.PackageIdentity;
 
-namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
+namespace Knapcode.ExplorePackages.Worker.RunRealRestore
 {
     public class RealRestoreResult
     {

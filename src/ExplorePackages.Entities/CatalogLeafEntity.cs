@@ -1,6 +1,4 @@
-﻿using Knapcode.ExplorePackages.Logic;
-
-namespace Knapcode.ExplorePackages.Entities
+﻿namespace Knapcode.ExplorePackages.Entities
 {
     public class CatalogLeafEntity
     {

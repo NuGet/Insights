@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.Logging;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages.Tool
 {
     public static class ConsoleUtility
     {
@@ -10,7 +10,7 @@ namespace Knapcode.ExplorePackages.Logic
         /// <summary>
         /// Log a message to the console.
         /// </summary>
-        internal static void LogToConsole(LogLevel level, string message)
+        public static void LogToConsole(LogLevel level, string message)
         {
             if (message == null)
             {

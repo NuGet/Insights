@@ -4,7 +4,7 @@ using System.Linq;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages
 {
     /// <summary>
     /// These are documented interpretations of values returned by the catalog API.

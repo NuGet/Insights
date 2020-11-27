@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages.Entities
 {
     public class ExplorePackagesEntitiesSettings : ExplorePackagesSettings
     {

@@ -1,6 +1,6 @@
 ﻿using Knapcode.MiniZip;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages
 {
     public class PackageArchiveMetadata
     {

@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Logic;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Knapcode.ExplorePackages.Website.Controllers

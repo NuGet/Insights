@@ -1,6 +1,4 @@
-﻿using Knapcode.ExplorePackages.Logic;
-using Knapcode.ExplorePackages.Logic.Worker;
-using Knapcode.ExplorePackages.Worker;
+﻿using Knapcode.ExplorePackages.Worker;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host.Queues;

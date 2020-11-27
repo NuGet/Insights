@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Logic;
-using Knapcode.ExplorePackages.Logic.Worker;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage.Queue;

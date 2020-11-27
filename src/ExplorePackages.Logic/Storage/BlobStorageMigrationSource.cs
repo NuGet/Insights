@@ -1,4 +1,4 @@
-﻿namespace Knapcode.ExplorePackages.Logic
+﻿namespace Knapcode.ExplorePackages
 {
     public class BlobStorageMigrationSource
     {

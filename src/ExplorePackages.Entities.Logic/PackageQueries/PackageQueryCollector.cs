@@ -6,13 +6,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.Delta.Common;
-using Knapcode.ExplorePackages.Entities;
-using Knapcode.ExplorePackages.Logic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages.Entities
 {
     /// <summary>
     /// Executes package queries on catalog commits.

@@ -13,7 +13,7 @@ using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets
+namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
 {
     public class FindPackageAssetsScanDriver : ICatalogScanDriver
     {

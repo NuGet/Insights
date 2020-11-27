@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Xml.Linq;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages.Entities
 {
     public class FindCaseInsensitiveDuplicateTextMetadataElementsNuspecQuery : INuspecQuery
     {

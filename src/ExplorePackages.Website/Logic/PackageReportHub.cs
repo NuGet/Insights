@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Logic;
 using Microsoft.AspNetCore.SignalR;
 using NuGet.Versioning;
 

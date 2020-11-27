@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets;
-using Knapcode.ExplorePackages.Logic.Worker.RunRealRestore;
+using Knapcode.ExplorePackages.Worker.FindPackageAssets;
+using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
-namespace Knapcode.ExplorePackages.Logic.Worker
+namespace Knapcode.ExplorePackages.Worker
 {
     public class MessageEnqueuer
     {

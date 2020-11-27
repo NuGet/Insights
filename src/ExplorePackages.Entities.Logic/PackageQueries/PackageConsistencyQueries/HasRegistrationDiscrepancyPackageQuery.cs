@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages.Entities
 {
     public abstract class HasRegistrationDiscrepancyPackageQuery : IPackageConsistencyQuery
     {

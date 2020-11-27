@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages
 {
     public class MD5IncrementalHash : IIncrementalHash
     {

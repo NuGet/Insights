@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages.Entities
 {
     public class PackageQueryFactory
     {

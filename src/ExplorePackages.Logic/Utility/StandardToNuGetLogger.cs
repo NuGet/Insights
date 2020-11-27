@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using StandardLogLevel = Microsoft.Extensions.Logging.LogLevel;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages
 {
     public class StandardToNuGetLogger : LoggerBase
     {

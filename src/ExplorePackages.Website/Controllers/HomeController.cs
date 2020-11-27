@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using Knapcode.ExplorePackages.Logic;
 using Knapcode.ExplorePackages.Website.Models;
 using Microsoft.AspNetCore.Mvc;
 using NuGet.Versioning;

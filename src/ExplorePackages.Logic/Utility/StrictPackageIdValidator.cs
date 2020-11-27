@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages
 {
     /// <summary>
     /// Sources:

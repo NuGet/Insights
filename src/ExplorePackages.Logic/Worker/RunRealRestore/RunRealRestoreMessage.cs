@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
+namespace Knapcode.ExplorePackages.Worker.RunRealRestore
 {
     public class RunRealRestoreMessage
     {

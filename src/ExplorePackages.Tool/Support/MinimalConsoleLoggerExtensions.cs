@@ -1,4 +1,4 @@
-﻿using Knapcode.ExplorePackages.Logic;
+﻿using Knapcode.ExplorePackages.Tool;
 
 namespace Microsoft.Extensions.Logging
 {

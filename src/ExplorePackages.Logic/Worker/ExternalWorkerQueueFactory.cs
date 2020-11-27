@@ -2,7 +2,7 @@
 using System.Threading;
 using Microsoft.WindowsAzure.Storage.Queue;
 
-namespace Knapcode.ExplorePackages.Logic.Worker
+namespace Knapcode.ExplorePackages.Worker
 {
     public class ExternalWorkerQueueFactory : IWorkerQueueFactory
     {

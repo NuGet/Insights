@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages.Entities
 {
     public class PackageQueryWork
     {

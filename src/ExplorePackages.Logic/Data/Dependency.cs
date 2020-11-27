@@ -1,6 +1,6 @@
 ﻿using NuGet.Versioning;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages
 {
     public class Dependency
     {

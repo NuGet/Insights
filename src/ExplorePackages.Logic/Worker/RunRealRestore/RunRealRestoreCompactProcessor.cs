@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
+namespace Knapcode.ExplorePackages.Worker.RunRealRestore
 {
     public class RunRealRestoreCompactProcessor : IMessageProcessor<RunRealRestoreCompactMessage>
     {

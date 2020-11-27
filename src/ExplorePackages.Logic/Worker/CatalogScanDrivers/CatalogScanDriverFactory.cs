@@ -1,8 +1,8 @@
 ﻿using System;
-using Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets;
+using Knapcode.ExplorePackages.Worker.FindPackageAssets;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Knapcode.ExplorePackages.Logic.Worker
+namespace Knapcode.ExplorePackages.Worker
 {
     public class CatalogScanDriverFactory
     {

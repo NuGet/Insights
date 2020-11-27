@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Knapcode.ExplorePackages.Logic.Worker.RunRealRestore
+namespace Knapcode.ExplorePackages.Worker.RunRealRestore
 {
     public class CommandResult
     {

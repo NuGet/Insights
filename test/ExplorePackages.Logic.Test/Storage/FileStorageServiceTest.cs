@@ -17,7 +17,7 @@ using NuGet.Protocol.Core.Types;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages
 {
     public class FileStorageServiceTest : IAsyncLifetime
     {

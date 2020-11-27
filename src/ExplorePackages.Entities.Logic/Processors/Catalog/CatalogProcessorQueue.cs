@@ -7,7 +7,7 @@ using Knapcode.Delta.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages.Entities
 {
     public class CatalogProcessorQueue
     {

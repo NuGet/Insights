@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages
 {
     public class ServiceClientFactory
     {

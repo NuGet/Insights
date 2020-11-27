@@ -3,7 +3,7 @@ using System.IO;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages
 {
     public class NuspecContext
     {

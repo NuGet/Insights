@@ -1,7 +1,6 @@
 ﻿using System;
-using Knapcode.ExplorePackages.Entities;
 
-namespace Knapcode.ExplorePackages.Logic
+namespace Knapcode.ExplorePackages.Entities
 {
     public static class PackageEntityExtensions
     {

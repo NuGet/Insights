@@ -3,7 +3,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <IsPackable>false</IsPackable>
     <AssemblyName>Knapcode.ExplorePackages.Logic.Test</AssemblyName>
-    <RootNamespace>Knapcode.ExplorePackages.Logic</RootNamespace>
+    <RootNamespace>Knapcode.ExplorePackages</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="TestData\*.nuspec" />
