@@ -13,18 +13,18 @@ namespace Knapcode.ExplorePackages.Website.Logic
         public const string Path = "/Hubs/PackageReport";
 
         private readonly PackageConsistencyService _packageConsistencyService;
-        private readonly PackageQueryContextBuilder _packageQueryContextBuilder;
+        private readonly PackageConsistencyContextBuilder _packageConsistencyContextBuilder;
         private readonly LatestCatalogCommitFetcher _latestCatalogCommitFetcher;
         private readonly UrlReporterProvider _urlReporterProvider;
 
         public PackageReportHub(
             PackageConsistencyService packageConsistencyService,
-            PackageQueryContextBuilder packageQueryContextBuilder,
+            PackageConsistencyContextBuilder packageConsistencyContextBuilder,
             LatestCatalogCommitFetcher latestCatalogCommitFetcher,
             UrlReporterProvider urlReporterProvider)
         {
             _packageConsistencyService = packageConsistencyService;
-            _packageQueryContextBuilder = packageQueryContextBuilder;
+            _packageConsistencyContextBuilder = packageConsistencyContextBuilder;
             _latestCatalogCommitFetcher = latestCatalogCommitFetcher;
             _urlReporterProvider = urlReporterProvider;
         }
@@ -94,7 +94,7 @@ namespace Knapcode.ExplorePackages.Website.Logic
             await InvokeProgressAsync(0, $"Initializing package report for {id} {version}.");
 
             var state = new PackageConsistencyState();
-            var context = await _packageQueryContextBuilder.GetPackageConsistencyContextFromServerAsync(id, version, state);
+            var context = await _packageConsistencyContextBuilder.CreateFromServerAsync(id, version, state);
 
             var packageDeletedStatus = state.Gallery.PackageState.PackageDeletedStatus;
             var isAvailable = packageDeletedStatus == PackageDeletedStatus.NotDeleted;

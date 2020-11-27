@@ -7,7 +7,25 @@ namespace Knapcode.ExplorePackages.Logic
         public PackageQueryContext(
             PackageEntity package,
             NuspecContext nuspec,
-            MZipContext mzip) : base(package)
+            MZipContext mzip) : this(
+                package.ToConsistencyContext(),
+                package,
+                nuspec,
+                mzip)
+        {
+        }
+
+        private PackageQueryContext(
+            PackageConsistencyContext consistencyContext,
+            PackageEntity package,
+            NuspecContext nuspec,
+            MZipContext mzip) : base(
+                consistencyContext.Id,
+                consistencyContext.Version,
+                consistencyContext.IsDeleted,
+                consistencyContext.IsSemVer2,
+                consistencyContext.IsListed,
+                consistencyContext.HasIcon)
         {
             Package = package;
             Nuspec = nuspec;

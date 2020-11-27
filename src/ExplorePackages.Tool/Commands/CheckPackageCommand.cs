@@ -13,8 +13,9 @@ namespace Knapcode.ExplorePackages.Tool
 {
     public class CheckPackageCommand : ICommand
     {
-        private readonly PackageConsistencyService _service;
-        private readonly PackageQueryContextBuilder _contextBuilder;
+        private readonly PackageService _packageService;
+        private readonly PackageConsistencyService _consistencyService;
+        private readonly PackageConsistencyContextBuilder _contextBuilder;
         private readonly ILogger<CheckPackageCommand> _logger;
 
         private CommandArgument _idArgument;
@@ -26,9 +27,14 @@ namespace Knapcode.ExplorePackages.Tool
         private CommandOption _noGallery;
         private CommandOption _database;
 
-        public CheckPackageCommand(PackageConsistencyService service, PackageQueryContextBuilder contextBuilder, ILogger<CheckPackageCommand> logger)
+        public CheckPackageCommand(
+            PackageService packageService,
+            PackageConsistencyService consistencyService,
+            PackageConsistencyContextBuilder contextBuilder,
+            ILogger<CheckPackageCommand> logger)
         {
-            _service = service;
+            _packageService = packageService;
+            _consistencyService = consistencyService;
             _contextBuilder = contextBuilder;
             _logger = logger;
         }
@@ -93,27 +99,28 @@ namespace Knapcode.ExplorePackages.Tool
             PackageConsistencyContext context;
             if (!NoGallery)
             {
-                context = await _contextBuilder.GetPackageConsistencyContextFromServerAsync(Id, Version, state);
+                context = await _contextBuilder.CreateFromServerAsync(Id, Version, state);
             }
             else if (Database)
             {
-                context = await _contextBuilder.GetPackageConsistencyContextFromDatabaseAsync(Id, Version);
-                if (context == null)
+                var package = await _packageService.GetPackageOrNullAsync(Id, Version);
+                if (package == null)
                 {
                     _logger.LogError("The package {Id} {Version} could not be found in the database.", Id, Version);
                     return;
                 }
+                context = package.ToConsistencyContext();
             }
             else if (Deleted)
             {
-                context = _contextBuilder.CreateDeletedPackageConsistencyContext(Id, Version);
+                context = _contextBuilder.CreateDeleted(Id, Version);
             }
             else
             {
-                context = _contextBuilder.CreateAvailablePackageConsistencyContext(Id, Version, isSemVer2, !Unlisted, HasIcon);
+                context = _contextBuilder.CreateAvailable(Id, Version, isSemVer2, !Unlisted, HasIcon);
             }
 
-            var report = await _service.GetReportAsync(context, state, NullProgressReporter.Instance);
+            var report = await _consistencyService.GetReportAsync(context, state, NullProgressReporter.Instance);
             var reportJson = JsonConvert.SerializeObject(
                 report,
                 new JsonSerializerSettings

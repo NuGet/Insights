@@ -1,7 +1,4 @@
-﻿using System;
-using Knapcode.ExplorePackages.Entities;
-
-namespace Knapcode.ExplorePackages.Logic
+﻿namespace Knapcode.ExplorePackages.Logic
 {
     public class PackageConsistencyContext
     {
@@ -19,30 +16,6 @@ namespace Knapcode.ExplorePackages.Logic
             IsSemVer2 = isSemVer2;
             IsListed = isListed;
             HasIcon = hasIcon;
-        }
-
-        public PackageConsistencyContext(PackageEntity package)
-        {
-            if (package == null)
-            {
-                throw new ArgumentNullException(nameof(package));
-            }
-
-            if (package.PackageRegistration == null)
-            {
-                throw new ArgumentException($"The package's {nameof(package.PackageRegistration)} property must not be null.", nameof(package));
-            }
-
-            Id = package.PackageRegistration.Id;
-            Version = package.Version;
-            IsDeleted = package.CatalogPackage?.Deleted ?? false;
-            IsListed = package.CatalogPackage?.Listed ?? package.V2Package?.Listed ?? true;
-
-            IsSemVer2 = false;
-            if (package.CatalogPackage?.SemVerType != null)
-            {
-                IsSemVer2 = package.CatalogPackage.SemVerType.Value != SemVerType.SemVer1;
-            }
         }
 
         public string Id { get; }
