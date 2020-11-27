@@ -1,6 +1,6 @@
 ﻿using Microsoft.WindowsAzure.Storage.Queue;
 
-namespace Knapcode.ExplorePackages
+namespace Knapcode.ExplorePackages.Worker
 {
     public interface IWorkerQueueFactory
     {

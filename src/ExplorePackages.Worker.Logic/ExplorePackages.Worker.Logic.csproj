@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>Knapcode.ExplorePackages.Worker.Logic</AssemblyName>
+    <RootNamespace>Knapcode.ExplorePackages.Worker</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ExplorePackages.Logic\ExplorePackages.Logic.csproj" />
+  </ItemGroup>
+</Project>

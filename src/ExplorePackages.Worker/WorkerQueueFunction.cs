@@ -8,7 +8,7 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class WorkerQueueFunction
     {
-        private const string WorkerQueue = ExplorePackagesSettings.DefaultSectionName + ":" + nameof(ExplorePackagesSettings.WorkerQueueName);
+        private const string WorkerQueue = ExplorePackagesSettings.DefaultSectionName + ":" + nameof(ExplorePackagesWorkerSettings.WorkerQueueName);
         private const string WorkerQueueVariable = "%" + WorkerQueue + "%";
         private const string StorageConnection = ExplorePackagesSettings.DefaultSectionName + ":" + nameof(ExplorePackagesSettings.StorageConnectionString);
 

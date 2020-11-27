@@ -1,16 +1,16 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage.Queue;
 
-namespace Knapcode.ExplorePackages
+namespace Knapcode.ExplorePackages.Worker
 {
     public class UnencodedWorkerQueueFactory : IWorkerQueueFactory
     {
         private readonly ServiceClientFactory _serviceClientFactory;
-        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
+        private readonly IOptionsSnapshot<ExplorePackagesWorkerSettings> _options;
 
         public UnencodedWorkerQueueFactory(
             ServiceClientFactory serviceClientFactory,
-            IOptionsSnapshot<ExplorePackagesSettings> options)
+            IOptionsSnapshot<ExplorePackagesWorkerSettings> options)
         {
             _serviceClientFactory = serviceClientFactory;
             _options = options;

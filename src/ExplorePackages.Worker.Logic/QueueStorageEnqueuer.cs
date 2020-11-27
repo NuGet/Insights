@@ -12,12 +12,12 @@ namespace Knapcode.ExplorePackages.Worker
     public class QueueStorageEnqueuer : IRawMessageEnqueuer
     {
         private readonly IWorkerQueueFactory _workerQueueFactory;
-        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
+        private readonly IOptionsSnapshot<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<QueueStorageEnqueuer> _logger;
 
         public QueueStorageEnqueuer(
             IWorkerQueueFactory workerQueueFactory,
-            IOptionsSnapshot<ExplorePackagesSettings> options,
+            IOptionsSnapshot<ExplorePackagesWorkerSettings> options,
             ILogger<QueueStorageEnqueuer> logger)
         {
             _workerQueueFactory = workerQueueFactory;

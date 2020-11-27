@@ -4,9 +4,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker;
-using Knapcode.ExplorePackages.Worker.FindPackageAssets;
-using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using Knapcode.MiniZip;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -89,9 +86,6 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<IFileStorageService, FileStorageService>();
             serviceCollection.AddTransient<IBlobStorageService, BlobStorageService>();
 
-            serviceCollection.AddTransient<IRawMessageEnqueuer, QueueStorageEnqueuer>();
-            serviceCollection.AddTransient<IWorkerQueueFactory, UnencodedWorkerQueueFactory>();
-
             serviceCollection.AddSingleton<IBatchSizeProvider, BatchSizeProvider>();
             serviceCollection.AddTransient<CommitEnumerator>();
 
@@ -118,35 +112,6 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<SearchConsistencyService>();
             serviceCollection.AddTransient<PackageConsistencyService>();
             serviceCollection.AddTransient<CrossCheckConsistencyService>();
-
-            serviceCollection.AddTransient<GenericMessageProcessor>();
-            serviceCollection.AddTransient<SchemaSerializer>();
-            serviceCollection.AddTransient<MessageEnqueuer>();
-
-            serviceCollection.AddTransient<IMessageProcessor<BulkEnqueueMessage>, BulkEnqueueMessageProcessor>();
-            serviceCollection.AddTransient<IMessageProcessor<CatalogIndexScanMessage>, CatalogIndexScanMessageProcessor>();
-            serviceCollection.AddTransient<IMessageProcessor<CatalogPageScanMessage>, CatalogPageScanMessageProcessor>();
-            serviceCollection.AddTransient<IMessageProcessor<CatalogLeafScanMessage>, CatalogLeafScanMessageProcessor>();
-            serviceCollection.AddTransient<IMessageProcessor<FindPackageAssetsCompactMessage>, FindPackageAssetsCompactProcessor>();
-            serviceCollection.AddTransient<IMessageProcessor<RunRealRestoreMessage>, RunRealRestoreProcessor>();
-            serviceCollection.AddTransient<IMessageProcessor<RunRealRestoreCompactMessage>, RunRealRestoreCompactProcessor>();
-
-            serviceCollection.AddTransient<CatalogScanStorageService>();
-            serviceCollection.AddTransient<LatestPackageLeafStorageService>();
-            serviceCollection.AddTransient<CursorStorageService>();
-
-            serviceCollection.AddTransient<AppendResultStorageService>();
-            serviceCollection.AddTransient<TaskStateStorageService>();
-
-            serviceCollection.AddTransient<ProjectHelper>();
-
-            serviceCollection.AddTransient<CatalogScanDriverFactory>();
-            serviceCollection.AddTransient<DownloadLeavesCatalogScanDriver>();
-            serviceCollection.AddTransient<DownloadPagesCatalogScanDriver>();
-            serviceCollection.AddTransient<FindLatestLeavesCatalogScanDriver>();
-            serviceCollection.AddTransient<FindPackageAssetsScanDriver>();
-
-            serviceCollection.AddTransient<CatalogScanService>();
 
             return serviceCollection;
         }

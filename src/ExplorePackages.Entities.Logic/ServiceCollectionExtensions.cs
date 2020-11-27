@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Entities
 {
-    public static class EntitiesServiceCollectionExtensions
+    public static class ServiceCollectionExtensions
     {
         public static IServiceCollection AddExplorePackagesEntities(this IServiceCollection serviceCollection)
         {
@@ -162,7 +162,7 @@ namespace Knapcode.ExplorePackages.Entities
 
         private static IEnumerable<Type> GetClassesImplementing<T>()
         {
-            return typeof(EntitiesServiceCollectionExtensions)
+            return typeof(ServiceCollectionExtensions)
                 .Assembly
                 .GetTypes()
                 .Where(t => t.GetInterfaces().Contains(typeof(T)))

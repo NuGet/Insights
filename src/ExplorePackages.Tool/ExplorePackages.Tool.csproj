@@ -12,5 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ExplorePackages.Entities.Logic\ExplorePackages.Entities.Logic.csproj" />
+    <ProjectReference Include="..\ExplorePackages.Worker.Logic\ExplorePackages.Worker.Logic.csproj" />
   </ItemGroup>
 </Project>

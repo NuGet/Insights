@@ -13,15 +13,11 @@ namespace Knapcode.ExplorePackages.Worker
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            builder
-                .Services
-                .AddOptions<ExplorePackagesSettings>()
-                .Configure<IConfiguration>((settings, configuration) =>
-                {
-                    configuration.GetSection(ExplorePackagesSettings.DefaultSectionName).Bind(settings);
-                });
+            AddOptions<ExplorePackagesSettings>(builder, ExplorePackagesSettings.DefaultSectionName);
+            AddOptions<ExplorePackagesWorkerSettings>(builder, ExplorePackagesSettings.DefaultSectionName);
 
             builder.Services.AddExplorePackages("Knapcode.ExplorePackages.Worker");
+            builder.Services.AddExplorePackagesWorker();
 
             builder.Services.AddSingleton<IQueueProcessorFactory, UnencodedQueueProcessorFactory>();
 
@@ -32,6 +28,17 @@ namespace Knapcode.ExplorePackages.Worker
             builder.Services.AddScoped<ServiceClientFactory>();
 
             builder.Services.AddTransient<IRawMessageEnqueuer>(x => x.GetRequiredService<TargetableRawMessageEnqueuer>());
+        }
+
+        private static void AddOptions<TOptions>(IFunctionsHostBuilder builder, string sectionName) where TOptions : class
+        {
+            builder
+                .Services
+                .AddOptions<TOptions>()
+                .Configure<IConfiguration>((settings, configuration) =>
+                {
+                    configuration.GetSection(sectionName).Bind(settings);
+                });
         }
     }
 }

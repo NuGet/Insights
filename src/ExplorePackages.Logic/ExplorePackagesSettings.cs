@@ -1,6 +1,4 @@
-﻿using Knapcode.ExplorePackages.Worker;
-
-namespace Knapcode.ExplorePackages
+﻿namespace Knapcode.ExplorePackages
 {
     public class ExplorePackagesSettings
     {
@@ -17,11 +15,6 @@ namespace Knapcode.ExplorePackages
             StorageContainerName = "packages";
             LeaseContainerName = "leases";
             IsStorageContainerPublic = false;
-            UseBulkEnqueueStrategy = true;
-            BulkEnqueueThreshold = 10;
-            EnqueueWorkers = 1;
-            WorkerQueueName = "worker-queue";
-            AppendResultStorageMode = AppendResultStorageMode.Table;
         }
 
         public string GalleryBaseUrl { get; set; }
@@ -33,10 +26,5 @@ namespace Knapcode.ExplorePackages
         public string StorageContainerName { get; set; }
         public string LeaseContainerName { get; set; }
         public bool IsStorageContainerPublic { get; set; }
-        public bool UseBulkEnqueueStrategy { get; set; }
-        public int BulkEnqueueThreshold { get; set; }
-        public int EnqueueWorkers { get; set; }
-        public string WorkerQueueName { get; set; }
-        public AppendResultStorageMode AppendResultStorageMode { get; set; }
     }
 }
