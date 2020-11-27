@@ -70,7 +70,7 @@ namespace Knapcode.ExplorePackages.Logic
                 MZipsCommitProcessor processor,
                 CommitCollectorSequentialProgressService sequentialProgressService,
                 ISingletonService singletonService,
-                IOptionsSnapshot<ExplorePackagesSettings> options,
+                IOptionsSnapshot<ExplorePackagesEntitiesSettings> options,
                 ILogger<Collector> logger) : base(
                     cursorService,
                     enumerator,

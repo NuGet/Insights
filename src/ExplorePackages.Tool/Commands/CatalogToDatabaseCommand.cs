@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Tool
 {
@@ -12,6 +13,7 @@ namespace Knapcode.ExplorePackages.Tool
         private readonly CursorService _cursorService;
         private readonly CatalogToDatabaseProcessor _processor;
         private readonly ISingletonService _singletonService;
+        private readonly IOptionsSnapshot<ExplorePackagesEntitiesSettings> _options;
         private readonly ILogger<CatalogProcessorQueue> _logger;
 
         public CatalogToDatabaseCommand(
@@ -19,12 +21,14 @@ namespace Knapcode.ExplorePackages.Tool
             CursorService cursorService,
             CatalogToDatabaseProcessor processor,
             ISingletonService singletonService,
+            IOptionsSnapshot<ExplorePackagesEntitiesSettings> options,
             ILogger<CatalogProcessorQueue> logger)
         {
             _catalogClient = catalogClient;
             _cursorService = cursorService;
             _processor = processor;
             _singletonService = singletonService;
+            _options = options;
             _logger = logger;
         }
 
@@ -39,8 +43,9 @@ namespace Knapcode.ExplorePackages.Tool
                 _cursorService,
                 _processor,
                 _singletonService,
+                _options,
                 _logger);
-            await catalogProcessor.ProcessAsync(token);
+            await catalogProcessor.ProcessAsync();
         }
 
         public bool IsInitializationRequired() => true;

@@ -17,7 +17,7 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly ICommitProcessor<TEntity, TItem, TProgressToken> _processor;
         private readonly CommitCollectorSequentialProgressService _sequentialProgressService;
         private readonly ISingletonService _singletonService;
-        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
+        private readonly IOptionsSnapshot<ExplorePackagesEntitiesSettings> _options;
         private readonly ILogger _logger;
 
         public CommitCollector(
@@ -26,7 +26,7 @@ namespace Knapcode.ExplorePackages.Logic
             ICommitProcessor<TEntity, TItem, TProgressToken> processor,
             CommitCollectorSequentialProgressService sequentialProgressService,
             ISingletonService singletonService,
-            IOptionsSnapshot<ExplorePackagesSettings> options,
+            IOptionsSnapshot<ExplorePackagesEntitiesSettings> options,
             ILogger logger)
         {
             _cursorService = cursorService;
@@ -80,7 +80,7 @@ namespace Knapcode.ExplorePackages.Logic
                             await ProcessSequentiallyAsync(commits, token);
                             break;
                         case ProcessMode.TaskQueue:
-                            await ProcessTaskQueueAsync(commits, token);
+                            await ProcessTaskQueueAsync(commits);
                             break;
                         default:
                             throw new NotImplementedException();
@@ -100,9 +100,7 @@ namespace Knapcode.ExplorePackages.Logic
             while (commitCount > 0);
         }
 
-        private async Task ProcessTaskQueueAsync(
-            IReadOnlyList<EntityCommit<TEntity>> commits,
-            CancellationToken token)
+        private async Task ProcessTaskQueueAsync(IReadOnlyList<EntityCommit<TEntity>> commits)
         {
             var taskQueue = new TaskQueue<IReadOnlyList<TItem>>(
                 workerCount: _options.Value.WorkerCount,

@@ -76,17 +76,16 @@ namespace Knapcode.ExplorePackages.Tool
                 o.AddProvider(new XunitLoggerProvider(_output));
             });
 
-            serviceCollection.Configure<ExplorePackagesSettings>(x =>
+            serviceCollection.Configure<ExplorePackagesEntitiesSettings>(x =>
             {
                 x.DatabaseConnectionString = _databaseConnectionString;
                 x.DownloadsV1Path = Path.Combine(_testDirectory, "downloads.txt");
-                x.StorageConnectionString = _storageConnectionString;
-                x.DownloadsV1Url = null;
-                x.StorageContainerName = _storageContainerName;
-                x.IsStorageContainerPublic = true;
                 x.RunBoringQueries = true;
                 x.WorkerCount = 8;
+                Configure(x);
             });
+
+            serviceCollection.Configure<ExplorePackagesSettings>(Configure);
 
             using (var serviceProvider = serviceCollection.BuildServiceProvider())
             {
@@ -122,6 +121,14 @@ namespace Knapcode.ExplorePackages.Tool
 
                 Assert.Equal(0, exitCode);
             }
+        }
+
+        private void Configure(ExplorePackagesSettings x)
+        {
+            x.StorageConnectionString = _storageConnectionString;
+            x.DownloadsV1Url = null;
+            x.StorageContainerName = _storageContainerName;
+            x.IsStorageContainerPublic = true;
         }
     }
 }

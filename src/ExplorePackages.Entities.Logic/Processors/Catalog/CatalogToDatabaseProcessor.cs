@@ -12,20 +12,17 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly IPackageService _packageService;
         private readonly CatalogClient _catalogClient;
         private readonly CatalogService _catalogService;
-        private readonly V2Client _v2Client;
-        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
+        private readonly IOptionsSnapshot<ExplorePackagesEntitiesSettings> _options;
 
         public CatalogToDatabaseProcessor(
             IPackageService packageService,
             CatalogClient catalogClient,
             CatalogService catalogService,
-            V2Client v2Client,
-            IOptionsSnapshot<ExplorePackagesSettings> options)
+            IOptionsSnapshot<ExplorePackagesEntitiesSettings> options)
         {
             _packageService = packageService;
             _catalogClient = catalogClient;
             _catalogService = catalogService;
-            _v2Client = v2Client;
             _options = options;
         }
 

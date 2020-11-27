@@ -14,18 +14,15 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly PackageBlobNameProvider _blobNameProvider;
         private readonly IBlobStorageService _blobStorageService;
         private readonly IMemoryCache _memoryCache;
-        private readonly ILogger<FileStorageService> _logger;
 
         public FileStorageService(
             PackageBlobNameProvider blobNameProvider,
             IBlobStorageService blobStorageService,
-            IMemoryCache memoryCache,
-            ILogger<FileStorageService> logger)
+            IMemoryCache memoryCache)
         {
             _blobNameProvider = blobNameProvider;
             _blobStorageService = blobStorageService;
             _memoryCache = memoryCache;
-            _logger = logger;
         }
 
         public async Task StoreStreamAsync(string id, string version, FileArtifactType type, Func<Stream, Task> writeAsync, AccessCondition accessCondition)

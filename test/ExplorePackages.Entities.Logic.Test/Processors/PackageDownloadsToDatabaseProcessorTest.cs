@@ -14,20 +14,18 @@ namespace Knapcode.ExplorePackages.Logic
     {
         public class UpdateAsync : IDisposable
         {
-            private readonly ITestOutputHelper _output;
             private readonly TestDirectory _testDirectory;
             private readonly List<List<PackageDownloads>> _batches;
             private readonly Mock<IPackageDownloadsClient> _client;
             private readonly Mock<IPackageService> _service;
             private readonly Mock<IETagService> _etagService;
             private readonly Mock<IBatchSizeProvider> _batchSizeProvider;
-            private readonly ExplorePackagesSettings _settings;
-            private readonly Mock<IOptionsSnapshot<ExplorePackagesSettings>> _options;
+            private readonly ExplorePackagesEntitiesSettings _settings;
+            private readonly Mock<IOptionsSnapshot<ExplorePackagesEntitiesSettings>> _options;
             private readonly PackageDownloadsToDatabaseProcessor _target;
 
             public UpdateAsync(ITestOutputHelper output)
             {
-                _output = output;
                 _testDirectory = TestDirectory.Create();
                 _batches = new List<List<PackageDownloads>>();
 
@@ -38,11 +36,11 @@ namespace Knapcode.ExplorePackages.Logic
                 _batchSizeProvider
                     .Setup(x => x.Get(It.IsAny<BatchSizeType>()))
                     .Returns(1000);
-                _settings = new ExplorePackagesSettings
+                _settings = new ExplorePackagesEntitiesSettings
                 {
                     DownloadsV1Path = Path.Combine(_testDirectory, "downloads.txt"),
                 };
-                _options = new Mock<IOptionsSnapshot<ExplorePackagesSettings>>();
+                _options = new Mock<IOptionsSnapshot<ExplorePackagesEntitiesSettings>>();
                 _options
                     .Setup(x => x.Value)
                     .Returns(() => _settings);
@@ -241,7 +239,7 @@ namespace Knapcode.ExplorePackages.Logic
 
         private class MemoryAsyncEnumerator<T> : IAsyncEnumerator<T>
         {
-            private IEnumerator<T> _enumerator;
+            private readonly IEnumerator<T> _enumerator;
 
             public MemoryAsyncEnumerator(IEnumerator<T> enumerator)
             {

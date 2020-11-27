@@ -58,8 +58,8 @@ namespace Knapcode.ExplorePackages.Logic
 
         public static void SanitizeAndLogSettings(this IServiceProvider serviceProvider)
         {
-            var logger = serviceProvider.GetRequiredService<ILogger<ExplorePackagesSettings>>();
-            var options = serviceProvider.GetRequiredService<IOptionsSnapshot<ExplorePackagesSettings>>();
+            var logger = serviceProvider.GetRequiredService<ILogger<ExplorePackagesEntitiesSettings>>();
+            var options = serviceProvider.GetRequiredService<IOptionsSnapshot<ExplorePackagesEntitiesSettings>>();
             var settings = options.Value;
 
             logger.LogInformation("===== settings =====");

@@ -25,7 +25,7 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly PackageV2CommitEnumerator _packageV2CommitEnumerator;
         private readonly IBatchSizeProvider _batchSizeProvider;
         private readonly ISingletonService _singletonService;
-        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
+        private readonly IOptionsSnapshot<ExplorePackagesEntitiesSettings> _options;
         private readonly ILogger<PackageQueryCollector> _logger;
 
         public PackageQueryCollector(
@@ -35,7 +35,7 @@ namespace Knapcode.ExplorePackages.Logic
             PackageV2CommitEnumerator packageV2CommitEnumerator,
             IBatchSizeProvider batchSizeProvider,
             ISingletonService singletonService,
-            IOptionsSnapshot<ExplorePackagesSettings> options,
+            IOptionsSnapshot<ExplorePackagesEntitiesSettings> options,
             ILogger<PackageQueryCollector> logger)
         {
             _processor = packageQueryProcessor;
@@ -48,7 +48,7 @@ namespace Knapcode.ExplorePackages.Logic
             _logger = logger;
         }
 
-        public async Task ProcessAsync(IReadOnlyList<IPackageQuery> queries, bool reprocess, CancellationToken token)
+        public async Task ProcessAsync(IReadOnlyList<IPackageQuery> queries, bool reprocess)
         {
             var isV2QueryToQueries = queries.ToLookup(x => x.IsV2Query);
 

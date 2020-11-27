@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.Delta.Common;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Logic
 {
@@ -14,6 +15,7 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly CursorService _cursorService;
         private readonly ICatalogEntriesProcessor _processor;
         private readonly ISingletonService _singletonService;
+        private readonly IOptionsSnapshot<ExplorePackagesEntitiesSettings> _options;
         private readonly ILogger<CatalogProcessorQueue> _logger;
 
         public CatalogProcessorQueue(
@@ -21,16 +23,18 @@ namespace Knapcode.ExplorePackages.Logic
             CursorService cursorService,
             ICatalogEntriesProcessor processor,
             ISingletonService singletonService,
+            IOptionsSnapshot<ExplorePackagesEntitiesSettings> options,
             ILogger<CatalogProcessorQueue> logger)
         {
             _catalogClient = catalogClient;
             _cursorService = cursorService;
             _processor = processor;
             _singletonService = singletonService;
+            _options = options;
             _logger = logger;
         }
 
-        public async Task ProcessAsync(CancellationToken token)
+        public async Task ProcessAsync()
         {
             var start = await _cursorService.GetValueAsync(_processor.CursorName);
             DateTimeOffset end;
@@ -71,10 +75,39 @@ namespace Knapcode.ExplorePackages.Logic
                 var currentPage = remainingPages.Dequeue();
                 var currentPages = new[] { currentPage };
 
-                var entries = await _catalogClient.GetCatalogLeafItemsAsync(currentPages, start, end, token);
+                var entries = await GetCatalogLeafItemsAsync(currentPages, start, end, token);
 
                 await producer.EnqueueAsync(new Work(currentPage, entries), token);
             }
+        }
+
+        private async Task<IReadOnlyList<CatalogLeafItem>> GetCatalogLeafItemsAsync(
+            IEnumerable<CatalogPageItem> pageItems,
+            DateTimeOffset minCommitTimestamp,
+            DateTimeOffset maxCommitTimestamp,
+            CancellationToken token)
+        {
+            var leafItemBatches = await TaskProcessor.ExecuteAsync(
+                pageItems,
+                async pageItem =>
+                {
+                    var page = await _catalogClient.GetCatalogPageAsync(pageItem.Url);
+                    return page.GetLeavesInBounds(
+                        minCommitTimestamp,
+                        maxCommitTimestamp,
+                        excludeRedundantLeaves: false);
+                },
+                workerCount: _options.Value.WorkerCount,
+                token: token);
+
+            // Each consumer should ensure values are sorted in an appropriate fashion, but for consistency we
+            // sort here as well.
+            return leafItemBatches
+                .SelectMany(x => x)
+                .OrderBy(x => x.CommitTimestamp)
+                .ThenBy(x => x.PackageId, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(x => x.ParsePackageVersion())
+                .ToList();
         }
 
         private async Task WorkAsync(Work work, CancellationToken token)

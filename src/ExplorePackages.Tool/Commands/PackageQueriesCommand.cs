@@ -129,11 +129,11 @@ namespace Knapcode.ExplorePackages.Tool
                     .Zip(Versions, (id, version) => new PackageIdentity(id.Trim(), version.Trim()))
                     .ToList();
 
-                await _executor.ProcessPackageAsync(queries, identities, token);
+                await _executor.ProcessPackageAsync(queries, identities);
             }
             else
             {
-                await _processor.ProcessAsync(queries, Reprocess, token);
+                await _processor.ProcessAsync(queries, Reprocess);
             }
         }
 

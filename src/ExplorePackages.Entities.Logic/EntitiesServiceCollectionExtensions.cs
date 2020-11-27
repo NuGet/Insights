@@ -15,7 +15,7 @@ namespace Knapcode.ExplorePackages.Logic
         {
             serviceCollection.AddDbContext<SqliteEntityContext>((x, dbContextOptionsBuilder) =>
             {
-                var options = x.GetRequiredService<IOptionsSnapshot<ExplorePackagesSettings>>();
+                var options = x.GetRequiredService<IOptionsSnapshot<ExplorePackagesEntitiesSettings>>();
                 dbContextOptionsBuilder
                     .UseSqlite(options.Value.DatabaseConnectionString);
             }, contextLifetime: ServiceLifetime.Transient);
@@ -38,7 +38,7 @@ namespace Knapcode.ExplorePackages.Logic
 
             serviceCollection.AddDbContext<SqlServerEntityContext>((x, dbContextOptionsBuilder) =>
             {
-                var options = x.GetRequiredService<IOptionsSnapshot<ExplorePackagesSettings>>();
+                var options = x.GetRequiredService<IOptionsSnapshot<ExplorePackagesEntitiesSettings>>();
                 dbContextOptionsBuilder
                     .UseSqlServer(options.Value.DatabaseConnectionString);
             }, contextLifetime: ServiceLifetime.Transient);
@@ -61,7 +61,7 @@ namespace Knapcode.ExplorePackages.Logic
 
             serviceCollection.AddTransient<Func<bool, IEntityContext>>(x => includeCommitCondition =>
             {
-                var options = x.GetRequiredService<IOptionsSnapshot<ExplorePackagesSettings>>();
+                var options = x.GetRequiredService<IOptionsSnapshot<ExplorePackagesEntitiesSettings>>();
                 switch (options.Value.DatabaseType)
                 {
                     case DatabaseType.Sqlite:
@@ -122,7 +122,7 @@ namespace Knapcode.ExplorePackages.Logic
 
             serviceCollection.AddTransient(x => new PackageQueryFactory(
                 () => x.GetRequiredService<IEnumerable<IPackageQuery>>(),
-                x.GetRequiredService<IOptionsSnapshot<ExplorePackagesSettings>>()));
+                x.GetRequiredService<IOptionsSnapshot<ExplorePackagesEntitiesSettings>>()));
 
             // Add all of the .nuspec queries.
             foreach (var serviceType in GetClassesImplementing<INuspecQuery>())

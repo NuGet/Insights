@@ -36,8 +36,7 @@ namespace Knapcode.ExplorePackages.Tool
 
             await _processor.ProcessAsync(
                 queries,
-                reprocess: true,
-                token: token);
+                reprocess: true);
         }
 
         public bool IsInitializationRequired() => true;

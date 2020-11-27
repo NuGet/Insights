@@ -16,13 +16,13 @@ namespace Knapcode.ExplorePackages.Logic
     {
         private readonly PackageQueryProcessor _processor;
         private readonly IPackageService _packageService;
-        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
+        private readonly IOptionsSnapshot<ExplorePackagesEntitiesSettings> _options;
         private readonly ILogger<PackageQueryExecutor> _logger;
 
         public PackageQueryExecutor(
             PackageQueryProcessor processor,
             IPackageService packageService,
-            IOptionsSnapshot<ExplorePackagesSettings> options,
+            IOptionsSnapshot<ExplorePackagesEntitiesSettings> options,
             ILogger<PackageQueryExecutor> logger)
         {
             _processor = processor;
@@ -31,7 +31,7 @@ namespace Knapcode.ExplorePackages.Logic
             _logger = logger;
         }
 
-        public async Task ProcessPackageAsync(IReadOnlyList<IPackageQuery> queries, IReadOnlyList<PackageIdentity> identities, CancellationToken token)
+        public async Task ProcessPackageAsync(IReadOnlyList<IPackageQuery> queries, IReadOnlyList<PackageIdentity> identities)
         {
             var results = new ConcurrentBag<PackageQueryResult>();
 

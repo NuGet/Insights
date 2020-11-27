@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Logic;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -235,7 +237,7 @@ namespace Knapcode.ExplorePackages.Tool
 
             serviceCollection.AddExplorePackages("Knapcode.ExplorePackages.Tool");
             serviceCollection.AddExplorePackagesEntities();
-            serviceCollection.AddExplorePackagesSettings<Program>();
+            AddExplorePackagesSettings<Program>(serviceCollection);
 
             serviceCollection.AddLogging(o =>
             {
@@ -248,6 +250,35 @@ namespace Knapcode.ExplorePackages.Tool
             {
                 serviceCollection.AddTransient(pair.Value);
             }
+
+            return serviceCollection;
+        }
+
+        private static IServiceCollection AddExplorePackagesSettings<T>(IServiceCollection serviceCollection)
+        {
+            var localDirectory = Path.GetDirectoryName(typeof(T).Assembly.Location);
+            return AddExplorePackagesSettings(serviceCollection, localDirectory);
+        }
+
+        private static IServiceCollection AddExplorePackagesSettings(
+            IServiceCollection serviceCollection,
+            string localDirectory = null)
+        {
+            var userProfile = Environment.GetEnvironmentVariable("USERPROFILE") ?? Directory.GetCurrentDirectory();
+            var userProfilePath = Path.Combine(userProfile, "Knapcode.ExplorePackages.Settings.json");
+
+            var localPath = Path.Combine(
+                localDirectory ?? typeof(ServiceCollectionExtensions).Assembly.Location,
+                "Knapcode.ExplorePackages.Settings.json");
+
+            var configurationBuilder = new ConfigurationBuilder()
+                .AddJsonFile(userProfilePath, optional: true, reloadOnChange: false)
+                .AddJsonFile(localPath, optional: true, reloadOnChange: false);
+
+            var configuration = configurationBuilder.Build();
+
+            serviceCollection.Configure<ExplorePackagesEntitiesSettings>(configuration.GetSection(ExplorePackagesSettings.DefaultSectionName));
+            serviceCollection.Configure<ExplorePackagesSettings>(configuration.GetSection(ExplorePackagesSettings.DefaultSectionName));
 
             return serviceCollection;
         }

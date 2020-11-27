@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using NuGet.Protocol;
 
 namespace Knapcode.ExplorePackages.Logic
@@ -22,18 +19,15 @@ namespace Knapcode.ExplorePackages.Logic
 
         private readonly HttpSource _httpSource;
         private readonly ServiceIndexCache _serviceIndexCache;
-        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
         private readonly ILogger<CatalogClient> _logger;
 
         public CatalogClient(
             HttpSource httpSource,
             ServiceIndexCache serviceIndexCache,
-            IOptionsSnapshot<ExplorePackagesSettings> options,
             ILogger<CatalogClient> logger)
         {
             _httpSource = httpSource;
             _serviceIndexCache = serviceIndexCache;
-            _options = options;
             _logger = logger;
         }
 
@@ -84,35 +78,6 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var catalogIndex = await GetCatalogIndexAsync();
             return catalogIndex.GetPagesInBounds(minCommitTimestamp, maxCommitTimestamp);
-        }
-
-        public async Task<IReadOnlyList<CatalogLeafItem>> GetCatalogLeafItemsAsync(
-            IEnumerable<CatalogPageItem> pageItems,
-            DateTimeOffset minCommitTimestamp,
-            DateTimeOffset maxCommitTimestamp,
-            CancellationToken token)
-        {
-            var leafItemBatches = await TaskProcessor.ExecuteAsync(
-                pageItems,
-                async pageItem =>
-                {
-                    var page = await GetCatalogPageAsync(pageItem.Url);
-                    return page.GetLeavesInBounds(
-                        minCommitTimestamp,
-                        maxCommitTimestamp,
-                        excludeRedundantLeaves: false);
-                },
-                workerCount: _options.Value.WorkerCount,
-                token: token);
-
-            // Each consumer should ensure values are sorted in an appropriate fashion, but for consistency we
-            // sort here as well.
-            return leafItemBatches
-                .SelectMany(x => x)
-                .OrderBy(x => x.CommitTimestamp)
-                .ThenBy(x => x.PackageId, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(x => x.ParsePackageVersion())
-                .ToList();
         }
 
         public async Task<CatalogLeaf> GetCatalogLeafAsync(CatalogLeafItem leaf)

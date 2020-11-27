@@ -14,13 +14,13 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly MZipStore _mZipStore;
         private readonly IPackageService _packageService;
         private readonly IBatchSizeProvider _batchSizeProvider;
-        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
+        private readonly IOptionsSnapshot<ExplorePackagesEntitiesSettings> _options;
 
         public MZipToDatabaseCommitProcessor(
             MZipStore mZipStore,
             IPackageService packageService,
             IBatchSizeProvider batchSizeProvider,
-            IOptionsSnapshot<ExplorePackagesSettings> options)
+            IOptionsSnapshot<ExplorePackagesEntitiesSettings> options)
         {
             _mZipStore = mZipStore;
             _packageService = packageService;
@@ -47,7 +47,7 @@ namespace Knapcode.ExplorePackages.Logic
         {
             var output = await TaskProcessor.ExecuteAsync(
                 packages,
-                x => InitializeItemAsync(x, token),
+                InitializeItemAsync,
                 workerCount: _options.Value.WorkerCount,
                 token: token);
 
@@ -56,7 +56,7 @@ namespace Knapcode.ExplorePackages.Logic
             return new ItemBatch<PackageArchiveMetadata, object>(list);
         }
 
-        private async Task<PackageArchiveMetadata> InitializeItemAsync(PackageEntity package, CancellationToken token)
+        private async Task<PackageArchiveMetadata> InitializeItemAsync(PackageEntity package)
         {
             // Read the .zip directory.
             var context = await _mZipStore.GetMZipContextAsync(
@@ -98,7 +98,7 @@ namespace Knapcode.ExplorePackages.Logic
                 MZipToDatabaseCommitProcessor processor,
                 CommitCollectorSequentialProgressService sequentialProgressService,
                 ISingletonService singletonService,
-                IOptionsSnapshot<ExplorePackagesSettings> options,
+                IOptionsSnapshot<ExplorePackagesEntitiesSettings> options,
                 ILogger<Collector> logger) : base(
                     cursorService,
                     enumerator,

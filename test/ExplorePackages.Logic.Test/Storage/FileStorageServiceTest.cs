@@ -71,8 +71,7 @@ namespace Knapcode.ExplorePackages.Logic
             _target = new FileStorageService(
                 _blobNameProvider,
                 _blobStorageService.Object,
-                _memoryCache,
-                _output.GetLogger<FileStorageService>());
+                _memoryCache);
         }
 
         [Theory]

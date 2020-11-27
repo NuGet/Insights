@@ -17,7 +17,7 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly V2Client _v2Client;
         private readonly PackageService _service;
         private readonly IBatchSizeProvider _batchSizeProvider;
-        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
+        private readonly IOptionsSnapshot<ExplorePackagesEntitiesSettings> _options;
         private readonly ILogger<V2ToDatabaseProcessor> _logger;
 
         public V2ToDatabaseProcessor(
@@ -25,7 +25,7 @@ namespace Knapcode.ExplorePackages.Logic
             V2Client v2Client,
             PackageService service,
             IBatchSizeProvider batchSizeProvider,
-            IOptionsSnapshot<ExplorePackagesSettings> options,
+            IOptionsSnapshot<ExplorePackagesEntitiesSettings> options,
             ILogger<V2ToDatabaseProcessor> logger)
         {
             _cursorService = cursorService;

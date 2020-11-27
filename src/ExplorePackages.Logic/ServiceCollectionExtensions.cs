@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -10,7 +8,6 @@ using Knapcode.ExplorePackages.Logic.Worker;
 using Knapcode.ExplorePackages.Logic.Worker.FindPackageAssets;
 using Knapcode.ExplorePackages.Logic.Worker.RunRealRestore;
 using Knapcode.MiniZip;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using NuGet.Configuration;
@@ -22,34 +19,6 @@ namespace Knapcode.ExplorePackages.Logic
     public static class ServiceCollectionExtensions
     {
         public const string HttpClientName = "Knapcode.ExplorePackages";
-        
-        public static IServiceCollection AddExplorePackagesSettings<T>(this IServiceCollection serviceCollection)
-        {
-            var localDirectory = Path.GetDirectoryName(typeof(T).Assembly.Location);
-            return serviceCollection.AddExplorePackagesSettings(localDirectory);
-        }
-
-        public static IServiceCollection AddExplorePackagesSettings(
-            this IServiceCollection serviceCollection,
-            string localDirectory = null)
-        {
-            var userProfile = Environment.GetEnvironmentVariable("USERPROFILE") ?? Directory.GetCurrentDirectory();
-            var userProfilePath = Path.Combine(userProfile, "Knapcode.ExplorePackages.Settings.json");
-
-            var localPath = Path.Combine(
-                localDirectory ?? typeof(ServiceCollectionExtensions).Assembly.Location,
-                "Knapcode.ExplorePackages.Settings.json");
-
-            var configurationBuilder = new ConfigurationBuilder()
-                .AddJsonFile(userProfilePath, optional: true, reloadOnChange: false)
-                .AddJsonFile(localPath, optional: true, reloadOnChange: false);
-
-            var configuration = configurationBuilder.Build();
-
-            serviceCollection.Configure<ExplorePackagesSettings>(configuration.GetSection(ExplorePackagesSettings.DefaultSectionName));
-
-            return serviceCollection;
-        }
 
         public static IServiceCollection AddExplorePackages(
             this IServiceCollection serviceCollection,

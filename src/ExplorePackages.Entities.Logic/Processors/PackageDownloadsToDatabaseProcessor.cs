@@ -19,7 +19,7 @@ namespace Knapcode.ExplorePackages.Logic
         private readonly IPackageService _service;
         private readonly IETagService _etagService;
         private readonly IBatchSizeProvider _batchSizeProvider;
-        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
+        private readonly IOptionsSnapshot<ExplorePackagesEntitiesSettings> _options;
         private readonly ILogger<PackageDownloadsToDatabaseProcessor> _logger;
 
         public PackageDownloadsToDatabaseProcessor(
@@ -27,7 +27,7 @@ namespace Knapcode.ExplorePackages.Logic
             IPackageService service,
             IETagService etagService,
             IBatchSizeProvider batchSizeProvider,
-            IOptionsSnapshot<ExplorePackagesSettings> options,
+            IOptionsSnapshot<ExplorePackagesEntitiesSettings> options,
             ILogger<PackageDownloadsToDatabaseProcessor> logger)
         {
             _client = client;
