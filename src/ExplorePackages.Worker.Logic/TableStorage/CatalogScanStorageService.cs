@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Knapcode.ExplorePackages.Worker
@@ -8,10 +9,14 @@ namespace Knapcode.ExplorePackages.Worker
     public class CatalogScanStorageService
     {
         private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly IOptionsSnapshot<ExplorePackagesWorkerSettings> _options;
 
-        public CatalogScanStorageService(ServiceClientFactory serviceClientFactory)
+        public CatalogScanStorageService(
+            ServiceClientFactory serviceClientFactory,
+            IOptionsSnapshot<ExplorePackagesWorkerSettings> options)
         {
             _serviceClientFactory = serviceClientFactory;
+            _options = options;
         }
 
         public async Task InitializeAsync()
@@ -119,17 +124,17 @@ namespace Knapcode.ExplorePackages.Worker
 
         private CloudTable GetIndexScanTable()
         {
-            return GetClient().GetTableReference("catalogindexscans");
+            return GetClient().GetTableReference(_options.Value.CatalogIndexScanTableName);
         }
 
         private CloudTable GetPageScanTable(string suffix)
         {
-            return GetClient().GetTableReference($"catalogpagescans{suffix}");
+            return GetClient().GetTableReference($"{_options.Value.CatalogPageScanTableName}{suffix}");
         }
 
         private CloudTable GetLeafScanTable(string suffix)
         {
-            return GetClient().GetTableReference($"catalogleafscans{suffix}");
+            return GetClient().GetTableReference($"{_options.Value.CatalogLeafScanTableName}{suffix}");
         }
     }
 }

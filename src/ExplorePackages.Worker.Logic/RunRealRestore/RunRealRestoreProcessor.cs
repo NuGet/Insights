@@ -89,7 +89,7 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
             {
                 var account = _serviceClientFactory.GetStorageAccount();
                 var client = account.CreateCloudBlobClient();
-                var container = client.GetContainerReference(RunRealRestoreConstants.ContainerName);
+                var container = client.GetContainerReference(_options.Value.RunRealRestoreContainerName);
                 result.ErrorBlobPath = $"errors/{StorageUtility.GenerateDescendingId()}_{package.Id}_{package.Version.ToNormalizedString()}_{framework.GetShortFolderName()}.json";
                 var blob = container.GetBlockBlobReference(result.ErrorBlobPath);
                 blob.Properties.ContentType = "application/json";
@@ -99,7 +99,7 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
 
             var bucketKey = $"{package.Id}/{packageVersion.ToNormalizedString()}".ToLowerInvariant();
             await _storageService.AppendAsync(
-                RunRealRestoreConstants.ContainerName,
+                _options.Value.RunRealRestoreContainerName,
                 _options.Value.AppendResultStorageBucketCount,
                 bucketKey,
                 new[] { result });

@@ -2,23 +2,28 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Worker.RunRealRestore
 {
     public class RunRealRestoreCompactProcessor : IMessageProcessor<RunRealRestoreCompactMessage>
     {
         private readonly AppendResultStorageService _storageService;
+        private readonly IOptionsSnapshot<ExplorePackagesWorkerSettings> _options;
 
-        public RunRealRestoreCompactProcessor(AppendResultStorageService storageService)
+        public RunRealRestoreCompactProcessor(
+            AppendResultStorageService storageService,
+            IOptionsSnapshot<ExplorePackagesWorkerSettings> options)
         {
             _storageService = storageService;
+            _options = options;
         }
 
         public async Task ProcessAsync(RunRealRestoreCompactMessage message)
         {
             await _storageService.CompactAsync<RealRestoreResult>(
-                RunRealRestoreConstants.ContainerName,
-                RunRealRestoreConstants.ContainerName,
+                _options.Value.RunRealRestoreContainerName,
+                _options.Value.RunRealRestoreContainerName,
                 message.Bucket,
                 force: true,
                 mergeExisting: true,

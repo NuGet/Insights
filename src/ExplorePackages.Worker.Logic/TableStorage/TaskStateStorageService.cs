@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Knapcode.ExplorePackages.Worker
@@ -8,10 +9,14 @@ namespace Knapcode.ExplorePackages.Worker
     public class TaskStateStorageService
     {
         private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly IOptionsSnapshot<ExplorePackagesWorkerSettings> _options;
 
-        public TaskStateStorageService(ServiceClientFactory serviceClientFactory)
+        public TaskStateStorageService(
+            ServiceClientFactory serviceClientFactory,
+            IOptionsSnapshot<ExplorePackagesWorkerSettings> options)
         {
             _serviceClientFactory = serviceClientFactory;
+            _options = options;
         }
 
         public async Task InitializeAsync(string storageSuffix)
@@ -76,7 +81,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         private CloudTable GetTable(string suffix)
         {
-            return GetClient().GetTableReference($"taskstate{suffix}");
+            return GetClient().GetTableReference($"{_options.Value.TaskStateTableName}{suffix}");
         }
     }
 }

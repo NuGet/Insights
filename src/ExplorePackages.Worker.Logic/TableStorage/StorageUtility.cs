@@ -9,10 +9,18 @@ namespace Knapcode.ExplorePackages.Worker
         public const string PartitionKey = "PartitionKey";
         public const string RowKey = "RowKey";
 
+        public static string GenerateUniqueId()
+        {
+            return Base32
+                .ToBase32(Guid.NewGuid().ToByteArray())
+                .TrimEnd('=')
+                .ToLowerInvariant();
+        }
+
         public static StorageId GenerateDescendingId()
         {
-            string descendingComponent = (long.MaxValue - DateTimeOffset.UtcNow.Ticks).ToString("D20");
-            var uniqueComponent = Guid.NewGuid().ToString("N");
+            var descendingComponent = (long.MaxValue - DateTimeOffset.UtcNow.Ticks).ToString("D20");
+            var uniqueComponent = GenerateUniqueId();
             return new StorageId(descendingComponent, uniqueComponent);
         }
     }

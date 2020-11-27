@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Knapcode.ExplorePackages.Worker
@@ -6,10 +7,14 @@ namespace Knapcode.ExplorePackages.Worker
     public class CursorStorageService
     {
         private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly IOptionsSnapshot<ExplorePackagesWorkerSettings> _options;
 
-        public CursorStorageService(ServiceClientFactory serviceClientFactory)
+        public CursorStorageService(
+            ServiceClientFactory serviceClientFactory,
+            IOptionsSnapshot<ExplorePackagesWorkerSettings> options)
         {
             _serviceClientFactory = serviceClientFactory;
+            _options = options;
         }
 
         public async Task InitializeAsync()
@@ -44,7 +49,7 @@ namespace Knapcode.ExplorePackages.Worker
             return _serviceClientFactory
                 .GetStorageAccount()
                 .CreateCloudTableClient()
-                .GetTableReference("cursors");
+                .GetTableReference(_options.Value.CursorTableName);
         }
     }
 }

@@ -18,8 +18,6 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
 {
     public class FindPackageAssetsScanDriver : ICatalogScanDriver
     {
-        public static readonly string ContainerName = "findpackageassets";
-
         private readonly SchemaSerializer _schemaSerializer;
         private readonly CatalogClient _catalogClient;
         private readonly ServiceIndexCache _serviceIndexCache;
@@ -57,7 +55,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
 
         public async Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
         {
-            await _storageService.InitializeAsync(GetTableName(indexScan.StorageSuffix), ContainerName);
+            await _storageService.InitializeAsync(GetTableName(indexScan.StorageSuffix), _options.Value.FindPackageAssetsContainerName);
             await _taskStateStorageService.InitializeAsync(indexScan.StorageSuffix);
 
             return CatalogIndexScanResult.Expand;
@@ -247,7 +245,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
                 .Select(b => new FindPackageAssetsCompactMessage
                 {
                     SourceContainer = GetTableName(indexScan.StorageSuffix),
-                    DestinationContainer = ContainerName,
+                    DestinationContainer = _options.Value.FindPackageAssetsContainerName,
                     Bucket = b,
                     TaskStateStorageSuffix = indexScan.StorageSuffix,
                     TaskStatePartitionKey = partitionKey,
@@ -280,9 +278,9 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             }
         }
 
-        private static string GetTableName(string suffix)
+        private string GetTableName(string suffix)
         {
-            return $"{ContainerName}{suffix}";
+            return $"{_options.Value.FindPackageAssetsContainerName}{suffix}";
         }
     }
 }

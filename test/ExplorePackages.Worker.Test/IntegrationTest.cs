@@ -32,6 +32,17 @@ namespace Knapcode.ExplorePackages.Worker
                     {
                         x.AppendResultStorageBucketCount = 5;
                         x.AppendResultUniqueIds = false;
+
+                        var prefix = StorageUtility.GenerateUniqueId();
+                        x.WorkerQueueName = $"{prefix}wq";
+                        x.CursorTableName = $"{prefix}c";
+                        x.CatalogIndexScanTableName = $"{prefix}cis";
+                        x.CatalogPageScanTableName = $"{prefix}cps";
+                        x.CatalogLeafScanTableName = $"{prefix}cls";
+                        x.TaskStateTableName = $"{prefix}ts";
+                        x.LatestLeavesTableName = $"{prefix}ll";
+                        x.FindPackageAssetsContainerName = $"{prefix}fpa";
+                        x.RunRealRestoreContainerName = $"{prefix}rrr";
                     });
                 })
                 .Build();
@@ -82,7 +93,7 @@ namespace Knapcode.ExplorePackages.Worker
             var container = ServiceClientFactory
                 .GetStorageAccount()
                 .CreateCloudBlobClient()
-                .GetContainerReference("findpackageassets");
+                .GetContainerReference(Options.Value.FindPackageAssetsContainerName);
             for (var i = 0; i < Options.Value.AppendResultStorageBucketCount; i++)
             {
                 var blob = container.GetBlockBlobReference($"compact_{i}.csv");

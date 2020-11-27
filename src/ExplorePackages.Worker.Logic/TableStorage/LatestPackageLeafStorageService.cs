@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage.Table;
 using static Knapcode.ExplorePackages.Worker.StorageUtility;
 
@@ -11,13 +12,16 @@ namespace Knapcode.ExplorePackages.Worker
     public class LatestPackageLeafStorageService
     {
         private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly IOptionsSnapshot<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<LatestPackageLeafStorageService> _logger;
 
         public LatestPackageLeafStorageService(
             ServiceClientFactory serviceClientFactory,
+            IOptionsSnapshot<ExplorePackagesWorkerSettings> options,
             ILogger<LatestPackageLeafStorageService> logger)
         {
             _serviceClientFactory = serviceClientFactory;
+            _options = options;
             _logger = logger;
         }
 
@@ -164,7 +168,7 @@ namespace Knapcode.ExplorePackages.Worker
             return _serviceClientFactory
                 .GetStorageAccount()
                 .CreateCloudTableClient()
-                .GetTableReference("latestleaves");
+                .GetTableReference(_options.Value.LatestLeavesTableName);
         }
     }
 }
