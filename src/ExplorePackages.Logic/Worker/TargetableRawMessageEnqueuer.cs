@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Logic.Worker;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace Knapcode.ExplorePackages.Logic.Worker
 {
     public class TargetableRawMessageEnqueuer : IRawMessageEnqueuer
     {
