@@ -1,5 +1,6 @@
 ﻿using Knapcode.MiniZip;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NuGet.Client;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
@@ -27,6 +28,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
         private readonly AppendResultStorageService _storageService;
         private readonly TaskStateStorageService _taskStateStorageService;
         private readonly MessageEnqueuer _messageEnqueuer;
+        private readonly IOptionsSnapshot<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<FindPackageAssetsScanDriver> _logger;
 
         public FindPackageAssetsScanDriver(
@@ -38,6 +40,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             AppendResultStorageService storageService,
             TaskStateStorageService taskStateStorageService,
             MessageEnqueuer messageEnqueuer,
+            IOptionsSnapshot<ExplorePackagesWorkerSettings> options,
             ILogger<FindPackageAssetsScanDriver> logger)
         {
             _schemaSerializer = schemaSerializer;
@@ -48,6 +51,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             _storageService = storageService;
             _taskStateStorageService = taskStateStorageService;
             _messageEnqueuer = messageEnqueuer;
+            _options = options;
             _logger = logger;
         }
 
@@ -66,8 +70,14 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
 
         public async Task ProcessLeafAsync(CatalogLeafScan leafScan)
         {
-            var scanId = Guid.NewGuid();
-            var scanTimestamp = DateTimeOffset.UtcNow;
+            Guid? scanId = null;
+            DateTimeOffset? scanTimestamp = null;
+            if (_options.Value.AppendResultUniqueIds)
+            {
+                scanId = Guid.NewGuid();
+                scanTimestamp = DateTimeOffset.UtcNow;
+            }
+
             var parameters = GetParameters(leafScan.ScanParameters);
 
             if (leafScan.ParsedLeafType == CatalogLeafType.PackageDelete)
@@ -112,7 +122,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             return (FindPackageAssetsParameters)_schemaSerializer.Deserialize(scanParameters);
         }
 
-        private List<PackageAsset> GetAssets(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf, List<string> files)
+        private List<PackageAsset> GetAssets(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, List<string> files)
         {
             var contentItemCollection = new ContentItemCollection();
             contentItemCollection.Load(files);
@@ -202,7 +212,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             return assets;
         }
 
-        private List<PackageAsset> GetErrorResult(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf, Exception ex, string message)
+        private List<PackageAsset> GetErrorResult(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, Exception ex, string message)
         {
             _logger.LogWarning(ex, message, leaf.PackageId, leaf.PackageVersion);
             return new List<PackageAsset> { new PackageAsset(scanId, scanTimestamp, leaf, PackageAssetResultType.Error) };

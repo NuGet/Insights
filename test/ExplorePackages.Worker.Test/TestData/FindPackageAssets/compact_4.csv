@@ -1,0 +1,6 @@
+,,Archimedes.Library,1.0.245,2020-11-27T19:33:25.6870000+00:00,AvailableAssets,RuntimeAssemblies,,,netstandard2.0,,,,,,lib/netstandard2.0/Archimedes.Library.dll,Archimedes.Library.dll,.dll,lib,netstandard2.0,.NETStandard,2.0.0.0,,,0.0.0.0
+,,Archimedes.Library,1.0.245,2020-11-27T19:33:25.6870000+00:00,AvailableAssets,CompileLibAssemblies,,,netstandard2.0,,,,,,lib/netstandard2.0/Archimedes.Library.dll,Archimedes.Library.dll,.dll,lib,netstandard2.0,.NETStandard,2.0.0.0,,,0.0.0.0
+,,DNT.Deskly.Web,1.1.0,2020-11-27T19:36:41.5530000+00:00,AvailableAssets,RuntimeAssemblies,,,netstandard2.1,,,,,,lib/netstandard2.1/DNT.Deskly.Web.dll,DNT.Deskly.Web.dll,.dll,lib,netstandard2.1,.NETStandard,2.1.0.0,,,0.0.0.0
+,,DNT.Deskly.Web,1.1.0,2020-11-27T19:36:41.5530000+00:00,AvailableAssets,CompileLibAssemblies,,,netstandard2.1,,,,,,lib/netstandard2.1/DNT.Deskly.Web.dll,DNT.Deskly.Web.dll,.dll,lib,netstandard2.1,.NETStandard,2.1.0.0,,,0.0.0.0
+,,Eto.Platform.Gtk3,2.5.8,2020-11-27T19:32:30.2600000+00:00,AvailableAssets,RuntimeAssemblies,,,net45,,,,,,lib/net45/Eto.Gtk3.dll,Eto.Gtk3.dll,.dll,lib,net45,.NETFramework,4.5.0.0,,,0.0.0.0
+,,Eto.Platform.Gtk3,2.5.8,2020-11-27T19:32:30.2600000+00:00,AvailableAssets,CompileLibAssemblies,,,net45,,,,,,lib/net45/Eto.Gtk3.dll,Eto.Gtk3.dll,.dll,lib,net45,.NETFramework,4.5.0.0,,,0.0.0.0

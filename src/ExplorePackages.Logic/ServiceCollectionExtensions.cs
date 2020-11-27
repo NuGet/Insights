@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Knapcode.MiniZip;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NuGet.Configuration;
 using NuGet.Protocol;
@@ -43,6 +44,11 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient(x => x
                 .GetRequiredService<IHttpClientFactory>()
                 .CreateClient(HttpClientName));
+
+            serviceCollection.AddLogging(o =>
+            {
+                o.AddFilter("System.Net.Http.HttpClient", LogLevel.Warning);
+            });
 
             serviceCollection.AddSingleton<ServiceClientFactory>();
 

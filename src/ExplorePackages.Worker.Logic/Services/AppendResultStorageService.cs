@@ -383,6 +383,7 @@ namespace Knapcode.ExplorePackages.Worker
             using (var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture))
             {
                 var options = new TypeConverterOptions { Formats = new[] { "O" } };
+                csvWriter.Configuration.TypeConverterOptionsCache.AddOptions<DateTimeOffset?>(options);
                 csvWriter.Configuration.TypeConverterOptionsCache.AddOptions<DateTimeOffset>(options);
                 csvWriter.Configuration.HasHeaderRecord = false;
                 csvWriter.WriteRecords(records);

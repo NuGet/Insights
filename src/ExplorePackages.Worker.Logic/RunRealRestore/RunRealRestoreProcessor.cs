@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
@@ -19,6 +20,7 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
         private readonly ProjectHelper _projectHelper;
         private readonly AppendResultStorageService _storageService;
         private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly IOptionsSnapshot<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<RunRealRestoreProcessor> _logger;
 
         private const string ConsoleTemplate = "console";
@@ -48,11 +50,13 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
             ProjectHelper projectHelper,
             AppendResultStorageService storageService,
             ServiceClientFactory serviceClientFactory,
+            IOptionsSnapshot<ExplorePackagesWorkerSettings> options,
             ILogger<RunRealRestoreProcessor> logger)
         {
             _projectHelper = projectHelper;
             _storageService = storageService;
             _serviceClientFactory = serviceClientFactory;
+            _options = options;
             _logger = logger;
         }
 
@@ -94,7 +98,11 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
             }
 
             var bucketKey = $"{package.Id}/{packageVersion.ToNormalizedString()}".ToLowerInvariant();
-            await _storageService.AppendAsync(RunRealRestoreConstants.ContainerName, 1000, bucketKey, new[] { result });
+            await _storageService.AppendAsync(
+                RunRealRestoreConstants.ContainerName,
+                _options.Value.AppendResultStorageBucketCount,
+                bucketKey,
+                new[] { result });
         }
 
         private RealRestoreResult GetRealRestoreResult(NuGetPackageIdentity package, ProjectProfile projectProfile)

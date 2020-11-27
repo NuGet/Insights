@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
-using Microsoft.WindowsAzure.Storage.Queue;
 
 namespace Knapcode.ExplorePackages.Worker
 {
@@ -14,33 +13,19 @@ namespace Knapcode.ExplorePackages.Worker
 
         private readonly GenericMessageProcessor _messageProcessor;
         private readonly ILogger<WorkerQueueFunction> _logger;
-        private readonly TargetableRawMessageEnqueuer _rawMessageEnqueuer;
-        private readonly ExternalWorkerQueueFactory _workerQueueFactory;
-        private readonly QueueStorageEnqueuer _queueStorageEnqueuer;
 
         public WorkerQueueFunction(
-            ExternalWorkerQueueFactory workerQueueFactory,
-            QueueStorageEnqueuer queueStorageEnqueuer,
-            TargetableRawMessageEnqueuer rawMessageEnqueuer,
             GenericMessageProcessor messageProcessor,
             ILogger<WorkerQueueFunction> logger)
         {
-            _workerQueueFactory = workerQueueFactory;
-            _queueStorageEnqueuer = queueStorageEnqueuer;
-            _rawMessageEnqueuer = rawMessageEnqueuer;
             _messageProcessor = messageProcessor;
             _logger = logger;
         }
 
         [FunctionName("WorkerQueueFunction")]
         public async Task ProcessAsync(
-            [QueueTrigger(WorkerQueueVariable, Connection = StorageConnection)] string message,
-            [Queue(WorkerQueueVariable, Connection = StorageConnection)] CloudQueue target)
+            [QueueTrigger(WorkerQueueVariable, Connection = StorageConnection)] string message)
         {
-            target.EncodeMessage = false;
-            _workerQueueFactory.SetTarget(target);
-            _rawMessageEnqueuer.SetTarget(_queueStorageEnqueuer);
-
             try
             {
                 await _messageProcessor.ProcessAsync(message);

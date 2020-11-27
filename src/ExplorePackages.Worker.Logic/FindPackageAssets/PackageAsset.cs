@@ -11,7 +11,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
         {
         }
 
-        public PackageAsset(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf, string resultType)
+        public PackageAsset(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, string resultType)
         {
             ScanId = scanId;
             ScanTimestamp = scanTimestamp;
@@ -21,8 +21,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             ResultType = resultType;
         }
 
-        [Index(0)] public Guid ScanId { get; set; }
-        [Index(1)] public DateTimeOffset ScanTimestamp { get; set; }
+        [Index(0)] public Guid? ScanId { get; set; }
+        [Index(1)] public DateTimeOffset? ScanTimestamp { get; set; }
         [Index(2)] public string Id { get; set; }
         [Index(3)] public string Version { get; set; }
         [Index(4)] public DateTimeOffset Created { get; set; }

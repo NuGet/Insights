@@ -20,14 +20,6 @@ namespace Knapcode.ExplorePackages.Worker
             builder.Services.AddExplorePackagesWorker();
 
             builder.Services.AddSingleton<IQueueProcessorFactory, UnencodedQueueProcessorFactory>();
-
-            builder.Services.AddScoped<TargetableRawMessageEnqueuer>();
-            builder.Services.AddScoped<QueueStorageEnqueuer>();
-            builder.Services.AddScoped<ExternalWorkerQueueFactory>();
-            builder.Services.AddScoped<IWorkerQueueFactory>(x => x.GetRequiredService<ExternalWorkerQueueFactory>());
-            builder.Services.AddScoped<ServiceClientFactory>();
-
-            builder.Services.AddTransient<IRawMessageEnqueuer>(x => x.GetRequiredService<TargetableRawMessageEnqueuer>());
         }
 
         private static void AddOptions<TOptions>(IFunctionsHostBuilder builder, string sectionName) where TOptions : class

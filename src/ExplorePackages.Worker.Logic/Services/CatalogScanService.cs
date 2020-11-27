@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Worker.FindPackageAssets;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Worker
 {
@@ -13,6 +14,7 @@ namespace Knapcode.ExplorePackages.Worker
         private readonly MessageEnqueuer _messageEnqueuer;
         private readonly SchemaSerializer _serializer;
         private readonly CatalogScanStorageService _catalogScanStorageService;
+        private readonly IOptionsSnapshot<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<CatalogScanService> _logger;
 
         public CatalogScanService(
@@ -21,6 +23,7 @@ namespace Knapcode.ExplorePackages.Worker
             MessageEnqueuer messageEnqueuer,
             SchemaSerializer serializer,
             CatalogScanStorageService catalogScanStorageService,
+            IOptionsSnapshot<ExplorePackagesWorkerSettings> options,
             ILogger<CatalogScanService> logger)
         {
             _catalogClient = catalogClient;
@@ -28,17 +31,8 @@ namespace Knapcode.ExplorePackages.Worker
             _messageEnqueuer = messageEnqueuer;
             _serializer = serializer;
             _catalogScanStorageService = catalogScanStorageService;
+            _options = options;
             _logger = logger;
-        }
-
-        public async Task<CatalogIndexScan> UpdateGetPackageAssets()
-        {
-            return await UpdateAsync(
-                CatalogScanType.FindPackageAssets,
-                _serializer.Serialize(new FindPackageAssetsParameters
-                {
-                    BucketCount = 1000, // Azure Data Explorer can only import up to 1000 blobs.
-                }).AsString());
         }
 
         public async Task RequeueAsync(string scanId)
@@ -82,16 +76,27 @@ namespace Knapcode.ExplorePackages.Worker
             });
         }
 
-        private async Task<CatalogIndexScan> UpdateAsync(CatalogScanType type, string parameters)
+        public async Task<CatalogIndexScan> UpdateGetPackageAssets() => await UpdateGetPackageAssets(max: null);
+        public async Task<CatalogIndexScan> UpdateGetPackageAssets(DateTimeOffset max) => await UpdateGetPackageAssets((DateTimeOffset?)max);
+
+        private async Task<CatalogIndexScan> UpdateGetPackageAssets(DateTimeOffset? max)
+        {
+            return await UpdateAsync(
+                CatalogScanType.FindPackageAssets,
+                _serializer.Serialize(new FindPackageAssetsParameters
+                {
+                    BucketCount = _options.Value.AppendResultStorageBucketCount,
+                }).AsString(),
+                max);
+        }
+
+        private async Task<CatalogIndexScan> UpdateAsync(CatalogScanType type, string parameters, DateTimeOffset? max)
         {
             // Determine the bounds of the scan.
             var cursor = await _cursorStorageService.GetOrCreateAsync($"CatalogScan-{type}");
             var index = await _catalogClient.GetCatalogIndexAsync();
             var min = new[] { cursor.Value, CatalogClient.NuGetOrgMin }.Max();
-            var max = index.CommitTimestamp;
-
-            // max = new[] { max, min.AddHours(2) }.Min();
-            max = DateTimeOffset.Parse("2020-11-24T19:33:47.846Z");
+            max = max.GetValueOrDefault(index.CommitTimestamp);
 
             if (min == max)
             {
@@ -110,7 +115,7 @@ namespace Knapcode.ExplorePackages.Worker
                 ScanParameters = parameters,
                 ParsedState = CatalogScanState.Created,
                 Min = min,
-                Max = max,
+                Max = max.Value,
                 CursorName = cursor.Name,
             };
             await _catalogScanStorageService.InitializeChildTablesAsync(catalogIndexScan.StorageSuffix);
