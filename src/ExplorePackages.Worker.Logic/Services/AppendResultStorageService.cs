@@ -200,12 +200,17 @@ namespace Knapcode.ExplorePackages.Worker
             };
         }
 
+        private CloudBlob GetBlob(string container, string prefix, int bucket)
+        {
+            return GetContainer(container).GetBlobReference($"{prefix}{bucket}.csv");
+        }
+
         private CloudAppendBlob GetAppendBlob(string container, int bucket)
         {
             return GetContainer(container).GetAppendBlobReference($"{AppendPrefix}{bucket}.csv");
         }
 
-        private CloudBlockBlob GetCompactlob(string container, int bucket)
+        private CloudBlockBlob GetCompactBlob(string container, int bucket)
         {
             return GetContainer(container).GetBlockBlobReference($"{CompactPrefix}{bucket}.csv");
         }
@@ -243,11 +248,10 @@ namespace Knapcode.ExplorePackages.Worker
 
             if (!force || srcContainer != null)
             {
-                var appendBlob = GetAppendBlob(srcContainer, bucket);
-                if (await appendBlob.ExistsAsync())
+                var blob = GetBlob(srcContainer, AppendPrefix, bucket);
+                if (await blob.ExistsAsync())
                 {
-                    var text = await appendBlob.DownloadTextAsync();
-                    var records = DeserializeRecords<T>(text);
+                    var records = await DeserializeBlobAsync<T>(blob);
                     appendRecords.AddRange(records);
                 }
                 else if (!force)
@@ -300,12 +304,11 @@ namespace Knapcode.ExplorePackages.Worker
         {
             var allRecords = new List<T>(appendRecords);
 
-            var compactBlob = GetCompactlob(destContainer, bucket);
+            var compactBlob = GetCompactBlob(destContainer, bucket);
             var accessCondition = AccessCondition.GenerateIfNotExistsCondition();
             if (mergeExisting && await compactBlob.ExistsAsync())
             {
-                var text = await compactBlob.DownloadTextAsync();
-                var records = DeserializeRecords<T>(text);
+                var records = await DeserializeBlobAsync<T>(compactBlob);
                 allRecords.AddRange(records);
                 accessCondition = AccessCondition.GenerateIfMatchCondition(compactBlob.Properties.ETag);
             }
@@ -321,14 +324,20 @@ namespace Knapcode.ExplorePackages.Worker
             await compactBlob.UploadFromByteArrayAsync(bytes, 0, bytes.Length, accessCondition, options: null, operationContext: null);
         }
 
-        private static List<T> DeserializeRecords<T>(string text)
+        private static async Task<List<T>> DeserializeBlobAsync<T>(CloudBlob blob)
         {
             List<T> allRecords;
-            using (var reader = new StringReader(text))
-            using (var csvReader = new CsvReader(reader, CultureInfo.InvariantCulture))
+            using (var memoryStream = new MemoryStream())
             {
-                csvReader.Configuration.HasHeaderRecord = false;
-                allRecords = csvReader.GetRecords<T>().ToList();
+                await blob.DownloadToStreamAsync(memoryStream);
+                memoryStream.Position = 0;
+
+                using (var reader = new StreamReader(memoryStream))
+                using (var csvReader = new CsvReader(reader, CultureInfo.InvariantCulture))
+                {
+                    csvReader.Configuration.HasHeaderRecord = false;
+                    allRecords = csvReader.GetRecords<T>().ToList();
+                }
             }
 
             return allRecords;
