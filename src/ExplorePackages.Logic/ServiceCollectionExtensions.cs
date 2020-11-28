@@ -17,6 +17,17 @@ namespace Knapcode.ExplorePackages
     public static class ServiceCollectionExtensions
     {
         public const string HttpClientName = "Knapcode.ExplorePackages";
+        public const string LoggingHttpClientName = "Knapcode.ExplorePackages.Logging";
+
+        private static IHttpClientBuilder AddExplorePackages(this IHttpClientBuilder builder)
+        {
+            return builder.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+                {
+                    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                })
+                .AddHttpMessageHandler<UrlReporterHandler>()
+                .ConfigureHttpClient(UserAgent.SetUserAgent);
+        }
 
         public static IServiceCollection AddExplorePackages(
             this IServiceCollection serviceCollection,
@@ -28,22 +39,24 @@ namespace Knapcode.ExplorePackages
 
             var userAgent = GetUserAgent(programName, programVersion, programUrl);
 
+            // Set the user agent for NuGet Client HTTP requests (i.e. HttpSource)
+            typeof(UserAgent)
+                .GetProperty(nameof(UserAgent.UserAgentString), BindingFlags.Public | BindingFlags.Static | BindingFlags.SetProperty)
+                .SetMethod
+                .Invoke(null, new object[] { userAgent });
+
             serviceCollection
                 .AddHttpClient(HttpClientName)
-                .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-                {
-                    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
-                    MaxConnectionsPerServer = 64,
-                })
-                .AddHttpMessageHandler<LoggingHandler>()
-                .AddHttpMessageHandler<UrlReporterHandler>()
-                .ConfigureHttpClient(httpClient =>
-                {
-                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", userAgent);
-                });
+                .AddExplorePackages();
+
+            serviceCollection
+                .AddHttpClient(LoggingHttpClientName)
+                .AddExplorePackages()
+                .AddHttpMessageHandler<LoggingHandler>();
+
             serviceCollection.AddTransient(x => x
                 .GetRequiredService<IHttpClientFactory>()
-                .CreateClient(HttpClientName));
+                .CreateClient(LoggingHttpClientName));
 
             serviceCollection.AddLogging(o =>
             {

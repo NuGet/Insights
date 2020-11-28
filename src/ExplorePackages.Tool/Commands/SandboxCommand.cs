@@ -9,6 +9,8 @@ using Knapcode.ExplorePackages.Worker;
 using Knapcode.ExplorePackages.Worker.FindPackageAssets;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using McMaster.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Logging;
+using Microsoft.WindowsAzure.Storage.Queue;
 using Newtonsoft.Json;
 using NuGet.Frameworks;
 using NuGet.Versioning;
@@ -29,6 +31,8 @@ namespace Knapcode.ExplorePackages.Tool
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly FindPackageAssetsScanDriver _driver;
         private readonly SchemaSerializer _serializer;
+        private readonly GenericMessageProcessor _genericMessageProcessor;
+        private readonly ILogger<SandboxCommand> _logger;
 
         public SandboxCommand(
             CatalogScanService catalogScanService,
@@ -41,7 +45,9 @@ namespace Knapcode.ExplorePackages.Tool
             MessageEnqueuer messageEnqueuer,
             ServiceClientFactory serviceClientFactory,
             FindPackageAssetsScanDriver driver,
-            SchemaSerializer serializer)
+            SchemaSerializer serializer,
+            GenericMessageProcessor genericMessageProcessor,
+            ILogger<SandboxCommand> logger)
         {
             _catalogScanService = catalogScanService;
             _workerQueueFactory = workerQueueFactory;
@@ -54,6 +60,8 @@ namespace Knapcode.ExplorePackages.Tool
             _serviceClientFactory = serviceClientFactory;
             _driver = driver;
             _serializer = serializer;
+            _genericMessageProcessor = genericMessageProcessor;
+            _logger = logger;
         }
 
         public void Configure(CommandLineApplication app)
@@ -62,9 +70,11 @@ namespace Knapcode.ExplorePackages.Tool
 
         public async Task ExecuteAsync(CancellationToken token)
         {
-            await _workerQueueFactory.GetQueue().CreateIfNotExistsAsync(retry: true);
+            await _workerQueueFactory.InitializeAsync();
             await _cursorStorageService.InitializeAsync();
             await _catalogScanStorageService.InitializeAsync();
+
+            await ShortRunForPerfAsync();
 
             /*
             await _messageEnqueuer.EnqueueAsync(Enumerable
@@ -104,6 +114,49 @@ namespace Knapcode.ExplorePackages.Tool
             // await EnqueueRunRealRestoreCompactAsync();
             // await ReadErrorBlobsAsync();
             // await RetryRunRealRestoreAsync();
+        }
+
+        private async Task ShortRunForPerfAsync()
+        {
+            var min = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
+            var max = DateTimeOffset.Parse("2020-11-27T20:10:55.5609452Z");
+            var cursorName = $"CatalogScan-{CatalogScanType.FindPackageAssets}";
+
+            await _workerQueueFactory.InitializeAsync();
+            await _cursorStorageService.InitializeAsync();
+            await _catalogScanStorageService.InitializeAsync();
+
+            var cursor = await _cursorStorageService.GetOrCreateAsync(cursorName);
+            cursor.Value = min;
+            await _cursorStorageService.UpdateAsync(cursor);
+
+            var indexScan = await _catalogScanService.UpdateFindPackageAssetsAsync(max);
+
+            var queue = _workerQueueFactory.GetQueue();
+            do
+            {
+                CloudQueueMessage message;
+                while ((message = await queue.GetMessageAsync()) != null)
+                {
+                    try
+                    {
+                        await _genericMessageProcessor.ProcessAsync(message.AsString);
+                        await queue.DeleteMessageAsync(message);
+                    }
+                    catch (Exception ex) when (message.DequeueCount < 5)
+                    {
+                        _logger.LogWarning(ex, "Message with {DequeueCount} dequeues failed with an exception.", message.DequeueCount);
+                    }
+                }
+
+                indexScan = await _catalogScanStorageService.GetIndexScanAsync(indexScan.ScanId);
+
+                if (indexScan.ParsedState != CatalogScanState.Complete)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(1));
+                }
+            }
+            while (indexScan.ParsedState != CatalogScanState.Complete);
         }
 
         private async Task ReadErrorBlobsAsync()
