@@ -1,3 +1,0 @@
-config:
-  ExplorePackages:AppendResultStorageMode: AppendBlob
-  azure:location: WestUS2
