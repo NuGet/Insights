@@ -70,11 +70,11 @@ namespace Knapcode.ExplorePackages
     {
         static void Main(string[] args)
         {
+            IConfig config = null;
 #if DEBUG
-            BenchmarkRunner.Run<TheAppendResultStorageServiceClass.TheCompactAsyncMethod>(new DebugInProcessConfig());
-#else
-            BenchmarkRunner.Run<TheAppendResultStorageServiceClass.TheCompactAsyncMethod>();
+            config = new DebugInProcessConfig();
 #endif
+            BenchmarkRunner.Run<TheAppendResultStorageServiceClass.TheCompactAsyncMethod>(config);
         }
     }
 }

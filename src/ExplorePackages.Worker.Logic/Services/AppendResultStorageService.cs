@@ -321,6 +321,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             compactBlob.Properties.ContentType = ContentType;
+            stream.Position = 0;
             await compactBlob.UploadFromStreamAsync(stream, accessCondition, options: null, operationContext: null);
         }
 
