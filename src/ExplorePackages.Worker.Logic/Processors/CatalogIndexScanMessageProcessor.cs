@@ -97,6 +97,7 @@ namespace Knapcode.ExplorePackages.Worker
                 await EnqueueAsync(pageScans);
 
                 scan.ParsedState = CatalogScanState.Waiting;
+                message.AttemptCount = 0;
                 await _storageService.ReplaceAsync(scan);
             }
 
@@ -107,8 +108,8 @@ namespace Knapcode.ExplorePackages.Worker
                 if (countLowerBound > 0)
                 {
                     _logger.LogInformation("There are at least {Count} page scans pending.", countLowerBound);
-
-                    await _messageEnqueuer.EnqueueAsync(new[] { message }, TimeSpan.FromSeconds(10));
+                    message.AttemptCount++;
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
                 }
                 else
                 {
@@ -123,6 +124,7 @@ namespace Knapcode.ExplorePackages.Worker
                 await driver.StartAggregateAsync(scan);
 
                 scan.ParsedState = CatalogScanState.Aggregating;
+                message.AttemptCount = 0;
                 await _storageService.ReplaceAsync(scan);
             }
 
@@ -132,8 +134,8 @@ namespace Knapcode.ExplorePackages.Worker
                 if (!await driver.IsAggregateCompleteAsync(scan))
                 {
                     _logger.LogInformation("The index scan is still aggregating.");
-
-                    await _messageEnqueuer.EnqueueAsync(new[] { message }, TimeSpan.FromSeconds(10));
+                    message.AttemptCount++;
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
                 }
                 else
                 {

@@ -23,5 +23,10 @@ namespace Knapcode.ExplorePackages.Worker
             var uniqueComponent = GenerateUniqueId();
             return new StorageId(descendingComponent, uniqueComponent);
         }
+
+        public static TimeSpan GetMessageDelay(int attemptCount)
+        {
+            return TimeSpan.FromSeconds(Math.Min(Math.Max(attemptCount, 0), 60));
+        }
     }
 }

@@ -86,6 +86,7 @@ namespace Knapcode.ExplorePackages.Worker
                 await EnqueueAsync(leafScans);
 
                 scan.ParsedState = CatalogScanState.Waiting;
+                message.AttemptCount = 0;
                 await _storageService.ReplaceAsync(scan);
             }
 
@@ -96,7 +97,8 @@ namespace Knapcode.ExplorePackages.Worker
                 if (countLowerBound > 0)
                 {
                     _logger.LogInformation("There are at least {Count} leaf scans pending.", countLowerBound);
-                    await _messageEnqueuer.EnqueueAsync(new[] { message }, TimeSpan.FromSeconds(10));
+                    message.AttemptCount++;
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
                 }
                 else
                 {

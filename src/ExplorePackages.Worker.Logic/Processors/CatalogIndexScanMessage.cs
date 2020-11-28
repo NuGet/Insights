@@ -6,5 +6,8 @@ namespace Knapcode.ExplorePackages.Worker
     {
         [JsonProperty("i")]
         public string ScanId { get; set; }
+
+        [JsonProperty("ac")]
+        public int AttemptCount { get; set; }
     }
 }
