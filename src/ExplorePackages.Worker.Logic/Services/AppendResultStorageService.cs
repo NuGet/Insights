@@ -68,7 +68,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        public async Task AppendAsync<T>(string containerName, int bucketCount, string bucketKey, IReadOnlyList<T> records)
+        public async Task AppendAsync<T>(string containerName, int bucketCount, string bucketKey, IReadOnlyList<T> records) where T : ICsvWritable
         {
             switch (_options.Value.AppendResultStorageMode)
             {
@@ -83,7 +83,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        private async Task AppendToBlobAsync<T>(string containerName, int bucketCount, string bucketKey, IReadOnlyList<T> records)
+        private async Task AppendToBlobAsync<T>(string containerName, int bucketCount, string bucketKey, IReadOnlyList<T> records) where T : ICsvWritable
         {
             var bucket = GetBucket(bucketCount, bucketKey);
             var blob = GetAppendBlob(containerName, bucket);
@@ -109,7 +109,7 @@ namespace Knapcode.ExplorePackages.Worker
             await AppendToBlobAsync(blob, records);
         }
 
-        private async Task AppendToBlobAsync<T>(CloudAppendBlob blob, IReadOnlyList<T> records)
+        private async Task AppendToBlobAsync<T>(CloudAppendBlob blob, IReadOnlyList<T> records) where T : ICsvWritable
         {
             using var memoryStream = SerializeRecords(records);
             try
@@ -221,7 +221,7 @@ namespace Knapcode.ExplorePackages.Worker
             int bucket,
             bool force,
             bool mergeExisting,
-            Func<List<T>, List<T>> prune)
+            Func<List<T>, List<T>> prune) where T : ICsvWritable
         {
             switch (_options.Value.AppendResultStorageMode)
             {
@@ -242,7 +242,7 @@ namespace Knapcode.ExplorePackages.Worker
             int bucket,
             bool force,
             bool mergeExisting,
-            Func<List<T>, List<T>> prune)
+            Func<List<T>, List<T>> prune) where T : ICsvWritable
         {
             var appendRecords = new List<T>();
 
@@ -270,7 +270,7 @@ namespace Knapcode.ExplorePackages.Worker
             int bucket,
             bool force,
             bool mergeExisting,
-            Func<List<T>, List<T>> prune)
+            Func<List<T>, List<T>> prune) where T : ICsvWritable
         {
             var appendRecords = new List<T>();
 
@@ -300,7 +300,7 @@ namespace Knapcode.ExplorePackages.Worker
             string destContainer,
             int bucket,
             bool mergeExisting,
-            Func<List<T>, List<T>> prune)
+            Func<List<T>, List<T>> prune) where T : ICsvWritable
         {
             var allRecords = new List<T>(appendRecords);
 
@@ -385,28 +385,14 @@ namespace Knapcode.ExplorePackages.Worker
             return markerEntities.Select(x => int.Parse(x.RowKey)).ToList();
         }
 
-        private static MemoryStream SerializeRecords<T>(IReadOnlyList<T> records)
+        private static MemoryStream SerializeRecords<T>(IReadOnlyList<T> records) where T : ICsvWritable
         {
             var memoryStream = new MemoryStream();
             using (var streamWriter = new StreamWriter(memoryStream, new UTF8Encoding(false), bufferSize: 1024, leaveOpen: true))
             {
-                if (typeof(ICsvWritable).IsAssignableFrom(typeof(T)))
+                foreach (var record in records)
                 {
-                    foreach (var record in records)
-                    {
-                        ((ICsvWritable)record).Write(streamWriter);
-                    }
-                }
-                else
-                {
-                    using (var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture))
-                    {
-                        var options = new TypeConverterOptions { Formats = new[] { "O" } };
-                        csvWriter.Configuration.TypeConverterOptionsCache.AddOptions<DateTimeOffset?>(options);
-                        csvWriter.Configuration.TypeConverterOptionsCache.AddOptions<DateTimeOffset>(options);
-                        csvWriter.Configuration.HasHeaderRecord = false;
-                        csvWriter.WriteRecords(records);
-                    }
+                    record.Write(streamWriter);
                 }
             }
 

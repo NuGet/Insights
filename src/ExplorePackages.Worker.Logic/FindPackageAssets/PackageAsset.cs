@@ -2,11 +2,10 @@
 using NuGet.Versioning;
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 
 namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
 {
-    public class PackageAsset : IEquatable<PackageAsset>, ICsvWritable
+    public partial class PackageAsset : IEquatable<PackageAsset>, ICsvWritable
     {
         public PackageAsset()
         {
@@ -22,108 +21,34 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             ResultType = resultType;
         }
 
-        [Index(0)] public Guid? ScanId { get; set; }
-        [Index(1)] public DateTimeOffset? ScanTimestamp { get; set; }
-        [Index(2)] public string Id { get; set; }
-        [Index(3)] public string Version { get; set; }
-        [Index(4)] public DateTimeOffset Created { get; set; }
-        [Index(5)] public string ResultType { get; set; }
+        public Guid? ScanId { get; set; }
+        public DateTimeOffset? ScanTimestamp { get; set; }
+        public string Id { get; set; }
+        public string Version { get; set; }
+        public DateTimeOffset Created { get; set; }
+        public string ResultType { get; set; }
 
-        [Index(6)] public string PatternSet { get; set; }
-        [Index(7)] public string PropertyAnyValue { get; set; }
-        [Index(8)] public string PropertyCodeLanguage { get; set; }
-        [Index(9)] public string PropertyTargetFrameworkMoniker { get; set; }
-        [Index(10)] public string PropertyLocale { get; set; }
-        [Index(11)] public string PropertyManagedAssembly { get; set; }
-        [Index(12)] public string PropertyMSBuild { get; set; }
-        [Index(13)] public string PropertyRuntimeIdentifier { get; set; }
-        [Index(14)] public string PropertySatelliteAssembly { get; set; }
+        public string PatternSet { get; set; }
+        public string PropertyAnyValue { get; set; }
+        public string PropertyCodeLanguage { get; set; }
+        public string PropertyTargetFrameworkMoniker { get; set; }
+        public string PropertyLocale { get; set; }
+        public string PropertyManagedAssembly { get; set; }
+        public string PropertyMSBuild { get; set; }
+        public string PropertyRuntimeIdentifier { get; set; }
+        public string PropertySatelliteAssembly { get; set; }
 
-        [Index(15)] public string Path { get; set; }
-        [Index(16)] public string FileName { get; set; }
-        [Index(17)] public string FileExtension { get; set; }
-        [Index(18)] public string TopLevelFolder { get; set; }
+        public string Path { get; set; }
+        public string FileName { get; set; }
+        public string FileExtension { get; set; }
+        public string TopLevelFolder { get; set; }
 
-        [Index(19)] public string RoundTripTargetFrameworkMoniker { get; set; }
-        [Index(20)] public string FrameworkName { get; set; }
-        [Index(21)] public string FrameworkVersion { get; set; }
-        [Index(22)] public string FrameworkProfile { get; set; }
-        [Index(23)] public string PlatformName { get; set; }
-        [Index(24)] public string PlatformVersion { get; set; }
-
-        public void Write(TextWriter writer)
-        {
-            writer.Write(ScanId);
-            writer.Write(',');
-            writer.Write(ScanTimestamp?.ToString("O"));
-            writer.Write(',');
-            WriteWithQuotes(writer, Id);
-            writer.Write(',');
-            WriteWithQuotes(writer, Version);
-            writer.Write(',');
-            writer.Write(Created.ToString("O"));
-            writer.Write(',');
-            WriteWithQuotes(writer, ResultType);
-            writer.Write(',');
-
-            WriteWithQuotes(writer, PatternSet);
-            writer.Write(',');
-            WriteWithQuotes(writer, PropertyAnyValue);
-            writer.Write(',');
-            WriteWithQuotes(writer, PropertyCodeLanguage);
-            writer.Write(',');
-            WriteWithQuotes(writer, PropertyTargetFrameworkMoniker);
-            writer.Write(',');
-            WriteWithQuotes(writer, PropertyLocale);
-            writer.Write(',');
-            WriteWithQuotes(writer, PropertyManagedAssembly);
-            writer.Write(',');
-            WriteWithQuotes(writer, PropertyMSBuild);
-            writer.Write(',');
-            WriteWithQuotes(writer, PropertyRuntimeIdentifier);
-            writer.Write(',');
-            WriteWithQuotes(writer, PropertySatelliteAssembly);
-            writer.Write(',');
-
-            WriteWithQuotes(writer, Path);
-            writer.Write(',');
-            WriteWithQuotes(writer, FileName);
-            writer.Write(',');
-            WriteWithQuotes(writer, FileExtension);
-            writer.Write(',');
-            WriteWithQuotes(writer, TopLevelFolder);
-            writer.Write(',');
-
-            WriteWithQuotes(writer, RoundTripTargetFrameworkMoniker);
-            writer.Write(',');
-            WriteWithQuotes(writer, FrameworkName);
-            writer.Write(',');
-            WriteWithQuotes(writer, FrameworkVersion);
-            writer.Write(',');
-            WriteWithQuotes(writer, FrameworkProfile);
-            writer.Write(',');
-            WriteWithQuotes(writer, PlatformName);
-            writer.Write(',');
-            WriteWithQuotes(writer, PlatformVersion);
-
-            writer.WriteLine();
-        }
-
-        private void WriteWithQuotes(TextWriter writer, string value)
-        {
-            if (value.StartsWith(' ')
-                || value.EndsWith(' ')
-                || value.IndexOfAny(new[] { ',', '"', '\r', '\n' }) > -1)
-            {
-                writer.Write('"');
-                writer.Write(value.Replace("\"", "\"\""));
-                writer.Write('"');
-            }
-            else
-            {
-                writer.Write(value);
-            }
-        }
+        public string RoundTripTargetFrameworkMoniker { get; set; }
+        public string FrameworkName { get; set; }
+        public string FrameworkVersion { get; set; }
+        public string FrameworkProfile { get; set; }
+        public string PlatformName { get; set; }
+        public string PlatformVersion { get; set; }
 
         public override bool Equals(object obj)
         {

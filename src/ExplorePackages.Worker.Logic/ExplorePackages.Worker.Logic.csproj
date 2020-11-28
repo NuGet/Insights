@@ -1,10 +1,17 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssemblyName>Knapcode.ExplorePackages.Worker.Logic</AssemblyName>
     <RootNamespace>Knapcode.ExplorePackages.Worker</RootNamespace>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Generated\**\*.cs" />
+    <None Include="Generated\**\*.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\ExplorePackages.Logic\ExplorePackages.Logic.csproj" />
+    <ProjectReference Include="..\ExplorePackages.SourceGenerator\ExplorePackages.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 </Project>
