@@ -30,7 +30,7 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
                 PruneAssets);
         }
         
-        private static IEnumerable<RealRestoreResult> PruneAssets(IEnumerable<RealRestoreResult> allAssets)
+        private static List<RealRestoreResult> PruneAssets(List<RealRestoreResult> allAssets)
         {
             return allAssets
                 .GroupBy(x => new { Id = x.Id.ToLowerInvariant(), Version = x.Version.ToLowerInvariant(), x.Framework, x.DotnetVersion })

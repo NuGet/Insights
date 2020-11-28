@@ -2,10 +2,11 @@
 using NuGet.Versioning;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 
 namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
 {
-    public class PackageAsset : IEquatable<PackageAsset>
+    public class PackageAsset : IEquatable<PackageAsset>, ICsvWritable
     {
         public PackageAsset()
         {
@@ -49,6 +50,80 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
         [Index(22)] public string FrameworkProfile { get; set; }
         [Index(23)] public string PlatformName { get; set; }
         [Index(24)] public string PlatformVersion { get; set; }
+
+        public void Write(TextWriter writer)
+        {
+            writer.Write(ScanId);
+            writer.Write(',');
+            writer.Write(ScanTimestamp?.ToString("O"));
+            writer.Write(',');
+            WriteWithQuotes(writer, Id);
+            writer.Write(',');
+            WriteWithQuotes(writer, Version);
+            writer.Write(',');
+            writer.Write(Created.ToString("O"));
+            writer.Write(',');
+            WriteWithQuotes(writer, ResultType);
+            writer.Write(',');
+
+            WriteWithQuotes(writer, PatternSet);
+            writer.Write(',');
+            WriteWithQuotes(writer, PropertyAnyValue);
+            writer.Write(',');
+            WriteWithQuotes(writer, PropertyCodeLanguage);
+            writer.Write(',');
+            WriteWithQuotes(writer, PropertyTargetFrameworkMoniker);
+            writer.Write(',');
+            WriteWithQuotes(writer, PropertyLocale);
+            writer.Write(',');
+            WriteWithQuotes(writer, PropertyManagedAssembly);
+            writer.Write(',');
+            WriteWithQuotes(writer, PropertyMSBuild);
+            writer.Write(',');
+            WriteWithQuotes(writer, PropertyRuntimeIdentifier);
+            writer.Write(',');
+            WriteWithQuotes(writer, PropertySatelliteAssembly);
+            writer.Write(',');
+
+            WriteWithQuotes(writer, Path);
+            writer.Write(',');
+            WriteWithQuotes(writer, FileName);
+            writer.Write(',');
+            WriteWithQuotes(writer, FileExtension);
+            writer.Write(',');
+            WriteWithQuotes(writer, TopLevelFolder);
+            writer.Write(',');
+
+            WriteWithQuotes(writer, RoundTripTargetFrameworkMoniker);
+            writer.Write(',');
+            WriteWithQuotes(writer, FrameworkName);
+            writer.Write(',');
+            WriteWithQuotes(writer, FrameworkVersion);
+            writer.Write(',');
+            WriteWithQuotes(writer, FrameworkProfile);
+            writer.Write(',');
+            WriteWithQuotes(writer, PlatformName);
+            writer.Write(',');
+            WriteWithQuotes(writer, PlatformVersion);
+
+            writer.WriteLine();
+        }
+
+        private void WriteWithQuotes(TextWriter writer, string value)
+        {
+            if (value.StartsWith(' ')
+                || value.EndsWith(' ')
+                || value.IndexOfAny(new[] { ',', '"', '\r', '\n' }) > -1)
+            {
+                writer.Write('"');
+                writer.Write(value.Replace("\"", "\"\""));
+                writer.Write('"');
+            }
+            else
+            {
+                writer.Write(value);
+            }
+        }
 
         public override bool Equals(object obj)
         {

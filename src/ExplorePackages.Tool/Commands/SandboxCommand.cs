@@ -75,8 +75,6 @@ namespace Knapcode.ExplorePackages.Tool
             await _cursorStorageService.InitializeAsync();
             await _catalogScanStorageService.InitializeAsync();
 
-            await CompactPerfAsync();
-
             /*
             await _messageEnqueuer.EnqueueAsync(Enumerable
                 .Range(0, 1000)
@@ -115,46 +113,6 @@ namespace Knapcode.ExplorePackages.Tool
             // await EnqueueRunRealRestoreCompactAsync();
             // await ReadErrorBlobsAsync();
             // await RetryRunRealRestoreAsync();
-        }
-
-        private async Task CompactPerfAsync()
-        {
-            var durations = new List<TimeSpan>();
-            for (var i = 0; i < 22; i++)
-            {
-                var sw = Stopwatch.StartNew();
-                await _appendResultStorageService.CompactAsync<PackageAsset>(
-                   "findpackageassets",
-                   "findpackageassets",
-                   0,
-                   force: true,
-                   mergeExisting: true,
-                   PruneAssets);
-                sw.Stop();
-                durations.Add(sw.Elapsed);
-                _logger.LogInformation("{Elapsed}", sw.Elapsed);
-            }
-
-            durations.Remove(durations.Min());
-            durations.Remove(durations.Max());
-
-            _logger.LogInformation("Average: {Elapsed}", TimeSpan.FromTicks((long)durations.Average(x => x.Ticks)));
-        }
-
-        private static IEnumerable<PackageAsset> PruneAssets(IEnumerable<PackageAsset> allAssets)
-        {
-            return allAssets
-                .GroupBy(x => new { Id = x.Id.ToLowerInvariant(), Version = x.Version.ToLowerInvariant() }) // Group by unique package version
-                .Select(g => g
-                    .GroupBy(x => x.ScanId) // Group package version assets by scan
-                    .OrderByDescending(x => x.First().Created) // Ignore all but the most recent scan of the most recent version of the package
-                    .OrderByDescending(x => x.First().ScanTimestamp)
-                    .First())
-                .SelectMany(g => g)
-                .OrderBy(x => x.Id, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(x => x.Version, StringComparer.OrdinalIgnoreCase)
-                .Distinct()
-                .ToList();
         }
 
         private async Task ShortRunForPerfAsync()

@@ -221,7 +221,7 @@ namespace Knapcode.ExplorePackages.Worker
             int bucket,
             bool force,
             bool mergeExisting,
-            Func<IEnumerable<T>, IEnumerable<T>> prune)
+            Func<List<T>, List<T>> prune)
         {
             switch (_options.Value.AppendResultStorageMode)
             {
@@ -242,7 +242,7 @@ namespace Knapcode.ExplorePackages.Worker
             int bucket,
             bool force,
             bool mergeExisting,
-            Func<IEnumerable<T>, IEnumerable<T>> prune)
+            Func<List<T>, List<T>> prune)
         {
             var appendRecords = new List<T>();
 
@@ -270,7 +270,7 @@ namespace Knapcode.ExplorePackages.Worker
             int bucket,
             bool force,
             bool mergeExisting,
-            Func<IEnumerable<T>, IEnumerable<T>> prune)
+            Func<List<T>, List<T>> prune)
         {
             var appendRecords = new List<T>();
 
@@ -296,11 +296,11 @@ namespace Knapcode.ExplorePackages.Worker
         }
 
         private async Task CompactAsync<T>(
-            IEnumerable<T> appendRecords,
+            List<T> appendRecords,
             string destContainer,
             int bucket,
             bool mergeExisting,
-            Func<IEnumerable<T>, IEnumerable<T>> prune)
+            Func<List<T>, List<T>> prune)
         {
             var allRecords = new List<T>(appendRecords);
 
@@ -316,7 +316,7 @@ namespace Knapcode.ExplorePackages.Worker
             Stream stream = Stream.Null;
             if (allRecords.Any())
             {
-                var prunedRecords = prune(allRecords).ToList();
+                var prunedRecords = prune(allRecords);
                 stream = SerializeRecords(prunedRecords);
             }
 
@@ -389,13 +389,25 @@ namespace Knapcode.ExplorePackages.Worker
         {
             var memoryStream = new MemoryStream();
             using (var streamWriter = new StreamWriter(memoryStream, new UTF8Encoding(false), bufferSize: 1024, leaveOpen: true))
-            using (var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture))
             {
-                var options = new TypeConverterOptions { Formats = new[] { "O" } };
-                csvWriter.Configuration.TypeConverterOptionsCache.AddOptions<DateTimeOffset?>(options);
-                csvWriter.Configuration.TypeConverterOptionsCache.AddOptions<DateTimeOffset>(options);
-                csvWriter.Configuration.HasHeaderRecord = false;
-                csvWriter.WriteRecords(records);
+                if (typeof(ICsvWritable).IsAssignableFrom(typeof(T)))
+                {
+                    foreach (var record in records)
+                    {
+                        ((ICsvWritable)record).Write(streamWriter);
+                    }
+                }
+                else
+                {
+                    using (var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture))
+                    {
+                        var options = new TypeConverterOptions { Formats = new[] { "O" } };
+                        csvWriter.Configuration.TypeConverterOptionsCache.AddOptions<DateTimeOffset?>(options);
+                        csvWriter.Configuration.TypeConverterOptionsCache.AddOptions<DateTimeOffset>(options);
+                        csvWriter.Configuration.HasHeaderRecord = false;
+                        csvWriter.WriteRecords(records);
+                    }
+                }
             }
 
             return memoryStream;
