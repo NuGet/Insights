@@ -7,8 +7,8 @@
     <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="Generated\**\*.cs" />
-    <None Include="Generated\**\*.cs" />
+    <Compile Remove="$(CompilerGeneratedFilesOutputPath)\**\*.cs" />
+    <None Include="$(CompilerGeneratedFilesOutputPath)\**\*.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ExplorePackages.Logic\ExplorePackages.Logic.csproj" />
