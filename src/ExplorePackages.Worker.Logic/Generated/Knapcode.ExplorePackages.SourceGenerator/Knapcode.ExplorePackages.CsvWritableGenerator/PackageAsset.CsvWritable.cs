@@ -61,8 +61,3 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
         }
     }
 }
-es(writer, PlatformVersion);
-            writer.WriteLine();
-        }
-    }
-}

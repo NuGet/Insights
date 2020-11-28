@@ -89,41 +89,41 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
             OnlyMSB3644 = onlyMSB3644;
         }
 
-        [Index(0)] public DateTimeOffset Timestamp { get; set; }
-        [Index(1)] public string DotnetVersion { get; set; }
-        [Index(2)] public TimeSpan Duration { get; set; }
+        public DateTimeOffset Timestamp { get; set; }
+        public string DotnetVersion { get; set; }
+        public TimeSpan Duration { get; set; }
 
-        [Index(3)] public string Id { get; set; }
-        [Index(4)] public string Version { get; set; }
-        [Index(5)] public string Framework { get; set; }
-        [Index(6)] public string Template { get; set; }
+        public string Id { get; set; }
+        public string Version { get; set; }
+        public string Framework { get; set; }
+        public string Template { get; set; }
 
-        [Index(7)] public int? TargetCount { get; set; }
-        [Index(8)] public int? LibraryCount { get; set; }
+        public int? TargetCount { get; set; }
+        public int? LibraryCount { get; set; }
 
-        [Index(9)] public bool RestoreSucceeded { get; set; }
-        [Index(10)] public bool? BuildSucceeded { get; set; }
+        public bool RestoreSucceeded { get; set; }
+        public bool? BuildSucceeded { get; set; }
 
-        [Index(11)] public int? DependencyCount { get; set; }
-        [Index(12)] public int? FrameworkAssemblyCount { get; set; }
-        [Index(13)] public int? FrameworkReferenceCount { get; set; }
-        [Index(14)] public int? RuntimeAssemblyCount { get; set; }
-        [Index(15)] public int? ResourceAssemblyCount { get; set; }
-        [Index(16)] public int? CompileTimeAssemblyCount { get; set; }
-        [Index(17)] public int? NativeLibraryCount { get; set; }
-        [Index(18)] public int? BuildCount { get; set; }
-        [Index(19)] public int? BuildMultiTargetingCount { get; set; }
-        [Index(20)] public int? ContentFileCount { get; set; }
-        [Index(21)] public int? RuntimeTargetCount { get; set; }
-        [Index(22)] public int? ToolAssemblyCount { get; set; }
-        [Index(23)] public int? EmbedAssemblyCount { get; set; }
+        public int? DependencyCount { get; set; }
+        public int? FrameworkAssemblyCount { get; set; }
+        public int? FrameworkReferenceCount { get; set; }
+        public int? RuntimeAssemblyCount { get; set; }
+        public int? ResourceAssemblyCount { get; set; }
+        public int? CompileTimeAssemblyCount { get; set; }
+        public int? NativeLibraryCount { get; set; }
+        public int? BuildCount { get; set; }
+        public int? BuildMultiTargetingCount { get; set; }
+        public int? ContentFileCount { get; set; }
+        public int? RuntimeTargetCount { get; set; }
+        public int? ToolAssemblyCount { get; set; }
+        public int? EmbedAssemblyCount { get; set; }
 
-        [Index(24)] public string ErrorBlobPath { get; set; }
+        public string ErrorBlobPath { get; set; }
 
-        [Index(25)] public string RestoreLogMessageCodes { get; set; }
-        [Index(26)] public bool? OnlyNU1202 { get; set; }
-        [Index(27)] public bool? OnlyNU1213 { get; set; }
-        [Index(28)] public string BuildErrorCodes { get; set; }
-        [Index(29)] public bool? OnlyMSB3644 { get; set; }
+        public string RestoreLogMessageCodes { get; set; }
+        public bool? OnlyNU1202 { get; set; }
+        public bool? OnlyNU1213 { get; set; }
+        public string BuildErrorCodes { get; set; }
+        public bool? OnlyMSB3644 { get; set; }
     }
 }

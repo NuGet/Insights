@@ -71,8 +71,3 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
         }
     }
 }
-  writer.Write(OnlyMSB3644);
-            writer.WriteLine();
-        }
-    }
-}
