@@ -111,7 +111,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         private async Task AppendToBlobAsync<T>(CloudAppendBlob blob, IReadOnlyList<T> records)
         {
-            using var memoryStream = new MemoryStream(SerializeRecords(records));
+            using var memoryStream = SerializeRecords(records);
             try
             {
                 await blob.AppendBlockAsync(memoryStream);
@@ -313,15 +313,15 @@ namespace Knapcode.ExplorePackages.Worker
                 accessCondition = AccessCondition.GenerateIfMatchCondition(compactBlob.Properties.ETag);
             }
 
-            var bytes = Array.Empty<byte>();
+            Stream stream = Stream.Null;
             if (allRecords.Any())
             {
                 var prunedRecords = prune(allRecords).ToList();
-                bytes = SerializeRecords(prunedRecords);
+                stream = SerializeRecords(prunedRecords);
             }
 
             compactBlob.Properties.ContentType = ContentType;
-            await compactBlob.UploadFromByteArrayAsync(bytes, 0, bytes.Length, accessCondition, options: null, operationContext: null);
+            await compactBlob.UploadFromStreamAsync(stream, accessCondition, options: null, operationContext: null);
         }
 
         private static async Task<List<T>> DeserializeBlobAsync<T>(CloudBlob blob)
@@ -385,10 +385,10 @@ namespace Knapcode.ExplorePackages.Worker
             return markerEntities.Select(x => int.Parse(x.RowKey)).ToList();
         }
 
-        private static byte[] SerializeRecords<T>(IReadOnlyList<T> records)
+        private static MemoryStream SerializeRecords<T>(IReadOnlyList<T> records)
         {
-            using var writeMemoryStream = new MemoryStream();
-            using (var streamWriter = new StreamWriter(writeMemoryStream, new UTF8Encoding(false)))
+            var memoryStream = new MemoryStream();
+            using (var streamWriter = new StreamWriter(memoryStream, new UTF8Encoding(false), bufferSize: 1024, leaveOpen: true))
             using (var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture))
             {
                 var options = new TypeConverterOptions { Formats = new[] { "O" } };
@@ -398,7 +398,7 @@ namespace Knapcode.ExplorePackages.Worker
                 csvWriter.WriteRecords(records);
             }
 
-            return writeMemoryStream.ToArray();
+            return memoryStream;
         }
 
         private static int GetBucket(int bucketCount, string bucketKey)
