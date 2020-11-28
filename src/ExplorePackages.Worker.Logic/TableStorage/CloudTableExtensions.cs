@@ -11,6 +11,18 @@ namespace Knapcode.ExplorePackages.Worker
     {
         public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(this CloudTable table, string partitionKey) where T : ITableEntity, new()
         {
+            return await GetEntitiesAsync<T>(table.ExecuteQuerySegmentedAsync, partitionKey);
+        }
+
+        public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(this ICloudTable table, string partitionKey) where T : ITableEntity, new()
+        {
+            return await GetEntitiesAsync<T>(table.ExecuteQuerySegmentedAsync, partitionKey);
+        }
+
+        private static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(
+            Func<TableQuery<T>, TableContinuationToken, Task<TableQuerySegment<T>>> executeQuerySegmentedAsync,
+            string partitionKey) where T : ITableEntity, new()
+        {
             var entities = new List<T>();
             var query = new TableQuery<T>
             {
@@ -24,7 +36,7 @@ namespace Knapcode.ExplorePackages.Worker
             TableContinuationToken token = null;
             do
             {
-                var segment = await table.ExecuteQuerySegmentedAsync(query, token);
+                var segment = await executeQuerySegmentedAsync(query, token);
                 token = segment.ContinuationToken;
                 entities.AddRange(segment.Results);
             }
@@ -34,6 +46,16 @@ namespace Knapcode.ExplorePackages.Worker
         }
 
         public static async Task InsertEntitiesAsync<T>(this CloudTable table, IReadOnlyList<T> entities) where T : ITableEntity
+        {
+            await InsertEntitiesAsync(table.ExecuteBatchAsync, entities);
+        }
+
+        public static async Task InsertEntitiesAsync<T>(this ICloudTable table, IReadOnlyList<T> entities) where T : ITableEntity
+        {
+            await InsertEntitiesAsync(table.ExecuteBatchAsync, entities);
+        }
+
+        private static async Task InsertEntitiesAsync<T>(Func<TableBatchOperation, Task> executeBatchAsync, IReadOnlyList<T> entities) where T : ITableEntity
         {
             if (!entities.Any())
             {
@@ -45,7 +67,7 @@ namespace Knapcode.ExplorePackages.Worker
             {
                 if (batch.Count >= MaxBatchSize)
                 {
-                    await table.ExecuteBatchAsync(batch);
+                    await executeBatchAsync(batch);
                     batch = new TableBatchOperation();
                 }
 
@@ -54,7 +76,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             if (batch.Count > 0)
             {
-                await table.ExecuteBatchAsync(batch);
+                await executeBatchAsync(batch);
             }
         }
 

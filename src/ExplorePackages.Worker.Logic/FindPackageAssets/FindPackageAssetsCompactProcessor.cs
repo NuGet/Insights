@@ -60,7 +60,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             }
         }
         
-        private static List<PackageAsset> PruneAssets(List<PackageAsset> allAssets)
+        public static List<PackageAsset> PruneAssets(List<PackageAsset> allAssets)
         {
             return allAssets
                 .GroupBy(x => new { Id = x.Id.ToLowerInvariant(), Version = x.Version.ToLowerInvariant() }) // Group by unique package version

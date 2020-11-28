@@ -64,6 +64,7 @@ namespace Knapcode.ExplorePackages
             });
 
             serviceCollection.AddSingleton<ServiceClientFactory>();
+            serviceCollection.AddSingleton<IServiceClientFactory>(x => x.GetRequiredService<ServiceClientFactory>());
 
             serviceCollection.AddSingleton<UrlReporterProvider>();
             serviceCollection.AddTransient<UrlReporterHandler>();

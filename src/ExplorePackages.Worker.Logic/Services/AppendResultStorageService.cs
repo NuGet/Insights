@@ -1,5 +1,4 @@
 ﻿using CsvHelper;
-using CsvHelper.TypeConversion;
 using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
@@ -25,11 +24,11 @@ namespace Knapcode.ExplorePackages.Worker
         private const string AppendPrefix = "append_";
         private const string CompactPrefix = "compact_";
         private const int MaximumPropertyLength = 32 * 1024;
-        private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly IServiceClientFactory _serviceClientFactory;
         private readonly IOptionsSnapshot<ExplorePackagesWorkerSettings> _options;
 
         public AppendResultStorageService(
-            ServiceClientFactory serviceClientFactory,
+            IServiceClientFactory serviceClientFactory,
             IOptionsSnapshot<ExplorePackagesWorkerSettings> options)
         {
             _serviceClientFactory = serviceClientFactory;
@@ -140,7 +139,7 @@ namespace Knapcode.ExplorePackages.Worker
             await table.ExecuteAsync(TableOperation.InsertOrReplace(markerEntity));
         }
 
-        private static async Task AppendToTableAsync<T>(int bucket, CloudTable table, IReadOnlyList<T> records)
+        private static async Task AppendToTableAsync<T>(int bucket, ICloudTable table, IReadOnlyList<T> records)
         {
             AppendResultEntity dataEntity = SerializeToTableEntity(records, bucket);
 
@@ -200,7 +199,7 @@ namespace Knapcode.ExplorePackages.Worker
             };
         }
 
-        private CloudBlob GetBlob(string container, string prefix, int bucket)
+        private ICloudBlobWrapper GetBlob(string container, string prefix, int bucket)
         {
             return GetContainer(container).GetBlobReference($"{prefix}{bucket}.csv");
         }
@@ -210,7 +209,7 @@ namespace Knapcode.ExplorePackages.Worker
             return GetContainer(container).GetAppendBlobReference($"{AppendPrefix}{bucket}.csv");
         }
 
-        private CloudBlockBlob GetCompactBlob(string container, int bucket)
+        private ICloudBlockBlobWrapper GetCompactBlob(string container, int bucket)
         {
             return GetContainer(container).GetBlockBlobReference($"{CompactPrefix}{bucket}.csv");
         }
@@ -325,7 +324,7 @@ namespace Knapcode.ExplorePackages.Worker
             await compactBlob.UploadFromStreamAsync(stream, accessCondition, options: null, operationContext: null);
         }
 
-        private static async Task<List<T>> DeserializeBlobAsync<T>(CloudBlob blob)
+        private static async Task<List<T>> DeserializeBlobAsync<T>(ICloudBlobWrapper blob)
         {
             List<T> allRecords;
             using (var memoryStream = new MemoryStream())
@@ -412,16 +411,16 @@ namespace Knapcode.ExplorePackages.Worker
             return bucket;
         }
 
-        private CloudTable GetTable(string name)
+        private ICloudTable GetTable(string name)
         {
-            var storageAccount = _serviceClientFactory.GetStorageAccount();
+            var storageAccount = _serviceClientFactory.GetAbstractedStorageAccount();
             var client = storageAccount.CreateCloudTableClient();
             return client.GetTableReference(name);
         }
 
-        private CloudBlobContainer GetContainer(string name)
+        private ICloudBlobContainer GetContainer(string name)
         {
-            var storageAccount = _serviceClientFactory.GetStorageAccount();
+            var storageAccount = _serviceClientFactory.GetAbstractedStorageAccount();
             var client = storageAccount.CreateCloudBlobClient();
             return client.GetContainerReference(name);
         }
