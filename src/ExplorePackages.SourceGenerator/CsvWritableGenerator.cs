@@ -39,7 +39,7 @@ namespace {0}
 
         public void Execute(GeneratorExecutionContext context)
         {
-            if (context.SyntaxReceiver is not SyntaxReceiver receiver)
+            if (!(context.SyntaxReceiver is SyntaxReceiver receiver))
             {
                 return;
             }
@@ -166,7 +166,7 @@ namespace {0}
 
             public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
             {
-                if (syntaxNode is not ClassDeclarationSyntax classDeclarationSyntax)
+                if (!(syntaxNode is ClassDeclarationSyntax classDeclarationSyntax))
                 {
                     return;
                 }
