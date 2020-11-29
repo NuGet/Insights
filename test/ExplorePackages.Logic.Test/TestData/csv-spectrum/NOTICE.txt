@@ -18,6 +18,7 @@ Repository: https://github.com/maxogden/csv-spectrum
 
 Repository: https://github.com/calvinmetcalf/csv-spectrum
   - null
+    NOTE: I modified this test case to consider an unquoted NULL as a literal NULL instead of an empty string.
 
 Repository: https://github.com/finnp/csv-spectrum
   - newlines_cr
