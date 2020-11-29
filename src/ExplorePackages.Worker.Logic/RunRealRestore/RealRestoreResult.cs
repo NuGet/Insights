@@ -129,12 +129,7 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
         public string BuildErrorCodes { get; set; }
         public bool? OnlyMSB3644 { get; set; }
 
-        public bool TryRead(TextReader reader, List<string> fields, StringBuilder builder)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool TryRead(CsvReader reader)
+        public void Read(Func<int, string> getField)
         {
             throw new NotImplementedException();
         }

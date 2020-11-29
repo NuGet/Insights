@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,6 +16,7 @@ namespace Knapcode.ExplorePackages
 {
     public class TheAppendResultStorageServiceClass
     {
+        // [SimpleJob(launchCount: 0, warmupCount: 0, targetCount: 1)]
         public class TheCompactAsyncMethod : IDisposable
         {
             private readonly ServiceProvider _serviceProvider;
@@ -85,7 +85,27 @@ namespace Knapcode.ExplorePackages
             public void Dispose() => _serviceProvider.Dispose();
 
             [Benchmark]
-            public async Task ExecuteAsync()
+            public async Task CustomCsvReader() => await ExecuteAsync(new CustomCsvReader());
+
+            [Benchmark]
+            public async Task NRecoCsvReader() => await ExecuteAsync(new NRecoCsvReader());
+
+            [Benchmark]
+            public async Task ServiceStackTextCsvReader() => await ExecuteAsync(new ServiceStackTextCsvReader());
+
+            [Benchmark]
+            public async Task CsvHelperCsvReader() => await ExecuteAsync(new CsvHelperCsvReader());
+
+            [Benchmark]
+            public async Task FastCsvParserCsvReader() => await ExecuteAsync(new FastCsvParserCsvReader());
+
+            [Benchmark]
+            public async Task LumenWorksCsvReader() => await ExecuteAsync(new LumenWorksCsvReader());
+
+            [Benchmark]
+            public async Task TinyCsvReader() => await ExecuteAsync(new TinyCsvReader());
+
+            private async Task ExecuteAsync(ICsvReader reader)
             {
                 await _appendResultStorageService.CompactAsync<PackageAsset>(
                    "findpackageassets",
@@ -93,7 +113,8 @@ namespace Knapcode.ExplorePackages
                    0,
                    force: true,
                    mergeExisting: true,
-                   FindPackageAssetsCompactProcessor.PruneAssets);
+                   FindPackageAssetsCompactProcessor.PruneAssets,
+                   reader);
 
                 if (!_dataBytes.SequenceEqual(_writtenBytes))
                 {

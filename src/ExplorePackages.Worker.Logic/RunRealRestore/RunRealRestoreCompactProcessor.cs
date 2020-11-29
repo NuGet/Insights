@@ -9,13 +9,16 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
     public class RunRealRestoreCompactProcessor : IMessageProcessor<RunRealRestoreCompactMessage>
     {
         private readonly AppendResultStorageService _storageService;
+        private readonly ICsvReader _csvReader;
         private readonly IOptionsSnapshot<ExplorePackagesWorkerSettings> _options;
 
         public RunRealRestoreCompactProcessor(
             AppendResultStorageService storageService,
+            ICsvReader csvReader,
             IOptionsSnapshot<ExplorePackagesWorkerSettings> options)
         {
             _storageService = storageService;
+            _csvReader = csvReader;
             _options = options;
         }
 
@@ -27,7 +30,8 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
                 message.Bucket,
                 force: true,
                 mergeExisting: true,
-                PruneAssets);
+                PruneAssets,
+                _csvReader);
         }
         
         private static List<RealRestoreResult> PruneAssets(List<RealRestoreResult> allAssets)

@@ -220,15 +220,16 @@ namespace Knapcode.ExplorePackages.Worker
             int bucket,
             bool force,
             bool mergeExisting,
-            Func<List<T>, List<T>> prune) where T : ICsvWritable, new()
+            Func<List<T>, List<T>> prune,
+            ICsvReader csvReader) where T : ICsvWritable, new()
         {
             switch (_options.Value.AppendResultStorageMode)
             {
                 case AppendResultStorageMode.AppendBlob:
-                    await CompactFromBlobAsync(srcContainer, destContainer, bucket, force, mergeExisting, prune);
+                    await CompactFromBlobAsync(srcContainer, destContainer, bucket, force, mergeExisting, prune, csvReader);
                     break;
                 case AppendResultStorageMode.Table:
-                    await CompactFromTableAsync(srcContainer, destContainer, bucket, force, mergeExisting, prune);
+                    await CompactFromTableAsync(srcContainer, destContainer, bucket, force, mergeExisting, prune, csvReader);
                     break;
                 default:
                     throw new NotImplementedException();
@@ -241,7 +242,8 @@ namespace Knapcode.ExplorePackages.Worker
             int bucket,
             bool force,
             bool mergeExisting,
-            Func<List<T>, List<T>> prune) where T : ICsvWritable, new()
+            Func<List<T>, List<T>> prune,
+            ICsvReader csvReader) where T : ICsvWritable, new()
         {
             var appendRecords = new List<T>();
 
@@ -250,7 +252,7 @@ namespace Knapcode.ExplorePackages.Worker
                 var blob = GetBlob(srcContainer, AppendPrefix, bucket);
                 if (await blob.ExistsAsync())
                 {
-                    var records = await DeserializeBlobAsync<T>(blob);
+                    var records = await DeserializeBlobAsync<T>(blob, csvReader);
                     appendRecords.AddRange(records);
                 }
                 else if (!force)
@@ -260,7 +262,7 @@ namespace Knapcode.ExplorePackages.Worker
                 }
             }
 
-            await CompactAsync(appendRecords, destContainer, bucket, mergeExisting, prune);
+            await CompactAsync(appendRecords, destContainer, bucket, mergeExisting, prune, csvReader);
         }
 
         private async Task CompactFromTableAsync<T>(
@@ -269,7 +271,8 @@ namespace Knapcode.ExplorePackages.Worker
             int bucket,
             bool force,
             bool mergeExisting,
-            Func<List<T>, List<T>> prune) where T : ICsvWritable, new()
+            Func<List<T>, List<T>> prune,
+            ICsvReader csvReader) where T : ICsvWritable, new()
         {
             var appendRecords = new List<T>();
 
@@ -291,7 +294,7 @@ namespace Knapcode.ExplorePackages.Worker
                 }
             }
 
-            await CompactAsync(appendRecords, destContainer, bucket, mergeExisting, prune);
+            await CompactAsync(appendRecords, destContainer, bucket, mergeExisting, prune, csvReader);
         }
 
         private async Task CompactAsync<T>(
@@ -299,7 +302,8 @@ namespace Knapcode.ExplorePackages.Worker
             string destContainer,
             int bucket,
             bool mergeExisting,
-            Func<List<T>, List<T>> prune) where T : ICsvWritable, new()
+            Func<List<T>, List<T>> prune,
+            ICsvReader csvReader) where T : ICsvWritable, new()
         {
             var allRecords = new List<T>(appendRecords);
 
@@ -307,7 +311,7 @@ namespace Knapcode.ExplorePackages.Worker
             var accessCondition = AccessCondition.GenerateIfNotExistsCondition();
             if (mergeExisting && await compactBlob.ExistsAsync())
             {
-                var records = await DeserializeBlobAsync<T>(compactBlob);
+                var records = await DeserializeBlobAsync<T>(compactBlob, csvReader);
                 allRecords.AddRange(records);
                 accessCondition = AccessCondition.GenerateIfMatchCondition(compactBlob.Properties.ETag);
             }
@@ -324,35 +328,14 @@ namespace Knapcode.ExplorePackages.Worker
             await compactBlob.UploadFromStreamAsync(stream, accessCondition, options: null, operationContext: null);
         }
 
-        private static async Task<List<T>> DeserializeBlobAsync<T>(ICloudBlobWrapper blob) where T : ICsvWritable, new()
+        private static async Task<List<T>> DeserializeBlobAsync<T>(ICloudBlobWrapper blob, ICsvReader csvReader) where T : ICsvWritable, new()
         {
-            var allRecords = new List<T>();
-            var fields = new List<string>();
-            var builder = new StringBuilder();
             using (var memoryStream = new MemoryStream())
             {
                 await blob.DownloadToStreamAsync(memoryStream);
                 memoryStream.Position = 0;
-
-                using (var reader = new StreamReader(memoryStream, Encoding.UTF8, true, 1024 * 32))
-                {
-                    var csvReader = new NReco.Csv.CsvReader(reader);
-                    bool read;
-                    do
-                    {
-                        var record = new T();
-                        // read = record.TryRead(csvReader);
-                        read = record.TryRead(reader, fields, builder);
-                        if (read)
-                        {
-                            allRecords.Add(record);
-                        }
-                    }
-                    while (read);
-                }
+                return csvReader.GetRecords<T>(memoryStream);
             }
-
-            return allRecords;
         }
 
         public async Task<List<int>> GetWrittenBucketsAsync(string containerName)

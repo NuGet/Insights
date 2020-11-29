@@ -10,15 +10,18 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
     {
         private readonly AppendResultStorageService _storageService;
         private readonly TaskStateStorageService _taskStateStorageService;
+        private readonly ICsvReader _csvReader;
         private readonly ILogger<FindPackageAssetsCompactProcessor> _logger;
 
         public FindPackageAssetsCompactProcessor(
             AppendResultStorageService storageService,
             TaskStateStorageService taskStateStorageService,
+            ICsvReader csvReader,
             ILogger<FindPackageAssetsCompactProcessor> logger)
         {
             _storageService = storageService;
             _taskStateStorageService = taskStateStorageService;
+            _csvReader = csvReader;
             _logger = logger;
         }
 
@@ -52,7 +55,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
                 message.Bucket,
                 force: message.Force,
                 mergeExisting: true,
-                PruneAssets);
+                PruneAssets,
+                _csvReader);
 
             if (taskState != null)
             {
