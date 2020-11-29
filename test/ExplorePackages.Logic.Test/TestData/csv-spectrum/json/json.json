@@ -1,6 +1,10 @@
 [
-  {
-    "key": "1",
-    "val": "{\"type\": \"Point\", \"coordinates\": [102.0, 0.5]}"
-  }
+  [
+    "key",
+    "val"
+  ],
+  [
+    "1",
+    "{\"type\": \"Point\", \"coordinates\": [102.0, 0.5]}"
+  ]
 ]
