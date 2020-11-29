@@ -9,6 +9,7 @@ using BenchmarkDotNet.Running;
 using Knapcode.ExplorePackages.Worker;
 using Knapcode.ExplorePackages.Worker.FindPackageAssets;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Moq;
 
@@ -21,6 +22,7 @@ namespace Knapcode.ExplorePackages
             private readonly ServiceProvider _serviceProvider;
             private readonly AppendResultStorageService _appendResultStorageService;
             private readonly byte[] _dataBytes;
+            private byte[] _writtenBytes;
 
             public TheCompactAsyncMethod()
             {
@@ -37,11 +39,29 @@ namespace Knapcode.ExplorePackages
 
                 _dataBytes = File.ReadAllBytes("FindPackageAssets.csv");
 
-                blob.Setup(x => x.DownloadToStreamAsync(It.IsAny<Stream>())).Returns<Stream>(s =>
-                {
-                    s.Write(_dataBytes, 0, _dataBytes.Length);
-                    return Task.CompletedTask;
-                });
+                blob
+                    .Setup(x => x.DownloadToStreamAsync(It.IsAny<Stream>()))
+                    .Returns<Stream>(s =>
+                    {
+                        s.Write(_dataBytes, 0, _dataBytes.Length);
+                        return Task.CompletedTask;
+                    });
+                blob
+                    .Setup(x => x.UploadFromStreamAsync(
+                        It.IsAny<Stream>(),
+                        It.IsAny<AccessCondition>(),
+                        It.IsAny<BlobRequestOptions>(),
+                        It.IsAny<OperationContext>()))
+                    .Returns<Stream, AccessCondition, BlobRequestOptions, OperationContext>((s, _, __, ___) =>
+                    {
+                        using (var memoryStream = new MemoryStream())
+                        {
+                            s.CopyTo(memoryStream);
+                            _writtenBytes = memoryStream.ToArray();
+                        }
+
+                        return Task.CompletedTask;
+                    });
                 blob.Setup(x => x.Properties).Returns(new BlobProperties());
                 blob.Setup(x => x.ExistsAsync()).ReturnsAsync(true);
 
@@ -74,6 +94,11 @@ namespace Knapcode.ExplorePackages
                    force: true,
                    mergeExisting: true,
                    FindPackageAssetsCompactProcessor.PruneAssets);
+
+                if (!_dataBytes.SequenceEqual(_writtenBytes))
+                {
+                    throw new InvalidOperationException("The written bytes do no match the read bytes.");
+                }
             }
         }
     }
