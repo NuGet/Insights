@@ -220,7 +220,7 @@ namespace Knapcode.ExplorePackages.Worker
             int bucket,
             bool force,
             bool mergeExisting,
-            Func<List<T>, List<T>> prune) where T : ICsvWritable
+            Func<List<T>, List<T>> prune) where T : ICsvWritable, new()
         {
             switch (_options.Value.AppendResultStorageMode)
             {
@@ -241,7 +241,7 @@ namespace Knapcode.ExplorePackages.Worker
             int bucket,
             bool force,
             bool mergeExisting,
-            Func<List<T>, List<T>> prune) where T : ICsvWritable
+            Func<List<T>, List<T>> prune) where T : ICsvWritable, new()
         {
             var appendRecords = new List<T>();
 
@@ -269,7 +269,7 @@ namespace Knapcode.ExplorePackages.Worker
             int bucket,
             bool force,
             bool mergeExisting,
-            Func<List<T>, List<T>> prune) where T : ICsvWritable
+            Func<List<T>, List<T>> prune) where T : ICsvWritable, new()
         {
             var appendRecords = new List<T>();
 
@@ -299,7 +299,7 @@ namespace Knapcode.ExplorePackages.Worker
             string destContainer,
             int bucket,
             bool mergeExisting,
-            Func<List<T>, List<T>> prune) where T : ICsvWritable
+            Func<List<T>, List<T>> prune) where T : ICsvWritable, new()
         {
             var allRecords = new List<T>(appendRecords);
 
@@ -324,19 +324,31 @@ namespace Knapcode.ExplorePackages.Worker
             await compactBlob.UploadFromStreamAsync(stream, accessCondition, options: null, operationContext: null);
         }
 
-        private static async Task<List<T>> DeserializeBlobAsync<T>(ICloudBlobWrapper blob)
+        private static async Task<List<T>> DeserializeBlobAsync<T>(ICloudBlobWrapper blob) where T : ICsvWritable, new()
         {
-            List<T> allRecords;
+            var allRecords = new List<T>();
+            var fields = new List<string>();
+            var builder = new StringBuilder();
             using (var memoryStream = new MemoryStream())
             {
                 await blob.DownloadToStreamAsync(memoryStream);
                 memoryStream.Position = 0;
 
-                using (var reader = new StreamReader(memoryStream))
-                using (var csvReader = new CsvReader(reader, CultureInfo.InvariantCulture))
+                using (var reader = new StreamReader(memoryStream, Encoding.UTF8, true, 1024 * 32))
                 {
-                    csvReader.Configuration.HasHeaderRecord = false;
-                    allRecords = csvReader.GetRecords<T>().ToList();
+                    var csvReader = new NReco.Csv.CsvReader(reader);
+                    bool read;
+                    do
+                    {
+                        var record = new T();
+                        // read = record.TryRead(csvReader);
+                        read = record.TryRead(reader, fields, builder);
+                        if (read)
+                        {
+                            allRecords.Add(record);
+                        }
+                    }
+                    while (read);
                 }
             }
 

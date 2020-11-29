@@ -1,9 +1,12 @@
-﻿using CsvHelper.Configuration.Attributes;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using NReco.Csv;
 using NuGet.Common;
 using NuGet.ProjectModel;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using NuGetPackageIdentity = NuGet.Packaging.Core.PackageIdentity;
 
 namespace Knapcode.ExplorePackages.Worker.RunRealRestore
@@ -125,5 +128,20 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
         public bool? OnlyNU1213 { get; set; }
         public string BuildErrorCodes { get; set; }
         public bool? OnlyMSB3644 { get; set; }
+
+        public bool TryRead(TextReader reader, List<string> fields, StringBuilder builder)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool TryRead(CsvReader reader)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Write(CsvWriter writer)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

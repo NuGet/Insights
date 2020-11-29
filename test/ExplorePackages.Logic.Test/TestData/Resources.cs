@@ -1,5 +1,7 @@
 ﻿using System.IO;
 using System.Xml.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Knapcode.ExplorePackages
 {
@@ -33,21 +35,31 @@ namespace Knapcode.ExplorePackages
 
         public static MemoryStream LoadMemoryStream(string resourceName)
         {
-            using (var resourceStream = typeof(Resources)
-                .Assembly
-                .GetManifestResourceStream(typeof(Resources).Namespace + ".TestData." + resourceName))
+            using (var fileStream = GetFileStream(resourceName))
             {
-                if (resourceName == null)
-                {
-                    return null;
-                }
-
                 var memoryStream = new MemoryStream();
-                resourceStream.CopyTo(memoryStream);
+                fileStream.CopyTo(memoryStream);
                 memoryStream.Position = 0;
 
                 return memoryStream;
-            }   
+            }
+        }
+
+        public static StringReader LoadStringReader(string resourceName)
+        {
+            using (var reader = new StreamReader(GetFileStream(resourceName)))
+            {
+                return new StringReader(reader.ReadToEnd());
+            }
+        }
+
+        public static T LoadJson<T>(string resourceName)
+        {
+            using (var reader = new StreamReader(GetFileStream(resourceName)))
+            using (var jsonReader = new JsonTextReader(reader))
+            {
+                return new JsonSerializer().Deserialize<T>(jsonReader);
+            }
         }
 
         public static XDocument LoadXml(string resourceName)
@@ -56,6 +68,11 @@ namespace Knapcode.ExplorePackages
             {
                 return XmlUtility.LoadXml(stream);
             }
+        }
+
+        private static FileStream GetFileStream(string resourceName)
+        {
+            return File.OpenRead(Path.Combine("TestData", resourceName));
         }
     }
 }

@@ -1,7 +1,10 @@
-﻿using CsvHelper.Configuration.Attributes;
-using NuGet.Versioning;
+﻿using NuGet.Versioning;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.IO;
+using System.Text;
 
 namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
 {
@@ -114,6 +117,123 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             hash.Add(PlatformName);
             hash.Add(PlatformVersion);
             return hash.ToHashCode();
+        }
+
+        public bool TryRead(TextReader reader, List<string> fields, StringBuilder builder)
+        {
+            if (!CsvUtility.TryReadLine(reader, fields, builder))
+            {
+                return false;
+            }
+
+            ScanId = ParseNullableGuid(fields[0]);
+            ScanTimestamp = ParseNullableDateTimeOffset(fields[1]);
+            Id = fields[2];
+            Version = fields[3];
+            Created = ParseDateTimeOffset(fields[4]);
+            ResultType = fields[5];
+            PatternSet = fields[6];
+            PropertyAnyValue = fields[7];
+            PropertyCodeLanguage = fields[8];
+            PropertyTargetFrameworkMoniker = fields[9];
+            PropertyLocale = fields[10];
+            PropertyManagedAssembly = fields[11];
+            PropertyMSBuild = fields[12];
+            PropertyRuntimeIdentifier = fields[13];
+            PropertySatelliteAssembly = fields[14];
+            Path = fields[15];
+            FileName = fields[16];
+            FileExtension = fields[17];
+            TopLevelFolder = fields[18];
+            RoundTripTargetFrameworkMoniker = fields[19];
+            FrameworkName = fields[20];
+            FrameworkVersion = fields[21];
+            FrameworkProfile = fields[22];
+            PlatformName = fields[23];
+            PlatformVersion = fields[24];
+
+            return true;
+        }
+
+        public bool TryRead(NReco.Csv.CsvReader reader)
+        {
+            if (!reader.Read())
+            {
+                return false;
+            }
+
+            ScanId = ParseNullableGuid(reader[0]);
+            ScanTimestamp = ParseNullableDateTimeOffset(reader[1]);
+            Id = reader[2];
+            Version = reader[3];
+            Created = ParseDateTimeOffset(reader[4]);
+            ResultType = reader[5];
+            PatternSet = reader[6];
+            PropertyAnyValue = reader[7];
+            PropertyCodeLanguage = reader[8];
+            PropertyTargetFrameworkMoniker = reader[9];
+            PropertyLocale = reader[10];
+            PropertyManagedAssembly = reader[11];
+            PropertyMSBuild = reader[12];
+            PropertyRuntimeIdentifier = reader[13];
+            PropertySatelliteAssembly = reader[14];
+            Path = reader[15];
+            FileName = reader[16];
+            FileExtension = reader[17];
+            TopLevelFolder = reader[18];
+            RoundTripTargetFrameworkMoniker = reader[19];
+            FrameworkName = reader[20];
+            FrameworkVersion = reader[21];
+            FrameworkProfile = reader[22];
+            PlatformName = reader[23];
+            PlatformVersion = reader[24];
+
+            return true;
+        }
+
+        public void Write(NReco.Csv.CsvWriter writer)
+        {
+            writer.WriteField(ScanId?.ToString());
+            writer.WriteField(ScanTimestamp?.ToString("O"));
+            writer.WriteField(Id);
+            writer.WriteField(Version);
+            writer.WriteField(Created.ToString("O"));
+            writer.WriteField(ResultType);
+            writer.WriteField(PatternSet);
+            writer.WriteField(PropertyAnyValue);
+            writer.WriteField(PropertyCodeLanguage);
+            writer.WriteField(PropertyTargetFrameworkMoniker);
+            writer.WriteField(PropertyLocale);
+            writer.WriteField(PropertyManagedAssembly);
+            writer.WriteField(PropertyMSBuild);
+            writer.WriteField(PropertyRuntimeIdentifier);
+            writer.WriteField(PropertySatelliteAssembly);
+            writer.WriteField(Path);
+            writer.WriteField(FileName);
+            writer.WriteField(FileExtension);
+            writer.WriteField(TopLevelFolder);
+            writer.WriteField(RoundTripTargetFrameworkMoniker);
+            writer.WriteField(FrameworkName);
+            writer.WriteField(FrameworkVersion);
+            writer.WriteField(FrameworkProfile);
+            writer.WriteField(PlatformName);
+            writer.WriteField(PlatformVersion);
+            writer.NextRecord();
+        }
+
+        private static Guid? ParseNullableGuid(string input)
+        {
+            return input.Length > 0 ? Guid.Parse(input) : (Guid?)null;
+        }
+
+        private static DateTimeOffset? ParseNullableDateTimeOffset(string input)
+        {
+            return input.Length > 0 ? ParseDateTimeOffset(input) : (DateTimeOffset?)null;
+        }
+
+        private static DateTimeOffset ParseDateTimeOffset(string input)
+        {
+            return DateTimeOffset.ParseExact(input, "O", CultureInfo.InvariantCulture);
         }
     }
 }
