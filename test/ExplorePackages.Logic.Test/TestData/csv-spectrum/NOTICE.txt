@@ -1,0 +1,23 @@
+﻿This "csvs" directory is from Max Ogden's csv-spectrum GitHub repository and some of its forks. The "json" directory is
+different and my own since I don't want to consider the first line as a special header line.
+
+For full transparency, I have enumerated where each test case came from:
+
+Repository: https://github.com/maxogden/csv-spectrum
+  - comma_in_quotes
+  - empty
+  - empty_crlf
+  - escaped_quotes
+  - json
+  - newlines
+  - newlines_crlf
+  - quotes_and_newlines
+  - simple
+  - simple_crlf
+  - utf8
+
+Repository: https://github.com/calvinmetcalf/csv-spectrum
+  - null
+
+Repository: https://github.com/finnp/csv-spectrum
+  - newlines_cr
