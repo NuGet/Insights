@@ -12,13 +12,13 @@ namespace Knapcode.ExplorePackages.Entities
         private readonly IPackageService _packageService;
         private readonly CatalogClient _catalogClient;
         private readonly CatalogService _catalogService;
-        private readonly IOptionsSnapshot<ExplorePackagesEntitiesSettings> _options;
+        private readonly IOptions<ExplorePackagesEntitiesSettings> _options;
 
         public CatalogToDatabaseProcessor(
             IPackageService packageService,
             CatalogClient catalogClient,
             CatalogService catalogService,
-            IOptionsSnapshot<ExplorePackagesEntitiesSettings> options)
+            IOptions<ExplorePackagesEntitiesSettings> options)
         {
             _packageService = packageService;
             _catalogClient = catalogClient;

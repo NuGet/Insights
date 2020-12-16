@@ -15,7 +15,7 @@ namespace Knapcode.ExplorePackages.Entities
         private readonly CursorService _cursorService;
         private readonly ICatalogEntriesProcessor _processor;
         private readonly ISingletonService _singletonService;
-        private readonly IOptionsSnapshot<ExplorePackagesEntitiesSettings> _options;
+        private readonly IOptions<ExplorePackagesEntitiesSettings> _options;
         private readonly ILogger<CatalogProcessorQueue> _logger;
 
         public CatalogProcessorQueue(
@@ -23,7 +23,7 @@ namespace Knapcode.ExplorePackages.Entities
             CursorService cursorService,
             ICatalogEntriesProcessor processor,
             ISingletonService singletonService,
-            IOptionsSnapshot<ExplorePackagesEntitiesSettings> options,
+            IOptions<ExplorePackagesEntitiesSettings> options,
             ILogger<CatalogProcessorQueue> logger)
         {
             _catalogClient = catalogClient;

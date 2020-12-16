@@ -26,7 +26,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
         private readonly AppendResultStorageService _storageService;
         private readonly TaskStateStorageService _taskStateStorageService;
         private readonly MessageEnqueuer _messageEnqueuer;
-        private readonly IOptionsSnapshot<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<FindPackageAssetsScanDriver> _logger;
 
         public FindPackageAssetsScanDriver(
@@ -38,7 +38,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             AppendResultStorageService storageService,
             TaskStateStorageService taskStateStorageService,
             MessageEnqueuer messageEnqueuer,
-            IOptionsSnapshot<ExplorePackagesWorkerSettings> options,
+            IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<FindPackageAssetsScanDriver> logger)
         {
             _schemaSerializer = schemaSerializer;

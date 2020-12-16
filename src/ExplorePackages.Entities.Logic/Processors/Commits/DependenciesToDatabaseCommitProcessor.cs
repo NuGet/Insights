@@ -12,13 +12,13 @@ namespace Knapcode.ExplorePackages.Entities
         private readonly NuspecStore _nuspecStore;
         private readonly PackageDependencyService _packageDependencyService;
         private readonly IBatchSizeProvider _batchSizeProvider;
-        private readonly IOptionsSnapshot<ExplorePackagesEntitiesSettings> _options;
+        private readonly IOptions<ExplorePackagesEntitiesSettings> _options;
 
         public DependenciesToDatabaseCommitProcessor(
             NuspecStore nuspecStore,
             PackageDependencyService packageDependencyService,
             IBatchSizeProvider batchSizeProvider,
-            IOptionsSnapshot<ExplorePackagesEntitiesSettings> options)
+            IOptions<ExplorePackagesEntitiesSettings> options)
         {
             _nuspecStore = nuspecStore;
             _packageDependencyService = packageDependencyService;
@@ -82,7 +82,7 @@ namespace Knapcode.ExplorePackages.Entities
                 DependenciesToDatabaseCommitProcessor processor,
                 CommitCollectorSequentialProgressService sequentialProgressService,
                 ISingletonService singletonService,
-                IOptionsSnapshot<ExplorePackagesEntitiesSettings> options,
+                IOptions<ExplorePackagesEntitiesSettings> options,
                 ILogger<Collector> logger) : base(
                     cursorService,
                     enumerator,

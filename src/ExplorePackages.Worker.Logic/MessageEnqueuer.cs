@@ -26,6 +26,11 @@ namespace Knapcode.ExplorePackages.Worker
             _logger = logger;
         }
 
+        public async Task InitializeAsync()
+        {
+            await _rawMessageEnqueuer.InitializeAsync();
+        }
+
         public async Task EnqueueAsync(IReadOnlyList<CatalogIndexScanMessage> messages) => await EnqueueAsync(messages, TimeSpan.Zero);
         public async Task EnqueueAsync(IReadOnlyList<CatalogIndexScanMessage> messages, TimeSpan notBefore)
         {

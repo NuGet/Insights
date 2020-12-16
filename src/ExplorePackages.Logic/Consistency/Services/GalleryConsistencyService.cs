@@ -6,11 +6,11 @@ namespace Knapcode.ExplorePackages
     public class GalleryConsistencyService : IConsistencyService<GalleryConsistencyReport>
     {
         private readonly GalleryClient _client;
-        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
+        private readonly IOptions<ExplorePackagesSettings> _options;
 
         public GalleryConsistencyService(
             GalleryClient client,
-            IOptionsSnapshot<ExplorePackagesSettings> settings)
+            IOptions<ExplorePackagesSettings> settings)
         {
             _client = client;
             _options = settings;

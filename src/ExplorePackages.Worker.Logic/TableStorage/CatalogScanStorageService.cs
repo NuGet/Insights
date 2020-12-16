@@ -9,11 +9,11 @@ namespace Knapcode.ExplorePackages.Worker
     public class CatalogScanStorageService
     {
         private readonly ServiceClientFactory _serviceClientFactory;
-        private readonly IOptionsSnapshot<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
         public CatalogScanStorageService(
             ServiceClientFactory serviceClientFactory,
-            IOptionsSnapshot<ExplorePackagesWorkerSettings> options)
+            IOptions<ExplorePackagesWorkerSettings> options)
         {
             _serviceClientFactory = serviceClientFactory;
             _options = options;

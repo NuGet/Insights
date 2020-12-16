@@ -12,4 +12,8 @@
     <PackageReference Include="Pulumi.Azure" Version="3.30.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ExplorePackages.Worker.Logic\ExplorePackages.Worker.Logic.csproj" />
+  </ItemGroup>
+
 </Project>

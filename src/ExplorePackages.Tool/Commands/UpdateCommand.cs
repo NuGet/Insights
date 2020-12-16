@@ -29,7 +29,7 @@ namespace Knapcode.ExplorePackages.Tool
             DownloadsToDatabaseCommand downloadsToDatabase,
             PackageQueriesCommand packageQueries,
             ISingletonService singletonService,
-            IOptionsSnapshot<ExplorePackagesSettings> options,
+            IOptions<ExplorePackagesSettings> options,
             ILogger<CommandExecutor> logger)
         {
             var commands = new List<ICommand>

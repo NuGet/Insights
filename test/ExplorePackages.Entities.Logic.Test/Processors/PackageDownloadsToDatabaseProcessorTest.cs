@@ -21,7 +21,7 @@ namespace Knapcode.ExplorePackages.Entities
             private readonly Mock<IETagService> _etagService;
             private readonly Mock<IBatchSizeProvider> _batchSizeProvider;
             private readonly ExplorePackagesEntitiesSettings _settings;
-            private readonly Mock<IOptionsSnapshot<ExplorePackagesEntitiesSettings>> _options;
+            private readonly Mock<IOptions<ExplorePackagesEntitiesSettings>> _options;
             private readonly PackageDownloadsToDatabaseProcessor _target;
 
             public UpdateAsync(ITestOutputHelper output)
@@ -40,7 +40,7 @@ namespace Knapcode.ExplorePackages.Entities
                 {
                     DownloadsV1Path = Path.Combine(_testDirectory, "downloads.txt"),
                 };
-                _options = new Mock<IOptionsSnapshot<ExplorePackagesEntitiesSettings>>();
+                _options = new Mock<IOptions<ExplorePackagesEntitiesSettings>>();
                 _options
                     .Setup(x => x.Value)
                     .Returns(() => _settings);

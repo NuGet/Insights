@@ -12,12 +12,12 @@ namespace Knapcode.ExplorePackages.Worker
     public class QueueStorageEnqueuer : IRawMessageEnqueuer
     {
         private readonly IWorkerQueueFactory _workerQueueFactory;
-        private readonly IOptionsSnapshot<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<QueueStorageEnqueuer> _logger;
 
         public QueueStorageEnqueuer(
             IWorkerQueueFactory workerQueueFactory,
-            IOptionsSnapshot<ExplorePackagesWorkerSettings> options,
+            IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<QueueStorageEnqueuer> logger)
         {
             _workerQueueFactory = workerQueueFactory;
@@ -29,6 +29,11 @@ namespace Knapcode.ExplorePackages.Worker
         }
 
         public BulkEnqueueStrategy BulkEnqueueStrategy { get; }
+
+        public async Task InitializeAsync()
+        {
+            await _workerQueueFactory.InitializeAsync();
+        }
 
         public async Task AddAsync(IReadOnlyList<string> messages)
         {

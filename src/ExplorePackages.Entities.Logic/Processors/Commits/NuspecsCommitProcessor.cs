@@ -69,7 +69,7 @@ namespace Knapcode.ExplorePackages.Entities
                 NuspecsCommitProcessor processor,
                 CommitCollectorSequentialProgressService sequentialProgressService,
                 ISingletonService singletonService,
-                IOptionsSnapshot<ExplorePackagesEntitiesSettings> options,
+                IOptions<ExplorePackagesEntitiesSettings> options,
                 ILogger<Collector> logger) : base(
                     cursorService,
                     enumerator,

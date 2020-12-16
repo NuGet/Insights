@@ -17,7 +17,7 @@ namespace Knapcode.ExplorePackages.Entities
         private readonly ICommitProcessor<TEntity, TItem, TProgressToken> _processor;
         private readonly CommitCollectorSequentialProgressService _sequentialProgressService;
         private readonly ISingletonService _singletonService;
-        private readonly IOptionsSnapshot<ExplorePackagesEntitiesSettings> _options;
+        private readonly IOptions<ExplorePackagesEntitiesSettings> _options;
         private readonly ILogger _logger;
 
         public CommitCollector(
@@ -26,7 +26,7 @@ namespace Knapcode.ExplorePackages.Entities
             ICommitProcessor<TEntity, TItem, TProgressToken> processor,
             CommitCollectorSequentialProgressService sequentialProgressService,
             ISingletonService singletonService,
-            IOptionsSnapshot<ExplorePackagesEntitiesSettings> options,
+            IOptions<ExplorePackagesEntitiesSettings> options,
             ILogger logger)
         {
             _cursorService = cursorService;

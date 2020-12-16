@@ -13,11 +13,11 @@ namespace Knapcode.ExplorePackages
     public class PackageDownloadsClient : IPackageDownloadsClient
     {
         private readonly HttpClient _httpClient;
-        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
+        private readonly IOptions<ExplorePackagesSettings> _options;
 
         public PackageDownloadsClient(
             HttpClient httpClient,
-            IOptionsSnapshot<ExplorePackagesSettings> options)
+            IOptions<ExplorePackagesSettings> options)
         {
             _httpClient = httpClient;
             _options = options;

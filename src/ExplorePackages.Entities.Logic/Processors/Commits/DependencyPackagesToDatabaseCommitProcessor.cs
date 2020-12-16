@@ -240,7 +240,7 @@ namespace Knapcode.ExplorePackages.Entities
                 DependencyPackagesToDatabaseCommitProcessor processor,
                 CommitCollectorSequentialProgressService sequentialProgressService,
                 ISingletonService singletonService,
-                IOptionsSnapshot<ExplorePackagesEntitiesSettings> options,
+                IOptions<ExplorePackagesEntitiesSettings> options,
                 ILogger<Collector> logger) : base(
                     cursorService,
                     enumerator,

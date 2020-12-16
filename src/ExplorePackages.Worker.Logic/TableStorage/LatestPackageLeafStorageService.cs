@@ -12,12 +12,12 @@ namespace Knapcode.ExplorePackages.Worker
     public class LatestPackageLeafStorageService
     {
         private readonly ServiceClientFactory _serviceClientFactory;
-        private readonly IOptionsSnapshot<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<LatestPackageLeafStorageService> _logger;
 
         public LatestPackageLeafStorageService(
             ServiceClientFactory serviceClientFactory,
-            IOptionsSnapshot<ExplorePackagesWorkerSettings> options,
+            IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<LatestPackageLeafStorageService> logger)
         {
             _serviceClientFactory = serviceClientFactory;

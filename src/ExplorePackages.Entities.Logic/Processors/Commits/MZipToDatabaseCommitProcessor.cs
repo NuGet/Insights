@@ -13,13 +13,13 @@ namespace Knapcode.ExplorePackages.Entities
         private readonly MZipStore _mZipStore;
         private readonly IPackageService _packageService;
         private readonly IBatchSizeProvider _batchSizeProvider;
-        private readonly IOptionsSnapshot<ExplorePackagesEntitiesSettings> _options;
+        private readonly IOptions<ExplorePackagesEntitiesSettings> _options;
 
         public MZipToDatabaseCommitProcessor(
             MZipStore mZipStore,
             IPackageService packageService,
             IBatchSizeProvider batchSizeProvider,
-            IOptionsSnapshot<ExplorePackagesEntitiesSettings> options)
+            IOptions<ExplorePackagesEntitiesSettings> options)
         {
             _mZipStore = mZipStore;
             _packageService = packageService;
@@ -97,7 +97,7 @@ namespace Knapcode.ExplorePackages.Entities
                 MZipToDatabaseCommitProcessor processor,
                 CommitCollectorSequentialProgressService sequentialProgressService,
                 ISingletonService singletonService,
-                IOptionsSnapshot<ExplorePackagesEntitiesSettings> options,
+                IOptions<ExplorePackagesEntitiesSettings> options,
                 ILogger<Collector> logger) : base(
                     cursorService,
                     enumerator,

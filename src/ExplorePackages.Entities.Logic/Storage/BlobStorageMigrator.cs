@@ -17,7 +17,7 @@ namespace Knapcode.ExplorePackages.Entities
         private readonly IPackageService _packageService;
         private readonly IFileStorageService _fileStorageService;
         private readonly ServiceClientFactory _serviceClientFactory;
-        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
+        private readonly IOptions<ExplorePackagesSettings> _options;
         private readonly ILogger<BlobStorageService> _logger;
 
         public BlobStorageMigrator(
@@ -25,7 +25,7 @@ namespace Knapcode.ExplorePackages.Entities
             IPackageService packageService,
             IFileStorageService fileStorageService,
             ServiceClientFactory serviceClientFactory,
-            IOptionsSnapshot<ExplorePackagesSettings> options,
+            IOptions<ExplorePackagesSettings> options,
             ILogger<BlobStorageService> logger)
         {
             _nameProvider = nameProvider;

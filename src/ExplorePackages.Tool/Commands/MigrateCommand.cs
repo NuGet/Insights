@@ -42,7 +42,7 @@ namespace Knapcode.ExplorePackages.Tool
         {
             using (var migrationScope = _serviceProvider.CreateScope())
             {
-                var options = migrationScope.ServiceProvider.GetRequiredService<IOptionsSnapshot<ExplorePackagesEntitiesSettings>>();
+                var options = migrationScope.ServiceProvider.GetRequiredService<IOptions<ExplorePackagesEntitiesSettings>>();
                 if (_typeOption != null && _typeOption.HasValue())
                 {
                     options.Value.DatabaseType = _typeOption.ParsedValue;

@@ -9,7 +9,7 @@ namespace Knapcode.ExplorePackages
         private readonly Lazy<CloudStorageAccount> _storageAccount;
         private readonly Lazy<ICloudStorageAccount> _abstractedStorageAccount;
 
-        public ServiceClientFactory(IOptionsSnapshot<ExplorePackagesSettings> options)
+        public ServiceClientFactory(IOptions<ExplorePackagesSettings> options)
         {
             _storageAccount = GetLazyStorageAccount(options.Value.StorageConnectionString);
             _abstractedStorageAccount = GetLazyAbstractedStorageAccount(_storageAccount);

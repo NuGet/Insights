@@ -23,7 +23,7 @@ namespace Knapcode.ExplorePackages.Entities
         private readonly PackageV2CommitEnumerator _packageV2CommitEnumerator;
         private readonly IBatchSizeProvider _batchSizeProvider;
         private readonly ISingletonService _singletonService;
-        private readonly IOptionsSnapshot<ExplorePackagesEntitiesSettings> _options;
+        private readonly IOptions<ExplorePackagesEntitiesSettings> _options;
         private readonly ILogger<PackageQueryCollector> _logger;
 
         public PackageQueryCollector(
@@ -33,7 +33,7 @@ namespace Knapcode.ExplorePackages.Entities
             PackageV2CommitEnumerator packageV2CommitEnumerator,
             IBatchSizeProvider batchSizeProvider,
             ISingletonService singletonService,
-            IOptionsSnapshot<ExplorePackagesEntitiesSettings> options,
+            IOptions<ExplorePackagesEntitiesSettings> options,
             ILogger<PackageQueryCollector> logger)
         {
             _processor = packageQueryProcessor;

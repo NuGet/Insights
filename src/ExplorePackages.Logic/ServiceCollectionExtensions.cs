@@ -63,8 +63,8 @@ namespace Knapcode.ExplorePackages
                 o.AddFilter("System.Net.Http.HttpClient", LogLevel.Warning);
             });
 
-            serviceCollection.AddSingleton<ServiceClientFactory>();
-            serviceCollection.AddSingleton<IServiceClientFactory>(x => x.GetRequiredService<ServiceClientFactory>());
+            serviceCollection.AddTransient<ServiceClientFactory>();
+            serviceCollection.AddTransient<IServiceClientFactory>(x => x.GetRequiredService<ServiceClientFactory>());
 
             serviceCollection.AddSingleton<UrlReporterProvider>();
             serviceCollection.AddTransient<UrlReporterHandler>();

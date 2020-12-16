@@ -53,7 +53,7 @@ namespace Knapcode.ExplorePackages.Worker
                 })
                 .Build();
 
-            Options = Host.Services.GetRequiredService<IOptionsSnapshot<ExplorePackagesWorkerSettings>>();
+            Options = Host.Services.GetRequiredService<IOptions<ExplorePackagesWorkerSettings>>();
             ServiceClientFactory = Host.Services.GetRequiredService<ServiceClientFactory>();
             WorkerQueueFactory = Host.Services.GetRequiredService<IWorkerQueueFactory>();
             CursorStorageService = Host.Services.GetRequiredService<CursorStorageService>();
@@ -66,7 +66,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public string StoragePrefix { get; }
         public IHost Host { get; }
-        public IOptionsSnapshot<ExplorePackagesWorkerSettings> Options { get; }
+        public IOptions<ExplorePackagesWorkerSettings> Options { get; }
         public ServiceClientFactory ServiceClientFactory { get; }
         public IWorkerQueueFactory WorkerQueueFactory { get; }
         public CursorStorageService CursorStorageService { get; }

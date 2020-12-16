@@ -193,7 +193,7 @@ namespace Knapcode.ExplorePackages
                     StorageConnectionString = "UseDevelopmentStorage=true",
                     LeaseContainerName = ContainerName,
                 };
-                Options = new Mock<IOptionsSnapshot<ExplorePackagesSettings>>();
+                Options = new Mock<IOptions<ExplorePackagesSettings>>();
                 Options.Setup(x => x.Value).Returns(() => Settings);
                 ServiceClientFactory = new ServiceClientFactory(Options.Object);
                 Target = new StorageLeaseService(ServiceClientFactory, Options.Object);
@@ -203,7 +203,7 @@ namespace Knapcode.ExplorePackages
             public string LeaseName { get; }
             public TimeSpan Duration { get; }
             public ExplorePackagesSettings Settings { get; }
-            public Mock<IOptionsSnapshot<ExplorePackagesSettings>> Options { get; }
+            public Mock<IOptions<ExplorePackagesSettings>> Options { get; }
             public ServiceClientFactory ServiceClientFactory { get; }
             public StorageLeaseService Target { get; }
 

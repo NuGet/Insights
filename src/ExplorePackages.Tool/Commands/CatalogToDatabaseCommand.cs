@@ -13,7 +13,7 @@ namespace Knapcode.ExplorePackages.Tool
         private readonly CursorService _cursorService;
         private readonly CatalogToDatabaseProcessor _processor;
         private readonly ISingletonService _singletonService;
-        private readonly IOptionsSnapshot<ExplorePackagesEntitiesSettings> _options;
+        private readonly IOptions<ExplorePackagesEntitiesSettings> _options;
         private readonly ILogger<CatalogProcessorQueue> _logger;
 
         public CatalogToDatabaseCommand(
@@ -21,7 +21,7 @@ namespace Knapcode.ExplorePackages.Tool
             CursorService cursorService,
             CatalogToDatabaseProcessor processor,
             ISingletonService singletonService,
-            IOptionsSnapshot<ExplorePackagesEntitiesSettings> options,
+            IOptions<ExplorePackagesEntitiesSettings> options,
             ILogger<CatalogProcessorQueue> logger)
         {
             _catalogClient = catalogClient;

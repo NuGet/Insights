@@ -20,7 +20,7 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
         private readonly ProjectHelper _projectHelper;
         private readonly AppendResultStorageService _storageService;
         private readonly ServiceClientFactory _serviceClientFactory;
-        private readonly IOptionsSnapshot<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<RunRealRestoreProcessor> _logger;
 
         private const string ConsoleTemplate = "console";
@@ -50,7 +50,7 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
             ProjectHelper projectHelper,
             AppendResultStorageService storageService,
             ServiceClientFactory serviceClientFactory,
-            IOptionsSnapshot<ExplorePackagesWorkerSettings> options,
+            IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<RunRealRestoreProcessor> logger)
         {
             _projectHelper = projectHelper;

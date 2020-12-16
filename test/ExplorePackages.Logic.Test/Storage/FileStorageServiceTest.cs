@@ -28,7 +28,7 @@ namespace Knapcode.ExplorePackages
         private readonly HttpSource _httpSource;
         private readonly ITestOutputHelper _output;
         private readonly ExplorePackagesSettings _settings;
-        private readonly Mock<IOptionsSnapshot<ExplorePackagesSettings>> _options;
+        private readonly Mock<IOptions<ExplorePackagesSettings>> _options;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly PackageBlobNameProvider _blobNameProvider;
         private readonly Mock<BlobStorageService> _blobStorageService;
@@ -54,7 +54,7 @@ namespace Knapcode.ExplorePackages
                 StorageConnectionString = "UseDevelopmentStorage=true",
                 StorageContainerName = Guid.NewGuid().ToString("N"),
             };
-            _options = new Mock<IOptionsSnapshot<ExplorePackagesSettings>>();
+            _options = new Mock<IOptions<ExplorePackagesSettings>>();
             _options.Setup(x => x.Value).Returns(() => _settings);
             _serviceClientFactory = new ServiceClientFactory(_options.Object);
             _blobNameProvider = new PackageBlobNameProvider();

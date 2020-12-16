@@ -7,11 +7,11 @@ namespace Knapcode.ExplorePackages.Worker
     public class CursorStorageService
     {
         private readonly ServiceClientFactory _serviceClientFactory;
-        private readonly IOptionsSnapshot<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
         public CursorStorageService(
             ServiceClientFactory serviceClientFactory,
-            IOptionsSnapshot<ExplorePackagesWorkerSettings> options)
+            IOptions<ExplorePackagesWorkerSettings> options)
         {
             _serviceClientFactory = serviceClientFactory;
             _options = options;

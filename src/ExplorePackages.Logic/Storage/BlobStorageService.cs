@@ -17,14 +17,14 @@ namespace Knapcode.ExplorePackages
     {
         private readonly HttpSource _httpSource;
         private readonly ServiceClientFactory _serviceClientFactory;
-        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
+        private readonly IOptions<ExplorePackagesSettings> _options;
         private readonly ILogger<BlobStorageService> _logger;
         private readonly Lazy<CloudBlobContainer> _lazyContainer;
 
         public BlobStorageService(
             HttpSource httpSource,
             ServiceClientFactory serviceClientFactory,
-            IOptionsSnapshot<ExplorePackagesSettings> options,
+            IOptions<ExplorePackagesSettings> options,
             ILogger<BlobStorageService> logger)
         {
             _httpSource = httpSource;

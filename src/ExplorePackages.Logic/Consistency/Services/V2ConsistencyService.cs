@@ -6,11 +6,11 @@ namespace Knapcode.ExplorePackages
     public class V2ConsistencyService : IConsistencyService<V2ConsistencyReport>
     {
         private readonly V2Client _client;
-        private readonly IOptionsSnapshot<ExplorePackagesSettings> _options;
+        private readonly IOptions<ExplorePackagesSettings> _options;
 
         public V2ConsistencyService(
             V2Client client,
-            IOptionsSnapshot<ExplorePackagesSettings> options)
+            IOptions<ExplorePackagesSettings> options)
         {
             _client = client;
             _options = options;

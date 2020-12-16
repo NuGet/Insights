@@ -14,7 +14,7 @@ namespace Knapcode.ExplorePackages.Worker
         private readonly MessageEnqueuer _messageEnqueuer;
         private readonly SchemaSerializer _serializer;
         private readonly CatalogScanStorageService _catalogScanStorageService;
-        private readonly IOptionsSnapshot<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<CatalogScanService> _logger;
 
         public CatalogScanService(
@@ -23,7 +23,7 @@ namespace Knapcode.ExplorePackages.Worker
             MessageEnqueuer messageEnqueuer,
             SchemaSerializer serializer,
             CatalogScanStorageService catalogScanStorageService,
-            IOptionsSnapshot<ExplorePackagesWorkerSettings> options,
+            IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<CatalogScanService> logger)
         {
             _catalogClient = catalogClient;
@@ -33,6 +33,13 @@ namespace Knapcode.ExplorePackages.Worker
             _catalogScanStorageService = catalogScanStorageService;
             _options = options;
             _logger = logger;
+        }
+
+        public async Task InitializeAsync()
+        {
+            await _cursorStorageService.InitializeAsync();
+            await _catalogScanStorageService.InitializeAsync();
+            await _messageEnqueuer.InitializeAsync();
         }
 
         public async Task RequeueAsync(string scanId)
@@ -76,10 +83,10 @@ namespace Knapcode.ExplorePackages.Worker
             });
         }
 
-        public async Task<CatalogIndexScan> UpdateFindPackageAssets() => await UpdateFindPackageAssets(max: null);
-        public async Task<CatalogIndexScan> UpdateFindPackageAssetsAsync(DateTimeOffset max) => await UpdateFindPackageAssets((DateTimeOffset?)max);
+        public async Task<CatalogIndexScan> UpdateFindPackageAssetsAsync() => await UpdateFindPackageAssetsAsync(max: null);
+        public async Task<CatalogIndexScan> UpdateFindPackageAssetsAsync(DateTimeOffset max) => await UpdateFindPackageAssetsAsync((DateTimeOffset?)max);
 
-        private async Task<CatalogIndexScan> UpdateFindPackageAssets(DateTimeOffset? max)
+        private async Task<CatalogIndexScan> UpdateFindPackageAssetsAsync(DateTimeOffset? max)
         {
             return await UpdateAsync(
                 CatalogScanType.FindPackageAssets,

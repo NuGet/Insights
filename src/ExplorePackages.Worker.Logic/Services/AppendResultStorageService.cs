@@ -23,11 +23,11 @@ namespace Knapcode.ExplorePackages.Worker
         private const string CompactPrefix = "compact_";
         private const int MaximumPropertyLength = 32 * 1024;
         private readonly IServiceClientFactory _serviceClientFactory;
-        private readonly IOptionsSnapshot<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
         public AppendResultStorageService(
             IServiceClientFactory serviceClientFactory,
-            IOptionsSnapshot<ExplorePackagesWorkerSettings> options)
+            IOptions<ExplorePackagesWorkerSettings> options)
         {
             _serviceClientFactory = serviceClientFactory;
             _options = options;

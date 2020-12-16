@@ -5,6 +5,7 @@ using Pulumi.Azure.AppInsights;
 using Pulumi.Azure.Core;
 using Pulumi.Azure.Storage;
 using System.Text.RegularExpressions;
+using Knapcode.ExplorePackages.Worker;
 
 namespace Knapcode.ExplorePackages
 {
@@ -43,6 +44,8 @@ namespace Knapcode.ExplorePackages
 
             var config = new Config();
 
+            var defaultSettings = new ExplorePackagesWorkerSettings();
+
             var workerApp = new FunctionApp("ExplorePackagesWorker" + stackAlpha, new FunctionAppArgs
             {
                 ResourceGroupName = resourceGroup.Name,
@@ -56,9 +59,9 @@ namespace Knapcode.ExplorePackages
                     { "APPINSIGHTS_INSTRUMENTATIONKEY", appInsights.InstrumentationKey },
                     { "APPLICATIONINSIGHTS_CONNECTION_STRING", appInsights.ConnectionString },
                     { "FUNCTIONS_WORKER_RUNTIME", "dotnet" },
-                    { "Knapcode.ExplorePackages:StorageConnectionString", storageAccount.PrimaryConnectionString },
-                    { "Knapcode.ExplorePackages:WorkerQueueName", "worker-queue" },
-                    { "Knapcode.ExplorePackages:AppendResultStorageMode", config.Require("AppendResultStorageMode") },
+                    { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesSettings.StorageConnectionString)}", storageAccount.PrimaryConnectionString },
+                    { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWorkerSettings.WorkerQueueName)}", defaultSettings.WorkerQueueName },
+                    { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWorkerSettings.AppendResultStorageMode)}", config.Get(nameof(ExplorePackagesWorkerSettings.AppendResultStorageMode)) ?? defaultSettings.AppendResultStorageMode.ToString() },
                 },
             });
         }

@@ -16,13 +16,13 @@ namespace Knapcode.ExplorePackages.Entities
     {
         private readonly PackageQueryProcessor _processor;
         private readonly IPackageService _packageService;
-        private readonly IOptionsSnapshot<ExplorePackagesEntitiesSettings> _options;
+        private readonly IOptions<ExplorePackagesEntitiesSettings> _options;
         private readonly ILogger<PackageQueryExecutor> _logger;
 
         public PackageQueryExecutor(
             PackageQueryProcessor processor,
             IPackageService packageService,
-            IOptionsSnapshot<ExplorePackagesEntitiesSettings> options,
+            IOptions<ExplorePackagesEntitiesSettings> options,
             ILogger<PackageQueryExecutor> logger)
         {
             _processor = processor;

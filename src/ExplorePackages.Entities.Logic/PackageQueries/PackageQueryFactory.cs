@@ -17,11 +17,11 @@ namespace Knapcode.ExplorePackages.Entities
         };
 
         private readonly Func<IEnumerable<IPackageQuery>> _getPackageQueries;
-        private readonly IOptionsSnapshot<ExplorePackagesEntitiesSettings> _options;
+        private readonly IOptions<ExplorePackagesEntitiesSettings> _options;
 
         public PackageQueryFactory(
             Func<IEnumerable<IPackageQuery>> getPackageQueries,
-            IOptionsSnapshot<ExplorePackagesEntitiesSettings> options)
+            IOptions<ExplorePackagesEntitiesSettings> options)
         {
             _getPackageQueries = getPackageQueries;
             _options = options;
