@@ -1,7 +1,4 @@
-﻿using System;
-using System.Text;
-
-namespace Knapcode.ExplorePackages
+﻿namespace Knapcode.ExplorePackages
 {
     public interface ICloudStorageAccount
     {

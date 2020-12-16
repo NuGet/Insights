@@ -1,17 +1,13 @@
 ﻿using Newtonsoft.Json;
-using NReco.Csv;
 using NuGet.Common;
 using NuGet.ProjectModel;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using NuGetPackageIdentity = NuGet.Packaging.Core.PackageIdentity;
 
 namespace Knapcode.ExplorePackages.Worker.RunRealRestore
 {
-    public partial class RealRestoreResult : ICsvWritable
+    public partial class RealRestoreResult : ICsvRecord
     {
         public RealRestoreResult()
         {
@@ -128,15 +124,5 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
         public bool? OnlyNU1213 { get; set; }
         public string BuildErrorCodes { get; set; }
         public bool? OnlyMSB3644 { get; set; }
-
-        public void Read(Func<int, string> getField)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Write(CsvWriter writer)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

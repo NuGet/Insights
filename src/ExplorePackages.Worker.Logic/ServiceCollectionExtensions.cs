@@ -34,6 +34,8 @@ namespace Knapcode.ExplorePackages.Worker
 
             serviceCollection.AddTransient<CatalogScanService>();
 
+            serviceCollection.AddTransient<ICsvReader, NRecoCsvReader>();
+
             serviceCollection.AddFindPackageAssets();
             serviceCollection.AddRunRealRestore();
 

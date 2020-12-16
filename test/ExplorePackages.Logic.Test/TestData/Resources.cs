@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using System.Xml.Linq;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Knapcode.ExplorePackages
 {

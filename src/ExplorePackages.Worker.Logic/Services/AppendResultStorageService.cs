@@ -1,5 +1,4 @@
-﻿using CsvHelper;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Shared.Protocol;
@@ -8,7 +7,6 @@ using Microsoft.WindowsAzure.Storage.Table.Protocol;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -67,7 +65,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        public async Task AppendAsync<T>(string containerName, int bucketCount, string bucketKey, IReadOnlyList<T> records) where T : ICsvWritable
+        public async Task AppendAsync<T>(string containerName, int bucketCount, string bucketKey, IReadOnlyList<T> records) where T : ICsvRecord
         {
             switch (_options.Value.AppendResultStorageMode)
             {
@@ -82,7 +80,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        private async Task AppendToBlobAsync<T>(string containerName, int bucketCount, string bucketKey, IReadOnlyList<T> records) where T : ICsvWritable
+        private async Task AppendToBlobAsync<T>(string containerName, int bucketCount, string bucketKey, IReadOnlyList<T> records) where T : ICsvRecord
         {
             var bucket = GetBucket(bucketCount, bucketKey);
             var blob = GetAppendBlob(containerName, bucket);
@@ -108,7 +106,7 @@ namespace Knapcode.ExplorePackages.Worker
             await AppendToBlobAsync(blob, records);
         }
 
-        private async Task AppendToBlobAsync<T>(CloudAppendBlob blob, IReadOnlyList<T> records) where T : ICsvWritable
+        private async Task AppendToBlobAsync<T>(CloudAppendBlob blob, IReadOnlyList<T> records) where T : ICsvRecord
         {
             using var memoryStream = SerializeRecords(records);
             try
@@ -221,7 +219,7 @@ namespace Knapcode.ExplorePackages.Worker
             bool force,
             bool mergeExisting,
             Func<List<T>, List<T>> prune,
-            ICsvReader csvReader) where T : ICsvWritable, new()
+            ICsvReader csvReader) where T : ICsvRecord, new()
         {
             switch (_options.Value.AppendResultStorageMode)
             {
@@ -243,7 +241,7 @@ namespace Knapcode.ExplorePackages.Worker
             bool force,
             bool mergeExisting,
             Func<List<T>, List<T>> prune,
-            ICsvReader csvReader) where T : ICsvWritable, new()
+            ICsvReader csvReader) where T : ICsvRecord, new()
         {
             var appendRecords = new List<T>();
 
@@ -272,7 +270,7 @@ namespace Knapcode.ExplorePackages.Worker
             bool force,
             bool mergeExisting,
             Func<List<T>, List<T>> prune,
-            ICsvReader csvReader) where T : ICsvWritable, new()
+            ICsvReader csvReader) where T : ICsvRecord, new()
         {
             var appendRecords = new List<T>();
 
@@ -303,7 +301,7 @@ namespace Knapcode.ExplorePackages.Worker
             int bucket,
             bool mergeExisting,
             Func<List<T>, List<T>> prune,
-            ICsvReader csvReader) where T : ICsvWritable, new()
+            ICsvReader csvReader) where T : ICsvRecord, new()
         {
             var allRecords = new List<T>(appendRecords);
 
@@ -328,7 +326,7 @@ namespace Knapcode.ExplorePackages.Worker
             await compactBlob.UploadFromStreamAsync(stream, accessCondition, options: null, operationContext: null);
         }
 
-        private static async Task<List<T>> DeserializeBlobAsync<T>(ICloudBlobWrapper blob, ICsvReader csvReader) where T : ICsvWritable, new()
+        private static async Task<List<T>> DeserializeBlobAsync<T>(ICloudBlobWrapper blob, ICsvReader csvReader) where T : ICsvRecord, new()
         {
             using (var memoryStream = new MemoryStream())
             {
@@ -380,7 +378,7 @@ namespace Knapcode.ExplorePackages.Worker
             return markerEntities.Select(x => int.Parse(x.RowKey)).ToList();
         }
 
-        private static MemoryStream SerializeRecords<T>(IReadOnlyList<T> records) where T : ICsvWritable
+        private static MemoryStream SerializeRecords<T>(IReadOnlyList<T> records) where T : ICsvRecord
         {
             var memoryStream = new MemoryStream();
             using (var streamWriter = new StreamWriter(memoryStream, new UTF8Encoding(false), bufferSize: 1024, leaveOpen: true))
