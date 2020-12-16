@@ -68,9 +68,9 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        public async Task<CatalogIndexScan> GetIndexScanAsync(string scanId)
+        public async Task<CatalogIndexScan> GetIndexScanAsync(string cursorName, string scanId)
         {
-            return await GetIndexScanTable().RetrieveAsync<CatalogIndexScan>(scanId, string.Empty);
+            return await GetIndexScanTable().RetrieveAsync<CatalogIndexScan>(cursorName, scanId);
         }
 
         public async Task<CatalogPageScan> GetPageScanAsync(string storageSuffix, string scanId, string pageId)

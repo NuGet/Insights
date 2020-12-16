@@ -42,9 +42,9 @@ namespace Knapcode.ExplorePackages.Worker
             await _messageEnqueuer.InitializeAsync();
         }
 
-        public async Task RequeueAsync(string scanId)
+        public async Task RequeueAsync(string cursorName, string scanId)
         {
-            var indexScan = await _catalogScanStorageService.GetIndexScanAsync(scanId);
+            var indexScan = await _catalogScanStorageService.GetIndexScanAsync(cursorName, scanId);
             if (indexScan.ParsedState != CatalogScanState.Waiting)
             {
                 return;
@@ -78,6 +78,7 @@ namespace Knapcode.ExplorePackages.Worker
             {
                 new CatalogIndexScanMessage
                 {
+                    CursorName = indexScan.CursorName,
                     ScanId = indexScan.ScanId,
                 },
             });
@@ -113,17 +114,20 @@ namespace Knapcode.ExplorePackages.Worker
             // Start a new scan.
             _logger.LogInformation("Attempting to start a catalog index scan from ({Min}, {Max}].", min, max);
             var scanId = StorageUtility.GenerateDescendingId();
-            var catalogIndexScanMessage = new CatalogIndexScanMessage { ScanId = scanId.ToString() };
+            var catalogIndexScanMessage = new CatalogIndexScanMessage
+            {
+                CursorName = cursor.Name,
+                ScanId = scanId.ToString(),
+            };
             await _messageEnqueuer.EnqueueAsync(new[] { catalogIndexScanMessage });
 
-            var catalogIndexScan = new CatalogIndexScan(scanId.ToString(), scanId.Unique)
+            var catalogIndexScan = new CatalogIndexScan(cursor.Name, scanId.ToString(), scanId.Unique)
             {
                 ParsedScanType = type,
                 ScanParameters = parameters,
                 ParsedState = CatalogScanState.Created,
                 Min = min,
                 Max = max.Value,
-                CursorName = cursor.Name,
             };
             await _catalogScanStorageService.InitializeChildTablesAsync(catalogIndexScan.StorageSuffix);
             await _catalogScanStorageService.InsertAsync(catalogIndexScan);

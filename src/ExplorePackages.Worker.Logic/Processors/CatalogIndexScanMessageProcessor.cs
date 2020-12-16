@@ -34,7 +34,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task ProcessAsync(CatalogIndexScanMessage message)
         {
-            var scan = await _storageService.GetIndexScanAsync(message.ScanId);
+            var scan = await _storageService.GetIndexScanAsync(message.CursorName, message.ScanId);
             if (scan == null)
             {
                 await Task.Delay(TimeSpan.FromSeconds(10));

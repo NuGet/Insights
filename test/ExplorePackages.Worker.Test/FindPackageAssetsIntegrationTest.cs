@@ -154,7 +154,7 @@ namespace Knapcode.ExplorePackages.Worker
                     }
                 }
 
-                indexScan = await CatalogScanStorageService.GetIndexScanAsync(indexScan.ScanId);
+                indexScan = await CatalogScanStorageService.GetIndexScanAsync(indexScan.CursorName, indexScan.ScanId);
 
                 if (indexScan.ParsedState != CatalogScanState.Complete)
                 {

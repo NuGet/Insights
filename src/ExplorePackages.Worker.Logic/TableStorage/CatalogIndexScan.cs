@@ -5,19 +5,22 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class CatalogIndexScan : TableEntity
     {
-        public CatalogIndexScan(string scanId, string storageSuffix) : this()
+        public CatalogIndexScan(string cursorName, string scanId, string storageSuffix) : this()
         {
-            PartitionKey = scanId;
+            PartitionKey = cursorName;
+            RowKey = scanId;
             StorageSuffix = storageSuffix;
         }
 
         public CatalogIndexScan()
         {
-            RowKey = string.Empty;
         }
 
         [IgnoreProperty]
-        public string ScanId => PartitionKey;
+        public string CursorName => PartitionKey;
+
+        [IgnoreProperty]
+        public string ScanId => RowKey;
 
         [IgnoreProperty]
         public CatalogScanState ParsedState
@@ -39,6 +42,5 @@ namespace Knapcode.ExplorePackages.Worker
         public string ScanParameters { get; set; }
         public DateTimeOffset? Min { get; set; }
         public DateTimeOffset? Max { get; set; }
-        public string CursorName { get; set; }
     }
 }
