@@ -1,11 +1,11 @@
-using Pulumi;
-using Pulumi.Azure.AppService;
-using Pulumi.Azure.AppService.Inputs;
-using Pulumi.Azure.AppInsights;
-using Pulumi.Azure.Core;
-using Pulumi.Azure.Storage;
 using System.Text.RegularExpressions;
 using Knapcode.ExplorePackages.Worker;
+using Pulumi;
+using Pulumi.Azure.AppInsights;
+using Pulumi.Azure.AppService;
+using Pulumi.Azure.AppService.Inputs;
+using Pulumi.Azure.Core;
+using Pulumi.Azure.Storage;
 
 namespace Knapcode.ExplorePackages
 {
@@ -42,6 +42,21 @@ namespace Knapcode.ExplorePackages
                 },
             });
 
+            var deploymentContainer = new Container("deployment", new ContainerArgs
+            {
+                StorageAccountName = storageAccount.Name,
+            });
+
+            var deploymentBlob = new Blob("Knapcode.ExplorerPackages.Worker", new BlobArgs
+            {
+                StorageAccountName = storageAccount.Name,
+                StorageContainerName = deploymentContainer.Name,
+                Type = "Block",
+                Source = new FileArchive("../../artifacts/ExplorePackages/ExplorePackages.Worker/bin/Release/netcoreapp3.1/publish"),
+            });
+
+            var deploymentBlobUrl = SharedAccessSignature.SignedBlobReadUrl(deploymentBlob, storageAccount);
+
             var config = new Config();
 
             var defaultSettings = new ExplorePackagesWorkerSettings();
@@ -56,6 +71,7 @@ namespace Knapcode.ExplorePackages
                 Version = "~3",
                 AppSettings = new InputMap<string>
                 {
+                    { "WEBSITE_RUN_FROM_PACKAGE", deploymentBlobUrl },
                     { "APPINSIGHTS_INSTRUMENTATIONKEY", appInsights.InstrumentationKey },
                     { "APPLICATIONINSIGHTS_CONNECTION_STRING", appInsights.ConnectionString },
                     { "FUNCTIONS_WORKER_RUNTIME", "dotnet" },

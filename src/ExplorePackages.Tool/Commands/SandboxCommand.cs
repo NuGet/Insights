@@ -104,8 +104,8 @@ namespace Knapcode.ExplorePackages.Tool
             // NU1213: { "n":"rrr","v":1,"d":{ "i":"Microsoft.AspNetCore.App.Runtime.linux-x64","v":"5.0.0-rc.1.20451.17","f":"netstandard1.5"} }
             // MSB3644: { "n":"rrr","v":1,"d":{ "i":"Newtonsoft.Json","v":"12.0.3","f":"net35"} }
 
-            // await _catalogScanService.UpdateFindPackageAssets();
-            await _catalogScanService.UpdateFindPackageAssetsAsync(DateTimeOffset.Parse("2018-08-08T17:29:16.4488298Z"));
+            await _catalogScanService.UpdateFindPackageAssetsAsync();
+            // await _catalogScanService.UpdateFindPackageAssetsAsync(DateTimeOffset.Parse("2018-08-08T17:29:16.4488298Z"));
             // await _catalogScanService.RequeueAsync("08585954065972383328-9a556c36a70a48078031b866de666a4b");
             // await EnqueueRunRealRestoreAsync();
             // await EnqueueRunRealRestoreCompactAsync();
