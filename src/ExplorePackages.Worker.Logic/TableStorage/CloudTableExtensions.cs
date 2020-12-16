@@ -9,19 +9,20 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public static class CloudTableExtensions
     {
-        public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(this CloudTable table, string partitionKey) where T : ITableEntity, new()
+        public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(this CloudTable table, string partitionKey, int? maxEntities = null) where T : ITableEntity, new()
         {
-            return await GetEntitiesAsync<T>(table.ExecuteQuerySegmentedAsync, partitionKey);
+            return await GetEntitiesAsync<T>(table.ExecuteQuerySegmentedAsync, partitionKey, maxEntities);
         }
 
-        public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(this ICloudTable table, string partitionKey) where T : ITableEntity, new()
+        public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(this ICloudTable table, string partitionKey, int? maxEntities = null) where T : ITableEntity, new()
         {
-            return await GetEntitiesAsync<T>(table.ExecuteQuerySegmentedAsync, partitionKey);
+            return await GetEntitiesAsync<T>(table.ExecuteQuerySegmentedAsync, partitionKey, maxEntities);
         }
 
         private static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(
             Func<TableQuery<T>, TableContinuationToken, Task<TableQuerySegment<T>>> executeQuerySegmentedAsync,
-            string partitionKey) where T : ITableEntity, new()
+            string partitionKey,
+            int? maxEntities = null) where T : ITableEntity, new()
         {
             var entities = new List<T>();
             var query = new TableQuery<T>
@@ -36,11 +37,12 @@ namespace Knapcode.ExplorePackages.Worker
             TableContinuationToken token = null;
             do
             {
+                query.TakeCount = Math.Min(MaxTakeCount, maxEntities.GetValueOrDefault(MaxTakeCount) - entities.Count);
                 var segment = await executeQuerySegmentedAsync(query, token);
                 token = segment.ContinuationToken;
                 entities.AddRange(segment.Results);
             }
-            while (token != null);
+            while (token != null && (!maxEntities.HasValue || entities.Count < maxEntities));
 
             return entities;
         }

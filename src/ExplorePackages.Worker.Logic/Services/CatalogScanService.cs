@@ -14,6 +14,7 @@ namespace Knapcode.ExplorePackages.Worker
         private readonly MessageEnqueuer _messageEnqueuer;
         private readonly SchemaSerializer _serializer;
         private readonly CatalogScanStorageService _catalogScanStorageService;
+        private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<CatalogScanService> _logger;
 
@@ -23,6 +24,7 @@ namespace Knapcode.ExplorePackages.Worker
             MessageEnqueuer messageEnqueuer,
             SchemaSerializer serializer,
             CatalogScanStorageService catalogScanStorageService,
+            AutoRenewingStorageLeaseService leaseService,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<CatalogScanService> logger)
         {
@@ -31,6 +33,7 @@ namespace Knapcode.ExplorePackages.Worker
             _messageEnqueuer = messageEnqueuer;
             _serializer = serializer;
             _catalogScanStorageService = catalogScanStorageService;
+            _leaseService = leaseService;
             _options = options;
             _logger = logger;
         }
@@ -40,6 +43,7 @@ namespace Knapcode.ExplorePackages.Worker
             await _cursorStorageService.InitializeAsync();
             await _catalogScanStorageService.InitializeAsync();
             await _messageEnqueuer.InitializeAsync();
+            await _leaseService.InitializeAsync();
         }
 
         public async Task RequeueAsync(string cursorName, string scanId)
@@ -100,8 +104,15 @@ namespace Knapcode.ExplorePackages.Worker
 
         private async Task<CatalogIndexScan> UpdateAsync(CatalogScanType type, string parameters, DateTimeOffset? max)
         {
-            // Determine the bounds of the scan.
+            // Check if a scan is already running, outside the lease.
             var cursor = await _cursorStorageService.GetOrCreateAsync($"CatalogScan-{type}");
+            var incompleteScan = await GetLatestIncompleteScanAsync(cursor.Name);
+            if (incompleteScan != null)
+            {
+                return incompleteScan;
+            }
+
+            // Determine the bounds of the scan.
             var index = await _catalogClient.GetCatalogIndexAsync();
             var min = new[] { cursor.Value, CatalogClient.NuGetOrgMin }.Max();
             max = max.GetValueOrDefault(index.CommitTimestamp);
@@ -111,28 +122,55 @@ namespace Knapcode.ExplorePackages.Worker
                 return null;
             }
 
-            // Start a new scan.
-            _logger.LogInformation("Attempting to start a catalog index scan from ({Min}, {Max}].", min, max);
-            var scanId = StorageUtility.GenerateDescendingId();
-            var catalogIndexScanMessage = new CatalogIndexScanMessage
+            await using (var lease = await _leaseService.TryAcquireAsync($"Start-{cursor.Name}"))
             {
-                CursorName = cursor.Name,
-                ScanId = scanId.ToString(),
-            };
-            await _messageEnqueuer.EnqueueAsync(new[] { catalogIndexScanMessage });
+                if (!lease.Acquired)
+                {
+                    return null;
+                }
 
-            var catalogIndexScan = new CatalogIndexScan(cursor.Name, scanId.ToString(), scanId.Unique)
+                // Check if a scan is already running, inside the lease.
+                incompleteScan = await GetLatestIncompleteScanAsync(cursor.Name);
+                if (incompleteScan != null)
+                {
+                    return incompleteScan;
+                }
+
+                // Start a new scan.
+                _logger.LogInformation("Attempting to start a catalog index scan from ({Min}, {Max}].", min, max);
+                var scanId = StorageUtility.GenerateDescendingId();
+                var catalogIndexScanMessage = new CatalogIndexScanMessage
+                {
+                    CursorName = cursor.Name,
+                    ScanId = scanId.ToString(),
+                };
+                await _messageEnqueuer.EnqueueAsync(new[] { catalogIndexScanMessage });
+
+                var catalogIndexScan = new CatalogIndexScan(cursor.Name, scanId.ToString(), scanId.Unique)
+                {
+                    ParsedScanType = type,
+                    ScanParameters = parameters,
+                    ParsedState = CatalogScanState.Created,
+                    Min = min,
+                    Max = max.Value,
+                };
+                await _catalogScanStorageService.InitializeChildTablesAsync(catalogIndexScan.StorageSuffix);
+                await _catalogScanStorageService.InsertAsync(catalogIndexScan);
+
+                return catalogIndexScan;
+            }
+        }
+
+        private async Task<CatalogIndexScan> GetLatestIncompleteScanAsync(string cursorName)
+        {
+            var latestScans = await _catalogScanStorageService.GetLatestIndexScans(cursorName);
+            var incompleteScans = latestScans.Where(x => x.ParsedState != CatalogScanState.Complete);
+            if (incompleteScans.Any())
             {
-                ParsedScanType = type,
-                ScanParameters = parameters,
-                ParsedState = CatalogScanState.Created,
-                Min = min,
-                Max = max.Value,
-            };
-            await _catalogScanStorageService.InitializeChildTablesAsync(catalogIndexScan.StorageSuffix);
-            await _catalogScanStorageService.InsertAsync(catalogIndexScan);
+                return incompleteScans.First();
+            }
 
-            return catalogIndexScan;
+            return null;
         }
     }
 }

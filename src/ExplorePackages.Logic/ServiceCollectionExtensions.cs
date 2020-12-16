@@ -105,6 +105,8 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<PackageBlobNameProvider>();
             serviceCollection.AddTransient<IFileStorageService, FileStorageService>();
             serviceCollection.AddTransient<IBlobStorageService, BlobStorageService>();
+            serviceCollection.AddTransient<StorageLeaseService>();
+            serviceCollection.AddTransient<AutoRenewingStorageLeaseService>();
 
             serviceCollection.AddSingleton<IBatchSizeProvider, BatchSizeProvider>();
             serviceCollection.AddTransient<CommitEnumerator>();

@@ -32,6 +32,7 @@ namespace Knapcode.ExplorePackages.Tool
         private readonly FindPackageAssetsScanDriver _driver;
         private readonly SchemaSerializer _serializer;
         private readonly GenericMessageProcessor _genericMessageProcessor;
+        private readonly StorageLeaseService _storageLeaseService;
         private readonly ILogger<SandboxCommand> _logger;
 
         public SandboxCommand(
@@ -47,6 +48,7 @@ namespace Knapcode.ExplorePackages.Tool
             FindPackageAssetsScanDriver driver,
             SchemaSerializer serializer,
             GenericMessageProcessor genericMessageProcessor,
+            StorageLeaseService storageLeaseService,
             ILogger<SandboxCommand> logger)
         {
             _catalogScanService = catalogScanService;
@@ -61,6 +63,7 @@ namespace Knapcode.ExplorePackages.Tool
             _driver = driver;
             _serializer = serializer;
             _genericMessageProcessor = genericMessageProcessor;
+            _storageLeaseService = storageLeaseService;
             _logger = logger;
         }
 
