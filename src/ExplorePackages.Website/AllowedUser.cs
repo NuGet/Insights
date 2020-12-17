@@ -3,6 +3,6 @@
     public class AllowedUser
     {
         public string TenantId { get; set; } = string.Empty;
-        public string NameIdentifier { get; set; } = string.Empty;
+        public string ObjectId { get; set; } = string.Empty;
     }
 }

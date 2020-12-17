@@ -5,6 +5,10 @@ namespace Knapcode.ExplorePackages
 {
     public class Program
     {
-        static Task<int> Main() => Deployment.RunAsync<MyStack>();
+        static async Task<int> Main()
+        {
+            var result = await Deployment.RunAsync<MyStack>();
+            return result;
+        }
     }
 }

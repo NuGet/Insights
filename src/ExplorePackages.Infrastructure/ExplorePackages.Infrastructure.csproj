@@ -9,11 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Pulumi.Azure" Version="3.30.1" />
+    <PackageReference Include="Pulumi.Azure" Version="3.40.0" />
+    <PackageReference Include="Pulumi.AzureAD" Version="3.1.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ExplorePackages.Worker.Logic\ExplorePackages.Worker.Logic.csproj" />
+    <ProjectReference Include="..\ExplorePackages.Website\ExplorePackages.Website.csproj" />
   </ItemGroup>
 
 </Project>

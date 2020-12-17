@@ -19,22 +19,21 @@ namespace Knapcode.ExplorePackages.Website
                 .Value
                 .AllowedUsers
                 .GroupBy(x => x.TenantId)
-                .ToDictionary(x => x.Key, x => x.Select(y => y.NameIdentifier).ToHashSet());
+                .ToDictionary(x => x.Key, x => x.Select(y => y.ObjectId).ToHashSet());
         }
 
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, AllowListRequirement requirement)
         {
             var tenantId = context.User.FindFirst(ClaimConstants.TenantId);
             if (tenantId == null
-                || !_allowedUsers.TryGetValue(tenantId.Value, out var nameIdentifiers))
+                || !_allowedUsers.TryGetValue(tenantId.Value, out var objectIds))
             {
                 context.Fail();
-                return Task.CompletedTask;
             }
             else
             {
-                var nameIdentifer = context.User.FindFirst(ClaimTypes.NameIdentifier);
-                if (!nameIdentifiers.Contains(nameIdentifer.Value))
+                var objectId = context.User.FindFirst(ClaimConstants.ObjectId);
+                if (!objectIds.Contains(objectId.Value))
                 {
                     context.Fail();
                 }
