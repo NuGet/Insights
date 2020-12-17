@@ -72,8 +72,8 @@ namespace Knapcode.ExplorePackages
                     Kind = "App",
                     Sku = new PlanSkuArgs
                     {
-                        Tier = "Free",
-                        Size = "F1",
+                        Tier = "Basic",
+                        Size = "B1",
                     },
                 });
                 planId = plan.Id;
@@ -90,10 +90,11 @@ namespace Knapcode.ExplorePackages
             var deploymentBlobUrl = SharedAccessSignature.SignedBlobReadUrl(deploymentBlob, _storageAccount);
 
             var appServiceName = "explorepackages" + _stackAlpha;
+            var aadAppName = "Knapcode.ExplorePackages-" + _stackAlpha;
 
-            var aadApp = new Application("ExplorePackagesWebsiteOpenIdConnect", new ApplicationArgs
+            var aadApp = new Application(aadAppName, new ApplicationArgs
             {
-                Name = "Knapcode.ExplorePackages",
+                Name = aadAppName,
                 ReplyUrls = { $"https://{appServiceName}.azurewebsites.net/signin-oidc" },
                 LogoutUrl = $"https://{appServiceName}.azurewebsites.net/signout-oidc",
             });
