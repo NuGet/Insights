@@ -98,13 +98,9 @@ namespace Knapcode.ExplorePackages
 
             var deploymentBlobUrl = SharedAccessSignature.SignedBlobReadUrl(deploymentBlob, _storageAccount);
 
-            var aadAppName = "Knapcode.ExplorePackages-" + _stackAlpha;
-            var aadApp = new Application(aadAppName, new ApplicationArgs
-            {
-                Name = aadAppName,
-            });
+            var aadApp = new Application("Knapcode.ExplorePackages-" + _stackAlpha);
 
-            var appService = new AppService("explorepackagesworker", new AppServiceArgs
+            var appService = new AppService("ExplorePackagesWebsite" + _stackAlpha, new AppServiceArgs
             {
                 ResourceGroupName = _resourceGroup.Name,
                 AppServicePlanId = planId,
