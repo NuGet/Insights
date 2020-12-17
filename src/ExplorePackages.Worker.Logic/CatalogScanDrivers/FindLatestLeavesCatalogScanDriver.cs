@@ -12,11 +12,11 @@ namespace Knapcode.ExplorePackages.Worker
         public FindLatestLeavesCatalogScanDriver(
             CatalogClient catalogClient,
             LatestPackageLeafStorageService storageService,
-            SchemaSerializer parameterSerializer)
+            SchemaSerializer schemaSerializer)
         {
             _catalogClient = catalogClient;
             _storageService = storageService;
-            _schemaSerializer = parameterSerializer;
+            _schemaSerializer = schemaSerializer;
         }
 
         public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)

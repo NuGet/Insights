@@ -7,7 +7,8 @@ namespace Knapcode.ExplorePackages.Worker
     {
         string Name { get; }
         Type Type { get; }
-        ISerializedEntity Serialize(object message);
+        ISerializedEntity SerializeMessage(object message);
+        JToken SerializeData(object message);
         object Deserialize(int schemaVersion, JToken data);
     }
 }

@@ -4,20 +4,20 @@ using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class BulkEnqueueMessageProcessor : IMessageProcessor<BulkEnqueueMessage>
+    public class MixedBulkEnqueueMessageProcessor : IMessageProcessor<MixedBulkEnqueueMessage>
     {
         private readonly IRawMessageEnqueuer _messageEnqueuer;
-        private readonly ILogger<BulkEnqueueMessage> _logger;
+        private readonly ILogger<MixedBulkEnqueueMessage> _logger;
 
-        public BulkEnqueueMessageProcessor(IRawMessageEnqueuer messageEnqueuer, ILogger<BulkEnqueueMessage> logger)
+        public MixedBulkEnqueueMessageProcessor(IRawMessageEnqueuer messageEnqueuer, ILogger<MixedBulkEnqueueMessage> logger)
         {
             _messageEnqueuer = messageEnqueuer;
             _logger = logger;
         }
 
-        public async Task ProcessAsync(BulkEnqueueMessage message)
+        public async Task ProcessAsync(MixedBulkEnqueueMessage message)
         {
-            _logger.LogInformation("Processing bulk enqueue message with {Count} messages.", message.Messages.Count);
+            _logger.LogInformation("Processing mixed bulk enqueue message with {Count} messages.", message.Messages.Count);
 
             var messages = message.Messages.Select(x => new SerializedMessage(() => x).AsString()).ToList();
             await _messageEnqueuer.AddAsync(messages, message.NotBefore);

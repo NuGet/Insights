@@ -88,7 +88,7 @@ namespace Knapcode.ExplorePackages.Worker
             else
             {
                 var batch = new List<JToken>();
-                var batchMessage = new BulkEnqueueMessage { Messages = batch, NotBefore = notBefore };
+                var batchMessage = new MixedBulkEnqueueMessage { Messages = batch, NotBefore = notBefore };
                 var emptyBatchMessageLength = GetMessageLength(batchMessage);
                 var batchMessageLength = emptyBatchMessageLength;
 
@@ -127,7 +127,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        private async Task EnqueueBulkEnqueueMessageAsync(BulkEnqueueMessage batchMessage, int expectedLength)
+        private async Task EnqueueBulkEnqueueMessageAsync(MixedBulkEnqueueMessage batchMessage, int expectedLength)
         {
             var bytes = _serializer.Serialize(batchMessage).AsString();
             if (bytes.Length != expectedLength)
@@ -142,7 +142,7 @@ namespace Knapcode.ExplorePackages.Worker
             await _rawMessageEnqueuer.AddAsync(new[] { bytes });
         }
 
-        private int GetMessageLength(BulkEnqueueMessage batchMessage)
+        private int GetMessageLength(MixedBulkEnqueueMessage batchMessage)
         {
             return GetMessageLength(_serializer.Serialize(batchMessage));
         }

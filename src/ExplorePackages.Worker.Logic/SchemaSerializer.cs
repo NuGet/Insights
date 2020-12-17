@@ -8,7 +8,8 @@ namespace Knapcode.ExplorePackages.Worker
     {
         private static readonly GenericSchemaSerializer Serializer = new GenericSchemaSerializer(new ISchema[]
         {
-            new SchemaV1<BulkEnqueueMessage>("be"),
+            new SchemaV1<MixedBulkEnqueueMessage>("mbe"),
+            new SchemaV1<HomogeneousBulkEnqueueMessage>("hbe"),
             new SchemaV1<CatalogIndexScanMessage>("cis"),
             new SchemaV1<CatalogPageScanMessage>("cps"),
             new SchemaV1<CatalogLeafScanMessage>("cls"),
@@ -27,7 +28,8 @@ namespace Knapcode.ExplorePackages.Worker
             _logger = logger;
         }
 
-        public ISerializedEntity Serialize(BulkEnqueueMessage message) => Serializer.Serialize(message);
+        public ISerializedEntity Serialize(MixedBulkEnqueueMessage message) => Serializer.Serialize(message);
+        public ISerializedEntity Serialize(HomogeneousBulkEnqueueMessage message) => Serializer.Serialize(message);
         public ISerializedEntity Serialize(CatalogIndexScanMessage message) => Serializer.Serialize(message);
         public ISerializedEntity Serialize(CatalogPageScanMessage message) => Serializer.Serialize(message);
         public ISerializedEntity Serialize(CatalogLeafScanMessage message) => Serializer.Serialize(message);

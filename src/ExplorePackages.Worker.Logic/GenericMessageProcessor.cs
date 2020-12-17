@@ -7,14 +7,14 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class GenericMessageProcessor
     {
-        private readonly SchemaSerializer _serializer;
+        private readonly SchemaSerializer _schemaSerializer;
         private readonly IServiceProvider _serviceProvider;
 
         public GenericMessageProcessor(
             SchemaSerializer serializer,
             IServiceProvider serviceProvider)
         {
-            _serializer = serializer;
+            _schemaSerializer = serializer;
             _serviceProvider = serviceProvider;
         }
 
@@ -23,12 +23,12 @@ namespace Knapcode.ExplorePackages.Worker
             object deserializedMessage;
             try
             {
-                deserializedMessage = _serializer.Deserialize(message);
+                deserializedMessage = _schemaSerializer.Deserialize(message);
             }
             catch (JsonException)
             {
                 message = Encoding.UTF8.GetString(Convert.FromBase64String(message));
-                deserializedMessage = _serializer.Deserialize(message);
+                deserializedMessage = _schemaSerializer.Deserialize(message);
             }
 
             var messageType = deserializedMessage.GetType();

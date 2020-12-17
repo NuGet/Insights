@@ -15,7 +15,7 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient<SchemaSerializer>();
             serviceCollection.AddTransient<MessageEnqueuer>();
 
-            serviceCollection.AddTransient<IMessageProcessor<BulkEnqueueMessage>, BulkEnqueueMessageProcessor>();
+            serviceCollection.AddTransient<IMessageProcessor<MixedBulkEnqueueMessage>, MixedBulkEnqueueMessageProcessor>();
             serviceCollection.AddTransient<IMessageProcessor<CatalogIndexScanMessage>, CatalogIndexScanMessageProcessor>();
             serviceCollection.AddTransient<IMessageProcessor<CatalogPageScanMessage>, CatalogPageScanMessageProcessor>();
             serviceCollection.AddTransient<IMessageProcessor<CatalogLeafScanMessage>, CatalogLeafScanMessageProcessor>();

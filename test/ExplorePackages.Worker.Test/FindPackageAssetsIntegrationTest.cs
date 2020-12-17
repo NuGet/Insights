@@ -86,9 +86,7 @@ namespace Knapcode.ExplorePackages.Worker
             var max2 = DateTimeOffset.Parse("2020-11-27T19:36:50.4909042Z");
             var cursorName = $"CatalogScan-{CatalogScanType.FindPackageAssets}";
 
-            await WorkerQueueFactory.InitializeAsync();
-            await CursorStorageService.InitializeAsync();
-            await CatalogScanStorageService.InitializeAsync();
+            await CatalogScanService.InitializeAsync();
 
             var cursor = await CursorStorageService.GetOrCreateAsync(cursorName);
             cursor.Value = min0;

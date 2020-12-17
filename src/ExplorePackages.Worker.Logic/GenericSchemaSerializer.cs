@@ -26,7 +26,7 @@ namespace Knapcode.ExplorePackages.Worker
                 throw new FormatException($"No schema for message type '{typeof(T).FullName}' exists.");
             }
 
-            return schema.Serialize(message);
+            return schema.SerializeMessage(message);
         }
 
         public object Deserialize(string message, ILogger logger)

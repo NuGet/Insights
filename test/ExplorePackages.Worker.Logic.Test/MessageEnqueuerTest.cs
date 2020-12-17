@@ -16,7 +16,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             await Target.EnqueueAsync(
                 Enumerable.Range(0, messageCount).ToList(),
-                i => Serializer.Serialize(new CatalogPageScanMessage { PageId = i.ToString() }));
+                i => SchemaSerializer.Serialize(new CatalogPageScanMessage { PageId = i.ToString() }));
 
             var messages = Assert.Single(EnqueuedMessages);
             for (var i = 0; i < messageCount; i++)
@@ -43,7 +43,7 @@ namespace Knapcode.ExplorePackages.Worker
             Assert.Equal((messageCount / perBatch) + (messageCount % perBatch > 0 ? 1 : 0), EnqueuedMessages.Count);
             for (var i = 0; i < messageCount; i++)
             {
-                var message = (BulkEnqueueMessage)Assert.Single(EnqueuedMessages[i / perBatch]);
+                var message = (MixedBulkEnqueueMessage)Assert.Single(EnqueuedMessages[i / perBatch]);
                 Assert.StartsWith($"{i}_", message.Messages[i % perBatch].ToString());
             }
         }
@@ -58,7 +58,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public MessageEnqueuerTest(ITestOutputHelper output)
         {
-            Serializer = new SchemaSerializer(output.GetLogger<SchemaSerializer>());
+            SchemaSerializer = new SchemaSerializer(output.GetLogger<SchemaSerializer>());
             RawMessageEnqueuer = new Mock<IRawMessageEnqueuer>();
 
             RawMessageEnqueuer
@@ -68,21 +68,21 @@ namespace Knapcode.ExplorePackages.Worker
             RawMessageEnqueuer
                 .Setup(x => x.AddAsync(It.IsAny<IReadOnlyList<string>>()))
                 .Returns(Task.CompletedTask)
-                .Callback<IReadOnlyList<string>>(x => EnqueuedMessages.Add(x.Select(y => Serializer.Deserialize(y)).ToList()));
+                .Callback<IReadOnlyList<string>>(x => EnqueuedMessages.Add(x.Select(y => SchemaSerializer.Deserialize(y)).ToList()));
             RawMessageEnqueuer
                 .Setup(x => x.AddAsync(It.IsAny<IReadOnlyList<string>>(), It.IsAny<TimeSpan>()))
                 .Returns(Task.CompletedTask)
-                .Callback<IReadOnlyList<string>, TimeSpan>((x, ts) => EnqueuedMessages.Add(x.Select(y => Serializer.Deserialize(y)).ToList()));
+                .Callback<IReadOnlyList<string>, TimeSpan>((x, ts) => EnqueuedMessages.Add(x.Select(y => SchemaSerializer.Deserialize(y)).ToList()));
 
             EnqueuedMessages = new List<List<object>>();
 
             Target = new MessageEnqueuer(
-                Serializer,
+                SchemaSerializer,
                 RawMessageEnqueuer.Object,
                 output.GetLogger<MessageEnqueuer>());
         }
 
-        public SchemaSerializer Serializer { get; }
+        public SchemaSerializer SchemaSerializer { get; }
         public Mock<IRawMessageEnqueuer> RawMessageEnqueuer { get; }
         public List<List<object>> EnqueuedMessages { get; }
         public MessageEnqueuer Target { get; }

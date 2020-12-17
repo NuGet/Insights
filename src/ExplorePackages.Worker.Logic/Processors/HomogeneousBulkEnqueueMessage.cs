@@ -5,8 +5,14 @@ using Newtonsoft.Json.Linq;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class BulkEnqueueMessage
+    public class HomogeneousBulkEnqueueMessage
     {
+        [JsonProperty("n")]
+        public string SchemaName { get; }
+
+        [JsonProperty("v")]
+        public int SchemaVersion { get; }
+
         [JsonProperty("m")]
         public List<JToken> Messages { get; set; }
 
