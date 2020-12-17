@@ -1,5 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using Knapcode.ExplorePackages.Website.Logic;
+using Knapcode.ExplorePackages.Worker;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -24,9 +25,11 @@ namespace Knapcode.ExplorePackages.Website
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<ExplorePackagesSettings>(Configuration.GetSection(ExplorePackagesSettings.DefaultSectionName));
+            services.Configure<ExplorePackagesWorkerSettings>(Configuration.GetSection(ExplorePackagesSettings.DefaultSectionName));
             services.Configure<ExplorePackagesWebsiteSettings>(Configuration.GetSection(ExplorePackagesSettings.DefaultSectionName));
 
             services.AddExplorePackages("Knapcode.ExplorePackages.Website");
+            services.AddExplorePackagesWorker();
 
             services.AddSingleton<IAuthorizationHandler, AllowListAuthorizationHandler>();
 

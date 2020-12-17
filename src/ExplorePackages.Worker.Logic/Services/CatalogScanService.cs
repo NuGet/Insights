@@ -88,6 +88,11 @@ namespace Knapcode.ExplorePackages.Worker
             });
         }
 
+        public async Task<CursorTableEntity> GetCursorAsync(CatalogScanType type)
+        {
+            return await _cursorStorageService.GetOrCreateAsync($"CatalogScan-{type}");
+        }
+
         public async Task<CatalogIndexScan> UpdateFindPackageAssetsAsync() => await UpdateFindPackageAssetsAsync(max: null);
         public async Task<CatalogIndexScan> UpdateFindPackageAssetsAsync(DateTimeOffset max) => await UpdateFindPackageAssetsAsync((DateTimeOffset?)max);
 
@@ -105,7 +110,7 @@ namespace Knapcode.ExplorePackages.Worker
         private async Task<CatalogIndexScan> UpdateAsync(CatalogScanType type, string parameters, DateTimeOffset? max)
         {
             // Check if a scan is already running, outside the lease.
-            var cursor = await _cursorStorageService.GetOrCreateAsync($"CatalogScan-{type}");
+            var cursor = await GetCursorAsync(type);
             var incompleteScan = await GetLatestIncompleteScanAsync(cursor.Name);
             if (incompleteScan != null)
             {

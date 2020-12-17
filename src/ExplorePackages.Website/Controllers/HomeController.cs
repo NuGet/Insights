@@ -26,10 +26,10 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             return View(nameof(Index), new ExploreViewModel(id, version));
         }
 
-        public async Task<RedirectResult> SignOutAsync()
+        public async Task<RedirectToActionResult> SignOut()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return Redirect(Url.Action(nameof(Index)));
+            return RedirectToAction(nameof(Index));
         }
 
         public ViewResult Error()

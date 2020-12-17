@@ -35,6 +35,20 @@ namespace Knapcode.ExplorePackages.Worker
             await _workerQueueFactory.InitializeAsync();
         }
 
+        public async Task<int> GetApproximateMessageCountAsync()
+        {
+            var queue = _workerQueueFactory.GetQueue();
+            await queue.FetchAttributesAsync();
+            return queue.ApproximateMessageCount.Value;
+        }
+
+        public async Task<int> GetAvailableMessageCountLowerBoundAsync()
+        {
+            var queue = _workerQueueFactory.GetQueue();
+            var messages = await queue.PeekMessagesAsync(32);
+            return messages.Count();
+        }
+
         public async Task AddAsync(IReadOnlyList<string> messages)
         {
             await AddAsync(messages, TimeSpan.Zero);

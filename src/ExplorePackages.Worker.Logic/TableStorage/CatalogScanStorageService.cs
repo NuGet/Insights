@@ -68,9 +68,9 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        public async Task<IReadOnlyList<CatalogIndexScan>> GetLatestIndexScans(string cursorName)
+        public async Task<IReadOnlyList<CatalogIndexScan>> GetLatestIndexScans(string cursorName, int? maxEntities = 1000)
         {
-            return await GetIndexScanTable().GetEntitiesAsync<CatalogIndexScan>(cursorName, maxEntities: 1000);
+            return await GetIndexScanTable().GetEntitiesAsync<CatalogIndexScan>(cursorName, maxEntities);
         }
 
         public async Task<CatalogIndexScan> GetIndexScanAsync(string cursorName, string scanId)
