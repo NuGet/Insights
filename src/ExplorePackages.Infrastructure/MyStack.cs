@@ -111,6 +111,18 @@ namespace Knapcode.ExplorePackages
                     AlwaysOn = true,
                     WebsocketsEnabled = true,
                 },
+                // Workaround for a bug. Source: https://github.com/pulumi/pulumi-azure/issues/740#issuecomment-734054001
+                Logs = new AppServiceLogsArgs
+                {
+                    HttpLogs = new AppServiceLogsHttpLogsArgs
+                    {
+                        FileSystem = new AppServiceLogsHttpLogsFileSystemArgs
+                        {
+                            RetentionInDays = 1,
+                            RetentionInMb = 25,
+                        },
+                    },
+                },
                 AppSettings = new InputMap<string>
                 {
                     { "WEBSITE_RUN_FROM_PACKAGE", deploymentBlobUrl },
