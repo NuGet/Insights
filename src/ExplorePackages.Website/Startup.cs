@@ -1,11 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using Knapcode.ExplorePackages.Website.Logic;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.UI;
 
 namespace Knapcode.ExplorePackages.Website
 {
@@ -18,30 +21,44 @@ namespace Knapcode.ExplorePackages.Website
 
         public IConfiguration Configuration { get; }
         
-        public void ConfigureServices(IServiceCollection serviceCollection)
+        public void ConfigureServices(IServiceCollection services)
         {
-            // Add the base configuration.
-            var configurationBuilder = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string>
-                {
-                    { "Knapcode.ExplorePackages:DatabaseType", "None" }
-                });
-            var configuration = configurationBuilder.Build();
-            serviceCollection.Configure<ExplorePackagesSettings>(configuration.GetSection(ExplorePackagesSettings.DefaultSectionName));
+            services.Configure<ExplorePackagesSettings>(Configuration.GetSection(ExplorePackagesSettings.DefaultSectionName));
+            services.Configure<ExplorePackagesWebsiteSettings>(Configuration.GetSection(ExplorePackagesSettings.DefaultSectionName));
 
-            // Enable ExplorePackages dependencies.
-            serviceCollection.AddExplorePackages("Knapcode.ExplorePackages.Website");
-            serviceCollection.AddScoped<ServiceClientFactory>();
+            services.AddExplorePackages("Knapcode.ExplorePackages.Website");
 
-            // Add stuff specific to the website.
-            serviceCollection.AddLogging();
-            serviceCollection.AddMvc();
-            serviceCollection
+            services.AddSingleton<IAuthorizationHandler, AllowListAuthorizationHandler>();
+
+            services.AddLogging();
+            services.AddMvc();
+            services
                 .AddSignalR()
-                .AddJsonProtocol(o =>
+                .AddJsonProtocol(options =>
                 {
-                    o.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                    options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 });
+
+            services
+                .AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+                .AddMicrosoftIdentityWebApp(options =>
+                {
+                    options.Instance = "https://login.microsoftonline.com/";
+                    options.ClientId = "3182a756-a40a-41a9-851b-68d16b92e373";
+                    options.TenantId = "common";
+                });
+
+            services
+                .AddAuthorization(options =>
+                {
+                    options.AddPolicy(
+                        AllowListAuthorizationHandler.PolicyName,
+                        policy => policy.Requirements.Add(new AllowListRequirement()));
+                });
+
+            services
+                .AddRazorPages()
+                .AddMicrosoftIdentityUI();
         }
         
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -58,6 +75,9 @@ namespace Knapcode.ExplorePackages.Website
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(routes =>
             {

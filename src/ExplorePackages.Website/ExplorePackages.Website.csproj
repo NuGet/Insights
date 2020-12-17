@@ -6,6 +6,9 @@
     <UserSecretsId>fc241d56-9e3d-46f4-8c4b-40209befb209</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Identity.Web" Version="1.4.0" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\ExplorePackages.Logic\ExplorePackages.Logic.csproj" />
   </ItemGroup>
 </Project>
