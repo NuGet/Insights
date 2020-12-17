@@ -43,9 +43,11 @@ namespace Knapcode.ExplorePackages.Website
                 .AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
                 .AddMicrosoftIdentityWebApp(options =>
                 {
-                    options.Instance = "https://login.microsoftonline.com/";
-                    options.ClientId = "3182a756-a40a-41a9-851b-68d16b92e373";
-                    options.TenantId = "common";
+                    Configuration.GetSection(Constants.AzureAd).Bind(options);
+                },
+                options =>
+                {
+                    options.AccessDeniedPath = "/Home/AccessDenied";
                 });
 
             services

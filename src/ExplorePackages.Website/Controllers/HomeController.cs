@@ -1,5 +1,8 @@
 ﻿using System.Diagnostics;
+using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Website.Models;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using NuGet.Versioning;
 
@@ -23,9 +26,20 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             return View(nameof(Index), new ExploreViewModel(id, version));
         }
 
-        public IActionResult Error()
+        public async Task<RedirectResult> SignOutAsync()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return Redirect(Url.Action(nameof(Index)));
+        }
+
+        public ViewResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        public ViewResult AccessDenied()
+        {
+            return View();
         }
     }
 }
