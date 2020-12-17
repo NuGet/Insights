@@ -10,8 +10,14 @@ using Pulumi.Azure.Core;
 using Pulumi.Azure.Storage;
 using Config = Pulumi.Config;
 using Knapcode.ExplorePackages.Website;
-using Pulumi.AzureAD.Inputs;
-using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text;
+using System;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using System.Collections.Concurrent;
+using System.Linq;
+using System.IO;
 
 namespace Knapcode.ExplorePackages
 {
@@ -56,6 +62,9 @@ namespace Knapcode.ExplorePackages
             CreateWorker();
         }
 
+        [Output]
+        public Output<bool> AadAppUpdated { get; set; }
+
         private void CreateWebsite()
         {
             Output<string> planId;
@@ -89,22 +98,14 @@ namespace Knapcode.ExplorePackages
 
             var deploymentBlobUrl = SharedAccessSignature.SignedBlobReadUrl(deploymentBlob, _storageAccount);
 
-            var appServiceName = "explorepackages" + _stackAlpha;
             var aadAppName = "Knapcode.ExplorePackages-" + _stackAlpha;
-
             var aadApp = new Application(aadAppName, new ApplicationArgs
             {
                 Name = aadAppName,
-                ReplyUrls = { $"https://{appServiceName}.azurewebsites.net/signin-oidc" },
-                LogoutUrl = $"https://{appServiceName}.azurewebsites.net/signout-oidc",
             });
-            // Manually edit the following properties in the AAD app manifest editor:
-            //   "accessTokenAcceptedVersion": 2
-            //   "signInAudience": "AzureADandPersonalMicrosoftAccount"
 
-            var appService = new AppService(appServiceName, new AppServiceArgs
+            var appService = new AppService("explorepackagesworker", new AppServiceArgs
             {
-                Name = appServiceName,
                 ResourceGroupName = _resourceGroup.Name,
                 AppServicePlanId = planId,
                 ClientAffinityEnabled = false,
@@ -128,6 +129,79 @@ namespace Knapcode.ExplorePackages
                     { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.AllowedUsers)}:0:{nameof(AllowedUser.ObjectId)}", "00000000-0000-0000-1325-2c8418ebab3b" },
                 },
             });
+
+            AadAppUpdated = aadApp.ApplicationId.Apply(clientId =>
+            {
+                var objectId = ExecuteJson("cmd", "/c", "az", "ad", "app", "show", "--id", clientId).Value<string>("objectId");
+
+                return appService.DefaultSiteHostname.Apply(defaultSiteHostname =>
+                {
+                    if (!Deployment.Instance.IsDryRun)
+                    {
+                        Execute("cmd", "/c", "az", "rest",
+                            "--method", "PATCH",
+                            "--headers", "Content-Type=application/json",
+                            "--uri", $"https://graph.microsoft.com/v1.0/applications/{objectId}",
+                            "--body", JsonConvert.SerializeObject(new
+                            {
+                                api = new
+                                {
+                                    requestedAccessTokenVersion = 2,
+                                },
+                                signInAudience = "AzureADandPersonalMicrosoftAccount",
+                                web = new
+                                {
+                                    redirectUris = new[]
+                                    {
+                                        $"https://{defaultSiteHostname}/signin-oidc",
+                                    },
+                                    logoutUrl = $"https://{defaultSiteHostname}/signout-oidc",
+                                },
+                            }));
+                    }
+
+                    return true;
+                });
+            });
+        }
+
+        private string Execute(string fileName, params string[] arguments)
+        {
+            using (var process = new Process())
+            {
+                process.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
+                process.StartInfo.FileName = fileName;
+                foreach (var argument in arguments)
+                {
+                    process.StartInfo.ArgumentList.Add(argument);
+                }
+                process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.RedirectStandardError = true;
+                process.StartInfo.UseShellExecute = false;
+                var output = new ConcurrentQueue<(bool isOutput, string data)>();
+                process.OutputDataReceived += (sender, args) => output.Enqueue((true, args.Data));
+                process.ErrorDataReceived += (sender, args) => output.Enqueue((false, args.Data));
+                process.Start();
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+                process.WaitForExit();
+
+                if (process.ExitCode != 0)
+                {
+                    throw new InvalidOperationException(
+                        $"Command failed: {fileName} {string.Join(' ', arguments)}" +
+                        System.Environment.NewLine +
+                        string.Join(System.Environment.NewLine, output.Select(x => x.data)));
+                }
+
+                return string.Join(System.Environment.NewLine, output.Where(x => x.isOutput).Select(x => x.data));
+            }
+        }
+
+        private JToken ExecuteJson(string fileName, params string[] arguments)
+        {
+            var output = Execute(fileName, arguments);
+            return JToken.Parse(output);
         }
 
         private void CreateWorker()
