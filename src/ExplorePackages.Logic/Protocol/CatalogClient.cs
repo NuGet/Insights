@@ -31,21 +31,6 @@ namespace Knapcode.ExplorePackages
             _logger = logger;
         }
 
-        /*
-        public string GetCatalogLeafRelativePath(CatalogLeafEntity leaf)
-        {
-            if (leaf.RelativePath != null)
-            {
-                return leaf.RelativePath;
-            }
-
-            return GetExpectedCatalogLeafRelativePath(
-                leaf.CatalogPackage.Package.Id,
-                leaf.CatalogPackage.Package.Version,
-                new DateTimeOffset(leaf.CatalogCommit.CommitTimestamp, TimeSpan.Zero));
-        }
-        */
-
         public async Task<CatalogIndex> GetCatalogIndexAsync(string url)
         {
             return await _httpSource.DeserializeUrlAsync<CatalogIndex>(
@@ -107,35 +92,6 @@ namespace Knapcode.ExplorePackages
                     throw new NotImplementedException($"Catalog leaf type {type} is not supported.");
             }
         }
-
-        /*
-        public async Task<CatalogLeaf> GetCatalogLeafAsync(CatalogLeafEntity leaf)
-        {
-            var baseUrl = await GetCatalogBaseUrlAsync();
-            var relativePath = GetCatalogLeafRelativePath(leaf);
-            var url = baseUrl + relativePath;
-
-            switch (leaf.Type)
-            {
-                case CatalogLeafType.PackageDelete:
-                    return await _httpSource.DeserializeUrlAsync<PackageDeleteCatalogLeaf>(
-                        url,
-                        ignoreNotFounds: false,
-                        maxTries: 3,
-                        serializer: CatalogJsonSerialization.Serializer,
-                        logger: _logger);
-                case CatalogLeafType.PackageDetails:
-                    return await _httpSource.DeserializeUrlAsync<PackageDetailsCatalogLeaf>(
-                        url,
-                        ignoreNotFounds: false,
-                        maxTries: 3,
-                        serializer: CatalogJsonSerialization.Serializer,
-                        logger: _logger);
-                default:
-                    throw new NotImplementedException($"Catalog leaf type {leaf.Type} is not supported.");
-            }
-        }
-        */
 
         public string GetExpectedCatalogLeafRelativePath(string id, string version, DateTimeOffset commitTimestamp)
         {
