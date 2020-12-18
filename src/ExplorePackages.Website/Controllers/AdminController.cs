@@ -27,22 +27,33 @@ namespace Knapcode.ExplorePackages.Website.Controllers
         {
             await _catalogScanService.InitializeAsync();
             var approximateMessageCountTask = _rawMessageEnqueuer.GetApproximateMessageCountAsync();
+            var poisonApproximateMessageCountTask = _rawMessageEnqueuer.GetPoisonApproximateMessageCountAsync();
             const int messageCount = 32;
             var availableMessageCountLowerBoundTask = _rawMessageEnqueuer.GetAvailableMessageCountLowerBoundAsync(messageCount);
+            var poisonAvailableMessageCountLowerBoundTask = _rawMessageEnqueuer.GetPoisonAvailableMessageCountLowerBoundAsync(messageCount);
             var cursorTask = _catalogScanService.GetCursorAsync(CatalogScanType.FindPackageAssets);
             var cursor = await cursorTask;
             var latestScansTask = _catalogScanStorageService.GetLatestIndexScans(cursor.Name, maxEntities: 10);
-            await Task.WhenAll(approximateMessageCountTask, availableMessageCountLowerBoundTask, cursorTask, latestScansTask);
+            await Task.WhenAll(
+                approximateMessageCountTask,
+                poisonApproximateMessageCountTask,
+                availableMessageCountLowerBoundTask,
+                poisonAvailableMessageCountLowerBoundTask,
+                cursorTask,
+                latestScansTask);
 
             var model = new AdminViewModel
             {
                 ApproximateMessageCount = await approximateMessageCountTask,
                 AvailableMessageCountLowerBound = await availableMessageCountLowerBoundTask,
+                PoisonApproximateMessageCount = await poisonApproximateMessageCountTask,
+                PoisonAvailableMessageCountLowerBound = await poisonAvailableMessageCountLowerBoundTask,
                 Cursor = cursor,
                 LatestScans = await latestScansTask,
             };
 
             model.AvailableMessageCountIsExact = model.AvailableMessageCountLowerBound < messageCount;
+            model.PoisonAvailableMessageCountIsExact = model.PoisonAvailableMessageCountLowerBound < messageCount;
 
             return View(model);
         }

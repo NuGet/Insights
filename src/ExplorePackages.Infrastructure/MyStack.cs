@@ -107,7 +107,6 @@ namespace Knapcode.ExplorePackages
                 HttpsOnly = true,
                 SiteConfig = new AppServiceSiteConfigArgs
                 {
-                    AlwaysOn = true,
                     WebsocketsEnabled = true,
                 },
                 // Workaround for a bug. Source: https://github.com/pulumi/pulumi-azure/issues/740#issuecomment-734054001

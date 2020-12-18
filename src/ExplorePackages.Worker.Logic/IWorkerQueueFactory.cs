@@ -7,5 +7,6 @@ namespace Knapcode.ExplorePackages.Worker
     {
         Task InitializeAsync();
         CloudQueue GetQueue();
+        CloudQueue GetPoisonQueue();
     }
 }

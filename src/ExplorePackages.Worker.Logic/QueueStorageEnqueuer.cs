@@ -35,17 +35,20 @@ namespace Knapcode.ExplorePackages.Worker
             await _workerQueueFactory.InitializeAsync();
         }
 
-        public async Task<int> GetApproximateMessageCountAsync()
+        public Task<int> GetApproximateMessageCountAsync() => GetApproximateMessageCountAsync(_workerQueueFactory.GetQueue());
+        public Task<int> GetAvailableMessageCountLowerBoundAsync(int messageCount) => GetAvailableMessageCountLowerBoundAsync(_workerQueueFactory.GetQueue(), messageCount);
+        public Task<int> GetPoisonApproximateMessageCountAsync() => GetApproximateMessageCountAsync(_workerQueueFactory.GetPoisonQueue());
+        public Task<int> GetPoisonAvailableMessageCountLowerBoundAsync(int messageCount) => GetAvailableMessageCountLowerBoundAsync(_workerQueueFactory.GetPoisonQueue(), messageCount);
+
+        private static async Task<int> GetApproximateMessageCountAsync(CloudQueue queue)
         {
-            var queue = _workerQueueFactory.GetQueue();
             await queue.FetchAttributesAsync();
             return queue.ApproximateMessageCount.Value;
         }
 
-        public async Task<int> GetAvailableMessageCountLowerBoundAsync(int messageCount)
+        private static async Task<int> GetAvailableMessageCountLowerBoundAsync(CloudQueue queue, int messageCount)
         {
-            var queue = _workerQueueFactory.GetQueue();
-            var messages = await queue.PeekMessagesAsync(32);
+            var messages = await queue.PeekMessagesAsync(messageCount);
             return messages.Count();
         }
 

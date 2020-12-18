@@ -20,14 +20,25 @@ namespace Knapcode.ExplorePackages.Worker
         public async Task InitializeAsync()
         {
             await GetQueue().CreateIfNotExistsAsync(retry: true);
+            await GetPoisonQueue().CreateIfNotExistsAsync(retry: true);
         }
 
         public CloudQueue GetQueue()
         {
+            return GetQueue(_options.Value.WorkerQueueName);
+        }
+
+        public CloudQueue GetPoisonQueue()
+        {
+            return GetQueue(_options.Value.WorkerQueueName + "-poison");
+        }
+
+        private CloudQueue GetQueue(string queueName)
+        {
             var queue = _serviceClientFactory
                 .GetStorageAccount()
                 .CreateCloudQueueClient()
-                .GetQueueReference(_options.Value.WorkerQueueName);
+                .GetQueueReference(queueName);
             queue.EncodeMessage = false;
             return queue;
         }
