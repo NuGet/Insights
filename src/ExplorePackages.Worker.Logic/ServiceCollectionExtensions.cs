@@ -15,12 +15,6 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient<SchemaSerializer>();
             serviceCollection.AddTransient<MessageEnqueuer>();
 
-            serviceCollection.AddTransient<IMessageProcessor<MixedBulkEnqueueMessage>, MixedBulkEnqueueMessageProcessor>();
-            serviceCollection.AddTransient<IMessageProcessor<HomogeneousBulkEnqueueMessage>, HomogeneousBulkEnqueueMessageProcessor>();
-            serviceCollection.AddTransient<IMessageProcessor<CatalogIndexScanMessage>, CatalogIndexScanMessageProcessor>();
-            serviceCollection.AddTransient<IMessageProcessor<CatalogPageScanMessage>, CatalogPageScanMessageProcessor>();
-            serviceCollection.AddTransient<IMessageProcessor<CatalogLeafScanMessage>, CatalogLeafScanMessageProcessor>();
-
             serviceCollection.AddTransient<CatalogScanStorageService>();
             serviceCollection.AddTransient<LatestPackageLeafStorageService>();
             serviceCollection.AddTransient<CursorStorageService>();
@@ -40,21 +34,21 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddFindPackageAssets();
             serviceCollection.AddRunRealRestore();
 
+            foreach (var (serviceType, implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(IMessageProcessor<>)))
+            {
+                serviceCollection.AddTransient(serviceType, implementationType);
+            }
+
             return serviceCollection;
         }
 
         private static void AddFindPackageAssets(this IServiceCollection serviceCollection)
         {
-            serviceCollection.AddTransient<IMessageProcessor<FindPackageAssetsCompactMessage>, FindPackageAssetsCompactProcessor>();
-
             serviceCollection.AddTransient<FindPackageAssetsScanDriver>();
         }
 
         private static void AddRunRealRestore(this IServiceCollection serviceCollection)
         {
-            serviceCollection.AddTransient<IMessageProcessor<RunRealRestoreMessage>, RunRealRestoreProcessor>();
-            serviceCollection.AddTransient<IMessageProcessor<RunRealRestoreCompactMessage>, RunRealRestoreCompactProcessor>();
-
             serviceCollection.AddTransient<ProjectHelper>();
         }
     }

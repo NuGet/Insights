@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker.FindPackageAssets;
-using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
@@ -31,33 +29,9 @@ namespace Knapcode.ExplorePackages.Worker
             await _rawMessageEnqueuer.InitializeAsync();
         }
 
-        public Task EnqueueAsync(IReadOnlyList<CatalogIndexScanMessage> messages) => EnqueueAsync(messages, TimeSpan.Zero);
-        public Task EnqueueAsync(IReadOnlyList<CatalogIndexScanMessage> messages, TimeSpan notBefore) => GetSchemaAndEnqueueAsync(messages, notBefore);
-
-        public Task EnqueueAsync(IReadOnlyList<CatalogPageScanMessage> messages) => EnqueueAsync(messages, TimeSpan.Zero);
-        public Task EnqueueAsync(IReadOnlyList<CatalogPageScanMessage> messages, TimeSpan notBefore) => GetSchemaAndEnqueueAsync(messages, notBefore);
-
-        public Task EnqueueAsync(IReadOnlyList<CatalogLeafScanMessage> messages) => EnqueueAsync(messages, TimeSpan.Zero);
-        public Task EnqueueAsync(IReadOnlyList<CatalogLeafScanMessage> messages, TimeSpan notBefore) => GetSchemaAndEnqueueAsync(messages, notBefore);
-
-        public Task EnqueueAsync(IReadOnlyList<FindPackageAssetsCompactMessage> messages) => EnqueueAsync(messages, TimeSpan.Zero);
-        public Task EnqueueAsync(IReadOnlyList<FindPackageAssetsCompactMessage> messages, TimeSpan notBefore) => GetSchemaAndEnqueueAsync(messages, notBefore);
-
-        public Task EnqueueAsync(IReadOnlyList<RunRealRestoreMessage> messages) => EnqueueAsync(messages, TimeSpan.Zero);
-        public Task EnqueueAsync(IReadOnlyList<RunRealRestoreMessage> messages, TimeSpan notBefore) => GetSchemaAndEnqueueAsync(messages, notBefore);
-
-        public Task EnqueueAsync(IReadOnlyList<RunRealRestoreCompactMessage> messages) => EnqueueAsync(messages, TimeSpan.Zero);
-        public Task EnqueueAsync(IReadOnlyList<RunRealRestoreCompactMessage> messages, TimeSpan notBefore) => GetSchemaAndEnqueueAsync(messages, notBefore);
-
-        private async Task GetSchemaAndEnqueueAsync<T>(IReadOnlyList<T> messages, TimeSpan notBefore)
-        {
-            await EnqueueAsync(messages, _serializer.GetSerializer<T>(), notBefore);
-        }
-
-        public async Task EnqueueAsync<T>(IReadOnlyList<T> messages, ISchemaSerializer<T> schema)
-        {
-            await EnqueueAsync(messages, schema, TimeSpan.Zero);
-        }
+        public Task EnqueueAsync<T>(IReadOnlyList<T> messages) => EnqueueAsync(messages, TimeSpan.Zero);
+        public Task EnqueueAsync<T>(IReadOnlyList<T> messages, TimeSpan notBefore) => EnqueueAsync(messages, _serializer.GetSerializer<T>(), notBefore);
+        public Task EnqueueAsync<T>(IReadOnlyList<T> messages, ISchemaSerializer<T> schema) => EnqueueAsync(messages, schema, TimeSpan.Zero);
 
         public async Task EnqueueAsync<T>(IReadOnlyList<T> messages, ISchemaSerializer<T> schema, TimeSpan notBefore)
         {

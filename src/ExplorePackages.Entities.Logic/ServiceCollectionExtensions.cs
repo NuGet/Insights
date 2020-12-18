@@ -123,8 +123,10 @@ namespace Knapcode.ExplorePackages.Entities
                 () => x.GetRequiredService<IEnumerable<IPackageQuery>>(),
                 x.GetRequiredService<IOptions<ExplorePackagesEntitiesSettings>>()));
 
+            var assembly = typeof(ServiceCollectionExtensions).Assembly;
+            
             // Add all of the .nuspec queries.
-            foreach (var serviceType in GetClassesImplementing<INuspecQuery>())
+            foreach (var serviceType in assembly.GetClassesImplementing<INuspecQuery>())
             {
                 serviceCollection.AddTransient(serviceType);
                 serviceCollection.AddTransient<IPackageQuery>(x =>
@@ -135,7 +137,7 @@ namespace Knapcode.ExplorePackages.Entities
             }
 
             // Add all of the package consistency queries.
-            foreach (var serviceType in GetClassesImplementing<IPackageConsistencyQuery>())
+            foreach (var serviceType in assembly.GetClassesImplementing<IPackageConsistencyQuery>())
             {
                 serviceCollection.AddTransient(serviceType);
                 serviceCollection.AddTransient<IPackageQuery>(x =>
@@ -146,7 +148,7 @@ namespace Knapcode.ExplorePackages.Entities
             }
 
             // Add all of the package queries.
-            foreach (var serviceType in GetClassesImplementing<IPackageQuery>())
+            foreach (var serviceType in assembly.GetClassesImplementing<IPackageQuery>())
             {
                 if (serviceType == typeof(NuspecPackageQuery)
                     || serviceType == typeof(PackageConsistencyPackageQuery))
@@ -158,15 +160,6 @@ namespace Knapcode.ExplorePackages.Entities
             }
 
             return serviceCollection;
-        }
-
-        private static IEnumerable<Type> GetClassesImplementing<T>()
-        {
-            return typeof(ServiceCollectionExtensions)
-                .Assembly
-                .GetTypes()
-                .Where(t => t.GetInterfaces().Contains(typeof(T)))
-                .Where(t => t.IsClass && !t.IsAbstract);
         }
     }
 }
