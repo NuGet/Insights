@@ -1,4 +1,7 @@
-﻿using Knapcode.ExplorePackages.Worker.FindPackageAssets;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Knapcode.ExplorePackages.Worker.FindPackageAssets;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using Microsoft.Extensions.Logging;
 
@@ -6,7 +9,7 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class SchemaSerializer
     {
-        private static readonly GenericSchemaSerializer Serializer = new GenericSchemaSerializer(new ISchema[]
+        private static readonly SchemasCollection Schemas = new SchemasCollection(new ISchemaDeserializer[]
         {
             new SchemaV1<MixedBulkEnqueueMessage>("mbe"),
             new SchemaV1<HomogeneousBulkEnqueueMessage>("hbe"),
@@ -28,18 +31,55 @@ namespace Knapcode.ExplorePackages.Worker
             _logger = logger;
         }
 
-        public ISerializedEntity Serialize(MixedBulkEnqueueMessage message) => Serializer.Serialize(message);
-        public ISerializedEntity Serialize(HomogeneousBulkEnqueueMessage message) => Serializer.Serialize(message);
-        public ISerializedEntity Serialize(CatalogIndexScanMessage message) => Serializer.Serialize(message);
-        public ISerializedEntity Serialize(CatalogPageScanMessage message) => Serializer.Serialize(message);
-        public ISerializedEntity Serialize(CatalogLeafScanMessage message) => Serializer.Serialize(message);
-        public ISerializedEntity Serialize(FindPackageAssetsCompactMessage message) => Serializer.Serialize(message);
-        public ISerializedEntity Serialize(RunRealRestoreMessage message) => Serializer.Serialize(message);
-        public ISerializedEntity Serialize(RunRealRestoreCompactMessage message) => Serializer.Serialize(message);
+        public ISchemaSerializer<T> GetSerializer<T>() => Schemas.GetSerializer<T>();
+        public ISerializedEntity Serialize<T>(T message) => Schemas.GetSerializer<T>().SerializeMessage(message);
+        public object Deserialize(string message) => Schemas.Deserialize(message, _logger);
 
-        public ISerializedEntity Serialize(FindLatestLeavesParameters parameters) => Serializer.Serialize(parameters);
-        public ISerializedEntity Serialize(FindPackageAssetsParameters parameters) => Serializer.Serialize(parameters);
+        private class SchemasCollection
+        {
+            private readonly IReadOnlyDictionary<string, ISchemaDeserializer> NameToSchema;
+            private readonly IReadOnlyDictionary<Type, ISchemaDeserializer> TypeToSchema;
 
-        public object Deserialize(string message) => Serializer.Deserialize(message, _logger);
+            public SchemasCollection(IReadOnlyList<ISchemaDeserializer> schemas)
+            {
+                NameToSchema = schemas.ToDictionary(x => x.Name);
+                TypeToSchema = schemas.ToDictionary(x => x.Type);
+            }
+
+            public ISchemaSerializer<T> GetSerializer<T>()
+            {
+                if (!TypeToSchema.TryGetValue(typeof(T), out var genericSchema))
+                {
+                    throw new FormatException($"No schema for message type '{typeof(T).FullName}' exists.");
+                }
+
+                var typedScheme = genericSchema as ISchemaSerializer<T>;
+                if (typedScheme == null)
+                {
+                    throw new FormatException($"The schema for message type '{typeof(T).FullName}' is not a typed schema.");
+                }
+
+                return typedScheme;
+            }
+
+            public object Deserialize(string message, ILogger logger)
+            {
+                var deserialized = NameVersionSerializer.DeserializeMessage(message);
+
+                if (!NameToSchema.TryGetValue(deserialized.SchemaName, out var schema))
+                {
+                    throw new FormatException($"The schema '{deserialized.SchemaName}' is not supported.");
+                }
+
+                var deserializedEntity = schema.Deserialize(deserialized.SchemaVersion, deserialized.Data);
+
+                logger.LogInformation(
+                    "Deserialized object with schema {SchemaName} and version {SchemaVersion}.",
+                    deserialized.SchemaName,
+                    deserialized.SchemaVersion);
+
+                return deserializedEntity;
+            }
+        }
     }
 }

@@ -31,48 +31,35 @@ namespace Knapcode.ExplorePackages.Worker
             await _rawMessageEnqueuer.InitializeAsync();
         }
 
-        public async Task EnqueueAsync(IReadOnlyList<CatalogIndexScanMessage> messages) => await EnqueueAsync(messages, TimeSpan.Zero);
-        public async Task EnqueueAsync(IReadOnlyList<CatalogIndexScanMessage> messages, TimeSpan notBefore)
+        public Task EnqueueAsync(IReadOnlyList<CatalogIndexScanMessage> messages) => EnqueueAsync(messages, TimeSpan.Zero);
+        public Task EnqueueAsync(IReadOnlyList<CatalogIndexScanMessage> messages, TimeSpan notBefore) => GetSchemaAndEnqueueAsync(messages, notBefore);
+
+        public Task EnqueueAsync(IReadOnlyList<CatalogPageScanMessage> messages) => EnqueueAsync(messages, TimeSpan.Zero);
+        public Task EnqueueAsync(IReadOnlyList<CatalogPageScanMessage> messages, TimeSpan notBefore) => GetSchemaAndEnqueueAsync(messages, notBefore);
+
+        public Task EnqueueAsync(IReadOnlyList<CatalogLeafScanMessage> messages) => EnqueueAsync(messages, TimeSpan.Zero);
+        public Task EnqueueAsync(IReadOnlyList<CatalogLeafScanMessage> messages, TimeSpan notBefore) => GetSchemaAndEnqueueAsync(messages, notBefore);
+
+        public Task EnqueueAsync(IReadOnlyList<FindPackageAssetsCompactMessage> messages) => EnqueueAsync(messages, TimeSpan.Zero);
+        public Task EnqueueAsync(IReadOnlyList<FindPackageAssetsCompactMessage> messages, TimeSpan notBefore) => GetSchemaAndEnqueueAsync(messages, notBefore);
+
+        public Task EnqueueAsync(IReadOnlyList<RunRealRestoreMessage> messages) => EnqueueAsync(messages, TimeSpan.Zero);
+        public Task EnqueueAsync(IReadOnlyList<RunRealRestoreMessage> messages, TimeSpan notBefore) => GetSchemaAndEnqueueAsync(messages, notBefore);
+
+        public Task EnqueueAsync(IReadOnlyList<RunRealRestoreCompactMessage> messages) => EnqueueAsync(messages, TimeSpan.Zero);
+        public Task EnqueueAsync(IReadOnlyList<RunRealRestoreCompactMessage> messages, TimeSpan notBefore) => GetSchemaAndEnqueueAsync(messages, notBefore);
+
+        private async Task GetSchemaAndEnqueueAsync<T>(IReadOnlyList<T> messages, TimeSpan notBefore)
         {
-            await EnqueueAsync(messages, m => _serializer.Serialize(m), notBefore);
+            await EnqueueAsync(messages, _serializer.GetSerializer<T>(), notBefore);
         }
 
-        public async Task EnqueueAsync(IReadOnlyList<CatalogPageScanMessage> messages) => await EnqueueAsync(messages, TimeSpan.Zero);
-        public async Task EnqueueAsync(IReadOnlyList<CatalogPageScanMessage> messages, TimeSpan notBefore)
+        public async Task EnqueueAsync<T>(IReadOnlyList<T> messages, ISchemaSerializer<T> schema)
         {
-            await EnqueueAsync(messages, m => _serializer.Serialize(m), notBefore);
+            await EnqueueAsync(messages, schema, TimeSpan.Zero);
         }
 
-        public async Task EnqueueAsync(IReadOnlyList<CatalogLeafScanMessage> messages) => await EnqueueAsync(messages, TimeSpan.Zero);
-        public async Task EnqueueAsync(IReadOnlyList<CatalogLeafScanMessage> messages, TimeSpan notBefore)
-        {
-            await EnqueueAsync(messages, m => _serializer.Serialize(m), notBefore);
-        }
-
-        public async Task EnqueueAsync(IReadOnlyList<FindPackageAssetsCompactMessage> messages) => await EnqueueAsync(messages, TimeSpan.Zero);
-        public async Task EnqueueAsync(IReadOnlyList<FindPackageAssetsCompactMessage> messages, TimeSpan notBefore)
-        {
-            await EnqueueAsync(messages, m => _serializer.Serialize(m), notBefore);
-        }
-
-        public async Task EnqueueAsync(IReadOnlyList<RunRealRestoreMessage> messages) => await EnqueueAsync(messages, TimeSpan.Zero);
-        public async Task EnqueueAsync(IReadOnlyList<RunRealRestoreMessage> messages, TimeSpan notBefore)
-        {
-            await EnqueueAsync(messages, m => _serializer.Serialize(m), notBefore);
-        }
-
-        public async Task EnqueueAsync(IReadOnlyList<RunRealRestoreCompactMessage> messages) => await EnqueueAsync(messages, TimeSpan.Zero);
-        public async Task EnqueueAsync(IReadOnlyList<RunRealRestoreCompactMessage> messages, TimeSpan notBefore)
-        {
-            await EnqueueAsync(messages, m => _serializer.Serialize(m), notBefore);
-        }
-
-        public async Task EnqueueAsync<T>(IReadOnlyList<T> messages, Func<T, ISerializedEntity> serialize)
-        {
-            await EnqueueAsync(messages, serialize, TimeSpan.Zero);
-        }
-
-        public async Task EnqueueAsync<T>(IReadOnlyList<T> messages, Func<T, ISerializedEntity> serialize, TimeSpan notBefore)
+        public async Task EnqueueAsync<T>(IReadOnlyList<T> messages, ISchemaSerializer<T> schema, TimeSpan notBefore)
         {
             if (messages.Count == 0)
             {
@@ -82,39 +69,45 @@ namespace Knapcode.ExplorePackages.Worker
             var bulkEnqueueStrategy = _rawMessageEnqueuer.BulkEnqueueStrategy;
             if (!bulkEnqueueStrategy.IsEnabled || messages.Count < bulkEnqueueStrategy.Threshold)
             {
-                var serializedMessages = messages.Select(m => serialize(m).AsString()).ToList();
+                var serializedMessages = messages.Select(m => schema.SerializeMessage(m).AsString()).ToList();
                 await _rawMessageEnqueuer.AddAsync(serializedMessages, notBefore);
             }
             else
             {
                 var batch = new List<JToken>();
-                var batchMessage = new MixedBulkEnqueueMessage { Messages = batch, NotBefore = notBefore };
+                var batchMessage = new HomogeneousBulkEnqueueMessage
+                {
+                    SchemaName = schema.Name,
+                    SchemaVersion = schema.LatestVersion,
+                    Messages = batch,
+                    NotBefore = notBefore <= TimeSpan.Zero ? (TimeSpan?)null : notBefore,
+                };
                 var emptyBatchMessageLength = GetMessageLength(batchMessage);
                 var batchMessageLength = emptyBatchMessageLength;
 
                 for (int i = 0; i < messages.Count; i++)
                 {
-                    var innerMessage = serialize(messages[i]);
-                    var innerMessageLength = GetMessageLength(innerMessage);
+                    var innerData = schema.SerializeData(messages[i]);
+                    var innerDataLength = GetMessageLength(innerData);
 
                     if (!batch.Any())
                     {
-                        batch.Add(innerMessage.AsJToken());
-                        batchMessageLength += innerMessageLength;
+                        batch.Add(innerData.AsJToken());
+                        batchMessageLength += innerDataLength;
                     }
                     else
                     {
-                        var newBatchMessageLength = batchMessageLength + ",".Length + innerMessageLength;
+                        var newBatchMessageLength = batchMessageLength + ",".Length + innerDataLength;
                         if (newBatchMessageLength > bulkEnqueueStrategy.MaxSize)
                         {
                             await EnqueueBulkEnqueueMessageAsync(batchMessage, batchMessageLength);
                             batch.Clear();
-                            batch.Add(innerMessage.AsJToken());
-                            batchMessageLength = emptyBatchMessageLength + innerMessageLength;
+                            batch.Add(innerData.AsJToken());
+                            batchMessageLength = emptyBatchMessageLength + innerDataLength;
                         }
                         else
                         {
-                            batch.Add(innerMessage.AsJToken());
+                            batch.Add(innerData.AsJToken());
                             batchMessageLength = newBatchMessageLength;
                         }
                     }
@@ -127,7 +120,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        private async Task EnqueueBulkEnqueueMessageAsync(MixedBulkEnqueueMessage batchMessage, int expectedLength)
+        private async Task EnqueueBulkEnqueueMessageAsync(HomogeneousBulkEnqueueMessage batchMessage, int expectedLength)
         {
             var bytes = _serializer.Serialize(batchMessage).AsString();
             if (bytes.Length != expectedLength)
@@ -142,7 +135,7 @@ namespace Knapcode.ExplorePackages.Worker
             await _rawMessageEnqueuer.AddAsync(new[] { bytes });
         }
 
-        private int GetMessageLength(MixedBulkEnqueueMessage batchMessage)
+        private int GetMessageLength(HomogeneousBulkEnqueueMessage batchMessage)
         {
             return GetMessageLength(_serializer.Serialize(batchMessage));
         }

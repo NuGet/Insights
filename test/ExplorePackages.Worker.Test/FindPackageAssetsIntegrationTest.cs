@@ -141,15 +141,8 @@ namespace Knapcode.ExplorePackages.Worker
                 CloudQueueMessage message;
                 while ((message = await queue.GetMessageAsync()) != null)
                 {
-                    try
-                    {
-                        await Target.ProcessAsync(message.AsString);
-                        await queue.DeleteMessageAsync(message);
-                    }
-                    catch (Exception ex) when (message.DequeueCount < 5)
-                    {
-                        Logger.LogWarning(ex, "Message with {DequeueCount} dequeues failed with an exception.", message.DequeueCount);
-                    }
+                    await Target.ProcessAsync(message.AsString);
+                    await queue.DeleteMessageAsync(message);
                 }
 
                 indexScan = await CatalogScanStorageService.GetIndexScanAsync(indexScan.CursorName, indexScan.ScanId);

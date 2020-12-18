@@ -12,11 +12,10 @@ namespace Knapcode.ExplorePackages.Worker
     {
         [Theory]
         [InlineData(1)]
+        [InlineData(2)]
         public async Task DoesNotBatchIfMessageCountIsLessThanThreshold(int messageCount)
         {
-            await Target.EnqueueAsync(
-                Enumerable.Range(0, messageCount).ToList(),
-                i => SchemaSerializer.Serialize(new CatalogPageScanMessage { PageId = i.ToString() }));
+            await Target.EnqueueAsync(Enumerable.Range(0, messageCount).Select(x => new CatalogPageScanMessage { PageId = x.ToString() }).ToList());
 
             var messages = Assert.Single(EnqueuedMessages);
             for (var i = 0; i < messageCount; i++)
@@ -27,6 +26,7 @@ namespace Knapcode.ExplorePackages.Worker
         }
 
         [Theory]
+        [InlineData(3)]
         [InlineData(100)]
         [InlineData(101)]
         [InlineData(102)]
@@ -34,26 +34,28 @@ namespace Knapcode.ExplorePackages.Worker
         public async Task BatchesIfMessageCountIsGreaterThanThreshold(int messageCount)
         {
             var byteCount = 10000;
-            var perBatch = 6;
+            var perBatch = RawMessageEnqueuer.Object.BulkEnqueueStrategy.MaxSize / byteCount;
+            Assert.Equal(6, perBatch);
+
+            var schema = new SchemaV1<string>("i");
 
             await Target.EnqueueAsync(
-                Enumerable.Range(0, messageCount).ToList(),
-                i => GetSerializedMessage(i, byteCount));
+                Enumerable.Range(0, messageCount).Select(i => GetSerializedMessage(i, byteCount)).ToList(),
+                schema);
 
             Assert.Equal((messageCount / perBatch) + (messageCount % perBatch > 0 ? 1 : 0), EnqueuedMessages.Count);
             for (var i = 0; i < messageCount; i++)
             {
-                var message = (MixedBulkEnqueueMessage)Assert.Single(EnqueuedMessages[i / perBatch]);
+                var message = (HomogeneousBulkEnqueueMessage)Assert.Single(EnqueuedMessages[i / perBatch]);
                 Assert.StartsWith($"{i}_", message.Messages[i % perBatch].ToString());
             }
         }
 
-        private SerializedMessage GetSerializedMessage(int id, int byteCount)
+        private string GetSerializedMessage(int id, int byteCount)
         {
-            return new SerializedMessage(
-                () => string.Join(
-                    string.Empty,
-                    Enumerable.Repeat($"{id}_", byteCount / 2)).Substring(0, byteCount - 2)); // subtract 2 for JSON quotes
+            return string.Join(
+                string.Empty,
+                Enumerable.Repeat($"{id}_", byteCount / 2)).Substring(0, byteCount - 2); // subtract 2 for JSON quotes
         }
 
         public MessageEnqueuerTest(ITestOutputHelper output)
@@ -63,7 +65,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             RawMessageEnqueuer
                 .Setup(x => x.BulkEnqueueStrategy)
-                .Returns(() => BulkEnqueueStrategy.Enabled(2, 64 * 1024));
+                .Returns(() => BulkEnqueueStrategy.Enabled(3, 64 * 1024));
 
             RawMessageEnqueuer
                 .Setup(x => x.AddAsync(It.IsAny<IReadOnlyList<string>>()))

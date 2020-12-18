@@ -8,15 +8,15 @@ namespace Knapcode.ExplorePackages.Worker
     public class HomogeneousBulkEnqueueMessage
     {
         [JsonProperty("n")]
-        public string SchemaName { get; }
+        public string SchemaName { get; set; }
 
         [JsonProperty("v")]
-        public int SchemaVersion { get; }
+        public int SchemaVersion { get; set; }
+
+        [JsonProperty("d")]
+        public TimeSpan? NotBefore { get; set; }
 
         [JsonProperty("m")]
         public List<JToken> Messages { get; set; }
-
-        [JsonProperty("d")]
-        public TimeSpan NotBefore { get; set; }
     }
 }

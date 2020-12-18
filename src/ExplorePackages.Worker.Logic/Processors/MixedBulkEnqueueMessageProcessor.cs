@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -20,7 +21,7 @@ namespace Knapcode.ExplorePackages.Worker
             _logger.LogInformation("Processing mixed bulk enqueue message with {Count} messages.", message.Messages.Count);
 
             var messages = message.Messages.Select(x => new SerializedMessage(() => x).AsString()).ToList();
-            await _messageEnqueuer.AddAsync(messages, message.NotBefore);
+            await _messageEnqueuer.AddAsync(messages, message.NotBefore.GetValueOrDefault(TimeSpan.Zero));
         }
     }
 }

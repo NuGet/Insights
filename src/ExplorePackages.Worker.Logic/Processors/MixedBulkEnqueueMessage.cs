@@ -11,6 +11,6 @@ namespace Knapcode.ExplorePackages.Worker
         public List<JToken> Messages { get; set; }
 
         [JsonProperty("d")]
-        public TimeSpan NotBefore { get; set; }
+        public TimeSpan? NotBefore { get; set; }
     }
 }

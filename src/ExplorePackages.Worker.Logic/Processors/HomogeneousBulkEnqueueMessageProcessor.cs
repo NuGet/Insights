@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -24,7 +25,7 @@ namespace Knapcode.ExplorePackages.Worker
                 .Select(x => NameVersionSerializer.SerializeMessage(message.SchemaName, message.SchemaVersion, x).AsString())
                 .ToList();
 
-            await _messageEnqueuer.AddAsync(messages, message.NotBefore);
+            await _messageEnqueuer.AddAsync(messages, message.NotBefore.GetValueOrDefault(TimeSpan.Zero));
         }
     }
 }

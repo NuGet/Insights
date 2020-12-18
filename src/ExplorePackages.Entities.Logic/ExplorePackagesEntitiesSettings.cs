@@ -13,7 +13,7 @@ namespace Knapcode.ExplorePackages.Entities
             RunConsistencyChecks = true;
             RunBoringQueries = false;
             DownloadsV1Path = Path.Combine(currentDirectory, "downloads.txt");
-            WorkerCount = 32;
+            WorkerCount = 16;
         }
 
         public DatabaseType DatabaseType { get; set; }
