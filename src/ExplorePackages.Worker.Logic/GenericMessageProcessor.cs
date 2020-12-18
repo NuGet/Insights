@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,14 +8,14 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class GenericMessageProcessor
     {
-        private readonly SchemaSerializer _schemaSerializer;
+        private readonly SchemaSerializer _serializer;
         private readonly IServiceProvider _serviceProvider;
 
         public GenericMessageProcessor(
             SchemaSerializer serializer,
             IServiceProvider serviceProvider)
         {
-            _schemaSerializer = serializer;
+            _serializer = serializer;
             _serviceProvider = serviceProvider;
         }
 
@@ -23,14 +24,26 @@ namespace Knapcode.ExplorePackages.Worker
             object deserializedMessage;
             try
             {
-                deserializedMessage = _schemaSerializer.Deserialize(message);
+                deserializedMessage = _serializer.Deserialize(message);
             }
             catch (JsonException)
             {
                 message = Encoding.UTF8.GetString(Convert.FromBase64String(message));
-                deserializedMessage = _schemaSerializer.Deserialize(message);
+                deserializedMessage = _serializer.Deserialize(message);
             }
 
+            await ProcessAsync(deserializedMessage);
+        }
+
+        public async Task ProcessAsync(NameVersionMessage<JToken> message)
+        {
+            var deserializedMessage = _serializer.Deserialize(message);
+
+            await ProcessAsync(deserializedMessage);
+        }
+
+        private async Task ProcessAsync(object deserializedMessage)
+        {
             var messageType = deserializedMessage.GetType();
             var processorType = typeof(IMessageProcessor<>).MakeGenericType(deserializedMessage.GetType());
             var processor = _serviceProvider.GetService(processorType);

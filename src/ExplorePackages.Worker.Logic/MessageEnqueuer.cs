@@ -11,15 +11,18 @@ namespace Knapcode.ExplorePackages.Worker
     public class MessageEnqueuer
     {
         private readonly SchemaSerializer _serializer;
+        private readonly MessageBatcher _batcher;
         private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
         private readonly ILogger<MessageEnqueuer> _logger;
 
         public MessageEnqueuer(
             SchemaSerializer serializer,
+            MessageBatcher batcher,
             IRawMessageEnqueuer rawMessageEnqueuer,
             ILogger<MessageEnqueuer> logger)
         {
             _serializer = serializer;
+            _batcher = batcher;
             _rawMessageEnqueuer = rawMessageEnqueuer;
             _logger = logger;
         }
@@ -38,6 +41,13 @@ namespace Knapcode.ExplorePackages.Worker
         {
             if (messages.Count == 0)
             {
+                return;
+            }
+
+            var batches = _batcher.BatchOrNull(messages, serializer);
+            if (batches != null)
+            {
+                await EnqueueAsync(batches, notBefore);
                 return;
             }
 

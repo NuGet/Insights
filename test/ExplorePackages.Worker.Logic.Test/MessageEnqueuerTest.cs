@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;
@@ -61,7 +62,12 @@ namespace Knapcode.ExplorePackages.Worker
         public MessageEnqueuerTest(ITestOutputHelper output)
         {
             SchemaSerializer = new SchemaSerializer(output.GetLogger<SchemaSerializer>());
+            Options = new Mock<IOptions<ExplorePackagesWorkerSettings>>();
+            Settings = new ExplorePackagesWorkerSettings();
+            MessageBatcher = new MessageBatcher(Options.Object);
             RawMessageEnqueuer = new Mock<IRawMessageEnqueuer>();
+
+            Options.Setup(x => x.Value).Returns(() => Settings);
 
             RawMessageEnqueuer
                 .Setup(x => x.BulkEnqueueStrategy)
@@ -80,11 +86,15 @@ namespace Knapcode.ExplorePackages.Worker
 
             Target = new MessageEnqueuer(
                 SchemaSerializer,
+                MessageBatcher,
                 RawMessageEnqueuer.Object,
                 output.GetLogger<MessageEnqueuer>());
         }
 
         public SchemaSerializer SchemaSerializer { get; }
+        public Mock<IOptions<ExplorePackagesWorkerSettings>> Options { get; }
+        public ExplorePackagesWorkerSettings Settings { get; }
+        public MessageBatcher MessageBatcher { get; }
         public Mock<IRawMessageEnqueuer> RawMessageEnqueuer { get; }
         public List<List<object>> EnqueuedMessages { get; }
         public MessageEnqueuer Target { get; }

@@ -75,9 +75,16 @@ namespace Knapcode.ExplorePackages.Worker
         public ILogger<FindPackageAssetsIntegrationTest> Logger { get; }
         public WorkerQueueFunction Target { get; }
 
-        [Fact]
-        public async Task FindPackageAssets()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task FindPackageAssets(bool usingBatching)
         {
+            if (usingBatching)
+            {
+                Options.Value.MessageBatchSizes[typeof(CatalogLeafScanMessage).FullName] = 2;
+            }
+
             Logger.LogInformation("Settings: " + Environment.NewLine + JsonConvert.SerializeObject(Options.Value, Formatting.Indented));
 
             // Arrange

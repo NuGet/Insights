@@ -4,6 +4,7 @@ using System.Linq;
 using Knapcode.ExplorePackages.Worker.FindPackageAssets;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 
 namespace Knapcode.ExplorePackages.Worker
 {
@@ -13,10 +14,14 @@ namespace Knapcode.ExplorePackages.Worker
         {
             new SchemaV1<MixedBulkEnqueueMessage>("mbe"),
             new SchemaV1<HomogeneousBulkEnqueueMessage>("hbe"),
+            new SchemaV1<HomogeneousBatchMessage>("hb"),
+
             new SchemaV1<CatalogIndexScanMessage>("cis"),
             new SchemaV1<CatalogPageScanMessage>("cps"),
             new SchemaV1<CatalogLeafScanMessage>("cls"),
+
             new SchemaV1<FindPackageAssetsCompactMessage>("fpa.c"),
+
             new SchemaV1<RunRealRestoreMessage>("rrr"),
             new SchemaV1<RunRealRestoreCompactMessage>("rrr.c"),
 
@@ -34,6 +39,7 @@ namespace Knapcode.ExplorePackages.Worker
         public ISchemaSerializer<T> GetSerializer<T>() => Schemas.GetSerializer<T>();
         public ISerializedEntity Serialize<T>(T message) => Schemas.GetSerializer<T>().SerializeMessage(message);
         public object Deserialize(string message) => Schemas.Deserialize(message, _logger);
+        public object Deserialize(NameVersionMessage<JToken> message) => Schemas.Deserialize(message, _logger);
 
         private class SchemasCollection
         {
@@ -64,19 +70,22 @@ namespace Knapcode.ExplorePackages.Worker
 
             public object Deserialize(string message, ILogger logger)
             {
-                var deserialized = NameVersionSerializer.DeserializeMessage(message);
+                return Deserialize(NameVersionSerializer.DeserializeMessage(message), logger);
+            }
 
-                if (!NameToSchema.TryGetValue(deserialized.SchemaName, out var schema))
+            public object Deserialize(NameVersionMessage<JToken> message, ILogger logger)
+            {
+                if (!NameToSchema.TryGetValue(message.SchemaName, out var schema))
                 {
-                    throw new FormatException($"The schema '{deserialized.SchemaName}' is not supported.");
+                    throw new FormatException($"The schema '{message.SchemaName}' is not supported.");
                 }
 
-                var deserializedEntity = schema.Deserialize(deserialized.SchemaVersion, deserialized.Data);
+                var deserializedEntity = schema.Deserialize(message.SchemaVersion, message.Data);
 
                 logger.LogInformation(
                     "Deserialized object with schema {SchemaName} and version {SchemaVersion}.",
-                    deserialized.SchemaName,
-                    deserialized.SchemaVersion);
+                    message.SchemaName,
+                    message.SchemaVersion);
 
                 return deserializedEntity;
             }
