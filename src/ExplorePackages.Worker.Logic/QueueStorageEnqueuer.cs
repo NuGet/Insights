@@ -42,7 +42,7 @@ namespace Knapcode.ExplorePackages.Worker
             return queue.ApproximateMessageCount.Value;
         }
 
-        public async Task<int> GetAvailableMessageCountLowerBoundAsync()
+        public async Task<int> GetAvailableMessageCountLowerBoundAsync(int messageCount)
         {
             var queue = _workerQueueFactory.GetQueue();
             var messages = await queue.PeekMessagesAsync(32);

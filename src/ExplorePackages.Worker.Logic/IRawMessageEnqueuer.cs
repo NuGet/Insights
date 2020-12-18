@@ -8,7 +8,7 @@ namespace Knapcode.ExplorePackages.Worker
     {
         BulkEnqueueStrategy BulkEnqueueStrategy { get; }
         Task<int> GetApproximateMessageCountAsync();
-        Task<int> GetAvailableMessageCountLowerBoundAsync();
+        Task<int> GetAvailableMessageCountLowerBoundAsync(int messageCount);
         Task InitializeAsync();
         Task AddAsync(IReadOnlyList<string> message);
         Task AddAsync(IReadOnlyList<string> messages, TimeSpan notBefore);

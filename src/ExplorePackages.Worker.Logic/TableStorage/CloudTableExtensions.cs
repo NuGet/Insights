@@ -37,7 +37,12 @@ namespace Knapcode.ExplorePackages.Worker
             TableContinuationToken token = null;
             do
             {
-                query.TakeCount = Math.Min(MaxTakeCount, maxEntities.GetValueOrDefault(MaxTakeCount) - entities.Count);
+                if (maxEntities.HasValue)
+                {
+                    var remaining = maxEntities.Value - entities.Count;
+                    query.TakeCount = Math.Min(MaxTakeCount, remaining);
+                }
+
                 var segment = await executeQuerySegmentedAsync(query, token);
                 token = segment.ContinuationToken;
                 entities.AddRange(segment.Results);

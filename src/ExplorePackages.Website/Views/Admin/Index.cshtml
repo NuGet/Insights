@@ -10,7 +10,7 @@
         <h3>Worker Queue</h3>
         <ul class="list-unstyled">
             <li><b>Approximate message count:</b> @Model.ApproximateMessageCount</li>
-            <li><b>Available messages:</b> ≥ @Model.AvailableMessageCountLowerBound</li>
+            <li><b>Available messages:</b> @(Model.AvailableMessageCountIsExact ? string.Empty : "≥") @Model.AvailableMessageCountLowerBound</li>
         </ul>
 
         <h3>Find Package Assets</h3>

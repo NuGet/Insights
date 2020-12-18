@@ -27,7 +27,8 @@ namespace Knapcode.ExplorePackages.Website.Controllers
         {
             await _catalogScanService.InitializeAsync();
             var approximateMessageCountTask = _rawMessageEnqueuer.GetApproximateMessageCountAsync();
-            var availableMessageCountLowerBoundTask = _rawMessageEnqueuer.GetAvailableMessageCountLowerBoundAsync();
+            const int messageCount = 32;
+            var availableMessageCountLowerBoundTask = _rawMessageEnqueuer.GetAvailableMessageCountLowerBoundAsync(messageCount);
             var cursorTask = _catalogScanService.GetCursorAsync(CatalogScanType.FindPackageAssets);
             var cursor = await cursorTask;
             var latestScansTask = _catalogScanStorageService.GetLatestIndexScans(cursor.Name, maxEntities: 10);
@@ -40,6 +41,8 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 Cursor = cursor,
                 LatestScans = await latestScansTask,
             };
+
+            model.AvailableMessageCountIsExact = model.AvailableMessageCountLowerBound < messageCount;
 
             return View(model);
         }
