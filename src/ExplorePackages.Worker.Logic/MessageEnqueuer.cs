@@ -31,9 +31,10 @@ namespace Knapcode.ExplorePackages.Worker
 
         public Task EnqueueAsync<T>(IReadOnlyList<T> messages) => EnqueueAsync(messages, TimeSpan.Zero);
         public Task EnqueueAsync<T>(IReadOnlyList<T> messages, TimeSpan notBefore) => EnqueueAsync(messages, _serializer.GetSerializer<T>(), notBefore);
-        public Task EnqueueAsync<T>(IReadOnlyList<T> messages, ISchemaSerializer<T> schema) => EnqueueAsync(messages, schema, TimeSpan.Zero);
 
-        public async Task EnqueueAsync<T>(IReadOnlyList<T> messages, ISchemaSerializer<T> schema, TimeSpan notBefore)
+        internal Task EnqueueAsync<T>(IReadOnlyList<T> messages, ISchemaSerializer<T> serializer) => EnqueueAsync(messages, serializer, TimeSpan.Zero);
+        
+        internal async Task EnqueueAsync<T>(IReadOnlyList<T> messages, ISchemaSerializer<T> serializer, TimeSpan notBefore)
         {
             if (messages.Count == 0)
             {
@@ -43,7 +44,7 @@ namespace Knapcode.ExplorePackages.Worker
             var bulkEnqueueStrategy = _rawMessageEnqueuer.BulkEnqueueStrategy;
             if (!bulkEnqueueStrategy.IsEnabled || messages.Count < bulkEnqueueStrategy.Threshold)
             {
-                var serializedMessages = messages.Select(m => schema.SerializeMessage(m).AsString()).ToList();
+                var serializedMessages = messages.Select(m => serializer.SerializeMessage(m).AsString()).ToList();
                 await _rawMessageEnqueuer.AddAsync(serializedMessages, notBefore);
             }
             else
@@ -51,8 +52,8 @@ namespace Knapcode.ExplorePackages.Worker
                 var batch = new List<JToken>();
                 var batchMessage = new HomogeneousBulkEnqueueMessage
                 {
-                    SchemaName = schema.Name,
-                    SchemaVersion = schema.LatestVersion,
+                    SchemaName = serializer.Name,
+                    SchemaVersion = serializer.LatestVersion,
                     Messages = batch,
                     NotBefore = notBefore <= TimeSpan.Zero ? (TimeSpan?)null : notBefore,
                 };
@@ -61,7 +62,7 @@ namespace Knapcode.ExplorePackages.Worker
 
                 for (int i = 0; i < messages.Count; i++)
                 {
-                    var innerData = schema.SerializeData(messages[i]);
+                    var innerData = serializer.SerializeData(messages[i]);
                     var innerDataLength = GetMessageLength(innerData);
 
                     if (!batch.Any())
