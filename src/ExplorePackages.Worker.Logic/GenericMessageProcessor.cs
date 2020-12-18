@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,13 +11,16 @@ namespace Knapcode.ExplorePackages.Worker
     {
         private readonly SchemaSerializer _serializer;
         private readonly IServiceProvider _serviceProvider;
+        private readonly ITelemetryClient _telemetryClient;
 
         public GenericMessageProcessor(
             SchemaSerializer serializer,
-            IServiceProvider serviceProvider)
+            IServiceProvider serviceProvider,
+            ITelemetryClient telemetryClient)
         {
             _serializer = serializer;
             _serviceProvider = serviceProvider;
+            _telemetryClient = telemetryClient;
         }
 
         public async Task ProcessAsync(string message)
@@ -55,7 +59,18 @@ namespace Knapcode.ExplorePackages.Worker
 
             var method = processorType.GetMethod(nameof(IMessageProcessor<object>.ProcessAsync), new Type[] { messageType });
 
-            await (Task)method.Invoke(processor, new object[] { deserializedMessage });
+            var stopwatch = Stopwatch.StartNew();
+            var success = false;
+            try
+            {
+                await (Task)method.Invoke(processor, new object[] { deserializedMessage });
+                success = true;
+            }
+            finally
+            {
+                var metric = _telemetryClient.GetMetric("MessageProcessorDurationMs", "TypeName", "Success");
+                metric.TrackValue(stopwatch.ElapsedMilliseconds, processor.GetType().FullName, success ? "true" : "false");
+            }
         }
     }
 }

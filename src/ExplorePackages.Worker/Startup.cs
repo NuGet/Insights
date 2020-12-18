@@ -20,6 +20,7 @@ namespace Knapcode.ExplorePackages.Worker
             builder.Services.AddExplorePackagesWorker();
 
             builder.Services.AddSingleton<IQueueProcessorFactory, UnencodedQueueProcessorFactory>();
+            builder.Services.AddTransient<ITelemetryClient, TelemetryClientWrapper>();
         }
 
         private static void AddOptions<TOptions>(IFunctionsHostBuilder builder, string sectionName) where TOptions : class

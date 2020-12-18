@@ -10,6 +10,8 @@ using Microsoft.WindowsAzure.Storage.Queue;
 using System.IO;
 using Newtonsoft.Json;
 using System.Linq;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
 
 namespace Knapcode.ExplorePackages.Worker
 {
@@ -28,6 +30,8 @@ namespace Knapcode.ExplorePackages.Worker
                 .ConfigureServices(serviceCollection =>
                 {
                     serviceCollection.AddTransient<WorkerQueueFunction>();
+
+                    serviceCollection.AddSingleton(new TelemetryClient(TelemetryConfiguration.CreateDefault()));
 
                     serviceCollection.AddLogging(o =>
                     {
@@ -129,7 +133,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             var queues = await account.CreateCloudQueueClient().ListQueuesAsync(StoragePrefix);
             Assert.Equal(
-                new[] { Options.Value.WorkerQueueName },
+                new[] { Options.Value.WorkerQueueName, Options.Value.WorkerQueueName + "-poison" },
                 queues.Select(x => x.Name).ToArray());
 
             var tables = await account.CreateCloudTableClient().ListTablesAsync(StoragePrefix);
