@@ -122,6 +122,12 @@ namespace Knapcode.ExplorePackages.Worker
             var min = new[] { cursor.Value, CatalogClient.NuGetOrgMin }.Max();
             max = max.GetValueOrDefault(index.CommitTimestamp);
 
+            var testMax = DateTimeOffset.Parse("2018-11-20T01:46:19.1755275Z");
+            if (max > testMax)
+            {
+                max = testMax;
+            }
+
             if (min == max)
             {
                 return null;
