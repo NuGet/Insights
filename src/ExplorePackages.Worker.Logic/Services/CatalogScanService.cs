@@ -123,6 +123,7 @@ namespace Knapcode.ExplorePackages.Worker
             max = max.GetValueOrDefault(index.CommitTimestamp);
 
             var testMax = DateTimeOffset.Parse("2019-02-20T20:18:34.697022Z");
+            // var testMax = DateTimeOffset.Parse("2018-09-20T01:46:19.1755275Z");
             if (max > testMax)
             {
                 max = testMax;
