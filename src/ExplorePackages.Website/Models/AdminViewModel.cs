@@ -6,7 +6,7 @@ namespace Knapcode.ExplorePackages.Website.Models
 {
     public class AdminViewModel
     {
-        public TimeSpan CursorAge => DateTimeOffset.UtcNow - Cursor.Timestamp;
+        public TimeSpan CursorAge => DateTimeOffset.UtcNow - Cursor.Value;
         public CursorTableEntity Cursor { get; set; }
         public IReadOnlyList<CatalogIndexScan> LatestScans { get; set; }
         public int ApproximateMessageCount { get; internal set; }

@@ -25,6 +25,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
 
         public async Task<ViewResult> Index()
         {
+            await _catalogScanService.InitializeAsync();
             var approximateMessageCountTask = _rawMessageEnqueuer.GetApproximateMessageCountAsync();
             var availableMessageCountLowerBoundTask = _rawMessageEnqueuer.GetAvailableMessageCountLowerBoundAsync();
             var cursorTask = _catalogScanService.GetCursorAsync(CatalogScanType.FindPackageAssets);
