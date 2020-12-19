@@ -5,11 +5,15 @@
     <AssemblyName>Knapcode.ExplorePackages.Worker</AssemblyName>
     <RootNamespace>Knapcode.ExplorePackages.Worker</RootNamespace>
   </PropertyGroup>
+  <PropertyGroup>
+    <!-- Workaround: https://github.com/Azure/azure-functions-host/issues/5894#issuecomment-727024381 -->
+    <_FunctionsSkipCleanOutput>true</_FunctionsSkipCleanOutput>
+  </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.16.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="3.0.11" />
-    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.3" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Logging.ApplicationInsights" Version="3.0.23" />
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.11" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ExplorePackages.Worker.Logic\ExplorePackages.Worker.Logic.csproj" />

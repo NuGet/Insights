@@ -54,6 +54,7 @@ namespace Knapcode.ExplorePackages
             {
                 ResourceGroupName = _resourceGroup.Name,
                 ApplicationType = "web",
+                DailyDataCapInGb = 0.5,
             });
 
             CreateWebsite();

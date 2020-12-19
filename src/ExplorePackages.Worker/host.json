@@ -3,6 +3,10 @@
   "logging": {
     "logLevel": {
       "default": "Warning"
+    },
+    "applicationInsights": {
+      "enableDependencyTracking": false,
+      "enablePerformanceCountersCollection": false
     }
   },
   "functionTimeout": "00:10:00"

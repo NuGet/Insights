@@ -1,4 +1,5 @@
-﻿using Knapcode.ExplorePackages.Worker;
+﻿using System.Collections.Generic;
+using Knapcode.ExplorePackages.Worker;
 using Microsoft.ApplicationInsights;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 
@@ -23,6 +24,11 @@ namespace Knapcode.ExplorePackages.Worker
         public IMetric GetMetric(string metricId, string dimension1Name, string dimension2Name)
         {
             return new MetricWrapper(_inner.GetMetric(metricId, dimension1Name, dimension2Name));
+        }
+
+        public void TrackMetric(string name, double value, IDictionary<string, string> properties)
+        {
+            _inner.TrackMetric(name, value, properties);
         }
     }
 }

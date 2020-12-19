@@ -1,4 +1,7 @@
-﻿using Knapcode.ExplorePackages.Worker;
+﻿using System;
+using Knapcode.ExplorePackages.Worker;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host.Queues;
@@ -20,7 +23,14 @@ namespace Knapcode.ExplorePackages.Worker
             builder.Services.AddExplorePackagesWorker();
 
             builder.Services.AddSingleton<IQueueProcessorFactory, UnencodedQueueProcessorFactory>();
-            builder.Services.AddTransient<ITelemetryClient, TelemetryClientWrapper>();
+            builder.Services.AddSingleton<ITelemetryClient>(s =>
+            {
+                // var configuration = s.GetRequiredService<IConfiguration>();
+                // var telemetryConfiguration = new TelemetryConfiguration(configuration["APPINSIGHTS_INSTRUMENTATIONKEY"]);
+                var telemetryConfiguration = s.GetRequiredService<TelemetryConfiguration>();
+                var telemetryClient = new TelemetryClient(telemetryConfiguration);
+                return new TelemetryClientWrapper(telemetryClient);
+            });
         }
 
         private static void AddOptions<TOptions>(IFunctionsHostBuilder builder, string sectionName) where TOptions : class
