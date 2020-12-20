@@ -31,7 +31,6 @@ namespace Knapcode.ExplorePackages.Tool
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly FindPackageAssetsScanDriver _driver;
         private readonly SchemaSerializer _serializer;
-        private readonly GenericMessageProcessor _genericMessageProcessor;
         private readonly StorageLeaseService _storageLeaseService;
         private readonly ILogger<SandboxCommand> _logger;
 
@@ -47,7 +46,6 @@ namespace Knapcode.ExplorePackages.Tool
             ServiceClientFactory serviceClientFactory,
             FindPackageAssetsScanDriver driver,
             SchemaSerializer serializer,
-            GenericMessageProcessor genericMessageProcessor,
             StorageLeaseService storageLeaseService,
             ILogger<SandboxCommand> logger)
         {
@@ -62,7 +60,6 @@ namespace Knapcode.ExplorePackages.Tool
             _serviceClientFactory = serviceClientFactory;
             _driver = driver;
             _serializer = serializer;
-            _genericMessageProcessor = genericMessageProcessor;
             _storageLeaseService = storageLeaseService;
             _logger = logger;
         }
@@ -114,49 +111,6 @@ namespace Knapcode.ExplorePackages.Tool
             // await EnqueueRunRealRestoreCompactAsync();
             // await ReadErrorBlobsAsync();
             // await RetryRunRealRestoreAsync();
-        }
-
-        private async Task ShortRunForPerfAsync()
-        {
-            var min = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
-            var max = DateTimeOffset.Parse("2020-11-27T22:59:01.2095283Z");
-            var cursorName = $"CatalogScan-{CatalogScanType.FindPackageAssets}";
-
-            await _workerQueueFactory.InitializeAsync();
-            await _cursorStorageService.InitializeAsync();
-            await _catalogScanStorageService.InitializeAsync();
-
-            var cursor = await _cursorStorageService.GetOrCreateAsync(cursorName);
-            cursor.Value = min;
-            await _cursorStorageService.UpdateAsync(cursor);
-
-            var indexScan = await _catalogScanService.UpdateFindPackageAssetsAsync(max);
-
-            var queue = _workerQueueFactory.GetQueue();
-            do
-            {
-                CloudQueueMessage message;
-                while ((message = await queue.GetMessageAsync()) != null)
-                {
-                    try
-                    {
-                        await _genericMessageProcessor.ProcessAsync(message.AsString);
-                        await queue.DeleteMessageAsync(message);
-                    }
-                    catch (Exception ex) when (message.DequeueCount < 5)
-                    {
-                        _logger.LogWarning(ex, "Message with {DequeueCount} dequeues failed with an exception.", message.DequeueCount);
-                    }
-                }
-
-                indexScan = await _catalogScanStorageService.GetIndexScanAsync(indexScan.CursorName, indexScan.ScanId);
-
-                if (indexScan.ParsedState != CatalogScanState.Complete)
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(1));
-                }
-            }
-            while (indexScan.ParsedState != CatalogScanState.Complete);
         }
 
         private async Task ReadErrorBlobsAsync()
