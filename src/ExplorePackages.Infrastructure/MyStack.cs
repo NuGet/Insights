@@ -236,7 +236,6 @@ namespace Knapcode.ExplorePackages
             var deploymentBlobUrl = SharedAccessSignature.SignedBlobReadUrl(deploymentBlob, _storageAccount);
 
             var defaultSettings = new ExplorePackagesWorkerSettings();
-            var leafScanFullName = typeof(CatalogLeafScanMessage).FullName;
 
             var app = new FunctionApp("ExplorePackagesWorker" + _stackAlpha, new FunctionAppArgs
             {
@@ -257,7 +256,7 @@ namespace Knapcode.ExplorePackages
                     { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesSettings.StorageConnectionString)}", _storageAccount.PrimaryConnectionString },
                     { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWorkerSettings.WorkerQueueName)}", defaultSettings.WorkerQueueName },
                     { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWorkerSettings.AppendResultStorageMode)}", _config.Get(nameof(ExplorePackagesWorkerSettings.AppendResultStorageMode)) ?? defaultSettings.AppendResultStorageMode.ToString() },
-                    { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWorkerSettings.MessageBatchSizes)}:{leafScanFullName}", _config.Get("CatalogLeafScanBatchSize") ?? "1" },
+                    { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWorkerSettings.MessageBatchSizes)}:{nameof(CatalogLeafScanMessage)}", _config.Get("CatalogLeafScanBatchSize") ?? "1" },
                 },
             });
         }

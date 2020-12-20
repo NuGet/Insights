@@ -86,7 +86,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             if (usingBatching)
             {
-                Options.Value.MessageBatchSizes[typeof(CatalogLeafScanMessage).FullName] = 2;
+                Options.Value.MessageBatchSizes[typeof(CatalogLeafScanMessage).Name] = 2;
             }
 
             Logger.LogInformation("Settings: " + Environment.NewLine + JsonConvert.SerializeObject(Options.Value, Formatting.Indented));

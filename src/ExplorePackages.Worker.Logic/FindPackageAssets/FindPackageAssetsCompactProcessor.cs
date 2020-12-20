@@ -70,7 +70,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
                 .GroupBy(x => x, PackageAssetIdVersionComparer.Instance) // Group by unique package version
                 .Select(g => g
                     .GroupBy(x => x.ScanId) // Group package version assets by scan
-                    .OrderByDescending(x => x.First().Created) // Ignore all but the most recent scan of the most recent version of the package
+                    .OrderByDescending(x => x.First().LastModified) // Ignore all but the most recent scan of the most recent version of the package
+                    .OrderByDescending(x => x.First().Created)
                     .OrderByDescending(x => x.First().ScanTimestamp) 
                     .First())
                 .SelectMany(g => g)

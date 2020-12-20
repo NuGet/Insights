@@ -19,6 +19,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             writer.Write(',');
             writer.Write(CsvUtility.FormatDateTimeOffset(Created));
             writer.Write(',');
+            writer.Write(CsvUtility.FormatDateTimeOffset(LastModified));
+            writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, ResultType);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, PatternSet);
@@ -68,6 +70,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             Id = getNextField();
             Version = getNextField();
             Created = CsvUtility.ParseDateTimeOffset(getNextField());
+            LastModified = CsvUtility.ParseDateTimeOffset(getNextField());
             ResultType = getNextField();
             PatternSet = getNextField();
             PropertyAnyValue = getNextField();

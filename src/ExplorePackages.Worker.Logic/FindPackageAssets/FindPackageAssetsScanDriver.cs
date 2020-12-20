@@ -90,11 +90,14 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             var normalizedVersion = NuGetVersion.Parse(leafScan.PackageVersion).ToNormalizedString();
             var url = _flatContainerClient.GetPackageContentUrl(flatContainerBaseUrl, leafScan.PackageId, leafScan.PackageVersion);
 
+            DateTimeOffset lastModified;
             List<string> files;
             try
             {
                 using (var reader = await _httpZipProvider.GetReaderAsync(new Uri(url)))
                 {
+                    lastModified = DateTimeOffset.Parse(reader.Properties["Last-Modified"].Single());
+
                     var zipDirectory = await reader.ReadAsync();
                     files = zipDirectory
                         .Entries
@@ -110,7 +113,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
                 return;
             }
 
-            var assets = GetAssets(scanId, scanTimestamp, leaf, files);
+            var assets = GetAssets(scanId, scanTimestamp, leaf, lastModified, files);
             var bucketKey = $"{leaf.PackageId}/{leaf.PackageVersion}".ToLowerInvariant();
             await _storageService.AppendAsync(GetTableName(leafScan.StorageSuffix), parameters.BucketCount, bucketKey, assets);
         }
@@ -120,7 +123,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             return (FindPackageAssetsParameters)_schemaSerializer.Deserialize(scanParameters);
         }
 
-        private List<PackageAsset> GetAssets(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, List<string> files)
+        private List<PackageAsset> GetAssets(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, DateTimeOffset lastModified, List<string> files)
         {
             var contentItemCollection = new ContentItemCollection();
             contentItemCollection.Load(files);
@@ -146,7 +149,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
                 }
                 catch (ArgumentException ex) when (IsInvalidDueToHyphenInPortal(ex))
                 {
-                    return GetErrorResult(scanId, scanTimestamp, leaf, ex, "Package {Id} {Version} contains a portable framework with a hyphen in the profile.");
+                    return GetErrorResult(scanId, scanTimestamp, leaf, lastModified, ex, "Package {Id} {Version} contains a portable framework with a hyphen in the profile.");
                 }
 
                 foreach (var group in groups)
@@ -166,7 +169,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
                     }
                     catch (FrameworkException ex) when (IsInvalidDueMissingPortableProfile(ex))
                     {
-                        return GetErrorResult(scanId, scanTimestamp, leaf, ex, "Package {Id} {Version} contains a portable framework missing a profile.");
+                        return GetErrorResult(scanId, scanTimestamp, leaf, lastModified, ex, "Package {Id} {Version} contains a portable framework missing a profile.");
                     }
 
                     var parsedFramework = NuGetFramework.Parse(targetFrameworkMoniker);
@@ -174,7 +177,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
 
                     foreach (var item in group.Items)
                     {
-                        assets.Add(new PackageAsset(scanId, scanTimestamp, leaf, PackageAssetResultType.AvailableAssets)
+                        assets.Add(new PackageAsset(scanId, scanTimestamp, leaf, lastModified, PackageAssetResultType.AvailableAssets)
                         {
                             PatternSet = pair.Key,
 
@@ -204,16 +207,16 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
 
             if (assets.Count == 0)
             {
-                return new List<PackageAsset> { new PackageAsset(scanId, scanTimestamp, leaf, PackageAssetResultType.NoAssets) };
+                return new List<PackageAsset> { new PackageAsset(scanId, scanTimestamp, leaf, lastModified, PackageAssetResultType.NoAssets) };
             }
 
             return assets;
         }
 
-        private List<PackageAsset> GetErrorResult(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, Exception ex, string message)
+        private List<PackageAsset> GetErrorResult(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, DateTimeOffset lastModified, Exception ex, string message)
         {
             _logger.LogWarning(ex, message, leaf.PackageId, leaf.PackageVersion);
-            return new List<PackageAsset> { new PackageAsset(scanId, scanTimestamp, leaf, PackageAssetResultType.Error) };
+            return new List<PackageAsset> { new PackageAsset(scanId, scanTimestamp, leaf, lastModified, PackageAssetResultType.Error) };
         }
 
         private static bool IsInvalidDueMissingPortableProfile(FrameworkException ex)

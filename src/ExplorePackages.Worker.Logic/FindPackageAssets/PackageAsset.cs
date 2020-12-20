@@ -1,5 +1,6 @@
 ﻿using NuGet.Versioning;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
@@ -10,13 +11,14 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
         {
         }
 
-        public PackageAsset(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, string resultType)
+        public PackageAsset(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, DateTimeOffset lastModified, string resultType)
         {
             ScanId = scanId;
             ScanTimestamp = scanTimestamp;
             Id = leaf.PackageId;
             Version = NuGetVersion.Parse(leaf.PackageVersion).ToNormalizedString();
             Created = leaf.Created;
+            LastModified = lastModified;
             ResultType = resultType;
         }
 
@@ -25,6 +27,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
         public string Id { get; set; }
         public string Version { get; set; }
         public DateTimeOffset Created { get; set; }
+        public DateTimeOffset LastModified { get; set; }
         public string ResultType { get; set; }
 
         public string PatternSet { get; set; }
@@ -57,11 +60,12 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
         public bool Equals([AllowNull] PackageAsset other)
         {
             return other != null &&
-                   ScanId.Equals(other.ScanId) &&
-                   ScanTimestamp.Equals(other.ScanTimestamp) &&
+                   EqualityComparer<Guid?>.Default.Equals(ScanId, other.ScanId) &&
+                   EqualityComparer<DateTimeOffset?>.Default.Equals(ScanTimestamp, other.ScanTimestamp) &&
                    Id == other.Id &&
                    Version == other.Version &&
                    Created.Equals(other.Created) &&
+                   LastModified.Equals(other.LastModified) &&
                    ResultType == other.ResultType &&
                    PatternSet == other.PatternSet &&
                    PropertyAnyValue == other.PropertyAnyValue &&
@@ -92,6 +96,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             hash.Add(Id);
             hash.Add(Version);
             hash.Add(Created);
+            hash.Add(LastModified);
             hash.Add(ResultType);
             hash.Add(PatternSet);
             hash.Add(PropertyAnyValue);
