@@ -1,0 +1,3 @@
+config:
+  ExplorePackages:AppendResultStorageMode: Table
+  azure:location: WestUS2
