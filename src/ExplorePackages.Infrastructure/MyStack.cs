@@ -1,22 +1,22 @@
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Website;
 using Knapcode.ExplorePackages.Worker;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Pulumi;
-using Pulumi.AzureAD;
 using Pulumi.Azure.AppInsights;
 using Pulumi.Azure.AppService;
 using Pulumi.Azure.AppService.Inputs;
 using Pulumi.Azure.Core;
 using Pulumi.Azure.Storage;
-using Config = Pulumi.Config;
-using Knapcode.ExplorePackages.Website;
-using System.Diagnostics;
+using Pulumi.AzureAD;
 using System;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
 using System.Collections.Concurrent;
-using System.Linq;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Config = Pulumi.Config;
 
 namespace Knapcode.ExplorePackages
 {
@@ -133,8 +133,12 @@ namespace Knapcode.ExplorePackages
                     { "AzureAd:ClientId", aadApp.ApplicationId },
                     { "AzureAd:TenantId", "common" },
                     { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesSettings.StorageConnectionString)}", _storageAccount.PrimaryConnectionString },
-                    { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.AllowedUsers)}:0:{nameof(AllowedUser.TenantId)}", "9188040d-6c67-4c5b-b112-36a304b66dad" },
-                    { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.AllowedUsers)}:0:{nameof(AllowedUser.ObjectId)}", "00000000-0000-0000-1325-2c8418ebab3b" },
+                    // My personal Microsoft account
+                    { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.AllowedUsers)}:0:{nameof(AllowedUser.HashedTenantId)}", "ba11237b5a4c119a16898a3b09c0b61315567aa7787df898c2557e03e8e371b4" },
+                    { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.AllowedUsers)}:0:{nameof(AllowedUser.HashedObjectId)}", "51a4221f6b956ad8ed53188dbeb067d2e68ee772ad901cc602a4ff6d43d11b40" },
+                    // My work account
+                    { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.AllowedUsers)}:1:{nameof(AllowedUser.HashedTenantId)}", "42b3755ec2b6929d7ed3589fad70f30656b8fb9d7b3b561430efab5bf197f7a0" },
+                    { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.AllowedUsers)}:1:{nameof(AllowedUser.HashedObjectId)}", "e2bface8eb40fbf1f24e407f3daa7a71705fcad26f584a9e55636b9feed472be" },
                 },
             });
 

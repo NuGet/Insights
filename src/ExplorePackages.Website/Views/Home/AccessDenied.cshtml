@@ -5,5 +5,22 @@
 <div class="row">
     <div class="col-xs-12">
         <h2>@ViewData["Title"]</h2>
+        <p><b>Claims:</b></p>
+        <ul>
+            @foreach (var claim in User.Claims.OrderBy(x => x.Type))
+            {
+                <li>
+                    Type: <code>@claim.Type</code>
+                    <ul>
+                        <li>
+                            Value: <code>@claim.Value</code>
+                        </li>
+                        <li>
+                            Hashed value: <code>@AllowListAuthorizationHandler.HashValue(claim.Value)</code>
+                        </li>
+                    </ul>
+                </li>
+            }
+        </ul>
     </div>
 </div>

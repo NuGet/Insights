@@ -34,7 +34,9 @@ namespace Knapcode.ExplorePackages.Website
             services.AddSingleton<IAuthorizationHandler, AllowListAuthorizationHandler>();
 
             services.AddLogging();
-            services.AddMvc();
+            services
+                .AddMvc()
+                .AddRazorRuntimeCompilation();
             services
                 .AddSignalR()
                 .AddJsonProtocol(options =>
