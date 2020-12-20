@@ -1,6 +1,5 @@
-﻿using System;
+﻿using System.Linq;
 using Knapcode.ExplorePackages.Worker;
-using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs;
@@ -16,6 +15,23 @@ namespace Knapcode.ExplorePackages.Worker
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
+            var serviceDescriptor = builder.Services.SingleOrDefault(tc => tc.ServiceType == typeof(TelemetryConfiguration));
+            if (serviceDescriptor?.ImplementationFactory != null)
+            {
+                var factory = serviceDescriptor.ImplementationFactory;
+                builder.Services.Remove(serviceDescriptor);
+                builder.Services.AddSingleton(provider =>
+                {
+                    if (factory.Invoke(provider) is TelemetryConfiguration config)
+                    {
+                        config.TelemetryInitializers.Add(new RemoveLogLevelFromMetricsTelemetryInitializer());
+
+                        return config;
+                    }
+                    return null;
+                });
+            }
+
             AddOptions<ExplorePackagesSettings>(builder, ExplorePackagesSettings.DefaultSectionName);
             AddOptions<ExplorePackagesWorkerSettings>(builder, ExplorePackagesSettings.DefaultSectionName);
 
@@ -23,14 +39,7 @@ namespace Knapcode.ExplorePackages.Worker
             builder.Services.AddExplorePackagesWorker();
 
             builder.Services.AddSingleton<IQueueProcessorFactory, UnencodedQueueProcessorFactory>();
-            builder.Services.AddSingleton<ITelemetryClient>(s =>
-            {
-                // var configuration = s.GetRequiredService<IConfiguration>();
-                // var telemetryConfiguration = new TelemetryConfiguration(configuration["APPINSIGHTS_INSTRUMENTATIONKEY"]);
-                var telemetryConfiguration = s.GetRequiredService<TelemetryConfiguration>();
-                var telemetryClient = new TelemetryClient(telemetryConfiguration);
-                return new TelemetryClientWrapper(telemetryClient);
-            });
+            builder.Services.AddSingleton<ITelemetryClient, TelemetryClientWrapper>();
         }
 
         private static void AddOptions<TOptions>(IFunctionsHostBuilder builder, string sectionName) where TOptions : class

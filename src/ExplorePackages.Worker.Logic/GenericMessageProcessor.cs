@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
@@ -69,15 +68,8 @@ namespace Knapcode.ExplorePackages.Worker
             }
             finally
             {
-                /*
-                var metric = _telemetryClient.GetMetric("MessageProcessorDurationMs", "TypeName", "Success");
-                metric.TrackValue(stopwatch.ElapsedMilliseconds, processor.GetType().FullName, success ? "true" : "false");
-                */
-                _telemetryClient.TrackMetric("MessageProcessorDurationMs", stopwatch.ElapsedMilliseconds, new Dictionary<string, string>
-                {
-                    {"TypeName", processor.GetType().FullName },
-                    {"Success", success ? "true" : "false" },
-                });
+                var metric = _telemetryClient.GetMetric($"MessageProcessor{(success ? "Success" : "Failure")}DurationMs", "TypeName");
+                metric.TrackValue(stopwatch.ElapsedMilliseconds, processor.GetType().FullName);
             }
         }
     }
