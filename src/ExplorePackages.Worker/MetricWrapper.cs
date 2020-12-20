@@ -1,8 +1,4 @@
-﻿using Knapcode.ExplorePackages.Worker;
-using Microsoft.ApplicationInsights;
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
-
-[assembly: FunctionsStartup(typeof(Startup))]
+﻿using Microsoft.ApplicationInsights;
 
 namespace Knapcode.ExplorePackages.Worker
 {

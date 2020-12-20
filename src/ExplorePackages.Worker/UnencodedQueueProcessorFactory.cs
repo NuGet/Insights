@@ -1,8 +1,4 @@
-﻿using Knapcode.ExplorePackages.Worker;
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
-using Microsoft.Azure.WebJobs.Host.Queues;
-
-[assembly: FunctionsStartup(typeof(Startup))]
+﻿using Microsoft.Azure.WebJobs.Host.Queues;
 
 namespace Knapcode.ExplorePackages.Worker
 {
