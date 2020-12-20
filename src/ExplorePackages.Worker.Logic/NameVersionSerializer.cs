@@ -10,6 +10,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             DateTimeZoneHandling = DateTimeZoneHandling.Utc,
             DateParseHandling = DateParseHandling.DateTimeOffset,
+            NullValueHandling = NullValueHandling.Ignore,
             Converters =
             {
                 new StringEnumConverter(),
