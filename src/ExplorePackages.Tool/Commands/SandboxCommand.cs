@@ -10,7 +10,6 @@ using Knapcode.ExplorePackages.Worker.FindPackageAssets;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
-using Microsoft.WindowsAzure.Storage.Queue;
 using Newtonsoft.Json;
 using NuGet.Frameworks;
 using NuGet.Versioning;

@@ -84,10 +84,7 @@ namespace Knapcode.ExplorePackages.Worker
         [InlineData(true)]
         public async Task FindPackageAssets(bool usingBatching)
         {
-            if (usingBatching)
-            {
-                Options.Value.MessageBatchSizes[typeof(CatalogLeafScanMessage).Name] = 2;
-            }
+            Options.Value.MessageBatchSizes[nameof(CatalogLeafScanMessage)] = usingBatching ? 2 : 1;
 
             Logger.LogInformation("Settings: " + Environment.NewLine + JsonConvert.SerializeObject(Options.Value, Formatting.Indented));
 

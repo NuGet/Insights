@@ -12,7 +12,10 @@ namespace Knapcode.ExplorePackages.Worker
             AppendResultStorageMode = AppendResultStorageMode.Table;
             AppendResultStorageBucketCount = 1000; // Azure Data Explorer can only import up to 1000 blobs.
             AppendResultUniqueIds = true;
-            MessageBatchSizes = new Dictionary<string, int>();
+            MessageBatchSizes = new Dictionary<string, int>
+            {
+                { nameof(CatalogLeafScanMessage), 20 },
+            };
 
             WorkerQueueName = "workerqueue";
             CursorTableName = "cursors";

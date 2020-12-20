@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 
@@ -10,10 +11,12 @@ namespace Knapcode.ExplorePackages.Worker
     {
         private static readonly string ThisNamespaceDot = typeof(MessageBatcher).Namespace + ".";
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly ILogger<MessageBatcher> _logger;
 
-        public MessageBatcher(IOptions<ExplorePackagesWorkerSettings> options)
+        public MessageBatcher(IOptions<ExplorePackagesWorkerSettings> options, ILogger<MessageBatcher> logger)
         {
             _options = options;
+            _logger = logger;
         }
 
         public IReadOnlyList<HomogeneousBatchMessage> BatchOrNull<T>(IReadOnlyList<T> messages, ISchemaSerializer<T> serializer)
@@ -44,6 +47,13 @@ namespace Knapcode.ExplorePackages.Worker
 
                 batches.Last().Messages.Add(serializer.SerializeData(message).AsJToken());
             }
+
+            _logger.LogInformation(
+                "Batched {MessageCount} {TypeName} messages into {BatchCount} batches of size {BatchSize}.",
+                messages.Count,
+                messageType.FullName,
+                batches.Count,
+                batchSize);
 
             return batches;
         }

@@ -64,7 +64,7 @@ namespace Knapcode.ExplorePackages.Worker
             SchemaSerializer = new SchemaSerializer(output.GetLogger<SchemaSerializer>());
             Options = new Mock<IOptions<ExplorePackagesWorkerSettings>>();
             Settings = new ExplorePackagesWorkerSettings();
-            MessageBatcher = new MessageBatcher(Options.Object);
+            MessageBatcher = new MessageBatcher(Options.Object, output.GetLogger<MessageBatcher>());
             RawMessageEnqueuer = new Mock<IRawMessageEnqueuer>();
 
             Options.Setup(x => x.Value).Returns(() => Settings);
