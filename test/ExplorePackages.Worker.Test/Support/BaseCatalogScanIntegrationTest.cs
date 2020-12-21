@@ -150,8 +150,8 @@ namespace Knapcode.ExplorePackages.Worker
             var container = client.GetContainerReference(DestinationContainerName);
             var blob = container.GetBlockBlobReference($"compact_{bucket}.csv");
             var actual = await blob.DownloadTextAsync();
-            Directory.CreateDirectory(Path.Combine(TestData, testName, stepName));
-            File.WriteAllText(Path.Combine(TestData, testName, stepName, blob.Name), actual);
+            // Directory.CreateDirectory(Path.Combine(TestData, testName, stepName));
+            // File.WriteAllText(Path.Combine(TestData, testName, stepName, blob.Name), actual);
             var expected = File.ReadAllText(Path.Combine(TestData, testName, stepName, blob.Name));
             Assert.Equal(expected, actual);
         }
