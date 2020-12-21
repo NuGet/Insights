@@ -107,107 +107,115 @@ namespace {0}
                 var readerBuilder = new StringBuilder();
                 const int indent = 12;
 
-                var sortedMembers = declaredClass.Members.OrderBy(x => x.SpanStart);
-                foreach (var member in sortedMembers)
+                var sortedProperties = new List<IPropertySymbol>();
+                var currentType = classModel;
+                while (currentType != null)
                 {
-                    var memberSymbol = model.GetDeclaredSymbol(member);
-                    if (memberSymbol is IPropertySymbol propertySymbol)
+                    sortedProperties.AddRange(currentType
+                        .GetMembers()
+                        .OfType<IPropertySymbol>()
+                        .OrderByDescending(x => x.Locations.First().SourceSpan.Start));
+                    currentType = currentType.BaseType;
+                }
+
+                sortedProperties.Reverse();
+
+                foreach (var propertySymbol in sortedProperties)
+                {
+                    if (writerBuilder.Length > 0)
                     {
-                        if (writerBuilder.Length > 0)
-                        {
-                            writerBuilder.AppendLine();
-                            writerBuilder.Append(' ', indent);
-                            writerBuilder.AppendLine("writer.Write(',');");
-                        }
-
-                        if (readerBuilder.Length > 0)
-                        {
-                            readerBuilder.AppendLine();
-                        }
-
-                        var propType = propertySymbol.Type.ToString();
-                        var propName = propertySymbol.Name;
-
-                        var nonNullPropType = propType.TrimEnd('?');
-
-                        // Clean up the type name by removing unnecessary namespaces.
-                        const string systemPrefix = "System.";
-                        if (nonNullPropType.StartsWith(systemPrefix))
-                        {
-                            nonNullPropType = nonNullPropType.Substring(systemPrefix.Length);
-                        }
-
-                        if (nonNullPropType.StartsWith(classNamespacePrefix))
-                        {
-                            nonNullPropType = nonNullPropType.Substring(classNamespacePrefix.Length);
-                        }
-
+                        writerBuilder.AppendLine();
                         writerBuilder.Append(' ', indent);
+                        writerBuilder.AppendLine("writer.Write(',');");
+                    }
 
-                        readerBuilder.Append(' ', indent);
+                    if (readerBuilder.Length > 0)
+                    {
+                        readerBuilder.AppendLine();
+                    }
 
-                        switch (propType)
-                        {
-                            case "bool":
-                            case "bool?":
-                            case "short":
-                            case "short?":
-                            case "ushort":
-                            case "ushort?":
-                            case "int":
-                            case "int?":
-                            case "uint":
-                            case "uint?":
-                            case "long":
-                            case "long?":
-                            case "ulong":
-                            case "ulong?":
-                            case "System.Guid":
-                            case "System.Guid?":
-                            case "System.TimeSpan":
-                            case "System.TimeSpan?":
+                    var propType = propertySymbol.Type.ToString();
+                    var propName = propertySymbol.Name;
+
+                    var nonNullPropType = propType.TrimEnd('?');
+
+                    // Clean up the type name by removing unnecessary namespaces.
+                    const string systemPrefix = "System.";
+                    if (nonNullPropType.StartsWith(systemPrefix))
+                    {
+                        nonNullPropType = nonNullPropType.Substring(systemPrefix.Length);
+                    }
+
+                    if (nonNullPropType.StartsWith(classNamespacePrefix))
+                    {
+                        nonNullPropType = nonNullPropType.Substring(classNamespacePrefix.Length);
+                    }
+
+                    writerBuilder.Append(' ', indent);
+
+                    readerBuilder.Append(' ', indent);
+
+                    switch (propType)
+                    {
+                        case "bool":
+                        case "bool?":
+                        case "short":
+                        case "short?":
+                        case "ushort":
+                        case "ushort?":
+                        case "int":
+                        case "int?":
+                        case "uint":
+                        case "uint?":
+                        case "long":
+                        case "long?":
+                        case "ulong":
+                        case "ulong?":
+                        case "System.Guid":
+                        case "System.Guid?":
+                        case "System.TimeSpan":
+                        case "System.TimeSpan?":
+                            writerBuilder.AppendFormat("writer.Write({0});", propName);
+                            if (propType.EndsWith("?"))
+                            {
+                                readerBuilder.AppendFormat("{0} = CsvUtility.ParseNullable(getNextField(), {1}.Parse);", propName, nonNullPropType);
+                            }
+                            else
+                            {
+                                readerBuilder.AppendFormat("{0} = {1}.Parse(getNextField());", propName, nonNullPropType);
+                            }
+                            break;
+                        case "string":
+                            writerBuilder.AppendFormat("CsvUtility.WriteWithQuotes(writer, {0});", propName);
+                            readerBuilder.AppendFormat("{0} = getNextField();", propName);
+                            break;
+                        case "System.DateTimeOffset":
+                            writerBuilder.AppendFormat("writer.Write(CsvUtility.FormatDateTimeOffset({0}));", propName);
+                            readerBuilder.AppendFormat("{0} = CsvUtility.ParseDateTimeOffset(getNextField());", propName);
+                            break;
+                        case "System.DateTimeOffset?":
+                            writerBuilder.AppendFormat("writer.Write(CsvUtility.FormatDateTimeOffset({0}));", propName);
+                            readerBuilder.AppendFormat("{0} = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset);", propName);
+                            break;
+                        default:
+                            if (propertySymbol.Type.TypeKind == TypeKind.Enum)
+                            {
                                 writerBuilder.AppendFormat("writer.Write({0});", propName);
                                 if (propType.EndsWith("?"))
                                 {
-                                    readerBuilder.AppendFormat("{0} = CsvUtility.ParseNullable(getNextField(), {1}.Parse);", propName, nonNullPropType);
+                                    readerBuilder.AppendFormat("{0} = CsvUtility.ParseNullable(getNextField(), Enum.Parse<{1}>);", propName, nonNullPropType);
                                 }
                                 else
                                 {
-                                    readerBuilder.AppendFormat("{0} = {1}.Parse(getNextField());", propName, nonNullPropType);
+                                    readerBuilder.AppendFormat("{0} = Enum.Parse<{1}>(getNextField());", propName, nonNullPropType);
                                 }
-                                break;
-                            case "string":
-                                writerBuilder.AppendFormat("CsvUtility.WriteWithQuotes(writer, {0});", propName);
-                                readerBuilder.AppendFormat("{0} = getNextField();", propName);
-                                break;
-                            case "System.DateTimeOffset":
-                                writerBuilder.AppendFormat("writer.Write(CsvUtility.FormatDateTimeOffset({0}));", propName);
-                                readerBuilder.AppendFormat("{0} = CsvUtility.ParseDateTimeOffset(getNextField());", propName);
-                                break;
-                            case "System.DateTimeOffset?":
-                                writerBuilder.AppendFormat("writer.Write(CsvUtility.FormatDateTimeOffset({0}));", propName);
-                                readerBuilder.AppendFormat("{0} = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset);", propName);
-                                break;
-                            default:
-                                if (propertySymbol.Type.TypeKind == TypeKind.Enum)
-                                {
-                                    writerBuilder.AppendFormat("writer.Write({0});", propName);
-                                    if (propType.EndsWith("?"))
-                                    {
-                                        readerBuilder.AppendFormat("{0} = CsvUtility.ParseNullable(getNextField(), Enum.Parse<{1}>);", propName, nonNullPropType);
-                                    }
-                                    else
-                                    {
-                                        readerBuilder.AppendFormat("{0} = Enum.Parse<{1}>(getNextField());", propName, nonNullPropType);
-                                    }
-                                }
-                                else
-                                {
-                                    writerBuilder.AppendFormat("CsvUtility.WriteWithQuotes(writer, {0}?.ToString());", propName);
-                                    readerBuilder.AppendFormat("{0} = Parse{0}(getNextField());", propName);
-                                }
-                                break;
-                        }
+                            }
+                            else
+                            {
+                                writerBuilder.AppendFormat("CsvUtility.WriteWithQuotes(writer, {0}?.ToString());", propName);
+                                readerBuilder.AppendFormat("{0} = Parse{0}(getNextField());", propName);
+                            }
+                            break;
                     }
                 }
 

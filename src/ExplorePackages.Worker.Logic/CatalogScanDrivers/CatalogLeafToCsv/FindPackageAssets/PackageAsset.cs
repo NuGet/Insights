@@ -1,43 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
 {
-    public partial class PackageAsset : IEquatable<PackageAsset>, ICsvRecord
+    public partial class PackageAsset : PackageRecord, IEquatable<PackageAsset>, ICsvRecord
     {
         public PackageAsset()
         {
         }
 
         public PackageAsset(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDeleteCatalogLeaf leaf)
+            : base(scanId, scanTimestamp, leaf)
         {
-            ScanId = scanId;
-            ScanTimestamp = scanTimestamp;
-            Id = leaf.PackageId;
-            Version = NuGetVersion.Parse(leaf.PackageVersion).ToNormalizedString();
-            CatalogCommitTimestamp = leaf.CommitTimestamp;
             ResultType = PackageAssetResultType.Deleted;
         }
 
         public PackageAsset(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, PackageAssetResultType resultType)
+            : base(scanId, scanTimestamp, leaf)
         {
-            ScanId = scanId;
-            ScanTimestamp = scanTimestamp;
-            Id = leaf.PackageId;
-            Version = NuGetVersion.Parse(leaf.PackageVersion).ToNormalizedString();
-            CatalogCommitTimestamp = leaf.CommitTimestamp;
-            Created = leaf.Created;
             ResultType = resultType;
         }
 
-        public Guid? ScanId { get; set; }
-        public DateTimeOffset? ScanTimestamp { get; set; }
-        public string Id { get; set; }
-        public string Version { get; set; }
-        public DateTimeOffset CatalogCommitTimestamp { get; set; }
-        public DateTimeOffset? Created { get; set; }
         public PackageAssetResultType ResultType { get; set; }
 
         public string PatternSet { get; set; }
