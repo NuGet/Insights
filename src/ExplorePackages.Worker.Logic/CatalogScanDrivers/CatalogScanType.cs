@@ -2,8 +2,6 @@
 {
     public enum CatalogScanType
     {
-        DownloadPages,
-        DownloadLeaves,
         FindLatestLeaves,
         FindPackageAssets,
     }

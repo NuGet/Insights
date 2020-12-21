@@ -24,8 +24,6 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient<TaskStateStorageService>();
 
             serviceCollection.AddTransient<CatalogScanDriverFactory>();
-            serviceCollection.AddTransient<DownloadLeavesCatalogScanDriver>();
-            serviceCollection.AddTransient<DownloadPagesCatalogScanDriver>();
             serviceCollection.AddTransient<FindLatestLeavesCatalogScanDriver>();
 
             serviceCollection.AddTransient<CatalogScanService>();

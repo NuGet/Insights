@@ -17,10 +17,6 @@ namespace Knapcode.ExplorePackages.Worker
         {
             switch (type)
             {
-                case CatalogScanType.DownloadPages:
-                    return _serviceProvider.GetRequiredService<DownloadPagesCatalogScanDriver>();
-                case CatalogScanType.DownloadLeaves:
-                    return _serviceProvider.GetRequiredService<DownloadLeavesCatalogScanDriver>();
                 case CatalogScanType.FindLatestLeaves:
                     return _serviceProvider.GetRequiredService<FindLatestLeavesCatalogScanDriver>();
                 case CatalogScanType.FindPackageAssets:
