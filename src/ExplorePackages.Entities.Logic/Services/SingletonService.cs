@@ -10,7 +10,7 @@ namespace Knapcode.ExplorePackages.Entities
         public const string LeaseName = "Knapcode.ExplorePackages";
         private static readonly TimeSpan Duration = TimeSpan.FromHours(1);
 
-        private static SemaphoreSlim _lock = new SemaphoreSlim(1);
+        private static readonly SemaphoreSlim _lock = new SemaphoreSlim(1);
         private readonly IDatabaseLeaseService _leaseService;
         private readonly ILogger<SingletonService> _logger;
         private LeaseEntity _lease;

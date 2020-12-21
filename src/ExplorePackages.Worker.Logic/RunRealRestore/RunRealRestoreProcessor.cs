@@ -37,7 +37,7 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
             { ClassLibTemplate, CommonProjectTemplates31 },
         };
 
-        private static HashSet<string> IgnoredPackageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        private static readonly HashSet<string> IgnoredPackageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             // These packages are part of the SDK after netcoreapp3.0, therefore they will not appear in the assets
             // file, which messes up the analysis in this class.

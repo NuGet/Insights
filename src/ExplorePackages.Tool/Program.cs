@@ -18,7 +18,7 @@ namespace Knapcode.ExplorePackages.Tool
     {
         private static readonly TimeSpan ReleaseInDuration = TimeSpan.FromSeconds(15);
 
-        private static IReadOnlyDictionary<string, Type> Commands = new Dictionary<string, Type>
+        private static readonly IReadOnlyDictionary<string, Type> Commands = new Dictionary<string, Type>
         {
             { "backup-database", typeof(BackupDatabaseCommand) },
             { "break-singleton-lease", typeof(BreakSingletonLeaseCommand) },

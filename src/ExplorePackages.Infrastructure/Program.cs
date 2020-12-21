@@ -5,7 +5,7 @@ namespace Knapcode.ExplorePackages
 {
     public class Program
     {
-        static async Task<int> Main()
+        private static async Task<int> Main()
         {
             var result = await Deployment.RunAsync<MyStack>();
             return result;

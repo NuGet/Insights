@@ -4,7 +4,7 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class MetricWrapper : IMetric
     {
-        private Metric _inner;
+        private readonly Metric _inner;
 
         public MetricWrapper(Metric metric)
         {

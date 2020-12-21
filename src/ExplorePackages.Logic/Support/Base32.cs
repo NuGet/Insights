@@ -21,8 +21,7 @@ namespace Knapcode.ExplorePackages
             StringBuilder sb = new StringBuilder();
             for (int offset = 0; offset < input.Length;)
             {
-                byte a, b, c, d, e, f, g, h;
-                int numCharsToOutput = GetNextGroup(input, ref offset, out a, out b, out c, out d, out e, out f, out g, out h);
+                int numCharsToOutput = GetNextGroup(input, ref offset, out byte a, out byte b, out byte c, out byte d, out byte e, out byte f, out byte g, out byte h);
 
                 sb.Append((numCharsToOutput >= 1) ? _base32Chars[a] : '=');
                 sb.Append((numCharsToOutput >= 2) ? _base32Chars[b] : '=');

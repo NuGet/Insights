@@ -98,8 +98,8 @@ namespace Knapcode.ExplorePackages
 
         private class PackageDownloadsAsyncEnumerator : IAsyncEnumerator<PackageDownloads>
         {
-            private Stack<IDisposable> _disposables;
-            private JsonReader _jsonReader;
+            private readonly Stack<IDisposable> _disposables;
+            private readonly JsonReader _jsonReader;
 
             private State _state;
             private string _currentId;

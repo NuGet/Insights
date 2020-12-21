@@ -7,7 +7,7 @@ namespace Knapcode.ExplorePackages.Entities
 {
     public class ProblemService
     {
-        private static IReadOnlyList<string> QueryNames = new[]
+        private static readonly IReadOnlyList<string> QueryNames = new[]
         {
             PackageQueryNames.HasCrossCheckDiscrepancyPackageQuery,
             PackageQueryNames.HasFlatContainerDiscrepancyPackageQuery,

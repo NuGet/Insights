@@ -25,8 +25,7 @@ namespace Knapcode.ExplorePackages
             string stringValue = reader.Value as string;
             if (stringValue != null)
             {
-                CatalogLeafType output;
-                if (FromString.TryGetValue(stringValue, out output))
+                if (FromString.TryGetValue(stringValue, out CatalogLeafType output))
                 {
                     return output;
                 }

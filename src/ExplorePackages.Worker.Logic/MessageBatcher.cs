@@ -22,11 +22,10 @@ namespace Knapcode.ExplorePackages.Worker
         public IReadOnlyList<HomogeneousBatchMessage> BatchOrNull<T>(IReadOnlyList<T> messages, ISchemaSerializer<T> serializer)
         {
             var messageType = typeof(T);
-            int batchSize;
             if (messageType == typeof(HomogeneousBatchMessage)
                || messages.Count <= 1
                || _options.Value.MessageBatchSizes == null
-               || !TryGetBatchSize(messageType, out batchSize)
+               || !TryGetBatchSize(messageType, out int batchSize)
                || batchSize <= 1)
             {
                 return null;

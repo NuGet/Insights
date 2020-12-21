@@ -20,8 +20,7 @@ namespace Knapcode.ExplorePackages
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            string output;
-            if (_fromType.TryGetValue((CatalogLeafType)value, out output))
+            if (_fromType.TryGetValue((CatalogLeafType)value, out string output))
             {
                 writer.WriteValue(output);
                 return;
