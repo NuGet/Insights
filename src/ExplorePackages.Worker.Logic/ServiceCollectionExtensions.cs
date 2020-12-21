@@ -1,6 +1,7 @@
 ﻿using Knapcode.ExplorePackages.Worker.FindPackageAssets;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using Microsoft.Extensions.DependencyInjection;
+using System.Linq;
 
 namespace Knapcode.ExplorePackages.Worker
 {
@@ -30,7 +31,6 @@ namespace Knapcode.ExplorePackages.Worker
 
             serviceCollection.AddTransient<ICsvReader, NRecoCsvReader>();
 
-            serviceCollection.AddFindPackageAssets();
             serviceCollection.AddRunRealRestore();
 
             foreach (var (serviceType, implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(IMessageProcessor<>)))
@@ -38,12 +38,23 @@ namespace Knapcode.ExplorePackages.Worker
                 serviceCollection.AddTransient(serviceType, implementationType);
             }
 
-            return serviceCollection;
-        }
+            foreach (var (serviceType, implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ICatalogLeafToCsvDriver<>)))
+            {
+                // Add the driver
+                serviceCollection.AddTransient(serviceType, implementationType);
 
-        private static void AddFindPackageAssets(this IServiceCollection serviceCollection)
-        {
-            serviceCollection.AddTransient<FindPackageAssetsScanDriver>();
+                // Add the catalog scan adapter
+                var recordType = serviceType.GenericTypeArguments.Single();
+                serviceCollection.AddTransient(
+                    typeof(CatalogLeafToCsvAdapter<>).MakeGenericType(recordType));
+
+                // Add the compact processor
+                serviceCollection.AddTransient(
+                    typeof(IMessageProcessor<>).MakeGenericType(typeof(CatalogLeafToCsvCompactMessage<>).MakeGenericType(recordType)),
+                    typeof(CatalogLeafToCsvCompactProcessor<>).MakeGenericType(recordType));
+            } 
+
+            return serviceCollection;
         }
 
         private static void AddRunRealRestore(this IServiceCollection serviceCollection)

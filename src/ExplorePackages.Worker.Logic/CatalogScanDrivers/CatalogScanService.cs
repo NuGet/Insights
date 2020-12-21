@@ -100,7 +100,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             return await UpdateAsync(
                 CatalogScanType.FindPackageAssets,
-                _serializer.Serialize(new FindPackageAssetsParameters
+                _serializer.Serialize(new CatalogLeafToCsvParameters
                 {
                     BucketCount = _options.Value.AppendResultStorageBucketCount,
                 }).AsString(),

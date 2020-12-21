@@ -20,13 +20,13 @@ namespace Knapcode.ExplorePackages.Worker
             new SchemaV1<CatalogPageScanMessage>("cps"),
             new SchemaV1<CatalogLeafScanMessage>("cls"),
 
-            new SchemaV1<FindPackageAssetsCompactMessage>("fpa.c"),
+            new SchemaV1<CatalogLeafToCsvCompactMessage<PackageAsset>>("fpa.c"),
 
             new SchemaV1<RunRealRestoreMessage>("rrr"),
             new SchemaV1<RunRealRestoreCompactMessage>("rrr.c"),
 
             new SchemaV1<FindLatestLeavesParameters>("fll"),
-            new SchemaV1<FindPackageAssetsParameters>("fpa"),
+            new SchemaV1<CatalogLeafToCsvParameters>("cl2c"),
         });
 
         private readonly ILogger<SchemaSerializer> _logger;

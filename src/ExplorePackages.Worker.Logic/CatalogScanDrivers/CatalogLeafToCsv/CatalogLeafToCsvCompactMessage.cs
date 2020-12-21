@@ -1,14 +1,11 @@
 ﻿using Newtonsoft.Json;
 
-namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
+namespace Knapcode.ExplorePackages.Worker
 {
-    public class FindPackageAssetsCompactMessage
+    public class CatalogLeafToCsvCompactMessage<T> where T : ICsvRecord
     {
         [JsonProperty("s")]
         public string SourceContainer { get; set; }
-
-        [JsonProperty("d")]
-        public string DestinationContainer { get; set; }
 
         [JsonProperty("b")]
         public int Bucket { get; set; }

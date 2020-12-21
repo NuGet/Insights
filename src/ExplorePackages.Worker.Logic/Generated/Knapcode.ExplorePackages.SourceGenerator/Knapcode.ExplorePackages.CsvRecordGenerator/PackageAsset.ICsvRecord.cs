@@ -21,8 +21,6 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             writer.Write(',');
             writer.Write(CsvUtility.FormatDateTimeOffset(Created));
             writer.Write(',');
-            writer.Write(CsvUtility.FormatDateTimeOffset(LastModified));
-            writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, ResultType);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, PatternSet);
@@ -73,7 +71,6 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             Version = getNextField();
             CatalogCommitTimestamp = CsvUtility.ParseDateTimeOffset(getNextField());
             Created = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset);
-            LastModified = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset);
             ResultType = getNextField();
             PatternSet = getNextField();
             PropertyAnyValue = getNextField();
@@ -90,6 +87,13 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             TopLevelFolder = getNextField();
             RoundTripTargetFrameworkMoniker = getNextField();
             FrameworkName = getNextField();
+            FrameworkVersion = getNextField();
+            FrameworkProfile = getNextField();
+            PlatformName = getNextField();
+            PlatformVersion = getNextField();
+        }
+    }
+}
             FrameworkVersion = getNextField();
             FrameworkProfile = getNextField();
             PlatformName = getNextField();

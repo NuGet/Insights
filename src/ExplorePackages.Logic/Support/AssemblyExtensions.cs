@@ -9,7 +9,7 @@ namespace Knapcode.ExplorePackages
     {
         public static IEnumerable<(Type serviceType, Type implementationType)> GetClassesImplementingGeneric(this Assembly assembly, Type openType)
         {
-            foreach (var type in assembly.GetTypes().Where(t => t.IsClass && !t.IsAbstract))
+            foreach (var type in assembly.GetTypes().Where(t => t.IsClass && !t.IsAbstract && !t.IsGenericType))
             {
                 foreach (var i in type.GetInterfaces())
                 {

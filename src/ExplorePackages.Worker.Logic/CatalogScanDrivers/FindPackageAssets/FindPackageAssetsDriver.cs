@@ -16,57 +16,34 @@ using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
 {
-    public class FindPackageAssetsScanDriver : ICatalogScanDriver
+    public class FindPackageAssetsDriver : ICatalogLeafToCsvDriver<PackageAsset>
     {
-        private readonly SchemaSerializer _schemaSerializer;
         private readonly CatalogClient _catalogClient;
         private readonly ServiceIndexCache _serviceIndexCache;
         private readonly FlatContainerClient _flatContainerClient;
         private readonly HttpZipProvider _httpZipProvider;
-        private readonly AppendResultStorageService _storageService;
-        private readonly TaskStateStorageService _taskStateStorageService;
-        private readonly MessageEnqueuer _messageEnqueuer;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
-        private readonly ILogger<FindPackageAssetsScanDriver> _logger;
+        private readonly ILogger<FindPackageAssetsDriver> _logger;
 
-        public FindPackageAssetsScanDriver(
-            SchemaSerializer schemaSerializer,
+        public FindPackageAssetsDriver(
             CatalogClient catalogClient,
             ServiceIndexCache serviceIndexCache,
             FlatContainerClient flatContainerClient,
             HttpZipProvider httpZipProvider,
-            AppendResultStorageService storageService,
-            TaskStateStorageService taskStateStorageService,
-            MessageEnqueuer messageEnqueuer,
             IOptions<ExplorePackagesWorkerSettings> options,
-            ILogger<FindPackageAssetsScanDriver> logger)
+            ILogger<FindPackageAssetsDriver> logger)
         {
-            _schemaSerializer = schemaSerializer;
             _catalogClient = catalogClient;
             _serviceIndexCache = serviceIndexCache;
             _flatContainerClient = flatContainerClient;
             _httpZipProvider = httpZipProvider;
-            _storageService = storageService;
-            _taskStateStorageService = taskStateStorageService;
-            _messageEnqueuer = messageEnqueuer;
             _options = options;
             _logger = logger;
         }
 
-        public async Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
-        {
-            await _storageService.InitializeAsync(GetTableName(indexScan.StorageSuffix), _options.Value.FindPackageAssetsContainerName);
-            await _taskStateStorageService.InitializeAsync(indexScan.StorageSuffix);
+        public string ResultsContainerName => _options.Value.FindPackageAssetsContainerName;
 
-            return CatalogIndexScanResult.Expand;
-        }
-
-        public Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan)
-        {
-            return Task.FromResult(CatalogPageScanResult.Expand);
-        }
-
-        public async Task ProcessLeafAsync(CatalogLeafScan leafScan)
+        public async Task<List<PackageAsset>> ProcessLeafAsync(CatalogLeafItem item)
         {
             Guid? scanId = null;
             DateTimeOffset? scanTimestamp = null;
@@ -76,28 +53,24 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
                 scanTimestamp = DateTimeOffset.UtcNow;
             }
 
-            List<PackageAsset> assets;
-            if (leafScan.ParsedLeafType == CatalogLeafType.PackageDelete)
+            if (item.Type == CatalogLeafType.PackageDelete)
             {
-                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.ParsedLeafType, leafScan.Url);
-                assets = new List<PackageAsset> { new PackageAsset(scanId, scanTimestamp, leaf) };
+                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                return new List<PackageAsset> { new PackageAsset(scanId, scanTimestamp, leaf) };
             }
             else
             {
-                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.ParsedLeafType, leafScan.Url);
+                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
 
                 var flatContainerBaseUrl = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.FlatContainer);
-                var normalizedVersion = NuGetVersion.Parse(leafScan.PackageVersion).ToNormalizedString();
-                var url = _flatContainerClient.GetPackageContentUrl(flatContainerBaseUrl, leafScan.PackageId, leafScan.PackageVersion);
+                var normalizedVersion = NuGetVersion.Parse(item.PackageVersion).ToNormalizedString();
+                var url = _flatContainerClient.GetPackageContentUrl(flatContainerBaseUrl, item.PackageId, item.PackageVersion);
 
-                DateTimeOffset lastModified;
                 List<string> files;
                 try
                 {
                     using (var reader = await _httpZipProvider.GetReaderAsync(new Uri(url)))
                     {
-                        lastModified = DateTimeOffset.Parse(reader.Properties["Last-Modified"].Single());
-
                         var zipDirectory = await reader.ReadAsync();
                         files = zipDirectory
                             .Entries
@@ -110,18 +83,30 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
                 catch (MiniZipHttpStatusCodeException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
                 {
                     // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted asset record.
-                    return;
+                    return new List<PackageAsset>();
                 }
 
-                assets = GetAssets(scanId, scanTimestamp, leaf, lastModified, files);
+                return GetAssets(scanId, scanTimestamp, leaf, files);
             }
-
-            var bucketKey = $"{leafScan.PackageId}/{NuGetVersion.Parse(leafScan.PackageVersion).ToNormalizedString()}".ToLowerInvariant();
-            var parameters = (FindPackageAssetsParameters)_schemaSerializer.Deserialize(leafScan.ScanParameters);
-            await _storageService.AppendAsync(GetTableName(leafScan.StorageSuffix), parameters.BucketCount, bucketKey, assets);
         }
 
-        private List<PackageAsset> GetAssets(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, DateTimeOffset lastModified, List<string> files)
+        public List<PackageAsset> Prune(List<PackageAsset> records)
+        {
+            return records
+                .GroupBy(x => x, PackageAssetIdVersionComparer.Instance) // Group by unique package version
+                .Select(g => g
+                    .GroupBy(x => new { x.ScanId, x.CatalogCommitTimestamp }) // Group package version assets by scan and catalog commit timestamp
+                    .OrderByDescending(x => x.Key.CatalogCommitTimestamp)
+                    .OrderByDescending(x => x.First().ScanTimestamp)
+                    .First())
+                .SelectMany(g => g)
+                .OrderBy(x => x.Id, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(x => x.Version, StringComparer.OrdinalIgnoreCase)
+                .Distinct()
+                .ToList();
+        }
+
+        private List<PackageAsset> GetAssets(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, List<string> files)
         {
             var contentItemCollection = new ContentItemCollection();
             contentItemCollection.Load(files);
@@ -147,7 +132,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
                 }
                 catch (ArgumentException ex) when (IsInvalidDueToHyphenInPortal(ex))
                 {
-                    return GetErrorResult(scanId, scanTimestamp, leaf, lastModified, ex, "Package {Id} {Version} contains a portable framework with a hyphen in the profile.");
+                    return GetErrorResult(scanId, scanTimestamp, leaf, ex, "Package {Id} {Version} contains a portable framework with a hyphen in the profile.");
                 }
 
                 foreach (var group in groups)
@@ -167,7 +152,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
                     }
                     catch (FrameworkException ex) when (IsInvalidDueMissingPortableProfile(ex))
                     {
-                        return GetErrorResult(scanId, scanTimestamp, leaf, lastModified, ex, "Package {Id} {Version} contains a portable framework missing a profile.");
+                        return GetErrorResult(scanId, scanTimestamp, leaf, ex, "Package {Id} {Version} contains a portable framework missing a profile.");
                     }
 
                     var parsedFramework = NuGetFramework.Parse(targetFrameworkMoniker);
@@ -175,7 +160,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
 
                     foreach (var item in group.Items)
                     {
-                        assets.Add(new PackageAsset(scanId, scanTimestamp, leaf, lastModified, PackageAssetResultType.AvailableAssets)
+                        assets.Add(new PackageAsset(scanId, scanTimestamp, leaf, PackageAssetResultType.AvailableAssets)
                         {
                             PatternSet = pair.Key,
 
@@ -205,16 +190,16 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
 
             if (assets.Count == 0)
             {
-                return new List<PackageAsset> { new PackageAsset(scanId, scanTimestamp, leaf, lastModified, PackageAssetResultType.NoAssets) };
+                return new List<PackageAsset> { new PackageAsset(scanId, scanTimestamp, leaf, PackageAssetResultType.NoAssets) };
             }
 
             return assets;
         }
 
-        private List<PackageAsset> GetErrorResult(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, DateTimeOffset lastModified, Exception ex, string message)
+        private List<PackageAsset> GetErrorResult(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, Exception ex, string message)
         {
             _logger.LogWarning(ex, message, leaf.PackageId, leaf.PackageVersion);
-            return new List<PackageAsset> { new PackageAsset(scanId, scanTimestamp, leaf, lastModified, PackageAssetResultType.Error) };
+            return new List<PackageAsset> { new PackageAsset(scanId, scanTimestamp, leaf, PackageAssetResultType.Error) };
         }
 
         private static bool IsInvalidDueMissingPortableProfile(FrameworkException ex)
@@ -229,59 +214,6 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             return
                 ex.Message.StartsWith("Invalid portable frameworks '")
                 && ex.Message.EndsWith("'. A hyphen may not be in any of the portable framework names.");
-        }
-
-        public async Task StartAggregateAsync(CatalogIndexScan indexScan)
-        {
-            var buckets = await _storageService.GetWrittenBucketsAsync(GetTableName(indexScan.StorageSuffix));
-
-            var partitionKey = GetAggregateTasksPartitionKey(indexScan);
-
-            await _taskStateStorageService.InitializeAllAsync(
-                indexScan.StorageSuffix,
-                partitionKey,
-                buckets.Select(x => x.ToString()).ToList());
-
-            var messages = buckets
-                .Select(b => new FindPackageAssetsCompactMessage
-                {
-                    SourceContainer = GetTableName(indexScan.StorageSuffix),
-                    DestinationContainer = _options.Value.FindPackageAssetsContainerName,
-                    Bucket = b,
-                    TaskStateStorageSuffix = indexScan.StorageSuffix,
-                    TaskStatePartitionKey = partitionKey,
-                    TaskStateRowKey = b.ToString(),
-                })
-                .ToList();
-            await _messageEnqueuer.EnqueueAsync(messages);
-        }
-
-        public async Task<bool> IsAggregateCompleteAsync(CatalogIndexScan indexScan)
-        {
-            var countLowerBound = await _taskStateStorageService.GetCountLowerBoundAsync(
-                indexScan.StorageSuffix,
-                GetAggregateTasksPartitionKey(indexScan));
-            _logger.LogInformation("There are at least {Count} compact tasks pending.", countLowerBound);
-            return countLowerBound == 0;
-        }
-
-        private static string GetAggregateTasksPartitionKey(CatalogIndexScan indexScan)
-        {
-            return $"{indexScan.ScanId}-aggregate";
-        }
-
-        public async Task FinalizeAsync(CatalogIndexScan indexScan)
-        {
-            if (!string.IsNullOrEmpty(indexScan.StorageSuffix))
-            {
-                await _taskStateStorageService.DeleteTableAsync(indexScan.StorageSuffix);
-                await _storageService.DeleteAsync(GetTableName(indexScan.StorageSuffix));
-            }
-        }
-
-        private string GetTableName(string suffix)
-        {
-            return $"{_options.Value.FindPackageAssetsContainerName}{suffix}";
         }
     }
 }

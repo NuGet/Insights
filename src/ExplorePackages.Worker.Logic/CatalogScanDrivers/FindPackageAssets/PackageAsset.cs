@@ -21,7 +21,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             ResultType = PackageAssetResultType.Deleted;
         }
 
-        public PackageAsset(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, DateTimeOffset lastModified, string resultType)
+        public PackageAsset(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, string resultType)
         {
             ScanId = scanId;
             ScanTimestamp = scanTimestamp;
@@ -29,7 +29,6 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             Version = NuGetVersion.Parse(leaf.PackageVersion).ToNormalizedString();
             CatalogCommitTimestamp = leaf.CommitTimestamp;
             Created = leaf.Created;
-            LastModified = lastModified;
             ResultType = resultType;
         }
 
@@ -39,7 +38,6 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
         public string Version { get; set; }
         public DateTimeOffset CatalogCommitTimestamp { get; set; }
         public DateTimeOffset? Created { get; set; }
-        public DateTimeOffset? LastModified { get; set; }
         public string ResultType { get; set; }
 
         public string PatternSet { get; set; }
@@ -78,7 +76,6 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
                    Version == other.Version &&
                    CatalogCommitTimestamp.Equals(other.CatalogCommitTimestamp) &&
                    EqualityComparer<DateTimeOffset?>.Default.Equals(Created, other.Created) &&
-                   EqualityComparer<DateTimeOffset?>.Default.Equals(LastModified, other.LastModified) &&
                    ResultType == other.ResultType &&
                    PatternSet == other.PatternSet &&
                    PropertyAnyValue == other.PropertyAnyValue &&
@@ -110,7 +107,6 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             hash.Add(Version);
             hash.Add(CatalogCommitTimestamp);
             hash.Add(Created);
-            hash.Add(LastModified);
             hash.Add(ResultType);
             hash.Add(PatternSet);
             hash.Add(PropertyAnyValue);

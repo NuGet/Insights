@@ -1,31 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
+namespace Knapcode.ExplorePackages.Worker
 {
-    public class FindPackageAssetsCompactProcessor : IMessageProcessor<FindPackageAssetsCompactMessage>
+    public class CatalogLeafToCsvCompactProcessor<T> : IMessageProcessor<CatalogLeafToCsvCompactMessage<T>> where T : ICsvRecord, new()
     {
         private readonly AppendResultStorageService _storageService;
         private readonly TaskStateStorageService _taskStateStorageService;
+        private readonly ICatalogLeafToCsvDriver<T> _driver;
         private readonly ICsvReader _csvReader;
-        private readonly ILogger<FindPackageAssetsCompactProcessor> _logger;
+        private readonly ILogger<CatalogLeafToCsvCompactProcessor<T>> _logger;
 
-        public FindPackageAssetsCompactProcessor(
+        public CatalogLeafToCsvCompactProcessor(
             AppendResultStorageService storageService,
             TaskStateStorageService taskStateStorageService,
+            ICatalogLeafToCsvDriver<T> driver,
             ICsvReader csvReader,
-            ILogger<FindPackageAssetsCompactProcessor> logger)
+            ILogger<CatalogLeafToCsvCompactProcessor<T>> logger)
         {
             _storageService = storageService;
             _taskStateStorageService = taskStateStorageService;
+            _driver = driver;
             _csvReader = csvReader;
             _logger = logger;
         }
 
-        public async Task ProcessAsync(FindPackageAssetsCompactMessage message)
+        public async Task ProcessAsync(CatalogLeafToCsvCompactMessage<T> message)
         {
             TaskState taskState;
             if (message.Force
@@ -49,35 +49,19 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
                 return;
             }
 
-            await _storageService.CompactAsync<PackageAsset>(
+            await _storageService.CompactAsync<T>(
                 message.SourceContainer,
-                message.DestinationContainer,
+                _driver.ResultsContainerName,
                 message.Bucket,
                 force: message.Force,
                 mergeExisting: true,
-                PruneAssets,
+                _driver.Prune,
                 _csvReader);
 
             if (taskState != null)
             {
                 await _taskStateStorageService.DeleteAsync(taskState);
             }
-        }
-
-        public static List<PackageAsset> PruneAssets(List<PackageAsset> allAssets)
-        {
-            return allAssets
-                .GroupBy(x => x, PackageAssetIdVersionComparer.Instance) // Group by unique package version
-                .Select(g => g
-                    .GroupBy(x => new { x.ScanId, x.CatalogCommitTimestamp }) // Group package version assets by scan and catalog commit timestamp
-                    .OrderByDescending(x => x.Key.CatalogCommitTimestamp)
-                    .OrderByDescending(x => x.First().ScanTimestamp)
-                    .First())
-                .SelectMany(g => g)
-                .OrderBy(x => x.Id, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(x => x.Version, StringComparer.OrdinalIgnoreCase)
-                .Distinct()
-                .ToList();
         }
     }
 }

@@ -20,7 +20,7 @@ namespace Knapcode.ExplorePackages.Worker
                 case CatalogScanType.FindLatestLeaves:
                     return _serviceProvider.GetRequiredService<FindLatestLeavesCatalogScanDriver>();
                 case CatalogScanType.FindPackageAssets:
-                    return _serviceProvider.GetRequiredService<FindPackageAssetsScanDriver>();
+                    return _serviceProvider.GetRequiredService<CatalogLeafToCsvAdapter<PackageAsset>>();
                 default:
                     throw new NotSupportedException($"Catalog scan type '{type}' is not supported.");
             }

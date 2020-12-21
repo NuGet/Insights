@@ -28,7 +28,6 @@ namespace Knapcode.ExplorePackages.Tool
         private readonly IMessageProcessor<RunRealRestoreMessage> _messageProcessor;
         private readonly MessageEnqueuer _messageEnqueuer;
         private readonly ServiceClientFactory _serviceClientFactory;
-        private readonly FindPackageAssetsScanDriver _driver;
         private readonly SchemaSerializer _serializer;
         private readonly StorageLeaseService _storageLeaseService;
         private readonly ILogger<SandboxCommand> _logger;
@@ -43,7 +42,6 @@ namespace Knapcode.ExplorePackages.Tool
             IMessageProcessor<RunRealRestoreMessage> messageProcessor,
             MessageEnqueuer messageEnqueuer,
             ServiceClientFactory serviceClientFactory,
-            FindPackageAssetsScanDriver driver,
             SchemaSerializer serializer,
             StorageLeaseService storageLeaseService,
             ILogger<SandboxCommand> logger)
@@ -57,7 +55,6 @@ namespace Knapcode.ExplorePackages.Tool
             _messageProcessor = messageProcessor;
             _messageEnqueuer = messageEnqueuer;
             _serviceClientFactory = serviceClientFactory;
-            _driver = driver;
             _serializer = serializer;
             _storageLeaseService = storageLeaseService;
             _logger = logger;

@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 
-namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
+namespace Knapcode.ExplorePackages.Worker
 {
-    public class FindPackageAssetsParameters
+    public class CatalogLeafToCsvParameters
     {
         [JsonProperty("bc")]
         public int BucketCount { get; set; }
