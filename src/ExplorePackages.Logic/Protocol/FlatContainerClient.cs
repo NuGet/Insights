@@ -51,45 +51,23 @@ namespace Knapcode.ExplorePackages
         public async Task<Stream> DownloadPackageContentToFileAsync(string id, string version, CancellationToken token)
         {
             var url = await GetPackageContentUrlAsync(id, version);
-            FileStream fileStream = null;
             var nuGetLogger = _logger.ToNuGetLogger();
-
-            try
-            {
-                fileStream = await _httpSource.ProcessStreamAsync(
-                    new HttpSourceRequest(url, nuGetLogger)
+            return await _httpSource.ProcessStreamAsync(
+                new HttpSourceRequest(url, nuGetLogger)
+                {
+                    IgnoreNotFounds = true,
+                },
+                async networkStream =>
+                {
+                    if (networkStream == null)
                     {
-                        IgnoreNotFounds = true,
-                    },
-                    async networkStream =>
-                    {
-                        if (networkStream == null)
-                        {
-                            return null;
-                        }
+                        return null;
+                    }
 
-                        fileStream = new FileStream(
-                            Path.GetTempFileName(),
-                            FileMode.Create,
-                            FileAccess.ReadWrite,
-                            FileShare.None,
-                            bufferSize: 80 * 1024,
-                            FileOptions.Asynchronous | FileOptions.DeleteOnClose);
-
-                        await networkStream.CopyToAsync(fileStream);
-                        fileStream.Position = 0;
-                        return fileStream;
-                    },
-                    nuGetLogger,
-                    token);
-            }
-            catch
-            {
-                fileStream?.Dispose();
-                throw;
-            }
-
-            return fileStream;
+                    return await FileSystemUtility.CopyToTempStreamAsync(networkStream);
+                },
+                nuGetLogger,
+                token);
         }
 
         public async Task<NuspecContext> GetNuspecContextAsync(string id, string version, CancellationToken token)

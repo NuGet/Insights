@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker
@@ -35,5 +37,21 @@ namespace Knapcode.ExplorePackages.Worker
         public string Version { get; set; }
         public DateTimeOffset CatalogCommitTimestamp { get; set; }
         public DateTimeOffset? Created { get; set; }
+
+        public static List<T> Prune<T>(List<T> records) where T : PackageRecord
+        {
+            return records
+                .GroupBy(x => x, PackageRecordIdVersionComparer.Instance) // Group by unique package version
+                .Select(g => g
+                    .GroupBy(x => new { x.ScanId, x.CatalogCommitTimestamp }) // Group package version records by scan and catalog commit timestamp
+                    .OrderByDescending(x => x.Key.CatalogCommitTimestamp)
+                    .OrderByDescending(x => x.First().ScanTimestamp)
+                    .First())
+                .SelectMany(g => g)
+                .OrderBy(x => x.Id, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(x => x.Version, StringComparer.OrdinalIgnoreCase)
+                .Distinct()
+                .ToList();
+        }
     }
 }

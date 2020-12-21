@@ -12,7 +12,6 @@ using NuGet.Client;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
 using NuGet.RuntimeModel;
-using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
 {
@@ -39,6 +38,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
         }
 
         public string ResultsContainerName => _options.Value.FindPackageAssetsContainerName;
+        public List<PackageAsset> Prune(List<PackageAsset> records) => PackageRecord.Prune(records);
 
         public async Task<List<PackageAsset>> ProcessLeafAsync(CatalogLeafItem item)
         {
@@ -82,22 +82,6 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
 
                 return GetAssets(scanId, scanTimestamp, leaf, files);
             }
-        }
-
-        public List<PackageAsset> Prune(List<PackageAsset> records)
-        {
-            return records
-                .GroupBy(x => x, PackageAssetIdVersionComparer.Instance) // Group by unique package version
-                .Select(g => g
-                    .GroupBy(x => new { x.ScanId, x.CatalogCommitTimestamp }) // Group package version assets by scan and catalog commit timestamp
-                    .OrderByDescending(x => x.Key.CatalogCommitTimestamp)
-                    .OrderByDescending(x => x.First().ScanTimestamp)
-                    .First())
-                .SelectMany(g => g)
-                .OrderBy(x => x.Id, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(x => x.Version, StringComparer.OrdinalIgnoreCase)
-                .Distinct()
-                .ToList();
         }
 
         private List<PackageAsset> GetAssets(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, List<string> files)

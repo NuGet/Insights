@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
+namespace Knapcode.ExplorePackages.Worker
 {
-    public class PackageAssetIdVersionComparer : IEqualityComparer<PackageAsset>
+    public class PackageRecordIdVersionComparer : IEqualityComparer<PackageRecord>
     {
-        public static PackageAssetIdVersionComparer Instance { get; } = new PackageAssetIdVersionComparer();
+        public static PackageRecordIdVersionComparer Instance { get; } = new PackageRecordIdVersionComparer();
 
-        public bool Equals([AllowNull] PackageAsset x, [AllowNull] PackageAsset y)
+        public bool Equals([AllowNull] PackageRecord x, [AllowNull] PackageRecord y)
         {
             if (x == null && y == null)
             {
@@ -24,7 +24,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
                 && StringComparer.OrdinalIgnoreCase.Equals(x.Version, y.Version);
         }
 
-        public int GetHashCode([DisallowNull] PackageAsset obj)
+        public int GetHashCode([DisallowNull] PackageRecord obj)
         {
             var hashCode = new HashCode();
             hashCode.Add(obj.Id, StringComparer.OrdinalIgnoreCase);

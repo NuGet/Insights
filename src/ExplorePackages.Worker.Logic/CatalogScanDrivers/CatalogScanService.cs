@@ -92,13 +92,16 @@ namespace Knapcode.ExplorePackages.Worker
             return await _cursorStorageService.GetOrCreateAsync($"CatalogScan-{type}");
         }
 
-        public async Task<CatalogIndexScan> UpdateFindPackageAssetsAsync() => await UpdateFindPackageAssetsAsync(max: null);
-        public async Task<CatalogIndexScan> UpdateFindPackageAssetsAsync(DateTimeOffset max) => await UpdateFindPackageAssetsAsync((DateTimeOffset?)max);
+        public async Task<CatalogIndexScan> UpdateFindPackageAssetsAsync() => await UpdateCatalogLeafToCsvAsync(CatalogScanType.FindPackageAssets, null);
+        public async Task<CatalogIndexScan> UpdateFindPackageAssetsAsync(DateTimeOffset max) => await UpdateCatalogLeafToCsvAsync(CatalogScanType.FindPackageAssets, (DateTimeOffset?)max);
 
-        private async Task<CatalogIndexScan> UpdateFindPackageAssetsAsync(DateTimeOffset? max)
+        public async Task<CatalogIndexScan> UpdateFindPackageAssembliesAsync() => await UpdateCatalogLeafToCsvAsync(CatalogScanType.FindPackageAssemblies, null);
+        public async Task<CatalogIndexScan> UpdateFindPackageAssembliesAsync(DateTimeOffset max) => await UpdateCatalogLeafToCsvAsync(CatalogScanType.FindPackageAssemblies, (DateTimeOffset?)max);
+
+        private async Task<CatalogIndexScan> UpdateCatalogLeafToCsvAsync(CatalogScanType catalogScanType, DateTimeOffset? max)
         {
-            return await UpdateAsync(
-                CatalogScanType.FindPackageAssets,
+            return await UpdateCatalogScanAsync(
+                catalogScanType,
                 _serializer.Serialize(new CatalogLeafToCsvParameters
                 {
                     BucketCount = _options.Value.AppendResultStorageBucketCount,
@@ -106,7 +109,7 @@ namespace Knapcode.ExplorePackages.Worker
                 max);
         }
 
-        private async Task<CatalogIndexScan> UpdateAsync(CatalogScanType type, string parameters, DateTimeOffset? max)
+        private async Task<CatalogIndexScan> UpdateCatalogScanAsync(CatalogScanType type, string parameters, DateTimeOffset? max)
         {
             // Check if a scan is already running, outside the lease.
             var cursor = await GetCursorAsync(type);

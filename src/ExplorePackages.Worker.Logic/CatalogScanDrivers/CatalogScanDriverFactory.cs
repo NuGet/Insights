@@ -1,5 +1,6 @@
 ﻿using System;
 using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
+using Knapcode.ExplorePackages.Worker.FindPackageAssemblies;
 using Knapcode.ExplorePackages.Worker.FindPackageAssets;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,6 +23,8 @@ namespace Knapcode.ExplorePackages.Worker
                     return _serviceProvider.GetRequiredService<FindLatestLeavesCatalogScanDriver>();
                 case CatalogScanType.FindPackageAssets:
                     return _serviceProvider.GetRequiredService<CatalogLeafToCsvAdapter<PackageAsset>>();
+                case CatalogScanType.FindPackageAssemblies:
+                    return _serviceProvider.GetRequiredService<CatalogLeafToCsvAdapter<PackageAssembly>>();
                 default:
                     throw new NotSupportedException($"Catalog scan type '{type}' is not supported.");
             }

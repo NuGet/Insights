@@ -27,6 +27,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             LatestLeavesTableName = "latestleaves";
             FindPackageAssetsContainerName = "findpackageassets";
+            FindPackageAssembliesContainerName = "findpackageassemblies";
             RunRealRestoreContainerName = "runrealrestore";
         }
 
@@ -44,9 +45,11 @@ namespace Knapcode.ExplorePackages.Worker
         public string CatalogPageScanTableName { get; set; }
         public string CatalogLeafScanTableName { get; set; }
         public string TaskStateTableName { get; set; }
+        public object CatalogLeafToCsvTableName { get; set; }
+
         public string LatestLeavesTableName { get; set; }
         public string FindPackageAssetsContainerName { get; set; }
+        public string FindPackageAssembliesContainerName { get; set; }
         public string RunRealRestoreContainerName { get; set; }
-        public object CatalogLeafToCsvTableName { get; set; }
     }
 }

@@ -4,5 +4,6 @@
     {
         FindLatestLeaves,
         FindPackageAssets,
+        FindPackageAssemblies,
     }
 }

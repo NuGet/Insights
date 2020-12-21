@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
+using Knapcode.ExplorePackages.Worker.FindPackageAssemblies;
 using Knapcode.ExplorePackages.Worker.FindPackageAssets;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using Microsoft.Extensions.Logging;
@@ -22,6 +23,7 @@ namespace Knapcode.ExplorePackages.Worker
             new SchemaV1<CatalogLeafScanMessage>("cls"),
 
             new SchemaV1<CatalogLeafToCsvCompactMessage<PackageAsset>>("fpa.c"),
+            new SchemaV1<CatalogLeafToCsvCompactMessage<PackageAssembly>>("fpi.c"),
 
             new SchemaV1<RunRealRestoreMessage>("rrr"),
             new SchemaV1<RunRealRestoreCompactMessage>("rrr.c"),

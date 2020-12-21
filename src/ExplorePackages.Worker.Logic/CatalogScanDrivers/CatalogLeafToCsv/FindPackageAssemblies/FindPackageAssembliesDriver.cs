@@ -1,58 +1,18 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Mono.Cecil;
-using NuGet.Versioning;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Mono.Cecil;
 
 namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
 {
-    public enum PackageAssemblyResultType
-    {
-        NoAssemblies,
-        Error,
-        NotManagedAssembly,
-        ValidAssembly,
-        Deleted,
-    }
-
-    public partial class PackageAssembly : PackageRecord, ICsvRecord
-    {
-        public PackageAssembly()
-        {
-        }
-
-        public PackageAssembly(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDeleteCatalogLeaf leaf)
-            : base(scanId, scanTimestamp, leaf)
-        {
-            ResultType = PackageAssemblyResultType.Deleted;
-        }
-
-        public PackageAssembly(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, PackageAssemblyResultType resultType)
-            : base(scanId, scanTimestamp, leaf)
-        {
-            ResultType = resultType;
-        }
-
-        public PackageAssemblyResultType ResultType { get; set; }
-
-        public string Path { get; set; }
-        public string Name { get; set; }
-        public string AssemblyVersion { get; set; }
-        public string Culture { get; set; }
-        public string PublicKeyToken { get; set; }
-    }
-
     public class FindPackageAssembliesDriver : ICatalogLeafToCsvDriver<PackageAssembly>
     {
         private readonly CatalogClient _catalogClient;
-        private readonly ServiceIndexCache _serviceIndexCache;
         private readonly FlatContainerClient _flatContainerClient;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<FindPackageAssembliesDriver> _logger;
@@ -64,19 +24,18 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
 
         public FindPackageAssembliesDriver(
             CatalogClient catalogClient,
-            ServiceIndexCache serviceIndexCache,
             FlatContainerClient flatContainerClient,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<FindPackageAssembliesDriver> logger)
         {
             _catalogClient = catalogClient;
-            _serviceIndexCache = serviceIndexCache;
             _flatContainerClient = flatContainerClient;
             _options = options;
             _logger = logger;
         }
 
-        public string ResultsContainerName => throw new NotImplementedException();
+        public string ResultsContainerName => _options.Value.FindPackageAssembliesContainerName;
+        public List<PackageAssembly> Prune(List<PackageAssembly> records) => PackageRecord.Prune(records);
 
         public async Task<List<PackageAssembly>> ProcessLeafAsync(CatalogLeafItem item)
         {
@@ -105,37 +64,48 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 }
 
                 using var zipArchive = new ZipArchive(packageStream);
-                var assemblies = zipArchive
+                var entries = zipArchive
                     .Entries
                     .Where(x => FileExtensions.Contains(GetExtension(x.FullName)))
-                    .Select(x => Analyze(scanId, scanTimestamp, leaf, x))
                     .ToList();
 
-                if (!assemblies.Any())
+                if (!entries.Any())
                 {
                     return new List<PackageAssembly> { new PackageAssembly(scanId, scanTimestamp, leaf, PackageAssemblyResultType.NoAssemblies) };
+                }
+
+                var assemblies = new List<PackageAssembly>();
+                foreach (var entry in entries)
+                {
+                    var assembly = await AnalyzeAsync(scanId, scanTimestamp, leaf, entry);
+                    assemblies.Add(assembly);
                 }
 
                 return assemblies;
             }
         }
 
-        private PackageAssembly Analyze(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, ZipArchiveEntry entry)
+        private async Task<PackageAssembly> AnalyzeAsync(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, ZipArchiveEntry entry)
         {
-            var assembly = new PackageAssembly(scanId, scanTimestamp, leaf, PackageAssemblyResultType.ValidAssembly);
-            Analyze(assembly, entry);
+            var assembly = new PackageAssembly(scanId, scanTimestamp, leaf, PackageAssemblyResultType.ValidAssembly)
+            {
+                Path = entry.FullName,
+            };
+            await AnalyzeAsync(assembly, entry);
             return assembly;
         }
 
-        private void Analyze(PackageAssembly assembly, ZipArchiveEntry entry)
+        private async Task AnalyzeAsync(PackageAssembly assembly, ZipArchiveEntry entry)
         {
-            using var stream = entry.Open();
+            using var entryStream = entry.Open();
+            using var tempStream = await FileSystemUtility.CopyToTempStreamAsync(entryStream);
+
             try
             {
-                using var module = ModuleDefinition.ReadModule(stream);
+                using var module = ModuleDefinition.ReadModule(tempStream);
                 var name = module.Assembly.Name;
                 assembly.Name = name.Name;
-                assembly.AssemblyVersion = name.Version.ToString(fieldCount: 4);
+                assembly.AssemblyVersion = name.Version.ToString();
                 assembly.Culture = name.Culture;
                 if (name.PublicKeyToken != null)
                 {
@@ -157,11 +127,6 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             }
 
             return path.Substring(dotIndex);
-        }
-
-        public List<PackageAssembly> Prune(List<PackageAssembly> records)
-        {
-            throw new NotImplementedException();
         }
     }
 }

@@ -1,7 +1,7 @@
-﻿using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
+﻿using System.Linq;
+using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using Microsoft.Extensions.DependencyInjection;
-using System.Linq;
 
 namespace Knapcode.ExplorePackages.Worker
 {
