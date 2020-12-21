@@ -1,3 +1,10 @@
+using System;
+using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Website;
 using Knapcode.ExplorePackages.Worker;
 using Newtonsoft.Json;
@@ -9,13 +16,6 @@ using Pulumi.Azure.AppService.Inputs;
 using Pulumi.Azure.Core;
 using Pulumi.Azure.Storage;
 using Pulumi.AzureAD;
-using System;
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Config = Pulumi.Config;
 
 namespace Knapcode.ExplorePackages
