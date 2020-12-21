@@ -102,6 +102,7 @@ namespace {0}
                     continue;
                 }
 
+                var classNamespacePrefix = classModel.ContainingNamespace.ToString() + ".";
                 var writerBuilder = new StringBuilder();
                 var readerBuilder = new StringBuilder();
                 const int indent = 12;
@@ -128,10 +129,17 @@ namespace {0}
                         var propName = propertySymbol.Name;
 
                         var nonNullPropType = propType.TrimEnd('?');
+
+                        // Clean up the type name by removing unnecessary namespaces.
                         const string systemPrefix = "System.";
                         if (nonNullPropType.StartsWith(systemPrefix))
                         {
                             nonNullPropType = nonNullPropType.Substring(systemPrefix.Length);
+                        }
+
+                        if (nonNullPropType.StartsWith(classNamespacePrefix))
+                        {
+                            nonNullPropType = nonNullPropType.Substring(classNamespacePrefix.Length);
                         }
 
                         writerBuilder.Append(' ', indent);
@@ -181,8 +189,23 @@ namespace {0}
                                 readerBuilder.AppendFormat("{0} = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset);", propName);
                                 break;
                             default:
-                                writerBuilder.AppendFormat("CsvUtility.WriteWithQuotes(writer, {0}?.ToString());", propName);
-                                readerBuilder.AppendFormat("{0} = Parse{0}(getNextField());", propName);
+                                if (propertySymbol.Type.TypeKind == TypeKind.Enum)
+                                {
+                                    writerBuilder.AppendFormat("writer.Write({0});", propName);
+                                    if (propType.EndsWith("?"))
+                                    {
+                                        readerBuilder.AppendFormat("{0} = CsvUtility.ParseNullable(getNextField(), Enum.Parse<{1}>);", propName, nonNullPropType);
+                                    }
+                                    else
+                                    {
+                                        readerBuilder.AppendFormat("{0} = Enum.Parse<{1}>(getNextField());", propName, nonNullPropType);
+                                    }
+                                }
+                                else
+                                {
+                                    writerBuilder.AppendFormat("CsvUtility.WriteWithQuotes(writer, {0}?.ToString());", propName);
+                                    readerBuilder.AppendFormat("{0} = Parse{0}(getNextField());", propName);
+                                }
                                 break;
                         }
                     }

@@ -1,10 +1,10 @@
 ﻿namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
 {
-    public static class PackageAssetResultType
+    public enum PackageAssetResultType
     {
-        public static readonly string NoAssets = nameof(NoAssets);
-        public static readonly string Error = nameof(Error);
-        public static readonly string AvailableAssets = nameof(AvailableAssets);
-        public static readonly string Deleted = nameof(Deleted);
+        NoAssets,
+        Error,
+        AvailableAssets,
+        Deleted,
     }
 }

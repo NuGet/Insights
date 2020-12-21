@@ -21,7 +21,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             ResultType = PackageAssetResultType.Deleted;
         }
 
-        public PackageAsset(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, string resultType)
+        public PackageAsset(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, PackageAssetResultType resultType)
         {
             ScanId = scanId;
             ScanTimestamp = scanTimestamp;
@@ -38,7 +38,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
         public string Version { get; set; }
         public DateTimeOffset CatalogCommitTimestamp { get; set; }
         public DateTimeOffset? Created { get; set; }
-        public string ResultType { get; set; }
+        public PackageAssetResultType ResultType { get; set; }
 
         public string PatternSet { get; set; }
         public string PropertyAnyValue { get; set; }
