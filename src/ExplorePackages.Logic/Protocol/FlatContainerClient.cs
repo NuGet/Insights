@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
@@ -25,6 +26,12 @@ namespace Knapcode.ExplorePackages
             return await _httpSource.GetBlobMetadataAsync(url, _logger);
         }
 
+        public async Task<string> GetPackageContentUrlAsync(string id, string version)
+        {
+            var baseUrl = await GetBaseUrlAsync();
+            return GetPackageContentUrl(baseUrl, id, version);
+        }
+
         public string GetPackageContentUrl(string baseUrl, string id, string version)
         {
             var lowerId = id.ToLowerInvariant();
@@ -39,6 +46,50 @@ namespace Knapcode.ExplorePackages
             var lowerVersion = NuGetVersion.Parse(version).ToNormalizedString().ToLowerInvariant();
             var url = $"{baseUrl.TrimEnd('/')}/{lowerId}/{lowerVersion}/{lowerId}.nuspec";
             return url;
+        }
+
+        public async Task<Stream> DownloadPackageContentToFileAsync(string id, string version, CancellationToken token)
+        {
+            var url = await GetPackageContentUrlAsync(id, version);
+            FileStream fileStream = null;
+            var nuGetLogger = _logger.ToNuGetLogger();
+
+            try
+            {
+                fileStream = await _httpSource.ProcessStreamAsync(
+                    new HttpSourceRequest(url, nuGetLogger)
+                    {
+                        IgnoreNotFounds = true,
+                    },
+                    async networkStream =>
+                    {
+                        if (networkStream == null)
+                        {
+                            return null;
+                        }
+
+                        fileStream = new FileStream(
+                            Path.GetTempFileName(),
+                            FileMode.Create,
+                            FileAccess.ReadWrite,
+                            FileShare.None,
+                            bufferSize: 80 * 1024,
+                            FileOptions.Asynchronous | FileOptions.DeleteOnClose);
+
+                        await networkStream.CopyToAsync(fileStream);
+                        fileStream.Position = 0;
+                        return fileStream;
+                    },
+                    nuGetLogger,
+                    token);
+            }
+            catch
+            {
+                fileStream?.Dispose();
+                throw;
+            }
+
+            return fileStream;
         }
 
         public async Task<NuspecContext> GetNuspecContextAsync(string id, string version, CancellationToken token)

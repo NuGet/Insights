@@ -19,7 +19,6 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
     public class FindPackageAssetsDriver : ICatalogLeafToCsvDriver<PackageAsset>
     {
         private readonly CatalogClient _catalogClient;
-        private readonly ServiceIndexCache _serviceIndexCache;
         private readonly FlatContainerClient _flatContainerClient;
         private readonly HttpZipProvider _httpZipProvider;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
@@ -27,14 +26,12 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
 
         public FindPackageAssetsDriver(
             CatalogClient catalogClient,
-            ServiceIndexCache serviceIndexCache,
             FlatContainerClient flatContainerClient,
             HttpZipProvider httpZipProvider,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<FindPackageAssetsDriver> logger)
         {
             _catalogClient = catalogClient;
-            _serviceIndexCache = serviceIndexCache;
             _flatContainerClient = flatContainerClient;
             _httpZipProvider = httpZipProvider;
             _options = options;
@@ -61,10 +58,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             else
             {
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
-
-                var flatContainerBaseUrl = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.FlatContainer);
-                var normalizedVersion = NuGetVersion.Parse(item.PackageVersion).ToNormalizedString();
-                var url = _flatContainerClient.GetPackageContentUrl(flatContainerBaseUrl, item.PackageId, item.PackageVersion);
+                var url = await _flatContainerClient.GetPackageContentUrlAsync(item.PackageId, item.PackageVersion);
 
                 List<string> files;
                 try
