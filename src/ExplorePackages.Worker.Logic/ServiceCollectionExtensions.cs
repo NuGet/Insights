@@ -1,4 +1,4 @@
-﻿using Knapcode.ExplorePackages.Worker.FindPackageAssets;
+﻿using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
@@ -18,19 +18,16 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient<MessageEnqueuer>();
 
             serviceCollection.AddTransient<CatalogScanStorageService>();
-            serviceCollection.AddTransient<LatestPackageLeafStorageService>();
+            serviceCollection.AddTransient<CatalogScanDriverFactory>();
+            serviceCollection.AddTransient<CatalogScanService>();
+
             serviceCollection.AddTransient<CursorStorageService>();
 
             serviceCollection.AddTransient<AppendResultStorageService>();
             serviceCollection.AddTransient<TaskStateStorageService>();
-
-            serviceCollection.AddTransient<CatalogScanDriverFactory>();
-            serviceCollection.AddTransient<FindLatestLeavesCatalogScanDriver>();
-
-            serviceCollection.AddTransient<CatalogScanService>();
-
             serviceCollection.AddTransient<ICsvReader, NRecoCsvReader>();
 
+            serviceCollection.AddFindLatestLeaves();
             serviceCollection.AddRunRealRestore();
 
             foreach (var (serviceType, implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(IMessageProcessor<>)))
@@ -52,9 +49,15 @@ namespace Knapcode.ExplorePackages.Worker
                 serviceCollection.AddTransient(
                     typeof(IMessageProcessor<>).MakeGenericType(typeof(CatalogLeafToCsvCompactMessage<>).MakeGenericType(recordType)),
                     typeof(CatalogLeafToCsvCompactProcessor<>).MakeGenericType(recordType));
-            } 
+            }
 
             return serviceCollection;
+        }
+
+        private static void AddFindLatestLeaves(this IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddTransient<LatestPackageLeafStorageService>();
+            serviceCollection.AddTransient<FindLatestLeavesCatalogScanDriver>();
         }
 
         private static void AddRunRealRestore(this IServiceCollection serviceCollection)

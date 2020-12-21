@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
 {
     public class FindLatestLeavesParameters
     {

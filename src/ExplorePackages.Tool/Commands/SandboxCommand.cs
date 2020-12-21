@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Worker;
-using Knapcode.ExplorePackages.Worker.FindPackageAssets;
+using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;

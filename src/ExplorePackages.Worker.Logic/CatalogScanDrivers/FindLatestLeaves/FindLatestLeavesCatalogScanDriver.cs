@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
 {
     public class FindLatestLeavesCatalogScanDriver : ICatalogScanDriver
     {

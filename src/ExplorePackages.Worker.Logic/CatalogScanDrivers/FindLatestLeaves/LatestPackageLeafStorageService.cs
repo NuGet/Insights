@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage.Table;
 using static Knapcode.ExplorePackages.Worker.StorageUtility;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
 {
     public class LatestPackageLeafStorageService
     {

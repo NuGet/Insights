@@ -2,7 +2,7 @@
 {
     public enum AppendResultStorageMode
     {
-        AppendBlob,
         Table,
+        AppendBlob,
     }
 }

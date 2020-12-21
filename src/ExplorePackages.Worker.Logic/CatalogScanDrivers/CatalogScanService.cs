@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker.FindPackageAssets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
