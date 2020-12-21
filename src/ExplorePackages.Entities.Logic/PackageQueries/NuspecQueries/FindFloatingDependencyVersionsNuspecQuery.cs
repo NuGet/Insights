@@ -7,7 +7,7 @@ namespace Knapcode.ExplorePackages.Entities
     {
         public string Name => PackageQueryNames.FindFloatingDependencyVersionsNuspecQuery;
         public string CursorName => CursorNames.FindFloatingDependencyVersionsNuspecQuery;
-        
+
         public bool IsMatch(XDocument nuspec)
         {
             return NuspecUtility

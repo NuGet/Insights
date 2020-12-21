@@ -11,7 +11,7 @@ namespace Knapcode.ExplorePackages
             string[] directories;
             try
             {
-                 directories = Directory.GetDirectories(path);
+                directories = Directory.GetDirectories(path);
             }
             catch (DirectoryNotFoundException)
             {

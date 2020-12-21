@@ -14,7 +14,7 @@ namespace Knapcode.ExplorePackages.Entities
             public GetOrNullAsync(ITestOutputHelper output) : base(output)
             {
             }
-            
+
             [Fact]
             public async Task ReturnsNullLeaseWhenDoesNotExist()
             {

@@ -68,7 +68,7 @@ namespace Knapcode.ExplorePackages.Worker
                     return true;
                 }
             }
-            
+
             if (_options.Value.MessageBatchSizes.TryGetValue(messageType.FullName, out batchSize))
             {
                 return true;

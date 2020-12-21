@@ -33,7 +33,7 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
                 PruneAssets,
                 _csvReader);
         }
-        
+
         private static List<RealRestoreResult> PruneAssets(List<RealRestoreResult> allAssets)
         {
             return allAssets

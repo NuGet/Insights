@@ -7,7 +7,7 @@ using NuGet.Protocol;
 namespace Knapcode.ExplorePackages
 {
     public class NuspecStore
-    {        
+    {
         private readonly IFileStorageService _fileStorageService;
         private readonly ServiceIndexCache _serviceIndexCache;
         private readonly FlatContainerClient _flatContainerClient;

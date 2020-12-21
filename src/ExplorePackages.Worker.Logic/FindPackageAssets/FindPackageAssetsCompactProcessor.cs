@@ -1,8 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
 {
@@ -63,16 +63,15 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
                 await _taskStateStorageService.DeleteAsync(taskState);
             }
         }
-        
+
         public static List<PackageAsset> PruneAssets(List<PackageAsset> allAssets)
         {
             return allAssets
                 .GroupBy(x => x, PackageAssetIdVersionComparer.Instance) // Group by unique package version
                 .Select(g => g
-                    .GroupBy(x => x.ScanId) // Group package version assets by scan
-                    .OrderByDescending(x => x.First().LastModified) // Ignore all but the most recent scan of the most recent version of the package
-                    .OrderByDescending(x => x.First().Created)
-                    .OrderByDescending(x => x.First().ScanTimestamp) 
+                    .GroupBy(x => new { x.ScanId, x.CatalogCommitTimestamp }) // Group package version assets by scan and catalog commit timestamp
+                    .OrderByDescending(x => x.Key.CatalogCommitTimestamp)
+                    .OrderByDescending(x => x.First().ScanTimestamp)
                     .First())
                 .SelectMany(g => g)
                 .OrderBy(x => x.Id, StringComparer.OrdinalIgnoreCase)

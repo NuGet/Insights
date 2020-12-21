@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using System.Linq;
+using Newtonsoft.Json;
 using NuGet.Common;
 using NuGet.ProjectModel;
-using System;
-using System.Linq;
 using NuGetPackageIdentity = NuGet.Packaging.Core.PackageIdentity;
 
 namespace Knapcode.ExplorePackages.Worker.RunRealRestore

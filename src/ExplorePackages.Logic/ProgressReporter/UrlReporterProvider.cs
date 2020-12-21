@@ -8,7 +8,7 @@ namespace Knapcode.ExplorePackages
 
         public UrlReporterProvider()
         {
-             _currentUrlReporter = new AsyncLocal<IUrlReporter>();
+            _currentUrlReporter = new AsyncLocal<IUrlReporter>();
         }
 
         public void SetUrlReporter(IUrlReporter urlReporter)

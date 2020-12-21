@@ -226,7 +226,7 @@ namespace Knapcode.ExplorePackages.Entities
             }
 
             public int SchemaVersion => SchemaVersion2;
-            
+
             public IReadOnlyList<long> AllPackageRegistrationKeys { get; }
             public int? PackageRegistrationKeyIndex { get; }
             public long AfterKey { get; }

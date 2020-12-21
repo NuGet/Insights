@@ -56,7 +56,7 @@ namespace Knapcode.ExplorePackages.Entities
                     _etagService.Object,
                     _batchSizeProvider.Object,
                     _options.Object,
-                    output.GetLogger< PackageDownloadsToDatabaseProcessor>());
+                    output.GetLogger<PackageDownloadsToDatabaseProcessor>());
             }
 
             public void Dispose()

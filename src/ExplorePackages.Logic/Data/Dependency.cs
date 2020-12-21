@@ -12,7 +12,7 @@ namespace Knapcode.ExplorePackages
         }
 
         public string Id { get; }
-        public string Version { get; } 
+        public string Version { get; }
         public VersionRange ParsedVersionRange { get; }
     }
 }

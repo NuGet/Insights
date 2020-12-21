@@ -48,7 +48,7 @@ namespace Knapcode.ExplorePackages
                 disposables.Push(response);
 
                 string newEtag;
-                TextReader textReader;                
+                TextReader textReader;
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     newEtag = response.Headers.ETag.ToString();

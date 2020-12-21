@@ -27,22 +27,22 @@ namespace Knapcode.ExplorePackages
             {
                 queryString["q"] = q;
             }
-            
+
             if (skip.HasValue)
             {
                 queryString["skip"] = skip.Value.ToString();
             }
-            
+
             if (take.HasValue)
             {
                 queryString["take"] = take.ToString();
             }
-            
+
             if (prerelease.HasValue)
             {
                 queryString["prerelease"] = prerelease.Value ? "true" : "false";
             }
-            
+
             if (semVerLevel != null)
             {
                 queryString["semVerLevel"] = semVerLevel;

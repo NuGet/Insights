@@ -1,7 +1,7 @@
-﻿using NuGet.Versioning;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
 {
@@ -11,12 +11,23 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
         {
         }
 
+        public PackageAsset(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDeleteCatalogLeaf leaf)
+        {
+            ScanId = scanId;
+            ScanTimestamp = scanTimestamp;
+            Id = leaf.PackageId;
+            Version = NuGetVersion.Parse(leaf.PackageVersion).ToNormalizedString();
+            CatalogCommitTimestamp = leaf.CommitTimestamp;
+            ResultType = PackageAssetResultType.Deleted;
+        }
+
         public PackageAsset(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, DateTimeOffset lastModified, string resultType)
         {
             ScanId = scanId;
             ScanTimestamp = scanTimestamp;
             Id = leaf.PackageId;
             Version = NuGetVersion.Parse(leaf.PackageVersion).ToNormalizedString();
+            CatalogCommitTimestamp = leaf.CommitTimestamp;
             Created = leaf.Created;
             LastModified = lastModified;
             ResultType = resultType;
@@ -26,8 +37,9 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
         public DateTimeOffset? ScanTimestamp { get; set; }
         public string Id { get; set; }
         public string Version { get; set; }
-        public DateTimeOffset Created { get; set; }
-        public DateTimeOffset LastModified { get; set; }
+        public DateTimeOffset CatalogCommitTimestamp { get; set; }
+        public DateTimeOffset? Created { get; set; }
+        public DateTimeOffset? LastModified { get; set; }
         public string ResultType { get; set; }
 
         public string PatternSet { get; set; }
@@ -64,8 +76,9 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
                    EqualityComparer<DateTimeOffset?>.Default.Equals(ScanTimestamp, other.ScanTimestamp) &&
                    Id == other.Id &&
                    Version == other.Version &&
-                   Created.Equals(other.Created) &&
-                   LastModified.Equals(other.LastModified) &&
+                   CatalogCommitTimestamp.Equals(other.CatalogCommitTimestamp) &&
+                   EqualityComparer<DateTimeOffset?>.Default.Equals(Created, other.Created) &&
+                   EqualityComparer<DateTimeOffset?>.Default.Equals(LastModified, other.LastModified) &&
                    ResultType == other.ResultType &&
                    PatternSet == other.PatternSet &&
                    PropertyAnyValue == other.PropertyAnyValue &&
@@ -95,6 +108,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             hash.Add(ScanTimestamp);
             hash.Add(Id);
             hash.Add(Version);
+            hash.Add(CatalogCommitTimestamp);
             hash.Add(Created);
             hash.Add(LastModified);
             hash.Add(ResultType);

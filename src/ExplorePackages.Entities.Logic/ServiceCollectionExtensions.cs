@@ -124,7 +124,7 @@ namespace Knapcode.ExplorePackages.Entities
                 x.GetRequiredService<IOptions<ExplorePackagesEntitiesSettings>>()));
 
             var assembly = typeof(ServiceCollectionExtensions).Assembly;
-            
+
             // Add all of the .nuspec queries.
             foreach (var serviceType in assembly.GetClassesImplementing<INuspecQuery>())
             {

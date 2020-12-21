@@ -52,7 +52,7 @@ namespace Knapcode.ExplorePackages.Website.Logic
             await InvokeProgressAsync(0, "Fetching the latest catalog commit...");
 
             var commit = await _latestCatalogCommitFetcher.GetLatestCommitAsync(new ProgressReporter(this));
-            
+
             var catalogItem = commit.First();
             await InvokeProgressAsync(1, $"Using package {catalogItem.PackageId} {catalogItem.PackageVersion}.");
 

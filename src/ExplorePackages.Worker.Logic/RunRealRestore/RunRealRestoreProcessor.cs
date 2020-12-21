@@ -1,16 +1,16 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using NuGet.Frameworks;
-using NuGet.ProjectModel;
-using NuGet.Versioning;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using NuGet.Frameworks;
+using NuGet.ProjectModel;
+using NuGet.Versioning;
 using NuGetPackageIdentity = NuGet.Packaging.Core.PackageIdentity;
 
 namespace Knapcode.ExplorePackages.Worker.RunRealRestore

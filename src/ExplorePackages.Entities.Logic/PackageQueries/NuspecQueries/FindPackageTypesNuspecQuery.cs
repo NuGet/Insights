@@ -6,7 +6,7 @@ namespace Knapcode.ExplorePackages.Entities
     {
         public string Name => PackageQueryNames.FindPackageTypesNuspecQuery;
         public string CursorName => CursorNames.FindPackageTypesNuspecQuery;
-        
+
         public bool IsMatch(XDocument nuspec)
         {
             var metadataEl = NuspecUtility.GetMetadata(nuspec);

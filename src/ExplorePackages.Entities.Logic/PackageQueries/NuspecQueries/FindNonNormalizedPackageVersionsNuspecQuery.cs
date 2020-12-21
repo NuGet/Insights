@@ -8,7 +8,7 @@ namespace Knapcode.ExplorePackages.Entities
     {
         public string Name => PackageQueryNames.FindNonNormalizedPackageVersionsNuspecQuery;
         public string CursorName => CursorNames.FindNonNormalizedPackageVersionsNuspecQuery;
-        
+
         public bool IsMatch(XDocument nuspec)
         {
             var originalVersion = NuspecUtility.GetOriginalVersion(nuspec);

@@ -57,7 +57,7 @@ namespace Knapcode.ExplorePackages
 
             await report.ProgressReporter.ReportProgressAsync(max, message);
         }
-        
+
         public async Task<PackageConsistencyReport> GetReportAsync(
             PackageConsistencyContext context,
             PackageConsistencyState state,
@@ -71,7 +71,7 @@ namespace Knapcode.ExplorePackages
                 Processed = 0,
                 IsConsistent = true,
             };
-            
+
             await AddAsync(report, _gallery, (r, s) => r.Gallery = s, "Fetched the gallery report.");
             await AddAsync(report, _v2, (r, s) => r.V2 = s, "Fetched the V2 report.");
             await AddAsync(report, _packagesContainer, (r, s) => r.PackagesContainer = s, "Fetched the packages container report.");
@@ -172,7 +172,7 @@ namespace Knapcode.ExplorePackages
             public IProgressReporter ProgressReporter { get; set; }
             public int Processed { get; set; }
             public int Total => 9;
-            
+
             public bool IsConsistent { get; set; }
             public GalleryConsistencyReport Gallery { get; set; }
             public V2ConsistencyReport V2 { get; set; }

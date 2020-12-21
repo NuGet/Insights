@@ -21,7 +21,7 @@ namespace Knapcode.ExplorePackages.Website
         }
 
         public IConfiguration Configuration { get; }
-        
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<ExplorePackagesSettings>(Configuration.GetSection(ExplorePackagesSettings.DefaultSectionName));
@@ -67,7 +67,7 @@ namespace Knapcode.ExplorePackages.Website
                 .AddRazorPages()
                 .AddMicrosoftIdentityUI();
         }
-        
+
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())

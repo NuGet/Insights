@@ -28,7 +28,7 @@ namespace Knapcode.ExplorePackages
         {
             return await TryAcquireAsync(name, leaseDuration, shouldThrow: true);
         }
-        
+
         public async Task<StorageLeaseResult> TryAcquireAsync(string name, TimeSpan leaseDuration)
         {
             return await TryAcquireAsync(name, leaseDuration, shouldThrow: false);

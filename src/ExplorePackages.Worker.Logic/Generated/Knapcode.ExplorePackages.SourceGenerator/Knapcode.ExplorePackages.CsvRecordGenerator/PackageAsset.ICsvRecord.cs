@@ -17,6 +17,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, Version);
             writer.Write(',');
+            writer.Write(CsvUtility.FormatDateTimeOffset(CatalogCommitTimestamp));
+            writer.Write(',');
             writer.Write(CsvUtility.FormatDateTimeOffset(Created));
             writer.Write(',');
             writer.Write(CsvUtility.FormatDateTimeOffset(LastModified));
@@ -69,8 +71,9 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             ScanTimestamp = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset);
             Id = getNextField();
             Version = getNextField();
-            Created = CsvUtility.ParseDateTimeOffset(getNextField());
-            LastModified = CsvUtility.ParseDateTimeOffset(getNextField());
+            CatalogCommitTimestamp = CsvUtility.ParseDateTimeOffset(getNextField());
+            Created = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset);
+            LastModified = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset);
             ResultType = getNextField();
             PatternSet = getNextField();
             PropertyAnyValue = getNextField();

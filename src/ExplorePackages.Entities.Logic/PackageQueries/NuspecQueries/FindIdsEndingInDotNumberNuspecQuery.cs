@@ -9,7 +9,7 @@ namespace Knapcode.ExplorePackages.Entities
 
         public string Name => PackageQueryNames.FindIdsEndingInDotNumberNuspecQuery;
         public string CursorName => CursorNames.FindIdsEndingInDotNumberNuspecQuery;
-        
+
         public bool IsMatch(XDocument nuspec)
         {
             var metadataEl = NuspecUtility.GetMetadata(nuspec);

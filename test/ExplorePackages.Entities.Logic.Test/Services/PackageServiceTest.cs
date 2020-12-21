@@ -46,7 +46,7 @@ namespace Knapcode.ExplorePackages.Entities
                     NullCommitCondition.Instance,
                     EntityContextFactory,
                     Output.GetLogger<PackageService>());
-                
+
                 var a = await CreateArchiveAsync(id, ver, new ZipEntry("a.txt"));
                 var b = await CreateArchiveAsync(id, ver, new ZipEntry("a.txt"), new ZipEntry("b.txt"));
 
@@ -98,7 +98,7 @@ namespace Knapcode.ExplorePackages.Entities
                     NullCommitCondition.Instance,
                     EntityContextFactory,
                     Output.GetLogger<PackageService>());
-                
+
                 var a = await CreateArchiveAsync(id, ver, new ZipEntry("a.txt"), new ZipEntry("b.txt"));
                 var b = await CreateArchiveAsync(id, ver, new ZipEntry("b.txt"), new ZipEntry("a.txt"));
 

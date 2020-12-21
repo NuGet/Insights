@@ -1,4 +1,11 @@
-﻿using Knapcode.MiniZip;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Reflection;
+using System.Threading.Tasks;
+using Knapcode.MiniZip;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NuGet.Client;
@@ -6,13 +13,6 @@ using NuGet.ContentModel;
 using NuGet.Frameworks;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Reflection;
-using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
 {
@@ -76,51 +76,49 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
                 scanTimestamp = DateTimeOffset.UtcNow;
             }
 
-            var parameters = GetParameters(leafScan.ScanParameters);
-
+            List<PackageAsset> assets;
             if (leafScan.ParsedLeafType == CatalogLeafType.PackageDelete)
             {
-                // Ignore delete events.
-                return;
+                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.ParsedLeafType, leafScan.Url);
+                assets = new List<PackageAsset> { new PackageAsset(scanId, scanTimestamp, leaf) };
             }
-
-            var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.ParsedLeafType, leafScan.Url);
-
-            var flatContainerBaseUrl = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.FlatContainer);
-            var normalizedVersion = NuGetVersion.Parse(leafScan.PackageVersion).ToNormalizedString();
-            var url = _flatContainerClient.GetPackageContentUrl(flatContainerBaseUrl, leafScan.PackageId, leafScan.PackageVersion);
-
-            DateTimeOffset lastModified;
-            List<string> files;
-            try
+            else
             {
-                using (var reader = await _httpZipProvider.GetReaderAsync(new Uri(url)))
+                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.ParsedLeafType, leafScan.Url);
+
+                var flatContainerBaseUrl = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.FlatContainer);
+                var normalizedVersion = NuGetVersion.Parse(leafScan.PackageVersion).ToNormalizedString();
+                var url = _flatContainerClient.GetPackageContentUrl(flatContainerBaseUrl, leafScan.PackageId, leafScan.PackageVersion);
+
+                DateTimeOffset lastModified;
+                List<string> files;
+                try
                 {
-                    lastModified = DateTimeOffset.Parse(reader.Properties["Last-Modified"].Single());
+                    using (var reader = await _httpZipProvider.GetReaderAsync(new Uri(url)))
+                    {
+                        lastModified = DateTimeOffset.Parse(reader.Properties["Last-Modified"].Single());
 
-                    var zipDirectory = await reader.ReadAsync();
-                    files = zipDirectory
-                        .Entries
-                        .Select(x => x.GetName())
-                        .Select(x => x.Replace('\\', '/'))
-                        .Distinct()
-                        .ToList();
+                        var zipDirectory = await reader.ReadAsync();
+                        files = zipDirectory
+                            .Entries
+                            .Select(x => x.GetName())
+                            .Select(x => x.Replace('\\', '/'))
+                            .Distinct()
+                            .ToList();
+                    }
                 }
-            }
-            catch (MiniZipHttpStatusCodeException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
-            {
-                // Ignore deleted packages.
-                return;
+                catch (MiniZipHttpStatusCodeException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+                {
+                    // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted asset record.
+                    return;
+                }
+
+                assets = GetAssets(scanId, scanTimestamp, leaf, lastModified, files);
             }
 
-            var assets = GetAssets(scanId, scanTimestamp, leaf, lastModified, files);
-            var bucketKey = $"{leaf.PackageId}/{leaf.PackageVersion}".ToLowerInvariant();
+            var bucketKey = $"{leafScan.PackageId}/{NuGetVersion.Parse(leafScan.PackageVersion).ToNormalizedString()}".ToLowerInvariant();
+            var parameters = (FindPackageAssetsParameters)_schemaSerializer.Deserialize(leafScan.ScanParameters);
             await _storageService.AppendAsync(GetTableName(leafScan.StorageSuffix), parameters.BucketCount, bucketKey, assets);
-        }
-
-        private FindPackageAssetsParameters GetParameters(string scanParameters)
-        {
-            return (FindPackageAssetsParameters)_schemaSerializer.Deserialize(scanParameters);
         }
 
         private List<PackageAsset> GetAssets(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, DateTimeOffset lastModified, List<string> files)

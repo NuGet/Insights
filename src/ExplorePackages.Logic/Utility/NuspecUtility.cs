@@ -445,7 +445,7 @@ namespace Knapcode.ExplorePackages
                 }
             }
         }
-        
+
         public static DependencyGroups GetParsedDependencyGroups(XDocument nuspec)
         {
             var xmlDependencyGroups = GetXmlDependencyGroups(nuspec);

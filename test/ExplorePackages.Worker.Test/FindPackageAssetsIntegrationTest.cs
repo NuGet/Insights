@@ -1,34 +1,54 @@
-﻿using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using System.Threading.Tasks;
-using Xunit;
-using Microsoft.Extensions.Logging;
-using Xunit.Abstractions;
-using System;
-using Microsoft.Extensions.Options;
-using Microsoft.WindowsAzure.Storage.Queue;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
-using Newtonsoft.Json;
 using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Worker.Support;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.WindowsAzure.Storage.Queue;
+using Newtonsoft.Json;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class FindPackageAssetsIntegrationTest : IAsyncLifetime
+    public class FindPackageAssetsIntegrationTest : IClassFixture<DefaultWebApplicationFactory<StaticFilesStartup>>, IAsyncLifetime
     {
+        private const string TestData = "TestData";
+        private const string FindPackageAssetsDir = "FindPackageAssets";
+        private const string FindPackageAssets_WithDeleteDir = "FindPackageAssets_WithDelete";
         private const string Step1 = "Step1";
         private const string Step2 = "Step2";
 
-        public FindPackageAssetsIntegrationTest(ITestOutputHelper output)
+        public FindPackageAssetsIntegrationTest(
+            ITestOutputHelper output,
+            DefaultWebApplicationFactory<StaticFilesStartup> factory)
         {
             StoragePrefix = "t" + StorageUtility.GenerateUniqueId();
+            HttpMessageHandlerFactory = new TestHttpMessageHandlerFactory();
+
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var testWebHostBuilder = factory.WithWebHostBuilder(b => b
+                .ConfigureLogging(b => b.SetMinimumLevel(LogLevel.Error))
+                .UseContentRoot(currentDirectory)
+                .UseWebRoot(currentDirectory));
+            TestDataHttpClient = testWebHostBuilder.CreateClient();
 
             var startup = new Startup();
             Host = new HostBuilder()
                 .ConfigureWebJobs(startup.Configure)
                 .ConfigureServices(serviceCollection =>
                 {
+                    serviceCollection.AddSingleton<IExplorePackagesHttpMessageHandlerFactory>(HttpMessageHandlerFactory);
+
                     serviceCollection.AddTransient<WorkerQueueFunction>();
 
                     serviceCollection.AddSingleton(new TelemetryClient(TelemetryConfiguration.CreateDefault()));
@@ -69,6 +89,8 @@ namespace Knapcode.ExplorePackages.Worker
         }
 
         public string StoragePrefix { get; }
+        private TestHttpMessageHandlerFactory HttpMessageHandlerFactory { get; }
+        public HttpClient TestDataHttpClient { get; }
         public IHost Host { get; }
         public IOptions<ExplorePackagesWorkerSettings> Options { get; }
         public ServiceClientFactory ServiceClientFactory { get; }
@@ -104,17 +126,64 @@ namespace Knapcode.ExplorePackages.Worker
             await UpdateFindPackageAssetsAsync(max1);
 
             // Assert
-            await AssertFindPackageAssetsOutputAsync(Step1, 0);
-            await AssertFindPackageAssetsOutputAsync(Step1, 1);
-            await AssertFindPackageAssetsOutputAsync(Step1, 2);
+            await AssertFindPackageAssetsOutputAsync(FindPackageAssetsDir, Step1, 0);
+            await AssertFindPackageAssetsOutputAsync(FindPackageAssetsDir, Step1, 1);
+            await AssertFindPackageAssetsOutputAsync(FindPackageAssetsDir, Step1, 2);
 
             // Act
             await UpdateFindPackageAssetsAsync(max2);
 
             // Assert
-            await AssertFindPackageAssetsOutputAsync(Step2, 0);
-            await AssertFindPackageAssetsOutputAsync(Step1, 1); // This file is unchanged.
-            await AssertFindPackageAssetsOutputAsync(Step2, 2);
+            await AssertFindPackageAssetsOutputAsync(FindPackageAssetsDir, Step2, 0);
+            await AssertFindPackageAssetsOutputAsync(FindPackageAssetsDir, Step1, 1); // This file is unchanged.
+            await AssertFindPackageAssetsOutputAsync(FindPackageAssetsDir, Step2, 2);
+
+            await VerifyExpectedContainers();
+        }
+
+        [Fact]
+        public async Task FindPackageAssets_WithDelete()
+        {
+            Logger.LogInformation("Settings: " + Environment.NewLine + JsonConvert.SerializeObject(Options.Value, Formatting.Indented));
+
+            // Arrange
+            HttpMessageHandlerFactory.OnSendAsync = async req =>
+            {
+                if (req.RequestUri.AbsolutePath.EndsWith("/behaviorsample.1.0.0.nupkg"))
+                {
+                    var newReq = Clone(req);
+                    newReq.RequestUri = new Uri($"http://localhost/{TestData}/{FindPackageAssets_WithDeleteDir}/behaviorsample.1.0.0.nupkg");
+                    return await TestDataHttpClient.SendAsync(newReq);
+                }
+
+                return null;
+            };
+            var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
+            var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
+            var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
+            var cursorName = $"CatalogScan-{CatalogScanType.FindPackageAssets}";
+
+            await CatalogScanService.InitializeAsync();
+
+            var cursor = await CursorStorageService.GetOrCreateAsync(cursorName);
+            cursor.Value = min0;
+            await CursorStorageService.UpdateAsync(cursor);
+
+            // Act
+            await UpdateFindPackageAssetsAsync(max1);
+
+            // Assert
+            await AssertFindPackageAssetsOutputAsync(FindPackageAssets_WithDeleteDir, Step1, 0);
+            await AssertFindPackageAssetsOutputAsync(FindPackageAssets_WithDeleteDir, Step1, 1);
+            await AssertFindPackageAssetsOutputAsync(FindPackageAssets_WithDeleteDir, Step1, 2);
+
+            // Act
+            await UpdateFindPackageAssetsAsync(max2);
+
+            // Assert
+            await AssertFindPackageAssetsOutputAsync(FindPackageAssets_WithDeleteDir, Step1, 0); // This file is unchanged.
+            await AssertFindPackageAssetsOutputAsync(FindPackageAssets_WithDeleteDir, Step1, 1); // This file is unchanged.
+            await AssertFindPackageAssetsOutputAsync(FindPackageAssets_WithDeleteDir, Step2, 2);
 
             await VerifyExpectedContainers();
         }
@@ -163,13 +232,13 @@ namespace Knapcode.ExplorePackages.Worker
             while (indexScan.ParsedState != CatalogScanState.Complete);
         }
 
-        private async Task AssertFindPackageAssetsOutputAsync(string stepName, int bucket)
+        private async Task AssertFindPackageAssetsOutputAsync(string testName, string stepName, int bucket)
         {
             var client = ServiceClientFactory.GetStorageAccount().CreateCloudBlobClient();
             var container = client.GetContainerReference(Options.Value.FindPackageAssetsContainerName);
             var blob = container.GetBlockBlobReference($"compact_{bucket}.csv");
             var actual = await blob.DownloadTextAsync();
-            var expected = File.ReadAllText(Path.Combine("TestData", "FindPackageAssets", stepName, blob.Name));
+            var expected = File.ReadAllText(Path.Combine(TestData, testName, stepName, blob.Name));
             Assert.Equal(expected, actual);
         }
 
@@ -195,6 +264,65 @@ namespace Knapcode.ExplorePackages.Worker
             foreach (var table in tables)
             {
                 await table.DeleteAsync();
+            }
+        }
+
+        public static HttpRequestMessage Clone(HttpRequestMessage req)
+        {
+            var clone = new HttpRequestMessage(req.Method, req.RequestUri);
+
+            clone.Content = req.Content;
+            clone.Version = req.Version;
+
+            foreach (KeyValuePair<string, object> prop in req.Properties)
+            {
+                clone.Properties.Add(prop);
+            }
+
+            foreach (KeyValuePair<string, IEnumerable<string>> header in req.Headers)
+            {
+                clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
+            }
+
+            return clone;
+        }
+
+        private class TestHttpMessageHandlerFactory : IExplorePackagesHttpMessageHandlerFactory
+        {
+            public Func<HttpRequestMessage, Task<HttpResponseMessage>> OnSendAsync { get; set; }
+
+            public DelegatingHandler Create()
+            {
+                return new TestHttpMessageHandler(async req =>
+                {
+                    if (OnSendAsync != null)
+                    {
+                        return await OnSendAsync(req);
+                    }
+
+                    return null;
+                });
+            }
+        }
+
+        private class TestHttpMessageHandler : DelegatingHandler
+        {
+            private readonly Func<HttpRequestMessage, Task<HttpResponseMessage>> _onSendAsync;
+
+            public TestHttpMessageHandler(Func<HttpRequestMessage, Task<HttpResponseMessage>> onSendAsync)
+            {
+                _onSendAsync = onSendAsync;
+            }
+
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                var response = await _onSendAsync(request);
+                if (response != null)
+                {
+                    return response;
+                }
+
+                return await base.SendAsync(request, cancellationToken);
             }
         }
     }

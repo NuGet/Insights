@@ -200,7 +200,7 @@ namespace Knapcode.ExplorePackages.Entities
                 .ToDictionary(x => x.Id, x => x, StringComparer.OrdinalIgnoreCase);
         }
 
-        private async Task<IReadOnlyDictionary<string, long>>  AddOrUpdatePackagesAsync<T>(
+        private async Task<IReadOnlyDictionary<string, long>> AddOrUpdatePackagesAsync<T>(
             QueryPackagesAsync queryPackagesAsync,
             IEnumerable<T> foreignPackages,
             Func<T, string> getId,
@@ -374,7 +374,7 @@ namespace Knapcode.ExplorePackages.Entities
 
             latest.PackageEntries.Sort((a, b) => a.Index.CompareTo(b.Index));
             existing.PackageEntries.Sort((a, b) => a.Index.CompareTo(b.Index));
-            
+
             for (var index = 0; index < latest.PackageEntries.Count; index++)
             {
                 var latestEntry = latest.PackageEntries[index];
@@ -449,7 +449,7 @@ namespace Knapcode.ExplorePackages.Entities
             }
 
             entity.PackageEntries.Sort((a, b) => a.Index.CompareTo(b.Index));
-            
+
             for (var index = 0; index < metadata.ZipDirectory.Entries.Count; index++)
             {
                 var entryMetadata = metadata.ZipDirectory.Entries[index];
@@ -463,7 +463,7 @@ namespace Knapcode.ExplorePackages.Entities
                         throw new InvalidOperationException("One of the package archive entries seems to have an incorrect index.");
                     }
                 }
-                else if(index == entity.PackageEntries.Count)
+                else if (index == entity.PackageEntries.Count)
                 {
                     entryEntity = new PackageEntryEntity
                     {
@@ -604,7 +604,7 @@ namespace Knapcode.ExplorePackages.Entities
                 {
                     return Task.CompletedTask;
                 },
-                (c, f, pe, pl) => {},
+                (c, f, pe, pl) => { },
                 includeCatalogPackageRegistrations: false);
         }
 

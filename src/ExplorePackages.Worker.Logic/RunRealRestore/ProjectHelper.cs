@@ -1,8 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using NuGet.Common;
-using NuGet.Frameworks;
-using NuGet.ProjectModel;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,6 +6,10 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using System.Xml.XPath;
+using Microsoft.Extensions.Logging;
+using NuGet.Common;
+using NuGet.Frameworks;
+using NuGet.ProjectModel;
 using NuGetPackageIdentity = NuGet.Packaging.Core.PackageIdentity;
 
 namespace Knapcode.ExplorePackages.Worker.RunRealRestore

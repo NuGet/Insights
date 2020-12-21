@@ -37,7 +37,7 @@ namespace Knapcode.ExplorePackages.Entities
                 {
                     await _cursorService.EnsureExistsAsync(cursorName);
                     var cursor = await _cursorService.GetAsync(cursorName);
-                    
+
                     query = new PackageQueryEntity
                     {
                         Name = queryName,
@@ -83,7 +83,7 @@ namespace Knapcode.ExplorePackages.Entities
                 {
                     return new PackageQueryMatches(0, new List<PackageEntity>());
                 }
-                
+
                 return new PackageQueryMatches(
                     matches.Max(x => x.PackageQueryMatchKey),
                     matches.Select(x => x.Package).ToList());

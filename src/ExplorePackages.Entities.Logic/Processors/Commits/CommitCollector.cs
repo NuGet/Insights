@@ -37,7 +37,7 @@ namespace Knapcode.ExplorePackages.Entities
             _options = options;
             _logger = logger;
         }
-        
+
         public async Task ProcessAsync(CancellationToken token)
         {
             var start = await _cursorService.GetValueAsync(_processor.CursorName);

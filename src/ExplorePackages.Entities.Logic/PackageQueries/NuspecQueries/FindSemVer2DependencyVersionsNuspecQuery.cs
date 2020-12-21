@@ -6,7 +6,7 @@ namespace Knapcode.ExplorePackages.Entities
     {
         public string Name => PackageQueryNames.FindSemVer2DependencyVersionsNuspecQuery;
         public string CursorName => CursorNames.FindSemVer2DependencyVersionsNuspecQuery;
-        
+
         public bool IsMatch(XDocument nuspec)
         {
             return NuspecUtility.HasSemVer2DependencyVersion(nuspec);

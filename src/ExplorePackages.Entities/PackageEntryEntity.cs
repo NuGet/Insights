@@ -5,7 +5,7 @@
         public long PackageEntryKey { get; set; }
         public long PackageKey { get; set; }
         public ulong Index { get; set; }
-        
+
         public byte[] Comment { get; set; }
         public byte[] ExtraField { get; set; }
         public byte[] Name { get; set; }
@@ -25,7 +25,7 @@
         public ushort Flags { get; set; }
         public ushort VersionToExtract { get; set; }
         public ushort VersionMadeBy { get; set; }
-        
+
         public PackageArchiveEntity PackageArchive { get; set; }
     }
 }

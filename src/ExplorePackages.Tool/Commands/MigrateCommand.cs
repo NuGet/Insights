@@ -56,7 +56,7 @@ namespace Knapcode.ExplorePackages.Tool
                 using (var loggingScope = migrationScope.ServiceProvider.CreateScope())
                 {
                     loggingScope.ServiceProvider.SanitizeAndLogSettings();
-                }   
+                }
 
                 using (var entityContext = migrationScope.ServiceProvider.GetRequiredService<IEntityContext>())
                 {

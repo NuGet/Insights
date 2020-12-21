@@ -5,5 +5,6 @@
         public static readonly string NoAssets = nameof(NoAssets);
         public static readonly string Error = nameof(Error);
         public static readonly string AvailableAssets = nameof(AvailableAssets);
+        public static readonly string Deleted = nameof(Deleted);
     }
 }

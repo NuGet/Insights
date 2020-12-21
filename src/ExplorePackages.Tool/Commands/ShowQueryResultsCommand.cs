@@ -30,7 +30,7 @@ namespace Knapcode.ExplorePackages.Tool
         public async Task ExecuteAsync(CancellationToken token)
         {
             Console.WriteLine("ID\tVersion\tFirst Commit Timestamp\tLast Commit Timestamp");
-            
+
             int count;
             long lastKey = 0;
             do

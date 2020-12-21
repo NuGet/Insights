@@ -6,7 +6,7 @@ namespace Knapcode.ExplorePackages.Entities
     {
         public string Name => PackageQueryNames.FindRepositoriesNuspecQuery;
         public string CursorName => CursorNames.FindRepositoriesNuspecQuery;
-        
+
         public bool IsMatch(XDocument nuspec)
         {
             var repositoryEl = NuspecUtility.GetRepository(nuspec);

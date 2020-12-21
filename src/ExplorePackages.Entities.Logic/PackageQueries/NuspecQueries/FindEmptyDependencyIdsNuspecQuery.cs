@@ -7,7 +7,7 @@ namespace Knapcode.ExplorePackages.Entities
     {
         public string Name => PackageQueryNames.FindEmptyDependencyIdsNuspecQuery;
         public string CursorName => CursorNames.FindEmptyDependencyIdsNuspecQuery;
-        
+
         public bool IsMatch(XDocument nuspec)
         {
             return NuspecUtility

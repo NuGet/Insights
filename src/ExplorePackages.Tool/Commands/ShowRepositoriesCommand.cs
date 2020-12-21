@@ -50,7 +50,7 @@ namespace Knapcode.ExplorePackages.Tool
             Console.Write('\t');
             Console.Write("Last Commit Timestamp");
             Console.WriteLine();
-            
+
             int count;
             long lastKey = 0;
             do

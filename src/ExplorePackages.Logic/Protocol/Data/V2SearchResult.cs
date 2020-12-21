@@ -7,7 +7,7 @@ namespace Knapcode.ExplorePackages
     {
         [JsonProperty("totalHits")]
         public int TotalHits { get; set; }
-        
+
         [JsonProperty("data")]
         public List<V2SearchResultItem> Data { get; set; }
     }

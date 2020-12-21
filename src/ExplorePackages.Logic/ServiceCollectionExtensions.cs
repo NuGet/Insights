@@ -22,8 +22,19 @@ namespace Knapcode.ExplorePackages
         private static IHttpClientBuilder AddExplorePackages(this IHttpClientBuilder builder)
         {
             return builder.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+            })
+                .AddHttpMessageHandler(serviceProvider =>
                 {
-                    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                    // Enable a hook for injecting additional HTTP messages in.
+                    var factory = serviceProvider.GetService<IExplorePackagesHttpMessageHandlerFactory>();
+                    if (factory != null)
+                    {
+                        return factory.Create();
+                    }
+
+                    return new NullDelegatingHandler();
                 })
                 .AddHttpMessageHandler<UrlReporterHandler>()
                 .ConfigureHttpClient(UserAgent.SetUserAgent);

@@ -76,7 +76,7 @@ namespace Knapcode.ExplorePackages.Entities
                 latestEntries,
                 latestEntryToFirstCommitTimestamp,
                 entryToVisibilityState);
-            
+
             // Add the CatalogPackageLeaf instances and their parent classes.
             await _catalogService.AddOrUpdateAsync(page, leaves, identityToPackageKey, entryToVisibilityState);
 

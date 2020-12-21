@@ -127,7 +127,7 @@ namespace Knapcode.ExplorePackages
             else if (!foundPackageIdentity.Equals(packageIdentity))
             {
                 // Use the input version, since the found one does not match.
-                state.PackageVersion = packageIdentity.Version; 
+                state.PackageVersion = packageIdentity.Version;
 
                 state.PackageDeletedStatus = PackageDeletedStatus.Unknown;
                 state.IsListed = false;
@@ -161,7 +161,7 @@ namespace Knapcode.ExplorePackages
             foreach (var alert in alerts)
             {
                 var flattenedText = FlattenWhitespace.Replace(alert.TextContent.Trim(), " ");
-                
+
                 if (flattenedText.Contains("This package has been deleted from the gallery."))
                 {
                     state.PackageDeletedStatus = PackageDeletedStatus.SoftDeleted;

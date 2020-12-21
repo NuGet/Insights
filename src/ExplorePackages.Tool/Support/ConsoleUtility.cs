@@ -6,7 +6,7 @@ namespace Knapcode.ExplorePackages.Tool
     public static class ConsoleUtility
     {
         private static readonly object _consoleLock = new object();
-        
+
         /// <summary>
         /// Log a message to the console.
         /// </summary>

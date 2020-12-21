@@ -120,7 +120,7 @@ namespace Knapcode.ExplorePackages.Entities
                     packageRegistrationKeyToPackageRegistration.Count,
                     stopwatch.ElapsedMilliseconds);
 
-                foreach (var dependency in dependencies)    
+                foreach (var dependency in dependencies)
                 {
                     dependency.DependencyPackageRegistration =
                         packageRegistrationKeyToPackageRegistration[dependency.DependencyPackageRegistrationKey];

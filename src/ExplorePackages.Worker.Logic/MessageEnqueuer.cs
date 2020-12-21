@@ -36,7 +36,7 @@ namespace Knapcode.ExplorePackages.Worker
         public Task EnqueueAsync<T>(IReadOnlyList<T> messages, TimeSpan notBefore) => EnqueueAsync(messages, _serializer.GetSerializer<T>(), notBefore);
 
         internal Task EnqueueAsync<T>(IReadOnlyList<T> messages, ISchemaSerializer<T> serializer) => EnqueueAsync(messages, serializer, TimeSpan.Zero);
-        
+
         internal async Task EnqueueAsync<T>(IReadOnlyList<T> messages, ISchemaSerializer<T> serializer, TimeSpan notBefore)
         {
             if (messages.Count == 0)

@@ -10,7 +10,7 @@ namespace Knapcode.ExplorePackages.Entities
         private readonly ICommitCondition _commitCondition;
 
         public BaseEntityContext(
-            ICommitCondition commitCondition, 
+            ICommitCondition commitCondition,
             DbContextOptions<T> options) : base(options)
         {
             _commitCondition = commitCondition ?? throw new ArgumentNullException(nameof(commitCondition));
@@ -153,7 +153,7 @@ namespace Knapcode.ExplorePackages.Entities
                 .IsRequired();
             modelBuilder
                 .Entity<PackageQueryEntity>()
-                .HasKey(x => x.PackageQueryKey);            
+                .HasKey(x => x.PackageQueryKey);
             modelBuilder
                 .Entity<PackageQueryEntity>()
                 .HasIndex(x => new { x.Name })
@@ -169,7 +169,7 @@ namespace Knapcode.ExplorePackages.Entities
                 .ToTable("PackageQueryMatches");
             modelBuilder
                 .Entity<PackageQueryMatchEntity>()
-                .HasKey(x => x.PackageQueryMatchKey);            
+                .HasKey(x => x.PackageQueryMatchKey);
             modelBuilder
                 .Entity<PackageQueryMatchEntity>()
                 .HasIndex(x => new { x.PackageQueryKey, x.PackageKey })
@@ -190,7 +190,7 @@ namespace Knapcode.ExplorePackages.Entities
                 .ToTable("V2Packages");
             modelBuilder
                 .Entity<V2PackageEntity>()
-                .HasKey(x => x.PackageKey);            
+                .HasKey(x => x.PackageKey);
             modelBuilder
                 .Entity<V2PackageEntity>()
                 .HasIndex(x => new { x.CreatedTimestamp });

@@ -198,7 +198,7 @@ namespace Knapcode.ExplorePackages.Entities
                         batch.Add(newRecord);
                         newRecord = ParseLine(await newReader.ReadLineAsync());
                     }
-                    
+
                     if (batch.Count >= _batchSizeProvider.Get(BatchSizeType.PackageDownloadsToDatabase))
                     {
                         await producer.EnqueueAsync(batch, token);
