@@ -25,40 +25,43 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task ProcessAsync(HomogeneousBatchMessage batch, int dequeueCount)
         {
-            if (dequeueCount > 1)
+            using (_logger.BeginScope(new { BatchSize = batch.Messages.Count }))
             {
-                var messages = new List<string>();
-                foreach (var data in batch.Messages)
+                if (dequeueCount > 1)
                 {
-                    messages.Add(GetSerializedMessage(batch, data));
-                }
-
-                _logger.LogWarning("Homogeneous batch message has been attempted multiple times. Retrying messages individually.");
-                await _messageEnqueuer.AddAsync(messages);
-            }
-            else
-            {
-                _logger.LogInformation("Processing homogeneous batch message with {Count} messages.", batch.Messages.Count);
-
-                var failed = new List<string>();
-                foreach (var data in batch.Messages)
-                {
-                    var singleMessage = new NameVersionMessage<JToken>(batch.SchemaName, batch.SchemaVersion, data);
-                    try
+                    var messages = new List<string>();
+                    foreach (var data in batch.Messages)
                     {
-                        await _messageProcessor.ProcessAsync(singleMessage, dequeueCount);
+                        messages.Add(GetSerializedMessage(batch, data));
                     }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "A message in a batch failed.");
-                        failed.Add(GetSerializedMessage(batch, data));
-                    }
-                }
 
-                if (failed.Any())
+                    _logger.LogWarning("Homogeneous batch message has been attempted multiple times. Retrying messages individually.");
+                    await _messageEnqueuer.AddAsync(messages);
+                }
+                else
                 {
-                    _logger.LogError("{FailedCount} messages in a batch of {Count} failed. Retrying messages individually.", failed.Count, batch.Messages.Count);
-                    await _messageEnqueuer.AddAsync(failed);
+                    _logger.LogInformation("Processing homogeneous batch message with {Count} messages.", batch.Messages.Count);
+
+                    var failed = new List<string>();
+                    foreach (var data in batch.Messages)
+                    {
+                        var singleMessage = new NameVersionMessage<JToken>(batch.SchemaName, batch.SchemaVersion, data);
+                        try
+                        {
+                            await _messageProcessor.ProcessAsync(singleMessage, dequeueCount);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "A message in a batch failed.");
+                            failed.Add(GetSerializedMessage(batch, data));
+                        }
+                    }
+
+                    if (failed.Any())
+                    {
+                        _logger.LogError("{FailedCount} messages in a batch of {Count} failed. Retrying messages individually.", failed.Count, batch.Messages.Count);
+                        await _messageEnqueuer.AddAsync(failed);
+                    }
                 }
             }
         }
