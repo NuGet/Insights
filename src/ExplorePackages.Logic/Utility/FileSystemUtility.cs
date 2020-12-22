@@ -1,9 +1,35 @@
-﻿using System;
+﻿using Microsoft.Extensions.Options;
+using System;
 using System.IO;
+using System.Runtime;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages
 {
+    public class BufferService
+    {
+        private const int MB = 1024 * 1024;
+
+        private readonly IOptions<ExplorePackagesSettings> _options;
+
+        public BufferService(IOptions<ExplorePackagesSettings> options)
+        {
+            _options = options;
+        }
+
+        public async Task<Stream> CopyToTempStreamAsync(Stream src)
+        {
+            var lengthMB = (int)((src.Length / MB) + (src.Length % MB != 0 ? 1 : 0));
+            MemoryStream memoryStream = null;
+            using (var memoryFailPoint = new MemoryFailPoint(lengthMB))
+            {
+
+            }
+            
+        }
+    }
+
     public static class FileSystemUtility
     {
         public static async Task<FileStream> CopyToTempStreamAsync(string baseDir, Stream src)
