@@ -105,11 +105,12 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
 
         private async Task AnalyzeAsync(PackageAssembly assembly, ZipArchiveEntry entry)
         {
+            _logger.LogInformation("Analyzing ZIP entry {FullName} of length {Length} bytes.", entry.FullName, entry.Length);
             using var tempStream = await _tempStreamService.CopyToTempStreamAsync(() => entry.Open(), entry.Length);
 
             try
             {
-                using var peReader = new PEReader(tempStream, PEStreamOptions.PrefetchMetadata);
+                using var peReader = new PEReader(tempStream);
                 if (!peReader.HasMetadata)
                 {
                     assembly.ResultType = PackageAssemblyResultType.NotManagedAssembly;

@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Worker;
 using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
+using Knapcode.ExplorePackages.Worker.FindPackageAssemblies;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
@@ -30,6 +31,7 @@ namespace Knapcode.ExplorePackages.Tool
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly SchemaSerializer _serializer;
         private readonly StorageLeaseService _storageLeaseService;
+        private readonly ICatalogLeafToCsvDriver<PackageAssembly> _findPackageAssembliesDriver;
         private readonly ILogger<SandboxCommand> _logger;
 
         public SandboxCommand(
@@ -44,6 +46,7 @@ namespace Knapcode.ExplorePackages.Tool
             ServiceClientFactory serviceClientFactory,
             SchemaSerializer serializer,
             StorageLeaseService storageLeaseService,
+            ICatalogLeafToCsvDriver<PackageAssembly> findPackageAssembliesDriver,
             ILogger<SandboxCommand> logger)
         {
             _catalogScanService = catalogScanService;
@@ -57,6 +60,7 @@ namespace Knapcode.ExplorePackages.Tool
             _serviceClientFactory = serviceClientFactory;
             _serializer = serializer;
             _storageLeaseService = storageLeaseService;
+            _findPackageAssembliesDriver = findPackageAssembliesDriver;
             _logger = logger;
         }
 
@@ -66,7 +70,17 @@ namespace Knapcode.ExplorePackages.Tool
 
         public async Task ExecuteAsync(CancellationToken token)
         {
-            await _catalogScanService.InitializeAsync();
+            // await _catalogScanService.InitializeAsync();
+
+            var results = await _findPackageAssembliesDriver.ProcessLeafAsync(new CatalogLeafItem
+            {
+                CommitId = "916c94e9-b3c0-4583-a93c-0a0c09bdeba7",
+                CommitTimestamp = DateTimeOffset.Parse("2018-08-31T20:59:43.241Z"),
+                PackageId = "qnamakerruntime",
+                PackageVersion = "4.0.9",
+                Type = CatalogLeafType.PackageDetails,
+                Url = "https://api.nuget.org/v3/catalog0/data/2018.08.31.20.59.43/qnamakerruntime.4.0.9.json",
+            });
 
             /*
             await _messageEnqueuer.EnqueueAsync(Enumerable
@@ -100,7 +114,7 @@ namespace Knapcode.ExplorePackages.Tool
             // NU1213: { "n":"rrr","v":1,"d":{ "i":"Microsoft.AspNetCore.App.Runtime.linux-x64","v":"5.0.0-rc.1.20451.17","f":"netstandard1.5"} }
             // MSB3644: { "n":"rrr","v":1,"d":{ "i":"Newtonsoft.Json","v":"12.0.3","f":"net35"} }
 
-            await _catalogScanService.UpdateFindPackageAssetsAsync(max: null);
+            // await _catalogScanService.UpdateFindPackageAssetsAsync(max: null);
             // await _catalogScanService.UpdateFindPackageAssetsAsync(DateTimeOffset.Parse("2018-08-08T17:29:16.4488298Z"));
             // await _catalogScanService.RequeueAsync("08585954065972383328-9a556c36a70a48078031b866de666a4b");
             // await EnqueueRunRealRestoreAsync();

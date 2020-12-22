@@ -42,6 +42,12 @@ namespace Knapcode.ExplorePackages
 
             _logger.LogInformation("Starting to buffer a {TypeName} stream with length {LengthBytes} bytes.", src.GetType().FullName, length);
 
+            if (length == 0)
+            {
+                _logger.LogInformation("Successfully copied an empty {TypeName} stream.", src.GetType().FullName);
+                return TempStreamResult.NewSuccess(Stream.Null);
+            }
+
             Stream dest = null;
             var consumedSource = false;
             try
