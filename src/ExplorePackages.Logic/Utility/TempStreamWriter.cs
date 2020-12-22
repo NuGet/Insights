@@ -85,6 +85,7 @@ namespace Knapcode.ExplorePackages
                         Directory.CreateDirectory(tempDir);
                     }
 
+                    // Check if there is enough space on the drive.
                     try
                     {
                         var pathRoot = Path.GetPathRoot(tempDir);
@@ -103,12 +104,12 @@ namespace Knapcode.ExplorePackages
                             continue;
                         }
                     }
-                    catch (ArgumentException ex)
+                    catch (Exception ex) when (ex is ArgumentException || ex is IOException || ex is UnauthorizedAccessException)
                     {
-                        _logger.LogWarning(ex, "Could determine available free space in temp dir {TempDir}.", tempDir);
+                        _logger.LogWarning(ex, "Could not determine available free space in temp dir {TempDir}.", tempDir);
                     }
 
-                    string tmpPath = Path.Combine(tempDir, Guid.NewGuid().ToString("N"));
+                    var tmpPath = Path.Combine(tempDir, Guid.NewGuid().ToString("N"));
                     try
                     {
                         dest = new FileStream(
@@ -147,7 +148,7 @@ namespace Knapcode.ExplorePackages
             sw.Stop();
             dest.Position = 0;
             _logger.LogInformation(
-                "Successfully buffered {TypeName} stream with length {LengthBytes} bytes to {Location} in {DurationMs} ms.",
+                "Successfully copied a {TypeName} stream with length {LengthBytes} bytes to {Location} in {DurationMs} ms.",
                 src.GetType().FullName,
                 dest.Length,
                 location,
