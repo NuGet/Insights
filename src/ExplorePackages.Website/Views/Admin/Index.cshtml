@@ -17,41 +17,9 @@
         </ul>
 
         <h3>Find Package Assets</h3>
-        <ul class="list-unstyled">
-            <li><b>Cursor value:</b> @Model.Cursor.Value.ToString("O")</li>
-            <li><b>Cursor age:</b> @Model.CursorAge</li>
-        </ul>
-        <table class="table">
-            <caption>Latest catalog scans</caption>
-            <thead>
-                <tr>
-                    <th>Scan ID</th>
-                    <th>State</th>
-                    <th>Min</th>
-                    <th>Max</th>
-                    <th>Delta</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var scan in Model.LatestScans)
-                {
-                    <tr>
-                        <td>@scan.ScanId</td>
-                        <td>@scan.ParsedState</td>
-                        <td>@scan.Min?.ToString("O")</td>
-                        <td>@scan.Max?.ToString("O")</td>
-                        <td>
-                            @if (scan.Max.HasValue && scan.Min.HasValue)
-                            {
-                                @(scan.Max.Value - scan.Min.Value)
-                            }
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-        <form asp-action="UpdateFindPackageAssets" method="post">
-            <button type="submit" class="btn btn-default">Start new scan</button>
-        </form>
+        @await Html.PartialAsync("_CatalogScan", Model.FindPackageAssets)
+
+        <h3>Find Package Assemblies</h3>
+        @await Html.PartialAsync("_CatalogScan", Model.FindPackageAssemblies)
     </div>
 </div>

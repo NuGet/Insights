@@ -1,34 +1,58 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class MessageBatcher
+    public class MessageBatcher : IMessageBatcher
     {
-        private static readonly string ThisNamespaceDot = typeof(MessageBatcher).Namespace + ".";
+        private readonly CatalogScanStorageService _catalogScanStorageService;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<MessageBatcher> _logger;
 
-        public MessageBatcher(IOptions<ExplorePackagesWorkerSettings> options, ILogger<MessageBatcher> logger)
+        public MessageBatcher(
+            CatalogScanStorageService catalogScanStorageService,
+            IOptions<ExplorePackagesWorkerSettings> options,
+            ILogger<MessageBatcher> logger)
         {
+            _catalogScanStorageService = catalogScanStorageService;
             _options = options;
             _logger = logger;
         }
 
-        public IReadOnlyList<HomogeneousBatchMessage> BatchOrNull<T>(IReadOnlyList<T> messages, ISchemaSerializer<T> serializer)
+        public async Task<IReadOnlyList<HomogeneousBatchMessage>> BatchOrNullAsync<T>(IReadOnlyList<T> messages, ISchemaSerializer<T> serializer)
         {
             var messageType = typeof(T);
             if (messageType == typeof(HomogeneousBatchMessage)
-               || messages.Count <= 1
-               || _options.Value.MessageBatchSizes == null
-               || !TryGetBatchSize(messageType, out int batchSize)
-               || batchSize <= 1)
+                || messages.Count <= 1
+                || !_options.Value.AllowBatching)
             {
                 return null;
+            }
+
+            int batchSize;
+            switch (messages.First())
+            {
+                case CatalogLeafScanMessage clsm:
+                    var catalogLeafScan = await _catalogScanStorageService.GetLeafScanAsync(
+                        clsm.StorageSuffix,
+                        clsm.ScanId,
+                        clsm.PageId,
+                        clsm.LeafId);
+                    if (catalogLeafScan.ParsedScanType == CatalogScanType.FindPackageAssets)
+                    {
+                        batchSize = 20;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                    break;
+                default:
+                    return null;
             }
 
             var batches = new List<HomogeneousBatchMessage>();
@@ -55,25 +79,6 @@ namespace Knapcode.ExplorePackages.Worker
                 batchSize);
 
             return batches;
-        }
-
-        private bool TryGetBatchSize(Type messageType, out int batchSize)
-        {
-            if (messageType.FullName.StartsWith(ThisNamespaceDot))
-            {
-                var nameSuffix = messageType.FullName.Substring(ThisNamespaceDot.Length);
-                if (_options.Value.MessageBatchSizes.TryGetValue(nameSuffix, out batchSize))
-                {
-                    return true;
-                }
-            }
-
-            if (_options.Value.MessageBatchSizes.TryGetValue(messageType.FullName, out batchSize))
-            {
-                return true;
-            }
-
-            return false;
         }
     }
 }

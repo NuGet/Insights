@@ -1,13 +1,14 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages
 {
     public static class FileSystemUtility
     {
-        public static async Task<FileStream> CopyToTempStreamAsync(Stream src)
+        public static async Task<FileStream> CopyToTempStreamAsync(string baseDir, Stream src)
         {
-            FileStream dest = GetTempStream();
+            FileStream dest = GetTempStream(baseDir);
             try
             {
                 await src.CopyToAsync(dest);
@@ -21,10 +22,15 @@ namespace Knapcode.ExplorePackages
             }
         }
 
-        public static FileStream GetTempStream()
+        public static FileStream GetTempStream(string baseDir)
         {
+            if (!Directory.Exists(baseDir))
+            {
+                Directory.CreateDirectory(baseDir);
+            }
+
             return new FileStream(
-                Path.GetTempFileName(),
+                Path.Combine(baseDir, Guid.NewGuid().ToString("N")),
                 FileMode.Create,
                 FileAccess.ReadWrite,
                 FileShare.None,

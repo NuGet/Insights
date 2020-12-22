@@ -110,7 +110,7 @@ namespace Knapcode.ExplorePackages.Worker
                 CloudQueueMessage message;
                 while ((message = await queue.GetMessageAsync()) != null)
                 {
-                    await Target.ProcessAsync(message.AsString);
+                    await Target.ProcessAsync(message);
                     await queue.DeleteMessageAsync(message);
                 }
 

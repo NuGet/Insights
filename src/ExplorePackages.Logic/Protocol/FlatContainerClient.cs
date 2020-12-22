@@ -48,7 +48,7 @@ namespace Knapcode.ExplorePackages
             return url;
         }
 
-        public async Task<Stream> DownloadPackageContentToFileAsync(string id, string version, CancellationToken token)
+        public async Task<Stream> DownloadPackageContentToFileAsync(string baseDir, string id, string version, CancellationToken token)
         {
             var url = await GetPackageContentUrlAsync(id, version);
             var nuGetLogger = _logger.ToNuGetLogger();
@@ -64,7 +64,7 @@ namespace Knapcode.ExplorePackages
                         return null;
                     }
 
-                    return await FileSystemUtility.CopyToTempStreamAsync(networkStream);
+                    return await FileSystemUtility.CopyToTempStreamAsync(baseDir, networkStream);
                 },
                 nuGetLogger,
                 token);

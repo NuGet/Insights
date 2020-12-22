@@ -22,7 +22,7 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
             _options = options;
         }
 
-        public async Task ProcessAsync(RunRealRestoreCompactMessage message)
+        public async Task ProcessAsync(RunRealRestoreCompactMessage message, int dequeueCount)
         {
             await _storageService.CompactAsync<RealRestoreResult>(
                 _options.Value.RunRealRestoreContainerName,

@@ -19,7 +19,7 @@ namespace Knapcode.ExplorePackages.Worker
             _logger = logger;
         }
 
-        public async Task ProcessAsync(CatalogLeafScanMessage message)
+        public async Task ProcessAsync(CatalogLeafScanMessage message, int dequeueCount)
         {
             var scan = await _storageService.GetLeafScanAsync(message.StorageSuffix, message.ScanId, message.PageId, message.LeafId);
             if (scan == null)

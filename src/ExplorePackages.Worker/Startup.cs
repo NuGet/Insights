@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.IO;
+using System.Linq;
 using Knapcode.ExplorePackages.Worker;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
@@ -34,6 +36,14 @@ namespace Knapcode.ExplorePackages.Worker
 
             AddOptions<ExplorePackagesSettings>(builder, ExplorePackagesSettings.DefaultSectionName);
             AddOptions<ExplorePackagesWorkerSettings>(builder, ExplorePackagesSettings.DefaultSectionName);
+
+            builder.Services.Configure<ExplorePackagesWorkerSettings>(settings =>
+            {
+                if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("HOME")))
+                {
+                    settings.TempBaseDir = Environment.ExpandEnvironmentVariables(Path.Combine("%HOME%", "Knapcode.ExplorePackages", "temp"));
+                }
+            });
 
             builder.Services.AddExplorePackages("Knapcode.ExplorePackages.Worker");
             builder.Services.AddExplorePackagesWorker();

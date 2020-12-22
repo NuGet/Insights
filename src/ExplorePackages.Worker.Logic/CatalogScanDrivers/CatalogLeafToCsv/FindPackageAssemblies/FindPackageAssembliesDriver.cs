@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.IO.Compression;
 using System.Linq;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Mono.Cecil;
 
 namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
 {
@@ -56,7 +57,12 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             {
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
 
-                using var packageStream = await _flatContainerClient.DownloadPackageContentToFileAsync(item.PackageId, item.PackageVersion, CancellationToken.None);
+                using var packageStream = await _flatContainerClient.DownloadPackageContentToFileAsync(
+                    _options.Value.TempBaseDir,
+                    item.PackageId,
+                    item.PackageVersion,
+                    CancellationToken.None);
+
                 if (packageStream == null)
                 {
                     // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted asset record.
@@ -98,18 +104,21 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
         private async Task AnalyzeAsync(PackageAssembly assembly, ZipArchiveEntry entry)
         {
             using var entryStream = entry.Open();
-            using var tempStream = await FileSystemUtility.CopyToTempStreamAsync(entryStream);
+            using var tempStream = await FileSystemUtility.CopyToTempStreamAsync(_options.Value.TempBaseDir, entryStream);
 
             try
             {
-                using var module = ModuleDefinition.ReadModule(tempStream);
-                var name = module.Assembly.Name;
+                using var peReader = new PEReader(tempStream);
+                var metadataReader = peReader.GetMetadataReader();
+                var assemblyDefinition = metadataReader.GetAssemblyDefinition();
+                var name = assemblyDefinition.GetAssemblyName();
                 assembly.Name = name.Name;
                 assembly.AssemblyVersion = name.Version.ToString();
-                assembly.Culture = name.Culture;
-                if (name.PublicKeyToken != null)
+                assembly.Culture = name.CultureName;
+                var publicKeyToken = name.GetPublicKeyToken();
+                if (publicKeyToken != null)
                 {
-                    assembly.PublicKeyToken = BitConverter.ToString(name.PublicKeyToken).Replace("-", string.Empty).ToLowerInvariant();
+                    assembly.PublicKeyToken = BitConverter.ToString(publicKeyToken).Replace("-", string.Empty).ToLowerInvariant();
                 }
             }
             catch (BadImageFormatException)

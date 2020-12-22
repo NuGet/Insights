@@ -32,7 +32,7 @@ namespace Knapcode.ExplorePackages.Worker
             _logger = logger;
         }
 
-        public async Task ProcessAsync(CatalogIndexScanMessage message)
+        public async Task ProcessAsync(CatalogIndexScanMessage message, int dequeueCount)
         {
             var scan = await _storageService.GetIndexScanAsync(message.CursorName, message.ScanId);
             if (scan == null)

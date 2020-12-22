@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
+using Microsoft.WindowsAzure.Storage.Queue;
 
 namespace Knapcode.ExplorePackages.Worker
 {
@@ -24,11 +25,11 @@ namespace Knapcode.ExplorePackages.Worker
 
         [FunctionName("WorkerQueueFunction")]
         public async Task ProcessAsync(
-            [QueueTrigger(WorkerQueueVariable, Connection = StorageConnection)] string message)
+            [QueueTrigger(WorkerQueueVariable, Connection = StorageConnection)] CloudQueueMessage message)
         {
             try
             {
-                await _messageProcessor.ProcessAsync(message);
+                await _messageProcessor.ProcessAsync(message.AsString, message.DequeueCount);
             }
             catch (Exception ex)
             {

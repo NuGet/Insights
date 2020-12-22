@@ -31,16 +31,17 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             const int messageCount = 32;
             var availableMessageCountLowerBoundTask = _rawMessageEnqueuer.GetAvailableMessageCountLowerBoundAsync(messageCount);
             var poisonAvailableMessageCountLowerBoundTask = _rawMessageEnqueuer.GetPoisonAvailableMessageCountLowerBoundAsync(messageCount);
-            var cursorTask = _catalogScanService.GetCursorAsync(CatalogScanType.FindPackageAssets);
-            var cursor = await cursorTask;
-            var latestScansTask = _catalogScanStorageService.GetLatestIndexScans(cursor.Name, maxEntities: 10);
+
+            var findPackageAssetsTask = GetCatalogScanAsync(CatalogScanType.FindPackageAssets);
+            var findPackageAssembliesTask = GetCatalogScanAsync(CatalogScanType.FindPackageAssemblies);
+
             await Task.WhenAll(
                 approximateMessageCountTask,
                 poisonApproximateMessageCountTask,
                 availableMessageCountLowerBoundTask,
                 poisonAvailableMessageCountLowerBoundTask,
-                cursorTask,
-                latestScansTask);
+                findPackageAssetsTask,
+                findPackageAssembliesTask);
 
             var model = new AdminViewModel
             {
@@ -48,8 +49,8 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 AvailableMessageCountLowerBound = await availableMessageCountLowerBoundTask,
                 PoisonApproximateMessageCount = await poisonApproximateMessageCountTask,
                 PoisonAvailableMessageCountLowerBound = await poisonAvailableMessageCountLowerBoundTask,
-                Cursor = cursor,
-                LatestScans = await latestScansTask,
+                FindPackageAssets = await findPackageAssetsTask,
+                FindPackageAssemblies = await findPackageAssembliesTask,
             };
 
             model.AvailableMessageCountIsExact = model.AvailableMessageCountLowerBound < messageCount;
@@ -58,10 +59,32 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             return View(model);
         }
 
-        [HttpPost]
-        public async Task<RedirectToActionResult> UpdateFindPackageAssets()
+        private async Task<CatalogScanViewModel> GetCatalogScanAsync(CatalogScanType type)
         {
-            await _catalogScanService.UpdateFindPackageAssetsAsync();
+            var cursor = await _catalogScanService.GetCursorAsync(type);
+            var latestScans = await _catalogScanStorageService.GetLatestIndexScans(cursor.Name, maxEntities: 10);
+
+            return new CatalogScanViewModel
+            {
+                Type = type,
+                Cursor = cursor,
+                LatestScans = latestScans,
+            };
+        }
+
+        [HttpPost]
+        public async Task<RedirectToActionResult> UpdateCatalogScan(CatalogScanType type)
+        {
+            switch (type)
+            {
+                case CatalogScanType.FindPackageAssets:
+                    await _catalogScanService.UpdateFindPackageAssetsAsync();
+                    break;
+                case CatalogScanType.FindPackageAssemblies:
+                    await _catalogScanService.UpdateFindPackageAssembliesAsync();
+                    break;
+            }
+
             return RedirectToAction(nameof(Index));
         }
     }

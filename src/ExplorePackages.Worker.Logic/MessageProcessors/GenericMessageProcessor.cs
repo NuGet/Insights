@@ -23,7 +23,7 @@ namespace Knapcode.ExplorePackages.Worker
             _telemetryClient = telemetryClient;
         }
 
-        public async Task ProcessAsync(string message)
+        public async Task ProcessAsync(string message, int dequeueCount)
         {
             object deserializedMessage;
             try
@@ -36,17 +36,17 @@ namespace Knapcode.ExplorePackages.Worker
                 deserializedMessage = _serializer.Deserialize(message);
             }
 
-            await ProcessAsync(deserializedMessage);
+            await ProcessAsync(deserializedMessage, dequeueCount);
         }
 
-        public async Task ProcessAsync(NameVersionMessage<JToken> message)
+        public async Task ProcessAsync(NameVersionMessage<JToken> message, int dequeueCount)
         {
             var deserializedMessage = _serializer.Deserialize(message);
 
-            await ProcessAsync(deserializedMessage);
+            await ProcessAsync(deserializedMessage, dequeueCount);
         }
 
-        private async Task ProcessAsync(object deserializedMessage)
+        private async Task ProcessAsync(object deserializedMessage, int dequeueCount)
         {
             var messageType = deserializedMessage.GetType();
             var processorType = typeof(IMessageProcessor<>).MakeGenericType(deserializedMessage.GetType());
@@ -57,13 +57,13 @@ namespace Knapcode.ExplorePackages.Worker
                 throw new NotSupportedException($"The message type '{deserializedMessage.GetType().FullName}' is not supported.");
             }
 
-            var method = processorType.GetMethod(nameof(IMessageProcessor<object>.ProcessAsync), new Type[] { messageType });
+            var method = processorType.GetMethod(nameof(IMessageProcessor<object>.ProcessAsync), new Type[] { messageType, typeof(int) });
 
             var stopwatch = Stopwatch.StartNew();
             var success = false;
             try
             {
-                await (Task)method.Invoke(processor, new object[] { deserializedMessage });
+                await (Task)method.Invoke(processor, new object[] { deserializedMessage, dequeueCount });
                 success = true;
             }
             finally

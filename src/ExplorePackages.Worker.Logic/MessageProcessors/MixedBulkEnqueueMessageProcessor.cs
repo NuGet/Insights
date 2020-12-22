@@ -16,7 +16,7 @@ namespace Knapcode.ExplorePackages.Worker
             _logger = logger;
         }
 
-        public async Task ProcessAsync(MixedBulkEnqueueMessage message)
+        public async Task ProcessAsync(MixedBulkEnqueueMessage message, int dequeueCount)
         {
             _logger.LogInformation("Processing mixed bulk enqueue message with {Count} messages.", message.Messages.Count);
 

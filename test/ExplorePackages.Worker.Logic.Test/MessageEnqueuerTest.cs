@@ -64,7 +64,7 @@ namespace Knapcode.ExplorePackages.Worker
             SchemaSerializer = new SchemaSerializer(output.GetLogger<SchemaSerializer>());
             Options = new Mock<IOptions<ExplorePackagesWorkerSettings>>();
             Settings = new ExplorePackagesWorkerSettings();
-            MessageBatcher = new MessageBatcher(Options.Object, output.GetLogger<MessageBatcher>());
+            MessageBatcher = new Mock<IMessageBatcher>();
             RawMessageEnqueuer = new Mock<IRawMessageEnqueuer>();
 
             Options.Setup(x => x.Value).Returns(() => Settings);
@@ -86,7 +86,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             Target = new MessageEnqueuer(
                 SchemaSerializer,
-                MessageBatcher,
+                MessageBatcher.Object,
                 RawMessageEnqueuer.Object,
                 output.GetLogger<MessageEnqueuer>());
         }
@@ -94,7 +94,7 @@ namespace Knapcode.ExplorePackages.Worker
         public SchemaSerializer SchemaSerializer { get; }
         public Mock<IOptions<ExplorePackagesWorkerSettings>> Options { get; }
         public ExplorePackagesWorkerSettings Settings { get; }
-        public MessageBatcher MessageBatcher { get; }
+        public Mock<IMessageBatcher> MessageBatcher { get; }
         public Mock<IRawMessageEnqueuer> RawMessageEnqueuer { get; }
         public List<List<object>> EnqueuedMessages { get; }
         public MessageEnqueuer Target { get; }

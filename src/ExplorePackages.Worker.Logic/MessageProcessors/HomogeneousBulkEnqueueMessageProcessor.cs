@@ -16,7 +16,7 @@ namespace Knapcode.ExplorePackages.Worker
             _logger = logger;
         }
 
-        public async Task ProcessAsync(HomogeneousBulkEnqueueMessage message)
+        public async Task ProcessAsync(HomogeneousBulkEnqueueMessage message, int dequeueCount)
         {
             _logger.LogInformation("Processing homogeneous bulk enqueue message with {Count} messages.", message.Messages.Count);
 

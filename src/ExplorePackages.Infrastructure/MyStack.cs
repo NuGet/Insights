@@ -259,8 +259,6 @@ namespace Knapcode.ExplorePackages
                     { "FUNCTIONS_WORKER_RUNTIME", "dotnet" },
                     { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesSettings.StorageConnectionString)}", _storageAccount.PrimaryConnectionString },
                     { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWorkerSettings.WorkerQueueName)}", defaultSettings.WorkerQueueName },
-                    { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWorkerSettings.AppendResultStorageMode)}", _config.Get(nameof(ExplorePackagesWorkerSettings.AppendResultStorageMode)) ?? defaultSettings.AppendResultStorageMode.ToString() },
-                    { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWorkerSettings.MessageBatchSizes)}:{nameof(CatalogLeafScanMessage)}", _config.Get("CatalogLeafScanBatchSize") ?? "20" },
                 },
             });
         }
