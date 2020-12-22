@@ -74,17 +74,25 @@ namespace Knapcode.ExplorePackages.Website.Controllers
         }
 
         [HttpPost]
-        public async Task<RedirectToActionResult> UpdateCatalogScan(CatalogScanType type, bool shortRun)
+        public async Task<RedirectToActionResult> UpdateCatalogScan(CatalogScanType type, bool shortTest, string max)
         {
-            var max = shortRun ? DateTimeOffset.Parse("2018-09-20T01:46:19.1755275Z") : (DateTimeOffset?)null;
+            DateTimeOffset? parsedMax = null;
+            if (shortTest)
+            {
+                parsedMax = DateTimeOffset.Parse("2018-09-20T01:46:19.1755275Z");
+            }
+            else if (!string.IsNullOrWhiteSpace(max))
+            {
+                parsedMax = DateTimeOffset.Parse(max);
+            }
 
             switch (type)
             {
                 case CatalogScanType.FindPackageAssets:
-                    await _catalogScanService.UpdateFindPackageAssetsAsync(max);
+                    await _catalogScanService.UpdateFindPackageAssetsAsync(parsedMax);
                     break;
                 case CatalogScanType.FindPackageAssemblies:
-                    await _catalogScanService.UpdateFindPackageAssembliesAsync(max);
+                    await _catalogScanService.UpdateFindPackageAssembliesAsync(parsedMax);
                     break;
             }
 
