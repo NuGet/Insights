@@ -33,7 +33,7 @@ namespace Knapcode.ExplorePackages.Worker
                 return null;
             }
 
-            int batchSize;
+            var batchSize = 1;
             switch (messages.First())
             {
                 case CatalogLeafScanMessage clsm:
@@ -46,13 +46,12 @@ namespace Knapcode.ExplorePackages.Worker
                     {
                         batchSize = 20;
                     }
-                    else
-                    {
-                        return null;
-                    }
                     break;
-                default:
-                    return null;
+            }
+
+            if (batchSize <= 1)
+            {
+                return null;
             }
 
             var batches = new List<HomogeneousBatchMessage>();
