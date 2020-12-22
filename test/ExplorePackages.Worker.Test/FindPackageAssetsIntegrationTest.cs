@@ -25,7 +25,7 @@ namespace Knapcode.ExplorePackages.Worker
         [InlineData(true)]
         public async Task FindPackageAssets(bool allowBatching)
         {
-            Options.Value.AllowBatching = allowBatching;
+            ConfigureWorkerSettings = x => x.AllowBatching = allowBatching;
 
             Logger.LogInformation("Settings: " + Environment.NewLine + JsonConvert.SerializeObject(Options.Value, Formatting.Indented));
 

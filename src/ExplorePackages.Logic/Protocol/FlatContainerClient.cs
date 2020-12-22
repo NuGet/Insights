@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -11,12 +12,18 @@ namespace Knapcode.ExplorePackages
     {
         private readonly ServiceIndexCache _serviceIndexCache;
         private readonly HttpSource _httpSource;
+        private readonly TempStreamService _tempStreamService;
         private readonly ILogger<FlatContainerClient> _logger;
 
-        public FlatContainerClient(ServiceIndexCache serviceIndexCache, HttpSource httpSource, ILogger<FlatContainerClient> logger)
+        public FlatContainerClient(
+            ServiceIndexCache serviceIndexCache,
+            HttpSource httpSource,
+            TempStreamService tempStreamService,
+            ILogger<FlatContainerClient> logger)
         {
             _serviceIndexCache = serviceIndexCache;
             _httpSource = httpSource;
+            _tempStreamService = tempStreamService;
             _logger = logger;
         }
 
@@ -48,26 +55,37 @@ namespace Knapcode.ExplorePackages
             return url;
         }
 
-        public async Task<Stream> DownloadPackageContentToFileAsync(string baseDir, string id, string version, CancellationToken token)
+        public async Task<Stream> DownloadPackageContentToFileAsync(string id, string version, CancellationToken token)
         {
             var url = await GetPackageContentUrlAsync(id, version);
             var nuGetLogger = _logger.ToNuGetLogger();
-            return await _httpSource.ProcessStreamAsync(
-                new HttpSourceRequest(url, nuGetLogger)
-                {
-                    IgnoreNotFounds = true,
-                },
-                async networkStream =>
-                {
-                    if (networkStream == null)
+            var writer = _tempStreamService.GetWriter();
+            TempStreamResult result;
+            do
+            {
+                result = await _httpSource.ProcessResponseAsync(
+                    new HttpSourceRequest(url, nuGetLogger),
+                    async response =>
                     {
-                        return null;
-                    }
+                        if (response.StatusCode == HttpStatusCode.NotFound)
+                        {
+                            return null;
+                        }
 
-                    return await FileSystemUtility.CopyToTempStreamAsync(baseDir, networkStream);
-                },
-                nuGetLogger,
-                token);
+                        response.EnsureSuccessStatusCode();
+                        using var networkStream = await response.Content.ReadAsStreamAsync();
+                        return await writer.CopyToTempStreamAsync(networkStream, response.Content.Headers.ContentLength.Value);
+                    },
+                    nuGetLogger,
+                    token);
+
+                if (result == null)
+                {
+                    return null;
+                }
+            }
+            while (!result.Success);
+            return result.Stream;
         }
 
         public async Task<NuspecContext> GetNuspecContextAsync(string id, string version, CancellationToken token)

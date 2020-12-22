@@ -12,6 +12,7 @@ namespace Knapcode.ExplorePackages.Worker
     {
         private const string FindPackageAssembliesDir = nameof(FindPackageAssemblies);
         private const string FindPackageAssemblies_WithDeleteDir = nameof(FindPackageAssemblies_WithDelete);
+        private const string FindPackageAssemblies_WithUnmanagedDir = nameof(FindPackageAssemblies_WithUnmanaged);
 
         public FindPackageAssembliesIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
             : base(output, factory)
@@ -20,9 +21,13 @@ namespace Knapcode.ExplorePackages.Worker
 
         protected override string DestinationContainerName => Options.Value.FindPackageAssembliesContainerName;
 
-        [Fact]
-        public async Task FindPackageAssemblies()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task FindPackageAssemblies(bool bufferTempStreamsToMemory)
         {
+            ConfigureSettings = x => x.BufferTempStreamsToMemory = bufferTempStreamsToMemory;
+
             Logger.LogInformation("Settings: " + Environment.NewLine + JsonConvert.SerializeObject(Options.Value, Formatting.Indented));
 
             // Arrange
@@ -101,6 +106,31 @@ namespace Knapcode.ExplorePackages.Worker
             await AssertOutputAsync(FindPackageAssemblies_WithDeleteDir, Step2, 2);
 
             await VerifyExpectedContainers();
+        }
+
+        [Fact]
+        public async Task FindPackageAssemblies_WithUnmanaged()
+        {
+            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
+
+            Logger.LogInformation("Settings: " + Environment.NewLine + JsonConvert.SerializeObject(Options.Value, Formatting.Indented));
+
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2018-08-29T04:22:56.6184931Z");
+            var max1 = DateTimeOffset.Parse("2018-08-29T04:24:40.3247223Z");
+            var cursorName = $"CatalogScan-{CatalogScanType.FindPackageAssemblies}";
+
+            await CatalogScanService.InitializeAsync();
+
+            var cursor = await CursorStorageService.GetOrCreateAsync(cursorName);
+            cursor.Value = min0;
+            await CursorStorageService.UpdateAsync(cursor);
+
+            // Act
+            await UpdateFindPackageAssembliesAsync(max1);
+
+            // Assert
+            await AssertOutputAsync(FindPackageAssemblies_WithUnmanagedDir, Step1, 0);
         }
 
         private async Task UpdateFindPackageAssembliesAsync(DateTimeOffset max)

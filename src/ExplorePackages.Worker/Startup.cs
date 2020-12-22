@@ -41,7 +41,7 @@ namespace Knapcode.ExplorePackages.Worker
             {
                 if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("HOME")))
                 {
-                    settings.TempBaseDir = Environment.ExpandEnvironmentVariables(Path.Combine("%HOME%", "Knapcode.ExplorePackages", "temp"));
+                    settings.TempDirectories.Add(Environment.ExpandEnvironmentVariables(Path.Combine("%HOME%", "Knapcode.ExplorePackages", "temp")));
                 }
             });
 

@@ -25,6 +25,8 @@ namespace Knapcode.ExplorePackages.Worker
         public const string Step1 = "Step1";
         public const string Step2 = "Step2";
 
+        private readonly Lazy<IHost> _lazyHost;
+
         public BaseCatalogScanIntegrationTest(
             ITestOutputHelper output,
             DefaultWebApplicationFactory<StaticFilesStartup> factory)
@@ -39,8 +41,13 @@ namespace Knapcode.ExplorePackages.Worker
                 .UseWebRoot(currentDirectory));
             TestDataHttpClient = testWebHostBuilder.CreateClient();
 
+            _lazyHost = new Lazy<IHost>(() => GetHost(output));
+        }
+
+        private IHost GetHost(ITestOutputHelper output)
+        {
             var startup = new Startup();
-            Host = new HostBuilder()
+            return new HostBuilder()
                 .ConfigureWebJobs(startup.Configure)
                 .ConfigureServices(serviceCollection =>
                 {
@@ -54,6 +61,14 @@ namespace Knapcode.ExplorePackages.Worker
                     {
                         o.SetMinimumLevel(LogLevel.Trace);
                         o.AddProvider(new XunitLoggerProvider(output));
+                    });
+
+                    serviceCollection.Configure<ExplorePackagesSettings>(x =>
+                    {
+                        if (ConfigureSettings != null)
+                        {
+                            ConfigureSettings(x);
+                        }
                     });
 
                     serviceCollection.Configure<ExplorePackagesWorkerSettings>(x =>
@@ -72,33 +87,36 @@ namespace Knapcode.ExplorePackages.Worker
                         x.FindPackageAssetsContainerName = $"{StoragePrefix}1fpa1";
                         x.FindPackageAssembliesContainerName = $"{StoragePrefix}1fpi1";
                         x.RunRealRestoreContainerName = $"{StoragePrefix}1rrr1";
+
+                        if (ConfigureSettings != null)
+                        {
+                            ConfigureSettings(x);
+                        }
+
+                        if (ConfigureWorkerSettings != null)
+                        {
+                            ConfigureWorkerSettings(x);
+                        }
                     });
                 })
                 .Build();
-
-            Options = Host.Services.GetRequiredService<IOptions<ExplorePackagesWorkerSettings>>();
-            ServiceClientFactory = Host.Services.GetRequiredService<ServiceClientFactory>();
-            WorkerQueueFactory = Host.Services.GetRequiredService<IWorkerQueueFactory>();
-            CursorStorageService = Host.Services.GetRequiredService<CursorStorageService>();
-            CatalogScanStorageService = Host.Services.GetRequiredService<CatalogScanStorageService>();
-            CatalogScanService = Host.Services.GetRequiredService<CatalogScanService>();
-            Logger = Host.Services.GetRequiredService<ILogger<BaseCatalogScanIntegrationTest>>();
-
-            Target = Host.Services.GetRequiredService<WorkerQueueFunction>();
         }
 
         public string StoragePrefix { get; }
         public TestHttpMessageHandlerFactory HttpMessageHandlerFactory { get; }
         public HttpClient TestDataHttpClient { get; }
-        public IHost Host { get; }
-        public IOptions<ExplorePackagesWorkerSettings> Options { get; }
-        public ServiceClientFactory ServiceClientFactory { get; }
-        public IWorkerQueueFactory WorkerQueueFactory { get; }
-        public CursorStorageService CursorStorageService { get; }
-        public CatalogScanStorageService CatalogScanStorageService { get; }
-        public CatalogScanService CatalogScanService { get; }
-        public ILogger Logger { get; }
-        public WorkerQueueFunction Target { get; }
+
+        public Action<ExplorePackagesSettings> ConfigureSettings { get; set; }
+        public Action<ExplorePackagesWorkerSettings> ConfigureWorkerSettings { get; set; }
+        public IHost Host => _lazyHost.Value;
+        public IOptions<ExplorePackagesWorkerSettings> Options => Host.Services.GetRequiredService<IOptions<ExplorePackagesWorkerSettings>>();
+        public ServiceClientFactory ServiceClientFactory => Host.Services.GetRequiredService<ServiceClientFactory>();
+        public IWorkerQueueFactory WorkerQueueFactory => Host.Services.GetRequiredService<IWorkerQueueFactory>();
+        public CursorStorageService CursorStorageService => Host.Services.GetRequiredService<CursorStorageService>();
+        public CatalogScanStorageService CatalogScanStorageService => Host.Services.GetRequiredService<CatalogScanStorageService>();
+        public CatalogScanService CatalogScanService => Host.Services.GetRequiredService<CatalogScanService>();
+        public ILogger Logger => Host.Services.GetRequiredService<ILogger<BaseCatalogScanIntegrationTest>>();
+        public WorkerQueueFunction Target => Host.Services.GetRequiredService<WorkerQueueFunction>();
 
         protected abstract string DestinationContainerName { get; }
 

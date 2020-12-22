@@ -15,6 +15,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
     {
         private readonly CatalogClient _catalogClient;
         private readonly FlatContainerClient _flatContainerClient;
+        private readonly TempStreamService _tempStreamService;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<FindPackageAssembliesDriver> _logger;
 
@@ -26,11 +27,13 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
         public FindPackageAssembliesDriver(
             CatalogClient catalogClient,
             FlatContainerClient flatContainerClient,
+            TempStreamService tempStreamService,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<FindPackageAssembliesDriver> logger)
         {
             _catalogClient = catalogClient;
             _flatContainerClient = flatContainerClient;
+            _tempStreamService = tempStreamService;
             _options = options;
             _logger = logger;
         }
@@ -58,7 +61,6 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
 
                 using var packageStream = await _flatContainerClient.DownloadPackageContentToFileAsync(
-                    _options.Value.TempBaseDir,
                     item.PackageId,
                     item.PackageVersion,
                     CancellationToken.None);
@@ -103,12 +105,17 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
 
         private async Task AnalyzeAsync(PackageAssembly assembly, ZipArchiveEntry entry)
         {
-            using var entryStream = entry.Open();
-            using var tempStream = await FileSystemUtility.CopyToTempStreamAsync(_options.Value.TempBaseDir, entryStream);
+            using var tempStream = await _tempStreamService.CopyToTempStreamAsync(() => entry.Open(), entry.Length);
 
             try
             {
-                using var peReader = new PEReader(tempStream);
+                using var peReader = new PEReader(tempStream, PEStreamOptions.PrefetchMetadata);
+                if (!peReader.HasMetadata)
+                {
+                    assembly.ResultType = PackageAssemblyResultType.NotManagedAssembly;
+                    return;
+                }
+
                 var metadataReader = peReader.GetMetadataReader();
                 var assemblyDefinition = metadataReader.GetAssemblyDefinition();
                 var name = assemblyDefinition.GetAssemblyName();

@@ -1,4 +1,7 @@
-﻿namespace Knapcode.ExplorePackages
+﻿using System.Collections.Generic;
+using System.IO;
+
+namespace Knapcode.ExplorePackages
 {
     public class ExplorePackagesSettings
     {
@@ -15,6 +18,11 @@
             StorageContainerName = "packages";
             LeaseContainerName = "leases";
             IsStorageContainerPublic = false;
+            BufferTempStreamsToMemory = true;
+            TempDirectories = new List<string>
+            {
+                Path.Combine(Path.GetTempPath(), "Knapcode.ExplorePackages"),
+            };
         }
 
         public string GalleryBaseUrl { get; set; }
@@ -26,5 +34,7 @@
         public string StorageContainerName { get; set; }
         public string LeaseContainerName { get; set; }
         public bool IsStorageContainerPublic { get; set; }
+        public bool BufferTempStreamsToMemory { get; set; }
+        public List<string> TempDirectories { get; set; }
     }
 }
