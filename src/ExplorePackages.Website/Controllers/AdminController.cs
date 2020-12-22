@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Website.Models;
 using Knapcode.ExplorePackages.Worker;
 using Microsoft.AspNetCore.Authorization;
@@ -73,15 +74,17 @@ namespace Knapcode.ExplorePackages.Website.Controllers
         }
 
         [HttpPost]
-        public async Task<RedirectToActionResult> UpdateCatalogScan(CatalogScanType type)
+        public async Task<RedirectToActionResult> UpdateCatalogScan(CatalogScanType type, bool shortRun)
         {
+            var max = shortRun ? DateTimeOffset.Parse("2018-09-20T01:46:19.1755275Z") : (DateTimeOffset?)null;
+
             switch (type)
             {
                 case CatalogScanType.FindPackageAssets:
-                    await _catalogScanService.UpdateFindPackageAssetsAsync();
+                    await _catalogScanService.UpdateFindPackageAssetsAsync(max);
                     break;
                 case CatalogScanType.FindPackageAssemblies:
-                    await _catalogScanService.UpdateFindPackageAssembliesAsync();
+                    await _catalogScanService.UpdateFindPackageAssembliesAsync(max);
                     break;
             }
 

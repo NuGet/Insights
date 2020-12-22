@@ -92,11 +92,9 @@ namespace Knapcode.ExplorePackages.Worker
             return await _cursorStorageService.GetOrCreateAsync($"CatalogScan-{type}");
         }
 
-        public async Task<CatalogIndexScan> UpdateFindPackageAssetsAsync() => await UpdateCatalogLeafToCsvAsync(CatalogScanType.FindPackageAssets, null);
-        public async Task<CatalogIndexScan> UpdateFindPackageAssetsAsync(DateTimeOffset max) => await UpdateCatalogLeafToCsvAsync(CatalogScanType.FindPackageAssets, (DateTimeOffset?)max);
+        public async Task<CatalogIndexScan> UpdateFindPackageAssetsAsync(DateTimeOffset? max) => await UpdateCatalogLeafToCsvAsync(CatalogScanType.FindPackageAssets, max);
 
-        public async Task<CatalogIndexScan> UpdateFindPackageAssembliesAsync() => await UpdateCatalogLeafToCsvAsync(CatalogScanType.FindPackageAssemblies, null);
-        public async Task<CatalogIndexScan> UpdateFindPackageAssembliesAsync(DateTimeOffset max) => await UpdateCatalogLeafToCsvAsync(CatalogScanType.FindPackageAssemblies, (DateTimeOffset?)max);
+        public async Task<CatalogIndexScan> UpdateFindPackageAssembliesAsync(DateTimeOffset? max) => await UpdateCatalogLeafToCsvAsync(CatalogScanType.FindPackageAssemblies, max);
 
         private async Task<CatalogIndexScan> UpdateCatalogLeafToCsvAsync(CatalogScanType catalogScanType, DateTimeOffset? max)
         {
@@ -123,15 +121,6 @@ namespace Knapcode.ExplorePackages.Worker
             var index = await _catalogClient.GetCatalogIndexAsync();
             var min = new[] { cursor.Value, CatalogClient.NuGetOrgMin }.Max();
             max = max.GetValueOrDefault(index.CommitTimestamp);
-
-            // var testMax = DateTimeOffset.Parse("2019-02-20T20:18:34.697022Z");
-            /*
-            var testMax = DateTimeOffset.Parse("2018-09-20T01:46:19.1755275Z");
-            if (max > testMax)
-            {
-                max = testMax;
-            }
-            */
 
             if (min >= max)
             {

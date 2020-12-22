@@ -35,5 +35,6 @@
 </table>
 <form asp-action="UpdateCatalogScan" method="post">
     <input type="hidden" name="type" value="@Model.Type" />
-    <button type="submit" class="btn btn-default">Start new scan</button>
+    <button type="submit" name="shortRun" value="true" class="btn btn-default">Start test scan</button>
+    <button type="submit" name="shortRun" value="false" class="btn btn-default">Start full scan</button>
 </form>
