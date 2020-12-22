@@ -40,7 +40,7 @@ namespace Knapcode.ExplorePackages
                 {
                     await Task.Delay(TimeSpan.FromSeconds(LeaseSeconds / 2), token);
                 }
-                catch when (token.IsCancellationRequested)
+                catch (Exception ex) when ((ex is ObjectDisposedException || ex is TaskCanceledException) && token.IsCancellationRequested)
                 {
                     return;
                 }
