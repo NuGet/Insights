@@ -29,7 +29,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task ProcessAsync(string message, int dequeueCount)
         {
-            using (_logger.BeginScope("Processing string message {TruncatedMessage} with dequeue count {DequeueCount}", TruncateMessage(message), dequeueCount))
+            using (_logger.BeginScope("Processing string message {Scope_TruncatedMessage} with dequeue count {Scope_DequeueCount}", TruncateMessage(message), dequeueCount))
             {
                 object deserializedMessage;
                 try
