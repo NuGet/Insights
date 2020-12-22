@@ -29,7 +29,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task ProcessAsync(string message, int dequeueCount)
         {
-            using (_logger.BeginScope(new { TruncatedMessage = TruncateMessage(message), DequeueCount = dequeueCount }))
+            using (_logger.BeginScope("Processing string message {TruncatedMessage} with dequeue count {DequeueCount}", TruncateMessage(message), dequeueCount))
             {
                 object deserializedMessage;
                 try
@@ -48,7 +48,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task ProcessAsync(NameVersionMessage<JToken> message, int dequeueCount)
         {
-            using (_logger.BeginScope(new { TruncatedMessage = TruncateMessage(message), DequeueCount = dequeueCount }))
+            using (_logger.BeginScope("Processing deserialized message {TruncatedMessage} with dequeue count {DequeueCount}", TruncateMessage(message), dequeueCount))
             {
                 var deserializedMessage = _serializer.Deserialize(message);
 

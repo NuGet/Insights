@@ -25,7 +25,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task ProcessAsync(HomogeneousBatchMessage batch, int dequeueCount)
         {
-            using (_logger.BeginScope(new { BatchSize = batch.Messages.Count }))
+            using (_logger.BeginScope("Processing homogeneous batch message with {Count} messages", batch.Messages.Count))
             {
                 if (dequeueCount > 1)
                 {
