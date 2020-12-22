@@ -13,7 +13,6 @@ namespace Knapcode.ExplorePackages.Worker
             AppendResultStorageBucketCount = 1000; // Azure Data Explorer can only import up to 1000 blobs.
             AppendResultUniqueIds = true;
             AllowBatching = true;
-            TempBaseDir = Path.GetTempPath();
 
             WorkerQueueName = "workerqueue";
             CursorTableName = "cursors";
@@ -36,7 +35,6 @@ namespace Knapcode.ExplorePackages.Worker
         public int AppendResultStorageBucketCount { get; set; }
         public bool AppendResultUniqueIds { get; set; }
         public bool AllowBatching { get; set; }
-        public string TempBaseDir { get; set; }
 
         public string WorkerQueueName { get; set; }
         public string CursorTableName { get; set; }
