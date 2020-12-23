@@ -65,9 +65,9 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        public class FindPackageAssemblies_WithoutMemoryBuffering : FindPackageAssembliesIntegrationTest
+        public class FindPackageAssemblies_WithDiskBuffering : FindPackageAssembliesIntegrationTest
         {
-            public FindPackageAssemblies_WithoutMemoryBuffering(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public FindPackageAssemblies_WithDiskBuffering(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -75,7 +75,11 @@ namespace Knapcode.ExplorePackages.Worker
             [Fact]
             public async Task Execute()
             {
-                ConfigureSettings = x => x.MaxInMemoryTempStreamSize = 0;
+                ConfigureSettings = x =>
+                {
+                    x.MaxInMemoryTempStreamSize = 0;
+                    x.TempDirectories[0].MaxConcurrentWriters = 1;
+                };
 
                 Logger.LogInformation("Settings: " + Environment.NewLine + JsonConvert.SerializeObject(Options.Value, Formatting.Indented));
 

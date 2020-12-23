@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -17,17 +19,27 @@ namespace Knapcode.ExplorePackages
         private const string Memory = "memory";
         private static readonly ReadOnlyMemory<byte> OneByte = new ReadOnlyMemory<byte>(new[] { (byte)0 });
 
+        private readonly StorageSemaphoreLeaseService _semaphoreService;
         private readonly int _maxInMemorySize;
-        private readonly List<string> _tempDirs;
+        private readonly List<TempStreamDirectory> _tempDirs;
         private readonly ILogger _logger;
         private bool _attemptedMemory;
         private bool _skipMemory;
         private int _tempDirIndex;
 
-        public TempStreamWriter(IOptions<ExplorePackagesSettings> options, ILogger logger)
+        public TempStreamWriter(StorageSemaphoreLeaseService semaphoreService, IOptions<ExplorePackagesSettings> options, ILogger logger)
         {
+            _semaphoreService = semaphoreService;
             _maxInMemorySize = options.Value.MaxInMemoryTempStreamSize;
-            _tempDirs = options.Value.TempDirectories.Select(x => Path.GetFullPath(x)).ToList();
+            _tempDirs = options
+                .Value
+                .TempDirectories
+                .Select(x => new TempStreamDirectory
+                {
+                    Path = Path.GetFullPath(x.Path),
+                    MaxConcurrentWriters = x.MaxConcurrentWriters,
+                })
+                .ToList();
             _logger = logger;
             _attemptedMemory = false;
             _skipMemory = false;
@@ -131,30 +143,33 @@ namespace Knapcode.ExplorePackages
                     }
 
                     var tmpPath = Path.Combine(tempDir, StorageUtility.GenerateDescendingId().ToString());
-                    FileStream destFileStream = null;
-                    try
+                    await using (await LeaseTempDirAsync(tempDir))
                     {
-                        dest = new FileStream(
-                            tmpPath,
-                            FileMode.Create,
-                            FileAccess.ReadWrite,
-                            FileShare.None,
-                            BufferSize,
-                            FileOptions.Asynchronous | FileOptions.DeleteOnClose);
+                        FileStream destFileStream = null;
+                        try
+                        {
+                            dest = new FileStream(
+                                tmpPath,
+                                FileMode.Create,
+                                FileAccess.ReadWrite,
+                                FileShare.None,
+                                BufferSize,
+                                FileOptions.Asynchronous | FileOptions.DeleteOnClose);
 
-                        destFileStream = (FileStream)dest;
+                            destFileStream = (FileStream)dest;
 
-                        // Pre-allocate the full file size, to encounter full disk exceptions prior to reading the source stream.
-                        await SetStreamLength(destFileStream, length);
+                            // Pre-allocate the full file size, to encounter full disk exceptions prior to reading the source stream.
+                            await SetStreamLength(destFileStream, length);
 
-                        consumedSource = true;
-                        return await CopyAndSeekAsync(src, dest, tmpPath);
-                    }
-                    catch (IOException ex)
-                    {
-                        SafeDispose(dest);
-                        _tempDirIndex++;
-                        _logger.LogWarning(ex, "Could not buffer a {TypeName} stream with length {LengthBytes} bytes to temp file {TempFile}.", src.GetType().FullName, length, tmpPath);
+                            consumedSource = true;
+                            return await CopyAndSeekAsync(src, dest, tmpPath);
+                        }
+                        catch (IOException ex)
+                        {
+                            SafeDispose(dest);
+                            _tempDirIndex++;
+                            _logger.LogWarning(ex, "Could not buffer a {TypeName} stream with length {LengthBytes} bytes to temp file {TempFile}.", src.GetType().FullName, length, tmpPath);
+                        }
                     }
                 }
 
@@ -162,13 +177,43 @@ namespace Knapcode.ExplorePackages
                     "Unable to find a place to copy the stream. Tried:" + Environment.NewLine +
                     string.Join(Environment.NewLine, Enumerable.Empty<string>()
                         .Concat(_attemptedMemory ? new[] { Memory } : Array.Empty<string>())
-                        .Concat(_tempDirs).Select(x => $" - {x}")));
+                        .Concat(_tempDirs.Select(DisplayTempDir))
+                        .Select(x => $" - {x}")));
             }
             catch
             {
                 SafeDispose(dest);
                 throw;
             }
+        }
+
+        private static string DisplayTempDir(TempStreamDirectory tempDir)
+        {
+            if (!tempDir.MaxConcurrentWriters.HasValue)
+            {
+                return tempDir.Path;
+            }
+
+            return $"{tempDir.Path} (max writers: {tempDir.MaxConcurrentWriters.Value})";
+        }
+
+        private async Task<IAsyncDisposable> LeaseTempDirAsync(TempStreamDirectory dir)
+        {
+            if (!dir.MaxConcurrentWriters.HasValue)
+            {
+                return null;
+            }
+
+            string dirHash;
+            using (var sha256 = SHA256.Create())
+            {
+                var bytes = Encoding.UTF8.GetBytes(dir.Path.ToLowerInvariant());
+                dirHash = sha256.ComputeHash(bytes).ToTrimmedBase32();
+            }
+
+            var name = $"temp-dir-{dirHash}";
+
+            return await _semaphoreService.WaitAsync(name, dir.MaxConcurrentWriters.Value);
         }
 
         private static async Task SetStreamLength(Stream stream, long length)

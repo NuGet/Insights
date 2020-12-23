@@ -8,13 +8,16 @@ namespace Knapcode.ExplorePackages
 {
     public class TempStreamService
     {
+        private readonly StorageSemaphoreLeaseService _semaphoreService;
         private readonly IOptions<ExplorePackagesSettings> _options;
         private readonly ILogger<TempStreamService> _logger;
 
         public TempStreamService(
+            StorageSemaphoreLeaseService semaphoreService,
             IOptions<ExplorePackagesSettings> options,
             ILogger<TempStreamService> logger)
         {
+            _semaphoreService = semaphoreService;
             _options = options;
             _logger = logger;
         }
@@ -34,7 +37,7 @@ namespace Knapcode.ExplorePackages
 
         public TempStreamWriter GetWriter()
         {
-            return new TempStreamWriter(_options, _logger);
+            return new TempStreamWriter(_semaphoreService, _options, _logger);
         }
     }
 }

@@ -11,10 +11,7 @@ namespace Knapcode.ExplorePackages
 
         public static string GenerateUniqueId()
         {
-            return Base32
-                .ToBase32(Guid.NewGuid().ToByteArray())
-                .TrimEnd('=')
-                .ToLowerInvariant();
+            return Guid.NewGuid().ToByteArray().ToTrimmedBase32();
         }
 
         public static StorageId GenerateDescendingId()

@@ -51,7 +51,12 @@ namespace Knapcode.ExplorePackages.Worker
         {
             if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("HOME")))
             {
-                settings.TempDirectories.Add(Environment.ExpandEnvironmentVariables(Path.Combine("%HOME%", "Knapcode.ExplorePackages", "temp")));
+                var networkDir = Environment.ExpandEnvironmentVariables(Path.Combine("%HOME%", "Knapcode.ExplorePackages", "temp"));
+                settings.TempDirectories.Add(new TempStreamDirectory
+                {
+                    MaxConcurrentWriters = 1,
+                    Path = networkDir,
+                });
             }
         }
 
