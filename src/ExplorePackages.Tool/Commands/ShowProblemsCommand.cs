@@ -89,13 +89,13 @@ namespace Knapcode.ExplorePackages.Tool
 
             public int GetHashCode(List<T> obj)
             {
-                var combiner = new HashCodeCombiner();
+                var hashCode = new HashCode();
                 foreach (var i in obj)
                 {
-                    combiner.AddObject(i);
+                    hashCode.Add(i);
                 }
 
-                return combiner.CombinedHash;
+                return hashCode.ToHashCode();
             }
         }
 
