@@ -111,10 +111,20 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
         private async Task AnalyzeAsync(PackageAssembly assembly, ZipArchiveEntry entry)
         {
             _logger.LogInformation("Analyzing ZIP entry {FullName} of length {Length} bytes.", entry.FullName, entry.Length);
-            using var tempStream = await _tempStreamService.CopyToTempStreamAsync(() => entry.Open(), entry.Length);
 
+            Stream tempStream = null;
             try
             {
+                try
+                {
+                    tempStream = await _tempStreamService.CopyToTempStreamAsync(() => entry.Open(), entry.Length);
+                }
+                catch (InvalidDataException)
+                {
+                    assembly.ResultType = PackageAssemblyResultType.InvalidZipEntry;
+                    return;
+                }
+
                 using var peReader = new PEReader(tempStream);
                 if (!peReader.HasMetadata)
                 {
@@ -145,6 +155,10 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             catch (BadImageFormatException)
             {
                 assembly.ResultType = PackageAssemblyResultType.NotManagedAssembly;
+            }
+            finally
+            {
+                tempStream?.Dispose();
             }
         }
 

@@ -7,5 +7,6 @@
         DoesNotHaveMetadata,
         ValidAssembly,
         Deleted,
+        InvalidZipEntry,
     }
 }

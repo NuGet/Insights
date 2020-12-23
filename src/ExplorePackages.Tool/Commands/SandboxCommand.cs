@@ -72,6 +72,7 @@ namespace Knapcode.ExplorePackages.Tool
         {
             // await _catalogScanService.InitializeAsync();
 
+            /*
             try
             {
                 await _findPackageAssembliesDriver.ProcessLeafAsync(new CatalogLeafItem
@@ -137,6 +138,60 @@ namespace Knapcode.ExplorePackages.Tool
             {
                 Console.WriteLine(ex);
             }
+
+            Console.WriteLine();
+
+            try
+            {
+                await _findPackageAssembliesDriver.ProcessLeafAsync(new CatalogLeafItem
+                {
+                    Url = "https://api.nuget.org/v3/catalog0/data/2018.11.25.10.12.42/0x53a.referenceassemblies.paket.0.2.0.json",
+                    Type = CatalogLeafType.PackageDetails,
+                    PackageId = "0x53a.referenceassemblies.paket",
+                    PackageVersion = "0.2.0",
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            */
+
+            Console.WriteLine();
+
+            try
+            {
+                await _findPackageAssembliesDriver.ProcessLeafAsync(new CatalogLeafItem
+                {
+                    Url = "https://api.nuget.org/v3/catalog0/data/2018.11.30.21.10.14/groupdocs-annotation-dotnet.3.2.0.json",
+                    Type = CatalogLeafType.PackageDetails,
+                    PackageId = "groupdocs-annotation-dotnet",
+                    PackageVersion = "3.2.0",
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+
+            Console.WriteLine();
+
+            try
+            {
+                await _findPackageAssembliesDriver.ProcessLeafAsync(new CatalogLeafItem
+                {
+                    Url = "https://api.nuget.org/v3/catalog0/data/2018.12.14.10.06.47/microsoft.dotnet.interop.1.0.0-prerelease-0002.json",
+                    Type = CatalogLeafType.PackageDetails,
+                    PackageId = "microsoft.dotnet.interop",
+                    PackageVersion = "1.0.0-prerelease-0002",
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+
+            Console.WriteLine();
 
             /*
             await _messageEnqueuer.EnqueueAsync(Enumerable
