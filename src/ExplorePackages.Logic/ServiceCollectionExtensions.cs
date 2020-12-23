@@ -118,6 +118,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<IBlobStorageService, BlobStorageService>();
             serviceCollection.AddTransient<StorageLeaseService>();
             serviceCollection.AddTransient<AutoRenewingStorageLeaseService>();
+            serviceCollection.AddTransient<StorageSemaphoreLeaseService>();
             serviceCollection.AddTransient<TempStreamService>();
 
             serviceCollection.AddSingleton<IBatchSizeProvider, BatchSizeProvider>();
