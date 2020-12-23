@@ -210,6 +210,40 @@ namespace Knapcode.ExplorePackages.Tool
 
             Console.WriteLine();
 
+            try
+            {
+                await _findPackageAssembliesDriver.ProcessLeafAsync(new CatalogLeafItem
+                {
+                    Url = "https://api.nuget.org/v3/catalog0/data/2019.09.27.13.17.20/cntk.deps.cudnn.2.8.0-rc0.dev20190927.json",
+                    Type = CatalogLeafType.PackageDetails,
+                    PackageId = "cntk.deps.cudnn",
+                    PackageVersion = "2.8.0-rc0.dev20190927",
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+
+            Console.WriteLine();
+
+            try
+            {
+                await _findPackageAssembliesDriver.ProcessLeafAsync(new CatalogLeafItem
+                {
+                    Url = "https://api.nuget.org/v3/catalog0/data/2020.01.31.00.01.15/libmorda.0.5.102.json",
+                    Type = CatalogLeafType.PackageDetails,
+                    PackageId = "libmorda",
+                    PackageVersion = "0.5.102",
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+
+            Console.WriteLine();
+
             /*
             await _messageEnqueuer.EnqueueAsync(Enumerable
                 .Range(0, 1000)
