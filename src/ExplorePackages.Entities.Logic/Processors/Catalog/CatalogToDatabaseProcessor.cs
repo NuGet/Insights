@@ -47,7 +47,7 @@ namespace Knapcode.ExplorePackages.Entities
                         visiblityState = await DetermineVisibilityStateAsync(x);
                     }
 
-                    return KeyValuePairFactory.Create(x, visiblityState);
+                    return KeyValuePair.Create(x, visiblityState);
                 },
                 workerCount: _options.Value.WorkerCount,
                 token: CancellationToken.None))

@@ -162,19 +162,19 @@ namespace Knapcode.ExplorePackages.Entities
                 if (dependency.MinimumDependencyPackageKey != keys.MinimumDependencyPackageKey
                     && dependency.BestDependencyPackageKey != keys.BestDependencyPackageKey)
                 {
-                    minimumAndBestUpdates.Add(KeyValuePairFactory.Create(
+                    minimumAndBestUpdates.Add(KeyValuePair.Create(
                         dependency.PackageDependencyKey,
                         keys));
                 }
                 else if (dependency.MinimumDependencyPackageKey != keys.MinimumDependencyPackageKey)
                 {
-                    minimumUpdates.Add(KeyValuePairFactory.Create(
+                    minimumUpdates.Add(KeyValuePair.Create(
                         dependency.PackageDependencyKey,
                         keys.MinimumDependencyPackageKey));
                 }
                 else if (dependency.BestDependencyPackageKey != keys.BestDependencyPackageKey)
                 {
-                    bestUpdates.Add(KeyValuePairFactory.Create(
+                    bestUpdates.Add(KeyValuePair.Create(
                         dependency.PackageDependencyKey,
                         keys.BestDependencyPackageKey));
                 }

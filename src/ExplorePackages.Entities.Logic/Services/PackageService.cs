@@ -522,7 +522,7 @@ namespace Knapcode.ExplorePackages.Entities
             var identityToPackageKey = await AddOrUpdatePackagesAsync(identityToPackageDownloads.Keys);
 
             var packageKeyDownloadPairs = identityToPackageDownloads
-                .Select(x => KeyValuePairFactory.Create(identityToPackageKey[x.Key.Value], x.Value.Downloads))
+                .Select(x => KeyValuePair.Create(identityToPackageKey[x.Key.Value], x.Value.Downloads))
                 .OrderBy(x => x.Key)
                 .ToList();
 
