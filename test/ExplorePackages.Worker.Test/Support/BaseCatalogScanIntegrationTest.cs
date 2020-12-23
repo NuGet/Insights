@@ -51,7 +51,7 @@ namespace Knapcode.ExplorePackages.Worker
                 .ConfigureWebJobs(startup.Configure)
                 .ConfigureServices(serviceCollection =>
                 {
-                    serviceCollection.AddSingleton<IExplorePackagesHttpMessageHandlerFactory>(HttpMessageHandlerFactory);
+                    serviceCollection.AddSingleton((IExplorePackagesHttpMessageHandlerFactory)HttpMessageHandlerFactory);
 
                     serviceCollection.AddTransient<WorkerQueueFunction>();
 
@@ -63,43 +63,46 @@ namespace Knapcode.ExplorePackages.Worker
                         o.AddProvider(new XunitLoggerProvider(output));
                     });
 
-                    serviceCollection.Configure<ExplorePackagesSettings>(x =>
-                    {
-                        if (ConfigureSettings != null)
-                        {
-                            ConfigureSettings(x);
-                        }
-                    });
-
-                    serviceCollection.Configure<ExplorePackagesWorkerSettings>(x =>
-                    {
-                        x.AppendResultStorageBucketCount = 3;
-                        x.AppendResultUniqueIds = false;
-
-                        x.WorkerQueueName = $"{StoragePrefix}1wq1";
-                        x.CursorTableName = $"{StoragePrefix}1c1";
-                        x.CatalogIndexScanTableName = $"{StoragePrefix}1cis1";
-                        x.CatalogPageScanTableName = $"{StoragePrefix}1cps1";
-                        x.CatalogLeafScanTableName = $"{StoragePrefix}1cls1";
-                        x.TaskStateTableName = $"{StoragePrefix}1ts1";
-                        x.CatalogLeafToCsvTableName = $"{StoragePrefix}1cltc1";
-                        x.LatestLeavesTableName = $"{StoragePrefix}1ll1";
-                        x.FindPackageAssetsContainerName = $"{StoragePrefix}1fpa1";
-                        x.FindPackageAssembliesContainerName = $"{StoragePrefix}1fpi1";
-                        x.RunRealRestoreContainerName = $"{StoragePrefix}1rrr1";
-
-                        if (ConfigureSettings != null)
-                        {
-                            ConfigureSettings(x);
-                        }
-
-                        if (ConfigureWorkerSettings != null)
-                        {
-                            ConfigureWorkerSettings(x);
-                        }
-                    });
+                    serviceCollection.Configure((Action<ExplorePackagesSettings>)(ConfigureDefaultsAndSettings));
+                    serviceCollection.Configure((Action<ExplorePackagesWorkerSettings>)(ConfigureDefaultsAndSettings));
                 })
                 .Build();
+        }
+
+        private void ConfigureDefaultsAndSettings(ExplorePackagesSettings x)
+        {
+            x.StorageContainerName = $"{StoragePrefix}1p1";
+            x.LeaseContainerName = $"{StoragePrefix}1l1";
+
+            if (ConfigureSettings != null)
+            {
+                ConfigureSettings(x);
+            }
+        }
+
+        private void ConfigureDefaultsAndSettings(ExplorePackagesWorkerSettings x)
+        {
+            x.AppendResultStorageBucketCount = 3;
+            x.AppendResultUniqueIds = false;
+
+            x.WorkerQueueName = $"{StoragePrefix}1wq1";
+            x.CursorTableName = $"{StoragePrefix}1c1";
+            x.CatalogIndexScanTableName = $"{StoragePrefix}1cis1";
+            x.CatalogPageScanTableName = $"{StoragePrefix}1cps1";
+            x.CatalogLeafScanTableName = $"{StoragePrefix}1cls1";
+            x.TaskStateTableName = $"{StoragePrefix}1ts1";
+            x.CatalogLeafToCsvTableName = $"{StoragePrefix}1cltc1";
+            x.LatestLeavesTableName = $"{StoragePrefix}1ll1";
+            x.FindPackageAssetsContainerName = $"{StoragePrefix}1fpa1";
+            x.FindPackageAssembliesContainerName = $"{StoragePrefix}1fpi1";
+            x.RunRealRestoreContainerName = $"{StoragePrefix}1rrr1";
+
+            ConfigureDefaultsAndSettings((ExplorePackagesSettings)x);
+
+            if (ConfigureWorkerSettings != null)
+            {
+                ConfigureWorkerSettings(x);
+            }
         }
 
         public string StoragePrefix { get; }
@@ -142,13 +145,13 @@ namespace Knapcode.ExplorePackages.Worker
             while (indexScan.ParsedState != CatalogScanState.Complete);
         }
 
-        protected async Task VerifyExpectedContainers()
+        protected async Task VerifyExpectedContainersAsync()
         {
             var account = ServiceClientFactory.GetStorageAccount();
 
             var containers = await account.CreateCloudBlobClient().ListContainersAsync(StoragePrefix);
             Assert.Equal(
-                new[] { DestinationContainerName },
+                new[] { Options.Value.LeaseContainerName, DestinationContainerName }.OrderBy(x => x).ToArray(),
                 containers.Select(x => x.Name).ToArray());
 
             var queues = await account.CreateCloudQueueClient().ListQueuesAsync(StoragePrefix);

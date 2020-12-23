@@ -57,7 +57,7 @@ namespace Knapcode.ExplorePackages.Worker
             await AssertOutputAsync(FindPackageAssetsDir, Step1, 1); // This file is unchanged.
             await AssertOutputAsync(FindPackageAssetsDir, Step2, 2);
 
-            await VerifyExpectedContainers();
+            await VerifyExpectedContainersAsync();
         }
 
         [Fact]
@@ -104,7 +104,7 @@ namespace Knapcode.ExplorePackages.Worker
             await AssertOutputAsync(FindPackageAssets_WithDeleteDir, Step1, 1); // This file is unchanged.
             await AssertOutputAsync(FindPackageAssets_WithDeleteDir, Step2, 2);
 
-            await VerifyExpectedContainers();
+            await VerifyExpectedContainersAsync();
         }
 
         private async Task UpdateFindPackageAssetsAsync(DateTimeOffset max)
