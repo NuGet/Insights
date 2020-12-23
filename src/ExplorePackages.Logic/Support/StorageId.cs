@@ -1,4 +1,4 @@
-﻿namespace Knapcode.ExplorePackages.Worker
+﻿namespace Knapcode.ExplorePackages
 {
     public class StorageId
     {

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage.Table;
-using static Knapcode.ExplorePackages.Worker.StorageUtility;
+using static Knapcode.ExplorePackages.StorageUtility;
 
 namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
 {

@@ -14,6 +14,7 @@ namespace Knapcode.ExplorePackages
         private const int MB = 1024 * 1024;
         private const int BufferSize = 80 * 1024;
         private const string Memory = "memory";
+        private static readonly ReadOnlyMemory<byte> OneByte = new ReadOnlyMemory<byte>(new[] { (byte)0 });
 
         private readonly int _maxInMemorySize;
         private readonly List<string> _tempDirs;
@@ -126,7 +127,7 @@ namespace Knapcode.ExplorePackages
                         _logger.LogWarning(ex, "Could not determine available free space in temp dir {TempDir}.", tempDir);
                     }
 
-                    var tmpPath = Path.Combine(tempDir, Guid.NewGuid().ToString("N"));
+                    var tmpPath = Path.Combine(tempDir, StorageUtility.GenerateDescendingId().ToString());
                     FileStream destFileStream = null;
                     try
                     {
@@ -137,7 +138,15 @@ namespace Knapcode.ExplorePackages
                             FileShare.None,
                             BufferSize,
                             FileOptions.Asynchronous | FileOptions.DeleteOnClose);
+                        
                         destFileStream = (FileStream)dest;
+
+                        // Pre-allocate the full file size, to encounter full disk exceptions prior to reading the source stream.
+                        destFileStream.SetLength(length);
+                        destFileStream.Position = length - 1;
+                        await destFileStream.WriteAsync(OneByte);
+                        destFileStream.Position = 0;
+
                         consumedSource = true;
                         return await CopyAndSeekAsync(src, dest, tmpPath);
                     }
@@ -203,7 +212,11 @@ namespace Knapcode.ExplorePackages
         private async Task<TempStreamResult> CopyAndSeekAsync(Stream src, Stream dest, string location)
         {
             var sw = Stopwatch.StartNew();
-            await src.CopyToAsync(dest);
+            var copiedBytes = await CopyToAndCountAsync(src, dest);
+            if (copiedBytes < dest.Length)
+            {
+                dest.SetLength(copiedBytes);
+            }
             sw.Stop();
             dest.Position = 0;
             _logger.LogInformation(
@@ -213,6 +226,25 @@ namespace Knapcode.ExplorePackages
                 location,
                 sw.Elapsed.TotalMilliseconds);
             return TempStreamResult.NewSuccess(dest);
+        }
+
+        private static async Task<long> CopyToAndCountAsync(Stream src, Stream dest)
+        {
+            var buffer = new byte[BufferSize];
+            long count = 0;
+            while (true)
+            {
+                int num;
+                int bytesRead = (num = await src.ReadAsync(buffer, 0, buffer.Length));
+                if (num == 0)
+                {
+                    break;
+                }
+                await dest.WriteAsync(buffer, 0, bytesRead);
+                count += bytesRead;
+            }
+
+            return count;
         }
     }
 }
