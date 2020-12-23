@@ -12,7 +12,6 @@ using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Shared.Protocol;
 using Microsoft.WindowsAzure.Storage.Table;
 using Microsoft.WindowsAzure.Storage.Table.Protocol;
-using Newtonsoft.Json;
 
 namespace Knapcode.ExplorePackages.Worker
 {
@@ -124,7 +123,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        private async Task AppendToTableAsync<T>(string tableName, int bucketCount, string bucketKey, IReadOnlyList<T> records)
+        private async Task AppendToTableAsync<T>(string tableName, int bucketCount, string bucketKey, IReadOnlyList<T> records) where T : ICsvRecord
         {
             var bucket = GetBucket(bucketCount, bucketKey);
             var table = GetTable(tableName);
@@ -137,7 +136,7 @@ namespace Knapcode.ExplorePackages.Worker
             await table.ExecuteAsync(TableOperation.InsertOrReplace(markerEntity));
         }
 
-        private static async Task AppendToTableAsync<T>(int bucket, ICloudTable table, IReadOnlyList<T> records)
+        private static async Task AppendToTableAsync<T>(int bucket, ICloudTable table, IReadOnlyList<T> records) where T : ICsvRecord
         {
             AppendResultEntity dataEntity = SerializeToTableEntity(records, bucket);
 
@@ -189,11 +188,14 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        private static AppendResultEntity SerializeToTableEntity<T>(IReadOnlyList<T> records, int bucket)
+        private static AppendResultEntity SerializeToTableEntity<T>(IReadOnlyList<T> records, int bucket) where T : ICsvRecord
         {
+            using var stringWriter = new StringWriter();
+            SerializeRecords(records, stringWriter);
+
             return new AppendResultEntity(bucket, StorageUtility.GenerateDescendingId().ToString())
             {
-                Data = JsonConvert.SerializeObject(records),
+                Data = stringWriter.ToString(),
             };
         }
 
@@ -282,7 +284,8 @@ namespace Knapcode.ExplorePackages.Worker
                 {
                     foreach (var entity in entities)
                     {
-                        appendRecords.AddRange(JsonConvert.DeserializeObject<List<T>>(entity.Data));
+                        using var stringReader = new StringReader(entity.Data);
+                        appendRecords.AddRange(csvReader.GetRecords<T>(stringReader));
                     }
                 }
                 else if (!force)
@@ -332,7 +335,8 @@ namespace Knapcode.ExplorePackages.Worker
             {
                 await blob.DownloadToStreamAsync(memoryStream);
                 memoryStream.Position = 0;
-                return csvReader.GetRecords<T>(memoryStream);
+                using var reader = new StreamReader(memoryStream);
+                return csvReader.GetRecords<T>(reader);
             }
         }
 
@@ -383,13 +387,18 @@ namespace Knapcode.ExplorePackages.Worker
             var memoryStream = new MemoryStream();
             using (var streamWriter = new StreamWriter(memoryStream, new UTF8Encoding(false), bufferSize: 1024, leaveOpen: true))
             {
-                foreach (var record in records)
-                {
-                    record.Write(streamWriter);
-                }
+                SerializeRecords(records, streamWriter);
             }
 
             return memoryStream;
+        }
+
+        private static void SerializeRecords<T>(IReadOnlyList<T> records, TextWriter streamWriter) where T : ICsvRecord
+        {
+            foreach (var record in records)
+            {
+                record.Write(streamWriter);
+            }
         }
 
         private static int GetBucket(int bucketCount, string bucketKey)

@@ -189,7 +189,6 @@ namespace {0}
                         case "System.Guid?":
                         case "System.TimeSpan":
                         case "System.TimeSpan?":
-                        case "System.Version":
                             writerBuilder.AppendFormat("writer.Write({0});", propName);
                             if (propType.EndsWith("?"))
                             {
@@ -199,6 +198,10 @@ namespace {0}
                             {
                                 readerBuilder.AppendFormat("{0} = {1}.Parse(getNextField());", propName, nonNullPropType);
                             }
+                            break;
+                        case "System.Version":
+                            writerBuilder.AppendFormat("writer.Write({0});", propName);
+                            readerBuilder.AppendFormat("{0} = CsvUtility.ParseReference(getNextField(), {1}.Parse);", propName, nonNullPropType);
                             break;
                         case "string":
                             writerBuilder.AppendFormat("CsvUtility.WriteWithQuotes(writer, {0});", propName);

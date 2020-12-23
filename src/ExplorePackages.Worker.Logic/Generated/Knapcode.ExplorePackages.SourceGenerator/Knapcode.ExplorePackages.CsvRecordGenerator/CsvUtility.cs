@@ -27,6 +27,11 @@ namespace Knapcode.ExplorePackages
             }
         }
 
+        public static T ParseReference<T>(string input, Func<string, T> parse) where T : class
+        {
+            return input.Length > 0 ? parse(input) : null;
+        }
+
         public static T? ParseNullable<T>(string input, Func<string, T> parse) where T : struct
         {
             return input.Length > 0 ? parse(input) : new T?();

@@ -60,7 +60,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             ResultType = Enum.Parse<PackageAssemblyResultType>(getNextField());
             Path = getNextField();
             Name = getNextField();
-            AssemblyVersion = System.Version.Parse(getNextField());
+            AssemblyVersion = CsvUtility.ParseReference(getNextField(), System.Version.Parse);
             Culture = getNextField();
             AssemblyNameHasCultureNotFoundException = CsvUtility.ParseNullable(getNextField(), bool.Parse);
             AssemblyNameHasFileLoadException = CsvUtility.ParseNullable(getNextField(), bool.Parse);
