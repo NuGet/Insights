@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -119,6 +120,7 @@ namespace {0}
                 }
 
                 sortedProperties.Reverse();
+                var propertyNames = sortedProperties.Select(x => x.Name).ToImmutableHashSet();
 
                 foreach (var propertySymbol in sortedProperties)
                 {
@@ -141,7 +143,7 @@ namespace {0}
 
                     // Clean up the type name by removing unnecessary namespaces.
                     const string systemPrefix = "System.";
-                    if (nonNullPropType.StartsWith(systemPrefix))
+                    if (nonNullPropType.StartsWith(systemPrefix) && nonNullPropType.IndexOf('.', systemPrefix.Length) < 0)
                     {
                         nonNullPropType = nonNullPropType.Substring(systemPrefix.Length);
                     }
@@ -149,6 +151,12 @@ namespace {0}
                     if (nonNullPropType.StartsWith(classNamespacePrefix))
                     {
                         nonNullPropType = nonNullPropType.Substring(classNamespacePrefix.Length);
+                    }
+
+                    // To avoid property name collisions, only use the pretty version if it doesn't match a property name.
+                    if (propertyNames.Contains(nonNullPropType))
+                    {
+                        nonNullPropType = propType.TrimEnd();
                     }
 
                     writerBuilder.Append(' ', indent);
@@ -175,6 +183,7 @@ namespace {0}
                         case "System.Guid?":
                         case "System.TimeSpan":
                         case "System.TimeSpan?":
+                        case "System.Version":
                             writerBuilder.AppendFormat("writer.Write({0});", propName);
                             if (propType.EndsWith("?"))
                             {

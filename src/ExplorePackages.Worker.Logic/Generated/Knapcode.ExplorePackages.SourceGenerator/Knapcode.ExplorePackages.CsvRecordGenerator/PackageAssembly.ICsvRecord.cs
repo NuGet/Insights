@@ -27,11 +27,13 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, Name);
             writer.Write(',');
-            CsvUtility.WriteWithQuotes(writer, AssemblyVersion);
+            writer.Write(AssemblyVersion);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, Culture);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, PublicKeyToken);
+            writer.Write(',');
+            writer.Write(HashAlgorithm);
             writer.WriteLine();
         }
 
@@ -46,9 +48,10 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             ResultType = Enum.Parse<PackageAssemblyResultType>(getNextField());
             Path = getNextField();
             Name = getNextField();
-            AssemblyVersion = getNextField();
+            AssemblyVersion = System.Version.Parse(getNextField());
             Culture = getNextField();
             PublicKeyToken = getNextField();
+            HashAlgorithm = Enum.Parse<System.Reflection.AssemblyHashAlgorithm>(getNextField());
         }
     }
 }

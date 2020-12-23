@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.IO.Compression;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
+using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -119,20 +121,25 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
 
                 var metadataReader = peReader.GetMetadataReader();
                 var assemblyDefinition = metadataReader.GetAssemblyDefinition();
-                var name = assemblyDefinition.GetAssemblyName();
-                assembly.Name = name.Name;
-                assembly.AssemblyVersion = name.Version.ToString();
-                assembly.Culture = name.CultureName;
-                var publicKeyToken = name.GetPublicKeyToken();
-                if (publicKeyToken != null)
-                {
-                    assembly.PublicKeyToken = BitConverter.ToString(publicKeyToken).Replace("-", string.Empty).ToLowerInvariant();
-                }
+
+                assembly.Name = metadataReader.GetString(assemblyDefinition.Name);
+                assembly.AssemblyVersion = assemblyDefinition.Version;
+                assembly.Culture = metadataReader.GetString(assemblyDefinition.Culture);
+                assembly.HashAlgorithm = assemblyDefinition.HashAlgorithm;
+                assembly.PublicKeyToken = GetPublicKeyToken(assemblyDefinition);
             }
             catch (BadImageFormatException)
             {
                 assembly.ResultType = PackageAssemblyResultType.NotManagedAssembly;
             }
+        }
+
+        private static string GetPublicKeyToken(AssemblyDefinition assemblyDefinition)
+        {
+            var assemblyName = assemblyDefinition.GetAssemblyName();
+            var publicKeyTokenBytes = assemblyName.GetPublicKeyToken();
+            var publicKeyToken = BitConverter.ToString(publicKeyTokenBytes).Replace("-", string.Empty).ToLowerInvariant();
+            return publicKeyToken;
         }
 
         private static string GetExtension(string path)

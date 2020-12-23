@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 
 namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
 {
@@ -24,8 +25,9 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
 
         public string Path { get; set; }
         public string Name { get; set; }
-        public string AssemblyVersion { get; set; }
+        public Version AssemblyVersion { get; set; }
         public string Culture { get; set; }
         public string PublicKeyToken { get; set; }
+        public AssemblyHashAlgorithm HashAlgorithm { get; set; }
     }
 }
