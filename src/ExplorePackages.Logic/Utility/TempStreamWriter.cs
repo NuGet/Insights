@@ -140,9 +140,7 @@ namespace Knapcode.ExplorePackages
                     }
                     catch (IOException ex)
                     {
-                        // Close the file handle first, to avoid any flushes when disposing the stream.
-                        destFileStream?.SafeFileHandle?.Dispose();
-                        dest?.Dispose();
+                        SafeDispose(dest);
                         _tempDirIndex++;
                         _logger.LogWarning(ex, "Could not buffer a {TypeName} stream with length {LengthBytes} bytes to temp file {TempFile}.", src.GetType().FullName, length, tmpPath);
                     }
@@ -154,8 +152,46 @@ namespace Knapcode.ExplorePackages
             }
             catch
             {
-                dest?.Dispose();
+                SafeDispose(dest);
                 throw;
+            }
+        }
+
+        private static void SafeDispose(Stream dest)
+        {
+            var isFileStream = false;
+            if (dest is FileStream fileStream)
+            {
+                isFileStream = true;
+
+                try
+                {
+                    fileStream.SetLength(0);
+                }
+                catch
+                {
+                    // Best effort.
+                }
+
+                try
+                {
+                    fileStream.SafeFileHandle?.Close();
+                }
+                catch
+                {
+                    // Best effort.
+                }
+            }
+
+            try
+            {
+                dest?.Dispose();
+            }
+            catch (IOException) when (isFileStream)
+            {
+                // Dispose of a FileStream can fail with an IOException because it can flush some remaining bytes to
+                // disk, which in turn causes an "out of disk space" IOException. We ignore this exception in order to
+                // try another disk location.
             }
         }
 
