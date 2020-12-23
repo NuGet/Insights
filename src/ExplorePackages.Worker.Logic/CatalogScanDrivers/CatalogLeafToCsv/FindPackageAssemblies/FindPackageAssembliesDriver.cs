@@ -119,23 +119,24 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 {
                     tempStream = await _tempStreamService.CopyToTempStreamAsync(() => entry.Open(), entry.Length);
                 }
-                catch (InvalidDataException)
+                catch (InvalidDataException ex)
                 {
                     assembly.ResultType = PackageAssemblyResultType.InvalidZipEntry;
+                    _logger.LogWarning(ex, "Package {Id} {Version} has an invalid ZIP entry: {Path}", assembly.Id, assembly.Version, assembly.Path);
                     return;
                 }
 
                 using var peReader = new PEReader(tempStream);
                 if (!peReader.HasMetadata)
                 {
-                    assembly.ResultType = PackageAssemblyResultType.DoesNotHaveMetadata;
+                    assembly.ResultType = PackageAssemblyResultType.NoManagedMetadata;
                     return;
                 }
 
                 var metadataReader = peReader.GetMetadataReader();
                 if (!metadataReader.IsAssembly)
                 {
-                    assembly.ResultType = PackageAssemblyResultType.NotManagedAssembly;
+                    assembly.ResultType = PackageAssemblyResultType.DoesNotContainAssembly;
                     return;
                 }
 
@@ -152,9 +153,10 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                     SetPublicKeyTokenInfo(assembly, assemblyName);
                 }
             }
-            catch (BadImageFormatException)
+            catch (BadImageFormatException ex)
             {
                 assembly.ResultType = PackageAssemblyResultType.NotManagedAssembly;
+                _logger.LogWarning(ex, "Package {Id} {Version} has an unmanaged assembly: {Path}", assembly.Id, assembly.Version, assembly.Path);
             }
             finally
             {
@@ -162,7 +164,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             }
         }
 
-        private static AssemblyName GetAssemblyName(PackageAssembly assembly, AssemblyDefinition assemblyDefinition)
+        private AssemblyName GetAssemblyName(PackageAssembly assembly, AssemblyDefinition assemblyDefinition)
         {
             AssemblyName assemblyName = null;
             try
@@ -171,13 +173,15 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 assembly.AssemblyNameHasCultureNotFoundException = false;
                 assembly.AssemblyNameHasFileLoadException = false;
             }
-            catch (CultureNotFoundException)
+            catch (CultureNotFoundException ex)
             {
                 assembly.AssemblyNameHasCultureNotFoundException = true;
+                _logger.LogWarning(ex, "Package {Id} {Version} has an invalid culture: {Path}", assembly.Id, assembly.Version, assembly.Path);
             }
-            catch (FileLoadException)
+            catch (FileLoadException ex)
             {
                 assembly.AssemblyNameHasFileLoadException = true;
+                _logger.LogWarning(ex, "Package {Id} {Version} has an AssemblyName that can't be loaded: {Path}", assembly.Id, assembly.Version, assembly.Path);
             }
 
             return assemblyName;
@@ -187,6 +191,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
         {
             if (assemblyDefinition.PublicKey.IsNil)
             {
+                assembly.HasPublicKey = false;
                 return;
             }
 
@@ -200,7 +205,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             }
         }
 
-        private static void SetPublicKeyTokenInfo(PackageAssembly assembly, AssemblyName assemblyName)
+        private void SetPublicKeyTokenInfo(PackageAssembly assembly, AssemblyName assemblyName)
         {
             byte[] publicKeyTokenBytes = null;
             try
@@ -208,9 +213,10 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 publicKeyTokenBytes = assemblyName.GetPublicKeyToken();
                 assembly.PublicKeyTokenHasSecurityException = false;
             }
-            catch (SecurityException)
+            catch (SecurityException ex)
             {
                 assembly.PublicKeyTokenHasSecurityException = true;
+                _logger.LogWarning(ex, "Package {Id} {Version} has an invalid public key: {Path}", assembly.Id, assembly.Version, assembly.Path);
             }
 
             if (publicKeyTokenBytes != null)

@@ -3,10 +3,11 @@
     public enum PackageAssemblyResultType
     {
         NoAssemblies,
-        NotManagedAssembly,
-        DoesNotHaveMetadata,
-        ValidAssembly,
         Deleted,
+        ValidAssembly,
+        NotManagedAssembly,
+        NoManagedMetadata,
+        DoesNotContainAssembly,
         InvalidZipEntry,
     }
 }
