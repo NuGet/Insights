@@ -142,7 +142,7 @@ namespace Knapcode.ExplorePackages
                     var headerMD5Bytes = response.Content.Headers.ContentMD5;
                     if (headerMD5Bytes != null)
                     {
-                        var contentMD5 = BytesToHex(headerMD5Bytes);
+                        var contentMD5 = headerMD5Bytes.ToHex();
                         return Task.FromResult(new BlobMetadata(
                             exists: true,
                             hasContentMD5Header: true,
@@ -177,7 +177,7 @@ namespace Knapcode.ExplorePackages
                         while (read > 0);
 
                         var hash = md5.GetHashAndReset();
-                        var contentMD5 = BytesToHex(hash);
+                        var contentMD5 = hash.ToHex();
                         return new BlobMetadata(
                             exists: true,
                             hasContentMD5Header: false,
@@ -186,14 +186,6 @@ namespace Knapcode.ExplorePackages
                 },
                 nuGetLogger,
                 CancellationToken.None);
-        }
-
-        private static string BytesToHex(byte[] hash)
-        {
-            return BitConverter
-                .ToString(hash)
-                .Replace("-", string.Empty)
-                .ToLowerInvariant();
         }
     }
 }

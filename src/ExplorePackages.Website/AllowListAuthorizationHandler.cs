@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -30,7 +29,7 @@ namespace Knapcode.ExplorePackages.Website
             using (var algorithm = SHA256.Create())
             {
                 var bytes = algorithm.ComputeHash(Encoding.UTF8.GetBytes(salt + input));
-                return BitConverter.ToString(bytes).Replace("-", "").ToLowerInvariant();
+                return bytes.ToHex();
             }
         }
 

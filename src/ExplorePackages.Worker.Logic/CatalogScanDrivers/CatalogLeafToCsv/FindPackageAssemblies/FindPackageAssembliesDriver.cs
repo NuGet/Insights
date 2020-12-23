@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Security;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -126,7 +129,12 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 assembly.AssemblyVersion = assemblyDefinition.Version;
                 assembly.Culture = metadataReader.GetString(assemblyDefinition.Culture);
                 assembly.HashAlgorithm = assemblyDefinition.HashAlgorithm;
-                assembly.PublicKeyToken = GetPublicKeyToken(assemblyDefinition);
+                SetPublicKeyInfo(assembly, metadataReader, assemblyDefinition);
+                var assemblyName = GetAssemblyName(assembly, assemblyDefinition);
+                if (assemblyName != null)
+                {
+                    SetPublicKeyTokenInfo(assembly, assemblyName);
+                }
             }
             catch (BadImageFormatException)
             {
@@ -134,12 +142,59 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             }
         }
 
-        private static string GetPublicKeyToken(AssemblyDefinition assemblyDefinition)
+        private static AssemblyName GetAssemblyName(PackageAssembly assembly, AssemblyDefinition assemblyDefinition)
         {
-            var assemblyName = assemblyDefinition.GetAssemblyName();
-            var publicKeyTokenBytes = assemblyName.GetPublicKeyToken();
-            var publicKeyToken = BitConverter.ToString(publicKeyTokenBytes).Replace("-", string.Empty).ToLowerInvariant();
-            return publicKeyToken;
+            AssemblyName assemblyName = null;
+            try
+            {
+                assemblyName = assemblyDefinition.GetAssemblyName();
+            }
+            catch (CultureNotFoundException)
+            {
+                assembly.AssemblyNameHasCultureNotFoundException = true;
+            }
+            catch (FileLoadException)
+            {
+                assembly.AssemblyNameHasFileLoadException = true;
+            }
+
+            return assemblyName;
+        }
+
+        private static void SetPublicKeyInfo(PackageAssembly assembly, MetadataReader metadataReader, AssemblyDefinition assemblyDefinition)
+        {
+            if (assemblyDefinition.PublicKey.IsNil)
+            {
+                return;
+            }
+
+            assembly.HasPublicKey = true;
+            var publicKey = metadataReader.GetBlobBytes(assemblyDefinition.PublicKey);
+            assembly.PublicKeyLength = publicKey.Length;
+
+            using (var sha256 = SHA256.Create())
+            {
+                assembly.PublicKeyHash = sha256.ComputeHash(publicKey).ToHex();
+            }
+        }
+
+        private static void SetPublicKeyTokenInfo(PackageAssembly assembly, AssemblyName assemblyName)
+        {
+
+            byte[] publicKeyTokenBytes = null;
+            try
+            {
+                publicKeyTokenBytes = assemblyName.GetPublicKeyToken();
+            }
+            catch (SecurityException)
+            {
+                assembly.PublicKeyTokenHasSecurityException = true;
+            }
+
+            if (publicKeyTokenBytes != null)
+            {
+                assembly.PublicKeyToken = publicKeyTokenBytes.ToHex();
+            }
         }
 
         private static string GetExtension(string path)

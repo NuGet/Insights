@@ -31,9 +31,21 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, Culture);
             writer.Write(',');
+            writer.Write(AssemblyNameHasCultureNotFoundException);
+            writer.Write(',');
+            writer.Write(AssemblyNameHasFileLoadException);
+            writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, PublicKeyToken);
             writer.Write(',');
+            writer.Write(PublicKeyTokenHasSecurityException);
+            writer.Write(',');
             writer.Write(HashAlgorithm);
+            writer.Write(',');
+            writer.Write(HasPublicKey);
+            writer.Write(',');
+            writer.Write(PublicKeyLength);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, PublicKeyHash);
             writer.WriteLine();
         }
 
@@ -50,8 +62,14 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             Name = getNextField();
             AssemblyVersion = System.Version.Parse(getNextField());
             Culture = getNextField();
+            AssemblyNameHasCultureNotFoundException = bool.Parse(getNextField());
+            AssemblyNameHasFileLoadException = bool.Parse(getNextField());
             PublicKeyToken = getNextField();
+            PublicKeyTokenHasSecurityException = bool.Parse(getNextField());
             HashAlgorithm = Enum.Parse<System.Reflection.AssemblyHashAlgorithm>(getNextField());
+            HasPublicKey = bool.Parse(getNextField());
+            PublicKeyLength = int.Parse(getNextField());
+            PublicKeyHash = getNextField();
         }
     }
 }

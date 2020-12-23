@@ -24,10 +24,21 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
         public PackageAssemblyResultType ResultType { get; set; }
 
         public string Path { get; set; }
+
         public string Name { get; set; }
         public Version AssemblyVersion { get; set; }
         public string Culture { get; set; }
+
+        public bool AssemblyNameHasCultureNotFoundException { get; set; }
+        public bool AssemblyNameHasFileLoadException { get; set; }
+
         public string PublicKeyToken { get; set; }
+        public bool PublicKeyTokenHasSecurityException { get; set; }
+
         public AssemblyHashAlgorithm HashAlgorithm { get; set; }
+
+        public bool HasPublicKey { get; set; }
+        public int PublicKeyLength { get; set; }
+        public string PublicKeyHash { get; set; }
     }
 }
