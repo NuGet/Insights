@@ -1,4 +1,4 @@
-,,Archimedes.Library,1.0.245,2020-11-27T19:35:06.0046046+00:00,2020-11-27T19:33:25.6870000+00:00,ValidAssembly,lib/netstandard2.0/Archimedes.Library.dll,Archimedes.Library,1.0.0.0,,
-,,DNT.Deskly.EFCore.Identity,1.1.0,2020-11-27T19:36:50.4909042+00:00,2020-11-27T19:35:09.9170000+00:00,ValidAssembly,lib/netstandard2.1/DNT.Deskly.EFCore.Identity.dll,DNT.Deskly.EFCore.Identity,1.1.0.0,,
-,,Eto.Serialization.Xaml,2.5.8,2020-11-27T19:34:44.6917011+00:00,2020-11-27T19:32:26.7430000+00:00,ValidAssembly,lib/netstandard1.0/Eto.Serialization.Xaml.dll,Eto.Serialization.Xaml,2.5.0.0,,
-,,Eto.Serialization.Xaml,2.5.8,2020-11-27T19:34:44.6917011+00:00,2020-11-27T19:32:26.7430000+00:00,ValidAssembly,lib/netstandard2.0/Eto.Serialization.Xaml.dll,Eto.Serialization.Xaml,2.5.0.0,,
+,,Archimedes.Library,1.0.245,2020-11-27T19:35:06.0046046+00:00,2020-11-27T19:33:25.6870000+00:00,ValidAssembly,lib/netstandard2.0/Archimedes.Library.dll,Archimedes.Library,1.0.0.0,,false,false,,false,Sha1,false,,
+,,DNT.Deskly.EFCore.Identity,1.1.0,2020-11-27T19:36:50.4909042+00:00,2020-11-27T19:35:09.9170000+00:00,ValidAssembly,lib/netstandard2.1/DNT.Deskly.EFCore.Identity.dll,DNT.Deskly.EFCore.Identity,1.1.0.0,,false,false,,false,Sha1,false,,
+,,Eto.Serialization.Xaml,2.5.8,2020-11-27T19:34:44.6917011+00:00,2020-11-27T19:32:26.7430000+00:00,ValidAssembly,lib/netstandard1.0/Eto.Serialization.Xaml.dll,Eto.Serialization.Xaml,2.5.0.0,,false,false,,false,Sha1,false,,
+,,Eto.Serialization.Xaml,2.5.8,2020-11-27T19:34:44.6917011+00:00,2020-11-27T19:32:26.7430000+00:00,ValidAssembly,lib/netstandard2.0/Eto.Serialization.Xaml.dll,Eto.Serialization.Xaml,2.5.0.0,,false,false,,false,Sha1,false,,

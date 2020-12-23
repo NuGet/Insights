@@ -27,9 +27,9 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
             writer.Write(',');
             writer.Write(LibraryCount);
             writer.Write(',');
-            writer.Write(RestoreSucceeded);
+            writer.Write(CsvUtility.FormatBool(RestoreSucceeded));
             writer.Write(',');
-            writer.Write(BuildSucceeded);
+            writer.Write(CsvUtility.FormatBool(BuildSucceeded));
             writer.Write(',');
             writer.Write(DependencyCount);
             writer.Write(',');
@@ -61,13 +61,13 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, RestoreLogMessageCodes);
             writer.Write(',');
-            writer.Write(OnlyNU1202);
+            writer.Write(CsvUtility.FormatBool(OnlyNU1202));
             writer.Write(',');
-            writer.Write(OnlyNU1213);
+            writer.Write(CsvUtility.FormatBool(OnlyNU1213));
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, BuildErrorCodes);
             writer.Write(',');
-            writer.Write(OnlyMSB3644);
+            writer.Write(CsvUtility.FormatBool(OnlyMSB3644));
             writer.WriteLine();
         }
 

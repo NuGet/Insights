@@ -1,4 +1,4 @@
-,,AmazonKS3,1.5.0,2020-12-20T02:39:20.5757299+00:00,2020-12-20T02:37:10.2100000+00:00,ValidAssembly,lib/netstandard2.1/AmazonKS3.dll,AmazonKS3,1.5.0.0,,
-,,LunaBot.Commands.Public,1.2.0,2020-12-20T03:01:57.2082154+00:00,2020-12-20T03:00:07.1470000+00:00,ValidAssembly,lib/netstandard2.0/Luna.Commands.Public.dll,Luna.Commands.Public,1.2.0.0,,
-,,Nut.MediatR.Behaviors,0.0.0-preview.0.44,2020-12-20T02:37:52.9649363+00:00,2020-12-20T02:35:17.0800000+00:00,ValidAssembly,lib/netstandard2.1/ja/Nut.MediatR.Behaviors.resources.dll,Nut.MediatR.Behaviors.resources,0.0.0.0,ja,
-,,Nut.MediatR.Behaviors,0.0.0-preview.0.44,2020-12-20T02:37:52.9649363+00:00,2020-12-20T02:35:17.0800000+00:00,ValidAssembly,lib/netstandard2.1/Nut.MediatR.Behaviors.dll,Nut.MediatR.Behaviors,0.0.0.0,,
+,,AmazonKS3,1.5.0,2020-12-20T02:39:20.5757299+00:00,2020-12-20T02:37:10.2100000+00:00,ValidAssembly,lib/netstandard2.1/AmazonKS3.dll,AmazonKS3,1.5.0.0,,false,false,,false,Sha1,false,,
+,,LunaBot.Commands.Public,1.2.0,2020-12-20T03:01:57.2082154+00:00,2020-12-20T03:00:07.1470000+00:00,ValidAssembly,lib/netstandard2.0/Luna.Commands.Public.dll,Luna.Commands.Public,1.2.0.0,,false,false,,false,Sha1,false,,
+,,Nut.MediatR.Behaviors,0.0.0-preview.0.44,2020-12-20T02:37:52.9649363+00:00,2020-12-20T02:35:17.0800000+00:00,ValidAssembly,lib/netstandard2.1/ja/Nut.MediatR.Behaviors.resources.dll,Nut.MediatR.Behaviors.resources,0.0.0.0,ja,false,false,,false,Sha1,false,,
+,,Nut.MediatR.Behaviors,0.0.0-preview.0.44,2020-12-20T02:37:52.9649363+00:00,2020-12-20T02:35:17.0800000+00:00,ValidAssembly,lib/netstandard2.1/Nut.MediatR.Behaviors.dll,Nut.MediatR.Behaviors,0.0.0.0,,false,false,,false,Sha1,false,,

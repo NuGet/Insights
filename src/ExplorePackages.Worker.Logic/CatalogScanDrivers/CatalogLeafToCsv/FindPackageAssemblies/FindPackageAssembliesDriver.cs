@@ -128,7 +128,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 assembly.Name = metadataReader.GetString(assemblyDefinition.Name);
                 assembly.AssemblyVersion = assemblyDefinition.Version;
                 assembly.Culture = metadataReader.GetString(assemblyDefinition.Culture);
-                assembly.HashAlgorithm = assemblyDefinition.HashAlgorithm;
+                assembly.HashAlgorithm = assemblyDefinition.HashAlgorithm.ToString();
                 SetPublicKeyInfo(assembly, metadataReader, assemblyDefinition);
                 var assemblyName = GetAssemblyName(assembly, assemblyDefinition);
                 if (assemblyName != null)
@@ -148,6 +148,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             try
             {
                 assemblyName = assemblyDefinition.GetAssemblyName();
+                assembly.AssemblyNameHasCultureNotFoundException = false;
+                assembly.AssemblyNameHasFileLoadException = false;
             }
             catch (CultureNotFoundException)
             {
@@ -180,11 +182,11 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
 
         private static void SetPublicKeyTokenInfo(PackageAssembly assembly, AssemblyName assemblyName)
         {
-
             byte[] publicKeyTokenBytes = null;
             try
             {
                 publicKeyTokenBytes = assemblyName.GetPublicKeyToken();
+                assembly.PublicKeyTokenHasSecurityException = false;
             }
             catch (SecurityException)
             {

@@ -29,16 +29,16 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
         public Version AssemblyVersion { get; set; }
         public string Culture { get; set; }
 
-        public bool AssemblyNameHasCultureNotFoundException { get; set; }
-        public bool AssemblyNameHasFileLoadException { get; set; }
+        public bool? AssemblyNameHasCultureNotFoundException { get; set; }
+        public bool? AssemblyNameHasFileLoadException { get; set; }
 
         public string PublicKeyToken { get; set; }
-        public bool PublicKeyTokenHasSecurityException { get; set; }
+        public bool? PublicKeyTokenHasSecurityException { get; set; }
 
-        public AssemblyHashAlgorithm HashAlgorithm { get; set; }
+        public string HashAlgorithm { get; set; }
 
         public bool HasPublicKey { get; set; }
-        public int PublicKeyLength { get; set; }
+        public int? PublicKeyLength { get; set; }
         public string PublicKeyHash { get; set; }
     }
 }

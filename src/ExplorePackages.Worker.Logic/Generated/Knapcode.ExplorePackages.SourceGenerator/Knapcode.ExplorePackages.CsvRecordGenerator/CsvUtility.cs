@@ -32,6 +32,21 @@ namespace Knapcode.ExplorePackages
             return input.Length > 0 ? parse(input) : new T?();
         }
 
+        public static string FormatBool(bool input)
+        {
+            return input ? "true" : "false";
+        }
+
+        public static string FormatBool(bool? input)
+        {
+            if (input.HasValue)
+            {
+                return FormatBool(input.Value);
+            }
+
+            return string.Empty;
+        }
+
         public static string FormatDateTimeOffset(DateTimeOffset input)
         {
             return input.ToString("O", CultureInfo.InvariantCulture);

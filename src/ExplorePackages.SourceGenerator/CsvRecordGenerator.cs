@@ -166,7 +166,13 @@ namespace {0}
                     switch (propType)
                     {
                         case "bool":
+                            writerBuilder.AppendFormat("writer.Write(CsvUtility.FormatBool({0}));", propName);
+                            readerBuilder.AppendFormat("{0} = {1}.Parse(getNextField());", propName, nonNullPropType);
+                            break;
                         case "bool?":
+                            writerBuilder.AppendFormat("writer.Write(CsvUtility.FormatBool({0}));", propName);
+                            readerBuilder.AppendFormat("{0} = CsvUtility.ParseNullable(getNextField(), {1}.Parse);", propName, nonNullPropType);
+                            break;
                         case "short":
                         case "short?":
                         case "ushort":

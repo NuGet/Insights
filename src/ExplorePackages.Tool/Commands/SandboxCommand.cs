@@ -78,8 +78,6 @@ namespace Knapcode.ExplorePackages.Tool
                 {
                     Url = "https://api.nuget.org/v3/catalog0/data/2018.10.11.03.47.42/sharepointpnpcoreonline.2.21.1712.json",
                     Type = CatalogLeafType.PackageDetails,
-                    CommitId = "1665ef2d-87d6-42ef-8fc0-8709bbb1f3f2",
-                    CommitTimestamp = DateTimeOffset.Parse("2018-10-11T03:47:42.189Z"),
                     PackageId = "SharePointPnPCoreOnline",
                     PackageVersion = "2.21.1712",
                 });
@@ -97,8 +95,6 @@ namespace Knapcode.ExplorePackages.Tool
                 {
                     Url = "https://api.nuget.org/v3/catalog0/data/2018.12.18.08.44.52/enyutrynuget.1.0.0.json",
                     Type = CatalogLeafType.PackageDetails,
-                    CommitId = "2e0ef1b6-69d1-4822-abdb-4d45c2d57c1b",
-                    CommitTimestamp = DateTimeOffset.Parse("2018-12-18T08:44:52.180Z"),
                     PackageId = "EnyuTryNuget",
                     PackageVersion = "1.0.0",
                 });
@@ -116,10 +112,25 @@ namespace Knapcode.ExplorePackages.Tool
                 {
                     Url = "https://api.nuget.org/v3/catalog0/data/2018.12.11.04.41.19/getaddress.azuretablestorage.1.0.0.json",
                     Type = CatalogLeafType.PackageDetails,
-                    CommitId = "646bc4bc-4b67-45ba-aceb-76488ed487eb",
-                    CommitTimestamp = DateTimeOffset.Parse("2018-12-11T04:41:19.791Z"),
                     PackageId = "getAddress.AzureTableStorage",
                     PackageVersion = "1.0.0",
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+
+            Console.WriteLine();
+
+            try
+            {
+                await _findPackageAssembliesDriver.ProcessLeafAsync(new CatalogLeafItem
+                {
+                    Url = "https://api.nuget.org/v3/catalog0/data/2018.12.08.14.26.05/httpservermock.0.0.9.json",
+                    Type = CatalogLeafType.PackageDetails,
+                    PackageId = "httpservermock",
+                    PackageVersion = "0.0.9",
                 });
             }
             catch (Exception ex)

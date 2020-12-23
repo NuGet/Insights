@@ -31,17 +31,17 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, Culture);
             writer.Write(',');
-            writer.Write(AssemblyNameHasCultureNotFoundException);
+            writer.Write(CsvUtility.FormatBool(AssemblyNameHasCultureNotFoundException));
             writer.Write(',');
-            writer.Write(AssemblyNameHasFileLoadException);
+            writer.Write(CsvUtility.FormatBool(AssemblyNameHasFileLoadException));
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, PublicKeyToken);
             writer.Write(',');
-            writer.Write(PublicKeyTokenHasSecurityException);
+            writer.Write(CsvUtility.FormatBool(PublicKeyTokenHasSecurityException));
             writer.Write(',');
-            writer.Write(HashAlgorithm);
+            CsvUtility.WriteWithQuotes(writer, HashAlgorithm);
             writer.Write(',');
-            writer.Write(HasPublicKey);
+            writer.Write(CsvUtility.FormatBool(HasPublicKey));
             writer.Write(',');
             writer.Write(PublicKeyLength);
             writer.Write(',');
@@ -62,13 +62,13 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             Name = getNextField();
             AssemblyVersion = System.Version.Parse(getNextField());
             Culture = getNextField();
-            AssemblyNameHasCultureNotFoundException = bool.Parse(getNextField());
-            AssemblyNameHasFileLoadException = bool.Parse(getNextField());
+            AssemblyNameHasCultureNotFoundException = CsvUtility.ParseNullable(getNextField(), bool.Parse);
+            AssemblyNameHasFileLoadException = CsvUtility.ParseNullable(getNextField(), bool.Parse);
             PublicKeyToken = getNextField();
-            PublicKeyTokenHasSecurityException = bool.Parse(getNextField());
-            HashAlgorithm = Enum.Parse<System.Reflection.AssemblyHashAlgorithm>(getNextField());
+            PublicKeyTokenHasSecurityException = CsvUtility.ParseNullable(getNextField(), bool.Parse);
+            HashAlgorithm = getNextField();
             HasPublicKey = bool.Parse(getNextField());
-            PublicKeyLength = int.Parse(getNextField());
+            PublicKeyLength = CsvUtility.ParseNullable(getNextField(), int.Parse);
             PublicKeyHash = getNextField();
         }
     }
