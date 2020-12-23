@@ -74,12 +74,12 @@ namespace Knapcode.ExplorePackages.Website.Controllers
         }
 
         [HttpPost]
-        public async Task<RedirectToActionResult> UpdateCatalogScan(CatalogScanType type, bool shortTest, string max)
+        public async Task<RedirectToActionResult> UpdateCatalogScan(CatalogScanType type, bool? shortTest, string max)
         {
             DateTimeOffset? parsedMax = null;
-            if (shortTest)
+            if (shortTest.HasValue)
             {
-                parsedMax = DateTimeOffset.Parse("2018-09-20T01:46:19.1755275Z");
+                parsedMax = shortTest.Value ? DateTimeOffset.Parse("2018-09-20T01:46:19.1755275Z") : (DateTimeOffset?)null;
             }
             else if (!string.IsNullOrWhiteSpace(max))
             {
