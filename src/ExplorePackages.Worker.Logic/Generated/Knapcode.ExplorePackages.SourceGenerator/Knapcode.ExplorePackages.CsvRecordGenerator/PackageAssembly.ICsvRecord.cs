@@ -63,7 +63,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             Created = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset);
             ResultType = Enum.Parse<PackageAssemblyResultType>(getNextField());
             Path = getNextField();
-            CompressedLength = long.Parse(getNextField());
+            CompressedLength = CsvUtility.ParseNullable(getNextField(), long.Parse);
             UncompressedLength = CsvUtility.ParseNullable(getNextField(), long.Parse);
             Name = getNextField();
             AssemblyVersion = CsvUtility.ParseReference(getNextField(), System.Version.Parse);
@@ -73,7 +73,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             PublicKeyToken = getNextField();
             PublicKeyTokenHasSecurityException = CsvUtility.ParseNullable(getNextField(), bool.Parse);
             HashAlgorithm = getNextField();
-            HasPublicKey = bool.Parse(getNextField());
+            HasPublicKey = CsvUtility.ParseNullable(getNextField(), bool.Parse);
             PublicKeyLength = CsvUtility.ParseNullable(getNextField(), int.Parse);
             PublicKeyHash = getNextField();
         }

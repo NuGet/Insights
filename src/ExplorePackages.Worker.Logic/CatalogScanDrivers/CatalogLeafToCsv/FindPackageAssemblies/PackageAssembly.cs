@@ -23,7 +23,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
         public PackageAssemblyResultType ResultType { get; set; }
 
         public string Path { get; set; }
-        public long CompressedLength { get; set; }
+        public long? CompressedLength { get; set; }
         public long? UncompressedLength { get; set; }
 
         public string Name { get; set; }
@@ -38,7 +38,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
 
         public string HashAlgorithm { get; set; }
 
-        public bool HasPublicKey { get; set; }
+        public bool? HasPublicKey { get; set; }
         public int? PublicKeyLength { get; set; }
         public string PublicKeyHash { get; set; }
     }

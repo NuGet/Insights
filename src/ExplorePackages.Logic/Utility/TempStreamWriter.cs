@@ -18,7 +18,8 @@ namespace Knapcode.ExplorePackages
         private readonly int _maxInMemorySize;
         private readonly List<string> _tempDirs;
         private readonly ILogger _logger;
-        private bool _failedMemory;
+        private bool _attemptedMemory;
+        private bool _skipMemory;
         private int _tempDirIndex;
 
         public TempStreamWriter(int maxInMemorySize, IEnumerable<string> tempDirs, ILogger logger)
@@ -26,7 +27,8 @@ namespace Knapcode.ExplorePackages
             _maxInMemorySize = maxInMemorySize;
             _tempDirs = tempDirs.Select(x => Path.GetFullPath(x)).ToList();
             _logger = logger;
-            _failedMemory = false;
+            _attemptedMemory = false;
+            _skipMemory = false;
             _tempDirIndex = 0;
         }
 
@@ -52,7 +54,7 @@ namespace Knapcode.ExplorePackages
 
             if (length > _maxInMemorySize)
             {
-                _failedMemory = true;
+                _skipMemory = true;
                 _logger.LogInformation("A {TypeName} stream is greater than {MaxInMemorySize} bytes. It will not be buffered to memory.", src.GetType().FullName, _maxInMemorySize);
             }
 
@@ -61,11 +63,12 @@ namespace Knapcode.ExplorePackages
             try
             {
                 // First, try to buffer to memory.
-                if (!_failedMemory)
+                if (!_skipMemory)
                 {
                     var lengthMB = (int)((length / MB) + (length % MB != 0 ? 1 : 0));
                     try
                     {
+                        _attemptedMemory = true;
                         using (var memoryFailPoint = new MemoryFailPoint(lengthMB))
                         {
                             dest = new MemoryStream((int)length);
@@ -75,8 +78,8 @@ namespace Knapcode.ExplorePackages
                     }
                     catch (InsufficientMemoryException ex)
                     {
-                        dest?.Dispose();
-                        _failedMemory = true;
+                        SafeDispose(dest);
+                        _skipMemory = true;
                         _logger.LogWarning(ex, "Could not buffer a {TypeName} stream with length {LengthMB} MB ({LengthBytes} bytes) to memory.", src.GetType().FullName, lengthMB, length);
                         if (consumedSource)
                         {
@@ -148,7 +151,9 @@ namespace Knapcode.ExplorePackages
 
                 throw new InvalidOperationException(
                     "Unable to find a place to copy the stream. Tried:" + Environment.NewLine +
-                    string.Join(Environment.NewLine, new[] { Memory }.Concat(_tempDirs).Select(x => $" - {x}")));
+                    string.Join(Environment.NewLine, Enumerable.Empty<string>()
+                        .Concat(_attemptedMemory ? new[] { Memory } : Array.Empty<string>()) 
+                        .Concat(_tempDirs).Select(x => $" - {x}")));
             }
             catch
             {
