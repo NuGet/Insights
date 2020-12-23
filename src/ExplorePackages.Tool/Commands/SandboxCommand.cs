@@ -155,7 +155,6 @@ namespace Knapcode.ExplorePackages.Tool
             {
                 Console.WriteLine(ex);
             }
-            */
 
             Console.WriteLine();
 
@@ -184,6 +183,24 @@ namespace Knapcode.ExplorePackages.Tool
                     Type = CatalogLeafType.PackageDetails,
                     PackageId = "microsoft.dotnet.interop",
                     PackageVersion = "1.0.0-prerelease-0002",
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+
+            Console.WriteLine();
+            */
+
+            try
+            {
+                await _findPackageAssembliesDriver.ProcessLeafAsync(new CatalogLeafItem
+                {
+                    Url = "https://api.nuget.org/v3/catalog0/data/2020.06.19.11.08.14/aspose.pub.cpp.20.6.0.json",
+                    Type = CatalogLeafType.PackageDetails,
+                    PackageId = "aspose.pub.cpp",
+                    PackageVersion = "20.6.0",
                 });
             }
             catch (Exception ex)

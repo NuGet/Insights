@@ -35,7 +35,7 @@ namespace Knapcode.ExplorePackages
         public TempStreamWriter GetWriter()
         {
             return new TempStreamWriter(
-                _options.Value.BufferTempStreamsToMemory,
+                _options.Value.MaxInMemoryTempStreamSize,
                 _options.Value.TempDirectories,
                 _logger);
         }

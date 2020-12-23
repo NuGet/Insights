@@ -18,7 +18,7 @@ namespace Knapcode.ExplorePackages
             StorageContainerName = "packages";
             LeaseContainerName = "leases";
             IsStorageContainerPublic = false;
-            BufferTempStreamsToMemory = true;
+            MaxInMemoryTempStreamSize = 1024 * 1024 * 256;
             TempDirectories = new List<string>
             {
                 Path.Combine(Path.GetTempPath(), "Knapcode.ExplorePackages"),
@@ -34,7 +34,7 @@ namespace Knapcode.ExplorePackages
         public string StorageContainerName { get; set; }
         public string LeaseContainerName { get; set; }
         public bool IsStorageContainerPublic { get; set; }
-        public bool BufferTempStreamsToMemory { get; set; }
+        public int MaxInMemoryTempStreamSize { get; set; }
         public List<string> TempDirectories { get; set; }
     }
 }

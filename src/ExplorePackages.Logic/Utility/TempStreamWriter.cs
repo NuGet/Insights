@@ -15,16 +15,18 @@ namespace Knapcode.ExplorePackages
         private const int BufferSize = 80 * 1024;
         private const string Memory = "memory";
 
+        private readonly int _maxInMemorySize;
         private readonly List<string> _tempDirs;
         private readonly ILogger _logger;
         private bool _failedMemory;
         private int _tempDirIndex;
 
-        public TempStreamWriter(bool bufferToMemory, IEnumerable<string> tempDirs, ILogger logger)
+        public TempStreamWriter(int maxInMemorySize, IEnumerable<string> tempDirs, ILogger logger)
         {
+            _maxInMemorySize = maxInMemorySize;
             _tempDirs = tempDirs.Select(x => Path.GetFullPath(x)).ToList();
             _logger = logger;
-            _failedMemory = !bufferToMemory;
+            _failedMemory = false;
             _tempDirIndex = 0;
         }
 
@@ -46,6 +48,12 @@ namespace Knapcode.ExplorePackages
             {
                 _logger.LogInformation("Successfully copied an empty {TypeName} stream.", src.GetType().FullName);
                 return TempStreamResult.NewSuccess(Stream.Null);
+            }
+
+            if (length > _maxInMemorySize)
+            {
+                _failedMemory = true;
+                _logger.LogInformation("A {TypeName} stream is greater than {MaxInMemorySize} bytes. It will not be buffered to memory.", src.GetType().FullName, _maxInMemorySize);
             }
 
             Stream dest = null;

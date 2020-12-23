@@ -26,7 +26,13 @@ namespace Knapcode.ExplorePackages.Worker
         [InlineData(true)]
         public async Task FindPackageAssemblies(bool bufferTempStreamsToMemory)
         {
-            ConfigureSettings = x => x.BufferTempStreamsToMemory = bufferTempStreamsToMemory;
+            ConfigureSettings = x =>
+            {
+                if (!bufferTempStreamsToMemory)
+                {
+                    x.MaxInMemoryTempStreamSize = 0;
+                }
+            };
 
             Logger.LogInformation("Settings: " + Environment.NewLine + JsonConvert.SerializeObject(Options.Value, Formatting.Indented));
 
