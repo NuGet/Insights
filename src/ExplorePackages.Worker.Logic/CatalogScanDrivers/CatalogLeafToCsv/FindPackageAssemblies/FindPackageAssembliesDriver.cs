@@ -103,6 +103,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             var assembly = new PackageAssembly(scanId, scanTimestamp, leaf, PackageAssemblyResultType.ValidAssembly)
             {
                 Path = entry.FullName,
+                CompressedLength = entry.CompressedLength,
             };
             await AnalyzeAsync(assembly, entry);
             return assembly;
@@ -125,6 +126,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                     _logger.LogWarning(ex, "Package {Id} {Version} has an invalid ZIP entry: {Path}", assembly.Id, assembly.Version, assembly.Path);
                     return;
                 }
+
+                assembly.UncompressedLength = tempStream.Length;
 
                 using var peReader = new PEReader(tempStream);
                 if (!peReader.HasMetadata)

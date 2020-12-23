@@ -23,6 +23,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
         public PackageAssemblyResultType ResultType { get; set; }
 
         public string Path { get; set; }
+        public long CompressedLength { get; set; }
+        public long? UncompressedLength { get; set; }
 
         public string Name { get; set; }
         public Version AssemblyVersion { get; set; }

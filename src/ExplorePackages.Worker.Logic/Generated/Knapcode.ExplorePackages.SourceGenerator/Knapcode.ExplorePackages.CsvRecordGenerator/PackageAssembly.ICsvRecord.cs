@@ -25,6 +25,10 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, Path);
             writer.Write(',');
+            writer.Write(CompressedLength);
+            writer.Write(',');
+            writer.Write(UncompressedLength);
+            writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, Name);
             writer.Write(',');
             writer.Write(AssemblyVersion);
@@ -59,6 +63,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             Created = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset);
             ResultType = Enum.Parse<PackageAssemblyResultType>(getNextField());
             Path = getNextField();
+            CompressedLength = long.Parse(getNextField());
+            UncompressedLength = CsvUtility.ParseNullable(getNextField(), long.Parse);
             Name = getNextField();
             AssemblyVersion = CsvUtility.ParseReference(getNextField(), System.Version.Parse);
             Culture = getNextField();
