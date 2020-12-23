@@ -109,7 +109,7 @@ namespace Knapcode.ExplorePackages
                         var pathRoot = Path.GetPathRoot(tempDir);
                         var driveInfo = new DriveInfo(pathRoot);
                         var availableBytes = driveInfo.AvailableFreeSpace;
-                        _logger.LogInformation("For temp dir {TempDir}, there are {AvailableBytes} bytes available in drive {DriveName}.", tempDir, driveInfo);
+                        _logger.LogInformation("For temp dir {TempDir}, there are {AvailableBytes} bytes available in drive {DriveName}.", tempDir, availableBytes, driveInfo);
 
                         if (length > availableBytes)
                         {
