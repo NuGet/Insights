@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages
 {
@@ -23,10 +24,10 @@ namespace Knapcode.ExplorePackages
         private bool _skipMemory;
         private int _tempDirIndex;
 
-        public TempStreamWriter(int maxInMemorySize, IEnumerable<string> tempDirs, ILogger logger)
+        public TempStreamWriter(IOptions<ExplorePackagesSettings> options, ILogger logger)
         {
-            _maxInMemorySize = maxInMemorySize;
-            _tempDirs = tempDirs.Select(x => Path.GetFullPath(x)).ToList();
+            _maxInMemorySize = options.Value.MaxInMemoryTempStreamSize;
+            _tempDirs = options.Value.TempDirectories.Select(x => Path.GetFullPath(x)).ToList();
             _logger = logger;
             _attemptedMemory = false;
             _skipMemory = false;

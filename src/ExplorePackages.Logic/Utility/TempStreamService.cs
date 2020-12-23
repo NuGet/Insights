@@ -34,10 +34,7 @@ namespace Knapcode.ExplorePackages
 
         public TempStreamWriter GetWriter()
         {
-            return new TempStreamWriter(
-                _options.Value.MaxInMemoryTempStreamSize,
-                _options.Value.TempDirectories,
-                _logger);
+            return new TempStreamWriter(_options, _logger);
         }
     }
 }
