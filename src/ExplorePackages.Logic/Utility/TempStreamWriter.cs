@@ -109,6 +109,8 @@ namespace Knapcode.ExplorePackages
                         var pathRoot = Path.GetPathRoot(tempDir);
                         var driveInfo = new DriveInfo(pathRoot);
                         var availableBytes = driveInfo.AvailableFreeSpace;
+                        _logger.LogInformation("For temp dir {TempDir}, there are {AvailableBytes} bytes available in drive {DriveName}.", tempDir, driveInfo);
+
                         if (length > availableBytes)
                         {
                             _tempDirIndex++;
@@ -117,7 +119,7 @@ namespace Knapcode.ExplorePackages
                                 tempDir,
                                 src.GetType().FullName,
                                 length,
-                                driveInfo.Name,
+                                driveInfo,
                                 availableBytes);
                             continue;
                         }
@@ -138,14 +140,11 @@ namespace Knapcode.ExplorePackages
                             FileShare.None,
                             BufferSize,
                             FileOptions.Asynchronous | FileOptions.DeleteOnClose);
-                        
+
                         destFileStream = (FileStream)dest;
 
                         // Pre-allocate the full file size, to encounter full disk exceptions prior to reading the source stream.
-                        destFileStream.SetLength(length);
-                        destFileStream.Position = length - 1;
-                        await destFileStream.WriteAsync(OneByte);
-                        destFileStream.Position = 0;
+                        await SetStreamLength(destFileStream, length);
 
                         consumedSource = true;
                         return await CopyAndSeekAsync(src, dest, tmpPath);
@@ -161,7 +160,7 @@ namespace Knapcode.ExplorePackages
                 throw new InvalidOperationException(
                     "Unable to find a place to copy the stream. Tried:" + Environment.NewLine +
                     string.Join(Environment.NewLine, Enumerable.Empty<string>()
-                        .Concat(_attemptedMemory ? new[] { Memory } : Array.Empty<string>()) 
+                        .Concat(_attemptedMemory ? new[] { Memory } : Array.Empty<string>())
                         .Concat(_tempDirs).Select(x => $" - {x}")));
             }
             catch
@@ -169,6 +168,14 @@ namespace Knapcode.ExplorePackages
                 SafeDispose(dest);
                 throw;
             }
+        }
+
+        private static async Task SetStreamLength(Stream stream, long length)
+        {
+            stream.SetLength(length);
+            stream.Position = length - 1;
+            await stream.WriteAsync(OneByte);
+            stream.Position = 0;
         }
 
         private static void SafeDispose(Stream dest)
