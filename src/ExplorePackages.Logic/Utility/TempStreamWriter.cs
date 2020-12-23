@@ -124,6 +124,7 @@ namespace Knapcode.ExplorePackages
                     }
 
                     var tmpPath = Path.Combine(tempDir, Guid.NewGuid().ToString("N"));
+                    FileStream destFileStream = null;
                     try
                     {
                         dest = new FileStream(
@@ -133,11 +134,14 @@ namespace Knapcode.ExplorePackages
                             FileShare.None,
                             BufferSize,
                             FileOptions.Asynchronous | FileOptions.DeleteOnClose);
+                        destFileStream = (FileStream)dest;
                         consumedSource = true;
                         return await CopyAndSeekAsync(src, dest, tmpPath);
                     }
                     catch (IOException ex)
                     {
+                        // Close the file handle first, to avoid any flushes when disposing the stream.
+                        destFileStream?.SafeFileHandle?.Dispose();
                         dest?.Dispose();
                         _tempDirIndex++;
                         _logger.LogWarning(ex, "Could not buffer a {TypeName} stream with length {LengthBytes} bytes to temp file {TempFile}.", src.GetType().FullName, length, tmpPath);
@@ -146,7 +150,7 @@ namespace Knapcode.ExplorePackages
 
                 throw new InvalidOperationException(
                     "Unable to find a place to copy the stream. Tried:" + Environment.NewLine +
-                    string.Join(Environment.NewLine, new[] { Memory }.Concat(_tempDirs).Select(x => $" - {x})")));
+                    string.Join(Environment.NewLine, new[] { Memory }.Concat(_tempDirs).Select(x => $" - {x}")));
             }
             catch
             {

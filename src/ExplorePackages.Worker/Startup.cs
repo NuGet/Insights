@@ -37,19 +37,22 @@ namespace Knapcode.ExplorePackages.Worker
             AddOptions<ExplorePackagesSettings>(builder, ExplorePackagesSettings.DefaultSectionName);
             AddOptions<ExplorePackagesWorkerSettings>(builder, ExplorePackagesSettings.DefaultSectionName);
 
-            builder.Services.Configure<ExplorePackagesWorkerSettings>(settings =>
-            {
-                if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("HOME")))
-                {
-                    settings.TempDirectories.Add(Environment.ExpandEnvironmentVariables(Path.Combine("%HOME%", "Knapcode.ExplorePackages", "temp")));
-                }
-            });
+            builder.Services.Configure<ExplorePackagesSettings>(Configure);
+            builder.Services.Configure<ExplorePackagesWorkerSettings>(Configure);
 
             builder.Services.AddExplorePackages("Knapcode.ExplorePackages.Worker");
             builder.Services.AddExplorePackagesWorker();
 
             builder.Services.AddSingleton<IQueueProcessorFactory, UnencodedQueueProcessorFactory>();
             builder.Services.AddSingleton<ITelemetryClient, TelemetryClientWrapper>();
+        }
+
+        private static void Configure(ExplorePackagesSettings settings)
+        {
+            if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("HOME")))
+            {
+                settings.TempDirectories.Add(Environment.ExpandEnvironmentVariables(Path.Combine("%HOME%", "Knapcode.ExplorePackages", "temp")));
+            }
         }
 
         private static void AddOptions<TOptions>(IFunctionsHostBuilder builder, string sectionName) where TOptions : class
