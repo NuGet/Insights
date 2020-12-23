@@ -49,7 +49,8 @@ namespace Knapcode.ExplorePackages
                         options: null,
                         operationContext: null);
                 }
-                catch (StorageException ex) when (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.PreconditionFailed)
+                catch (StorageException ex) when (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.PreconditionFailed
+                                               || ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.Conflict)
                 {
                     // Ignore this exception.
                 }
