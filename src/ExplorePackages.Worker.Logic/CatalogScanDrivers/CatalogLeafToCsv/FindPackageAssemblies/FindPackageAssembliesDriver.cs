@@ -118,11 +118,17 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 using var peReader = new PEReader(tempStream);
                 if (!peReader.HasMetadata)
                 {
-                    assembly.ResultType = PackageAssemblyResultType.NotManagedAssembly;
+                    assembly.ResultType = PackageAssemblyResultType.DoesNotHaveMetadata;
                     return;
                 }
 
                 var metadataReader = peReader.GetMetadataReader();
+                if (!metadataReader.IsAssembly)
+                {
+                    assembly.ResultType = PackageAssemblyResultType.NotManagedAssembly;
+                    return;
+                }
+
                 var assemblyDefinition = metadataReader.GetAssemblyDefinition();
 
                 assembly.Name = metadataReader.GetString(assemblyDefinition.Name);

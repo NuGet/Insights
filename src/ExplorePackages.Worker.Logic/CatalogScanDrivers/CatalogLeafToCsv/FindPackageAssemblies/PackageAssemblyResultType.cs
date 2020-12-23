@@ -4,6 +4,7 @@
     {
         NoAssemblies,
         NotManagedAssembly,
+        DoesNotHaveMetadata,
         ValidAssembly,
         Deleted,
     }
