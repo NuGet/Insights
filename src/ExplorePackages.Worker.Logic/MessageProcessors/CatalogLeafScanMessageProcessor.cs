@@ -38,7 +38,7 @@ namespace Knapcode.ExplorePackages.Worker
             if (dequeueCount > 1 && message.AttemptCount < 5)
             {
                 message.AttemptCount++;
-                var delay = GetMessageDelay(message.AttemptCount);
+                var delay = GetMessageDelay(Math.Max(dequeueCount, message.AttemptCount));
                 _logger.LogWarning(
                     "Catalog leaf scan message has attempt count {AttemptCount} and dequeue count {DequeueCount}. Delaying for {DelayMs}.",
                     message.AttemptCount,
@@ -63,6 +63,7 @@ namespace Knapcode.ExplorePackages.Worker
             const int incrementMinutes = 10;
             var minMinutes = attemptCount <= 1 ? 1 : incrementMinutes * (attemptCount - 1);
             var maxMinutes = attemptCount <= 1 ? incrementMinutes : minMinutes + incrementMinutes;
+
             const int ms = 1000;
             var minMs = minMinutes * ms;
             var maxMs = maxMinutes * ms;
