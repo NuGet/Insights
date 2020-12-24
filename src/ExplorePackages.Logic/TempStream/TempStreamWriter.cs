@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -35,7 +36,8 @@ namespace Knapcode.ExplorePackages
 
         private readonly TempStreamLeaseScope _leaseScope;
         private readonly int _maxInMemorySize;
-        private readonly IReadOnlyList<string> _tempDirs;
+        private readonly int _maxInMemoryMB;
+        private readonly IReadOnlyList<TempStreamDirectory> _tempDirs;
         private readonly ILogger<TempStreamWriter> _logger;
         private bool _attemptedMemory;
         private bool _skipMemory;
@@ -45,10 +47,15 @@ namespace Knapcode.ExplorePackages
         {
             _leaseScope = leaseScope;
             _maxInMemorySize = Math.Min(options.Value.MaxTempMemoryStreamSize, GB);
+            _maxInMemoryMB = (_maxInMemorySize / MB) + (_maxInMemorySize % MB > 0 ? 1 : 0);
             _tempDirs = options
                 .Value
                 .TempDirectories
-                .Select(x => Path.GetFullPath(x.Path))
+                .Select(x => new TempStreamDirectory
+                {
+                    Path = Path.GetFullPath(x.Path),
+                    MaxConcurrentWriters = x.MaxConcurrentWriters,
+                })
                 .ToList();
             _logger = logger;
             _attemptedMemory = false;
@@ -93,13 +100,21 @@ namespace Knapcode.ExplorePackages
 
                     try
                     {
-                        dest = new MemoryStream((int)length);
+                        // 1. Ensure there is at least some fixed margin of memory available. We don't want to put the
+                        //    app under too much pressure with these MemoryStream instances.
+                        //
+                        // 2. Allocation the full memory stream up front to catch try to avoid later OutOfMemoryExceptions.
+                        //
+                        using (new MemoryFailPoint(_maxInMemoryMB))
+                        {
+                            dest = new MemoryStream((int)length);
+                        }
                     }
                     catch (OutOfMemoryException ex)
                     {
-                        // It's probably a bad idea to catch OutOfMemoryException. I tried using a MemoryFailPoint but
-                        // it was not producing InsufficientMemoryException in all of the cases I expected so let's try
-                        // this instead and see what blows up.
+                        // It's probably a bad idea to catch OutOfMemoryException, but I tried using the MemoryFailPoint
+                        // to check for the precise amount of memory (not the max) and UnavailableMemoryException was not
+                        // getting thrown as often as I liked. We'll try this and see if it works...
                         dest = null;
                         _logger.LogWarning(ex, "Could not allocate a memory stream of length {LengthBytes} bytes for a {TypeName}.", length, src.GetType().FullName);
                     }
@@ -191,7 +206,7 @@ namespace Knapcode.ExplorePackages
                     "Unable to find a place to copy the stream. Tried:" + Environment.NewLine +
                     string.Join(Environment.NewLine, Enumerable.Empty<string>()
                         .Concat(_attemptedMemory ? new[] { Memory } : Array.Empty<string>())
-                        .Concat(_tempDirs)
+                        .Concat(_tempDirs.Select(DisplayTempDir))
                         .Select(x => $" - {x}")));
             }
             catch
@@ -199,6 +214,16 @@ namespace Knapcode.ExplorePackages
                 SafeDispose(dest);
                 throw;
             }
+        }
+
+        private static string DisplayTempDir(TempStreamDirectory tempDir)
+        {
+            if (!tempDir.MaxConcurrentWriters.HasValue)
+            {
+                return tempDir.Path;
+            }
+
+            return $"{tempDir.Path} (max writers: {tempDir.MaxConcurrentWriters.Value})";
         }
 
         private static async Task SetStreamLength(Stream stream, long length)
