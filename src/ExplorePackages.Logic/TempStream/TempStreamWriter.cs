@@ -30,7 +30,7 @@ namespace Knapcode.ExplorePackages
         public TempStreamWriter(StorageSemaphoreLeaseService semaphoreService, IOptions<ExplorePackagesSettings> options, ILogger logger)
         {
             _semaphoreService = semaphoreService;
-            _maxInMemorySize = options.Value.MaxInMemoryTempStreamSize;
+            _maxInMemorySize = options.Value.MaxTempMemoryStreamSize;
             _tempDirs = options
                 .Value
                 .TempDirectories

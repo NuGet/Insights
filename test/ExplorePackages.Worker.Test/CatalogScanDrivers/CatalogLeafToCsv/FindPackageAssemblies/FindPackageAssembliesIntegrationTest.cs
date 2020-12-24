@@ -77,7 +77,7 @@ namespace Knapcode.ExplorePackages.Worker
             {
                 ConfigureSettings = x =>
                 {
-                    x.MaxInMemoryTempStreamSize = 0;
+                    x.MaxTempMemoryStreamSize = 0;
                     x.TempDirectories[0].MaxConcurrentWriters = 1;
                 };
 
