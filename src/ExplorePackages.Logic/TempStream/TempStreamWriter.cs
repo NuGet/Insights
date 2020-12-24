@@ -178,6 +178,7 @@ namespace Knapcode.ExplorePackages
                     FileStream destFileStream = null;
                     try
                     {
+                        _logger.LogInformation("Creating a file stream at location {TempPath}.", tempPath);
                         dest = new FileStream(
                             tempPath,
                             FileMode.Create,
@@ -189,6 +190,7 @@ namespace Knapcode.ExplorePackages
                         destFileStream = (FileStream)dest;
 
                         // Pre-allocate the full file size, to encounter full disk exceptions prior to reading the source stream.
+                        _logger.LogInformation("Pre-allocating file at location {TempPath} to {Length} bytes.", tempPath, length);
                         await SetStreamLength(destFileStream, length);
 
                         consumedSource = true;
@@ -274,6 +276,12 @@ namespace Knapcode.ExplorePackages
 
         private async Task<TempStreamResult> CopyAndSeekAsync(Stream src, Stream dest, string location)
         {
+            _logger.LogInformation(
+                "Starting copy of a {TypeName} stream with length {LengthBytes} bytes to {Location}.",
+                src.GetType().FullName,
+                dest.Length,
+                location);
+
             var sw = Stopwatch.StartNew();
             var copiedBytes = await CopyToAndCountAsync(src, dest);
             if (copiedBytes < dest.Length)
@@ -282,12 +290,14 @@ namespace Knapcode.ExplorePackages
             }
             sw.Stop();
             dest.Position = 0;
+
             _logger.LogInformation(
                 "Successfully copied a {TypeName} stream with length {LengthBytes} bytes to {Location} in {DurationMs} ms.",
                 src.GetType().FullName,
                 dest.Length,
                 location,
                 sw.Elapsed.TotalMilliseconds);
+
             return TempStreamResult.NewSuccess(dest);
         }
 
