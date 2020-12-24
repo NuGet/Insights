@@ -13,6 +13,13 @@ namespace Knapcode.ExplorePackages
 {
     public class TempStreamWriter
     {
+        /// <summary>
+        /// We use this method instead of <see cref="DriveInfo.AvailableFreeSpace"/> because it observes quotas at the
+        /// specific directory level, instead of the quote at the drive level. It's possible for directories to have
+        /// different quotes than the root of the drive. For example, the <c>C:\local</c> directory in Azure Functions
+        /// is more limited than <c>C:\home</c> because the former is a local, smaller, faster disk and the latter is a
+        /// Azure Storage-based file share which is remote, bigger, and slower. These two have different quotas.
+        /// </summary>
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern bool GetDiskFreeSpaceEx(
             string lpDirectoryName,
