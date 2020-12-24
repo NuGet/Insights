@@ -24,6 +24,7 @@ namespace Knapcode.ExplorePackages
             out ulong lpTotalNumberOfFreeBytes);
 
         private const int MB = 1024 * 1024;
+        private const int GB = 1024 * MB;
         private const int BufferSize = 80 * 1024;
         private const string Memory = "memory";
         private static readonly ReadOnlyMemory<byte> OneByte = new ReadOnlyMemory<byte>(new[] { (byte)0 });
@@ -75,7 +76,7 @@ namespace Knapcode.ExplorePackages
                 return TempStreamResult.NewSuccess(Stream.Null);
             }
 
-            if (length > _maxInMemorySize)
+            if (length > _maxInMemorySize || length > GB)
             {
                 _skipMemory = true;
                 _logger.LogInformation("A {TypeName} stream is greater than {MaxInMemorySize} bytes. It will not be buffered to memory.", src.GetType().FullName, _maxInMemorySize);
@@ -86,28 +87,26 @@ namespace Knapcode.ExplorePackages
             try
             {
                 // First, try to buffer to memory.
-                if (!_skipMemory)
+                if (!_skipMemory && !_attemptedMemory)
                 {
-                    var lengthMB = (int)((length / MB) + (length % MB != 0 ? 1 : 0));
+                    _attemptedMemory = true;
+
                     try
                     {
-                        _attemptedMemory = true;
-                        using (var memoryFailPoint = new MemoryFailPoint(lengthMB))
-                        {
-                            dest = new MemoryStream((int)length);
-                            consumedSource = true;
-                            return await CopyAndSeekAsync(src, dest, Memory);
-                        }
+                        dest = new MemoryStream((int)length);
                     }
-                    catch (InsufficientMemoryException ex)
+                    catch (OutOfMemoryException ex)
                     {
-                        SafeDispose(dest);
-                        _skipMemory = true;
-                        _logger.LogWarning(ex, "Could not buffer a {TypeName} stream with length {LengthMB} MB ({LengthBytes} bytes) to memory.", src.GetType().FullName, lengthMB, length);
-                        if (consumedSource)
-                        {
-                            return TempStreamResult.NewFailure();
-                        }
+                        // It's probably a bad idea to catch OutOfMemoryException. I tried using a MemoryFailPoint but
+                        // it was not producing InsufficientMemoryException in all of the cases I expected so let's try
+                        // this instead and see what blows up.
+                        dest = null;
+                        _logger.LogWarning(ex, "Could not allocate a memory stream of length {LengthBytes} bytes for a {TypeName}.", length, src.GetType().FullName);
+                    }
+
+                    if (dest != null)
+                    {
+                        return await CopyAndSeekAsync(src, dest, Memory);
                     }
                 }
 
