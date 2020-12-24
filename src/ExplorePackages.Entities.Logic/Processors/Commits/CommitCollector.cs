@@ -165,10 +165,10 @@ namespace Knapcode.ExplorePackages.Entities
                 if (batch.Items.Any())
                 {
                     _logger.LogInformation(
-                        "Initialized batch of {BatchItemCount} {ItemTypeName}. {ElapsedMilliseconds}ms",
+                        "Initialized batch of {BatchItemCount} {ItemTypeName}. {ElapsedMs}ms",
                         batch.Items.Count,
                         typeof(TItem).Name,
-                        stopwatch.ElapsedMilliseconds);
+                        stopwatch.Elapsed.TotalMilliseconds);
                     stopwatch.Restart();
                     await _processor.ProcessBatchAsync(batch.Items);
 
@@ -184,10 +184,10 @@ namespace Knapcode.ExplorePackages.Entities
                     }
 
                     _logger.LogInformation(
-                        "Done processing batch of {BatchItemCount} {ItemTypeName}. {ElapsedMilliseconds}ms",
+                        "Done processing batch of {BatchItemCount} {ItemTypeName}. {ElapsedMs}ms",
                         batch.Items.Count,
                         typeof(TItem).Name,
-                        stopwatch.ElapsedMilliseconds);
+                        stopwatch.Elapsed.TotalMilliseconds);
                 }
             }
         }

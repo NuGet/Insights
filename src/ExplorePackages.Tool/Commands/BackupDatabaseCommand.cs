@@ -42,10 +42,10 @@ namespace Knapcode.ExplorePackages.Tool
                 }
 
                 var destination = _destinationOption.Value();
-                _logger.LogInformation("Backing up the database to: {destination}", _destinationOption.Value());
+                _logger.LogInformation("Backing up the database to: {Destination}", _destinationOption.Value());
                 var stopwatch = Stopwatch.StartNew();
                 await sqliteEntityContext.BackupDatabaseAsync(destination);
-                _logger.LogInformation("Done. {duration}ms", stopwatch.ElapsedMilliseconds);
+                _logger.LogInformation("Done. {DurationMs}ms", stopwatch.Elapsed.TotalMilliseconds);
             }
         }
 

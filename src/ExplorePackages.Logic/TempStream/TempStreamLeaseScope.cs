@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Security.Cryptography;
@@ -11,14 +12,16 @@ namespace Knapcode.ExplorePackages
     public class TempStreamLeaseScope
     {
         private readonly StorageSemaphoreLeaseService _semaphoreService;
+        private readonly ILogger<TempStreamLeaseScope> _logger;
         private bool _disposing;
         private int _owned;
         private readonly ConcurrentDictionary<string, Lazy<Task<AutoRenewingStorageLeaseResult>>> _nameToLazyLease
             = new ConcurrentDictionary<string, Lazy<Task<AutoRenewingStorageLeaseResult>>>();
 
-        public TempStreamLeaseScope(StorageSemaphoreLeaseService semaphoreService)
+        public TempStreamLeaseScope(StorageSemaphoreLeaseService semaphoreService, ILogger<TempStreamLeaseScope> logger)
         {
             _semaphoreService = semaphoreService;
+            _logger = logger;
             _disposing = false;
         }
 
@@ -58,7 +61,17 @@ namespace Knapcode.ExplorePackages
 
             var name = $"temp-dir-{dirHash}";
 
-            await _nameToLazyLease.GetOrAdd(name, x => GetLazyLease(x, dir.MaxConcurrentWriters.Value)).Value;
+            var lazy = _nameToLazyLease.GetOrAdd(name, x => GetLazyLease(x, dir.MaxConcurrentWriters.Value));
+            if (lazy.IsValueCreated && lazy.Value.Status == TaskStatus.RanToCompletion)
+            {
+                _logger.LogInformation("The semaphore {Name} for {TempDir} has already been acquired in this scope.", name, dir);
+            }
+            else
+            {
+                _logger.LogInformation("Starting to wait for semaphore {Name} for {TempDir}.", name, dir);
+            }
+
+            await lazy.Value;
         }
 
         private Lazy<Task<AutoRenewingStorageLeaseResult>> GetLazyLease(string name, int count)
@@ -78,11 +91,14 @@ namespace Knapcode.ExplorePackages
             public async ValueTask DisposeAsync()
             {
                 _scope._disposing = true;
-                var leases = await Task.WhenAll(_scope._nameToLazyLease
-                    .Values
-                    .Where(x => x.IsValueCreated)
-                    .Select(x => x.Value));
-                await Task.WhenAll(leases.Select(x => x.DisposeAsync().AsTask()));
+                if (_scope._nameToLazyLease.Any())
+                {
+                    _scope._logger.LogInformation("Waiting for scope semaphores: {Names}", _scope._nameToLazyLease.Keys);
+                    var leases = await Task.WhenAll(_scope._nameToLazyLease.Values.Select(x => x.Value));
+                    _scope._logger.LogInformation("Starting to release scope semaphores: {Names}", _scope._nameToLazyLease.Keys);
+                    await Task.WhenAll(leases.Select(x => x.DisposeAsync().AsTask()));
+                    _scope._logger.LogInformation("Done release scope semaphores: {Names}", _scope._nameToLazyLease.Keys);
+                }
             }
         }
     }

@@ -93,9 +93,9 @@ namespace Knapcode.ExplorePackages.Entities
 
                 stopwatch.Stop();
                 _logger.LogInformation(
-                    "Fetched {Count} package dependencies. {Elapsed}ms",
+                    "Fetched {Count} package dependencies. {ElapsedMs}ms",
                     dependencies.Count,
-                    stopwatch.ElapsedMilliseconds);
+                    stopwatch.Elapsed.TotalMilliseconds);
 
                 var foundPackageRegistrationKeys = dependencies
                     .Select(x => x.DependencyPackageRegistrationKey)
@@ -116,9 +116,9 @@ namespace Knapcode.ExplorePackages.Entities
 
                 stopwatch.Stop();
                 _logger.LogInformation(
-                    "Fetched {Count} package registrations. {Elapsed}ms",
+                    "Fetched {Count} package registrations. {ElapsedMs}ms",
                     packageRegistrationKeyToPackageRegistration.Count,
-                    stopwatch.ElapsedMilliseconds);
+                    stopwatch.Elapsed.TotalMilliseconds);
 
                 foreach (var dependency in dependencies)
                 {
@@ -187,9 +187,9 @@ namespace Knapcode.ExplorePackages.Entities
             var changes = minimumUpdates.Count + bestUpdates.Count + minimumAndBestUpdates.Count;
 
             _logger.LogInformation(
-                "Prepared package dependency {Changes} changes. {ElapsedMilliseconds}ms",
+                "Prepared package dependency {Changes} changes. {ElapsedMs}ms",
                 changes,
-                prepareStopwatch.ElapsedMilliseconds);
+                prepareStopwatch.Elapsed.TotalMilliseconds);
 
             return new DependencyPackageUpdates(
                 minimumUpdates,
@@ -329,9 +329,9 @@ namespace Knapcode.ExplorePackages.Entities
 
                     transaction.Commit();
                     _logger.LogInformation(
-                        "Committed package dependency {Changes} changes. {commitStopwatch.ElapsedMilliseconds}ms",
+                        "Committed package dependency {Changes} changes. {commitStopwatch.ElapsedMs}ms",
                         changes,
-                        stopwatch.ElapsedMilliseconds);
+                        stopwatch.Elapsed.TotalMilliseconds);
                 }
             }
         }
@@ -424,9 +424,9 @@ namespace Knapcode.ExplorePackages.Entities
                 var commitStopwatch = Stopwatch.StartNew();
                 var changes = await entityContext.SaveChangesAsync();
                 _logger.LogInformation(
-                    "Committed package dependency {Changes} changes. {ElapsedMilliseconds}ms",
+                    "Committed package dependency {Changes} changes. {ElapsedMs}ms",
                     changes,
-                    commitStopwatch.ElapsedMilliseconds);
+                    commitStopwatch.Elapsed.TotalMilliseconds);
             }
         }
 
@@ -585,9 +585,9 @@ namespace Knapcode.ExplorePackages.Entities
                 var commitStopwatch = Stopwatch.StartNew();
                 var changes = await entityContext.SaveChangesAsync();
                 _logger.LogInformation(
-                    "Committed {Changes} framework changes. {ElapsedMilliseconds}ms",
+                    "Committed {Changes} framework changes. {ElapsedMs}ms",
                     changes,
-                    commitStopwatch.ElapsedMilliseconds);
+                    commitStopwatch.Elapsed.TotalMilliseconds);
 
                 return existingEntities
                     .Concat(newEntities)

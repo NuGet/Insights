@@ -212,15 +212,15 @@ namespace Knapcode.ExplorePackages.Tool
                                 {
                                     batchSizeProvider.Increase();
                                     logger.LogInformation(
-                                        "Waiting for {SuccessSleepDuration} since the command completed successfully." + Environment.NewLine,
-                                        successSleepDuration);
+                                        "Waiting for {SuccessSleepDurationMs}ms since the command completed successfully." + Environment.NewLine,
+                                        successSleepDuration.TotalMilliseconds);
                                     await Task.Delay(successSleepDuration);
                                 }
                                 else
                                 {
                                     batchSizeProvider.Decrease();
-                                    logger.LogInformation("Waiting for {FailureSleepDuration} since the command failed." + Environment.NewLine,
-                                        failureSleepDuration);
+                                    logger.LogInformation("Waiting for {FailureSleepDurationMs}ms since the command failed." + Environment.NewLine,
+                                        failureSleepDuration.TotalMilliseconds);
                                     await Task.Delay(failureSleepDuration);
                                 }
                             }

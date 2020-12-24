@@ -24,10 +24,10 @@ namespace Knapcode.ExplorePackages
             var stopwatch = Stopwatch.StartNew();
             var response = await base.SendAsync(request, cancellationToken);
             _logger.LogInformation(
-                "  {StatusCode} {RequestUri} {ElapsedMilliseconds}ms",
+                "  {StatusCode} {RequestUri} {ElapsedMs}ms",
                 response.StatusCode,
                 response.RequestMessage.RequestUri,
-                stopwatch.ElapsedMilliseconds);
+                stopwatch.Elapsed.TotalMilliseconds);
             return response;
         }
     }

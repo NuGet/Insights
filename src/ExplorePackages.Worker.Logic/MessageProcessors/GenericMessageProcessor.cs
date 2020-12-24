@@ -79,7 +79,7 @@ namespace Knapcode.ExplorePackages.Worker
             finally
             {
                 var metric = _telemetryClient.GetMetric($"MessageProcessor{(success ? "Success" : "Failure")}DurationMs", "TypeName");
-                metric.TrackValue(stopwatch.ElapsedMilliseconds, processor.GetType().FullName);
+                metric.TrackValue(stopwatch.Elapsed.TotalMilliseconds, processor.GetType().FullName);
             }
         }
 

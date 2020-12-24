@@ -137,10 +137,10 @@ namespace Knapcode.ExplorePackages
 
                 var duration = e.RequestInformation.EndTime - e.RequestInformation.StartTime;
                 logger.LogDebug(
-                    "  {StatusCode} {RequestUri} {Milliseconds}ms",
+                    "  {StatusCode} {RequestUri} {ElapsedMs}ms",
                     (HttpStatusCode)e.RequestInformation.HttpStatusCode,
                     sanitizedRequestUri,
-                    stopwatch.ElapsedMilliseconds);
+                    stopwatch.Elapsed.TotalMilliseconds);
             };
 
             return operationContext;

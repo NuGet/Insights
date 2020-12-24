@@ -253,10 +253,10 @@ namespace Knapcode.ExplorePackages.Entities
                 var existingPackages = await queryPackagesAsync(entityContext, identities);
 
                 _logger.LogInformation(
-                    "Got {ExistingCount} existing {TypeName} instances. {ElapsedMilliseconds}ms",
+                    "Got {ExistingCount} existing {TypeName} instances. {ElapsedMs}ms",
                     existingPackages.Count,
                     typeof(T).Name,
-                    getExistingStopwatch.ElapsedMilliseconds);
+                    getExistingStopwatch.Elapsed.TotalMilliseconds);
 
                 // Keep track of the resulting package keys.
                 var identityToPackageKey = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
@@ -280,10 +280,10 @@ namespace Knapcode.ExplorePackages.Entities
                 var commitStopwatch = Stopwatch.StartNew();
                 var changes = await entityContext.SaveChangesAsync();
                 _logger.LogInformation(
-                    "Committed {Changes} {TypeName} changes. {ElapsedMilliseconds}ms",
+                    "Committed {Changes} {TypeName} changes. {ElapsedMs}ms",
                     changes,
                     typeof(T).Name,
-                    commitStopwatch.ElapsedMilliseconds);
+                    commitStopwatch.Elapsed.TotalMilliseconds);
 
                 // Add the new package keys.
                 foreach (var pair in identityToLatest)
@@ -585,9 +585,9 @@ namespace Knapcode.ExplorePackages.Entities
             }
 
             _logger.LogInformation(
-                "Committed {ChangeCount} package download changes. {ElapsedMilliseconds}ms.",
+                "Committed {ChangeCount} package download changes. {ElapsedMs}ms.",
                 changeCount,
-                stopwatch.ElapsedMilliseconds);
+                stopwatch.Elapsed.TotalMilliseconds);
         }
 
         private async Task<IReadOnlyDictionary<string, long>> AddOrUpdatePackagesAsync(IEnumerable<PackageIdentity> identities)
@@ -685,9 +685,9 @@ namespace Knapcode.ExplorePackages.Entities
                     .Where(p => identities.Contains(p.Identity))
                     .ToListAsync();
                 _logger.LogInformation(
-                    "Found {Count} corresponding V2 packages. {ElapsedMilliseconds}ms",
+                    "Found {Count} corresponding V2 packages. {ElapsedMs}ms",
                     existingPackages.Count,
-                    selectStopwatch.ElapsedMilliseconds);
+                    selectStopwatch.Elapsed.TotalMilliseconds);
 
                 foreach (var existingPackage in existingPackages)
                 {
@@ -704,9 +704,9 @@ namespace Knapcode.ExplorePackages.Entities
                 var commitStopwatch = Stopwatch.StartNew();
                 var changeCount = await entityContext.SaveChangesAsync();
                 _logger.LogInformation(
-                    "Committed {Count} changes. {ElapsedMilliseconds}ms",
+                    "Committed {Count} changes. {ElapsedMs}ms",
                     changeCount,
-                    commitStopwatch.ElapsedMilliseconds);
+                    commitStopwatch.Elapsed.TotalMilliseconds);
             }
         }
 

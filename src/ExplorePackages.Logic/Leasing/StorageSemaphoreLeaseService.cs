@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -24,13 +25,14 @@ namespace Knapcode.ExplorePackages
         public async Task<AutoRenewingStorageLeaseResult> WaitAsync(string name, int count)
         {
             int attempt = 0;
+            var sw = Stopwatch.StartNew();
             AutoRenewingStorageLeaseResult result = null;
             do
             {
                 if (result != null)
                 {
                     var sleepDuration = TimeSpan.FromSeconds(Math.Max(attempt, 10));
-                    _logger.LogWarning("Storage semaphore {Name} of count {Count} is not available. Trying again in {SleepDuration}.", name, count, sleepDuration);
+                    _logger.LogWarning("Storage semaphore {Name} of count {Count} is not available. Trying again in {SleepDurationMs}ms.", name, count, sleepDuration.TotalMilliseconds);
                     await Task.Delay(sleepDuration);
                 }
 
@@ -38,6 +40,8 @@ namespace Knapcode.ExplorePackages
                 result = await TryAcquireAsync(name, count);
             }
             while (!result.Acquired);
+
+            _logger.LogInformation("Acquired semaphore {Name} after {DurationMs}ms.", name, sw.Elapsed.TotalMilliseconds);
 
             return result;
         }

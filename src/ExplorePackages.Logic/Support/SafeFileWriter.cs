@@ -60,7 +60,7 @@ namespace Knapcode.ExplorePackages
                     if (i < Attempts - 1)
                     {
                         var sleepDuration = TimeSpan.FromSeconds(5);
-                        logger.LogWarning(ex, "Failed to replace the file. Retrying after {SleepDuration}...", sleepDuration);
+                        logger.LogWarning(ex, "Failed to replace the file. Retrying after {SleepDurationMs}ms...", sleepDuration.TotalMilliseconds);
                         Thread.Sleep(sleepDuration);
                     }
                     else

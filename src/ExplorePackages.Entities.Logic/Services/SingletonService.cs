@@ -130,7 +130,7 @@ namespace Knapcode.ExplorePackages.Entities
                     {
                         if (await _leaseService.TryRenewAsync(_lease, duration))
                         {
-                            _logger.LogInformation("The singleton lease will be released in {Duration}.", duration);
+                            _logger.LogInformation("The singleton lease will be released in {DurationMs}ms.", duration.TotalMilliseconds);
                         }
                         else
                         {

@@ -51,7 +51,7 @@ namespace Knapcode.ExplorePackages.Entities
 
                 var commitStopwatch = Stopwatch.StartNew();
                 var changes = await context.SaveChangesAsync();
-                _logger.LogInformation("Committed {Changes} changes. {ElapsedMilliseconds}ms", changes, commitStopwatch.ElapsedMilliseconds);
+                _logger.LogInformation("Committed {Changes} changes. {ElapsedMs}ms", changes, commitStopwatch.Elapsed.TotalMilliseconds);
             }
         }
 

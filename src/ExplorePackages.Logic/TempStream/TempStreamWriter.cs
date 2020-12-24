@@ -292,7 +292,7 @@ namespace Knapcode.ExplorePackages
             dest.Position = 0;
 
             _logger.LogInformation(
-                "Successfully copied a {TypeName} stream with length {LengthBytes} bytes to {Location} in {DurationMs} ms.",
+                "Successfully copied a {TypeName} stream with length {LengthBytes} bytes to {Location} in {DurationMs}ms.",
                 src.GetType().FullName,
                 dest.Length,
                 location,
