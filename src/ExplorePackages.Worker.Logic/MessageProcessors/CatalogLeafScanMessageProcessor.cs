@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Worker
@@ -7,15 +8,18 @@ namespace Knapcode.ExplorePackages.Worker
     {
         private readonly CatalogScanDriverFactory _driverFactory;
         private readonly CatalogScanStorageService _storageService;
+        private readonly MessageEnqueuer _messageEnqueuer;
         private readonly ILogger<CatalogLeafScanMessageProcessor> _logger;
 
         public CatalogLeafScanMessageProcessor(
             CatalogScanDriverFactory driverFactory,
             CatalogScanStorageService storageService,
+            MessageEnqueuer messageEnqueuer,
             ILogger<CatalogLeafScanMessageProcessor> logger)
         {
             _driverFactory = driverFactory;
             _storageService = storageService;
+            _messageEnqueuer = messageEnqueuer;
             _logger = logger;
         }
 
@@ -27,12 +31,43 @@ namespace Knapcode.ExplorePackages.Worker
                 _logger.LogWarning("No matching leaf scan was found.");
                 return;
             }
+            
+            // Perform some exponential back-off for leaf-level work. This is important for cases where the leaf
+            // processing performs a very taxing operation and a given node may not be able to handle too many leaves
+            // at once.
+            if (dequeueCount > 1 && message.AttemptCount < 5)
+            {
+                message.AttemptCount++;
+                var delay = GetMessageDelay(message.AttemptCount);
+                _logger.LogWarning(
+                    "Catalog leaf scan message has attempt count {AttemptCount} and dequeue count {DequeueCount}. Delaying for {DelayMs}.",
+                    message.AttemptCount,
+                    dequeueCount,
+                    delay.TotalMilliseconds);
 
-            var driver = _driverFactory.Create(scan.ParsedScanType);
+                // This will reset the dequeue count back to 0. The next attempt will have a dequeue count of 1.
+                await _messageEnqueuer.EnqueueAsync(new[] { message }, delay);
+            }
+            else
+            {
+                var driver = _driverFactory.Create(scan.ParsedScanType);
 
-            await driver.ProcessLeafAsync(scan);
+                await driver.ProcessLeafAsync(scan);
 
-            await _storageService.DeleteAsync(scan);
+                await _storageService.DeleteAsync(scan);
+            }
+        }
+
+        public static TimeSpan GetMessageDelay(int attemptCount)
+        {
+            const int incrementMinutes = 5;
+            const int ms = 1000;
+            var minMinutes = attemptCount <= 1 ? 1 : incrementMinutes * (attemptCount - 1);
+            var maxMinutes = minMinutes + incrementMinutes;
+            var minMs = minMinutes * ms;
+            var maxMs = maxMinutes * ms;
+
+            return TimeSpan.FromMinutes(ThreadLocalRandom.Next(minMs, maxMs));
         }
     }
 }

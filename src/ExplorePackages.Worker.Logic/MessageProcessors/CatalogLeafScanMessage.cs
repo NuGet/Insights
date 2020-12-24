@@ -15,5 +15,8 @@ namespace Knapcode.ExplorePackages.Worker
 
         [JsonProperty("r")]
         public string LeafId { get; set; }
+
+        [JsonProperty("ac")]
+        public int AttemptCount { get; set; }
     }
 }
