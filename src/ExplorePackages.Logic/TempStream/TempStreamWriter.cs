@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +15,13 @@ namespace Knapcode.ExplorePackages
 {
     public class TempStreamWriter
     {
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        private static extern bool GetDiskFreeSpaceEx(
+            string lpDirectoryName,
+            out ulong lpFreeBytesAvailable,
+            out ulong lpTotalNumberOfBytes,
+            out ulong lpTotalNumberOfFreeBytes);
+
         private const int MB = 1024 * 1024;
         private const int BufferSize = 80 * 1024;
         private const string Memory = "memory";
@@ -119,10 +127,14 @@ namespace Knapcode.ExplorePackages
                     // Check if there is enough space on the drive.
                     try
                     {
-                        var pathRoot = Path.GetPathRoot(tempDir);
-                        var driveInfo = new DriveInfo(pathRoot);
+                        var driveInfo = new DriveInfo(tempDir);
                         var availableBytes = driveInfo.AvailableFreeSpace;
                         _logger.LogInformation("For temp dir {TempDir}, there are {AvailableBytes} bytes available in drive {DriveName}.", tempDir, availableBytes, driveInfo);
+
+                        if (GetDiskFreeSpaceEx(tempDir, out var availableBytes2, out var _, out var __))
+                        {
+                            _logger.LogInformation("For temp dir {TempDir}, there are {AvailableBytes} bytes available via P/Invoke.", tempDir, availableBytes2);
+                        }
 
                         if (length > availableBytes)
                         {
