@@ -75,6 +75,24 @@ namespace Knapcode.ExplorePackages.Tool
             // await _catalogScanService.InitializeAsync();
 
             /*
+            await _findPackageAssembliesDriver.ProcessLeafAsync(new CatalogLeafItem
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2018.08.23.17.47.42/cntk.deps.cudnn.2.6.0-rc0.dev20180823.json",
+                Type = CatalogLeafType.PackageDetails,
+                PackageId = "CNTK.Deps.cuDNN",
+                PackageVersion = "2.6.0-rc0.dev20180823",
+            });
+            */
+
+            await _findPackageAssembliesDriver.ProcessLeafAsync(new CatalogLeafItem
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2018.12.10.07.25.55/opencvcuda-debug.redist.3.1.0.json",
+                Type = CatalogLeafType.PackageDetails,
+                PackageId = "opencvcuda-debug.redist",
+                PackageVersion = "3.1.0",
+            });
+
+            /*
             await _messageEnqueuer.EnqueueAsync(Enumerable
                 .Range(0, 1000)
                 .Select(b => new FindPackageAssetsCompactMessage

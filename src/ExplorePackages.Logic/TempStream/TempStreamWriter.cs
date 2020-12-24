@@ -29,26 +29,20 @@ namespace Knapcode.ExplorePackages
         private const string Memory = "memory";
         private static readonly ReadOnlyMemory<byte> OneByte = new ReadOnlyMemory<byte>(new[] { (byte)0 });
 
-        private readonly StorageSemaphoreLeaseService _semaphoreService;
         private readonly int _maxInMemorySize;
-        private readonly List<TempStreamDirectory> _tempDirs;
+        private readonly IReadOnlyList<string> _tempDirs;
         private readonly ILogger _logger;
         private bool _attemptedMemory;
         private bool _skipMemory;
         private int _tempDirIndex;
 
-        public TempStreamWriter(StorageSemaphoreLeaseService semaphoreService, IOptions<ExplorePackagesSettings> options, ILogger logger)
+        public TempStreamWriter(IOptions<ExplorePackagesSettings> options, ILogger logger)
         {
-            _semaphoreService = semaphoreService;
-            _maxInMemorySize = options.Value.MaxTempMemoryStreamSize;
+            _maxInMemorySize = Math.Min(options.Value.MaxTempMemoryStreamSize, GB);
             _tempDirs = options
                 .Value
                 .TempDirectories
-                .Select(x => new TempStreamDirectory
-                {
-                    Path = Path.GetFullPath(x.Path),
-                    MaxConcurrentWriters = x.MaxConcurrentWriters,
-                })
+                .Select(x => Path.GetFullPath(x.Path))
                 .ToList();
             _logger = logger;
             _attemptedMemory = false;
@@ -76,7 +70,7 @@ namespace Knapcode.ExplorePackages
                 return TempStreamResult.NewSuccess(Stream.Null);
             }
 
-            if (length > _maxInMemorySize || length > GB)
+            if (length > _maxInMemorySize)
             {
                 _skipMemory = true;
                 _logger.LogInformation("A {TypeName} stream is greater than {MaxInMemorySize} bytes. It will not be buffered to memory.", src.GetType().FullName, _maxInMemorySize);
@@ -159,33 +153,30 @@ namespace Knapcode.ExplorePackages
                     }
 
                     var tmpPath = Path.Combine(tempDir, StorageUtility.GenerateDescendingId().ToString());
-                    await using (await LeaseTempDirAsync(tempDir))
+                    FileStream destFileStream = null;
+                    try
                     {
-                        FileStream destFileStream = null;
-                        try
-                        {
-                            dest = new FileStream(
-                                tmpPath,
-                                FileMode.Create,
-                                FileAccess.ReadWrite,
-                                FileShare.None,
-                                BufferSize,
-                                FileOptions.Asynchronous | FileOptions.DeleteOnClose);
+                        dest = new FileStream(
+                            tmpPath,
+                            FileMode.Create,
+                            FileAccess.ReadWrite,
+                            FileShare.None,
+                            BufferSize,
+                            FileOptions.Asynchronous | FileOptions.DeleteOnClose);
 
-                            destFileStream = (FileStream)dest;
+                        destFileStream = (FileStream)dest;
 
-                            // Pre-allocate the full file size, to encounter full disk exceptions prior to reading the source stream.
-                            await SetStreamLength(destFileStream, length);
+                        // Pre-allocate the full file size, to encounter full disk exceptions prior to reading the source stream.
+                        await SetStreamLength(destFileStream, length);
 
-                            consumedSource = true;
-                            return await CopyAndSeekAsync(src, dest, tmpPath);
-                        }
-                        catch (IOException ex)
-                        {
-                            SafeDispose(dest);
-                            _tempDirIndex++;
-                            _logger.LogWarning(ex, "Could not buffer a {TypeName} stream with length {LengthBytes} bytes to temp file {TempFile}.", src.GetType().FullName, length, tmpPath);
-                        }
+                        consumedSource = true;
+                        return await CopyAndSeekAsync(src, dest, tmpPath);
+                    }
+                    catch (IOException ex)
+                    {
+                        SafeDispose(dest);
+                        _tempDirIndex++;
+                        _logger.LogWarning(ex, "Could not buffer a {TypeName} stream with length {LengthBytes} bytes to temp file {TempFile}.", src.GetType().FullName, length, tmpPath);
                     }
                 }
 
@@ -193,7 +184,7 @@ namespace Knapcode.ExplorePackages
                     "Unable to find a place to copy the stream. Tried:" + Environment.NewLine +
                     string.Join(Environment.NewLine, Enumerable.Empty<string>()
                         .Concat(_attemptedMemory ? new[] { Memory } : Array.Empty<string>())
-                        .Concat(_tempDirs.Select(DisplayTempDir))
+                        .Concat(_tempDirs)
                         .Select(x => $" - {x}")));
             }
             catch
@@ -201,35 +192,6 @@ namespace Knapcode.ExplorePackages
                 SafeDispose(dest);
                 throw;
             }
-        }
-
-        private static string DisplayTempDir(TempStreamDirectory tempDir)
-        {
-            if (!tempDir.MaxConcurrentWriters.HasValue)
-            {
-                return tempDir.Path;
-            }
-
-            return $"{tempDir.Path} (max writers: {tempDir.MaxConcurrentWriters.Value})";
-        }
-
-        private async Task<IAsyncDisposable> LeaseTempDirAsync(TempStreamDirectory dir)
-        {
-            if (!dir.MaxConcurrentWriters.HasValue)
-            {
-                return null;
-            }
-
-            string dirHash;
-            using (var sha256 = SHA256.Create())
-            {
-                var bytes = Encoding.UTF8.GetBytes(dir.Path.ToLowerInvariant());
-                dirHash = sha256.ComputeHash(bytes).ToTrimmedBase32();
-            }
-
-            var name = $"temp-dir-{dirHash}";
-
-            return await _semaphoreService.WaitAsync(name, dir.MaxConcurrentWriters.Value);
         }
 
         private static async Task SetStreamLength(Stream stream, long length)
