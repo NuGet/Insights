@@ -18,7 +18,7 @@ namespace Knapcode.ExplorePackages
             StorageContainerName = "packages";
             LeaseContainerName = "leases";
             IsStorageContainerPublic = false;
-            MaxTempMemoryStreamSize = 1024 * 1024 * 255;
+            MaxTempMemoryStreamSize = 1024 * 1024 * 240;
             TempDirectories = new List<TempStreamDirectory>
             {
                 Path.Combine(Path.GetTempPath(), "Knapcode.ExplorePackages"),
