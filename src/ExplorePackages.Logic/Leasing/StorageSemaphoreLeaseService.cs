@@ -27,7 +27,6 @@ namespace Knapcode.ExplorePackages
             AutoRenewingStorageLeaseResult result = null;
             do
             {
-                attempt++;
                 if (result != null)
                 {
                     var sleepDuration = TimeSpan.FromSeconds(Math.Max(attempt, 10));
@@ -35,6 +34,7 @@ namespace Knapcode.ExplorePackages
                     await Task.Delay(sleepDuration);
                 }
 
+                attempt++;
                 result = await TryAcquireAsync(name, count);
             }
             while (!result.Acquired);
