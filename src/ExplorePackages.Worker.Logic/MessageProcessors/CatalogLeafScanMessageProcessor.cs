@@ -60,10 +60,10 @@ namespace Knapcode.ExplorePackages.Worker
 
         public static TimeSpan GetMessageDelay(int attemptCount)
         {
-            const int incrementMinutes = 5;
-            const int ms = 1000;
+            const int incrementMinutes = 10;
             var minMinutes = attemptCount <= 1 ? 1 : incrementMinutes * (attemptCount - 1);
-            var maxMinutes = minMinutes + incrementMinutes;
+            var maxMinutes = attemptCount <= 1 ? incrementMinutes : minMinutes + incrementMinutes;
+            const int ms = 1000;
             var minMs = minMinutes * ms;
             var maxMs = maxMinutes * ms;
 
