@@ -111,11 +111,13 @@ namespace Knapcode.ExplorePackages
                             dest = new MemoryStream((int)length);
                         }
                     }
-                    catch (OutOfMemoryException ex)
+                    catch (Exception ex) when (ex is OutOfMemoryException || ex is IOException)
                     {
                         // It's probably a bad idea to catch OutOfMemoryException, but I tried using the MemoryFailPoint
                         // to check for the precise amount of memory (not the max) and UnavailableMemoryException was not
                         // getting thrown as often as I liked. We'll try this and see if it works...
+                        //
+                        // I've seen IOException get thrown from MemoryFailPoint's constructor when memory is low.
                         dest = null;
                         _logger.LogWarning(ex, "Could not allocate a memory stream of length {LengthBytes} bytes for a {TypeName}.", length, src.GetType().FullName);
                     }
