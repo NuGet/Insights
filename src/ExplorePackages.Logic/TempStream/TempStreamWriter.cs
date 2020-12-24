@@ -55,6 +55,7 @@ namespace Knapcode.ExplorePackages
                 {
                     Path = Path.GetFullPath(x.Path),
                     MaxConcurrentWriters = x.MaxConcurrentWriters,
+                    PreallocateFile = x.PreallocateFile,
                 })
                 .ToList();
             _logger = logger;
@@ -121,7 +122,7 @@ namespace Knapcode.ExplorePackages
 
                     if (dest != null)
                     {
-                        return await CopyAndSeekAsync(src, dest, Memory);
+                        return await CopyAndSeekAsync(src, length, dest, Memory);
                     }
                 }
 
@@ -175,7 +176,6 @@ namespace Knapcode.ExplorePackages
 
                     var tempPath = Path.Combine(tempDir, StorageUtility.GenerateDescendingId().ToString());
                     await _leaseScope.WaitAsync(tempDir);
-                    FileStream destFileStream = null;
                     try
                     {
                         _logger.LogInformation("Creating a file stream at location {TempPath}.", tempPath);
@@ -187,14 +187,15 @@ namespace Knapcode.ExplorePackages
                             BufferSize,
                             FileOptions.Asynchronous | FileOptions.DeleteOnClose);
 
-                        destFileStream = (FileStream)dest;
-
-                        // Pre-allocate the full file size, to encounter full disk exceptions prior to reading the source stream.
-                        _logger.LogInformation("Pre-allocating file at location {TempPath} to {Length} bytes.", tempPath, length);
-                        await SetStreamLength(destFileStream, length);
+                        if (tempDir.PreallocateFile)
+                        {
+                            // Pre-allocate the full file size, to encounter full disk exceptions prior to reading the source stream.
+                            _logger.LogInformation("Pre-allocating file at location {TempPath} to {Length} bytes.", tempPath, length);
+                            await SetStreamLength((FileStream)dest, length);
+                        }
 
                         consumedSource = true;
-                        return await CopyAndSeekAsync(src, dest, tempPath);
+                        return await CopyAndSeekAsync(src, length, dest, tempPath);
                     }
                     catch (IOException ex)
                     {
@@ -274,7 +275,7 @@ namespace Knapcode.ExplorePackages
             }
         }
 
-        private async Task<TempStreamResult> CopyAndSeekAsync(Stream src, Stream dest, string location)
+        private async Task<TempStreamResult> CopyAndSeekAsync(Stream src, long length, Stream dest, string location)
         {
             _logger.LogInformation(
                 "Starting copy of a {TypeName} stream with length {LengthBytes} bytes to {Location}.",
@@ -283,13 +284,8 @@ namespace Knapcode.ExplorePackages
                 location);
 
             var sw = Stopwatch.StartNew();
-            var copiedBytes = await CopyToAndCountAsync(src, dest);
-            if (copiedBytes < dest.Length)
-            {
-                dest.SetLength(copiedBytes);
-            }
+            await CopyAndSeekAsync(src, length, dest);
             sw.Stop();
-            dest.Position = 0;
 
             _logger.LogInformation(
                 "Successfully copied a {TypeName} stream with length {LengthBytes} bytes to {Location} in {DurationMs}ms.",
@@ -301,23 +297,31 @@ namespace Knapcode.ExplorePackages
             return TempStreamResult.NewSuccess(dest);
         }
 
-        private static async Task<long> CopyToAndCountAsync(Stream src, Stream dest)
+        private async Task CopyAndSeekAsync(Stream src, long length, Stream dest)
         {
             var buffer = new byte[BufferSize];
-            long count = 0;
+
+            long copiedBytes = 0;
             while (true)
             {
-                int num;
-                int bytesRead = (num = await src.ReadAsync(buffer, 0, buffer.Length));
-                if (num == 0)
+                var bytesRead = await src.ReadAsync(buffer, 0, buffer.Length);
+                if (bytesRead == 0)
                 {
                     break;
                 }
+                copiedBytes += bytesRead;
+                _logger.LogInformation("Read {BufferBytes} bytes ({CopiedBytes} of {TotalBytes}, {Percent:P2}).", bytesRead, copiedBytes, length, 1.0 * copiedBytes / length);
                 await dest.WriteAsync(buffer, 0, bytesRead);
-                count += bytesRead;
+                _logger.LogInformation("Wrote {BufferBytes} bytes ({CopiedBytes} of {TotalBytes}, {Percent:P2}).", bytesRead, copiedBytes, length, 1.0 * copiedBytes / length);
+            }
+            
+            if (copiedBytes < dest.Length)
+            {
+                _logger.LogInformation("Shortening destination stream from {OldLength} to {NewLength}.", dest.Length, copiedBytes);
+                dest.SetLength(copiedBytes);
             }
 
-            return count;
+            dest.Position = 0;
         }
     }
 }
