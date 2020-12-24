@@ -119,7 +119,10 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<StorageLeaseService>();
             serviceCollection.AddTransient<AutoRenewingStorageLeaseService>();
             serviceCollection.AddTransient<StorageSemaphoreLeaseService>();
+
             serviceCollection.AddTransient<TempStreamService>();
+            serviceCollection.AddTransient<TempStreamWriter>();
+            serviceCollection.AddScoped<TempStreamLeaseScope>();
 
             serviceCollection.AddSingleton<IBatchSizeProvider, BatchSizeProvider>();
             serviceCollection.AddTransient<CommitEnumerator>();

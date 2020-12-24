@@ -4,10 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -29,15 +26,17 @@ namespace Knapcode.ExplorePackages
         private const string Memory = "memory";
         private static readonly ReadOnlyMemory<byte> OneByte = new ReadOnlyMemory<byte>(new[] { (byte)0 });
 
+        private readonly TempStreamLeaseScope _leaseScope;
         private readonly int _maxInMemorySize;
         private readonly IReadOnlyList<string> _tempDirs;
-        private readonly ILogger _logger;
+        private readonly ILogger<TempStreamWriter> _logger;
         private bool _attemptedMemory;
         private bool _skipMemory;
         private int _tempDirIndex;
 
-        public TempStreamWriter(IOptions<ExplorePackagesSettings> options, ILogger logger)
+        public TempStreamWriter(TempStreamLeaseScope leaseScope, IOptions<ExplorePackagesSettings> options, ILogger<TempStreamWriter> logger)
         {
+            _leaseScope = leaseScope;
             _maxInMemorySize = Math.Min(options.Value.MaxTempMemoryStreamSize, GB);
             _tempDirs = options
                 .Value
@@ -152,12 +151,13 @@ namespace Knapcode.ExplorePackages
                         }
                     }
 
-                    var tmpPath = Path.Combine(tempDir, StorageUtility.GenerateDescendingId().ToString());
+                    var tempPath = Path.Combine(tempDir, StorageUtility.GenerateDescendingId().ToString());
+                    await _leaseScope.WaitAsync(tempDir);
                     FileStream destFileStream = null;
                     try
                     {
                         dest = new FileStream(
-                            tmpPath,
+                            tempPath,
                             FileMode.Create,
                             FileAccess.ReadWrite,
                             FileShare.None,
@@ -170,13 +170,13 @@ namespace Knapcode.ExplorePackages
                         await SetStreamLength(destFileStream, length);
 
                         consumedSource = true;
-                        return await CopyAndSeekAsync(src, dest, tmpPath);
+                        return await CopyAndSeekAsync(src, dest, tempPath);
                     }
                     catch (IOException ex)
                     {
                         SafeDispose(dest);
                         _tempDirIndex++;
-                        _logger.LogWarning(ex, "Could not buffer a {TypeName} stream with length {LengthBytes} bytes to temp file {TempFile}.", src.GetType().FullName, length, tmpPath);
+                        _logger.LogWarning(ex, "Could not buffer a {TypeName} stream with length {LengthBytes} bytes to temp file {TempFile}.", src.GetType().FullName, length, tempPath);
                     }
                 }
 

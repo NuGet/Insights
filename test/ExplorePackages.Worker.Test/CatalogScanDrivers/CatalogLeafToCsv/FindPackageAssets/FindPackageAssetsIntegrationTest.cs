@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
 {
     public class FindPackageAssetsIntegrationTest : BaseCatalogScanIntegrationTest
     {

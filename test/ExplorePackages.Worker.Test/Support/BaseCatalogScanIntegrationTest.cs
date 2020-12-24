@@ -119,7 +119,6 @@ namespace Knapcode.ExplorePackages.Worker
         public CatalogScanStorageService CatalogScanStorageService => Host.Services.GetRequiredService<CatalogScanStorageService>();
         public CatalogScanService CatalogScanService => Host.Services.GetRequiredService<CatalogScanService>();
         public ILogger Logger => Host.Services.GetRequiredService<ILogger<BaseCatalogScanIntegrationTest>>();
-        public WorkerQueueFunction Target => Host.Services.GetRequiredService<WorkerQueueFunction>();
 
         protected abstract string DestinationContainerName { get; }
 
@@ -131,7 +130,12 @@ namespace Knapcode.ExplorePackages.Worker
                 CloudQueueMessage message;
                 while ((message = await queue.GetMessageAsync()) != null)
                 {
-                    await Target.ProcessAsync(message);
+                    using (var scope = Host.Services.CreateScope())
+                    {
+                        var target = scope.ServiceProvider.GetRequiredService<WorkerQueueFunction>();
+                        await target.ProcessAsync(message);
+                    }
+
                     await queue.DeleteMessageAsync(message);
                 }
 

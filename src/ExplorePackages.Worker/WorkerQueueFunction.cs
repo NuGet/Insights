@@ -12,13 +12,16 @@ namespace Knapcode.ExplorePackages.Worker
         private const string WorkerQueueVariable = "%" + WorkerQueue + "%";
         private const string StorageConnection = ExplorePackagesSettings.DefaultSectionName + ":" + nameof(ExplorePackagesSettings.StorageConnectionString);
 
+        private readonly TempStreamLeaseScope _tempStreamLeaseScope;
         private readonly GenericMessageProcessor _messageProcessor;
         private readonly ILogger<WorkerQueueFunction> _logger;
 
         public WorkerQueueFunction(
+            TempStreamLeaseScope tempStreamLeaseScope,
             GenericMessageProcessor messageProcessor,
             ILogger<WorkerQueueFunction> logger)
         {
+            _tempStreamLeaseScope = tempStreamLeaseScope;
             _messageProcessor = messageProcessor;
             _logger = logger;
         }
@@ -27,6 +30,7 @@ namespace Knapcode.ExplorePackages.Worker
         public async Task ProcessAsync(
             [QueueTrigger(WorkerQueueVariable, Connection = StorageConnection)] CloudQueueMessage message)
         {
+            await using var scopeOwnership = _tempStreamLeaseScope.TakeOwnership();
             try
             {
                 await _messageProcessor.ProcessAsync(message.AsString, message.DequeueCount);

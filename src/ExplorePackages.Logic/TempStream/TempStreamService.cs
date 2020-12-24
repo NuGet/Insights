@@ -1,22 +1,17 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Knapcode.ExplorePackages
 {
     public class TempStreamService
     {
-        private readonly IOptions<ExplorePackagesSettings> _options;
-        private readonly ILogger<TempStreamService> _logger;
+        private readonly IServiceProvider _serviceProvider;
 
-        public TempStreamService(
-            IOptions<ExplorePackagesSettings> options,
-            ILogger<TempStreamService> logger)
+        public TempStreamService(IServiceProvider serviceProvider)
         {
-            _options = options;
-            _logger = logger;
+            _serviceProvider = serviceProvider;
         }
 
         public async Task<Stream> CopyToTempStreamAsync(Func<Stream> getStream, long length)
@@ -32,9 +27,6 @@ namespace Knapcode.ExplorePackages
             return result.Stream;
         }
 
-        public TempStreamWriter GetWriter()
-        {
-            return new TempStreamWriter(_options, _logger);
-        }
+        public TempStreamWriter GetWriter() => _serviceProvider.GetRequiredService<TempStreamWriter>();
     }
 }
