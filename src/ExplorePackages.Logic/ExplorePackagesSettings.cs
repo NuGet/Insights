@@ -10,7 +10,7 @@ namespace Knapcode.ExplorePackages
         public ExplorePackagesSettings()
         {
             GalleryBaseUrl = "https://www.nuget.org";
-            PackagesContainerBaseUrl = "https://api.nuget.org/packages";
+            PackagesContainerBaseUrl = "https://globalcdn.nuget.org/packages";
             V2BaseUrl = "https://www.nuget.org/api/v2";
             V3ServiceIndex = "https://api.nuget.org/v3/index.json";
             DownloadsV1Url = null;
