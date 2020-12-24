@@ -68,7 +68,7 @@ namespace Knapcode.ExplorePackages.Worker
             var minMs = minMinutes * ms;
             var maxMs = maxMinutes * ms;
 
-            return TimeSpan.FromMinutes(ThreadLocalRandom.Next(minMs, maxMs));
+            return TimeSpan.FromMilliseconds(ThreadLocalRandom.Next(minMs, maxMs));
         }
     }
 }
