@@ -30,7 +30,7 @@ namespace Knapcode.ExplorePackages
                 attempt++;
                 if (result != null)
                 {
-                    var sleepDuration = TimeSpan.FromMilliseconds(Math.Max(attempt * 500, 10_000));
+                    var sleepDuration = TimeSpan.FromSeconds(Math.Max(attempt, 10));
                     _logger.LogWarning("Storage semaphore {Name} of count {Count} is not available. Trying again in {SleepDuration}.", name, count, sleepDuration);
                     await Task.Delay(sleepDuration);
                 }

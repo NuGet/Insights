@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Table;
 using static Knapcode.ExplorePackages.StorageUtility;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace Knapcode.ExplorePackages
 {
     public static class CloudTableExtensions
     {

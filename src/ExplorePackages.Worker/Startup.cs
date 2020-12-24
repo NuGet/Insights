@@ -54,7 +54,7 @@ namespace Knapcode.ExplorePackages.Worker
                 var networkDir = Environment.ExpandEnvironmentVariables(Path.Combine("%HOME%", "Knapcode.ExplorePackages", "temp"));
                 settings.TempDirectories.Add(new TempStreamDirectory
                 {
-                    MaxConcurrentWriters = 1,
+                    MaxConcurrentWriters = 4,
                     Path = networkDir,
                 });
             }
