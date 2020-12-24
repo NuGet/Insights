@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -124,34 +125,38 @@ namespace Knapcode.ExplorePackages
                         Directory.CreateDirectory(tempDir);
                     }
 
-                    // Check if there is enough space on the drive.
-                    try
+                    // Try to check if there is enough space on the drive.
+                    if (!GetDiskFreeSpaceEx(tempDir, out var freeBytesAvailable, out var totalNumberOfBytes, out var totalNumberOfFreeBytes))
                     {
-                        var driveInfo = new DriveInfo(tempDir);
-                        var availableBytes = driveInfo.AvailableFreeSpace;
-                        _logger.LogInformation("For temp dir {TempDir}, there are {AvailableBytes} bytes available in drive {DriveName}.", tempDir, availableBytes, driveInfo);
-
-                        if (GetDiskFreeSpaceEx(tempDir, out var availableBytes2, out var _, out var __))
+                        try
                         {
-                            _logger.LogInformation("For temp dir {TempDir}, there are {AvailableBytes} bytes available via P/Invoke.", tempDir, availableBytes2);
+                            throw new Win32Exception(Marshal.GetLastWin32Error());
                         }
+                        catch (Win32Exception ex)
+                        {
+                            _logger.LogWarning(ex, "Could not determine available free space in temp dir {TempDir}.", tempDir);
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogInformation(
+                            "For temp dir {TempDir}, there are {FreeBytesAvailable} bytes available (total: {TotalNumberOfBytes}, total free: {TotalNumberOfFreeBytes}).",
+                            tempDir,
+                            freeBytesAvailable,
+                            totalNumberOfBytes,
+                            totalNumberOfFreeBytes);
 
-                        if (length > availableBytes)
+                        if ((ulong)length > freeBytesAvailable)
                         {
                             _tempDirIndex++;
                             _logger.LogWarning(
-                                "Not enough space in temp dir {TempDir} to buffer a {TypeName} stream with length {LengthBytes} bytes (drive {DriveName} only has {AvailableBytes} bytes).",
+                                "Not enough space in temp dir {TempDir} to buffer a {TypeName} stream with length {LengthBytes} bytes (only {FreeBytesAvailable} bytes available).",
                                 tempDir,
                                 src.GetType().FullName,
                                 length,
-                                driveInfo,
-                                availableBytes);
+                                freeBytesAvailable);
                             continue;
                         }
-                    }
-                    catch (Exception ex) when (ex is ArgumentException || ex is IOException || ex is UnauthorizedAccessException)
-                    {
-                        _logger.LogWarning(ex, "Could not determine available free space in temp dir {TempDir}.", tempDir);
                     }
 
                     var tmpPath = Path.Combine(tempDir, StorageUtility.GenerateDescendingId().ToString());
