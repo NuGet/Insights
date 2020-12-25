@@ -6,7 +6,7 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class CatalogLeafScanMessageProcessor : IMessageProcessor<CatalogLeafScanMessage>
     {
-        private const int MaxAttempts = 5;
+        private const int MaxAttempts = 10;
 
         private readonly CatalogScanDriverFactory _driverFactory;
         private readonly CatalogScanStorageService _storageService;
@@ -85,7 +85,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public static TimeSpan GetMessageDelay(int attemptCount)
         {
-            const int incrementMinutes = 10;
+            const int incrementMinutes = 5;
             var minMinutes = attemptCount <= 1 ? 1 : incrementMinutes * (attemptCount - 1);
             var maxMinutes = attemptCount <= 1 ? incrementMinutes : minMinutes + incrementMinutes;
 
