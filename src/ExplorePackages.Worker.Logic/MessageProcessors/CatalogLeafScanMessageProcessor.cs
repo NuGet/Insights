@@ -71,12 +71,15 @@ namespace Knapcode.ExplorePackages.Worker
                 }
             }
 
+            _logger.LogInformation("Attempting catalog leaf scan.");
             scan.LatestAttempt = DateTimeOffset.UtcNow;
             scan.AttemptCount++;
             await _storageService.ReplaceAsync(scan);
 
             var driver = _driverFactory.Create(scan.ParsedScanType);
             await driver.ProcessLeafAsync(scan);
+
+            _logger.LogInformation("Completed catalog leaf scan.");
             await _storageService.DeleteAsync(scan);
         }
 
