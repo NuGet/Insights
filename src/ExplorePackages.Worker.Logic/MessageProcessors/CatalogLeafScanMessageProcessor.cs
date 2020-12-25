@@ -55,10 +55,10 @@ namespace Knapcode.ExplorePackages.Worker
                 if (remainingDelay > TimeSpan.Zero)
                 {
                     _logger.LogWarning(
-                        "Catalog leaf scan has {AttemptCount} attempts and the message has {DequeueCount} dequeues. Waiting for {RemainingMs}ms.",
+                        "Catalog leaf scan has {AttemptCount} attempts and the message has {DequeueCount} dequeues. Waiting for {RemainingMinutes} minutes.",
                         scan.AttemptCount,
                         dequeueCount,
-                        remainingDelay.TotalMilliseconds);
+                        remainingDelay.TotalMinutes);
 
                     var notBefore = TimeSpan.FromSeconds(60);
                     if (remainingDelay < notBefore)
