@@ -100,6 +100,11 @@ namespace Knapcode.ExplorePackages.Worker
             await GetPageScanTable(pageScan.StorageSuffix).ReplaceAsync(pageScan);
         }
 
+        public async Task ReplaceAsync(CatalogLeafScan leafScan)
+        {
+            await GetLeafScanTable(leafScan.StorageSuffix).ReplaceAsync(leafScan);
+        }
+
         public async Task<int> GetPageScanCountLowerBoundAsync(string storageSuffix, string scanId)
         {
             return await GetPageScanTable(storageSuffix).GetEntityCountLowerBoundAsync<CatalogPageScan>(scanId);

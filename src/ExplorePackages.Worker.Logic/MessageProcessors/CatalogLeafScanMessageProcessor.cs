@@ -31,31 +31,42 @@ namespace Knapcode.ExplorePackages.Worker
                 _logger.LogWarning("No matching leaf scan was found.");
                 return;
             }
-            
+
             // Perform some exponential back-off for leaf-level work. This is important for cases where the leaf
-            // processing performs a very taxing operation and a given node may not be able to handle too many leaves
-            // at once.
-            if (dequeueCount > 1 && message.AttemptCount < 5)
+            // processing performs a very taxing operation and a given worker instance may not be able to handle too
+            // many leaves at once.
+            var attemptCount = Math.Max(scan.AttemptCount, dequeueCount);
+            if (attemptCount > 1)
             {
-                message.AttemptCount++;
-                var delay = GetMessageDelay(Math.Max(dequeueCount, message.AttemptCount));
-                _logger.LogWarning(
-                    "Catalog leaf scan message has attempt count {AttemptCount} and dequeue count {DequeueCount}. Delaying for {DelayMs}.",
-                    message.AttemptCount,
-                    dequeueCount,
-                    delay.TotalMilliseconds);
+                var sinceLatestAttempt = DateTimeOffset.UtcNow - scan.LatestAttempt.GetValueOrDefault(scan.Created);
+                var totalDelay = GetMessageDelay(attemptCount);
+                var remainingDelay = totalDelay - sinceLatestAttempt;
+                if (remainingDelay > TimeSpan.Zero)
+                {
+                    _logger.LogWarning(
+                        "Catalog leaf scan has attempt count {AttemptCount} and the message has dequeue count {DequeueCount}. Waiting for {RemainingMs}ms.",
+                        scan.AttemptCount,
+                        dequeueCount,
+                        remainingDelay.TotalMilliseconds);
 
-                // This will reset the dequeue count back to 0. The next attempt will have a dequeue count of 1.
-                await _messageEnqueuer.EnqueueAsync(new[] { message }, delay);
+                    var notBefore = TimeSpan.FromSeconds(60);
+                    if (remainingDelay < notBefore)
+                    {
+                        notBefore = remainingDelay;
+                    }
+
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, notBefore);
+                    return;
+                }
             }
-            else
-            {
-                var driver = _driverFactory.Create(scan.ParsedScanType);
 
-                await driver.ProcessLeafAsync(scan);
+            scan.LatestAttempt = DateTimeOffset.UtcNow;
+            scan.AttemptCount++;
+            await _storageService.ReplaceAsync(scan);
 
-                await _storageService.DeleteAsync(scan);
-            }
+            var driver = _driverFactory.Create(scan.ParsedScanType);
+            await driver.ProcessLeafAsync(scan);
+            await _storageService.DeleteAsync(scan);
         }
 
         public static TimeSpan GetMessageDelay(int attemptCount)

@@ -10,6 +10,7 @@ namespace Knapcode.ExplorePackages.Worker
             PartitionKey = cursorName;
             RowKey = scanId;
             StorageSuffix = storageSuffix;
+            Created = DateTimeOffset.UtcNow;
         }
 
         public CatalogIndexScan()
@@ -37,6 +38,7 @@ namespace Knapcode.ExplorePackages.Worker
         }
 
         public string StorageSuffix { get; set; }
+        public DateTimeOffset Created { get; set; }
         public string State { get; set; }
         public string ScanType { get; set; }
         public string ScanParameters { get; set; }
