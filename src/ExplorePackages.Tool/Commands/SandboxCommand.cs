@@ -73,6 +73,8 @@ namespace Knapcode.ExplorePackages.Tool
             await Task.Yield();
 
             // await _catalogScanService.InitializeAsync();
+            
+            await _catalogScanService.RequeueAsync("CatalogScan-FindPackageAssemblies", "08585928640987077276-2zbm6qzw65ne5dlde242pezrcm");
 
             /*
             await _findPackageAssembliesDriver.ProcessLeafAsync(new CatalogLeafItem
@@ -82,7 +84,6 @@ namespace Knapcode.ExplorePackages.Tool
                 PackageId = "CNTK.Deps.cuDNN",
                 PackageVersion = "2.6.0-rc0.dev20180823",
             });
-            */
 
             await _findPackageAssembliesDriver.ProcessLeafAsync(new CatalogLeafItem
             {
@@ -91,6 +92,7 @@ namespace Knapcode.ExplorePackages.Tool
                 PackageId = "opencvcuda-debug.redist",
                 PackageVersion = "3.1.0",
             });
+            */
 
             /*
             await _messageEnqueuer.EnqueueAsync(Enumerable
@@ -126,7 +128,6 @@ namespace Knapcode.ExplorePackages.Tool
 
             // await _catalogScanService.UpdateFindPackageAssetsAsync(max: null);
             // await _catalogScanService.UpdateFindPackageAssetsAsync(DateTimeOffset.Parse("2018-08-08T17:29:16.4488298Z"));
-            // await _catalogScanService.RequeueAsync("08585954065972383328-9a556c36a70a48078031b866de666a4b");
             // await EnqueueRunRealRestoreAsync();
             // await EnqueueRunRealRestoreCompactAsync();
             // await ReadErrorBlobsAsync();

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -54,19 +55,22 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             var pageScans = await _catalogScanStorageService.GetPageScansAsync(indexScan.StorageSuffix, indexScan.ScanId);
+            var leafScans = new List<CatalogLeafScan>();
             foreach (var pageScan in pageScans)
             {
-                var leafScans = await _catalogScanStorageService.GetLeafScansAsync(pageScan.StorageSuffix, pageScan.ScanId, pageScan.PageId);
-                await _messageEnqueuer.EnqueueAsync(leafScans
-                    .Select(x => new CatalogLeafScanMessage
-                    {
-                        StorageSuffix = x.StorageSuffix,
-                        ScanId = x.ScanId,
-                        PageId = x.PageId,
-                        LeafId = x.LeafId,
-                    })
-                    .ToList());
+                var pageLeafScans = await _catalogScanStorageService.GetLeafScansAsync(pageScan.StorageSuffix, pageScan.ScanId, pageScan.PageId);
+                leafScans.AddRange(pageLeafScans);
             }
+
+            await _messageEnqueuer.EnqueueAsync(leafScans
+                .Select(x => new CatalogLeafScanMessage
+                {
+                    StorageSuffix = x.StorageSuffix,
+                    ScanId = x.ScanId,
+                    PageId = x.PageId,
+                    LeafId = x.LeafId,
+                })
+                .ToList());
 
             await _messageEnqueuer.EnqueueAsync(pageScans
                 .Select(x => new CatalogPageScanMessage
