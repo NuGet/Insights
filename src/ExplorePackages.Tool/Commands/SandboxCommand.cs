@@ -70,10 +70,8 @@ namespace Knapcode.ExplorePackages.Tool
 
         public async Task ExecuteAsync(CancellationToken token)
         {
-            await Task.Yield();
-
             // await _catalogScanService.InitializeAsync();
-            
+
             await _catalogScanService.RequeueAsync("CatalogScan-FindPackageAssemblies", "08585928640987077276-2zbm6qzw65ne5dlde242pezrcm");
 
             /*

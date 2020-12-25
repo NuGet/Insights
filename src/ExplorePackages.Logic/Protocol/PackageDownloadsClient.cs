@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -13,13 +14,16 @@ namespace Knapcode.ExplorePackages
     public class PackageDownloadsClient : IPackageDownloadsClient
     {
         private readonly HttpClient _httpClient;
+        private readonly IThrottle _throttle;
         private readonly IOptions<ExplorePackagesSettings> _options;
 
         public PackageDownloadsClient(
             HttpClient httpClient,
+            IThrottle throttle,
             IOptions<ExplorePackagesSettings> options)
         {
             _httpClient = httpClient;
+            _throttle = throttle;
             _options = options;
         }
 
@@ -44,6 +48,7 @@ namespace Knapcode.ExplorePackages
                     request.Headers.TryAddWithoutValidation("If-None-Match", etag);
                 }
 
+                await _throttle.WaitAsync();
                 var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
                 disposables.Push(response);
 
@@ -79,10 +84,12 @@ namespace Knapcode.ExplorePackages
                     newEtag,
                     new PackageDownloadsAsyncEnumerator(
                         jsonReader,
-                        disposables));
+                        disposables,
+                        _throttle));
             }
             catch
             {
+                _throttle.Release();
                 DisposeAll(disposables);
                 throw;
             }
@@ -98,18 +105,22 @@ namespace Knapcode.ExplorePackages
 
         private class PackageDownloadsAsyncEnumerator : IAsyncEnumerator<PackageDownloads>
         {
-            private readonly Stack<IDisposable> _disposables;
             private readonly JsonReader _jsonReader;
+            private readonly Stack<IDisposable> _disposables;
+            private readonly IThrottle _throttle;
 
             private State _state;
             private string _currentId;
+            private int _disposed;
 
             public PackageDownloadsAsyncEnumerator(
                 JsonReader jsonReader,
-                Stack<IDisposable> disposables)
+                Stack<IDisposable> disposables,
+                IThrottle throttle)
             {
                 _jsonReader = jsonReader;
                 _disposables = disposables;
+                _throttle = throttle;
                 _state = State.Uninitialized;
             }
 
@@ -117,12 +128,17 @@ namespace Knapcode.ExplorePackages
 
             public void Dispose()
             {
+                if (Interlocked.CompareExchange(ref _disposed, 1, 0) == 0)
+                {
+                    _throttle.Release();
+                }
+
                 DisposeAll(_disposables);
             }
 
             public ValueTask DisposeAsync()
             {
-                DisposeAll(_disposables);
+                Dispose();
                 return default;
             }
 

@@ -77,6 +77,8 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<ServiceClientFactory>();
             serviceCollection.AddTransient<IServiceClientFactory>(x => x.GetRequiredService<ServiceClientFactory>());
 
+            serviceCollection.AddSingleton<IThrottle>(NullThrottle.Instance);
+
             serviceCollection.AddSingleton<UrlReporterProvider>();
             serviceCollection.AddTransient<UrlReporterHandler>();
             serviceCollection.AddTransient<LoggingHandler>();
@@ -93,11 +95,11 @@ namespace Knapcode.ExplorePackages
 
                             return Task.FromResult<HttpHandlerResource>(new HttpMessageHandlerResource(httpMessageHandler));
                         },
-                        NullThrottle.Instance);
+                        x.GetRequiredService<IThrottle>());
                 });
 
             serviceCollection.AddTransient(
-                x => new HttpZipProvider(x.GetRequiredService<HttpClient>())
+                x => new HttpZipProvider(x.GetRequiredService<HttpClient>(), x.GetRequiredService<IThrottle>())
                 {
                     BufferSizeProvider = new ZipBufferSizeProvider(
                         firstBufferSize: 4096,

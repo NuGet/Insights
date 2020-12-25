@@ -316,7 +316,7 @@ namespace Knapcode.ExplorePackages
                 await dest.WriteAsync(buffer, 0, bytesRead);
                 _logger.LogInformation("Wrote {BufferBytes} bytes ({CopiedBytes} of {TotalBytes}, {Percent:P2}).", bytesRead, copiedBytes, length, 1.0 * copiedBytes / length);
             }
-            
+
             if (copiedBytes < dest.Length)
             {
                 _logger.LogInformation("Shortening destination stream from {OldLength} to {NewLength}.", dest.Length, copiedBytes);
