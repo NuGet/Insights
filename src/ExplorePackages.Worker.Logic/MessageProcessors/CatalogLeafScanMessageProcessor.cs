@@ -36,7 +36,7 @@ namespace Knapcode.ExplorePackages.Worker
             // processing performs a very taxing operation and a given worker instance may not be able to handle too
             // many leaves at once.
             var attemptCount = Math.Max(scan.AttemptCount, dequeueCount);
-            if (attemptCount > 1)
+            if (attemptCount > 1 && attemptCount <= 5)
             {
                 var sinceLatestAttempt = DateTimeOffset.UtcNow - scan.LatestAttempt.GetValueOrDefault(scan.Created);
                 var totalDelay = GetMessageDelay(attemptCount);
