@@ -42,7 +42,8 @@ namespace Knapcode.ExplorePackages.Worker
 
             await Target.EnqueueAsync(
                 Enumerable.Range(0, messageCount).Select(i => GetSerializedMessage(i, byteCount)).ToList(),
-                schema);
+                schema,
+                TimeSpan.Zero);
 
             Assert.Equal((messageCount / perBatch) + (messageCount % perBatch > 0 ? 1 : 0), EnqueuedMessages.Count);
             for (var i = 0; i < messageCount; i++)

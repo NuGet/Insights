@@ -10,6 +10,8 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class MessageEnqueuer
     {
+        private delegate Task AddAsync(IReadOnlyList<string> messages, TimeSpan notBefore);
+
         private readonly SchemaSerializer _serializer;
         private readonly IMessageBatcher _batcher;
         private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
@@ -34,10 +36,12 @@ namespace Knapcode.ExplorePackages.Worker
 
         public Task EnqueueAsync<T>(IReadOnlyList<T> messages) => EnqueueAsync(messages, TimeSpan.Zero);
         public Task EnqueueAsync<T>(IReadOnlyList<T> messages, TimeSpan notBefore) => EnqueueAsync(messages, _serializer.GetSerializer<T>(), notBefore);
+        internal Task EnqueueAsync<T>(IReadOnlyList<T> messages, ISchemaSerializer<T> serializer, TimeSpan notBefore) => EnqueueAsync(_rawMessageEnqueuer.AddAsync, messages, serializer, notBefore);
 
-        internal Task EnqueueAsync<T>(IReadOnlyList<T> messages, ISchemaSerializer<T> serializer) => EnqueueAsync(messages, serializer, TimeSpan.Zero);
+        public Task EnqueuePoisonAsync<T>(IReadOnlyList<T> messages) => EnqueuePoisonAsync(messages, TimeSpan.Zero);
+        public Task EnqueuePoisonAsync<T>(IReadOnlyList<T> messages, TimeSpan notBefore) => EnqueueAsync(_rawMessageEnqueuer.AddPoisonAsync, messages, _serializer.GetSerializer<T>(), notBefore);
 
-        internal async Task EnqueueAsync<T>(IReadOnlyList<T> messages, ISchemaSerializer<T> serializer, TimeSpan notBefore)
+        private async Task EnqueueAsync<T>(AddAsync addAsync, IReadOnlyList<T> messages, ISchemaSerializer<T> serializer, TimeSpan notBefore)
         {
             if (messages.Count == 0)
             {
@@ -55,7 +59,7 @@ namespace Knapcode.ExplorePackages.Worker
             if (!bulkEnqueueStrategy.IsEnabled || messages.Count < bulkEnqueueStrategy.Threshold)
             {
                 var serializedMessages = messages.Select(m => serializer.SerializeMessage(m).AsString()).ToList();
-                await _rawMessageEnqueuer.AddAsync(serializedMessages, notBefore);
+                await addAsync(serializedMessages, notBefore);
             }
             else
             {
@@ -85,7 +89,7 @@ namespace Knapcode.ExplorePackages.Worker
                         var newBatchMessageLength = batchMessageLength + ",".Length + innerDataLength;
                         if (newBatchMessageLength > bulkEnqueueStrategy.MaxSize)
                         {
-                            await EnqueueBulkEnqueueMessageAsync(batchMessage, batchMessageLength);
+                            await EnqueueBulkEnqueueMessageAsync(addAsync, batchMessage, batchMessageLength);
                             batch.Clear();
                             batch.Add(innerData.AsJToken());
                             batchMessageLength = emptyBatchMessageLength + innerDataLength;
@@ -100,12 +104,12 @@ namespace Knapcode.ExplorePackages.Worker
 
                 if (batch.Count > 0)
                 {
-                    await EnqueueBulkEnqueueMessageAsync(batchMessage, batchMessageLength);
+                    await EnqueueBulkEnqueueMessageAsync(addAsync, batchMessage, batchMessageLength);
                 }
             }
         }
 
-        private async Task EnqueueBulkEnqueueMessageAsync(HomogeneousBulkEnqueueMessage batchMessage, int expectedLength)
+        private async Task EnqueueBulkEnqueueMessageAsync(AddAsync addAsync, HomogeneousBulkEnqueueMessage batchMessage, int expectedLength)
         {
             var bytes = _serializer.Serialize(batchMessage).AsString();
             if (bytes.Length != expectedLength)
@@ -117,7 +121,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             _logger.LogInformation("Enqueueing a bulk enqueue message containing {Count} individual messages.", batchMessage.Messages.Count);
-            await _rawMessageEnqueuer.AddAsync(new[] { bytes });
+            await addAsync(new[] { bytes }, TimeSpan.Zero);
         }
 
         private int GetMessageLength(HomogeneousBulkEnqueueMessage batchMessage)

@@ -59,6 +59,21 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task AddAsync(IReadOnlyList<string> messages, TimeSpan visibilityDelay)
         {
+            await AddAsync(_workerQueueFactory.GetQueue, messages, visibilityDelay);
+        }
+
+        public async Task AddPoisonAsync(IReadOnlyList<string> messages)
+        {
+            await AddPoisonAsync(messages, TimeSpan.Zero);
+        }
+
+        public async Task AddPoisonAsync(IReadOnlyList<string> messages, TimeSpan visibilityDelay)
+        {
+            await AddAsync(_workerQueueFactory.GetPoisonQueue, messages, visibilityDelay);
+        }
+
+        private async Task AddAsync(Func<CloudQueue> getQueue, IReadOnlyList<string> messages, TimeSpan visibilityDelay)
+        {
             if (messages.Count == 0)
             {
                 return;
@@ -67,8 +82,8 @@ namespace Knapcode.ExplorePackages.Worker
             var workers = Math.Min(messages.Count, _options.Value.EnqueueWorkers);
             if (workers < 2)
             {
-                _logger.LogInformation("Enqueueing {Count} individual messages.", messages.Count);
-                var queue = _workerQueueFactory.GetQueue();
+                var queue = getQueue();
+                _logger.LogInformation("Enqueueing {Count} individual messages to {QueueName}.", messages.Count, queue.Name);
                 var completedCount = 0;
                 foreach (var message in messages)
                 {
@@ -79,22 +94,24 @@ namespace Knapcode.ExplorePackages.Worker
                         _logger.LogInformation("Enqueued {CompletedCount} of {TotalCount} messages.", completedCount, messages.Count);
                     }
                 }
-                _logger.LogInformation("Done enqueueing {Count} individual messages.", messages.Count);
+                _logger.LogInformation("Done enqueueing {Count} individual messages to {QueueName}.", messages.Count, queue.Name);
             }
             else
             {
                 var work = new ConcurrentQueue<string>(messages);
 
+                var queueName = getQueue().Name;
                 _logger.LogInformation(
-                    "Enqueueing {MessageCount} individual messages with {WorkerCount} workers.",
+                    "Enqueueing {MessageCount} individual messages to {QueueName} with {WorkerCount} workers.",
                     messages.Count,
+                    queueName,
                     workers);
 
                 var tasks = Enumerable
                     .Range(0, workers)
                     .Select(async i =>
                     {
-                        var queue = _workerQueueFactory.GetQueue();
+                        var queue = getQueue();
                         while (work.TryDequeue(out var message))
                         {
                             await AddMessageAsync(queue, message, visibilityDelay);
@@ -103,6 +120,12 @@ namespace Knapcode.ExplorePackages.Worker
                     .ToList();
 
                 await Task.WhenAll(tasks);
+
+                _logger.LogInformation(
+                    "Done enqueueing {MessageCount} individual messages to {QueueName} with {WorkerCount} workers.",
+                    messages.Count,
+                    queueName,
+                    workers);
             }
         }
 

@@ -6,6 +6,8 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class CatalogLeafScanMessageProcessor : IMessageProcessor<CatalogLeafScanMessage>
     {
+        private const int MaxAttempts = 5;
+
         private readonly CatalogScanDriverFactory _driverFactory;
         private readonly CatalogScanStorageService _storageService;
         private readonly MessageEnqueuer _messageEnqueuer;
@@ -31,20 +33,29 @@ namespace Knapcode.ExplorePackages.Worker
                 _logger.LogWarning("No matching leaf scan was found.");
                 return;
             }
+            
+            // Since we copy this message, the dequeue count will be reset. Therefore we use both the attempt count on
+            // the scan record and the dequeue count on the current message copy to determine the number of attempts.
+            var totalAttempts = Math.Max(scan.AttemptCount, dequeueCount);
+            if (totalAttempts > MaxAttempts)
+            {
+                _logger.LogError("Moving message with {AttemptCount} attempts and {DequeueCount} dequeues (on the current message copy) to the poison queue.", scan.AttemptCount, dequeueCount);
+                await _messageEnqueuer.EnqueuePoisonAsync(new[] { message });
+                return;
+            }
 
             // Perform some exponential back-off for leaf-level work. This is important for cases where the leaf
             // processing performs a very taxing operation and a given worker instance may not be able to handle too
             // many leaves at once.
-            var attemptCount = Math.Max(scan.AttemptCount, dequeueCount);
-            if (attemptCount > 1 && attemptCount <= 5)
+            if (totalAttempts > 1)
             {
                 var sinceLatestAttempt = DateTimeOffset.UtcNow - scan.LatestAttempt.GetValueOrDefault(scan.Created);
-                var totalDelay = GetMessageDelay(attemptCount);
+                var totalDelay = GetMessageDelay(totalAttempts);
                 var remainingDelay = totalDelay - sinceLatestAttempt;
                 if (remainingDelay > TimeSpan.Zero)
                 {
                     _logger.LogWarning(
-                        "Catalog leaf scan has attempt count {AttemptCount} and the message has dequeue count {DequeueCount}. Waiting for {RemainingMs}ms.",
+                        "Catalog leaf scan has {AttemptCount} attempts and the message has {DequeueCount} dequeues. Waiting for {RemainingMs}ms.",
                         scan.AttemptCount,
                         dequeueCount,
                         remainingDelay.TotalMilliseconds);
@@ -75,9 +86,9 @@ namespace Knapcode.ExplorePackages.Worker
             var minMinutes = attemptCount <= 1 ? 1 : incrementMinutes * (attemptCount - 1);
             var maxMinutes = attemptCount <= 1 ? incrementMinutes : minMinutes + incrementMinutes;
 
-            const int ms = 1000;
-            var minMs = minMinutes * ms;
-            var maxMs = maxMinutes * ms;
+            const int msPerMinute = 60 * 1000;
+            var minMs = minMinutes * msPerMinute;
+            var maxMs = maxMinutes * msPerMinute;
 
             return TimeSpan.FromMilliseconds(ThreadLocalRandom.Next(minMs, maxMs));
         }
