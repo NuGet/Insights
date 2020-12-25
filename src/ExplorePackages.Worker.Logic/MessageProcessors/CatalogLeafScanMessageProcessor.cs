@@ -55,7 +55,7 @@ namespace Knapcode.ExplorePackages.Worker
                 if (remainingDelay > TimeSpan.Zero)
                 {
                     _logger.LogWarning(
-                        "Catalog leaf scan has {AttemptCount} attempts and the message has {DequeueCount} dequeues. Waiting for {RemainingMinutes} minutes.",
+                        "Catalog leaf scan has {AttemptCount} attempts and the message has {DequeueCount} dequeues. Waiting for {RemainingMinutes:F2} minutes.",
                         scan.AttemptCount,
                         dequeueCount,
                         remainingDelay.TotalMinutes);
