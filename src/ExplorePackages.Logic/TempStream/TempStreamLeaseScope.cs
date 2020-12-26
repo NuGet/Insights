@@ -91,14 +91,20 @@ namespace Knapcode.ExplorePackages
             return new Lazy<Task<AutoRenewingStorageLeaseResult>>(async () =>
             {
                 Interlocked.Increment(ref _inProgressCount);
-                var result = await _semaphoreService.WaitAsync(name, count, timeout);
-                if (result.Acquired)
+                try
                 {
-                    Interlocked.Increment(ref _acquiredCount);
-                }
-                Interlocked.Decrement(ref _inProgressCount);
+                    var result = await _semaphoreService.WaitAsync(name, count, timeout);
+                    if (result.Acquired)
+                    {
+                        Interlocked.Increment(ref _acquiredCount);
+                    }
 
-                return result;
+                    return result;
+                }
+                finally
+                {
+                    Interlocked.Decrement(ref _inProgressCount);
+                }
             });
         }
 
