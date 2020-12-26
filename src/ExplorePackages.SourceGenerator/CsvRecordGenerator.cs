@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Humanizer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -25,16 +27,27 @@ using Knapcode.ExplorePackages;
 
 namespace {0}
 {{
-    partial class {1}
+    /* Kusto DDL:
+
+    .drop table {1};
+
+    .create table {1} (
+{2}
+    );
+
+    .create table {1} ingestion csv mapping '{1}_mapping' '{3}'
+
+    */
+    partial class {4}
     {{
         public void Write(TextWriter writer)
         {{
-{2}
+{5}
         }}
 
         public void Read(Func<string> getNextField)
         {{
-{3}
+{6}
         }}
     }}
 }}
@@ -104,9 +117,19 @@ namespace {0}
                 }
 
                 var classNamespacePrefix = classModel.ContainingNamespace.ToString() + ".";
-                var writerBuilder = new StringBuilder();
-                var readerBuilder = new StringBuilder();
-                const int indent = 12;
+
+                var kustoTableBuilder = new KustoTableBuilder(indent: 8);
+                var kustoMappingBuilder = new KustoMappingBuilder();
+                var writerBuilder = new WriteBuilder(indent: 12);
+                var readerBuilder = new ReadBuilder(indent: 12);
+
+                var visitors = new IPropertyVisitor[]
+                {
+                    kustoTableBuilder,
+                    kustoMappingBuilder,
+                    writerBuilder,
+                    readerBuilder,
+                };
 
                 var sortedProperties = new List<IPropertySymbol>();
                 var currentType = classModel;
@@ -124,134 +147,37 @@ namespace {0}
 
                 foreach (var propertySymbol in sortedProperties)
                 {
-                    if (writerBuilder.Length > 0)
-                    {
-                        writerBuilder.AppendLine();
-                        writerBuilder.Append(' ', indent);
-                        writerBuilder.AppendLine("writer.Write(',');");
-                    }
-
-                    if (readerBuilder.Length > 0)
-                    {
-                        readerBuilder.AppendLine();
-                    }
-
                     var propType = propertySymbol.Type.ToString();
                     var propName = propertySymbol.Name;
 
-                    var nonNullPropType = propType.TrimEnd('?');
-
-                    // Clean up the type name by removing unnecessary namespaces.
-                    const string systemPrefix = "System.";
-                    if (nonNullPropType.StartsWith(systemPrefix) && nonNullPropType.IndexOf('.', systemPrefix.Length) < 0)
+                    var prettyType = PropertyHelper.GetPrettyType(classNamespacePrefix, propertyNames, propertySymbol);
+                    foreach (var visitor in visitors)
                     {
-                        nonNullPropType = nonNullPropType.Substring(systemPrefix.Length);
-                    }
-
-                    if (nonNullPropType.StartsWith(classNamespacePrefix))
-                    {
-                        nonNullPropType = nonNullPropType.Substring(classNamespacePrefix.Length);
-                    }
-
-                    // To avoid property name collisions, only use the pretty version if it doesn't match a property name.
-                    if (propertyNames.Contains(nonNullPropType))
-                    {
-                        nonNullPropType = propType.TrimEnd();
-                    }
-
-                    writerBuilder.Append(' ', indent);
-
-                    readerBuilder.Append(' ', indent);
-
-                    switch (propType)
-                    {
-                        case "bool":
-                            writerBuilder.AppendFormat("writer.Write(CsvUtility.FormatBool({0}));", propName);
-                            readerBuilder.AppendFormat("{0} = {1}.Parse(getNextField());", propName, nonNullPropType);
-                            break;
-                        case "bool?":
-                            writerBuilder.AppendFormat("writer.Write(CsvUtility.FormatBool({0}));", propName);
-                            readerBuilder.AppendFormat("{0} = CsvUtility.ParseNullable(getNextField(), {1}.Parse);", propName, nonNullPropType);
-                            break;
-                        case "short":
-                        case "short?":
-                        case "ushort":
-                        case "ushort?":
-                        case "int":
-                        case "int?":
-                        case "uint":
-                        case "uint?":
-                        case "long":
-                        case "long?":
-                        case "ulong":
-                        case "ulong?":
-                        case "System.Guid":
-                        case "System.Guid?":
-                        case "System.TimeSpan":
-                        case "System.TimeSpan?":
-                            writerBuilder.AppendFormat("writer.Write({0});", propName);
-                            if (propType.EndsWith("?"))
-                            {
-                                readerBuilder.AppendFormat("{0} = CsvUtility.ParseNullable(getNextField(), {1}.Parse);", propName, nonNullPropType);
-                            }
-                            else
-                            {
-                                readerBuilder.AppendFormat("{0} = {1}.Parse(getNextField());", propName, nonNullPropType);
-                            }
-                            break;
-                        case "System.Version":
-                            writerBuilder.AppendFormat("writer.Write({0});", propName);
-                            readerBuilder.AppendFormat("{0} = CsvUtility.ParseReference(getNextField(), {1}.Parse);", propName, nonNullPropType);
-                            break;
-                        case "string":
-                            writerBuilder.AppendFormat("CsvUtility.WriteWithQuotes(writer, {0});", propName);
-                            readerBuilder.AppendFormat("{0} = getNextField();", propName);
-                            break;
-                        case "System.DateTimeOffset":
-                            writerBuilder.AppendFormat("writer.Write(CsvUtility.FormatDateTimeOffset({0}));", propName);
-                            readerBuilder.AppendFormat("{0} = CsvUtility.ParseDateTimeOffset(getNextField());", propName);
-                            break;
-                        case "System.DateTimeOffset?":
-                            writerBuilder.AppendFormat("writer.Write(CsvUtility.FormatDateTimeOffset({0}));", propName);
-                            readerBuilder.AppendFormat("{0} = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset);", propName);
-                            break;
-                        default:
-                            if (propertySymbol.Type.TypeKind == TypeKind.Enum)
-                            {
-                                writerBuilder.AppendFormat("writer.Write({0});", propName);
-                                if (propType.EndsWith("?"))
-                                {
-                                    readerBuilder.AppendFormat("{0} = CsvUtility.ParseNullable(getNextField(), Enum.Parse<{1}>);", propName, nonNullPropType);
-                                }
-                                else
-                                {
-                                    readerBuilder.AppendFormat("{0} = Enum.Parse<{1}>(getNextField());", propName, nonNullPropType);
-                                }
-                            }
-                            else
-                            {
-                                writerBuilder.AppendFormat("CsvUtility.WriteWithQuotes(writer, {0}?.ToString());", propName);
-                                readerBuilder.AppendFormat("{0} = Parse{0}(getNextField());", propName);
-                            }
-                            break;
+                        visitor.OnProperty(propertySymbol, prettyType);
                     }
                 }
 
-                writerBuilder.AppendLine();
-                writerBuilder.Append(' ', indent);
-                writerBuilder.Append("writer.WriteLine();");
+                foreach (var visitor in visitors)
+                {
+                    visitor.Finish();
+                }
 
                 var className = declaredClass.Identifier.Text;
+                var kustoTableName = "Jver" + className.Pluralize();
+
                 context.AddSource(
                     $"{className}.{InterfaceName}.cs",
                     SourceText.From(
                         string.Format(
                             Template,
                             classModel.ContainingNamespace,
+                            kustoTableName,
+                            kustoTableBuilder.GetResult(),
+                            kustoMappingBuilder.GetResult(),
                             className,
-                            writerBuilder,
-                            readerBuilder),
-                        Encoding.UTF8));
+                            writerBuilder.GetResult(),
+                            readerBuilder.GetResult()),
+                        Encoding.UTF8)); ;
             }
         }
 

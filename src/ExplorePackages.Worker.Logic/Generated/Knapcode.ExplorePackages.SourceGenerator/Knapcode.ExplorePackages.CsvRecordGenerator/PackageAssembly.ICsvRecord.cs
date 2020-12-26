@@ -5,6 +5,37 @@ using Knapcode.ExplorePackages;
 
 namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
 {
+    /* Kusto DDL:
+
+    .drop table JverPackageAssemblies;
+
+    .create table JverPackageAssemblies (
+        ScanId: guid,
+        ScanTimestamp: datetime,
+        Id: string,
+        Version: string,
+        CatalogCommitTimestamp: datetime,
+        Created: datetime,
+        ResultType: string,
+        Path: string,
+        CompressedLength: long,
+        UncompressedLength: long,
+        Name: string,
+        AssemblyVersion: string,
+        Culture: string,
+        AssemblyNameHasCultureNotFoundException: bool,
+        AssemblyNameHasFileLoadException: bool,
+        PublicKeyToken: string,
+        PublicKeyTokenHasSecurityException: bool,
+        HashAlgorithm: string,
+        HasPublicKey: bool,
+        PublicKeyLength: int,
+        PublicKeyHash: string
+    );
+
+    .create table JverPackageAssemblies ingestion csv mapping 'JverPackageAssemblies_mapping' '[{"Name":"ScanId","Ordinal":0,"DataType":"guid"},{"Name":"ScanTimestamp","Ordinal":1,"DataType":"datetime"},{"Name":"Id","Ordinal":2,"DataType":"string"},{"Name":"Version","Ordinal":3,"DataType":"string"},{"Name":"CatalogCommitTimestamp","Ordinal":4,"DataType":"datetime"},{"Name":"Created","Ordinal":5,"DataType":"datetime"},{"Name":"ResultType","Ordinal":6,"DataType":"string"},{"Name":"Path","Ordinal":7,"DataType":"string"},{"Name":"CompressedLength","Ordinal":8,"DataType":"long"},{"Name":"UncompressedLength","Ordinal":9,"DataType":"long"},{"Name":"Name","Ordinal":10,"DataType":"string"},{"Name":"AssemblyVersion","Ordinal":11,"DataType":"string"},{"Name":"Culture","Ordinal":12,"DataType":"string"},{"Name":"AssemblyNameHasCultureNotFoundException","Ordinal":13,"DataType":"bool"},{"Name":"AssemblyNameHasFileLoadException","Ordinal":14,"DataType":"bool"},{"Name":"PublicKeyToken","Ordinal":15,"DataType":"string"},{"Name":"PublicKeyTokenHasSecurityException","Ordinal":16,"DataType":"bool"},{"Name":"HashAlgorithm","Ordinal":17,"DataType":"string"},{"Name":"HasPublicKey","Ordinal":18,"DataType":"bool"},{"Name":"PublicKeyLength","Ordinal":19,"DataType":"int"},{"Name":"PublicKeyHash","Ordinal":20,"DataType":"string"}]'
+
+    */
     partial class PackageAssembly
     {
         public void Write(TextWriter writer)

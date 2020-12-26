@@ -5,6 +5,46 @@ using Knapcode.ExplorePackages;
 
 namespace Knapcode.ExplorePackages.Worker.RunRealRestore
 {
+    /* Kusto DDL:
+
+    .drop table JverRealRestoreResults;
+
+    .create table JverRealRestoreResults (
+        Timestamp: datetime,
+        DotnetVersion: string,
+        Duration: timespan,
+        Id: string,
+        Version: string,
+        Framework: string,
+        Template: string,
+        TargetCount: int,
+        LibraryCount: int,
+        RestoreSucceeded: bool,
+        BuildSucceeded: bool,
+        DependencyCount: int,
+        FrameworkAssemblyCount: int,
+        FrameworkReferenceCount: int,
+        RuntimeAssemblyCount: int,
+        ResourceAssemblyCount: int,
+        CompileTimeAssemblyCount: int,
+        NativeLibraryCount: int,
+        BuildCount: int,
+        BuildMultiTargetingCount: int,
+        ContentFileCount: int,
+        RuntimeTargetCount: int,
+        ToolAssemblyCount: int,
+        EmbedAssemblyCount: int,
+        ErrorBlobPath: string,
+        RestoreLogMessageCodes: string,
+        OnlyNU1202: bool,
+        OnlyNU1213: bool,
+        BuildErrorCodes: string,
+        OnlyMSB3644: bool
+    );
+
+    .create table JverRealRestoreResults ingestion csv mapping 'JverRealRestoreResults_mapping' '[{"Name":"Timestamp","Ordinal":0,"DataType":"datetime"},{"Name":"DotnetVersion","Ordinal":1,"DataType":"string"},{"Name":"Duration","Ordinal":2,"DataType":"timespan"},{"Name":"Id","Ordinal":3,"DataType":"string"},{"Name":"Version","Ordinal":4,"DataType":"string"},{"Name":"Framework","Ordinal":5,"DataType":"string"},{"Name":"Template","Ordinal":6,"DataType":"string"},{"Name":"TargetCount","Ordinal":7,"DataType":"int"},{"Name":"LibraryCount","Ordinal":8,"DataType":"int"},{"Name":"RestoreSucceeded","Ordinal":9,"DataType":"bool"},{"Name":"BuildSucceeded","Ordinal":10,"DataType":"bool"},{"Name":"DependencyCount","Ordinal":11,"DataType":"int"},{"Name":"FrameworkAssemblyCount","Ordinal":12,"DataType":"int"},{"Name":"FrameworkReferenceCount","Ordinal":13,"DataType":"int"},{"Name":"RuntimeAssemblyCount","Ordinal":14,"DataType":"int"},{"Name":"ResourceAssemblyCount","Ordinal":15,"DataType":"int"},{"Name":"CompileTimeAssemblyCount","Ordinal":16,"DataType":"int"},{"Name":"NativeLibraryCount","Ordinal":17,"DataType":"int"},{"Name":"BuildCount","Ordinal":18,"DataType":"int"},{"Name":"BuildMultiTargetingCount","Ordinal":19,"DataType":"int"},{"Name":"ContentFileCount","Ordinal":20,"DataType":"int"},{"Name":"RuntimeTargetCount","Ordinal":21,"DataType":"int"},{"Name":"ToolAssemblyCount","Ordinal":22,"DataType":"int"},{"Name":"EmbedAssemblyCount","Ordinal":23,"DataType":"int"},{"Name":"ErrorBlobPath","Ordinal":24,"DataType":"string"},{"Name":"RestoreLogMessageCodes","Ordinal":25,"DataType":"string"},{"Name":"OnlyNU1202","Ordinal":26,"DataType":"bool"},{"Name":"OnlyNU1213","Ordinal":27,"DataType":"bool"},{"Name":"BuildErrorCodes","Ordinal":28,"DataType":"string"},{"Name":"OnlyMSB3644","Ordinal":29,"DataType":"bool"}]'
+
+    */
     partial class RealRestoreResult
     {
         public void Write(TextWriter writer)
