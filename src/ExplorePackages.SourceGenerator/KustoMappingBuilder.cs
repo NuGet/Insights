@@ -19,11 +19,14 @@ namespace Knapcode.ExplorePackages
 
         public void OnProperty(IPropertySymbol symbol, string prettyPropType)
         {
-            var field = new FieldMapping
+            var field = new DataMapping
             {
-                Name = symbol.Name,
-                Ordinal = _nextOrdinal,
+                Column = symbol.Name,
                 DataType = PropertyHelper.GetKustoDataType(symbol),
+                Properties = new CsvProperties
+                {
+                    Ordinal = _nextOrdinal,
+                }
             };
             _nextOrdinal++;
 
@@ -45,11 +48,21 @@ namespace Knapcode.ExplorePackages
 
         public string GetResult() => _builder.ToString();
 
-        private class FieldMapping
+        /// <summary>
+        /// Source: https://docs.microsoft.com/en-us/azure/data-explorer/kusto/management/mappings
+        /// </summary>
+        private class DataMapping
         {
-            public string Name { get; set; }
-            public int Ordinal { get; set; }
+            public string Column { get; set; }
+
             public string DataType { get; set; }
+
+            public CsvProperties Properties { get; set; }
+        }
+
+        private class CsvProperties
+        {
+            public int Ordinal { get; set; }
         }
     }
 }
