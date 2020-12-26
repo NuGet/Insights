@@ -92,15 +92,20 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 var assemblies = new List<PackageAssembly>();
                 foreach (var entry in entries)
                 {
-                    var assembly = await AnalyzeAsync(scanId, scanTimestamp, leaf, entry);
-                    assemblies.Add(assembly);
+                    var assemblyResult = await AnalyzeAsync(scanId, scanTimestamp, leaf, entry);
+                    if (assemblyResult.Type == DriverResultType.TryAgainLater)
+                    {
+                        return DriverResult.TryAgainLater<List<PackageAssembly>>();
+                    }
+
+                    assemblies.Add(assemblyResult.Value);
                 }
 
                 return DriverResult.Success(assemblies);
             }
         }
 
-        private async Task<PackageAssembly> AnalyzeAsync(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, ZipArchiveEntry entry)
+        private async Task<DriverResult<PackageAssembly>> AnalyzeAsync(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, ZipArchiveEntry entry)
         {
             var assembly = new PackageAssembly(scanId, scanTimestamp, leaf, PackageAssemblyResultType.ValidAssembly)
             {
@@ -113,16 +118,20 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 EntryUncompressedLength = entry.Length,
             };
 
-            await AnalyzeAsync(assembly, entry);
+            var result = await AnalyzeAsync(assembly, entry);
+            if (result.Type == DriverResultType.TryAgainLater)
+            {
+                return DriverResult.TryAgainLater<PackageAssembly>();
+            }
 
             assembly.HasException = assembly.AssemblyNameHasCultureNotFoundException.GetValueOrDefault(false)
                 || assembly.AssemblyNameHasFileLoadException.GetValueOrDefault(false)
                 || assembly.PublicKeyTokenHasSecurityException.GetValueOrDefault(false);
 
-            return assembly;
+            return DriverResult.Success(assembly);
         }
 
-        private async Task AnalyzeAsync(PackageAssembly assembly, ZipArchiveEntry entry)
+        private async Task<DriverResult> AnalyzeAsync(PackageAssembly assembly, ZipArchiveEntry entry)
         {
             _logger.LogInformation("Analyzing ZIP entry {FullName} of length {Length} bytes.", entry.FullName, entry.Length);
 
@@ -137,7 +146,12 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 {
                     assembly.ResultType = PackageAssemblyResultType.InvalidZipEntry;
                     _logger.LogWarning(ex, "Package {Id} {Version} has an invalid ZIP entry: {Path}", assembly.Id, assembly.Version, assembly.Path);
-                    return;
+                    return DriverResult.Success();
+                }
+
+                if (tempStreamResult.Type == TempStreamResultType.SemaphoreTimeout)
+                {
+                    return DriverResult.TryAgainLater();
                 }
 
                 assembly.ActualUncompressedLength = tempStreamResult.Stream.Length;
@@ -147,14 +161,14 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 if (!peReader.HasMetadata)
                 {
                     assembly.ResultType = PackageAssemblyResultType.NoManagedMetadata;
-                    return;
+                    return DriverResult.Success();
                 }
 
                 var metadataReader = peReader.GetMetadataReader();
                 if (!metadataReader.IsAssembly)
                 {
                     assembly.ResultType = PackageAssemblyResultType.DoesNotContainAssembly;
-                    return;
+                    return DriverResult.Success();
                 }
 
                 var assemblyDefinition = metadataReader.GetAssemblyDefinition();
@@ -169,11 +183,14 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 {
                     SetPublicKeyTokenInfo(assembly, assemblyName);
                 }
+
+                return DriverResult.Success();
             }
             catch (BadImageFormatException ex)
             {
                 assembly.ResultType = PackageAssemblyResultType.NotManagedAssembly;
                 _logger.LogWarning(ex, "Package {Id} {Version} has an unmanaged assembly: {Path}", assembly.Id, assembly.Version, assembly.Path);
+                return DriverResult.Success();
             }
             finally
             {

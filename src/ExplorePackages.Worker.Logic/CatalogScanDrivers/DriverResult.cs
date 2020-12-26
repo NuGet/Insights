@@ -11,15 +11,10 @@ namespace Knapcode.ExplorePackages.Worker
 
         public DriverResultType Type { get; }
 
-        public static DriverResult<T> Success<T>(T value)
-        {
-            return new DriverResult<T>(DriverResultType.Success, value);
-        }
-
-        public static DriverResult<T> TryAgainLater<T>()
-        {
-            return new DriverResult<T>(DriverResultType.TryAgainLater, default);
-        }
+        public static DriverResult Success() => new DriverResult(DriverResultType.Success);
+        public static DriverResult<T> Success<T>(T value) => new DriverResult<T>(DriverResultType.Success, value);
+        public static DriverResult TryAgainLater() => new DriverResult(DriverResultType.TryAgainLater);
+        public static DriverResult<T> TryAgainLater<T>() => new DriverResult<T>(DriverResultType.TryAgainLater, default);
     }
 
     public class DriverResult<T> : DriverResult
