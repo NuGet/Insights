@@ -1,9 +1,12 @@
-﻿namespace Knapcode.ExplorePackages
+﻿using System;
+
+namespace Knapcode.ExplorePackages
 {
     public class TempStreamDirectory
     {
         public string Path { get; set; }
         public int? MaxConcurrentWriters { get; set; }
+        public TimeSpan SemaphoreTimeout { get; set; } = TimeSpan.Zero;
         public bool PreallocateFile { get; set; } = true;
 
         public static implicit operator TempStreamDirectory(string Path) => new TempStreamDirectory { Path = Path };

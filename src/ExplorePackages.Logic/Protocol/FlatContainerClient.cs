@@ -55,7 +55,7 @@ namespace Knapcode.ExplorePackages
             return url;
         }
 
-        public async Task<Stream> DownloadPackageContentToFileAsync(string id, string version, CancellationToken token)
+        public async Task<TempStreamResult> DownloadPackageContentToFileAsync(string id, string version, CancellationToken token)
         {
             var url = await GetPackageContentUrlAsync(id, version);
             var nuGetLogger = _logger.ToNuGetLogger();
@@ -84,8 +84,9 @@ namespace Knapcode.ExplorePackages
                     return null;
                 }
             }
-            while (!result.Success);
-            return result.Stream;
+            while (result.Type == TempStreamResultType.NeedNewStream);
+
+            return result;
         }
 
         public async Task<NuspecContext> GetNuspecContextAsync(string id, string version, CancellationToken token)

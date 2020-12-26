@@ -40,7 +40,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
         public string ResultsContainerName => _options.Value.FindPackageAssetsContainerName;
         public List<PackageAsset> Prune(List<PackageAsset> records) => PackageRecord.Prune(records);
 
-        public async Task<List<PackageAsset>> ProcessLeafAsync(CatalogLeafItem item)
+        public async Task<DriverResult<List<PackageAsset>>> ProcessLeafAsync(CatalogLeafItem item)
         {
             Guid? scanId = null;
             DateTimeOffset? scanTimestamp = null;
@@ -53,7 +53,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             if (item.Type == CatalogLeafType.PackageDelete)
             {
                 var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
-                return new List<PackageAsset> { new PackageAsset(scanId, scanTimestamp, leaf) };
+                return DriverResult.Success(new List<PackageAsset> { new PackageAsset(scanId, scanTimestamp, leaf) });
             }
             else
             {
@@ -63,24 +63,22 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
                 List<string> files;
                 try
                 {
-                    using (var reader = await _httpZipProvider.GetReaderAsync(new Uri(url)))
-                    {
-                        var zipDirectory = await reader.ReadAsync();
-                        files = zipDirectory
-                            .Entries
-                            .Select(x => x.GetName())
-                            .Select(x => x.Replace('\\', '/'))
-                            .Distinct()
-                            .ToList();
-                    }
+                    using var reader = await _httpZipProvider.GetReaderAsync(new Uri(url));
+                    var zipDirectory = await reader.ReadAsync();
+                    files = zipDirectory
+                        .Entries
+                        .Select(x => x.GetName())
+                        .Select(x => x.Replace('\\', '/'))
+                        .Distinct()
+                        .ToList();
                 }
                 catch (MiniZipHttpStatusCodeException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
                 {
                     // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted asset record.
-                    return new List<PackageAsset>();
+                    return DriverResult.Success(new List<PackageAsset>());
                 }
 
-                return GetAssets(scanId, scanTimestamp, leaf, files);
+                return DriverResult.Success(GetAssets(scanId, scanTimestamp, leaf, files));
             }
         }
 

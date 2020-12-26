@@ -133,7 +133,7 @@ namespace Knapcode.ExplorePackages
                 {
                     if (consumedSource)
                     {
-                        return TempStreamResult.NewFailure();
+                        return TempStreamResult.NeedNewStream();
                     }
 
                     var tempDir = _tempDirs[_tempDirIndex];
@@ -177,7 +177,11 @@ namespace Knapcode.ExplorePackages
                     }
 
                     var tempPath = Path.Combine(tempDir, StorageUtility.GenerateDescendingId().ToString());
-                    await _leaseScope.WaitAsync(tempDir);
+                    if (!await _leaseScope.WaitAsync(tempDir))
+                    {
+                        return TempStreamResult.SemaphoreTimeout();
+                    }
+
                     try
                     {
                         _logger.LogInformation("Creating a file stream at location {TempPath}.", tempPath);
@@ -296,7 +300,7 @@ namespace Knapcode.ExplorePackages
                 location,
                 sw.Elapsed.TotalMilliseconds);
 
-            return TempStreamResult.NewSuccess(dest, hashAlgorithm?.Hash);
+            return TempStreamResult.Success(dest, hashAlgorithm?.Hash);
         }
 
         private async Task CopyAndSeekAsync(Stream src, long length, HashAlgorithm hashAlgorithm, Stream dest)

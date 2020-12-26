@@ -31,7 +31,7 @@ namespace Knapcode.ExplorePackages
                 using var hashAlgorithm = getHashAlgorithm();
                 result = await writer.CopyToTempStreamAsync(src, length, hashAlgorithm);
             }
-            while (!result.Success);
+            while (result.Type == TempStreamResultType.NeedNewStream);
             return result;
         }
 

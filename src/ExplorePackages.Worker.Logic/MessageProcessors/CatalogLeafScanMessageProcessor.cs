@@ -7,6 +7,7 @@ namespace Knapcode.ExplorePackages.Worker
     public class CatalogLeafScanMessageProcessor : IMessageProcessor<CatalogLeafScanMessage>
     {
         private const int MaxAttempts = 10;
+        private static readonly TimeSpan PollFrequency = TimeSpan.FromSeconds(60);
 
         private readonly CatalogScanDriverFactory _driverFactory;
         private readonly CatalogScanStorageService _storageService;
@@ -51,7 +52,7 @@ namespace Knapcode.ExplorePackages.Worker
             // many leaves at once.
             if (scan.NextAttempt.HasValue)
             {
-                var untilNextAttempt = DateTimeOffset.UtcNow - scan.NextAttempt.Value;
+                var untilNextAttempt = scan.NextAttempt.Value - DateTimeOffset.UtcNow;
                 if (untilNextAttempt > TimeSpan.Zero)
                 {
                     _logger.LogWarning(
@@ -60,7 +61,7 @@ namespace Knapcode.ExplorePackages.Worker
                         dequeueCount,
                         untilNextAttempt.TotalMinutes);
 
-                    var notBefore = TimeSpan.FromSeconds(60);
+                    var notBefore = PollFrequency;
                     if (untilNextAttempt < notBefore)
                     {
                         notBefore = untilNextAttempt;
@@ -77,10 +78,22 @@ namespace Knapcode.ExplorePackages.Worker
 
             _logger.LogInformation("Attempting catalog leaf scan.");
             var driver = _driverFactory.Create(scan.ParsedScanType);
-            await driver.ProcessLeafAsync(scan);
-            _logger.LogInformation("Completed catalog leaf scan.");
-
-            await _storageService.DeleteAsync(scan);
+            var result = await driver.ProcessLeafAsync(scan);
+            switch (result.Type)
+            {
+                case DriverResultType.TryAgainLater:
+                    _logger.LogInformation("Catalog leaf scan will be tried again later.");
+                    scan.AttemptCount--;
+                    await _storageService.ReplaceAsync(scan);
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, PollFrequency);
+                    break;
+                case DriverResultType.Success:
+                    _logger.LogInformation("Completed catalog leaf scan.");
+                    await _storageService.DeleteAsync(scan);
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
         public static TimeSpan GetMessageDelay(int attemptCount)

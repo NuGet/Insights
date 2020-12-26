@@ -15,6 +15,8 @@ namespace Knapcode.ExplorePackages
         private readonly ILogger<TempStreamLeaseScope> _logger;
         private bool _disposing;
         private int _owned;
+        private int _inProgressCount;
+        private int _acquiredCount;
         private readonly ConcurrentDictionary<string, Lazy<Task<AutoRenewingStorageLeaseResult>>> _nameToLazyLease
             = new ConcurrentDictionary<string, Lazy<Task<AutoRenewingStorageLeaseResult>>>();
 
@@ -23,6 +25,8 @@ namespace Knapcode.ExplorePackages
             _semaphoreService = semaphoreService;
             _logger = logger;
             _disposing = false;
+            _owned = 0;
+            _acquiredCount = 0;
         }
 
         public IAsyncDisposable TakeOwnership()
@@ -35,7 +39,7 @@ namespace Knapcode.ExplorePackages
             return new Ownership(this);
         }
 
-        public async Task WaitAsync(TempStreamDirectory dir)
+        public async Task<bool> WaitAsync(TempStreamDirectory dir)
         {
             if (_disposing)
             {
@@ -49,7 +53,7 @@ namespace Knapcode.ExplorePackages
 
             if (!dir.MaxConcurrentWriters.HasValue)
             {
-                return;
+                return true;
             }
 
             string dirHash;
@@ -61,22 +65,41 @@ namespace Knapcode.ExplorePackages
 
             var name = $"temp-dir-{dirHash}";
 
-            var lazy = _nameToLazyLease.GetOrAdd(name, x => GetLazyLease(x, dir.MaxConcurrentWriters.Value));
+            var lazy = _nameToLazyLease.GetOrAdd(name, x => GetLazyLease(x, dir.MaxConcurrentWriters.Value, dir.SemaphoreTimeout));
             if (lazy.IsValueCreated && lazy.Value.Status == TaskStatus.RanToCompletion)
             {
-                _logger.LogInformation("The semaphore {Name} for {TempDir} has already been acquired in this scope.", name, dir);
+                if (!(await lazy.Value).Acquired)
+                {
+                    return false;
+                }
+                else
+                {
+                    _logger.LogInformation("The semaphore {Name} for {TempDir} has already been acquired in this scope.", name, dir);
+                }
             }
             else
             {
                 _logger.LogInformation("Starting to wait for semaphore {Name} for {TempDir}.", name, dir);
             }
 
-            await lazy.Value;
+            var lease = await lazy.Value;
+            return lease.Acquired;
         }
 
-        private Lazy<Task<AutoRenewingStorageLeaseResult>> GetLazyLease(string name, int count)
+        private Lazy<Task<AutoRenewingStorageLeaseResult>> GetLazyLease(string name, int count, TimeSpan timeout)
         {
-            return new Lazy<Task<AutoRenewingStorageLeaseResult>>(() => _semaphoreService.WaitAsync(name, count));
+            return new Lazy<Task<AutoRenewingStorageLeaseResult>>(async () =>
+            {
+                Interlocked.Increment(ref _inProgressCount);
+                var result = await _semaphoreService.WaitAsync(name, count, timeout);
+                if (result.Acquired)
+                {
+                    Interlocked.Increment(ref _acquiredCount);
+                }
+                Interlocked.Decrement(ref _inProgressCount);
+
+                return result;
+            });
         }
 
         private class Ownership : IAsyncDisposable
@@ -91,7 +114,7 @@ namespace Knapcode.ExplorePackages
             public async ValueTask DisposeAsync()
             {
                 _scope._disposing = true;
-                if (_scope._nameToLazyLease.Any())
+                if (_scope._nameToLazyLease.Any() && (_scope._inProgressCount > 0 || _scope._acquiredCount > 0))
                 {
                     _scope._logger.LogInformation("Waiting for scope semaphores: {Names}", _scope._nameToLazyLease.Keys);
                     var leases = await Task.WhenAll(_scope._nameToLazyLease.Values.Select(x => x.Value));

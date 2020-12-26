@@ -6,7 +6,7 @@ namespace Knapcode.ExplorePackages.Worker
     {
         Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan);
         Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan);
-        Task ProcessLeafAsync(CatalogLeafScan leafScan);
+        Task<DriverResult> ProcessLeafAsync(CatalogLeafScan leafScan);
         Task StartAggregateAsync(CatalogIndexScan indexScan);
         Task<bool> IsAggregateCompleteAsync(CatalogIndexScan indexScan);
         Task FinalizeAsync(CatalogIndexScan indexScan);

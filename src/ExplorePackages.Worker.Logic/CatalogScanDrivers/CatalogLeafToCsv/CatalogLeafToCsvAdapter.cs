@@ -47,7 +47,7 @@ namespace Knapcode.ExplorePackages.Worker
             return Task.FromResult(CatalogPageScanResult.Expand);
         }
 
-        public async Task ProcessLeafAsync(CatalogLeafScan leafScan)
+        public async Task<DriverResult> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
             var leafItem = new CatalogLeafItem
             {
@@ -59,15 +59,21 @@ namespace Knapcode.ExplorePackages.Worker
                 PackageVersion = leafScan.PackageVersion
             };
 
-            var records = await _driver.ProcessLeafAsync(leafItem);
-            if (!records.Any())
+            var result = await _driver.ProcessLeafAsync(leafItem);
+            if (result.Type == DriverResultType.TryAgainLater)
             {
-                return;
+                return result;
+            }
+
+            if (!result.Value.Any())
+            {
+                return result;
             }
 
             var bucketKey = $"{leafScan.PackageId}/{NuGetVersion.Parse(leafScan.PackageVersion).ToNormalizedString()}".ToLowerInvariant();
             var parameters = (CatalogLeafToCsvParameters)_schemaSerializer.Deserialize(leafScan.ScanParameters);
-            await _storageService.AppendAsync(GetTableName(leafScan.StorageSuffix), parameters.BucketCount, bucketKey, records);
+            await _storageService.AppendAsync(GetTableName(leafScan.StorageSuffix), parameters.BucketCount, bucketKey, result.Value);
+            return result;
         }
 
         public async Task StartAggregateAsync(CatalogIndexScan indexScan)

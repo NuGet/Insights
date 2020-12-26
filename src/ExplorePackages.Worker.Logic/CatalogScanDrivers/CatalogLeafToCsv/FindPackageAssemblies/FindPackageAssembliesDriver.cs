@@ -43,7 +43,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
         public string ResultsContainerName => _options.Value.FindPackageAssembliesContainerName;
         public List<PackageAssembly> Prune(List<PackageAssembly> records) => PackageRecord.Prune(records);
 
-        public async Task<List<PackageAssembly>> ProcessLeafAsync(CatalogLeafItem item)
+        public async Task<DriverResult<List<PackageAssembly>>> ProcessLeafAsync(CatalogLeafItem item)
         {
             Guid? scanId = null;
             DateTimeOffset? scanTimestamp = null;
@@ -56,24 +56,29 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             if (item.Type == CatalogLeafType.PackageDelete)
             {
                 var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
-                return new List<PackageAssembly> { new PackageAssembly(scanId, scanTimestamp, leaf) };
+                return DriverResult.Success(new List<PackageAssembly> { new PackageAssembly(scanId, scanTimestamp, leaf) });
             }
             else
             {
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
 
-                using var packageStream = await _flatContainerClient.DownloadPackageContentToFileAsync(
+                using var result = await _flatContainerClient.DownloadPackageContentToFileAsync(
                     item.PackageId,
                     item.PackageVersion,
                     CancellationToken.None);
 
-                if (packageStream == null)
+                if (result == null)
                 {
                     // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted asset record.
-                    return new List<PackageAssembly>();
+                    return DriverResult.Success(new List<PackageAssembly>());
                 }
 
-                using var zipArchive = new ZipArchive(packageStream);
+                if (result.Type == TempStreamResultType.SemaphoreTimeout)
+                {
+                    return DriverResult.TryAgainLater<List<PackageAssembly>>();
+                }
+
+                using var zipArchive = new ZipArchive(result.Stream);
                 var entries = zipArchive
                     .Entries
                     .Where(x => FileExtensions.Contains(Path.GetExtension(x.FullName)))
@@ -81,7 +86,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
 
                 if (!entries.Any())
                 {
-                    return new List<PackageAssembly> { new PackageAssembly(scanId, scanTimestamp, leaf, PackageAssemblyResultType.NoAssemblies) };
+                    return DriverResult.Success(new List<PackageAssembly> { new PackageAssembly(scanId, scanTimestamp, leaf, PackageAssemblyResultType.NoAssemblies) });
                 }
 
                 var assemblies = new List<PackageAssembly>();
@@ -91,7 +96,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                     assemblies.Add(assembly);
                 }
 
-                return assemblies;
+                return DriverResult.Success(assemblies);
             }
         }
 
@@ -211,10 +216,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             var publicKey = metadataReader.GetBlobBytes(assemblyDefinition.PublicKey);
             assembly.PublicKeyLength = publicKey.Length;
 
-            using (var algorithm = SHA1.Create()) // SHA1 because that is what is used for the public key token
-            {
-                assembly.PublicKeySHA1 = algorithm.ComputeHash(publicKey).ToBase64();
-            }
+            using var algorithm = SHA1.Create(); // SHA1 because that is what is used for the public key token
+            assembly.PublicKeySHA1 = algorithm.ComputeHash(publicKey).ToBase64();
         }
 
         private void SetPublicKeyTokenInfo(PackageAssembly assembly, AssemblyName assemblyName)

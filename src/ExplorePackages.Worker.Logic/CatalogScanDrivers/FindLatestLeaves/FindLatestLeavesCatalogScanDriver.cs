@@ -33,7 +33,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
             return CatalogPageScanResult.Processed;
         }
 
-        public Task ProcessLeafAsync(CatalogLeafScan leafScan) => throw new NotImplementedException();
+        public Task<DriverResult> ProcessLeafAsync(CatalogLeafScan leafScan) => throw new NotImplementedException();
         public Task StartAggregateAsync(CatalogIndexScan indexScan) => Task.CompletedTask;
         public Task<bool> IsAggregateCompleteAsync(CatalogIndexScan indexScan) => Task.FromResult(true);
         public Task FinalizeAsync(CatalogIndexScan indexScan) => Task.CompletedTask;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -22,7 +23,7 @@ namespace Knapcode.ExplorePackages
             await _leaseService.InitializeAsync();
         }
 
-        public async Task<AutoRenewingStorageLeaseResult> WaitAsync(string name, int count)
+        public async Task<AutoRenewingStorageLeaseResult> WaitAsync(string name, int count, TimeSpan timeout)
         {
             int attempt = 0;
             var sw = Stopwatch.StartNew();
@@ -39,9 +40,16 @@ namespace Knapcode.ExplorePackages
                 attempt++;
                 result = await TryAcquireAsync(name, count);
             }
-            while (!result.Acquired);
+            while (!result.Acquired && (timeout == Timeout.InfiniteTimeSpan || sw.Elapsed < timeout));
 
-            _logger.LogInformation("Acquired semaphore {Name} after {DurationMs}ms.", name, sw.Elapsed.TotalMilliseconds);
+            if (result.Acquired)
+            {
+                _logger.LogInformation("Acquired semaphore {Name} after {DurationMs}ms.", name, sw.Elapsed.TotalMilliseconds);
+            }
+            else
+            {
+                _logger.LogWarning("Failed to acquired semaphore {Name} after {DurationMs}ms.", name, sw.Elapsed.TotalMilliseconds);
+            }
 
             return result;
         }
