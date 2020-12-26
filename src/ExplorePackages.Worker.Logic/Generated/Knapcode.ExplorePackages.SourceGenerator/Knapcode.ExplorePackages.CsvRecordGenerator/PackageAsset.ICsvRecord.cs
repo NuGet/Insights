@@ -38,7 +38,35 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
         PlatformVersion: string
     );
 
-    .create table JverPackageAssets ingestion csv mapping 'JverPackageAssets_mapping' '[{"Name":"ScanId","Ordinal":0,"DataType":"guid"},{"Name":"ScanTimestamp","Ordinal":1,"DataType":"datetime"},{"Name":"Id","Ordinal":2,"DataType":"string"},{"Name":"Version","Ordinal":3,"DataType":"string"},{"Name":"CatalogCommitTimestamp","Ordinal":4,"DataType":"datetime"},{"Name":"Created","Ordinal":5,"DataType":"datetime"},{"Name":"ResultType","Ordinal":6,"DataType":"string"},{"Name":"PatternSet","Ordinal":7,"DataType":"string"},{"Name":"PropertyAnyValue","Ordinal":8,"DataType":"string"},{"Name":"PropertyCodeLanguage","Ordinal":9,"DataType":"string"},{"Name":"PropertyTargetFrameworkMoniker","Ordinal":10,"DataType":"string"},{"Name":"PropertyLocale","Ordinal":11,"DataType":"string"},{"Name":"PropertyManagedAssembly","Ordinal":12,"DataType":"string"},{"Name":"PropertyMSBuild","Ordinal":13,"DataType":"string"},{"Name":"PropertyRuntimeIdentifier","Ordinal":14,"DataType":"string"},{"Name":"PropertySatelliteAssembly","Ordinal":15,"DataType":"string"},{"Name":"Path","Ordinal":16,"DataType":"string"},{"Name":"FileName","Ordinal":17,"DataType":"string"},{"Name":"FileExtension","Ordinal":18,"DataType":"string"},{"Name":"TopLevelFolder","Ordinal":19,"DataType":"string"},{"Name":"RoundTripTargetFrameworkMoniker","Ordinal":20,"DataType":"string"},{"Name":"FrameworkName","Ordinal":21,"DataType":"string"},{"Name":"FrameworkVersion","Ordinal":22,"DataType":"string"},{"Name":"FrameworkProfile","Ordinal":23,"DataType":"string"},{"Name":"PlatformName","Ordinal":24,"DataType":"string"},{"Name":"PlatformVersion","Ordinal":25,"DataType":"string"}]'
+    .create table JverPackageAssets ingestion csv mapping 'JverPackageAssets_mapping'
+    '['
+        '{"Name":"ScanId","Ordinal":0,"DataType":"guid"},'
+        '{"Name":"ScanTimestamp","Ordinal":1,"DataType":"datetime"},'
+        '{"Name":"Id","Ordinal":2,"DataType":"string"},'
+        '{"Name":"Version","Ordinal":3,"DataType":"string"},'
+        '{"Name":"CatalogCommitTimestamp","Ordinal":4,"DataType":"datetime"},'
+        '{"Name":"Created","Ordinal":5,"DataType":"datetime"},'
+        '{"Name":"ResultType","Ordinal":6,"DataType":"string"},'
+        '{"Name":"PatternSet","Ordinal":7,"DataType":"string"},'
+        '{"Name":"PropertyAnyValue","Ordinal":8,"DataType":"string"},'
+        '{"Name":"PropertyCodeLanguage","Ordinal":9,"DataType":"string"},'
+        '{"Name":"PropertyTargetFrameworkMoniker","Ordinal":10,"DataType":"string"},'
+        '{"Name":"PropertyLocale","Ordinal":11,"DataType":"string"},'
+        '{"Name":"PropertyManagedAssembly","Ordinal":12,"DataType":"string"},'
+        '{"Name":"PropertyMSBuild","Ordinal":13,"DataType":"string"},'
+        '{"Name":"PropertyRuntimeIdentifier","Ordinal":14,"DataType":"string"},'
+        '{"Name":"PropertySatelliteAssembly","Ordinal":15,"DataType":"string"},'
+        '{"Name":"Path","Ordinal":16,"DataType":"string"},'
+        '{"Name":"FileName","Ordinal":17,"DataType":"string"},'
+        '{"Name":"FileExtension","Ordinal":18,"DataType":"string"},'
+        '{"Name":"TopLevelFolder","Ordinal":19,"DataType":"string"},'
+        '{"Name":"RoundTripTargetFrameworkMoniker","Ordinal":20,"DataType":"string"},'
+        '{"Name":"FrameworkName","Ordinal":21,"DataType":"string"},'
+        '{"Name":"FrameworkVersion","Ordinal":22,"DataType":"string"},'
+        '{"Name":"FrameworkProfile","Ordinal":23,"DataType":"string"},'
+        '{"Name":"PlatformName","Ordinal":24,"DataType":"string"},'
+        '{"Name":"PlatformVersion","Ordinal":25,"DataType":"string"}'
+    ']'
 
     */
     partial class PackageAsset

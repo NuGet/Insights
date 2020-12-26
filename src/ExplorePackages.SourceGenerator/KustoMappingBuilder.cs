@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Text;
 using Microsoft.CodeAnalysis;
 using Newtonsoft.Json;
 
@@ -6,27 +6,44 @@ namespace Knapcode.ExplorePackages
 {
     public class KustoMappingBuilder : IPropertyVisitor
     {
-        private readonly List<FieldMapping> _fields;
+        private readonly int _indent;
+        private readonly StringBuilder _builder;
+        private int _nextOrdinal;
 
-        public KustoMappingBuilder()
+        public KustoMappingBuilder(int indent)
         {
-            _fields = new List<FieldMapping>();
+            _indent = indent;
+            _builder = new StringBuilder();
+            _nextOrdinal = 0;
         }
+
         public void OnProperty(IPropertySymbol symbol, string prettyPropType)
         {
-            _fields.Add(new FieldMapping
+            var field = new FieldMapping
             {
                 Name = symbol.Name,
-                Ordinal = _fields.Count,
+                Ordinal = _nextOrdinal,
                 DataType = PropertyHelper.GetKustoDataType(symbol),
-            });
+            };
+            _nextOrdinal++;
+
+            if (_builder.Length > 1)
+            {
+                _builder.Append(",'");
+                _builder.AppendLine();
+            }
+
+            _builder.Append(' ', _indent);
+            _builder.Append("'");
+            _builder.Append(JsonConvert.SerializeObject(field).Replace("'", "\\'"));
         }
 
         public void Finish()
         {
+            _builder.Append("'");
         }
 
-        public string GetResult() => JsonConvert.SerializeObject(_fields);
+        public string GetResult() => _builder.ToString();
 
         private class FieldMapping
         {

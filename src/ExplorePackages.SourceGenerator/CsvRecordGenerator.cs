@@ -34,7 +34,10 @@ namespace {0}
 {2}
     );
 
-    .create table {1} ingestion csv mapping '{1}_mapping' '{3}'
+    .create table {1} ingestion csv mapping '{1}_mapping'
+    '['
+{3}
+    ']'
 
     */
     partial class {4}
@@ -118,7 +121,7 @@ namespace {0}
                 var classNamespacePrefix = classModel.ContainingNamespace.ToString() + ".";
 
                 var kustoTableBuilder = new KustoTableBuilder(indent: 8);
-                var kustoMappingBuilder = new KustoMappingBuilder();
+                var kustoMappingBuilder = new KustoMappingBuilder(8);
                 var writerBuilder = new WriteBuilder(indent: 12);
                 var readerBuilder = new ReadBuilder(indent: 12);
 

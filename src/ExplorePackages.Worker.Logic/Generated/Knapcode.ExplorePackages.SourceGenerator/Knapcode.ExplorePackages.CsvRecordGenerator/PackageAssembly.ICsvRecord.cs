@@ -39,7 +39,36 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
         PublicKeySHA1: string
     );
 
-    .create table JverPackageAssemblies ingestion csv mapping 'JverPackageAssemblies_mapping' '[{"Name":"ScanId","Ordinal":0,"DataType":"guid"},{"Name":"ScanTimestamp","Ordinal":1,"DataType":"datetime"},{"Name":"Id","Ordinal":2,"DataType":"string"},{"Name":"Version","Ordinal":3,"DataType":"string"},{"Name":"CatalogCommitTimestamp","Ordinal":4,"DataType":"datetime"},{"Name":"Created","Ordinal":5,"DataType":"datetime"},{"Name":"ResultType","Ordinal":6,"DataType":"string"},{"Name":"Path","Ordinal":7,"DataType":"string"},{"Name":"FileName","Ordinal":8,"DataType":"string"},{"Name":"FileExtension","Ordinal":9,"DataType":"string"},{"Name":"TopLevelFolder","Ordinal":10,"DataType":"string"},{"Name":"CompressedLength","Ordinal":11,"DataType":"long"},{"Name":"EntryUncompressedLength","Ordinal":12,"DataType":"long"},{"Name":"ActualUncompressedLength","Ordinal":13,"DataType":"long"},{"Name":"FileSHA256","Ordinal":14,"DataType":"string"},{"Name":"HasException","Ordinal":15,"DataType":"bool"},{"Name":"AssemblyName","Ordinal":16,"DataType":"string"},{"Name":"AssemblyVersion","Ordinal":17,"DataType":"string"},{"Name":"Culture","Ordinal":18,"DataType":"string"},{"Name":"AssemblyNameHasCultureNotFoundException","Ordinal":19,"DataType":"bool"},{"Name":"AssemblyNameHasFileLoadException","Ordinal":20,"DataType":"bool"},{"Name":"PublicKeyToken","Ordinal":21,"DataType":"string"},{"Name":"PublicKeyTokenHasSecurityException","Ordinal":22,"DataType":"bool"},{"Name":"HashAlgorithm","Ordinal":23,"DataType":"string"},{"Name":"HasPublicKey","Ordinal":24,"DataType":"bool"},{"Name":"PublicKeyLength","Ordinal":25,"DataType":"int"},{"Name":"PublicKeySHA1","Ordinal":26,"DataType":"string"}]'
+    .create table JverPackageAssemblies ingestion csv mapping 'JverPackageAssemblies_mapping'
+    '['
+        '{"Name":"ScanId","Ordinal":0,"DataType":"guid"},'
+        '{"Name":"ScanTimestamp","Ordinal":1,"DataType":"datetime"},'
+        '{"Name":"Id","Ordinal":2,"DataType":"string"},'
+        '{"Name":"Version","Ordinal":3,"DataType":"string"},'
+        '{"Name":"CatalogCommitTimestamp","Ordinal":4,"DataType":"datetime"},'
+        '{"Name":"Created","Ordinal":5,"DataType":"datetime"},'
+        '{"Name":"ResultType","Ordinal":6,"DataType":"string"},'
+        '{"Name":"Path","Ordinal":7,"DataType":"string"},'
+        '{"Name":"FileName","Ordinal":8,"DataType":"string"},'
+        '{"Name":"FileExtension","Ordinal":9,"DataType":"string"},'
+        '{"Name":"TopLevelFolder","Ordinal":10,"DataType":"string"},'
+        '{"Name":"CompressedLength","Ordinal":11,"DataType":"long"},'
+        '{"Name":"EntryUncompressedLength","Ordinal":12,"DataType":"long"},'
+        '{"Name":"ActualUncompressedLength","Ordinal":13,"DataType":"long"},'
+        '{"Name":"FileSHA256","Ordinal":14,"DataType":"string"},'
+        '{"Name":"HasException","Ordinal":15,"DataType":"bool"},'
+        '{"Name":"AssemblyName","Ordinal":16,"DataType":"string"},'
+        '{"Name":"AssemblyVersion","Ordinal":17,"DataType":"string"},'
+        '{"Name":"Culture","Ordinal":18,"DataType":"string"},'
+        '{"Name":"AssemblyNameHasCultureNotFoundException","Ordinal":19,"DataType":"bool"},'
+        '{"Name":"AssemblyNameHasFileLoadException","Ordinal":20,"DataType":"bool"},'
+        '{"Name":"PublicKeyToken","Ordinal":21,"DataType":"string"},'
+        '{"Name":"PublicKeyTokenHasSecurityException","Ordinal":22,"DataType":"bool"},'
+        '{"Name":"HashAlgorithm","Ordinal":23,"DataType":"string"},'
+        '{"Name":"HasPublicKey","Ordinal":24,"DataType":"bool"},'
+        '{"Name":"PublicKeyLength","Ordinal":25,"DataType":"int"},'
+        '{"Name":"PublicKeySHA1","Ordinal":26,"DataType":"string"}'
+    ']'
 
     */
     partial class PackageAssembly
