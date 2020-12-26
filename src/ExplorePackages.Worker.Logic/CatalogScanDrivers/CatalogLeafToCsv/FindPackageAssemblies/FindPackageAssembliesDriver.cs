@@ -109,11 +109,11 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             };
 
             await AnalyzeAsync(assembly, entry);
-            
+
             assembly.HasException = assembly.AssemblyNameHasCultureNotFoundException.GetValueOrDefault(false)
                 || assembly.AssemblyNameHasFileLoadException.GetValueOrDefault(false)
                 || assembly.PublicKeyTokenHasSecurityException.GetValueOrDefault(false);
-            
+
             return assembly;
         }
 
@@ -121,12 +121,12 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
         {
             _logger.LogInformation("Analyzing ZIP entry {FullName} of length {Length} bytes.", entry.FullName, entry.Length);
 
-            Stream tempStream = null;
+            TempStreamResult tempStreamResult = null;
             try
             {
                 try
                 {
-                    tempStream = await _tempStreamService.CopyToTempStreamAsync(() => entry.Open(), entry.Length);
+                    tempStreamResult = await _tempStreamService.CopyToTempStreamAsync(() => entry.Open(), entry.Length, SHA256.Create);
                 }
                 catch (InvalidDataException ex)
                 {
@@ -135,9 +135,10 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                     return;
                 }
 
-                assembly.ActualUncompressedLength = tempStream.Length;
+                assembly.ActualUncompressedLength = tempStreamResult.Stream.Length;
+                assembly.FileSHA256 = tempStreamResult.Hash.ToBase64();
 
-                using var peReader = new PEReader(tempStream);
+                using var peReader = new PEReader(tempStreamResult.Stream);
                 if (!peReader.HasMetadata)
                 {
                     assembly.ResultType = PackageAssemblyResultType.NoManagedMetadata;
@@ -153,7 +154,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
 
                 var assemblyDefinition = metadataReader.GetAssemblyDefinition();
 
-                assembly.Name = metadataReader.GetString(assemblyDefinition.Name);
+                assembly.AssemblyName = metadataReader.GetString(assemblyDefinition.Name);
                 assembly.AssemblyVersion = assemblyDefinition.Version;
                 assembly.Culture = metadataReader.GetString(assemblyDefinition.Culture);
                 assembly.HashAlgorithm = assemblyDefinition.HashAlgorithm.ToString();
@@ -171,7 +172,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             }
             finally
             {
-                tempStream?.Dispose();
+                tempStreamResult?.Stream.Dispose();
             }
         }
 
@@ -210,9 +211,9 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             var publicKey = metadataReader.GetBlobBytes(assemblyDefinition.PublicKey);
             assembly.PublicKeyLength = publicKey.Length;
 
-            using (var algorithm = SHA1.Create())
+            using (var algorithm = SHA1.Create()) // SHA1 because that is what is used for the public key token
             {
-                assembly.PublicKeyHash = algorithm.ComputeHash(publicKey).ToHex();
+                assembly.PublicKeySHA1 = algorithm.ComputeHash(publicKey).ToBase64();
             }
         }
 

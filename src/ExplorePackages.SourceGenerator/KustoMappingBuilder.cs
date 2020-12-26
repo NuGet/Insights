@@ -1,7 +1,6 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 using Newtonsoft.Json;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Knapcode.ExplorePackages
 {

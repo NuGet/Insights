@@ -47,7 +47,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             Assert.True(record.PublicKeyTokenHasSecurityException);
             Assert.True(record.HasPublicKey);
             Assert.Null(record.PublicKeyToken);
-            Assert.Equal("1adedf8d4860f72e180ca54e366fcf9b7ca4715c", record.PublicKeyHash);
+            Assert.Equal("Gt7fjUhg9y4YDKVONm/Pm3ykcVw=", record.PublicKeySHA1);
             Assert.Equal(288, record.PublicKeyLength);
         }
 

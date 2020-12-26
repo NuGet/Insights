@@ -24,8 +24,9 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
         CompressedLength: long,
         EntryUncompressedLength: long,
         ActualUncompressedLength: long,
+        FileSHA256: string,
         HasException: bool,
-        Name: string,
+        AssemblyName: string,
         AssemblyVersion: string,
         Culture: string,
         AssemblyNameHasCultureNotFoundException: bool,
@@ -35,10 +36,10 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
         HashAlgorithm: string,
         HasPublicKey: bool,
         PublicKeyLength: int,
-        PublicKeyHash: string
+        PublicKeySHA1: string
     );
 
-    .create table JverPackageAssemblies ingestion csv mapping 'JverPackageAssemblies_mapping' '[{"Name":"ScanId","Ordinal":0,"DataType":"guid"},{"Name":"ScanTimestamp","Ordinal":1,"DataType":"datetime"},{"Name":"Id","Ordinal":2,"DataType":"string"},{"Name":"Version","Ordinal":3,"DataType":"string"},{"Name":"CatalogCommitTimestamp","Ordinal":4,"DataType":"datetime"},{"Name":"Created","Ordinal":5,"DataType":"datetime"},{"Name":"ResultType","Ordinal":6,"DataType":"string"},{"Name":"Path","Ordinal":7,"DataType":"string"},{"Name":"FileName","Ordinal":8,"DataType":"string"},{"Name":"FileExtension","Ordinal":9,"DataType":"string"},{"Name":"TopLevelFolder","Ordinal":10,"DataType":"string"},{"Name":"CompressedLength","Ordinal":11,"DataType":"long"},{"Name":"EntryUncompressedLength","Ordinal":12,"DataType":"long"},{"Name":"ActualUncompressedLength","Ordinal":13,"DataType":"long"},{"Name":"HasException","Ordinal":14,"DataType":"bool"},{"Name":"Name","Ordinal":15,"DataType":"string"},{"Name":"AssemblyVersion","Ordinal":16,"DataType":"string"},{"Name":"Culture","Ordinal":17,"DataType":"string"},{"Name":"AssemblyNameHasCultureNotFoundException","Ordinal":18,"DataType":"bool"},{"Name":"AssemblyNameHasFileLoadException","Ordinal":19,"DataType":"bool"},{"Name":"PublicKeyToken","Ordinal":20,"DataType":"string"},{"Name":"PublicKeyTokenHasSecurityException","Ordinal":21,"DataType":"bool"},{"Name":"HashAlgorithm","Ordinal":22,"DataType":"string"},{"Name":"HasPublicKey","Ordinal":23,"DataType":"bool"},{"Name":"PublicKeyLength","Ordinal":24,"DataType":"int"},{"Name":"PublicKeyHash","Ordinal":25,"DataType":"string"}]'
+    .create table JverPackageAssemblies ingestion csv mapping 'JverPackageAssemblies_mapping' '[{"Name":"ScanId","Ordinal":0,"DataType":"guid"},{"Name":"ScanTimestamp","Ordinal":1,"DataType":"datetime"},{"Name":"Id","Ordinal":2,"DataType":"string"},{"Name":"Version","Ordinal":3,"DataType":"string"},{"Name":"CatalogCommitTimestamp","Ordinal":4,"DataType":"datetime"},{"Name":"Created","Ordinal":5,"DataType":"datetime"},{"Name":"ResultType","Ordinal":6,"DataType":"string"},{"Name":"Path","Ordinal":7,"DataType":"string"},{"Name":"FileName","Ordinal":8,"DataType":"string"},{"Name":"FileExtension","Ordinal":9,"DataType":"string"},{"Name":"TopLevelFolder","Ordinal":10,"DataType":"string"},{"Name":"CompressedLength","Ordinal":11,"DataType":"long"},{"Name":"EntryUncompressedLength","Ordinal":12,"DataType":"long"},{"Name":"ActualUncompressedLength","Ordinal":13,"DataType":"long"},{"Name":"FileSHA256","Ordinal":14,"DataType":"string"},{"Name":"HasException","Ordinal":15,"DataType":"bool"},{"Name":"AssemblyName","Ordinal":16,"DataType":"string"},{"Name":"AssemblyVersion","Ordinal":17,"DataType":"string"},{"Name":"Culture","Ordinal":18,"DataType":"string"},{"Name":"AssemblyNameHasCultureNotFoundException","Ordinal":19,"DataType":"bool"},{"Name":"AssemblyNameHasFileLoadException","Ordinal":20,"DataType":"bool"},{"Name":"PublicKeyToken","Ordinal":21,"DataType":"string"},{"Name":"PublicKeyTokenHasSecurityException","Ordinal":22,"DataType":"bool"},{"Name":"HashAlgorithm","Ordinal":23,"DataType":"string"},{"Name":"HasPublicKey","Ordinal":24,"DataType":"bool"},{"Name":"PublicKeyLength","Ordinal":25,"DataType":"int"},{"Name":"PublicKeySHA1","Ordinal":26,"DataType":"string"}]'
 
     */
     partial class PackageAssembly
@@ -73,9 +74,11 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             writer.Write(',');
             writer.Write(ActualUncompressedLength);
             writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, FileSHA256);
+            writer.Write(',');
             writer.Write(CsvUtility.FormatBool(HasException));
             writer.Write(',');
-            CsvUtility.WriteWithQuotes(writer, Name);
+            CsvUtility.WriteWithQuotes(writer, AssemblyName);
             writer.Write(',');
             writer.Write(AssemblyVersion);
             writer.Write(',');
@@ -95,7 +98,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             writer.Write(',');
             writer.Write(PublicKeyLength);
             writer.Write(',');
-            CsvUtility.WriteWithQuotes(writer, PublicKeyHash);
+            CsvUtility.WriteWithQuotes(writer, PublicKeySHA1);
             writer.WriteLine();
         }
 
@@ -115,8 +118,9 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             CompressedLength = CsvUtility.ParseNullable(getNextField(), long.Parse);
             EntryUncompressedLength = CsvUtility.ParseNullable(getNextField(), long.Parse);
             ActualUncompressedLength = CsvUtility.ParseNullable(getNextField(), long.Parse);
+            FileSHA256 = getNextField();
             HasException = bool.Parse(getNextField());
-            Name = getNextField();
+            AssemblyName = getNextField();
             AssemblyVersion = CsvUtility.ParseReference(getNextField(), System.Version.Parse);
             Culture = getNextField();
             AssemblyNameHasCultureNotFoundException = CsvUtility.ParseNullable(getNextField(), bool.Parse);
@@ -126,7 +130,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             HashAlgorithm = getNextField();
             HasPublicKey = CsvUtility.ParseNullable(getNextField(), bool.Parse);
             PublicKeyLength = CsvUtility.ParseNullable(getNextField(), int.Parse);
-            PublicKeyHash = getNextField();
+            PublicKeySHA1 = getNextField();
         }
     }
 }

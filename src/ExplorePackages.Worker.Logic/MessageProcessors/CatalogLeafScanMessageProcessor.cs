@@ -33,7 +33,7 @@ namespace Knapcode.ExplorePackages.Worker
                 _logger.LogWarning("No matching leaf scan was found.");
                 return;
             }
-            
+
             // Since we copy this message, the dequeue count will be reset. Therefore we use both the attempt count on
             // the scan record (plus 1, for the current attempt) and the dequeue count on the current message copy to
             // determine the number of attempts. We want to use the dequeue count because it will always go up, even if

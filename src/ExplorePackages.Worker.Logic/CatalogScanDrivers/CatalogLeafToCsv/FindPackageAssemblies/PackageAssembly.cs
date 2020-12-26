@@ -30,11 +30,13 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
 
         public long? CompressedLength { get; set; }
         public long? EntryUncompressedLength { get; set; }
+
         public long? ActualUncompressedLength { get; set; }
+        public string FileSHA256 { get; set; }
 
         public bool HasException { get; set; }
 
-        public string Name { get; set; }
+        public string AssemblyName { get; set; }
         public Version AssemblyVersion { get; set; }
         public string Culture { get; set; }
 
@@ -48,7 +50,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
 
         public bool? HasPublicKey { get; set; }
         public int? PublicKeyLength { get; set; }
-        public string PublicKeyHash { get; set; }
+        public string PublicKeySHA1 { get; set; }
 
         public override bool Equals(object obj)
         {
@@ -72,8 +74,9 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                    CompressedLength == other.CompressedLength &&
                    EntryUncompressedLength == other.EntryUncompressedLength &&
                    ActualUncompressedLength == other.ActualUncompressedLength &&
+                   FileSHA256 == other.FileSHA256 &&
                    HasException == other.HasException &&
-                   Name == other.Name &&
+                   AssemblyName == other.AssemblyName &&
                    EqualityComparer<Version>.Default.Equals(AssemblyVersion, other.AssemblyVersion) &&
                    Culture == other.Culture &&
                    AssemblyNameHasCultureNotFoundException == other.AssemblyNameHasCultureNotFoundException &&
@@ -83,7 +86,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                    HashAlgorithm == other.HashAlgorithm &&
                    HasPublicKey == other.HasPublicKey &&
                    PublicKeyLength == other.PublicKeyLength &&
-                   PublicKeyHash == other.PublicKeyHash;
+                   PublicKeySHA1 == other.PublicKeySHA1;
         }
 
         public override int GetHashCode()
@@ -103,8 +106,9 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             hash.Add(CompressedLength);
             hash.Add(EntryUncompressedLength);
             hash.Add(ActualUncompressedLength);
+            hash.Add(FileSHA256);
             hash.Add(HasException);
-            hash.Add(Name);
+            hash.Add(AssemblyName);
             hash.Add(AssemblyVersion);
             hash.Add(Culture);
             hash.Add(AssemblyNameHasCultureNotFoundException);
@@ -114,7 +118,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             hash.Add(HashAlgorithm);
             hash.Add(HasPublicKey);
             hash.Add(PublicKeyLength);
-            hash.Add(PublicKeyHash);
+            hash.Add(PublicKeySHA1);
             return hash.ToHashCode();
         }
     }

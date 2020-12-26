@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -71,18 +72,17 @@ namespace Knapcode.ExplorePackages
 
         public async Task<TempStreamResult> CopyToTempStreamAsync(Stream src, long length)
         {
+            return await CopyToTempStreamAsync(src, length, hashAlgorithm: null);
+        }
+
+        public async Task<TempStreamResult> CopyToTempStreamAsync(Stream src, long length, HashAlgorithm hashAlgorithm)
+        {
             if (length < 0)
             {
                 length = src.Length;
             }
 
             _logger.LogInformation("Starting to buffer a {TypeName} stream with length {LengthBytes} bytes.", src.GetType().FullName, length);
-
-            if (length == 0)
-            {
-                _logger.LogInformation("Successfully copied an empty {TypeName} stream.", src.GetType().FullName);
-                return TempStreamResult.NewSuccess(Stream.Null);
-            }
 
             if (length > _maxInMemorySize)
             {
@@ -124,7 +124,7 @@ namespace Knapcode.ExplorePackages
 
                     if (dest != null)
                     {
-                        return await CopyAndSeekAsync(src, length, dest, Memory);
+                        return await CopyAndSeekAsync(src, length, hashAlgorithm, dest, Memory);
                     }
                 }
 
@@ -197,7 +197,7 @@ namespace Knapcode.ExplorePackages
                         }
 
                         consumedSource = true;
-                        return await CopyAndSeekAsync(src, length, dest, tempPath);
+                        return await CopyAndSeekAsync(src, length, hashAlgorithm, dest, tempPath);
                     }
                     catch (IOException ex)
                     {
@@ -277,7 +277,7 @@ namespace Knapcode.ExplorePackages
             }
         }
 
-        private async Task<TempStreamResult> CopyAndSeekAsync(Stream src, long length, Stream dest, string location)
+        private async Task<TempStreamResult> CopyAndSeekAsync(Stream src, long length, HashAlgorithm hashAlgorithm, Stream dest, string location)
         {
             _logger.LogInformation(
                 "Starting copy of a {TypeName} stream with length {LengthBytes} bytes to {Location}.",
@@ -286,7 +286,7 @@ namespace Knapcode.ExplorePackages
                 location);
 
             var sw = Stopwatch.StartNew();
-            await CopyAndSeekAsync(src, length, dest);
+            await CopyAndSeekAsync(src, length, hashAlgorithm, dest);
             sw.Stop();
 
             _logger.LogInformation(
@@ -296,10 +296,10 @@ namespace Knapcode.ExplorePackages
                 location,
                 sw.Elapsed.TotalMilliseconds);
 
-            return TempStreamResult.NewSuccess(dest);
+            return TempStreamResult.NewSuccess(dest, hashAlgorithm?.Hash);
         }
 
-        private async Task CopyAndSeekAsync(Stream src, long length, Stream dest)
+        private async Task CopyAndSeekAsync(Stream src, long length, HashAlgorithm hashAlgorithm, Stream dest)
         {
             var buffer = new byte[BufferSize];
 
@@ -315,8 +315,11 @@ namespace Knapcode.ExplorePackages
 
                 if (bytesRead == 0)
                 {
+                    hashAlgorithm?.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
                     break;
                 }
+
+                hashAlgorithm?.TransformBlock(buffer, 0, bytesRead, buffer, 0);
 
                 await dest.WriteAsync(buffer, 0, bytesRead);
                 _logger.Log(logLevel, "Wrote {BufferBytes} bytes ({CopiedBytes} of {TotalBytes}, {Percent:P2}).", bytesRead, copiedBytes, length, percent);
