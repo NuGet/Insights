@@ -64,7 +64,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        public async Task AppendAsync<T>(string containerName, int bucketCount, string bucketKey, IReadOnlyList<T> records) where T : ICsvRecord<T>
+        public async Task AppendAsync<T>(string containerName, int bucketCount, string bucketKey, IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
         {
             switch (_options.Value.AppendResultStorageMode)
             {
@@ -79,7 +79,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        private async Task AppendToBlobAsync<T>(string containerName, int bucketCount, string bucketKey, IReadOnlyList<T> records) where T : ICsvRecord<T>
+        private async Task AppendToBlobAsync<T>(string containerName, int bucketCount, string bucketKey, IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
         {
             var bucket = GetBucket(bucketCount, bucketKey);
             var blob = GetAppendBlob(containerName, bucket);
@@ -105,7 +105,7 @@ namespace Knapcode.ExplorePackages.Worker
             await AppendToBlobAsync(blob, records);
         }
 
-        private async Task AppendToBlobAsync<T>(CloudAppendBlob blob, IReadOnlyList<T> records) where T : ICsvRecord<T>
+        private async Task AppendToBlobAsync<T>(CloudAppendBlob blob, IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
         {
             using var memoryStream = SerializeRecords(records);
             try
@@ -123,7 +123,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        private async Task AppendToTableAsync<T>(string tableName, int bucketCount, string bucketKey, IReadOnlyList<T> records) where T : ICsvRecord<T>
+        private async Task AppendToTableAsync<T>(string tableName, int bucketCount, string bucketKey, IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
         {
             var bucket = GetBucket(bucketCount, bucketKey);
             var table = GetTable(tableName);
@@ -136,7 +136,7 @@ namespace Knapcode.ExplorePackages.Worker
             await table.ExecuteAsync(TableOperation.InsertOrReplace(markerEntity));
         }
 
-        private static async Task AppendToTableAsync<T>(int bucket, ICloudTable table, IReadOnlyList<T> records) where T : ICsvRecord<T>
+        private static async Task AppendToTableAsync<T>(int bucket, ICloudTable table, IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
         {
             AppendResultEntity dataEntity = SerializeToTableEntity(records, bucket);
 
@@ -188,7 +188,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        private static AppendResultEntity SerializeToTableEntity<T>(IReadOnlyList<T> records, int bucket) where T : ICsvRecord<T>
+        private static AppendResultEntity SerializeToTableEntity<T>(IReadOnlyList<T> records, int bucket) where T : ICsvRecord<T>, new()
         {
             using var stringWriter = new StringWriter();
             SerializeRecords(records, stringWriter);
@@ -382,7 +382,7 @@ namespace Knapcode.ExplorePackages.Worker
             return markerEntities.Select(x => int.Parse(x.RowKey)).ToList();
         }
 
-        private static MemoryStream SerializeRecords<T>(IReadOnlyList<T> records) where T : ICsvRecord<T>
+        private static MemoryStream SerializeRecords<T>(IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
         {
             var memoryStream = new MemoryStream();
             using (var streamWriter = new StreamWriter(memoryStream, new UTF8Encoding(false), bufferSize: 1024, leaveOpen: true))
@@ -393,7 +393,7 @@ namespace Knapcode.ExplorePackages.Worker
             return memoryStream;
         }
 
-        private static void SerializeRecords<T>(IReadOnlyList<T> records, TextWriter streamWriter) where T : ICsvRecord<T>
+        private static void SerializeRecords<T>(IReadOnlyList<T> records, TextWriter streamWriter) where T : ICsvRecord<T>, new()
         {
             foreach (var record in records)
             {

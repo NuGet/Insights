@@ -14,7 +14,7 @@ namespace Knapcode.ExplorePackages
             _builder = new StringBuilder();
         }
 
-        public void OnProperty(IPropertySymbol symbol, string prettyPropType)
+        public void OnProperty(INamedTypeSymbol nullable, IPropertySymbol symbol, string prettyPropType)
         {
             if (_builder.Length > 0)
             {
@@ -50,7 +50,7 @@ namespace Knapcode.ExplorePackages
                     _builder.AppendFormat("CsvUtility.WriteWithQuotes(writer, {0});", symbol.Name);
                     break;
                 default:
-                    if (symbol.Type.TypeKind == TypeKind.Enum)
+                    if (symbol.Type.TypeKind == TypeKind.Enum || PropertyHelper.IsNullableEnum(nullable, symbol))
                     {
                         _builder.AppendFormat("writer.Write({0});", symbol.Name);
                     }

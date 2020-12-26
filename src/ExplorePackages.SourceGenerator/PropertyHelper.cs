@@ -31,7 +31,26 @@ namespace Knapcode.ExplorePackages
             return prettyPropType;
         }
 
-        public static string GetKustoDataType(IPropertySymbol symbol)
+        public static bool IsNullableEnum(INamedTypeSymbol nullable, IPropertySymbol symbol)
+        {
+            return IsNullable(nullable, symbol, out var innerType) && innerType.TypeKind == TypeKind.Enum;
+        }
+
+        public static bool IsNullable(INamedTypeSymbol nullable, IPropertySymbol symbol, out ITypeSymbol innerType)
+        {
+            if (symbol.Type is INamedTypeSymbol typeSymbol
+                && SymbolEqualityComparer.Default.Equals(typeSymbol.OriginalDefinition, nullable)
+                && typeSymbol.TypeArguments.Length == 1)
+            {
+                innerType = typeSymbol.TypeArguments[0];
+                return true;
+            }
+
+            innerType = null;
+            return false;
+        }
+
+        public static string GetKustoDataType(INamedTypeSymbol nullable, IPropertySymbol symbol)
         {
             switch (symbol.Type.ToString())
             {
@@ -59,7 +78,7 @@ namespace Knapcode.ExplorePackages
                 case "string":
                     return "string";
                 default:
-                    if (symbol.Type.TypeKind == TypeKind.Enum)
+                    if (symbol.Type.TypeKind == TypeKind.Enum || IsNullableEnum(nullable, symbol))
                     {
                         return "string";
                     }

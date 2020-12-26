@@ -4,7 +4,7 @@ namespace Knapcode.ExplorePackages
 {
     public interface IPropertyVisitor
     {
-        void OnProperty(IPropertySymbol symbol, string prettyPropType);
+        void OnProperty(INamedTypeSymbol nullable, IPropertySymbol symbol, string prettyPropType);
         void Finish();
         string GetResult();
     }

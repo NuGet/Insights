@@ -17,12 +17,12 @@ namespace Knapcode.ExplorePackages
             _nextOrdinal = 0;
         }
 
-        public void OnProperty(IPropertySymbol symbol, string prettyPropType)
+        public void OnProperty(INamedTypeSymbol nullable, IPropertySymbol symbol, string prettyPropType)
         {
             var field = new DataMapping
             {
                 Column = symbol.Name,
-                DataType = PropertyHelper.GetKustoDataType(symbol),
+                DataType = PropertyHelper.GetKustoDataType(nullable, symbol),
                 Properties = new CsvProperties
                 {
                     Ordinal = _nextOrdinal,

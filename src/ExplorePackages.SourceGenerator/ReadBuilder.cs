@@ -14,7 +14,7 @@ namespace Knapcode.ExplorePackages
             _builder = new StringBuilder();
         }
 
-        public void OnProperty(IPropertySymbol symbol, string prettyPropType)
+        public void OnProperty(INamedTypeSymbol nullable, IPropertySymbol symbol, string prettyPropType)
         {
             if (_builder.Length > 0)
             {
@@ -57,14 +57,11 @@ namespace Knapcode.ExplorePackages
                 default:
                     if (symbol.Type.TypeKind == TypeKind.Enum)
                     {
-                        if (propertyType.EndsWith("?"))
-                        {
-                            _builder.AppendFormat("{0} = CsvUtility.ParseNullable(getNextField(), Enum.Parse<{1}>),", symbol.Name, prettyPropType);
-                        }
-                        else
-                        {
-                            _builder.AppendFormat("{0} = Enum.Parse<{1}>(getNextField()),", symbol.Name, prettyPropType);
-                        }
+                        _builder.AppendFormat("{0} = Enum.Parse<{1}>(getNextField()),", symbol.Name, prettyPropType);
+                    }
+                    else if (PropertyHelper.IsNullableEnum(nullable, symbol))
+                    {
+                        _builder.AppendFormat("{0} = CsvUtility.ParseNullable(getNextField(), Enum.Parse<{1}>),", symbol.Name, prettyPropType);
                     }
                     else
                     {

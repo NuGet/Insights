@@ -176,7 +176,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 assembly.AssemblyName = metadataReader.GetString(assemblyDefinition.Name);
                 assembly.AssemblyVersion = assemblyDefinition.Version;
                 assembly.Culture = metadataReader.GetString(assemblyDefinition.Culture);
-                assembly.HashAlgorithm = assemblyDefinition.HashAlgorithm.ToString();
+                assembly.HashAlgorithm = assemblyDefinition.HashAlgorithm;
                 SetPublicKeyInfo(assembly, metadataReader, assemblyDefinition);
                 var assemblyName = GetAssemblyName(assembly, assemblyDefinition);
                 if (assemblyName != null)

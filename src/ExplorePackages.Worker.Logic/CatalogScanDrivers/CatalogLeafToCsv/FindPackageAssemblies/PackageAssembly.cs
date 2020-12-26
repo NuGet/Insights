@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 
 namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
 {
@@ -45,7 +46,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
         public string PublicKeyToken { get; set; }
         public bool? PublicKeyTokenHasSecurityException { get; set; }
 
-        public string HashAlgorithm { get; set; }
+        public AssemblyHashAlgorithm? HashAlgorithm { get; set; }
 
         public bool? HasPublicKey { get; set; }
         public int? PublicKeyLength { get; set; }

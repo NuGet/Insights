@@ -72,6 +72,7 @@ namespace {0}
 
             // System.Diagnostics.Debugger.Launch();
 
+            var nullable = context.Compilation.GetTypeByMetadataName("System.Nullable`1");
             var type = context.Compilation.GetTypeByMetadataName(FullInterfaceName);
             if (type == null)
             {
@@ -157,7 +158,7 @@ namespace {0}
                     var prettyType = PropertyHelper.GetPrettyType(typeNamespacePrefix, propertyNames, propertySymbol);
                     foreach (var visitor in visitors)
                     {
-                        visitor.OnProperty(propertySymbol, prettyType);
+                        visitor.OnProperty(nullable, propertySymbol, prettyType);
                     }
                 }
 

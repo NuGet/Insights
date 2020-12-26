@@ -121,7 +121,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             writer.Write(',');
             writer.Write(CsvUtility.FormatBool(PublicKeyTokenHasSecurityException));
             writer.Write(',');
-            CsvUtility.WriteWithQuotes(writer, HashAlgorithm);
+            writer.Write(HashAlgorithm);
             writer.Write(',');
             writer.Write(CsvUtility.FormatBool(HasPublicKey));
             writer.Write(',');
@@ -158,7 +158,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 AssemblyNameHasFileLoadException = CsvUtility.ParseNullable(getNextField(), bool.Parse),
                 PublicKeyToken = getNextField(),
                 PublicKeyTokenHasSecurityException = CsvUtility.ParseNullable(getNextField(), bool.Parse),
-                HashAlgorithm = getNextField(),
+                HashAlgorithm = CsvUtility.ParseNullable(getNextField(), Enum.Parse<System.Reflection.AssemblyHashAlgorithm>),
                 HasPublicKey = CsvUtility.ParseNullable(getNextField(), bool.Parse),
                 PublicKeyLength = CsvUtility.ParseNullable(getNextField(), int.Parse),
                 PublicKeySHA1 = getNextField(),
