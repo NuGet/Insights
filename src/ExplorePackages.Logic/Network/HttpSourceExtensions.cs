@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -166,18 +167,19 @@ namespace Knapcode.ExplorePackages
                 async stream =>
                 {
                     var buffer = new byte[16 * 1024];
-                    using (var md5 = new MD5IncrementalHash())
+                    using (var md5 = MD5.Create())
                     {
                         int read;
                         do
                         {
                             read = await stream.ReadAsync(buffer, 0, buffer.Length);
-                            md5.AppendData(buffer, 0, read);
+                            md5.TransformBlock(buffer, 0, read, buffer, 0);
                         }
                         while (read > 0);
 
-                        var hash = md5.GetHashAndReset();
-                        var contentMD5 = hash.ToHex();
+                        md5.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+                        var contentMD5 = md5.Hash.ToHex();
+
                         return new BlobMetadata(
                             exists: true,
                             hasContentMD5Header: false,
