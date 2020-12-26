@@ -7,7 +7,7 @@ using NuGetPackageIdentity = NuGet.Packaging.Core.PackageIdentity;
 
 namespace Knapcode.ExplorePackages.Worker.RunRealRestore
 {
-    public partial class RealRestoreResult : ICsvRecord
+    public partial record RealRestoreResult : ICsvRecord<RealRestoreResult>
     {
         public RealRestoreResult()
         {

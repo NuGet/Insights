@@ -3,6 +3,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssemblyName>Knapcode.ExplorePackages.Worker.Logic</AssemblyName>
     <RootNamespace>Knapcode.ExplorePackages.Worker</RootNamespace>
+    <LangVersion>9.0</LangVersion>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>

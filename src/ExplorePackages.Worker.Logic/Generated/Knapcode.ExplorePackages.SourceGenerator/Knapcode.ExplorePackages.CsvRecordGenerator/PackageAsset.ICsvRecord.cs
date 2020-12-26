@@ -69,7 +69,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
     ']'
 
     */
-    partial class PackageAsset
+    partial record PackageAsset
     {
         public void Write(TextWriter writer)
         {
@@ -127,34 +127,37 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
             writer.WriteLine();
         }
 
-        public void Read(Func<string> getNextField)
+        public PackageAsset Read(Func<string> getNextField)
         {
-            ScanId = CsvUtility.ParseNullable(getNextField(), Guid.Parse);
-            ScanTimestamp = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset);
-            Id = getNextField();
-            Version = getNextField();
-            CatalogCommitTimestamp = CsvUtility.ParseDateTimeOffset(getNextField());
-            Created = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset);
-            ResultType = Enum.Parse<PackageAssetResultType>(getNextField());
-            PatternSet = getNextField();
-            PropertyAnyValue = getNextField();
-            PropertyCodeLanguage = getNextField();
-            PropertyTargetFrameworkMoniker = getNextField();
-            PropertyLocale = getNextField();
-            PropertyManagedAssembly = getNextField();
-            PropertyMSBuild = getNextField();
-            PropertyRuntimeIdentifier = getNextField();
-            PropertySatelliteAssembly = getNextField();
-            Path = getNextField();
-            FileName = getNextField();
-            FileExtension = getNextField();
-            TopLevelFolder = getNextField();
-            RoundTripTargetFrameworkMoniker = getNextField();
-            FrameworkName = getNextField();
-            FrameworkVersion = getNextField();
-            FrameworkProfile = getNextField();
-            PlatformName = getNextField();
-            PlatformVersion = getNextField();
+            return new PackageAsset
+            {
+                ScanId = CsvUtility.ParseNullable(getNextField(), Guid.Parse),
+                ScanTimestamp = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
+                Id = getNextField(),
+                Version = getNextField(),
+                CatalogCommitTimestamp = CsvUtility.ParseDateTimeOffset(getNextField()),
+                Created = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
+                ResultType = Enum.Parse<PackageAssetResultType>(getNextField()),
+                PatternSet = getNextField(),
+                PropertyAnyValue = getNextField(),
+                PropertyCodeLanguage = getNextField(),
+                PropertyTargetFrameworkMoniker = getNextField(),
+                PropertyLocale = getNextField(),
+                PropertyManagedAssembly = getNextField(),
+                PropertyMSBuild = getNextField(),
+                PropertyRuntimeIdentifier = getNextField(),
+                PropertySatelliteAssembly = getNextField(),
+                Path = getNextField(),
+                FileName = getNextField(),
+                FileExtension = getNextField(),
+                TopLevelFolder = getNextField(),
+                RoundTripTargetFrameworkMoniker = getNextField(),
+                FrameworkName = getNextField(),
+                FrameworkVersion = getNextField(),
+                FrameworkProfile = getNextField(),
+                PlatformName = getNextField(),
+                PlatformVersion = getNextField(),
+            };
         }
     }
 }

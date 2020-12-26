@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class CatalogLeafToCsvCompactProcessor<T> : IMessageProcessor<CatalogLeafToCsvCompactMessage<T>> where T : ICsvRecord, new()
+    public class CatalogLeafToCsvCompactProcessor<T> : IMessageProcessor<CatalogLeafToCsvCompactMessage<T>> where T : ICsvRecord<T>, new()
     {
         private readonly AppendResultStorageService _storageService;
         private readonly TaskStateStorageService _taskStateStorageService;

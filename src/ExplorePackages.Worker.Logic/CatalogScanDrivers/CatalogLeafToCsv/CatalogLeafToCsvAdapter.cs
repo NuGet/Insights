@@ -6,7 +6,7 @@ using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class CatalogLeafToCsvAdapter<T> : ICatalogScanDriver where T : ICsvRecord
+    public class CatalogLeafToCsvAdapter<T> : ICatalogScanDriver where T : ICsvRecord<T>
     {
         private readonly AppendResultStorageService _storageService;
         private readonly TaskStateStorageService _taskStateStorageService;

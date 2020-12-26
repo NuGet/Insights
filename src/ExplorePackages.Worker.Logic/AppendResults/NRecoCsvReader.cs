@@ -5,15 +5,15 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class NRecoCsvReader : ICsvReader
     {
-        public List<T> GetRecords<T>(TextReader reader) where T : ICsvRecord, new()
+        public List<T> GetRecords<T>(TextReader reader) where T : ICsvRecord<T>, new()
         {
             var allRecords = new List<T>();
             var csvReader = new NReco.Csv.CsvReader(reader);
+            var factory = new T();
             while (csvReader.Read())
             {
-                var record = new T();
                 var i = 0;
-                record.Read(() => csvReader[i++]);
+                var record = factory.Read(() => csvReader[i++]);
                 allRecords.Add(record);
             }
 

@@ -77,7 +77,7 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
     ']'
 
     */
-    partial class RealRestoreResult
+    partial record RealRestoreResult
     {
         public void Write(TextWriter writer)
         {
@@ -143,38 +143,41 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
             writer.WriteLine();
         }
 
-        public void Read(Func<string> getNextField)
+        public RealRestoreResult Read(Func<string> getNextField)
         {
-            Timestamp = CsvUtility.ParseDateTimeOffset(getNextField());
-            DotnetVersion = getNextField();
-            Duration = TimeSpan.Parse(getNextField());
-            Id = getNextField();
-            Version = getNextField();
-            Framework = getNextField();
-            Template = getNextField();
-            TargetCount = CsvUtility.ParseNullable(getNextField(), int.Parse);
-            LibraryCount = CsvUtility.ParseNullable(getNextField(), int.Parse);
-            RestoreSucceeded = bool.Parse(getNextField());
-            BuildSucceeded = CsvUtility.ParseNullable(getNextField(), bool.Parse);
-            DependencyCount = CsvUtility.ParseNullable(getNextField(), int.Parse);
-            FrameworkAssemblyCount = CsvUtility.ParseNullable(getNextField(), int.Parse);
-            FrameworkReferenceCount = CsvUtility.ParseNullable(getNextField(), int.Parse);
-            RuntimeAssemblyCount = CsvUtility.ParseNullable(getNextField(), int.Parse);
-            ResourceAssemblyCount = CsvUtility.ParseNullable(getNextField(), int.Parse);
-            CompileTimeAssemblyCount = CsvUtility.ParseNullable(getNextField(), int.Parse);
-            NativeLibraryCount = CsvUtility.ParseNullable(getNextField(), int.Parse);
-            BuildCount = CsvUtility.ParseNullable(getNextField(), int.Parse);
-            BuildMultiTargetingCount = CsvUtility.ParseNullable(getNextField(), int.Parse);
-            ContentFileCount = CsvUtility.ParseNullable(getNextField(), int.Parse);
-            RuntimeTargetCount = CsvUtility.ParseNullable(getNextField(), int.Parse);
-            ToolAssemblyCount = CsvUtility.ParseNullable(getNextField(), int.Parse);
-            EmbedAssemblyCount = CsvUtility.ParseNullable(getNextField(), int.Parse);
-            ErrorBlobPath = getNextField();
-            RestoreLogMessageCodes = getNextField();
-            OnlyNU1202 = CsvUtility.ParseNullable(getNextField(), bool.Parse);
-            OnlyNU1213 = CsvUtility.ParseNullable(getNextField(), bool.Parse);
-            BuildErrorCodes = getNextField();
-            OnlyMSB3644 = CsvUtility.ParseNullable(getNextField(), bool.Parse);
+            return new RealRestoreResult
+            {
+                Timestamp = CsvUtility.ParseDateTimeOffset(getNextField()),
+                DotnetVersion = getNextField(),
+                Duration = TimeSpan.Parse(getNextField()),
+                Id = getNextField(),
+                Version = getNextField(),
+                Framework = getNextField(),
+                Template = getNextField(),
+                TargetCount = CsvUtility.ParseNullable(getNextField(), int.Parse),
+                LibraryCount = CsvUtility.ParseNullable(getNextField(), int.Parse),
+                RestoreSucceeded = bool.Parse(getNextField()),
+                BuildSucceeded = CsvUtility.ParseNullable(getNextField(), bool.Parse),
+                DependencyCount = CsvUtility.ParseNullable(getNextField(), int.Parse),
+                FrameworkAssemblyCount = CsvUtility.ParseNullable(getNextField(), int.Parse),
+                FrameworkReferenceCount = CsvUtility.ParseNullable(getNextField(), int.Parse),
+                RuntimeAssemblyCount = CsvUtility.ParseNullable(getNextField(), int.Parse),
+                ResourceAssemblyCount = CsvUtility.ParseNullable(getNextField(), int.Parse),
+                CompileTimeAssemblyCount = CsvUtility.ParseNullable(getNextField(), int.Parse),
+                NativeLibraryCount = CsvUtility.ParseNullable(getNextField(), int.Parse),
+                BuildCount = CsvUtility.ParseNullable(getNextField(), int.Parse),
+                BuildMultiTargetingCount = CsvUtility.ParseNullable(getNextField(), int.Parse),
+                ContentFileCount = CsvUtility.ParseNullable(getNextField(), int.Parse),
+                RuntimeTargetCount = CsvUtility.ParseNullable(getNextField(), int.Parse),
+                ToolAssemblyCount = CsvUtility.ParseNullable(getNextField(), int.Parse),
+                EmbedAssemblyCount = CsvUtility.ParseNullable(getNextField(), int.Parse),
+                ErrorBlobPath = getNextField(),
+                RestoreLogMessageCodes = getNextField(),
+                OnlyNU1202 = CsvUtility.ParseNullable(getNextField(), bool.Parse),
+                OnlyNU1213 = CsvUtility.ParseNullable(getNextField(), bool.Parse),
+                BuildErrorCodes = getNextField(),
+                OnlyMSB3644 = CsvUtility.ParseNullable(getNextField(), bool.Parse),
+            };
         }
     }
 }

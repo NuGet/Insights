@@ -5,6 +5,6 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public interface ICsvReader
     {
-        List<T> GetRecords<T>(TextReader reader) where T : ICsvRecord, new();
+        List<T> GetRecords<T>(TextReader reader) where T : ICsvRecord<T>, new();
     }
 }

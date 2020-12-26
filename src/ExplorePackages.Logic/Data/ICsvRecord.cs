@@ -3,9 +3,9 @@ using System.IO;
 
 namespace Knapcode.ExplorePackages
 {
-    public interface ICsvRecord
+    public interface ICsvRecord<T>
     {
         public void Write(TextWriter writer);
-        public void Read(Func<string> getNextField);
+        public T Read(Func<string> getNextField);
     }
 }

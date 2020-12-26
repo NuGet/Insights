@@ -71,7 +71,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
     ']'
 
     */
-    partial class PackageAssembly
+    partial record PackageAssembly
     {
         public void Write(TextWriter writer)
         {
@@ -131,35 +131,38 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             writer.WriteLine();
         }
 
-        public void Read(Func<string> getNextField)
+        public PackageAssembly Read(Func<string> getNextField)
         {
-            ScanId = CsvUtility.ParseNullable(getNextField(), Guid.Parse);
-            ScanTimestamp = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset);
-            Id = getNextField();
-            Version = getNextField();
-            CatalogCommitTimestamp = CsvUtility.ParseDateTimeOffset(getNextField());
-            Created = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset);
-            ResultType = Enum.Parse<PackageAssemblyResultType>(getNextField());
-            Path = getNextField();
-            FileName = getNextField();
-            FileExtension = getNextField();
-            TopLevelFolder = getNextField();
-            CompressedLength = CsvUtility.ParseNullable(getNextField(), long.Parse);
-            EntryUncompressedLength = CsvUtility.ParseNullable(getNextField(), long.Parse);
-            ActualUncompressedLength = CsvUtility.ParseNullable(getNextField(), long.Parse);
-            FileSHA256 = getNextField();
-            HasException = bool.Parse(getNextField());
-            AssemblyName = getNextField();
-            AssemblyVersion = CsvUtility.ParseReference(getNextField(), System.Version.Parse);
-            Culture = getNextField();
-            AssemblyNameHasCultureNotFoundException = CsvUtility.ParseNullable(getNextField(), bool.Parse);
-            AssemblyNameHasFileLoadException = CsvUtility.ParseNullable(getNextField(), bool.Parse);
-            PublicKeyToken = getNextField();
-            PublicKeyTokenHasSecurityException = CsvUtility.ParseNullable(getNextField(), bool.Parse);
-            HashAlgorithm = getNextField();
-            HasPublicKey = CsvUtility.ParseNullable(getNextField(), bool.Parse);
-            PublicKeyLength = CsvUtility.ParseNullable(getNextField(), int.Parse);
-            PublicKeySHA1 = getNextField();
+            return new PackageAssembly
+            {
+                ScanId = CsvUtility.ParseNullable(getNextField(), Guid.Parse),
+                ScanTimestamp = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
+                Id = getNextField(),
+                Version = getNextField(),
+                CatalogCommitTimestamp = CsvUtility.ParseDateTimeOffset(getNextField()),
+                Created = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
+                ResultType = Enum.Parse<PackageAssemblyResultType>(getNextField()),
+                Path = getNextField(),
+                FileName = getNextField(),
+                FileExtension = getNextField(),
+                TopLevelFolder = getNextField(),
+                CompressedLength = CsvUtility.ParseNullable(getNextField(), long.Parse),
+                EntryUncompressedLength = CsvUtility.ParseNullable(getNextField(), long.Parse),
+                ActualUncompressedLength = CsvUtility.ParseNullable(getNextField(), long.Parse),
+                FileSHA256 = getNextField(),
+                HasException = bool.Parse(getNextField()),
+                AssemblyName = getNextField(),
+                AssemblyVersion = CsvUtility.ParseReference(getNextField(), System.Version.Parse),
+                Culture = getNextField(),
+                AssemblyNameHasCultureNotFoundException = CsvUtility.ParseNullable(getNextField(), bool.Parse),
+                AssemblyNameHasFileLoadException = CsvUtility.ParseNullable(getNextField(), bool.Parse),
+                PublicKeyToken = getNextField(),
+                PublicKeyTokenHasSecurityException = CsvUtility.ParseNullable(getNextField(), bool.Parse),
+                HashAlgorithm = getNextField(),
+                HasPublicKey = CsvUtility.ParseNullable(getNextField(), bool.Parse),
+                PublicKeyLength = CsvUtility.ParseNullable(getNextField(), int.Parse),
+                PublicKeySHA1 = getNextField(),
+            };
         }
     }
 }

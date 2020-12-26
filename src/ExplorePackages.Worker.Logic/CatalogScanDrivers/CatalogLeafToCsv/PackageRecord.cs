@@ -5,7 +5,7 @@ using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class PackageRecord
+    public record PackageRecord
     {
         public PackageRecord()
         {
