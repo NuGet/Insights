@@ -304,6 +304,7 @@ namespace Knapcode.ExplorePackages
             var buffer = new byte[BufferSize];
 
             long copiedBytes = 0;
+            double previousPercent = -1;
             while (true)
             {
                 var bytesRead = await src.ReadAsync(buffer, 0, buffer.Length);
@@ -312,9 +313,12 @@ namespace Knapcode.ExplorePackages
                     break;
                 }
                 copiedBytes += bytesRead;
-                _logger.LogInformation("Read {BufferBytes} bytes ({CopiedBytes} of {TotalBytes}, {Percent:P2}).", bytesRead, copiedBytes, length, 1.0 * copiedBytes / length);
+                var percent = 1.0 * copiedBytes / length;
+                var logLevel = (int)(percent * 100) == (int)(previousPercent * 100) ? LogLevel.Debug : LogLevel.Information;
+                _logger.Log(logLevel, "Read {BufferBytes} bytes ({CopiedBytes} of {TotalBytes}, {Percent:P2}).", bytesRead, copiedBytes, length, percent);
                 await dest.WriteAsync(buffer, 0, bytesRead);
-                _logger.LogInformation("Wrote {BufferBytes} bytes ({CopiedBytes} of {TotalBytes}, {Percent:P2}).", bytesRead, copiedBytes, length, 1.0 * copiedBytes / length);
+                _logger.Log(logLevel, "Wrote {BufferBytes} bytes ({CopiedBytes} of {TotalBytes}, {Percent:P2}).", bytesRead, copiedBytes, length, percent);
+                previousPercent = percent;
             }
 
             if (copiedBytes < dest.Length)
