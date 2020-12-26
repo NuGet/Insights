@@ -38,7 +38,7 @@ namespace Knapcode.ExplorePackages.Worker
         public DateTimeOffset CatalogCommitTimestamp { get; set; }
         public DateTimeOffset? Created { get; set; }
 
-        public static List<T> Prune<T>(List<T> records) where T : PackageRecord
+        public static List<T> Prune<T>(List<T> records) where T : PackageRecord, IEquatable<T>
         {
             return records
                 .GroupBy(x => x, PackageRecordIdVersionComparer.Instance) // Group by unique package version

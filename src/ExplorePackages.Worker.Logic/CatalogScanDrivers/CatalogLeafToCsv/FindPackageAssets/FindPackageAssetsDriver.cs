@@ -151,9 +151,9 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
                             PropertySatelliteAssembly = (string)satelliteAssembly,
 
                             Path = item.Path,
-                            TopLevelFolder = item.Path.Split('/')[0].ToLowerInvariant(),
                             FileName = Path.GetFileName(item.Path),
                             FileExtension = Path.GetExtension(item.Path),
+                            TopLevelFolder = PathUtility.GetTopLevelFolder(item.Path),
 
                             RoundTripTargetFrameworkMoniker = roundTripTargetFrameworkMoniker,
                             FrameworkName = parsedFramework.Framework,

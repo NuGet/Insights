@@ -24,10 +24,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<FindPackageAssembliesDriver> _logger;
 
-        private static readonly HashSet<string> FileExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ".dll", ".exe"
-        };
+        private static readonly HashSet<string> FileExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".dll", ".exe" };
 
         public FindPackageAssembliesDriver(
             CatalogClient catalogClient,
@@ -79,7 +76,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 using var zipArchive = new ZipArchive(packageStream);
                 var entries = zipArchive
                     .Entries
-                    .Where(x => FileExtensions.Contains(GetExtension(x.FullName)))
+                    .Where(x => FileExtensions.Contains(Path.GetExtension(x.FullName)))
                     .ToList();
 
                 if (!entries.Any())
@@ -103,9 +100,20 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             var assembly = new PackageAssembly(scanId, scanTimestamp, leaf, PackageAssemblyResultType.ValidAssembly)
             {
                 Path = entry.FullName,
+                FileName = Path.GetFileName(entry.FullName),
+                FileExtension = Path.GetExtension(entry.FullName),
+                TopLevelFolder = PathUtility.GetTopLevelFolder(entry.FullName),
+
                 CompressedLength = entry.CompressedLength,
+                EntryUncompressedLength = entry.Length,
             };
+
             await AnalyzeAsync(assembly, entry);
+            
+            assembly.HasException = assembly.AssemblyNameHasCultureNotFoundException.GetValueOrDefault(false)
+                || assembly.AssemblyNameHasFileLoadException.GetValueOrDefault(false)
+                || assembly.PublicKeyTokenHasSecurityException.GetValueOrDefault(false);
+            
             return assembly;
         }
 
@@ -127,7 +135,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                     return;
                 }
 
-                assembly.UncompressedLength = tempStream.Length;
+                assembly.ActualUncompressedLength = tempStream.Length;
 
                 using var peReader = new PEReader(tempStream);
                 if (!peReader.HasMetadata)
@@ -202,9 +210,9 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             var publicKey = metadataReader.GetBlobBytes(assemblyDefinition.PublicKey);
             assembly.PublicKeyLength = publicKey.Length;
 
-            using (var sha256 = SHA256.Create())
+            using (var algorithm = SHA1.Create())
             {
-                assembly.PublicKeyHash = sha256.ComputeHash(publicKey).ToHex();
+                assembly.PublicKeyHash = algorithm.ComputeHash(publicKey).ToHex();
             }
         }
 
@@ -226,17 +234,6 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             {
                 assembly.PublicKeyToken = publicKeyTokenBytes.ToHex();
             }
-        }
-
-        private static string GetExtension(string path)
-        {
-            var dotIndex = path.LastIndexOf('.');
-            if (dotIndex < 0)
-            {
-                return null;
-            }
-
-            return path.Substring(dotIndex);
         }
     }
 }

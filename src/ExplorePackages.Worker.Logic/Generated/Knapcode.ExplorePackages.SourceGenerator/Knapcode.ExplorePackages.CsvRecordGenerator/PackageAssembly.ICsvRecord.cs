@@ -18,8 +18,13 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
         Created: datetime,
         ResultType: string,
         Path: string,
+        FileName: string,
+        FileExtension: string,
+        TopLevelFolder: string,
         CompressedLength: long,
-        UncompressedLength: long,
+        EntryUncompressedLength: long,
+        ActualUncompressedLength: long,
+        HasException: bool,
         Name: string,
         AssemblyVersion: string,
         Culture: string,
@@ -33,7 +38,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
         PublicKeyHash: string
     );
 
-    .create table JverPackageAssemblies ingestion csv mapping 'JverPackageAssemblies_mapping' '[{"Name":"ScanId","Ordinal":0,"DataType":"guid"},{"Name":"ScanTimestamp","Ordinal":1,"DataType":"datetime"},{"Name":"Id","Ordinal":2,"DataType":"string"},{"Name":"Version","Ordinal":3,"DataType":"string"},{"Name":"CatalogCommitTimestamp","Ordinal":4,"DataType":"datetime"},{"Name":"Created","Ordinal":5,"DataType":"datetime"},{"Name":"ResultType","Ordinal":6,"DataType":"string"},{"Name":"Path","Ordinal":7,"DataType":"string"},{"Name":"CompressedLength","Ordinal":8,"DataType":"long"},{"Name":"UncompressedLength","Ordinal":9,"DataType":"long"},{"Name":"Name","Ordinal":10,"DataType":"string"},{"Name":"AssemblyVersion","Ordinal":11,"DataType":"string"},{"Name":"Culture","Ordinal":12,"DataType":"string"},{"Name":"AssemblyNameHasCultureNotFoundException","Ordinal":13,"DataType":"bool"},{"Name":"AssemblyNameHasFileLoadException","Ordinal":14,"DataType":"bool"},{"Name":"PublicKeyToken","Ordinal":15,"DataType":"string"},{"Name":"PublicKeyTokenHasSecurityException","Ordinal":16,"DataType":"bool"},{"Name":"HashAlgorithm","Ordinal":17,"DataType":"string"},{"Name":"HasPublicKey","Ordinal":18,"DataType":"bool"},{"Name":"PublicKeyLength","Ordinal":19,"DataType":"int"},{"Name":"PublicKeyHash","Ordinal":20,"DataType":"string"}]'
+    .create table JverPackageAssemblies ingestion csv mapping 'JverPackageAssemblies_mapping' '[{"Name":"ScanId","Ordinal":0,"DataType":"guid"},{"Name":"ScanTimestamp","Ordinal":1,"DataType":"datetime"},{"Name":"Id","Ordinal":2,"DataType":"string"},{"Name":"Version","Ordinal":3,"DataType":"string"},{"Name":"CatalogCommitTimestamp","Ordinal":4,"DataType":"datetime"},{"Name":"Created","Ordinal":5,"DataType":"datetime"},{"Name":"ResultType","Ordinal":6,"DataType":"string"},{"Name":"Path","Ordinal":7,"DataType":"string"},{"Name":"FileName","Ordinal":8,"DataType":"string"},{"Name":"FileExtension","Ordinal":9,"DataType":"string"},{"Name":"TopLevelFolder","Ordinal":10,"DataType":"string"},{"Name":"CompressedLength","Ordinal":11,"DataType":"long"},{"Name":"EntryUncompressedLength","Ordinal":12,"DataType":"long"},{"Name":"ActualUncompressedLength","Ordinal":13,"DataType":"long"},{"Name":"HasException","Ordinal":14,"DataType":"bool"},{"Name":"Name","Ordinal":15,"DataType":"string"},{"Name":"AssemblyVersion","Ordinal":16,"DataType":"string"},{"Name":"Culture","Ordinal":17,"DataType":"string"},{"Name":"AssemblyNameHasCultureNotFoundException","Ordinal":18,"DataType":"bool"},{"Name":"AssemblyNameHasFileLoadException","Ordinal":19,"DataType":"bool"},{"Name":"PublicKeyToken","Ordinal":20,"DataType":"string"},{"Name":"PublicKeyTokenHasSecurityException","Ordinal":21,"DataType":"bool"},{"Name":"HashAlgorithm","Ordinal":22,"DataType":"string"},{"Name":"HasPublicKey","Ordinal":23,"DataType":"bool"},{"Name":"PublicKeyLength","Ordinal":24,"DataType":"int"},{"Name":"PublicKeyHash","Ordinal":25,"DataType":"string"}]'
 
     */
     partial class PackageAssembly
@@ -56,9 +61,19 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, Path);
             writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, FileName);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, FileExtension);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, TopLevelFolder);
+            writer.Write(',');
             writer.Write(CompressedLength);
             writer.Write(',');
-            writer.Write(UncompressedLength);
+            writer.Write(EntryUncompressedLength);
+            writer.Write(',');
+            writer.Write(ActualUncompressedLength);
+            writer.Write(',');
+            writer.Write(CsvUtility.FormatBool(HasException));
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, Name);
             writer.Write(',');
@@ -94,8 +109,13 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             Created = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset);
             ResultType = Enum.Parse<PackageAssemblyResultType>(getNextField());
             Path = getNextField();
+            FileName = getNextField();
+            FileExtension = getNextField();
+            TopLevelFolder = getNextField();
             CompressedLength = CsvUtility.ParseNullable(getNextField(), long.Parse);
-            UncompressedLength = CsvUtility.ParseNullable(getNextField(), long.Parse);
+            EntryUncompressedLength = CsvUtility.ParseNullable(getNextField(), long.Parse);
+            ActualUncompressedLength = CsvUtility.ParseNullable(getNextField(), long.Parse);
+            HasException = bool.Parse(getNextField());
             Name = getNextField();
             AssemblyVersion = CsvUtility.ParseReference(getNextField(), System.Version.Parse);
             Culture = getNextField();
