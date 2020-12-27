@@ -7,7 +7,6 @@ namespace Knapcode.ExplorePackages.Worker
     public class CatalogLeafScanMessageProcessor : IMessageProcessor<CatalogLeafScanMessage>
     {
         private const int MaxAttempts = 10;
-        private static readonly TimeSpan PollFrequency = TimeSpan.FromSeconds(60);
 
         private readonly CatalogScanDriverFactory _driverFactory;
         private readonly CatalogScanStorageService _storageService;
@@ -61,7 +60,7 @@ namespace Knapcode.ExplorePackages.Worker
                         dequeueCount,
                         untilNextAttempt.TotalMinutes);
 
-                    var notBefore = PollFrequency;
+                    var notBefore = TimeSpan.FromMinutes(10);
                     if (untilNextAttempt < notBefore)
                     {
                         notBefore = untilNextAttempt;
@@ -85,7 +84,7 @@ namespace Knapcode.ExplorePackages.Worker
                     _logger.LogInformation("Catalog leaf scan will be tried again later.");
                     scan.AttemptCount--;
                     await _storageService.ReplaceAsync(scan);
-                    await _messageEnqueuer.EnqueueAsync(new[] { message }, PollFrequency);
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, TimeSpan.FromMinutes(1));
                     break;
                 case DriverResultType.Success:
                     _logger.LogInformation("Completed catalog leaf scan.");
