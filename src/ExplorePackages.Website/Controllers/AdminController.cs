@@ -33,6 +33,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             var availableMessageCountLowerBoundTask = _rawMessageEnqueuer.GetAvailableMessageCountLowerBoundAsync(messageCount);
             var poisonAvailableMessageCountLowerBoundTask = _rawMessageEnqueuer.GetPoisonAvailableMessageCountLowerBoundAsync(messageCount);
 
+            var findLatestLeavesTask = GetCatalogScanAsync(CatalogScanType.FindLatestLeaves);
             var findPackageAssetsTask = GetCatalogScanAsync(CatalogScanType.FindPackageAssets);
             var findPackageAssembliesTask = GetCatalogScanAsync(CatalogScanType.FindPackageAssemblies);
 
@@ -41,6 +42,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 poisonApproximateMessageCountTask,
                 availableMessageCountLowerBoundTask,
                 poisonAvailableMessageCountLowerBoundTask,
+                findLatestLeavesTask,
                 findPackageAssetsTask,
                 findPackageAssembliesTask);
 
@@ -50,6 +52,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 AvailableMessageCountLowerBound = await availableMessageCountLowerBoundTask,
                 PoisonApproximateMessageCount = await poisonApproximateMessageCountTask,
                 PoisonAvailableMessageCountLowerBound = await poisonAvailableMessageCountLowerBoundTask,
+                FindLatestLeaves = await findLatestLeavesTask,
                 FindPackageAssets = await findPackageAssetsTask,
                 FindPackageAssemblies = await findPackageAssembliesTask,
             };
@@ -88,6 +91,9 @@ namespace Knapcode.ExplorePackages.Website.Controllers
 
             switch (type)
             {
+                case CatalogScanType.FindLatestLeaves:
+                    await _catalogScanService.UpdateFindLatestLeavesAsync(parsedMax);
+                    break;
                 case CatalogScanType.FindPackageAssets:
                     await _catalogScanService.UpdateFindPackageAssetsAsync(parsedMax);
                     break;

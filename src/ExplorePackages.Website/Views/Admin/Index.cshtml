@@ -16,6 +16,9 @@
             <li><b>Poison - available messages:</b> @(Model.PoisonAvailableMessageCountIsExact ? string.Empty : "≥") @Model.PoisonAvailableMessageCountLowerBound</li>
         </ul>
 
+        <h3>Find Latest Leaves</h3>
+        @await Html.PartialAsync("_CatalogScan", Model.FindLatestLeaves)
+
         <h3>Find Package Assets</h3>
         @await Html.PartialAsync("_CatalogScan", Model.FindPackageAssets)
 

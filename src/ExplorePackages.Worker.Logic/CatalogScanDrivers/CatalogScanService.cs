@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -102,12 +103,27 @@ namespace Knapcode.ExplorePackages.Worker
 
         private async Task<CatalogIndexScan> UpdateCatalogLeafToCsvAsync(CatalogScanType catalogScanType, DateTimeOffset? max)
         {
+            var parameters = new CatalogLeafToCsvParameters
+            {
+                BucketCount = _options.Value.AppendResultStorageBucketCount,
+            };
+
             return await UpdateCatalogScanAsync(
                 catalogScanType,
-                _serializer.Serialize(new CatalogLeafToCsvParameters
-                {
-                    BucketCount = _options.Value.AppendResultStorageBucketCount,
-                }).AsString(),
+                _serializer.Serialize(parameters).AsString(),
+                max);
+        }
+
+        public async Task<CatalogIndexScan> UpdateFindLatestLeavesAsync(DateTimeOffset? max)
+        {
+            var parameters = new FindLatestLeavesParameters
+            {
+                Prefix = string.Empty,
+            };
+
+            return await UpdateCatalogScanAsync(
+                CatalogScanType.FindLatestLeaves,
+                _serializer.Serialize(parameters).AsString(),
                 max);
         }
 

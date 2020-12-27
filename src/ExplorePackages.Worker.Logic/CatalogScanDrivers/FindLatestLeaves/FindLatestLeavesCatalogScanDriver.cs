@@ -19,14 +19,22 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
             _schemaSerializer = schemaSerializer;
         }
 
-        public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
+        public async Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
         {
-            return Task.FromResult(CatalogIndexScanResult.Expand);
+            await _storageService.InitializeAsync();
+
+            return CatalogIndexScanResult.Expand;
         }
 
         public async Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan)
         {
             var parameters = (FindLatestLeavesParameters)_schemaSerializer.Deserialize(pageScan.ScanParameters);
+
+            if (parameters.Prefix != string.Empty)
+            {
+                throw new NotImplementedException("The cursor does not contain the prefix or anything specific to the prefix so it must be an empty string.");
+            }
+
             var page = await _catalogClient.GetCatalogPageAsync(pageScan.Url);
             var items = page.GetLeavesInBounds(pageScan.Min, pageScan.Max, excludeRedundantLeaves: true);
             await _storageService.AddAsync(parameters.Prefix, items);
