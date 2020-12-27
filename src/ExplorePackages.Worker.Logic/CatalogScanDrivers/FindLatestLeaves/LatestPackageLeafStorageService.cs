@@ -44,7 +44,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
         {
             // Sort items by lexicographical order, since this is what table storage does.
             var itemList = items
-                .Select(x => new { Item = x, LowerVersion = GetLowerVersion(x) })
+                .Select(x => new { Item = x, LowerVersion = LatestPackageLeaf.GetRowKey(x.PackageVersion) })
                 .GroupBy(x => x.LowerVersion)
                 .Select(x => x.OrderByDescending(x => x.Item.CommitTimestamp).First())
                 .OrderBy(x => x.LowerVersion, StringComparer.Ordinal)
@@ -54,9 +54,8 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
             var versionsToUpsert = new List<string>();
 
             // Query for all of the version data in Table Storage, determining what needs to be updated.
-            var lowerId = packageId.ToLowerInvariant();
             var filterString = TableQuery.CombineFilters(
-                EqualPrefixAndPackageId(prefix, lowerId),
+                EqualPrefixAndPackageId(prefix, packageId),
                 TableOperators.And,
                 TableQuery.CombineFilters(
                     GreaterThanOrEqualToVersion(itemList.First().LowerVersion),
@@ -110,10 +109,10 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
 
                 var lowerVersion = versionsToUpsert[i];
                 var leaf = lowerVersionToItem[lowerVersion];
-                var entity = new LatestPackageLeaf(prefix, lowerId, lowerVersion)
+                var entity = new LatestPackageLeaf(prefix, leaf)
                 {
                     CommitTimestamp = leaf.CommitTimestamp,
-                    ParsedType = leaf.Type,
+                    ParsedLeafType = leaf.Type,
                     Url = leaf.Url,
                 };
 
@@ -140,12 +139,12 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
             await table.ExecuteBatchAsync(batch);
         }
 
-        private static string EqualPrefixAndPackageId(string prefix, string lowerId)
+        private static string EqualPrefixAndPackageId(string prefix, string id)
         {
             return TableQuery.GenerateFilterCondition(
                 PartitionKey,
                 QueryComparisons.Equal,
-                LatestPackageLeaf.GetPartitionKey(prefix, lowerId));
+                LatestPackageLeaf.GetPartitionKey(prefix, id));
         }
 
         private static string GreaterThanOrEqualToVersion(string lowerVersion)
@@ -156,11 +155,6 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
         private static string LessThanOrEqualToVersion(string lowerVersion)
         {
             return TableQuery.GenerateFilterCondition(RowKey, QueryComparisons.LessThanOrEqual, lowerVersion);
-        }
-
-        private static string GetLowerVersion(CatalogLeafItem x)
-        {
-            return x.ParsePackageVersion().ToNormalizedString().ToLowerInvariant();
         }
 
         private CloudTable GetTable()

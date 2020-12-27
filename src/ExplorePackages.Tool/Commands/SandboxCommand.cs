@@ -72,7 +72,48 @@ namespace Knapcode.ExplorePackages.Tool
         {
             // await _catalogScanService.InitializeAsync();
 
-            await _catalogScanService.RequeueAsync("CatalogScan-FindPackageAssemblies", "08585928640987077276-2zbm6qzw65ne5dlde242pezrcm");
+            // await _catalogScanService.RequeueAsync("CatalogScan-FindPackageAssemblies", "08585928640987077276-2zbm6qzw65ne5dlde242pezrcm");
+
+            await _latestPackageLeafStorageService.InitializeAsync();
+
+            var increment = 0;
+
+            var leaves = new[]
+            {
+                new CatalogLeafItem
+                {
+                    Url = "https://api.nuget.org/v3/catalog0/data/2018.10.13.13.46.44/cntk.deps.cudnn.2.4.0.json",
+                    Type = CatalogLeafType.PackageDetails,
+                    PackageId = "CNTK.Deps.cuDNN",
+                    PackageVersion = "2.4.0",
+                    CommitId = "02e08d75-c4b1-4d90-af1f-42f3dddaee30",
+                    CommitTimestamp = DateTimeOffset.Parse("2018-10-13T13:46:44.773813Z").AddDays(increment),
+                },
+                new CatalogLeafItem
+                {
+                    Url = "https://api.nuget.org/v3/catalog0/data/2018.08.23.17.47.42/cntk.deps.cudnn.2.6.0-rc0.dev20180823.json",
+                    Type = CatalogLeafType.PackageDetails,
+                    PackageId = "CNTK.Deps.cuDNN",
+                    PackageVersion = "2.6.0-rc0.dev20180823",
+                    CommitId = "271c3ece-38ca-4045-8d79-82a6c90d1877",
+                    CommitTimestamp = DateTimeOffset.Parse("2018-08-23T17:47:42.033489Z").AddDays(increment),
+                },
+                new CatalogLeafItem
+                {
+                    Url = "https://api.nuget.org/v3/catalog0/data/2018.12.10.07.25.55/opencvcuda-debug.redist.3.1.0.json",
+                    Type = CatalogLeafType.PackageDetails,
+                    PackageId = "opencvcuda-debug.redist",
+                    PackageVersion = "3.1.0",
+                    CommitId = "e3f67b84-9c13-4f2f-ac80-12d08b6a23ce",
+                    CommitTimestamp = DateTimeOffset.Parse("2018-12-10T07:25:55.4992861Z").AddDays(increment),
+                },
+            };
+
+            var prefix = StorageUtility.GenerateDescendingId().ToString();
+            var taskA = _latestPackageLeafStorageService.AddAsync(prefix, leaves);
+            var taskB = _latestPackageLeafStorageService.AddAsync(prefix, leaves.Skip(1).ToList());
+
+            await Task.WhenAll(taskA, taskB);
 
             /*
             await _findPackageAssembliesDriver.ProcessLeafAsync(new CatalogLeafItem
