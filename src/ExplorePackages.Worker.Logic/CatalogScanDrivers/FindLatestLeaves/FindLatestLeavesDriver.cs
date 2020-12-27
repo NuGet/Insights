@@ -3,13 +3,13 @@ using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
 {
-    public class FindLatestLeavesCatalogScanDriver : ICatalogScanDriver
+    public class FindLatestLeavesDriver : ICatalogScanDriver
     {
         private readonly CatalogClient _catalogClient;
         private readonly LatestPackageLeafStorageService _storageService;
         private readonly SchemaSerializer _schemaSerializer;
 
-        public FindLatestLeavesCatalogScanDriver(
+        public FindLatestLeavesDriver(
             CatalogClient catalogClient,
             LatestPackageLeafStorageService storageService,
             SchemaSerializer schemaSerializer)

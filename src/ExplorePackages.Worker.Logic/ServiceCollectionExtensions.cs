@@ -57,7 +57,7 @@ namespace Knapcode.ExplorePackages.Worker
         private static void AddFindLatestLeaves(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddTransient<LatestPackageLeafStorageService>();
-            serviceCollection.AddTransient<FindLatestLeavesCatalogScanDriver>();
+            serviceCollection.AddTransient<FindLatestLeavesDriver>();
         }
 
         private static void AddRunRealRestore(this IServiceCollection serviceCollection)

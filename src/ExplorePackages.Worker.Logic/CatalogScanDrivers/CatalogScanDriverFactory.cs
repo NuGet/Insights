@@ -20,7 +20,7 @@ namespace Knapcode.ExplorePackages.Worker
             switch (type)
             {
                 case CatalogScanType.FindLatestLeaves:
-                    return _serviceProvider.GetRequiredService<FindLatestLeavesCatalogScanDriver>();
+                    return _serviceProvider.GetRequiredService<FindLatestLeavesDriver>();
                 case CatalogScanType.FindPackageAssets:
                     return _serviceProvider.GetRequiredService<CatalogLeafToCsvAdapter<PackageAsset>>();
                 case CatalogScanType.FindPackageAssemblies:
