@@ -71,4 +71,4 @@ track of what I was originally working on. Maybe I should use issues for this? T
 
 - Build a catalog index reader that uses range requests for perf
 
-- Add execution duration to CatalogIndexScan
+- Measure performance of each driver
