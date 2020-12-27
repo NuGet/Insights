@@ -44,5 +44,6 @@ namespace Knapcode.ExplorePackages.Worker
         public string ScanParameters { get; set; }
         public DateTimeOffset? Min { get; set; }
         public DateTimeOffset? Max { get; set; }
+        public DateTimeOffset? Completed { get; set; }
     }
 }

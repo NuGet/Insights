@@ -168,6 +168,7 @@ namespace Knapcode.ExplorePackages.Worker
                 _logger.LogInformation("The catalog scan is complete.");
 
                 scan.ParsedState = CatalogScanState.Complete;
+                scan.Completed = DateTimeOffset.UtcNow;
                 await _storageService.ReplaceAsync(scan);
             }
         }

@@ -14,7 +14,7 @@
             <th>State</th>
             <th>Min</th>
             <th>Max</th>
-            <th>Delta</th>
+            <th>Runtime</th>
         </tr>
     </thead>
     <tbody>
@@ -25,12 +25,7 @@
                 <td>@scan.ParsedState</td>
                 <td>@scan.Min?.ToString("O")</td>
                 <td>@scan.Max?.ToString("O")</td>
-                <td>
-                    @if (scan.Max.HasValue && scan.Min.HasValue)
-                    {
-                        @(scan.Max.Value - scan.Min.Value)
-                    }
-                </td>
+                <td>@(scan.Completed.GetValueOrDefault(DateTimeOffset.UtcNow) - scan.Created)</td>
             </tr>
         }
     </tbody>
