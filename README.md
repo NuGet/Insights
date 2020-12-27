@@ -57,7 +57,11 @@ https://explorepackages.azurewebsites.net/
 I need to keep a TODO for this project since I indulge myself in all of the rabbit trails that I want and often lose
 track of what I was originally working on. Maybe I should use issues for this? Too much work.
 
+- Add a driver to write all catalog leaf items to CSV (very simple, helps with analysis)
+
 - Chain `FindLatestLeaves` to the other catalog scan logic, to dedupe catalog leaves
+
+- Remove the "NuGetOrgMin" once there is deduping via `FindLatestLeaves`
 
 - Make `FindPackageAssemblies` use MiniZip to fetch the file listing first similar to `FinsPackageAssets`, ensuring that
   there is at least one assembly (by file extension) before downloading the full package.
