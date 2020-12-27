@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Website.Models;
 using Knapcode.ExplorePackages.Worker;
@@ -33,20 +34,19 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             var availableMessageCountLowerBoundTask = _rawMessageEnqueuer.GetAvailableMessageCountLowerBoundAsync(messageCount);
             var poisonAvailableMessageCountLowerBoundTask = _rawMessageEnqueuer.GetPoisonAvailableMessageCountLowerBoundAsync(messageCount);
 
-            var findCatalogLeafItemsTask = GetCatalogScanAsync(CatalogScanType.FindCatalogLeafItems);
-            var findLatestLeavesTask = GetCatalogScanAsync(CatalogScanType.FindLatestLeaves);
-            var findPackageAssetsTask = GetCatalogScanAsync(CatalogScanType.FindPackageAssets);
-            var findPackageAssembliesTask = GetCatalogScanAsync(CatalogScanType.FindPackageAssemblies);
+            var catalogScanTasks = Enum
+                .GetValues(typeof(CatalogScanType))
+                .Cast<CatalogScanType>()
+                .Select(GetCatalogScanAsync)
+                .ToList();
 
             await Task.WhenAll(
                 approximateMessageCountTask,
                 poisonApproximateMessageCountTask,
                 availableMessageCountLowerBoundTask,
-                poisonAvailableMessageCountLowerBoundTask,
-                findCatalogLeafItemsTask,
-                findLatestLeavesTask,
-                findPackageAssetsTask,
-                findPackageAssembliesTask);
+                poisonAvailableMessageCountLowerBoundTask);
+
+            var catalogScans = await Task.WhenAll(catalogScanTasks);
 
             var model = new AdminViewModel
             {
@@ -54,10 +54,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 AvailableMessageCountLowerBound = await availableMessageCountLowerBoundTask,
                 PoisonApproximateMessageCount = await poisonApproximateMessageCountTask,
                 PoisonAvailableMessageCountLowerBound = await poisonAvailableMessageCountLowerBoundTask,
-                FindCatalogLeafItems = await findCatalogLeafItemsTask,
-                FindLatestLeaves = await findLatestLeavesTask,
-                FindPackageAssets = await findPackageAssetsTask,
-                FindPackageAssemblies = await findPackageAssembliesTask,
+                CatalogScans = catalogScans,
             };
 
             model.AvailableMessageCountIsExact = model.AvailableMessageCountLowerBound < messageCount;
@@ -92,23 +89,9 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 parsedMax = DateTimeOffset.Parse(max);
             }
 
-            switch (type)
-            {
-                case CatalogScanType.FindCatalogLeafItems:
-                    await _catalogScanService.UpdateFindCatalogLeafItemsAsync(parsedMax);
-                    break;
-                case CatalogScanType.FindLatestLeaves:
-                    await _catalogScanService.UpdateFindLatestLeavesAsync(parsedMax);
-                    break;
-                case CatalogScanType.FindPackageAssets:
-                    await _catalogScanService.UpdateFindPackageAssetsAsync(parsedMax);
-                    break;
-                case CatalogScanType.FindPackageAssemblies:
-                    await _catalogScanService.UpdateFindPackageAssembliesAsync(parsedMax);
-                    break;
-            }
+            await _catalogScanService.UpdateAsync(type, parsedMax);
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment: type.ToString());
         }
     }
 }

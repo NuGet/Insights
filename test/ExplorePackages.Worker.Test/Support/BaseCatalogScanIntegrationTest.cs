@@ -122,6 +122,13 @@ namespace Knapcode.ExplorePackages.Worker
         public ILogger Logger => Host.Services.GetRequiredService<ILogger<BaseCatalogScanIntegrationTest>>();
 
         protected abstract string DestinationContainerName { get; }
+        protected abstract CatalogScanType Type { get; }
+
+        protected async Task UpdateAsync(DateTimeOffset max)
+        {
+            var indexScan = await CatalogScanService.UpdateAsync(Type, max);
+            await ProcessQueueAsync(indexScan);
+        }
 
         protected async Task ProcessQueueAsync(CatalogIndexScan indexScan)
         {

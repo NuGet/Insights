@@ -20,6 +20,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
         }
 
         protected override string DestinationContainerName => Options.Value.FindPackageAssembliesContainerName;
+        protected override CatalogScanType Type => CatalogScanType.FindPackageAssemblies;
 
         public class FindPackageAssemblies : FindPackageAssembliesIntegrationTest
         {
@@ -46,7 +47,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 await CursorStorageService.UpdateAsync(cursor);
 
                 // Act
-                await UpdateFindPackageAssembliesAsync(max1);
+                await UpdateAsync(max1);
 
                 // Assert
                 await AssertOutputAsync(FindPackageAssembliesDir, Step1, 0);
@@ -54,7 +55,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 await AssertOutputAsync(FindPackageAssembliesDir, Step1, 2);
 
                 // Act
-                await UpdateFindPackageAssembliesAsync(max2);
+                await UpdateAsync(max2);
 
                 // Assert
                 await AssertOutputAsync(FindPackageAssembliesDir, Step2, 0);
@@ -95,7 +96,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 await CursorStorageService.UpdateAsync(cursor);
 
                 // Act
-                await UpdateFindPackageAssembliesAsync(max1);
+                await UpdateAsync(max1);
 
                 // Assert
                 await AssertOutputAsync(FindPackageAssembliesDir, Step1, 0);
@@ -142,7 +143,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 await CursorStorageService.UpdateAsync(cursor);
 
                 // Act
-                await UpdateFindPackageAssembliesAsync(max1);
+                await UpdateAsync(max1);
 
                 // Assert
                 await AssertOutputAsync(FindPackageAssemblies_WithDeleteDir, Step1, 0);
@@ -150,7 +151,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 await AssertOutputAsync(FindPackageAssemblies_WithDeleteDir, Step1, 2);
 
                 // Act
-                await UpdateFindPackageAssembliesAsync(max2);
+                await UpdateAsync(max2);
 
                 // Assert
                 await AssertOutputAsync(FindPackageAssemblies_WithDeleteDir, Step1, 0); // This file is unchanged.
@@ -187,19 +188,13 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 await CursorStorageService.UpdateAsync(cursor);
 
                 // Act
-                await UpdateFindPackageAssembliesAsync(max1);
+                await UpdateAsync(max1);
 
                 // Assert
                 await AssertOutputAsync(FindPackageAssemblies_WithUnmanagedDir, Step1, 0);
 
                 await VerifyExpectedContainersAsync();
             }
-        }
-
-        private async Task UpdateFindPackageAssembliesAsync(DateTimeOffset max)
-        {
-            var indexScan = await CatalogScanService.UpdateFindPackageAssembliesAsync(max);
-            await ProcessQueueAsync(indexScan);
         }
     }
 }

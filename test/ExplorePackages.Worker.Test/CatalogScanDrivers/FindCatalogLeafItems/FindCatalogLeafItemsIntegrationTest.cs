@@ -18,6 +18,7 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItems
         }
 
         protected override string DestinationContainerName => Options.Value.FindCatalogLeafItemsContainerName;
+        protected override CatalogScanType Type => CatalogScanType.FindCatalogLeafItems;
 
         public class FindCatalogLeafItems : FindCatalogLeafItemsIntegrationTest
         {
@@ -45,19 +46,13 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItems
                 await CursorStorageService.UpdateAsync(cursor);
 
                 // Act
-                await UpdateFindCatalogLeafItems(max1);
+                await UpdateAsync(max1);
 
                 // Assert
                 await AssertOutputAsync(FindCatalogLeafItemsDir, Step1, 0);
 
                 await VerifyExpectedContainersAsync();
             }
-        }
-
-        private async Task UpdateFindCatalogLeafItems(DateTimeOffset max)
-        {
-            var indexScan = await CatalogScanService.UpdateFindCatalogLeafItemsAsync(max);
-            await ProcessQueueAsync(indexScan);
         }
     }
 }

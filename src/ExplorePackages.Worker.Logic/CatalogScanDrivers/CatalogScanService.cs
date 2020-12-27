@@ -47,8 +47,14 @@ namespace Knapcode.ExplorePackages.Worker
             await _leaseService.InitializeAsync();
         }
 
-        public async Task RequeueAsync(string cursorName, string scanId)
+        public async Task<CursorTableEntity> GetCursorAsync(CatalogScanType type)
         {
+            return await _cursorStorageService.GetOrCreateAsync(GetCursorName(type));
+        }
+
+        public async Task RequeueAsync(CatalogScanType type, string scanId)
+        {
+            var cursorName = GetCursorName(type);
             var indexScan = await _catalogScanStorageService.GetIndexScanAsync(cursorName, scanId);
             if (indexScan.ParsedState != CatalogScanState.Waiting)
             {
@@ -92,17 +98,28 @@ namespace Knapcode.ExplorePackages.Worker
             });
         }
 
-        public async Task<CursorTableEntity> GetCursorAsync(CatalogScanType type)
+        private static string GetCursorName(CatalogScanType type)
         {
-            return await _cursorStorageService.GetOrCreateAsync($"CatalogScan-{type}");
+            return $"CatalogScan-{type}";
         }
 
-        public async Task<CatalogIndexScan> UpdateFindCatalogLeafItemsAsync(DateTimeOffset? max)
+        public async Task<CatalogIndexScan> UpdateAsync(CatalogScanType type, DateTimeOffset? max)
         {
-            return await UpdateCatalogScanAsync(CatalogScanType.FindCatalogLeafItems, string.Empty, max);
+            switch (type)
+            {
+                case CatalogScanType.FindCatalogLeafItems:
+                    return await UpdateCatalogScanAsync(type, string.Empty, max);
+                case CatalogScanType.FindLatestLeaves:
+                    return await UpdateFindLatestLeavesAsync(max);
+                case CatalogScanType.FindPackageAssemblies:
+                case CatalogScanType.FindPackageAssets:
+                    return await UpdateCatalogLeafToCsvAsync(type, max);
+                default:
+                    throw new NotSupportedException();
+            }
         }
 
-        public async Task<CatalogIndexScan> UpdateFindLatestLeavesAsync(DateTimeOffset? max)
+        private async Task<CatalogIndexScan> UpdateFindLatestLeavesAsync(DateTimeOffset? max)
         {
             var parameters = new FindLatestLeavesParameters
             {
@@ -114,10 +131,6 @@ namespace Knapcode.ExplorePackages.Worker
                 _serializer.Serialize(parameters).AsString(),
                 max);
         }
-
-        public async Task<CatalogIndexScan> UpdateFindPackageAssetsAsync(DateTimeOffset? max) => await UpdateCatalogLeafToCsvAsync(CatalogScanType.FindPackageAssets, max);
-
-        public async Task<CatalogIndexScan> UpdateFindPackageAssembliesAsync(DateTimeOffset? max) => await UpdateCatalogLeafToCsvAsync(CatalogScanType.FindPackageAssemblies, max);
 
         private async Task<CatalogIndexScan> UpdateCatalogLeafToCsvAsync(CatalogScanType catalogScanType, DateTimeOffset? max)
         {

@@ -1,5 +1,7 @@
 ﻿@model CatalogScanViewModel
 
+<a name="@Model.Type" class="anchor"></a>
+<h3>@Model.Type.ToString().Humanize()</h3>
 <ul class="list-unstyled">
     <li><b>Cursor value:</b> @Model.Cursor.Value.ToString("O")</li>
     <li><b>Cursor age:</b> @Model.CursorAge</li>

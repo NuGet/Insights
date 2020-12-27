@@ -57,7 +57,7 @@ namespace Knapcode.ExplorePackages.Worker
             return result;
         }
 
-        public Task StartAggregateAsync(CatalogIndexScan indexScan) =>_adapter.StartAggregateAsync(indexScan);
+        public Task StartAggregateAsync(CatalogIndexScan indexScan) => _adapter.StartAggregateAsync(indexScan);
         public Task<bool> IsAggregateCompleteAsync(CatalogIndexScan indexScan) => _adapter.IsAggregateCompleteAsync(indexScan);
         public Task FinalizeAsync(CatalogIndexScan indexScan) => _adapter.FinalizeAsync(indexScan);
     }

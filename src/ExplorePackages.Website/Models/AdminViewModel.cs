@@ -1,4 +1,6 @@
-﻿namespace Knapcode.ExplorePackages.Website.Models
+﻿using System.Collections.Generic;
+
+namespace Knapcode.ExplorePackages.Website.Models
 {
     public class AdminViewModel
     {
@@ -9,9 +11,6 @@
         public int PoisonAvailableMessageCountLowerBound { get; set; }
         public bool PoisonAvailableMessageCountIsExact { get; set; }
 
-        public CatalogScanViewModel FindCatalogLeafItems { get; set; }
-        public CatalogScanViewModel FindPackageAssets { get; set; }
-        public CatalogScanViewModel FindPackageAssemblies { get; set; }
-        public CatalogScanViewModel FindLatestLeaves { get; set; }
+        public IReadOnlyList<CatalogScanViewModel> CatalogScans { get; set; }
     }
 }
