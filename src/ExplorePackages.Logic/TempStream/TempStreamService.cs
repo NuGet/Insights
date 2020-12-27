@@ -15,12 +15,6 @@ namespace Knapcode.ExplorePackages
             _serviceProvider = serviceProvider;
         }
 
-        public async Task<Stream> CopyToTempStreamAsync(Func<Stream> getStream, long length)
-        {
-            var result = await CopyToTempStreamAsync(getStream, length, () => null);
-            return result.Stream;
-        }
-
         public async Task<TempStreamResult> CopyToTempStreamAsync(Func<Stream> getStream, long length, Func<HashAlgorithm> getHashAlgorithm)
         {
             var writer = GetWriter();

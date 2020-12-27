@@ -59,33 +59,42 @@ namespace Knapcode.ExplorePackages
             var url = await GetPackageContentUrlAsync(id, version);
             var nuGetLogger = _logger.ToNuGetLogger();
             var writer = _tempStreamService.GetWriter();
-            TempStreamResult result;
-            do
+
+            TempStreamResult result = null;
+            try
             {
-                result = await _httpSource.ProcessResponseAsync(
-                    new HttpSourceRequest(url, nuGetLogger),
-                    async response =>
-                    {
-                        if (response.StatusCode == HttpStatusCode.NotFound)
-                        {
-                            return null;
-                        }
-
-                        response.EnsureSuccessStatusCode();
-                        using var networkStream = await response.Content.ReadAsStreamAsync();
-                        return await writer.CopyToTempStreamAsync(networkStream, response.Content.Headers.ContentLength.Value);
-                    },
-                    nuGetLogger,
-                    token);
-
-                if (result == null)
+                do
                 {
-                    return null;
-                }
-            }
-            while (result.Type == TempStreamResultType.NeedNewStream);
+                    result = await _httpSource.ProcessResponseAsync(
+                        new HttpSourceRequest(url, nuGetLogger),
+                        async response =>
+                        {
+                            if (response.StatusCode == HttpStatusCode.NotFound)
+                            {
+                                return null;
+                            }
 
-            return result;
+                            response.EnsureSuccessStatusCode();
+                            using var networkStream = await response.Content.ReadAsStreamAsync();
+                            return await writer.CopyToTempStreamAsync(networkStream, response.Content.Headers.ContentLength.Value);
+                        },
+                        nuGetLogger,
+                        token);
+
+                    if (result == null)
+                    {
+                        return null;
+                    }
+                }
+                while (result.Type == TempStreamResultType.NeedNewStream);
+
+                return result;
+            }
+            catch
+            {
+                result?.Dispose();
+                throw;
+            }
         }
 
         public async Task<NuspecContext> GetNuspecContextAsync(string id, string version, CancellationToken token)

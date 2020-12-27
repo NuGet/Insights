@@ -194,7 +194,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
             }
             finally
             {
-                tempStreamResult?.Stream.Dispose();
+                tempStreamResult?.Dispose();
             }
         }
 
