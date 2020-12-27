@@ -96,6 +96,7 @@ namespace Knapcode.ExplorePackages.Worker
             x.FindPackageAssetsContainerName = $"{StoragePrefix}1fpa1";
             x.FindPackageAssembliesContainerName = $"{StoragePrefix}1fpi1";
             x.RunRealRestoreContainerName = $"{StoragePrefix}1rrr1";
+            x.FindCatalogLeafItemsContainerName = $"{StoragePrefix}1fcli1";
 
             ConfigureDefaultsAndSettings((ExplorePackagesSettings)x);
 

@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Knapcode.ExplorePackages.Worker.FindCatalogLeafItems;
 using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,12 +28,27 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient<TaskStateStorageService>();
             serviceCollection.AddTransient<ICsvReader, NRecoCsvReader>();
 
+            serviceCollection.AddFindCatalogLeafItems();
             serviceCollection.AddFindLatestLeaves();
             serviceCollection.AddRunRealRestore();
+
+            serviceCollection.AddTransient(typeof(CatalogScanToCsvAdapter<>));
 
             foreach (var (serviceType, implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(IMessageProcessor<>)))
             {
                 serviceCollection.AddTransient(serviceType, implementationType);
+            }
+
+            foreach (var (serviceType, implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ICsvCompactor<>)))
+            {
+                // Add the compactor
+                serviceCollection.AddTransient(serviceType, implementationType);
+
+                // Add the compact processor
+                var recordType = serviceType.GenericTypeArguments.Single();
+                serviceCollection.AddTransient(
+                    typeof(IMessageProcessor<>).MakeGenericType(typeof(CatalogLeafToCsvCompactMessage<>).MakeGenericType(recordType)),
+                    typeof(CatalogLeafToCsvCompactProcessor<>).MakeGenericType(recordType));
             }
 
             foreach (var (serviceType, implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ICatalogLeafToCsvDriver<>)))
@@ -43,15 +59,15 @@ namespace Knapcode.ExplorePackages.Worker
                 // Add the catalog scan adapter
                 var recordType = serviceType.GenericTypeArguments.Single();
                 serviceCollection.AddTransient(
-                    typeof(CatalogLeafToCsvAdapter<>).MakeGenericType(recordType));
-
-                // Add the compact processor
-                serviceCollection.AddTransient(
-                    typeof(IMessageProcessor<>).MakeGenericType(typeof(CatalogLeafToCsvCompactMessage<>).MakeGenericType(recordType)),
-                    typeof(CatalogLeafToCsvCompactProcessor<>).MakeGenericType(recordType));
+                    typeof(CatalogLeafScanToCsvAdapter<>).MakeGenericType(recordType));
             }
 
             return serviceCollection;
+        }
+
+        private static void AddFindCatalogLeafItems(this IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddTransient<FindCatalogLeafItemsDriver>();
         }
 
         private static void AddFindLatestLeaves(this IServiceCollection serviceCollection)

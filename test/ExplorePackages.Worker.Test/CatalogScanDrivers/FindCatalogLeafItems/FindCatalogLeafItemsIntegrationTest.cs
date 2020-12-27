@@ -1,0 +1,63 @@
+﻿using System;
+using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Worker.Support;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItems
+{
+    public class FindCatalogLeafItemsIntegrationTest : BaseCatalogScanIntegrationTest
+    {
+        private const string FindCatalogLeafItemsDir = nameof(FindCatalogLeafItems);
+
+        public FindCatalogLeafItemsIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            : base(output, factory)
+        {
+        }
+
+        protected override string DestinationContainerName => Options.Value.FindCatalogLeafItemsContainerName;
+
+        public class FindCatalogLeafItems : FindCatalogLeafItemsIntegrationTest
+        {
+            public FindCatalogLeafItems(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+                : base(output, factory)
+            {
+            }
+
+            [Fact]
+            public async Task Execute()
+            {
+                ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
+
+                Logger.LogInformation("Settings: " + Environment.NewLine + JsonConvert.SerializeObject(Options.Value, Formatting.Indented));
+
+                // Arrange
+                var min0 = DateTimeOffset.Parse("2020-12-27T05:06:30.4180312Z");
+                var max1 = DateTimeOffset.Parse("2020-12-27T05:07:45.7628472Z");
+                var cursorName = $"CatalogScan-{CatalogScanType.FindCatalogLeafItems}";
+
+                await CatalogScanService.InitializeAsync();
+
+                var cursor = await CursorStorageService.GetOrCreateAsync(cursorName);
+                cursor.Value = min0;
+                await CursorStorageService.UpdateAsync(cursor);
+
+                // Act
+                await UpdateFindCatalogLeafItems(max1);
+
+                // Assert
+                await AssertOutputAsync(FindCatalogLeafItemsDir, Step1, 0);
+
+                await VerifyExpectedContainersAsync();
+            }
+        }
+
+        private async Task UpdateFindCatalogLeafItems(DateTimeOffset max)
+        {
+            var indexScan = await CatalogScanService.UpdateFindCatalogLeafItemsAsync(max);
+            await ProcessQueueAsync(indexScan);
+        }
+    }
+}

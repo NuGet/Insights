@@ -1,79 +1,42 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class CatalogLeafToCsvAdapter<T> : ICatalogScanDriver where T : ICsvRecord<T>, new()
+    public class CatalogScanToCsvAdapter<T> where T : ICsvRecord<T>, new()
     {
         private readonly AppendResultStorageService _storageService;
         private readonly TaskStateStorageService _taskStateStorageService;
-        private readonly SchemaSerializer _schemaSerializer;
         private readonly MessageEnqueuer _messageEnqueuer;
-        private readonly ICatalogLeafToCsvDriver<T> _driver;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
-        private readonly ILogger<CatalogLeafToCsvAdapter<T>> _logger;
+        private readonly ILogger<CatalogScanToCsvAdapter<T>> _logger;
 
-        public CatalogLeafToCsvAdapter(
+        public CatalogScanToCsvAdapter(
             AppendResultStorageService storageService,
             TaskStateStorageService taskStateStorageService,
-            SchemaSerializer schemaSerializer,
             MessageEnqueuer messageEnqueuer,
-            ICatalogLeafToCsvDriver<T> driver,
             IOptions<ExplorePackagesWorkerSettings> options,
-            ILogger<CatalogLeafToCsvAdapter<T>> logger)
+            ILogger<CatalogScanToCsvAdapter<T>> logger)
         {
             _storageService = storageService;
             _taskStateStorageService = taskStateStorageService;
-            _schemaSerializer = schemaSerializer;
             _messageEnqueuer = messageEnqueuer;
-            _driver = driver;
             _options = options;
             _logger = logger;
         }
 
-        public async Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
+        public async Task InitializeAsync(CatalogIndexScan indexScan, string resultsContainerName)
         {
-            await _storageService.InitializeAsync(GetTableName(indexScan.StorageSuffix), _driver.ResultsContainerName);
+            await _storageService.InitializeAsync(GetTableName(indexScan.StorageSuffix), resultsContainerName);
             await _taskStateStorageService.InitializeAsync(indexScan.StorageSuffix);
-
-            return CatalogIndexScanResult.Expand;
         }
 
-        public Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan)
+        public async Task AppendAsync(string storageSuffix, int bucketCount, string bucketKey, IReadOnlyList<T> records)
         {
-            return Task.FromResult(CatalogPageScanResult.Expand);
-        }
-
-        public async Task<DriverResult> ProcessLeafAsync(CatalogLeafScan leafScan)
-        {
-            var leafItem = new CatalogLeafItem
-            {
-                Url = leafScan.Url,
-                Type = leafScan.ParsedLeafType,
-                CommitId = leafScan.CommitId,
-                CommitTimestamp = leafScan.CommitTimestamp,
-                PackageId = leafScan.PackageId,
-                PackageVersion = leafScan.PackageVersion
-            };
-
-            var result = await _driver.ProcessLeafAsync(leafItem);
-            if (result.Type == DriverResultType.TryAgainLater)
-            {
-                return result;
-            }
-
-            if (!result.Value.Any())
-            {
-                return result;
-            }
-
-            var bucketKey = $"{leafScan.PackageId}/{NuGetVersion.Parse(leafScan.PackageVersion).ToNormalizedString()}".ToLowerInvariant();
-            var parameters = (CatalogLeafToCsvParameters)_schemaSerializer.Deserialize(leafScan.ScanParameters);
-            await _storageService.AppendAsync(GetTableName(leafScan.StorageSuffix), parameters.BucketCount, bucketKey, result.Value);
-            return result;
+            await _storageService.AppendAsync(GetTableName(storageSuffix), bucketCount, bucketKey, records);
         }
 
         public async Task StartAggregateAsync(CatalogIndexScan indexScan)

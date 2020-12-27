@@ -33,6 +33,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             var availableMessageCountLowerBoundTask = _rawMessageEnqueuer.GetAvailableMessageCountLowerBoundAsync(messageCount);
             var poisonAvailableMessageCountLowerBoundTask = _rawMessageEnqueuer.GetPoisonAvailableMessageCountLowerBoundAsync(messageCount);
 
+            var findCatalogLeafItemsTask = GetCatalogScanAsync(CatalogScanType.FindCatalogLeafItems);
             var findLatestLeavesTask = GetCatalogScanAsync(CatalogScanType.FindLatestLeaves);
             var findPackageAssetsTask = GetCatalogScanAsync(CatalogScanType.FindPackageAssets);
             var findPackageAssembliesTask = GetCatalogScanAsync(CatalogScanType.FindPackageAssemblies);
@@ -42,6 +43,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 poisonApproximateMessageCountTask,
                 availableMessageCountLowerBoundTask,
                 poisonAvailableMessageCountLowerBoundTask,
+                findCatalogLeafItemsTask,
                 findLatestLeavesTask,
                 findPackageAssetsTask,
                 findPackageAssembliesTask);
@@ -52,6 +54,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 AvailableMessageCountLowerBound = await availableMessageCountLowerBoundTask,
                 PoisonApproximateMessageCount = await poisonApproximateMessageCountTask,
                 PoisonAvailableMessageCountLowerBound = await poisonAvailableMessageCountLowerBoundTask,
+                FindCatalogLeafItems = await findCatalogLeafItemsTask,
                 FindLatestLeaves = await findLatestLeavesTask,
                 FindPackageAssets = await findPackageAssetsTask,
                 FindPackageAssemblies = await findPackageAssembliesTask,
@@ -91,6 +94,9 @@ namespace Knapcode.ExplorePackages.Website.Controllers
 
             switch (type)
             {
+                case CatalogScanType.FindCatalogLeafItems:
+                    await _catalogScanService.UpdateFindCatalogLeafItemsAsync(parsedMax);
+                    break;
                 case CatalogScanType.FindLatestLeaves:
                     await _catalogScanService.UpdateFindLatestLeavesAsync(parsedMax);
                     break;

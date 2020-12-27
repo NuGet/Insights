@@ -1,4 +1,5 @@
 ﻿using System;
+using Knapcode.ExplorePackages.Worker.FindCatalogLeafItems;
 using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
 using Knapcode.ExplorePackages.Worker.FindPackageAssemblies;
 using Knapcode.ExplorePackages.Worker.FindPackageAssets;
@@ -19,12 +20,14 @@ namespace Knapcode.ExplorePackages.Worker
         {
             switch (type)
             {
+                case CatalogScanType.FindCatalogLeafItems:
+                    return _serviceProvider.GetRequiredService<FindCatalogLeafItemsDriver>();
                 case CatalogScanType.FindLatestLeaves:
                     return _serviceProvider.GetRequiredService<FindLatestLeavesDriver>();
                 case CatalogScanType.FindPackageAssets:
-                    return _serviceProvider.GetRequiredService<CatalogLeafToCsvAdapter<PackageAsset>>();
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<PackageAsset>>();
                 case CatalogScanType.FindPackageAssemblies:
-                    return _serviceProvider.GetRequiredService<CatalogLeafToCsvAdapter<PackageAssembly>>();
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<PackageAssembly>>();
                 default:
                     throw new NotSupportedException($"Catalog scan type '{type}' is not supported.");
             }

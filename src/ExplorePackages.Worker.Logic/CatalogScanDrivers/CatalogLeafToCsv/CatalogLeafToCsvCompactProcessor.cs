@@ -7,20 +7,20 @@ namespace Knapcode.ExplorePackages.Worker
     {
         private readonly AppendResultStorageService _storageService;
         private readonly TaskStateStorageService _taskStateStorageService;
-        private readonly ICatalogLeafToCsvDriver<T> _driver;
+        private readonly ICsvCompactor<T> _compactor;
         private readonly ICsvReader _csvReader;
         private readonly ILogger<CatalogLeafToCsvCompactProcessor<T>> _logger;
 
         public CatalogLeafToCsvCompactProcessor(
             AppendResultStorageService storageService,
             TaskStateStorageService taskStateStorageService,
-            ICatalogLeafToCsvDriver<T> driver,
+            ICsvCompactor<T> compactor,
             ICsvReader csvReader,
             ILogger<CatalogLeafToCsvCompactProcessor<T>> logger)
         {
             _storageService = storageService;
             _taskStateStorageService = taskStateStorageService;
-            _driver = driver;
+            _compactor = compactor;
             _csvReader = csvReader;
             _logger = logger;
         }
@@ -51,11 +51,11 @@ namespace Knapcode.ExplorePackages.Worker
 
             await _storageService.CompactAsync<T>(
                 message.SourceContainer,
-                _driver.ResultsContainerName,
+                _compactor.ResultsContainerName,
                 message.Bucket,
                 force: message.Force,
                 mergeExisting: true,
-                _driver.Prune,
+                _compactor.Prune,
                 _csvReader);
 
             if (taskState != null)

@@ -9,6 +9,7 @@
         public int PoisonAvailableMessageCountLowerBound { get; set; }
         public bool PoisonAvailableMessageCountIsExact { get; set; }
 
+        public CatalogScanViewModel FindCatalogLeafItems { get; set; }
         public CatalogScanViewModel FindPackageAssets { get; set; }
         public CatalogScanViewModel FindPackageAssemblies { get; set; }
         public CatalogScanViewModel FindLatestLeaves { get; set; }

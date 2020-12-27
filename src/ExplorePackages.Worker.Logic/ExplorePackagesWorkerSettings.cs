@@ -24,6 +24,7 @@
             FindPackageAssetsContainerName = "findpackageassets";
             FindPackageAssembliesContainerName = "findpackageassemblies";
             RunRealRestoreContainerName = "runrealrestore";
+            FindCatalogLeafItemsContainerName = "findcatalogleafitems";
         }
 
         public bool UseBulkEnqueueStrategy { get; set; }
@@ -46,5 +47,6 @@
         public string FindPackageAssetsContainerName { get; set; }
         public string FindPackageAssembliesContainerName { get; set; }
         public string RunRealRestoreContainerName { get; set; }
+        public string FindCatalogLeafItemsContainerName { get; set; }
     }
 }

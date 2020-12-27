@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Knapcode.ExplorePackages.Worker.FindCatalogLeafItems;
 using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
 using Knapcode.ExplorePackages.Worker.FindPackageAssemblies;
 using Knapcode.ExplorePackages.Worker.FindPackageAssets;
@@ -22,6 +23,7 @@ namespace Knapcode.ExplorePackages.Worker
             new SchemaV1<CatalogPageScanMessage>("cps"),
             new SchemaV1<CatalogLeafScanMessage>("cls"),
 
+            new SchemaV1<CatalogLeafToCsvCompactMessage<CatalogLeafItemRecord>>("fcli.c"),
             new SchemaV1<CatalogLeafToCsvCompactMessage<PackageAsset>>("fpa.c"),
             new SchemaV1<CatalogLeafToCsvCompactMessage<PackageAssembly>>("fpi.c"),
 
