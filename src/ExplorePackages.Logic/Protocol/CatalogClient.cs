@@ -8,6 +8,22 @@ namespace Knapcode.ExplorePackages
 {
     public class CatalogClient
     {
+        /*
+
+        JverCatalogLeafItemRecords
+        | extend Identity = strcat(LowerId, "/", LowerNormalizedVersion)
+        | summarize min(CommitTimestamp), arg_max(CommitTimestamp, Type), leafCount = count() by Identity
+        | summarize
+            min = min(min_CommitTimestamp),
+            minAllPackages = min(CommitTimestamp),
+            minAvailablePackages = minif(CommitTimestamp, Type != "PackageDelete")
+
+        min                         | minAllPackages              | minAvailablePackages
+        --------------------------- | --------------------------- | ---------------------------
+        2015-02-01 06:22:45.8488496 | 2015-10-28 10:22:26.4686283 | 2018-08-08 16:29:16.4488298
+
+        */
+
         /// <summary>
         /// This is the point in time that nuget.org started repository signing packages that had already been
         /// published and includes all packages that were repository signed at push time. In other words, we can start
