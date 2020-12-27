@@ -18,7 +18,7 @@
             CatalogPageScanTableName = "catalogpagescans";
             CatalogLeafScanTableName = "catalogleafscans";
             TaskStateTableName = "taskstate";
-            CatalogLeafToCsvTableName = "catalogleaftocsv";
+            CsvRecordsTableName = "csvrecords";
 
             LatestLeavesTableName = "latestleaves";
             FindPackageAssetsContainerName = "findpackageassets";
@@ -40,7 +40,7 @@
         public string CatalogPageScanTableName { get; set; }
         public string CatalogLeafScanTableName { get; set; }
         public string TaskStateTableName { get; set; }
-        public object CatalogLeafToCsvTableName { get; set; }
+        public object CsvRecordsTableName { get; set; }
 
         public string LatestLeavesTableName { get; set; }
         public string FindPackageAssetsContainerName { get; set; }

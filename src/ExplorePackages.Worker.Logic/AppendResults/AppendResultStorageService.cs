@@ -49,15 +49,15 @@ namespace Knapcode.ExplorePackages.Worker
             await GetContainer(destContainer).CreateIfNotExistsAsync(retry: true);
         }
 
-        public async Task DeleteAsync(string destContainer)
+        public async Task DeleteAsync(string containerName)
         {
             switch (_options.Value.AppendResultStorageMode)
             {
                 case AppendResultStorageMode.AppendBlob:
-                    await GetContainer(destContainer).DeleteIfExistsAsync();
+                    await GetContainer(containerName).DeleteIfExistsAsync();
                     break;
                 case AppendResultStorageMode.Table:
-                    await GetTable(destContainer).DeleteIfExistsAsync();
+                    await GetTable(containerName).DeleteIfExistsAsync();
                     break;
                 default:
                     throw new NotImplementedException();

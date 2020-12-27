@@ -125,7 +125,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         private string GetTableName(string suffix)
         {
-            return $"{_options.Value.CatalogLeafToCsvTableName}{suffix}";
+            return $"{_options.Value.CsvRecordsTableName}{suffix}";
         }
     }
 }
