@@ -9,11 +9,43 @@ this goal, I've built several generic ways of writing "queries" which search for
 
 ### Parallelized queries on Azure Functions
 
-- `FindLatestLeaves` - find the latest catalog leaf for each package ID and version and put it in Table Storage
-- `FindPackageAssets` - find all assets recognized by NuGet restore and put them in big CSVs
-- `FindPackageAssemblies` - find all information like public key token for all assemblies on NuGet.org
+I've built several "drivers" that implement what to do for each unit of work. A unit of work is represented by a queue
+message that Azure Functions is triggered on. The unit of work can be based on a catalog index, catalog page, or catalog
+leaf.
 
-[src/ExplorePackages.Worker.Logic/CatalogScanDrivers](src/ExplorePackages.Worker.Logic/CatalogScanDrivers)
+Results are stored in different ways but so far it's either results in Azure Table Storage (super cheap and scalable) or
+Azure Blob Storage CSV files (easy import to Kusto a.k.a Azure Data Explorer).
+
+- [`FindPackageAssemblies`](src/ExplorePackages.Worker.Logic/CatalogScanDrivers/CatalogLeafToCsv/FindPackageAssemblies/FindPackageAssembliesDriver.cs) - find information like public key tokens for all assemblies on NuGet.org
+- [`FindPackageAssets`](src/ExplorePackages.Worker.Logic/CatalogScanDrivers/CatalogLeafToCsv/FindPackageAssets/FindPackageAssetsDriver.cs) - find all assets recognized by NuGet restore
+- [`FindLatestLeaves`](src/ExplorePackages.Worker.Logic/CatalogScanDrivers/FindLatestLeaves/FindLatestLeavesDriver.cs) - find the latest catalog leaf for each package ID and version
+- [`FindCatalogLeafItems`](src/ExplorePackages.Worker.Logic/CatalogScanDrivers/FindCatalogLeafItems/FindCatalogLeafItemsDriver.cs) - write all catalog leaf items to big CSVs for analysis
+
+#### Performance and cost
+
+Commit timestamp range:
+- Min (absolute): `2015-02-01T06:22:45.8488496Z`
+- Min (all available packages): `2018-08-08T16:29:16.4488297Z`
+- Max: `2020-12-27T08:10:52.8300258Z`
+- Leaf count: TBD
+
+Drivers:
+- `FindPackageAssemblies`
+   - Resource group name: `explorepackages-jver20e230a3f`
+   - Runtime: 6 hours, 20 minutes, 8 seconds
+   - Cost: TBD (remember to subtract `FindPackageAssets` cost...)
+- `FindPackageAssets`
+   - Resource group name: `explorepackages-jver2db4c08c2`
+   - Runtime: 48 minutes, 23 seconds
+   - Cost: TBD
+- `FindLatestLeaves`
+   - Resource group name: `explorepackages-jver2af59d2ff`
+   - Runtime: 7 minutes, 56 seconds
+   - Cost: TBD
+- `FindCatalogLeafItems`
+   - Resource group name: `explorepackages-jver205e900e9`
+   - Runtime: 2 minutes, 28 seconds
+   - Cost: TBD
 
 ### Slow, serial queries (deprecated)
 
