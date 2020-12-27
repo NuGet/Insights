@@ -10,6 +10,8 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class CatalogScanService
     {
+        private const string NoParameters = "";
+
         private readonly CatalogClient _catalogClient;
         private readonly CursorStorageService _cursorStorageService;
         private readonly MessageEnqueuer _messageEnqueuer;
@@ -108,7 +110,7 @@ namespace Knapcode.ExplorePackages.Worker
             switch (type)
             {
                 case CatalogScanType.FindCatalogLeafItems:
-                    return await UpdateCatalogScanAsync(type, string.Empty, max);
+                    return await UpdateCatalogScanAsync(type, NoParameters, DateTimeOffset.MinValue, max);
                 case CatalogScanType.FindLatestLeaves:
                     return await UpdateFindLatestLeavesAsync(max);
                 case CatalogScanType.FindPackageAssemblies:
@@ -128,7 +130,8 @@ namespace Knapcode.ExplorePackages.Worker
 
             return await UpdateCatalogScanAsync(
                 CatalogScanType.FindLatestLeaves,
-                _serializer.Serialize(parameters).AsString(),
+                parameters: _serializer.Serialize(parameters).AsString(),
+                min: CatalogClient.NuGetOrgMin,
                 max);
         }
 
@@ -141,11 +144,12 @@ namespace Knapcode.ExplorePackages.Worker
 
             return await UpdateCatalogScanAsync(
                 catalogScanType,
-                _serializer.Serialize(parameters).AsString(),
+                parameters: _serializer.Serialize(parameters).AsString(),
+                min: CatalogClient.NuGetOrgMin,
                 max);
         }
 
-        private async Task<CatalogIndexScan> UpdateCatalogScanAsync(CatalogScanType type, string parameters, DateTimeOffset? max)
+        private async Task<CatalogIndexScan> UpdateCatalogScanAsync(CatalogScanType type, string parameters, DateTimeOffset min, DateTimeOffset? max)
         {
             // Check if a scan is already running, outside the lease.
             var cursor = await GetCursorAsync(type);
@@ -157,7 +161,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             // Determine the bounds of the scan.
             var index = await _catalogClient.GetCatalogIndexAsync();
-            var min = new[] { cursor.Value, CatalogClient.NuGetOrgMin }.Max();
+            min = new[] { cursor.Value, min }.Max();
             max = max.GetValueOrDefault(index.CommitTimestamp);
 
             if (min >= max)

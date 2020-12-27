@@ -69,4 +69,4 @@ track of what I was originally working on. Maybe I should use issues for this? T
 - Store the MiniZip file listing in a ExplorePackages-maintained record (probably table storage) to avoid unnecessary
   hits to NuGet.org.
 
-- Reduce uses of `switch` on driver types much as possible...
+- Build a catalog index reader that uses range requests for perf
