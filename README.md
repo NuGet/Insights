@@ -23,13 +23,28 @@ Azure Blob Storage CSV files (easy import to Kusto a.k.a Azure Data Explorer).
 
 #### Performance and cost
 
-Commit timestamp range:
-- Min (absolute): `2015-02-01T06:22:45.8488496Z`
-- Min (all available packages): `2018-08-08T16:29:16.4488297Z`
-- Max: `2020-12-27T08:10:52.8300258Z`
-- Leaf count: TBD
+Tested timestamp ranges:
+- From the beginning of the catalog:
+  - Min: `2015-02-01T06:22:45.8488496Z`
+  - Max: `2020-12-27T08:10:52.8300258Z`
+  - Page count: 11,621
+  - Leaf count: 6,339,112
+  - Unique packages: 3,597,830
+  - Drivers that used this range:
+    - `FindLatestLeaves`
+    - `FindCatalogLeafItems`
+- Mininum commit to get all **non-deleted** packages:
+  - Min: `2018-08-08T16:29:16.4488297Z`
+  - Max: `2020-12-27T08:10:52.8300258Z`
+  - Page count: 7,435
+  - Leaf count: 4,007,407
+  - Unique packages: 3,593,656
+  - Tests that used this range:
+    - `FindPackageAssemblies`
+    - `FindPackageAssets`
+    - `FindLatestLeaves`
 
-Drivers:
+Results:
 - `FindPackageAssemblies`
    - Resource group name: `explorepackages-jver20e230a3f`
    - Runtime: 6 hours, 20 minutes, 8 seconds
@@ -38,9 +53,13 @@ Drivers:
    - Resource group name: `explorepackages-jver2db4c08c2`
    - Runtime: 48 minutes, 23 seconds
    - Cost: TBD
-- `FindLatestLeaves`
+- `FindLatestLeaves` from "available min"
    - Resource group name: `explorepackages-jver2af59d2ff`
    - Runtime: 7 minutes, 56 seconds
+   - Cost: TBD
+- `FindLatestLeaves` from "absolute min"
+   - Resource group name: `explorepackages-jver26aceba10`
+   - Runtime: 9 minutes, 58 seconds
    - Cost: TBD
 - `FindCatalogLeafItems`
    - Resource group name: `explorepackages-jver205e900e9`

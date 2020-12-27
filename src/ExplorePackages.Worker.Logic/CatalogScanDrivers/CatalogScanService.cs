@@ -131,7 +131,7 @@ namespace Knapcode.ExplorePackages.Worker
             return await UpdateCatalogScanAsync(
                 CatalogScanType.FindLatestLeaves,
                 parameters: _serializer.Serialize(parameters).AsString(),
-                min: CatalogClient.NuGetOrgMin,
+                min: DateTimeOffset.MinValue,
                 max);
         }
 
