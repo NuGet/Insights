@@ -16,10 +16,10 @@ leaf.
 Results are stored in different ways but so far it's either results in Azure Table Storage (super cheap and scalable) or
 Azure Blob Storage CSV files (easy import to Kusto a.k.a Azure Data Explorer).
 
-- [`FindPackageAssemblies`](src/ExplorePackages.Worker.Logic/CatalogScanDrivers/CatalogLeafToCsv/FindPackageAssemblies/FindPackageAssembliesDriver.cs) - find information like public key tokens for all assemblies on NuGet.org
-- [`FindPackageAssets`](src/ExplorePackages.Worker.Logic/CatalogScanDrivers/CatalogLeafToCsv/FindPackageAssets/FindPackageAssetsDriver.cs) - find all assets recognized by NuGet restore
-- [`FindLatestLeaves`](src/ExplorePackages.Worker.Logic/CatalogScanDrivers/FindLatestLeaves/FindLatestLeavesDriver.cs) - find the latest catalog leaf for each package ID and version
-- [`FindCatalogLeafItems`](src/ExplorePackages.Worker.Logic/CatalogScanDrivers/FindCatalogLeafItems/FindCatalogLeafItemsDriver.cs) - write all catalog leaf items to big CSVs for analysis
+- [`FindPackageAssemblies`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindPackageAssemblies/FindPackageAssembliesDriver.cs) - find information like public key tokens for all assemblies on NuGet.org
+- [`FindPackageAssets`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindPackageAssets/FindPackageAssetsDriver.cs) - find all assets recognized by NuGet restore
+- [`FindLatestLeaves`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindLatestLeaves/FindLatestLeavesDriver.cs) - find the latest catalog leaf for each package ID and version
+- [`FindCatalogLeafItems`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindCatalogLeafItems/FindCatalogLeafItemsDriver.cs) - write all catalog leaf items to big CSVs for analysis
 
 #### Performance and cost
 

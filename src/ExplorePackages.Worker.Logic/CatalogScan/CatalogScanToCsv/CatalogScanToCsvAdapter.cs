@@ -51,7 +51,7 @@ namespace Knapcode.ExplorePackages.Worker
                 buckets.Select(x => x.ToString()).ToList());
 
             var messages = buckets
-                .Select(b => new CatalogLeafToCsvCompactMessage<T>
+                .Select(b => new CsvCompactMessage<T>
                 {
                     SourceContainer = GetTableName(indexScan.StorageSuffix),
                     Bucket = b,

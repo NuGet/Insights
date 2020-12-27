@@ -47,7 +47,7 @@ namespace Knapcode.ExplorePackages.Worker
                 // Add the compact processor
                 var recordType = serviceType.GenericTypeArguments.Single();
                 serviceCollection.AddTransient(
-                    typeof(IMessageProcessor<>).MakeGenericType(typeof(CatalogLeafToCsvCompactMessage<>).MakeGenericType(recordType)),
+                    typeof(IMessageProcessor<>).MakeGenericType(typeof(CsvCompactMessage<>).MakeGenericType(recordType)),
                     typeof(CatalogLeafToCsvCompactProcessor<>).MakeGenericType(recordType));
             }
 

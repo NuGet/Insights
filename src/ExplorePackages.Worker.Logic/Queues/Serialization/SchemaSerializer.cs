@@ -23,9 +23,9 @@ namespace Knapcode.ExplorePackages.Worker
             new SchemaV1<CatalogPageScanMessage>("cps"),
             new SchemaV1<CatalogLeafScanMessage>("cls"),
 
-            new SchemaV1<CatalogLeafToCsvCompactMessage<CatalogLeafItemRecord>>("fcli.c"),
-            new SchemaV1<CatalogLeafToCsvCompactMessage<PackageAsset>>("fpa.c"),
-            new SchemaV1<CatalogLeafToCsvCompactMessage<PackageAssembly>>("fpi.c"),
+            new SchemaV1<CsvCompactMessage<CatalogLeafItemRecord>>("fcli.c"),
+            new SchemaV1<CsvCompactMessage<PackageAsset>>("fpa.c"),
+            new SchemaV1<CsvCompactMessage<PackageAssembly>>("fpi.c"),
 
             new SchemaV1<RunRealRestoreMessage>("rrr"),
             new SchemaV1<RunRealRestoreCompactMessage>("rrr.c"),
