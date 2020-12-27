@@ -77,6 +77,7 @@ namespace Knapcode.ExplorePackages.Worker
                 }
 
                 scan.ParsedState = CatalogScanState.Expanding;
+                scan.Started = DateTimeOffset.UtcNow;
                 await _storageService.ReplaceAsync(scan);
             }
 

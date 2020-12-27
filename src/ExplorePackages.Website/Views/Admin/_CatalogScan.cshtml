@@ -25,7 +25,18 @@
                 <td>@scan.ParsedState</td>
                 <td>@scan.Min?.ToString("O")</td>
                 <td>@scan.Max?.ToString("O")</td>
-                <td>@(scan.Completed.GetValueOrDefault(DateTimeOffset.UtcNow) - scan.Created)</td>
+                <td>
+                    @if (scan.Started.HasValue)
+                    {
+                        var runtime = scan.Completed.GetValueOrDefault(DateTimeOffset.UtcNow) - scan.Started.Value;
+                        var runtimeStr = runtime.ToString("d\\.hh\\:mm\\:ss");
+                        if (runtimeStr.StartsWith("0."))
+                        {
+                            runtimeStr = runtimeStr.Substring(2); 
+                        }
+                        <text>@runtimeStr</text>
+                    }
+                </td>
             </tr>
         }
     </tbody>
