@@ -36,11 +36,11 @@ namespace Knapcode.ExplorePackages.Worker
         {
             switch (_options.Value.AppendResultStorageMode)
             {
-                case AppendResultStorageMode.AppendBlob:
-                    await GetContainer(srcContainer).CreateIfNotExistsAsync(retry: true);
-                    break;
                 case AppendResultStorageMode.Table:
                     await GetTable(srcContainer).CreateIfNotExistsAsync(retry: true);
+                    break;
+                case AppendResultStorageMode.AppendBlob:
+                    await GetContainer(srcContainer).CreateIfNotExistsAsync(retry: true);
                     break;
                 default:
                     throw new NotImplementedException();
@@ -53,11 +53,11 @@ namespace Knapcode.ExplorePackages.Worker
         {
             switch (_options.Value.AppendResultStorageMode)
             {
-                case AppendResultStorageMode.AppendBlob:
-                    await GetContainer(containerName).DeleteIfExistsAsync();
-                    break;
                 case AppendResultStorageMode.Table:
                     await GetTable(containerName).DeleteIfExistsAsync();
+                    break;
+                case AppendResultStorageMode.AppendBlob:
+                    await GetContainer(containerName).DeleteIfExistsAsync();
                     break;
                 default:
                     throw new NotImplementedException();
@@ -68,11 +68,11 @@ namespace Knapcode.ExplorePackages.Worker
         {
             switch (_options.Value.AppendResultStorageMode)
             {
-                case AppendResultStorageMode.AppendBlob:
-                    await AppendToBlobAsync(containerName, bucketCount, bucketKey, records);
-                    break;
                 case AppendResultStorageMode.Table:
                     await AppendToTableAsync(containerName, bucketCount, bucketKey, records);
+                    break;
+                case AppendResultStorageMode.AppendBlob:
+                    await AppendToBlobAsync(containerName, bucketCount, bucketKey, records);
                     break;
                 default:
                     throw new NotImplementedException();
@@ -225,11 +225,11 @@ namespace Knapcode.ExplorePackages.Worker
         {
             switch (_options.Value.AppendResultStorageMode)
             {
-                case AppendResultStorageMode.AppendBlob:
-                    await CompactFromBlobAsync(srcContainer, destContainer, bucket, force, mergeExisting, prune, csvReader);
-                    break;
                 case AppendResultStorageMode.Table:
                     await CompactFromTableAsync(srcContainer, destContainer, bucket, force, mergeExisting, prune, csvReader);
+                    break;
+                case AppendResultStorageMode.AppendBlob:
+                    await CompactFromBlobAsync(srcContainer, destContainer, bucket, force, mergeExisting, prune, csvReader);
                     break;
                 default:
                     throw new NotImplementedException();
@@ -344,10 +344,10 @@ namespace Knapcode.ExplorePackages.Worker
         {
             switch (_options.Value.AppendResultStorageMode)
             {
-                case AppendResultStorageMode.AppendBlob:
-                    return await GetWrittenAppendBlobBucketsAsync(containerName);
                 case AppendResultStorageMode.Table:
                     return await GetWrittenAppendTableBucketsAsync(containerName);
+                case AppendResultStorageMode.AppendBlob:
+                    return await GetWrittenAppendBlobBucketsAsync(containerName);
                 default:
                     throw new NotImplementedException();
             }
