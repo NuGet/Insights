@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -28,6 +29,24 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
         public async Task InitializeAsync()
         {
             await GetTable().CreateIfNotExistsAsync(retry: true);
+        }
+
+        public async Task Sandbox()
+        {
+            var prefix = string.Empty;
+            var packageIdPrefix = "microsoft.e";
+
+            var partitionKeyPrefix = $"{prefix}${packageIdPrefix}";
+            var table = GetTable();
+
+            var enumerator = new TablePrefixScanner();
+            var selectColumns = TablePrefixScanner.MinSelectColumns;
+            await enumerator.EnumerateAllByPrefixAsync<TableEntity>(table, partitionKeyPrefix, selectColumns);
+        }
+
+        private static void WriteResults<T>(string path, List<T> results) where T : ITableEntity
+        {
+            File.WriteAllLines(path, results.Select(x => $"{x.PartitionKey}\t{x.RowKey}"));
         }
 
         public async Task AddAsync(string prefix, IReadOnlyList<CatalogLeafItem> items)

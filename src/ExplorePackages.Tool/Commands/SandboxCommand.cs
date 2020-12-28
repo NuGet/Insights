@@ -76,6 +76,9 @@ namespace Knapcode.ExplorePackages.Tool
 
             await _latestPackageLeafStorageService.InitializeAsync();
 
+            await _latestPackageLeafStorageService.Sandbox();
+
+            /*
             var increment = 0;
 
             var leaves = new[]
@@ -114,6 +117,7 @@ namespace Knapcode.ExplorePackages.Tool
             var taskB = _latestPackageLeafStorageService.AddAsync(prefix, leaves.Skip(1).ToList());
 
             await Task.WhenAll(taskA, taskB);
+            */
 
             /*
             await _findPackageAssembliesDriver.ProcessLeafAsync(new CatalogLeafItem
