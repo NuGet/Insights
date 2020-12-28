@@ -40,8 +40,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
             var table = GetTable();
 
             var enumerator = new TablePrefixScanner();
-            var selectColumns = TablePrefixScanner.MinSelectColumns;
-            await enumerator.EnumerateAllByPrefixAsync<TableEntity>(table, partitionKeyPrefix, selectColumns);
+            await enumerator.EnumerateAllByPrefixAsync<LatestPackageLeaf>(table, partitionKeyPrefix, selectColumns: null);
         }
 
         private static void WriteResults<T>(string path, List<T> results) where T : ITableEntity

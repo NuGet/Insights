@@ -20,13 +20,13 @@ namespace Knapcode.ExplorePackages
             var output = new List<T>();
             var initialSteps = StartEnumerateByPrefix(table, partitionKeyPrefix, selectColumns);
             initialSteps.Reverse();
-            var remainingSteps = new Stack<TablePrefixScanResult>(initialSteps);
+            var remainingSteps = new Stack<TablePrefixScanStep>(initialSteps);
 
             while (remainingSteps.Any())
             {
                 var currentStep = remainingSteps.Pop();
 
-                IReadOnlyList<TablePrefixScanResult> newSteps;
+                IReadOnlyList<TablePrefixScanStep> newSteps;
                 switch (currentStep)
                 {
                     case TablePrefixScanEntitySegment<T> segment:
@@ -35,12 +35,12 @@ namespace Knapcode.ExplorePackages
                         newSteps = Array.Empty<TablePrefixScanEntitySegment<T>>();
                         output.AddRange(segment.Entities);
                         break;
-                    case TablePrefixScanPartitionKeyStep partitionKeyStep:
+                    case TablePrefixScanPartitionKeyQuery partitionKeyStep:
                         Console.Write(new string(' ', currentStep.Depth * 2));
                         Console.WriteLine(currentStep);
                         newSteps = await EnumerateRowKeysAsync<T>(partitionKeyStep);
                         break;
-                    case TablePrefixScanExpandStep expandStep:
+                    case TablePrefixScanPrefixQuery expandStep:
                         Console.Write(new string(' ', currentStep.Depth * 2));
                         Console.WriteLine(currentStep);
                         newSteps = await ExpandPrefixAsync<T>(expandStep);
@@ -58,43 +58,43 @@ namespace Knapcode.ExplorePackages
             return output;
         }
 
-        public List<TablePrefixScanResult> StartEnumerateByPrefix(CloudTable table, string partitionKeyPrefix, IList<string> selectColumns)
+        private List<TablePrefixScanStep> StartEnumerateByPrefix(CloudTable table, string partitionKeyPrefix, IList<string> selectColumns)
         {
             var parameters = new TableQueryParameters(table, selectColumns, MaxTakeCount);
-            var steps = new List<TablePrefixScanResult>();
-            steps.Add(new TablePrefixScanPartitionKeyStep(parameters, 0, partitionKeyPrefix, "\0"));
-            steps.Add(new TablePrefixScanExpandStep(parameters, 0, partitionKeyPrefix, partitionKeyPrefix + "\0"));
+            var steps = new List<TablePrefixScanStep>();
+            steps.Add(new TablePrefixScanPartitionKeyQuery(parameters, 0, partitionKeyPrefix, "\0"));
+            steps.Add(new TablePrefixScanPrefixQuery(parameters, 0, partitionKeyPrefix, partitionKeyPrefix + "\0"));
             return steps;
         }
 
-        private async Task<List<TablePrefixScanResult>> EnumerateRowKeysAsync<T>(TablePrefixScanPartitionKeyStep step) where T : ITableEntity, new()
+        private async Task<List<TablePrefixScanStep>> EnumerateRowKeysAsync<T>(TablePrefixScanPartitionKeyQuery query) where T : ITableEntity, new()
         {
             var filter = TableQuery.CombineFilters(
                 TableQuery.GenerateFilterCondition(
                     PartitionKey,
                     QueryComparisons.Equal, // Match the provided partition key
-                    step.PartitionKey),
+                    query.PartitionKey),
                 TableOperators.And,
                 TableQuery.GenerateFilterCondition(
                     RowKey,
                     QueryComparisons.GreaterThan, // Skip past the provided row key
-                    step.RowKeySkip));
+                    query.RowKeySkip));
 
-            var query = new TableQuery<T>
+            var tableQuery = new TableQuery<T>
             {
-                SelectColumns = step.Parameters.SelectColumns,
+                SelectColumns = query.Parameters.SelectColumns,
                 TakeCount = MaxTakeCount,
                 FilterString = filter,
             };
 
-            var output = new List<TablePrefixScanResult>();
+            var output = new List<TablePrefixScanStep>();
             TableContinuationToken continuationToken = null;
             do
             {
-                var segment = await step.Parameters.Table.ExecuteQuerySegmentedAsync(query, continuationToken);
+                var segment = await query.Parameters.Table.ExecuteQuerySegmentedAsync(tableQuery, continuationToken);
                 if (segment.Any())
                 {
-                    output.Add(new TablePrefixScanEntitySegment<T>(step.Parameters, step.Depth + 1, segment.Results));
+                    output.Add(new TablePrefixScanEntitySegment<T>(query.Parameters, query.Depth + 1, segment.Results));
                 }
 
                 continuationToken = segment.ContinuationToken;
@@ -104,15 +104,41 @@ namespace Knapcode.ExplorePackages
             return output;
         }
 
-        private async Task<List<TablePrefixScanResult>> ExpandPrefixAsync<T>(TablePrefixScanExpandStep step) where T : ITableEntity, new()
+        private async Task<List<TablePrefixScanStep>> ExpandPrefixAsync<T>(TablePrefixScanPrefixQuery query) where T : ITableEntity, new()
         {
-            var output = new List<TablePrefixScanResult>();
-            var upperBound = step.PartitionKeyPrefix + char.MaxValue;
+            //
+            // Consider the following query, where we're enumerating all partition keys starting with '$'.
+            //
+            //    QUERY = get 3 entities where PK > '$\0' and PK < '$\uffff'
+            //
+            //            +- PK --- RK -+
+            //            | $1_0 | 10.0 |
+            //   RESULT = | $1_0 | 11.0 | and a non-null continuation token
+            //            | $2_A | 12.0 |
+            //            +-------------+
+            //
+            // From the result set, we can deduce the following facts:
+            //   1. The '$1' prefix is totally discovered. No more work in this space is necessary.
+            //   2. The '$2_A' partition key exists but we don't know how many row keys are in it.
+            //   3. The '$2' prefix exists but we don't know how many partition keys are in it.
+            //
+            // Therefore we yield three types of results from each fact.
+            //   1. A terminal result, containing all three rows.
+            //   2. A result to enumerate all of the row keys for partition key '$2_A', starting after row key '12.0'.
+            //   3. A result to expand the '$2' prefix further, starting after partition key '$2_A'
+            //
+            // This method that we're in will also see that we've reached '$2_A' and will continue expanding the '$'
+            // prefix to find partition keys '$3_A' and on with a query like this:
+            //
+            //    QUERY = get 3 entities where PK > '$2\uffff' and PK < '$\uffff'
+            //
+            var output = new List<TablePrefixScanStep>();
+            var upperBound = query.PartitionKeyPrefix + char.MaxValue;
             string lastPartitionKey = null;
 
             while (true)
             {
-                var lowerBound = lastPartitionKey == null ? step.PartitionKeyLowerBound : IncrementPrefix(step.PartitionKeyPrefix, lastPartitionKey) + char.MaxValue;
+                var lowerBound = lastPartitionKey == null ? query.PartitionKeyLowerBound : IncrementPrefix(query.PartitionKeyPrefix, lastPartitionKey) + char.MaxValue;
                 var filter = TableQuery.CombineFilters(
                     TableQuery.GenerateFilterCondition(
                         PartitionKey,
@@ -124,10 +150,10 @@ namespace Knapcode.ExplorePackages
                         QueryComparisons.LessThan, // Don't go outside of the provided prefix
                         upperBound));
 
-                var query = new TableQuery<T>
+                var tableQuery = new TableQuery<T>
                 {
-                    SelectColumns = step.Parameters.SelectColumns,
-                    TakeCount = step.Parameters.TakeCount,
+                    SelectColumns = query.Parameters.SelectColumns,
+                    TakeCount = query.Parameters.TakeCount,
                     FilterString = filter,
                 };
 
@@ -138,7 +164,7 @@ namespace Knapcode.ExplorePackages
                 do
                 {
                     continuationToken = segment?.ContinuationToken;
-                    segment = await step.Parameters.Table.ExecuteQuerySegmentedAsync(query, continuationToken);
+                    segment = await query.Parameters.Table.ExecuteQuerySegmentedAsync(tableQuery, continuationToken);
                 }
                 while (!segment.Any() && segment.ContinuationToken != null);
 
@@ -148,34 +174,7 @@ namespace Knapcode.ExplorePackages
                 }
 
                 lastPartitionKey = segment.Results.Last().PartitionKey;
-                output.AddRange(MakeResults(step, segment));
-
-                //
-                // Consider the following query, where we're enumerating all partition keys starting with '$'.
-                //
-                //    QUERY = get 3 entities where PK > '$\0' and PK < '$\uffff'
-                //
-                //            +- PK --- RK -+
-                //            | $1_0 | 10.0 |
-                //   RESULT = | $1_0 | 11.0 | and a non-null continuation token
-                //            | $2_A | 12.0 |
-                //            +-------------+
-                //
-                // From the result set, we can deduce the following facts:
-                //   1. The '$1' prefix is totally discovered. No more work in this space is necessary.
-                //   2. The '$2_A' partition key exists but we don't know how many row keys are in it.
-                //   3. The '$2' prefix exists but we don't know how many partition keys are in it.
-                //
-                // Therefore we yield three types of results from each fact.
-                //   1. A terminal result, containing all three rows.
-                //   2. A result to enumerate all of the row keys for partition key '$2_A', starting after row key '12.0'.
-                //   3. A result to expand the '$2' prefix further, starting after partition key '$2_A'
-                //
-                // This method that we're in will also see that we've reached '$2_A' and will continue expanding the '$'
-                // prefix to find partition keys '$3_A' and on with a query like this:
-                //
-                //    QUERY = get 3 entities where PK > '$2\uffff' and PK < '$\uffff'
-                //
+                output.AddRange(MakeResults(query, segment));
             }
 
             return output;
@@ -197,7 +196,7 @@ namespace Knapcode.ExplorePackages
             return prefix;
         }
 
-        private static IEnumerable<TablePrefixScanResult> MakeResults<T>(TablePrefixScanExpandStep step, TableQuerySegment<T> segment) where T : ITableEntity, new()
+        private static IEnumerable<TablePrefixScanStep> MakeResults<T>(TablePrefixScanPrefixQuery step, TableQuerySegment<T> segment) where T : ITableEntity, new()
         {
             if (!segment.Results.Any())
             {
@@ -214,11 +213,11 @@ namespace Knapcode.ExplorePackages
                 var last = segment.Results.Last();
 
                 // Find the remaining row keys for the partition key that straddles the current and subsequent page.
-                yield return new TablePrefixScanPartitionKeyStep(step.Parameters, nextDepth, last.PartitionKey, last.RowKey);
+                yield return new TablePrefixScanPartitionKeyQuery(step.Parameters, nextDepth, last.PartitionKey, last.RowKey);
 
                 // Expand the next prefix of the last partition key.
                 var nextPrefix = IncrementPrefix(step.PartitionKeyPrefix, last.PartitionKey);
-                yield return new TablePrefixScanExpandStep(step.Parameters, nextDepth, nextPrefix, last.PartitionKey);
+                yield return new TablePrefixScanPrefixQuery(step.Parameters, nextDepth, nextPrefix, last.PartitionKey);
             }
         }
     }

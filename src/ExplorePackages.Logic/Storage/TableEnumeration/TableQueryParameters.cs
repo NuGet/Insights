@@ -9,7 +9,7 @@ namespace Knapcode.ExplorePackages
         public TableQueryParameters(CloudTable table, IList<string> selectColumns, int takeCount)
         {
             Table = table ?? throw new ArgumentNullException(nameof(table));
-            SelectColumns = selectColumns ?? throw new ArgumentNullException(nameof(selectColumns));
+            SelectColumns = selectColumns;
             TakeCount = takeCount;
         }
 

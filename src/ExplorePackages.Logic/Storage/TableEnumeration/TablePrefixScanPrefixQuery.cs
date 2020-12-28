@@ -4,9 +4,9 @@ using System.Diagnostics;
 namespace Knapcode.ExplorePackages
 {
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
-    public class TablePrefixScanExpandStep : TablePrefixScanResult
+    public class TablePrefixScanPrefixQuery : TablePrefixScanStep
     {
-        public TablePrefixScanExpandStep(TableQueryParameters parameters, int depth, string partitionKeyPrefix, string partitionKeyLowerBound)
+        public TablePrefixScanPrefixQuery(TableQueryParameters parameters, int depth, string partitionKeyPrefix, string partitionKeyLowerBound)
             : base(parameters, depth)
         {
             PartitionKeyPrefix = partitionKeyPrefix ?? throw new ArgumentNullException(nameof(partitionKeyPrefix));

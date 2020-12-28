@@ -2,9 +2,9 @@
 
 namespace Knapcode.ExplorePackages
 {
-    public abstract class TablePrefixScanResult
+    public abstract class TablePrefixScanStep
     {
-        protected TablePrefixScanResult(TableQueryParameters parameters, int depth)
+        protected TablePrefixScanStep(TableQueryParameters parameters, int depth)
         {
             Parameters = parameters ?? throw new ArgumentNullException(nameof(parameters));
             Depth = depth;

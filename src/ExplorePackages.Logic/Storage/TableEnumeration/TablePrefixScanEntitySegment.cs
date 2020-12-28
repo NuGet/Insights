@@ -7,7 +7,7 @@ using Microsoft.WindowsAzure.Storage.Table;
 namespace Knapcode.ExplorePackages
 {
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
-    public class TablePrefixScanEntitySegment<T> : TablePrefixScanResult where T : ITableEntity, new()
+    public class TablePrefixScanEntitySegment<T> : TablePrefixScanStep where T : ITableEntity, new()
     {
         public TablePrefixScanEntitySegment(TableQueryParameters parameters, int depth, List<T> entities)
             : base(parameters, depth)
@@ -26,7 +26,7 @@ namespace Knapcode.ExplorePackages
             {
                 var first = Entities.First();
                 var last = Entities.Last();
-                return $"Entities: (PK '{first.PartitionKey}', RK '{first.RowKey}') ... (PK '{last.PartitionKey}', RK '{last.RowKey}') ({Entities.Count})'";
+                return $"Entity segment: (PK '{first.PartitionKey}', RK '{first.RowKey}') ... (PK '{last.PartitionKey}', RK '{last.RowKey}') ({Entities.Count})'";
             }
         }
 
