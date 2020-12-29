@@ -256,7 +256,8 @@ namespace Knapcode.ExplorePackages
 
             public Fixture()
             {
-                StorageAccount = CloudStorageAccount.DevelopmentStorageAccount;
+                var connectionString = "UseDevelopmentStorage=true";
+                StorageAccount = CloudStorageAccount.Parse(connectionString);
             }
 
             public CloudStorageAccount StorageAccount { get; }
