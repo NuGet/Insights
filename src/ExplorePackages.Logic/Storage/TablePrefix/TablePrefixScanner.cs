@@ -13,12 +13,21 @@ namespace Knapcode.ExplorePackages
 
         public async Task<List<T>> EnumerateAllByPrefixAsync<T>(
             CloudTable table,
+            string partitionKeyPrefix)
+            where T : ITableEntity, new()
+        {
+            return await EnumerateAllByPrefixAsync<T>(table, partitionKeyPrefix, selectColumns: null, takeCount: MaxTakeCount);
+        }
+
+        public async Task<List<T>> EnumerateAllByPrefixAsync<T>(
+            CloudTable table,
             string partitionKeyPrefix,
-            IList<string> selectColumns)
+            IList<string> selectColumns,
+            int takeCount)
             where T : ITableEntity, new()
         {
             var output = new List<T>();
-            var initialSteps = StartEnumerateByPrefix(table, partitionKeyPrefix, selectColumns);
+            var initialSteps = StartEnumerateByPrefix(table, partitionKeyPrefix, selectColumns, takeCount);
             initialSteps.Reverse();
             var remainingSteps = new Stack<TablePrefixScanStep>(initialSteps);
 
@@ -58,27 +67,36 @@ namespace Knapcode.ExplorePackages
             return output;
         }
 
-        private List<TablePrefixScanStep> StartEnumerateByPrefix(CloudTable table, string partitionKeyPrefix, IList<string> selectColumns)
+        private List<TablePrefixScanStep> StartEnumerateByPrefix(CloudTable table, string partitionKeyPrefix, IList<string> selectColumns, int takeCount)
         {
-            var parameters = new TableQueryParameters(table, selectColumns, MaxTakeCount);
+            var parameters = new TableQueryParameters(table, selectColumns, takeCount);
             var steps = new List<TablePrefixScanStep>();
-            steps.Add(new TablePrefixScanPartitionKeyQuery(parameters, 0, partitionKeyPrefix, "\0"));
-            steps.Add(new TablePrefixScanPrefixQuery(parameters, 0, partitionKeyPrefix, partitionKeyPrefix + "\0"));
+
+            // Originally I have a NULL character '\0' for both the row key and partition key prefix lower bound but
+            // the Azure Storage Emulator behaved different for this. It looked like it completely ignored the '\0'
+            // included in the query. Real Azure Table Storage does not ignore the NULL byte.
+            steps.Add(new TablePrefixScanPartitionKeyQuery(parameters, 0, partitionKeyPrefix, rowKeySkip: null));
+            steps.Add(new TablePrefixScanPrefixQuery(parameters, 0, partitionKeyPrefix, partitionKeyPrefix));
             return steps;
         }
 
         private async Task<List<TablePrefixScanStep>> EnumerateRowKeysAsync<T>(TablePrefixScanPartitionKeyQuery query) where T : ITableEntity, new()
         {
-            var filter = TableQuery.CombineFilters(
-                TableQuery.GenerateFilterCondition(
-                    PartitionKey,
-                    QueryComparisons.Equal, // Match the provided partition key
-                    query.PartitionKey),
-                TableOperators.And,
-                TableQuery.GenerateFilterCondition(
-                    RowKey,
-                    QueryComparisons.GreaterThan, // Skip past the provided row key
-                    query.RowKeySkip));
+            var filter = TableQuery.GenerateFilterCondition(
+                PartitionKey,
+                QueryComparisons.Equal, // Match the provided partition key
+                query.PartitionKey);
+
+            if (query.RowKeySkip != null)
+            {
+                filter = TableQuery.CombineFilters(
+                    filter,
+                    TableOperators.And,
+                    TableQuery.GenerateFilterCondition(
+                        RowKey,
+                        QueryComparisons.GreaterThan, // Skip past the provided row key
+                        query.RowKeySkip));
+            }
 
             var tableQuery = new TableQuery<T>
             {

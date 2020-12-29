@@ -10,10 +10,22 @@ namespace Knapcode.ExplorePackages
             : base(parameters, depth)
         {
             PartitionKey = partitionKey ?? throw new ArgumentNullException(nameof(partitionKey));
-            RowKeySkip = rowKeySkip ?? throw new ArgumentNullException(rowKeySkip);
+            RowKeySkip = rowKeySkip;
         }
 
-        public override string DebuggerDisplay => $"Partition key query: PK = '{PartitionKey}', RK > '{RowKeySkip}'";
+        public override string DebuggerDisplay
+        {
+            get
+            {
+                var output = $"Partition key query: PK = '{PartitionKey}'";
+                if (RowKeySkip != null)
+                {
+                    output += ", RK > '{RowKeySkip}'";
+                }
+
+                return output;
+            }
+        }
 
         public string PartitionKey { get; }
         public string RowKeySkip { get; }
