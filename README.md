@@ -48,23 +48,27 @@ Results:
 - `FindPackageAssemblies`
    - Resource group name: `explorepackages-jver20e230a3f`
    - Runtime: 6 hours, 20 minutes, 8 seconds
-   - Cost: TBD (remember to subtract `FindPackageAssets` cost...)
+   - Cost:
+       - Functions: $8.73
+       - Storage: $2.83
 - `FindPackageAssets`
    - Resource group name: `explorepackages-jver2db4c08c2`
    - Runtime: 48 minutes, 23 seconds
-   - Cost: TBD
+   - Cost: 
+       - Functions: $0.96
+       - Storage: $0.21 
 - `FindLatestLeaves` from "available min"
    - Resource group name: `explorepackages-jver2af59d2ff`
    - Runtime: 7 minutes, 56 seconds
-   - Cost: TBD
+   - Cost: <$0.01
 - `FindLatestLeaves` from "absolute min"
    - Resource group name: `explorepackages-jver26aceba10`
    - Runtime: 9 minutes, 58 seconds
-   - Cost: TBD
+   - Cost: $0.01
 - `FindCatalogLeafItems`
    - Resource group name: `explorepackages-jver205e900e9`
    - Runtime: 2 minutes, 28 seconds
-   - Cost: TBD
+   - Cost: <$0.01
 
 ### Slow, serial queries (deprecated)
 
