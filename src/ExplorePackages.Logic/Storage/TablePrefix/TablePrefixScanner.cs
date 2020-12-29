@@ -278,6 +278,9 @@ namespace Knapcode.ExplorePackages
                 var last = segment.Results.Last();
 
                 // Find the remaining row keys for the partition key that straddles the current and subsequent page.
+                // It's possible that this partition key has very few rows or even only has a single row meaning that this
+                // yield query may not result in very many records. That's OK. We don't want to read too far into the
+                // prefix in a serial fashion.
                 yield return new TablePrefixScanPartitionKeyQuery(step.Parameters, nextDepth, last.PartitionKey, last.RowKey);
 
                 // Expand the next prefix of the last partition key.
