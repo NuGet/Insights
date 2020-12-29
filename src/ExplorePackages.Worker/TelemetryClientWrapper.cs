@@ -12,6 +12,11 @@ namespace Knapcode.ExplorePackages.Worker
             _inner = inner;
         }
 
+        public IMetric GetMetric(string metricId)
+        {
+            return new MetricWrapper(_inner.GetMetric(metricId));
+        }
+
         public IMetric GetMetric(string metricId, string dimension1Name)
         {
             return new MetricWrapper(_inner.GetMetric(metricId, dimension1Name));

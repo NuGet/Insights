@@ -25,8 +25,15 @@ namespace Knapcode.ExplorePackages
             get
             {
                 var first = Entities.First();
-                var last = Entities.Last();
-                return $"Entity segment: (PK '{first.PartitionKey}', RK '{first.RowKey}') ... (PK '{last.PartitionKey}', RK '{last.RowKey}') ({Entities.Count})'";
+                if (Entities.Count > 1)
+                {
+                    var last = Entities.Last();
+                    return $"entity segment (PK '{first.PartitionKey}', RK '{first.RowKey}') ... (PK '{last.PartitionKey}', RK '{last.RowKey}') ({Entities.Count} total)";
+                }
+                else
+                {
+                    return $"entity segment (PK '{first.PartitionKey}', RK '{first.RowKey}') ({Entities.Count} total)";
+                }
             }
         }
 

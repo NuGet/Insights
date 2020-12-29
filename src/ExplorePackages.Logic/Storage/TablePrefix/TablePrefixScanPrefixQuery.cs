@@ -13,7 +13,7 @@ namespace Knapcode.ExplorePackages
             PartitionKeyLowerBound = partitionKeyLowerBound ?? throw new ArgumentNullException(nameof(partitionKeyLowerBound));
         }
 
-        public override string DebuggerDisplay => $"Prefix query: PK = '{PartitionKeyPrefix}*', PK > '{PartitionKeyLowerBound}'";
+        public override string DebuggerDisplay => $"prefix query PK = '{PartitionKeyPrefix}*', PK > '{PartitionKeyLowerBound}'";
 
         public string PartitionKeyPrefix { get; }
         public string PartitionKeyLowerBound { get; }

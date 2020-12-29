@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages
 {
@@ -18,7 +19,7 @@ namespace Knapcode.ExplorePackages
         {
             (var table, var _) = await _fixture.SortAndInsertAsync(Enumerable.Empty<TestEntity>());
 
-            var actual = await Target.EnumerateAllByPrefixAsync<TestEntity>(table, prefix, MinSelectColumns, StorageUtility.MaxTakeCount);
+            var actual = await Target.ListAsync<TestEntity>(table, prefix, MinSelectColumns, StorageUtility.MaxTakeCount);
 
             Assert.Empty(actual);
         }
@@ -48,7 +49,7 @@ namespace Knapcode.ExplorePackages
                 new TestEntity(prefix + "𤭣", "R3"),
             });
 
-            var actual = await Target.EnumerateAllByPrefixAsync<TestEntity>(table, prefix, MinSelectColumns, takeCount: 1);
+            var actual = await Target.ListAsync<TestEntity>(table, prefix, MinSelectColumns, takeCount: 1);
 
             Assert.Equal(expected, actual);
         }
@@ -63,7 +64,7 @@ namespace Knapcode.ExplorePackages
                 new TestEntity("D", "R1"),
             });
 
-            var actual = await Target.EnumerateAllByPrefixAsync<TestEntity>(table, prefix, MinSelectColumns, takeCount);
+            var actual = await Target.ListAsync<TestEntity>(table, prefix, MinSelectColumns, takeCount);
 
             Assert.Empty(actual);
         }
@@ -87,7 +88,7 @@ namespace Knapcode.ExplorePackages
         {
             (var table, var expected) = await _fixture.SortAndInsertAsync(GenerateTestEntities("PK", 3, 2));
 
-            var actual = await Target.EnumerateAllByPrefixAsync<TestEntity>(table, string.Empty, MinSelectColumns, StorageUtility.MaxTakeCount);
+            var actual = await Target.ListAsync<TestEntity>(table, string.Empty, MinSelectColumns, StorageUtility.MaxTakeCount);
 
             Assert.Equal(expected, actual);
         }
@@ -101,7 +102,7 @@ namespace Knapcode.ExplorePackages
         {
             (var table, var expected) = await _fixture.SortAndInsertAsync(GenerateTestEntities("PK", 3, 3));
 
-            var actual = await Target.EnumerateAllByPrefixAsync<TestEntity>(table, string.Empty, MinSelectColumns, takeCount);
+            var actual = await Target.ListAsync<TestEntity>(table, string.Empty, MinSelectColumns, takeCount);
 
             Assert.Equal(expected, actual);
         }
@@ -115,7 +116,7 @@ namespace Knapcode.ExplorePackages
         {
             (var table, var expected) = await _fixture.SortAndInsertAsync(GenerateTestEntities("PK", 3, 3));
 
-            var actual = await Target.EnumerateAllByPrefixAsync<TestEntity>(table, "P", MinSelectColumns, takeCount);
+            var actual = await Target.ListAsync<TestEntity>(table, "P", MinSelectColumns, takeCount);
 
             Assert.Equal(expected, actual);
         }
@@ -134,7 +135,7 @@ namespace Knapcode.ExplorePackages
                 .Concat(expected)
                 .Concat(GenerateTestEntities("ZK", 3, 3)));
 
-            var actual = await Target.EnumerateAllByPrefixAsync<TestEntity>(table, "P", MinSelectColumns, takeCount);
+            var actual = await Target.ListAsync<TestEntity>(table, "P", MinSelectColumns, takeCount);
 
             Assert.Equal(expected, actual);
         }
@@ -168,7 +169,7 @@ namespace Knapcode.ExplorePackages
             var prefix = new string('P', prefixLength);
             var expected = all.Where(x => x.PartitionKey.StartsWith(prefix)).ToList();
 
-            var actual = await Target.EnumerateAllByPrefixAsync<TestEntity>(table, prefix, MinSelectColumns, takeCount);
+            var actual = await Target.ListAsync<TestEntity>(table, prefix, MinSelectColumns, takeCount);
 
             Assert.Equal(expected, actual);
             Assert.Equal(expectedCount, actual.Count);
@@ -203,11 +204,13 @@ namespace Knapcode.ExplorePackages
 
         private readonly Fixture _fixture;
 
-        public TablePrefixScannerTest(Fixture fixture)
+        public TablePrefixScannerTest(Fixture fixture, ITestOutputHelper output)
         {
             _fixture = fixture;
             MinSelectColumns = TablePrefixScanner.MinSelectColumns;
-            Target = new TablePrefixScanner();
+            Target = new TablePrefixScanner(
+                output.GetTelemetryClient(),
+                output.GetLogger<TablePrefixScanner>());
         }
 
         private static IEnumerable<TestEntity> GenerateTestEntities(string prefix, int partitionKeyCount, int rowsPerPartitionKey)
@@ -226,7 +229,7 @@ namespace Knapcode.ExplorePackages
 
         public class Fixture : IAsyncLifetime
         {
-            private static List<(IReadOnlyList<TestEntity> sortedEntities, CloudTable table)> _candidates = new List<(IReadOnlyList<TestEntity> sortedEntities, CloudTable table)>();
+            private static readonly List<(IReadOnlyList<TestEntity> sortedEntities, CloudTable table)> _candidates = new List<(IReadOnlyList<TestEntity> sortedEntities, CloudTable table)>();
 
             public Fixture()
             {

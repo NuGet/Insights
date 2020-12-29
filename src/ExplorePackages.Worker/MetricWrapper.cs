@@ -11,6 +11,11 @@ namespace Knapcode.ExplorePackages.Worker
             _inner = metric;
         }
 
+        public void TrackValue(double metricValue)
+        {
+            _inner.TrackValue(metricValue);
+        }
+
         public bool TrackValue(double metricValue, string dimension1Value)
         {
             return _inner.TrackValue(metricValue, dimension1Value);

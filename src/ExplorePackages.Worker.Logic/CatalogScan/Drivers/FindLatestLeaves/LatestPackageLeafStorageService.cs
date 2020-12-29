@@ -13,15 +13,18 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
     public class LatestPackageLeafStorageService
     {
         private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly TablePrefixScanner _tablePrefixScanner;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<LatestPackageLeafStorageService> _logger;
 
         public LatestPackageLeafStorageService(
             ServiceClientFactory serviceClientFactory,
+            TablePrefixScanner tablePrefixScanner,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<LatestPackageLeafStorageService> logger)
         {
             _serviceClientFactory = serviceClientFactory;
+            _tablePrefixScanner = tablePrefixScanner;
             _options = options;
             _logger = logger;
         }
@@ -39,8 +42,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
             var partitionKeyPrefix = $"{prefix}${packageIdPrefix}";
             var table = GetTable();
 
-            var enumerator = new TablePrefixScanner();
-            await enumerator.EnumerateAllByPrefixAsync<LatestPackageLeaf>(table, partitionKeyPrefix);
+            await _tablePrefixScanner.ListAsync<LatestPackageLeaf>(table, partitionKeyPrefix);
         }
 
         private static void WriteResults<T>(string path, List<T> results) where T : ITableEntity

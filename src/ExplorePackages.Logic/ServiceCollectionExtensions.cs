@@ -121,6 +121,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<StorageLeaseService>();
             serviceCollection.AddTransient<AutoRenewingStorageLeaseService>();
             serviceCollection.AddTransient<StorageSemaphoreLeaseService>();
+            serviceCollection.AddTransient<TablePrefixScanner>();
 
             serviceCollection.AddTransient<TempStreamService>();
             serviceCollection.AddTransient<TempStreamWriter>();

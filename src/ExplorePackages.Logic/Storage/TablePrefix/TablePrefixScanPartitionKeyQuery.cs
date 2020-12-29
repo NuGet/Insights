@@ -17,10 +17,10 @@ namespace Knapcode.ExplorePackages
         {
             get
             {
-                var output = $"Partition key query: PK = '{PartitionKey}'";
+                var output = $"partition key query PK = '{PartitionKey}'";
                 if (RowKeySkip != null)
                 {
-                    output += ", RK > '{RowKeySkip}'";
+                    output += $", RK > '{RowKeySkip}'";
                 }
 
                 return output;
