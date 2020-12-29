@@ -120,3 +120,5 @@ track of what I was originally working on. Maybe I should use issues for this? T
   hits to NuGet.org.
 
 - Build a catalog index reader that uses range requests for perf
+
+- Add the csv-spectrum tests to NCsvPerf
