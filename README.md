@@ -125,3 +125,9 @@ track of what I was originally working on. Maybe I should use issues for this? T
 
 - Add a parameter to TablePrefixScanner to allow reading more than one page for a prefix query. Maybe there is some
   sweet spot greater than 1...
+
+- Enable heterogeneous enqueueing and batch enqueue messages
+
+- Enable enqueuing as many messages as possible for a bulk enqueue message, but no more and return the extra
+
+- Move Worker integration tests to Worker.Logic. We don't need to test the Azure Function like that.

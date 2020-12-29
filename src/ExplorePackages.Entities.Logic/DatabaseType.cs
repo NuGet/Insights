@@ -1,4 +1,4 @@
-﻿namespace Knapcode.ExplorePackages
+﻿namespace Knapcode.ExplorePackages.Entities
 {
     public enum DatabaseType
     {

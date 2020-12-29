@@ -10,7 +10,7 @@ namespace Knapcode.ExplorePackages
     public class TablePrefixScanEntitySegment<T> : TablePrefixScanStep where T : ITableEntity, new()
     {
         public TablePrefixScanEntitySegment(TableQueryParameters parameters, int depth, List<T> entities)
-            : base(TablePrefixScanStepType.EntitySegment, parameters, depth)
+            : base(parameters, depth)
         {
             Entities = entities ?? throw new ArgumentNullException(nameof(Entities));
 

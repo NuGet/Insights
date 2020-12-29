@@ -39,5 +39,10 @@ namespace Knapcode.ExplorePackages.Worker
                 message,
                 JsonSerializerSettings);
         }
+
+        public static NameVersionMessage<JToken> DeserializeMessage(JToken message)
+        {
+            return message.ToObject<NameVersionMessage<JToken>>(JsonSerializer);
+        }
     }
 }

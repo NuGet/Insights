@@ -6,6 +6,7 @@ using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
 using Knapcode.ExplorePackages.Worker.FindPackageAssemblies;
 using Knapcode.ExplorePackages.Worker.FindPackageAssets;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
+using Knapcode.ExplorePackages.Worker.TableCopy;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
@@ -15,6 +16,7 @@ namespace Knapcode.ExplorePackages.Worker
     {
         private static readonly SchemasCollection Schemas = new SchemasCollection(new ISchemaDeserializer[]
         {
+            // Messages
             new SchemaV1<MixedBulkEnqueueMessage>("mbe"),
             new SchemaV1<HomogeneousBulkEnqueueMessage>("hbe"),
             new SchemaV1<HomogeneousBatchMessage>("hb"),
@@ -23,15 +25,23 @@ namespace Knapcode.ExplorePackages.Worker
             new SchemaV1<CatalogPageScanMessage>("cps"),
             new SchemaV1<CatalogLeafScanMessage>("cls"),
 
-            new SchemaV1<CsvCompactMessage<CatalogLeafItemRecord>>("fcli.c"),
-            new SchemaV1<CsvCompactMessage<PackageAsset>>("fpa.c"),
-            new SchemaV1<CsvCompactMessage<PackageAssembly>>("fpi.c"),
+            new SchemaV1<CsvCompactMessage<CatalogLeafItemRecord>>("cc.fcli"),
+            new SchemaV1<CsvCompactMessage<PackageAsset>>("cc.fpa"),
+            new SchemaV1<CsvCompactMessage<PackageAssembly>>("cc.fpi"),
 
             new SchemaV1<RunRealRestoreMessage>("rrr"),
             new SchemaV1<RunRealRestoreCompactMessage>("rrr.c"),
 
+            new SchemaV1<TableCopyMessage<LatestPackageLeaf>>("tc.lpf"),
+            new SchemaV1<TableRowCopyMessage<LatestPackageLeaf>>("trc.lpf"),
+
+            // Parameters
             new SchemaV1<FindLatestLeavesParameters>("fll"),
             new SchemaV1<CatalogLeafToCsvParameters>("cl2c"),
+
+            new SchemaV1<TablePrefixScanStartParameters>("tps.s"),
+            new SchemaV1<TablePrefixScanPartitionKeyQueryParameters>("tps.pkq"),
+            new SchemaV1<TablePrefixScanPrefixQueryParameters>("tps.pq"),
         });
 
         private readonly ILogger<SchemaSerializer> _logger;
@@ -44,6 +54,7 @@ namespace Knapcode.ExplorePackages.Worker
         public ISchemaSerializer<T> GetSerializer<T>() => Schemas.GetSerializer<T>();
         public ISerializedEntity Serialize<T>(T message) => Schemas.GetSerializer<T>().SerializeMessage(message);
         public object Deserialize(string message) => Schemas.Deserialize(message, _logger);
+        public object Deserialize(JToken message) => Schemas.Deserialize(message, _logger);
         public object Deserialize(NameVersionMessage<JToken> message) => Schemas.Deserialize(message, _logger);
 
         private class SchemasCollection
@@ -74,6 +85,11 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             public object Deserialize(string message, ILogger logger)
+            {
+                return Deserialize(NameVersionSerializer.DeserializeMessage(message), logger);
+            }
+
+            public object Deserialize(JToken message, ILogger logger)
             {
                 return Deserialize(NameVersionSerializer.DeserializeMessage(message), logger);
             }

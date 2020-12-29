@@ -2,7 +2,9 @@
 using Knapcode.ExplorePackages.Worker.FindCatalogLeafItems;
 using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
+using Knapcode.ExplorePackages.Worker.TableCopy;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Knapcode.ExplorePackages.Worker
 {
@@ -17,10 +19,12 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient<SchemaSerializer>();
             serviceCollection.AddTransient<IMessageBatcher, MessageBatcher>();
             serviceCollection.AddTransient<MessageEnqueuer>();
+            serviceCollection.AddTransient(typeof(TableCopyEnqueuer<>));
 
             serviceCollection.AddTransient<CatalogScanStorageService>();
             serviceCollection.AddTransient<CatalogScanDriverFactory>();
             serviceCollection.AddTransient<CatalogScanService>();
+            serviceCollection.AddTransient(typeof(CatalogScanToCsvAdapter<>));
 
             serviceCollection.AddTransient<CursorStorageService>();
 
@@ -31,8 +35,7 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddFindCatalogLeafItems();
             serviceCollection.AddFindLatestLeaves();
             serviceCollection.AddRunRealRestore();
-
-            serviceCollection.AddTransient(typeof(CatalogScanToCsvAdapter<>));
+            AddTableCopy<LatestPackageLeaf>(serviceCollection);
 
             foreach (var (serviceType, implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(IMessageProcessor<>)))
             {
@@ -63,6 +66,17 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             return serviceCollection;
+        }
+
+        private static void AddTableCopy<T>(IServiceCollection serviceCollection) where T : ITableEntity, new()
+        {
+            var entityType = typeof(T);
+            serviceCollection.AddTransient(
+                typeof(IMessageProcessor<>).MakeGenericType(typeof(TableCopyMessage<>).MakeGenericType(entityType)),
+                typeof(TableCopyMessageProcessor<>).MakeGenericType(entityType));
+            serviceCollection.AddTransient(
+                typeof(IMessageProcessor<>).MakeGenericType(typeof(TableRowCopyMessage<>).MakeGenericType(entityType)),
+                typeof(TableRowCopyMessageProcessor<>).MakeGenericType(entityType));
         }
 
         private static void AddFindCatalogLeafItems(this IServiceCollection serviceCollection)

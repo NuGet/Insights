@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker.Support;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Xunit;
@@ -37,13 +36,9 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItems
                 // Arrange
                 var min0 = DateTimeOffset.Parse("2020-12-27T05:06:30.4180312Z");
                 var max1 = DateTimeOffset.Parse("2020-12-27T05:07:45.7628472Z");
-                var cursorName = $"CatalogScan-{CatalogScanType.FindCatalogLeafItems}";
 
                 await CatalogScanService.InitializeAsync();
-
-                var cursor = await CursorStorageService.GetOrCreateAsync(cursorName);
-                cursor.Value = min0;
-                await CursorStorageService.UpdateAsync(cursor);
+                await SetCursorAsync(min0);
 
                 // Act
                 await UpdateAsync(max1);

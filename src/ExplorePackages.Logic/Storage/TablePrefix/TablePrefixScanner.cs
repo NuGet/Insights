@@ -10,8 +10,6 @@ namespace Knapcode.ExplorePackages
 {
     public class TablePrefixScanner
     {
-        public static readonly IList<string> MinSelectColumns = new[] { PartitionKey, RowKey };
-
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<TablePrefixScanner> _logger;
 
@@ -46,7 +44,9 @@ namespace Knapcode.ExplorePackages
                 takeCount);
 
             var output = new List<T>();
-            var initialSteps = Start(table, partitionKeyPrefix, selectColumns, takeCount);
+            var parameters = new TableQueryParameters(table, selectColumns, takeCount);
+            var start = new TablePrefixScanStart(parameters, partitionKeyPrefix);
+            var initialSteps = Start(start);
             initialSteps.Reverse();
             var remainingSteps = new Stack<TablePrefixScanStep>(initialSteps);
 
@@ -62,11 +62,11 @@ namespace Knapcode.ExplorePackages
                         newSteps = Array.Empty<TablePrefixScanEntitySegment<T>>();
                         output.AddRange(segment.Entities);
                         break;
-                    case TablePrefixScanPartitionKeyQuery partitionKeyStep:
-                        newSteps = await ExpandPartitionKeyAsync<T>(partitionKeyStep);
+                    case TablePrefixScanPartitionKeyQuery partitionKeyQuery:
+                        newSteps = await ExecutePartitionKeyQueryAsync<T>(partitionKeyQuery);
                         break;
-                    case TablePrefixScanPrefixQuery expandStep:
-                        newSteps = await ExpandPrefixAsync<T>(expandStep);
+                    case TablePrefixScanPrefixQuery prefixQuery:
+                        newSteps = await ExecutePrefixQueryAsync<T>(prefixQuery);
                         break;
                     default:
                         throw new NotImplementedException();
@@ -83,30 +83,26 @@ namespace Knapcode.ExplorePackages
             return output;
         }
 
-        private List<TablePrefixScanStep> Start(CloudTable table, string partitionKeyPrefix, IList<string> selectColumns, int takeCount)
+        public List<TablePrefixScanStep> Start(TablePrefixScanStart start)
         {
-            if (partitionKeyPrefix == null)
-            {
-                throw new ArgumentNullException(nameof(partitionKeyPrefix));
-            }
-
-            var parameters = new TableQueryParameters(table, selectColumns, takeCount);
             var steps = new List<TablePrefixScanStep>();
+            var nextDepth = start.Depth + 1;
 
             // Originally I have a NULL character '\0' for both the row key and partition key prefix lower bound but
             // the Azure Storage Emulator behaved different for this. It looked like it completely ignored the '\0'
             // included in the query. Real Azure Table Storage does not ignore the NULL byte.
-            if (partitionKeyPrefix.Length > 0)
+            if (start.PartitionKeyPrefix.Length > 0)
             {
-                steps.Add(new TablePrefixScanPartitionKeyQuery(parameters, 0, partitionKeyPrefix, rowKeySkip: null));
+                steps.Add(new TablePrefixScanPartitionKeyQuery(start.Parameters, nextDepth, start.PartitionKeyPrefix, rowKeySkip: null));
             }
-            steps.Add(new TablePrefixScanPrefixQuery(parameters, 0, partitionKeyPrefix, partitionKeyPrefix));
+            steps.Add(new TablePrefixScanPrefixQuery(start.Parameters, nextDepth, start.PartitionKeyPrefix, start.PartitionKeyPrefix));
+
             return steps;
         }
 
-        private async Task<List<TablePrefixScanStep>> ExpandPartitionKeyAsync<T>(TablePrefixScanPartitionKeyQuery query) where T : ITableEntity, new()
+        public async Task<List<TablePrefixScanStep>> ExecutePartitionKeyQueryAsync<T>(TablePrefixScanPartitionKeyQuery query) where T : ITableEntity, new()
         {
-            using var queryLoopMetrics = GetQueryLoopMetrics(nameof(ExpandPartitionKeyAsync));
+            using var metrics = GetQueryLoopMetrics(nameof(ExecutePartitionKeyQueryAsync));
 
             var filter = TableQuery.GenerateFilterCondition(
                 PartitionKey,
@@ -137,7 +133,7 @@ namespace Knapcode.ExplorePackages
             do
             {
                 TableQuerySegment<T> segment;
-                using (queryLoopMetrics.TrackQuery())
+                using (metrics.TrackQuery())
                 {
                     segment = await query.Parameters.Table.ExecuteQuerySegmentedAsync(tableQuery, continuationToken);
                 }
@@ -154,9 +150,9 @@ namespace Knapcode.ExplorePackages
             return output;
         }
 
-        private async Task<List<TablePrefixScanStep>> ExpandPrefixAsync<T>(TablePrefixScanPrefixQuery query) where T : ITableEntity, new()
+        public async Task<List<TablePrefixScanStep>> ExecutePrefixQueryAsync<T>(TablePrefixScanPrefixQuery query) where T : ITableEntity, new()
         {
-            using var queryLoopMetrics = GetQueryLoopMetrics(nameof(ExpandPrefixAsync));
+            using var metrics = GetQueryLoopMetrics(nameof(ExecutePrefixQueryAsync));
 
             //
             // Consider the following query, where we're enumerating all partition keys starting with '$'.
@@ -216,7 +212,7 @@ namespace Knapcode.ExplorePackages
                 do
                 {
                     continuationToken = segment?.ContinuationToken;
-                    using (queryLoopMetrics.TrackQuery())
+                    using (metrics.TrackQuery())
                     {
                         segment = await query.Parameters.Table.ExecuteQuerySegmentedAsync(tableQuery, continuationToken);
                     }

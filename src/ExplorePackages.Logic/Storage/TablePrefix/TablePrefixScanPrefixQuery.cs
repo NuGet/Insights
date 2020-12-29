@@ -7,7 +7,7 @@ namespace Knapcode.ExplorePackages
     public class TablePrefixScanPrefixQuery : TablePrefixScanStep
     {
         public TablePrefixScanPrefixQuery(TableQueryParameters parameters, int depth, string partitionKeyPrefix, string partitionKeyLowerBound)
-            : base(TablePrefixScanStepType.PrefixQuery, parameters, depth)
+            : base(parameters, depth)
         {
             PartitionKeyPrefix = partitionKeyPrefix ?? throw new ArgumentNullException(nameof(partitionKeyPrefix));
             PartitionKeyLowerBound = partitionKeyLowerBound ?? throw new ArgumentNullException(nameof(partitionKeyLowerBound));

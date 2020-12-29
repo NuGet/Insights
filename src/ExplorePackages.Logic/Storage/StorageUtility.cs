@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Knapcode.ExplorePackages
 {
@@ -8,6 +9,8 @@ namespace Knapcode.ExplorePackages
         public const int MaxTakeCount = 1000;
         public const string PartitionKey = "PartitionKey";
         public const string RowKey = "RowKey";
+
+        public static readonly IList<string> MinSelectColumns = new[] { PartitionKey, RowKey };
 
         public static string GenerateUniqueId()
         {

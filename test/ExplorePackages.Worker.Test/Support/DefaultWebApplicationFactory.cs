@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 
-namespace Knapcode.ExplorePackages.Worker.Support
+namespace Knapcode.ExplorePackages.Worker
 {
     public class DefaultWebApplicationFactory<TStartup>
         : WebApplicationFactory<TStartup> where TStartup : class

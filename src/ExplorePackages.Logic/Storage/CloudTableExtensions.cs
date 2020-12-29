@@ -9,6 +9,11 @@ namespace Knapcode.ExplorePackages
 {
     public static class CloudTableExtensions
     {
+        public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(this CloudTable table) where T : ITableEntity, new()
+        {
+            return await GetEntitiesAsync<T>(table.ExecuteQuerySegmentedAsync, partitionKey: null, maxEntities: null);
+        }
+
         public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(this CloudTable table, string partitionKey, int? maxEntities = null) where T : ITableEntity, new()
         {
             return await GetEntitiesAsync<T>(table.ExecuteQuerySegmentedAsync, partitionKey, maxEntities);
@@ -27,12 +32,16 @@ namespace Knapcode.ExplorePackages
             var entities = new List<T>();
             var query = new TableQuery<T>
             {
-                FilterString = TableQuery.GenerateFilterCondition(
-                    PartitionKey,
-                    QueryComparisons.Equal,
-                    partitionKey),
                 TakeCount = MaxTakeCount,
             };
+
+            if (partitionKey != null)
+            {
+                query.FilterString = TableQuery.GenerateFilterCondition(
+                    PartitionKey,
+                    QueryComparisons.Equal,
+                    partitionKey);
+            }
 
             TableContinuationToken token = null;
             do
@@ -115,15 +124,20 @@ namespace Knapcode.ExplorePackages
             return 0;
         }
 
-        public static async Task<T> RetrieveAsync<T>(this CloudTable table, string partitionKey, string rowKey) where T : class, ITableEntity
+        public static async Task<T> RetrieveAsync<T>(this CloudTable table, string partitionKey, string rowKey) where T : ITableEntity
         {
             var result = await table.ExecuteAsync(TableOperation.Retrieve<T>(partitionKey, rowKey));
-            return result.Result != null ? (T)result.Result : null;
+            return result.Result != null ? (T)result.Result : default;
         }
 
         public static async Task ReplaceAsync<T>(this CloudTable table, T entity) where T : ITableEntity
         {
             await table.ExecuteAsync(TableOperation.Replace(entity));
+        }
+
+        public static async Task InsertOrReplaceAsync<T>(this CloudTable table, T entity) where T : ITableEntity
+        {
+            await table.ExecuteAsync(TableOperation.InsertOrReplace(entity));
         }
 
         public static async Task DeleteAsync<T>(this CloudTable table, T entity) where T : ITableEntity

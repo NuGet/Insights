@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker.Support;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Xunit;
@@ -38,13 +37,9 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
                 var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
                 var max2 = DateTimeOffset.Parse("2020-11-27T19:36:50.4909042Z");
-                var cursorName = $"CatalogScan-{CatalogScanType.FindPackageAssemblies}";
 
                 await CatalogScanService.InitializeAsync();
-
-                var cursor = await CursorStorageService.GetOrCreateAsync(cursorName);
-                cursor.Value = min0;
-                await CursorStorageService.UpdateAsync(cursor);
+                await SetCursorAsync(min0);
 
                 // Act
                 await UpdateAsync(max1);
@@ -87,13 +82,9 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 // Arrange
                 var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
                 var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
-                var cursorName = $"CatalogScan-{CatalogScanType.FindPackageAssemblies}";
 
                 await CatalogScanService.InitializeAsync();
-
-                var cursor = await CursorStorageService.GetOrCreateAsync(cursorName);
-                cursor.Value = min0;
-                await CursorStorageService.UpdateAsync(cursor);
+                await SetCursorAsync(min0);
 
                 // Act
                 await UpdateAsync(max1);
@@ -134,13 +125,9 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
                 var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
                 var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
-                var cursorName = $"CatalogScan-{CatalogScanType.FindPackageAssemblies}";
 
                 await CatalogScanService.InitializeAsync();
-
-                var cursor = await CursorStorageService.GetOrCreateAsync(cursorName);
-                cursor.Value = min0;
-                await CursorStorageService.UpdateAsync(cursor);
+                await SetCursorAsync(min0);
 
                 // Act
                 await UpdateAsync(max1);
@@ -179,13 +166,9 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 // Arrange
                 var min0 = DateTimeOffset.Parse("2018-08-29T04:22:56.6184931Z");
                 var max1 = DateTimeOffset.Parse("2018-08-29T04:24:40.3247223Z");
-                var cursorName = $"CatalogScan-{CatalogScanType.FindPackageAssemblies}";
 
                 await CatalogScanService.InitializeAsync();
-
-                var cursor = await CursorStorageService.GetOrCreateAsync(cursorName);
-                cursor.Value = min0;
-                await CursorStorageService.UpdateAsync(cursor);
+                await SetCursorAsync(min0);
 
                 // Act
                 await UpdateAsync(max1);

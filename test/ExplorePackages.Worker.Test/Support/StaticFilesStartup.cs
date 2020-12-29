@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Knapcode.ExplorePackages.Worker.Support
+namespace Knapcode.ExplorePackages.Worker
 {
     public class StaticFilesStartup
     {

@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
+using Knapcode.ExplorePackages.Worker.TableCopy;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
@@ -47,6 +49,9 @@ namespace Knapcode.ExplorePackages.Worker
                         batchSize = 20;
                     }
                     break;
+                case TableRowCopyMessage<LatestPackageLeaf>:
+                    batchSize = 20;
+                    break;
             }
 
             if (batchSize <= 1)
@@ -71,9 +76,9 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             _logger.LogInformation(
-                "Batched {MessageCount} {TypeName} messages into {BatchCount} batches of size {BatchSize}.",
+                "Batched {MessageCount} {SchemaName} messages into {BatchCount} batches of size {BatchSize}.",
                 messages.Count,
-                messageType.FullName,
+                serializer.Name,
                 batches.Count,
                 batchSize);
 

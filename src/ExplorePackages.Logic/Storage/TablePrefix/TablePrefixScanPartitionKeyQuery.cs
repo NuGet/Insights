@@ -7,7 +7,7 @@ namespace Knapcode.ExplorePackages
     public class TablePrefixScanPartitionKeyQuery : TablePrefixScanStep
     {
         public TablePrefixScanPartitionKeyQuery(TableQueryParameters parameters, int depth, string partitionKey, string rowKeySkip)
-            : base(TablePrefixScanStepType.PartitionKeyQuery, parameters, depth)
+            : base(parameters, depth)
         {
             PartitionKey = partitionKey ?? throw new ArgumentNullException(nameof(partitionKey));
             RowKeySkip = rowKeySkip;
