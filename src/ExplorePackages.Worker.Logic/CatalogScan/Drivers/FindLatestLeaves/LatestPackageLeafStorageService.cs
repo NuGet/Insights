@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -13,18 +12,15 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
     public class LatestPackageLeafStorageService
     {
         private readonly ServiceClientFactory _serviceClientFactory;
-        private readonly TablePrefixScanner _tablePrefixScanner;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<LatestPackageLeafStorageService> _logger;
 
         public LatestPackageLeafStorageService(
             ServiceClientFactory serviceClientFactory,
-            TablePrefixScanner tablePrefixScanner,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<LatestPackageLeafStorageService> logger)
         {
             _serviceClientFactory = serviceClientFactory;
-            _tablePrefixScanner = tablePrefixScanner;
             _options = options;
             _logger = logger;
         }
@@ -32,22 +28,6 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
         public async Task InitializeAsync()
         {
             await GetTable().CreateIfNotExistsAsync(retry: true);
-        }
-
-        public async Task Sandbox()
-        {
-            var prefix = string.Empty;
-            var packageIdPrefix = "microsoft.e";
-
-            var partitionKeyPrefix = $"{prefix}${packageIdPrefix}";
-            var table = GetTable();
-
-            await _tablePrefixScanner.ListAsync<LatestPackageLeaf>(table, partitionKeyPrefix);
-        }
-
-        private static void WriteResults<T>(string path, List<T> results) where T : ITableEntity
-        {
-            File.WriteAllLines(path, results.Select(x => $"{x.PartitionKey}\t{x.RowKey}"));
         }
 
         public async Task AddAsync(string prefix, IReadOnlyList<CatalogLeafItem> items)

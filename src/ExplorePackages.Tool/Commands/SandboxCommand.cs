@@ -9,8 +9,10 @@ using Knapcode.ExplorePackages.Worker;
 using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
 using Knapcode.ExplorePackages.Worker.FindPackageAssemblies;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
+using Knapcode.ExplorePackages.Worker.TableCopy;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using NuGet.Frameworks;
 using NuGet.Versioning;
@@ -32,6 +34,9 @@ namespace Knapcode.ExplorePackages.Tool
         private readonly SchemaSerializer _serializer;
         private readonly StorageLeaseService _storageLeaseService;
         private readonly ICatalogLeafToCsvDriver<PackageAssembly> _findPackageAssembliesDriver;
+        private readonly TablePrefixScanner _tablePrefixScanner;
+        private readonly TableCopyEnqueuer<LatestPackageLeaf> _tableCopyEnqueuer;
+        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<SandboxCommand> _logger;
 
         public SandboxCommand(
@@ -47,6 +52,9 @@ namespace Knapcode.ExplorePackages.Tool
             SchemaSerializer serializer,
             StorageLeaseService storageLeaseService,
             ICatalogLeafToCsvDriver<PackageAssembly> findPackageAssembliesDriver,
+            TablePrefixScanner tablePrefixScanner,
+            TableCopyEnqueuer<LatestPackageLeaf> tableCopyEnqueuer,
+            IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<SandboxCommand> logger)
         {
             _catalogScanService = catalogScanService;
@@ -61,6 +69,9 @@ namespace Knapcode.ExplorePackages.Tool
             _serializer = serializer;
             _storageLeaseService = storageLeaseService;
             _findPackageAssembliesDriver = findPackageAssembliesDriver;
+            _tablePrefixScanner = tablePrefixScanner;
+            _tableCopyEnqueuer = tableCopyEnqueuer;
+            _options = options;
             _logger = logger;
         }
 
@@ -74,9 +85,17 @@ namespace Knapcode.ExplorePackages.Tool
 
             // await _catalogScanService.RequeueAsync("CatalogScan-FindPackageAssemblies", "08585928640987077276-2zbm6qzw65ne5dlde242pezrcm");
 
-            await _latestPackageLeafStorageService.InitializeAsync();
+            await _tableCopyEnqueuer.StartPrefixScanAsync(
+                _options.Value.LatestLeavesTableName,
+                _options.Value.LatestLeavesTableName + "pscopy",
+                partitionKeyPrefix: string.Empty,
+                takeCount: StorageUtility.MaxBatchSize);
 
-            await _latestPackageLeafStorageService.Sandbox();
+            /*
+            await _tableCopyEnqueuer.StartSerialAsync(
+                _options.Value.LatestLeavesTableName,
+                _options.Value.LatestLeavesTableName + "pscopy");
+            */
 
             /*
             var increment = 0;

@@ -59,7 +59,7 @@ Results:
    - Runtime: 7 minutes, 56 seconds
    - Cost: <$0.01
 - `FindLatestLeaves` from "absolute min"
-   - Runtime: 9 minutes, 58 seconds
+   - Runtime: 8 minutes, 25 seconds
    - Cost: $0.01
 - `FindCatalogLeafItems`
    - Runtime: 2 minutes, 28 seconds
