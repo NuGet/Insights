@@ -63,13 +63,9 @@ namespace Knapcode.ExplorePackages
                         output.AddRange(segment.Entities);
                         break;
                     case TablePrefixScanPartitionKeyQuery partitionKeyStep:
-                        Console.Write(new string(' ', currentStep.Depth * 2));
-                        Console.WriteLine(currentStep);
                         newSteps = await ExpandPartitionKeyAsync<T>(partitionKeyStep);
                         break;
                     case TablePrefixScanPrefixQuery expandStep:
-                        Console.Write(new string(' ', currentStep.Depth * 2));
-                        Console.WriteLine(currentStep);
                         newSteps = await ExpandPrefixAsync<T>(expandStep);
                         break;
                     default:
