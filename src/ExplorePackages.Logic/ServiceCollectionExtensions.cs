@@ -123,6 +123,8 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<StorageSemaphoreLeaseService>();
             serviceCollection.AddTransient<TablePrefixScanner>();
 
+            serviceCollection.AddSingleton<ITelemetryClient>(s => NullTelemetryClient.Instance);
+
             serviceCollection.AddTransient<TempStreamService>();
             serviceCollection.AddTransient<TempStreamWriter>();
             serviceCollection.AddScoped<TempStreamLeaseScope>();
