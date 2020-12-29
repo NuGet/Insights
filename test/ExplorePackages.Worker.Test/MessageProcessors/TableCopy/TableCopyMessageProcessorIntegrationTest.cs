@@ -51,7 +51,6 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
             var tableClient = serviceClientFactory.GetStorageAccount().CreateCloudTableClient();
             var sourceTable = tableClient.GetTableReference(Options.Value.LatestLeavesTableName);
             var destinationTable = tableClient.GetTableReference(destTableName);
-            await destinationTable.CreateIfNotExistsAsync();
 
             var enqueuer = Host.Services.GetRequiredService<TableCopyEnqueuer<LatestPackageLeaf>>();
 

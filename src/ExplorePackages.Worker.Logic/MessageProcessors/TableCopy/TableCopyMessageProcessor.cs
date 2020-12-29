@@ -86,6 +86,7 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
                 switch (step)
                 {
                     case TablePrefixScanStart start:
+                        await CreateDestinationTableAsync(message);
                         currentSteps.AddRange(_prefixScanner.Start(start));
                         break;
                     case TablePrefixScanEntitySegment<T> entitySegment:
@@ -118,6 +119,7 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
             using var metrics = new QueryLoopMetrics(_telemetryClient, nameof(TableCopyMessageProcessor<T>), nameof(ProcessSerialAsync));
 
             var sourceTable = GetTable(message.SourceTableName);
+            await CreateDestinationTableAsync(message);
             var tableQuery = new TableQuery<TableEntity>
             {
                 SelectColumns = StorageUtility.MinSelectColumns,
@@ -147,6 +149,11 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
                 continuationToken = segment.ContinuationToken;
             }
             while (continuationToken != null);
+        }
+
+        private async Task CreateDestinationTableAsync(TableCopyMessage<T> message)
+        {
+            await GetTable(message.DestinationTableName).CreateIfNotExistsAsync(retry: true);
         }
 
         private CloudTable GetTable(string name)
