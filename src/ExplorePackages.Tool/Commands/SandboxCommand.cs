@@ -85,17 +85,17 @@ namespace Knapcode.ExplorePackages.Tool
 
             // await _catalogScanService.RequeueAsync("CatalogScan-FindPackageAssemblies", "08585928640987077276-2zbm6qzw65ne5dlde242pezrcm");
 
+            /*
             await _tableCopyEnqueuer.StartPrefixScanAsync(
                 _options.Value.LatestLeavesTableName,
                 _options.Value.LatestLeavesTableName + "pscopy",
                 partitionKeyPrefix: string.Empty,
                 takeCount: StorageUtility.MaxBatchSize);
+            */
 
-            /*
             await _tableCopyEnqueuer.StartSerialAsync(
                 _options.Value.LatestLeavesTableName,
-                _options.Value.LatestLeavesTableName + "pscopy");
-            */
+                _options.Value.LatestLeavesTableName + "serialcopy");
 
             /*
             var increment = 0;

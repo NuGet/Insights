@@ -131,3 +131,5 @@ track of what I was originally working on. Maybe I should use issues for this? T
 - Enable enqueuing as many messages as possible for a bulk enqueue message, but no more and return the extra
 
 - Move Worker integration tests to Worker.Logic. We don't need to test the Azure Function like that.
+
+- gzip batch or bulk enqueue messages?
