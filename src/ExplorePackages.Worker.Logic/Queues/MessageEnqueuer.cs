@@ -111,27 +111,21 @@ namespace Knapcode.ExplorePackages.Worker
 
         private async Task EnqueueBulkEnqueueMessageAsync(AddAsync addAsync, HomogeneousBulkEnqueueMessage batchMessage, int expectedLength)
         {
-            var bytes = _serializer.Serialize(batchMessage).AsString();
-            if (bytes.Length != expectedLength)
+            var rawMessage = _serializer.Serialize(batchMessage).AsString();
+            if (GetMessageLength(rawMessage) != expectedLength)
             {
                 throw new InvalidOperationException(
                     $"The bulk enqueue message had an unexpected size. " +
                     $"Expected: {expectedLength}. " +
-                    $"Actual: {bytes.Length}");
+                    $"Actual: {rawMessage.Length}");
             }
 
             _logger.LogInformation("Enqueueing a bulk enqueue message containing {Count} individual messages.", batchMessage.Messages.Count);
-            await addAsync(new[] { bytes }, TimeSpan.Zero);
+            await addAsync(new[] { rawMessage }, TimeSpan.Zero);
         }
 
-        private int GetMessageLength(HomogeneousBulkEnqueueMessage batchMessage)
-        {
-            return GetMessageLength(_serializer.Serialize(batchMessage));
-        }
-
-        private static int GetMessageLength(ISerializedEntity innerMessage)
-        {
-            return Encoding.UTF8.GetByteCount(innerMessage.AsString());
-        }
+        private int GetMessageLength(HomogeneousBulkEnqueueMessage batchMessage) => GetMessageLength(_serializer.Serialize(batchMessage));
+        private static int GetMessageLength(ISerializedEntity innerMessage) => GetMessageLength(innerMessage.AsString());
+        private static int GetMessageLength(string message) => Encoding.UTF8.GetByteCount(message);
     }
 }
