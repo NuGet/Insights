@@ -7,9 +7,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E875EFB7-FE3
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{CE6F8939-81A2-4BD4-9D9F-C1BF37DB1589}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExplorePackages.Logic", "src\ExplorePackages.Logic\ExplorePackages.Logic.csproj", "{55583FB5-7AB0-42CD-9C0A-6745E422875E}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExplorePackages.Website", "src\ExplorePackages.Website\ExplorePackages.Website.csproj", "{11370F28-6290-412D-BDA9-E7F83DFA58CD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExplorePackages.Logic", "src\ExplorePackages.Logic\ExplorePackages.Logic.csproj", "{55583FB5-7AB0-42CD-9C0A-6745E422875E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExplorePackages.Entities", "src\ExplorePackages.Entities\ExplorePackages.Entities.csproj", "{35B611A4-F1BE-4D7C-AA0D-EE07FB621B13}"
 EndProject
