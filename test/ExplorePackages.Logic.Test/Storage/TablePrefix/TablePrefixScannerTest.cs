@@ -12,6 +12,29 @@ namespace Knapcode.ExplorePackages
 {
     public class TablePrefixScannerTest : IClassFixture<TablePrefixScannerTest.Fixture>
     {
+        [Fact]
+        public async Task AllowsProjection()
+        {
+            (var table, var expected) = await _fixture.SortAndInsertAsync(GenerateTestEntities("PK", 2, 2));
+            MinSelectColumns = new[] { nameof(TestEntity.FieldB) };
+
+            var actual = await Target.ListAsync<TestEntity>(table, string.Empty, MinSelectColumns, takeCount: 1);
+
+            Assert.Equal(expected.Count, actual.Count);
+            Assert.All(expected.Zip(actual), (pair) =>
+            {
+                // Built-in properties
+                Assert.Equal(pair.First.PartitionKey, pair.Second.PartitionKey);
+                Assert.Equal(pair.First.RowKey, pair.Second.RowKey);
+                Assert.Equal(pair.First.Timestamp, pair.Second.Timestamp);
+                Assert.Equal(pair.First.ETag, pair.Second.ETag);
+
+                // Custom properties
+                Assert.Null(pair.Second.FieldA);
+                Assert.Equal(pair.First.FieldB, pair.Second.FieldB);
+            });
+        }
+
         [Theory]
         [InlineData("")]
         [InlineData("P")]
@@ -128,12 +151,12 @@ namespace Knapcode.ExplorePackages
         [InlineData(4)]
         public async Task EnumeratesAllEntitiesWithMatchingPrefix(int takeCount)
         {
-            var expected = GenerateTestEntities("PK", 3, 3);
-            (var table, var _) = await _fixture.SortAndInsertAsync(Enumerable
+            (var table, var all) = await _fixture.SortAndInsertAsync(Enumerable
                 .Empty<TestEntity>()
                 .Concat(GenerateTestEntities("AK", 3, 3))
-                .Concat(expected)
+                .Concat(GenerateTestEntities("PK", 3, 3))
                 .Concat(GenerateTestEntities("ZK", 3, 3)));
+            var expected = all.Where(x => x.PartitionKey.StartsWith("PK")).ToList();
 
             var actual = await Target.ListAsync<TestEntity>(table, "P", MinSelectColumns, takeCount);
 
@@ -207,7 +230,7 @@ namespace Knapcode.ExplorePackages
         public TablePrefixScannerTest(Fixture fixture, ITestOutputHelper output)
         {
             _fixture = fixture;
-            MinSelectColumns = TablePrefixScanner.MinSelectColumns;
+            MinSelectColumns = null;
             Target = new TablePrefixScanner(
                 output.GetTelemetryClient(),
                 output.GetLogger<TablePrefixScanner>());
@@ -224,7 +247,7 @@ namespace Knapcode.ExplorePackages
             }
         }
 
-        public IList<string> MinSelectColumns { get; }
+        public IList<string> MinSelectColumns { get; set; }
         public TablePrefixScanner Target { get; }
 
         public class Fixture : IAsyncLifetime
@@ -240,14 +263,15 @@ namespace Knapcode.ExplorePackages
 
             public async Task<(CloudTable table, IReadOnlyList<TestEntity> sortedEntities)> SortAndInsertAsync(IEnumerable<TestEntity> entities)
             {
-                var sortedEntities = entities.OrderBy(x => x).ToList();
+                IReadOnlyList<TestEntity> sortedEntities = entities.OrderBy(x => x).ToList();
 
                 CloudTable table = null;
                 foreach (var candidate in _candidates)
                 {
-                    if (candidate.sortedEntities.SequenceEqual(sortedEntities))
+                    if (candidate.sortedEntities.SequenceEqual(sortedEntities, new PartitionKeyRowKeyComparer<TestEntity>()))
                     {
                         table = candidate.table;
+                        sortedEntities = candidate.sortedEntities;
                         break;
                     }
                 }
@@ -270,6 +294,29 @@ namespace Knapcode.ExplorePackages
             public Task DisposeAsync() => Task.WhenAll(_candidates.Select(x => x.table.DeleteIfExistsAsync()));
         }
 
+        public class PartitionKeyRowKeyComparer<T> : IEqualityComparer<T> where T : ITableEntity
+        {
+            public bool Equals([AllowNull] T x, [AllowNull] T y)
+            {
+                if (ReferenceEquals(x, y))
+                {
+                    return true;
+                }
+
+                if (x is null || y is null)
+                {
+                    return false;
+                }
+
+                return x.PartitionKey == y.PartitionKey && x.RowKey == y.RowKey;
+            }
+
+            public int GetHashCode([DisallowNull] T obj)
+            {
+                return HashCode.Combine(obj.PartitionKey, obj.RowKey);
+            }
+        }
+
         public class TestEntity : TableEntity, IEquatable<TestEntity>, IComparable<TestEntity>
         {
             public TestEntity()
@@ -278,7 +325,12 @@ namespace Knapcode.ExplorePackages
 
             public TestEntity(string partitionKey, string rowKey) : base(partitionKey, rowKey)
             {
+                FieldA = partitionKey + "/" + rowKey;
+                FieldB = rowKey + "/" + partitionKey;
             }
+
+            public string FieldA { get; set; }
+            public string FieldB { get; set; }
 
             public int CompareTo([AllowNull] TestEntity other)
             {
@@ -305,12 +357,16 @@ namespace Knapcode.ExplorePackages
             {
                 return other != null &&
                        PartitionKey == other.PartitionKey &&
-                       RowKey == other.RowKey;
+                       RowKey == other.RowKey &&
+                       Timestamp.Equals(other.Timestamp) &&
+                       ETag == other.ETag &&
+                       FieldA == other.FieldA &&
+                       FieldB == other.FieldB;
             }
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(PartitionKey, RowKey);
+                return HashCode.Combine(PartitionKey, RowKey, Timestamp, ETag, FieldA, FieldB);
             }
         }
     }

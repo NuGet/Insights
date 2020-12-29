@@ -39,7 +39,7 @@ namespace Knapcode.ExplorePackages
             where T : ITableEntity, new()
         {
             _logger.LogInformation(
-                "For table {TableName}, starting prefix scan with partition key prefix {Prefix}, select columns {SelectColumns}, and take count {TakeCount}",
+                "For table {TableName}, starting prefix scan with partition key prefix '{Prefix}', select columns '{SelectColumns}', and take count {TakeCount}",
                 table.Name,
                 partitionKeyPrefix,
                 selectColumns,
@@ -230,6 +230,11 @@ namespace Knapcode.ExplorePackages
 
                 lastPartitionKey = segment.Results.Last().PartitionKey;
                 output.AddRange(MakeResults(query, segment));
+
+                if (segment.ContinuationToken == null)
+                {
+                    break;
+                }
             }
 
             return output;
