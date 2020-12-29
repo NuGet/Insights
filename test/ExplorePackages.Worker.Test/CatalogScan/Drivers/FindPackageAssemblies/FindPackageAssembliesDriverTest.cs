@@ -1,45 +1,18 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
 {
-    public class FindPackageAssembliesDriverTest
+    public class FindPackageAssembliesDriverTest : BaseWorkerIntegrationTest
     {
-        private readonly Lazy<IHost> _lazyHost;
-
-        public FindPackageAssembliesDriverTest(ITestOutputHelper output)
+        public FindPackageAssembliesDriverTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            : base(output, factory)
         {
-            var hostBuilder = new HostBuilder()
-                .ConfigureServices(serviceCollection =>
-                {
-                    serviceCollection.AddExplorePackages();
-                    serviceCollection.AddExplorePackagesWorker();
-
-                    serviceCollection.Configure<ExplorePackagesSettings>(x => ConfigureSettings?.Invoke(x));
-                    serviceCollection.Configure<ExplorePackagesWorkerSettings>(x =>
-                    {
-                        ConfigureSettings?.Invoke(x);
-                        ConfigureWorkerSettings?.Invoke(x);
-                    });
-
-                    serviceCollection.AddLogging(o =>
-                    {
-                        o.SetMinimumLevel(LogLevel.Trace);
-                        o.AddProvider(new XunitLoggerProvider(output));
-                    });
-                });
-            _lazyHost = new Lazy<IHost>(() => hostBuilder.Build());
         }
 
-        public Action<ExplorePackagesSettings> ConfigureSettings { get; set; }
-        public Action<ExplorePackagesWorkerSettings> ConfigureWorkerSettings { get; set; }
-        public IHost Host => _lazyHost.Value;
         public ICatalogLeafToCsvDriver<PackageAssembly> Target => Host.Services.GetRequiredService<ICatalogLeafToCsvDriver<PackageAssembly>>();
 
         [Fact]
