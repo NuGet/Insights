@@ -5,11 +5,13 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Worker;
 using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
 using Knapcode.ExplorePackages.Worker.FindPackageAssemblies;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using Knapcode.ExplorePackages.Worker.TableCopy;
+using Knapcode.TableDelta;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -93,9 +95,32 @@ namespace Knapcode.ExplorePackages.Tool
                 takeCount: StorageUtility.MaxBatchSize);
             */
 
+            /*
             await _tableCopyEnqueuer.StartSerialAsync(
                 _options.Value.LatestLeavesTableName,
                 _options.Value.LatestLeavesTableName + "serialcopy");
+            */
+
+            var tableClient = _serviceClientFactory.GetStorageAccount().CreateCloudTableClient();
+            var comparison = new EntityComparisonEnumerable<LatestPackageLeaf>(
+                new EntityEnumerable<LatestPackageLeaf>(tableClient.GetTableReference("latestleaves"), takeCount: null),
+                new EntityEnumerable<LatestPackageLeaf>(tableClient.GetTableReference("latestleavespscopy"), takeCount: null));
+            var enumerator = comparison.GetEnumerator();
+
+            var count = 0;
+            while (await enumerator.MoveNextAsync())
+            {
+                count++;
+                var notSame = enumerator.Current.Type != EntityComparisonType.Same;
+                if (notSame || count % 1000 == 0)
+                {
+                    var entity = enumerator.Current.Left?.RawEntity ?? enumerator.Current.Right.RawEntity;
+                    var currentColor = Console.ForegroundColor;
+                    Console.ForegroundColor = notSame ? ConsoleColor.Red : ConsoleColor.Green;
+                    Console.WriteLine($"{count}: {entity.PartitionKey} {entity.RowKey} - {enumerator.Current.Type}");
+                    Console.ForegroundColor = currentColor;
+                }
+            }
 
             /*
             var increment = 0;
