@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
 {
-    public class FindPackageAssetsIntegrationTest : BaseCatalogScanIntegrationTest
+    public class FindPackageAssetsIntegrationTest : BaseCatalogScanToCsvIntegrationTest
     {
         private const string FindPackageAssetsDir = nameof(FindPackageAssets);
         private const string FindPackageAssets_WithDeleteDir = nameof(FindPackageAssets_WithDelete);

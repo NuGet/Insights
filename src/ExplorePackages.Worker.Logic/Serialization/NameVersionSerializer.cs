@@ -6,7 +6,7 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public static class NameVersionSerializer
     {
-        private static readonly JsonSerializerSettings JsonSerializerSettings = new JsonSerializerSettings
+        public static JsonSerializerSettings JsonSerializerSettings => new JsonSerializerSettings
         {
             DateTimeZoneHandling = DateTimeZoneHandling.Utc,
             DateParseHandling = DateParseHandling.DateTimeOffset,
@@ -17,7 +17,7 @@ namespace Knapcode.ExplorePackages.Worker
             },
         };
 
-        public static readonly JsonSerializer JsonSerializer = JsonSerializer.Create(JsonSerializerSettings);
+        public static JsonSerializer JsonSerializer => JsonSerializer.Create(JsonSerializerSettings);
 
         public static ISerializedEntity SerializeData<T>(T message)
         {

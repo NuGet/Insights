@@ -6,7 +6,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
 {
     public class LatestPackageLeaf : TableEntity
     {
-        public LatestPackageLeaf(string prefix, CatalogLeafItem item)
+        public LatestPackageLeaf(string prefix, CatalogLeafItem item, string pageUrl)
         {
             PartitionKey = GetPartitionKey(prefix, item.PackageId);
             RowKey = GetRowKey(item.PackageVersion);
@@ -17,6 +17,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
             CommitTimestamp = item.CommitTimestamp;
             PackageId = item.PackageId;
             PackageVersion = item.PackageVersion;
+            PageUrl = pageUrl;
         }
 
         public LatestPackageLeaf()
@@ -40,6 +41,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
         public DateTimeOffset CommitTimestamp { get; set; }
         public string PackageId { get; set; }
         public string PackageVersion { get; set; }
+        public string PageUrl { get; set; }
 
         public static string GetPartitionKey(string prefix, string id)
         {

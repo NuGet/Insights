@@ -122,6 +122,7 @@ namespace Knapcode.ExplorePackages.Worker
         public CursorStorageService CursorStorageService => Host.Services.GetRequiredService<CursorStorageService>();
         public CatalogScanStorageService CatalogScanStorageService => Host.Services.GetRequiredService<CatalogScanStorageService>();
         public IWorkerQueueFactory WorkerQueueFactory => Host.Services.GetRequiredService<IWorkerQueueFactory>();
+        public ITelemetryClient TelemetryClient => Host.Services.GetRequiredService<ITelemetryClient>();
         public ILogger Logger => Host.Services.GetRequiredService<ILogger<BaseWorkerLogicIntegrationTest>>();
 
         protected async Task SetCursorAsync(CatalogScanType type, DateTimeOffset min)
@@ -131,7 +132,7 @@ namespace Knapcode.ExplorePackages.Worker
             await CursorStorageService.UpdateAsync(cursor);
         }
 
-        protected async Task UpdateAsync(CatalogScanType type, DateTimeOffset max)
+        protected async Task<CatalogIndexScan> UpdateAsync(CatalogScanType type, DateTimeOffset max)
         {
             var indexScan = await CatalogScanService.UpdateAsync(type, max);
 
@@ -147,6 +148,8 @@ namespace Knapcode.ExplorePackages.Worker
 
                 return true;
             });
+
+            return indexScan;
         }
 
         protected async Task ProcessQueueAsync()

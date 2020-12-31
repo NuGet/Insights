@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItems
 {
-    public class FindCatalogLeafItemsIntegrationTest : BaseCatalogScanIntegrationTest
+    public class FindCatalogLeafItemsIntegrationTest : BaseCatalogScanToCsvIntegrationTest
     {
         private const string FindCatalogLeafItemsDir = nameof(FindCatalogLeafItems);
 
