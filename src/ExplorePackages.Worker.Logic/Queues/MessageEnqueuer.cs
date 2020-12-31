@@ -146,9 +146,9 @@ namespace Knapcode.ExplorePackages.Worker
                 var splitMessages = split(message);
                 _logger.LogWarning(
                     "Message of type {Type} and length {Length} is bigger than the limit {MaxLength}. Attempting to split.",
-                    message.GetType().Name,
-                    _rawMessageEnqueuer.MaxMessageSize,
-                    serializedMessageLength);
+                    message.GetType().FullName,
+                    serializedMessageLength,
+                    _rawMessageEnqueuer.MaxMessageSize);
                 if (splitMessages != null)
                 {
                     _logger.LogWarning("Message was split into {MessageCount} messages.", splitMessages.Count);
