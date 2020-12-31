@@ -100,7 +100,7 @@ namespace Knapcode.ExplorePackages.Worker
             });
         }
 
-        private static string GetCursorName(CatalogScanType type)
+        public string GetCursorName(CatalogScanType type)
         {
             return $"CatalogScan-{type}";
         }
@@ -110,7 +110,7 @@ namespace Knapcode.ExplorePackages.Worker
             switch (type)
             {
                 case CatalogScanType.FindCatalogLeafItems:
-                    return await UpdateCatalogScanAsync(type, NoParameters, DateTimeOffset.MinValue, max);
+                    return await UpdateAsync(type, NoParameters, DateTimeOffset.MinValue, max);
                 case CatalogScanType.FindLatestLeaves:
                     return await UpdateFindLatestLeavesAsync(max);
                 case CatalogScanType.FindPackageAssemblies:
@@ -121,19 +121,27 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        public async Task<CatalogIndexScan> StartFindLatestLeavesAsync(string prefix, DateTimeOffset? max)
+        public async Task<CatalogIndexScan> StartSpecificFindLatestLeavesAsync(
+            string scanId,
+            string storageSuffix,
+            string prefix,
+            string tableName,
+            DateTimeOffset min,
+            DateTimeOffset? max)
         {
             var parameters = new FindLatestLeavesParameters
             {
                 Prefix = prefix,
+                TableName = tableName,
             };
 
-            return await StartCatalogScanAsync(
+            return await StartCursorlessAsync(
+                scanId,
+                storageSuffix,
                 CatalogScanType.FindLatestLeaves,
                 parameters: _serializer.Serialize(parameters).AsString(),
-                min: CursorTableEntity.Min,
-                max,
-                GetCursorName(CatalogScanType.FindLatestLeaves));
+                min,
+                max);
         }
 
         private async Task<CatalogIndexScan> UpdateFindLatestLeavesAsync(DateTimeOffset? max)
@@ -141,9 +149,10 @@ namespace Knapcode.ExplorePackages.Worker
             var parameters = new FindLatestLeavesParameters
             {
                 Prefix = string.Empty,
+                TableName = _options.Value.LatestLeavesTableName,
             };
 
-            return await UpdateCatalogScanAsync(
+            return await UpdateAsync(
                 CatalogScanType.FindLatestLeaves,
                 parameters: _serializer.Serialize(parameters).AsString(),
                 min: DateTimeOffset.MinValue,
@@ -157,14 +166,14 @@ namespace Knapcode.ExplorePackages.Worker
                 BucketCount = _options.Value.AppendResultStorageBucketCount,
             };
 
-            return await UpdateCatalogScanAsync(
+            return await UpdateAsync(
                 catalogScanType,
                 parameters: _serializer.Serialize(parameters).AsString(),
                 min: CatalogClient.NuGetOrgMin,
                 max);
         }
 
-        private async Task<CatalogIndexScan> UpdateCatalogScanAsync(CatalogScanType type, string parameters, DateTimeOffset min, DateTimeOffset? max)
+        private async Task<CatalogIndexScan> UpdateAsync(CatalogScanType type, string parameters, DateTimeOffset min, DateTimeOffset? max)
         {
             // Check if a scan is already running, outside the lease.
             var cursor = await GetCursorAsync(type);
@@ -198,28 +207,80 @@ namespace Knapcode.ExplorePackages.Worker
                     return incompleteScan;
                 }
 
-                return await StartCatalogScanAsync(type, parameters, min, max, cursor.Name);
+                var descendingId = StorageUtility.GenerateDescendingId();
+                return await StartWithoutLeaseAsync(
+                    cursor.Name,
+                    descendingId.ToString(),
+                    descendingId.Unique,
+                    type,
+                    parameters,
+                    min,
+                    max);
             }
         }
 
-        private async Task<CatalogIndexScan> StartCatalogScanAsync(
+        private async Task<CatalogIndexScan> StartCursorlessAsync(
+            string scanId,
+            string storageSuffix,
             CatalogScanType type,
             string parameters,
             DateTimeOffset min,
-            DateTimeOffset? max,
-            string cursorName)
+            DateTimeOffset? max)
+        {
+            var cursorName = string.Empty;
+
+            // Check if a scan is already running, outside the lease.
+            var scan = await _catalogScanStorageService.GetIndexScanAsync(cursorName, scanId);
+            if (scan != null)
+            {
+                return scan;
+            }
+
+            // Use a rather generic lease, to simplify clean-up.
+            await using (var lease = await _leaseService.TryAcquireAsync($"Start-{GetCursorName(type)}"))
+            {
+                if (!lease.Acquired)
+                {
+                    return null;
+                }
+
+                // Check if a scan is already running, inside the lease.
+                scan = await _catalogScanStorageService.GetIndexScanAsync(cursorName, scanId);
+                if (scan != null)
+                {
+                    return scan;
+                }
+
+                return await StartWithoutLeaseAsync(
+                    cursorName,
+                    scanId,
+                    storageSuffix,
+                    type,
+                    parameters,
+                    min,
+                    max);
+            }
+        }
+
+        private async Task<CatalogIndexScan> StartWithoutLeaseAsync(
+            string cursorName,
+            string scanId,
+            string storageSuffix,
+            CatalogScanType type,
+            string parameters,
+            DateTimeOffset min,
+            DateTimeOffset? max)
         {
             // Start a new scan.
-            _logger.LogInformation("Attempting to start a catalog index scan from ({Min}, {Max}].", min, max);
-            var scanId = StorageUtility.GenerateDescendingId();
+            _logger.LogInformation("Attempting to start a {Type} catalog index scan from ({Min}, {Max}].", type, min, max);
+
             var catalogIndexScanMessage = new CatalogIndexScanMessage
             {
                 CursorName = cursorName,
-                ScanId = scanId.ToString(),
+                ScanId = scanId,
             };
             await _messageEnqueuer.EnqueueAsync(new[] { catalogIndexScanMessage });
-
-            var catalogIndexScan = new CatalogIndexScan(cursorName, scanId.ToString(), scanId.Unique)
+            var catalogIndexScan = new CatalogIndexScan(cursorName, scanId, storageSuffix)
             {
                 ParsedScanType = type,
                 ScanParameters = parameters,

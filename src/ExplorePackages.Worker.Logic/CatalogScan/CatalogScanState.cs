@@ -3,6 +3,7 @@
     public enum CatalogScanState
     {
         Created,
+        WaitingOnDependency,
         Expanding,
         Enqueuing,
         Waiting,

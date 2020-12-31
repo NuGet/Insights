@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage.Table;
 
@@ -8,13 +9,16 @@ namespace Knapcode.ExplorePackages.Worker
     {
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly ILogger<CursorStorageService> _logger;
 
         public CursorStorageService(
             ServiceClientFactory serviceClientFactory,
-            IOptions<ExplorePackagesWorkerSettings> options)
+            IOptions<ExplorePackagesWorkerSettings> options,
+            ILogger<CursorStorageService> logger)
         {
             _serviceClientFactory = serviceClientFactory;
             _options = options;
+            _logger = logger;
         }
 
         public async Task InitializeAsync()
@@ -33,6 +37,7 @@ namespace Knapcode.ExplorePackages.Worker
             else
             {
                 var cursor = new CursorTableEntity(name);
+                _logger.LogInformation("Creating cursor {Name} to timestamp {Value:O}.", name, cursor.Value);
                 await table.ExecuteAsync(TableOperation.Insert(cursor));
                 return cursor;
             }
@@ -41,6 +46,7 @@ namespace Knapcode.ExplorePackages.Worker
         public async Task UpdateAsync(CursorTableEntity cursor)
         {
             var table = GetTable();
+            _logger.LogInformation("Updating cursor {Name} to timestamp {NewValue:O}.", cursor.Name, cursor.Value);
             await table.ExecuteAsync(TableOperation.Replace(cursor));
         }
 

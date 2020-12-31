@@ -6,5 +6,8 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
     {
         [JsonProperty("p")]
         public string Prefix { get; set; }
+
+        [JsonProperty("t")]
+        public string TableName { get; set; }
     }
 }

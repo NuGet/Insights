@@ -7,7 +7,7 @@ namespace Knapcode.ExplorePackages.Worker
     {
         public CatalogIndexScan(string cursorName, string scanId, string storageSuffix) : this()
         {
-            PartitionKey = cursorName;
+            PartitionKey = cursorName ?? throw new ArgumentNullException(nameof(cursorName)); // empty string is allowed
             RowKey = scanId;
             StorageSuffix = storageSuffix;
             Created = DateTimeOffset.UtcNow;

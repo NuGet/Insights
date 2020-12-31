@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage.Table;
 using static Knapcode.ExplorePackages.StorageUtility;
 
@@ -13,29 +12,26 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
     {
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly ITelemetryClient _telemetryClient;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<LatestPackageLeafStorageService> _logger;
 
         public LatestPackageLeafStorageService(
             ServiceClientFactory serviceClientFactory,
             ITelemetryClient telemetryClient,
-            IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<LatestPackageLeafStorageService> logger)
         {
             _serviceClientFactory = serviceClientFactory;
             _telemetryClient = telemetryClient;
-            _options = options;
             _logger = logger;
         }
 
-        public async Task InitializeAsync()
+        public async Task InitializeAsync(string tableName)
         {
-            await GetTable().CreateIfNotExistsAsync(retry: true);
+            await GetTable(tableName).CreateIfNotExistsAsync(retry: true);
         }
 
-        public async Task AddAsync(string prefix, IReadOnlyList<CatalogLeafItem> items)
+        public async Task AddAsync(string tableName, string prefix, IReadOnlyList<CatalogLeafItem> items)
         {
-            var table = GetTable();
+            var table = GetTable(tableName);
             var packageIdGroups = items.GroupBy(x => x.PackageId, StringComparer.OrdinalIgnoreCase);
             foreach (var group in packageIdGroups)
             {
@@ -175,12 +171,12 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
             return TableQuery.GenerateFilterCondition(RowKey, QueryComparisons.LessThanOrEqual, lowerVersion);
         }
 
-        private CloudTable GetTable()
+        private CloudTable GetTable(string tableName)
         {
             return _serviceClientFactory
                 .GetStorageAccount()
                 .CreateCloudTableClient()
-                .GetTableReference(_options.Value.LatestLeavesTableName);
+                .GetTableReference(tableName);
         }
     }
 }
