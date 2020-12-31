@@ -42,15 +42,14 @@ namespace Knapcode.ExplorePackages.Worker
 
         private IHost GetHost(ITestOutputHelper output)
         {
-            return ConfigureHostBuilder(new HostBuilder(), output).Build();
-        }
+            var hostBuilder = new HostBuilder();
 
-        protected virtual IHostBuilder ConfigureHostBuilder(IHostBuilder hostBuilder, ITestOutputHelper output)
-        {
+            ConfigureHostBuilder(hostBuilder);
+
             return hostBuilder
                 .ConfigureServices(serviceCollection =>
                 {
-                    serviceCollection.AddExplorePackages("Knapcode.ExplorePackages.Worker");
+                    serviceCollection.AddExplorePackages("Knapcode.ExplorePackages.Worker.Logic.Test");
                     serviceCollection.AddExplorePackagesWorker();
 
                     serviceCollection.AddSingleton((IExplorePackagesHttpMessageHandlerFactory)HttpMessageHandlerFactory);
@@ -65,7 +64,12 @@ namespace Knapcode.ExplorePackages.Worker
 
                     serviceCollection.Configure((Action<ExplorePackagesSettings>)(ConfigureDefaultsAndSettings));
                     serviceCollection.Configure((Action<ExplorePackagesWorkerSettings>)(ConfigureDefaultsAndSettings));
-                });
+                })
+                .Build();
+        }
+
+        protected virtual void ConfigureHostBuilder(IHostBuilder hostBuilder)
+        {
         }
 
         private void ConfigureDefaultsAndSettings(ExplorePackagesSettings x)
