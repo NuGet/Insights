@@ -1,0 +1,197 @@
+[
+  {
+    "Id": 1,
+    "ParentId": null,
+    "Timestamp": "2020-12-30T21:26:31.6913421+00:00",
+    "Data": {
+      "Type": "Start",
+      "Depth": 0,
+      "PartitionKeyPrefix": ""
+    }
+  },
+  {
+    "Id": 2,
+    "ParentId": 1,
+    "Timestamp": "2020-12-30T21:26:31.7169488+00:00",
+    "Data": {
+      "Type": "PrefixQuery",
+      "Depth": 1,
+      "PartitionKeyPrefix": "",
+      "PartitionKeyLowerBound": ""
+    }
+  },
+  {
+    "Id": 3,
+    "ParentId": 2,
+    "Timestamp": "2020-12-30T21:26:31.7170002+00:00",
+    "Data": {
+      "Type": "EntitySegment",
+      "Depth": 2,
+      "First": {
+        "PartitionKey": "Dashner",
+        "RowKey": "Cleopatra"
+      },
+      "Last": {
+        "PartitionKey": "Davis",
+        "RowKey": "Gemma"
+      },
+      "Count": 2
+    }
+  },
+  {
+    "Id": 4,
+    "ParentId": 2,
+    "Timestamp": "2020-12-30T21:26:31.7219575+00:00",
+    "Data": {
+      "Type": "PartitionKeyQuery",
+      "Depth": 2,
+      "PartitionKey": "Davis",
+      "RowKeySkip": "Gemma"
+    }
+  },
+  {
+    "Id": 5,
+    "ParentId": 4,
+    "Timestamp": "2020-12-30T21:26:31.7219619+00:00",
+    "Data": {
+      "Type": "EntitySegment",
+      "Depth": 3,
+      "First": {
+        "PartitionKey": "Davis",
+        "RowKey": "Loralee"
+      },
+      "Last": {
+        "PartitionKey": "Davis",
+        "RowKey": "Loralee"
+      },
+      "Count": 1
+    }
+  },
+  {
+    "Id": 6,
+    "ParentId": 2,
+    "Timestamp": "2020-12-30T21:26:31.7284558+00:00",
+    "Data": {
+      "Type": "PrefixQuery",
+      "Depth": 2,
+      "PartitionKeyPrefix": "D",
+      "PartitionKeyLowerBound": "Davis"
+    }
+  },
+  {
+    "Id": 7,
+    "ParentId": 6,
+    "Timestamp": "2020-12-30T21:26:31.7284616+00:00",
+    "Data": {
+      "Type": "EntitySegment",
+      "Depth": 3,
+      "First": {
+        "PartitionKey": "Dodge",
+        "RowKey": "Lowell"
+      },
+      "Last": {
+        "PartitionKey": "Dodge",
+        "RowKey": "Lowell"
+      },
+      "Count": 1
+    }
+  },
+  {
+    "Id": 8,
+    "ParentId": 2,
+    "Timestamp": "2020-12-30T21:26:31.7284630+00:00",
+    "Data": {
+      "Type": "EntitySegment",
+      "Depth": 2,
+      "First": {
+        "PartitionKey": "Hartlage",
+        "RowKey": "Marketta"
+      },
+      "Last": {
+        "PartitionKey": "Nuckles",
+        "RowKey": "Timmy"
+      },
+      "Count": 2
+    }
+  },
+  {
+    "Id": 9,
+    "ParentId": 2,
+    "Timestamp": "2020-12-30T21:26:31.7344783+00:00",
+    "Data": {
+      "Type": "PartitionKeyQuery",
+      "Depth": 2,
+      "PartitionKey": "Nuckles",
+      "RowKeySkip": "Timmy"
+    }
+  },
+  {
+    "Id": 10,
+    "ParentId": 2,
+    "Timestamp": "2020-12-30T21:26:31.7393588+00:00",
+    "Data": {
+      "Type": "PrefixQuery",
+      "Depth": 2,
+      "PartitionKeyPrefix": "N",
+      "PartitionKeyLowerBound": "Nuckles"
+    }
+  },
+  {
+    "Id": 11,
+    "ParentId": 2,
+    "Timestamp": "2020-12-30T21:26:31.7393655+00:00",
+    "Data": {
+      "Type": "EntitySegment",
+      "Depth": 2,
+      "First": {
+        "PartitionKey": "Rundle",
+        "RowKey": "Coleen"
+      },
+      "Last": {
+        "PartitionKey": "Splawn",
+        "RowKey": "Lise"
+      },
+      "Count": 2
+    }
+  },
+  {
+    "Id": 12,
+    "ParentId": 2,
+    "Timestamp": "2020-12-30T21:26:31.7468968+00:00",
+    "Data": {
+      "Type": "PartitionKeyQuery",
+      "Depth": 2,
+      "PartitionKey": "Splawn",
+      "RowKeySkip": "Lise"
+    }
+  },
+  {
+    "Id": 13,
+    "ParentId": 2,
+    "Timestamp": "2020-12-30T21:26:31.7518594+00:00",
+    "Data": {
+      "Type": "PrefixQuery",
+      "Depth": 2,
+      "PartitionKeyPrefix": "S",
+      "PartitionKeyLowerBound": "Splawn"
+    }
+  },
+  {
+    "Id": 14,
+    "ParentId": 2,
+    "Timestamp": "2020-12-30T21:26:31.7518664+00:00",
+    "Data": {
+      "Type": "EntitySegment",
+      "Depth": 2,
+      "First": {
+        "PartitionKey": "Wedell",
+        "RowKey": "Annabelle"
+      },
+      "Last": {
+        "PartitionKey": "Wongus",
+        "RowKey": "Rosenda"
+      },
+      "Count": 2
+    }
+  }
+]
