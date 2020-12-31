@@ -253,7 +253,7 @@ namespace Knapcode.ExplorePackages.Worker
                 .Select((x, index) => new CatalogPageScan(
                     scan.StorageSuffix,
                     scan.ScanId,
-                    index.ToString(CultureInfo.InvariantCulture).PadLeft(maxPageIdLength, '0'))
+                    "P" + index.ToString(CultureInfo.InvariantCulture).PadLeft(maxPageIdLength, '0'))
                 {
                     ParsedScanType = scan.ParsedScanType,
                     ScanParameters = scan.ScanParameters,

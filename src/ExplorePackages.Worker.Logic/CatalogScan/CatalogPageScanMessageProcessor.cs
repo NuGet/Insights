@@ -132,7 +132,7 @@ namespace Knapcode.ExplorePackages.Worker
                     scan.StorageSuffix,
                     scan.ScanId,
                     scan.PageId,
-                    index.ToString(CultureInfo.InvariantCulture).PadLeft(maxLeafIdLength, '0'))
+                    "L" + index.ToString(CultureInfo.InvariantCulture).PadLeft(maxLeafIdLength, '0'))
                 {
                     ParsedScanType = scan.ParsedScanType,
                     ScanParameters = scan.ScanParameters,
