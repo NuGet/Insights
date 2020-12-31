@@ -69,8 +69,9 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
             await ProcessQueueAsync();
 
             // Assert
-            var sourceEntities = await sourceTable.GetEntitiesAsync<LatestPackageLeaf>();
-            var destinationEntities = await destinationTable.GetEntitiesAsync<LatestPackageLeaf>();
+            var telemetryClient = Host.Services.GetRequiredService<ITelemetryClient>();
+            var sourceEntities = await sourceTable.GetEntitiesAsync<LatestPackageLeaf>(telemetryClient.NewQueryLoopMetrics());
+            var destinationEntities = await destinationTable.GetEntitiesAsync<LatestPackageLeaf>(telemetryClient.NewQueryLoopMetrics());
 
             Assert.All(sourceEntities.Zip(destinationEntities), pair =>
             {

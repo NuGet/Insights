@@ -22,13 +22,16 @@ namespace Knapcode.ExplorePackages.Worker
         private const string CompactPrefix = "compact_";
         private const int MaximumPropertyLength = 32 * 1024;
         private readonly IServiceClientFactory _serviceClientFactory;
+        private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
         public AppendResultStorageService(
             IServiceClientFactory serviceClientFactory,
+            ITelemetryClient telemetryClient,
             IOptions<ExplorePackagesWorkerSettings> options)
         {
             _serviceClientFactory = serviceClientFactory;
+            _telemetryClient = telemetryClient;
             _options = options;
         }
 
@@ -279,7 +282,7 @@ namespace Knapcode.ExplorePackages.Worker
             if (!force || srcTable != null)
             {
                 var table = GetTable(srcTable);
-                var entities = await table.GetEntitiesAsync<AppendResultEntity>(bucket.ToString());
+                var entities = await table.GetEntitiesAsync<AppendResultEntity>(bucket.ToString(), _telemetryClient.NewQueryLoopMetrics());
                 if (entities.Any())
                 {
                     foreach (var entity in entities)
@@ -378,7 +381,7 @@ namespace Knapcode.ExplorePackages.Worker
         private async Task<List<int>> GetWrittenAppendTableBucketsAsync(string tableName)
         {
             var table = GetTable(tableName);
-            var markerEntities = await table.GetEntitiesAsync<TableEntity>(string.Empty);
+            var markerEntities = await table.GetEntitiesAsync<TableEntity>(string.Empty, _telemetryClient.NewQueryLoopMetrics());
             return markerEntities.Select(x => int.Parse(x.RowKey)).ToList();
         }
 

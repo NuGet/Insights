@@ -9,13 +9,16 @@ namespace Knapcode.ExplorePackages.Worker
     public class TaskStateStorageService
     {
         private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
         public TaskStateStorageService(
             ServiceClientFactory serviceClientFactory,
+            ITelemetryClient telemetryClient,
             IOptions<ExplorePackagesWorkerSettings> options)
         {
             _serviceClientFactory = serviceClientFactory;
+            _telemetryClient = telemetryClient;
             _options = options;
         }
 
@@ -41,7 +44,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         private async Task<IReadOnlyList<TaskState>> GetAllAsync(string storageSuffix, string partitionKey)
         {
-            return await GetTable(storageSuffix).GetEntitiesAsync<TaskState>(partitionKey);
+            return await GetTable(storageSuffix).GetEntitiesAsync<TaskState>(partitionKey, _telemetryClient.NewQueryLoopMetrics());
         }
 
         private async Task InsertAsync(IReadOnlyList<TaskState> taskStates)
@@ -54,7 +57,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task<int> GetCountLowerBoundAsync(string storageSuffix, string partitionKey)
         {
-            return await GetTable(storageSuffix).GetEntityCountLowerBoundAsync<TaskState>(partitionKey);
+            return await GetTable(storageSuffix).GetEntityCountLowerBoundAsync<TaskState>(partitionKey, _telemetryClient.NewQueryLoopMetrics());
         }
 
         public async Task<TaskState> GetAsync(string storageSuffix, string partitionKey, string rowKey)

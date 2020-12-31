@@ -102,7 +102,7 @@ namespace Knapcode.ExplorePackages
 
         public async Task<List<TablePrefixScanStep>> ExecutePartitionKeyQueryAsync<T>(TablePrefixScanPartitionKeyQuery query) where T : ITableEntity, new()
         {
-            using var metrics = GetQueryLoopMetrics(nameof(ExecutePartitionKeyQueryAsync));
+            using var metrics = _telemetryClient.NewQueryLoopMetrics();
 
             var filter = TableQuery.GenerateFilterCondition(
                 PartitionKey,
@@ -152,7 +152,7 @@ namespace Knapcode.ExplorePackages
 
         public async Task<List<TablePrefixScanStep>> ExecutePrefixQueryAsync<T>(TablePrefixScanPrefixQuery query) where T : ITableEntity, new()
         {
-            using var metrics = GetQueryLoopMetrics(nameof(ExecutePrefixQueryAsync));
+            using var metrics = _telemetryClient.NewQueryLoopMetrics();
 
             //
             // Consider the following query, where we're enumerating all partition keys starting with '$'.
@@ -234,11 +234,6 @@ namespace Knapcode.ExplorePackages
             }
 
             return output;
-        }
-
-        private QueryLoopMetrics GetQueryLoopMetrics(string methodName)
-        {
-            return new QueryLoopMetrics(_telemetryClient, nameof(TablePrefixScanner), methodName);
         }
 
         private static string IncrementPrefix(string partitionKeyPrefix, string partitionKey)

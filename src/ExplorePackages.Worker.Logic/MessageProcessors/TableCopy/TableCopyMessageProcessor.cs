@@ -116,7 +116,7 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
 
         private async Task ProcessSerialAsync(TableCopyMessage<T> message)
         {
-            using var metrics = new QueryLoopMetrics(_telemetryClient, nameof(TableCopyMessageProcessor<T>), nameof(ProcessSerialAsync));
+            using var metrics = _telemetryClient.NewQueryLoopMetrics();
 
             var sourceTable = GetTable(message.SourceTableName);
             await CreateDestinationTableAsync(message);

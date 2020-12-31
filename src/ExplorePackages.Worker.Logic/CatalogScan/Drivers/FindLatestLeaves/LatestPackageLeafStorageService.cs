@@ -12,15 +12,18 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
     public class LatestPackageLeafStorageService
     {
         private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<LatestPackageLeafStorageService> _logger;
 
         public LatestPackageLeafStorageService(
             ServiceClientFactory serviceClientFactory,
+            ITelemetryClient telemetryClient,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<LatestPackageLeafStorageService> logger)
         {
             _serviceClientFactory = serviceClientFactory;
+            _telemetryClient = telemetryClient;
             _options = options;
             _logger = logger;
         }
@@ -42,58 +45,10 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
 
         public async Task AddAsync(CloudTable table, string prefix, string packageId, IEnumerable<CatalogLeafItem> items)
         {
-            // Sort items by lexicographical order, since this is what table storage does.
-            var itemList = items
-                .Select(x => new { Item = x, LowerVersion = LatestPackageLeaf.GetRowKey(x.PackageVersion) })
-                .GroupBy(x => x.LowerVersion)
-                .Select(x => x.OrderByDescending(x => x.Item.CommitTimestamp).First())
-                .OrderBy(x => x.LowerVersion, StringComparer.Ordinal)
-                .ToList();
-            var lowerVersionToItem = itemList.ToDictionary(x => x.LowerVersion, x => x.Item);
-            var lowerVersionToEtag = new Dictionary<string, string>();
-            var versionsToUpsert = new List<string>();
-
-            // Query for all of the version data in Table Storage, determining what needs to be updated.
-            var filterString = TableQuery.CombineFilters(
-                EqualPrefixAndPackageId(prefix, packageId),
-                TableOperators.And,
-                TableQuery.CombineFilters(
-                    GreaterThanOrEqualToVersion(itemList.First().LowerVersion),
-                    TableOperators.And,
-                    LessThanOrEqualToVersion(itemList.Last().LowerVersion)));
-            var query = new TableQuery<LatestPackageLeaf>
-            {
-                FilterString = filterString,
-                SelectColumns = new List<string> { RowKey, nameof(LatestPackageLeaf.CommitTimestamp) },
-                TakeCount = MaxTakeCount,
-            };
-
-            TableContinuationToken token = null;
-            do
-            {
-                var segment = await table.ExecuteQuerySegmentedAsync(query, token);
-                token = segment.ContinuationToken;
-
-                foreach (var result in segment.Results)
-                {
-                    if (lowerVersionToItem.TryGetValue(result.LowerVersion, out var item))
-                    {
-                        if (result.CommitTimestamp >= item.CommitTimestamp)
-                        {
-                            // The version in Table Storage is newer, ignore the version we have.
-                            lowerVersionToItem.Remove(result.LowerVersion);
-                        }
-                        else
-                        {
-                            // The version in Table Storage is older, save the etag to update it.
-                            lowerVersionToEtag.Add(result.LowerVersion, result.ETag);
-                        }
-                    }
-                }
-            }
-            while (token != null);
+            (var lowerVersionToItem, var lowerVersionToEtag) = await GetExistingsRowsAsync(table, prefix, packageId, items);
 
             // Add the versions that remain. These are the versions that are not in Table Storage.
+            var versionsToUpsert = new List<string>();
             versionsToUpsert.AddRange(lowerVersionToItem.Keys);
             versionsToUpsert.Sort(StringComparer.Ordinal);
 
@@ -131,6 +86,69 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
             {
                 await ExecuteBatchAsync(table, batch);
             }
+        }
+
+        private async Task<(Dictionary<string, CatalogLeafItem>, Dictionary<string, string>)> GetExistingsRowsAsync(CloudTable table, string prefix, string packageId, IEnumerable<CatalogLeafItem> items)
+        {
+            using var metrics = _telemetryClient.NewQueryLoopMetrics();
+
+            // Sort items by lexicographical order, since this is what table storage does.
+            List<(CatalogLeafItem Item, string LowerVersion)> itemList = items
+                .Select(x => new { Item = x, LowerVersion = LatestPackageLeaf.GetRowKey(x.PackageVersion) })
+                .GroupBy(x => x.LowerVersion)
+                .Select(x => x.OrderByDescending(x => x.Item.CommitTimestamp).First())
+                .OrderBy(x => x.LowerVersion, StringComparer.Ordinal)
+                .Select(x => (x.Item, x.LowerVersion))
+                .ToList();
+            var lowerVersionToItem = itemList.ToDictionary(x => x.LowerVersion, x => x.Item);
+            var lowerVersionToEtag = new Dictionary<string, string>();
+
+            // Query for all of the version data in Table Storage, determining what needs to be updated.
+            var filterString = TableQuery.CombineFilters(
+                EqualPrefixAndPackageId(prefix, packageId),
+                TableOperators.And,
+                TableQuery.CombineFilters(
+                    GreaterThanOrEqualToVersion(itemList.First().LowerVersion),
+                    TableOperators.And,
+                    LessThanOrEqualToVersion(itemList.Last().LowerVersion)));
+            var query = new TableQuery<LatestPackageLeaf>
+            {
+                FilterString = filterString,
+                SelectColumns = new List<string> { RowKey, nameof(LatestPackageLeaf.CommitTimestamp) },
+                TakeCount = MaxTakeCount,
+            };
+
+            TableContinuationToken token = null;
+            do
+            {
+                TableQuerySegment<LatestPackageLeaf> segment;
+                using (metrics.TrackQuery())
+                {
+                    segment = await table.ExecuteQuerySegmentedAsync(query, token);
+                }
+
+                token = segment.ContinuationToken;
+
+                foreach (var result in segment.Results)
+                {
+                    if (lowerVersionToItem.TryGetValue(result.LowerVersion, out var item))
+                    {
+                        if (result.CommitTimestamp >= item.CommitTimestamp)
+                        {
+                            // The version in Table Storage is newer, ignore the version we have.
+                            lowerVersionToItem.Remove(result.LowerVersion);
+                        }
+                        else
+                        {
+                            // The version in Table Storage is older, save the etag to update it.
+                            lowerVersionToEtag.Add(result.LowerVersion, result.ETag);
+                        }
+                    }
+                }
+            }
+            while (token != null);
+
+            return (lowerVersionToItem, lowerVersionToEtag);
         }
 
         private async Task ExecuteBatchAsync(CloudTable table, TableBatchOperation batch)

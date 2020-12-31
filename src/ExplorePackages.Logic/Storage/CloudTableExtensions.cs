@@ -9,56 +9,65 @@ namespace Knapcode.ExplorePackages
 {
     public static class CloudTableExtensions
     {
-        public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(this CloudTable table) where T : ITableEntity, new()
+        public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(this CloudTable table, QueryLoopMetrics metrics) where T : ITableEntity, new()
         {
-            return await GetEntitiesAsync<T>(table.ExecuteQuerySegmentedAsync, partitionKey: null, maxEntities: null);
+            return await GetEntitiesAsync<T>(table.ExecuteQuerySegmentedAsync, partitionKey: null, metrics, maxEntities: null);
         }
 
-        public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(this CloudTable table, string partitionKey, int? maxEntities = null) where T : ITableEntity, new()
+        public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(this CloudTable table, string partitionKey, QueryLoopMetrics metrics, int? maxEntities = null) where T : ITableEntity, new()
         {
-            return await GetEntitiesAsync<T>(table.ExecuteQuerySegmentedAsync, partitionKey, maxEntities);
+            return await GetEntitiesAsync<T>(table.ExecuteQuerySegmentedAsync, partitionKey, metrics, maxEntities);
         }
 
-        public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(this ICloudTable table, string partitionKey, int? maxEntities = null) where T : ITableEntity, new()
+        public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(this ICloudTable table, string partitionKey, QueryLoopMetrics metrics, int? maxEntities = null) where T : ITableEntity, new()
         {
-            return await GetEntitiesAsync<T>(table.ExecuteQuerySegmentedAsync, partitionKey, maxEntities);
+            return await GetEntitiesAsync<T>(table.ExecuteQuerySegmentedAsync, partitionKey, metrics, maxEntities);
         }
 
         private static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(
             Func<TableQuery<T>, TableContinuationToken, Task<TableQuerySegment<T>>> executeQuerySegmentedAsync,
             string partitionKey,
+            QueryLoopMetrics metrics,
             int? maxEntities = null) where T : ITableEntity, new()
         {
-            var entities = new List<T>();
-            var query = new TableQuery<T>
+            using (metrics)
             {
-                TakeCount = MaxTakeCount,
-            };
-
-            if (partitionKey != null)
-            {
-                query.FilterString = TableQuery.GenerateFilterCondition(
-                    PartitionKey,
-                    QueryComparisons.Equal,
-                    partitionKey);
-            }
-
-            TableContinuationToken token = null;
-            do
-            {
-                if (maxEntities.HasValue)
+                var entities = new List<T>();
+                var query = new TableQuery<T>
                 {
-                    var remaining = maxEntities.Value - entities.Count;
-                    query.TakeCount = Math.Min(MaxTakeCount, remaining);
+                    TakeCount = MaxTakeCount,
+                };
+
+                if (partitionKey != null)
+                {
+                    query.FilterString = TableQuery.GenerateFilterCondition(
+                        PartitionKey,
+                        QueryComparisons.Equal,
+                        partitionKey);
                 }
 
-                var segment = await executeQuerySegmentedAsync(query, token);
-                token = segment.ContinuationToken;
-                entities.AddRange(segment.Results);
-            }
-            while (token != null && (!maxEntities.HasValue || entities.Count < maxEntities));
+                TableContinuationToken token = null;
+                do
+                {
+                    if (maxEntities.HasValue)
+                    {
+                        var remaining = maxEntities.Value - entities.Count;
+                        query.TakeCount = Math.Min(MaxTakeCount, remaining);
+                    }
 
-            return entities;
+                    TableQuerySegment<T> segment;
+                    using (metrics.TrackQuery())
+                    {
+                        segment = await executeQuerySegmentedAsync(query, token);
+                    }
+
+                    token = segment.ContinuationToken;
+                    entities.AddRange(segment.Results);
+                }
+                while (token != null && (!maxEntities.HasValue || entities.Count < maxEntities));
+
+                return entities;
+            }
         }
 
         public static async Task InsertEntitiesAsync<T>(this CloudTable table, IReadOnlyList<T> entities) where T : ITableEntity
@@ -116,32 +125,40 @@ namespace Knapcode.ExplorePackages
             }
         }
 
-        public static async Task<int> GetEntityCountLowerBoundAsync<T>(this CloudTable table, string partitionKey) where T : ITableEntity, new()
+        public static async Task<int> GetEntityCountLowerBoundAsync<T>(this CloudTable table, string partitionKey, QueryLoopMetrics metrics) where T : ITableEntity, new()
         {
-            var query = new TableQuery<T>
+            using (metrics)
             {
-                FilterString = TableQuery.GenerateFilterCondition(
-                    PartitionKey,
-                    QueryComparisons.Equal,
-                    partitionKey),
-                TakeCount = MaxTakeCount,
-                SelectColumns = Array.Empty<string>(),
-            };
-
-            TableContinuationToken token = null;
-            do
-            {
-                var segment = await table.ExecuteQuerySegmentedAsync<T>(query, token);
-                token = segment.ContinuationToken;
-
-                if (segment.Results.Count > 0)
+                var query = new TableQuery<T>
                 {
-                    return segment.Results.Count;
-                }
-            }
-            while (token != null);
+                    FilterString = TableQuery.GenerateFilterCondition(
+                        PartitionKey,
+                        QueryComparisons.Equal,
+                        partitionKey),
+                    TakeCount = MaxTakeCount,
+                    SelectColumns = Array.Empty<string>(),
+                };
 
-            return 0;
+                TableContinuationToken token = null;
+                do
+                {
+                    TableQuerySegment<T> segment;
+                    using (metrics.TrackQuery())
+                    {
+                        segment = await table.ExecuteQuerySegmentedAsync(query, token);
+                    }
+
+                    token = segment.ContinuationToken;
+
+                    if (segment.Results.Count > 0)
+                    {
+                        return segment.Results.Count;
+                    }
+                }
+                while (token != null);
+
+                return 0;
+            }
         }
 
         public static async Task<T> RetrieveAsync<T>(this CloudTable table, string partitionKey, string rowKey) where T : ITableEntity

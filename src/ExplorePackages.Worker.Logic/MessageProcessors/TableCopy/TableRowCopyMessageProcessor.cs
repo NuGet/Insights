@@ -10,25 +10,39 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
     public class TableRowCopyMessageProcessor<T> : IMessageProcessor<TableRowCopyMessage<T>> where T : ITableEntity, new()
     {
         private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<TableRowCopyMessageProcessor<T>> _logger;
 
-        public TableRowCopyMessageProcessor(ServiceClientFactory serviceClientFactory, ILogger<TableRowCopyMessageProcessor<T>> logger)
+        public TableRowCopyMessageProcessor(
+            ServiceClientFactory serviceClientFactory,
+            ITelemetryClient telemetryClient,
+            ILogger<TableRowCopyMessageProcessor<T>> logger)
         {
             _serviceClientFactory = serviceClientFactory;
+            _telemetryClient = telemetryClient;
             _logger = logger;
         }
 
         public async Task ProcessAsync(TableRowCopyMessage<T> message, int dequeueCount)
         {
-            var sourceTable = _serviceClientFactory
-                .GetStorageAccount()
-                .CreateCloudTableClient()
-                .GetTableReference(message.SourceTableName);
+            var rows = await GetSourceRowsAsync(message);
 
             var destinationTable = _serviceClientFactory
                 .GetStorageAccount()
                 .CreateCloudTableClient()
                 .GetTableReference(message.DestinationTableName);
+
+            await destinationTable.InsertOrReplaceEntitiesAsync(rows);
+        }
+
+        private async Task<List<T>> GetSourceRowsAsync(TableRowCopyMessage<T> message)
+        {
+            using var metrics = _telemetryClient.NewQueryLoopMetrics();
+
+            var sourceTable = _serviceClientFactory
+                .GetStorageAccount()
+                .CreateCloudTableClient()
+                .GetTableReference(message.SourceTableName);
 
             var sortedRowKeys = message.RowKeys.OrderBy(x => x, StringComparer.Ordinal).ToList();
             var minRowKey = sortedRowKeys.First();
@@ -60,7 +74,12 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
             TableContinuationToken continuationToken = null;
             do
             {
-                var segment = await sourceTable.ExecuteQuerySegmentedAsync(query, continuationToken);
+                TableQuerySegment<T> segment;
+                using (metrics.TrackQuery())
+                {
+                    segment = await sourceTable.ExecuteQuerySegmentedAsync(query, continuationToken);
+                }
+
                 foreach (var row in segment.Results)
                 {
                     if (rowKeys.Contains(row.RowKey))
@@ -81,7 +100,7 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
                 throw new InvalidOperationException("When copying rows, some rows were not found.");
             }
 
-            await destinationTable.InsertOrReplaceEntitiesAsync(rows);
+            return rows;
         }
     }
 }
