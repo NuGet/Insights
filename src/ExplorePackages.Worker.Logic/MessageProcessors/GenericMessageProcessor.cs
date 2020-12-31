@@ -31,7 +31,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             using (_logger.BeginScope("Processing string message {Scope_TruncatedMessage} with dequeue count {Scope_DequeueCount}", TruncateMessage(message), dequeueCount))
             {
-                object deserializedMessage;
+                NameVersionMessage<object> deserializedMessage;
                 try
                 {
                     deserializedMessage = _serializer.Deserialize(message);
@@ -56,15 +56,18 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        private async Task ProcessAsync(object deserializedMessage, int dequeueCount)
+        private async Task ProcessAsync(NameVersionMessage<object> deserializedMessage, int dequeueCount)
         {
-            var messageType = deserializedMessage.GetType();
-            var processorType = typeof(IMessageProcessor<>).MakeGenericType(deserializedMessage.GetType());
+            var messageType = deserializedMessage.Data.GetType();
+            var processorType = typeof(IMessageProcessor<>).MakeGenericType(deserializedMessage.Data.GetType());
             var processor = _serviceProvider.GetService(processorType);
 
             if (processor == null)
             {
-                throw new NotSupportedException($"The message type '{deserializedMessage.GetType().FullName}' is not supported.");
+                throw new NotSupportedException(
+                    $"The message type '{deserializedMessage.Data.GetType().FullName}', " +
+                    $"schema name '{deserializedMessage.SchemaName}', " +
+                    $"schema version {deserializedMessage.SchemaVersion} is not supported.");
             }
 
             var method = processorType.GetMethod(nameof(IMessageProcessor<object>.ProcessAsync), new Type[] { messageType, typeof(int) });
@@ -73,13 +76,13 @@ namespace Knapcode.ExplorePackages.Worker
             var success = false;
             try
             {
-                await (Task)method.Invoke(processor, new object[] { deserializedMessage, dequeueCount });
+                await (Task)method.Invoke(processor, new object[] { deserializedMessage.Data, dequeueCount });
                 success = true;
             }
             finally
             {
-                var metric = _telemetryClient.GetMetric($"MessageProcessor{(success ? "Success" : "Failure")}DurationMs", "TypeName");
-                metric.TrackValue(stopwatch.Elapsed.TotalMilliseconds, processor.GetType().FullName);
+                var metric = _telemetryClient.GetMetric($"MessageProcessor{(success ? "Success" : "Failure")}DurationMs", "SchemaName");
+                metric.TrackValue(stopwatch.Elapsed.TotalMilliseconds, deserializedMessage.SchemaName);
             }
         }
 

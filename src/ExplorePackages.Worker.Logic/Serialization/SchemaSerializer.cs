@@ -53,9 +53,9 @@ namespace Knapcode.ExplorePackages.Worker
 
         public ISchemaSerializer<T> GetSerializer<T>() => Schemas.GetSerializer<T>();
         public ISerializedEntity Serialize<T>(T message) => Schemas.GetSerializer<T>().SerializeMessage(message);
-        public object Deserialize(string message) => Schemas.Deserialize(message, _logger);
-        public object Deserialize(JToken message) => Schemas.Deserialize(message, _logger);
-        public object Deserialize(NameVersionMessage<JToken> message) => Schemas.Deserialize(message, _logger);
+        public NameVersionMessage<object> Deserialize(string message) => Schemas.Deserialize(message, _logger);
+        public NameVersionMessage<object> Deserialize(JToken message) => Schemas.Deserialize(message, _logger);
+        public NameVersionMessage<object> Deserialize(NameVersionMessage<JToken> message) => Schemas.Deserialize(message, _logger);
 
         private class SchemasCollection
         {
@@ -84,17 +84,17 @@ namespace Knapcode.ExplorePackages.Worker
                 return typedScheme;
             }
 
-            public object Deserialize(string message, ILogger logger)
+            public NameVersionMessage<object> Deserialize(string message, ILogger logger)
             {
                 return Deserialize(NameVersionSerializer.DeserializeMessage(message), logger);
             }
 
-            public object Deserialize(JToken message, ILogger logger)
+            public NameVersionMessage<object> Deserialize(JToken message, ILogger logger)
             {
                 return Deserialize(NameVersionSerializer.DeserializeMessage(message), logger);
             }
 
-            public object Deserialize(NameVersionMessage<JToken> message, ILogger logger)
+            public NameVersionMessage<object> Deserialize(NameVersionMessage<JToken> message, ILogger logger)
             {
                 if (!NameToSchema.TryGetValue(message.SchemaName, out var schema))
                 {
@@ -108,7 +108,7 @@ namespace Knapcode.ExplorePackages.Worker
                     message.SchemaName,
                     message.SchemaVersion);
 
-                return deserializedEntity;
+                return new NameVersionMessage<object>(message.SchemaName, message.SchemaVersion, deserializedEntity);
             }
         }
     }

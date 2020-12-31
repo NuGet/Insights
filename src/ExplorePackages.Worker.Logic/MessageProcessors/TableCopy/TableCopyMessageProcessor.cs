@@ -47,7 +47,7 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
         private async Task ProcessPrefixScanAsync(TableCopyMessage<T> message)
         {
             TablePrefixScanStep currentStep;
-            switch (_serializer.Deserialize(message.Parameters))
+            switch (_serializer.Deserialize(message.Parameters).Data)
             {
                 case TablePrefixScanStartParameters startParameters:
                     currentStep = new TablePrefixScanStart(

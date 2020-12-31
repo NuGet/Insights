@@ -80,11 +80,11 @@ namespace Knapcode.ExplorePackages.Worker
             RawMessageEnqueuer
                 .Setup(x => x.AddAsync(It.IsAny<IReadOnlyList<string>>()))
                 .Returns(Task.CompletedTask)
-                .Callback<IReadOnlyList<string>>(x => EnqueuedMessages.Add(x.Select(y => SchemaSerializer.Deserialize(y)).ToList()));
+                .Callback<IReadOnlyList<string>>(x => EnqueuedMessages.Add(x.Select(y => SchemaSerializer.Deserialize(y).Data).ToList()));
             RawMessageEnqueuer
                 .Setup(x => x.AddAsync(It.IsAny<IReadOnlyList<string>>(), It.IsAny<TimeSpan>()))
                 .Returns(Task.CompletedTask)
-                .Callback<IReadOnlyList<string>, TimeSpan>((x, ts) => EnqueuedMessages.Add(x.Select(y => SchemaSerializer.Deserialize(y)).ToList()));
+                .Callback<IReadOnlyList<string>, TimeSpan>((x, ts) => EnqueuedMessages.Add(x.Select(y => SchemaSerializer.Deserialize(y).Data).ToList()));
 
             EnqueuedMessages = new List<List<object>>();
 

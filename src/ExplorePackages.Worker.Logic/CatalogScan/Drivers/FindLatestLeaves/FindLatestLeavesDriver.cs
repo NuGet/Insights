@@ -28,7 +28,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
 
         public async Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan)
         {
-            var parameters = (FindLatestLeavesParameters)_schemaSerializer.Deserialize(pageScan.ScanParameters);
+            var parameters = (FindLatestLeavesParameters)_schemaSerializer.Deserialize(pageScan.ScanParameters).Data;
 
             if (parameters.Prefix != string.Empty)
             {
