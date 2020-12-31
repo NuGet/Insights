@@ -4,8 +4,6 @@ using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -17,7 +15,7 @@ using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public abstract class BaseWorkerIntegrationTest : IClassFixture<DefaultWebApplicationFactory<StaticFilesStartup>>, IAsyncLifetime
+    public abstract class BaseWorkerLogicIntegrationTest : IClassFixture<DefaultWebApplicationFactory<StaticFilesStartup>>, IAsyncLifetime
     {
         public const string TestData = "TestData";
         public const string Step1 = "Step1";
@@ -25,7 +23,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         private readonly Lazy<IHost> _lazyHost;
 
-        public BaseWorkerIntegrationTest(
+        public BaseWorkerLogicIntegrationTest(
             ITestOutputHelper output,
             DefaultWebApplicationFactory<StaticFilesStartup> factory)
         {
@@ -44,16 +42,20 @@ namespace Knapcode.ExplorePackages.Worker
 
         private IHost GetHost(ITestOutputHelper output)
         {
-            var startup = new Startup();
-            return new HostBuilder()
-                .ConfigureWebJobs(startup.Configure)
+            return ConfigureHostBuilder(new HostBuilder(), output).Build();
+        }
+
+        protected virtual IHostBuilder ConfigureHostBuilder(IHostBuilder hostBuilder, ITestOutputHelper output)
+        {
+            return hostBuilder
                 .ConfigureServices(serviceCollection =>
                 {
+                    serviceCollection.AddExplorePackages("Knapcode.ExplorePackages.Worker");
+                    serviceCollection.AddExplorePackagesWorker();
+
                     serviceCollection.AddSingleton((IExplorePackagesHttpMessageHandlerFactory)HttpMessageHandlerFactory);
 
-                    serviceCollection.AddTransient<WorkerQueueFunction>();
-
-                    serviceCollection.AddSingleton(new TelemetryClient(TelemetryConfiguration.CreateDefault()));
+                    serviceCollection.AddTransient(s => output.GetTelemetryClient());
 
                     serviceCollection.AddLogging(o =>
                     {
@@ -63,8 +65,7 @@ namespace Knapcode.ExplorePackages.Worker
 
                     serviceCollection.Configure((Action<ExplorePackagesSettings>)(ConfigureDefaultsAndSettings));
                     serviceCollection.Configure((Action<ExplorePackagesWorkerSettings>)(ConfigureDefaultsAndSettings));
-                })
-                .Build();
+                });
         }
 
         private void ConfigureDefaultsAndSettings(ExplorePackagesSettings x)
@@ -117,7 +118,7 @@ namespace Knapcode.ExplorePackages.Worker
         public CursorStorageService CursorStorageService => Host.Services.GetRequiredService<CursorStorageService>();
         public CatalogScanStorageService CatalogScanStorageService => Host.Services.GetRequiredService<CatalogScanStorageService>();
         public IWorkerQueueFactory WorkerQueueFactory => Host.Services.GetRequiredService<IWorkerQueueFactory>();
-        public ILogger Logger => Host.Services.GetRequiredService<ILogger<BaseWorkerIntegrationTest>>();
+        public ILogger Logger => Host.Services.GetRequiredService<ILogger<BaseWorkerLogicIntegrationTest>>();
 
         protected async Task SetCursorAsync(CatalogScanType type, DateTimeOffset min)
         {
@@ -172,8 +173,7 @@ namespace Knapcode.ExplorePackages.Worker
                     foundMessage();
                     using (var scope = Host.Services.CreateScope())
                     {
-                        var target = scope.ServiceProvider.GetRequiredService<WorkerQueueFunction>();
-                        await target.ProcessAsync(message);
+                        await ProcessMessageAsync(scope.ServiceProvider, message);
                     }
 
                     await queue.DeleteMessageAsync(message);
@@ -182,6 +182,14 @@ namespace Knapcode.ExplorePackages.Worker
                 isComplete = await isCompleteAsync();
             }
             while (!isComplete);
+        }
+
+        protected virtual async Task ProcessMessageAsync(IServiceProvider serviceProvider, CloudQueueMessage message)
+        {
+            var leaseScope = serviceProvider.GetRequiredService<TempStreamLeaseScope>();
+            await using var scopeOwnership = leaseScope.TakeOwnership();
+            var messageProcessor = serviceProvider.GetRequiredService<GenericMessageProcessor>();
+            await messageProcessor.ProcessAsync(message.AsString, message.DequeueCount);
         }
 
         public Task InitializeAsync() => Task.CompletedTask;

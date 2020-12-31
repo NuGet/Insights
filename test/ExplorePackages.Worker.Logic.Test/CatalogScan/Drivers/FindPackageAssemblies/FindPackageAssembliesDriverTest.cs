@@ -6,7 +6,7 @@ using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
 {
-    public class FindPackageAssembliesDriverTest : BaseWorkerIntegrationTest
+    public class FindPackageAssembliesDriverTest : BaseWorkerLogicIntegrationTest
     {
         public FindPackageAssembliesDriverTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
             : base(output, factory)

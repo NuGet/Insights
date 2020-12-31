@@ -6,7 +6,6 @@
     <RootNamespace>Knapcode.ExplorePackages.Worker</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.10" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.0" />
     <PackageReference Include="Moq" Version="4.15.2" />
     <PackageReference Include="xunit" Version="2.4.1" />
@@ -18,10 +17,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\ExplorePackages.Worker\ExplorePackages.Worker.csproj" />
     <ProjectReference Include="..\ExplorePackages.Logic.Test\ExplorePackages.Logic.Test.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="TestData\**\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <ProjectReference Include="..\ExplorePackages.Worker.Logic.Test\ExplorePackages.Worker.Logic.Test.csproj" />
   </ItemGroup>
 </Project>

@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public abstract class BaseCatalogScanIntegrationTest : BaseWorkerIntegrationTest
+    public abstract class BaseCatalogScanIntegrationTest : BaseWorkerLogicIntegrationTest
     {
         public BaseCatalogScanIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
             : base(output, factory)

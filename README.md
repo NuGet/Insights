@@ -107,8 +107,6 @@ https://explorepackages.azurewebsites.net/
 I need to keep a TODO for this project since I indulge myself in all of the rabbit trails that I want and often lose
 track of what I was originally working on. Maybe I should use issues for this? Too much work.
 
-- Add a driver to write all catalog leaf items to CSV (very simple, helps with analysis)
-
 - Chain `FindLatestLeaves` to the other catalog scan logic, to dedupe catalog leaves
 
 - Remove the "NuGetOrgMin" once there is deduping via `FindLatestLeaves`
@@ -129,7 +127,5 @@ track of what I was originally working on. Maybe I should use issues for this? T
 - Enable heterogeneous enqueueing and batch enqueue messages
 
 - Enable enqueuing as many messages as possible for a bulk enqueue message, but no more and return the extra
-
-- Move Worker integration tests to Worker.Logic. We don't need to test the Azure Function like that.
 
 - gzip batch or bulk enqueue messages?

@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages.Worker.TableCopy
 {
-    public class TableCopyMessageProcessorIntegrationTest : BaseWorkerIntegrationTest
+    public class TableCopyMessageProcessorIntegrationTest : BaseWorkerLogicIntegrationTest
     {
         public TableCopyMessageProcessorIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
             : base(output, factory)

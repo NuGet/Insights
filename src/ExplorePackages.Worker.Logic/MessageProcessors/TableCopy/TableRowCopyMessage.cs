@@ -1,6 +1,6 @@
-﻿using Microsoft.WindowsAzure.Storage.Table;
+﻿using System.Collections.Generic;
+using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
-using System.Collections.Generic;
 
 namespace Knapcode.ExplorePackages.Worker.TableCopy
 {
