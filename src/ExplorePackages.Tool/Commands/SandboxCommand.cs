@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -15,6 +16,8 @@ using Knapcode.TableDelta;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
 using NuGet.Frameworks;
 using NuGet.Versioning;
@@ -81,11 +84,124 @@ namespace Knapcode.ExplorePackages.Tool
         {
         }
 
+        public abstract class StepCollection
+        {
+            public abstract void Add(int? parentId, TablePrefixScanStep step);
+            public abstract void AddRange(int? parentId, IEnumerable<TablePrefixScanStep> steps);
+            public abstract bool Any();
+            public abstract (int? ParentId, TablePrefixScanStep Step) RemoveNext();
+        }
+
+        public class DFS : StepCollection
+        {
+            private readonly Stack<(int? ParentId, TablePrefixScanStep Step)> _data = new Stack<(int? ParentId, TablePrefixScanStep Step)>();
+
+            public override void Add(int? parentId, TablePrefixScanStep step) => _data.Push((parentId, step));
+
+            public override void AddRange(int? parentId, IEnumerable<TablePrefixScanStep> steps)
+            {
+                foreach (var step in steps.Reverse())
+                {
+                    Add(parentId, step);
+                }
+            }
+
+            public override bool Any() => _data.Any();
+            public override (int? ParentId, TablePrefixScanStep Step) RemoveNext() => _data.Pop();
+        }
+
+        public class BFS : StepCollection
+        {
+            private readonly Queue<(int? ParentId, TablePrefixScanStep Step)> _data = new Queue<(int? ParentId, TablePrefixScanStep Step)>();
+
+            public override void Add(int? parentId, TablePrefixScanStep step) => _data.Enqueue((parentId, step));
+
+            public override void AddRange(int? parentId, IEnumerable<TablePrefixScanStep> steps)
+            {
+                foreach (var step in steps)
+                {
+                    Add(parentId, step);
+                }
+            }
+
+            public override bool Any() => _data.Any();
+            public override (int? ParentId, TablePrefixScanStep Step) RemoveNext() => _data.Dequeue();
+        }
+
         public async Task ExecuteAsync(CancellationToken token)
         {
             // await _catalogScanService.InitializeAsync();
 
             // await _catalogScanService.RequeueAsync("CatalogScan-FindPackageAssemblies", "08585928640987077276-2zbm6qzw65ne5dlde242pezrcm");
+
+            var stepCollections = new Func<StepCollection>[] { () => new BFS(), () => new DFS() };
+            foreach (var getRemainingSteps in stepCollections)
+            {
+                var account = CloudStorageAccount.DevelopmentStorageAccount;
+                var client = account.CreateCloudTableClient();
+                var table = client.GetTableReference("example1");
+                var queryParameters = new TableQueryParameters(table, StorageUtility.MinSelectColumns, 2);
+
+                var remainingSteps = getRemainingSteps();
+                var firstPrefix = "";
+                remainingSteps.Add(null, new TablePrefixScanStart(queryParameters, firstPrefix));
+
+                var completedSteps = new List<object>();
+                var entityCount = 0;
+                var lastThreshold = 0;
+                var nextStepId = 1;
+                while (remainingSteps.Any())
+                {
+                    var currentStep = remainingSteps.RemoveNext();
+                    var currentStepId = nextStepId++;
+
+                    List<TablePrefixScanStep> nextSteps;
+                    object stepData;
+                    switch (currentStep.Step)
+                    {
+                        case TablePrefixScanStart start:
+                            nextSteps = _tablePrefixScanner.Start(start);
+                            stepData = new { Type = "Start", start.Depth, start.PartitionKeyPrefix };
+                            break;
+                        case TablePrefixScanEntitySegment<TableEntity> entitySegment:
+                            nextSteps = new List<TablePrefixScanStep>();
+                            var first = entitySegment.Entities.First();
+                            var last = entitySegment.Entities.Last();
+                            entityCount += entitySegment.Entities.Count;
+                            stepData = new { Type = "EntitySegment", entitySegment.Depth, First = new { first.PartitionKey, first.RowKey }, Last = new { last.PartitionKey, last.RowKey }, entitySegment.Entities.Count };
+                            break;
+                        case TablePrefixScanPartitionKeyQuery partitionKeyQuery:
+                            nextSteps = await _tablePrefixScanner.ExecutePartitionKeyQueryAsync<TableEntity>(partitionKeyQuery);
+                            stepData = new { Type = "PartitionKeyQuery", partitionKeyQuery.Depth, partitionKeyQuery.PartitionKey, partitionKeyQuery.RowKeySkip };
+                            break;
+                        case TablePrefixScanPrefixQuery prefixQuery:
+                            nextSteps = await _tablePrefixScanner.ExecutePrefixQueryAsync<TableEntity>(prefixQuery);
+                            stepData = new { Type = "PrefixQuery", prefixQuery.Depth, prefixQuery.PartitionKeyPrefix, prefixQuery.PartitionKeyLowerBound };
+                            break;
+                        default:
+                            throw new NotImplementedException();
+                    }
+
+                    remainingSteps.AddRange(currentStepId, nextSteps);
+
+                    completedSteps.Add(new
+                    {
+                        Id = currentStepId,
+                        currentStep.ParentId,
+                        Timestamp = DateTimeOffset.UtcNow.ToString("O"),
+                        Data = stepData,
+                    });
+
+                    var roundedDownEntityCount = entityCount - (entityCount % 1000);
+                    if (roundedDownEntityCount > lastThreshold)
+                    {
+                        lastThreshold = roundedDownEntityCount;
+                        Console.WriteLine(lastThreshold);
+                    }
+                }
+
+                File.WriteAllText($"steps-{firstPrefix}-{remainingSteps.GetType().Name}.json", JsonConvert.SerializeObject(completedSteps));
+            }
 
             /*
             await _tableCopyEnqueuer.StartPrefixScanAsync(
@@ -101,6 +217,7 @@ namespace Knapcode.ExplorePackages.Tool
                 _options.Value.LatestLeavesTableName + "serialcopy");
             */
 
+            /*
             var tableClient = _serviceClientFactory.GetStorageAccount().CreateCloudTableClient();
             var comparison = new EntityComparisonEnumerable<LatestPackageLeaf>(
                 new EntityEnumerable<LatestPackageLeaf>(tableClient.GetTableReference("latestleaves"), takeCount: null),
@@ -121,6 +238,7 @@ namespace Knapcode.ExplorePackages.Tool
                     Console.ForegroundColor = currentColor;
                 }
             }
+            */
 
             /*
             var increment = 0;
