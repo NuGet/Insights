@@ -1,5 +1,6 @@
 ﻿using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace Knapcode.ExplorePackages.Worker.TableCopy
 {
@@ -15,6 +16,6 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
         public string PartitionKey { get; set; }
 
         [JsonProperty("r")]
-        public string RowKey { get; set; }
+        public List<string> RowKeys { get; set; }
     }
 }

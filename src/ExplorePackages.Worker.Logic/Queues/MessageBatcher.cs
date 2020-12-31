@@ -49,9 +49,6 @@ namespace Knapcode.ExplorePackages.Worker
                         batchSize = 20;
                     }
                     break;
-                case TableRowCopyMessage<LatestPackageLeaf>:
-                    batchSize = 20;
-                    break;
             }
 
             if (batchSize <= 1)

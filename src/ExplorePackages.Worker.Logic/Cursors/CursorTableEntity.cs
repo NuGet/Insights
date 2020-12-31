@@ -6,7 +6,7 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class CursorTableEntity : TableEntity
     {
-        private static readonly DateTimeOffset Min = new DateTimeOffset(1900, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        public static readonly DateTimeOffset Min = new DateTimeOffset(1900, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
         public CursorTableEntity(string name)
         {

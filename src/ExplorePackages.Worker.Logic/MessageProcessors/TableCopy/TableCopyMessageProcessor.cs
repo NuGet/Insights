@@ -12,7 +12,7 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
         private readonly MessageEnqueuer _enqueuer;
         private readonly SchemaSerializer _serializer;
         private readonly TablePrefixScanner _prefixScanner;
-        private readonly TableCopyEnqueuer<T> _prefixScannerEnqueuer;
+        private readonly TableCopyEnqueuer<T> _tableCopyEnqueuer;
         private readonly ITelemetryClient _telemetryClient;
 
         public TableCopyMessageProcessor(
@@ -27,7 +27,7 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
             _enqueuer = enqueuer;
             _serializer = serializer;
             _prefixScanner = prefixScanner;
-            _prefixScannerEnqueuer = prefixScannerEnqueuer;
+            _tableCopyEnqueuer = prefixScannerEnqueuer;
             _telemetryClient = telemetryClient;
         }
 
@@ -103,7 +103,7 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
                 }
             }
 
-            await _prefixScannerEnqueuer.EnqueuePrefixScanStepsAsync(message.DestinationTableName, enqueueSteps);
+            await _tableCopyEnqueuer.EnqueuePrefixScanStepsAsync(message.DestinationTableName, enqueueSteps);
         }
 
         private TableQueryParameters MakeParameters(TableCopyMessage<T> message, TablePrefixScanStepParameters parameters)
@@ -135,16 +135,7 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
                     segment = await sourceTable.ExecuteQuerySegmentedAsync(tableQuery, continuationToken);
                 }
 
-                await _enqueuer.EnqueueAsync(segment
-                    .Results
-                    .Select(x => new TableRowCopyMessage<T>
-                    {
-                        SourceTableName = message.SourceTableName,
-                        DestinationTableName = message.DestinationTableName,
-                        PartitionKey = x.PartitionKey,
-                        RowKey = x.RowKey,
-                    })
-                    .ToList());
+                await _tableCopyEnqueuer.EnqueueRowCopyAsync(message.SourceTableName, message.DestinationTableName, segment);
 
                 continuationToken = segment.ContinuationToken;
             }

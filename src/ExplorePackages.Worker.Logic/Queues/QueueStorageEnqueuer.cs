@@ -24,10 +24,11 @@ namespace Knapcode.ExplorePackages.Worker
             _options = options;
             _logger = logger;
             BulkEnqueueStrategy = _options.Value.UseBulkEnqueueStrategy
-                ? BulkEnqueueStrategy.Enabled(_options.Value.BulkEnqueueThreshold, maxSize: 65536)
+                ? BulkEnqueueStrategy.Enabled(_options.Value.BulkEnqueueThreshold)
                 : BulkEnqueueStrategy.Disabled();
         }
 
+        public int MaxMessageSize => 65536;
         public BulkEnqueueStrategy BulkEnqueueStrategy { get; }
 
         public async Task InitializeAsync()

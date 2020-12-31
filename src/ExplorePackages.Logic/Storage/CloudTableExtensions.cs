@@ -71,7 +71,27 @@ namespace Knapcode.ExplorePackages
             await InsertEntitiesAsync(table.ExecuteBatchAsync, entities);
         }
 
+        public static async Task InsertOrReplaceEntitiesAsync<T>(this CloudTable table, IReadOnlyList<T> entities) where T : ITableEntity
+        {
+            await InsertOrReplaceEntitiesAsync(table.ExecuteBatchAsync, entities);
+        }
+
+        public static async Task InsertOrReplaceEntitiesAsync<T>(this ICloudTable table, IReadOnlyList<T> entities) where T : ITableEntity
+        {
+            await InsertOrReplaceEntitiesAsync(table.ExecuteBatchAsync, entities);
+        }
+
         private static async Task InsertEntitiesAsync<T>(Func<TableBatchOperation, Task> executeBatchAsync, IReadOnlyList<T> entities) where T : ITableEntity
+        {
+            await BatchEntities(TableOperation.Insert, executeBatchAsync, entities);
+        }
+
+        private static async Task InsertOrReplaceEntitiesAsync<T>(Func<TableBatchOperation, Task> executeBatchAsync, IReadOnlyList<T> entities) where T : ITableEntity
+        {
+            await BatchEntities(TableOperation.InsertOrReplace, executeBatchAsync, entities);
+        }
+
+        private static async Task BatchEntities<T>(Func<ITableEntity, TableOperation> getOperation, Func<TableBatchOperation, Task> executeBatchAsync, IReadOnlyList<T> entities) where T : ITableEntity
         {
             if (!entities.Any())
             {
@@ -87,7 +107,7 @@ namespace Knapcode.ExplorePackages
                     batch = new TableBatchOperation();
                 }
 
-                batch.Add(TableOperation.Insert(scan));
+                batch.Add(getOperation(scan));
             }
 
             if (batch.Count > 0)

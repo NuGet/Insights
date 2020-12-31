@@ -35,7 +35,7 @@ namespace Knapcode.ExplorePackages.Worker
         public async Task BatchesIfMessageCountIsGreaterThanThreshold(int messageCount)
         {
             var byteCount = 10000;
-            var perBatch = RawMessageEnqueuer.Object.BulkEnqueueStrategy.MaxSize / byteCount;
+            var perBatch = RawMessageEnqueuer.Object.MaxMessageSize / byteCount;
             Assert.Equal(6, perBatch);
 
             var schema = new SchemaV1<string>("i");
@@ -72,7 +72,10 @@ namespace Knapcode.ExplorePackages.Worker
 
             RawMessageEnqueuer
                 .Setup(x => x.BulkEnqueueStrategy)
-                .Returns(() => BulkEnqueueStrategy.Enabled(3, 64 * 1024));
+                .Returns(() => BulkEnqueueStrategy.Enabled(3));
+            RawMessageEnqueuer
+                .Setup(x => x.MaxMessageSize)
+                .Returns(() => 64 * 1024);
 
             RawMessageEnqueuer
                 .Setup(x => x.AddAsync(It.IsAny<IReadOnlyList<string>>()))

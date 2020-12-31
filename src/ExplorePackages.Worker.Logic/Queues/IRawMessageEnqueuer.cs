@@ -6,6 +6,7 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public interface IRawMessageEnqueuer
     {
+        int MaxMessageSize { get; }
         BulkEnqueueStrategy BulkEnqueueStrategy { get; }
         Task<int> GetApproximateMessageCountAsync();
         Task<int> GetAvailableMessageCountLowerBoundAsync(int messageCount);
