@@ -121,6 +121,21 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
+        public async Task<CatalogIndexScan> StartFindLatestLeavesAsync(string prefix, DateTimeOffset? max)
+        {
+            var parameters = new FindLatestLeavesParameters
+            {
+                Prefix = prefix,
+            };
+
+            return await StartCatalogScanAsync(
+                CatalogScanType.FindLatestLeaves,
+                parameters: _serializer.Serialize(parameters).AsString(),
+                min: CursorTableEntity.Min,
+                max,
+                GetCursorName(CatalogScanType.FindLatestLeaves));
+        }
+
         private async Task<CatalogIndexScan> UpdateFindLatestLeavesAsync(DateTimeOffset? max)
         {
             var parameters = new FindLatestLeavesParameters
@@ -183,29 +198,39 @@ namespace Knapcode.ExplorePackages.Worker
                     return incompleteScan;
                 }
 
-                // Start a new scan.
-                _logger.LogInformation("Attempting to start a catalog index scan from ({Min}, {Max}].", min, max);
-                var scanId = StorageUtility.GenerateDescendingId();
-                var catalogIndexScanMessage = new CatalogIndexScanMessage
-                {
-                    CursorName = cursor.Name,
-                    ScanId = scanId.ToString(),
-                };
-                await _messageEnqueuer.EnqueueAsync(new[] { catalogIndexScanMessage });
-
-                var catalogIndexScan = new CatalogIndexScan(cursor.Name, scanId.ToString(), scanId.Unique)
-                {
-                    ParsedScanType = type,
-                    ScanParameters = parameters,
-                    ParsedState = CatalogScanState.Created,
-                    Min = min,
-                    Max = max.Value,
-                };
-                await _catalogScanStorageService.InitializeChildTablesAsync(catalogIndexScan.StorageSuffix);
-                await _catalogScanStorageService.InsertAsync(catalogIndexScan);
-
-                return catalogIndexScan;
+                return await StartCatalogScanAsync(type, parameters, min, max, cursor.Name);
             }
+        }
+
+        private async Task<CatalogIndexScan> StartCatalogScanAsync(
+            CatalogScanType type,
+            string parameters,
+            DateTimeOffset min,
+            DateTimeOffset? max,
+            string cursorName)
+        {
+            // Start a new scan.
+            _logger.LogInformation("Attempting to start a catalog index scan from ({Min}, {Max}].", min, max);
+            var scanId = StorageUtility.GenerateDescendingId();
+            var catalogIndexScanMessage = new CatalogIndexScanMessage
+            {
+                CursorName = cursorName,
+                ScanId = scanId.ToString(),
+            };
+            await _messageEnqueuer.EnqueueAsync(new[] { catalogIndexScanMessage });
+
+            var catalogIndexScan = new CatalogIndexScan(cursorName, scanId.ToString(), scanId.Unique)
+            {
+                ParsedScanType = type,
+                ScanParameters = parameters,
+                ParsedState = CatalogScanState.Created,
+                Min = min,
+                Max = max.Value,
+            };
+            await _catalogScanStorageService.InitializeChildTablesAsync(catalogIndexScan.StorageSuffix);
+            await _catalogScanStorageService.InsertAsync(catalogIndexScan);
+
+            return catalogIndexScan;
         }
 
         private async Task<CatalogIndexScan> GetLatestIncompleteScanAsync(string cursorName)

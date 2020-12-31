@@ -203,6 +203,33 @@ namespace Knapcode.ExplorePackages.Tool
                 File.WriteAllText($"steps-{firstPrefix}-{remainingSteps.GetType().Name}.json", JsonConvert.SerializeObject(completedSteps));
             }
 
+            // await _catalogScanService.InitializeAsync();
+            // var max = DateTimeOffset.Parse("2020-12-29T19:08:26.8305274+00:00");
+            // await _catalogScanService.StartFindLatestLeavesAsync(prefix: "00", max);
+            // await _catalogScanService.StartFindLatestLeavesAsync(prefix: "01", max);
+            // await _catalogScanService.StartFindLatestLeavesAsync(prefix: "02", max);
+            // await _catalogScanService.StartFindLatestLeavesAsync(prefix: "03", max);
+            // await _catalogScanService.StartFindLatestLeavesAsync(prefix: "04", max);
+            // await _catalogScanService.StartFindLatestLeavesAsync(prefix: "05", max);
+            // await _catalogScanService.StartFindLatestLeavesAsync(prefix: "06", max);
+            // await _catalogScanService.StartFindLatestLeavesAsync(prefix: "07", max);
+            // await _catalogScanService.StartFindLatestLeavesAsync(prefix: "08", max);
+            // await _catalogScanService.StartFindLatestLeavesAsync(prefix: "09", max);
+
+            /*
+	        await _tableCopyEnqueuer.StartPrefixScanAsync(
+                "latestleavesperf10",
+                "latestleavesperf10pscopy",
+                partitionKeyPrefix: string.Empty,
+                takeCount: StorageUtility.MaxTakeCount);
+            */
+
+            /*
+            await _tableCopyEnqueuer.StartSerialAsync(
+                "latestleavesperf02",
+                "latestleavesperf02serialcopy");
+            */
+
             /*
             await _tableCopyEnqueuer.StartPrefixScanAsync(
                 _options.Value.LatestLeavesTableName,
