@@ -119,20 +119,20 @@ namespace Knapcode.ExplorePackages.Worker
         {
             _logger.LogInformation("Loading catalog page URL: {Url}", scan.Url);
             var page = await _catalogClient.GetCatalogPageAsync(scan.Url);
+
+            var leafItemToRank = page.GetLeafItemToRank();
+
             var items = page.GetLeavesInBounds(scan.Min, scan.Max, excludeRedundantLeaves);
+
             _logger.LogInformation("Starting scan of {LeafCount} leaves from ({Min:O}, {Max:O}].", items.Count, scan.Min, scan.Max);
 
-            var maxLeafIdLength = (items.Count - 1).ToString().Length;
-
             return items
-                .OrderBy(x => x.CommitTimestamp)
-                .ThenBy(x => x.PackageId, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(x => x.ParsePackageVersion().ToNormalizedString(), StringComparer.OrdinalIgnoreCase)
-                .Select((x, index) => new CatalogLeafScan(
+                .OrderBy(x => leafItemToRank[x])
+                .Select(x => new CatalogLeafScan(
                     scan.StorageSuffix,
                     scan.ScanId,
                     scan.PageId,
-                    "L" + index.ToString(CultureInfo.InvariantCulture).PadLeft(maxLeafIdLength, '0'))
+                    "L" + leafItemToRank[x].ToString(CultureInfo.InvariantCulture).PadLeft(10, '0'))
                 {
                     ParsedScanType = scan.ParsedScanType,
                     ScanParameters = scan.ScanParameters,
@@ -142,6 +142,7 @@ namespace Knapcode.ExplorePackages.Worker
                     CommitTimestamp = x.CommitTimestamp,
                     PackageId = x.PackageId,
                     PackageVersion = x.PackageVersion,
+                    Rank = leafItemToRank[x],
                 })
                 .ToList();
         }

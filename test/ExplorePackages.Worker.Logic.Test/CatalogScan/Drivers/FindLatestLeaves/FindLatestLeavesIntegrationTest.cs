@@ -61,8 +61,8 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
                 }
 
                 var serializerSettings = NameVersionSerializer.JsonSerializerSettings;
+                serializerSettings.NullValueHandling = NullValueHandling.Include;
                 serializerSettings.Formatting = Formatting.Indented;
-                serializerSettings.DefaultValueHandling = DefaultValueHandling.Ignore;
                 var actual = JsonConvert.SerializeObject(leaves, serializerSettings);
                 // Directory.CreateDirectory(Path.Combine(TestData, FindLatestLeavesDir));
                 // File.WriteAllText(Path.Combine(TestData, FindLatestLeavesDir, "leaves.json"), actual);

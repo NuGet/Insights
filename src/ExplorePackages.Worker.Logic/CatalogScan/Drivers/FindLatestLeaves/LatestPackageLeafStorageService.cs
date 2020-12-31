@@ -29,17 +29,30 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
             await GetTable(tableName).CreateIfNotExistsAsync(retry: true);
         }
 
-        public async Task AddAsync(string tableName, string prefix, IReadOnlyList<CatalogLeafItem> items, string pageUrl)
+        public async Task AddAsync(
+            string tableName,
+            string prefix,
+            IReadOnlyList<CatalogLeafItem> items,
+            IReadOnlyDictionary<CatalogLeafItem, int> leafItemToRank,
+            int pageRank,
+            string pageUrl)
         {
             var table = GetTable(tableName);
             var packageIdGroups = items.GroupBy(x => x.PackageId, StringComparer.OrdinalIgnoreCase);
             foreach (var group in packageIdGroups)
             {
-                await AddAsync(table, prefix, group.Key, group, pageUrl);
+                await AddAsync(table, prefix, group.Key, group, leafItemToRank, pageRank, pageUrl);
             }
         }
 
-        public async Task AddAsync(CloudTable table, string prefix, string packageId, IEnumerable<CatalogLeafItem> items, string pageUrl)
+        private async Task AddAsync(
+            CloudTable table,
+            string prefix,
+            string packageId,
+            IEnumerable<CatalogLeafItem> items,
+            IReadOnlyDictionary<CatalogLeafItem, int> leafItemToRank,
+            int pageRank,
+            string pageUrl)
         {
             (var lowerVersionToItem, var lowerVersionToEtag) = await GetExistingsRowsAsync(table, prefix, packageId, items);
 
@@ -60,7 +73,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
 
                 var lowerVersion = versionsToUpsert[i];
                 var leaf = lowerVersionToItem[lowerVersion];
-                var entity = new LatestPackageLeaf(prefix, leaf, pageUrl);
+                var entity = new LatestPackageLeaf(prefix, leaf, leafItemToRank[leaf], pageRank, pageUrl);
 
                 if (lowerVersionToEtag.TryGetValue(lowerVersion, out var etag))
                 {

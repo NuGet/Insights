@@ -48,6 +48,7 @@ namespace Knapcode.ExplorePackages.Worker
         public DateTimeOffset CommitTimestamp { get; set; }
         public string PackageId { get; set; }
         public string PackageVersion { get; set; }
+        public int Rank { get; set; }
         public DateTimeOffset? NextAttempt { get; set; }
         public int AttemptCount { get; set; }
 

@@ -237,6 +237,8 @@ namespace Knapcode.ExplorePackages.Worker
 
         private List<CatalogPageScan> GetPageScans(CatalogIndexScan scan, CatalogIndex catalogIndex)
         {
+            var pageItemToRank = catalogIndex.GetPageItemToRank();
+
             var pages = catalogIndex.GetPagesInBounds(scan.Min.Value, scan.Max.Value);
 
             _logger.LogInformation(
@@ -246,14 +248,12 @@ namespace Knapcode.ExplorePackages.Worker
                 scan.Min.Value,
                 scan.Max.Value);
 
-            var maxPageIdLength = (pages.Count - 1).ToString().Length;
-
             var pageScans = pages
-                .OrderBy(x => x.CommitTimestamp)
-                .Select((x, index) => new CatalogPageScan(
+                .OrderBy(x => pageItemToRank[x])
+                .Select(x => new CatalogPageScan(
                     scan.StorageSuffix,
                     scan.ScanId,
-                    "P" + index.ToString(CultureInfo.InvariantCulture).PadLeft(maxPageIdLength, '0'))
+                    "P" + pageItemToRank[x].ToString(CultureInfo.InvariantCulture).PadLeft(10, '0'))
                 {
                     ParsedScanType = scan.ParsedScanType,
                     ScanParameters = scan.ScanParameters,
@@ -261,6 +261,7 @@ namespace Knapcode.ExplorePackages.Worker
                     Min = scan.Min.Value,
                     Max = scan.Max.Value,
                     Url = x.Url,
+                    Rank = pageItemToRank[x],
                 })
                 .ToList();
             return pageScans;

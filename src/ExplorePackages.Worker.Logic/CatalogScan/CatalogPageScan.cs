@@ -45,5 +45,6 @@ namespace Knapcode.ExplorePackages.Worker
         public DateTimeOffset Min { get; set; }
         public DateTimeOffset Max { get; set; }
         public string Url { get; set; }
+        public int Rank { get; set; }
     }
 }

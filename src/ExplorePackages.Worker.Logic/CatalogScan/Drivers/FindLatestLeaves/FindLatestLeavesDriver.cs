@@ -53,8 +53,9 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
         {
             var parameters = DeserializeParameters(pageScan.ScanParameters);
             var page = await _catalogClient.GetCatalogPageAsync(pageScan.Url);
+            var leafItemToRank = page.GetLeafItemToRank();
             var items = page.GetLeavesInBounds(pageScan.Min, pageScan.Max, excludeRedundantLeaves: true);
-            await _storageService.AddAsync(parameters.TableName, parameters.Prefix, items, pageScan.Url);
+            await _storageService.AddAsync(parameters.TableName, parameters.Prefix, items, leafItemToRank, pageScan.Rank, pageScan.Url);
             return CatalogPageScanResult.Processed;
         }
 

@@ -44,6 +44,26 @@ namespace Knapcode.ExplorePackages
                 .ToList();
         }
 
+        public static Dictionary<CatalogPageItem, int> GetPageItemToRank(this CatalogIndex catalogIndex)
+        {
+            return catalogIndex
+                .Items
+                .OrderBy(x => x.CommitTimestamp)
+                .ThenBy(x => x.Url)
+                .Select((x, i) => new { Item = x, Rank = i })
+                .ToDictionary(x => x.Item, x => x.Rank);
+        }
+
+        public static Dictionary<CatalogLeafItem, int> GetLeafItemToRank(this CatalogPage catalogPage)
+        {
+            return catalogPage
+                .Items
+                .OrderBy(x => x.CommitTimestamp)
+                .ThenBy(x => x.Url)
+                .Select((x, i) => new { Item = x, Rank = i })
+                .ToDictionary(x => x.Item, x => x.Rank);
+        }
+
         /// <summary>
         /// Gets the pages that may have catalog leaves within the provided commit timestamp bounds. The result is
         /// sorted by commit timestamp.
