@@ -32,16 +32,17 @@ namespace Knapcode.ExplorePackages.Worker
             new SchemaV1<RunRealRestoreMessage>("rrr"),
             new SchemaV1<RunRealRestoreCompactMessage>("rrr.c"),
 
-            new SchemaV1<TableCopyMessage<LatestPackageLeaf>>("tc.lpf"),
+            new SchemaV1<TableScanMessage<LatestPackageLeaf>>("tc.lpf"),
             new SchemaV1<TableRowCopyMessage<LatestPackageLeaf>>("trc.lpf"),
 
             // Parameters
+            new SchemaV1<TablePrefixScanPartitionKeyQueryParameters>("tps.pkq"),
+            new SchemaV1<TablePrefixScanPrefixQueryParameters>("tps.pq"),
+
             new SchemaV1<FindLatestLeavesParameters>("fll"),
             new SchemaV1<CatalogLeafToCsvParameters>("cl2c"),
 
-            new SchemaV1<TablePrefixScanStartParameters>("tps.s"),
-            new SchemaV1<TablePrefixScanPartitionKeyQueryParameters>("tps.pkq"),
-            new SchemaV1<TablePrefixScanPrefixQueryParameters>("tps.pq"),
+            new SchemaV1<TableCopyParameters>("tc"),
         });
 
         private readonly ILogger<SchemaSerializer> _logger;

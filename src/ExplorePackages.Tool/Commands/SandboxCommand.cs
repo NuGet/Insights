@@ -9,7 +9,6 @@ using Knapcode.ExplorePackages.Worker;
 using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
 using Knapcode.ExplorePackages.Worker.FindPackageAssemblies;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
-using Knapcode.ExplorePackages.Worker.TableCopy;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -37,7 +36,7 @@ namespace Knapcode.ExplorePackages.Tool
         private readonly StorageLeaseService _storageLeaseService;
         private readonly ICatalogLeafToCsvDriver<PackageAssembly> _findPackageAssembliesDriver;
         private readonly TablePrefixScanner _tablePrefixScanner;
-        private readonly TableCopyEnqueuer<LatestPackageLeaf> _tableCopyEnqueuer;
+        private readonly TableScanEnqueuer<LatestPackageLeaf> _tableCopyEnqueuer;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<SandboxCommand> _logger;
 
@@ -55,7 +54,7 @@ namespace Knapcode.ExplorePackages.Tool
             StorageLeaseService storageLeaseService,
             ICatalogLeafToCsvDriver<PackageAssembly> findPackageAssembliesDriver,
             TablePrefixScanner tablePrefixScanner,
-            TableCopyEnqueuer<LatestPackageLeaf> tableCopyEnqueuer,
+            TableScanEnqueuer<LatestPackageLeaf> tableCopyEnqueuer,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<SandboxCommand> logger)
         {

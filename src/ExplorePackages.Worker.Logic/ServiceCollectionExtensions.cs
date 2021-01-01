@@ -19,7 +19,11 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient<SchemaSerializer>();
             serviceCollection.AddTransient<IMessageBatcher, MessageBatcher>();
             serviceCollection.AddTransient<MessageEnqueuer>();
-            serviceCollection.AddTransient(typeof(TableCopyEnqueuer<>));
+
+            serviceCollection.AddTransient(typeof(TableScanEnqueuer<>));
+            serviceCollection.AddTransient(typeof(TableScanDriverFactory<>));
+            AddTableScan<LatestPackageLeaf>(serviceCollection);
+            serviceCollection.AddTransient(typeof(TableCopyDriver<>));
 
             serviceCollection.AddTransient<CatalogScanStorageService>();
             serviceCollection.AddTransient<CatalogScanDriverFactory>();
@@ -35,7 +39,6 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddFindCatalogLeafItems();
             serviceCollection.AddFindLatestLeaves();
             serviceCollection.AddRunRealRestore();
-            AddTableCopy<LatestPackageLeaf>(serviceCollection);
 
             foreach (var (serviceType, implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(IMessageProcessor<>)))
             {
@@ -68,12 +71,12 @@ namespace Knapcode.ExplorePackages.Worker
             return serviceCollection;
         }
 
-        private static void AddTableCopy<T>(IServiceCollection serviceCollection) where T : ITableEntity, new()
+        private static void AddTableScan<T>(IServiceCollection serviceCollection) where T : ITableEntity, new()
         {
             var entityType = typeof(T);
             serviceCollection.AddTransient(
-                typeof(IMessageProcessor<>).MakeGenericType(typeof(TableCopyMessage<>).MakeGenericType(entityType)),
-                typeof(TableCopyMessageProcessor<>).MakeGenericType(entityType));
+                typeof(IMessageProcessor<>).MakeGenericType(typeof(TableScanMessage<>).MakeGenericType(entityType)),
+                typeof(TableScanMessageProcessor<>).MakeGenericType(entityType));
             serviceCollection.AddTransient(
                 typeof(IMessageProcessor<>).MakeGenericType(typeof(TableRowCopyMessage<>).MakeGenericType(entityType)),
                 typeof(TableRowCopyMessageProcessor<>).MakeGenericType(entityType));

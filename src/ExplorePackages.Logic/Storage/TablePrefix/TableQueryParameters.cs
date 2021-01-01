@@ -15,6 +15,6 @@ namespace Knapcode.ExplorePackages
 
         public CloudTable Table { get; }
         public IList<string> SelectColumns { get; }
-        public int TakeCount { get; set; }
+        public int TakeCount { get; }
     }
 }

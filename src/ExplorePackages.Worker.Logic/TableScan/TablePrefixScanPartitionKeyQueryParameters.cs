@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 
-namespace Knapcode.ExplorePackages.Worker.TableCopy
+namespace Knapcode.ExplorePackages.Worker
 {
-    public class TablePrefixScanPartitionKeyQueryParameters : TablePrefixScanStepParameters
+    public class TablePrefixScanPartitionKeyQueryParameters
     {
         [JsonProperty("d")]
         public int Depth { get; set; }

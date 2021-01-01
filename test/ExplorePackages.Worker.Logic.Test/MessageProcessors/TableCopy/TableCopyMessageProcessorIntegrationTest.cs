@@ -23,7 +23,7 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
             }
 
             [Fact]
-            public Task ExecuteAsync() => CopyAsync(TableCopyStrategy.Serial);
+            public Task ExecuteAsync() => CopyAsync(TableScanStrategy.Serial);
         }
 
         public class CopyAsync_PrefixScan : TableCopyMessageProcessorIntegrationTest
@@ -33,10 +33,10 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
             }
 
             [Fact]
-            public Task ExecuteAsync() => CopyAsync(TableCopyStrategy.PrefixScan);
+            public Task ExecuteAsync() => CopyAsync(TableScanStrategy.PrefixScan);
         }
 
-        private async Task CopyAsync(TableCopyStrategy strategy)
+        private async Task CopyAsync(TableScanStrategy strategy)
         {
             // Arrange
             var min0 = DateTimeOffset.Parse("2020-11-27T20:58:24.1558179Z");
@@ -52,20 +52,15 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
             var sourceTable = tableClient.GetTableReference(Options.Value.LatestLeavesTableName);
             var destinationTable = tableClient.GetTableReference(destTableName);
 
-            var enqueuer = Host.Services.GetRequiredService<TableCopyEnqueuer<LatestPackageLeaf>>();
+            var enqueuer = Host.Services.GetRequiredService<TableScanEnqueuer<LatestPackageLeaf>>();
 
             // Act
-            switch (strategy)
-            {
-                case TableCopyStrategy.Serial:
-                    await enqueuer.StartSerialAsync(sourceTable.Name, destinationTable.Name);
-                    break;
-                case TableCopyStrategy.PrefixScan:
-                    await enqueuer.StartPrefixScanAsync(sourceTable.Name, destinationTable.Name, partitionKeyPrefix: "", takeCount: 10);
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
+            await enqueuer.StartTableCopyAsync(
+                sourceTable.Name,
+                destinationTable.Name,
+                partitionKeyPrefix: string.Empty,
+                strategy,
+                takeCount: 10);
             await ProcessQueueAsync();
 
             // Assert
