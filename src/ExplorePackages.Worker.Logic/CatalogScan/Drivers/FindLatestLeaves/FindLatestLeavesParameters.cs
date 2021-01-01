@@ -8,6 +8,6 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
         public string Prefix { get; set; }
 
         [JsonProperty("t")]
-        public string TableName { get; set; }
+        public string StorageSuffix { get; set; }
     }
 }

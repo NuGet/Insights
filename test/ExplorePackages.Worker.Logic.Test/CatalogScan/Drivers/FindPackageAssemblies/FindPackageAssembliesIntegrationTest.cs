@@ -1,4 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -7,11 +12,12 @@ using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
 {
-    public class FindPackageAssembliesIntegrationTest : BaseCatalogScanToCsvIntegrationTest
+    public class FindPackageAssembliesIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest
     {
         private const string FindPackageAssembliesDir = nameof(FindPackageAssemblies);
         private const string FindPackageAssemblies_WithDeleteDir = nameof(FindPackageAssemblies_WithDelete);
         private const string FindPackageAssemblies_WithUnmanagedDir = nameof(FindPackageAssemblies_WithUnmanaged);
+        private const string FindPackageAssemblies_WithDuplicatesDir = nameof(FindPackageAssemblies_WithDuplicates);
 
         public FindPackageAssembliesIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
             : base(output, factory)
@@ -19,6 +25,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
         }
 
         protected override string DestinationContainerName => Options.Value.FindPackageAssembliesContainerName;
+
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.FindPackageAssemblies;
 
         public class FindPackageAssemblies : FindPackageAssembliesIntegrationTest
@@ -57,7 +64,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 await AssertOutputAsync(FindPackageAssembliesDir, Step1, 1); // This file is unchanged.
                 await AssertOutputAsync(FindPackageAssembliesDir, Step2, 2);
 
-                await VerifyExpectedContainersAsync();
+                await VerifyExpectedStorageAsync();
             }
         }
 
@@ -94,7 +101,25 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 await AssertOutputAsync(FindPackageAssembliesDir, Step1, 1);
                 await AssertOutputAsync(FindPackageAssembliesDir, Step1, 2);
 
-                await VerifyExpectedContainersAsync();
+                await VerifyExpectedStorageAsync();
+            }
+
+            public string TempDirLeaseName
+            {
+                get
+                {
+                    using (var sha256 = SHA256.Create())
+                    {
+                        var path = Path.GetFullPath(Options.Value.TempDirectories[0].Path);
+                        var bytes = Encoding.UTF8.GetBytes(path.ToLowerInvariant());
+                        return $"TempStreamDirectory-{sha256.ComputeHash(bytes).ToTrimmedBase32()}-Semaphore-0";
+                    }
+                }
+            }
+
+            protected override IEnumerable<string> GetExpectedLeaseNames()
+            {
+                return base.GetExpectedLeaseNames().Concat(new[] { TempDirLeaseName });
             }
         }
 
@@ -145,7 +170,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 await AssertOutputAsync(FindPackageAssemblies_WithDeleteDir, Step1, 1); // This file is unchanged.
                 await AssertOutputAsync(FindPackageAssemblies_WithDeleteDir, Step2, 2);
 
-                await VerifyExpectedContainersAsync();
+                await VerifyExpectedStorageAsync();
             }
         }
 
@@ -176,8 +201,62 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
                 // Assert
                 await AssertOutputAsync(FindPackageAssemblies_WithUnmanagedDir, Step1, 0);
 
-                await VerifyExpectedContainersAsync();
+                await VerifyExpectedStorageAsync();
             }
+        }
+
+        public class FindPackageAssemblies_WithDuplicates_OnlyLatestLeaves : FindPackageAssembliesIntegrationTest
+        {
+            public FindPackageAssemblies_WithDuplicates_OnlyLatestLeaves(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+                : base(output, factory)
+            {
+            }
+
+            public override bool OnlyLatestLeaves => true;
+
+            [Fact]
+            public Task Execute() => FindPackageAssemblies_WithDuplicates();
+        }
+
+        public class FindPackageAssemblies_WithDuplicates_AllLeaves : FindPackageAssembliesIntegrationTest
+        {
+            public FindPackageAssemblies_WithDuplicates_AllLeaves(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+                : base(output, factory)
+            {
+            }
+
+            public override bool OnlyLatestLeaves => false;
+
+            [Fact]
+            public Task Execute() => FindPackageAssemblies_WithDuplicates();
+        }
+
+        private async Task FindPackageAssemblies_WithDuplicates()
+        {
+            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
+
+            Logger.LogInformation("Settings: " + Environment.NewLine + JsonConvert.SerializeObject(Options.Value, Formatting.Indented));
+
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z");
+            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
+
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
+
+            // Act
+            await UpdateAsync(max1);
+
+            // Assert
+            await AssertOutputAsync(FindPackageAssemblies_WithDuplicatesDir, Step1, 0);
+
+            var duplicatePackageRequests = HttpMessageHandlerFactory
+                .Requests
+                .Where(x => x.RequestUri.AbsolutePath.EndsWith("/gosms.ge-sms-api.1.0.1.nupkg"))
+                .ToList();
+            Assert.Equal(OnlyLatestLeaves ? 1 : 2, duplicatePackageRequests.Count);
+
+            await VerifyExpectedStorageAsync();
         }
     }
 }

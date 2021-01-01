@@ -37,7 +37,7 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
 
         private async Task<List<T>> GetSourceRowsAsync(TableRowCopyMessage<T> message)
         {
-            using var metrics = _telemetryClient.NewQueryLoopMetrics();
+            using var metrics = _telemetryClient.StartQueryLoopMetrics();
 
             var sourceTable = _serviceClientFactory
                 .GetStorageAccount()

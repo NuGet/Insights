@@ -105,37 +105,48 @@ namespace Knapcode.ExplorePackages.Worker
             return $"CatalogScan-{driverType}";
         }
 
-        public async Task<CatalogIndexScan> UpdateAsync(CatalogScanDriverType driverType, DateTimeOffset? max)
+        public Task<CatalogIndexScan> UpdateAsync(CatalogScanDriverType driverType, DateTimeOffset? max) => UpdateAsync(driverType, onlyLatestLeaves: null, max);
+
+        public async Task<CatalogIndexScan> UpdateAsync(CatalogScanDriverType driverType, bool? onlyLatestLeaves, DateTimeOffset? max)
         {
             switch (driverType)
             {
                 case CatalogScanDriverType.FindCatalogLeafItems:
+                    if (onlyLatestLeaves.HasValue && onlyLatestLeaves.Value)
+                    {
+                        throw new NotSupportedException("When finding catalog leaf items all leaves will be reported, not just the latest.");
+                    }
                     return await UpdateAsync(driverType, NoParameters, DateTimeOffset.MinValue, max);
                 case CatalogScanDriverType.FindLatestLeaves:
+                    if (onlyLatestLeaves.HasValue && !onlyLatestLeaves.Value)
+                    {
+                        throw new NotSupportedException("When finding latest leaves, only the latest leaves will be reported. Obviously.");
+                    }
                     return await UpdateFindLatestLeavesAsync(max);
                 case CatalogScanDriverType.FindPackageAssemblies:
+                    return await UpdateFindPackageAssembliesAsync(onlyLatestLeaves.GetValueOrDefault(true), max);
                 case CatalogScanDriverType.FindPackageAssets:
-                    return await UpdateCatalogLeafToCsvAsync(driverType, max);
+                    return await UpdateFindPackageAssetsAsync(onlyLatestLeaves.GetValueOrDefault(true), max);
                 default:
                     throw new NotSupportedException();
             }
         }
 
-        public async Task<CatalogIndexScan> StartSpecificFindLatestLeavesAsync(
+        public async Task<CatalogIndexScan> GetOrStartSpecificFindLatestLeavesAsync(
             string scanId,
             string storageSuffix,
             string prefix,
-            string tableName,
+            string destinationStorageSuffix,
             DateTimeOffset min,
             DateTimeOffset? max)
         {
             var parameters = new FindLatestLeavesParameters
             {
                 Prefix = prefix,
-                TableName = tableName,
+                StorageSuffix = destinationStorageSuffix,
             };
 
-            return await StartCursorlessAsync(
+            return await GetOrStartCursorlessAsync(
                 scanId,
                 storageSuffix,
                 CatalogScanDriverType.FindLatestLeaves,
@@ -149,7 +160,7 @@ namespace Knapcode.ExplorePackages.Worker
             var parameters = new FindLatestLeavesParameters
             {
                 Prefix = string.Empty,
-                TableName = _options.Value.LatestLeavesTableName,
+                StorageSuffix = string.Empty,
             };
 
             return await UpdateAsync(
@@ -159,11 +170,22 @@ namespace Knapcode.ExplorePackages.Worker
                 max);
         }
 
-        private async Task<CatalogIndexScan> UpdateCatalogLeafToCsvAsync(CatalogScanDriverType driverType, DateTimeOffset? max)
+        public async Task<CatalogIndexScan> UpdateFindPackageAssembliesAsync(bool onlyLatestLeaves, DateTimeOffset? max)
+        {
+            return await UpdateCatalogLeafToCsvAsync(CatalogScanDriverType.FindPackageAssemblies, onlyLatestLeaves, max);
+        }
+
+        public async Task<CatalogIndexScan> UpdateFindPackageAssetsAsync(bool onlyLatestLeaves, DateTimeOffset? max)
+        {
+            return await UpdateCatalogLeafToCsvAsync(CatalogScanDriverType.FindPackageAssets, onlyLatestLeaves, max);
+        }
+
+        private async Task<CatalogIndexScan> UpdateCatalogLeafToCsvAsync(CatalogScanDriverType driverType, bool onlyLatestLeaves, DateTimeOffset? max)
         {
             var parameters = new CatalogLeafToCsvParameters
             {
                 BucketCount = _options.Value.AppendResultStorageBucketCount,
+                OnlyLatestLeaves = onlyLatestLeaves,
             };
 
             return await UpdateAsync(
@@ -219,7 +241,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        private async Task<CatalogIndexScan> StartCursorlessAsync(
+        private async Task<CatalogIndexScan> GetOrStartCursorlessAsync(
             string scanId,
             string storageSuffix,
             CatalogScanDriverType driverType,

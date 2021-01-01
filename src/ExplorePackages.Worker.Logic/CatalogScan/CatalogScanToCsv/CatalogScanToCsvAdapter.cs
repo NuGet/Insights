@@ -45,7 +45,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             var partitionKey = GetAggregateTasksPartitionKey(indexScan);
 
-            await _taskStateStorageService.AddAllAsync(
+            await _taskStateStorageService.GetOrAddAsync(
                 indexScan.StorageSuffix,
                 partitionKey,
                 buckets.Select(x => x.ToString()).ToList());
@@ -75,7 +75,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         private static string GetAggregateTasksPartitionKey(CatalogIndexScan indexScan)
         {
-            return $"{indexScan.ScanId}-aggregate";
+            return $"{indexScan.ScanId}-{nameof(CatalogScanToCsvAdapter<T>)}";
         }
 
         public async Task FinalizeAsync(CatalogIndexScan indexScan)

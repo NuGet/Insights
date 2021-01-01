@@ -58,7 +58,7 @@ namespace Knapcode.ExplorePackages
         {
             var leaseNames = Enumerable
                 .Range(0, count)
-                .Select(i => $"{name}-semaphore-{i}")
+                .Select(i => $"{name}-Semaphore-{i}")
                 .OrderBy(x => ThreadLocalRandom.Next())
                 .ToList();
 

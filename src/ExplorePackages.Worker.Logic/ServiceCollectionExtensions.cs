@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Knapcode.ExplorePackages.Worker.FindCatalogLeafItems;
 using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
+using Knapcode.ExplorePackages.Worker.LatestLeafToLeafScan;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using Knapcode.ExplorePackages.Worker.TableCopy;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,13 +23,14 @@ namespace Knapcode.ExplorePackages.Worker
 
             serviceCollection.AddTransient(typeof(TableScanService<>));
             serviceCollection.AddTransient(typeof(TableScanDriverFactory<>));
-            AddTableScan<LatestPackageLeaf>(serviceCollection);
-            serviceCollection.AddTransient(typeof(TableCopyDriver<>));
 
             serviceCollection.AddTransient<CatalogScanStorageService>();
             serviceCollection.AddTransient<CatalogScanDriverFactory>();
             serviceCollection.AddTransient<CatalogScanService>();
+            serviceCollection.AddTransient<CatalogScanExpandService>();
             serviceCollection.AddTransient(typeof(CatalogScanToCsvAdapter<>));
+            AddTableScan<LatestPackageLeaf>(serviceCollection);
+            serviceCollection.AddTransient<LatestLeafToLeafScanDriver>();
 
             serviceCollection.AddTransient<CursorStorageService>();
 
@@ -39,6 +41,7 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddFindCatalogLeafItems();
             serviceCollection.AddFindLatestLeaves();
             serviceCollection.AddRunRealRestore();
+            serviceCollection.AddTableCopy();
 
             foreach (var (serviceType, implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(IMessageProcessor<>)))
             {
@@ -69,6 +72,11 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             return serviceCollection;
+        }
+
+        private static void AddTableCopy(this IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddTransient(typeof(TableCopyDriver<>));
         }
 
         private static void AddTableScan<T>(IServiceCollection serviceCollection) where T : ITableEntity, new()

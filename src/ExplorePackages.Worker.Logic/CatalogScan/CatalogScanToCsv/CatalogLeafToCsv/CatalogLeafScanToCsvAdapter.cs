@@ -23,10 +23,12 @@ namespace Knapcode.ExplorePackages.Worker
         public async Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
         {
             await _adapter.InitializeAsync(indexScan, _driver.ResultsContainerName);
-            return CatalogIndexScanResult.Expand;
+
+            var parameters = (CatalogLeafToCsvParameters)_schemaSerializer.Deserialize(indexScan.DriverParameters).Data;
+            return parameters.OnlyLatestLeaves ? CatalogIndexScanResult.ExpandLatestLeaves : CatalogIndexScanResult.ExpandAllLeaves;
         }
 
-        public Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan) => Task.FromResult(CatalogPageScanResult.Expand);
+        public Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan) => Task.FromResult(CatalogPageScanResult.ExpandAllowDuplicates);
 
         public async Task<DriverResult> ProcessLeafAsync(CatalogLeafScan leafScan)
         {

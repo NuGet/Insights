@@ -8,15 +8,30 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class TableScanService<T> where T : ITableEntity, new()
     {
+        private readonly TaskStateStorageService _taskStateStorageService;
         private readonly MessageEnqueuer _enqueuer;
         private readonly SchemaSerializer _serializer;
 
         public TableScanService(
+            TaskStateStorageService taskStateStorageService,
             MessageEnqueuer enqueuer,
             SchemaSerializer serializer)
         {
+            _taskStateStorageService = taskStateStorageService;
             _enqueuer = enqueuer;
             _serializer = serializer;
+        }
+
+        public async Task StartLatestLeafToLeafScanAsync(TaskStateKey taskStateKey, CatalogIndexScanMessage message, string tableName)
+        {
+            await StartTableScanAsync(
+                taskStateKey,
+                TableScanDriverType.LatestLeafToLeafScan,
+                tableName,
+                TableScanStrategy.PrefixScan,
+                StorageUtility.MaxTakeCount,
+                partitionKeyPrefix: string.Empty,
+                _serializer.Serialize(message).AsJToken());
         }
 
         public async Task StartTableCopyAsync(

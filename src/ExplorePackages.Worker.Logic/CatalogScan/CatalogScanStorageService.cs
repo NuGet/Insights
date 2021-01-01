@@ -47,14 +47,14 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task<IReadOnlyList<CatalogPageScan>> GetPageScansAsync(string storageSuffix, string scanId)
         {
-            return await GetPageScanTable(storageSuffix).GetEntitiesAsync<CatalogPageScan>(scanId, _telemetryClient.NewQueryLoopMetrics());
+            return await GetPageScanTable(storageSuffix).GetEntitiesAsync<CatalogPageScan>(scanId, _telemetryClient.StartQueryLoopMetrics());
         }
 
         public async Task<IReadOnlyList<CatalogLeafScan>> GetLeafScansAsync(string storageSuffix, string scanId, string pageId)
         {
             return await GetLeafScanTable(storageSuffix).GetEntitiesAsync<CatalogLeafScan>(
                 CatalogLeafScan.GetPartitionKey(scanId, pageId),
-                _telemetryClient.NewQueryLoopMetrics());
+                _telemetryClient.StartQueryLoopMetrics());
         }
 
         public async Task InsertAsync(IReadOnlyList<CatalogPageScan> pageScans)
@@ -75,7 +75,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task<IReadOnlyList<CatalogIndexScan>> GetLatestIndexScans(string cursorName, int? maxEntities = 1000)
         {
-            return await GetIndexScanTable().GetEntitiesAsync<CatalogIndexScan>(cursorName, _telemetryClient.NewQueryLoopMetrics(), maxEntities);
+            return await GetIndexScanTable().GetEntitiesAsync<CatalogIndexScan>(cursorName, _telemetryClient.StartQueryLoopMetrics(), maxEntities);
         }
 
         public async Task<CatalogIndexScan> GetIndexScanAsync(string cursorName, string scanId)
@@ -114,14 +114,27 @@ namespace Knapcode.ExplorePackages.Worker
         {
             return await GetPageScanTable(storageSuffix).GetEntityCountLowerBoundAsync<CatalogPageScan>(
                 scanId,
-                _telemetryClient.NewQueryLoopMetrics());
+                _telemetryClient.StartQueryLoopMetrics());
         }
 
         public async Task<int> GetLeafScanCountLowerBoundAsync(string storageSuffix, string scanId, string pageId)
         {
             return await GetLeafScanTable(storageSuffix).GetEntityCountLowerBoundAsync<CatalogLeafScan>(
                 CatalogLeafScan.GetPartitionKey(scanId, pageId),
-                _telemetryClient.NewQueryLoopMetrics());
+                _telemetryClient.StartQueryLoopMetrics());
+        }
+
+        public async Task<int> GetLeafScanCountLowerBoundAsync(string storageSuffix, string scanId)
+        {
+            return await GetLeafScanTable(storageSuffix).GetEntityCountLowerBoundAsync<CatalogLeafScan>(
+                CatalogLeafScan.GetPartitionKey(scanId, string.Empty),
+                CatalogLeafScan.GetPartitionKey(scanId, char.MaxValue.ToString()),
+                _telemetryClient.StartQueryLoopMetrics());
+        }
+
+        public async Task DeleteAsync(CatalogIndexScan indexScan)
+        {
+            await GetIndexScanTable().DeleteAsync(indexScan);
         }
 
         public async Task DeleteAsync(CatalogPageScan pageScan)

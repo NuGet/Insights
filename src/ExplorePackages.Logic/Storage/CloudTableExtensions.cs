@@ -127,14 +127,38 @@ namespace Knapcode.ExplorePackages
 
         public static async Task<int> GetEntityCountLowerBoundAsync<T>(this CloudTable table, string partitionKey, QueryLoopMetrics metrics) where T : ITableEntity, new()
         {
+            return await GetEntityCountLowerBoundWithFilterAsync<T>(
+                table,
+                TableQuery.GenerateFilterCondition(
+                    PartitionKey,
+                    QueryComparisons.Equal,
+                    partitionKey),
+                metrics);
+        }
+
+        public static async Task<int> GetEntityCountLowerBoundAsync<T>(this CloudTable table, string minPartitionKey, string maxPartitionKey, QueryLoopMetrics metrics) where T : ITableEntity, new()
+        {
+            return await table.GetEntityCountLowerBoundWithFilterAsync<T>(
+                TableQuery.CombineFilters(
+                    TableQuery.GenerateFilterCondition(
+                        PartitionKey,
+                        QueryComparisons.GreaterThanOrEqual,
+                        minPartitionKey),
+                    TableOperators.And,
+                    TableQuery.GenerateFilterCondition(
+                        PartitionKey,
+                        QueryComparisons.LessThanOrEqual,
+                        maxPartitionKey)),
+                metrics);
+        }
+
+        private static async Task<int> GetEntityCountLowerBoundWithFilterAsync<T>(this CloudTable table, string filterString, QueryLoopMetrics metrics) where T : ITableEntity, new()
+        {
             using (metrics)
             {
                 var query = new TableQuery<T>
                 {
-                    FilterString = TableQuery.GenerateFilterCondition(
-                        PartitionKey,
-                        QueryComparisons.Equal,
-                        partitionKey),
+                    FilterString = filterString,
                     TakeCount = MaxTakeCount,
                     SelectColumns = Array.Empty<string>(),
                 };

@@ -44,7 +44,7 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(CatalogScanDriverType.FindLatestLeaves, min0);
-            await UpdateAsync(CatalogScanDriverType.FindLatestLeaves, max1);
+            await UpdateAsync(CatalogScanDriverType.FindLatestLeaves, onlyLatestLeaves: null, max1);
 
             var serviceClientFactory = Host.Services.GetRequiredService<ServiceClientFactory>();
             var destTableName = StoragePrefix + "1d1";
@@ -56,7 +56,7 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
 
             var taskStateStorageSuffix = "copy";
             await TaskStateStorageService.InitializeAsync(taskStateStorageSuffix);
-            var taskState = await TaskStateStorageService.AddAsync(taskStateStorageSuffix, "copy", "copy");
+            var taskState = await TaskStateStorageService.GetOrAddAsync(new TaskStateKey(taskStateStorageSuffix, "copy", "copy"));
 
             // Act
             await tableScanService.StartTableCopyAsync(
@@ -69,8 +69,8 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
             await ProcessQueueAsync();
 
             // Assert
-            var sourceEntities = await sourceTable.GetEntitiesAsync<LatestPackageLeaf>(TelemetryClient.NewQueryLoopMetrics());
-            var destinationEntities = await destinationTable.GetEntitiesAsync<LatestPackageLeaf>(TelemetryClient.NewQueryLoopMetrics());
+            var sourceEntities = await sourceTable.GetEntitiesAsync<LatestPackageLeaf>(TelemetryClient.StartQueryLoopMetrics());
+            var destinationEntities = await destinationTable.GetEntitiesAsync<LatestPackageLeaf>(TelemetryClient.StartQueryLoopMetrics());
 
             Assert.All(sourceEntities.Zip(destinationEntities), pair =>
             {

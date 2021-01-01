@@ -33,13 +33,27 @@ namespace Knapcode.ExplorePackages.Worker
             await GetTable(storageSuffix).DeleteIfExistsAsync();
         }
 
-        public async Task<TaskState> AddAsync(string storageSuffix, string partitionKey, string rowKey)
+        public async Task<TaskState> GetOrAddAsync(TaskStateKey taskStateKey)
         {
-            var added = await AddAllAsync(storageSuffix, partitionKey, new[] { rowKey });
+            var added = await GetOrAddAsync(taskStateKey.StorageSuffix, taskStateKey.PartitionKey, new[] { taskStateKey.RowKey });
             return added.Single();
         }
 
-        public async Task<IReadOnlyList<TaskState>> AddAllAsync(string storageSuffix, string partitionKey, IReadOnlyList<TaskState> taskStates)
+        public async Task<TaskState> GetOrAddAsync(TaskState taskState)
+        {
+            var added = await GetOrAddAsync(taskState.StorageSuffix, taskState.PartitionKey, new[] { taskState });
+            return added.Single();
+        }
+
+        public async Task<IReadOnlyList<TaskState>> GetOrAddAsync(string storageSuffix, string partitionKey, IReadOnlyList<string> rowKeys)
+        {
+            return await GetOrAddAsync(
+                storageSuffix,
+                partitionKey,
+                rowKeys.Select(r => new TaskState(storageSuffix, partitionKey, r)).ToList());
+        }
+
+        public async Task<IReadOnlyList<TaskState>> GetOrAddAsync(string storageSuffix, string partitionKey, IReadOnlyList<TaskState> taskStates)
         {
             if (taskStates.Any(x => x.StorageSuffix != storageSuffix || x.PartitionKey != partitionKey))
             {
@@ -59,17 +73,9 @@ namespace Knapcode.ExplorePackages.Worker
             return toInsert;
         }
 
-        public async Task<IReadOnlyList<TaskState>> AddAllAsync(string storageSuffix, string partitionKey, IReadOnlyList<string> rowKeys)
-        {
-            return await AddAllAsync(
-                storageSuffix,
-                partitionKey,
-                rowKeys.Select(r => new TaskState(storageSuffix, partitionKey, r)).ToList());
-        }
-
         private async Task<IReadOnlyList<TaskState>> GetAllAsync(string storageSuffix, string partitionKey)
         {
-            return await GetTable(storageSuffix).GetEntitiesAsync<TaskState>(partitionKey, _telemetryClient.NewQueryLoopMetrics());
+            return await GetTable(storageSuffix).GetEntitiesAsync<TaskState>(partitionKey, _telemetryClient.StartQueryLoopMetrics());
         }
 
         private async Task InsertAsync(IReadOnlyList<TaskState> taskStates)
@@ -82,7 +88,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task<int> GetCountLowerBoundAsync(string storageSuffix, string partitionKey)
         {
-            return await GetTable(storageSuffix).GetEntityCountLowerBoundAsync<TaskState>(partitionKey, _telemetryClient.NewQueryLoopMetrics());
+            return await GetTable(storageSuffix).GetEntityCountLowerBoundAsync<TaskState>(partitionKey, _telemetryClient.StartQueryLoopMetrics());
         }
 
         public async Task<TaskState> GetAsync(TaskStateKey key)

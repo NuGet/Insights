@@ -102,7 +102,7 @@ namespace Knapcode.ExplorePackages
 
         public async Task<List<TablePrefixScanStep>> ExecutePartitionKeyQueryAsync<T>(TablePrefixScanPartitionKeyQuery query) where T : ITableEntity, new()
         {
-            using var metrics = _telemetryClient.NewQueryLoopMetrics();
+            using var metrics = _telemetryClient.StartQueryLoopMetrics();
 
             var filter = TableQuery.GenerateFilterCondition(
                 PartitionKey,
@@ -152,7 +152,7 @@ namespace Knapcode.ExplorePackages
 
         public async Task<List<TablePrefixScanStep>> ExecutePrefixQueryAsync<T>(TablePrefixScanPrefixQuery query) where T : ITableEntity, new()
         {
-            using var metrics = _telemetryClient.NewQueryLoopMetrics();
+            using var metrics = _telemetryClient.StartQueryLoopMetrics();
 
             //
             // Consider the following query, where we're enumerating all partition keys starting with '$'.

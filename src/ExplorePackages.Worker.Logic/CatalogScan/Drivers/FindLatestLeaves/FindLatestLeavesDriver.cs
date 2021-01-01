@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
 {
@@ -10,26 +9,23 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
         private readonly LatestPackageLeafStorageService _storageService;
         private readonly SchemaSerializer _schemaSerializer;
         private readonly CatalogScanService _catalogScanService;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
         public FindLatestLeavesDriver(
             CatalogClient catalogClient,
             LatestPackageLeafStorageService storageService,
             SchemaSerializer schemaSerializer,
-            CatalogScanService catalogScanService,
-            IOptions<ExplorePackagesWorkerSettings> options)
+            CatalogScanService catalogScanService)
         {
             _catalogClient = catalogClient;
             _storageService = storageService;
             _schemaSerializer = schemaSerializer;
             _catalogScanService = catalogScanService;
-            _options = options;
         }
 
         public async Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
         {
             var parameters = DeserializeParameters(indexScan.DriverParameters);
-            if (parameters.TableName == _options.Value.LatestLeavesTableName)
+            if (parameters.StorageSuffix == string.Empty)
             {
                 if (indexScan.CursorName != _catalogScanService.GetCursorName(CatalogScanDriverType.FindLatestLeaves))
                 {
@@ -44,9 +40,9 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
                 }
             }
 
-            await _storageService.InitializeAsync(parameters.TableName);
+            await _storageService.InitializeAsync(parameters.StorageSuffix);
 
-            return CatalogIndexScanResult.Expand;
+            return CatalogIndexScanResult.ExpandAllLeaves;
         }
 
         public async Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan)
@@ -55,7 +51,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
             var page = await _catalogClient.GetCatalogPageAsync(pageScan.Url);
             var leafItemToRank = page.GetLeafItemToRank();
             var items = page.GetLeavesInBounds(pageScan.Min, pageScan.Max, excludeRedundantLeaves: true);
-            await _storageService.AddAsync(parameters.TableName, parameters.Prefix, items, leafItemToRank, pageScan.Rank, pageScan.Url);
+            await _storageService.AddAsync(parameters.StorageSuffix, parameters.Prefix, items, leafItemToRank, pageScan.Rank, pageScan.Url);
             return CatalogPageScanResult.Processed;
         }
 
@@ -63,7 +59,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
         {
             var parameters = (FindLatestLeavesParameters)_schemaSerializer.Deserialize(scanParameters).Data;
 
-            if (parameters.TableName == _options.Value.LatestLeavesTableName)
+            if (parameters.StorageSuffix == string.Empty)
             {
                 if (parameters.Prefix != string.Empty)
                 {

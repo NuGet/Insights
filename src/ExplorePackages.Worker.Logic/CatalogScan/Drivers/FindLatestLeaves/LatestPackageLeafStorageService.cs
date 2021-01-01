@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage.Table;
 using static Knapcode.ExplorePackages.StorageUtility;
 
@@ -12,32 +13,40 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
     {
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly ITelemetryClient _telemetryClient;
+        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<LatestPackageLeafStorageService> _logger;
 
         public LatestPackageLeafStorageService(
             ServiceClientFactory serviceClientFactory,
             ITelemetryClient telemetryClient,
+            IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<LatestPackageLeafStorageService> logger)
         {
             _serviceClientFactory = serviceClientFactory;
             _telemetryClient = telemetryClient;
+            _options = options;
             _logger = logger;
         }
 
-        public async Task InitializeAsync(string tableName)
+        public async Task InitializeAsync(string storageSuffix)
         {
-            await GetTable(tableName).CreateIfNotExistsAsync(retry: true);
+            await GetTable(storageSuffix).CreateIfNotExistsAsync(retry: true);
+        }
+
+        public async Task DeleteTableAsync(string storageSuffix)
+        {
+            await GetTable(storageSuffix).DeleteIfExistsAsync();
         }
 
         public async Task AddAsync(
-            string tableName,
+            string storageSuffix,
             string prefix,
             IReadOnlyList<CatalogLeafItem> items,
             IReadOnlyDictionary<CatalogLeafItem, int> leafItemToRank,
             int pageRank,
             string pageUrl)
         {
-            var table = GetTable(tableName);
+            var table = GetTable(storageSuffix);
             var packageIdGroups = items.GroupBy(x => x.PackageId, StringComparer.OrdinalIgnoreCase);
             foreach (var group in packageIdGroups)
             {
@@ -94,7 +103,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
 
         private async Task<(Dictionary<string, CatalogLeafItem>, Dictionary<string, string>)> GetExistingsRowsAsync(CloudTable table, string prefix, string packageId, IEnumerable<CatalogLeafItem> items)
         {
-            using var metrics = _telemetryClient.NewQueryLoopMetrics();
+            using var metrics = _telemetryClient.StartQueryLoopMetrics();
 
             // Sort items by lexicographical order, since this is what table storage does.
             List<(CatalogLeafItem Item, string LowerVersion)> itemList = items
@@ -179,12 +188,17 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
             return TableQuery.GenerateFilterCondition(RowKey, QueryComparisons.LessThanOrEqual, lowerVersion);
         }
 
-        private CloudTable GetTable(string tableName)
+        private CloudTable GetTable(string storageSuffix)
         {
             return _serviceClientFactory
                 .GetStorageAccount()
                 .CreateCloudTableClient()
-                .GetTableReference(tableName);
+                .GetTableReference(GetTableName(storageSuffix));
+        }
+
+        public string GetTableName(string storageSuffix)
+        {
+            return $"{_options.Value.LatestLeavesTableName}{storageSuffix}";
         }
     }
 }

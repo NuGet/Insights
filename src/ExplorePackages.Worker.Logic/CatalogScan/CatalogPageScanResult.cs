@@ -3,7 +3,7 @@
     public enum CatalogPageScanResult
     {
         Processed,
-        Expand,
         ExpandAllowDuplicates,
+        ExpandRemoveDuplicates,
     }
 }

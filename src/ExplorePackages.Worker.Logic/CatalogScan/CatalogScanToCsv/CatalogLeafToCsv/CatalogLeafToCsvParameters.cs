@@ -6,5 +6,8 @@ namespace Knapcode.ExplorePackages.Worker
     {
         [JsonProperty("bc")]
         public int BucketCount { get; set; }
+
+        [JsonProperty("ll")]
+        public bool OnlyLatestLeaves { get; set; }
     }
 }

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -13,6 +11,7 @@ namespace Knapcode.ExplorePackages.Worker
         private readonly CatalogScanDriverFactory _driverFactory;
         private readonly MessageEnqueuer _messageEnqueuer;
         private readonly CatalogScanStorageService _storageService;
+        private readonly CatalogScanExpandService _expandService;
         private readonly ILogger<CatalogPageScanMessageProcessor> _logger;
 
         public CatalogPageScanMessageProcessor(
@@ -20,12 +19,14 @@ namespace Knapcode.ExplorePackages.Worker
             CatalogScanDriverFactory driverFactory,
             MessageEnqueuer messageEnqueuer,
             CatalogScanStorageService storageService,
+            CatalogScanExpandService expandService,
             ILogger<CatalogPageScanMessageProcessor> logger)
         {
             _catalogClient = catalogClient;
             _driverFactory = driverFactory;
             _messageEnqueuer = messageEnqueuer;
             _storageService = storageService;
+            _expandService = expandService;
             _logger = logger;
         }
 
@@ -44,14 +45,14 @@ namespace Knapcode.ExplorePackages.Worker
 
             switch (result)
             {
-                case CatalogPageScanResult.Expand:
-                    await ExpandAsync(message, scan, excludeRedundantLeaves: true);
+                case CatalogPageScanResult.Processed:
+                    await _storageService.DeleteAsync(scan);
                     break;
                 case CatalogPageScanResult.ExpandAllowDuplicates:
                     await ExpandAsync(message, scan, excludeRedundantLeaves: false);
                     break;
-                case CatalogPageScanResult.Processed:
-                    await _storageService.DeleteAsync(scan);
+                case CatalogPageScanResult.ExpandRemoveDuplicates:
+                    await ExpandAsync(message, scan, excludeRedundantLeaves: true);
                     break;
                 default:
                     throw new NotSupportedException($"Catalog page scan result '{result}' is not supported.");
@@ -73,7 +74,7 @@ namespace Knapcode.ExplorePackages.Worker
             if (scan.ParsedState == CatalogScanState.Expanding)
             {
                 var leafScans = await lazyLeafScansTask.Value;
-                await ExpandAsync(scan, leafScans);
+                await _expandService.InsertLeafScansAsync(scan, leafScans);
 
                 scan.ParsedState = CatalogScanState.Enqueuing;
                 await _storageService.ReplaceAsync(scan);
@@ -83,7 +84,7 @@ namespace Knapcode.ExplorePackages.Worker
             if (scan.ParsedState == CatalogScanState.Enqueuing)
             {
                 var leafScans = await lazyLeafScansTask.Value;
-                await EnqueueAsync(leafScans);
+                await _expandService.EnqueueLeafScansAsync(leafScans);
 
                 scan.ParsedState = CatalogScanState.Waiting;
                 message.AttemptCount = 0;
@@ -120,64 +121,12 @@ namespace Knapcode.ExplorePackages.Worker
             _logger.LogInformation("Loading catalog page URL: {Url}", scan.Url);
             var page = await _catalogClient.GetCatalogPageAsync(scan.Url);
 
-            var leafItemToRank = page.GetLeafItemToRank();
-
             var items = page.GetLeavesInBounds(scan.Min, scan.Max, excludeRedundantLeaves);
+            var leafItemToRank = page.GetLeafItemToRank();
 
             _logger.LogInformation("Starting scan of {LeafCount} leaves from ({Min:O}, {Max:O}].", items.Count, scan.Min, scan.Max);
 
-            return items
-                .OrderBy(x => leafItemToRank[x])
-                .Select(x => new CatalogLeafScan(
-                    scan.StorageSuffix,
-                    scan.ScanId,
-                    scan.PageId,
-                    "L" + leafItemToRank[x].ToString(CultureInfo.InvariantCulture).PadLeft(10, '0'))
-                {
-                    ParsedDriverType = scan.ParsedDriverType,
-                    DriverParameters = scan.DriverParameters,
-                    Url = x.Url,
-                    ParsedLeafType = x.Type,
-                    CommitId = x.CommitId,
-                    CommitTimestamp = x.CommitTimestamp,
-                    PackageId = x.PackageId,
-                    PackageVersion = x.PackageVersion,
-                    Rank = leafItemToRank[x],
-                })
-                .ToList();
-        }
-
-        private async Task ExpandAsync(CatalogPageScan scan, IReadOnlyList<CatalogLeafScan> leafScans)
-        {
-            var createdLeaves = await _storageService.GetLeafScansAsync(scan.StorageSuffix, scan.ScanId, scan.PageId);
-
-            var allUrls = leafScans.Select(x => x.Url).ToHashSet();
-            var createdUrls = createdLeaves.Select(x => x.Url).ToHashSet();
-            var uncreatedUrls = allUrls.Except(createdUrls).ToHashSet();
-
-            if (createdUrls.Except(allUrls).Any())
-            {
-                throw new InvalidOperationException("There should not be any extra leaf scan entities.");
-            }
-
-            var uncreatedLeafScans = leafScans
-                .Where(x => uncreatedUrls.Contains(x.Url))
-                .ToList();
-            await _storageService.InsertAsync(uncreatedLeafScans);
-        }
-
-        private async Task EnqueueAsync(IReadOnlyList<CatalogLeafScan> leafScans)
-        {
-            _logger.LogInformation("Enqueuing a scan of {LeafCount} leaves.", leafScans.Count);
-            await _messageEnqueuer.EnqueueAsync(leafScans
-                .Select(x => new CatalogLeafScanMessage
-                {
-                    StorageSuffix = x.StorageSuffix,
-                    ScanId = x.ScanId,
-                    PageId = x.PageId,
-                    LeafId = x.LeafId,
-                })
-                .ToList());
+            return _expandService.CreateLeafScans(scan, items, leafItemToRank);
         }
     }
 }

@@ -3,7 +3,7 @@
     public enum CatalogIndexScanResult
     {
         Processed,
-        Expand,
-        FindLatestLeaves,
+        ExpandAllLeaves,
+        ExpandLatestLeaves,
     }
 }

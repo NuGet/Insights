@@ -10,6 +10,7 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItems
     public class FindCatalogLeafItemsIntegrationTest : BaseCatalogScanToCsvIntegrationTest
     {
         private const string FindCatalogLeafItemsDir = nameof(FindCatalogLeafItems);
+        private const string FindCatalogLeafItems_WithDuplicatesDir = nameof(FindCatalogLeafItems_WithDuplicates);
 
         public FindCatalogLeafItemsIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
             : base(output, factory)
@@ -46,7 +47,38 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItems
                 // Assert
                 await AssertOutputAsync(FindCatalogLeafItemsDir, Step1, 0);
 
-                await VerifyExpectedContainersAsync();
+                await VerifyExpectedStorageAsync();
+            }
+        }
+
+        public class FindCatalogLeafItems_WithDuplicates : FindCatalogLeafItemsIntegrationTest
+        {
+            public FindCatalogLeafItems_WithDuplicates(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+                : base(output, factory)
+            {
+            }
+
+            [Fact]
+            public async Task Execute()
+            {
+                ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
+
+                Logger.LogInformation("Settings: " + Environment.NewLine + JsonConvert.SerializeObject(Options.Value, Formatting.Indented));
+
+                // Arrange
+                var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z");
+                var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
+
+                await CatalogScanService.InitializeAsync();
+                await SetCursorAsync(min0);
+
+                // Act
+                await UpdateAsync(max1);
+
+                // Assert
+                await AssertOutputAsync(FindCatalogLeafItems_WithDuplicatesDir, Step1, 0);
+
+                await VerifyExpectedStorageAsync();
             }
         }
     }

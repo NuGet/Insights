@@ -63,7 +63,7 @@ namespace Knapcode.ExplorePackages
                 dirHash = sha256.ComputeHash(bytes).ToTrimmedBase32();
             }
 
-            var name = $"temp-dir-{dirHash}";
+            var name = $"TempStreamDirectory-{dirHash}";
 
             var lazy = _nameToLazyLease.GetOrAdd(name, x => GetLazyLease(x, dir.MaxConcurrentWriters.Value, dir.SemaphoreTimeout));
             if (lazy.IsValueCreated && lazy.Value.Status == TaskStatus.RanToCompletion)

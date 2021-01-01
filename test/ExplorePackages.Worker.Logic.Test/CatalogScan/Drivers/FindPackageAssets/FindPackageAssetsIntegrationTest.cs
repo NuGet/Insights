@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -7,10 +9,11 @@ using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
 {
-    public class FindPackageAssetsIntegrationTest : BaseCatalogScanToCsvIntegrationTest
+    public class FindPackageAssetsIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest
     {
         private const string FindPackageAssetsDir = nameof(FindPackageAssets);
         private const string FindPackageAssets_WithDeleteDir = nameof(FindPackageAssets_WithDelete);
+        private const string FindPackageAssets_WithDuplicatesDir = nameof(FindPackageAssets_WithDuplicates);
 
         public FindPackageAssetsIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
             : base(output, factory)
@@ -56,7 +59,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
                 await AssertOutputAsync(FindPackageAssetsDir, Step1, 1); // This file is unchanged.
                 await AssertOutputAsync(FindPackageAssetsDir, Step2, 2);
 
-                await VerifyExpectedContainersAsync();
+                await VerifyExpectedStorageAsync();
             }
         }
 
@@ -89,7 +92,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
                 await AssertOutputAsync(FindPackageAssetsDir, Step1, 1);
                 await AssertOutputAsync(FindPackageAssetsDir, Step1, 2);
 
-                await VerifyExpectedContainersAsync();
+                await VerifyExpectedStorageAsync();
             }
         }
 
@@ -140,8 +143,63 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
                 await AssertOutputAsync(FindPackageAssets_WithDeleteDir, Step1, 1); // This file is unchanged.
                 await AssertOutputAsync(FindPackageAssets_WithDeleteDir, Step2, 2);
 
-                await VerifyExpectedContainersAsync();
+                await VerifyExpectedStorageAsync();
             }
+        }
+
+        public class FindPackageAssets_WithDuplicates_OnlyLatestLeaves : FindPackageAssetsIntegrationTest
+        {
+            public FindPackageAssets_WithDuplicates_OnlyLatestLeaves(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+                : base(output, factory)
+            {
+            }
+
+            public override bool OnlyLatestLeaves => true;
+
+            [Fact]
+            public Task Execute() => FindPackageAssets_WithDuplicates();
+        }
+
+        public class FindPackageAssets_WithDuplicates_AllLeaves : FindPackageAssetsIntegrationTest
+        {
+            public FindPackageAssets_WithDuplicates_AllLeaves(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+                : base(output, factory)
+            {
+            }
+
+            public override bool OnlyLatestLeaves => false;
+
+            [Fact]
+            public Task Execute() => FindPackageAssets_WithDuplicates();
+        }
+
+        private async Task FindPackageAssets_WithDuplicates()
+        {
+            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
+
+            Logger.LogInformation("Settings: " + Environment.NewLine + JsonConvert.SerializeObject(Options.Value, Formatting.Indented));
+
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z");
+            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
+
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
+
+            // Act
+            await UpdateAsync(max1);
+
+            // Assert
+            await AssertOutputAsync(FindPackageAssets_WithDuplicatesDir, Step1, 0);
+
+            var duplicatePackageRequests = HttpMessageHandlerFactory
+                .Requests
+                .Where(x => x.RequestUri.AbsolutePath.EndsWith("/gosms.ge-sms-api.1.0.1.nupkg"))
+                .ToList();
+            Assert.Equal(OnlyLatestLeaves ? 1 : 2, duplicatePackageRequests.Where(x => x.Method == HttpMethod.Head).Count());
+            Assert.Equal(OnlyLatestLeaves ? 1 : 2, duplicatePackageRequests.Where(x => x.Method == HttpMethod.Get).Count());
+
+            await VerifyExpectedStorageAsync();
         }
     }
 }

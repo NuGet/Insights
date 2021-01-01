@@ -282,7 +282,7 @@ namespace Knapcode.ExplorePackages.Worker
             if (!force || srcTable != null)
             {
                 var table = GetTable(srcTable);
-                var entities = await table.GetEntitiesAsync<AppendResultEntity>(bucket.ToString(), _telemetryClient.NewQueryLoopMetrics());
+                var entities = await table.GetEntitiesAsync<AppendResultEntity>(bucket.ToString(), _telemetryClient.StartQueryLoopMetrics());
                 if (entities.Any())
                 {
                     foreach (var entity in entities)
@@ -381,7 +381,7 @@ namespace Knapcode.ExplorePackages.Worker
         private async Task<List<int>> GetWrittenAppendTableBucketsAsync(string tableName)
         {
             var table = GetTable(tableName);
-            var markerEntities = await table.GetEntitiesAsync<TableEntity>(string.Empty, _telemetryClient.NewQueryLoopMetrics());
+            var markerEntities = await table.GetEntitiesAsync<TableEntity>(string.Empty, _telemetryClient.StartQueryLoopMetrics());
             return markerEntities.Select(x => int.Parse(x.RowKey)).ToList();
         }
 

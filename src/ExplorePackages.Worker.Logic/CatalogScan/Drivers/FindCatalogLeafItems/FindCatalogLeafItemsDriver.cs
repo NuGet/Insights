@@ -37,7 +37,7 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItems
         public async Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
         {
             await _adapter.InitializeAsync(indexScan, ResultsContainerName);
-            return CatalogIndexScanResult.Expand;
+            return CatalogIndexScanResult.ExpandAllLeaves;
         }
 
         public async Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan)

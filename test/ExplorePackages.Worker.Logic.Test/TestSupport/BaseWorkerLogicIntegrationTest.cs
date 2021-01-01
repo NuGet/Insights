@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
@@ -133,9 +134,11 @@ namespace Knapcode.ExplorePackages.Worker
             await CursorStorageService.UpdateAsync(cursor);
         }
 
-        protected async Task<CatalogIndexScan> UpdateAsync(CatalogScanDriverType driverType, DateTimeOffset max)
+        public ConcurrentBag<CatalogIndexScan> UpdatedCatalogIndexScans { get; } = new ConcurrentBag<CatalogIndexScan>();
+
+        protected async Task<CatalogIndexScan> UpdateAsync(CatalogScanDriverType driverType, bool? onlyLatestLeaves, DateTimeOffset max)
         {
-            var indexScan = await CatalogScanService.UpdateAsync(driverType, max);
+            var indexScan = await CatalogScanService.UpdateAsync(driverType, onlyLatestLeaves, max);
 
             await ProcessQueueAsync(() => { }, async () =>
             {
@@ -149,6 +152,8 @@ namespace Knapcode.ExplorePackages.Worker
 
                 return true;
             });
+
+            UpdatedCatalogIndexScans.Add(indexScan);
 
             return indexScan;
         }
@@ -249,10 +254,14 @@ namespace Knapcode.ExplorePackages.Worker
         {
             public Func<HttpRequestMessage, Task<HttpResponseMessage>> OnSendAsync { get; set; }
 
+            public ConcurrentQueue<HttpRequestMessage> Requests { get; } = new ConcurrentQueue<HttpRequestMessage>();
+
             public DelegatingHandler Create()
             {
                 return new TestHttpMessageHandler(async req =>
                 {
+                    Requests.Enqueue(req);
+
                     if (OnSendAsync != null)
                     {
                         return await OnSendAsync(req);

@@ -66,7 +66,7 @@ namespace Knapcode.ExplorePackages.Worker
                 throw new NotImplementedException();
             }
 
-            using var metrics = _telemetryClient.NewQueryLoopMetrics();
+            using var metrics = _telemetryClient.StartQueryLoopMetrics();
 
             var sourceTable = GetTable(message.TableName);
             var driver = _driverFactory.Create(message.DriverType);
@@ -217,7 +217,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             if (tableCopyMessages.Any())
             {
-                await _taskStateStorageService.AddAllAsync(
+                await _taskStateStorageService.GetOrAddAsync(
                     originalMessage.TaskStateKey.StorageSuffix,
                     originalMessage.TaskStateKey.PartitionKey,
                     taskStates);
@@ -234,7 +234,7 @@ namespace Knapcode.ExplorePackages.Worker
             using (var sha256 = SHA256.Create())
             {
                 var bytes = Encoding.UTF8.GetBytes(serializedParameters.AsString());
-                rowKey = sha256.ComputeHash(bytes).ToTrimmedBase32();
+                rowKey = "step-" + sha256.ComputeHash(bytes).ToTrimmedBase32();
             }
 
             var taskState = new TaskState(
