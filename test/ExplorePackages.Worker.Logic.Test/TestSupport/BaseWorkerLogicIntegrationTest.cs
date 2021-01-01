@@ -138,7 +138,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         protected async Task<CatalogIndexScan> UpdateAsync(CatalogScanDriverType driverType, bool? onlyLatestLeaves, DateTimeOffset max)
         {
-            var indexScan = await CatalogScanService.UpdateAsync(driverType, onlyLatestLeaves, max);
+            var indexScan = await CatalogScanService.UpdateAsync(driverType, max, onlyLatestLeaves);
             return await UpdateAsync(indexScan);
         }
 

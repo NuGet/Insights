@@ -77,7 +77,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
         }
 
         [HttpPost]
-        public async Task<RedirectToActionResult> UpdateCatalogScan(CatalogScanDriverType driverType, bool? shortTest, string max)
+        public async Task<RedirectToActionResult> UpdateCatalogScan(CatalogScanDriverType driverType, bool? shortTest, bool onlyLatestLeaves, string max)
         {
             DateTimeOffset? parsedMax = null;
             if (shortTest.HasValue)
@@ -89,7 +89,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 parsedMax = DateTimeOffset.Parse(max);
             }
 
-            await _catalogScanService.UpdateAsync(driverType, parsedMax);
+            await _catalogScanService.UpdateAsync(driverType, parsedMax, onlyLatestLeaves);
 
             return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment: driverType.ToString());
         }

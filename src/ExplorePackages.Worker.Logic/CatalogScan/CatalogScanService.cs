@@ -105,9 +105,7 @@ namespace Knapcode.ExplorePackages.Worker
             return $"CatalogScan-{driverType}";
         }
 
-        public Task<CatalogIndexScan> UpdateAsync(CatalogScanDriverType driverType, DateTimeOffset? max) => UpdateAsync(driverType, onlyLatestLeaves: null, max);
-
-        public async Task<CatalogIndexScan> UpdateAsync(CatalogScanDriverType driverType, bool? onlyLatestLeaves, DateTimeOffset? max)
+        public async Task<CatalogIndexScan> UpdateAsync(CatalogScanDriverType driverType, DateTimeOffset? max, bool? onlyLatestLeaves)
         {
             switch (driverType)
             {
@@ -191,7 +189,7 @@ namespace Knapcode.ExplorePackages.Worker
             return await UpdateAsync(
                 driverType,
                 parameters: _serializer.Serialize(parameters).AsString(),
-                min: CatalogClient.NuGetOrgMin,
+                min: onlyLatestLeaves ? DateTimeOffset.MinValue : CatalogClient.NuGetOrgMin,
                 max);
         }
 
