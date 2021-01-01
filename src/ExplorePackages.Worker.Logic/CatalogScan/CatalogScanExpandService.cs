@@ -23,49 +23,9 @@ namespace Knapcode.ExplorePackages.Worker
             _logger = logger;
         }
 
-        public CatalogPageScan CreatePageScan(CatalogIndexScan scan, string url, int rank)
+        public async Task InsertLeafScansAsync(string storageSuffix, string scanId, string pageId, IReadOnlyList<CatalogLeafScan> leafScans)
         {
-            return new CatalogPageScan(
-                scan.StorageSuffix,
-                scan.ScanId,
-                "P" + rank.ToString(CultureInfo.InvariantCulture).PadLeft(10, '0'))
-            {
-                ParsedDriverType = scan.ParsedDriverType,
-                DriverParameters = scan.DriverParameters,
-                ParsedState = CatalogScanState.Created,
-                Min = scan.Min.Value,
-                Max = scan.Max.Value,
-                Url = url,
-                Rank = rank,
-            };
-        }
-
-        public List<CatalogLeafScan> CreateLeafScans(CatalogPageScan scan, List<CatalogLeafItem> items, Dictionary<CatalogLeafItem, int> leafItemToRank)
-        {
-            return items
-                .OrderBy(x => leafItemToRank[x])
-                .Select(x => new CatalogLeafScan(
-                    scan.StorageSuffix,
-                    scan.ScanId,
-                    scan.PageId,
-                    "L" + leafItemToRank[x].ToString(CultureInfo.InvariantCulture).PadLeft(10, '0'))
-                {
-                    ParsedDriverType = scan.ParsedDriverType,
-                    DriverParameters = scan.DriverParameters,
-                    Url = x.Url,
-                    ParsedLeafType = x.Type,
-                    CommitId = x.CommitId,
-                    CommitTimestamp = x.CommitTimestamp,
-                    PackageId = x.PackageId,
-                    PackageVersion = x.PackageVersion,
-                    Rank = leafItemToRank[x],
-                })
-                .ToList();
-        }
-
-        public async Task InsertLeafScansAsync(CatalogPageScan scan, IReadOnlyList<CatalogLeafScan> leafScans)
-        {
-            var createdLeaves = await _storageService.GetLeafScansAsync(scan.StorageSuffix, scan.ScanId, scan.PageId);
+            var createdLeaves = await _storageService.GetLeafScansAsync(storageSuffix, scanId, pageId);
 
             var allUrls = leafScans.Select(x => x.Url).ToHashSet();
             var createdUrls = createdLeaves.Select(x => x.Url).ToHashSet();

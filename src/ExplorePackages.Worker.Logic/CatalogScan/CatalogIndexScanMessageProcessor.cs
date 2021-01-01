@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
@@ -14,7 +15,6 @@ namespace Knapcode.ExplorePackages.Worker
         private readonly MessageEnqueuer _messageEnqueuer;
         private readonly CatalogScanStorageService _storageService;
         private readonly CursorStorageService _cursorStorageService;
-        private readonly CatalogScanExpandService _expandService;
         private readonly CatalogScanService _catalogScanService;
         private readonly LatestPackageLeafStorageService _latestPackageLeafStorageService;
         private readonly TaskStateStorageService _taskStateStorageService;
@@ -27,7 +27,6 @@ namespace Knapcode.ExplorePackages.Worker
             MessageEnqueuer messageEnqueuer,
             CatalogScanStorageService storageService,
             CursorStorageService cursorStorageService,
-            CatalogScanExpandService expandService,
             CatalogScanService catalogScanService,
             LatestPackageLeafStorageService latestPackageLeafStorageService,
             TaskStateStorageService taskStateStorageService,
@@ -39,7 +38,6 @@ namespace Knapcode.ExplorePackages.Worker
             _messageEnqueuer = messageEnqueuer;
             _storageService = storageService;
             _cursorStorageService = cursorStorageService;
-            _expandService = expandService;
             _catalogScanService = catalogScanService;
             _latestPackageLeafStorageService = latestPackageLeafStorageService;
             _taskStateStorageService = taskStateStorageService;
@@ -334,8 +332,25 @@ namespace Knapcode.ExplorePackages.Worker
 
             return pages
                 .OrderBy(x => pageItemToRank[x])
-                .Select(x => _expandService.CreatePageScan(scan, x.Url, pageItemToRank[x]))
+                .Select(x => CreatePageScan(scan, x.Url, pageItemToRank[x]))
                 .ToList();
+        }
+
+        private CatalogPageScan CreatePageScan(CatalogIndexScan scan, string url, int rank)
+        {
+            return new CatalogPageScan(
+                scan.StorageSuffix,
+                scan.ScanId,
+                "P" + rank.ToString(CultureInfo.InvariantCulture).PadLeft(10, '0'))
+            {
+                ParsedDriverType = scan.ParsedDriverType,
+                DriverParameters = scan.DriverParameters,
+                ParsedState = CatalogScanState.Created,
+                Min = scan.Min.Value,
+                Max = scan.Max.Value,
+                Url = url,
+                Rank = rank,
+            };
         }
 
         private async Task ExpandAsync(CatalogIndexScan scan, List<CatalogPageScan> allPageScans)

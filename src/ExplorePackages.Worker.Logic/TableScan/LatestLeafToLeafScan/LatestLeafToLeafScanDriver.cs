@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
@@ -32,37 +33,30 @@ namespace Knapcode.ExplorePackages.Worker.LatestLeafToLeafScan
             var indexScanMessage = (CatalogIndexScanMessage)_serializer.Deserialize(parameters).Data;
             var indexScan = await _storageService.GetIndexScanAsync(indexScanMessage.CursorName, indexScanMessage.ScanId);
 
-            foreach (var pageGroup in entities.GroupBy(x => x.PageUrl))
+            // The "page scan" in this case is a set of entities, grouped by package ID. A page scan entity will not be
+            // used at all.
+            foreach (var packageIdGroup in entities.GroupBy(x => x.PackageId, StringComparer.OrdinalIgnoreCase))
             {
-                // Convert the latest package leaf row to a leaf scan row
-                var pageRank = pageGroup.Select(x => x.PageRank).Distinct().Single();
-                var pageScan = _expandService.CreatePageScan(indexScan, pageGroup.Key, pageRank);
+                var pageId = packageIdGroup.Key.ToLowerInvariant();
 
-                var leafItemToRank = pageGroup
-                    .Select(x => new
+                var leafScans = packageIdGroup
+                    .Select(x => new CatalogLeafScan(indexScan.StorageSuffix, indexScan.ScanId, pageId, x.LowerVersion)
                     {
-                        x.LeafRank,
-                        Item = new CatalogLeafItem
-                        {
-                            CommitId = x.CommitId,
-                            CommitTimestamp = x.CommitTimestamp,
-                            PackageId = x.PackageId,
-                            PackageVersion = x.PackageVersion,
-                            Type = x.ParsedLeafType,
-                            Url = x.Url,
-                        },
+                        ParsedDriverType = indexScan.ParsedDriverType,
+                        DriverParameters = indexScan.DriverParameters,
+                        Url = x.Url,
+                        ParsedLeafType = x.ParsedLeafType,
+                        CommitId = x.CommitId,
+                        CommitTimestamp = x.CommitTimestamp,
+                        PackageId = x.PackageId,
+                        PackageVersion = x.PackageVersion,
                     })
-                    .ToDictionary(x => x.Item, x => x.LeafRank);
-                var leafItems = leafItemToRank
-                    .OrderBy(x => x.Value)
-                    .Select(x => x.Key)
                     .ToList();
-                var leafScans = _expandService.CreateLeafScans(pageScan, leafItems, leafItemToRank);
 
-                // Insert the leaf scan row
-                await _expandService.InsertLeafScansAsync(pageScan, leafScans);
+                // Insert the leaf scan rows
+                await _expandService.InsertLeafScansAsync(indexScan.StorageSuffix, indexScan.ScanId, pageId, leafScans);
 
-                // Enqueue the leaf scan
+                // Enqueue the leaf scans
                 await _expandService.EnqueueLeafScansAsync(leafScans);
             }
         }

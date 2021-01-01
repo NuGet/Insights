@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -74,7 +76,7 @@ namespace Knapcode.ExplorePackages.Worker
             if (scan.ParsedState == CatalogScanState.Expanding)
             {
                 var leafScans = await lazyLeafScansTask.Value;
-                await _expandService.InsertLeafScansAsync(scan, leafScans);
+                await _expandService.InsertLeafScansAsync(scan.StorageSuffix, scan.ScanId, scan.PageId, leafScans);
 
                 scan.ParsedState = CatalogScanState.Enqueuing;
                 await _storageService.ReplaceAsync(scan);
@@ -126,7 +128,29 @@ namespace Knapcode.ExplorePackages.Worker
 
             _logger.LogInformation("Starting scan of {LeafCount} leaves from ({Min:O}, {Max:O}].", items.Count, scan.Min, scan.Max);
 
-            return _expandService.CreateLeafScans(scan, items, leafItemToRank);
+            return CreateLeafScans(scan, items, leafItemToRank);
+        }
+
+        private List<CatalogLeafScan> CreateLeafScans(CatalogPageScan scan, List<CatalogLeafItem> items, Dictionary<CatalogLeafItem, int> leafItemToRank)
+        {
+            return items
+                .OrderBy(x => leafItemToRank[x])
+                .Select(x => new CatalogLeafScan(
+                    scan.StorageSuffix,
+                    scan.ScanId,
+                    scan.PageId,
+                    "L" + leafItemToRank[x].ToString(CultureInfo.InvariantCulture).PadLeft(10, '0'))
+                {
+                    ParsedDriverType = scan.ParsedDriverType,
+                    DriverParameters = scan.DriverParameters,
+                    Url = x.Url,
+                    ParsedLeafType = x.Type,
+                    CommitId = x.CommitId,
+                    CommitTimestamp = x.CommitTimestamp,
+                    PackageId = x.PackageId,
+                    PackageVersion = x.PackageVersion,
+                })
+                .ToList();
         }
     }
 }
