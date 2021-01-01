@@ -43,12 +43,9 @@ namespace Knapcode.ExplorePackages.Worker
             var initial = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindLatestLeaves, max1);
 
             // Act
-            await ProcessQueueAsync();
+            await UpdateAsync(initial);
 
             // Assert
-            var final = await CatalogScanStorageService.GetIndexScanAsync(initial.CursorName, initial.ScanId);
-            Assert.Equal(CatalogScanState.Complete, final.ParsedState);
-
             var rawMessageEnqueuer = Host.Services.GetRequiredService<IRawMessageEnqueuer>();
             Assert.Equal(0, await rawMessageEnqueuer.GetApproximateMessageCountAsync());
             Assert.Equal(0, await rawMessageEnqueuer.GetAvailableMessageCountLowerBoundAsync(32));

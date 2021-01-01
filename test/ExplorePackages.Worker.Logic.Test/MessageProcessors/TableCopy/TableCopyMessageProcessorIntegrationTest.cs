@@ -66,7 +66,7 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
                 partitionKeyPrefix: string.Empty,
                 strategy,
                 takeCount: 10);
-            await ProcessQueueAsync();
+            await UpdateAsync(taskState.Key);
 
             // Assert
             var sourceEntities = await sourceTable.GetEntitiesAsync<LatestPackageLeaf>(TelemetryClient.StartQueryLoopMetrics());

@@ -139,14 +139,18 @@ namespace Knapcode.ExplorePackages.Worker
         protected async Task<CatalogIndexScan> UpdateAsync(CatalogScanDriverType driverType, bool? onlyLatestLeaves, DateTimeOffset max)
         {
             var indexScan = await CatalogScanService.UpdateAsync(driverType, onlyLatestLeaves, max);
+            return await UpdateAsync(indexScan);
+        }
 
+        protected async Task<CatalogIndexScan> UpdateAsync(CatalogIndexScan indexScan)
+        {
             await ProcessQueueAsync(() => { }, async () =>
             {
                 indexScan = await CatalogScanStorageService.GetIndexScanAsync(indexScan.CursorName, indexScan.ScanId);
 
                 if (indexScan.ParsedState != CatalogScanState.Complete)
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(1));
+                    await Task.Delay(TimeSpan.FromMilliseconds(100));
                     return false;
                 }
 
@@ -158,19 +162,18 @@ namespace Knapcode.ExplorePackages.Worker
             return indexScan;
         }
 
-        protected async Task ProcessQueueAsync()
+        protected async Task UpdateAsync(TaskStateKey taskStateKey)
         {
-            var completeCount = 0;
-            await ProcessQueueAsync(() => completeCount = 0, async () =>
+            await ProcessQueueAsync(() => { }, async () =>
             {
-                if (completeCount >= 5)
+                var countLowerBound = await TaskStateStorageService.GetCountLowerBoundAsync(taskStateKey.StorageSuffix, taskStateKey.PartitionKey);
+                if (countLowerBound > 0)
                 {
-                    return true;
+                    await Task.Delay(TimeSpan.FromMilliseconds(100));
+                    return false;
                 }
 
-                completeCount++;
-                await Task.Delay(100);
-                return false;
+                return true;
             });
         }
 
