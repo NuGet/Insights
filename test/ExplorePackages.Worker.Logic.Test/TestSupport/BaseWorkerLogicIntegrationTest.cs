@@ -125,16 +125,16 @@ namespace Knapcode.ExplorePackages.Worker
         public ITelemetryClient TelemetryClient => Host.Services.GetRequiredService<ITelemetryClient>();
         public ILogger Logger => Host.Services.GetRequiredService<ILogger<BaseWorkerLogicIntegrationTest>>();
 
-        protected async Task SetCursorAsync(CatalogScanType type, DateTimeOffset min)
+        protected async Task SetCursorAsync(CatalogScanDriverType driverType, DateTimeOffset min)
         {
-            var cursor = await CatalogScanService.GetCursorAsync(type);
+            var cursor = await CatalogScanService.GetCursorAsync(driverType);
             cursor.Value = min;
             await CursorStorageService.UpdateAsync(cursor);
         }
 
-        protected async Task<CatalogIndexScan> UpdateAsync(CatalogScanType type, DateTimeOffset max)
+        protected async Task<CatalogIndexScan> UpdateAsync(CatalogScanDriverType driverType, DateTimeOffset max)
         {
-            var indexScan = await CatalogScanService.UpdateAsync(type, max);
+            var indexScan = await CatalogScanService.UpdateAsync(driverType, max);
 
             await ProcessQueueAsync(() => { }, async () =>
             {

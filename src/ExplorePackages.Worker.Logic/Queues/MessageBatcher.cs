@@ -42,7 +42,7 @@ namespace Knapcode.ExplorePackages.Worker
                         clsm.ScanId,
                         clsm.PageId,
                         clsm.LeafId);
-                    if (catalogLeafScan.ParsedScanType == CatalogScanType.FindPackageAssets)
+                    if (catalogLeafScan.ParsedDriverType == CatalogScanDriverType.FindPackageAssets)
                     {
                         batchSize = 20;
                     }

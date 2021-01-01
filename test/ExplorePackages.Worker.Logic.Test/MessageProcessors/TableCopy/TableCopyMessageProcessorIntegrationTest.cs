@@ -43,8 +43,8 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
             var max1 = DateTimeOffset.Parse("2020-11-27T23:41:30.2461308Z");
 
             await CatalogScanService.InitializeAsync();
-            await SetCursorAsync(CatalogScanType.FindLatestLeaves, min0);
-            await UpdateAsync(CatalogScanType.FindLatestLeaves, max1);
+            await SetCursorAsync(CatalogScanDriverType.FindLatestLeaves, min0);
+            await UpdateAsync(CatalogScanDriverType.FindLatestLeaves, max1);
 
             var serviceClientFactory = Host.Services.GetRequiredService<ServiceClientFactory>();
             var destTableName = StoragePrefix + "1d1";

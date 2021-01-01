@@ -27,7 +27,7 @@ namespace Knapcode.ExplorePackages.Worker
             int takeCount)
         {
             await StartTableScanAsync(
-                TableScanType.TableCopy,
+                TableScanDriverType.TableCopy,
                 sourceTable,
                 strategy,
                 takeCount,
@@ -39,7 +39,7 @@ namespace Knapcode.ExplorePackages.Worker
         }
 
         private async Task StartTableScanAsync(
-            TableScanType type,
+            TableScanDriverType driverType,
             string sourceTable,
             TableScanStrategy strategy,
             int takeCount,
@@ -65,7 +65,7 @@ namespace Knapcode.ExplorePackages.Worker
                 {
                     TableName = sourceTable,
                     Strategy = strategy,
-                    Type = type,
+                    DriverType = driverType,
                     TakeCount = takeCount,
                     PartitionKeyPrefix = partitionKeyPrefix,
                     ScanParameters = scanParameters,

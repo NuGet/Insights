@@ -1,6 +1,6 @@
 ﻿namespace Knapcode.ExplorePackages.Worker
 {
-    public enum CatalogScanType
+    public enum CatalogScanDriverType
     {
         FindCatalogLeafItems,
         FindLatestLeaves,

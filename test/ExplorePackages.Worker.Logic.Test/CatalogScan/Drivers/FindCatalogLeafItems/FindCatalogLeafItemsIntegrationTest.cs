@@ -17,7 +17,7 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItems
         }
 
         protected override string DestinationContainerName => Options.Value.FindCatalogLeafItemsContainerName;
-        protected override CatalogScanType Type => CatalogScanType.FindCatalogLeafItems;
+        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.FindCatalogLeafItems;
 
         public class FindCatalogLeafItems : FindCatalogLeafItemsIntegrationTest
         {

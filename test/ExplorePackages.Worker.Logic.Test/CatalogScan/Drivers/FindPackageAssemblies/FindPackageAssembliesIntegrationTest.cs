@@ -19,7 +19,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
         }
 
         protected override string DestinationContainerName => Options.Value.FindPackageAssembliesContainerName;
-        protected override CatalogScanType Type => CatalogScanType.FindPackageAssemblies;
+        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.FindPackageAssemblies;
 
         public class FindPackageAssemblies : FindPackageAssembliesIntegrationTest
         {

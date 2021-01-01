@@ -48,7 +48,7 @@ namespace Knapcode.ExplorePackages.Worker
                 throw new InvalidOperationException("The catalog index scan should have already been created.");
             }
 
-            var driver = _driverFactory.Create(scan.ParsedScanType);
+            var driver = _driverFactory.Create(scan.ParsedDriverType);
 
             var result = await driver.ProcessIndexAsync(scan);
 
@@ -242,8 +242,8 @@ namespace Knapcode.ExplorePackages.Worker
             var pages = catalogIndex.GetPagesInBounds(scan.Min.Value, scan.Max.Value);
 
             _logger.LogInformation(
-                "Starting {ScanType} scan of {PageCount} pages from ({Min:O}, {Max:O}].",
-                scan.ScanType,
+                "Starting {DriverType} scan of {PageCount} pages from ({Min:O}, {Max:O}].",
+                scan.DriverType,
                 pages.Count,
                 scan.Min.Value,
                 scan.Max.Value);
@@ -255,8 +255,8 @@ namespace Knapcode.ExplorePackages.Worker
                     scan.ScanId,
                     "P" + pageItemToRank[x].ToString(CultureInfo.InvariantCulture).PadLeft(10, '0'))
                 {
-                    ParsedScanType = scan.ParsedScanType,
-                    ScanParameters = scan.ScanParameters,
+                    ParsedDriverType = scan.ParsedDriverType,
+                    DriverParameters = scan.DriverParameters,
                     ParsedState = CatalogScanState.Created,
                     Min = scan.Min.Value,
                     Max = scan.Max.Value,

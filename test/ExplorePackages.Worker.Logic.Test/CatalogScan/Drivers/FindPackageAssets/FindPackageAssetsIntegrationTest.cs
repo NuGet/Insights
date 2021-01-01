@@ -18,7 +18,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
         }
 
         protected override string DestinationContainerName => Options.Value.FindPackageAssetsContainerName;
-        protected override CatalogScanType Type => CatalogScanType.FindPackageAssets;
+        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.FindPackageAssets;
 
         public class FindPackageAssets : FindPackageAssetsIntegrationTest
         {

@@ -14,10 +14,10 @@ namespace Knapcode.ExplorePackages.Worker
         {
         }
 
-        protected abstract CatalogScanType Type { get; }
+        protected abstract CatalogScanDriverType DriverType { get; }
 
-        protected Task SetCursorAsync(DateTimeOffset min) => SetCursorAsync(Type, min);
-        protected Task<CatalogIndexScan> UpdateAsync(DateTimeOffset max) => UpdateAsync(Type, max);
+        protected Task SetCursorAsync(DateTimeOffset min) => SetCursorAsync(DriverType, min);
+        protected Task<CatalogIndexScan> UpdateAsync(DateTimeOffset max) => UpdateAsync(DriverType, max);
 
         protected async Task VerifyExpectedContainersAsync()
         {

@@ -28,10 +28,10 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
 
         public async Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
         {
-            var parameters = DeserializeParameters(indexScan.ScanParameters);
+            var parameters = DeserializeParameters(indexScan.DriverParameters);
             if (parameters.TableName == _options.Value.LatestLeavesTableName)
             {
-                if (indexScan.CursorName != _catalogScanService.GetCursorName(CatalogScanType.FindLatestLeaves))
+                if (indexScan.CursorName != _catalogScanService.GetCursorName(CatalogScanDriverType.FindLatestLeaves))
                 {
                     throw new NotSupportedException("When using the primary latest leaves table, only the main cursor name is allowed.");
                 }
@@ -51,7 +51,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
 
         public async Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan)
         {
-            var parameters = DeserializeParameters(pageScan.ScanParameters);
+            var parameters = DeserializeParameters(pageScan.DriverParameters);
             var page = await _catalogClient.GetCatalogPageAsync(pageScan.Url);
             var leafItemToRank = page.GetLeafItemToRank();
             var items = page.GetLeavesInBounds(pageScan.Min, pageScan.Max, excludeRedundantLeaves: true);

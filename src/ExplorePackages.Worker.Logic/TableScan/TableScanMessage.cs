@@ -7,7 +7,7 @@ namespace Knapcode.ExplorePackages.Worker
     public class TableScanMessage<T> where T : ITableEntity, new()
     {
         [JsonProperty("t")]
-        public TableScanType Type { get; set; }
+        public TableScanDriverType DriverType { get; set; }
 
         [JsonProperty("n")]
         public string TableName { get; set; }

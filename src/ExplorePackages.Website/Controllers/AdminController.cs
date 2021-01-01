@@ -35,8 +35,8 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             var poisonAvailableMessageCountLowerBoundTask = _rawMessageEnqueuer.GetPoisonAvailableMessageCountLowerBoundAsync(messageCount);
 
             var catalogScanTasks = Enum
-                .GetValues(typeof(CatalogScanType))
-                .Cast<CatalogScanType>()
+                .GetValues(typeof(CatalogScanDriverType))
+                .Cast<CatalogScanDriverType>()
                 .Select(GetCatalogScanAsync)
                 .ToList();
 
@@ -63,21 +63,21 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             return View(model);
         }
 
-        private async Task<CatalogScanViewModel> GetCatalogScanAsync(CatalogScanType type)
+        private async Task<CatalogScanViewModel> GetCatalogScanAsync(CatalogScanDriverType driverType)
         {
-            var cursor = await _catalogScanService.GetCursorAsync(type);
+            var cursor = await _catalogScanService.GetCursorAsync(driverType);
             var latestScans = await _catalogScanStorageService.GetLatestIndexScans(cursor.Name, maxEntities: 10);
 
             return new CatalogScanViewModel
             {
-                Type = type,
+                DriverType = driverType,
                 Cursor = cursor,
                 LatestScans = latestScans,
             };
         }
 
         [HttpPost]
-        public async Task<RedirectToActionResult> UpdateCatalogScan(CatalogScanType type, bool? shortTest, string max)
+        public async Task<RedirectToActionResult> UpdateCatalogScan(CatalogScanDriverType driverType, bool? shortTest, string max)
         {
             DateTimeOffset? parsedMax = null;
             if (shortTest.HasValue)
@@ -89,9 +89,9 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 parsedMax = DateTimeOffset.Parse(max);
             }
 
-            await _catalogScanService.UpdateAsync(type, parsedMax);
+            await _catalogScanService.UpdateAsync(driverType, parsedMax);
 
-            return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment: type.ToString());
+            return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment: driverType.ToString());
         }
     }
 }

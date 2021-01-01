@@ -76,7 +76,7 @@ namespace Knapcode.ExplorePackages.Worker
             await _storageService.ReplaceAsync(scan);
 
             _logger.LogInformation("Attempting catalog leaf scan.");
-            var driver = _driverFactory.Create(scan.ParsedScanType);
+            var driver = _driverFactory.Create(scan.ParsedDriverType);
             var result = await driver.ProcessLeafAsync(scan);
             switch (result.Type)
             {

@@ -1,7 +1,7 @@
 ﻿@model CatalogScanViewModel
 
-<a name="@Model.Type" class="anchor"></a>
-<h3>@Model.Type.ToString().Humanize()</h3>
+<a name="@Model.DriverType" class="anchor"></a>
+<h3>@Model.DriverType.ToString().Humanize()</h3>
 <ul class="list-unstyled">
     <li><b>Cursor value:</b> @Model.Cursor.Value.ToString("O")</li>
     <li><b>Cursor age:</b> @Model.CursorAge</li>
@@ -42,7 +42,7 @@
     </tbody>
 </table>
 <form asp-action="UpdateCatalogScan" method="post" class="form-inline">
-    <input type="hidden" name="type" value="@Model.Type" />
+    <input type="hidden" name="type" value="@Model.DriverType" />
     <button type="submit" name="shortTest" value="true" class="btn btn-default">Start test scan</button>
     <button type="submit" name="shortTest" value="false" class="btn btn-default">Start full scan</button>
     <div class="form-group">

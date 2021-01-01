@@ -18,7 +18,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
         {
         }
 
-        protected override CatalogScanType Type => CatalogScanType.FindLatestLeaves;
+        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.FindLatestLeaves;
 
         public class FindLatestLeaves : FindLatestLeavesIntegrationTest
         {

@@ -16,20 +16,20 @@ namespace Knapcode.ExplorePackages.Worker
             _serviceProvider = serviceProvider;
         }
 
-        public ICatalogScanDriver Create(CatalogScanType type)
+        public ICatalogScanDriver Create(CatalogScanDriverType driverType)
         {
-            switch (type)
+            switch (driverType)
             {
-                case CatalogScanType.FindCatalogLeafItems:
+                case CatalogScanDriverType.FindCatalogLeafItems:
                     return _serviceProvider.GetRequiredService<FindCatalogLeafItemsDriver>();
-                case CatalogScanType.FindLatestLeaves:
+                case CatalogScanDriverType.FindLatestLeaves:
                     return _serviceProvider.GetRequiredService<FindLatestLeavesDriver>();
-                case CatalogScanType.FindPackageAssets:
+                case CatalogScanDriverType.FindPackageAssets:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<PackageAsset>>();
-                case CatalogScanType.FindPackageAssemblies:
+                case CatalogScanDriverType.FindPackageAssemblies:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<PackageAssembly>>();
                 default:
-                    throw new NotSupportedException($"Catalog scan type '{type}' is not supported.");
+                    throw new NotSupportedException($"Catalog scan driver type '{driverType}' is not supported.");
             }
         }
     }

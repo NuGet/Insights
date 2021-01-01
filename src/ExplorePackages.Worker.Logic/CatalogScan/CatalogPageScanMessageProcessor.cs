@@ -38,7 +38,7 @@ namespace Knapcode.ExplorePackages.Worker
                 return;
             }
 
-            var drvier = _driverFactory.Create(scan.ParsedScanType);
+            var drvier = _driverFactory.Create(scan.ParsedDriverType);
 
             var result = await drvier.ProcessPageAsync(scan);
 
@@ -134,8 +134,8 @@ namespace Knapcode.ExplorePackages.Worker
                     scan.PageId,
                     "L" + leafItemToRank[x].ToString(CultureInfo.InvariantCulture).PadLeft(10, '0'))
                 {
-                    ParsedScanType = scan.ParsedScanType,
-                    ScanParameters = scan.ScanParameters,
+                    ParsedDriverType = scan.ParsedDriverType,
+                    DriverParameters = scan.DriverParameters,
                     Url = x.Url,
                     ParsedLeafType = x.Type,
                     CommitId = x.CommitId,

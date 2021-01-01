@@ -54,7 +54,7 @@ namespace Knapcode.ExplorePackages.Worker
             using var metrics = _telemetryClient.NewQueryLoopMetrics();
 
             var sourceTable = GetTable(message.TableName);
-            var driver = _driverFactory.Create(message.Type);
+            var driver = _driverFactory.Create(message.DriverType);
             await driver.InitializeAsync(message.DriverParameters);
 
             var tableQuery = new TableQuery<T>
@@ -81,7 +81,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         private async Task ProcessPrefixScanAsync(TableScanMessage<T> message)
         {
-            var driver = _driverFactory.Create(message.Type);
+            var driver = _driverFactory.Create(message.DriverType);
 
             var tableQueryParameters = new TableQueryParameters(
                 GetTable(message.TableName),
@@ -200,7 +200,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             return new TableScanMessage<T>
             {
-                Type = originalMessage.Type,
+                DriverType = originalMessage.DriverType,
                 TableName = originalMessage.TableName,
                 Strategy = TableScanStrategy.PrefixScan,
                 TakeCount = originalMessage.TakeCount,

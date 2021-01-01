@@ -31,17 +31,17 @@ namespace Knapcode.ExplorePackages.Worker
         }
 
         [IgnoreProperty]
-        public CatalogScanType ParsedScanType
+        public CatalogScanDriverType ParsedDriverType
         {
-            get => Enum.Parse<CatalogScanType>(ScanType);
-            set => ScanType = value.ToString();
+            get => Enum.Parse<CatalogScanDriverType>(DriverType);
+            set => DriverType = value.ToString();
         }
 
         public string StorageSuffix { get; set; }
         public DateTimeOffset Created { get; set; }
         public string State { get; set; }
-        public string ScanType { get; set; }
-        public string ScanParameters { get; set; }
+        public string DriverType { get; set; }
+        public string DriverParameters { get; set; }
         public DateTimeOffset Min { get; set; }
         public DateTimeOffset Max { get; set; }
         public string Url { get; set; }

@@ -14,14 +14,14 @@ namespace Knapcode.ExplorePackages.Worker
             _serviceProvider = serviceProvider;
         }
 
-        public ITableScanDriver<T> Create(TableScanType type)
+        public ITableScanDriver<T> Create(TableScanDriverType driverType)
         {
-            switch (type)
+            switch (driverType)
             {
-                case TableScanType.TableCopy:
+                case TableScanDriverType.TableCopy:
                     return _serviceProvider.GetRequiredService<TableCopyDriver<T>>();
                 default:
-                    throw new NotSupportedException($"Table scan type '{type}' is not supported.");
+                    throw new NotSupportedException($"Table scan driver type '{driverType}' is not supported.");
             }
         }
     }

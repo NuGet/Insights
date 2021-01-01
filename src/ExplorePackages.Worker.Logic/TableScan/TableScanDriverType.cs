@@ -1,6 +1,6 @@
 ﻿namespace Knapcode.ExplorePackages.Worker
 {
-    public enum TableScanType
+    public enum TableScanDriverType
     {
         TableCopy,
     }
