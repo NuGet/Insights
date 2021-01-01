@@ -79,6 +79,11 @@ namespace Knapcode.ExplorePackages.Worker
                 await (Task)method.Invoke(processor, new object[] { deserializedMessage.Data, dequeueCount });
                 success = true;
             }
+            catch (Exception ex)
+            {
+                _logger.LogError("An exception occurred." + Environment.NewLine + "{ExceptionString}", ex.ToString());
+                throw;
+            }
             finally
             {
                 var metric = _telemetryClient.GetMetric($"MessageProcessor{(success ? "Success" : "Failure")}DurationMs", "SchemaName");

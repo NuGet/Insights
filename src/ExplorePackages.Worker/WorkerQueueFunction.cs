@@ -31,15 +31,7 @@ namespace Knapcode.ExplorePackages.Worker
             [QueueTrigger(WorkerQueueVariable, Connection = StorageConnection)] CloudQueueMessage message)
         {
             await using var scopeOwnership = _tempStreamLeaseScope.TakeOwnership();
-            try
-            {
-                await _messageProcessor.ProcessAsync(message.AsString, message.DequeueCount);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("An exception occurred." + Environment.NewLine + "{ExceptionString}", ex.ToString());
-                throw;
-            }
+            await _messageProcessor.ProcessAsync(message.AsString, message.DequeueCount);
         }
     }
 }

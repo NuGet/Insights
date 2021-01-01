@@ -38,7 +38,7 @@ namespace Knapcode.ExplorePackages.Worker.LatestLeafToLeafScan
                 var pageRank = pageGroup.Select(x => x.PageRank).Distinct().Single();
                 var pageScan = _expandService.CreatePageScan(indexScan, pageGroup.Key, pageRank);
 
-                var leafItemToRank = entities
+                var leafItemToRank = pageGroup
                     .Select(x => new
                     {
                         x.LeafRank,
