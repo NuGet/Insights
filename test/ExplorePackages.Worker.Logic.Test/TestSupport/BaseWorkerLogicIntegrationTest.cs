@@ -121,6 +121,7 @@ namespace Knapcode.ExplorePackages.Worker
         public CatalogScanService CatalogScanService => Host.Services.GetRequiredService<CatalogScanService>();
         public CursorStorageService CursorStorageService => Host.Services.GetRequiredService<CursorStorageService>();
         public CatalogScanStorageService CatalogScanStorageService => Host.Services.GetRequiredService<CatalogScanStorageService>();
+        public TaskStateStorageService TaskStateStorageService => Host.Services.GetRequiredService<TaskStateStorageService>();
         public IWorkerQueueFactory WorkerQueueFactory => Host.Services.GetRequiredService<IWorkerQueueFactory>();
         public ITelemetryClient TelemetryClient => Host.Services.GetRequiredService<ITelemetryClient>();
         public ILogger Logger => Host.Services.GetRequiredService<ILogger<BaseWorkerLogicIntegrationTest>>();

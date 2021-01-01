@@ -45,7 +45,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             var partitionKey = GetAggregateTasksPartitionKey(indexScan);
 
-            await _taskStateStorageService.InitializeAllAsync(
+            await _taskStateStorageService.AddAllAsync(
                 indexScan.StorageSuffix,
                 partitionKey,
                 buckets.Select(x => x.ToString()).ToList());
@@ -55,9 +55,10 @@ namespace Knapcode.ExplorePackages.Worker
                 {
                     SourceContainer = GetTableName(indexScan.StorageSuffix),
                     Bucket = b,
-                    TaskStateStorageSuffix = indexScan.StorageSuffix,
-                    TaskStatePartitionKey = partitionKey,
-                    TaskStateRowKey = b.ToString(),
+                    TaskStateKey = new TaskStateKey(
+                        indexScan.StorageSuffix,
+                        partitionKey,
+                         b.ToString()),
                 })
                 .ToList();
             await _messageEnqueuer.EnqueueAsync(messages);

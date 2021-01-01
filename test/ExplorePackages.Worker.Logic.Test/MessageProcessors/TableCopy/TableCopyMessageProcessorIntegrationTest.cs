@@ -54,8 +54,13 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
 
             var tableScanService = Host.Services.GetRequiredService<TableScanService<LatestPackageLeaf>>();
 
+            var taskStateStorageSuffix = "copy";
+            await TaskStateStorageService.InitializeAsync(taskStateStorageSuffix);
+            var taskState = await TaskStateStorageService.AddAsync(taskStateStorageSuffix, "copy", "copy");
+
             // Act
             await tableScanService.StartTableCopyAsync(
+                taskState.Key,
                 sourceTable.Name,
                 destinationTable.Name,
                 partitionKeyPrefix: string.Empty,
@@ -75,6 +80,11 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
                 pair.Second.ETag = string.Empty;
                 Assert.Equal(JsonConvert.SerializeObject(pair.First), JsonConvert.SerializeObject(pair.Second));
             });
+
+            var countLowerBound = await TaskStateStorageService.GetCountLowerBoundAsync(
+                taskState.Key.StorageSuffix,
+                taskState.Key.PartitionKey);
+            Assert.Equal(0, countLowerBound);
         }
     }
 }

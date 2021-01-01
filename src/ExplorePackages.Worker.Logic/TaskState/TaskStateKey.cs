@@ -1,0 +1,24 @@
+﻿using Newtonsoft.Json;
+
+namespace Knapcode.ExplorePackages.Worker
+{
+    public class TaskStateKey
+    {
+        [JsonConstructor]
+        public TaskStateKey(string storageSuffix, string partitionKey, string rowKey)
+        {
+            StorageSuffix = storageSuffix;
+            PartitionKey = partitionKey;
+            RowKey = rowKey;
+        }
+
+        [JsonProperty("s")]
+        public string StorageSuffix { get; }
+
+        [JsonProperty("p")]
+        public string PartitionKey { get; }
+
+        [JsonProperty("r")]
+        public string RowKey { get; }
+    }
+}

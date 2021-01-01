@@ -20,6 +20,7 @@ namespace Knapcode.ExplorePackages.Worker
         }
 
         public async Task StartTableCopyAsync(
+            TaskStateKey taskStateKey,
             string sourceTable,
             string destinationTable,
             string partitionKeyPrefix,
@@ -27,6 +28,7 @@ namespace Knapcode.ExplorePackages.Worker
             int takeCount)
         {
             await StartTableScanAsync(
+                taskStateKey,
                 TableScanDriverType.TableCopy,
                 sourceTable,
                 strategy,
@@ -39,6 +41,7 @@ namespace Knapcode.ExplorePackages.Worker
         }
 
         private async Task StartTableScanAsync(
+            TaskStateKey taskStateKey,
             TableScanDriverType driverType,
             string sourceTable,
             TableScanStrategy strategy,
@@ -63,6 +66,7 @@ namespace Knapcode.ExplorePackages.Worker
             {
                 new TableScanMessage<T>
                 {
+                    TaskStateKey = taskStateKey,
                     TableName = sourceTable,
                     Strategy = strategy,
                     DriverType = driverType,

@@ -28,19 +28,13 @@ namespace Knapcode.ExplorePackages.Worker
         public async Task ProcessAsync(CsvCompactMessage<T> message, int dequeueCount)
         {
             TaskState taskState;
-            if (message.Force
-                && message.TaskStatePartitionKey == null
-                && message.TaskStateRowKey == null
-                && message.TaskStateStorageSuffix == null)
+            if (message.Force && message.TaskStateKey == null)
             {
                 taskState = null;
             }
             else
             {
-                taskState = await _taskStateStorageService.GetAsync(
-                    message.TaskStateStorageSuffix,
-                    message.TaskStatePartitionKey,
-                    message.TaskStateRowKey);
+                taskState = await _taskStateStorageService.GetAsync(message.TaskStateKey);
             }
 
             if (!message.Force && taskState == null)

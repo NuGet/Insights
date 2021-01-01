@@ -11,13 +11,7 @@ namespace Knapcode.ExplorePackages.Worker
         public int Bucket { get; set; }
 
         [JsonProperty("ts")]
-        public string TaskStateStorageSuffix { get; set; }
-
-        [JsonProperty("tp")]
-        public string TaskStatePartitionKey { get; set; }
-
-        [JsonProperty("tr")]
-        public string TaskStateRowKey { get; set; }
+        public TaskStateKey TaskStateKey { get; set; }
 
         [JsonProperty("f")]
         public bool Force { get; set; }

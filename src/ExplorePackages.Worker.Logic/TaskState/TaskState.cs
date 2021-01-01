@@ -15,6 +15,11 @@ namespace Knapcode.ExplorePackages.Worker
         {
         }
 
+        [IgnoreProperty]
+        public TaskStateKey Key => new TaskStateKey(StorageSuffix, PartitionKey, RowKey);
+
         public string StorageSuffix { get; set; }
+
+        public string Parameters { get; set; }
     }
 }

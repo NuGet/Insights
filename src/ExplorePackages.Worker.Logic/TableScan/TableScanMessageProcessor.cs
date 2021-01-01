@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Table;
 
@@ -8,6 +10,7 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class TableScanMessageProcessor<T> : IMessageProcessor<TableScanMessage<T>> where T : ITableEntity, new()
     {
+        private readonly TaskStateStorageService _taskStateStorageService;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly MessageEnqueuer _enqueuer;
         private readonly SchemaSerializer _serializer;
@@ -16,6 +19,7 @@ namespace Knapcode.ExplorePackages.Worker
         private readonly ITelemetryClient _telemetryClient;
 
         public TableScanMessageProcessor(
+            TaskStateStorageService taskStateStorageService,
             ServiceClientFactory serviceClientFactory,
             MessageEnqueuer enqueuer,
             SchemaSerializer serializer,
@@ -23,6 +27,7 @@ namespace Knapcode.ExplorePackages.Worker
             TableScanDriverFactory<T> driverFactory,
             ITelemetryClient telemetryClient)
         {
+            _taskStateStorageService = taskStateStorageService;
             _serviceClientFactory = serviceClientFactory;
             _enqueuer = enqueuer;
             _serializer = serializer;
@@ -33,6 +38,12 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task ProcessAsync(TableScanMessage<T> message, int dequeueCount)
         {
+            var taskState = await _taskStateStorageService.GetAsync(message.TaskStateKey);
+            if (taskState == null)
+            {
+                return;
+            }
+
             switch (message.Strategy)
             {
                 case TableScanStrategy.Serial:
@@ -41,7 +52,11 @@ namespace Knapcode.ExplorePackages.Worker
                 case TableScanStrategy.PrefixScan:
                     await ProcessPrefixScanAsync(message);
                     break;
+                default:
+                    throw new NotImplementedException();
             }
+
+            await _taskStateStorageService.DeleteAsync(taskState);
         }
 
         private async Task ProcessSerialAsync(TableScanMessage<T> message)
@@ -159,6 +174,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             var entities = new List<T>();
             var tableCopyMessages = new List<TableScanMessage<T>>();
+            var taskStates = new List<TaskState>();
 
             foreach (var nextStep in nextSteps)
             {
@@ -168,20 +184,26 @@ namespace Knapcode.ExplorePackages.Worker
                         entities.AddRange(segment.Entities);
                         break;
                     case TablePrefixScanPartitionKeyQuery partitionKeyQuery:
-                        tableCopyMessages.Add(GetPrefixScanMessage(originalMessage, new TablePrefixScanPartitionKeyQueryParameters
-                        {
-                            Depth = partitionKeyQuery.Depth,
-                            PartitionKey = partitionKeyQuery.PartitionKey,
-                            RowKeySkip = partitionKeyQuery.RowKeySkip,
-                        }));
+                        tableCopyMessages.Add(GetPrefixScanMessage(
+                            originalMessage,
+                            new TablePrefixScanPartitionKeyQueryParameters
+                            {
+                                Depth = partitionKeyQuery.Depth,
+                                PartitionKey = partitionKeyQuery.PartitionKey,
+                                RowKeySkip = partitionKeyQuery.RowKeySkip,
+                            },
+                            taskStates));
                         break;
                     case TablePrefixScanPrefixQuery prefixQuery:
-                        tableCopyMessages.Add(GetPrefixScanMessage(originalMessage, new TablePrefixScanPrefixQueryParameters
-                        {
-                            Depth = prefixQuery.Depth,
-                            PartitionKeyPrefix = prefixQuery.PartitionKeyPrefix,
-                            PartitionKeyLowerBound = prefixQuery.PartitionKeyLowerBound,
-                        }));
+                        tableCopyMessages.Add(GetPrefixScanMessage(
+                            originalMessage,
+                            new TablePrefixScanPrefixQueryParameters
+                            {
+                                Depth = prefixQuery.Depth,
+                                PartitionKeyPrefix = prefixQuery.PartitionKeyPrefix,
+                                PartitionKeyLowerBound = prefixQuery.PartitionKeyLowerBound,
+                            },
+                            taskStates));
                         break;
                     default:
                         throw new NotImplementedException();
@@ -193,19 +215,47 @@ namespace Knapcode.ExplorePackages.Worker
                 await driver.ProcessEntitySegmentAsync(originalMessage.TableName, originalMessage.DriverParameters, entities);
             }
 
-            await _enqueuer.EnqueueAsync(tableCopyMessages);
+            if (tableCopyMessages.Any())
+            {
+                await _taskStateStorageService.AddAllAsync(
+                    originalMessage.TaskStateKey.StorageSuffix,
+                    originalMessage.TaskStateKey.PartitionKey,
+                    taskStates);
+
+                await _enqueuer.EnqueueAsync(tableCopyMessages);
+            }
         }
 
-        private TableScanMessage<T> GetPrefixScanMessage<TParameters>(TableScanMessage<T> originalMessage, TParameters scanParameters)
+        private TableScanMessage<T> GetPrefixScanMessage<TParameters>(TableScanMessage<T> originalMessage, TParameters scanParameters, List<TaskState> addedTaskStates)
         {
+            var serializedParameters = _serializer.Serialize(scanParameters);
+
+            string rowKey;
+            using (var sha256 = SHA256.Create())
+            {
+                var bytes = Encoding.UTF8.GetBytes(serializedParameters.AsString());
+                rowKey = sha256.ComputeHash(bytes).ToTrimmedBase32();
+            }
+
+            var taskState = new TaskState(
+                originalMessage.TaskStateKey.StorageSuffix,
+                originalMessage.TaskStateKey.PartitionKey,
+                rowKey)
+            {
+                Parameters = serializedParameters.AsString(),
+            };
+
+            addedTaskStates.Add(taskState);
+
             return new TableScanMessage<T>
             {
+                TaskStateKey = taskState.Key,
                 DriverType = originalMessage.DriverType,
                 TableName = originalMessage.TableName,
                 Strategy = TableScanStrategy.PrefixScan,
                 TakeCount = originalMessage.TakeCount,
                 PartitionKeyPrefix = originalMessage.PartitionKeyPrefix,
-                ScanParameters = _serializer.Serialize(scanParameters).AsJToken(),
+                ScanParameters = serializedParameters.AsJToken(),
                 DriverParameters = originalMessage.DriverParameters,
             };
         }
