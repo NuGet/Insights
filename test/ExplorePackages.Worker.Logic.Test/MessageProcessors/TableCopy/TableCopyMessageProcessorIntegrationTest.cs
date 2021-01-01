@@ -52,10 +52,10 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
             var sourceTable = tableClient.GetTableReference(Options.Value.LatestLeavesTableName);
             var destinationTable = tableClient.GetTableReference(destTableName);
 
-            var enqueuer = Host.Services.GetRequiredService<TableScanEnqueuer<LatestPackageLeaf>>();
+            var tableScanService = Host.Services.GetRequiredService<TableScanService<LatestPackageLeaf>>();
 
             // Act
-            await enqueuer.StartTableCopyAsync(
+            await tableScanService.StartTableCopyAsync(
                 sourceTable.Name,
                 destinationTable.Name,
                 partitionKeyPrefix: string.Empty,

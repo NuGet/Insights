@@ -36,7 +36,7 @@ namespace Knapcode.ExplorePackages.Tool
         private readonly StorageLeaseService _storageLeaseService;
         private readonly ICatalogLeafToCsvDriver<PackageAssembly> _findPackageAssembliesDriver;
         private readonly TablePrefixScanner _tablePrefixScanner;
-        private readonly TableScanEnqueuer<LatestPackageLeaf> _tableCopyEnqueuer;
+        private readonly TableScanService<LatestPackageLeaf> _tableScanService;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<SandboxCommand> _logger;
 
@@ -54,7 +54,7 @@ namespace Knapcode.ExplorePackages.Tool
             StorageLeaseService storageLeaseService,
             ICatalogLeafToCsvDriver<PackageAssembly> findPackageAssembliesDriver,
             TablePrefixScanner tablePrefixScanner,
-            TableScanEnqueuer<LatestPackageLeaf> tableCopyEnqueuer,
+            TableScanService<LatestPackageLeaf> tableScanService,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<SandboxCommand> logger)
         {
@@ -71,7 +71,7 @@ namespace Knapcode.ExplorePackages.Tool
             _storageLeaseService = storageLeaseService;
             _findPackageAssembliesDriver = findPackageAssembliesDriver;
             _tablePrefixScanner = tablePrefixScanner;
-            _tableCopyEnqueuer = tableCopyEnqueuer;
+            _tableScanService = tableScanService;
             _options = options;
             _logger = logger;
         }

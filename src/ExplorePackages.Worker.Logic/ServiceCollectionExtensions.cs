@@ -20,7 +20,7 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient<IMessageBatcher, MessageBatcher>();
             serviceCollection.AddTransient<MessageEnqueuer>();
 
-            serviceCollection.AddTransient(typeof(TableScanEnqueuer<>));
+            serviceCollection.AddTransient(typeof(TableScanService<>));
             serviceCollection.AddTransient(typeof(TableScanDriverFactory<>));
             AddTableScan<LatestPackageLeaf>(serviceCollection);
             serviceCollection.AddTransient(typeof(TableCopyDriver<>));

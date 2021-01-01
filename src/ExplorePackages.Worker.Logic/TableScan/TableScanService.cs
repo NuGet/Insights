@@ -6,12 +6,12 @@ using Newtonsoft.Json.Linq;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class TableScanEnqueuer<T> where T : ITableEntity, new()
+    public class TableScanService<T> where T : ITableEntity, new()
     {
         private readonly MessageEnqueuer _enqueuer;
         private readonly SchemaSerializer _serializer;
 
-        public TableScanEnqueuer(
+        public TableScanService(
             MessageEnqueuer enqueuer,
             SchemaSerializer serializer)
         {
