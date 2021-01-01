@@ -54,7 +54,7 @@ namespace Knapcode.ExplorePackages.Worker.LatestLeafToLeafScan
                     .ToList();
 
                 // Insert the leaf scan rows
-                await _expandService.InsertLeafScansAsync(indexScan.StorageSuffix, indexScan.ScanId, pageId, leafScans);
+                await _expandService.InsertLeafScansAsync(indexScan.StorageSuffix, indexScan.ScanId, pageId, leafScans, allowExtra: true);
 
                 // Enqueue the leaf scans
                 await _expandService.EnqueueLeafScansAsync(leafScans);

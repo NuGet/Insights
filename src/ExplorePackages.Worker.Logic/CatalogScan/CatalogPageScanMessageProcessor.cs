@@ -76,7 +76,7 @@ namespace Knapcode.ExplorePackages.Worker
             if (scan.ParsedState == CatalogScanState.Expanding)
             {
                 var leafScans = await lazyLeafScansTask.Value;
-                await _expandService.InsertLeafScansAsync(scan.StorageSuffix, scan.ScanId, scan.PageId, leafScans);
+                await _expandService.InsertLeafScansAsync(scan.StorageSuffix, scan.ScanId, scan.PageId, leafScans, allowExtra: false);
 
                 scan.ParsedState = CatalogScanState.Enqueuing;
                 await _storageService.ReplaceAsync(scan);
