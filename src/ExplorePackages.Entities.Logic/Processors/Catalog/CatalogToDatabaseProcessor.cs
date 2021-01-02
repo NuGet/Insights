@@ -67,7 +67,7 @@ namespace Knapcode.ExplorePackages.Entities
             var latestEntries = latestEntryToFirstCommitTimestamp
                 .Keys
                 .OrderBy(x => x.CommitTimestamp)
-                .OrderBy(x => x.PackageId, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(x => x.PackageId, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(x => x.ParsePackageVersion())
                 .ToList();
 

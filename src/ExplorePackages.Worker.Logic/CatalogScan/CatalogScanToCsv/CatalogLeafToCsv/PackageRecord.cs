@@ -45,7 +45,7 @@ namespace Knapcode.ExplorePackages.Worker
                 .Select(g => g
                     .GroupBy(x => new { x.ScanId, x.CatalogCommitTimestamp }) // Group package version records by scan and catalog commit timestamp
                     .OrderByDescending(x => x.Key.CatalogCommitTimestamp)
-                    .OrderByDescending(x => x.First().ScanTimestamp)
+                    .ThenByDescending(x => x.First().ScanTimestamp)
                     .First())
                 .SelectMany(g => g)
                 .OrderBy(x => x.Id, StringComparer.OrdinalIgnoreCase)

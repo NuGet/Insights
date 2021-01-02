@@ -42,9 +42,9 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
                     .OrderByDescending(x => x.Timestamp) // Ignore all but the most recent result
                     .First())
                 .OrderBy(x => x.Id, StringComparer.OrdinalIgnoreCase)
-                .OrderBy(x => x.Version, StringComparer.OrdinalIgnoreCase)
-                .OrderBy(x => x.Framework, StringComparer.OrdinalIgnoreCase)
-                .OrderBy(x => x.DotnetVersion, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(x => x.Version, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(x => x.Framework, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(x => x.DotnetVersion, StringComparer.OrdinalIgnoreCase)
                 .ToList();
         }
     }
