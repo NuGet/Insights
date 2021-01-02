@@ -54,7 +54,7 @@ namespace Knapcode.ExplorePackages
             {
                 ResourceGroupName = _resourceGroup.Name,
                 ApplicationType = "web",
-                DailyDataCapInGb = 5,
+                DailyDataCapInGb = 0.2,
                 RetentionInDays = 30,
             });
 
