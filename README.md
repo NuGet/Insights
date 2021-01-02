@@ -56,9 +56,10 @@ Results:
        - Functions: $0.96
        - Storage: $0.21
 - `FindPackageAssets` with latest leaf de-duping
-   - Resource group name: `explorepackages-jver26ed9d3c5`
    - Runtime: 42 minutes, 45 seconds
-   - Cost: TBD
+   - Cost: 
+       - Functions: $1.49
+       - Storage: $0.29
 - `FindLatestLeaves` from "available min"
    - Runtime: 7 minutes, 56 seconds
    - Cost: <$0.01
