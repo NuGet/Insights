@@ -7,7 +7,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
     {
         Task InitializeAsync(CatalogIndexScan indexScan);
 
-        ILatestPackageLeafStorage<T> Create(
+        Task<ILatestPackageLeafStorage<T>> CreateAsync(
             CatalogPageScan pageScan,
             IReadOnlyDictionary<CatalogLeafItem, int> leafItemToRank);
     }

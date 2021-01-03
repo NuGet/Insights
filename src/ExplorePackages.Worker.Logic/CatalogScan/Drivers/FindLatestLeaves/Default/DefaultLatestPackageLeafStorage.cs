@@ -3,14 +3,14 @@ using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
 {
-    public class DefaultLatestPackageLeafStorage : ILatestPackageLeafStorage<LatestPackageLeaf>
+    public class SimpleLatestPackageLeafStorage : ILatestPackageLeafStorage<LatestPackageLeaf>
     {
         private readonly string _prefix;
         private readonly IReadOnlyDictionary<CatalogLeafItem, int> _leafItemToRank;
         private readonly int _pageRank;
         private readonly string _pageUrl;
 
-        public DefaultLatestPackageLeafStorage(
+        public SimpleLatestPackageLeafStorage(
             CloudTable table,
             string prefix,
             IReadOnlyDictionary<CatalogLeafItem, int> leafItemToRank,

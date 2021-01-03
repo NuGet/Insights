@@ -24,15 +24,9 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
             _catalogScanService = catalogScanService;
             _options = options;
         }
-        public string GetTableName(string storageSuffix)
-        {
-            return $"{_options.Value.LatestLeavesTableName}{storageSuffix}";
-        }
 
-        public async Task DeleteTableAsync(string storageSuffix)
-        {
-            await GetTable(storageSuffix).DeleteIfExistsAsync();
-        }
+        public string GetTableName(string storageSuffix) => $"{_options.Value.LatestLeavesTableName}{storageSuffix}";
+        public Task DeleteTableAsync(string storageSuffix) => GetTable(storageSuffix).DeleteIfExistsAsync();
 
         public async Task InitializeAsync(CatalogIndexScan indexScan)
         {
@@ -56,16 +50,17 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
             await table.CreateIfNotExistsAsync(retry: true);
         }
 
-        public ILatestPackageLeafStorage<LatestPackageLeaf> Create(CatalogPageScan pageScan, IReadOnlyDictionary<CatalogLeafItem, int> leafItemToRank)
+        public Task<ILatestPackageLeafStorage<LatestPackageLeaf>> CreateAsync(CatalogPageScan pageScan, IReadOnlyDictionary<CatalogLeafItem, int> leafItemToRank)
         {
             var parameters = DeserializeParameters(pageScan.DriverParameters);
             var table = GetTable(parameters.StorageSuffix);
-            return new DefaultLatestPackageLeafStorage(
+            var storage = new SimpleLatestPackageLeafStorage(
                 table,
                 parameters.Prefix,
                 leafItemToRank,
                 pageScan.Rank,
                 pageScan.Url);
+            return Task.FromResult<ILatestPackageLeafStorage<LatestPackageLeaf>>(storage);
         }
 
         private DefaultLatestPackageLeafParameters DeserializeParameters(string parameters)

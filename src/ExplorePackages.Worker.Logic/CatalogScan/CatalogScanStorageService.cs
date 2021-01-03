@@ -164,7 +164,7 @@ namespace Knapcode.ExplorePackages.Worker
             return GetClient().GetTableReference($"{_options.Value.CatalogPageScanTableName}{suffix}");
         }
 
-        private CloudTable GetLeafScanTable(string suffix)
+        public CloudTable GetLeafScanTable(string suffix)
         {
             return GetClient().GetTableReference($"{_options.Value.CatalogLeafScanTableName}{suffix}");
         }

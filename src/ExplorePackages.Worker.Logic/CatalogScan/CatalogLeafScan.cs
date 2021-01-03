@@ -1,9 +1,10 @@
 ﻿using System;
+using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
 using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class CatalogLeafScan : TableEntity
+    public class CatalogLeafScan : TableEntity, ILatestPackageLeaf
     {
         public CatalogLeafScan(string storageSuffix, string scanId, string pageId, string leafId)
         {

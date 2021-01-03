@@ -43,7 +43,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
             var leafItemToRank = page.GetLeafItemToRank();
             leafItemToRank = items.ToDictionary(x => x, x => leafItemToRank[x]);
 
-            var storage = _storageFactory.Create(pageScan, leafItemToRank);
+            var storage = await _storageFactory.CreateAsync(pageScan, leafItemToRank);
 
             await AddAsync(items, storage);
 
