@@ -58,6 +58,11 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             await _taskStateStorageService.DeleteAsync(taskState);
+
+            var sinceStarted = DateTimeOffset.UtcNow - message.Started;
+            _telemetryClient
+                .GetMetric("TableScanMessageProcessor.SinceStartedSeconds", "Strategy")
+                .TrackValue(sinceStarted.TotalSeconds, message.Strategy.ToString());
         }
 
         private async Task ProcessSerialAsync(TableScanMessage<T> message)

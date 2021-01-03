@@ -80,6 +80,7 @@ namespace Knapcode.ExplorePackages.Worker
             {
                 new TableScanMessage<T>
                 {
+                    Started = DateTimeOffset.UtcNow,
                     TaskStateKey = taskStateKey,
                     TableName = sourceTable,
                     Strategy = strategy,
