@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaves;
 using Microsoft.Extensions.Logging;
