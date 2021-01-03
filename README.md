@@ -18,8 +18,9 @@ Azure Blob Storage CSV files (easy import to Kusto a.k.a Azure Data Explorer).
 
 - [`FindPackageAssembly`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindPackageAssembly/FindPackageAssemblyDriver.cs) - find information like public key tokens for all assemblies on NuGet.org
 - [`FindPackageAsset`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindPackageAsset/FindPackageAssetDriver.cs) - find all assets recognized by NuGet restore
-- [`FindLatestLeaf`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindLatestLeaf/FindLatestLeafDriver.cs) - find the latest catalog leaf for each package ID and version
 - [`FindCatalogLeafItem`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindCatalogLeafItem/FindCatalogLeafItemDriver.cs) - write all catalog leaf items to big CSVs for analysis
+- [`LatestLeaf`](src/ExplorePackages.Worker.Logic/CatalogScan/LatestLeaf/FindLatestLeafDriver.cs) - infrastructure to find the latest leaf per package ID and version
+  - [`FindLatestPackageLeaf`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindLatestPackageLeaf) - uses this generic infrastructure to write latest leaves to table storage
 
 #### Performance and cost
 
@@ -112,7 +113,7 @@ https://explorepackages.azurewebsites.net/
 I need to keep a TODO for this project since I indulge myself in all of the rabbit trails that I want and often lose
 track of what I was originally working on. Maybe I should use issues for this? Too much work.
 
-- Make `FindPackageAssembly` use MiniZip to fetch the file listing first similar to `FinsPackageAsset`, ensuring that
+- Make `FindPackageAssembly` use MiniZip to fetch the file listing first similar to `FindPackageAsset`, ensuring that
   there is at least one assembly (by file extension) before downloading the full package.
 
 - Store the MiniZip file listing in a ExplorePackages-maintained record (probably table storage) to avoid unnecessary
