@@ -16,10 +16,10 @@ leaf.
 Results are stored in different ways but so far it's either results in Azure Table Storage (super cheap and scalable) or
 Azure Blob Storage CSV files (easy import to Kusto a.k.a Azure Data Explorer).
 
-- [`FindPackageAssemblies`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindPackageAssemblies/FindPackageAssembliesDriver.cs) - find information like public key tokens for all assemblies on NuGet.org
-- [`FindPackageAssets`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindPackageAssets/FindPackageAssetsDriver.cs) - find all assets recognized by NuGet restore
-- [`FindLatestLeaves`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindLatestLeaves/FindLatestLeavesDriver.cs) - find the latest catalog leaf for each package ID and version
-- [`FindCatalogLeafItems`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindCatalogLeafItems/FindCatalogLeafItemsDriver.cs) - write all catalog leaf items to big CSVs for analysis
+- [`FindPackageAssembly`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindPackageAssembly/FindPackageAssemblyDriver.cs) - find information like public key tokens for all assemblies on NuGet.org
+- [`FindPackageAsset`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindPackageAsset/FindPackageAssetDriver.cs) - find all assets recognized by NuGet restore
+- [`FindLatestLeaf`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindLatestLeaf/FindLatestLeafDriver.cs) - find the latest catalog leaf for each package ID and version
+- [`FindCatalogLeafItem`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindCatalogLeafItem/FindCatalogLeafItemDriver.cs) - write all catalog leaf items to big CSVs for analysis
 
 #### Performance and cost
 
@@ -31,8 +31,8 @@ Tested timestamp ranges:
   - Leaf count: 6,339,112
   - Unique packages: 3,597,830
   - Drivers that used this range:
-    - `FindLatestLeaves`
-    - `FindCatalogLeafItems`
+    - `FindLatestLeaf`
+    - `FindCatalogLeafItem`
 - Mininum commit to get all **non-deleted** packages:
   - Min: `2018-08-08T16:29:16.4488297Z`
   - Max: `2020-12-27T08:10:52.8300258Z`
@@ -40,33 +40,33 @@ Tested timestamp ranges:
   - Leaf count: 4,007,407
   - Unique packages: 3,593,656
   - Tests that used this range:
-    - `FindPackageAssemblies`
-    - `FindPackageAssets`
-    - `FindLatestLeaves`
+    - `FindPackageAssembly`
+    - `FindPackageAsset`
+    - `FindLatestLeaf`
 
 Results:
-- `FindPackageAssemblies`
+- `FindPackageAssembly`
    - Runtime: 6 hours, 20 minutes, 8 seconds
    - Cost:
        - Functions: $8.73
        - Storage: $2.83
-- `FindPackageAssets`
+- `FindPackageAsset`
    - Runtime: 48 minutes, 23 seconds
    - Cost: 
        - Functions: $0.96
        - Storage: $0.21
-- `FindPackageAssets` with latest leaf de-duping
+- `FindPackageAsset` with latest leaf de-duping
    - Runtime: 42 minutes, 45 seconds
    - Cost: 
        - Functions: $1.49
        - Storage: $0.29
-- `FindLatestLeaves` from "available min"
+- `FindLatestLeaf` from "available min"
    - Runtime: 7 minutes, 56 seconds
    - Cost: <$0.01
-- `FindLatestLeaves` from "absolute min"
+- `FindLatestLeaf` from "absolute min"
    - Runtime: 8 minutes, 25 seconds
    - Cost: $0.01
-- `FindCatalogLeafItems`
+- `FindCatalogLeafItem`
    - Runtime: 2 minutes, 28 seconds
    - Cost: <$0.01
 
@@ -112,7 +112,7 @@ https://explorepackages.azurewebsites.net/
 I need to keep a TODO for this project since I indulge myself in all of the rabbit trails that I want and often lose
 track of what I was originally working on. Maybe I should use issues for this? Too much work.
 
-- Make `FindPackageAssemblies` use MiniZip to fetch the file listing first similar to `FinsPackageAssets`, ensuring that
+- Make `FindPackageAssembly` use MiniZip to fetch the file listing first similar to `FinsPackageAsset`, ensuring that
   there is at least one assembly (by file extension) before downloading the full package.
 
 - Store the MiniZip file listing in a ExplorePackages-maintained record (probably table storage) to avoid unnecessary
