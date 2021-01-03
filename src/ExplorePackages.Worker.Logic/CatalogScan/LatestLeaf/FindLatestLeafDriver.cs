@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using static Knapcode.ExplorePackages.StorageUtility;
 
@@ -53,9 +55,23 @@ namespace Knapcode.ExplorePackages.Worker
         private async Task AddAsync(List<CatalogLeafItem> items, ILatestPackageLeafStorage<T> storage)
         {
             var packageIdGroups = items.GroupBy(x => x.PackageId, StringComparer.OrdinalIgnoreCase);
+            const int maxAttempts = 3;
             foreach (var group in packageIdGroups)
             {
-                await AddAsync(group.Key, group, storage);
+                var attempt = 0;
+                while (true)
+                {
+                    attempt++;
+                    try
+                    {
+                        await AddAsync(group.Key, group, storage);
+                        break;
+                    }
+                    catch (StorageException ex) when (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.Conflict && attempt < maxAttempts)
+                    {
+                        _logger.LogWarning(ex, "Attempt {Attempt}: adding entities for package ID {PackageId} failed due to a conflict. Trying again.", attempt, group.Key);
+                    }
+                }
             }
         }
 
