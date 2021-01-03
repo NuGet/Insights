@@ -132,5 +132,3 @@ track of what I was originally working on. Maybe I should use issues for this? T
 - gzip batch or bulk enqueue messages?
 
 - consider removing polling at the catalog page scan level, and poll for leaves at the index level
-
-- make driver type names singular to improve consistency
