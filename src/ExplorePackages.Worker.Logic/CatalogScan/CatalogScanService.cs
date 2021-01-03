@@ -138,7 +138,7 @@ namespace Knapcode.ExplorePackages.Worker
             DateTimeOffset min,
             DateTimeOffset? max)
         {
-            var parameters = new FindLatestLeavesParameters
+            var parameters = new DefaultLatestPackageLeafParameters
             {
                 Prefix = prefix,
                 StorageSuffix = destinationStorageSuffix,
@@ -155,7 +155,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         private async Task<CatalogIndexScan> UpdateFindLatestLeavesAsync(DateTimeOffset? max)
         {
-            var parameters = new FindLatestLeavesParameters
+            var parameters = new DefaultLatestPackageLeafParameters
             {
                 Prefix = string.Empty,
                 StorageSuffix = string.Empty,

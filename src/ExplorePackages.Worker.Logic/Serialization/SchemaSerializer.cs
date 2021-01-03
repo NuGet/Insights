@@ -39,7 +39,7 @@ namespace Knapcode.ExplorePackages.Worker
             new SchemaV1<TablePrefixScanPartitionKeyQueryParameters>("tps.pkq"),
             new SchemaV1<TablePrefixScanPrefixQueryParameters>("tps.pq"),
 
-            new SchemaV1<FindLatestLeavesParameters>("fll"),
+            new SchemaV1<DefaultLatestPackageLeafParameters>("fll"),
             new SchemaV1<CatalogLeafToCsvParameters>("cl2c"),
 
             new SchemaV1<TableCopyParameters>("tc"),

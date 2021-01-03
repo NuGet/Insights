@@ -2,7 +2,7 @@
 
 namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
 {
-    public class FindLatestLeavesParameters
+    public class DefaultLatestPackageLeafParameters
     {
         [JsonProperty("p")]
         public string Prefix { get; set; }

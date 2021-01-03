@@ -27,7 +27,6 @@ namespace Knapcode.ExplorePackages.Tool
         private readonly IWorkerQueueFactory _workerQueueFactory;
         private readonly CursorStorageService _cursorStorageService;
         private readonly CatalogScanStorageService _catalogScanStorageService;
-        private readonly LatestPackageLeafStorageService _latestPackageLeafStorageService;
         private readonly AppendResultStorageService _appendResultStorageService;
         private readonly IMessageProcessor<RunRealRestoreMessage> _messageProcessor;
         private readonly MessageEnqueuer _messageEnqueuer;
@@ -45,7 +44,6 @@ namespace Knapcode.ExplorePackages.Tool
             IWorkerQueueFactory workerQueueFactory,
             CursorStorageService cursorStorageService,
             CatalogScanStorageService catalogScanStorageService,
-            LatestPackageLeafStorageService latestPackageLeafStorageService,
             AppendResultStorageService appendResultStorageService,
             IMessageProcessor<RunRealRestoreMessage> messageProcessor,
             MessageEnqueuer messageEnqueuer,
@@ -62,7 +60,6 @@ namespace Knapcode.ExplorePackages.Tool
             _workerQueueFactory = workerQueueFactory;
             _cursorStorageService = cursorStorageService;
             _catalogScanStorageService = catalogScanStorageService;
-            _latestPackageLeafStorageService = latestPackageLeafStorageService;
             _appendResultStorageService = appendResultStorageService;
             _messageProcessor = messageProcessor;
             _messageEnqueuer = messageEnqueuer;

@@ -23,7 +23,7 @@ namespace Knapcode.ExplorePackages.Worker
                 case CatalogScanDriverType.FindCatalogLeafItems:
                     return _serviceProvider.GetRequiredService<FindCatalogLeafItemsDriver>();
                 case CatalogScanDriverType.FindLatestLeaves:
-                    return _serviceProvider.GetRequiredService<FindLatestLeavesDriver>();
+                    return _serviceProvider.GetRequiredService<FindLatestLeavesDriver<LatestPackageLeaf>>();
                 case CatalogScanDriverType.FindPackageAssets:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<PackageAsset>>();
                 case CatalogScanDriverType.FindPackageAssemblies:

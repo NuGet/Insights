@@ -4,7 +4,7 @@ using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
 {
-    public class LatestPackageLeaf : TableEntity
+    public class LatestPackageLeaf : TableEntity, ILatestPackageLeaf
     {
         public LatestPackageLeaf(string prefix, CatalogLeafItem item, int leafRank, int pageRank, string pageUrl)
         {
