@@ -85,7 +85,7 @@ namespace Knapcode.ExplorePackages.Worker
                 await _storageService.ReplaceAsync(scan);
             }
 
-            // Enqueueing: enqueue a maessage for each page
+            // Enqueueing: enqueue a message for each page
             if (scan.ParsedState == CatalogScanState.Enqueuing)
             {
                 var pageScans = await lazyPageScansTask.Value;
@@ -96,15 +96,14 @@ namespace Knapcode.ExplorePackages.Worker
                 await _storageService.ReplaceAsync(scan);
             }
 
-            // Waiting: check if all of the page scans are complete
+            // Waiting: wait for the page scans and subsequent leaf scans to complete
             if (scan.ParsedState == CatalogScanState.Waiting)
             {
-                var countLowerBound = await _storageService.GetPageScanCountLowerBoundAsync(scan.StorageSuffix, scan.ScanId);
-                if (countLowerBound > 0)
+                if (!await ArePageScansCompleteAsync(scan) || !await AreLeafScansCompleteAsync(scan))
                 {
-                    _logger.LogInformation("There are at least {Count} page scans pending.", countLowerBound);
                     message.AttemptCount++;
                     await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
+                    return;
                 }
                 else
                 {
@@ -139,6 +138,7 @@ namespace Knapcode.ExplorePackages.Worker
                     _logger.LogInformation("Still finding latest catalog leaf scans.");
                     message.AttemptCount++;
                     await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
+                    return;
                 }
                 else
                 {
@@ -184,35 +184,60 @@ namespace Knapcode.ExplorePackages.Worker
             // Waiting: wait for the table scan and subsequent leaf scans to complete
             if (scan.ParsedState == CatalogScanState.Waiting)
             {
-                var taskStateCountLowerBound = await _taskStateStorageService.GetCountLowerBoundAsync(
-                    taskStateKey.StorageSuffix,
-                    taskStateKey.PartitionKey);
-                if (taskStateCountLowerBound > 0)
+                if (!await AreTableScanStepsCompleteAsync(taskStateKey) || !await AreLeafScansCompleteAsync(scan))
                 {
-                    _logger.LogInformation("There are at least {Count} table scan tasks pending.", taskStateCountLowerBound);
                     message.AttemptCount++;
                     await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
+                    return;
                 }
                 else
                 {
-                    var leafCountLowerBound = await _storageService.GetLeafScanCountLowerBoundAsync(
-                        scan.StorageSuffix,
-                        scan.ScanId);
-                    if (leafCountLowerBound > 0)
-                    {
-                        _logger.LogInformation("There are at least {Count} leaf scans pending.", leafCountLowerBound);
-                        message.AttemptCount++;
-                        await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
-                    }
-                    else
-                    {
-                        scan.ParsedState = CatalogScanState.StartingAggregate;
-                        await _storageService.ReplaceAsync(scan);
-                    }
+                    scan.ParsedState = CatalogScanState.StartingAggregate;
+                    await _storageService.ReplaceAsync(scan);
                 }
             }
 
             await HandleAggregateAndFinalizeStatesAsync(message, scan, driver);
+        }
+
+        private async Task<bool> ArePageScansCompleteAsync(CatalogIndexScan scan)
+        {
+            var countLowerBound = await _storageService.GetPageScanCountLowerBoundAsync(scan.StorageSuffix, scan.ScanId);
+            if (countLowerBound > 0)
+            {
+                _logger.LogInformation("There are at least {Count} page scans pending.", countLowerBound);
+                return false;
+            }
+
+            return true;
+        }
+
+        private async Task<bool> AreTableScanStepsCompleteAsync(TaskStateKey taskStateKey)
+        {
+            var taskStateCountLowerBound = await _taskStateStorageService.GetCountLowerBoundAsync(
+                taskStateKey.StorageSuffix,
+                taskStateKey.PartitionKey);
+            if (taskStateCountLowerBound > 0)
+            {
+                _logger.LogInformation("There are at least {Count} table scan steps pending.", taskStateCountLowerBound);
+                return false;
+            }
+
+            return true;
+        }
+
+        private async Task<bool> AreLeafScansCompleteAsync(CatalogIndexScan scan)
+        {
+            var countLowerBound = await _storageService.GetLeafScanCountLowerBoundAsync(
+                scan.StorageSuffix,
+                scan.ScanId);
+            if (countLowerBound > 0)
+            {
+                _logger.LogInformation("There are at least {Count} leaf scans pending.", countLowerBound);
+                return false;
+            }
+
+            return true;
         }
 
         private async Task<Lazy<Task<CatalogIndex>>> HandleCreateStateAsync(CatalogIndexScan scan, CatalogScanState nextState)
@@ -261,6 +286,7 @@ namespace Knapcode.ExplorePackages.Worker
                     _logger.LogInformation("The index scan is still aggregating.");
                     message.AttemptCount++;
                     await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
+                    return;
                 }
                 else
                 {

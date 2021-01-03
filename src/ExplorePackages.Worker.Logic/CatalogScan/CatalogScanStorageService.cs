@@ -117,13 +117,6 @@ namespace Knapcode.ExplorePackages.Worker
                 _telemetryClient.StartQueryLoopMetrics());
         }
 
-        public async Task<int> GetLeafScanCountLowerBoundAsync(string storageSuffix, string scanId, string pageId)
-        {
-            return await GetLeafScanTable(storageSuffix).GetEntityCountLowerBoundAsync<CatalogLeafScan>(
-                CatalogLeafScan.GetPartitionKey(scanId, pageId),
-                _telemetryClient.StartQueryLoopMetrics());
-        }
-
         public async Task<int> GetLeafScanCountLowerBoundAsync(string storageSuffix, string scanId)
         {
             return await GetLeafScanTable(storageSuffix).GetEntityCountLowerBoundAsync<CatalogLeafScan>(

@@ -131,5 +131,3 @@ track of what I was originally working on. Maybe I should use issues for this? T
 - Enable enqueuing as many messages as possible for a bulk enqueue message, but no more and return the extra
 
 - gzip batch or bulk enqueue messages?
-
-- consider removing polling at the catalog page scan level, and poll for leaves at the index level

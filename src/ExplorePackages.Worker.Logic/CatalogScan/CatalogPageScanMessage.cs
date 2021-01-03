@@ -12,8 +12,5 @@ namespace Knapcode.ExplorePackages.Worker
 
         [JsonProperty("r")]
         public string PageId { get; set; }
-
-        [JsonProperty("ac")]
-        public int AttemptCount { get; set; }
     }
 }
