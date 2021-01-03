@@ -4,7 +4,7 @@ using System;
 using System.IO;
 using Knapcode.ExplorePackages;
 
-namespace Knapcode.ExplorePackages.Worker.FindPackageAssemblies
+namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
 {
     /* Kusto DDL:
 

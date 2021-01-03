@@ -37,6 +37,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             var catalogScanTasks = Enum
                 .GetValues(typeof(CatalogScanDriverType))
                 .Cast<CatalogScanDriverType>()
+                .Where(x => x != CatalogScanDriverType.FindLatestCatalogLeafScan) // this driver is only used as part of another catalog scan as an implementation detail
                 .Select(GetCatalogScanAsync)
                 .ToList();
 

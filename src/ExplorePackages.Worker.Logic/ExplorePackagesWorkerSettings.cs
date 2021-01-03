@@ -18,13 +18,13 @@
             CatalogPageScanTableName = "catalogpagescans";
             CatalogLeafScanTableName = "catalogleafscans";
             TaskStateTableName = "taskstate";
-            CsvRecordsTableName = "csvrecords";
+            CsvRecordTableName = "csvrecords";
 
-            LatestPackageLeavesTableName = "latestpackageleaves";
-            FindPackageAssetsContainerName = "findpackageassets";
-            FindPackageAssembliesContainerName = "findpackageassemblies";
-            RunRealRestoreContainerName = "runrealrestore";
-            FindCatalogLeafItemsContainerName = "findcatalogleafitems";
+            LatestPackageLeafTableName = "latestpackageleaves";
+            PackageAssetContainerName = "packageassets";
+            PackageAssemblyContainerName = "packageassemblies";
+            RealRestoreContainerName = "realrestores";
+            CatalogLeafItemContainerName = "catalogleafitems";
         }
 
         public bool UseBulkEnqueueStrategy { get; set; }
@@ -41,12 +41,12 @@
         public string CatalogPageScanTableName { get; set; }
         public string CatalogLeafScanTableName { get; set; }
         public string TaskStateTableName { get; set; }
-        public object CsvRecordsTableName { get; set; }
+        public object CsvRecordTableName { get; set; }
 
-        public string LatestPackageLeavesTableName { get; set; }
-        public string FindPackageAssetsContainerName { get; set; }
-        public string FindPackageAssembliesContainerName { get; set; }
-        public string RunRealRestoreContainerName { get; set; }
-        public string FindCatalogLeafItemsContainerName { get; set; }
+        public string LatestPackageLeafTableName { get; set; }
+        public string PackageAssetContainerName { get; set; }
+        public string PackageAssemblyContainerName { get; set; }
+        public string RealRestoreContainerName { get; set; }
+        public string CatalogLeafItemContainerName { get; set; }
     }
 }

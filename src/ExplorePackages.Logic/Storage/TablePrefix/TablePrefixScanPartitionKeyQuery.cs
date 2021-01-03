@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace Knapcode.ExplorePackages
+namespace Knapcode.ExplorePackages.TablePrefixScan
 {
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
     public class TablePrefixScanPartitionKeyQuery : TablePrefixScanStep

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.WindowsAzure.Storage.Table;
 
-namespace Knapcode.ExplorePackages
+namespace Knapcode.ExplorePackages.TablePrefixScan
 {
     public class TableQueryParameters
     {

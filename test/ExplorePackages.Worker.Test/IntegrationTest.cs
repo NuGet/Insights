@@ -39,8 +39,8 @@ namespace Knapcode.ExplorePackages.Worker
             var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
             var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
 
-            await SetCursorAsync(CatalogScanDriverType.FindLatestPackageLeaves, min0);
-            var initial = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindLatestPackageLeaves, max1, onlyLatestLeaves: null);
+            await SetCursorAsync(CatalogScanDriverType.FindLatestPackageLeaf, min0);
+            var initial = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindLatestPackageLeaf, max1, onlyLatestLeaves: null);
 
             // Act
             await UpdateAsync(initial);

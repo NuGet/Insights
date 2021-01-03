@@ -8,7 +8,7 @@ using Microsoft.WindowsAzure.Storage.Table;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages
+namespace Knapcode.ExplorePackages.TablePrefixScan
 {
     public class TablePrefixScannerTest : IClassFixture<TablePrefixScannerTest.Fixture>
     {

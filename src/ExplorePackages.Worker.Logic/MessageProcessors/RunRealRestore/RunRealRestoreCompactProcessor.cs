@@ -25,8 +25,8 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
         public async Task ProcessAsync(RunRealRestoreCompactMessage message, int dequeueCount)
         {
             await _storageService.CompactAsync<RealRestoreResult>(
-                _options.Value.RunRealRestoreContainerName,
-                _options.Value.RunRealRestoreContainerName,
+                _options.Value.RealRestoreContainerName,
+                _options.Value.RealRestoreContainerName,
                 message.Bucket,
                 force: true,
                 mergeExisting: true,

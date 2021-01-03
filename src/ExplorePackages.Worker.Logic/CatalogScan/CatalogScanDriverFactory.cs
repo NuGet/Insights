@@ -1,8 +1,8 @@
 ﻿using System;
-using Knapcode.ExplorePackages.Worker.FindCatalogLeafItems;
-using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaves;
-using Knapcode.ExplorePackages.Worker.FindPackageAssemblies;
-using Knapcode.ExplorePackages.Worker.FindPackageAssets;
+using Knapcode.ExplorePackages.Worker.FindCatalogLeafItem;
+using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
+using Knapcode.ExplorePackages.Worker.FindPackageAssembly;
+using Knapcode.ExplorePackages.Worker.FindPackageAsset;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Knapcode.ExplorePackages.Worker
@@ -20,15 +20,15 @@ namespace Knapcode.ExplorePackages.Worker
         {
             switch (driverType)
             {
-                case CatalogScanDriverType.FindCatalogLeafItems:
-                    return _serviceProvider.GetRequiredService<FindCatalogLeafItemsDriver>();
-                case CatalogScanDriverType.FindLatestCatalogLeafScans:
-                    return _serviceProvider.GetRequiredService<FindLatestLeavesDriver<CatalogLeafScan>>();
-                case CatalogScanDriverType.FindLatestPackageLeaves:
-                    return _serviceProvider.GetRequiredService<FindLatestLeavesDriver<LatestPackageLeaf>>();
-                case CatalogScanDriverType.FindPackageAssemblies:
+                case CatalogScanDriverType.FindCatalogLeafItem:
+                    return _serviceProvider.GetRequiredService<FindCatalogLeafItemDriver>();
+                case CatalogScanDriverType.FindLatestCatalogLeafScan:
+                    return _serviceProvider.GetRequiredService<FindLatestLeafDriver<CatalogLeafScan>>();
+                case CatalogScanDriverType.FindLatestPackageLeaf:
+                    return _serviceProvider.GetRequiredService<FindLatestLeafDriver<LatestPackageLeaf>>();
+                case CatalogScanDriverType.FindPackageAssembly:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<PackageAssembly>>();
-                case CatalogScanDriverType.FindPackageAssets:
+                case CatalogScanDriverType.FindPackageAsset:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<PackageAsset>>();
                 default:
                     throw new NotSupportedException($"Catalog scan driver type '{driverType}' is not supported.");

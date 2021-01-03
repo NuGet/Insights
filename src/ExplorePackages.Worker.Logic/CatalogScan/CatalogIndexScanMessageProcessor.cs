@@ -118,7 +118,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         private async Task ExpandLatestLeavesAsync(CatalogIndexScanMessage message, CatalogIndexScan scan, ICatalogScanDriver driver)
         {
-            var findLatestLeavesScanId = scan.ScanId + "-flcls";
+            var findLatestLeafScanId = scan.ScanId + "-flcls";
             var taskStateKey = new TaskStateKey(scan.StorageSuffix, $"{scan.ScanId}-{TableScanDriverType.EnqueueCatalogLeafScans}", "start");
 
             // Created: determine the real time bounds for the scan.
@@ -127,8 +127,8 @@ namespace Knapcode.ExplorePackages.Worker
             // WaitingOnDependency: start and wait on a "find latest leaves" scan for the range of this parent scan
             if (scan.ParsedState == CatalogScanState.WaitingOnDependency)
             {
-                var findLatestLeavesScan = await _catalogScanService.GetOrStartFindLatestCatalogLeafScansAsync(
-                    scanId: findLatestLeavesScanId,
+                var findLatestLeavesScan = await _catalogScanService.GetOrStartFindLatestCatalogLeafScanAsync(
+                    scanId: findLatestLeafScanId,
                     storageSuffix: scan.StorageSuffix + "flcls",
                     parentScanMessage: message,
                     scan.Min.Value,
@@ -154,7 +154,7 @@ namespace Knapcode.ExplorePackages.Worker
             if (scan.ParsedState == CatalogScanState.Expanding)
             {
                 // Since the find latest leaves catalog scan is complete, delete the record.
-                var findLatestLeavesScan = await _storageService.GetIndexScanAsync(cursorName: string.Empty, findLatestLeavesScanId);
+                var findLatestLeavesScan = await _storageService.GetIndexScanAsync(cursorName: string.Empty, findLatestLeafScanId);
                 if (findLatestLeavesScan != null)
                 {
                     await _storageService.DeleteAsync(findLatestLeavesScan);

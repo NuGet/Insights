@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItems
+namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
 {
     public partial record CatalogLeafItemRecord : ICsvRecord<CatalogLeafItemRecord>
     {

@@ -17,7 +17,7 @@ namespace Knapcode.ExplorePackages.Website.Models
             {
                 switch (DriverType)
                 {
-                    case CatalogScanDriverType.FindCatalogLeafItems:
+                    case CatalogScanDriverType.FindCatalogLeafItem:
                         return false;
                     default:
                         return true;

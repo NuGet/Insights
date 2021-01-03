@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage.Table;
 using static Knapcode.ExplorePackages.StorageUtility;
 
-namespace Knapcode.ExplorePackages
+namespace Knapcode.ExplorePackages.TablePrefixScan
 {
     public class TablePrefixScanner
     {

@@ -1,8 +1,8 @@
 ﻿using System.Linq;
 using Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan;
-using Knapcode.ExplorePackages.Worker.FindCatalogLeafItems;
-using Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScans;
-using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaves;
+using Knapcode.ExplorePackages.Worker.FindCatalogLeafItem;
+using Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan;
+using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using Knapcode.ExplorePackages.Worker.TableCopy;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,8 +32,8 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient(typeof(CatalogScanToCsvAdapter<>));
             AddTableScan<LatestPackageLeaf>(serviceCollection);
             AddTableScan<CatalogLeafScan>(serviceCollection);
-            serviceCollection.AddTransient<ILatestPackageLeafStorageFactory<CatalogLeafScan>, LatestCatalogLeafScansStorageFactory>();
-            serviceCollection.AddTransient<FindLatestLeavesDriver<CatalogLeafScan>>();
+            serviceCollection.AddTransient<ILatestPackageLeafStorageFactory<CatalogLeafScan>, LatestCatalogLeafScanStorageFactory>();
+            serviceCollection.AddTransient<FindLatestLeafDriver<CatalogLeafScan>>();
             serviceCollection.AddTransient<EnqueueCatalogLeafScansDriver>();
 
             serviceCollection.AddTransient<CursorStorageService>();
@@ -42,8 +42,8 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient<TaskStateStorageService>();
             serviceCollection.AddTransient<ICsvReader, NRecoCsvReader>();
 
-            serviceCollection.AddFindCatalogLeafItems();
-            serviceCollection.AddFindLatestLeaves();
+            serviceCollection.AddFindCatalogLeafItem();
+            serviceCollection.AddFindLatestLeaf();
             serviceCollection.AddRunRealRestore();
             serviceCollection.AddTableCopy();
 
@@ -94,16 +94,16 @@ namespace Knapcode.ExplorePackages.Worker
                 typeof(TableRowCopyMessageProcessor<>).MakeGenericType(entityType));
         }
 
-        private static void AddFindCatalogLeafItems(this IServiceCollection serviceCollection)
+        private static void AddFindCatalogLeafItem(this IServiceCollection serviceCollection)
         {
-            serviceCollection.AddTransient<FindCatalogLeafItemsDriver>();
+            serviceCollection.AddTransient<FindCatalogLeafItemDriver>();
         }
 
-        private static void AddFindLatestLeaves(this IServiceCollection serviceCollection)
+        private static void AddFindLatestLeaf(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddTransient<LatestPackageLeafStorageFactory>();
             serviceCollection.AddTransient<ILatestPackageLeafStorageFactory<LatestPackageLeaf>, LatestPackageLeafStorageFactory>();
-            serviceCollection.AddTransient<FindLatestLeavesDriver<LatestPackageLeaf>>();
+            serviceCollection.AddTransient<FindLatestLeafDriver<LatestPackageLeaf>>();
         }
 
         private static void AddRunRealRestore(this IServiceCollection serviceCollection)

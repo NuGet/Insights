@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Knapcode.ExplorePackages.Worker.FindCatalogLeafItems;
-using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaves;
-using Knapcode.ExplorePackages.Worker.FindPackageAssemblies;
-using Knapcode.ExplorePackages.Worker.FindPackageAssets;
+using Knapcode.ExplorePackages.Worker.FindCatalogLeafItem;
+using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
+using Knapcode.ExplorePackages.Worker.FindPackageAssembly;
+using Knapcode.ExplorePackages.Worker.FindPackageAsset;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using Knapcode.ExplorePackages.Worker.TableCopy;
 using Microsoft.Extensions.Logging;

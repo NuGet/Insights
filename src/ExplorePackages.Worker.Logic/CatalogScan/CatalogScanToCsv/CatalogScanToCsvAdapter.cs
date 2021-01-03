@@ -89,7 +89,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         private string GetTableName(string suffix)
         {
-            return $"{_options.Value.CsvRecordsTableName}{suffix}";
+            return $"{_options.Value.CsvRecordTableName}{suffix}";
         }
     }
 }

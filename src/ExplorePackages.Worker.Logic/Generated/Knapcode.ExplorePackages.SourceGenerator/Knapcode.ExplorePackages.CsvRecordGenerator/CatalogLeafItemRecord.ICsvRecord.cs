@@ -4,7 +4,7 @@ using System;
 using System.IO;
 using Knapcode.ExplorePackages;
 
-namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItems
+namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
 {
     /* Kusto DDL:
 

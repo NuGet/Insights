@@ -22,6 +22,9 @@ namespace Knapcode.ExplorePackages.Worker
         public const string Step1 = "Step1";
         public const string Step2 = "Step2";
 
+        /// <summary>
+        /// This should only be on when generating new test data locally. It should never be checked in as true.
+        /// </summary>
         protected static readonly bool OverwriteTestData = false;
 
         private readonly Lazy<IHost> _lazyHost;
@@ -97,12 +100,12 @@ namespace Knapcode.ExplorePackages.Worker
             x.CatalogPageScanTableName = $"{StoragePrefix}1cps1";
             x.CatalogLeafScanTableName = $"{StoragePrefix}1cls1";
             x.TaskStateTableName = $"{StoragePrefix}1ts1";
-            x.CsvRecordsTableName = $"{StoragePrefix}1cr1";
-            x.LatestPackageLeavesTableName = $"{StoragePrefix}1lpl1";
-            x.FindPackageAssetsContainerName = $"{StoragePrefix}1fpa1";
-            x.FindPackageAssembliesContainerName = $"{StoragePrefix}1fpi1";
-            x.RunRealRestoreContainerName = $"{StoragePrefix}1rrr1";
-            x.FindCatalogLeafItemsContainerName = $"{StoragePrefix}1fcli1";
+            x.CsvRecordTableName = $"{StoragePrefix}1cr1";
+            x.LatestPackageLeafTableName = $"{StoragePrefix}1lpl1";
+            x.PackageAssetContainerName = $"{StoragePrefix}1fpa1";
+            x.PackageAssemblyContainerName = $"{StoragePrefix}1fpi1";
+            x.RealRestoreContainerName = $"{StoragePrefix}1rrr1";
+            x.CatalogLeafItemContainerName = $"{StoragePrefix}1fcli1";
 
             ConfigureDefaultsAndSettings((ExplorePackagesSettings)x);
 

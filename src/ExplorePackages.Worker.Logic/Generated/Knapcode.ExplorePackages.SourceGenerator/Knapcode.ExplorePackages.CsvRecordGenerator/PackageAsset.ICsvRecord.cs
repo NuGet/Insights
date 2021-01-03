@@ -4,7 +4,7 @@ using System;
 using System.IO;
 using Knapcode.ExplorePackages;
 
-namespace Knapcode.ExplorePackages.Worker.FindPackageAssets
+namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
 {
     /* Kusto DDL:
 
