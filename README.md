@@ -131,3 +131,6 @@ track of what I was originally working on. Maybe I should use issues for this? T
 - Enable enqueuing as many messages as possible for a bulk enqueue message, but no more and return the extra
 
 - gzip batch or bulk enqueue messages?
+
+- modify `AppendResultStorageService` to save table results in proper rows and columns. this could enable remove the
+  need for holding the entire 1/1000 of the results in memory at one time
