@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.WindowsAzure.Storage.Table;
+using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -19,6 +22,32 @@ namespace Knapcode.ExplorePackages.Worker
         protected Task SetCursorAsync(DateTimeOffset min) => SetCursorAsync(DriverType, min);
 
         protected virtual Task<CatalogIndexScan> UpdateAsync(DateTimeOffset max) => UpdateAsync(DriverType, onlyLatestLeaves: null, max);
+
+        protected async Task VerifyOutputAsync<T>(CloudTable table, string dir, Action<T> cleanEntity = null) where T : ITableEntity, new()
+        {
+            var entities = await table.GetEntitiesAsync<T>(TelemetryClient.StartQueryLoopMetrics());
+
+            foreach (var entity in entities)
+            {
+                entity.ETag = null;
+                entity.Timestamp = DateTimeOffset.MinValue;
+                cleanEntity?.Invoke(entity);
+            }
+
+            var serializerSettings = NameVersionSerializer.JsonSerializerSettings;
+            serializerSettings.NullValueHandling = NullValueHandling.Include;
+            serializerSettings.Formatting = Formatting.Indented;
+            var actual = JsonConvert.SerializeObject(entities, serializerSettings);
+            if (OverwriteTestData)
+            {
+                Directory.CreateDirectory(Path.Combine(TestData, dir));
+                File.WriteAllText(Path.Combine(TestData, dir, "entities.json"), actual);
+            }
+            var expected = File.ReadAllText(Path.Combine(TestData, dir, "entities.json"));
+            Assert.Equal(expected, actual);
+
+            await VerifyExpectedStorageAsync();
+        }
 
         protected async Task VerifyExpectedStorageAsync()
         {
@@ -60,16 +89,21 @@ namespace Knapcode.ExplorePackages.Worker
                 .GetTableReference(Options.Value.CursorTableName)
                 .GetEntitiesAsync<CursorTableEntity>(TelemetryClient.StartQueryLoopMetrics());
             Assert.Equal(
-                new[] { $"CatalogScan-{DriverType}" },
+                GetExpectedCursorNames().OrderBy(x => x).ToArray(),
                 cursors.Select(x => x.RowKey).ToArray());
 
             var catalogIndexScans = await tableClient
                 .GetTableReference(Options.Value.CatalogIndexScanTableName)
                 .GetEntitiesAsync<CatalogIndexScan>(TelemetryClient.StartQueryLoopMetrics());
             Assert.Equal(
-                UpdatedCatalogIndexScans.Select(x => (x.PartitionKey, x.RowKey)).OrderBy(x => x).ToArray(),
+                ExpectedCatalogIndexScans.Select(x => (x.PartitionKey, x.RowKey)).OrderBy(x => x).ToArray(),
                 catalogIndexScans.Select(x => (x.PartitionKey, x.RowKey)).ToArray());
 
+        }
+
+        protected virtual IEnumerable<string> GetExpectedCursorNames()
+        {
+            yield return $"CatalogScan-{DriverType}";
         }
 
         protected virtual IEnumerable<string> GetExpectedLeaseNames()

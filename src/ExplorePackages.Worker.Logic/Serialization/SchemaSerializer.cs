@@ -29,10 +29,12 @@ namespace Knapcode.ExplorePackages.Worker
             new SchemaV1<CsvCompactMessage<PackageAsset>>("cc.fpa"),
             new SchemaV1<CsvCompactMessage<PackageAssembly>>("cc.fpi"),
 
+            new SchemaV1<TableScanMessage<CatalogLeafScan>>("ts.cls"),
+            new SchemaV1<TableScanMessage<LatestPackageLeaf>>("ts.lpf"),
+
             new SchemaV1<RunRealRestoreMessage>("rrr"),
             new SchemaV1<RunRealRestoreCompactMessage>("rrr.c"),
 
-            new SchemaV1<TableScanMessage<LatestPackageLeaf>>("tc.lpf"),
             new SchemaV1<TableRowCopyMessage<LatestPackageLeaf>>("trc.lpf"),
 
             // Parameters

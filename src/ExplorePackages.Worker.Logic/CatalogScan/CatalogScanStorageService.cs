@@ -166,7 +166,12 @@ namespace Knapcode.ExplorePackages.Worker
 
         public CloudTable GetLeafScanTable(string suffix)
         {
-            return GetClient().GetTableReference($"{_options.Value.CatalogLeafScanTableName}{suffix}");
+            return GetClient().GetTableReference(GetLeafScanTableName(suffix));
+        }
+
+        public string GetLeafScanTableName(string suffix)
+        {
+            return $"{_options.Value.CatalogLeafScanTableName}{suffix}";
         }
     }
 }

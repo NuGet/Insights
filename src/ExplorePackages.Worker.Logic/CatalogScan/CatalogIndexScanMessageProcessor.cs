@@ -16,9 +16,8 @@ namespace Knapcode.ExplorePackages.Worker
         private readonly CatalogScanStorageService _storageService;
         private readonly CursorStorageService _cursorStorageService;
         private readonly CatalogScanService _catalogScanService;
-        private readonly LatestPackageLeafStorageFactory _latestPackageLeafStorageFactory;
         private readonly TaskStateStorageService _taskStateStorageService;
-        private readonly TableScanService<LatestPackageLeaf> _tableScanService;
+        private readonly TableScanService<CatalogLeafScan> _tableScanService;
         private readonly ILogger<CatalogIndexScanMessageProcessor> _logger;
 
         public CatalogIndexScanMessageProcessor(
@@ -28,9 +27,8 @@ namespace Knapcode.ExplorePackages.Worker
             CatalogScanStorageService storageService,
             CursorStorageService cursorStorageService,
             CatalogScanService catalogScanService,
-            LatestPackageLeafStorageFactory latestPackageLeafStorageFactory,
             TaskStateStorageService taskStateStorageService,
-            TableScanService<LatestPackageLeaf> tableScanService,
+            TableScanService<CatalogLeafScan> tableScanService,
             ILogger<CatalogIndexScanMessageProcessor> logger)
         {
             _catalogClient = catalogClient;
@@ -39,7 +37,6 @@ namespace Knapcode.ExplorePackages.Worker
             _storageService = storageService;
             _cursorStorageService = cursorStorageService;
             _catalogScanService = catalogScanService;
-            _latestPackageLeafStorageFactory = latestPackageLeafStorageFactory;
             _taskStateStorageService = taskStateStorageService;
             _tableScanService = tableScanService;
             _logger = logger;
@@ -122,8 +119,8 @@ namespace Knapcode.ExplorePackages.Worker
 
         private async Task ExpandLatestLeavesAsync(CatalogIndexScanMessage message, CatalogIndexScan scan, ICatalogScanDriver driver)
         {
-            var findLatestLeavesScanId = scan.ScanId + "-fll";
-            var taskStateKey = new TaskStateKey(scan.StorageSuffix, $"{scan.ScanId}-{TableScanDriverType.LatestLeafToLeafScan}", "start");
+            var findLatestLeavesScanId = scan.ScanId + "-flcls";
+            var taskStateKey = new TaskStateKey(scan.StorageSuffix, $"{scan.ScanId}-{TableScanDriverType.EnqueueCatalogLeafScans}", "start");
 
             // Created: determine the real time bounds for the scan.
             await HandleCreateStateAsync(scan, nextState: CatalogScanState.WaitingOnDependency);
@@ -131,23 +128,22 @@ namespace Knapcode.ExplorePackages.Worker
             // WaitingOnDependency: start and wait on a "find latest leaves" scan for the range of this parent scan
             if (scan.ParsedState == CatalogScanState.WaitingOnDependency)
             {
-                var findLatestLeavesScan = await _catalogScanService.GetOrStartSpecificFindLatestPackageLeavesAsync(
+                var findLatestLeavesScan = await _catalogScanService.GetOrStartFindLatestCatalogLeafScansAsync(
                     scanId: findLatestLeavesScanId,
-                    storageSuffix: scan.StorageSuffix + "fll",
-                    prefix: string.Empty,
-                    destinationStorageSuffix: scan.StorageSuffix,
+                    storageSuffix: scan.StorageSuffix + "flcls",
+                    parentScanMessage: message,
                     scan.Min.Value,
                     scan.Max.Value);
 
                 if (findLatestLeavesScan.ParsedState != CatalogScanState.Complete)
                 {
-                    _logger.LogInformation("Still finding latest leaves.");
+                    _logger.LogInformation("Still finding latest catalog leaf scans.");
                     message.AttemptCount++;
                     await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
                 }
                 else
                 {
-                    _logger.LogInformation("The catalog scan is complete.");
+                    _logger.LogInformation("Finding the latest catalog leaf scans is complete.");
 
                     scan.ParsedState = CatalogScanState.Expanding;
                     scan.Completed = DateTimeOffset.UtcNow;
@@ -176,10 +172,9 @@ namespace Knapcode.ExplorePackages.Worker
                 var taskState = await _taskStateStorageService.GetOrAddAsync(taskStateKey);
                 if (taskState != null)
                 {
-                    await _tableScanService.StartLatestLeafToLeafScanAsync(
+                    await _tableScanService.StartEnqueueCatalogLeafScansAsync(
                         taskStateKey,
-                        message,
-                        _latestPackageLeafStorageFactory.GetTableName(scan.StorageSuffix));
+                        _storageService.GetLeafScanTableName(scan.StorageSuffix));
                 }
 
                 scan.ParsedState = CatalogScanState.Waiting;
@@ -201,9 +196,6 @@ namespace Knapcode.ExplorePackages.Worker
                 }
                 else
                 {
-                    // Delete the latest leaves table, since we're done scanning it and all leaf scans are created and enqueued.
-                    await _latestPackageLeafStorageFactory.DeleteTableAsync(scan.StorageSuffix);
-
                     var leafCountLowerBound = await _storageService.GetLeafScanCountLowerBoundAsync(
                         scan.StorageSuffix,
                         scan.ScanId);

@@ -22,6 +22,8 @@ namespace Knapcode.ExplorePackages.Worker
         public const string Step1 = "Step1";
         public const string Step2 = "Step2";
 
+        protected static readonly bool OverwriteTestData = false;
+
         private readonly Lazy<IHost> _lazyHost;
 
         public BaseWorkerLogicIntegrationTest(
@@ -134,7 +136,7 @@ namespace Knapcode.ExplorePackages.Worker
             await CursorStorageService.UpdateAsync(cursor);
         }
 
-        public ConcurrentBag<CatalogIndexScan> UpdatedCatalogIndexScans { get; } = new ConcurrentBag<CatalogIndexScan>();
+        public ConcurrentBag<CatalogIndexScan> ExpectedCatalogIndexScans { get; } = new ConcurrentBag<CatalogIndexScan>();
 
         protected async Task<CatalogIndexScan> UpdateAsync(CatalogScanDriverType driverType, bool? onlyLatestLeaves, DateTimeOffset max)
         {
@@ -157,7 +159,7 @@ namespace Knapcode.ExplorePackages.Worker
                 return true;
             });
 
-            UpdatedCatalogIndexScans.Add(indexScan);
+            ExpectedCatalogIndexScans.Add(indexScan);
 
             return indexScan;
         }

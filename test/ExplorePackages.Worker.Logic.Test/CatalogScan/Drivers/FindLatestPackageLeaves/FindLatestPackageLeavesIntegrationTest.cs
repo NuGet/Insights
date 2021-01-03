@@ -83,28 +83,11 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
 
         private async Task VerifyOutputAsync(string dir)
         {
-            var leaves = await ServiceClientFactory
+            var table = ServiceClientFactory
                 .GetStorageAccount()
                 .CreateCloudTableClient()
-                .GetTableReference(Options.Value.LatestPackageLeavesTableName)
-                .GetEntitiesAsync<LatestPackageLeaf>(TelemetryClient.StartQueryLoopMetrics());
-
-            foreach (var leaf in leaves)
-            {
-                leaf.ETag = null;
-                leaf.Timestamp = DateTimeOffset.MinValue;
-            }
-
-            var serializerSettings = NameVersionSerializer.JsonSerializerSettings;
-            serializerSettings.NullValueHandling = NullValueHandling.Include;
-            serializerSettings.Formatting = Formatting.Indented;
-            var actual = JsonConvert.SerializeObject(leaves, serializerSettings);
-            // Directory.CreateDirectory(Path.Combine(TestData, dir));
-            // File.WriteAllText(Path.Combine(TestData, dir, "leaves.json"), actual);
-            var expected = File.ReadAllText(Path.Combine(TestData, dir, "leaves.json"));
-            Assert.Equal(expected, actual);
-
-            await VerifyExpectedStorageAsync();
+                .GetTableReference(Options.Value.LatestPackageLeavesTableName);
+            await VerifyOutputAsync<LatestPackageLeaf>(table, dir);
         }
     }
 }

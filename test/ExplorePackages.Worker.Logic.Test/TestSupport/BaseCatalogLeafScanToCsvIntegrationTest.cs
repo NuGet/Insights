@@ -19,7 +19,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             if (OnlyLatestLeaves)
             {
-                yield return $"Start-CatalogScan-{CatalogScanDriverType.FindLatestPackageLeaves}";
+                yield return $"Start-CatalogScan-{CatalogScanDriverType.FindLatestCatalogLeafScans}";
             }
         }
     }

@@ -130,25 +130,18 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        public async Task<CatalogIndexScan> GetOrStartSpecificFindLatestPackageLeavesAsync(
+        public async Task<CatalogIndexScan> GetOrStartFindLatestCatalogLeafScansAsync(
             string scanId,
             string storageSuffix,
-            string prefix,
-            string destinationStorageSuffix,
+            CatalogIndexScanMessage parentScanMessage,
             DateTimeOffset min,
             DateTimeOffset? max)
         {
-            var parameters = new LatestPackageLeafParameters
-            {
-                Prefix = prefix,
-                StorageSuffix = destinationStorageSuffix,
-            };
-
             return await GetOrStartCursorlessAsync(
                 scanId,
                 storageSuffix,
-                CatalogScanDriverType.FindLatestPackageLeaves,
-                parameters: _serializer.Serialize(parameters).AsString(),
+                CatalogScanDriverType.FindLatestCatalogLeafScans,
+                parameters: _serializer.Serialize(parentScanMessage).AsString(),
                 min,
                 max);
         }
