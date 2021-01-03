@@ -133,7 +133,7 @@ namespace Knapcode.ExplorePackages.Worker
                     TableQuery.GenerateFilterCondition(
                         RowKey,
                         QueryComparisons.LessThanOrEqual,
-                        itemList.First().RowKey)));
+                        itemList.Last().RowKey)));
 
             var query = new TableQuery<T>
             {
