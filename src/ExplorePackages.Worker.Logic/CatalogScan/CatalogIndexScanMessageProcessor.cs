@@ -145,7 +145,6 @@ namespace Knapcode.ExplorePackages.Worker
                     _logger.LogInformation("Finding the latest catalog leaf scans is complete.");
 
                     scan.ParsedState = CatalogScanState.Expanding;
-                    scan.Completed = DateTimeOffset.UtcNow;
                     await _storageService.ReplaceAsync(scan);
                 }
             }
