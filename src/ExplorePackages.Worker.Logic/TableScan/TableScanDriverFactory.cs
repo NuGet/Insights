@@ -1,4 +1,5 @@
 ﻿using System;
+using Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan;
 using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
 using Knapcode.ExplorePackages.Worker.LatestLeafToLeafScan;
 using Knapcode.ExplorePackages.Worker.TableCopy;
@@ -23,8 +24,9 @@ namespace Knapcode.ExplorePackages.Worker
                 case TableScanDriverType.TableCopy:
                     return _serviceProvider.GetRequiredService<TableCopyDriver<T>>();
                 case TableScanDriverType.LatestLeafToLeafScan when typeof(T) == typeof(LatestPackageLeaf):
-                    var driver = _serviceProvider.GetRequiredService<LatestLeafToLeafScanDriver>();
-                    return (ITableScanDriver<T>)driver;
+                    return (ITableScanDriver<T>)_serviceProvider.GetRequiredService<LatestLeafToLeafScanDriver>();
+                case TableScanDriverType.EnqueueCatalogLeafScans when typeof(T) == typeof(CatalogLeafScan):
+                    return (ITableScanDriver<T>)_serviceProvider.GetRequiredService<EnqueueCatalogLeafScansDriver>();
                 default:
                     throw new NotSupportedException($"Table scan driver type '{driverType}' and entity type '{typeof(T)}' is not supported.");
             }

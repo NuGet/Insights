@@ -4,5 +4,6 @@
     {
         TableCopy,
         LatestLeafToLeafScan,
+        EnqueueCatalogLeafScans,
     }
 }

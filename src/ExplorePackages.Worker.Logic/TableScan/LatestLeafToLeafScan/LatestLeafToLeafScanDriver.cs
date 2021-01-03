@@ -13,7 +13,6 @@ namespace Knapcode.ExplorePackages.Worker.LatestLeafToLeafScan
         private readonly CatalogScanStorageService _storageService;
         private readonly CatalogScanExpandService _expandService;
 
-
         public LatestLeafToLeafScanDriver(
             SchemaSerializer serializer,
             CatalogScanStorageService storageService,

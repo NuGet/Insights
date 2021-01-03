@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan;
 using Knapcode.ExplorePackages.Worker.FindCatalogLeafItems;
 using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
 using Knapcode.ExplorePackages.Worker.LatestLeafToLeafScan;
@@ -30,7 +31,11 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient<CatalogScanExpandService>();
             serviceCollection.AddTransient(typeof(CatalogScanToCsvAdapter<>));
             AddTableScan<LatestPackageLeaf>(serviceCollection);
+            AddTableScan<CatalogLeafScan>(serviceCollection);
+            serviceCollection.AddTransient<ILatestPackageLeafStorageFactory<CatalogLeafScan>, LatestCatalogLeafScanStorageFactory>();
+            serviceCollection.AddTransient<FindLatestLeavesDriver<CatalogLeafScan>>();
             serviceCollection.AddTransient<LatestLeafToLeafScanDriver>();
+            serviceCollection.AddTransient<EnqueueCatalogLeafScansDriver>();
 
             serviceCollection.AddTransient<CursorStorageService>();
 
