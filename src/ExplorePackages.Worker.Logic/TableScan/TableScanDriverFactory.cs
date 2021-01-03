@@ -1,6 +1,6 @@
 ﻿using System;
 using Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan;
-using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
+using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaves;
 using Knapcode.ExplorePackages.Worker.LatestLeafToLeafScan;
 using Knapcode.ExplorePackages.Worker.TableCopy;
 using Microsoft.Extensions.DependencyInjection;

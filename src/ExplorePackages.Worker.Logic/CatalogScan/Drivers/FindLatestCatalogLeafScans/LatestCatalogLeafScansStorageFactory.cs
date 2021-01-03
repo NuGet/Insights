@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
+namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScans
 {
-    public class LatestCatalogLeafScanStorageFactory : ILatestPackageLeafStorageFactory<CatalogLeafScan>
+    public class LatestCatalogLeafScansStorageFactory : ILatestPackageLeafStorageFactory<CatalogLeafScan>
     {
         private readonly SchemaSerializer _serializer;
         private readonly CatalogScanStorageService _storageService;
 
-        public LatestCatalogLeafScanStorageFactory(
+        public LatestCatalogLeafScansStorageFactory(
             SchemaSerializer serializer,
             CatalogScanStorageService storageService)
         {
@@ -23,7 +23,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
             var parameters = (CatalogIndexScanMessage)_serializer.Deserialize(pageScan.DriverParameters).Data;
             var indexScan = await _storageService.GetIndexScanAsync(parameters.CursorName, parameters.ScanId);
             var table = _storageService.GetLeafScanTable(indexScan.StorageSuffix);
-            return new LatestCatalogLeafScanStorage(table, indexScan);
+            return new LatestCatalogLeafScansStorage(table, indexScan);
         }
     }
 }

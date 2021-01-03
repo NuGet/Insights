@@ -2,7 +2,7 @@
 using Microsoft.WindowsAzure.Storage.Table;
 using NuGet.Versioning;
 
-namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
+namespace Knapcode.ExplorePackages.Worker.FindLatestPackageLeaves
 {
     public class LatestPackageLeaf : TableEntity, ILatestPackageLeaf
     {

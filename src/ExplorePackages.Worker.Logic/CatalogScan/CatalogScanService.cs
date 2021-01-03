@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
+using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaves;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -115,7 +115,7 @@ namespace Knapcode.ExplorePackages.Worker
                         throw new NotSupportedException("When finding catalog leaf items all leaves will be reported, not just the latest.");
                     }
                     return await UpdateAsync(driverType, NoParameters, DateTimeOffset.MinValue, max);
-                case CatalogScanDriverType.FindLatestLeaves:
+                case CatalogScanDriverType.FindLatestPackageLeaves:
                     if (onlyLatestLeaves.HasValue && !onlyLatestLeaves.Value)
                     {
                         throw new NotSupportedException("When finding latest leaves, only the latest leaves will be reported. Obviously.");
@@ -130,7 +130,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        public async Task<CatalogIndexScan> GetOrStartSpecificFindLatestLeavesAsync(
+        public async Task<CatalogIndexScan> GetOrStartSpecificFindLatestPackageLeavesAsync(
             string scanId,
             string storageSuffix,
             string prefix,
@@ -138,7 +138,7 @@ namespace Knapcode.ExplorePackages.Worker
             DateTimeOffset min,
             DateTimeOffset? max)
         {
-            var parameters = new DefaultLatestPackageLeafParameters
+            var parameters = new LatestPackageLeafParameters
             {
                 Prefix = prefix,
                 StorageSuffix = destinationStorageSuffix,
@@ -147,7 +147,7 @@ namespace Knapcode.ExplorePackages.Worker
             return await GetOrStartCursorlessAsync(
                 scanId,
                 storageSuffix,
-                CatalogScanDriverType.FindLatestLeaves,
+                CatalogScanDriverType.FindLatestPackageLeaves,
                 parameters: _serializer.Serialize(parameters).AsString(),
                 min,
                 max);
@@ -155,14 +155,14 @@ namespace Knapcode.ExplorePackages.Worker
 
         private async Task<CatalogIndexScan> UpdateFindLatestLeavesAsync(DateTimeOffset? max)
         {
-            var parameters = new DefaultLatestPackageLeafParameters
+            var parameters = new LatestPackageLeafParameters
             {
                 Prefix = string.Empty,
                 StorageSuffix = string.Empty,
             };
 
             return await UpdateAsync(
-                CatalogScanDriverType.FindLatestLeaves,
+                CatalogScanDriverType.FindLatestPackageLeaves,
                 parameters: _serializer.Serialize(parameters).AsString(),
                 min: DateTimeOffset.MinValue,
                 max);

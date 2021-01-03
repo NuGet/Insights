@@ -1,6 +1,6 @@
 ﻿using Microsoft.WindowsAzure.Storage.Table;
 
-namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
+namespace Knapcode.ExplorePackages.Worker
 {
     public interface ILatestPackageLeafStorage<T> where T : ILatestPackageLeaf
     {

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
+namespace Knapcode.ExplorePackages.Worker
 {
     public interface ILatestPackageLeafStorageFactory<T> where T : ILatestPackageLeaf
     {

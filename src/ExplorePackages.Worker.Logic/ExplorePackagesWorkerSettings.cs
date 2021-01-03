@@ -20,7 +20,7 @@
             TaskStateTableName = "taskstate";
             CsvRecordsTableName = "csvrecords";
 
-            LatestLeavesTableName = "latestleaves";
+            LatestPackageLeavesTableName = "latestpackageleaves";
             FindPackageAssetsContainerName = "findpackageassets";
             FindPackageAssembliesContainerName = "findpackageassemblies";
             RunRealRestoreContainerName = "runrealrestore";
@@ -43,7 +43,7 @@
         public string TaskStateTableName { get; set; }
         public object CsvRecordsTableName { get; set; }
 
-        public string LatestLeavesTableName { get; set; }
+        public string LatestPackageLeavesTableName { get; set; }
         public string FindPackageAssetsContainerName { get; set; }
         public string FindPackageAssembliesContainerName { get; set; }
         public string RunRealRestoreContainerName { get; set; }

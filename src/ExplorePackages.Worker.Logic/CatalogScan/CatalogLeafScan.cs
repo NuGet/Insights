@@ -1,5 +1,4 @@
 ﻿using System;
-using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
 using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Knapcode.ExplorePackages.Worker

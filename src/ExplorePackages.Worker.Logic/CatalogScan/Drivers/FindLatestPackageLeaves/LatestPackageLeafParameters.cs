@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 
-namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
+namespace Knapcode.ExplorePackages.Worker.FindLatestPackageLeaves
 {
-    public class DefaultLatestPackageLeafParameters
+    public class LatestPackageLeafParameters
     {
         [JsonProperty("p")]
         public string Prefix { get; set; }

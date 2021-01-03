@@ -96,7 +96,7 @@ namespace Knapcode.ExplorePackages.Worker
             x.CatalogLeafScanTableName = $"{StoragePrefix}1cls1";
             x.TaskStateTableName = $"{StoragePrefix}1ts1";
             x.CsvRecordsTableName = $"{StoragePrefix}1cr1";
-            x.LatestLeavesTableName = $"{StoragePrefix}1ll1";
+            x.LatestPackageLeavesTableName = $"{StoragePrefix}1lpl1";
             x.FindPackageAssetsContainerName = $"{StoragePrefix}1fpa1";
             x.FindPackageAssembliesContainerName = $"{StoragePrefix}1fpi1";
             x.RunRealRestoreContainerName = $"{StoragePrefix}1rrr1";

@@ -134,3 +134,5 @@ track of what I was originally working on. Maybe I should use issues for this? T
 - consider removing polling at the catalog page scan level, and poll for leaves at the index level
 
 - enhance latest package leaves code to allow custom record shape, so it can write catalog leaf scan items directly
+
+- make driver type names singular to improve consistency

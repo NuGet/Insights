@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
+using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaves;
 using Newtonsoft.Json.Linq;
 
 namespace Knapcode.ExplorePackages.Worker.LatestLeafToLeafScan

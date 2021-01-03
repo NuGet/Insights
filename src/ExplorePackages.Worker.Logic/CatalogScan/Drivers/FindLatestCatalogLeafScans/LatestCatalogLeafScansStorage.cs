@@ -1,13 +1,13 @@
 ﻿using Microsoft.WindowsAzure.Storage.Table;
 using NuGet.Versioning;
 
-namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
+namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScans
 {
-    public class LatestCatalogLeafScanStorage : ILatestPackageLeafStorage<CatalogLeafScan>
+    public class LatestCatalogLeafScansStorage : ILatestPackageLeafStorage<CatalogLeafScan>
     {
         private readonly CatalogIndexScan _indexScan;
 
-        public LatestCatalogLeafScanStorage(CloudTable table, CatalogIndexScan indexScan)
+        public LatestCatalogLeafScansStorage(CloudTable table, CatalogIndexScan indexScan)
         {
             Table = table;
             _indexScan = indexScan;

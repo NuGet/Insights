@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaves;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Xunit;
@@ -9,21 +10,21 @@ using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
 {
-    public class FindLatestLeavesIntegrationTest : BaseCatalogScanIntegrationTest
+    public class FindLatestPackageLeavesIntegrationTest : BaseCatalogScanIntegrationTest
     {
-        private const string FindLatestLeavesDir = nameof(FindLatestLeaves);
-        private const string FindLatestLeaves_WithDuplicatesDir = nameof(FindLatestLeaves_WithDuplicates);
+        private const string FindLatestPackageLeavesDir = nameof(FindLatestPackageLeaves);
+        private const string FindLatestPackageLeaves_WithDuplicatesDir = nameof(FindLatestPackageLeaves_WithDuplicates);
 
-        public FindLatestLeavesIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+        public FindLatestPackageLeavesIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
             : base(output, factory)
         {
         }
 
-        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.FindLatestLeaves;
+        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.FindLatestPackageLeaves;
 
-        public class FindLatestLeaves : FindLatestLeavesIntegrationTest
+        public class FindLatestPackageLeaves : FindLatestPackageLeavesIntegrationTest
         {
-            public FindLatestLeaves(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public FindLatestPackageLeaves(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -44,13 +45,13 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
                 await UpdateAsync(max1);
 
                 // Assert
-                await VerifyOutputAsync(FindLatestLeavesDir);
+                await VerifyOutputAsync(FindLatestPackageLeavesDir);
             }
         }
 
-        public class FindLatestLeaves_WithDuplicates : FindLatestLeavesIntegrationTest
+        public class FindLatestPackageLeaves_WithDuplicates : FindLatestPackageLeavesIntegrationTest
         {
-            public FindLatestLeaves_WithDuplicates(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public FindLatestPackageLeaves_WithDuplicates(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -71,13 +72,13 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
                 await UpdateAsync(max1);
 
                 // Assert
-                await VerifyOutputAsync(FindLatestLeaves_WithDuplicatesDir);
+                await VerifyOutputAsync(FindLatestPackageLeaves_WithDuplicatesDir);
             }
         }
 
         protected override IEnumerable<string> GetExpectedTableNames()
         {
-            yield return Options.Value.LatestLeavesTableName;
+            yield return Options.Value.LatestPackageLeavesTableName;
         }
 
         private async Task VerifyOutputAsync(string dir)
@@ -85,7 +86,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
             var leaves = await ServiceClientFactory
                 .GetStorageAccount()
                 .CreateCloudTableClient()
-                .GetTableReference(Options.Value.LatestLeavesTableName)
+                .GetTableReference(Options.Value.LatestPackageLeavesTableName)
                 .GetEntitiesAsync<LatestPackageLeaf>(TelemetryClient.StartQueryLoopMetrics());
 
             foreach (var leaf in leaves)

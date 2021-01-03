@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
+using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaves;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
@@ -43,13 +43,13 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
             var max1 = DateTimeOffset.Parse("2020-11-27T23:41:30.2461308Z");
 
             await CatalogScanService.InitializeAsync();
-            await SetCursorAsync(CatalogScanDriverType.FindLatestLeaves, min0);
-            await UpdateAsync(CatalogScanDriverType.FindLatestLeaves, onlyLatestLeaves: null, max1);
+            await SetCursorAsync(CatalogScanDriverType.FindLatestPackageLeaves, min0);
+            await UpdateAsync(CatalogScanDriverType.FindLatestPackageLeaves, onlyLatestLeaves: null, max1);
 
             var serviceClientFactory = Host.Services.GetRequiredService<ServiceClientFactory>();
             var destTableName = StoragePrefix + "1d1";
             var tableClient = serviceClientFactory.GetStorageAccount().CreateCloudTableClient();
-            var sourceTable = tableClient.GetTableReference(Options.Value.LatestLeavesTableName);
+            var sourceTable = tableClient.GetTableReference(Options.Value.LatestPackageLeavesTableName);
             var destinationTable = tableClient.GetTableReference(destTableName);
 
             var tableScanService = Host.Services.GetRequiredService<TableScanService<LatestPackageLeaf>>();

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Knapcode.ExplorePackages.Worker.FindCatalogLeafItems;
-using Knapcode.ExplorePackages.Worker.FindLatestLeaves;
+using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaves;
 using Knapcode.ExplorePackages.Worker.FindPackageAssemblies;
 using Knapcode.ExplorePackages.Worker.FindPackageAssets;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
@@ -39,7 +39,7 @@ namespace Knapcode.ExplorePackages.Worker
             new SchemaV1<TablePrefixScanPartitionKeyQueryParameters>("tps.pkq"),
             new SchemaV1<TablePrefixScanPrefixQueryParameters>("tps.pq"),
 
-            new SchemaV1<DefaultLatestPackageLeafParameters>("fll"),
+            new SchemaV1<LatestPackageLeafParameters>("fll"),
             new SchemaV1<CatalogLeafToCsvParameters>("cl2c"),
 
             new SchemaV1<TableCopyParameters>("tc"),

@@ -4,16 +4,16 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage.Table;
 
-namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
+namespace Knapcode.ExplorePackages.Worker.FindLatestPackageLeaves
 {
-    public class DefaultLatestPackageLeafStorageFactory : ILatestPackageLeafStorageFactory<LatestPackageLeaf>
+    public class LatestPackageLeafStorageFactory : ILatestPackageLeafStorageFactory<LatestPackageLeaf>
     {
         private readonly SchemaSerializer _serializer;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly CatalogScanService _catalogScanService;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
-        public DefaultLatestPackageLeafStorageFactory(
+        public LatestPackageLeafStorageFactory(
             SchemaSerializer serializer,
             ServiceClientFactory serviceClientFactory,
             CatalogScanService catalogScanService,
@@ -25,7 +25,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
             _options = options;
         }
 
-        public string GetTableName(string storageSuffix) => $"{_options.Value.LatestLeavesTableName}{storageSuffix}";
+        public string GetTableName(string storageSuffix) => $"{_options.Value.LatestPackageLeavesTableName}{storageSuffix}";
         public Task DeleteTableAsync(string storageSuffix) => GetTable(storageSuffix).DeleteIfExistsAsync();
 
         public async Task InitializeAsync(CatalogIndexScan indexScan)
@@ -33,7 +33,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
             var parameters = DeserializeParameters(indexScan.DriverParameters);
             if (parameters.StorageSuffix == string.Empty)
             {
-                if (indexScan.CursorName != _catalogScanService.GetCursorName(CatalogScanDriverType.FindLatestLeaves))
+                if (indexScan.CursorName != _catalogScanService.GetCursorName(CatalogScanDriverType.FindLatestPackageLeaves))
                 {
                     throw new NotSupportedException("When using the primary latest leaves table, only the main cursor name is allowed.");
                 }
@@ -54,7 +54,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
         {
             var parameters = DeserializeParameters(pageScan.DriverParameters);
             var table = GetTable(parameters.StorageSuffix);
-            var storage = new SimpleLatestPackageLeafStorage(
+            var storage = new LatestPackageLeafStorage(
                 table,
                 parameters.Prefix,
                 leafItemToRank,
@@ -63,9 +63,9 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestLeaves
             return Task.FromResult<ILatestPackageLeafStorage<LatestPackageLeaf>>(storage);
         }
 
-        private DefaultLatestPackageLeafParameters DeserializeParameters(string parameters)
+        private LatestPackageLeafParameters DeserializeParameters(string parameters)
         {
-            var deserializedParameters = (DefaultLatestPackageLeafParameters)_serializer.Deserialize(parameters).Data;
+            var deserializedParameters = (LatestPackageLeafParameters)_serializer.Deserialize(parameters).Data;
             if (deserializedParameters.StorageSuffix == string.Empty)
             {
                 if (deserializedParameters.Prefix != string.Empty)
