@@ -174,7 +174,7 @@ namespace Knapcode.ExplorePackages.Worker
                 {
                     await _tableScanService.StartEnqueueCatalogLeafScansAsync(
                         taskStateKey,
-                        _storageService.GetLeafScanTableName(scan.StorageSuffix));
+                        _storageService.GetLeafScanTable(scan.StorageSuffix).Name);
                 }
 
                 scan.ParsedState = CatalogScanState.Waiting;

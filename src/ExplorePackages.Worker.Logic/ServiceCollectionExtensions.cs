@@ -3,7 +3,6 @@ using Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan;
 using Knapcode.ExplorePackages.Worker.FindCatalogLeafItems;
 using Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScans;
 using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaves;
-using Knapcode.ExplorePackages.Worker.LatestLeafToLeafScan;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using Knapcode.ExplorePackages.Worker.TableCopy;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,7 +34,6 @@ namespace Knapcode.ExplorePackages.Worker
             AddTableScan<CatalogLeafScan>(serviceCollection);
             serviceCollection.AddTransient<ILatestPackageLeafStorageFactory<CatalogLeafScan>, LatestCatalogLeafScansStorageFactory>();
             serviceCollection.AddTransient<FindLatestLeavesDriver<CatalogLeafScan>>();
-            serviceCollection.AddTransient<LatestLeafToLeafScanDriver>();
             serviceCollection.AddTransient<EnqueueCatalogLeafScansDriver>();
 
             serviceCollection.AddTransient<CursorStorageService>();

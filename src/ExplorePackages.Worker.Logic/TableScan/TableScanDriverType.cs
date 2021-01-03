@@ -3,7 +3,6 @@
     public enum TableScanDriverType
     {
         TableCopy,
-        LatestLeafToLeafScan,
         EnqueueCatalogLeafScans,
     }
 }

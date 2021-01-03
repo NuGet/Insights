@@ -1,7 +1,6 @@
 ﻿using System;
 using Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan;
 using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaves;
-using Knapcode.ExplorePackages.Worker.LatestLeafToLeafScan;
 using Knapcode.ExplorePackages.Worker.TableCopy;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.WindowsAzure.Storage.Table;
@@ -23,8 +22,6 @@ namespace Knapcode.ExplorePackages.Worker
             {
                 case TableScanDriverType.TableCopy:
                     return _serviceProvider.GetRequiredService<TableCopyDriver<T>>();
-                case TableScanDriverType.LatestLeafToLeafScan when typeof(T) == typeof(LatestPackageLeaf):
-                    return (ITableScanDriver<T>)_serviceProvider.GetRequiredService<LatestLeafToLeafScanDriver>();
                 case TableScanDriverType.EnqueueCatalogLeafScans when typeof(T) == typeof(CatalogLeafScan):
                     return (ITableScanDriver<T>)_serviceProvider.GetRequiredService<EnqueueCatalogLeafScansDriver>();
                 default:

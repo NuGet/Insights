@@ -33,21 +33,6 @@ namespace Knapcode.ExplorePackages.Worker
                 driverParameters: null);
         }
 
-        public async Task StartLatestLeafToLeafScanAsync(
-            TaskStateKey taskStateKey,
-            CatalogIndexScanMessage message,
-            string tableName)
-        {
-            await StartTableScanAsync(
-                taskStateKey,
-                TableScanDriverType.LatestLeafToLeafScan,
-                tableName,
-                TableScanStrategy.PrefixScan,
-                StorageUtility.MaxTakeCount,
-                partitionKeyPrefix: string.Empty,
-                _serializer.Serialize(message).AsJToken());
-        }
-
         public async Task StartTableCopyAsync(
             TaskStateKey taskStateKey,
             string sourceTable,
