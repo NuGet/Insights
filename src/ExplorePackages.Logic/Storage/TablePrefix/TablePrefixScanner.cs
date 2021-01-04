@@ -26,7 +26,11 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
             string partitionKeyPrefix)
             where T : ITableEntity, new()
         {
-            return await ListAsync<T>(table, partitionKeyPrefix, selectColumns: null, takeCount: MaxTakeCount);
+            return await ListAsync<T>(
+                table,
+                partitionKeyPrefix,
+                selectColumns: null,
+                takeCount: MaxTakeCount);
         }
 
         public async Task<List<T>> ListAsync<T>(
@@ -36,14 +40,85 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
             int takeCount)
             where T : ITableEntity, new()
         {
+            return await ListAsync<T>(
+                table,
+                partitionKeyPrefix,
+                selectColumns,
+                takeCount,
+                segmentsPerFirstPrefix: 1,
+                segmentsPerSubsequentPrefix: 1);
+        }
+
+        public async Task<List<T>> ListAsync<T>(
+            CloudTable table,
+            string partitionKeyPrefix,
+            IList<string> selectColumns,
+            int takeCount,
+            int segmentsPerFirstPrefix,
+            int segmentsPerSubsequentPrefix)
+            where T : ITableEntity, new()
+        {
+            var output = await ListAsync<T, T>(
+                table,
+                partitionKeyPrefix,
+                selectColumns,
+                takeCount,
+                segmentsPerFirstPrefix,
+                segmentsPerSubsequentPrefix,
+                addSegment: (x, o) => o.AddRange(x));
+
+            _logger.LogInformation("Completed prefix scan. Found {Count} entities.", output.Count);
+
+            return output;
+        }
+
+        public async Task<List<List<T>>> ListSegmentsAsync<T>(
+            CloudTable table,
+            string partitionKeyPrefix,
+            IList<string> selectColumns,
+            int takeCount,
+            int segmentsPerFirstPrefix,
+            int segmentsPerSubsequentPrefix)
+            where T : ITableEntity, new()
+        {
+            var output = await ListAsync<T, List<T>>(
+                table,
+                partitionKeyPrefix,
+                selectColumns,
+                takeCount,
+                segmentsPerFirstPrefix,
+                segmentsPerSubsequentPrefix,
+                addSegment: (x, o) => o.Add(x));
+
+            _logger.LogInformation("Completed prefix scan. Found {Count} segments.", output.Count);
+
+            return output;
+        }
+
+        private async Task<List<TOutput>> ListAsync<T, TOutput>(
+            CloudTable table,
+            string partitionKeyPrefix,
+            IList<string> selectColumns,
+            int takeCount,
+            int segmentsPerFirstPrefix,
+            int segmentsPerSubsequentPrefix,
+            Action<List<T>, List<TOutput>> addSegment) where T : ITableEntity, new()
+        {
             _logger.LogInformation(
-                "For table {TableName}, starting prefix scan with partition key prefix '{Prefix}', select columns '{SelectColumns}', and take count {TakeCount}",
+                "For table {TableName}, starting prefix scan with " +
+                "partition key prefix '{Prefix}', " +
+                "select columns '{SelectColumns}', " +
+                "take count {TakeCount}, " +
+                "segments per first prefix {SegmentsPerFirstPrefix}, " +
+                "segments per subsequent prefix {SegmentsPerSubsequentPrefix}.",
                 table.Name,
                 partitionKeyPrefix,
                 selectColumns,
-                takeCount);
+                takeCount,
+                segmentsPerFirstPrefix,
+                segmentsPerSubsequentPrefix);
 
-            var output = new List<T>();
+            var output = new List<TOutput>();
             var parameters = new TableQueryParameters(table, selectColumns, takeCount);
             var start = new TablePrefixScanStart(parameters, partitionKeyPrefix);
             var initialSteps = Start(start);
@@ -60,13 +135,13 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
                 {
                     case TablePrefixScanEntitySegment<T> segment:
                         newSteps = Array.Empty<TablePrefixScanEntitySegment<T>>();
-                        output.AddRange(segment.Entities);
+                        addSegment(segment.Entities, output);
                         break;
                     case TablePrefixScanPartitionKeyQuery partitionKeyQuery:
                         newSteps = await ExecutePartitionKeyQueryAsync<T>(partitionKeyQuery);
                         break;
                     case TablePrefixScanPrefixQuery prefixQuery:
-                        newSteps = await ExecutePrefixQueryAsync<T>(prefixQuery);
+                        newSteps = await ExecutePrefixQueryAsync<T>(prefixQuery, segmentsPerFirstPrefix, segmentsPerSubsequentPrefix);
                         break;
                     default:
                         throw new NotImplementedException();
@@ -77,8 +152,6 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
                     remainingSteps.Push(newRange);
                 }
             }
-
-            _logger.LogInformation("Completed prefix scan. Found {Count} entities.", output.Count);
 
             return output;
         }
@@ -152,6 +225,25 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
 
         public async Task<List<TablePrefixScanStep>> ExecutePrefixQueryAsync<T>(TablePrefixScanPrefixQuery query) where T : ITableEntity, new()
         {
+            return await ExecutePrefixQueryAsync<T>(query, segmentsPerFirstPrefix: 1, segmentsPerSubsequentPrefix: 1);
+        }
+
+        public async Task<List<TablePrefixScanStep>> ExecutePrefixQueryAsync<T>(
+            TablePrefixScanPrefixQuery query,
+            int segmentsPerFirstPrefix,
+            int segmentsPerSubsequentPrefix)
+            where T : ITableEntity, new()
+        {
+            if (segmentsPerFirstPrefix < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(segmentsPerFirstPrefix), segmentsPerFirstPrefix, "The number of segments per first prefix must be at least 1.");
+            }
+
+            if (segmentsPerSubsequentPrefix < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(segmentsPerSubsequentPrefix), segmentsPerSubsequentPrefix, "The number of segments per subsequent prefix must be at least 1.");
+            }
+
             using var metrics = _telemetryClient.StartQueryLoopMetrics();
 
             //
@@ -183,6 +275,7 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
             var output = new List<TablePrefixScanStep>();
             var upperBound = query.PartitionKeyPrefix + char.MaxValue;
             string lastPartitionKey = null;
+            var segmentsPerPrefix = segmentsPerFirstPrefix;
 
             while (true)
             {
@@ -205,9 +298,11 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
                     FilterString = filter,
                 };
 
-                // Find the next segment with at least one entity. I'm not entirely sure if it's possible to get zero
+                // Find N segments with at least one entity. I'm not entirely sure if it's possible to get zero
                 // entities but have a continuation token, so let's protect against that.
                 TableContinuationToken continuationToken;
+                var results = new List<T>();
+                var segmentCount = 0;
                 TableQuerySegment<T> segment = null;
                 do
                 {
@@ -216,18 +311,27 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
                     {
                         segment = await query.Parameters.Table.ExecuteQuerySegmentedAsync(tableQuery, continuationToken);
                     }
-                }
-                while (!segment.Any() && segment.ContinuationToken != null);
 
-                if (!segment.Any())
+                    if (segment.Results.Any())
+                    {
+                        results.AddRange(segment.Results);
+                        segmentCount++;
+                    }
+                }
+                while (segmentCount < segmentsPerPrefix && segment.ContinuationToken != null);
+
+                segmentsPerPrefix = segmentsPerSubsequentPrefix;
+
+                if (!results.Any())
                 {
                     break;
                 }
 
-                lastPartitionKey = segment.Results.Last().PartitionKey;
-                output.AddRange(MakeResults(query, segment));
+                lastPartitionKey = results.Last().PartitionKey;
+                var hasMore = segment.ContinuationToken != null;
+                output.AddRange(MakeResults(query, results, hasMore));
 
-                if (segment.ContinuationToken == null)
+                if (!hasMore)
                 {
                     break;
                 }
@@ -252,9 +356,9 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
             return prefix;
         }
 
-        private static IEnumerable<TablePrefixScanStep> MakeResults<T>(TablePrefixScanPrefixQuery step, TableQuerySegment<T> segment) where T : ITableEntity, new()
+        private static IEnumerable<TablePrefixScanStep> MakeResults<T>(TablePrefixScanPrefixQuery step, List<T> results, bool hasMore) where T : ITableEntity, new()
         {
-            if (!segment.Results.Any())
+            if (!results.Any())
             {
                 throw new ArgumentException("The segment must have at least one entity.");
             }
@@ -262,11 +366,11 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
             var nextDepth = step.Depth + 1;
 
             // Produce a terminal node for the discovered results.
-            yield return new TablePrefixScanEntitySegment<T>(step.Parameters, nextDepth, segment.Results);
+            yield return new TablePrefixScanEntitySegment<T>(step.Parameters, nextDepth, results);
 
-            if (segment.ContinuationToken != null)
+            if (hasMore)
             {
-                var last = segment.Results.Last();
+                var last = results.Last();
 
                 // Find the remaining row keys for the partition key that straddles the current and subsequent page.
                 // It's possible that this partition key has very few rows or even only has a single row meaning that this

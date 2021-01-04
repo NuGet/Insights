@@ -36,6 +36,43 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
         }
 
         [Theory]
+        [InlineData(1, 1, 1, "[AA] [AB] [AC] [AD] [AE] [AF] [AG] [AH] [BI] [BJ] [BK] [BL] [BM] [BN] [BO] [BP]")]
+        [InlineData(1, 2, 1, "[AA, AB] [AC, AD] [AE] [AF] [AG] [AH] [BI] [BJ, BK] [BL] [BM] [BN] [BO] [BP]")]
+        [InlineData(1, 2, 3, "[AA, AB] [AC, AD] [AE, AF, AG] [AH] [BI, BJ, BK] [BL, BM] [BN, BO, BP]")]
+        [InlineData(1, 3, 2, "[AA, AB, AC] [AD, AE, AF] [AG, AH] [BI, BJ] [BK, BL, BM] [BN, BO] [BP]")]
+        [InlineData(2, 1, 3, "[AA, AB] [AC, AD] [AE, AF, AG, AH] [BI, BJ, BK, BL, BM, BN] [BO, BP]")]
+        [InlineData(2, 3, 1, "[AA, AB, AC, AD, AE, AF] [AG, AH] [BI, BJ] [BK, BL, BM, BN, BO, BP]")]
+        [InlineData(3, 1, 2, "[AA, AB, AC] [AD, AE, AF] [AG, AH] [BI, BJ, BK, BL, BM, BN] [BO, BP]")]
+        [InlineData(3, 2, 1, "[AA, AB, AC, AD, AE, AF] [AG, AH] [BI, BJ, BK] [BL, BM, BN, BO, BP]")]
+        public async Task AllowsMultipleSegmentsPerPrefix(int takeCount, int segmentsPerFirstPrefix, int segmentsPerSubsequentPrefix, string expected)
+        {
+            (var table, var all) = await _fixture.SortAndInsertAsync(new[]
+            {
+                new TestEntity("AA", "1"),
+                new TestEntity("AB", "1"),
+                new TestEntity("AC", "1"),
+                new TestEntity("AD", "1"),
+                new TestEntity("AE", "1"),
+                new TestEntity("AF", "1"),
+                new TestEntity("AG", "1"),
+                new TestEntity("AH", "1"),
+                new TestEntity("BI", "1"),
+                new TestEntity("BJ", "1"),
+                new TestEntity("BK", "1"),
+                new TestEntity("BL", "1"),
+                new TestEntity("BM", "1"),
+                new TestEntity("BN", "1"),
+                new TestEntity("BO", "1"),
+                new TestEntity("BP", "1"),
+            });
+
+            var segments = await Target.ListSegmentsAsync<TestEntity>(table, string.Empty, MinSelectColumns, takeCount, segmentsPerFirstPrefix, segmentsPerSubsequentPrefix);
+
+            var actual = string.Join(" ", segments.Select(x => "[" + string.Join(", ", x.Select(x => x.PartitionKey)) + "]"));
+            Assert.Equal(expected, actual);
+        }
+
+        [Theory]
         [InlineData("")]
         [InlineData("P")]
         public async Task EnumeratesEmptyTable(string prefix)

@@ -17,7 +17,7 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
             _scanner = scanner;
         }
 
-        public async Task WriteAsync(string path, CloudTable table, TablePrefixScanJsonType type)
+        public async Task WriteAsync(string path, CloudTable table, TablePrefixScanJsonType type, int segmentsPerFirstPrefix, int segmentsPerSubsequentPrefix)
         {
             StepCollection remainingSteps;
             switch (type)
@@ -65,7 +65,7 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
                         stepData = new { Type = "PartitionKeyQuery", partitionKeyQuery.Depth, partitionKeyQuery.PartitionKey, partitionKeyQuery.RowKeySkip };
                         break;
                     case TablePrefixScanPrefixQuery prefixQuery:
-                        nextSteps = await _scanner.ExecutePrefixQueryAsync<TableEntity>(prefixQuery);
+                        nextSteps = await _scanner.ExecutePrefixQueryAsync<TableEntity>(prefixQuery, segmentsPerFirstPrefix, segmentsPerSubsequentPrefix);
                         stepData = new { Type = "PrefixQuery", prefixQuery.Depth, prefixQuery.PartitionKeyPrefix, prefixQuery.PartitionKeyLowerBound };
                         break;
                     default:

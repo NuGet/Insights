@@ -30,6 +30,8 @@ namespace Knapcode.ExplorePackages.Worker
                 TableScanStrategy.PrefixScan,
                 StorageUtility.MaxTakeCount,
                 partitionKeyPrefix: string.Empty,
+                segmentsPerFirstPrefix: 1,
+                segmentsPerSubsequentPrefix: 1,
                 driverParameters: null);
         }
 
@@ -39,7 +41,9 @@ namespace Knapcode.ExplorePackages.Worker
             string destinationTable,
             string partitionKeyPrefix,
             TableScanStrategy strategy,
-            int takeCount)
+            int takeCount,
+            int segmentsPerFirstPrefix,
+            int segmentsPerSubsequentPrefix)
         {
             await StartTableScanAsync(
                 taskStateKey,
@@ -48,6 +52,8 @@ namespace Knapcode.ExplorePackages.Worker
                 strategy,
                 takeCount,
                 partitionKeyPrefix,
+                segmentsPerFirstPrefix,
+                segmentsPerSubsequentPrefix,
                 _serializer.Serialize(new TableCopyParameters
                 {
                     DestinationTableName = destinationTable,
@@ -61,6 +67,8 @@ namespace Knapcode.ExplorePackages.Worker
             TableScanStrategy strategy,
             int takeCount,
             string partitionKeyPrefix,
+            int segmentsPerFirstPrefix,
+            int segmentsPerSubsequentPrefix,
             JToken driverParameters)
         {
             JToken scanParameters;
@@ -70,7 +78,11 @@ namespace Knapcode.ExplorePackages.Worker
                     scanParameters = null;
                     break;
                 case TableScanStrategy.PrefixScan:
-                    scanParameters = null;
+                    scanParameters = _serializer.Serialize(new TablePrefixScanStartParameters
+                    {
+                        SegmentsPerFirstPrefix = segmentsPerFirstPrefix,
+                        SegmentsPerSubsequentPrefix = segmentsPerSubsequentPrefix,
+                    }).AsJToken();
                     break;
                 default:
                     throw new NotImplementedException();

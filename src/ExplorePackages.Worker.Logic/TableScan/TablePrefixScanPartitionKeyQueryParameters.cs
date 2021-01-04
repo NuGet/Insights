@@ -4,6 +4,12 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class TablePrefixScanPartitionKeyQueryParameters
     {
+        [JsonProperty("sf")]
+        public int SegmentsPerFirstPrefix { get; set; }
+
+        [JsonProperty("ss")]
+        public int SegmentsPerSubsequentPrefix { get; set; }
+
         [JsonProperty("d")]
         public int Depth { get; set; }
 

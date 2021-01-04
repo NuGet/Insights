@@ -38,6 +38,7 @@ namespace Knapcode.ExplorePackages.Worker
             new SchemaV1<TableRowCopyMessage<LatestPackageLeaf>>("trc.lpf"),
 
             // Parameters
+            new SchemaV1<TablePrefixScanStartParameters>("tps.s"),
             new SchemaV1<TablePrefixScanPartitionKeyQueryParameters>("tps.pkq"),
             new SchemaV1<TablePrefixScanPrefixQueryParameters>("tps.pq"),
 

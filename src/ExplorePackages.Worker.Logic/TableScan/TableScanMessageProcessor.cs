@@ -109,36 +109,41 @@ namespace Knapcode.ExplorePackages.Worker
                 driver.SelectColumns,
                 message.TakeCount);
 
+            int segmentsPerFirstPrefix;
+            int segmentsPerSubsequentPrefix;
             TablePrefixScanStep currentStep;
-            if (message.ScanParameters == null)
+            switch (_serializer.Deserialize(message.ScanParameters).Data)
             {
-                currentStep = new TablePrefixScanStart(
-                    tableQueryParameters,
-                    message.PartitionKeyPrefix);
-            }
-            else
-            {
-                switch (_serializer.Deserialize(message.ScanParameters).Data)
-                {
-                    case TablePrefixScanPartitionKeyQueryParameters partitionKeyQueryParameters:
-                        currentStep = new TablePrefixScanPartitionKeyQuery(
-                            tableQueryParameters,
-                            partitionKeyQueryParameters.Depth,
-                            partitionKeyQueryParameters.PartitionKey,
-                            partitionKeyQueryParameters.RowKeySkip);
-                        break;
+                case TablePrefixScanStartParameters startParameters:
+                    segmentsPerFirstPrefix = startParameters.SegmentsPerFirstPrefix;
+                    segmentsPerSubsequentPrefix = startParameters.SegmentsPerSubsequentPrefix;
+                    currentStep = new TablePrefixScanStart(
+                        tableQueryParameters,
+                        message.PartitionKeyPrefix);
+                    break;
 
-                    case TablePrefixScanPrefixQueryParameters prefixQueryParameters:
-                        currentStep = new TablePrefixScanPrefixQuery(
-                            tableQueryParameters,
-                            prefixQueryParameters.Depth,
-                            prefixQueryParameters.PartitionKeyPrefix,
-                            prefixQueryParameters.PartitionKeyLowerBound);
-                        break;
+                case TablePrefixScanPartitionKeyQueryParameters partitionKeyQueryParameters:
+                    segmentsPerFirstPrefix = partitionKeyQueryParameters.SegmentsPerFirstPrefix;
+                    segmentsPerSubsequentPrefix = partitionKeyQueryParameters.SegmentsPerSubsequentPrefix;
+                    currentStep = new TablePrefixScanPartitionKeyQuery(
+                        tableQueryParameters,
+                        partitionKeyQueryParameters.Depth,
+                        partitionKeyQueryParameters.PartitionKey,
+                        partitionKeyQueryParameters.RowKeySkip);
+                    break;
 
-                    default:
-                        throw new NotImplementedException();
-                }
+                case TablePrefixScanPrefixQueryParameters prefixQueryParameters:
+                    segmentsPerFirstPrefix = prefixQueryParameters.SegmentsPerFirstPrefix;
+                    segmentsPerSubsequentPrefix = prefixQueryParameters.SegmentsPerSubsequentPrefix;
+                    currentStep = new TablePrefixScanPrefixQuery(
+                        tableQueryParameters,
+                        prefixQueryParameters.Depth,
+                        prefixQueryParameters.PartitionKeyPrefix,
+                        prefixQueryParameters.PartitionKeyLowerBound);
+                    break;
+
+                default:
+                    throw new NotImplementedException();
             }
 
             // Run as many non-async steps as possible to save needless enqueues but only perform on batch of
@@ -162,17 +167,22 @@ namespace Knapcode.ExplorePackages.Worker
                         enqueueSteps.AddRange(await _prefixScanner.ExecutePartitionKeyQueryAsync<T>(partitionKeyQuery));
                         break;
                     case TablePrefixScanPrefixQuery prefixQuery:
-                        enqueueSteps.AddRange(await _prefixScanner.ExecutePrefixQueryAsync<T>(prefixQuery));
+                        enqueueSteps.AddRange(await _prefixScanner.ExecutePrefixQueryAsync<T>(prefixQuery, segmentsPerFirstPrefix, segmentsPerSubsequentPrefix));
                         break;
                     default:
                         throw new NotImplementedException();
                 }
             }
 
-            await EnqueuePrefixScanStepsAsync(message, driver, enqueueSteps);
+            await EnqueuePrefixScanStepsAsync(message, driver, enqueueSteps, segmentsPerFirstPrefix, segmentsPerSubsequentPrefix);
         }
 
-        private async Task EnqueuePrefixScanStepsAsync(TableScanMessage<T> originalMessage, ITableScanDriver<T> driver, List<TablePrefixScanStep> nextSteps)
+        private async Task EnqueuePrefixScanStepsAsync(
+            TableScanMessage<T> originalMessage,
+            ITableScanDriver<T> driver,
+            List<TablePrefixScanStep> nextSteps,
+            int segmentsPerFirstPrefix,
+            int segmentsPerSubsequentPrefix)
         {
             // Two types of messages can be enqueued here:
             //   1. Table row copy messages (the actual work to be done)
@@ -194,6 +204,8 @@ namespace Knapcode.ExplorePackages.Worker
                             originalMessage,
                             new TablePrefixScanPartitionKeyQueryParameters
                             {
+                                SegmentsPerFirstPrefix = segmentsPerFirstPrefix,
+                                SegmentsPerSubsequentPrefix = segmentsPerSubsequentPrefix,
                                 Depth = partitionKeyQuery.Depth,
                                 PartitionKey = partitionKeyQuery.PartitionKey,
                                 RowKeySkip = partitionKeyQuery.RowKeySkip,
@@ -205,6 +217,8 @@ namespace Knapcode.ExplorePackages.Worker
                             originalMessage,
                             new TablePrefixScanPrefixQueryParameters
                             {
+                                SegmentsPerFirstPrefix = segmentsPerFirstPrefix,
+                                SegmentsPerSubsequentPrefix = segmentsPerSubsequentPrefix,
                                 Depth = prefixQuery.Depth,
                                 PartitionKeyPrefix = prefixQuery.PartitionKeyPrefix,
                                 PartitionKeyLowerBound = prefixQuery.PartitionKeyLowerBound,

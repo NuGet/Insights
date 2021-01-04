@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Worker;
+using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using McMaster.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
@@ -21,11 +23,23 @@ namespace Knapcode.ExplorePackages.Tool
     public class SandboxCommand : ICommand
     {
         private readonly MessageEnqueuer _messageEnqueuer;
+        private readonly TaskStateStorageService _taskStateStorageService;
+        private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
+        private readonly TableScanService<LatestPackageLeaf> _tableScanService;
 
         public SandboxCommand(
-            MessageEnqueuer messageEnqueuer)
+            MessageEnqueuer messageEnqueuer,
+            TaskStateStorageService taskStateStorageService,
+            ServiceClientFactory serviceClientFactory,
+            IRawMessageEnqueuer rawMessageEnqueuer,
+            TableScanService<LatestPackageLeaf> tableScanService)
         {
             _messageEnqueuer = messageEnqueuer;
+            _taskStateStorageService = taskStateStorageService;
+            _serviceClientFactory = serviceClientFactory;
+            _rawMessageEnqueuer = rawMessageEnqueuer;
+            _tableScanService = tableScanService;
         }
 
         public void Configure(CommandLineApplication app)
@@ -35,6 +49,49 @@ namespace Knapcode.ExplorePackages.Tool
         public async Task ExecuteAsync(CancellationToken token)
         {
             await Task.Yield();
+
+            for (var i = 1; i <= 5; i++)
+            {
+                for (var j = 1; j <= 5; j++)
+                {
+                    var taskStateKey = new TaskStateKey("copy", "copy", "copy");
+                    await _taskStateStorageService.InitializeAsync(taskStateKey.StorageSuffix);
+
+                    await _taskStateStorageService.GetOrAddAsync(taskStateKey);
+
+                    var table = _serviceClientFactory.GetStorageAccount().CreateCloudTableClient().GetTableReference("latestpackageleavesps");
+                    await table.DeleteIfExistsAsync();
+                    await table.CreateIfNotExistsAsync(retry: true);
+
+                    var sw = Stopwatch.StartNew();
+                    /*
+                    await _tableScanService.StartTableCopyAsync(
+                        taskStateKey,
+                        "latestpackageleaves",
+                        table.Name,
+                        string.Empty,
+                        TableScanStrategy.PrefixScan,
+                        StorageUtility.MaxTakeCount,
+                        segmentsPerFirstPrefix: i,
+                        segmentsPerSubsequentPrefix: j);
+                    */
+
+                    int countLowerBound = -1;
+                    do
+                    {
+                        if (countLowerBound > 0)
+                        {
+                            await Task.Delay(TimeSpan.FromSeconds(1));
+                        }
+
+                        countLowerBound = await _taskStateStorageService.GetCountLowerBoundAsync(taskStateKey.StorageSuffix, taskStateKey.PartitionKey);
+                        Console.WriteLine($"[{sw.Elapsed}, {i}, {j}] count lower bound: {countLowerBound}, queue message count: {await _rawMessageEnqueuer.GetApproximateMessageCountAsync()}");
+                    }
+                    while (countLowerBound > 0);
+
+                    Console.WriteLine($"[{sw.Elapsed}, {i}, {j}] complete");
+                }
+            }
         }
 
         private async Task WorkOnRealRestoreAsync()

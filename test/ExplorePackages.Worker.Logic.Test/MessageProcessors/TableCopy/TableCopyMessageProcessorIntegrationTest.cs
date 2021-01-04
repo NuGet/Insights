@@ -65,7 +65,9 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
                 destinationTable.Name,
                 partitionKeyPrefix: string.Empty,
                 strategy,
-                takeCount: 10);
+                takeCount: 10,
+                segmentsPerFirstPrefix: 1,
+                segmentsPerSubsequentPrefix: 1);
             await UpdateAsync(taskState.Key);
 
             // Assert
