@@ -50,48 +50,53 @@ namespace Knapcode.ExplorePackages.Tool
         {
             await Task.Yield();
 
+            await RunTestAsync(1, 1);
+
             for (var i = 1; i <= 5; i++)
             {
                 for (var j = 1; j <= 5; j++)
                 {
-                    var taskStateKey = new TaskStateKey("copy", "copy", "copy");
-                    await _taskStateStorageService.InitializeAsync(taskStateKey.StorageSuffix);
-
-                    await _taskStateStorageService.GetOrAddAsync(taskStateKey);
-
-                    var table = _serviceClientFactory.GetStorageAccount().CreateCloudTableClient().GetTableReference("latestpackageleavesps");
-                    await table.DeleteIfExistsAsync();
-                    await table.CreateIfNotExistsAsync(retry: true);
-
-                    var sw = Stopwatch.StartNew();
-                    /*
-                    await _tableScanService.StartTableCopyAsync(
-                        taskStateKey,
-                        "latestpackageleaves",
-                        table.Name,
-                        string.Empty,
-                        TableScanStrategy.PrefixScan,
-                        StorageUtility.MaxTakeCount,
-                        segmentsPerFirstPrefix: i,
-                        segmentsPerSubsequentPrefix: j);
-                    */
-
-                    int countLowerBound = -1;
-                    do
-                    {
-                        if (countLowerBound > 0)
-                        {
-                            await Task.Delay(TimeSpan.FromSeconds(1));
-                        }
-
-                        countLowerBound = await _taskStateStorageService.GetCountLowerBoundAsync(taskStateKey.StorageSuffix, taskStateKey.PartitionKey);
-                        Console.WriteLine($"[{sw.Elapsed}, {i}, {j}] count lower bound: {countLowerBound}, queue message count: {await _rawMessageEnqueuer.GetApproximateMessageCountAsync()}");
-                    }
-                    while (countLowerBound > 0);
-
-                    Console.WriteLine($"[{sw.Elapsed}, {i}, {j}] complete");
+                    await RunTestAsync(i, j);
                 }
             }
+        }
+
+        private async Task RunTestAsync(int i, int j)
+        {
+            var taskStateKey = new TaskStateKey("copy", "copy", "copy");
+            await _taskStateStorageService.InitializeAsync(taskStateKey.StorageSuffix);
+
+            await _taskStateStorageService.GetOrAddAsync(taskStateKey);
+
+            var table = _serviceClientFactory.GetStorageAccount().CreateCloudTableClient().GetTableReference("latestpackageleavesps");
+            await table.DeleteIfExistsAsync();
+            await table.CreateIfNotExistsAsync(retry: true);
+
+            var sw = Stopwatch.StartNew();
+            await _tableScanService.StartTableCopyAsync(
+                taskStateKey,
+                "latestpackageleaves",
+                table.Name,
+                string.Empty,
+                TableScanStrategy.PrefixScan,
+                StorageUtility.MaxTakeCount,
+                segmentsPerFirstPrefix: i,
+                segmentsPerSubsequentPrefix: j);
+
+            int countLowerBound = -1;
+            do
+            {
+                if (countLowerBound > 0)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(1));
+                }
+
+                countLowerBound = await _taskStateStorageService.GetCountLowerBoundAsync(taskStateKey.StorageSuffix, taskStateKey.PartitionKey);
+                Console.WriteLine($"[{sw.Elapsed}, {i}, {j}] count lower bound: {countLowerBound}, queue message count: {await _rawMessageEnqueuer.GetApproximateMessageCountAsync()}");
+            }
+            while (countLowerBound > 0);
+
+            Console.WriteLine($"[{sw.Elapsed}, {i}, {j}] complete");
         }
 
         private async Task WorkOnRealRestoreAsync()
