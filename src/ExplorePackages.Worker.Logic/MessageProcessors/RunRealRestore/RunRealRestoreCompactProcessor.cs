@@ -30,11 +30,11 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
                 message.Bucket,
                 force: true,
                 mergeExisting: true,
-                PruneAssets,
+                Prune,
                 _csvReader);
         }
 
-        private static List<RealRestoreResult> PruneAssets(List<RealRestoreResult> allAssets)
+        private static List<RealRestoreResult> Prune(List<RealRestoreResult> allAssets)
         {
             return allAssets
                 .GroupBy(x => new { Id = x.Id.ToLowerInvariant(), Version = x.Version.ToLowerInvariant(), x.Framework, x.DotnetVersion })
