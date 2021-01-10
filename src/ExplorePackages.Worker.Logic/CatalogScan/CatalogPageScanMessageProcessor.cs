@@ -73,7 +73,7 @@ namespace Knapcode.ExplorePackages.Worker
             if (scan.ParsedState == CatalogScanState.Expanding)
             {
                 var leafScans = await lazyLeafScansTask.Value;
-                await _expandService.InsertLeafScansAsync(scan.StorageSuffix, scan.ScanId, scan.PageId, leafScans, allowExtra: false);
+                await InsertLeafScansAsync(scan.StorageSuffix, scan.ScanId, scan.PageId, leafScans);
 
                 scan.ParsedState = CatalogScanState.Enqueuing;
                 await _storageService.ReplaceAsync(scan);
@@ -94,6 +94,25 @@ namespace Knapcode.ExplorePackages.Worker
             {
                 await _storageService.DeleteAsync(scan);
             }
+        }
+
+        private async Task InsertLeafScansAsync(string storageSuffix, string scanId, string pageId, IReadOnlyList<CatalogLeafScan> leafScans)
+        {
+            var createdLeaves = await _storageService.GetLeafScansAsync(storageSuffix, scanId, pageId);
+
+            var allUrls = leafScans.Select(x => x.Url).ToHashSet();
+            var createdUrls = createdLeaves.Select(x => x.Url).ToHashSet();
+            var uncreatedUrls = allUrls.Except(createdUrls).ToHashSet();
+
+            if (createdUrls.Except(allUrls).Any())
+            {
+                throw new InvalidOperationException("There should not be any extra leaf scan entities.");
+            }
+
+            var uncreatedLeafScans = leafScans
+                .Where(x => uncreatedUrls.Contains(x.Url))
+                .ToList();
+            await _storageService.InsertAsync(uncreatedLeafScans);
         }
 
         private async Task<List<CatalogLeafScan>> InitializeLeavesAsync(CatalogPageScan scan, bool excludeRedundantLeaves)

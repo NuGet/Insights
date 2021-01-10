@@ -22,25 +22,6 @@ namespace Knapcode.ExplorePackages.Worker
             _logger = logger;
         }
 
-        public async Task InsertLeafScansAsync(string storageSuffix, string scanId, string pageId, IReadOnlyList<CatalogLeafScan> leafScans, bool allowExtra)
-        {
-            var createdLeaves = await _storageService.GetLeafScansAsync(storageSuffix, scanId, pageId);
-
-            var allUrls = leafScans.Select(x => x.Url).ToHashSet();
-            var createdUrls = createdLeaves.Select(x => x.Url).ToHashSet();
-            var uncreatedUrls = allUrls.Except(createdUrls).ToHashSet();
-
-            if (!allowExtra && createdUrls.Except(allUrls).Any())
-            {
-                throw new InvalidOperationException("There should not be any extra leaf scan entities.");
-            }
-
-            var uncreatedLeafScans = leafScans
-                .Where(x => uncreatedUrls.Contains(x.Url))
-                .ToList();
-            await _storageService.InsertAsync(uncreatedLeafScans);
-        }
-
         public async Task EnqueueLeafScansAsync(IReadOnlyList<CatalogLeafScan> leafScans)
         {
             _logger.LogInformation("Enqueuing a scan of {LeafCount} leaves.", leafScans.Count);
