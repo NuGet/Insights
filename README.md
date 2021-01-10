@@ -47,7 +47,7 @@ Tested timestamp ranges:
 
 Results:
 - `FindPackageAssembly`
-   - Runtime: 6 hours, 20 minutes, 8 seconds
+   - Runtime: 4 hours, 38 minutes, 35 seconds
    - Cost:
        - Functions: $8.73
        - Storage: $2.83
@@ -57,7 +57,7 @@ Results:
        - Functions: $0.96
        - Storage: $0.21
 - `FindPackageAsset` with latest leaf de-duping
-   - Runtime: 42 minutes, 45 seconds
+   - Runtime: 41 minutes, 38 seconds
    - Cost: 
        - Functions: $1.49
        - Storage: $0.29

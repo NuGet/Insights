@@ -55,7 +55,7 @@ namespace Knapcode.ExplorePackages.Worker
                 settings.TempDirectories.Add(new TempStreamDirectory
                 {
                     Path = networkDir,
-                    MaxConcurrentWriters = 8,
+                    MaxConcurrentWriters = 16,
                     PreallocateFile = false,
                 });
             }
