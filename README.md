@@ -133,3 +133,5 @@ track of what I was originally working on. Maybe I should use issues for this? T
 
 - modify `AppendResultStorageService` to save table results in proper rows and columns. this could enable remove the
   need for holding the entire 1/1000 of the results in memory at one time
+
+- push message batching down in the processor to allow processor-specific batching tricks
