@@ -64,7 +64,10 @@ namespace Knapcode.ExplorePackages
         }
 
         [Output]
-        public Output<bool> AadAppUpdated { get; set; }
+        public Output<string> WebsiteUrl { get; private set; }
+
+        [Output]
+        public Output<bool> AadAppUpdated { get; private set; }
 
         private void CreateWebsite()
         {
@@ -141,6 +144,8 @@ namespace Knapcode.ExplorePackages
                     { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.AllowedUsers)}:1:{nameof(AllowedUser.HashedObjectId)}", "e2bface8eb40fbf1f24e407f3daa7a71705fcad26f584a9e55636b9feed472be" },
                 },
             });
+
+            WebsiteUrl = appService.DefaultSiteHostname.Apply(defaultSiteHostname => $"https://{defaultSiteHostname}");
 
             AadAppUpdated = aadApp.ApplicationId.Apply(clientId =>
             {
