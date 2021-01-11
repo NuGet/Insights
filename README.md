@@ -113,11 +113,13 @@ https://explorepackages.azurewebsites.net/
 I need to keep a TODO for this project since I indulge myself in all of the rabbit trails that I want and often lose
 track of what I was originally working on. Maybe I should use issues for this? Too much work.
 
-- Make `FindPackageAssembly` use MiniZip to fetch the file listing first similar to `FindPackageAsset`, ensuring that
-  there is at least one assembly (by file extension) before downloading the full package.
+- Figure out specific limits of table entity row and field sizes
 
 - Store the MiniZip file listing in a ExplorePackages-maintained record (probably table storage) to avoid unnecessary
   hits to NuGet.org.
+
+- Make `FindPackageAssembly` use MiniZip to fetch the file listing first similar to `FindPackageAsset`, ensuring that
+  there is at least one assembly (by file extension) before downloading the full package.
 
 - Build a catalog index reader that uses range requests for perf
 
