@@ -113,7 +113,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 
         private async Task ScheduleLoopAsync()
         {
-            await _service.StartAsync(loop: true, notBefore: TimeSpan.FromMinutes(1));
+            await _service.StartAsync(loop: true, notBefore: TimeSpan.FromMinutes(30));
         }
 
         private async Task<bool> ProcessAsync()
