@@ -4,10 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 
 namespace Knapcode.ExplorePackages
 {
@@ -15,15 +13,18 @@ namespace Knapcode.ExplorePackages
     {
         private readonly HttpClient _httpClient;
         private readonly IThrottle _throttle;
+        private readonly DownloadsV1JsonDeserializer _deserializer;
         private readonly IOptions<ExplorePackagesSettings> _options;
 
         public PackageDownloadsClient(
             HttpClient httpClient,
             IThrottle throttle,
+            DownloadsV1JsonDeserializer deserializer,
             IOptions<ExplorePackagesSettings> options)
         {
             _httpClient = httpClient;
             _throttle = throttle;
+            _deserializer = deserializer;
             _options = options;
         }
 
@@ -50,6 +51,7 @@ namespace Knapcode.ExplorePackages
 
                 await _throttle.WaitAsync();
                 var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+                var asOfTimestamp = response.Content.Headers.LastModified.Value.ToUniversalTime();
                 disposables.Push(response);
 
                 string newEtag;
@@ -77,132 +79,24 @@ namespace Knapcode.ExplorePackages
                     throw new HttpRequestException($"Response status code is not 200 OK: {((int)response.StatusCode)} ({response.ReasonPhrase})");
                 }
 
-                var jsonReader = new JsonTextReader(textReader);
-                disposables.Push(jsonReader);
-
                 return new PackageDownloadSet(
+                    asOfTimestamp,
+                    _options.Value.DownloadsV1Url,
                     newEtag,
-                    new PackageDownloadsAsyncEnumerator(
-                        jsonReader,
-                        disposables,
-                        _throttle));
+                    _deserializer.DeserializeAsync(textReader, disposables, _throttle));
             }
             catch
             {
                 _throttle.Release();
-                DisposeAll(disposables);
+
+                while (disposables.Any())
+                {
+                    disposables.Pop()?.Dispose();
+                }
+
                 throw;
             }
         }
 
-        private static void DisposeAll(Stack<IDisposable> disposables)
-        {
-            while (disposables.Any())
-            {
-                disposables.Pop()?.Dispose();
-            }
-        }
-
-        private class PackageDownloadsAsyncEnumerator : IAsyncEnumerator<PackageDownloads>
-        {
-            private readonly JsonReader _jsonReader;
-            private readonly Stack<IDisposable> _disposables;
-            private readonly IThrottle _throttle;
-
-            private State _state;
-            private string _currentId;
-            private int _disposed;
-
-            public PackageDownloadsAsyncEnumerator(
-                JsonReader jsonReader,
-                Stack<IDisposable> disposables,
-                IThrottle throttle)
-            {
-                _jsonReader = jsonReader;
-                _disposables = disposables;
-                _throttle = throttle;
-                _state = State.Uninitialized;
-            }
-
-            public PackageDownloads Current { get; private set; }
-
-            public void Dispose()
-            {
-                if (Interlocked.CompareExchange(ref _disposed, 1, 0) == 0)
-                {
-                    _throttle.Release();
-                }
-
-                DisposeAll(_disposables);
-            }
-
-            public ValueTask DisposeAsync()
-            {
-                Dispose();
-                return default;
-            }
-
-            public async ValueTask<bool> MoveNextAsync()
-            {
-                Current = null;
-                while (Current == null && _state != State.Complete)
-                {
-                    switch (_state)
-                    {
-                        case State.Uninitialized:
-                            await _jsonReader.ReadAsStartArrayAsync();
-                            _state = State.InRootArray;
-                            break;
-
-                        case State.InRootArray:
-                            await _jsonReader.ReadRequiredAsync();
-                            if (_jsonReader.TokenType == JsonToken.EndArray)
-                            {
-                                _state = State.Complete;
-                                Dispose();
-                            }
-                            else if (_jsonReader.TokenType == JsonToken.StartArray)
-                            {
-                                _currentId = await _jsonReader.ReadAsStringAsync();
-                                _state = State.InRegistrationArray;
-                            }
-                            else
-                            {
-                                throw new JsonReaderException("Error reading start array or end array.");
-                            }
-                            break;
-
-                        case State.InRegistrationArray:
-                            await _jsonReader.ReadRequiredAsync();
-                            if (_jsonReader.TokenType == JsonToken.EndArray)
-                            {
-                                _state = State.InRootArray;
-                            }
-                            else if (_jsonReader.TokenType == JsonToken.StartArray)
-                            {
-                                var version = await _jsonReader.ReadAsStringAsync();
-                                var downloads = await _jsonReader.ReadAsInt64Async();
-                                await _jsonReader.ReadAsEndArrayAsync();
-                                Current = new PackageDownloads(_currentId, version, downloads);
-                            }
-                            else
-                            {
-                                throw new JsonReaderException("Error reading start array or end array.");
-                            }
-                            break;
-                    }
-                }
-
-                return Current != null;
-            }
-
-            private enum State
-            {
-                Uninitialized,
-                InRootArray,
-                InRegistrationArray,
-                Complete,
-            }
-        }
     }
 }

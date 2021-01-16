@@ -3,6 +3,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages
 {
@@ -26,6 +27,27 @@ namespace Knapcode.ExplorePackages
             else
             {
                 writer.Write(value);
+            }
+        }
+
+        public static async Task WriteWithQuotesAsync(TextWriter writer, string value)
+        {
+            if (value == null)
+            {
+                return;
+            }
+
+            if (value.StartsWith(" ")
+                || value.EndsWith(" ")
+                || value.IndexOfAny(new[] { ',', '"', '\r', '\n' }) > -1)
+            {
+                await writer.WriteAsync('"');
+                await writer.WriteAsync(value.Replace("\"", "\"\""));
+                await writer.WriteAsync('"');
+            }
+            else
+            {
+                await writer.WriteAsync(value);
             }
         }
 

@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -106,6 +107,8 @@ namespace Knapcode.ExplorePackages.Worker
             x.PackageAssemblyContainerName = $"{StoragePrefix}1fpi1";
             x.RealRestoreContainerName = $"{StoragePrefix}1rrr1";
             x.CatalogLeafItemContainerName = $"{StoragePrefix}1fcli1";
+            x.PackageDownloadsAppendTableName = $"{StoragePrefix}1pda1";
+            x.PackageDownloadsContainerName = $"{StoragePrefix}1pd1";
 
             ConfigureDefaultsAndSettings((ExplorePackagesSettings)x);
 
@@ -128,6 +131,7 @@ namespace Knapcode.ExplorePackages.Worker
         public CursorStorageService CursorStorageService => Host.Services.GetRequiredService<CursorStorageService>();
         public CatalogScanStorageService CatalogScanStorageService => Host.Services.GetRequiredService<CatalogScanStorageService>();
         public TaskStateStorageService TaskStateStorageService => Host.Services.GetRequiredService<TaskStateStorageService>();
+        public MessageEnqueuer MessageEnqueuer => Host.Services.GetRequiredService<MessageEnqueuer>();
         public IWorkerQueueFactory WorkerQueueFactory => Host.Services.GetRequiredService<IWorkerQueueFactory>();
         public ITelemetryClient TelemetryClient => Host.Services.GetRequiredService<ITelemetryClient>();
         public ILogger Logger => Host.Services.GetRequiredService<ILogger<BaseWorkerLogicIntegrationTest>>();
@@ -211,6 +215,47 @@ namespace Knapcode.ExplorePackages.Worker
             await using var scopeOwnership = leaseScope.TakeOwnership();
             var messageProcessor = serviceProvider.GetRequiredService<GenericMessageProcessor>();
             await messageProcessor.ProcessAsync(message.AsString, message.DequeueCount);
+        }
+
+        protected async Task AssertCompactAsync(string containerName, string testName, string stepName, int bucket)
+        {
+            await AssertBlobAsync(containerName, testName, stepName, $"compact_{bucket}.csv");
+        }
+
+        protected async Task AssertBlobAsync(string containerName, string testName, string stepName, string blobName, bool gzip = false)
+        {
+            var client = ServiceClientFactory.GetStorageAccount().CreateCloudBlobClient();
+            var container = client.GetContainerReference(containerName);
+            var blob = container.GetBlockBlobReference(blobName);
+
+            string actual;
+            var fileName = blobName;
+            if (gzip)
+            {
+                using var destStream = new MemoryStream();
+                await blob.DownloadToStreamAsync(destStream);
+                destStream.Position = 0;
+                using var gzipStream = new GZipStream(destStream, CompressionMode.Decompress);
+                using var reader = new StreamReader(gzipStream);
+                actual = await reader.ReadToEndAsync();
+
+                if (blobName.EndsWith(".gz"))
+                {
+                    fileName = blobName.Substring(0, blobName.Length - ".gz".Length);
+                }
+            }
+            else
+            {
+                actual = await blob.DownloadTextAsync();
+            }
+
+            if (OverwriteTestData)
+            {
+                Directory.CreateDirectory(Path.Combine(TestData, testName, stepName));
+                File.WriteAllText(Path.Combine(TestData, testName, stepName, fileName), actual);
+            }
+            var expected = File.ReadAllText(Path.Combine(TestData, testName, stepName, fileName));
+            Assert.Equal(expected, actual);
         }
 
         public Task InitializeAsync() => Task.CompletedTask;

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Website.Models;
 using Knapcode.ExplorePackages.Worker;
+using Knapcode.ExplorePackages.Worker.DownloadsToCsv;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,23 +12,28 @@ namespace Knapcode.ExplorePackages.Website.Controllers
     [Authorize(Policy = AllowListAuthorizationHandler.PolicyName)]
     public class AdminController : Controller
     {
+        private static bool _isInitialized;
         private readonly CatalogScanStorageService _catalogScanStorageService;
         private readonly CatalogScanService _catalogScanService;
+        private readonly DownloadsToCsvService _downloadsToCsvService;
         private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
 
         public AdminController(
+            IRawMessageEnqueuer rawMessageEnqueuer,
             CatalogScanStorageService catalogScanStorageService,
             CatalogScanService catalogScanService,
-            IRawMessageEnqueuer rawMessageEnqueuer)
+            DownloadsToCsvService downloadsToCsvService)
         {
+            _rawMessageEnqueuer = rawMessageEnqueuer;
             _catalogScanStorageService = catalogScanStorageService;
             _catalogScanService = catalogScanService;
-            _rawMessageEnqueuer = rawMessageEnqueuer;
+            _downloadsToCsvService = downloadsToCsvService;
         }
 
         public async Task<ViewResult> Index()
         {
-            await _catalogScanService.InitializeAsync();
+            await InitializeAsync();
+
             var approximateMessageCountTask = _rawMessageEnqueuer.GetApproximateMessageCountAsync();
             var poisonApproximateMessageCountTask = _rawMessageEnqueuer.GetPoisonApproximateMessageCountAsync();
             const int messageCount = 32;
@@ -41,11 +47,14 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 .Select(GetCatalogScanAsync)
                 .ToList();
 
+            var isDownloadsToCsvRunningTask = _downloadsToCsvService.IsRunningAsync();
+
             await Task.WhenAll(
                 approximateMessageCountTask,
                 poisonApproximateMessageCountTask,
                 availableMessageCountLowerBoundTask,
-                poisonAvailableMessageCountLowerBoundTask);
+                poisonAvailableMessageCountLowerBoundTask,
+                isDownloadsToCsvRunningTask);
 
             var catalogScans = await Task.WhenAll(catalogScanTasks);
 
@@ -56,12 +65,28 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 PoisonApproximateMessageCount = await poisonApproximateMessageCountTask,
                 PoisonAvailableMessageCountLowerBound = await poisonAvailableMessageCountLowerBoundTask,
                 CatalogScans = catalogScans,
+                IsDownloadsToCsvRunning = await isDownloadsToCsvRunningTask,
             };
 
             model.AvailableMessageCountIsExact = model.AvailableMessageCountLowerBound < messageCount;
             model.PoisonAvailableMessageCountIsExact = model.PoisonAvailableMessageCountLowerBound < messageCount;
 
             return View(model);
+        }
+
+        private async Task InitializeAsync()
+        {
+            if (_isInitialized)
+            {
+                return;
+            }
+
+            await Task.WhenAll(
+                _rawMessageEnqueuer.InitializeAsync(),
+                _catalogScanService.InitializeAsync(),
+                _downloadsToCsvService.InitializeAsync());
+
+            _isInitialized = true;
         }
 
         private async Task<CatalogScanViewModel> GetCatalogScanAsync(CatalogScanDriverType driverType)
@@ -93,6 +118,13 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             await _catalogScanService.UpdateAsync(driverType, parsedMax, onlyLatestLeaves);
 
             return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment: driverType.ToString());
+        }
+
+        [HttpPost]
+        public async Task<RedirectToActionResult> StartDownloadsToCsv()
+        {
+            await _downloadsToCsvService.StartAsync();
+            return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment: "DownloadsToCsv");
         }
     }
 }

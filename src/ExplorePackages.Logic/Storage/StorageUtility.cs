@@ -19,9 +19,14 @@ namespace Knapcode.ExplorePackages
 
         public static StorageId GenerateDescendingId()
         {
-            var descendingComponent = (long.MaxValue - DateTimeOffset.UtcNow.Ticks).ToString("D20");
+            var descendingComponent = GetDescendingId(DateTimeOffset.UtcNow);
             var uniqueComponent = GenerateUniqueId();
             return new StorageId(descendingComponent, uniqueComponent);
+        }
+
+        public static string GetDescendingId(DateTimeOffset timestamp)
+        {
+            return (long.MaxValue - timestamp.Ticks).ToString("D20");
         }
 
         public static TimeSpan GetMessageDelay(int attemptCount)

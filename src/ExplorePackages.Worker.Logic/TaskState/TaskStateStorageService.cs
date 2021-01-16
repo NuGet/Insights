@@ -63,12 +63,15 @@ namespace Knapcode.ExplorePackages.Worker
             var existing = await GetAllAsync(storageSuffix, partitionKey);
             var existingRowKeys = existing.Select(x => x.RowKey).ToHashSet();
 
+            // Remove row keys we don't care about at all.
+            existingRowKeys.IntersectWith(taskStates.Select(x => x.RowKey));
+
             var toInsert = taskStates
                 .Where(x => !existingRowKeys.Contains(x.RowKey))
                 .ToList();
             await InsertAsync(toInsert);
 
-            toInsert.AddRange(existing);
+            toInsert.AddRange(existing.Where(x => existingRowKeys.Contains(x.RowKey)));
 
             return toInsert;
         }

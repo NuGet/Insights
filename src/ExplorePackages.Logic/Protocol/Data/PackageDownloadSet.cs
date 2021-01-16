@@ -6,18 +6,22 @@ namespace Knapcode.ExplorePackages
 {
     public class PackageDownloadSet : IAsyncDisposable
     {
-        public PackageDownloadSet(string etag, IAsyncEnumerator<PackageDownloads> downloads)
+        public PackageDownloadSet(DateTimeOffset asOfTimestamp, string url, string etag, IAsyncEnumerable<PackageDownloads> downloads)
         {
+            AsOfTimestamp = asOfTimestamp;
+            Url = url;
             ETag = etag;
             Downloads = downloads;
         }
 
+        public DateTimeOffset AsOfTimestamp { get; }
+        public string Url { get; }
         public string ETag { get; }
-        public IAsyncEnumerator<PackageDownloads> Downloads { get; }
+        public IAsyncEnumerable<PackageDownloads> Downloads { get; }
 
         public ValueTask DisposeAsync()
         {
-            return Downloads?.DisposeAsync() ?? default;
+            return Downloads?.GetAsyncEnumerator().DisposeAsync() ?? default;
         }
     }
 }

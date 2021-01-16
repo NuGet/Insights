@@ -73,7 +73,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
                     return DriverResult.Success(new List<PackageAssembly>());
                 }
 
-                if (result.Type == TempStreamResultType.SemaphoreTimeout)
+                if (result.Type == TempStreamResultType.SemaphoreNotAvailable)
                 {
                     return DriverResult.TryAgainLater<List<PackageAssembly>>();
                 }
@@ -149,7 +149,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
                     return DriverResult.Success();
                 }
 
-                if (tempStreamResult.Type == TempStreamResultType.SemaphoreTimeout)
+                if (tempStreamResult.Type == TempStreamResultType.SemaphoreNotAvailable)
                 {
                     return DriverResult.TryAgainLater();
                 }

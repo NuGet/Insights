@@ -58,7 +58,7 @@ namespace Knapcode.ExplorePackages.Worker
                     TaskStateKey = new TaskStateKey(
                         indexScan.StorageSuffix,
                         partitionKey,
-                         b.ToString()),
+                        b.ToString()),
                 })
                 .ToList();
             await _messageEnqueuer.EnqueueAsync(messages);

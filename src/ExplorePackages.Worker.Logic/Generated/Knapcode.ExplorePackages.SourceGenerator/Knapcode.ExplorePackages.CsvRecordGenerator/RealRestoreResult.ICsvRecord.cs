@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Knapcode.ExplorePackages;
 
 namespace Knapcode.ExplorePackages.Worker.RunRealRestore
@@ -142,6 +143,70 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
             writer.Write(',');
             writer.Write(CsvUtility.FormatBool(OnlyMSB3644));
             writer.WriteLine();
+        }
+
+        public async Task WriteAsync(TextWriter writer)
+        {
+            await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(Timestamp));
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, DotnetVersion);
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(Duration.ToString());
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, Id);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, Version);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, Framework);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, Template);
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(TargetCount.ToString());
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(LibraryCount.ToString());
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatBool(RestoreSucceeded));
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatBool(BuildSucceeded));
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(DependencyCount.ToString());
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(FrameworkAssemblyCount.ToString());
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(FrameworkReferenceCount.ToString());
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(RuntimeAssemblyCount.ToString());
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(ResourceAssemblyCount.ToString());
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CompileTimeAssemblyCount.ToString());
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(NativeLibraryCount.ToString());
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(BuildCount.ToString());
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(BuildMultiTargetingCount.ToString());
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(ContentFileCount.ToString());
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(RuntimeTargetCount.ToString());
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(ToolAssemblyCount.ToString());
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(EmbedAssemblyCount.ToString());
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, ErrorBlobPath);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, RestoreLogMessageCodes);
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatBool(OnlyNU1202));
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatBool(OnlyNU1213));
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, BuildErrorCodes);
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatBool(OnlyMSB3644));
+            await writer.WriteLineAsync();
         }
 
         public RealRestoreResult Read(Func<string> getNextField)

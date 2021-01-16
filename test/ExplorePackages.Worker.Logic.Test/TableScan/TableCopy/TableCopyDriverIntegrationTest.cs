@@ -9,14 +9,14 @@ using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages.Worker.TableCopy
 {
-    public class TableCopyMessageProcessorIntegrationTest : BaseWorkerLogicIntegrationTest
+    public class TableCopyDriverIntegrationTest : BaseWorkerLogicIntegrationTest
     {
-        public TableCopyMessageProcessorIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+        public TableCopyDriverIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
             : base(output, factory)
         {
         }
 
-        public class CopyAsync_Serial : TableCopyMessageProcessorIntegrationTest
+        public class CopyAsync_Serial : TableCopyDriverIntegrationTest
         {
             public CopyAsync_Serial(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
             {
@@ -26,7 +26,7 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
             public Task ExecuteAsync() => CopyAsync(TableScanStrategy.Serial);
         }
 
-        public class CopyAsync_PrefixScan : TableCopyMessageProcessorIntegrationTest
+        public class CopyAsync_PrefixScan : TableCopyDriverIntegrationTest
         {
             public CopyAsync_PrefixScan(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
             {

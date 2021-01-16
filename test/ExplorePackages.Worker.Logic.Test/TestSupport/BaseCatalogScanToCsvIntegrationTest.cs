@@ -22,17 +22,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         protected async Task AssertOutputAsync(string testName, string stepName, int bucket)
         {
-            var client = ServiceClientFactory.GetStorageAccount().CreateCloudBlobClient();
-            var container = client.GetContainerReference(DestinationContainerName);
-            var blob = container.GetBlockBlobReference($"compact_{bucket}.csv");
-            var actual = await blob.DownloadTextAsync();
-            if (OverwriteTestData)
-            {
-                Directory.CreateDirectory(Path.Combine(TestData, testName, stepName));
-                File.WriteAllText(Path.Combine(TestData, testName, stepName, blob.Name), actual);
-            }
-            var expected = File.ReadAllText(Path.Combine(TestData, testName, stepName, blob.Name));
-            Assert.Equal(expected, actual);
+            await AssertCompactAsync(DestinationContainerName, testName, stepName, bucket);
         }
     }
 }

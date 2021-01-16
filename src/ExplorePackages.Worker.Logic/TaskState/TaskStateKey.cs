@@ -20,5 +20,10 @@ namespace Knapcode.ExplorePackages.Worker
 
         [JsonProperty("r")]
         public string RowKey { get; }
+
+        public TaskStateKey WithRowKeySuffix(string rowKeySuffix)
+        {
+            return new TaskStateKey(StorageSuffix, PartitionKey, RowKey + rowKeySuffix);
+        }
     }
 }

@@ -179,7 +179,7 @@ namespace Knapcode.ExplorePackages
                     var tempPath = Path.Combine(tempDir, StorageUtility.GenerateDescendingId().ToString());
                     if (!await _leaseScope.WaitAsync(tempDir))
                     {
-                        return TempStreamResult.SemaphoreTimeout();
+                        return TempStreamResult.SemaphoreNotAvailable();
                     }
 
                     try

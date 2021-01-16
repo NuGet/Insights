@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -73,12 +74,14 @@ namespace Knapcode.ExplorePackages.Entities
                 _client
                     .Setup(x => x.GetPackageDownloadSetAsync(It.IsAny<string>()))
                     .ReturnsAsync(new PackageDownloadSet(
+                        DateTimeOffset.MinValue,
+                        _settings.DownloadsV1Url,
                         "\"foo\"",
-                        new MemoryAsyncEnumerator<PackageDownloads>(new[]
+                        new MemoryAsyncEnumerable<PackageDownloads>(new[]
                         {
                             new PackageDownloads("C", "3.0.0", 30), // No change.
                             new PackageDownloads("A", "1.0.0", 10), // No change.
-                        }.ToList().GetEnumerator())));
+                        }.ToList())));
 
                 // Act
                 await _target.UpdateAsync();
@@ -98,13 +101,15 @@ namespace Knapcode.ExplorePackages.Entities
                 _client
                     .Setup(x => x.GetPackageDownloadSetAsync(It.IsAny<string>()))
                     .ReturnsAsync(new PackageDownloadSet(
+                        DateTimeOffset.MinValue,
+                        _settings.DownloadsV1Url,
                         "\"foo\"",
-                        new MemoryAsyncEnumerator<PackageDownloads>(new[]
+                        new MemoryAsyncEnumerable<PackageDownloads>(new[]
                         {
                             new PackageDownloads("B", "2.0.0", 20), // New.
                             new PackageDownloads("C", "3.0.0", 30), // No change.
                             new PackageDownloads("A", "1.0.0", 10), // No change.
-                        }.ToList().GetEnumerator())));
+                        }.ToList())));
 
                 // Act
                 await _target.UpdateAsync();
@@ -124,12 +129,14 @@ namespace Knapcode.ExplorePackages.Entities
                 _client
                     .Setup(x => x.GetPackageDownloadSetAsync(It.IsAny<string>()))
                     .ReturnsAsync(new PackageDownloadSet(
+                        DateTimeOffset.MinValue,
+                        _settings.DownloadsV1Url,
                         "\"foo\"",
-                        new MemoryAsyncEnumerator<PackageDownloads>(new[]
+                        new MemoryAsyncEnumerable<PackageDownloads>(new[]
                         {
                             new PackageDownloads("B", "2.0.0", 25), // More downloads.
                             new PackageDownloads("A", "1.0.0", 10), // No change.
-                        }.ToList().GetEnumerator())));
+                        }.ToList())));
 
                 // Act
                 await _target.UpdateAsync();
@@ -149,12 +156,14 @@ namespace Knapcode.ExplorePackages.Entities
                 _client
                     .Setup(x => x.GetPackageDownloadSetAsync(It.IsAny<string>()))
                     .ReturnsAsync(new PackageDownloadSet(
+                        DateTimeOffset.MinValue,
+                        _settings.DownloadsV1Url,
                         "\"foo\"",
-                        new MemoryAsyncEnumerator<PackageDownloads>(new[]
+                        new MemoryAsyncEnumerable<PackageDownloads>(new[]
                         {
                             new PackageDownloads("B", "2.0.0", 15), // Fewer downloads.
                             new PackageDownloads("A", "1.0.0", 10), // No change.
-                        }.ToList().GetEnumerator())));
+                        }.ToList())));
 
                 // Act
                 await _target.UpdateAsync();
@@ -174,12 +183,14 @@ namespace Knapcode.ExplorePackages.Entities
                 _client
                     .Setup(x => x.GetPackageDownloadSetAsync(It.IsAny<string>()))
                     .ReturnsAsync(new PackageDownloadSet(
+                        DateTimeOffset.MinValue,
+                        _settings.DownloadsV1Url,
                         "\"foo\"",
-                        new MemoryAsyncEnumerator<PackageDownloads>(new[]
+                        new MemoryAsyncEnumerable<PackageDownloads>(new[]
                         {
                             new PackageDownloads("B", "2.0.0", 20), // No change.
                             new PackageDownloads("A", "1.0.0", 10), // No change.
-                        }.ToList().GetEnumerator())));
+                        }.ToList())));
 
                 // Act
                 await _target.UpdateAsync();
@@ -195,12 +206,14 @@ namespace Knapcode.ExplorePackages.Entities
                 _client
                     .Setup(x => x.GetPackageDownloadSetAsync(It.IsAny<string>()))
                     .ReturnsAsync(new PackageDownloadSet(
+                        DateTimeOffset.MinValue,
+                        _settings.DownloadsV1Url,
                         "\"foo\"",
-                        new MemoryAsyncEnumerator<PackageDownloads>(new[]
+                        new MemoryAsyncEnumerable<PackageDownloads>(new[]
                         {
                             new PackageDownloads("B", "2.0.0", 20), // No change.
                             new PackageDownloads("A", "1.0.0", 10), // No change.
-                        }.ToList().GetEnumerator())));
+                        }.ToList())));
 
                 // Act
                 await _target.UpdateAsync();
@@ -221,10 +234,10 @@ namespace Knapcode.ExplorePackages.Entities
                 _client
                     .Setup(x => x.GetPackageDownloadSetAsync(It.IsAny<string>()))
                     .ReturnsAsync(new PackageDownloadSet(
+                        DateTimeOffset.MinValue,
+                        _settings.DownloadsV1Url,
                         "\"foo\"",
-                        new MemoryAsyncEnumerator<PackageDownloads>(Enumerable
-                            .Empty<PackageDownloads>()
-                            .GetEnumerator())));
+                        new MemoryAsyncEnumerable<PackageDownloads>(Enumerable.Empty<PackageDownloads>())));
 
                 // Act
                 await _target.UpdateAsync();
@@ -234,6 +247,21 @@ namespace Knapcode.ExplorePackages.Entities
                 Assert.Equal(2, batch.Count);
                 Assert.Equal(new PackageDownloads("A", "1.0.0", 10), batch[0]);
                 Assert.Equal(new PackageDownloads("B", "2.0.0", 20), batch[1]);
+            }
+        }
+
+        private class MemoryAsyncEnumerable<T> : IAsyncEnumerable<T>
+        {
+            private readonly IEnumerable<T> _enumerable;
+
+            public MemoryAsyncEnumerable(IEnumerable<T> enumerable)
+            {
+                _enumerable = enumerable;
+            }
+
+            public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+            {
+                return new MemoryAsyncEnumerator<T>(_enumerable.GetEnumerator());
             }
         }
 

@@ -29,9 +29,9 @@ namespace Knapcode.ExplorePackages
             return new TempStreamResult(TempStreamResultType.NeedNewStream, stream: null, hash: null);
         }
 
-        public static TempStreamResult SemaphoreTimeout()
+        public static TempStreamResult SemaphoreNotAvailable()
         {
-            return new TempStreamResult(TempStreamResultType.SemaphoreTimeout, stream: null, hash: null);
+            return new TempStreamResult(TempStreamResultType.SemaphoreNotAvailable, stream: null, hash: null);
         }
 
         public void Dispose() => _stream?.Dispose();

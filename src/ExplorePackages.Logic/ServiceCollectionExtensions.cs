@@ -143,6 +143,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<SearchClient>();
             serviceCollection.AddTransient<AutocompleteClient>();
             serviceCollection.AddTransient<IPackageDownloadsClient, PackageDownloadsClient>();
+            serviceCollection.AddTransient<DownloadsV1JsonDeserializer>();
             serviceCollection.AddTransient<CatalogClient>();
 
             serviceCollection.AddTransient<PackageConsistencyContextBuilder>();

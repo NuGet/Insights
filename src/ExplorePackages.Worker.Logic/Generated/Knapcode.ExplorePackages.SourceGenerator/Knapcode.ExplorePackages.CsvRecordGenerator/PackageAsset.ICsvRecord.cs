@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Knapcode.ExplorePackages;
 
 namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
@@ -126,6 +127,62 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, PlatformVersion);
             writer.WriteLine();
+        }
+
+        public async Task WriteAsync(TextWriter writer)
+        {
+            await writer.WriteAsync(ScanId.ToString());
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(ScanTimestamp));
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, Id);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, Version);
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(CatalogCommitTimestamp));
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(Created));
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(ResultType.ToString());
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, PatternSet);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, PropertyAnyValue);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, PropertyCodeLanguage);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, PropertyTargetFrameworkMoniker);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, PropertyLocale);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, PropertyManagedAssembly);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, PropertyMSBuild);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, PropertyRuntimeIdentifier);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, PropertySatelliteAssembly);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, Path);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, FileName);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, FileExtension);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, TopLevelFolder);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, RoundTripTargetFrameworkMoniker);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, FrameworkName);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, FrameworkVersion);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, FrameworkProfile);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, PlatformName);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, PlatformVersion);
+            await writer.WriteLineAsync();
         }
 
         public PackageAsset Read(Func<string> getNextField)

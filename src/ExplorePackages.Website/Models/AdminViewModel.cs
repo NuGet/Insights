@@ -12,5 +12,7 @@ namespace Knapcode.ExplorePackages.Website.Models
         public bool PoisonAvailableMessageCountIsExact { get; set; }
 
         public IReadOnlyList<CatalogScanViewModel> CatalogScans { get; set; }
+
+        public bool IsDownloadsToCsvRunning { get; set; }
     }
 }

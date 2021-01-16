@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Knapcode.ExplorePackages.Worker.DownloadsToCsv;
 using Knapcode.ExplorePackages.Worker.FindCatalogLeafItem;
 using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
 using Knapcode.ExplorePackages.Worker.FindPackageAssembly;
@@ -28,6 +29,7 @@ namespace Knapcode.ExplorePackages.Worker
             new SchemaV1<CsvCompactMessage<CatalogLeafItemRecord>>("cc.fcli"),
             new SchemaV1<CsvCompactMessage<PackageAsset>>("cc.fpa"),
             new SchemaV1<CsvCompactMessage<PackageAssembly>>("cc.fpi"),
+            new SchemaV1<CsvCompactMessage<PackageDownloadRecord>>("cc.d2c"),
 
             new SchemaV1<TableScanMessage<CatalogLeafScan>>("ts.cls"),
             new SchemaV1<TableScanMessage<LatestPackageLeaf>>("ts.lpf"),
@@ -36,6 +38,8 @@ namespace Knapcode.ExplorePackages.Worker
             new SchemaV1<RunRealRestoreCompactMessage>("rrr.c"),
 
             new SchemaV1<TableRowCopyMessage<LatestPackageLeaf>>("trc.lpf"),
+
+            new SchemaV1<DownloadsToCsvMessage>("d2c"),
 
             // Parameters
             new SchemaV1<TablePrefixScanStartParameters>("tps.s"),

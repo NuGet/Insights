@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Knapcode.ExplorePackages;
 
 namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
@@ -130,6 +131,64 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, PublicKeySHA1);
             writer.WriteLine();
+        }
+
+        public async Task WriteAsync(TextWriter writer)
+        {
+            await writer.WriteAsync(ScanId.ToString());
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(ScanTimestamp));
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, Id);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, Version);
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(CatalogCommitTimestamp));
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(Created));
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(ResultType.ToString());
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, Path);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, FileName);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, FileExtension);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, TopLevelFolder);
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CompressedLength.ToString());
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(EntryUncompressedLength.ToString());
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(ActualUncompressedLength.ToString());
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, FileSHA256);
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatBool(HasException));
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, AssemblyName);
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(AssemblyVersion.ToString());
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, Culture);
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatBool(AssemblyNameHasCultureNotFoundException));
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatBool(AssemblyNameHasFileLoadException));
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, PublicKeyToken);
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatBool(PublicKeyTokenHasSecurityException));
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(HashAlgorithm.ToString());
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatBool(HasPublicKey));
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(PublicKeyLength.ToString());
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, PublicKeySHA1);
+            await writer.WriteLineAsync();
         }
 
         public PackageAssembly Read(Func<string> getNextField)

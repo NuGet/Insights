@@ -1,11 +1,13 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages
 {
     public interface ICsvRecord<T> where T : new()
     {
-        public void Write(TextWriter writer);
-        public T Read(Func<string> getNextField);
+        void Write(TextWriter writer);
+        Task WriteAsync(TextWriter writer);
+        T Read(Func<string> getNextField);
     }
 }

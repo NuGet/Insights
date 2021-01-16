@@ -2,15 +2,16 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Knapcode.ExplorePackages;
 
 namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
 {
     /* Kusto DDL:
 
-    .drop table JverCatalogLeafItemRecords;
+    .drop table JverCatalogLeafItems;
 
-    .create table JverCatalogLeafItemRecords (
+    .create table JverCatalogLeafItems (
         CommitId: string,
         CommitTimestamp: datetime,
         Id: string,
@@ -22,7 +23,7 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
         PageUrl: string
     );
 
-    .create table JverCatalogLeafItemRecords ingestion csv mapping 'JverCatalogLeafItemRecords_mapping'
+    .create table JverCatalogLeafItems ingestion csv mapping 'JverCatalogLeafItems_mapping'
     '['
         '{"Column":"CommitId","DataType":"string","Properties":{"Ordinal":0}},'
         '{"Column":"CommitTimestamp","DataType":"datetime","Properties":{"Ordinal":1}},'
@@ -58,6 +59,28 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, PageUrl);
             writer.WriteLine();
+        }
+
+        public async Task WriteAsync(TextWriter writer)
+        {
+            await CsvUtility.WriteWithQuotesAsync(writer, CommitId);
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(CommitTimestamp));
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, Id);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, Version);
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(Type.ToString());
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, Url);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, LowerId);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, LowerNormalizedVersion);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, PageUrl);
+            await writer.WriteLineAsync();
         }
 
         public CatalogLeafItemRecord Read(Func<string> getNextField)

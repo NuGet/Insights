@@ -72,15 +72,12 @@ namespace Knapcode.ExplorePackages.Entities
 
         private async Task WriteDownloadsAsync(
             string path,
-            System.Collections.Generic.IAsyncEnumerator<PackageDownloads> enumerator)
+            System.Collections.Generic.IAsyncEnumerable<PackageDownloads> enumerator)
         {
             var records = new List<PackageDownloads>();
-            await using (enumerator)
+            await foreach (var record in enumerator)
             {
-                while (await enumerator.MoveNextAsync())
-                {
-                    records.Add(enumerator.Current);
-                }
+                records.Add(record);
             }
 
             records.Sort(new PackageDownloadsComparer(considerDownloads: true));

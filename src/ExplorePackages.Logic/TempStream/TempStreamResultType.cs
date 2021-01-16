@@ -4,6 +4,6 @@
     {
         Success,
         NeedNewStream,
-        SemaphoreTimeout,
+        SemaphoreNotAvailable,
     }
 }
