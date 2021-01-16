@@ -46,7 +46,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
                 var service = Host.Services.GetRequiredService<DownloadsToCsvService>();
                 await service.InitializeAsync();
 
-                await service.StartAsync();
+                await service.StartAsync(loop: false, notBefore: TimeSpan.Zero);
 
                 // Act
                 await ProcessQueueAsync(() => { }, async () => !await service.IsRunningAsync());

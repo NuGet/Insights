@@ -23,6 +23,8 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
         private readonly IPackageDownloadsClient _packageDownloadsClient;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly MessageEnqueuer _messageEnqueuer;
+        private readonly DownloadsToCsvService _service;
+        private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<DownloadsToCsvProcessor> _logger;
 
@@ -34,6 +36,8 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
             IPackageDownloadsClient packageDownloadsClient,
             ServiceClientFactory serviceClientFactory,
             MessageEnqueuer messageEnqueuer,
+            DownloadsToCsvService service,
+            AutoRenewingStorageLeaseService leaseService,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<DownloadsToCsvProcessor> logger)
         {
@@ -44,11 +48,75 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
             _packageDownloadsClient = packageDownloadsClient;
             _serviceClientFactory = serviceClientFactory;
             _messageEnqueuer = messageEnqueuer;
+            _service = service;
+            _leaseService = leaseService;
             _options = options;
             _logger = logger;
         }
 
         public async Task<bool> ProcessAsync(DownloadsToCsvMessage message, int dequeueCount)
+        {
+            // Only one function -- looping or non-looping should be executing at a time.
+            await using (var lease = await _leaseService.TryAcquireAsync("DownloadsToCsv"))
+            {
+                if (message.Loop)
+                {
+                    return await ProcessLoopingAsync(lease);
+                }
+                else
+                {
+                    return await ProcessNonLoopingAsync(lease);
+                }
+            }
+        }
+
+        private async Task<bool> ProcessNonLoopingAsync(AutoRenewingStorageLeaseResult lease)
+        {
+            if (!lease.Acquired)
+            {
+                // If the message is non-looping and the lease is acquired, ignore this message.
+                return true;
+            }
+
+            return await ProcessAsync();
+        }
+
+        private async Task<bool> ProcessLoopingAsync(AutoRenewingStorageLeaseResult lease)
+        {
+            if (!lease.Acquired)
+            {
+                // If the message is looping and the lease is not acquired, ignore this message but schedule the next one.
+                await ScheduleLoopAsync();
+                return true;
+            }
+
+            await using (var loopLease = await _leaseService.TryAcquireAsync("DownloadsToCsv-Loop"))
+            {
+                if (!lease.Acquired)
+                {
+                    // If there is another loop message already running, ignore this message.
+                    return true;
+                }
+
+                if (await ProcessAsync())
+                {
+                    // If the work is completed successfully, schedule the next one.
+                    await ScheduleLoopAsync();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        private async Task ScheduleLoopAsync()
+        {
+            await _service.StartAsync(loop: true, notBefore: TimeSpan.FromMinutes(1));
+        }
+
+        private async Task<bool> ProcessAsync()
         {
             var initialAsOfTimestamp = await GetAsOfTimestampAsync();
             if (await GetDestinationBlob(initialAsOfTimestamp).ExistsAsync())

@@ -9,5 +9,8 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 
         [JsonProperty("ac")]
         public int AttemptCount { get; set; }
+
+        [JsonProperty("l")]
+        public bool Loop { get; set; }
     }
 }

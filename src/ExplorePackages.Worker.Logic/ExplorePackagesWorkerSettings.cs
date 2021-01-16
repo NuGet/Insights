@@ -25,7 +25,6 @@
             PackageAssemblyContainerName = "packageassemblies";
             RealRestoreContainerName = "realrestores";
             CatalogLeafItemContainerName = "catalogleafitems";
-            PackageDownloadsAppendTableName = "packagedownloadsappend";
             PackageDownloadsContainerName = "packagedownloads";
         }
 
@@ -50,7 +49,6 @@
         public string PackageAssemblyContainerName { get; set; }
         public string RealRestoreContainerName { get; set; }
         public string CatalogLeafItemContainerName { get; set; }
-        public string PackageDownloadsAppendTableName { get; set; }
         public string PackageDownloadsContainerName { get; set; }
     }
 }

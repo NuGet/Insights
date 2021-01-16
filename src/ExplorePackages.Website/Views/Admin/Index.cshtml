@@ -25,6 +25,11 @@
         <h3>DownloadsToCsv</h3>
         <p><b>Is running?</b> @Model.IsDownloadsToCsvRunning</p>
         <form asp-action="StartDownloadsToCsv" method="post" class="form-inline">
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" name="loop" value="true" /> Loop
+                </label>
+            </div>
             <button type="submit" class="btn btn-default">Start Downloads2Csv</button>
         </form>
     </div>

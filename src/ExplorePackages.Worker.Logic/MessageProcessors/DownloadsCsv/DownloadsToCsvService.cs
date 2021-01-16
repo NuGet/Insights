@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using System;
 using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
@@ -10,20 +11,20 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 
         private readonly MessageEnqueuer _messageEnqueuer;
         private readonly TaskStateStorageService _taskStateStorageService;
-        private readonly AppendResultStorageService _resultStorageService;
+        private readonly ServiceClientFactory _serviceClientFactory;
         private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
         public DownloadsToCsvService(
             MessageEnqueuer messageEnqueuer,
             TaskStateStorageService taskStateStorageService,
-            AppendResultStorageService resultStorageService,
             AutoRenewingStorageLeaseService leaseService,
+            ServiceClientFactory serviceClientFactory,
             IOptions<ExplorePackagesWorkerSettings> options)
         {
             _messageEnqueuer = messageEnqueuer;
             _taskStateStorageService = taskStateStorageService;
-            _resultStorageService = resultStorageService;
+            _serviceClientFactory = serviceClientFactory;
             _leaseService = leaseService;
             _options = options;
         }
@@ -33,35 +34,27 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
             await _leaseService.InitializeAsync();
             await _messageEnqueuer.InitializeAsync();
             await _taskStateStorageService.InitializeAsync(StorageSuffix);
-            await _resultStorageService.InitializeAsync(
-                _options.Value.PackageDownloadsAppendTableName,
-                _options.Value.PackageDownloadsContainerName);
+            await _serviceClientFactory
+                .GetStorageAccount()
+                .CreateCloudBlobClient()
+                .GetContainerReference(_options.Value.PackageDownloadsContainerName)
+                .CreateIfNotExistsAsync(retry: true);
         }
 
-        public async Task StartAsync()
+        public async Task StartAsync(bool loop, TimeSpan notBefore)
         {
-            if (await IsRunningAsync())
-            {
-                return;
-            }
-
             await using (var lease = await _leaseService.TryAcquireAsync("Start-DownloadsToCsv"))
             {
                 if (!lease.Acquired)
                 {
-                    return;
-                }
-
-                if (await IsRunningAsync())
-                {
-                    return;
+                    throw new InvalidOperationException("Another actor is already starting DownloadsToCsv.");
                 }
 
                 var taskStateKey = new TaskStateKey(
                     StorageSuffix,
                     PartitionKey,
                     StorageUtility.GenerateDescendingId().ToString());
-                await _messageEnqueuer.EnqueueAsync(new[] { new DownloadsToCsvMessage { TaskStateKey = taskStateKey } });
+                await _messageEnqueuer.EnqueueAsync(new[] { new DownloadsToCsvMessage { TaskStateKey = taskStateKey, Loop = loop } }, notBefore);
                 await _taskStateStorageService.GetOrAddAsync(taskStateKey);
             }
         }

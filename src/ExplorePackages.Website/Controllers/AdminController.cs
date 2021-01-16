@@ -121,9 +121,9 @@ namespace Knapcode.ExplorePackages.Website.Controllers
         }
 
         [HttpPost]
-        public async Task<RedirectToActionResult> StartDownloadsToCsv()
+        public async Task<RedirectToActionResult> StartDownloadsToCsv(bool loop)
         {
-            await _downloadsToCsvService.StartAsync();
+            await _downloadsToCsvService.StartAsync(loop, notBefore: TimeSpan.Zero);
             return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment: "DownloadsToCsv");
         }
     }

@@ -107,7 +107,6 @@ namespace Knapcode.ExplorePackages.Worker
             x.PackageAssemblyContainerName = $"{StoragePrefix}1fpi1";
             x.RealRestoreContainerName = $"{StoragePrefix}1rrr1";
             x.CatalogLeafItemContainerName = $"{StoragePrefix}1fcli1";
-            x.PackageDownloadsAppendTableName = $"{StoragePrefix}1pda1";
             x.PackageDownloadsContainerName = $"{StoragePrefix}1pd1";
 
             ConfigureDefaultsAndSettings((ExplorePackagesSettings)x);
