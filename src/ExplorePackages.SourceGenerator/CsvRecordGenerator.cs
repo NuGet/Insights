@@ -177,9 +177,18 @@ namespace {0}
 
                 var typeName = info.Identifier.Text;
                 var kustoTableName = "Jver" + typeName;
-                if (kustoTableName.EndsWith("Record"))
+                var suffixesToRemove = new[]
                 {
-                    kustoTableName = kustoTableName.Substring(0, kustoTableName.Length - "Record".Length);
+                    "CsvRecord",
+                    "Record",
+                }.OrderByDescending(x => x.Length).ThenBy(x => x);
+
+                foreach (var suffix in suffixesToRemove)
+                {
+                    if (kustoTableName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+                    {
+                        kustoTableName = kustoTableName.Substring(0, kustoTableName.Length - suffix.Length);
+                    }
                 }
                 kustoTableName = kustoTableName.Pluralize();
 
