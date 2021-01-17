@@ -334,13 +334,11 @@ namespace Knapcode.ExplorePackages.Worker
 
         private static async Task<List<T>> DeserializeBlobAsync<T>(ICloudBlobWrapper blob, ICsvReader csvReader) where T : ICsvRecord<T>, new()
         {
-            using (var memoryStream = new MemoryStream())
-            {
-                await blob.DownloadToStreamAsync(memoryStream);
-                memoryStream.Position = 0;
-                using var reader = new StreamReader(memoryStream);
-                return csvReader.GetRecords<T>(reader);
-            }
+            using var memoryStream = new MemoryStream();
+            await blob.DownloadToStreamAsync(memoryStream);
+            memoryStream.Position = 0;
+            using var reader = new StreamReader(memoryStream);
+            return csvReader.GetRecords<T>(reader);
         }
 
         public async Task<List<int>> GetWrittenBucketsAsync(string containerName)
