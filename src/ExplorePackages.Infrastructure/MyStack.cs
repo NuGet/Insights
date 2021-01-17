@@ -104,7 +104,9 @@ namespace Knapcode.ExplorePackages
 
             var aadApp = new Application("Knapcode.ExplorePackages-" + _stackAlpha);
 
-            var appService = new AppService("ExplorePackagesWebsite" + _stackAlpha, new AppServiceArgs
+            var defaultSettings = new ExplorePackagesWebsiteSettings();
+
+            var appServiceArgs = new AppServiceArgs
             {
                 ResourceGroupName = _resourceGroup.Name,
                 AppServicePlanId = planId,
@@ -136,6 +138,7 @@ namespace Knapcode.ExplorePackages
                     { "AzureAd:ClientId", aadApp.ApplicationId },
                     { "AzureAd:TenantId", "common" },
                     { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesSettings.StorageConnectionString)}", _storageAccount.PrimaryConnectionString },
+                    { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.ShowAdminLink)}", (_config.GetBoolean("ShowAdminLink") ?? defaultSettings.ShowAdminLink).ToString() },
                     // My personal Microsoft account
                     { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.AllowedUsers)}:0:{nameof(AllowedUser.HashedTenantId)}", "ba11237b5a4c119a16898a3b09c0b61315567aa7787df898c2557e03e8e371b4" },
                     { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.AllowedUsers)}:0:{nameof(AllowedUser.HashedObjectId)}", "51a4221f6b956ad8ed53188dbeb067d2e68ee772ad901cc602a4ff6d43d11b40" },
@@ -143,7 +146,15 @@ namespace Knapcode.ExplorePackages
                     { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.AllowedUsers)}:1:{nameof(AllowedUser.HashedTenantId)}", "42b3755ec2b6929d7ed3589fad70f30656b8fb9d7b3b561430efab5bf197f7a0" },
                     { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.AllowedUsers)}:1:{nameof(AllowedUser.HashedObjectId)}", "e2bface8eb40fbf1f24e407f3daa7a71705fcad26f584a9e55636b9feed472be" },
                 },
-            });
+            };
+
+            var appServiceName = _config.Get("AppServiceName");
+            if (appServiceName != null)
+            {
+                appServiceArgs.Name = appServiceName;
+            }
+
+            var appService = new AppService("ExplorePackagesWebsite" + _stackAlpha, appServiceArgs);
 
             WebsiteUrl = appService.DefaultSiteHostname.Apply(defaultSiteHostname => $"https://{defaultSiteHostname}");
 
