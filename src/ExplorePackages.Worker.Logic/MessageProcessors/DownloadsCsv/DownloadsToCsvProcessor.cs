@@ -3,51 +3,32 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.WindowsAzure.Storage.Blob;
-using NuGet.Protocol;
 using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 {
     public class DownloadsToCsvProcessor : ITaskStateMessageProcessor<DownloadsToCsvMessage>
     {
-        private readonly HttpSource _httpSource;
-        private readonly TempStreamService _tempStreamService;
-        private readonly TaskStateStorageService _taskStateStorageService;
-        private readonly DownloadsV1JsonDeserializer _deserializer;
         private readonly IPackageDownloadsClient _packageDownloadsClient;
         private readonly ServiceClientFactory _serviceClientFactory;
-        private readonly MessageEnqueuer _messageEnqueuer;
         private readonly DownloadsToCsvService _service;
         private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<DownloadsToCsvProcessor> _logger;
 
         public DownloadsToCsvProcessor(
-            HttpSource httpSource,
-            TempStreamService tempStreamService,
-            TaskStateStorageService taskStateStorageService,
-            DownloadsV1JsonDeserializer deserializer,
             IPackageDownloadsClient packageDownloadsClient,
             ServiceClientFactory serviceClientFactory,
-            MessageEnqueuer messageEnqueuer,
             DownloadsToCsvService service,
             AutoRenewingStorageLeaseService leaseService,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<DownloadsToCsvProcessor> logger)
         {
-            _httpSource = httpSource;
-            _tempStreamService = tempStreamService;
-            _taskStateStorageService = taskStateStorageService;
-            _deserializer = deserializer;
             _packageDownloadsClient = packageDownloadsClient;
             _serviceClientFactory = serviceClientFactory;
-            _messageEnqueuer = messageEnqueuer;
             _service = service;
             _leaseService = leaseService;
             _options = options;
@@ -118,101 +99,42 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 
         private async Task<bool> ProcessAsync()
         {
-            var initialAsOfTimestamp = await GetAsOfTimestampAsync();
-            if (await GetDestinationBlob(initialAsOfTimestamp).ExistsAsync())
-            {
-                _logger.LogInformation("The downloads from {AsOfTimestamp:O} already exists.", initialAsOfTimestamp);
-                return true;
-            }
+            await using var set = await _packageDownloadsClient.GetPackageDownloadSetAsync(etag: null);
 
-            (var result, var asOfTimestamp) = await DownloadAsync();
-            using (result)
-            {
-                if (result.Type == TempStreamResultType.SemaphoreNotAvailable)
-                {
-                    return false;
-                }
-
-                using var reader = new StreamReader(result.Stream);
-
-                var destinationBlob = GetDestinationBlob(asOfTimestamp);
-                destinationBlob.Properties.ContentType = "text/plain";
-                destinationBlob.Properties.ContentEncoding = "gzip";
-
-                using var destStream = await destinationBlob.OpenWriteAsync();
-                using var gzipStream = new GZipStream(destStream, CompressionLevel.Optimal);
-                using var writer = new StreamWriter(gzipStream);
-
-                await WriteAsync(reader, asOfTimestamp, writer);
-
-                await writer.FlushAsync();
-                await gzipStream.FlushAsync();
-                await destStream.FlushAsync();
-
-                return true;
-            }
-        }
-
-        private async Task<DateTimeOffset> GetAsOfTimestampAsync()
-        {
-            var nuGetLogger = _logger.ToNuGetLogger();
-            return await _httpSource.ProcessResponseAsync(
-                new HttpSourceRequest(() => HttpRequestMessageFactory.Create(HttpMethod.Head, _options.Value.DownloadsV1Url, nuGetLogger)),
-                response => Task.FromResult(response.Content.Headers.LastModified.Value.ToUniversalTime()),
-                nuGetLogger,
-                CancellationToken.None);
-        }
-
-        private CloudBlockBlob GetDestinationBlob(DateTimeOffset asOfTimestamp)
-        {
-            return _serviceClientFactory
+            var destBlob = _serviceClientFactory
                 .GetStorageAccount()
                 .CreateCloudBlobClient()
                 .GetContainerReference(_options.Value.PackageDownloadsContainerName)
-                .GetBlockBlobReference($"downloads_{StorageUtility.GetDescendingId(asOfTimestamp)}.csv.gz");
+                .GetBlockBlobReference($"downloads_{StorageUtility.GetDescendingId(set.AsOfTimestamp)}.csv.gz");
+
+            if (await destBlob.ExistsAsync())
+            {
+                _logger.LogInformation("The downloads from {AsOfTimestamp:O} already exists.", set.AsOfTimestamp);
+                return true;
+            }
+
+            destBlob.Properties.ContentType = "text/plain";
+            destBlob.Properties.ContentEncoding = "gzip";
+
+            using var destStream = await destBlob.OpenWriteAsync();
+            using var gzipStream = new GZipStream(destStream, CompressionLevel.Optimal);
+            using var writer = new StreamWriter(gzipStream);
+
+            await WriteAsync(set.Downloads, set.AsOfTimestamp, writer);
+
+            await writer.FlushAsync();
+            await gzipStream.FlushAsync();
+            await destStream.FlushAsync();
+
+            return true;
         }
 
-        private async Task<(TempStreamResult Result, DateTimeOffset AsOfTimestamp)> DownloadAsync()
-        {
-            var nuGetLogger = _logger.ToNuGetLogger();
-            var writer = _tempStreamService.GetWriter();
-
-            TempStreamResult result = null;
-            DateTimeOffset asOfTimestamp = default;
-            try
-            {
-                do
-                {
-                    result = await _httpSource.ProcessResponseAsync(
-                        new HttpSourceRequest(_options.Value.DownloadsV1Url, nuGetLogger),
-                        async response =>
-                        {
-                            response.EnsureSuccessStatusCode();
-                            using var networkStream = await response.Content.ReadAsStreamAsync();
-                            result = await writer.CopyToTempStreamAsync(networkStream, response.Content.Headers.ContentLength.Value);
-                            asOfTimestamp = response.Content.Headers.LastModified.Value.ToUniversalTime();
-                            return result;
-                        },
-                        nuGetLogger,
-                        CancellationToken.None);
-                }
-                while (result.Type == TempStreamResultType.NeedNewStream);
-
-                return (result, asOfTimestamp);
-            }
-            catch
-            {
-                result?.Dispose();
-                throw;
-            }
-        }
-
-        private async Task WriteAsync(StreamReader reader, DateTimeOffset asOfTimestamp, StreamWriter writer)
+        private async Task WriteAsync(IAsyncEnumerable<PackageDownloads> entries, DateTimeOffset asOfTimestamp, StreamWriter writer)
         {
             var record = new PackageDownloadRecord { AsOfTimestamp = asOfTimestamp };
 
             var idToVersions = new Dictionary<string, Dictionary<string, long>>(StringComparer.OrdinalIgnoreCase);
-            await foreach (var entry in _deserializer.DeserializeAsync(reader))
+            await foreach (var entry in entries)
             {
                 if (!idToVersions.TryGetValue(entry.Id, out var versionToDownloads))
                 {

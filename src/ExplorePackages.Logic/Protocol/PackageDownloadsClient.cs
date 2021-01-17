@@ -97,6 +97,5 @@ namespace Knapcode.ExplorePackages
                 throw;
             }
         }
-
     }
 }
