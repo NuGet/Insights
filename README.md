@@ -108,30 +108,3 @@ little website to see if your package is fully propagated on NuGet.org (that is,
 
 https://explorepackages.azurewebsites.net/
 
-## TODO
-
-I need to keep a TODO for this project since I indulge myself in all of the rabbit trails that I want and often lose
-track of what I was originally working on. Maybe I should use issues for this? Too much work.
-
-- Figure out specific limits of table entity row and field sizes
-
-- Store the MiniZip file listing in a ExplorePackages-maintained record (probably table storage) to avoid unnecessary
-  hits to NuGet.org.
-
-- Make `FindPackageAssembly` use MiniZip to fetch the file listing first similar to `FindPackageAsset`, ensuring that
-  there is at least one assembly (by file extension) before downloading the full package.
-
-- Build a catalog index reader that uses range requests for perf
-
-- Add the csv-spectrum tests to NCsvPerf
-
-- Enable heterogeneous enqueueing and batch enqueue messages
-
-- Enable enqueuing as many messages as possible for a bulk enqueue message, but no more and return the extra
-
-- gzip batch or bulk enqueue messages?
-
-- modify `AppendResultStorageService` to save table results in proper rows and columns. this could enable remove the
-  need for holding the entire 1/1000 of the results in memory at one time
-
-- push message batching down in the processor to allow processor-specific batching tricks
