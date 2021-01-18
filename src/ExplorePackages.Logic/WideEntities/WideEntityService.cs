@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Table;
 
@@ -81,6 +82,11 @@ namespace Knapcode.ExplorePackages.WideEntities
                 throw new InvalidDataException("There is a continuation token for fetching a wide entity. This indicates that there too many entities.");
             }
 
+            if (entitySegment.Results.Count == 0)
+            {
+                return null;
+            }
+
             return new WideEntity(entitySegment.Results);
         }
 
@@ -108,7 +114,7 @@ namespace Knapcode.ExplorePackages.WideEntities
             var segments = new List<WideEntitySegment>();
             if (content.Length == 0)
             {
-                segments.Add(new WideEntitySegment(partitionKey, rowKey, 0));
+                segments.Add(new WideEntitySegment(partitionKey, rowKey, index: 0));
             }
             else
             {
@@ -147,6 +153,8 @@ namespace Knapcode.ExplorePackages.WideEntities
                     segments.Add(segment);
                 }
             }
+
+            segments.First().SegmentCount = segments.Count;
 
             return segments;
         }
