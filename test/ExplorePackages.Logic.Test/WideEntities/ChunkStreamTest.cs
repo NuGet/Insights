@@ -57,6 +57,22 @@ namespace Knapcode.ExplorePackages.WideEntities
         }
 
         [Fact]
+        public void AllowsEmpty()
+        {
+            // Arrange
+            var target = new ChunkStream(new List<ReadOnlyMemory<byte>>());
+            var buffer = new byte[500];
+            var offset = 0;
+            var count = 100;
+
+            // Act
+            var actualRead = target.Read(buffer, offset, count);
+
+            // Assert
+            VerifyResult(target, Array.Empty<byte>(), 0, buffer, offset, count, actualRead);
+        }
+
+        [Fact]
         public async Task AllowsAsyncRead()
         {
             // Arrange
@@ -128,6 +144,7 @@ namespace Knapcode.ExplorePackages.WideEntities
             // Assert
             VerifyResult(target, bytes, 0, buffer, 0, 200, 200);
         }
+
         private static void VerifyResult(ChunkStream target, byte[] bytes, int initialPosition, byte[] buffer, int offset, int count, int actualRead)
         {
             var empty = new byte[buffer.Length];
@@ -151,6 +168,9 @@ namespace Knapcode.ExplorePackages.WideEntities
 
             // Verify final position
             Assert.Equal(initialPosition + expectedRead, target.Position);
+
+            // Verify length
+            Assert.Equal(bytes.Length, target.Length);
         }
 
         private (IReadOnlyList<ReadOnlyMemory<byte>> Chunks, byte[] Bytes) GetChunks(params int[] chunkLengths)
