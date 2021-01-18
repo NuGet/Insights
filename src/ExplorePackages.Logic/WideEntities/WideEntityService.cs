@@ -50,7 +50,7 @@ namespace Knapcode.ExplorePackages.WideEntities
             }
         }
 
-        public async Task<Stream> GetAsync(string tableName, string partitionKey, string rowKey)
+        public async Task<WideEntity> GetAsync(string tableName, string partitionKey, string rowKey)
         {
             var query = new TableQuery<WideEntitySegment>
             {
@@ -81,18 +81,7 @@ namespace Knapcode.ExplorePackages.WideEntities
                 throw new InvalidDataException("There is a continuation token for fetching a wide entity. This indicates that there too many entities.");
             }
 
-            var memoryStream = new MemoryStream();
-            foreach (var entity in entitySegment)
-            {
-                foreach (var chunk in entity.Chunks)
-                {
-                    memoryStream.Write(chunk.Span);
-                }
-            }
-
-            memoryStream.Position = 0;
-
-            return memoryStream;
+            return new WideEntity(entitySegment.Results);
         }
 
         public async Task InsertAsync(string tableName, string partitionKey, string rowKey, ReadOnlyMemory<byte> content)

@@ -14,26 +14,51 @@ namespace Knapcode.ExplorePackages.WideEntities
     public class WideEntityServiceTest : IClassFixture<WideEntityServiceTest.Fixture>
     {
         [Theory]
-        [MemberData(nameof(RoundTripsTestData))]
-        public async Task RoundTrips(int length)
+        [MemberData(nameof(RoundTripsBytesTestData))]
+        public async Task RoundTripsBytes(int length)
         {
             // Arrange
             var src = Bytes.Slice(0, length);
-            var partitionKey = nameof(RoundTrips) + length;
+            var partitionKey = nameof(RoundTripsBytes) + length;
             var rowKey = "foo";
 
             // Act
             await Target.InsertAsync(TableName, partitionKey, rowKey, src);
-            using var srcStream = await Target.GetAsync(TableName, partitionKey, rowKey);
+            var wideEntity = await Target.GetAsync(TableName, partitionKey, rowKey);
 
             // Assert
+            using var srcStream = wideEntity.GetStream();
             using var destStream = new MemoryStream();
             await srcStream.CopyToAsync(destStream);
 
             Assert.Equal(src.ToArray(), destStream.ToArray());
         }
 
-        public static IEnumerable<object[]> RoundTripsTestData => ByteArrayLengths
+        [Fact]
+        public async Task PopulatesWideEntityProperties()
+        {
+            // Arrange
+            var src = Bytes.Slice(0, WideEntityService.MaxTotalEntitySize);
+            var partitionKey = nameof(PopulatesWideEntityProperties);
+            var rowKey = "foo";
+
+            // Act
+            var before = DateTimeOffset.UtcNow;
+            await Target.InsertAsync(TableName, partitionKey, rowKey, src);
+            var after = DateTimeOffset.UtcNow;
+            var wideEntity = await Target.GetAsync(TableName, partitionKey, rowKey);
+
+            // Assert
+            Assert.Equal(partitionKey, wideEntity.PartitionKey);
+            Assert.Equal(rowKey, wideEntity.RowKey);
+            var error = TimeSpan.FromMinutes(5);
+            Assert.InRange(wideEntity.Timestamp, before.Subtract(error), after.Add(error));
+            Assert.NotEqual(default, wideEntity.Timestamp);
+            Assert.NotNull(wideEntity.ETag);
+            Assert.Equal(_fixture.IsLoopback ? 8 : 3, wideEntity.SegmentCount);
+        }
+
+        public static IEnumerable<object[]> RoundTripsBytesTestData => ByteArrayLengths
             .Distinct()
             .OrderBy(x => x)
             .Select(x => new object[] { x });
@@ -85,6 +110,7 @@ namespace Knapcode.ExplorePackages.WideEntities
                 Options.Setup(x => x.Value).Returns(() => Settings);
                 ServiceClientFactory = new ServiceClientFactory(Options.Object);
                 TableName = "t" + StorageUtility.GenerateUniqueId().ToLowerInvariant();
+                IsLoopback = GetTable().Uri.IsLoopback;
 
                 Bytes = new byte[4 * 1024 * 1024];
                 var random = new Random(0);
@@ -95,6 +121,7 @@ namespace Knapcode.ExplorePackages.WideEntities
             public ExplorePackagesSettings Settings { get; }
             public ServiceClientFactory ServiceClientFactory { get; }
             public string TableName { get; }
+            public bool IsLoopback { get; }
             public byte[] Bytes { get; }
 
             public Task InitializeAsync() => GetTable().CreateIfNotExistsAsync();

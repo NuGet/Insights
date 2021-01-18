@@ -100,7 +100,7 @@ namespace Knapcode.ExplorePackages.WideEntities
             (var chunks, var bytes) = GetChunks(100, 50, 200);
             var target = new ChunkStream(chunks);
             var buffer = new byte[1000];
-            
+
             // Act
             Assert.Equal(75, target.Read(buffer, 0, count: 75));
             Assert.Equal(100, target.Read(buffer, 75, count: 100));
