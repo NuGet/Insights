@@ -98,7 +98,7 @@ namespace Knapcode.ExplorePackages.WideEntities
             public byte[] Bytes { get; }
 
             public Task InitializeAsync() => GetTable().CreateIfNotExistsAsync();
-            public Task DisposeAsync() => Task.CompletedTask;
+            public Task DisposeAsync() => GetTable().DeleteIfExistsAsync();
 
             private CloudTable GetTable()
             {
