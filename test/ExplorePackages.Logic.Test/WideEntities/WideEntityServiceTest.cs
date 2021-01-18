@@ -13,6 +13,20 @@ namespace Knapcode.ExplorePackages.WideEntities
 {
     public class WideEntityServiceTest : IClassFixture<WideEntityServiceTest.Fixture>
     {
+        [Fact]
+        public async Task ReturnsNullForNonExistentEntity()
+        {
+            // Arrange
+            var partitionKey = nameof(ReturnsNullForNonExistentEntity);
+            var rowKey = "foo";
+
+            // Act
+            var wideEntity = await Target.GetAsync(TableName, partitionKey, rowKey);
+
+            // Assert
+            Assert.Null(wideEntity);
+        }
+
         [Theory]
         [MemberData(nameof(RoundTripsBytesTestData))]
         public async Task RoundTripsBytes(int length)
