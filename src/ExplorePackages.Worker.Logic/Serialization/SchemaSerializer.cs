@@ -61,6 +61,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public ISchemaSerializer<T> GetSerializer<T>() => Schemas.GetSerializer<T>();
         public ISerializedEntity Serialize<T>(T message) => Schemas.GetSerializer<T>().SerializeMessage(message);
+        public ISchemaDeserializer GetDeserializer(string schemaName) => Schemas.GetDeserializer(schemaName);
         public NameVersionMessage<object> Deserialize(string message) => Schemas.Deserialize(message, _logger);
         public NameVersionMessage<object> Deserialize(JToken message) => Schemas.Deserialize(message, _logger);
         public NameVersionMessage<object> Deserialize(NameVersionMessage<JToken> message) => Schemas.Deserialize(message, _logger);
@@ -92,6 +93,16 @@ namespace Knapcode.ExplorePackages.Worker
                 return typedScheme;
             }
 
+            public ISchemaDeserializer GetDeserializer(string schemaName)
+            {
+                if (!NameToSchema.TryGetValue(schemaName, out var schema))
+                {
+                    throw new FormatException($"The schema '{schemaName}' is not supported.");
+                }
+
+                return schema;
+            }
+
             public NameVersionMessage<object> Deserialize(string message, ILogger logger)
             {
                 return Deserialize(NameVersionSerializer.DeserializeMessage(message), logger);
@@ -104,11 +115,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             public NameVersionMessage<object> Deserialize(NameVersionMessage<JToken> message, ILogger logger)
             {
-                if (!NameToSchema.TryGetValue(message.SchemaName, out var schema))
-                {
-                    throw new FormatException($"The schema '{message.SchemaName}' is not supported.");
-                }
-
+                var schema = GetDeserializer(message.SchemaName);
                 var deserializedEntity = schema.Deserialize(message.SchemaVersion, message.Data);
 
                 logger.LogInformation(

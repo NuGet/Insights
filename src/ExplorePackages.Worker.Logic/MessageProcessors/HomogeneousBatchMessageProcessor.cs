@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -42,25 +41,13 @@ namespace Knapcode.ExplorePackages.Worker
                 {
                     _logger.LogInformation("Processing homogeneous batch message with {Count} messages.", batch.Messages.Count);
 
-                    var failed = new List<string>();
-                    foreach (var data in batch.Messages)
-                    {
-                        var singleMessage = new NameVersionMessage<JToken>(batch.SchemaName, batch.SchemaVersion, data);
-                        try
-                        {
-                            await _messageProcessor.ProcessAsync(singleMessage, dequeueCount);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "A message in a batch failed.");
-                            failed.Add(GetSerializedMessage(batch, data));
-                        }
-                    }
+                    var result = await _messageProcessor.ProcessAsync(batch.SchemaName, batch.SchemaVersion, batch.Messages, dequeueCount);
+                    var failedMessages = result.Failed.Select(x => GetSerializedMessage(batch, x)).ToList();
 
-                    if (failed.Any())
+                    if (failedMessages.Any())
                     {
-                        _logger.LogError("{FailedCount} messages in a batch of {Count} failed. Retrying messages individually.", failed.Count, batch.Messages.Count);
-                        await _messageEnqueuer.AddAsync(failed);
+                        _logger.LogError("{FailedCount} messages in a batch of {Count} failed. Retrying messages individually.", failedMessages.Count, batch.Messages.Count);
+                        await _messageEnqueuer.AddAsync(failedMessages);
                     }
                 }
             }

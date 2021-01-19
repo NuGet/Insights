@@ -54,6 +54,11 @@ namespace Knapcode.ExplorePackages.Worker
                 serviceCollection.AddTransient(serviceType, implementationType);
             }
 
+            foreach (var (serviceType, implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(IBatchMessageProcessor<>)))
+            {
+                serviceCollection.AddTransient(serviceType, implementationType);
+            }
+
             foreach (var (serviceType, implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ITaskStateMessageProcessor<>)))
             {
                 // Add the task state message processor
