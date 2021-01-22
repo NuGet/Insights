@@ -10,13 +10,13 @@ namespace Knapcode.ExplorePackages.Worker
     {
         private const int MaxAttempts = 10;
 
-        private readonly CatalogScanDriverFactory _driverFactory;
+        private readonly ICatalogScanDriverFactory _driverFactory;
         private readonly CatalogScanStorageService _storageService;
         private readonly MessageEnqueuer _messageEnqueuer;
         private readonly ILogger<CatalogLeafScanMessageProcessor> _logger;
 
         public CatalogLeafScanMessageProcessor(
-            CatalogScanDriverFactory driverFactory,
+            ICatalogScanDriverFactory driverFactory,
             CatalogScanStorageService storageService,
             MessageEnqueuer messageEnqueuer,
             ILogger<CatalogLeafScanMessageProcessor> logger)

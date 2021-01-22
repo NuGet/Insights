@@ -12,17 +12,15 @@ namespace Knapcode.ExplorePackages.Worker
         private const string StorageConnection = ExplorePackagesSettings.DefaultSectionName + ":" + nameof(ExplorePackagesSettings.StorageConnectionString);
 
         private readonly TempStreamLeaseScope _tempStreamLeaseScope;
-        private readonly GenericMessageProcessor _messageProcessor;
-        private readonly ILogger<WorkerQueueFunction> _logger;
+        private readonly IGenericMessageProcessor _messageProcessor;
 
         public WorkerQueueFunction(
             TempStreamLeaseScope tempStreamLeaseScope,
-            GenericMessageProcessor messageProcessor,
+            IGenericMessageProcessor messageProcessor,
             ILogger<WorkerQueueFunction> logger)
         {
             _tempStreamLeaseScope = tempStreamLeaseScope;
             _messageProcessor = messageProcessor;
-            _logger = logger;
         }
 
         [FunctionName("WorkerQueueFunction")]

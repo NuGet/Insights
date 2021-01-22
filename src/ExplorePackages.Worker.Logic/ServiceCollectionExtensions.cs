@@ -18,7 +18,7 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient<IRawMessageEnqueuer, QueueStorageEnqueuer>();
             serviceCollection.AddTransient<IWorkerQueueFactory, UnencodedWorkerQueueFactory>();
 
-            serviceCollection.AddTransient<GenericMessageProcessor>();
+            serviceCollection.AddTransient<IGenericMessageProcessor, GenericMessageProcessor>();
             serviceCollection.AddTransient<SchemaSerializer>();
             serviceCollection.AddTransient<IMessageBatcher, MessageBatcher>();
             serviceCollection.AddTransient<MessageEnqueuer>();
@@ -27,7 +27,7 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient(typeof(TableScanDriverFactory<>));
 
             serviceCollection.AddTransient<CatalogScanStorageService>();
-            serviceCollection.AddTransient<CatalogScanDriverFactory>();
+            serviceCollection.AddTransient<ICatalogScanDriverFactory, CatalogScanDriverFactory>();
             serviceCollection.AddTransient<CatalogScanService>();
             serviceCollection.AddTransient<CatalogScanExpandService>();
             serviceCollection.AddTransient(typeof(CatalogScanToCsvAdapter<>));

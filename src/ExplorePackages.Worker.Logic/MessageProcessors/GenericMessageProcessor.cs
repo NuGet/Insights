@@ -11,7 +11,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class GenericMessageProcessor
+    public class GenericMessageProcessor : IGenericMessageProcessor
     {
         private readonly SchemaSerializer _serializer;
         private readonly IServiceProvider _serviceProvider;

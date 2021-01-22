@@ -214,7 +214,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             var leaseScope = serviceProvider.GetRequiredService<TempStreamLeaseScope>();
             await using var scopeOwnership = leaseScope.TakeOwnership();
-            var messageProcessor = serviceProvider.GetRequiredService<GenericMessageProcessor>();
+            var messageProcessor = serviceProvider.GetRequiredService<IGenericMessageProcessor>();
             await messageProcessor.ProcessAsync(message.AsString, message.DequeueCount);
         }
 

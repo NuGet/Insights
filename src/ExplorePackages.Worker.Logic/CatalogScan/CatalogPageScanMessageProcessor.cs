@@ -10,14 +10,14 @@ namespace Knapcode.ExplorePackages.Worker
     public class CatalogPageScanMessageProcessor : IMessageProcessor<CatalogPageScanMessage>
     {
         private readonly CatalogClient _catalogClient;
-        private readonly CatalogScanDriverFactory _driverFactory;
+        private readonly ICatalogScanDriverFactory _driverFactory;
         private readonly CatalogScanStorageService _storageService;
         private readonly CatalogScanExpandService _expandService;
         private readonly ILogger<CatalogPageScanMessageProcessor> _logger;
 
         public CatalogPageScanMessageProcessor(
             CatalogClient catalogClient,
-            CatalogScanDriverFactory driverFactory,
+            ICatalogScanDriverFactory driverFactory,
             CatalogScanStorageService storageService,
             CatalogScanExpandService expandService,
             ILogger<CatalogPageScanMessageProcessor> logger)

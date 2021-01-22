@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class CatalogScanDriverFactory
+    public class CatalogScanDriverFactory : ICatalogScanDriverFactory
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;

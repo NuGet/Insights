@@ -10,7 +10,7 @@ namespace Knapcode.ExplorePackages.Worker
     public class CatalogIndexScanMessageProcessor : IMessageProcessor<CatalogIndexScanMessage>
     {
         private readonly CatalogClient _catalogClient;
-        private readonly CatalogScanDriverFactory _driverFactory;
+        private readonly ICatalogScanDriverFactory _driverFactory;
         private readonly MessageEnqueuer _messageEnqueuer;
         private readonly CatalogScanStorageService _storageService;
         private readonly CursorStorageService _cursorStorageService;
@@ -21,7 +21,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public CatalogIndexScanMessageProcessor(
             CatalogClient catalogClient,
-            CatalogScanDriverFactory driverFactory,
+            ICatalogScanDriverFactory driverFactory,
             MessageEnqueuer messageEnqueuer,
             CatalogScanStorageService storageService,
             CursorStorageService cursorStorageService,

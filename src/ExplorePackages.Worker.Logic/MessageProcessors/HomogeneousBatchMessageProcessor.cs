@@ -8,12 +8,12 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class HomogeneousBatchMessageProcessor : IMessageProcessor<HomogeneousBatchMessage>
     {
-        private readonly GenericMessageProcessor _messageProcessor;
+        private readonly IGenericMessageProcessor _messageProcessor;
         private readonly IRawMessageEnqueuer _messageEnqueuer;
         private readonly ILogger<HomogeneousBatchMessageProcessor> _logger;
 
         public HomogeneousBatchMessageProcessor(
-            GenericMessageProcessor messageProcessor,
+            IGenericMessageProcessor messageProcessor,
             IRawMessageEnqueuer messageEnqueuer,
             ILogger<HomogeneousBatchMessageProcessor> logger)
         {
