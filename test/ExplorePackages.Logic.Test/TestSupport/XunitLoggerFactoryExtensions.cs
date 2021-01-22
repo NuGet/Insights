@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages
@@ -18,6 +19,12 @@ namespace Knapcode.ExplorePackages
         public static ILoggerFactory AddXunit(this ILoggerFactory loggerFactory, ITestOutputHelper output, LogLevel minLevel)
         {
             loggerFactory.AddProvider(new XunitLoggerProvider(output, minLevel));
+            return loggerFactory;
+        }
+
+        public static ILoggerFactory AddXunit(this ILoggerFactory loggerFactory, ITestOutputHelper output, LogLevel minLevel, ConcurrentDictionary<LogLevel, int> logLevelToCount)
+        {
+            loggerFactory.AddProvider(new XunitLoggerProvider(output, minLevel, logLevelToCount));
             return loggerFactory;
         }
     }

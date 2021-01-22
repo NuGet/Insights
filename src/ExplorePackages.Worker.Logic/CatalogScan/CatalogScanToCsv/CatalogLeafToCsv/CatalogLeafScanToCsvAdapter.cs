@@ -4,7 +4,7 @@ using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class CatalogLeafScanToCsvAdapter<T> : ICatalogScanDriver where T : ICsvRecord<T>, new()
+    public class CatalogLeafScanToCsvAdapter<T> : ICatalogScanDriver, ICatalogLeafScanDriver where T : ICsvRecord<T>, new()
     {
         private readonly SchemaSerializer _schemaSerializer;
         private readonly CatalogScanToCsvAdapter<T> _adapter;

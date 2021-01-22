@@ -46,8 +46,8 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
 
                 // Assert
                 await AssertOutputAsync(FindCatalogLeafItemDir, Step1, 0);
-
-                await VerifyExpectedStorageAsync();
+                await AssertExpectedStorageAsync();
+                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -77,8 +77,8 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
 
                 // Assert
                 await AssertOutputAsync(FindCatalogLeafItem_WithDuplicatesDir, Step1, 0);
-
-                await VerifyExpectedStorageAsync();
+                await AssertExpectedStorageAsync();
+                AssertOnlyInfoLogsOrLess();
             }
         }
     }

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
 {
-    public class FindCatalogLeafItemDriver : ICatalogScanDriver, ICsvCompactor<CatalogLeafItemRecord>
+    public class FindCatalogLeafItemDriver : ICatalogScanDriver, ICatalogLeafScanDriver, ICsvCompactor<CatalogLeafItemRecord>
     {
         private readonly CatalogScanToCsvAdapter<CatalogLeafItemRecord> _adapter;
         private readonly CatalogClient _catalogClient;

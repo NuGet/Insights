@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages
@@ -11,6 +12,7 @@ namespace Knapcode.ExplorePackages
     {
         private readonly ITestOutputHelper _output;
         private readonly LogLevel _minLevel;
+        private readonly ConcurrentDictionary<LogLevel, int> _logLevelToCount;
 
         public XunitLoggerProvider(ITestOutputHelper output)
             : this(output, LogLevel.Trace)
@@ -23,9 +25,16 @@ namespace Knapcode.ExplorePackages
             _minLevel = minLevel;
         }
 
+        public XunitLoggerProvider(ITestOutputHelper output, LogLevel minLevel, ConcurrentDictionary<LogLevel, int> logLevelToCount)
+        {
+            _output = output;
+            _minLevel = minLevel;
+            _logLevelToCount = logLevelToCount;
+        }
+
         public ILogger CreateLogger(string categoryName)
         {
-            return new XunitLogger(_output, categoryName, _minLevel);
+            return new XunitLogger(_output, categoryName, _minLevel, _logLevelToCount);
         }
 
         public void Dispose()

@@ -42,12 +42,18 @@ namespace Knapcode.ExplorePackages.Worker
                     _logger.LogInformation("Processing homogeneous batch message with {Count} messages.", batch.Messages.Count);
 
                     var result = await _messageProcessor.ProcessAsync(batch.SchemaName, batch.SchemaVersion, batch.Messages, dequeueCount);
-                    var failedMessages = result.Failed.Select(x => GetSerializedMessage(batch, x)).ToList();
 
-                    if (failedMessages.Any())
+                    if (result.TryAgainLater.Any())
                     {
-                        _logger.LogError("{FailedCount} messages in a batch of {Count} failed. Retrying messages individually.", failedMessages.Count, batch.Messages.Count);
-                        await _messageEnqueuer.AddAsync(failedMessages);
+                        foreach (var (notBefore, messages) in result.TryAgainLater)
+                        {
+                            if (messages.Any())
+                            {
+                                _logger.LogWarning("{TryAgainLaterCount} messages in a batch of {Count} need to be tried again. Retrying messages individually.", messages.Count, batch.Messages.Count);
+                                var serializedMessages = messages.Select(x => GetSerializedMessage(batch, x)).ToList();
+                                await _messageEnqueuer.AddAsync(serializedMessages, notBefore);
+                            }
+                        }
                     }
                 }
             }

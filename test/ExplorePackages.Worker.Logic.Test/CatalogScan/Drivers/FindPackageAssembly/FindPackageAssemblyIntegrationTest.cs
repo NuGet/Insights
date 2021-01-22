@@ -64,7 +64,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
                 await AssertOutputAsync(FindPackageAssemblyDir, Step1, 1); // This file is unchanged.
                 await AssertOutputAsync(FindPackageAssemblyDir, Step2, 2);
 
-                await VerifyExpectedStorageAsync();
+                await AssertExpectedStorageAsync();
+                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -101,7 +102,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
                 await AssertOutputAsync(FindPackageAssemblyDir, Step1, 1);
                 await AssertOutputAsync(FindPackageAssemblyDir, Step1, 2);
 
-                await VerifyExpectedStorageAsync();
+                await AssertExpectedStorageAsync();
+                AssertOnlyInfoLogsOrLess();
             }
 
             public string TempDirLeaseName
@@ -170,7 +172,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
                 await AssertOutputAsync(FindPackageAssembly_WithDeleteDir, Step1, 1); // This file is unchanged.
                 await AssertOutputAsync(FindPackageAssembly_WithDeleteDir, Step2, 2);
 
-                await VerifyExpectedStorageAsync();
+                await AssertExpectedStorageAsync();
+                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -201,7 +204,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
                 // Assert
                 await AssertOutputAsync(FindPackageAssembly_WithUnmanagedDir, Step1, 0);
 
-                await VerifyExpectedStorageAsync();
+                await AssertExpectedStorageAsync();
+                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -218,9 +222,9 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
             public Task Execute() => FindPackageAssembly_WithDuplicates();
         }
 
-        public class FindPackageAssemblt_WithDuplicates_AllLeaves : FindPackageAssemblyIntegrationTest
+        public class FindPackageAssembly_WithDuplicates_AllLeaves : FindPackageAssemblyIntegrationTest
         {
-            public FindPackageAssemblt_WithDuplicates_AllLeaves(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public FindPackageAssembly_WithDuplicates_AllLeaves(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -256,7 +260,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
                 .ToList();
             Assert.Equal(OnlyLatestLeaves ? 1 : 2, duplicatePackageRequests.Count);
 
-            await VerifyExpectedStorageAsync();
+            await AssertExpectedStorageAsync();
+            AssertOnlyInfoLogsOrLess();
         }
     }
 }

@@ -53,6 +53,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 
                 // Assert
                 await AssertBlobAsync(Options.Value.PackageDownloadsContainerName, DownloadsToCsvDir, Step1, "downloads_08585909596854775807.csv.gz", gzip: true);
+                AssertOnlyInfoLogsOrLess();
             }
         }
     }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
@@ -8,6 +9,8 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class CatalogScanStorageService
     {
+        private static readonly IReadOnlyDictionary<string, CatalogLeafScan> EmptyLeafIdToLeafScans = new Dictionary<string, CatalogLeafScan>();
+
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
@@ -55,6 +58,35 @@ namespace Knapcode.ExplorePackages.Worker
             return await GetLeafScanTable(storageSuffix).GetEntitiesAsync<CatalogLeafScan>(
                 CatalogLeafScan.GetPartitionKey(scanId, pageId),
                 _telemetryClient.StartQueryLoopMetrics());
+        }
+
+        public async Task<IReadOnlyDictionary<string, CatalogLeafScan>> GetLeafScansAsync(string storageSuffix, string scanId, string pageId, IEnumerable<string> leafIds)
+        {
+            var sortedLeafIds = leafIds.OrderBy(x => x).ToList();
+            if (sortedLeafIds.Count == 0)
+            {
+                return EmptyLeafIdToLeafScans;
+            }
+            else if (sortedLeafIds.Count == 1)
+            {
+                var leafScan = await GetLeafScanAsync(storageSuffix, scanId, pageId, sortedLeafIds[0]);
+                if (leafScan == null)
+                {
+                    return EmptyLeafIdToLeafScans;
+                }
+                else
+                {
+                    return new Dictionary<string, CatalogLeafScan> { { leafScan.LeafId, leafScan } };
+                }
+            }
+
+            var leafScans = await GetLeafScanTable(storageSuffix).GetEntitiesAsync<CatalogLeafScan>(
+                CatalogLeafScan.GetPartitionKey(scanId, pageId),
+                _telemetryClient.StartQueryLoopMetrics());
+            var uniqueLeafIds = sortedLeafIds.ToHashSet();
+            return leafScans
+                .Where(x => uniqueLeafIds.Contains(x.LeafId))
+                .ToDictionary(x => x.LeafId);
         }
 
         public async Task InsertAsync(IReadOnlyList<CatalogPageScan> pageScans)
@@ -108,6 +140,40 @@ namespace Knapcode.ExplorePackages.Worker
         public async Task ReplaceAsync(CatalogLeafScan leafScan)
         {
             await GetLeafScanTable(leafScan.StorageSuffix).ReplaceAsync(leafScan);
+        }
+
+        public async Task ReplaceAsync(IEnumerable<CatalogLeafScan> leafScans)
+        {
+            await BatchLeafScansAsync(leafScans, TableOperation.Replace);
+        }
+
+        public async Task DeleteAsync(IEnumerable<CatalogLeafScan> leafScans)
+        {
+            await BatchLeafScansAsync(leafScans, TableOperation.Delete);
+        }
+
+        private async Task BatchLeafScansAsync(IEnumerable<CatalogLeafScan> leafScans, Func<CatalogLeafScan, TableOperation> getOperation)
+        {
+            if (!leafScans.Any())
+            {
+                return;
+            }
+
+            var storageSuffixAndPartitionKeys = leafScans.Select(x => new { x.StorageSuffix, x.PartitionKey }).Distinct();
+            if (storageSuffixAndPartitionKeys.Count() > 1)
+            {
+                throw new ArgumentException("All leaf scans must have the same storage suffix and partition key.");
+            }
+
+            var table = GetLeafScanTable(storageSuffixAndPartitionKeys.Single().StorageSuffix);
+
+            var batch = new TableBatchOperation();
+            foreach (var leafScan in leafScans)
+            {
+                batch.Add(getOperation(leafScan));
+            }
+
+            await table.ExecuteBatchAsync(batch);
         }
 
         public async Task<int> GetPageScanCountLowerBoundAsync(string storageSuffix, string scanId)

@@ -11,6 +11,7 @@
             AppendResultStorageBucketCount = 1000; // Azure Data Explorer can only import up to 1000 blobs.
             AppendResultUniqueIds = true;
             AllowBatching = true;
+            RunAllCatalogScanDriversAsBatch = false;
 
             WorkerQueueName = "workerqueue";
             CursorTableName = "cursors";
@@ -35,6 +36,7 @@
         public int AppendResultStorageBucketCount { get; set; }
         public bool AppendResultUniqueIds { get; set; }
         public bool AllowBatching { get; set; }
+        public bool RunAllCatalogScanDriversAsBatch { get; set; }
 
         public string WorkerQueueName { get; set; }
         public string CursorTableName { get; set; }

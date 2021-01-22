@@ -44,6 +44,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf
 
                 // Assert
                 await VerifyOutputAsync(FindLatestPackageLeavesDir);
+                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -71,6 +72,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf
 
                 // Assert
                 await VerifyOutputAsync(FindLatestPackageLeaves_WithDuplicatesDir);
+                AssertOnlyInfoLogsOrLess();
             }
         }
 

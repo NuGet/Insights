@@ -67,8 +67,14 @@ namespace Knapcode.ExplorePackages.Worker
                 dequeueCount,
                 throwOnException: false);
 
-            var failed = result.Failed.Select(x => objectToJToken[x]).ToList();
-            return new BatchMessageProcessorResult<JToken>(failed);
+            return new BatchMessageProcessorResult<JToken>(result
+                .TryAgainLater
+                .Select(pair => new
+                {
+                    NotBefore = pair.Key,
+                    Messages = pair.Value.Select(x => objectToJToken[x]).ToList(),
+                })
+                .ToDictionary(x => x.NotBefore, x => (IReadOnlyList<JToken>)x.Messages));
         }
 
         private async Task<BatchMessageProcessorResult<object>> ProcessAsync(
@@ -109,7 +115,7 @@ namespace Knapcode.ExplorePackages.Worker
                     }
                     else
                     {
-                        return new BatchMessageProcessorResult<object>(failed: messages);
+                        return new BatchMessageProcessorResult<object>(messages, TimeSpan.Zero);
                     }
                 }
                 finally
@@ -165,17 +171,52 @@ namespace Knapcode.ExplorePackages.Worker
                     }
                 }
 
-                return new BatchMessageProcessorResult<object>(failed);
+                if (failed.Any())
+                {
+                    return new BatchMessageProcessorResult<object>(failed, TimeSpan.Zero);
+                }
+                else
+                {
+                    return BatchMessageProcessorResult<object>.Empty;
+                }
             }
         }
 
         private static BatchMessageProcessorResult<object> MakeGenericResult(Task task)
         {
+            // We need to turn this:
+            //   BatchMessageProcessorResult<T>
+            // into this:
+            //   BatchMessageProcessorResult<object>
+            //
+            // This is done by converting the single TryAgainLater property of type:
+            //   IReadOnlyDictionary<TimeSpan, IReadOnlyList<T>>
+            // into this:
+            //   IReadOnlyDictionary<TimeSpan, IReadOnlyList<object>>
+
             var result = task.GetType().GetProperty(nameof(Task<object>.Result)).GetMethod.Invoke(task, parameters: null);
             var resultType = result.GetType();
-            var stronglyTypedFailed = (IEnumerable)resultType.GetProperty(nameof(BatchMessageProcessorResult<object>.Failed)).GetMethod.Invoke(result, parameters: null);
-            var failed = stronglyTypedFailed.Cast<object>().ToList();
-            return new BatchMessageProcessorResult<object>(failed);
+            var stronglyTypedTryAgainLater = (IEnumerable)resultType.GetProperty(nameof(BatchMessageProcessorResult<object>.TryAgainLater)).GetMethod.Invoke(result, parameters: null);
+
+            var enumerator = stronglyTypedTryAgainLater.GetEnumerator();
+            if (!enumerator.MoveNext())
+            {
+                return BatchMessageProcessorResult<object>.Empty;
+            }
+
+            var pairType = enumerator.Current.GetType();
+            var getKey = pairType.GetProperty(nameof(KeyValuePair<object, object>.Key)).GetMethod;
+            var getValue = pairType.GetProperty(nameof(KeyValuePair<object, object>.Value)).GetMethod;
+
+            var tryAgainLater = new Dictionary<TimeSpan, IReadOnlyList<object>>();
+            foreach (var pair in stronglyTypedTryAgainLater)
+            {
+                var key = getKey.Invoke(pair, parameters: null);
+                var value = getValue.Invoke(pair, parameters: null);
+                tryAgainLater.Add((TimeSpan)key, ((IEnumerable)value).Cast<object>().ToList());
+            }
+
+            return new BatchMessageProcessorResult<object>(tryAgainLater);
         }
 
         private static object MakeListOfT(Type type, IEnumerable items)

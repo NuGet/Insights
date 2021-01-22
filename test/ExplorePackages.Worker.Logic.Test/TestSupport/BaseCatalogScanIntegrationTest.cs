@@ -46,10 +46,10 @@ namespace Knapcode.ExplorePackages.Worker
             var expected = File.ReadAllText(Path.Combine(TestData, dir, "entities.json"));
             Assert.Equal(expected, actual);
 
-            await VerifyExpectedStorageAsync();
+            await AssertExpectedStorageAsync();
         }
 
-        protected async Task VerifyExpectedStorageAsync()
+        protected async Task AssertExpectedStorageAsync()
         {
             var account = ServiceClientFactory.GetStorageAccount();
 

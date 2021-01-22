@@ -59,7 +59,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
                 await AssertOutputAsync(FindPackageAssetDir, Step1, 1); // This file is unchanged.
                 await AssertOutputAsync(FindPackageAssetDir, Step2, 2);
 
-                await VerifyExpectedStorageAsync();
+                await AssertExpectedStorageAsync();
+                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -92,7 +93,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
                 await AssertOutputAsync(FindPackageAssetDir, Step1, 1);
                 await AssertOutputAsync(FindPackageAssetDir, Step1, 2);
 
-                await VerifyExpectedStorageAsync();
+                await AssertExpectedStorageAsync();
+                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -143,7 +145,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
                 await AssertOutputAsync(FindPackageAsset_WithDeleteDir, Step1, 1); // This file is unchanged.
                 await AssertOutputAsync(FindPackageAsset_WithDeleteDir, Step2, 2);
 
-                await VerifyExpectedStorageAsync();
+                await AssertExpectedStorageAsync();
+                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -157,7 +160,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
             public override bool OnlyLatestLeaves => true;
 
             [Fact]
-            public Task Execute() => FindPackageAsset_WithDuplicates();
+            public Task Execute() => FindPackageAsset_WithDuplicates(batchProcessing: false);
         }
 
         public class FindPackageAsset_WithDuplicates_AllLeaves : FindPackageAssetIntegrationTest
@@ -170,12 +173,32 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
             public override bool OnlyLatestLeaves => false;
 
             [Fact]
-            public Task Execute() => FindPackageAsset_WithDuplicates();
+            public async Task Execute()
+            {
+                await FindPackageAsset_WithDuplicates(batchProcessing: false);
+            }
         }
 
-        private async Task FindPackageAsset_WithDuplicates()
+        public class FindPackageAsset_WithDuplicates_AllLeaves_BatchProcessing : FindPackageAssetIntegrationTest
         {
-            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
+            public FindPackageAsset_WithDuplicates_AllLeaves_BatchProcessing(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+                : base(output, factory)
+            {
+            }
+
+            public override bool OnlyLatestLeaves => false;
+
+            [Fact]
+            public Task Execute() => FindPackageAsset_WithDuplicates(batchProcessing: true);
+        }
+
+        private async Task FindPackageAsset_WithDuplicates(bool batchProcessing)
+        {
+            ConfigureWorkerSettings = x =>
+            {
+                x.AppendResultStorageBucketCount = 1;
+                x.RunAllCatalogScanDriversAsBatch = batchProcessing;
+            };
 
             Logger.LogInformation("Settings: " + Environment.NewLine + JsonConvert.SerializeObject(Options.Value, Formatting.Indented));
 
@@ -199,7 +222,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
             Assert.Equal(OnlyLatestLeaves ? 1 : 2, duplicatePackageRequests.Where(x => x.Method == HttpMethod.Head).Count());
             Assert.Equal(OnlyLatestLeaves ? 1 : 2, duplicatePackageRequests.Where(x => x.Method == HttpMethod.Get).Count());
 
-            await VerifyExpectedStorageAsync();
+            await AssertExpectedStorageAsync();
+            AssertOnlyInfoLogsOrLess();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
@@ -14,17 +15,32 @@ namespace Knapcode.ExplorePackages
         private readonly string _category;
         private readonly LogLevel _minLogLevel;
         private readonly ITestOutputHelper _output;
+        private readonly ConcurrentDictionary<LogLevel, int> _logLevelToCount;
 
         public XunitLogger(ITestOutputHelper output, string category, LogLevel minLogLevel)
         {
             _minLogLevel = minLogLevel;
             _category = category;
             _output = output;
+            _logLevelToCount = null;
+        }
+
+        public XunitLogger(ITestOutputHelper output, string category, LogLevel minLogLevel, ConcurrentDictionary<LogLevel, int> logLevelToCount)
+        {
+            _minLogLevel = minLogLevel;
+            _category = category;
+            _output = output;
+            _logLevelToCount = logLevelToCount;
         }
 
         public void Log<TState>(
             LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
+            if (_logLevelToCount != null)
+            {
+                _logLevelToCount.AddOrUpdate(logLevel, 1, (_, v) => v + 1);
+            }
+
             if (!IsEnabled(logLevel))
             {
                 return;

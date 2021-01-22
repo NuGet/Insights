@@ -9,24 +9,31 @@ namespace Knapcode.ExplorePackages
 {
     public static class CloudTableExtensions
     {
+        public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(this CloudTable table, string partitionKey, string minRowKey, string maxRowKey, QueryLoopMetrics metrics) where T : ITableEntity, new()
+        {
+            return await GetEntitiesAsync<T>(table.ExecuteQuerySegmentedAsync, partitionKey, minRowKey, maxRowKey, metrics, maxEntities: null);
+        }
+
         public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(this CloudTable table, QueryLoopMetrics metrics) where T : ITableEntity, new()
         {
-            return await GetEntitiesAsync<T>(table.ExecuteQuerySegmentedAsync, partitionKey: null, metrics, maxEntities: null);
+            return await GetEntitiesAsync<T>(table.ExecuteQuerySegmentedAsync, partitionKey: null, minRowKey: null, maxRowKey: null, metrics, maxEntities: null);
         }
 
         public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(this CloudTable table, string partitionKey, QueryLoopMetrics metrics, int? maxEntities = null) where T : ITableEntity, new()
         {
-            return await GetEntitiesAsync<T>(table.ExecuteQuerySegmentedAsync, partitionKey, metrics, maxEntities);
+            return await GetEntitiesAsync<T>(table.ExecuteQuerySegmentedAsync, partitionKey, minRowKey: null, maxRowKey: null, metrics, maxEntities);
         }
 
         public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(this ICloudTable table, string partitionKey, QueryLoopMetrics metrics, int? maxEntities = null) where T : ITableEntity, new()
         {
-            return await GetEntitiesAsync<T>(table.ExecuteQuerySegmentedAsync, partitionKey, metrics, maxEntities);
+            return await GetEntitiesAsync<T>(table.ExecuteQuerySegmentedAsync, partitionKey, minRowKey: null, maxRowKey: null, metrics, maxEntities);
         }
 
         private static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(
             Func<TableQuery<T>, TableContinuationToken, Task<TableQuerySegment<T>>> executeQuerySegmentedAsync,
             string partitionKey,
+            string minRowKey,
+            string maxRowKey,
             QueryLoopMetrics metrics,
             int? maxEntities = null) where T : ITableEntity, new()
         {
@@ -44,6 +51,37 @@ namespace Knapcode.ExplorePackages
                         PartitionKey,
                         QueryComparisons.Equal,
                         partitionKey);
+
+                    string rowKeyFilterString = null;
+                    if (minRowKey != null)
+                    {
+                        rowKeyFilterString = TableQuery.GenerateFilterCondition(
+                            RowKey,
+                            QueryComparisons.GreaterThanOrEqual,
+                            minRowKey);
+                    }
+
+                    if (maxRowKey != null)
+                    {
+                        var maxRowKeyFilterString = TableQuery.GenerateFilterCondition(
+                            RowKey,
+                            QueryComparisons.LessThanOrEqual,
+                            maxRowKey);
+
+                        if (rowKeyFilterString != null)
+                        {
+                            rowKeyFilterString = TableQuery.CombineFilters(rowKeyFilterString, TableOperators.And, maxRowKeyFilterString);
+                        }
+                        else
+                        {
+                            rowKeyFilterString = maxRowKeyFilterString;
+                        }
+                    }
+
+                    if (rowKeyFilterString != null)
+                    {
+                        query.FilterString = TableQuery.CombineFilters(query.FilterString, TableOperators.And, rowKeyFilterString);
+                    }
                 }
 
                 TableContinuationToken token = null;

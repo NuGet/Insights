@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -43,6 +44,7 @@ namespace Knapcode.ExplorePackages.Worker
                 .UseContentRoot(currentDirectory)
                 .UseWebRoot(currentDirectory));
             TestDataHttpClient = testWebHostBuilder.CreateClient();
+            LogLevelToCount = new ConcurrentDictionary<LogLevel, int>();
 
             _lazyHost = new Lazy<IHost>(() => GetHost(output));
         }
@@ -66,7 +68,7 @@ namespace Knapcode.ExplorePackages.Worker
                     serviceCollection.AddLogging(o =>
                     {
                         o.SetMinimumLevel(LogLevel.Trace);
-                        o.AddProvider(new XunitLoggerProvider(output));
+                        o.AddProvider(new XunitLoggerProvider(output, LogLevel.Trace, LogLevelToCount));
                     });
 
                     serviceCollection.Configure((Action<ExplorePackagesSettings>)(ConfigureDefaultsAndSettings));
@@ -120,7 +122,7 @@ namespace Knapcode.ExplorePackages.Worker
         public string StoragePrefix { get; }
         public TestHttpMessageHandlerFactory HttpMessageHandlerFactory { get; }
         public HttpClient TestDataHttpClient { get; }
-
+        public ConcurrentDictionary<LogLevel, int> LogLevelToCount { get; }
         public Action<ExplorePackagesSettings> ConfigureSettings { get; set; }
         public Action<ExplorePackagesWorkerSettings> ConfigureWorkerSettings { get; set; }
         public IHost Host => _lazyHost.Value;
@@ -219,6 +221,20 @@ namespace Knapcode.ExplorePackages.Worker
         protected async Task AssertCompactAsync(string containerName, string testName, string stepName, int bucket)
         {
             await AssertBlobAsync(containerName, testName, stepName, $"compact_{bucket}.csv");
+        }
+
+        protected void AssertOnlyInfoLogsOrLess()
+        {
+            var warningOrGreater = LogLevelToCount
+                .Where(x => x.Key >= LogLevel.Warning)
+                .Where(x => x.Value > 0)
+                .OrderByDescending(x => x.Key)
+                .ToList();
+            foreach (var (logLevel, count) in warningOrGreater)
+            {
+                Logger.LogInformation("There were {Count} {LogLevel} log messages.", count, logLevel);
+            }
+            Assert.Empty(warningOrGreater);
         }
 
         protected async Task AssertBlobAsync(string containerName, string testName, string stepName, string blobName, bool gzip = false)
