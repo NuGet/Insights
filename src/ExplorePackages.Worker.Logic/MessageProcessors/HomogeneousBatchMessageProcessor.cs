@@ -28,14 +28,9 @@ namespace Knapcode.ExplorePackages.Worker
             {
                 if (dequeueCount > 1)
                 {
-                    var messages = new List<string>();
-                    foreach (var data in batch.Messages)
-                    {
-                        messages.Add(GetSerializedMessage(batch, data));
-                    }
-
                     _logger.LogWarning("Homogeneous batch message has been attempted multiple times. Retrying messages individually.");
-                    await _messageEnqueuer.AddAsync(messages);
+
+                    await _messageEnqueuer.AddAsync(SerializeMessages(batch, batch.Messages));
                 }
                 else
                 {
@@ -51,7 +46,7 @@ namespace Knapcode.ExplorePackages.Worker
 
                     if (result.TryAgainLater.Any())
                     {
-                        foreach (var (notBefore, messages) in result.TryAgainLater)
+                        foreach (var (notBefore, messages) in result.TryAgainLater.OrderBy(x => x.Key))
                         {
                             if (messages.Any())
                             {
@@ -66,10 +61,10 @@ namespace Knapcode.ExplorePackages.Worker
 
         private static List<string> SerializeMessages(HomogeneousBatchMessage batch, IReadOnlyList<JToken> messages)
         {
-            return messages.Select(x => GetSerializedMessage(batch, x)).ToList();
+            return messages.Select(x => SerializeMessage(batch, x)).ToList();
         }
 
-        private static string GetSerializedMessage(HomogeneousBatchMessage batch, JToken data)
+        private static string SerializeMessage(HomogeneousBatchMessage batch, JToken data)
         {
             return NameVersionSerializer.SerializeMessage(
                 batch.SchemaName,
