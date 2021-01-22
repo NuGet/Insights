@@ -13,7 +13,7 @@ namespace Knapcode.ExplorePackages.Worker
     {
         private readonly TaskStateStorageService _taskStateStorageService;
         private readonly ServiceClientFactory _serviceClientFactory;
-        private readonly MessageEnqueuer _enqueuer;
+        private readonly IMessageEnqueuer _enqueuer;
         private readonly SchemaSerializer _serializer;
         private readonly TablePrefixScanner _prefixScanner;
         private readonly TableScanDriverFactory<T> _driverFactory;
@@ -22,7 +22,7 @@ namespace Knapcode.ExplorePackages.Worker
         public TableScanMessageProcessor(
             TaskStateStorageService taskStateStorageService,
             ServiceClientFactory serviceClientFactory,
-            MessageEnqueuer enqueuer,
+            IMessageEnqueuer enqueuer,
             SchemaSerializer serializer,
             TablePrefixScanner prefixScanner,
             TableScanDriverFactory<T> driverFactory,

@@ -6,13 +6,13 @@ namespace Knapcode.ExplorePackages.Worker
     public class TaskStateMessageProcessor<T> : IMessageProcessor<T> where T : ITaskStateMessage
     {
         private readonly TaskStateStorageService _taskStateStorageService;
-        private readonly MessageEnqueuer _messageEnqueuer;
+        private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly ITaskStateMessageProcessor<T> _processor;
         private readonly ILogger<TaskStateMessageProcessor<T>> _logger;
 
         public TaskStateMessageProcessor(
             TaskStateStorageService taskStateStorageService,
-            MessageEnqueuer messageEnqueuer,
+            IMessageEnqueuer messageEnqueuer,
             ITaskStateMessageProcessor<T> processor,
             ILogger<TaskStateMessageProcessor<T>> logger)
         {

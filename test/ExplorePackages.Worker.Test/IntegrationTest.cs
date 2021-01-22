@@ -20,6 +20,7 @@ namespace Knapcode.ExplorePackages.Worker
                 .ConfigureWebJobs(new Startup().Configure)
                 .ConfigureServices(serviceCollection =>
                 {
+                    serviceCollection.AddTransient(s => Output.GetTelemetryClient());
                     serviceCollection.AddTransient<WorkerQueueFunction>();
                 });
         }

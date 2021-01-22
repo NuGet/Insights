@@ -8,11 +8,11 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class TableScanService<T> where T : ITableEntity, new()
     {
-        private readonly MessageEnqueuer _enqueuer;
+        private readonly IMessageEnqueuer _enqueuer;
         private readonly SchemaSerializer _serializer;
 
         public TableScanService(
-            MessageEnqueuer enqueuer,
+            IMessageEnqueuer enqueuer,
             SchemaSerializer serializer)
         {
             _enqueuer = enqueuer;

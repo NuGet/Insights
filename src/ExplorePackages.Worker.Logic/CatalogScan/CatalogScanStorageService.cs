@@ -101,7 +101,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             foreach (var group in leafScans.GroupBy(x => x.StorageSuffix))
             {
-                await GetLeafScanTable(group.Key).InsertEntitiesAsync(leafScans.ToList());
+                await GetLeafScanTable(group.Key).InsertEntitiesAsync(group.ToList());
             }
         }
 

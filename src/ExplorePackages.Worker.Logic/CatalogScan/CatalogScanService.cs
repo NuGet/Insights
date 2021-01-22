@@ -14,7 +14,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         private readonly CatalogClient _catalogClient;
         private readonly CursorStorageService _cursorStorageService;
-        private readonly MessageEnqueuer _messageEnqueuer;
+        private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly SchemaSerializer _serializer;
         private readonly CatalogScanStorageService _catalogScanStorageService;
         private readonly AutoRenewingStorageLeaseService _leaseService;
@@ -24,7 +24,7 @@ namespace Knapcode.ExplorePackages.Worker
         public CatalogScanService(
             CatalogClient catalogClient,
             CursorStorageService cursorStorageService,
-            MessageEnqueuer messageEnqueuer,
+            IMessageEnqueuer messageEnqueuer,
             SchemaSerializer serializer,
             CatalogScanStorageService catalogScanStorageService,
             AutoRenewingStorageLeaseService leaseService,

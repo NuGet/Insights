@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.WindowsAzure.Storage;
 
 namespace Knapcode.ExplorePackages.Worker
 {
@@ -12,13 +14,13 @@ namespace Knapcode.ExplorePackages.Worker
 
         private readonly ICatalogScanDriverFactory _driverFactory;
         private readonly CatalogScanStorageService _storageService;
-        private readonly MessageEnqueuer _messageEnqueuer;
+        private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly ILogger<CatalogLeafScanMessageProcessor> _logger;
 
         public CatalogLeafScanMessageProcessor(
             ICatalogScanDriverFactory driverFactory,
             CatalogScanStorageService storageService,
-            MessageEnqueuer messageEnqueuer,
+            IMessageEnqueuer messageEnqueuer,
             ILogger<CatalogLeafScanMessageProcessor> logger)
         {
             _driverFactory = driverFactory;
@@ -31,23 +33,23 @@ namespace Knapcode.ExplorePackages.Worker
         {
             var failed = new List<CatalogLeafScanMessage>();
             var tryAgainLater = new List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan, TimeSpan NotBefore)>();
-            var noMatchingLeaf = new List<CatalogLeafScanMessage>();
+            var noMatchingScan = new List<CatalogLeafScanMessage>();
             var poison = new List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan)>();
 
             foreach (var pageGroup in messages.GroupBy(x => (x.StorageSuffix, x.ScanId, x.PageId)))
             {
                 var driverTypeToProcess = new Dictionary<CatalogScanDriverType, List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan)>>();
 
-                await CategorizeMessagesAsync(pageGroup, dequeueCount, noMatchingLeaf, poison, tryAgainLater, driverTypeToProcess);
+                await CategorizeMessagesAsync(pageGroup, dequeueCount, noMatchingScan, poison, tryAgainLater, driverTypeToProcess);
 
                 if (driverTypeToProcess.Count > 1)
                 {
                     throw new InvalidOperationException("For a single scan ID, there should be no more than one driver type.");
                 }
 
-                if (noMatchingLeaf.Any())
+                if (noMatchingScan.Any())
                 {
-                    _logger.LogWarning("There were {Count} messages with no matching leaf scans.", noMatchingLeaf.Count);
+                    _logger.LogWarning("There were {Count} messages with no matching leaf scans.", noMatchingScan.Count);
                 }
 
                 foreach (var (driverType, toProcess) in driverTypeToProcess)
@@ -70,7 +72,7 @@ namespace Knapcode.ExplorePackages.Worker
                 foreach (var (message, scan) in poison)
                 {
                     _logger.LogError("Moving message with {AttemptCount} attempts and {DequeueCount} dequeues (on the current message copy) to the poison queue.", scan.AttemptCount, dequeueCount);
-                    await _messageEnqueuer.EnqueuePoisonAsync(poison);
+                    await _messageEnqueuer.EnqueuePoisonAsync(new[] { message });
                 }
             }
 
@@ -87,30 +89,42 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             return new BatchMessageProcessorResult<CatalogLeafScanMessage>(
-                failed: Array.Empty<CatalogLeafScanMessage>(),
+                failed,
                 tryAgainLater.Select(x => (x.Message, x.NotBefore)));
         }
 
         private async Task CategorizeMessagesAsync(
             IGrouping<(string StorageSuffix, string ScanId, string PageId), CatalogLeafScanMessage> pageGroup,
             int dequeueCount,
-            List<CatalogLeafScanMessage> noMatchingLeaf,
+            List<CatalogLeafScanMessage> noMatchingScan,
             List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan)> poison,
             List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan, TimeSpan NotBefore)> tryAgainLater,
             Dictionary<CatalogScanDriverType, List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan)>> driverTypeToProcess)
         {
             var leafIdToMessage = pageGroup.ToDictionary(x => x.LeafId);
-            var leafIdToScan = await _storageService.GetLeafScansAsync(
-                pageGroup.Key.StorageSuffix,
-                pageGroup.Key.ScanId,
-                pageGroup.Key.PageId,
-                leafIdToMessage.Keys);
+
+            IReadOnlyDictionary<string, CatalogLeafScan> leafIdToScan;
+            try
+            {
+                leafIdToScan = await _storageService.GetLeafScansAsync(
+                    pageGroup.Key.StorageSuffix,
+                    pageGroup.Key.ScanId,
+                    pageGroup.Key.PageId,
+                    leafIdToMessage.Keys);
+            }
+            catch (StorageException ex) when (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.NotFound)
+            {
+                // Handle the missing table case.
+                noMatchingScan.AddRange(pageGroup);
+                return;
+            }
 
             foreach (var message in pageGroup)
             {
                 if (!leafIdToScan.TryGetValue(message.LeafId, out var scan))
                 {
-                    noMatchingLeaf.Add(message);
+                    noMatchingScan.Add(message);
+                    continue;
                 }
 
                 // Since we copy this message, the dequeue count will be reset. Therefore we use both the attempt count on
@@ -120,6 +134,7 @@ namespace Knapcode.ExplorePackages.Worker
                 if (GetTotalAttempts(scan, dequeueCount) > MaxAttempts)
                 {
                     poison.Add((message, scan));
+                    continue;
                 }
 
                 // Perform some exponential back-off for leaf-level work. This is important for cases where the leaf
@@ -137,6 +152,7 @@ namespace Knapcode.ExplorePackages.Worker
                         }
 
                         tryAgainLater.Add((message, scan, notBefore));
+                        continue;
                     }
                 }
 
@@ -171,7 +187,17 @@ namespace Knapcode.ExplorePackages.Worker
             await _storageService.ReplaceAsync(scans);
 
             // Execute the batch logic
-            var result = await batchDriver.ProcessLeavesAsync(scans);
+            BatchMessageProcessorResult<CatalogLeafScan> result;
+            try
+            {
+                result = await batchDriver.ProcessLeavesAsync(scans);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Processing a catalog leaf scan batch failed.");
+                failed.AddRange(scans.Select(x => scanToMessage[x]));
+                return;
+            }
 
             // Reduce the attempt counter for all "try again later" scans and remove them from the set to delete (complete)
             var allTryAgainLaterScans = new List<CatalogLeafScan>();
@@ -255,6 +281,7 @@ namespace Knapcode.ExplorePackages.Worker
         private static void ResetAttempt(CatalogLeafScan scan)
         {
             scan.AttemptCount--;
+            scan.NextAttempt = DateTime.UtcNow;
         }
 
         private static int GetTotalAttempts(CatalogLeafScan scan, int dequeueCount)

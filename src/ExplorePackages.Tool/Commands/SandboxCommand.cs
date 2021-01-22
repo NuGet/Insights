@@ -22,14 +22,14 @@ namespace Knapcode.ExplorePackages.Tool
 {
     public class SandboxCommand : ICommand
     {
-        private readonly MessageEnqueuer _messageEnqueuer;
+        private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly TaskStateStorageService _taskStateStorageService;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
         private readonly TableScanService<LatestPackageLeaf> _tableScanService;
 
         public SandboxCommand(
-            MessageEnqueuer messageEnqueuer,
+            IMessageEnqueuer messageEnqueuer,
             TaskStateStorageService taskStateStorageService,
             ServiceClientFactory serviceClientFactory,
             IRawMessageEnqueuer rawMessageEnqueuer,

@@ -4,6 +4,6 @@
     {
         ICatalogScanDriver Create(CatalogScanDriverType driverType);
         ICatalogLeafScanBatchDriver CreateBatchDriverOrNull(CatalogScanDriverType driverType);
-        ICatalogLeafScanDriver CreateNonBatchDriver(CatalogScanDriverType driverType);
+        ICatalogLeafScanNonBatchDriver CreateNonBatchDriver(CatalogScanDriverType driverType);
     }
 }

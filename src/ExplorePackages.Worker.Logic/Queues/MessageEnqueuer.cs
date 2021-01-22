@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class MessageEnqueuer
+    public class MessageEnqueuer : IMessageEnqueuer
     {
         private delegate Task AddAsync(IReadOnlyList<string> messages, TimeSpan notBefore);
 

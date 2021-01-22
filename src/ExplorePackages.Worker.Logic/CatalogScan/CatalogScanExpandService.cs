@@ -7,17 +7,14 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class CatalogScanExpandService
     {
-        private readonly MessageEnqueuer _messageEnqueuer;
-        private readonly CatalogScanStorageService _storageService;
+        private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly ILogger<CatalogScanExpandService> _logger;
 
         public CatalogScanExpandService(
-            MessageEnqueuer messageEnqueuer,
-            CatalogScanStorageService storageService,
+            IMessageEnqueuer messageEnqueuer,
             ILogger<CatalogScanExpandService> logger)
         {
             _messageEnqueuer = messageEnqueuer;
-            _storageService = storageService;
             _logger = logger;
         }
 

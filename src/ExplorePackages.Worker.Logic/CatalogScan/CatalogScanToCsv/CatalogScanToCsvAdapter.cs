@@ -10,14 +10,14 @@ namespace Knapcode.ExplorePackages.Worker
     {
         private readonly AppendResultStorageService _storageService;
         private readonly TaskStateStorageService _taskStateStorageService;
-        private readonly MessageEnqueuer _messageEnqueuer;
+        private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<CatalogScanToCsvAdapter<T>> _logger;
 
         public CatalogScanToCsvAdapter(
             AppendResultStorageService storageService,
             TaskStateStorageService taskStateStorageService,
-            MessageEnqueuer messageEnqueuer,
+            IMessageEnqueuer messageEnqueuer,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<CatalogScanToCsvAdapter<T>> logger)
         {

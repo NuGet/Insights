@@ -30,7 +30,7 @@ namespace Knapcode.ExplorePackages.Worker
             Failed = failed.ToList();
             TryAgainLater = tryAgainLater
                 .ToLookup(x => x.NotBefore)
-                .ToDictionary(x => x.Key, x => (IReadOnlyList<T>)x.ToList());
+                .ToDictionary(x => x.Key, x => (IReadOnlyList<T>)x.Select(y => y.Message).ToList());
         }
 
         public BatchMessageProcessorResult(IEnumerable<T> failed, IReadOnlyDictionary<TimeSpan, IReadOnlyList<T>> tryAgainLater)

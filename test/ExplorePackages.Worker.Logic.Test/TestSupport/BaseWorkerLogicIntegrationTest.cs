@@ -20,6 +20,7 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public abstract class BaseWorkerLogicIntegrationTest : IClassFixture<DefaultWebApplicationFactory<StaticFilesStartup>>, IAsyncLifetime
     {
+        public const string ProgramName = "Knapcode.ExplorePackages.Worker.Logic.Test";
         public const string TestData = "TestData";
         public const string Step1 = "Step1";
         public const string Step2 = "Step2";
@@ -35,6 +36,7 @@ namespace Knapcode.ExplorePackages.Worker
             ITestOutputHelper output,
             DefaultWebApplicationFactory<StaticFilesStartup> factory)
         {
+            Output = output;
             StoragePrefix = "t" + StorageUtility.GenerateUniqueId();
             HttpMessageHandlerFactory = new TestHttpMessageHandlerFactory();
 
@@ -53,12 +55,10 @@ namespace Knapcode.ExplorePackages.Worker
         {
             var hostBuilder = new HostBuilder();
 
-            ConfigureHostBuilder(hostBuilder);
-
-            return hostBuilder
+            hostBuilder
                 .ConfigureServices(serviceCollection =>
                 {
-                    serviceCollection.AddExplorePackages("Knapcode.ExplorePackages.Worker.Logic.Test");
+                    serviceCollection.AddExplorePackages(ProgramName);
                     serviceCollection.AddExplorePackagesWorker();
 
                     serviceCollection.AddSingleton((IExplorePackagesHttpMessageHandlerFactory)HttpMessageHandlerFactory);
@@ -73,8 +73,11 @@ namespace Knapcode.ExplorePackages.Worker
 
                     serviceCollection.Configure((Action<ExplorePackagesSettings>)(ConfigureDefaultsAndSettings));
                     serviceCollection.Configure((Action<ExplorePackagesWorkerSettings>)(ConfigureDefaultsAndSettings));
-                })
-                .Build();
+                });
+
+            ConfigureHostBuilder(hostBuilder);
+
+            return hostBuilder.Build();
         }
 
         protected virtual void ConfigureHostBuilder(IHostBuilder hostBuilder)
@@ -119,6 +122,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
+        public ITestOutputHelper Output { get; }
         public string StoragePrefix { get; }
         public TestHttpMessageHandlerFactory HttpMessageHandlerFactory { get; }
         public HttpClient TestDataHttpClient { get; }
@@ -132,7 +136,7 @@ namespace Knapcode.ExplorePackages.Worker
         public CursorStorageService CursorStorageService => Host.Services.GetRequiredService<CursorStorageService>();
         public CatalogScanStorageService CatalogScanStorageService => Host.Services.GetRequiredService<CatalogScanStorageService>();
         public TaskStateStorageService TaskStateStorageService => Host.Services.GetRequiredService<TaskStateStorageService>();
-        public MessageEnqueuer MessageEnqueuer => Host.Services.GetRequiredService<MessageEnqueuer>();
+        public IMessageEnqueuer MessageEnqueuer => Host.Services.GetRequiredService<IMessageEnqueuer>();
         public IWorkerQueueFactory WorkerQueueFactory => Host.Services.GetRequiredService<IWorkerQueueFactory>();
         public ITelemetryClient TelemetryClient => Host.Services.GetRequiredService<ITelemetryClient>();
         public ILogger Logger => Host.Services.GetRequiredService<ILogger<BaseWorkerLogicIntegrationTest>>();

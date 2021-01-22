@@ -21,7 +21,7 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient<IGenericMessageProcessor, GenericMessageProcessor>();
             serviceCollection.AddTransient<SchemaSerializer>();
             serviceCollection.AddTransient<IMessageBatcher, MessageBatcher>();
-            serviceCollection.AddTransient<MessageEnqueuer>();
+            serviceCollection.AddTransient<IMessageEnqueuer, MessageEnqueuer>();
 
             serviceCollection.AddTransient(typeof(TableScanService<>));
             serviceCollection.AddTransient(typeof(TableScanDriverFactory<>));

@@ -45,7 +45,7 @@ namespace Knapcode.ExplorePackages.Worker
         public string Url { get; set; }
         public string LeafType { get; set; }
         public string CommitId { get; set; }
-        public DateTimeOffset CommitTimestamp { get; set; }
+        public DateTimeOffset CommitTimestamp { get; set; } = new DateTimeOffset(1900, 1, 1, 0, 0, 0, TimeSpan.Zero);
         public string PackageId { get; set; }
         public string PackageVersion { get; set; }
         public DateTimeOffset? NextAttempt { get; set; }

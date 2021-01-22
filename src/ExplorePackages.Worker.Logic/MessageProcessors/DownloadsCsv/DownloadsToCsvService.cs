@@ -9,14 +9,14 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
         private static readonly string StorageSuffix = string.Empty;
         private static readonly string PartitionKey = "DownloadsToCsv";
 
-        private readonly MessageEnqueuer _messageEnqueuer;
+        private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly TaskStateStorageService _taskStateStorageService;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
         public DownloadsToCsvService(
-            MessageEnqueuer messageEnqueuer,
+            IMessageEnqueuer messageEnqueuer,
             TaskStateStorageService taskStateStorageService,
             AutoRenewingStorageLeaseService leaseService,
             ServiceClientFactory serviceClientFactory,

@@ -41,7 +41,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        public ICatalogLeafScanDriver CreateNonBatchDriver(CatalogScanDriverType driverType)
+        public ICatalogLeafScanNonBatchDriver CreateNonBatchDriver(CatalogScanDriverType driverType)
         {
             switch (driverType)
             {
@@ -60,7 +60,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        private ICatalogLeafScanBatchDriver WrapNonBatchDriver(ICatalogLeafScanDriver driver)
+        private ICatalogLeafScanBatchDriver WrapNonBatchDriver(ICatalogLeafScanNonBatchDriver driver)
         {
             return new CatalogLeafScanBatchDriverAdapter(
                 driver,

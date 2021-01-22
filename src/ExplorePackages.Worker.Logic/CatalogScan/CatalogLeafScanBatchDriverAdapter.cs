@@ -7,10 +7,10 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class CatalogLeafScanBatchDriverAdapter : ICatalogLeafScanBatchDriver
     {
-        private readonly ICatalogLeafScanDriver _inner;
+        private readonly ICatalogLeafScanNonBatchDriver _inner;
         private readonly ILogger<CatalogLeafScanBatchDriverAdapter> _logger;
 
-        public CatalogLeafScanBatchDriverAdapter(ICatalogLeafScanDriver inner, ILogger<CatalogLeafScanBatchDriverAdapter> logger)
+        public CatalogLeafScanBatchDriverAdapter(ICatalogLeafScanNonBatchDriver inner, ILogger<CatalogLeafScanBatchDriverAdapter> logger)
         {
             _inner = inner;
             _logger = logger;

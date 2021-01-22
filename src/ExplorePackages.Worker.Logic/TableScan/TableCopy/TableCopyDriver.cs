@@ -10,12 +10,12 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
     {
         private readonly SchemaSerializer _serializer;
         private readonly ServiceClientFactory _serviceClientFactory;
-        private readonly MessageEnqueuer _enqueuer;
+        private readonly IMessageEnqueuer _enqueuer;
 
         public TableCopyDriver(
             SchemaSerializer serializer,
             ServiceClientFactory serviceClientFactory,
-            MessageEnqueuer enqueuer)
+            IMessageEnqueuer enqueuer)
         {
             _serializer = serializer;
             _serviceClientFactory = serviceClientFactory;
