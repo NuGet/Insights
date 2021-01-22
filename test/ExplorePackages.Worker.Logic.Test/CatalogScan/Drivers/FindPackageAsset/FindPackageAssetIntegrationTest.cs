@@ -179,9 +179,9 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
             }
         }
 
-        public class FindPackageAsset_WithDuplicates_AllLeaves_BatchProcessing : FindPackageAssetIntegrationTest
+        public class FindPackageAsset_WithDuplicates_BatchProcessing : FindPackageAssetIntegrationTest
         {
-            public FindPackageAsset_WithDuplicates_AllLeaves_BatchProcessing(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public FindPackageAsset_WithDuplicates_BatchProcessing(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
