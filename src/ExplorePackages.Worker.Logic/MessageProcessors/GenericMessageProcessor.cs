@@ -67,14 +67,16 @@ namespace Knapcode.ExplorePackages.Worker
                 dequeueCount,
                 throwOnException: false);
 
-            return new BatchMessageProcessorResult<JToken>(result
-                .TryAgainLater
-                .Select(pair => new
-                {
-                    NotBefore = pair.Key,
-                    Messages = pair.Value.Select(x => objectToJToken[x]).ToList(),
-                })
-                .ToDictionary(x => x.NotBefore, x => (IReadOnlyList<JToken>)x.Messages));
+            return new BatchMessageProcessorResult<JToken>(
+                failed: result.Failed.Select(x => objectToJToken[x]).ToList(),
+                tryAgainLater: result
+                    .TryAgainLater
+                    .Select(pair => new
+                    {
+                        NotBefore = pair.Key,
+                        Messages = pair.Value.Select(x => objectToJToken[x]).ToList(),
+                    })
+                    .ToDictionary(x => x.NotBefore, x => (IReadOnlyList<JToken>)x.Messages));
         }
 
         private async Task<BatchMessageProcessorResult<object>> ProcessAsync(
@@ -115,7 +117,7 @@ namespace Knapcode.ExplorePackages.Worker
                     }
                     else
                     {
-                        return new BatchMessageProcessorResult<object>(messages, TimeSpan.Zero);
+                        return new BatchMessageProcessorResult<object>(messages);
                     }
                 }
                 finally
@@ -173,7 +175,7 @@ namespace Knapcode.ExplorePackages.Worker
 
                 if (failed.Any())
                 {
-                    return new BatchMessageProcessorResult<object>(failed, TimeSpan.Zero);
+                    return new BatchMessageProcessorResult<object>(failed, Array.Empty<object>(), TimeSpan.Zero);
                 }
                 else
                 {
@@ -196,15 +198,17 @@ namespace Knapcode.ExplorePackages.Worker
 
             var result = task.GetType().GetProperty(nameof(Task<object>.Result)).GetMethod.Invoke(task, parameters: null);
             var resultType = result.GetType();
+            var stronglyTypedFailed = (IEnumerable)resultType.GetProperty(nameof(BatchMessageProcessorResult<object>.Failed)).GetMethod.Invoke(result, parameters: null);
             var stronglyTypedTryAgainLater = (IEnumerable)resultType.GetProperty(nameof(BatchMessageProcessorResult<object>.TryAgainLater)).GetMethod.Invoke(result, parameters: null);
 
-            var enumerator = stronglyTypedTryAgainLater.GetEnumerator();
-            if (!enumerator.MoveNext())
+            var failedEnumerator = stronglyTypedFailed.GetEnumerator();
+            var tryAgainLaterEnumerator = stronglyTypedTryAgainLater.GetEnumerator();
+            if (!failedEnumerator.MoveNext() && !tryAgainLaterEnumerator.MoveNext())
             {
                 return BatchMessageProcessorResult<object>.Empty;
             }
 
-            var pairType = enumerator.Current.GetType();
+            var pairType = tryAgainLaterEnumerator.Current.GetType();
             var getKey = pairType.GetProperty(nameof(KeyValuePair<object, object>.Key)).GetMethod;
             var getValue = pairType.GetProperty(nameof(KeyValuePair<object, object>.Value)).GetMethod;
 
@@ -216,7 +220,9 @@ namespace Knapcode.ExplorePackages.Worker
                 tryAgainLater.Add((TimeSpan)key, ((IEnumerable)value).Cast<object>().ToList());
             }
 
-            return new BatchMessageProcessorResult<object>(tryAgainLater);
+            return new BatchMessageProcessorResult<object>(
+                stronglyTypedFailed.Cast<object>().ToList(),
+                tryAgainLater);
         }
 
         private static object MakeListOfT(Type type, IEnumerable items)

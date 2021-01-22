@@ -43,20 +43,30 @@ namespace Knapcode.ExplorePackages.Worker
 
                     var result = await _messageProcessor.ProcessAsync(batch.SchemaName, batch.SchemaVersion, batch.Messages, dequeueCount);
 
+                    if (result.Failed.Any())
+                    {
+                        _logger.LogError("{ErrorCount} messages in a batch of {Count} failed. Retrying messages individually.", result.Failed.Count, batch.Messages.Count);
+                        await _messageEnqueuer.AddAsync(SerializeMessages(batch, result.Failed));
+                    }
+
                     if (result.TryAgainLater.Any())
                     {
                         foreach (var (notBefore, messages) in result.TryAgainLater)
                         {
                             if (messages.Any())
                             {
-                                _logger.LogWarning("{TryAgainLaterCount} messages in a batch of {Count} need to be tried again. Retrying messages individually.", messages.Count, batch.Messages.Count);
-                                var serializedMessages = messages.Select(x => GetSerializedMessage(batch, x)).ToList();
-                                await _messageEnqueuer.AddAsync(serializedMessages, notBefore);
+                                _logger.LogInformation("{TryAgainLaterCount} messages in a batch of {Count} need to be tried again. Retrying messages individually.", messages.Count, batch.Messages.Count);
+                                await _messageEnqueuer.AddAsync(SerializeMessages(batch, messages), notBefore);
                             }
                         }
                     }
                 }
             }
+        }
+
+        private static List<string> SerializeMessages(HomogeneousBatchMessage batch, IReadOnlyList<JToken> messages)
+        {
+            return messages.Select(x => GetSerializedMessage(batch, x)).ToList();
         }
 
         private static string GetSerializedMessage(HomogeneousBatchMessage batch, JToken data)

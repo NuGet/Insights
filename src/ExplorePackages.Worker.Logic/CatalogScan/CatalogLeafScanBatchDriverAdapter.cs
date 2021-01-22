@@ -22,6 +22,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task<BatchMessageProcessorResult<CatalogLeafScan>> ProcessLeavesAsync(IReadOnlyList<CatalogLeafScan> leafScans)
         {
+            var failed = new List<CatalogLeafScan>();
             var tryAgainLater = new List<(CatalogLeafScan Scan, TimeSpan NotBefore)>();
             foreach (var leafScan in leafScans)
             {
@@ -43,11 +44,11 @@ namespace Knapcode.ExplorePackages.Worker
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "A catalog leaf scan failed.");
-                    tryAgainLater.Add((leafScan, TimeSpan.Zero));
+                    failed.Add(leafScan);
                 }
             }
 
-            return new BatchMessageProcessorResult<CatalogLeafScan>(tryAgainLater);
+            return new BatchMessageProcessorResult<CatalogLeafScan>(failed, tryAgainLater);
         }
 
         public Task StartAggregateAsync(CatalogIndexScan indexScan) => _inner.StartAggregateAsync(indexScan);

@@ -29,6 +29,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task<BatchMessageProcessorResult<CatalogLeafScanMessage>> ProcessAsync(IReadOnlyList<CatalogLeafScanMessage> messages, int dequeueCount)
         {
+            var failed = new List<CatalogLeafScanMessage>();
             var tryAgainLater = new List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan, TimeSpan NotBefore)>();
             var noMatchingLeaf = new List<CatalogLeafScanMessage>();
             var poison = new List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan)>();
@@ -54,11 +55,11 @@ namespace Knapcode.ExplorePackages.Worker
                     var batchDriver = _driverFactory.CreateBatchDriverOrNull(driverType);
                     if (batchDriver != null)
                     {
-                        await ProcessBatchAsync(batchDriver, dequeueCount, tryAgainLater, toProcess);
+                        await ProcessBatchAsync(batchDriver, dequeueCount, failed, tryAgainLater, toProcess);
                     }
                     else
                     {
-                        await ProcessBatchOneByOneAsync(dequeueCount, tryAgainLater, toProcess);
+                        await ProcessOneByOneAsync(dequeueCount, failed, tryAgainLater, toProcess);
                     }
                 }
             }
@@ -85,7 +86,9 @@ namespace Knapcode.ExplorePackages.Worker
                 }
             }
 
-            return new BatchMessageProcessorResult<CatalogLeafScanMessage>(tryAgainLater.Select(x => (x.Message, x.NotBefore)));
+            return new BatchMessageProcessorResult<CatalogLeafScanMessage>(
+                failed: Array.Empty<CatalogLeafScanMessage>(),
+                tryAgainLater.Select(x => (x.Message, x.NotBefore)));
         }
 
         private async Task CategorizeMessagesAsync(
@@ -150,6 +153,7 @@ namespace Knapcode.ExplorePackages.Worker
         private async Task ProcessBatchAsync(
             ICatalogLeafScanBatchDriver batchDriver,
             int dequeueCount,
+            List<CatalogLeafScanMessage> failed,
             List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan, TimeSpan NotBefore)> tryAgainLater,
             List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan)> toProcess)
         {
@@ -169,10 +173,7 @@ namespace Knapcode.ExplorePackages.Worker
             // Execute the batch logic
             var result = await batchDriver.ProcessLeavesAsync(scans);
 
-            // Delete all successful scans
-            await _storageService.DeleteAsync(scanToMessage.Keys);
-
-            // Reduce the attempt counter for all "try again later" scans
+            // Reduce the attempt counter for all "try again later" scans and remove them from the set to delete (complete)
             var allTryAgainLaterScans = new List<CatalogLeafScan>();
             foreach (var (notBefore, tryAgainLaterScans) in result.TryAgainLater)
             {
@@ -184,11 +185,24 @@ namespace Knapcode.ExplorePackages.Worker
                     ResetAttempt(scan);
                 }
             }
+
+            // Remove failed scans from the set to delete (complete)
+            foreach (var scan in result.Failed)
+            {
+                failed.Add(scanToMessage[scan]);
+                scanToMessage.Remove(scan);
+            }
+
+            // Delete all successful scans
+            await _storageService.DeleteAsync(scanToMessage.Keys);
+
+            // Update the "try again later" scans
             await _storageService.ReplaceAsync(allTryAgainLaterScans);
         }
 
-        private async Task ProcessBatchOneByOneAsync(
+        private async Task ProcessOneByOneAsync(
             int dequeueCount,
+            List<CatalogLeafScanMessage> failed,
             List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan, TimeSpan NotBefore)> tryAgainLater,
             List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan)> toProcess)
         {
@@ -204,22 +218,30 @@ namespace Knapcode.ExplorePackages.Worker
                 await _storageService.ReplaceAsync(scan);
 
                 // Execute the non-batch logic
-                var result = await nonBatchDriver.ProcessLeafAsync(scan);
-
-                switch (result.Type)
+                try
                 {
-                    case DriverResultType.Success:
-                        _logger.LogInformation("Completed catalog leaf scan.");
-                        await _storageService.DeleteAsync(scan);
-                        break;
-                    case DriverResultType.TryAgainLater:
-                        _logger.LogInformation("Catalog leaf scan will be tried again later.");
-                        ResetAttempt(scan);
-                        await _storageService.ReplaceAsync(scan);
-                        tryAgainLater.Add((message, scan, TimeSpan.FromMinutes(1)));
-                        break;
-                    default:
-                        throw new NotImplementedException();
+                    var result = await nonBatchDriver.ProcessLeafAsync(scan);
+
+                    switch (result.Type)
+                    {
+                        case DriverResultType.Success:
+                            _logger.LogInformation("Completed catalog leaf scan.");
+                            await _storageService.DeleteAsync(scan);
+                            break;
+                        case DriverResultType.TryAgainLater:
+                            _logger.LogInformation("Catalog leaf scan will be tried again later.");
+                            ResetAttempt(scan);
+                            await _storageService.ReplaceAsync(scan);
+                            tryAgainLater.Add((message, scan, TimeSpan.FromMinutes(1)));
+                            break;
+                        default:
+                            throw new NotImplementedException();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Processing a catalog leaf scan failed.");
+                    failed.Add(message);
                 }
             }
         }
