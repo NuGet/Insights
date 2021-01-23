@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Table;
@@ -55,6 +54,11 @@ namespace Knapcode.ExplorePackages.WideEntities
         {
             var result = await RetrieveAsync(tableName, partitionKey, rowKey, rowKey, includeData);
             return result.SingleOrDefault();
+        }
+
+        public async Task<IReadOnlyList<WideEntity>> RetrieveAsync(string tableName, string partitionKey, string minRowKey, string maxRowKey)
+        {
+            return await RetrieveAsync(tableName, partitionKey, minRowKey, maxRowKey, includeData: true);
         }
 
         public async Task<IReadOnlyList<WideEntity>> RetrieveAsync(string tableName, string partitionKey, string minRowKey, string maxRowKey, bool includeData)
@@ -148,9 +152,26 @@ namespace Knapcode.ExplorePackages.WideEntities
             return output;
         }
 
-        public async Task ReplaceAsync(string tableName, WideEntity existing, ReadOnlyMemory<byte> content)
+        public async Task DeleteAsync(string tableName, WideEntity existing)
         {
-            await InsertOrReplaceAsync(
+            var batch = new TableBatchOperation
+            {
+
+                // Use the etag on the first entity, for optimistic concurrency.
+                TableOperation.Delete(new WideEntitySegment(existing.PartitionKey, existing.RowKey, 0) { ETag = existing.ETag })
+            };
+
+            for (var index = 1; index < existing.SegmentCount; index++)
+            {
+                batch.Add(TableOperation.Delete(new WideEntitySegment(existing.PartitionKey, existing.RowKey, index) { ETag = "*" }));
+            }
+
+            await GetTable(tableName).ExecuteBatchAsync(batch);
+        }
+
+        public async Task<WideEntity> ReplaceAsync(string tableName, WideEntity existing, ReadOnlyMemory<byte> content)
+        {
+            return await InsertOrReplaceAsync(
                 () => Task.FromResult(existing),
                 tableName,
                 existing.PartitionKey,
@@ -158,9 +179,9 @@ namespace Knapcode.ExplorePackages.WideEntities
                 content);
         }
 
-        public async Task InsertAsync(string tableName, string partitionKey, string rowKey, ReadOnlyMemory<byte> content)
+        public async Task<WideEntity> InsertAsync(string tableName, string partitionKey, string rowKey, ReadOnlyMemory<byte> content)
         {
-            await InsertOrReplaceAsync(
+            return await InsertOrReplaceAsync(
                 () => Task.FromResult<WideEntity>(null),
                 tableName,
                 partitionKey,
@@ -168,9 +189,9 @@ namespace Knapcode.ExplorePackages.WideEntities
                 content);
         }
 
-        public async Task InsertOrReplaceAsync(string tableName, string partitionKey, string rowKey, ReadOnlyMemory<byte> content)
+        public async Task<WideEntity> InsertOrReplaceAsync(string tableName, string partitionKey, string rowKey, ReadOnlyMemory<byte> content)
         {
-            await InsertOrReplaceAsync(
+            return await InsertOrReplaceAsync(
                 () => RetrieveAsync(tableName, partitionKey, rowKey, includeData: false),
                 tableName,
                 partitionKey,
@@ -222,7 +243,7 @@ namespace Knapcode.ExplorePackages.WideEntities
                 $"{rowKeyPrefix}{WideEntitySegment.RowKeySeparator}{suffix}");
         }
 
-        private async Task InsertOrReplaceAsync(Func<Task<WideEntity>> getExistingAsync, string tableName, string partitionKey, string rowKey, ReadOnlyMemory<byte> content)
+        private async Task<WideEntity> InsertOrReplaceAsync(Func<Task<WideEntity>> getExistingAsync, string tableName, string partitionKey, string rowKey, ReadOnlyMemory<byte> content)
         {
             if (content.Length > MaxTotalEntitySize)
             {
@@ -231,7 +252,6 @@ namespace Knapcode.ExplorePackages.WideEntities
 
             var segments = MakeSegments(partitionKey, rowKey, content);
 
-            var table = GetTable(tableName);
             var batch = new TableBatchOperation();
 
             var existing = await getExistingAsync();
@@ -257,11 +277,13 @@ namespace Knapcode.ExplorePackages.WideEntities
                 // Delete any extra segments existing on the old entity but not on the new one.
                 for (var index = segments.Count; index < existing.SegmentCount; index++)
                 {
-                    batch.Add(TableOperation.Delete(new WideEntitySegment(partitionKey, rowKey, index)));
+                    batch.Add(TableOperation.Delete(new WideEntitySegment(partitionKey, rowKey, index) { ETag = "*" }));
                 }
             }
 
-            await table.ExecuteBatchAsync(batch);
+            await GetTable(tableName).ExecuteBatchAsync(batch);
+
+            return new WideEntity(segments);
         }
 
         private List<WideEntitySegment> MakeSegments(string partitionKey, string rowKey, ReadOnlyMemory<byte> content)

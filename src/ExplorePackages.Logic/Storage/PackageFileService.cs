@@ -7,8 +7,8 @@ using Knapcode.ExplorePackages.WideEntities;
 using Knapcode.MiniZip;
 using MessagePack;
 using Microsoft.Extensions.Options;
-using NuGet.Versioning;
 using Microsoft.Toolkit.HighPerformance.Extensions;
+using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages
 {

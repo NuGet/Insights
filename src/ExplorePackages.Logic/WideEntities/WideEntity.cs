@@ -62,5 +62,18 @@ namespace Knapcode.ExplorePackages.WideEntities
 
             return new ChunkStream(_chunks);
         }
+
+        public byte[] ToByteArray()
+        {
+            using var source = GetStream();
+            var buffer = new byte[(int)source.Length];
+            var offset = 0;
+            do
+            {
+                offset += source.Read(buffer, offset, buffer.Length - offset);
+            }
+            while (offset < buffer.Length);
+            return buffer;
+        }
     }
 }
