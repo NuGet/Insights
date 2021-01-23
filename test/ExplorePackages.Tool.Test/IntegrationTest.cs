@@ -63,7 +63,7 @@ namespace Knapcode.ExplorePackages.Tool
         public async Task Run()
         {
             // Arrange
-            var defaultCursor = DateTimeOffset.UtcNow.AddHours(-1);
+            var defaultCursor = DateTimeOffset.UtcNow.AddMinutes(-20);
             var serviceCollection = Program.InitializeServiceCollection();
 
             serviceCollection.AddTransient(x => new CursorService(
