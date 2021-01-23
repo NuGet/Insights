@@ -9,6 +9,20 @@ namespace Knapcode.ExplorePackages.WideEntities
     {
         private readonly IReadOnlyList<ReadOnlyMemory<byte>> _chunks;
 
+        internal WideEntity(WideEntitySegment firstSegment)
+        {
+            PartitionKey = firstSegment.PartitionKey;
+            RowKey = firstSegment.RowKeyPrefix;
+            Timestamp = firstSegment.Timestamp;
+            ETag = firstSegment.ETag;
+            SegmentCount = firstSegment.SegmentCount;
+
+            if (firstSegment.Index != 0)
+            {
+                throw new ArgumentException("The first segment should have an index of 0.", nameof(firstSegment));
+            }
+        }
+
         internal WideEntity(ICollection<WideEntitySegment> segments)
         {
             PartitionKey = segments.Select(x => x.PartitionKey).Distinct().Single();
@@ -38,8 +52,14 @@ namespace Knapcode.ExplorePackages.WideEntities
         public DateTimeOffset Timestamp { get; }
         public string ETag { get; }
         public int SegmentCount { get; }
+
         public Stream GetStream()
         {
+            if (_chunks == null)
+            {
+                throw new InvalidOperationException("The data was not included when retrieving this entity.");
+            }
+
             return new ChunkStream(_chunks);
         }
     }

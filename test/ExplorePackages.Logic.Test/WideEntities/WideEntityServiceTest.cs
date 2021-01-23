@@ -13,93 +13,140 @@ namespace Knapcode.ExplorePackages.WideEntities
 {
     public class WideEntityServiceTest : IClassFixture<WideEntityServiceTest.Fixture>
     {
-        [Fact]
-        public async Task ReturnsNullForNonExistentEntity()
+        public class ReplaceAsync : WideEntityServiceTest
         {
-            // Arrange
-            var partitionKey = nameof(ReturnsNullForNonExistentEntity);
-            var rowKey = "foo";
-
-            // Act
-            var wideEntity = await Target.GetAsync(TableName, partitionKey, rowKey);
-
-            // Assert
-            Assert.Null(wideEntity);
-        }
-
-        [Theory]
-        [MemberData(nameof(RoundTripsBytesTestData))]
-        public async Task RoundTripsBytes(int length)
-        {
-            // Arrange
-            var src = Bytes.Slice(0, length);
-            var partitionKey = nameof(RoundTripsBytes) + length;
-            var rowKey = "foo";
-
-            // Act
-            await Target.InsertAsync(TableName, partitionKey, rowKey, src);
-            var wideEntity = await Target.GetAsync(TableName, partitionKey, rowKey);
-
-            // Assert
-            using var srcStream = wideEntity.GetStream();
-            using var destStream = new MemoryStream();
-            await srcStream.CopyToAsync(destStream);
-
-            Assert.Equal(src.ToArray(), destStream.ToArray());
-        }
-
-        [Fact]
-        public async Task PopulatesWideEntityProperties()
-        {
-            // Arrange
-            var src = Bytes.Slice(0, WideEntityService.MaxTotalEntitySize);
-            var partitionKey = nameof(PopulatesWideEntityProperties);
-            var rowKey = "foo";
-
-            // Act
-            var before = DateTimeOffset.UtcNow;
-            await Target.InsertAsync(TableName, partitionKey, rowKey, src);
-            var after = DateTimeOffset.UtcNow;
-            var wideEntity = await Target.GetAsync(TableName, partitionKey, rowKey);
-
-            // Assert
-            Assert.Equal(partitionKey, wideEntity.PartitionKey);
-            Assert.Equal(rowKey, wideEntity.RowKey);
-            var error = TimeSpan.FromMinutes(5);
-            Assert.InRange(wideEntity.Timestamp, before.Subtract(error), after.Add(error));
-            Assert.NotEqual(default, wideEntity.Timestamp);
-            Assert.NotNull(wideEntity.ETag);
-            Assert.Equal(_fixture.IsLoopback ? 8 : 3, wideEntity.SegmentCount);
-        }
-
-        public static IEnumerable<object[]> RoundTripsBytesTestData => ByteArrayLengths
-            .Distinct()
-            .OrderBy(x => x)
-            .Select(x => new object[] { x });
-
-        private static IEnumerable<int> ByteArrayLengths
-        {
-            get
+            public ReplaceAsync(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
             {
-                yield return 0;
-                var current = 1;
-                do
-                {
-                    yield return current;
-                    current *= 2;
-                }
-                while (current <= WideEntityService.MaxTotalEntitySize);
+            }
+        }
 
-                for (var i = 16; i >= 0; i--)
-                {
-                    yield return WideEntityService.MaxTotalEntitySize;
-                }
+        public class RetrieveAsync : WideEntityServiceTest
+        {
+            [Fact]
+            public async Task ReturnsNullForNonExistentEntity()
+            {
+                // Arrange
+                var partitionKey = nameof(ReturnsNullForNonExistentEntity);
+                var rowKey = "rk";
 
-                var random = new Random(0);
-                for (var i = 0; i < 26; i++)
+                // Act
+                var wideEntity = await Target.RetrieveAsync(TableName, partitionKey, rowKey);
+
+                // Assert
+                Assert.Null(wideEntity);
+            }
+
+            [Fact]
+            public async Task AllowsNotFetchingData()
+            {
+                // Arrange
+                var src = Bytes.Slice(0, 1024);
+                var partitionKey = nameof(AllowsNotFetchingData);
+                var rowKey = "rk";
+                var before = DateTimeOffset.UtcNow;
+                await Target.InsertAsync(TableName, partitionKey, rowKey, src);
+                var after = DateTimeOffset.UtcNow;
+
+                // Act
+                var wideEntity = await Target.RetrieveAsync(TableName, partitionKey, rowKey, includeData: false);
+
+                // Assert
+                Assert.Equal(partitionKey, wideEntity.PartitionKey);
+                Assert.Equal(rowKey, wideEntity.RowKey);
+                var error = TimeSpan.FromMinutes(5);
+                Assert.InRange(wideEntity.Timestamp, before.Subtract(error), after.Add(error));
+                Assert.NotEqual(default, wideEntity.Timestamp);
+                Assert.NotNull(wideEntity.ETag);
+                Assert.Equal(1, wideEntity.SegmentCount);
+                var ex = Assert.Throws<InvalidOperationException>(() => wideEntity.GetStream());
+                Assert.Equal("The data was not included when retrieving this entity.", ex.Message);
+            }
+
+            public RetrieveAsync(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
+            {
+            }
+        }
+
+        public class IntegrationTest : WideEntityServiceTest
+        {
+            [Theory]
+            [MemberData(nameof(RoundTripsBytesTestData))]
+            public async Task RoundTripsBytes(int length)
+            {
+                // Arrange
+                var src = Bytes.Slice(0, length);
+                var partitionKey = nameof(RoundTripsBytes) + length;
+                var rowKey = "rk";
+
+                // Act
+                await Target.InsertAsync(TableName, partitionKey, rowKey, src);
+                var wideEntity = await Target.RetrieveAsync(TableName, partitionKey, rowKey);
+
+                // Assert
+                using var srcStream = wideEntity.GetStream();
+                using var destStream = new MemoryStream();
+                await srcStream.CopyToAsync(destStream);
+
+                Assert.Equal(src.ToArray(), destStream.ToArray());
+            }
+
+            [Fact]
+            public async Task PopulatesWideEntityProperties()
+            {
+                // Arrange
+                var src = Bytes.Slice(0, WideEntityService.MaxTotalEntitySize);
+                var partitionKey = nameof(PopulatesWideEntityProperties);
+                var rowKey = "rk";
+
+                // Act
+                var before = DateTimeOffset.UtcNow;
+                await Target.InsertAsync(TableName, partitionKey, rowKey, src);
+                var after = DateTimeOffset.UtcNow;
+                var wideEntity = await Target.RetrieveAsync(TableName, partitionKey, rowKey);
+
+                // Assert
+                Assert.Equal(partitionKey, wideEntity.PartitionKey);
+                Assert.Equal(rowKey, wideEntity.RowKey);
+                var error = TimeSpan.FromMinutes(5);
+                Assert.InRange(wideEntity.Timestamp, before.Subtract(error), after.Add(error));
+                Assert.NotEqual(default, wideEntity.Timestamp);
+                Assert.NotNull(wideEntity.ETag);
+                Assert.Equal(_fixture.IsLoopback ? 8 : 3, wideEntity.SegmentCount);
+            }
+
+            public static IEnumerable<object[]> RoundTripsBytesTestData => ByteArrayLengths
+                .Distinct()
+                .OrderBy(x => x)
+                .Select(x => new object[] { x });
+
+            private static IEnumerable<int> ByteArrayLengths
+            {
+                get
                 {
-                    yield return random.Next(0, WideEntityService.MaxTotalEntitySize);
+                    yield return 0;
+                    var current = 1;
+                    do
+                    {
+                        yield return current;
+                        current *= 2;
+                    }
+                    while (current <= WideEntityService.MaxTotalEntitySize);
+
+                    for (var i = 16; i >= 0; i--)
+                    {
+                        yield return WideEntityService.MaxTotalEntitySize;
+                    }
+
+                    var random = new Random(0);
+                    for (var i = 0; i < 26; i++)
+                    {
+                        yield return random.Next(0, WideEntityService.MaxTotalEntitySize);
+                    }
                 }
+            }
+
+            public IntegrationTest(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
+            {
             }
         }
 

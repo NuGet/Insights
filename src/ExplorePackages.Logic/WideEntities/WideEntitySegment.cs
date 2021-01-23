@@ -8,7 +8,17 @@ namespace Knapcode.ExplorePackages.WideEntities
 {
     internal class WideEntitySegment : ITableEntity
     {
-        private const string SegmentCountPropertyName = "C";
+        internal const string SegmentCountPropertyName = "C";
+
+        /// <summary>
+        /// The separator between the user-provided wide entity row key and the wide entity index suffix.
+        /// </summary>
+        internal const char RowKeySeparator = '~';
+
+        /// <summary>
+        /// The row key suffix for index 0.
+        /// </summary>
+        internal const string Index0Suffix = "00";
 
         /// <summary>
         /// 16 properties names.
@@ -40,7 +50,10 @@ namespace Knapcode.ExplorePackages.WideEntities
             {
                 if (_rowKey == null)
                 {
-                    _rowKey = $"{RowKeyPrefix}{WideEntityService.RowKeySeparator}{_index:D2}";
+                    // We use "D2" since we will never have more than 2 digits: 00 - 99. This allows for up to 100
+                    // segments per wide entity. We use 100 because this is the maximum batch size allowed in Azure
+                    // Table Storage.
+                    _rowKey = $"{RowKeyPrefix}{RowKeySeparator}{_index:D2}";
                 }
 
                 return _rowKey;
@@ -79,9 +92,9 @@ namespace Knapcode.ExplorePackages.WideEntities
                     throw new ArgumentNullException(nameof(value));
                 }
 
-                if (value.Contains(WideEntityService.RowKeySeparator))
+                if (value.Contains(RowKeySeparator))
                 {
-                    throw new ArgumentException($"The row key prefix cannot contain the separator '{WideEntityService.RowKeySeparator}'");
+                    throw new ArgumentException($"The row key prefix cannot contain the separator '{RowKeySeparator}'");
                 }
 
                 _rowKeyPrefix = value;
@@ -146,11 +159,11 @@ namespace Knapcode.ExplorePackages.WideEntities
 
         private int GetSeparatorIndex(string value)
         {
-            var tildeIndex = value.LastIndexOf(WideEntityService.RowKeySeparator);
+            var tildeIndex = value.LastIndexOf(RowKeySeparator);
 
             if (tildeIndex < 0)
             {
-                throw new InvalidDataException($"The row key must container the separator '{WideEntityService.RowKeySeparator}'.");
+                throw new InvalidDataException($"The row key must container the separator '{RowKeySeparator}'.");
             }
 
             return tildeIndex;

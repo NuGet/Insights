@@ -24,11 +24,6 @@ namespace Knapcode.ExplorePackages.WideEntities
         /// </summary>
         private const int MaxBinaryPropertySize = 64 * 1024;
 
-        /// <summary>
-        /// The separator between the user-provided wide entity row key and the wide entity index suffix.
-        /// </summary>
-        internal const char RowKeySeparator = '~';
-
         private const string ContentTooLargetMessage = "The content is too large.";
 
         private readonly ServiceClientFactory _serviceClientFactory;
@@ -51,46 +46,183 @@ namespace Knapcode.ExplorePackages.WideEntities
             }
         }
 
-        public async Task<WideEntity> GetAsync(string tableName, string partitionKey, string rowKey)
+        public async Task<WideEntity> RetrieveAsync(string tableName, string partitionKey, string rowKey)
         {
-            var query = new TableQuery<WideEntitySegment>
+            return await RetrieveAsync(tableName, partitionKey, rowKey, includeData: true);
+        }
+
+        public async Task<WideEntity> RetrieveAsync(string tableName, string partitionKey, string rowKey, bool includeData)
+        {
+            var result = await RetrieveAsync(tableName, partitionKey, rowKey, rowKey, includeData);
+            return result.SingleOrDefault();
+        }
+
+        public async Task<IReadOnlyList<WideEntity>> RetrieveAsync(string tableName, string partitionKey, string minRowKey, string maxRowKey, bool includeData)
+        {
+            IList<string> selectColumns;
+            string filterString;
+            if (includeData)
             {
-                FilterString = TableQuery.CombineFilters(
-                    TableQuery.GenerateFilterCondition(
-                        StorageUtility.PartitionKey,
-                        QueryComparisons.Equal,
-                        partitionKey),
+                selectColumns = null;
+
+                filterString = TableQuery.CombineFilters(
+                    PK_EQ(partitionKey),
                     TableOperators.And,
                     TableQuery.CombineFilters(
-                        TableQuery.GenerateFilterCondition(
-                            StorageUtility.RowKey,
-                            QueryComparisons.GreaterThanOrEqual,
-                            $"{rowKey}{RowKeySeparator}"), // Minimum possible row key with this prefix.
+                        RK_GTE(minRowKey, string.Empty), // Minimum possible row key with this prefix.
                         TableOperators.And,
-                        TableQuery.GenerateFilterCondition(
-                            StorageUtility.RowKey,
-                            QueryComparisons.LessThanOrEqual,
-                            $"{rowKey}{RowKeySeparator}{char.MaxValue}"))), // Maximum possible row key with this prefix.
+                        RK_LTE(maxRowKey, char.MaxValue.ToString()))); // Maximum possible row key with this prefix.
+            }
+            else
+            {
+                selectColumns = new[] { WideEntitySegment.SegmentCountPropertyName };
+                if (minRowKey == maxRowKey)
+                {
+                    filterString = TableQuery.CombineFilters(
+                        PK_EQ(partitionKey),
+                        TableOperators.And,
+                        RK_EQ(minRowKey, WideEntitySegment.Index0Suffix));
+                }
+                else
+                {
+                    filterString = TableQuery.CombineFilters(
+                        PK_EQ(partitionKey),
+                        TableOperators.And,
+                        TableQuery.CombineFilters(
+                            RK_GTE(minRowKey, string.Empty),
+                            TableOperators.And,
+                            RK_LTE(maxRowKey, WideEntitySegment.Index0Suffix)));
+                }
+            }
+
+            var query = new TableQuery<WideEntitySegment>
+            {
+                FilterString = filterString,
+                SelectColumns = selectColumns,
                 TakeCount = StorageUtility.MaxTakeCount,
             };
 
             var table = GetTable(tableName);
+            var output = new List<WideEntity>();
 
-            var entitySegment = await table.ExecuteQuerySegmentedAsync(query, token: null);
-            if (entitySegment.ContinuationToken != null)
+            string currentRowKeyPrefix = null;
+            var segments = new List<WideEntitySegment>();
+            TableContinuationToken token = null;
+            do
             {
-                throw new InvalidDataException("There is a continuation token for fetching a wide entity. This indicates that there too many entities.");
+                var entitySegment = await table.ExecuteQuerySegmentedAsync(query, token);
+                token = entitySegment.ContinuationToken;
+
+                if (!entitySegment.Results.Any())
+                {
+                    continue;
+                }
+
+                if (currentRowKeyPrefix == null)
+                {
+                    currentRowKeyPrefix = entitySegment.Results.First().RowKeyPrefix;
+                }
+
+                foreach (var entity in entitySegment.Results)
+                {
+                    if (entity.RowKeyPrefix == currentRowKeyPrefix)
+                    {
+                        segments.Add(entity);
+                    }
+                    else
+                    {
+                        MakeWideEntity(includeData, output, segments);
+                        currentRowKeyPrefix = entity.RowKeyPrefix;
+                        segments.Clear();
+                        segments.Add(entity);
+                    }
+                }
+            }
+            while (token != null);
+
+            if (segments.Any())
+            {
+                MakeWideEntity(includeData, output, segments);
             }
 
-            if (entitySegment.Results.Count == 0)
-            {
-                return null;
-            }
+            return output;
+        }
 
-            return new WideEntity(entitySegment.Results);
+        public async Task ReplaceAsync(string tableName, WideEntity existing, ReadOnlyMemory<byte> content)
+        {
+            await InsertOrReplaceAsync(
+                () => Task.FromResult(existing),
+                tableName,
+                existing.PartitionKey,
+                existing.RowKey,
+                content);
         }
 
         public async Task InsertAsync(string tableName, string partitionKey, string rowKey, ReadOnlyMemory<byte> content)
+        {
+            await InsertOrReplaceAsync(
+                () => Task.FromResult<WideEntity>(null),
+                tableName,
+                partitionKey,
+                rowKey,
+                content);
+        }
+
+        public async Task InsertOrReplaceAsync(string tableName, string partitionKey, string rowKey, ReadOnlyMemory<byte> content)
+        {
+            await InsertOrReplaceAsync(
+                () => RetrieveAsync(tableName, partitionKey, rowKey, includeData: false),
+                tableName,
+                partitionKey,
+                rowKey,
+                content);
+        }
+
+        private static void MakeWideEntity(bool includeData, List<WideEntity> output, List<WideEntitySegment> segments)
+        {
+            if (includeData)
+            {
+                output.Add(new WideEntity(segments));
+            }
+            else
+            {
+                output.Add(new WideEntity(segments[0]));
+            }
+        }
+
+        private static string PK_EQ(string partitionKey)
+        {
+            return TableQuery.GenerateFilterCondition(
+                StorageUtility.PartitionKey,
+                QueryComparisons.Equal,
+                partitionKey);
+        }
+
+        private static string RK_LTE(string rowKeyPrefix, string suffix)
+        {
+            return TableQuery.GenerateFilterCondition(
+                StorageUtility.RowKey,
+                QueryComparisons.LessThanOrEqual,
+                $"{rowKeyPrefix}{WideEntitySegment.RowKeySeparator}{suffix}");
+        }
+
+        private static string RK_GTE(string rowKeyPrefix, string suffix)
+        {
+            return TableQuery.GenerateFilterCondition(
+                StorageUtility.RowKey,
+                QueryComparisons.GreaterThanOrEqual,
+                $"{rowKeyPrefix}{WideEntitySegment.RowKeySeparator}{suffix}");
+        }
+
+        private static string RK_EQ(string rowKeyPrefix, string suffix)
+        {
+            return TableQuery.GenerateFilterCondition(
+                StorageUtility.RowKey,
+                QueryComparisons.Equal,
+                $"{rowKeyPrefix}{WideEntitySegment.RowKeySeparator}{suffix}");
+        }
+
+        private async Task InsertOrReplaceAsync(Func<Task<WideEntity>> getExistingAsync, string tableName, string partitionKey, string rowKey, ReadOnlyMemory<byte> content)
         {
             if (content.Length > MaxTotalEntitySize)
             {
@@ -101,9 +233,32 @@ namespace Knapcode.ExplorePackages.WideEntities
 
             var table = GetTable(tableName);
             var batch = new TableBatchOperation();
-            foreach (var segment in segments)
+
+            var existing = await getExistingAsync();
+            if (existing == null)
             {
-                batch.Add(TableOperation.Insert(segment));
+                foreach (var segment in segments)
+                {
+                    batch.Add(TableOperation.Insert(segment));
+                }
+            }
+            else
+            {
+                // Use the etag on the first entity, for optimistic concurrency.
+                segments[0].ETag = existing.ETag;
+                batch.Add(TableOperation.Replace(segments[0]));
+
+                // Blindly insert or replace the rest of the new segments, ignoring etags.
+                foreach (var segment in segments.Skip(1))
+                {
+                    batch.Add(TableOperation.InsertOrReplace(segment));
+                }
+
+                // Delete any extra segments existing on the old entity but not on the new one.
+                for (var index = segments.Count; index < existing.SegmentCount; index++)
+                {
+                    batch.Add(TableOperation.Delete(new WideEntitySegment(partitionKey, rowKey, index)));
+                }
             }
 
             await table.ExecuteBatchAsync(batch);

@@ -17,6 +17,7 @@ namespace Knapcode.ExplorePackages
             StorageConnectionString = "UseDevelopmentStorage=true";
             StorageContainerName = "packages";
             LeaseContainerName = "leases";
+            PackageFileTableName = "packagefiles";
             IsStorageContainerPublic = false;
             MaxTempMemoryStreamSize = 1024 * 1024 * 196;
             TempDirectories = new List<TempStreamDirectory>
@@ -33,6 +34,7 @@ namespace Knapcode.ExplorePackages
         public string StorageConnectionString { get; set; }
         public string StorageContainerName { get; set; }
         public string LeaseContainerName { get; set; }
+        public string PackageFileTableName { get; }
         public bool IsStorageContainerPublic { get; set; }
         public int MaxTempMemoryStreamSize { get; set; }
         public List<TempStreamDirectory> TempDirectories { get; set; }
