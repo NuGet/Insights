@@ -10,7 +10,7 @@ using static Knapcode.ExplorePackages.StorageUtility;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class FindLatestLeafDriver<T> : ICatalogScanDriver, ICatalogLeafScanNonBatchDriver where T : ILatestPackageLeaf, new()
+    public class FindLatestLeafDriver<T> : ICatalogLeafScanNonBatchDriver where T : ILatestPackageLeaf, new()
     {
         private readonly CatalogClient _catalogClient;
         private readonly ILatestPackageLeafStorageFactory<T> _storageFactory;
