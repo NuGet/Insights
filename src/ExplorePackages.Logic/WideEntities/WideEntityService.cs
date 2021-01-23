@@ -45,6 +45,11 @@ namespace Knapcode.ExplorePackages.WideEntities
             }
         }
 
+        public async Task InitializeAsync(string tableName)
+        {
+            await GetTable(tableName).CreateIfNotExistsAsync(retry: true);
+        }
+
         public async Task<WideEntity> RetrieveAsync(string tableName, string partitionKey, string rowKey)
         {
             return await RetrieveAsync(tableName, partitionKey, rowKey, includeData: true);

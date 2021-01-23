@@ -7,6 +7,7 @@ namespace Knapcode.ExplorePackages.WideEntities
 {
     public class WideEntity
     {
+        private readonly WideEntity _withoutData;
         private readonly IReadOnlyList<ReadOnlyMemory<byte>> _chunks;
 
         internal WideEntity(WideEntitySegment firstSegment)
@@ -21,6 +22,8 @@ namespace Knapcode.ExplorePackages.WideEntities
             {
                 throw new ArgumentException("The first segment should have an index of 0.", nameof(firstSegment));
             }
+
+            _withoutData = this;
         }
 
         internal WideEntity(ICollection<WideEntitySegment> segments)
@@ -45,6 +48,7 @@ namespace Knapcode.ExplorePackages.WideEntities
 
             SegmentCount = segments.Count;
             _chunks = orderedSegments.SelectMany(x => x.Chunks).ToList();
+            _withoutData = new WideEntity(firstSegment);
         }
 
         public string PartitionKey { get; }
@@ -52,6 +56,11 @@ namespace Knapcode.ExplorePackages.WideEntities
         public DateTimeOffset Timestamp { get; }
         public string ETag { get; }
         public int SegmentCount { get; }
+
+        public WideEntity CloneWithoutData()
+        {
+            return _withoutData;
+        }
 
         public Stream GetStream()
         {

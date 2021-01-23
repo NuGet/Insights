@@ -34,9 +34,15 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
         }
 
         public string ResultsContainerName => _options.Value.PackageAssetContainerName;
+
         public List<PackageAsset> Prune(List<PackageAsset> records)
         {
             return PackageRecord.Prune(records);
+        }
+
+        public async Task InitializeAsync()
+        {
+            await _packageFileService.InitializeAsync();
         }
 
         public async Task<DriverResult<List<PackageAsset>>> ProcessLeafAsync(CatalogLeafItem item)
@@ -58,7 +64,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
             {
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
 
-                var zipDirectory = await _packageFileService.GetZipDirectoryAsync(item.PackageId, item.PackageVersion);
+                var zipDirectory = await _packageFileService.GetZipDirectoryAsync(item);
                 if (zipDirectory == null)
                 {
                     // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted asset record.

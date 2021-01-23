@@ -38,39 +38,76 @@ namespace Knapcode.ExplorePackages
             _options = options;
         }
 
-        public async Task<ZipDirectory> GetZipDirectoryCachedAsync(string id, string version)
+        public async Task InitializeAsync()
         {
-            var entity = await _wideEntityService.RetrieveAsync(
-                _options.Value.PackageFileTableName,
-                GetPartitionKey(id),
-                GetRowKey(version),
-                includeData: true);
+            await _wideEntityService.InitializeAsync(_options.Value.PackageFileTableName);
+        }
 
-            var info = await MessagePackSerializer.DeserializeAsync<PackageFileInfo>(
-                entity.GetStream(),
-                MessagePackSerializerOptions);
-
+        public async Task<ZipDirectory> GetZipDirectoryAsync(CatalogLeafItem leafItem)
+        {
+            var info = await GetOrUpdateInfoAsync(leafItem);
             if (!info.Available)
             {
                 return null;
             }
 
-            using var zipStream = await _mzipFormat.ReadAsync(info.MZipBytes.AsStream());
-            using var zipDirectoryReader = new ZipDirectoryReader(zipStream);
-            return await zipDirectoryReader.ReadAsync();
+            using var srcStream = info.MZipBytes.AsStream();
+            using var destStream = await _mzipFormat.ReadAsync(srcStream);
+            var reader = new ZipDirectoryReader(destStream);
+            return await reader.ReadAsync();
         }
 
-        public async Task UpdateAsync(string id, string version)
+        public async Task<PackageFileInfo> GetOrUpdateInfoAsync(CatalogLeafItem leafItem)
         {
-            var url = await GetPackageUrlAsync(id, version);
+            var partitionKey = GetPartitionKey(leafItem.PackageId);
+            var rowKey = GetRowKey(leafItem.PackageVersion);
+
+            var existingEntity = await _wideEntityService.RetrieveAsync(_options.Value.PackageFileTableName, partitionKey, rowKey);
+            if (existingEntity != null)
+            {
+                var existingInfo = Deserialize(existingEntity);
+                if (existingInfo.CommitId == leafItem.CommitId
+                    && existingInfo.CommitTimestamp == leafItem.CommitTimestamp)
+                {
+                    return existingInfo;
+                }
+            }
+
+            var newInfo = await GetInfoAsync(leafItem);
+            var newBytes = MessagePackSerializer.Serialize(newInfo, MessagePackSerializerOptions);
+
+            if (existingEntity != null)
+            {
+                await _wideEntityService.ReplaceAsync(
+                    _options.Value.PackageFileTableName,
+                    existingEntity,
+                    newBytes);
+            }
+            else
+            {
+                await _wideEntityService.InsertAsync(
+                    _options.Value.PackageFileTableName,
+                    partitionKey,
+                    rowKey,
+                    newBytes);
+            }
+
+            return newInfo;
+        }
+
+        private async Task<PackageFileInfo> GetInfoAsync(CatalogLeafItem leafItem)
+        {
+            var url = await GetPackageUrlAsync(leafItem.PackageId, leafItem.PackageVersion);
             using var destStream = new MemoryStream();
-            PackageFileInfo info;
+            PackageFileInfo newInfo;
             try
             {
                 using var reader = await _httpZipProvider.GetReaderAsync(new Uri(url));
                 await _mzipFormat.WriteAsync(reader.Stream, destStream);
-                info = new PackageFileInfo
+                newInfo = new PackageFileInfo
                 {
+                    CommitId = leafItem.CommitId,
+                    CommitTimestamp = leafItem.CommitTimestamp,
                     Available = true,
                     HttpHeaders = reader.Properties,
                     MZipBytes = new Memory<byte>(destStream.GetBuffer(), 0, (int)destStream.Length),
@@ -78,19 +115,15 @@ namespace Knapcode.ExplorePackages
             }
             catch (MiniZipHttpStatusCodeException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {
-                info = new PackageFileInfo
+                newInfo = new PackageFileInfo
                 {
+                    CommitId = leafItem.CommitId,
+                    CommitTimestamp = leafItem.CommitTimestamp,
                     Available = false,
                 };
             }
 
-            var serializedBytes = MessagePackSerializer.Serialize(info, MessagePackSerializerOptions);
-
-            await _wideEntityService.InsertOrReplaceAsync(
-                _options.Value.PackageFileTableName,
-                GetPartitionKey(id),
-                GetRowKey(version),
-                serializedBytes);
+            return newInfo;
         }
 
         private static string GetPartitionKey(string id)
@@ -102,36 +135,32 @@ namespace Knapcode.ExplorePackages
         {
             return NuGetVersion.Parse(version).ToNormalizedString().ToLowerInvariant();
         }
-
-        public async Task<ZipDirectory> GetZipDirectoryAsync(string id, string version)
-        {
-            var url = await GetPackageUrlAsync(id, version);
-            try
-            {
-                using var reader = await _httpZipProvider.GetReaderAsync(new Uri(url));
-                return await reader.ReadAsync();
-            }
-            catch (MiniZipHttpStatusCodeException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
-            {
-                return null;
-            }
-        }
-
         private async Task<string> GetPackageUrlAsync(string id, string version)
         {
             return await _flatContainerClient.GetPackageContentUrlAsync(id, version);
         }
 
+        private static PackageFileInfo Deserialize(WideEntity entity)
+        {
+            return MessagePackSerializer.Deserialize<PackageFileInfo>(entity.GetStream(), MessagePackSerializerOptions);
+        }
+
         [MessagePackObject]
-        private class PackageFileInfo
+        public class PackageFileInfo
         {
             [Key(0)]
-            public bool Available { get; set; }
+            public string CommitId { get; set; }
 
             [Key(1)]
-            public ILookup<string, string> HttpHeaders { get; set; }
+            public DateTimeOffset CommitTimestamp { get; set; }
 
             [Key(2)]
+            public bool Available { get; set; }
+
+            [Key(3)]
+            public ILookup<string, string> HttpHeaders { get; set; }
+
+            [Key(4)]
             public Memory<byte> MZipBytes { get; set; }
         }
     }

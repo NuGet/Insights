@@ -23,6 +23,7 @@ namespace Knapcode.ExplorePackages.Worker
         public async Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
         {
             await _adapter.InitializeAsync(indexScan, _driver.ResultsContainerName);
+            await _driver.InitializeAsync();
 
             var parameters = (CatalogLeafToCsvParameters)_schemaSerializer.Deserialize(indexScan.DriverParameters).Data;
             return parameters.OnlyLatestLeaves ? CatalogIndexScanResult.ExpandLatestLeaves : CatalogIndexScanResult.ExpandAllLeaves;

@@ -46,6 +46,11 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
             return PackageRecord.Prune(records);
         }
 
+        public Task InitializeAsync()
+        {
+            return Task.CompletedTask;
+        }
+
         public async Task<DriverResult<List<PackageAssembly>>> ProcessLeafAsync(CatalogLeafItem item)
         {
             Guid? scanId = null;
