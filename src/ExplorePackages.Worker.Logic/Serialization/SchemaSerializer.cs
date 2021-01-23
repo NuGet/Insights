@@ -60,6 +60,7 @@ namespace Knapcode.ExplorePackages.Worker
         }
 
         public ISchemaSerializer<T> GetSerializer<T>() => Schemas.GetSerializer<T>();
+        public ISchemaSerializer GetGenericSerializer(Type type) => Schemas.GetSerializer(type);
         public ISerializedEntity Serialize<T>(T message) => Schemas.GetSerializer<T>().SerializeMessage(message);
         public ISchemaDeserializer GetDeserializer(string schemaName) => Schemas.GetDeserializer(schemaName);
         public NameVersionMessage<object> Deserialize(string message) => Schemas.Deserialize(message, _logger);
@@ -79,18 +80,34 @@ namespace Knapcode.ExplorePackages.Worker
 
             public ISchemaSerializer<T> GetSerializer<T>()
             {
-                if (!TypeToSchema.TryGetValue(typeof(T), out var genericSchema))
+                if (!TypeToSchema.TryGetValue(typeof(T), out var schema))
                 {
                     throw new FormatException($"No schema for message type '{typeof(T).FullName}' exists.");
                 }
 
-                var typedScheme = genericSchema as ISchemaSerializer<T>;
-                if (typedScheme == null)
+                var typedSchema = schema as ISchemaSerializer<T>;
+                if (typedSchema == null)
                 {
                     throw new FormatException($"The schema for message type '{typeof(T).FullName}' is not a typed schema.");
                 }
 
-                return typedScheme;
+                return typedSchema;
+            }
+
+            public ISchemaSerializer GetSerializer(Type type)
+            {
+                if (!TypeToSchema.TryGetValue(type, out var schema))
+                {
+                    throw new FormatException($"No schema for message type '{type.FullName}' exists.");
+                }
+
+                var genericSchema = schema as ISchemaSerializer;
+                if (genericSchema == null)
+                {
+                    throw new FormatException($"The schema for message type '{type.FullName}' is not a generic schema.");
+                }
+
+                return genericSchema;
             }
 
             public ISchemaDeserializer GetDeserializer(string schemaName)

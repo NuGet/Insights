@@ -3,7 +3,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class SchemaV1<T> : ISchemaDeserializer, ISchemaSerializer<T>
+    public class SchemaV1<T> : ISchemaDeserializer, ISchemaSerializer<T>, ISchemaSerializer
     {
         private const int V1 = 1;
 
@@ -18,6 +18,16 @@ namespace Knapcode.ExplorePackages.Worker
 
         public ISerializedEntity SerializeData(T message) => NameVersionSerializer.SerializeData(message);
         public ISerializedEntity SerializeMessage(T message) => NameVersionSerializer.SerializeMessage(Name, LatestVersion, message);
+
+        public ISerializedEntity SerializeMessage(object message)
+        {
+            if (message.GetType() != Type)
+            {
+                throw new ArgumentException($"The provided message must be of type {Type.FullName}.");
+            }
+
+            return SerializeMessage((T)message);
+        }
 
         public object Deserialize(int schemaVersion, JToken data)
         {

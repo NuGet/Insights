@@ -7,4 +7,9 @@
         ISerializedEntity SerializeData(T message);
         ISerializedEntity SerializeMessage(T message);
     }
+
+    public interface ISchemaSerializer
+    {
+        ISerializedEntity SerializeMessage(object message);
+    }
 }

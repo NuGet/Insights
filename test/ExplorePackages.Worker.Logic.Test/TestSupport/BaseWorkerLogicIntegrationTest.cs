@@ -219,7 +219,7 @@ namespace Knapcode.ExplorePackages.Worker
             var leaseScope = serviceProvider.GetRequiredService<TempStreamLeaseScope>();
             await using var scopeOwnership = leaseScope.TakeOwnership();
             var messageProcessor = serviceProvider.GetRequiredService<IGenericMessageProcessor>();
-            await messageProcessor.ProcessAsync(message.AsString, message.DequeueCount);
+            await messageProcessor.ProcessSingleAsync(message.AsString, message.DequeueCount);
         }
 
         protected async Task AssertCompactAsync(string containerName, string testName, string stepName, int bucket)

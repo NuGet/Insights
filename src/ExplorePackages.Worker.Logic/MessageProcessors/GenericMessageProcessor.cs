@@ -16,21 +16,24 @@ namespace Knapcode.ExplorePackages.Worker
         private readonly SchemaSerializer _serializer;
         private readonly IServiceProvider _serviceProvider;
         private readonly ITelemetryClient _telemetryClient;
+        private readonly IRawMessageEnqueuer _messageEnqueuer;
         private readonly ILogger<GenericMessageProcessor> _logger;
 
         public GenericMessageProcessor(
             SchemaSerializer serializer,
             IServiceProvider serviceProvider,
+            IRawMessageEnqueuer messageEnqueuer,
             ITelemetryClient telemetryClient,
             ILogger<GenericMessageProcessor> logger)
         {
             _serializer = serializer;
             _serviceProvider = serviceProvider;
             _telemetryClient = telemetryClient;
+            _messageEnqueuer = messageEnqueuer;
             _logger = logger;
         }
 
-        public async Task ProcessAsync(string message, int dequeueCount)
+        public async Task ProcessSingleAsync(string message, int dequeueCount)
         {
             NameVersionMessage<object> deserializedMessage;
             try
@@ -43,40 +46,93 @@ namespace Knapcode.ExplorePackages.Worker
                 deserializedMessage = _serializer.Deserialize(message);
             }
 
-            await ProcessAsync(
+            await ProcessSingleMessageAsync(
                 deserializedMessage.SchemaName,
                 deserializedMessage.SchemaVersion,
-                deserializedMessage.Data.GetType(),
-                new[] { deserializedMessage.Data },
-                dequeueCount,
-                throwOnException: true);
+                deserializedMessage.Data,
+                dequeueCount);
         }
 
-        public async Task<BatchMessageProcessorResult<JToken>> ProcessAsync(string schemaName, int schemaVersion, IReadOnlyList<JToken> data, int dequeueCount)
+        private async Task ProcessSingleMessageAsync(string schemaName, int schameVersion, object data, int dequeueCount)
         {
+            var result = await ProcessAsync(
+                schemaName,
+                schameVersion,
+                data.GetType(),
+                new[] { data },
+                dequeueCount,
+                throwOnException: true);
+
+            if (result.TryAgainLater.Count == 0
+                && result.Failed.Count == 1
+                && ReferenceEquals(data, result.Failed[0]))
+            {
+                throw new InvalidOperationException("A batch containing a single message failed.");
+            }
+
+            var serializer = _serializer.GetGenericSerializer(data.GetType());
+
+            await ProcessResultAsync(messageCount: 1, serializer, result);
+        }
+
+        public async Task ProcessBatchAsync(string schemaName, int schemaVersion, IReadOnlyList<JToken> data, int dequeueCount)
+        {
+            if (data.Count == 0)
+            {
+                return;
+            }
+
             var deserializer = _serializer.GetDeserializer(schemaName);
 
-            var batch = data.Select(x => new { JToken = x, Object = deserializer.Deserialize(schemaVersion, x) }).ToList();
-            var objectToJToken = batch.ToDictionary(x => x.Object, x => x.JToken, ReferenceEqualityComparer<object>.Instance);
+            // Process a single message without specially, without catching exceptions.
+            if (data.Count == 1)
+            {
+                await ProcessSingleMessageAsync(
+                    schemaName,
+                    schemaVersion,
+                    deserializer.Deserialize(schemaVersion, data[0]),
+                    dequeueCount);
+            }
+
+            var serializer = _serializer.GetGenericSerializer(deserializer.Type);
+
+            // This batch has failed before, so split it up instead of processing it immediately.
+            if (dequeueCount > 1 && data.Count > 1)
+            {
+                await _messageEnqueuer.AddAsync(data.Select(x => serializer.SerializeMessage(x).AsString()).ToList());
+                return;
+            }
 
             var result = await ProcessAsync(
                 schemaName,
                 schemaVersion,
                 deserializer.Type,
-                batch.Select(x => x.Object).ToList(),
+                data.Select(x => deserializer.Deserialize(schemaVersion, x)).ToList(),
                 dequeueCount,
                 throwOnException: false);
 
-            return new BatchMessageProcessorResult<JToken>(
-                failed: result.Failed.Select(x => objectToJToken[x]).ToList(),
-                tryAgainLater: result
-                    .TryAgainLater
-                    .Select(pair => new
+            await ProcessResultAsync(data.Count, serializer, result);
+        }
+
+        private async Task ProcessResultAsync(int messageCount, ISchemaSerializer serializer, BatchMessageProcessorResult<object> result)
+        {
+            if (result.Failed.Any())
+            {
+                _logger.LogError("{ErrorCount} messages in a batch of {Count} failed. Retrying messages individually.", result.Failed.Count, messageCount);
+                await _messageEnqueuer.AddAsync(result.Failed.Select(x => serializer.SerializeMessage(x).AsString()).ToList());
+            }
+
+            if (result.TryAgainLater.Any())
+            {
+                foreach (var (notBefore, tryAgainLater) in result.TryAgainLater.OrderBy(x => x.Key))
+                {
+                    if (tryAgainLater.Any())
                     {
-                        NotBefore = pair.Key,
-                        Messages = pair.Value.Select(x => objectToJToken[x]).ToList(),
-                    })
-                    .ToDictionary(x => x.NotBefore, x => (IReadOnlyList<JToken>)x.Messages));
+                        _logger.LogInformation("{TryAgainLaterCount} messages in a batch of {Count} need to be tried again in {NotBefore}. Retrying messages individually.", tryAgainLater.Count, notBefore, messageCount);
+                        await _messageEnqueuer.AddAsync(tryAgainLater.Select(x => serializer.SerializeMessage(x).AsString()).ToList(), notBefore);
+                    }
+                }
+            }
         }
 
         private async Task<BatchMessageProcessorResult<object>> ProcessAsync(
@@ -100,13 +156,16 @@ namespace Knapcode.ExplorePackages.Worker
 
                 // Execute the batch processor.
                 var stopwatch = Stopwatch.StartNew();
-                var success = false;
-                Task task;
+                var status = "Exception";
                 try
                 {
-                    task = (Task)processAsyncMethod.Invoke(batchProcessor, new object[] { stronglyTypedMessages, dequeueCount });
+                    var task = (Task)processAsyncMethod.Invoke(batchProcessor, new object[] { stronglyTypedMessages, dequeueCount });
                     await task;
-                    success = true;
+                    var result = MakeGenericResult(messageType, task);
+
+                    status = result.Failed.Count > 0 ? "Failure" : "Success";
+
+                    return result;
                 }
                 catch (Exception ex)
                 {
@@ -122,11 +181,9 @@ namespace Knapcode.ExplorePackages.Worker
                 }
                 finally
                 {
-                    var metric = _telemetryClient.GetMetric($"BatchMessageProcessor{(success ? "Success" : "Failure")}DurationMs", "SchemaName");
+                    var metric = _telemetryClient.GetMetric($"BatchMessageProcessor{status}DurationMs", "SchemaName");
                     metric.TrackValue(stopwatch.Elapsed.TotalMilliseconds, schemaName);
                 }
-
-                return MakeGenericResult(task);
             }
             else
             {
@@ -168,7 +225,7 @@ namespace Knapcode.ExplorePackages.Worker
                     }
                     finally
                     {
-                        var metric = _telemetryClient.GetMetric($"MessageProcessor{(success ? "Success" : "Failure")}DurationMs", "SchemaName");
+                        var metric = _telemetryClient.GetMetric($"MessageProcessor{(success ? "Success" : "Exception")}DurationMs", "SchemaName");
                         metric.TrackValue(stopwatch.Elapsed.TotalMilliseconds, schemaName);
                     }
                 }
@@ -184,7 +241,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        private static BatchMessageProcessorResult<object> MakeGenericResult(Task task)
+        private static BatchMessageProcessorResult<object> MakeGenericResult(Type messageType, Task task)
         {
             // We need to turn this:
             //   BatchMessageProcessorResult<T>
@@ -201,14 +258,7 @@ namespace Knapcode.ExplorePackages.Worker
             var stronglyTypedFailed = (IEnumerable)resultType.GetProperty(nameof(BatchMessageProcessorResult<object>.Failed)).GetMethod.Invoke(result, parameters: null);
             var stronglyTypedTryAgainLater = (IEnumerable)resultType.GetProperty(nameof(BatchMessageProcessorResult<object>.TryAgainLater)).GetMethod.Invoke(result, parameters: null);
 
-            var failedEnumerator = stronglyTypedFailed.GetEnumerator();
-            var tryAgainLaterEnumerator = stronglyTypedTryAgainLater.GetEnumerator();
-            if (!failedEnumerator.MoveNext() && !tryAgainLaterEnumerator.MoveNext())
-            {
-                return BatchMessageProcessorResult<object>.Empty;
-            }
-
-            var pairType = tryAgainLaterEnumerator.Current.GetType();
+            var pairType = typeof(KeyValuePair<,>).MakeGenericType(typeof(TimeSpan), typeof(IReadOnlyList<>).MakeGenericType(messageType));
             var getKey = pairType.GetProperty(nameof(KeyValuePair<object, object>.Key)).GetMethod;
             var getValue = pairType.GetProperty(nameof(KeyValuePair<object, object>.Value)).GetMethod;
 
