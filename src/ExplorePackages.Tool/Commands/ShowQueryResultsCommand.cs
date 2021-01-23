@@ -65,8 +65,19 @@ namespace Knapcode.ExplorePackages.Tool
             return dateTimeOffset.ToString("G", CultureInfo.InvariantCulture);
         }
 
-        public bool IsInitializationRequired() => true;
-        public bool IsDatabaseRequired() => true;
-        public bool IsSingleton() => false;
+        public bool IsInitializationRequired()
+        {
+            return true;
+        }
+
+        public bool IsDatabaseRequired()
+        {
+            return true;
+        }
+
+        public bool IsSingleton()
+        {
+            return false;
+        }
     }
 }

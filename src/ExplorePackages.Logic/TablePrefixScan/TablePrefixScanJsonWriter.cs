@@ -105,7 +105,10 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
         {
             private readonly Stack<(int? ParentId, TablePrefixScanStep Step)> _data = new Stack<(int? ParentId, TablePrefixScanStep Step)>();
 
-            public override void Add(int? parentId, TablePrefixScanStep step) => _data.Push((parentId, step));
+            public override void Add(int? parentId, TablePrefixScanStep step)
+            {
+                _data.Push((parentId, step));
+            }
 
             public override void AddRange(int? parentId, IEnumerable<TablePrefixScanStep> steps)
             {
@@ -115,15 +118,25 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
                 }
             }
 
-            public override bool Any() => _data.Any();
-            public override (int? ParentId, TablePrefixScanStep Step) RemoveNext() => _data.Pop();
+            public override bool Any()
+            {
+                return _data.Any();
+            }
+
+            public override (int? ParentId, TablePrefixScanStep Step) RemoveNext()
+            {
+                return _data.Pop();
+            }
         }
 
         private class BFS : StepCollection
         {
             private readonly Queue<(int? ParentId, TablePrefixScanStep Step)> _data = new Queue<(int? ParentId, TablePrefixScanStep Step)>();
 
-            public override void Add(int? parentId, TablePrefixScanStep step) => _data.Enqueue((parentId, step));
+            public override void Add(int? parentId, TablePrefixScanStep step)
+            {
+                _data.Enqueue((parentId, step));
+            }
 
             public override void AddRange(int? parentId, IEnumerable<TablePrefixScanStep> steps)
             {
@@ -133,8 +146,15 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
                 }
             }
 
-            public override bool Any() => _data.Any();
-            public override (int? ParentId, TablePrefixScanStep Step) RemoveNext() => _data.Dequeue();
+            public override bool Any()
+            {
+                return _data.Any();
+            }
+
+            public override (int? ParentId, TablePrefixScanStep Step) RemoveNext()
+            {
+                return _data.Dequeue();
+            }
         }
 
     }

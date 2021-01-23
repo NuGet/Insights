@@ -8,7 +8,14 @@
         {
         }
 
-        public bool TrackValue(double metricValue, string dimension1Value) => true;
-        public bool TrackValue(double metricValue, string dimension1Value, string dimension2Value) => true;
+        public bool TrackValue(double metricValue, string dimension1Value)
+        {
+            return true;
+        }
+
+        public bool TrackValue(double metricValue, string dimension1Value, string dimension2Value)
+        {
+            return true;
+        }
     }
 }

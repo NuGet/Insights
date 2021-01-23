@@ -40,8 +40,10 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
                 };
 
                 // Set the Last-Modified date
-                var downloadsFile = new FileInfo(Path.Combine(TestData, DownloadsToCsvDir, "downloads.v1.json"));
-                downloadsFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z");
+                var downloadsFile = new FileInfo(Path.Combine(TestData, DownloadsToCsvDir, "downloads.v1.json"))
+                {
+                    LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z")
+                };
 
                 var service = Host.Services.GetRequiredService<DownloadsToCsvService>();
                 await service.InitializeAsync();

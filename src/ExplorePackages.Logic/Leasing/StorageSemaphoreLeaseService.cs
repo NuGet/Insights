@@ -25,7 +25,7 @@ namespace Knapcode.ExplorePackages
 
         public async Task<AutoRenewingStorageLeaseResult> WaitAsync(string name, int count, TimeSpan timeout)
         {
-            int attempt = 0;
+            var attempt = 0;
             var sw = Stopwatch.StartNew();
             AutoRenewingStorageLeaseResult result = null;
             do

@@ -63,7 +63,10 @@ namespace Knapcode.ExplorePackages.Entities
                 }
             }
 
-            public override void SetValue(IDbDataParameter parameter, ulong value) => throw new NotImplementedException();
+            public override void SetValue(IDbDataParameter parameter, ulong value)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private class UintTypeHandler : SqlMapper.TypeHandler<uint>
@@ -73,7 +76,10 @@ namespace Knapcode.ExplorePackages.Entities
                 return (uint)(long)value;
             }
 
-            public override void SetValue(IDbDataParameter parameter, uint value) => throw new NotImplementedException();
+            public override void SetValue(IDbDataParameter parameter, uint value)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private class UshortTypeHandler : SqlMapper.TypeHandler<ushort>
@@ -90,7 +96,10 @@ namespace Knapcode.ExplorePackages.Entities
                 }
             }
 
-            public override void SetValue(IDbDataParameter parameter, ushort value) => throw new NotImplementedException();
+            public override void SetValue(IDbDataParameter parameter, ushort value)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         public PackageService(

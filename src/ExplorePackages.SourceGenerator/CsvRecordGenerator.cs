@@ -105,7 +105,7 @@ namespace {0}
             {
                 var model = context.Compilation.GetSemanticModel(info.Candidate.SyntaxTree);
                 var symbol = model.GetDeclaredSymbol(info.Candidate);
-                var typeSymbol = (ITypeSymbol)symbol;
+                ITypeSymbol typeSymbol = symbol;
                 if (!typeSymbol.Interfaces.OfType<INamedTypeSymbol>().Any(x => SymbolEqualityComparer.Default.Equals(type, x.OriginalDefinition)))
                 {
                     continue;

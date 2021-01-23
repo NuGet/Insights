@@ -38,7 +38,10 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
         }
 
         public string ResultsContainerName => _options.Value.PackageAssetContainerName;
-        public List<PackageAsset> Prune(List<PackageAsset> records) => PackageRecord.Prune(records);
+        public List<PackageAsset> Prune(List<PackageAsset> records)
+        {
+            return PackageRecord.Prune(records);
+        }
 
         public async Task<DriverResult<List<PackageAsset>>> ProcessLeafAsync(CatalogLeafItem item)
         {
@@ -132,7 +135,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
                     }
 
                     var parsedFramework = NuGetFramework.Parse(targetFrameworkMoniker);
-                    string roundTripTargetFrameworkMoniker = parsedFramework.GetShortFolderName();
+                    var roundTripTargetFrameworkMoniker = parsedFramework.GetShortFolderName();
 
                     foreach (var item in group.Items)
                     {

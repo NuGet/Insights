@@ -16,8 +16,15 @@ namespace Knapcode.ExplorePackages.Worker
         public string Name { get; }
         public int LatestVersion { get; } = V1;
 
-        public ISerializedEntity SerializeData(T message) => NameVersionSerializer.SerializeData(message);
-        public ISerializedEntity SerializeMessage(T message) => NameVersionSerializer.SerializeMessage(Name, LatestVersion, message);
+        public ISerializedEntity SerializeData(T message)
+        {
+            return NameVersionSerializer.SerializeData(message);
+        }
+
+        public ISerializedEntity SerializeMessage(T message)
+        {
+            return NameVersionSerializer.SerializeMessage(Name, LatestVersion, message);
+        }
 
         public ISerializedEntity SerializeMessage(object message)
         {

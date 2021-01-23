@@ -55,10 +55,14 @@ namespace Knapcode.ExplorePackages
         }
 
         public bool IsEnabled(LogLevel logLevel)
-            => logLevel >= _minLogLevel;
+        {
+            return logLevel >= _minLogLevel;
+        }
 
         public IDisposable BeginScope<TState>(TState state)
-            => new NullScope();
+        {
+            return new NullScope();
+        }
 
         private class NullScope : IDisposable
         {

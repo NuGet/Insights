@@ -36,7 +36,7 @@ namespace Knapcode.ExplorePackages
 
             foreach (var type in types.OfType<string>())
             {
-                if (FromString.TryGetValue(type, out CatalogLeafType foundType))
+                if (FromString.TryGetValue(type, out var foundType))
                 {
                     foundTypes.Add(foundType);
                 }

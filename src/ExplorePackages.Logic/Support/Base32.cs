@@ -18,10 +18,10 @@ namespace Knapcode.ExplorePackages
                 throw new ArgumentNullException(nameof(input));
             }
 
-            StringBuilder sb = new StringBuilder();
-            for (int offset = 0; offset < input.Length;)
+            var sb = new StringBuilder();
+            for (var offset = 0; offset < input.Length;)
             {
-                int numCharsToOutput = GetNextGroup(input, ref offset, out byte a, out byte b, out byte c, out byte d, out byte e, out byte f, out byte g, out byte h);
+                var numCharsToOutput = GetNextGroup(input, ref offset, out var a, out var b, out var c, out var d, out var e, out var f, out var g, out var h);
 
                 sb.Append((numCharsToOutput >= 1) ? _base32Chars[a] : '=');
                 sb.Append((numCharsToOutput >= 2) ? _base32Chars[b] : '=');

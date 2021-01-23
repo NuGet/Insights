@@ -59,13 +59,40 @@ namespace Knapcode.ExplorePackages.Worker
             _logger = logger;
         }
 
-        public ISchemaSerializer<T> GetSerializer<T>() => Schemas.GetSerializer<T>();
-        public ISchemaSerializer GetGenericSerializer(Type type) => Schemas.GetSerializer(type);
-        public ISerializedEntity Serialize<T>(T message) => Schemas.GetSerializer<T>().SerializeMessage(message);
-        public ISchemaDeserializer GetDeserializer(string schemaName) => Schemas.GetDeserializer(schemaName);
-        public NameVersionMessage<object> Deserialize(string message) => Schemas.Deserialize(message, _logger);
-        public NameVersionMessage<object> Deserialize(JToken message) => Schemas.Deserialize(message, _logger);
-        public NameVersionMessage<object> Deserialize(NameVersionMessage<JToken> message) => Schemas.Deserialize(message, _logger);
+        public ISchemaSerializer<T> GetSerializer<T>()
+        {
+            return Schemas.GetSerializer<T>();
+        }
+
+        public ISchemaSerializer GetGenericSerializer(Type type)
+        {
+            return Schemas.GetSerializer(type);
+        }
+
+        public ISerializedEntity Serialize<T>(T message)
+        {
+            return Schemas.GetSerializer<T>().SerializeMessage(message);
+        }
+
+        public ISchemaDeserializer GetDeserializer(string schemaName)
+        {
+            return Schemas.GetDeserializer(schemaName);
+        }
+
+        public NameVersionMessage<object> Deserialize(string message)
+        {
+            return Schemas.Deserialize(message, _logger);
+        }
+
+        public NameVersionMessage<object> Deserialize(JToken message)
+        {
+            return Schemas.Deserialize(message, _logger);
+        }
+
+        public NameVersionMessage<object> Deserialize(NameVersionMessage<JToken> message)
+        {
+            return Schemas.Deserialize(message, _logger);
+        }
 
         private class SchemasCollection
         {

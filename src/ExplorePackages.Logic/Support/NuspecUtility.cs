@@ -493,7 +493,7 @@ namespace Knapcode.ExplorePackages
         private static Dependency GetParsedDependency(XmlDependency dependency)
         {
             if (dependency.Version == null
-                || !VersionRange.TryParse(dependency.Version, out VersionRange parsedVersionRange))
+                || !VersionRange.TryParse(dependency.Version, out var parsedVersionRange))
             {
                 parsedVersionRange = null;
             }

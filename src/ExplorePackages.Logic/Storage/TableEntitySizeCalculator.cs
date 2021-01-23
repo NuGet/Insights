@@ -14,13 +14,40 @@ namespace Knapcode.ExplorePackages
 
         public int Size { get; private set; }
 
-        public void Reset() => Size = 0;
-        public void AddEntityOverhead() => Size += InitialSize;
-        public void AddPartitionKeyRowKey(string partitionKey, string rowKey) => Size += (partitionKey.Length + rowKey.Length) * 2;
-        public void AddPartitionKey(string rowKey) => AddPartitionKey(rowKey.Length);
-        public void AddPartitionKey(int length) => Size += length * 2;
-        public void AddRowKey(string rowKey) => AddRowKey(rowKey.Length);
-        public void AddRowKey(int length) => Size += length * 2;
+        public void Reset()
+        {
+            Size = 0;
+        }
+
+        public void AddEntityOverhead()
+        {
+            Size += InitialSize;
+        }
+
+        public void AddPartitionKeyRowKey(string partitionKey, string rowKey)
+        {
+            Size += (partitionKey.Length + rowKey.Length) * 2;
+        }
+
+        public void AddPartitionKey(string rowKey)
+        {
+            AddPartitionKey(rowKey.Length);
+        }
+
+        public void AddPartitionKey(int length)
+        {
+            Size += length * 2;
+        }
+
+        public void AddRowKey(string rowKey)
+        {
+            AddRowKey(rowKey.Length);
+        }
+
+        public void AddRowKey(int length)
+        {
+            Size += length * 2;
+        }
 
         public void AddPropertyOverhead(int nameLength)
         {

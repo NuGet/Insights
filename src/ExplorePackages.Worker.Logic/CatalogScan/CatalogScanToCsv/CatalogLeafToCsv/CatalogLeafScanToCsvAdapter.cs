@@ -28,7 +28,10 @@ namespace Knapcode.ExplorePackages.Worker
             return parameters.OnlyLatestLeaves ? CatalogIndexScanResult.ExpandLatestLeaves : CatalogIndexScanResult.ExpandAllLeaves;
         }
 
-        public Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan) => Task.FromResult(CatalogPageScanResult.ExpandAllowDuplicates);
+        public Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan)
+        {
+            return Task.FromResult(CatalogPageScanResult.ExpandAllowDuplicates);
+        }
 
         public async Task<DriverResult> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
@@ -59,8 +62,19 @@ namespace Knapcode.ExplorePackages.Worker
             return result;
         }
 
-        public Task StartAggregateAsync(CatalogIndexScan indexScan) => _adapter.StartAggregateAsync(indexScan);
-        public Task<bool> IsAggregateCompleteAsync(CatalogIndexScan indexScan) => _adapter.IsAggregateCompleteAsync(indexScan);
-        public Task FinalizeAsync(CatalogIndexScan indexScan) => _adapter.FinalizeAsync(indexScan);
+        public Task StartAggregateAsync(CatalogIndexScan indexScan)
+        {
+            return _adapter.StartAggregateAsync(indexScan);
+        }
+
+        public Task<bool> IsAggregateCompleteAsync(CatalogIndexScan indexScan)
+        {
+            return _adapter.IsAggregateCompleteAsync(indexScan);
+        }
+
+        public Task FinalizeAsync(CatalogIndexScan indexScan)
+        {
+            return _adapter.FinalizeAsync(indexScan);
+        }
     }
 }

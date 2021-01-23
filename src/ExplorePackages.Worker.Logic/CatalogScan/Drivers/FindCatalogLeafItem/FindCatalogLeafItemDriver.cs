@@ -69,9 +69,24 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
             return CatalogPageScanResult.Processed;
         }
 
-        public Task<DriverResult> ProcessLeafAsync(CatalogLeafScan leafScan) => throw new NotImplementedException();
-        public Task StartAggregateAsync(CatalogIndexScan indexScan) => _adapter.StartAggregateAsync(indexScan);
-        public Task<bool> IsAggregateCompleteAsync(CatalogIndexScan indexScan) => _adapter.IsAggregateCompleteAsync(indexScan);
-        public Task FinalizeAsync(CatalogIndexScan indexScan) => _adapter.FinalizeAsync(indexScan);
+        public Task<DriverResult> ProcessLeafAsync(CatalogLeafScan leafScan)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task StartAggregateAsync(CatalogIndexScan indexScan)
+        {
+            return _adapter.StartAggregateAsync(indexScan);
+        }
+
+        public Task<bool> IsAggregateCompleteAsync(CatalogIndexScan indexScan)
+        {
+            return _adapter.IsAggregateCompleteAsync(indexScan);
+        }
+
+        public Task FinalizeAsync(CatalogIndexScan indexScan)
+        {
+            return _adapter.FinalizeAsync(indexScan);
+        }
     }
 }

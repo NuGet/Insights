@@ -138,8 +138,15 @@ namespace Knapcode.ExplorePackages.WideEntities
             public bool IsLoopback { get; }
             public byte[] Bytes { get; }
 
-            public Task InitializeAsync() => GetTable().CreateIfNotExistsAsync();
-            public Task DisposeAsync() => GetTable().DeleteIfExistsAsync();
+            public Task InitializeAsync()
+            {
+                return GetTable().CreateIfNotExistsAsync();
+            }
+
+            public Task DisposeAsync()
+            {
+                return GetTable().DeleteIfExistsAsync();
+            }
 
             private CloudTable GetTable()
             {

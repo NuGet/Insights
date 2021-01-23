@@ -328,8 +328,15 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
                 return (table, sortedEntities);
             }
 
-            public Task InitializeAsync() => Task.CompletedTask;
-            public Task DisposeAsync() => Task.WhenAll(_candidates.Select(x => x.table.DeleteIfExistsAsync()));
+            public Task InitializeAsync()
+            {
+                return Task.CompletedTask;
+            }
+
+            public Task DisposeAsync()
+            {
+                return Task.WhenAll(_candidates.Select(x => x.table.DeleteIfExistsAsync()));
+            }
         }
 
         public class PartitionKeyRowKeyComparer<T> : IEqualityComparer<T> where T : ITableEntity

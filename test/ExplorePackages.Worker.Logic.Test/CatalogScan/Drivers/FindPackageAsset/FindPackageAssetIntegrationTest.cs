@@ -160,7 +160,10 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
             public override bool OnlyLatestLeaves => true;
 
             [Fact]
-            public Task Execute() => FindPackageAsset_WithDuplicates(batchProcessing: false);
+            public Task Execute()
+            {
+                return FindPackageAsset_WithDuplicates(batchProcessing: false);
+            }
         }
 
         public class FindPackageAsset_WithDuplicates_AllLeaves : FindPackageAssetIntegrationTest
@@ -189,7 +192,10 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
             public override bool OnlyLatestLeaves => false;
 
             [Fact]
-            public Task Execute() => FindPackageAsset_WithDuplicates(batchProcessing: true);
+            public Task Execute()
+            {
+                return FindPackageAsset_WithDuplicates(batchProcessing: true);
+            }
         }
 
         private async Task FindPackageAsset_WithDuplicates(bool batchProcessing)

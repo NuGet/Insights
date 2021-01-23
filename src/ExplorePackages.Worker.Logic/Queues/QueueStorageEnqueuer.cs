@@ -36,10 +36,25 @@ namespace Knapcode.ExplorePackages.Worker
             await _workerQueueFactory.InitializeAsync();
         }
 
-        public Task<int> GetApproximateMessageCountAsync() => GetApproximateMessageCountAsync(_workerQueueFactory.GetQueue());
-        public Task<int> GetAvailableMessageCountLowerBoundAsync(int messageCount) => GetAvailableMessageCountLowerBoundAsync(_workerQueueFactory.GetQueue(), messageCount);
-        public Task<int> GetPoisonApproximateMessageCountAsync() => GetApproximateMessageCountAsync(_workerQueueFactory.GetPoisonQueue());
-        public Task<int> GetPoisonAvailableMessageCountLowerBoundAsync(int messageCount) => GetAvailableMessageCountLowerBoundAsync(_workerQueueFactory.GetPoisonQueue(), messageCount);
+        public Task<int> GetApproximateMessageCountAsync()
+        {
+            return GetApproximateMessageCountAsync(_workerQueueFactory.GetQueue());
+        }
+
+        public Task<int> GetAvailableMessageCountLowerBoundAsync(int messageCount)
+        {
+            return GetAvailableMessageCountLowerBoundAsync(_workerQueueFactory.GetQueue(), messageCount);
+        }
+
+        public Task<int> GetPoisonApproximateMessageCountAsync()
+        {
+            return GetApproximateMessageCountAsync(_workerQueueFactory.GetPoisonQueue());
+        }
+
+        public Task<int> GetPoisonAvailableMessageCountLowerBoundAsync(int messageCount)
+        {
+            return GetAvailableMessageCountLowerBoundAsync(_workerQueueFactory.GetPoisonQueue(), messageCount);
+        }
 
         private static async Task<int> GetApproximateMessageCountAsync(CloudQueue queue)
         {
@@ -135,7 +150,7 @@ namespace Knapcode.ExplorePackages.Worker
             await queue.AddMessageAsync(
                 new CloudQueueMessage(message),
                 timeToLive: null,
-                initialVisibilityDelay: initialVisibilityDelay > TimeSpan.Zero ? (TimeSpan?)initialVisibilityDelay : null,
+                initialVisibilityDelay: initialVisibilityDelay > TimeSpan.Zero ? initialVisibilityDelay : null,
                 options: null,
                 operationContext: null);
         }

@@ -69,6 +69,9 @@ namespace Knapcode.ExplorePackages
             _builder.Append("await writer.WriteLineAsync();");
         }
 
-        public string GetResult() => _builder.ToString();
+        public string GetResult()
+        {
+            return _builder.ToString();
+        }
     }
 }

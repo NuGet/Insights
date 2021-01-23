@@ -20,6 +20,9 @@ namespace Knapcode.ExplorePackages
             await _inner.DownloadToStreamAsync(target);
         }
 
-        public async Task<bool> ExistsAsync() => await _inner.ExistsAsync();
+        public async Task<bool> ExistsAsync()
+        {
+            return await _inner.ExistsAsync();
+        }
     }
 }

@@ -16,9 +16,15 @@ namespace Knapcode.ExplorePackages.Worker
             _logger = logger;
         }
 
-        public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan) => _inner.ProcessIndexAsync(indexScan);
+        public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
+        {
+            return _inner.ProcessIndexAsync(indexScan);
+        }
 
-        public Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan) => _inner.ProcessPageAsync(pageScan);
+        public Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan)
+        {
+            return _inner.ProcessPageAsync(pageScan);
+        }
 
         public async Task<BatchMessageProcessorResult<CatalogLeafScan>> ProcessLeavesAsync(IReadOnlyList<CatalogLeafScan> leafScans)
         {
@@ -51,10 +57,19 @@ namespace Knapcode.ExplorePackages.Worker
             return new BatchMessageProcessorResult<CatalogLeafScan>(failed, tryAgainLater);
         }
 
-        public Task StartAggregateAsync(CatalogIndexScan indexScan) => _inner.StartAggregateAsync(indexScan);
+        public Task StartAggregateAsync(CatalogIndexScan indexScan)
+        {
+            return _inner.StartAggregateAsync(indexScan);
+        }
 
-        public Task<bool> IsAggregateCompleteAsync(CatalogIndexScan indexScan) => _inner.IsAggregateCompleteAsync(indexScan);
+        public Task<bool> IsAggregateCompleteAsync(CatalogIndexScan indexScan)
+        {
+            return _inner.IsAggregateCompleteAsync(indexScan);
+        }
 
-        public Task FinalizeAsync(CatalogIndexScan indexScan) => _inner.FinalizeAsync(indexScan);
+        public Task FinalizeAsync(CatalogIndexScan indexScan)
+        {
+            return _inner.FinalizeAsync(indexScan);
+        }
     }
 }

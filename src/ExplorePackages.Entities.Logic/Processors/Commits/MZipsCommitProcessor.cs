@@ -31,8 +31,15 @@ namespace Knapcode.ExplorePackages.Entities
 
         public ProcessMode ProcessMode => ProcessMode.TaskQueue;
         public int BatchSize => _batchSizeProvider.Get(BatchSizeType.MZips);
-        public string SerializeProgressToken(object progressToken) => null;
-        public object DeserializeProgressToken(string serializedProgressToken) => null;
+        public string SerializeProgressToken(object progressToken)
+        {
+            return null;
+        }
+
+        public object DeserializeProgressToken(string serializedProgressToken)
+        {
+            return null;
+        }
 
         public Task<ItemBatch<PackageEntity, object>> InitializeItemsAsync(
             IReadOnlyList<PackageEntity> entities,

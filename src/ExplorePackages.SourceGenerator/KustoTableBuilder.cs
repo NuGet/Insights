@@ -30,6 +30,9 @@ namespace Knapcode.ExplorePackages
         {
         }
 
-        public string GetResult() => _builder.ToString();
+        public string GetResult()
+        {
+            return _builder.ToString();
+        }
     }
 }

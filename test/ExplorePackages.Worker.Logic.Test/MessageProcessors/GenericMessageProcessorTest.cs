@@ -421,12 +421,35 @@ namespace Knapcode.ExplorePackages.Worker
                 output.GetLogger<GenericMessageProcessor>());
         }
 
-        public JToken GetData(CatalogLeafScanMessage message) => SchemaSerializer.GetSerializer<CatalogLeafScanMessage>().SerializeData(message).AsJToken();
-        public string GetString(CatalogLeafScanMessage message) => SchemaSerializer.GetSerializer<CatalogLeafScanMessage>().SerializeMessage(message).AsString();
-        public string GetString(JToken data) => NameVersionSerializer.SerializeMessage(SchemaName, SchemaVersion, data).AsString();
-        public IReadOnlyList<JToken> GetData(IEnumerable<CatalogLeafScanMessage> input) => input.Select(GetData).ToList();
-        public IReadOnlyList<string> GetString(IEnumerable<CatalogLeafScanMessage> input) => input.Select(GetString).ToList();
-        public IReadOnlyList<string> GetString(IEnumerable<JToken> input) => input.Select(GetString).ToList();
+        public JToken GetData(CatalogLeafScanMessage message)
+        {
+            return SchemaSerializer.GetSerializer<CatalogLeafScanMessage>().SerializeData(message).AsJToken();
+        }
+
+        public string GetString(CatalogLeafScanMessage message)
+        {
+            return SchemaSerializer.GetSerializer<CatalogLeafScanMessage>().SerializeMessage(message).AsString();
+        }
+
+        public string GetString(JToken data)
+        {
+            return NameVersionSerializer.SerializeMessage(SchemaName, SchemaVersion, data).AsString();
+        }
+
+        public IReadOnlyList<JToken> GetData(IEnumerable<CatalogLeafScanMessage> input)
+        {
+            return input.Select(GetData).ToList();
+        }
+
+        public IReadOnlyList<string> GetString(IEnumerable<CatalogLeafScanMessage> input)
+        {
+            return input.Select(GetString).ToList();
+        }
+
+        public IReadOnlyList<string> GetString(IEnumerable<JToken> input)
+        {
+            return input.Select(GetString).ToList();
+        }
 
         private static CatalogLeafScanMessage MakeMessage(int i = 0)
         {

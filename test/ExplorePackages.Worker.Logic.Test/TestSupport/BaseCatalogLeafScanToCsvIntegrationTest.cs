@@ -13,7 +13,10 @@ namespace Knapcode.ExplorePackages.Worker
 
         public virtual bool OnlyLatestLeaves => true;
 
-        protected override Task<CatalogIndexScan> UpdateAsync(DateTimeOffset max) => UpdateAsync(DriverType, OnlyLatestLeaves, max);
+        protected override Task<CatalogIndexScan> UpdateAsync(DateTimeOffset max)
+        {
+            return UpdateAsync(DriverType, OnlyLatestLeaves, max);
+        }
 
         protected override IEnumerable<string> GetExpectedLeaseNames()
         {

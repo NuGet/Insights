@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -234,7 +233,7 @@ namespace Knapcode.ExplorePackages.Worker
                 .Where(x => x.Value > 0)
                 .OrderByDescending(x => x.Key)
                 .ToList();
-            foreach (var (logLevel, count) in warningOrGreater)
+            foreach ((var logLevel, var count) in warningOrGreater)
             {
                 Logger.LogInformation("There were {Count} {LogLevel} log messages.", count, logLevel);
             }
@@ -277,7 +276,10 @@ namespace Knapcode.ExplorePackages.Worker
             Assert.Equal(expected, actual);
         }
 
-        public Task InitializeAsync() => Task.CompletedTask;
+        public Task InitializeAsync()
+        {
+            return Task.CompletedTask;
+        }
 
         public async Task DisposeAsync()
         {
@@ -304,17 +306,18 @@ namespace Knapcode.ExplorePackages.Worker
 
         public static HttpRequestMessage Clone(HttpRequestMessage req)
         {
-            var clone = new HttpRequestMessage(req.Method, req.RequestUri);
+            var clone = new HttpRequestMessage(req.Method, req.RequestUri)
+            {
+                Content = req.Content,
+                Version = req.Version
+            };
 
-            clone.Content = req.Content;
-            clone.Version = req.Version;
-
-            foreach (KeyValuePair<string, object> prop in req.Properties)
+            foreach (var prop in req.Properties)
             {
                 clone.Properties.Add(prop);
             }
 
-            foreach (KeyValuePair<string, IEnumerable<string>> header in req.Headers)
+            foreach (var header in req.Headers)
             {
                 clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
             }

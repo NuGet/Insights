@@ -12,8 +12,14 @@ namespace Knapcode.ExplorePackages
             _semaphoreSlim = semaphoreSlim;
         }
 
-        public Task WaitAsync() => _semaphoreSlim.WaitAsync();
+        public Task WaitAsync()
+        {
+            return _semaphoreSlim.WaitAsync();
+        }
 
-        public void Release() => _semaphoreSlim.Release();
+        public void Release()
+        {
+            _semaphoreSlim.Release();
+        }
     }
 }

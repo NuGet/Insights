@@ -55,10 +55,7 @@ namespace Knapcode.ExplorePackages
             return new TestDirectory(path);
         }
 
-        public static implicit operator string(TestDirectory directory)
-        {
-            return directory.FullPath;
-        }
+        public static implicit operator string(TestDirectory directory) => directory.FullPath;
 
         public override string ToString()
         {

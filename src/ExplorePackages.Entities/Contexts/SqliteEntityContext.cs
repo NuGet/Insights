@@ -19,8 +19,10 @@ namespace Knapcode.ExplorePackages.Entities
 
         public async Task BackupDatabaseAsync(string destinationDataSource)
         {
-            var builder = new SqliteConnectionStringBuilder();
-            builder.DataSource = destinationDataSource;
+            var builder = new SqliteConnectionStringBuilder
+            {
+                DataSource = destinationDataSource
+            };
             var connectionString = builder.ConnectionString;
 
             using (var sourceConnection = (SqliteConnection)Database.GetDbConnection())

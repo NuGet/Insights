@@ -59,8 +59,10 @@ namespace Knapcode.ExplorePackages
 
         public async Task<AutocompleteVersionResults> GetVersionsAsync(string id, bool? prerelease, string semVerLevel)
         {
-            var queryString = new Dictionary<string, string>();
-            queryString["id"] = id;
+            var queryString = new Dictionary<string, string>
+            {
+                ["id"] = id
+            };
 
             if (prerelease.HasValue)
             {

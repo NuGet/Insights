@@ -18,7 +18,14 @@ namespace Knapcode.ExplorePackages.Worker
             });
         }
 
-        public string AsString() => _string.Value;
-        public JToken AsJToken() => _json.Value;
+        public string AsString()
+        {
+            return _string.Value;
+        }
+
+        public JToken AsJToken()
+        {
+            return _json.Value;
+        }
     }
 }

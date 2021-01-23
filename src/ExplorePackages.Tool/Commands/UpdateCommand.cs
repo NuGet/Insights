@@ -92,8 +92,19 @@ namespace Knapcode.ExplorePackages.Tool
             }
         }
 
-        public bool IsInitializationRequired() => _commands.Any(x => x.IsInitializationRequired());
-        public bool IsDatabaseRequired() => _commands.Any(x => x.IsDatabaseRequired());
-        public bool IsSingleton() => _commands.Any(x => x.IsSingleton());
+        public bool IsInitializationRequired()
+        {
+            return _commands.Any(x => x.IsInitializationRequired());
+        }
+
+        public bool IsDatabaseRequired()
+        {
+            return _commands.Any(x => x.IsDatabaseRequired());
+        }
+
+        public bool IsSingleton()
+        {
+            return _commands.Any(x => x.IsSingleton());
+        }
     }
 }

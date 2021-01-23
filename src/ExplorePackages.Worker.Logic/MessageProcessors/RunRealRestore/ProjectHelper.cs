@@ -204,7 +204,7 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
                 endTimestamp,
                 process.StartInfo.FileName,
                 process.StartInfo.ArgumentList.ToList(),
-                timeout ? (int?)null : process.ExitCode,
+                timeout ? null : process.ExitCode,
                 timeout,
                 output);
 

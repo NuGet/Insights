@@ -23,7 +23,10 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
             }
 
             [Fact]
-            public Task ExecuteAsync() => CopyAsync(TableScanStrategy.Serial);
+            public Task ExecuteAsync()
+            {
+                return CopyAsync(TableScanStrategy.Serial);
+            }
         }
 
         public class CopyAsync_PrefixScan : TableCopyDriverIntegrationTest
@@ -33,7 +36,10 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
             }
 
             [Fact]
-            public Task ExecuteAsync() => CopyAsync(TableScanStrategy.PrefixScan);
+            public Task ExecuteAsync()
+            {
+                return CopyAsync(TableScanStrategy.PrefixScan);
+            }
         }
 
         private async Task CopyAsync(TableScanStrategy strategy)

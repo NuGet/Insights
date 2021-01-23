@@ -22,10 +22,10 @@ namespace Knapcode.ExplorePackages
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            string stringValue = reader.Value as string;
+            var stringValue = reader.Value as string;
             if (stringValue != null)
             {
-                if (FromString.TryGetValue(stringValue, out CatalogLeafType output))
+                if (FromString.TryGetValue(stringValue, out var output))
                 {
                     return output;
                 }

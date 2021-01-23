@@ -34,13 +34,35 @@ namespace Knapcode.ExplorePackages.Worker
             await _rawMessageEnqueuer.InitializeAsync();
         }
 
-        public Task EnqueueAsync<T>(IReadOnlyList<T> messages) => EnqueueAsync(messages, TimeSpan.Zero);
-        public Task EnqueueAsync<T>(IReadOnlyList<T> messages, Func<T, IReadOnlyList<T>> split) => EnqueueAsync(_rawMessageEnqueuer.AddAsync, messages, split, _serializer.GetSerializer<T>(), TimeSpan.Zero);
-        public Task EnqueueAsync<T>(IReadOnlyList<T> messages, TimeSpan notBefore) => EnqueueAsync(_rawMessageEnqueuer.AddAsync, messages, NoSplit, _serializer.GetSerializer<T>(), notBefore);
-        internal Task EnqueueAsync<T>(IReadOnlyList<T> messages, ISchemaSerializer<T> serializer, TimeSpan notBefore) => EnqueueAsync(_rawMessageEnqueuer.AddAsync, messages, NoSplit, serializer, notBefore);
+        public Task EnqueueAsync<T>(IReadOnlyList<T> messages)
+        {
+            return EnqueueAsync(messages, TimeSpan.Zero);
+        }
 
-        public Task EnqueuePoisonAsync<T>(IReadOnlyList<T> messages) => EnqueuePoisonAsync(messages, TimeSpan.Zero);
-        public Task EnqueuePoisonAsync<T>(IReadOnlyList<T> messages, TimeSpan notBefore) => EnqueueAsync(_rawMessageEnqueuer.AddPoisonAsync, messages, NoSplit, _serializer.GetSerializer<T>(), notBefore);
+        public Task EnqueueAsync<T>(IReadOnlyList<T> messages, Func<T, IReadOnlyList<T>> split)
+        {
+            return EnqueueAsync(_rawMessageEnqueuer.AddAsync, messages, split, _serializer.GetSerializer<T>(), TimeSpan.Zero);
+        }
+
+        public Task EnqueueAsync<T>(IReadOnlyList<T> messages, TimeSpan notBefore)
+        {
+            return EnqueueAsync(_rawMessageEnqueuer.AddAsync, messages, NoSplit, _serializer.GetSerializer<T>(), notBefore);
+        }
+
+        internal Task EnqueueAsync<T>(IReadOnlyList<T> messages, ISchemaSerializer<T> serializer, TimeSpan notBefore)
+        {
+            return EnqueueAsync(_rawMessageEnqueuer.AddAsync, messages, NoSplit, serializer, notBefore);
+        }
+
+        public Task EnqueuePoisonAsync<T>(IReadOnlyList<T> messages)
+        {
+            return EnqueuePoisonAsync(messages, TimeSpan.Zero);
+        }
+
+        public Task EnqueuePoisonAsync<T>(IReadOnlyList<T> messages, TimeSpan notBefore)
+        {
+            return EnqueueAsync(_rawMessageEnqueuer.AddPoisonAsync, messages, NoSplit, _serializer.GetSerializer<T>(), notBefore);
+        }
 
         private async Task EnqueueAsync<T>(
             AddAsync addAsync,
@@ -136,7 +158,10 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        private IReadOnlyList<T> NoSplit<T>(T message) => null;
+        private IReadOnlyList<T> NoSplit<T>(T message)
+        {
+            return null;
+        }
 
         private bool TrySplit<T>(T message, ISerializedEntity serializedMessage, Func<T, IReadOnlyList<T>> split, Queue<T> messagesToAdd)
         {
@@ -179,8 +204,19 @@ namespace Knapcode.ExplorePackages.Worker
             await addAsync(new[] { rawMessage }, TimeSpan.Zero);
         }
 
-        private int GetMessageLength(HomogeneousBulkEnqueueMessage batchMessage) => GetMessageLength(_serializer.Serialize(batchMessage));
-        private static int GetMessageLength(ISerializedEntity innerMessage) => GetMessageLength(innerMessage.AsString());
-        private static int GetMessageLength(string message) => Encoding.UTF8.GetByteCount(message);
+        private int GetMessageLength(HomogeneousBulkEnqueueMessage batchMessage)
+        {
+            return GetMessageLength(_serializer.Serialize(batchMessage));
+        }
+
+        private static int GetMessageLength(ISerializedEntity innerMessage)
+        {
+            return GetMessageLength(innerMessage.AsString());
+        }
+
+        private static int GetMessageLength(string message)
+        {
+            return Encoding.UTF8.GetByteCount(message);
+        }
     }
 }

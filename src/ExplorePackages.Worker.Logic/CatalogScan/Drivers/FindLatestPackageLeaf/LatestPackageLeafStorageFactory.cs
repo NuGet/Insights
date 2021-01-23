@@ -25,8 +25,15 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf
             _options = options;
         }
 
-        public string GetTableName(string storageSuffix) => $"{_options.Value.LatestPackageLeafTableName}{storageSuffix}";
-        public Task DeleteTableAsync(string storageSuffix) => GetTable(storageSuffix).DeleteIfExistsAsync();
+        public string GetTableName(string storageSuffix)
+        {
+            return $"{_options.Value.LatestPackageLeafTableName}{storageSuffix}";
+        }
+
+        public Task DeleteTableAsync(string storageSuffix)
+        {
+            return GetTable(storageSuffix).DeleteIfExistsAsync();
+        }
 
         public async Task InitializeAsync(CatalogIndexScan indexScan)
         {

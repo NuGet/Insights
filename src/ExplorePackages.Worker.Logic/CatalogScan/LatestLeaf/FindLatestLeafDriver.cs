@@ -123,7 +123,7 @@ namespace Knapcode.ExplorePackages.Worker
             using var metrics = _telemetryClient.StartQueryLoopMetrics();
 
             // Sort items by lexicographical order, since this is what table storage does.
-            List<(CatalogLeafItem Item, string RowKey)> itemList = items
+            var itemList = items
                 .Select(x => new { Item = x, RowKey = storage.GetRowKey(x.PackageVersion) })
                 .GroupBy(x => x.RowKey)
                 .Select(x => x.OrderByDescending(x => x.Item.CommitTimestamp).First())
@@ -197,9 +197,24 @@ namespace Knapcode.ExplorePackages.Worker
             await table.ExecuteBatchAsync(batch);
         }
 
-        public Task<DriverResult> ProcessLeafAsync(CatalogLeafScan leafScan) => throw new NotImplementedException();
-        public Task StartAggregateAsync(CatalogIndexScan indexScan) => Task.CompletedTask;
-        public Task<bool> IsAggregateCompleteAsync(CatalogIndexScan indexScan) => Task.FromResult(true);
-        public Task FinalizeAsync(CatalogIndexScan indexScan) => Task.CompletedTask;
+        public Task<DriverResult> ProcessLeafAsync(CatalogLeafScan leafScan)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task StartAggregateAsync(CatalogIndexScan indexScan)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task<bool> IsAggregateCompleteAsync(CatalogIndexScan indexScan)
+        {
+            return Task.FromResult(true);
+        }
+
+        public Task FinalizeAsync(CatalogIndexScan indexScan)
+        {
+            return Task.CompletedTask;
+        }
     }
 }

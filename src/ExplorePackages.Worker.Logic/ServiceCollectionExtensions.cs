@@ -49,17 +49,17 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTableCopy();
             serviceCollection.AddDownloadsToCsv();
 
-            foreach (var (serviceType, implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(IMessageProcessor<>)))
+            foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(IMessageProcessor<>)))
             {
                 serviceCollection.AddTransient(serviceType, implementationType);
             }
 
-            foreach (var (serviceType, implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(IBatchMessageProcessor<>)))
+            foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(IBatchMessageProcessor<>)))
             {
                 serviceCollection.AddTransient(serviceType, implementationType);
             }
 
-            foreach (var (serviceType, implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ITaskStateMessageProcessor<>)))
+            foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ITaskStateMessageProcessor<>)))
             {
                 // Add the task state message processor
                 serviceCollection.AddTransient(serviceType, implementationType);
@@ -71,7 +71,7 @@ namespace Knapcode.ExplorePackages.Worker
                     typeof(TaskStateMessageProcessor<>).MakeGenericType(messageType));
             }
 
-            foreach (var (serviceType, implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ICsvCompactor<>)))
+            foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ICsvCompactor<>)))
             {
                 // Add the compactor
                 serviceCollection.AddTransient(serviceType, implementationType);
@@ -83,7 +83,7 @@ namespace Knapcode.ExplorePackages.Worker
                     typeof(CsvCompactorProcessor<>).MakeGenericType(recordType));
             }
 
-            foreach (var (serviceType, implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ICatalogLeafToCsvDriver<>)))
+            foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ICatalogLeafToCsvDriver<>)))
             {
                 // Add the driver
                 serviceCollection.AddTransient(serviceType, implementationType);

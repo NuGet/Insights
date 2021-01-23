@@ -41,7 +41,10 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
         }
 
         public string ResultsContainerName => _options.Value.PackageAssemblyContainerName;
-        public List<PackageAssembly> Prune(List<PackageAssembly> records) => PackageRecord.Prune(records);
+        public List<PackageAssembly> Prune(List<PackageAssembly> records)
+        {
+            return PackageRecord.Prune(records);
+        }
 
         public async Task<DriverResult<List<PackageAssembly>>> ProcessLeafAsync(CatalogLeafItem item)
         {

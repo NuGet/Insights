@@ -69,7 +69,7 @@ namespace Knapcode.ExplorePackages.Tool
                     var hasType = typeAttr != null;
                     var urlAttr = repositoryEl.Attribute("url");
                     var hasUrl = urlAttr != null;
-                    var isValidAbsoluteUri = Uri.TryCreate(urlAttr?.Value, UriKind.Absolute, out Uri parsedUrl);
+                    var isValidAbsoluteUri = Uri.TryCreate(urlAttr?.Value, UriKind.Absolute, out var parsedUrl);
 
                     Console.Write(match.PackageKey);
                     Console.Write('\t');
@@ -111,8 +111,19 @@ namespace Knapcode.ExplorePackages.Tool
             return dateTimeOffset.ToString("G", CultureInfo.InvariantCulture);
         }
 
-        public bool IsInitializationRequired() => true;
-        public bool IsDatabaseRequired() => true;
-        public bool IsSingleton() => false;
+        public bool IsInitializationRequired()
+        {
+            return true;
+        }
+
+        public bool IsDatabaseRequired()
+        {
+            return true;
+        }
+
+        public bool IsSingleton()
+        {
+            return false;
+        }
     }
 }

@@ -38,7 +38,7 @@ namespace Knapcode.ExplorePackages
         /// Returns an instance of Random which can be used freely
         /// within the current thread.
         /// </summary>
-        public static Random Instance { get { return threadRandom.Value; } }
+        public static Random Instance => threadRandom.Value;
 
         /// <summary>See <see cref="Random.Next()" /></summary>
         public static int Next()

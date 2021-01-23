@@ -29,6 +29,9 @@ namespace Knapcode.ExplorePackages
             return result;
         }
 
-        public TempStreamWriter GetWriter() => _serviceProvider.GetRequiredService<TempStreamWriter>();
+        public TempStreamWriter GetWriter()
+        {
+            return _serviceProvider.GetRequiredService<TempStreamWriter>();
+        }
     }
 }

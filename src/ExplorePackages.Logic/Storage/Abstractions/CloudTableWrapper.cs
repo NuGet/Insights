@@ -13,8 +13,15 @@ namespace Knapcode.ExplorePackages
             _inner = inner;
         }
 
-        public async Task CreateIfNotExistsAsync() => await _inner.CreateIfNotExistsAsync();
-        public async Task DeleteIfExistsAsync() => await _inner.DeleteIfExistsAsync();
+        public async Task CreateIfNotExistsAsync()
+        {
+            await _inner.CreateIfNotExistsAsync();
+        }
+
+        public async Task DeleteIfExistsAsync()
+        {
+            await _inner.DeleteIfExistsAsync();
+        }
 
         public async Task<TableResult> ExecuteAsync(TableOperation operation)
         {

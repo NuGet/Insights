@@ -83,7 +83,7 @@ namespace Knapcode.ExplorePackages.Tool
                 segmentsPerFirstPrefix: i,
                 segmentsPerSubsequentPrefix: j);
 
-            int countLowerBound = -1;
+            var countLowerBound = -1;
             do
             {
                 if (countLowerBound > 0)
@@ -102,16 +102,17 @@ namespace Knapcode.ExplorePackages.Tool
         private async Task WorkOnRealRestoreAsync()
         {
             await Task.Yield();
+            /*
+            Success: {"n":"rrr","v":1,"d":{"i":"Newtonsoft.Json","v":"12.0.3","f":"netcoreapp1.1"}}
+            NU1202: { "n":"rrr","v":1,"d":{ "i":"Aspose.Words","v":"20.9.0","f":"netstandard1.6"} }
+            NU1213: { "n":"rrr","v":1,"d":{ "i":"Microsoft.AspNetCore.App.Runtime.linux-x64","v":"5.0.0-rc.1.20451.17","f":"netstandard1.5"} }
+            MSB3644: { "n":"rrr","v":1,"d":{ "i":"Newtonsoft.Json","v":"12.0.3","f":"net35"} }
 
-            // Success: {"n":"rrr","v":1,"d":{"i":"Newtonsoft.Json","v":"12.0.3","f":"netcoreapp1.1"}}
-            // NU1202: { "n":"rrr","v":1,"d":{ "i":"Aspose.Words","v":"20.9.0","f":"netstandard1.6"} }
-            // NU1213: { "n":"rrr","v":1,"d":{ "i":"Microsoft.AspNetCore.App.Runtime.linux-x64","v":"5.0.0-rc.1.20451.17","f":"netstandard1.5"} }
-            // MSB3644: { "n":"rrr","v":1,"d":{ "i":"Newtonsoft.Json","v":"12.0.3","f":"net35"} }
-
-            // await EnqueueRunRealRestoreAsync();
-            // await EnqueueRunRealRestoreCompactAsync();
-            // await ReadErrorBlobsAsync();
-            // await RetryRunRealRestoreAsync();
+            await EnqueueRunRealRestoreAsync();
+            await EnqueueRunRealRestoreCompactAsync();
+            await ReadErrorBlobsAsync();
+            await RetryRunRealRestoreAsync();
+            */
         }
 
         private async Task ReadErrorBlobsAsync()
@@ -216,9 +217,11 @@ namespace Knapcode.ExplorePackages.Tool
                 .Select(x => NuGetFramework.Parse(x))
                 .ToList();
 
-            var packages = new HashSet<NuGetPackageIdentity>();
-            // await AddTopPackagesAsync(packages);
-            packages.Add(new NuGetPackageIdentity("Xam.Plugins.Android.ExoPlayer.MediaSession", NuGetVersion.Parse("2.11.8")));
+            var packages = new HashSet<NuGetPackageIdentity>
+            {
+                // await AddTopPackagesAsync(packages);
+                new NuGetPackageIdentity("Xam.Plugins.Android.ExoPlayer.MediaSession", NuGetVersion.Parse("2.11.8"))
+            };
 
             Console.WriteLine($"Found {packages.Count} packages.");
 
@@ -278,9 +281,19 @@ namespace Knapcode.ExplorePackages.Tool
             while (packages.Count < packageCount && hasMoreResults);
         }
 
-        public bool IsInitializationRequired() => false;
-        public bool IsDatabaseRequired() => false;
-        public bool IsSingleton() => false;
+        public bool IsInitializationRequired()
+        {
+            return false;
+        }
 
+        public bool IsDatabaseRequired()
+        {
+            return false;
+        }
+
+        public bool IsSingleton()
+        {
+            return false;
+        }
     }
 }

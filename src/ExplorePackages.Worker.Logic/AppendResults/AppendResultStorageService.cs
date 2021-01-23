@@ -141,7 +141,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         private static async Task AppendToTableAsync<T>(int bucket, ICloudTable table, IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
         {
-            AppendResultEntity dataEntity = SerializeToTableEntity(records, bucket);
+            var dataEntity = SerializeToTableEntity(records, bucket);
 
             var entities = new List<AppendResultEntity>();
             if (dataEntity.Data.Length >= MaximumPropertyLength)
@@ -320,7 +320,7 @@ namespace Knapcode.ExplorePackages.Worker
                 accessCondition = AccessCondition.GenerateIfMatchCondition(compactBlob.Properties.ETag);
             }
 
-            Stream stream = Stream.Null;
+            var stream = Stream.Null;
             if (allRecords.Any())
             {
                 var prunedRecords = prune(allRecords);

@@ -44,8 +44,10 @@ namespace Knapcode.ExplorePackages.WideEntities
             var chunkLengthInts = chunkLengths.Split(',').Select(int.Parse).ToArray();
             (var chunks, var bytes) = GetChunks(chunkLengthInts);
 
-            var target = new ChunkStream(chunks);
-            target.Position = initialPosition;
+            var target = new ChunkStream(chunks)
+            {
+                Position = initialPosition
+            };
 
             var buffer = new byte[bufferSize];
 

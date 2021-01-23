@@ -24,7 +24,10 @@ namespace Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan
 
         public IList<string> SelectColumns => _selectColumns;
 
-        public Task InitializeAsync(JToken parameters) => Task.CompletedTask;
+        public Task InitializeAsync(JToken parameters)
+        {
+            return Task.CompletedTask;
+        }
 
         public async Task ProcessEntitySegmentAsync(string tableName, JToken parameters, List<CatalogLeafScan> entities)
         {

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
@@ -65,7 +64,7 @@ namespace Knapcode.ExplorePackages
                     continue;
                 }
 
-                List<RegistrationLeafItem> leaves = pageItem.Items;
+                var leaves = pageItem.Items;
                 if (leaves == null)
                 {
                     var page = await GetRegistrationPage(pageItem.Url);

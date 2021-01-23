@@ -38,6 +38,9 @@ namespace Knapcode.ExplorePackages.WideEntities
         public DateTimeOffset Timestamp { get; }
         public string ETag { get; }
         public int SegmentCount { get; }
-        public Stream GetStream() => new ChunkStream(_chunks);
+        public Stream GetStream()
+        {
+            return new ChunkStream(_chunks);
+        }
     }
 }

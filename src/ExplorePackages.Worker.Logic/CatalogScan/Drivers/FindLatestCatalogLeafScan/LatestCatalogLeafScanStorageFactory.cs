@@ -16,7 +16,10 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
             _storageService = storageService;
         }
 
-        public Task InitializeAsync(CatalogIndexScan indexScan) => Task.CompletedTask;
+        public Task InitializeAsync(CatalogIndexScan indexScan)
+        {
+            return Task.CompletedTask;
+        }
 
         public async Task<ILatestPackageLeafStorage<CatalogLeafScan>> CreateAsync(CatalogPageScan pageScan, IReadOnlyDictionary<CatalogLeafItem, int> leafItemToRank)
         {

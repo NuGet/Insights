@@ -52,7 +52,7 @@ namespace Knapcode.ExplorePackages.Worker
                     _logger.LogWarning("There were {Count} messages with no matching leaf scans.", noMatchingScan.Count);
                 }
 
-                foreach (var (driverType, toProcess) in driverTypeToProcess)
+                foreach ((var driverType, var toProcess) in driverTypeToProcess)
                 {
                     var batchDriver = _driverFactory.CreateBatchDriverOrNull(driverType);
                     if (batchDriver != null)
@@ -69,7 +69,7 @@ namespace Knapcode.ExplorePackages.Worker
             if (poison.Any())
             {
                 // Enqueue these one at a time to ease debugging.
-                foreach (var (message, scan) in poison)
+                foreach ((var message, var scan) in poison)
                 {
                     _logger.LogError("Moving message with {AttemptCount} attempts and {DequeueCount} dequeues (on the current message copy) to the poison queue.", scan.AttemptCount, dequeueCount);
                     await _messageEnqueuer.EnqueuePoisonAsync(new[] { message });
@@ -78,7 +78,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             if (tryAgainLater.Any())
             {
-                foreach (var (message, scan, notBefore) in tryAgainLater)
+                foreach ((var message, var scan, var notBefore) in tryAgainLater)
                 {
                     _logger.LogWarning(
                         "Catalog leaf scan has {AttemptCount} attempts and the message has {DequeueCount} dequeues. Waiting for {RemainingMinutes:F2} minutes.",
@@ -178,7 +178,7 @@ namespace Knapcode.ExplorePackages.Worker
             // Increment the attempt counter for all scans
             var scans = new List<CatalogLeafScan>();
             var scanToMessage = new Dictionary<CatalogLeafScan, CatalogLeafScanMessage>(ReferenceEqualityComparer<CatalogLeafScan>.Instance);
-            foreach (var (message, scan) in toProcess)
+            foreach ((var message, var scan) in toProcess)
             {
                 scans.Add(scan);
                 scanToMessage.Add(scan, message);
@@ -201,7 +201,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             // Reduce the attempt counter for all "try again later" scans and remove them from the set to delete (complete)
             var allTryAgainLaterScans = new List<CatalogLeafScan>();
-            foreach (var (notBefore, tryAgainLaterScans) in result.TryAgainLater)
+            foreach ((var notBefore, var tryAgainLaterScans) in result.TryAgainLater)
             {
                 foreach (var scan in tryAgainLaterScans)
                 {
@@ -232,7 +232,7 @@ namespace Knapcode.ExplorePackages.Worker
             List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan, TimeSpan NotBefore)> tryAgainLater,
             List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan)> toProcess)
         {
-            foreach (var (message, scan) in toProcess)
+            foreach ((var message, var scan) in toProcess)
             {
                 // Rebuild the driver for each message, to minimize interactions.
                 var nonBatchDriver = _driverFactory.CreateNonBatchDriver(scan.ParsedDriverType);

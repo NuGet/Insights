@@ -15,8 +15,15 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
 
         public CloudTable Table { get; }
         public string CommitTimestampColumnName => nameof(CatalogLeafScan.CommitTimestamp);
-        public string GetPartitionKey(string packageId) => CatalogLeafScan.GetPartitionKey(_indexScan.ScanId, GetPageId(packageId));
-        public string GetRowKey(string packageVersion) => GetLeafId(packageVersion);
+        public string GetPartitionKey(string packageId)
+        {
+            return CatalogLeafScan.GetPartitionKey(_indexScan.ScanId, GetPageId(packageId));
+        }
+
+        public string GetRowKey(string packageVersion)
+        {
+            return GetLeafId(packageVersion);
+        }
 
         public CatalogLeafScan Map(CatalogLeafItem item)
         {
@@ -33,7 +40,14 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
             };
         }
 
-        private static string GetPageId(string packageId) => packageId.ToLowerInvariant();
-        private static string GetLeafId(string packageVersion) => NuGetVersion.Parse(packageVersion).ToNormalizedString().ToLowerInvariant();
+        private static string GetPageId(string packageId)
+        {
+            return packageId.ToLowerInvariant();
+        }
+
+        private static string GetLeafId(string packageVersion)
+        {
+            return NuGetVersion.Parse(packageVersion).ToNormalizedString().ToLowerInvariant();
+        }
     }
 }

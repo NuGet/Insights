@@ -25,8 +25,16 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf
         }
 
         public CloudTable Table { get; }
-        public string GetPartitionKey(string packageId) => LatestPackageLeaf.GetPartitionKey(_prefix, packageId);
-        public string GetRowKey(string packageVersion) => LatestPackageLeaf.GetRowKey(packageVersion);
+        public string GetPartitionKey(string packageId)
+        {
+            return LatestPackageLeaf.GetPartitionKey(_prefix, packageId);
+        }
+
+        public string GetRowKey(string packageVersion)
+        {
+            return LatestPackageLeaf.GetRowKey(packageVersion);
+        }
+
         public string CommitTimestampColumnName => nameof(LatestPackageLeaf.CommitTimestamp);
 
         public LatestPackageLeaf Map(CatalogLeafItem item)

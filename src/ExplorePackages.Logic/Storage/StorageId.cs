@@ -14,6 +14,9 @@
         public string Sortable { get; }
         public string Unique { get; }
 
-        public override string ToString() => _value;
+        public override string ToString()
+        {
+            return _value;
+        }
     }
 }

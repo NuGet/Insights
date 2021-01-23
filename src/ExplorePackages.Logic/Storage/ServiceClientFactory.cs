@@ -15,8 +15,15 @@ namespace Knapcode.ExplorePackages
             _abstractedStorageAccount = GetLazyAbstractedStorageAccount(_storageAccount);
         }
 
-        public CloudStorageAccount GetStorageAccount() => _storageAccount.Value;
-        public ICloudStorageAccount GetAbstractedStorageAccount() => _abstractedStorageAccount.Value;
+        public CloudStorageAccount GetStorageAccount()
+        {
+            return _storageAccount.Value;
+        }
+
+        public ICloudStorageAccount GetAbstractedStorageAccount()
+        {
+            return _abstractedStorageAccount.Value;
+        }
 
         private static Lazy<CloudStorageAccount> GetLazyStorageAccount(string connectionString)
         {

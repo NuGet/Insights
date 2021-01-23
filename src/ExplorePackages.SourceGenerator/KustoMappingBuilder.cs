@@ -46,7 +46,10 @@ namespace Knapcode.ExplorePackages
             _builder.Append("'");
         }
 
-        public string GetResult() => _builder.ToString();
+        public string GetResult()
+        {
+            return _builder.ToString();
+        }
 
         /// <summary>
         /// Source: https://docs.microsoft.com/en-us/azure/data-explorer/kusto/management/mappings

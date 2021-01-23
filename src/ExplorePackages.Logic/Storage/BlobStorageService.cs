@@ -131,8 +131,10 @@ namespace Knapcode.ExplorePackages
 
                 // Remove the query string from the logged URI. It could contain a SAS token.
                 // See https://github.com/Azure/azure-storage-net/issues/670
-                var requestUriBuilder = new UriBuilder(e.RequestUri);
-                requestUriBuilder.Query = null;
+                var requestUriBuilder = new UriBuilder(e.RequestUri)
+                {
+                    Query = null
+                };
                 var sanitizedRequestUri = requestUriBuilder.Uri.AbsoluteUri;
 
                 var duration = e.RequestInformation.EndTime - e.RequestInformation.StartTime;

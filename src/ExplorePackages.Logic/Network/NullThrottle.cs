@@ -10,6 +10,9 @@ namespace Knapcode.ExplorePackages
         {
         }
 
-        public Task WaitAsync() => Task.CompletedTask;
+        public Task WaitAsync()
+        {
+            return Task.CompletedTask;
+        }
     }
 }

@@ -219,7 +219,10 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
             public override bool OnlyLatestLeaves => true;
 
             [Fact]
-            public Task Execute() => FindPackageAssembly_WithDuplicates();
+            public Task Execute()
+            {
+                return FindPackageAssembly_WithDuplicates();
+            }
         }
 
         public class FindPackageAssembly_WithDuplicates_AllLeaves : FindPackageAssemblyIntegrationTest
@@ -232,7 +235,10 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
             public override bool OnlyLatestLeaves => false;
 
             [Fact]
-            public Task Execute() => FindPackageAssembly_WithDuplicates();
+            public Task Execute()
+            {
+                return FindPackageAssembly_WithDuplicates();
+            }
         }
 
         private async Task FindPackageAssembly_WithDuplicates()

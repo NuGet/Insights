@@ -39,8 +39,19 @@ namespace Knapcode.ExplorePackages.Tool
                 reprocess: true);
         }
 
-        public bool IsInitializationRequired() => true;
-        public bool IsDatabaseRequired() => true;
-        public bool IsSingleton() => true;
+        public bool IsInitializationRequired()
+        {
+            return true;
+        }
+
+        public bool IsDatabaseRequired()
+        {
+            return true;
+        }
+
+        public bool IsSingleton()
+        {
+            return true;
+        }
     }
 }

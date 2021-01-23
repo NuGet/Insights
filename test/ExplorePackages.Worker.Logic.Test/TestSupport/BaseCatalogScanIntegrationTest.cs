@@ -19,9 +19,15 @@ namespace Knapcode.ExplorePackages.Worker
 
         protected abstract CatalogScanDriverType DriverType { get; }
 
-        protected Task SetCursorAsync(DateTimeOffset min) => SetCursorAsync(DriverType, min);
+        protected Task SetCursorAsync(DateTimeOffset min)
+        {
+            return SetCursorAsync(DriverType, min);
+        }
 
-        protected virtual Task<CatalogIndexScan> UpdateAsync(DateTimeOffset max) => UpdateAsync(DriverType, onlyLatestLeaves: null, max);
+        protected virtual Task<CatalogIndexScan> UpdateAsync(DateTimeOffset max)
+        {
+            return UpdateAsync(DriverType, onlyLatestLeaves: null, max);
+        }
 
         protected async Task VerifyOutputAsync<T>(CloudTable table, string dir, Action<T> cleanEntity = null) where T : ITableEntity, new()
         {

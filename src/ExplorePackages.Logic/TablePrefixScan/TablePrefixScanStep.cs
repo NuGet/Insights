@@ -14,6 +14,9 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
         public int Depth { get; }
         public abstract string DebuggerDisplay { get; }
 
-        public override string ToString() => DebuggerDisplay;
+        public override string ToString()
+        {
+            return DebuggerDisplay;
+        }
     }
 }
