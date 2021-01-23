@@ -474,6 +474,8 @@ namespace Knapcode.ExplorePackages.Worker
 
         protected override void ConfigureHostBuilder(IHostBuilder hostBuilder)
         {
+            base.ConfigureHostBuilder(hostBuilder);
+
             hostBuilder.ConfigureServices(serviceCollection =>
             {
                 serviceCollection.AddTransient<CatalogLeafScanMessageProcessor>();

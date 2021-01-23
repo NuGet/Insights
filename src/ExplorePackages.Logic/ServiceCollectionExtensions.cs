@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.TablePrefixScan;
+using Knapcode.ExplorePackages.WideEntities;
 using Knapcode.MiniZip;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -123,6 +124,8 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<AutoRenewingStorageLeaseService>();
             serviceCollection.AddTransient<StorageSemaphoreLeaseService>();
             serviceCollection.AddTransient<TablePrefixScanner>();
+            serviceCollection.AddTransient<WideEntityService>();
+            serviceCollection.AddTransient<PackageFileService>();
 
             serviceCollection.AddSingleton<ITelemetryClient>(s => NullTelemetryClient.Instance);
 
