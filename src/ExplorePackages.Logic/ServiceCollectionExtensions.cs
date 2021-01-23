@@ -103,8 +103,8 @@ namespace Knapcode.ExplorePackages
                 x => new HttpZipProvider(x.GetRequiredService<HttpClient>(), x.GetRequiredService<IThrottle>())
                 {
                     BufferSizeProvider = new ZipBufferSizeProvider(
-                        firstBufferSize: 4096,
-                        secondBufferSize: 4096,
+                        firstBufferSize: 1024 * 16,
+                        secondBufferSize: 1024 * 16,
                         exponent: 2)
                 });
             serviceCollection.AddTransient<MZipFormat>();
