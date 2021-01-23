@@ -70,8 +70,8 @@ namespace Knapcode.ExplorePackages.Worker
                         o.AddProvider(new XunitLoggerProvider(output, LogLevel.Trace, LogLevelToCount));
                     });
 
-                    serviceCollection.Configure((Action<ExplorePackagesSettings>)(ConfigureDefaultsAndSettings));
-                    serviceCollection.Configure((Action<ExplorePackagesWorkerSettings>)(ConfigureDefaultsAndSettings));
+                    serviceCollection.Configure((Action<ExplorePackagesSettings>)ConfigureDefaultsAndSettings);
+                    serviceCollection.Configure((Action<ExplorePackagesWorkerSettings>)ConfigureDefaultsAndSettings);
                 });
 
             ConfigureHostBuilder(hostBuilder);
@@ -87,6 +87,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             x.StorageContainerName = $"{StoragePrefix}1p1";
             x.LeaseContainerName = $"{StoragePrefix}1l1";
+            x.PackageFileTableName = $"{StoragePrefix}1pf1";
 
             if (ConfigureSettings != null)
             {

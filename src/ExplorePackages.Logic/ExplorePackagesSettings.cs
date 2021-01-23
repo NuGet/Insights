@@ -34,7 +34,7 @@ namespace Knapcode.ExplorePackages
         public string StorageConnectionString { get; set; }
         public string StorageContainerName { get; set; }
         public string LeaseContainerName { get; set; }
-        public string PackageFileTableName { get; }
+        public string PackageFileTableName { get; set; }
         public bool IsStorageContainerPublic { get; set; }
         public int MaxTempMemoryStreamSize { get; set; }
         public List<TempStreamDirectory> TempDirectories { get; set; }
