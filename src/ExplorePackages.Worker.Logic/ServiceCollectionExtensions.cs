@@ -4,6 +4,7 @@ using Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan;
 using Knapcode.ExplorePackages.Worker.FindCatalogLeafItem;
 using Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan;
 using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
+using Knapcode.ExplorePackages.Worker.FindPackageFile;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using Knapcode.ExplorePackages.Worker.TableCopy;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,6 +46,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             serviceCollection.AddFindCatalogLeafItem();
             serviceCollection.AddFindLatestLeaf();
+            serviceCollection.AddFindPackageFile();
             serviceCollection.AddRunRealRestore();
             serviceCollection.AddTableCopy();
             serviceCollection.AddDownloadsToCsv();
@@ -128,6 +130,11 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient<LatestPackageLeafStorageFactory>();
             serviceCollection.AddTransient<ILatestPackageLeafStorageFactory<LatestPackageLeaf>, LatestPackageLeafStorageFactory>();
             serviceCollection.AddTransient<FindLatestLeafDriver<LatestPackageLeaf>>();
+        }
+
+        private static void AddFindPackageFile(this IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddTransient<FindPackageFileDriver>();
         }
 
         private static void AddRunRealRestore(this IServiceCollection serviceCollection)

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Knapcode.ExplorePackages.WideEntities;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
 using Xunit;
@@ -19,6 +21,8 @@ namespace Knapcode.ExplorePackages.Worker
 
         protected abstract CatalogScanDriverType DriverType { get; }
 
+        public virtual bool OnlyLatestLeaves => false;
+
         protected Task SetCursorAsync(DateTimeOffset min)
         {
             return SetCursorAsync(DriverType, min);
@@ -29,7 +33,7 @@ namespace Knapcode.ExplorePackages.Worker
             return UpdateAsync(DriverType, onlyLatestLeaves: null, max);
         }
 
-        protected async Task VerifyOutputAsync<T>(CloudTable table, string dir, Action<T> cleanEntity = null) where T : ITableEntity, new()
+        protected async Task VerifyEntityOutputAsync<T>(CloudTable table, string dir, Action<T> cleanEntity = null) where T : ITableEntity, new()
         {
             var entities = await table.GetEntitiesAsync<T>(TelemetryClient.StartQueryLoopMetrics());
 
@@ -44,6 +48,33 @@ namespace Knapcode.ExplorePackages.Worker
             serializerSettings.NullValueHandling = NullValueHandling.Include;
             serializerSettings.Formatting = Formatting.Indented;
             var actual = JsonConvert.SerializeObject(entities, serializerSettings);
+            if (OverwriteTestData)
+            {
+                Directory.CreateDirectory(Path.Combine(TestData, dir));
+                File.WriteAllText(Path.Combine(TestData, dir, "entities.json"), actual);
+            }
+            var expected = File.ReadAllText(Path.Combine(TestData, dir, "entities.json"));
+            Assert.Equal(expected, actual);
+
+            await AssertExpectedStorageAsync();
+        }
+
+        protected async Task VerifyWideEntityOutputAsync<T>(string tableName, string dir, Func<Stream, T> deserializeEntity)
+        {
+            var service = Host.Services.GetRequiredService<WideEntityService>();
+
+            var wideEntities = await service.RetrieveAsync(tableName);
+            var entities = new List<(string PartitionKey, string RowKey, T Entity)>();
+            foreach (var wideEntity in wideEntities)
+            {
+                var entity = deserializeEntity(wideEntity.GetStream());
+                entities.Add((wideEntity.PartitionKey, wideEntity.RowKey, entity));
+            }
+
+            var serializerSettings = NameVersionSerializer.JsonSerializerSettings;
+            serializerSettings.NullValueHandling = NullValueHandling.Include;
+            serializerSettings.Formatting = Formatting.Indented;
+            var actual = JsonConvert.SerializeObject(entities.Select(x => new { x.PartitionKey, x.RowKey, x.Entity }), serializerSettings);
             if (OverwriteTestData)
             {
                 Directory.CreateDirectory(Path.Combine(TestData, dir));
@@ -114,7 +145,10 @@ namespace Knapcode.ExplorePackages.Worker
 
         protected virtual IEnumerable<string> GetExpectedLeaseNames()
         {
-            yield break;
+            if (OnlyLatestLeaves)
+            {
+                yield return $"Start-CatalogScan-{CatalogScanDriverType.FindLatestCatalogLeafScan}";
+            }
         }
 
         protected virtual IEnumerable<string> GetExpectedBlobContainerNames()

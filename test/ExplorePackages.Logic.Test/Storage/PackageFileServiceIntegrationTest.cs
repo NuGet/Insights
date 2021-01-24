@@ -14,27 +14,58 @@ namespace Knapcode.ExplorePackages
             // Arrange
             await Target.InitializeAsync();
 
+            var timestampA = DateTimeOffset.Parse("2018-10-15T01:04:00.4615524Z");
+            var timestampB = timestampA.AddHours(1);
+
             var leafItem = new CatalogLeafItem
             {
-                CommitId = "dc9945c1-9199-4479-bdea-22a6554d5b4d",
-                CommitTimestamp = DateTimeOffset.Parse("2018-10-15T01:04:00.4615524Z"),
+                CommitTimestamp = timestampA,
                 PackageId = "Newtonsoft.Json",
                 PackageVersion = "9.0.1",
                 Type = CatalogLeafType.PackageDetails,
-                Url = "https://api.nuget.org/v3/catalog0/data/2018.10.15.01.04.00/newtonsoft.json.9.0.1.json",
             };
 
-            var initial = await Target.GetOrUpdateInfoAsync(leafItem);
+            var first = await Target.GetOrUpdateInfoAsync(leafItem);
             var requestCount = HttpMessageHandlerFactory.Requests.Count;
-            leafItem.CommitId = "different";
+            leafItem.CommitTimestamp = timestampB;
 
             // Act
-            var updated = await Target.GetOrUpdateInfoAsync(leafItem);
+            var second = await Target.GetOrUpdateInfoAsync(leafItem);
 
             // Assert
             Assert.Equal(2 * requestCount, HttpMessageHandlerFactory.Requests.Count);
-            Assert.Equal("dc9945c1-9199-4479-bdea-22a6554d5b4d", initial.CommitId);
-            Assert.Equal("different", updated.CommitId);
+            Assert.Equal(timestampA, first.CommitTimestamp);
+            Assert.Equal(timestampB, second.CommitTimestamp);
+        }
+
+        [Fact]
+        public async Task DoesNotRepeatHttpRequestsForOlderLeaf()
+        {
+            // Arrange
+            await Target.InitializeAsync();
+
+            var timestampA = DateTimeOffset.Parse("2018-10-15T01:04:00.4615524Z");
+            var timestampB = timestampA.AddHours(-1);
+
+            var leafItem = new CatalogLeafItem
+            {
+                CommitTimestamp = timestampA,
+                PackageId = "Newtonsoft.Json",
+                PackageVersion = "9.0.1",
+                Type = CatalogLeafType.PackageDetails,
+            };
+
+            var first = await Target.GetOrUpdateInfoAsync(leafItem);
+            var requestCount = HttpMessageHandlerFactory.Requests.Count;
+            leafItem.CommitTimestamp = timestampB;
+
+            // Act
+            var second = await Target.GetOrUpdateInfoAsync(leafItem);
+
+            // Assert
+            Assert.Equal(requestCount, HttpMessageHandlerFactory.Requests.Count);
+            Assert.Equal(timestampA, first.CommitTimestamp);
+            Assert.Equal(timestampA, second.CommitTimestamp);
         }
 
         [Fact]

@@ -159,6 +159,7 @@ namespace Knapcode.ExplorePackages.Worker
                     await _storageService.DeleteAsync(findLatestLeavesScan);
                 }
 
+                await _taskStateStorageService.InitializeAsync(scan.StorageSuffix);
                 await _taskStateStorageService.GetOrAddAsync(taskStateKey);
                 scan.ParsedState = CatalogScanState.Enqueuing;
                 await _storageService.ReplaceAsync(scan);
@@ -305,6 +306,7 @@ namespace Knapcode.ExplorePackages.Worker
                 {
                     _logger.LogInformation("Deleting suffixed scan state tables.");
                     await _storageService.DeleteChildTablesAsync(scan.StorageSuffix);
+                    await _taskStateStorageService.DeleteTableAsync(scan.StorageSuffix);
                 }
 
                 // Update the cursor, now that the work is done.

@@ -4,22 +4,24 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Knapcode.ExplorePackages.Worker.FindPackageFiles
+namespace Knapcode.ExplorePackages.Worker.FindPackageFile
 {
-    public class FindPackageFilesDriver : ICatalogLeafScanBatchDriver
+    public class FindPackageFileDriver : ICatalogLeafScanBatchDriver
     {
         private readonly PackageFileService _packageFileService;
-        private readonly ILogger<FindPackageFilesDriver> _logger;
+        private readonly ILogger<FindPackageFileDriver> _logger;
 
-        public FindPackageFilesDriver(PackageFileService packageFileService, ILogger<FindPackageFilesDriver> logger)
+        public FindPackageFileDriver(PackageFileService packageFileService, ILogger<FindPackageFileDriver> logger)
         {
             _packageFileService = packageFileService;
             _logger = logger;
         }
 
-        public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
+        public async Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
         {
-            return Task.FromResult(CatalogIndexScanResult.ExpandLatestLeaves);
+            await _packageFileService.InitializeAsync();
+
+            return CatalogIndexScanResult.ExpandLatestLeaves;
         }
 
         public Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan)

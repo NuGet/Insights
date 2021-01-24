@@ -15,7 +15,7 @@ namespace Knapcode.ExplorePackages
 {
     public class PackageFileService
     {
-        private static readonly MessagePackSerializerOptions MessagePackSerializerOptions = MessagePackSerializerOptions
+        public static readonly MessagePackSerializerOptions MessagePackSerializerOptions = MessagePackSerializerOptions
             .Standard
             .WithCompression(MessagePackCompression.Lz4Block);
 
@@ -58,7 +58,7 @@ namespace Knapcode.ExplorePackages
             return await reader.ReadAsync();
         }
 
-        public async Task<IReadOnlyDictionary<CatalogLeafItem, PackageFileInfo>> UpdateBatchAsync(string id, IReadOnlyCollection<CatalogLeafItem> leafItems)
+        public async Task<IReadOnlyDictionary<CatalogLeafItem, PackageFileInfoV1>> UpdateBatchAsync(string id, IReadOnlyCollection<CatalogLeafItem> leafItems)
         {
             var rowKeyToLeafItem = new Dictionary<string, CatalogLeafItem>();
             foreach (var leafItem in leafItems)
@@ -85,7 +85,7 @@ namespace Knapcode.ExplorePackages
             //   2. The row exists but the data is stale. This means we must fetch the info and replace it in the table.
             //   3. The row exists and is not stale. We can just return the data in the table.
             var batch = new List<WideEntityOperation>();
-            var output = new Dictionary<CatalogLeafItem, PackageFileInfo>();
+            var output = new Dictionary<CatalogLeafItem, PackageFileInfoV1>();
             foreach (var (rowKey, leafItem) in rowKeyToLeafItem)
             {
                 (var existingEntity, var matchingInfo) = await GetExistingAsync(partitionKey, rowKey, leafItem);
@@ -115,7 +115,7 @@ namespace Knapcode.ExplorePackages
             return output;
         }
 
-        public async Task<PackageFileInfo> GetOrUpdateInfoAsync(CatalogLeafItem leafItem)
+        public async Task<PackageFileInfoV1> GetOrUpdateInfoAsync(CatalogLeafItem leafItem)
         {
             var partitionKey = GetPartitionKey(leafItem.PackageId);
             var rowKey = GetRowKey(leafItem.PackageVersion);
@@ -148,19 +148,22 @@ namespace Knapcode.ExplorePackages
             return newInfo;
         }
 
-        private static byte[] Serialize(PackageFileInfo newInfo)
+        private static byte[] Serialize(PackageFileInfoV1 newInfo)
         {
-            return MessagePackSerializer.Serialize(newInfo, MessagePackSerializerOptions);
+            return MessagePackSerializer.Serialize(
+                new PackageFileInfoVersions { V1 = newInfo },
+                MessagePackSerializerOptions);
         }
 
-        private async Task<(WideEntity ExistingEntity, PackageFileInfo MatchingInfo)> GetExistingAsync(string partitionKey, string rowKey, CatalogLeafItem leafItem)
+        private async Task<(WideEntity ExistingEntity, PackageFileInfoV1 MatchingInfo)> GetExistingAsync(string partitionKey, string rowKey, CatalogLeafItem leafItem)
         {
             var existingEntity = await _wideEntityService.RetrieveAsync(_options.Value.PackageFileTableName, partitionKey, rowKey);
             if (existingEntity != null)
             {
                 var existingInfo = Deserialize(existingEntity);
-                if (existingInfo.CommitId == leafItem.CommitId
-                    && existingInfo.CommitTimestamp == leafItem.CommitTimestamp)
+
+                // Prefer the existing entity if not older than the current leaf item
+                if (leafItem.CommitTimestamp <= existingInfo.CommitTimestamp)
                 {
                     return (existingEntity, existingInfo);
                 }
@@ -171,18 +174,21 @@ namespace Knapcode.ExplorePackages
             return (null, null);
         }
 
-        private async Task<PackageFileInfo> GetInfoAsync(CatalogLeafItem leafItem)
+        private async Task<PackageFileInfoV1> GetInfoAsync(CatalogLeafItem leafItem)
         {
+            if (leafItem.Type == CatalogLeafType.PackageDelete)
+            {
+                return MakeDeletedInfo(leafItem);
+            }
+
             var url = await GetPackageUrlAsync(leafItem.PackageId, leafItem.PackageVersion);
             using var destStream = new MemoryStream();
-            PackageFileInfo newInfo;
             try
             {
                 using var reader = await _httpZipProvider.GetReaderAsync(new Uri(url));
                 await _mzipFormat.WriteAsync(reader.Stream, destStream);
-                newInfo = new PackageFileInfo
+                return new PackageFileInfoV1
                 {
-                    CommitId = leafItem.CommitId,
                     CommitTimestamp = leafItem.CommitTimestamp,
                     Available = true,
                     HttpHeaders = reader.Properties,
@@ -191,15 +197,17 @@ namespace Knapcode.ExplorePackages
             }
             catch (MiniZipHttpStatusCodeException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {
-                newInfo = new PackageFileInfo
-                {
-                    CommitId = leafItem.CommitId,
-                    CommitTimestamp = leafItem.CommitTimestamp,
-                    Available = false,
-                };
+                return MakeDeletedInfo(leafItem);
             }
+        }
 
-            return newInfo;
+        private static PackageFileInfoV1 MakeDeletedInfo(CatalogLeafItem leafItem)
+        {
+            return new PackageFileInfoV1
+            {
+                CommitTimestamp = leafItem.CommitTimestamp,
+                Available = false,
+            };
         }
 
         private static string GetPartitionKey(string id)
@@ -216,17 +224,22 @@ namespace Knapcode.ExplorePackages
             return await _flatContainerClient.GetPackageContentUrlAsync(id, version);
         }
 
-        private static PackageFileInfo Deserialize(WideEntity entity)
+        private static PackageFileInfoV1 Deserialize(WideEntity entity)
         {
-            return MessagePackSerializer.Deserialize<PackageFileInfo>(entity.GetStream(), MessagePackSerializerOptions);
+            var info = MessagePackSerializer.Deserialize<PackageFileInfoVersions>(entity.GetStream(), MessagePackSerializerOptions);
+            return info.V1;
         }
 
         [MessagePackObject]
-        public class PackageFileInfo
+        public class PackageFileInfoVersions
         {
             [Key(0)]
-            public string CommitId { get; set; }
+            public PackageFileInfoV1 V1 { get; set; }
+        }
 
+        [MessagePackObject]
+        public class PackageFileInfoV1
+        {
             [Key(1)]
             public DateTimeOffset CommitTimestamp { get; set; }
 

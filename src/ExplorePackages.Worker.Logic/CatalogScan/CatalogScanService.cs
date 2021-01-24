@@ -118,13 +118,19 @@ namespace Knapcode.ExplorePackages.Worker
                 case CatalogScanDriverType.FindLatestPackageLeaf:
                     if (onlyLatestLeaves.HasValue && !onlyLatestLeaves.Value)
                     {
-                        throw new NotSupportedException("When finding latest leaves, only the latest leaves will be reported. Obviously.");
+                        throw new NotSupportedException("When finding latest leaves, only the latest leaves will be reported.");
                     }
                     return await UpdateFindLatestLeafAsync(max);
                 case CatalogScanDriverType.FindPackageAssembly:
                     return await UpdateFindPackageAssemblyAsync(onlyLatestLeaves.GetValueOrDefault(true), max);
                 case CatalogScanDriverType.FindPackageAsset:
                     return await UpdateFindPackageAssetAsync(onlyLatestLeaves.GetValueOrDefault(true), max);
+                case CatalogScanDriverType.FindPackageFile:
+                    if (onlyLatestLeaves.HasValue && !onlyLatestLeaves.Value)
+                    {
+                        throw new NotSupportedException("When finding package files, only the latest leaves will be reported.");
+                    }
+                    return await UpdateFindPackageFilesAsync(max);
                 default:
                     throw new NotSupportedException();
             }
@@ -183,6 +189,15 @@ namespace Knapcode.ExplorePackages.Worker
                 driverType,
                 parameters: _serializer.Serialize(parameters).AsString(),
                 min: onlyLatestLeaves ? DateTimeOffset.MinValue : CatalogClient.NuGetOrgMin,
+                max);
+        }
+
+        private async Task<CatalogIndexScan> UpdateFindPackageFilesAsync(DateTimeOffset? max)
+        {
+            return await UpdateAsync(
+                CatalogScanDriverType.FindPackageFile,
+                parameters: null,
+                min: DateTimeOffset.MinValue,
                 max);
         }
 

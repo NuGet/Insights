@@ -7,5 +7,6 @@
         FindLatestPackageLeaf,
         FindPackageAssembly,
         FindPackageAsset,
+        FindPackageFile,
     }
 }

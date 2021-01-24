@@ -1,0 +1,1082 @@
+[
+  {
+    "PartitionKey": "archimedes.library",
+    "RowKey": "1.0.245",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:35:06.0046046+00:00",
+      "HttpHeaders": {
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Access-Control-Allow-Origin": [
+          "*"
+        ],
+        "Access-Control-Expose-Headers": [
+          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
+        ],
+        "Cache-Control": [
+          "max-age=86400"
+        ],
+        "ETag": [
+          "0x8D8930B9A676EB0"
+        ],
+        "Server": [
+          "ECAcc",
+          "(sec/972D)"
+        ],
+        "Strict-Transport-Security": [
+          "max-age=31536000"
+        ],
+        "X-Cache": [
+          "HIT"
+        ],
+        "X-CDN-Rewrite": [
+          "Root path in dist"
+        ],
+        "X-Content-Type-Options": [
+          "nosniff"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "ad3f30a4-c571-41ce-9a5c-987ccca26722"
+        ],
+        "x-ms-meta-SHA512": [
+          "q/kbBSqu/KJpoucUnm3VWVUv+JWDIvKnuajEZn5LKUBrtyf2qRcJnjFZTQN55BsWKANEzpMISWxHtuezMW5mTw=="
+        ],
+        "x-ms-request-id": [
+          "b7634af6-401e-0006-0c14-f2c72d000000"
+        ],
+        "x-ms-version": [
+          "2013-08-15"
+        ],
+        "Content-MD5": [
+          "kONDG4tr8ljtslFzP0LsVg=="
+        ],
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:35:31 GMT"
+        ],
+        "Content-Length": [
+          "34399"
+        ]
+      },
+      "MZipHash": "93b5d42822bef8c70907eaae6801409dc26ccbc24b3f231ae34ce383ff5555a1"
+    }
+  },
+  {
+    "PartitionKey": "danilovsoft.microorm",
+    "RowKey": "3.3.4",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
+      "HttpHeaders": {
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Access-Control-Allow-Origin": [
+          "*"
+        ],
+        "Access-Control-Expose-Headers": [
+          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
+        ],
+        "Cache-Control": [
+          "max-age=86400"
+        ],
+        "ETag": [
+          "0x8D8930B9A377AC4"
+        ],
+        "Server": [
+          "ECAcc",
+          "(sec/970E)"
+        ],
+        "Strict-Transport-Security": [
+          "max-age=31536000"
+        ],
+        "X-Cache": [
+          "HIT"
+        ],
+        "X-CDN-Rewrite": [
+          "Root path in dist"
+        ],
+        "X-Content-Type-Options": [
+          "nosniff"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "4f8f4828-a881-4002-bd62-96c077abf27d"
+        ],
+        "x-ms-meta-SHA512": [
+          "o+/nMymBAcd5IYWZtLjjLqYhogucOmJMuavF8gmHP0TFQ80aTx/FWIvAy9TG7ZfSIybC2Q8HaD1qU/R4/erAsw=="
+        ],
+        "x-ms-request-id": [
+          "b7634ba4-401e-0006-1a14-f2c72d000000"
+        ],
+        "x-ms-version": [
+          "2013-08-15"
+        ],
+        "Content-MD5": [
+          "JzfKS/FdD56p6T3zYUxh4g=="
+        ],
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:35:31 GMT"
+        ],
+        "Content-Length": [
+          "56508"
+        ]
+      },
+      "MZipHash": "5a5f73de38746f65e1eda816e1cf5df1a4dcdafb944b69d2f1e9675b5c62a370"
+    }
+  },
+  {
+    "PartitionKey": "dnt.deskly",
+    "RowKey": "1.1.0",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:36:50.4909042+00:00",
+      "HttpHeaders": {
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Access-Control-Allow-Origin": [
+          "*"
+        ],
+        "Access-Control-Expose-Headers": [
+          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
+        ],
+        "Cache-Control": [
+          "max-age=86400"
+        ],
+        "ETag": [
+          "0x8D8930BD682C767"
+        ],
+        "Server": [
+          "ECAcc",
+          "(sec/9742)"
+        ],
+        "Strict-Transport-Security": [
+          "max-age=31536000"
+        ],
+        "X-Cache": [
+          "HIT"
+        ],
+        "X-CDN-Rewrite": [
+          "Root path in dist"
+        ],
+        "X-Content-Type-Options": [
+          "nosniff"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "174337f2-bedf-4332-855b-2c10e7820fd9"
+        ],
+        "x-ms-meta-SHA512": [
+          "TC/VJDQaFbSh8XAWcsE9U0opxVwKO/8JVLQ7hQUYZokUtjl2Mpge3u+u2akT41fW62t/mGCqmvOJVs07poFhJg=="
+        ],
+        "x-ms-request-id": [
+          "a41850b4-901e-0087-2716-f2657a000000"
+        ],
+        "x-ms-version": [
+          "2013-08-15"
+        ],
+        "Content-MD5": [
+          "3VAQtBRq8lhP1PdU4cTxzg=="
+        ],
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:37:12 GMT"
+        ],
+        "Content-Length": [
+          "327719"
+        ]
+      },
+      "MZipHash": "062d0434b1691f90e6c4a1cc3b07a7b77dc56c75341abd92d524f905756b082f"
+    }
+  },
+  {
+    "PartitionKey": "dnt.deskly.efcore",
+    "RowKey": "1.1.0",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:36:50.4909042+00:00",
+      "HttpHeaders": {
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Access-Control-Allow-Origin": [
+          "*"
+        ],
+        "Access-Control-Expose-Headers": [
+          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
+        ],
+        "Cache-Control": [
+          "max-age=86400"
+        ],
+        "ETag": [
+          "0x8D8930BD6027F6B"
+        ],
+        "Server": [
+          "ECAcc",
+          "(sec/9733)"
+        ],
+        "Strict-Transport-Security": [
+          "max-age=31536000"
+        ],
+        "X-Cache": [
+          "HIT"
+        ],
+        "X-CDN-Rewrite": [
+          "Root path in dist"
+        ],
+        "X-Content-Type-Options": [
+          "nosniff"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "f0ff1a2f-b6bc-4069-9df7-fe245a43bf32"
+        ],
+        "x-ms-meta-SHA512": [
+          "IxIVHR8eIiBq+zll1/Idpf/XGYGWG6FcAFiYKrm4raU28Dvf4WeC3vZAaEYtAxxUa6D1R0kKMA8Yc8U4rJv9XA=="
+        ],
+        "x-ms-request-id": [
+          "a4d70abc-501e-0074-5416-f2b613000000"
+        ],
+        "x-ms-version": [
+          "2013-08-15"
+        ],
+        "Content-MD5": [
+          "DJGyWwz+2B9X+JEJxV8eLQ=="
+        ],
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:37:11 GMT"
+        ],
+        "Content-Length": [
+          "302244"
+        ]
+      },
+      "MZipHash": "8ab1eba2ac39a3388d5b74b6400c2d5e52f75b2ec8fa048b6639cce8d7e60a8b"
+    }
+  },
+  {
+    "PartitionKey": "dnt.deskly.efcore.identity",
+    "RowKey": "1.1.0",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:36:50.4909042+00:00",
+      "HttpHeaders": {
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Access-Control-Allow-Origin": [
+          "*"
+        ],
+        "Access-Control-Expose-Headers": [
+          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
+        ],
+        "Cache-Control": [
+          "max-age=86400"
+        ],
+        "ETag": [
+          "0x8D8930BD6023136"
+        ],
+        "Server": [
+          "ECAcc",
+          "(sec/9733)"
+        ],
+        "Strict-Transport-Security": [
+          "max-age=31536000"
+        ],
+        "X-Cache": [
+          "HIT"
+        ],
+        "X-CDN-Rewrite": [
+          "Root path in dist"
+        ],
+        "X-Content-Type-Options": [
+          "nosniff"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "c1a3be93-4f41-4f1d-8efc-758505c36cb4"
+        ],
+        "x-ms-meta-SHA512": [
+          "mXyEMwskL7R/DMZrxCx2p/2+LXzfTMuBBhqo8vMPJXQcxAQ0JEh6+UnTRBQVmjvqrJ/Pz17k/TItMrcPFKGhEQ=="
+        ],
+        "x-ms-request-id": [
+          "869786cf-701e-0027-3716-f2aa1c000000"
+        ],
+        "x-ms-version": [
+          "2013-08-15"
+        ],
+        "Content-MD5": [
+          "5pnxmoIf5Je5MCig7Fxcqg=="
+        ],
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:37:11 GMT"
+        ],
+        "Content-Length": [
+          "281344"
+        ]
+      },
+      "MZipHash": "a35d82163cc0a244b21ddbce2b147567901aee7026237fff3a25f477428a9256"
+    }
+  },
+  {
+    "PartitionKey": "eto.forms.templates",
+    "RowKey": "2.5.8",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
+      "HttpHeaders": {
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Access-Control-Allow-Origin": [
+          "*"
+        ],
+        "Access-Control-Expose-Headers": [
+          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
+        ],
+        "Cache-Control": [
+          "max-age=86400"
+        ],
+        "ETag": [
+          "0x8D8930B99873EE0"
+        ],
+        "Server": [
+          "ECAcc",
+          "(sec/9758)"
+        ],
+        "Strict-Transport-Security": [
+          "max-age=31536000"
+        ],
+        "X-Cache": [
+          "HIT"
+        ],
+        "X-CDN-Rewrite": [
+          "Root path in dist"
+        ],
+        "X-Content-Type-Options": [
+          "nosniff"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "b490fb0e-c053-42f8-9aa9-35c47da3b801"
+        ],
+        "x-ms-meta-SHA512": [
+          "AniYDPO2GmR5UqPJVs6uEsG4Rc8NfdaoEGA5V2XWHKETRA3jPv4oFqasIrd1IbqPjwzU3PitVDy2WQNs6TAzXw=="
+        ],
+        "x-ms-request-id": [
+          "4c44b6e5-b01e-0013-1a14-f205b4000000"
+        ],
+        "x-ms-version": [
+          "2013-08-15"
+        ],
+        "Content-MD5": [
+          "o5PUDrdXHUlODvIIuGQ62w=="
+        ],
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:35:30 GMT"
+        ],
+        "Content-Length": [
+          "1070696"
+        ]
+      },
+      "MZipHash": "2552430c0af62ac6a31a520b5bc97ca032a16853258815bbe902dd535d75b578"
+    }
+  },
+  {
+    "PartitionKey": "eto.platform.direct2d",
+    "RowKey": "2.5.8",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
+      "HttpHeaders": {
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Access-Control-Allow-Origin": [
+          "*"
+        ],
+        "Access-Control-Expose-Headers": [
+          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
+        ],
+        "Cache-Control": [
+          "max-age=86400"
+        ],
+        "ETag": [
+          "0x8D8930B9BE5FC5C"
+        ],
+        "Server": [
+          "ECAcc",
+          "(sec/96B5)"
+        ],
+        "Strict-Transport-Security": [
+          "max-age=31536000"
+        ],
+        "X-Cache": [
+          "HIT"
+        ],
+        "X-CDN-Rewrite": [
+          "Root path in dist"
+        ],
+        "X-Content-Type-Options": [
+          "nosniff"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "a5d06a5f-30ad-4af0-8c7a-8feeb52b729d"
+        ],
+        "x-ms-meta-SHA512": [
+          "KU7lJ+VjCafd7Vw4ANJjfRwswHbjPRhb5mBXTrgOclAIUwLx+Ck5SH4sOfFTvcfteLGGfIEarNspFNOizZc+Jw=="
+        ],
+        "x-ms-request-id": [
+          "74845771-b01e-0090-5614-f2a519000000"
+        ],
+        "x-ms-version": [
+          "2013-08-15"
+        ],
+        "Content-MD5": [
+          "gjppk3lZHTO2RnNlfEY1Mw=="
+        ],
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:35:34 GMT"
+        ],
+        "Content-Length": [
+          "80549"
+        ]
+      },
+      "MZipHash": "64a19300a3dd480733c5f6603e1b44ed19a9e9ba749075271a25f7f2eedf02aa"
+    }
+  },
+  {
+    "PartitionKey": "eto.platform.gtk",
+    "RowKey": "2.5.8",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
+      "HttpHeaders": {
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Access-Control-Allow-Origin": [
+          "*"
+        ],
+        "Access-Control-Expose-Headers": [
+          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
+        ],
+        "Cache-Control": [
+          "max-age=86400"
+        ],
+        "ETag": [
+          "0x8D8930B9A76DB4A"
+        ],
+        "Server": [
+          "ECAcc",
+          "(sec/9734)"
+        ],
+        "Strict-Transport-Security": [
+          "max-age=31536000"
+        ],
+        "X-Cache": [
+          "HIT"
+        ],
+        "X-CDN-Rewrite": [
+          "Root path in dist"
+        ],
+        "X-Content-Type-Options": [
+          "nosniff"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "d54fff0e-af03-44bf-9154-bde6b2f21890"
+        ],
+        "x-ms-meta-SHA512": [
+          "1Z5vrl7A2Y+5G5wEEd96zF73asMOM5AVvFWSnXpvgZSR2JZ3DJVQostj9yay8upLBNuDZAO5ClsJL+EKNZGs9A=="
+        ],
+        "x-ms-request-id": [
+          "868e0bdf-701e-0027-3714-f2aa1c000000"
+        ],
+        "x-ms-version": [
+          "2013-08-15"
+        ],
+        "Content-MD5": [
+          "ah3n3Mk7/iQFIWVxXNNWGw=="
+        ],
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:35:31 GMT"
+        ],
+        "Content-Length": [
+          "199102"
+        ]
+      },
+      "MZipHash": "c436411f81a7109903b6b17e5e258f824691b2da711d26271091f154b4d09ebe"
+    }
+  },
+  {
+    "PartitionKey": "eto.platform.gtk2",
+    "RowKey": "2.5.8",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
+      "HttpHeaders": {
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Access-Control-Allow-Origin": [
+          "*"
+        ],
+        "Access-Control-Expose-Headers": [
+          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
+        ],
+        "Cache-Control": [
+          "max-age=86400"
+        ],
+        "ETag": [
+          "0x8D8930B9BE62378"
+        ],
+        "Server": [
+          "ECAcc",
+          "(sec/96A2)"
+        ],
+        "Strict-Transport-Security": [
+          "max-age=31536000"
+        ],
+        "X-Cache": [
+          "HIT"
+        ],
+        "X-CDN-Rewrite": [
+          "Root path in dist"
+        ],
+        "X-Content-Type-Options": [
+          "nosniff"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "9639b645-3147-4307-82be-9dd4b38b7cd8"
+        ],
+        "x-ms-meta-SHA512": [
+          "D1SwPXzv8RvDFGTyu142JLnQ0StuZbIKOHqxZRoyB4wzwFHkvkHZSvewOlHKPdEe/X5Hq/vM+P1fe1+EUQiFYw=="
+        ],
+        "x-ms-request-id": [
+          "1678b9a2-a01e-0025-6f14-f2a8e6000000"
+        ],
+        "x-ms-version": [
+          "2013-08-15"
+        ],
+        "Content-MD5": [
+          "8AxZGY1VewxI6VMj4g3ZDA=="
+        ],
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:35:34 GMT"
+        ],
+        "Content-Length": [
+          "198711"
+        ]
+      },
+      "MZipHash": "20a8271df146c0d8b11db19e8cf303508d9ccde3fe610f3d271b940531ee6cf9"
+    }
+  },
+  {
+    "PartitionKey": "eto.platform.gtk3",
+    "RowKey": "2.5.8",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
+      "HttpHeaders": {
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Access-Control-Allow-Origin": [
+          "*"
+        ],
+        "Access-Control-Expose-Headers": [
+          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
+        ],
+        "Cache-Control": [
+          "max-age=86400"
+        ],
+        "ETag": [
+          "0x8D8930B9A66AB3E"
+        ],
+        "Server": [
+          "ECAcc",
+          "(sec/96F5)"
+        ],
+        "Strict-Transport-Security": [
+          "max-age=31536000"
+        ],
+        "X-Cache": [
+          "HIT"
+        ],
+        "X-CDN-Rewrite": [
+          "Root path in dist"
+        ],
+        "X-Content-Type-Options": [
+          "nosniff"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "ce26ff6d-d369-4431-b4ca-59394a4665ab"
+        ],
+        "x-ms-meta-SHA512": [
+          "HDet6DkhFo1aCwNNsiP2sBYKS6X1ZrIhA9FWhqlTUv0ld9JIYCSoDsPzTGX30IH/qsgFApa9KxEQKgrg+Kpu6A=="
+        ],
+        "x-ms-request-id": [
+          "e62992cf-601e-0038-5a14-f2710c000000"
+        ],
+        "x-ms-version": [
+          "2013-08-15"
+        ],
+        "Content-MD5": [
+          "Kwz4FKoMchQZ3x/qLyLZkA=="
+        ],
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:35:31 GMT"
+        ],
+        "Content-Length": [
+          "198723"
+        ]
+      },
+      "MZipHash": "96a57094bd046c43cb01725ecf3b42a8a4f6fd72058a841cc89bbfc8b4b63ffb"
+    }
+  },
+  {
+    "PartitionKey": "eto.platform.mac64",
+    "RowKey": "2.5.8",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
+      "HttpHeaders": {
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Access-Control-Allow-Origin": [
+          "*"
+        ],
+        "Access-Control-Expose-Headers": [
+          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
+        ],
+        "Cache-Control": [
+          "max-age=86400"
+        ],
+        "ETag": [
+          "0x8D8930B9AB5C687"
+        ],
+        "Server": [
+          "ECAcc",
+          "(sec/973D)"
+        ],
+        "Strict-Transport-Security": [
+          "max-age=31536000"
+        ],
+        "X-Cache": [
+          "HIT"
+        ],
+        "X-CDN-Rewrite": [
+          "Root path in dist"
+        ],
+        "X-Content-Type-Options": [
+          "nosniff"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "ea38adaa-d833-4a4b-aac9-3495a857d90b"
+        ],
+        "x-ms-meta-SHA512": [
+          "VUdSBHGV0A6oqV7Ug6tyBB37bubNMbG2oC6N283iC9GKwhHTZE5GzCBoBeTB4VbFqlLVL+Zg0Vm42vfhxEif1A=="
+        ],
+        "x-ms-request-id": [
+          "0b158bf1-301e-0046-2314-f2eec3000000"
+        ],
+        "x-ms-version": [
+          "2013-08-15"
+        ],
+        "Content-MD5": [
+          "Mixh38c7Pkrh05UKgQNBeg=="
+        ],
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:35:32 GMT"
+        ],
+        "Content-Length": [
+          "3860384"
+        ]
+      },
+      "MZipHash": "aa03ed1815ac3509a07043b5141cb5c1395e4f89fb5b00167c5bd39ef66936dd"
+    }
+  },
+  {
+    "PartitionKey": "eto.platform.windows",
+    "RowKey": "2.5.8",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
+      "HttpHeaders": {
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Access-Control-Allow-Origin": [
+          "*"
+        ],
+        "Access-Control-Expose-Headers": [
+          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
+        ],
+        "Cache-Control": [
+          "max-age=86400"
+        ],
+        "ETag": [
+          "0x8D8930B9AAE4ADC"
+        ],
+        "Server": [
+          "ECAcc",
+          "(sec/972D)"
+        ],
+        "Strict-Transport-Security": [
+          "max-age=31536000"
+        ],
+        "X-Cache": [
+          "HIT"
+        ],
+        "X-CDN-Rewrite": [
+          "Root path in dist"
+        ],
+        "X-Content-Type-Options": [
+          "nosniff"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "ccedfc7d-7fc8-4a75-abfd-19240adc7d7b"
+        ],
+        "x-ms-meta-SHA512": [
+          "YJyrpaTUMjH/vx2NeQc48+kkQHUC5FO/MN1XV4D+INQdCbZlrnBDumrbEu7bJok+ZWw28jBDntUysVcyPSZn8g=="
+        ],
+        "x-ms-request-id": [
+          "5da02b83-101e-005a-7614-f236d4000000"
+        ],
+        "x-ms-version": [
+          "2013-08-15"
+        ],
+        "Content-MD5": [
+          "QCmHynRBZmO0G1uzIaktMw=="
+        ],
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:35:32 GMT"
+        ],
+        "Content-Length": [
+          "708111"
+        ]
+      },
+      "MZipHash": "a1a9ff268341c77b736b0fda8008cc896da76cb10a9919a857c527cdc80eb043"
+    }
+  },
+  {
+    "PartitionKey": "eto.platform.wpf",
+    "RowKey": "2.5.8",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
+      "HttpHeaders": {
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Access-Control-Allow-Origin": [
+          "*"
+        ],
+        "Access-Control-Expose-Headers": [
+          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
+        ],
+        "Cache-Control": [
+          "max-age=86400"
+        ],
+        "ETag": [
+          "0x8D8930B9B6FEFA3"
+        ],
+        "Server": [
+          "ECAcc",
+          "(sec/9788)"
+        ],
+        "Strict-Transport-Security": [
+          "max-age=31536000"
+        ],
+        "X-Cache": [
+          "HIT"
+        ],
+        "X-CDN-Rewrite": [
+          "Root path in dist"
+        ],
+        "X-Content-Type-Options": [
+          "nosniff"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "d80d2fa7-3d20-4e72-9097-81a10444b60b"
+        ],
+        "x-ms-meta-SHA512": [
+          "mzxtm6JJEa/mC9vm+OAaz/z6777wYA7WRHMvnKUFQks7IUxj5pNt8cIPPmQae9t6Znif2qGgrtmnwI/IkMJbsA=="
+        ],
+        "x-ms-request-id": [
+          "cac15240-001e-004e-4214-f2f5b0000000"
+        ],
+        "x-ms-version": [
+          "2013-08-15"
+        ],
+        "Content-MD5": [
+          "ipbVExKieOF36LTKoRgrog=="
+        ],
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:35:33 GMT"
+        ],
+        "Content-Length": [
+          "903993"
+        ]
+      },
+      "MZipHash": "a5daaba8fad862074268a2dc48a5bbba6950186b1a3b54366c81d97d17e41477"
+    }
+  },
+  {
+    "PartitionKey": "eto.serialization.xaml",
+    "RowKey": "2.5.8",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
+      "HttpHeaders": {
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Access-Control-Allow-Origin": [
+          "*"
+        ],
+        "Access-Control-Expose-Headers": [
+          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
+        ],
+        "Cache-Control": [
+          "max-age=86400"
+        ],
+        "ETag": [
+          "0x8D8930B9AA56F52"
+        ],
+        "Server": [
+          "ECAcc",
+          "(sec/972C)"
+        ],
+        "Strict-Transport-Security": [
+          "max-age=31536000"
+        ],
+        "X-Cache": [
+          "HIT"
+        ],
+        "X-CDN-Rewrite": [
+          "Root path in dist"
+        ],
+        "X-Content-Type-Options": [
+          "nosniff"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "14f7f0c2-aade-47df-a1c7-558a15f69189"
+        ],
+        "x-ms-meta-SHA512": [
+          "LhkKKDSS60ybnpyMTftLnE6e7y6pO5nZTfZZMqYdSbqM/4k2ibAeycRi+bzq4lbBHeFaely5CQcmDTiQEID2Cw=="
+        ],
+        "x-ms-request-id": [
+          "2e3250cf-701e-008d-1d14-f27cf3000000"
+        ],
+        "x-ms-version": [
+          "2013-08-15"
+        ],
+        "Content-MD5": [
+          "Fn+ur6gF+F0NMUoGWrv1MA=="
+        ],
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:35:32 GMT"
+        ],
+        "Content-Length": [
+          "40745"
+        ]
+      },
+      "MZipHash": "317916f3dee49a26e92d3507c4ea2a7818b35e0707587530e43050a68a5bed35"
+    }
+  },
+  {
+    "PartitionKey": "opheliasuitev2.core.brm.runtime.core",
+    "RowKey": "2.0.6.13",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:35:25.4893329+00:00",
+      "HttpHeaders": {
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Access-Control-Allow-Origin": [
+          "*"
+        ],
+        "Access-Control-Expose-Headers": [
+          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
+        ],
+        "Cache-Control": [
+          "max-age=86400"
+        ],
+        "ETag": [
+          "0x8D8930BAFDEE333"
+        ],
+        "Server": [
+          "ECAcc",
+          "(sec/96D9)"
+        ],
+        "Strict-Transport-Security": [
+          "max-age=31536000"
+        ],
+        "X-Cache": [
+          "HIT"
+        ],
+        "X-CDN-Rewrite": [
+          "Root path in dist"
+        ],
+        "X-Content-Type-Options": [
+          "nosniff"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "2aef6fc6-b7ac-4142-9818-3812da648f96"
+        ],
+        "x-ms-meta-SHA512": [
+          "HviFDLsrG4PMH+NVvsuy2/WQvzXdo/k2HedmJakvABOmzbdYqH/8QomVfAC7Di3hvodES8u+h30htWkD9aPiGA=="
+        ],
+        "x-ms-request-id": [
+          "9ef6428c-d01e-0080-6116-f293ff000000"
+        ],
+        "x-ms-version": [
+          "2013-08-15"
+        ],
+        "Content-MD5": [
+          "Rhw3aZfd79cUGdAf9SQb1w=="
+        ],
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:36:07 GMT"
+        ],
+        "Content-Length": [
+          "57938"
+        ]
+      },
+      "MZipHash": "bdef714341fecead675b130019f03ba42e7945bff30886b29d5f46678889fd85"
+    }
+  }
+]

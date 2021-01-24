@@ -1,0 +1,467 @@
+[
+  {
+    "PartitionKey": "amazonks3",
+    "RowKey": "1.5.0",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-12-20T02:39:20.5757299+00:00",
+      "HttpHeaders": {
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Access-Control-Allow-Origin": [
+          "*"
+        ],
+        "Access-Control-Expose-Headers": [
+          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
+        ],
+        "Cache-Control": [
+          "max-age=86400"
+        ],
+        "ETag": [
+          "0x8D8A4907FEF6282"
+        ],
+        "Server": [
+          "ECAcc",
+          "(sec/96C3)"
+        ],
+        "Strict-Transport-Security": [
+          "max-age=31536000"
+        ],
+        "X-Cache": [
+          "HIT"
+        ],
+        "X-CDN-Rewrite": [
+          "Root path in dist"
+        ],
+        "X-Content-Type-Options": [
+          "nosniff"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "fbdd746a-3648-4e3f-a610-1c4a0281988d"
+        ],
+        "x-ms-meta-SHA512": [
+          "2Vs5DBI4wXwFVRgQGypQ5oR178t+ittPd06rrzNWICKVKDZSsp24C2SNEDn3cQWS1aQjJU78pdyCohYeeQ1Fqg=="
+        ],
+        "x-ms-request-id": [
+          "b764f090-401e-0006-1514-f2c72d000000"
+        ],
+        "x-ms-version": [
+          "2013-08-15"
+        ],
+        "Content-MD5": [
+          "Pc+sJXvflwaamzKSkLxRiw=="
+        ],
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "Last-Modified": [
+          "Sun, 20 Dec 2020 02:39:40 GMT"
+        ],
+        "Content-Length": [
+          "17489"
+        ]
+      },
+      "MZipHash": "58e13d79c72725f01a25bac00f8ecb78465e0228d7df33fc4d653e4a4f796a56"
+    }
+  },
+  {
+    "PartitionKey": "behaviorsample",
+    "RowKey": "1.0.0",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-12-20T02:39:03.372413+00:00",
+      "HttpHeaders": {
+        "ETag": [
+          "\"1d6d7569b7f932b\""
+        ],
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Last-Modified": [
+          "Mon, 21 Dec 2020 05:03:23 GMT"
+        ],
+        "Content-Length": [
+          "3243"
+        ]
+      },
+      "MZipHash": "e5eab7e9d45033b7445bd2197343d9e6ed8b42e8868fec693e63a162208d0319"
+    }
+  },
+  {
+    "PartitionKey": "lunabot.commands.public",
+    "RowKey": "1.2.0",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-12-20T03:01:57.2082154+00:00",
+      "HttpHeaders": {
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Access-Control-Allow-Origin": [
+          "*"
+        ],
+        "Access-Control-Expose-Headers": [
+          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
+        ],
+        "Cache-Control": [
+          "max-age=86400"
+        ],
+        "ETag": [
+          "0x8D8A493B1536592"
+        ],
+        "Server": [
+          "ECAcc",
+          "(sec/9741)"
+        ],
+        "Strict-Transport-Security": [
+          "max-age=31536000"
+        ],
+        "X-Cache": [
+          "HIT"
+        ],
+        "X-CDN-Rewrite": [
+          "Root path in dist"
+        ],
+        "X-Content-Type-Options": [
+          "nosniff"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "ec8fb740-80ee-4f2d-abb4-3b3729fc5836"
+        ],
+        "x-ms-meta-SHA512": [
+          "5j3wKvgq6y7+g+xrHvBkxyxd1icevUzBhxCHHUf0bEPQw/iRuGGJkIp2GmNyXLJJvHFWotzMGD80KbC7cAXU/Q=="
+        ],
+        "x-ms-request-id": [
+          "3895064f-801e-0076-4014-f2b4e9000000"
+        ],
+        "x-ms-version": [
+          "2013-08-15"
+        ],
+        "Content-MD5": [
+          "lMbbSF4aOD3Z2qMkhZF8Vw=="
+        ],
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "Last-Modified": [
+          "Sun, 20 Dec 2020 03:02:31 GMT"
+        ],
+        "Content-Length": [
+          "72134"
+        ]
+      },
+      "MZipHash": "4ee628684582744b4e2676a5c3a661ee2e7c8d5e50323bbd0d40709fb51b0ccc"
+    }
+  },
+  {
+    "PartitionKey": "lunabot.core",
+    "RowKey": "1.0.4",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-12-20T02:39:20.5757299+00:00",
+      "HttpHeaders": {
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Access-Control-Allow-Origin": [
+          "*"
+        ],
+        "Access-Control-Expose-Headers": [
+          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
+        ],
+        "Cache-Control": [
+          "max-age=86400"
+        ],
+        "ETag": [
+          "0x8D8A4907FF57E4D"
+        ],
+        "Server": [
+          "ECAcc",
+          "(sec/96B2)"
+        ],
+        "Strict-Transport-Security": [
+          "max-age=31536000"
+        ],
+        "X-Cache": [
+          "HIT"
+        ],
+        "X-CDN-Rewrite": [
+          "Root path in dist"
+        ],
+        "X-Content-Type-Options": [
+          "nosniff"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "839f9bf3-1865-46de-82e5-65314f1e164d"
+        ],
+        "x-ms-meta-SHA512": [
+          "JRVSc6/HVji2Tg2Ixp8sJt1+CAURtkadNCoOKqAu31aLluyW1qmL46TD55UkQcHcw/aX51aQjWPVkxsDXDtSAQ=="
+        ],
+        "x-ms-request-id": [
+          "fa001828-501e-0019-2c14-f21c3d000000"
+        ],
+        "x-ms-version": [
+          "2013-08-15"
+        ],
+        "Content-MD5": [
+          "VgTylh5cU29RMsNsLkO/fg=="
+        ],
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "Last-Modified": [
+          "Sun, 20 Dec 2020 02:39:40 GMT"
+        ],
+        "Content-Length": [
+          "69028"
+        ]
+      },
+      "MZipHash": "6aabc7df2e71a836784a0f17caa8fecf9c3b6a0140953766cd66a857cb5214bd"
+    }
+  },
+  {
+    "PartitionKey": "nut.mediatr.behaviors",
+    "RowKey": "0.0.0-preview.0.44",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-12-20T02:37:52.9649363+00:00",
+      "HttpHeaders": {
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Access-Control-Allow-Origin": [
+          "*"
+        ],
+        "Access-Control-Expose-Headers": [
+          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
+        ],
+        "Cache-Control": [
+          "max-age=86400"
+        ],
+        "ETag": [
+          "0x8D8A4905AF1CCFE"
+        ],
+        "Server": [
+          "ECAcc",
+          "(sec/96F6)"
+        ],
+        "Strict-Transport-Security": [
+          "max-age=31536000"
+        ],
+        "X-Cache": [
+          "HIT"
+        ],
+        "X-CDN-Rewrite": [
+          "Root path in dist"
+        ],
+        "X-Content-Type-Options": [
+          "nosniff"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "828b8276-cdea-4520-b710-41c1fd635661"
+        ],
+        "x-ms-meta-SHA512": [
+          "z1sDXNtxP5q1Z3x8+UnKO14VJzgwLHUm6ixTFmSeNuggIqmc3HJGR+i53dklbdUB56t2erliRRSSXdcrda3qRw=="
+        ],
+        "x-ms-request-id": [
+          "c9f83da7-b01e-0057-7514-f2d9d8000000"
+        ],
+        "x-ms-version": [
+          "2013-08-15"
+        ],
+        "Content-MD5": [
+          "bfxatpT4Ksv5QOyXlL5WYg=="
+        ],
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "Last-Modified": [
+          "Sun, 20 Dec 2020 02:38:38 GMT"
+        ],
+        "Content-Length": [
+          "27983"
+        ]
+      },
+      "MZipHash": "2b3aa9bc485d3d93b4cf8d02d5a68ecebd36af8a38b50e9cf4bffa2426f4048d"
+    }
+  },
+  {
+    "PartitionKey": "nut.mediatr.behaviors.fluentvalidation",
+    "RowKey": "0.0.0-preview.0.44",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-12-20T02:37:52.9649363+00:00",
+      "HttpHeaders": {
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Access-Control-Allow-Origin": [
+          "*"
+        ],
+        "Access-Control-Expose-Headers": [
+          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
+        ],
+        "Cache-Control": [
+          "max-age=86400"
+        ],
+        "ETag": [
+          "0x8D8A4905B1C1A5A"
+        ],
+        "Server": [
+          "ECAcc",
+          "(sec/9750)"
+        ],
+        "Strict-Transport-Security": [
+          "max-age=31536000"
+        ],
+        "X-Cache": [
+          "HIT"
+        ],
+        "X-CDN-Rewrite": [
+          "Root path in dist"
+        ],
+        "X-Content-Type-Options": [
+          "nosniff"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "1668a6ab-5f3d-41d8-8a1f-a3732ba86526"
+        ],
+        "x-ms-meta-SHA512": [
+          "3X7biWepmnXFI3gAsvuHe5+ve0qaQ1fLkWCiTDufZgm0jugcDfFAyer11+hua/JZgkhZOohVyeoxrzcyQzuDsg=="
+        ],
+        "x-ms-request-id": [
+          "fdd2333c-a01e-002e-2314-f2b092000000"
+        ],
+        "x-ms-version": [
+          "2013-08-15"
+        ],
+        "Content-MD5": [
+          "kZfVXnVzAh+VV/JY5acmjA=="
+        ],
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "Last-Modified": [
+          "Sun, 20 Dec 2020 02:38:38 GMT"
+        ],
+        "Content-Length": [
+          "20723"
+        ]
+      },
+      "MZipHash": "e375c5d1b36416063c56dc7797458f7a3cf3d4b39254531ce742fb3b36391714"
+    }
+  },
+  {
+    "PartitionKey": "nut.mediatr.servicelike.dependencyinjection",
+    "RowKey": "0.0.0-preview.0.44",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-12-20T02:37:52.9649363+00:00",
+      "HttpHeaders": {
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Access-Control-Allow-Origin": [
+          "*"
+        ],
+        "Access-Control-Expose-Headers": [
+          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
+        ],
+        "Cache-Control": [
+          "max-age=86400"
+        ],
+        "ETag": [
+          "0x8D8A4905AFFB2A3"
+        ],
+        "Server": [
+          "ECAcc",
+          "(sec/9697)"
+        ],
+        "Strict-Transport-Security": [
+          "max-age=31536000"
+        ],
+        "X-Cache": [
+          "HIT"
+        ],
+        "X-CDN-Rewrite": [
+          "Root path in dist"
+        ],
+        "X-Content-Type-Options": [
+          "nosniff"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "32f0ccec-079c-454b-9720-607474fccf85"
+        ],
+        "x-ms-meta-SHA512": [
+          "Kw+yIpvGdMxY191w4MXP1YXBzfpMD0p0zGKGEXtkdM787nfHGUgJy3otp1gTtEFzL4kuk1YTiALURBV2aUx3/A=="
+        ],
+        "x-ms-request-id": [
+          "379185f6-701e-0068-2214-f26e04000000"
+        ],
+        "x-ms-version": [
+          "2013-08-15"
+        ],
+        "Content-MD5": [
+          "sWAO+4uMnMnEmQK6puFV0A=="
+        ],
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "Last-Modified": [
+          "Sun, 20 Dec 2020 02:38:38 GMT"
+        ],
+        "Content-Length": [
+          "19638"
+        ]
+      },
+      "MZipHash": "fd497ab5d5a471ae84a797d8fd04a4cdf0e1dd1a4d0dbc0e1262fae2ce568722"
+    }
+  },
+  {
+    "PartitionKey": "servicelikesample",
+    "RowKey": "1.0.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-12-20T02:39:37.8102297+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  }
+]

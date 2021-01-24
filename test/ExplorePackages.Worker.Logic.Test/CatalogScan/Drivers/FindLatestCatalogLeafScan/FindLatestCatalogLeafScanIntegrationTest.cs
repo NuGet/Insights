@@ -121,7 +121,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
 
         private async Task VerifyOutputAsync(string dir)
         {
-            await VerifyOutputAsync<CatalogLeafScan>(
+            await VerifyEntityOutputAsync<CatalogLeafScan>(
                 GetLeafScanTable(),
                 dir,
                 cleanEntity: x => x.Created = DateTimeOffset.Parse("2020-01-03T00:00:00Z"));

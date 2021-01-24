@@ -87,7 +87,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf
                 .GetStorageAccount()
                 .CreateCloudTableClient()
                 .GetTableReference(Options.Value.LatestPackageLeafTableName);
-            await VerifyOutputAsync<LatestPackageLeaf>(table, dir);
+            await VerifyEntityOutputAsync<LatestPackageLeaf>(table, dir);
         }
     }
 }

@@ -57,8 +57,23 @@ namespace Knapcode.ExplorePackages.WideEntities
 
         public async Task<WideEntity> RetrieveAsync(string tableName, string partitionKey, string rowKey, bool includeData)
         {
+            if (rowKey == null)
+            {
+                throw new ArgumentNullException(nameof(rowKey));
+            }
+
             var result = await RetrieveAsync(tableName, partitionKey, rowKey, rowKey, includeData);
             return result.SingleOrDefault();
+        }
+
+        public async Task<IReadOnlyList<WideEntity>> RetrieveAsync(string tableName)
+        {
+            return await RetrieveAsync(tableName, partitionKey: null, minRowKey: null, maxRowKey: null, includeData: true);
+        }
+
+        public async Task<IReadOnlyList<WideEntity>> RetrieveAsync(string tableName, string partitionKey)
+        {
+            return await RetrieveAsync(tableName, partitionKey, minRowKey: null, maxRowKey: null, includeData: true);
         }
 
         public async Task<IReadOnlyList<WideEntity>> RetrieveAsync(string tableName, string partitionKey, string minRowKey, string maxRowKey)
@@ -68,24 +83,65 @@ namespace Knapcode.ExplorePackages.WideEntities
 
         public async Task<IReadOnlyList<WideEntity>> RetrieveAsync(string tableName, string partitionKey, string minRowKey, string maxRowKey, bool includeData)
         {
+            var noRowKeys = false;
+            if (minRowKey == null)
+            {
+                if (maxRowKey != null)
+                {
+                    throw new ArgumentException("If min row key is null, max row key must be null as well.", nameof(maxRowKey));
+                }
+
+                noRowKeys = true;
+            }
+            else
+            {
+                if (partitionKey == null)
+                {
+                    throw new ArgumentException("If the partition key is null, the min and max row keys must be null as well.", nameof(minRowKey));
+                }
+            }
+
+            if (minRowKey != null && maxRowKey == null)
+            {
+                throw new ArgumentNullException(nameof(maxRowKey));
+            }
+
             IList<string> selectColumns;
             string filterString;
             if (includeData)
             {
                 selectColumns = null;
-
-                filterString = TableQuery.CombineFilters(
-                    PK_EQ(partitionKey),
-                    TableOperators.And,
-                    TableQuery.CombineFilters(
-                        RK_GTE(minRowKey, string.Empty), // Minimum possible row key with this prefix.
+                if (partitionKey == null)
+                {
+                    filterString = null;
+                }
+                else if (noRowKeys)
+                {
+                    filterString = PK_EQ(partitionKey);
+                }
+                else
+                {
+                    filterString = TableQuery.CombineFilters(
+                        PK_EQ(partitionKey),
                         TableOperators.And,
-                        RK_LTE(maxRowKey, char.MaxValue.ToString()))); // Maximum possible row key with this prefix.
+                        TableQuery.CombineFilters(
+                            RK_GTE(minRowKey, string.Empty), // Minimum possible row key with this prefix.
+                            TableOperators.And,
+                            RK_LTE(maxRowKey, char.MaxValue.ToString()))); // Maximum possible row key with this prefix.
+                }
             }
             else
             {
                 selectColumns = new[] { WideEntitySegment.SegmentCountPropertyName };
-                if (minRowKey == maxRowKey)
+                if (partitionKey == null)
+                {
+                    filterString = null;
+                }
+                if (noRowKeys)
+                {
+                    filterString = PK_EQ(partitionKey);
+                }
+                else if (minRowKey == maxRowKey)
                 {
                     filterString = TableQuery.CombineFilters(
                         PK_EQ(partitionKey),
@@ -114,6 +170,7 @@ namespace Knapcode.ExplorePackages.WideEntities
             var table = GetTable(tableName);
             var output = new List<WideEntity>();
 
+            string currentPartitionKey = null;
             string currentRowKeyPrefix = null;
             var segments = new List<WideEntitySegment>();
             TableContinuationToken token = null;
@@ -127,20 +184,22 @@ namespace Knapcode.ExplorePackages.WideEntities
                     continue;
                 }
 
-                if (currentRowKeyPrefix == null)
+                if (currentPartitionKey == null)
                 {
+                    currentPartitionKey = entitySegment.Results.First().PartitionKey;
                     currentRowKeyPrefix = entitySegment.Results.First().RowKeyPrefix;
                 }
 
                 foreach (var entity in entitySegment.Results)
                 {
-                    if (entity.RowKeyPrefix == currentRowKeyPrefix)
+                    if (entity.PartitionKey == currentPartitionKey && entity.RowKeyPrefix == currentRowKeyPrefix)
                     {
                         segments.Add(entity);
                     }
                     else
                     {
                         MakeWideEntity(includeData, output, segments);
+                        currentPartitionKey = entity.PartitionKey;
                         currentRowKeyPrefix = entity.RowKeyPrefix;
                         segments.Clear();
                         segments.Add(entity);
