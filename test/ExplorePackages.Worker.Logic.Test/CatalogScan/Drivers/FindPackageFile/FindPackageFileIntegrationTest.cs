@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker.CatalogScan.Drivers.FindPackageFile
+namespace Knapcode.ExplorePackages.Worker.FindPackageFile
 {
     public class FindPackageFileIntegrationTest : BaseCatalogScanIntegrationTest
     {
