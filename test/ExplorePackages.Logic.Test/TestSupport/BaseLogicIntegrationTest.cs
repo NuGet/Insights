@@ -25,7 +25,7 @@ namespace Knapcode.ExplorePackages
         /// <summary>
         /// This should only be on when generating new test data locally. It should never be checked in as true.
         /// </summary>
-        protected static readonly bool OverwriteTestData = true;
+        protected static readonly bool OverwriteTestData = false;
 
         private readonly Lazy<IHost> _lazyHost;
 
