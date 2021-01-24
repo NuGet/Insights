@@ -33,10 +33,6 @@
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:39:40 GMT"
         ],
-        "Server": [
-          "ECAcc",
-          "(sec/96C3)"
-        ],
         "Strict-Transport-Security": [
           "max-age=31536000"
         ],
@@ -122,10 +118,6 @@
         "Last-Modified": [
           "Sun, 20 Dec 2020 03:02:31 GMT"
         ],
-        "Server": [
-          "ECAcc",
-          "(sec/9741)"
-        ],
         "Strict-Transport-Security": [
           "max-age=31536000"
         ],
@@ -187,10 +179,6 @@
         ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:39:40 GMT"
-        ],
-        "Server": [
-          "ECAcc",
-          "(sec/96B2)"
         ],
         "Strict-Transport-Security": [
           "max-age=31536000"
@@ -254,10 +242,6 @@
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:38:38 GMT"
         ],
-        "Server": [
-          "ECAcc",
-          "(sec/96F6)"
-        ],
         "Strict-Transport-Security": [
           "max-age=31536000"
         ],
@@ -320,10 +304,6 @@
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:38:38 GMT"
         ],
-        "Server": [
-          "ECAcc",
-          "(sec/9750)"
-        ],
         "Strict-Transport-Security": [
           "max-age=31536000"
         ],
@@ -385,10 +365,6 @@
         ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:38:38 GMT"
-        ],
-        "Server": [
-          "ECAcc",
-          "(sec/9697)"
         ],
         "Strict-Transport-Security": [
           "max-age=31536000"

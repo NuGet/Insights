@@ -63,7 +63,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             if (noMatchingScan.Any())
             {
-                _logger.LogWarning("There were {Count} messages with no matching leaf scans.", noMatchingScan.Count);
+                _logger.LogWarning("There were {NoMatchingScanCount} messages of {Count} with no matching leaf scans.", noMatchingScan.Count, messages.Count);
             }
 
             if (failed.Any())
@@ -73,7 +73,12 @@ namespace Knapcode.ExplorePackages.Worker
 
             if (tryAgainLater.Any())
             {
-                _logger.LogWarning("{TryAgainLaterCount} catalog leaf scans of {Count} will be tried again later.", tryAgainLater.Count, messages.Count);
+                _logger.LogWarning(
+                    "{TryAgainLaterCount} catalog leaf scans of {Count} will be tried again later, in {Min} to {Max}.",
+                    tryAgainLater.Count,
+                    messages.Count,
+                    tryAgainLater.Min(x => x.NotBefore),
+                    tryAgainLater.Max(x => x.NotBefore));
             }
 
             if (poison.Any())

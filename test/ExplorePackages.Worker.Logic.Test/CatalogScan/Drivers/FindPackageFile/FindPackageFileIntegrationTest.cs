@@ -137,6 +137,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageFile
                         "Age",
                         "Date",
                         "Expires",
+                        "Server",
                         "x-ms-request-id",
                         "x-ms-version",
                     };
