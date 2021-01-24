@@ -122,20 +122,25 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageFile
                     var entity = MessagePackSerializer.Deserialize<PackageFileService.PackageFileInfoVersions>(stream, options);
 
                     string mzipHash = null;
-                    Dictionary<string, List<string>> httpHeaders = null;
+                    SortedDictionary<string, List<string>> httpHeaders = null;
+
+                    // These values are unstable
+                    var ignoredHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        "Age",
+                        "Data",
+                        "Expires",
+                    };
+
                     if (entity.V1.Available)
                     {
-                        using (var algorithm = SHA256.Create())
-                        {
-                            mzipHash = algorithm.ComputeHash(entity.V1.MZipBytes.ToArray()).ToHex();
-                        }
-
-                        httpHeaders = entity.V1.HttpHeaders.ToDictionary(x => x.Key, x => x.ToList());
-
-                        // These values are unstable
-                        httpHeaders.Remove("Age");
-                        httpHeaders.Remove("Date");
-                        httpHeaders.Remove("Expires");
+                        using var algorithm = SHA256.Create();
+                        mzipHash = algorithm.ComputeHash(entity.V1.MZipBytes.ToArray()).ToHex();
+                        httpHeaders = new SortedDictionary<string, List<string>>(entity
+                            .V1
+                            .HttpHeaders
+                            .Where(x => !ignoredHeaders.Contains(x.Key))
+                            .ToDictionary(x => x.Key, x => x.ToList()));
                     }
 
                     return new
