@@ -137,7 +137,7 @@ namespace Knapcode.ExplorePackages.WideEntities
                 {
                     filterString = null;
                 }
-                if (noRowKeys)
+                else if (noRowKeys)
                 {
                     filterString = PK_EQ(partitionKey);
                 }

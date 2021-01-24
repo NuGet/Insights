@@ -46,6 +46,10 @@ namespace Knapcode.ExplorePackages.Worker
                     {
                         batchSize = 20;
                     }
+                    else if (catalogLeafScan.ParsedDriverType == CatalogScanDriverType.FindPackageFile)
+                    {
+                        batchSize = 30;
+                    }
                     break;
             }
 

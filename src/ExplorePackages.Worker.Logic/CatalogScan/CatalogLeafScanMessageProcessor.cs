@@ -47,11 +47,6 @@ namespace Knapcode.ExplorePackages.Worker
                     throw new InvalidOperationException("For a single scan ID, there should be no more than one driver type.");
                 }
 
-                if (noMatchingScan.Any())
-                {
-                    _logger.LogWarning("There were {Count} messages with no matching leaf scans.", noMatchingScan.Count);
-                }
-
                 foreach ((var driverType, var toProcess) in driverTypeToProcess)
                 {
                     var batchDriver = _driverFactory.CreateBatchDriverOrNull(driverType);
@@ -66,25 +61,30 @@ namespace Knapcode.ExplorePackages.Worker
                 }
             }
 
-            if (poison.Any())
+            if (noMatchingScan.Any())
             {
-                // Enqueue these one at a time to ease debugging.
-                foreach ((var message, var scan) in poison)
-                {
-                    _logger.LogError("Moving message with {AttemptCount} attempts and {DequeueCount} dequeues (on the current message copy) to the poison queue.", scan.AttemptCount, dequeueCount);
-                    await _messageEnqueuer.EnqueuePoisonAsync(new[] { message });
-                }
+                _logger.LogWarning("There were {Count} messages with no matching leaf scans.", noMatchingScan.Count);
+            }
+
+            if (failed.Any())
+            {
+                _logger.LogError("{FailedCount} catalog leaf scans of {Count} failed.", failed.Count, messages.Count);
             }
 
             if (tryAgainLater.Any())
             {
-                foreach ((var message, var scan, var notBefore) in tryAgainLater)
+                _logger.LogWarning("{TryAgainLaterCount} catalog leaf scans of {Count} will be tried again later.", tryAgainLater.Count, messages.Count);
+            }
+
+            if (poison.Any())
+            {
+                _logger.LogError("{PoisonCount} catalog leaf scans of {Count} will be moved to the poison queue.", poison.Count, messages.Count);
+
+                // Enqueue these one at a time to ease debugging.
+                foreach ((var message, var scan) in poison)
                 {
-                    _logger.LogWarning(
-                        "Catalog leaf scan has {AttemptCount} attempts and the message has {DequeueCount} dequeues. Waiting for {RemainingMinutes:F2} minutes.",
-                        scan.AttemptCount,
-                        dequeueCount,
-                        notBefore.TotalMinutes);
+                    _logger.LogError("Moving message with {AttemptCount} attempts and {DequeueCount} dequeues to the poison queue.", scan.AttemptCount, dequeueCount);
+                    await _messageEnqueuer.EnqueuePoisonAsync(new[] { message });
                 }
             }
 
@@ -291,11 +291,18 @@ namespace Knapcode.ExplorePackages.Worker
 
         public static TimeSpan GetMessageDelay(int attemptCount)
         {
-            const int incrementMinutes = 5;
-            var minMinutes = attemptCount <= 1 ? 1 : incrementMinutes * (attemptCount - 1);
-            var maxMinutes = attemptCount <= 1 ? incrementMinutes : minMinutes + incrementMinutes;
-
+            // First attempt, wait up to a minute.
             const int msPerMinute = 60 * 1000;
+            if (attemptCount <= 1)
+            {
+                return TimeSpan.FromMilliseconds(ThreadLocalRandom.Next(0, msPerMinute));
+            }
+
+            // Then try in increments of 5 minutes.
+            const int incrementMinutes = 5;
+            var minMinutes = incrementMinutes * (attemptCount - 1);
+            var maxMinutes = minMinutes + incrementMinutes;
+
             var minMs = minMinutes * msPerMinute;
             var maxMs = maxMinutes * msPerMinute;
 

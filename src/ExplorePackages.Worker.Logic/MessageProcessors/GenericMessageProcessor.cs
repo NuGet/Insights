@@ -99,7 +99,9 @@ namespace Knapcode.ExplorePackages.Worker
             // This batch has failed before, so split it up instead of processing it immediately.
             if (dequeueCount > 1 && data.Count > 1)
             {
-                await _messageEnqueuer.AddAsync(data.Select(x => serializer.SerializeMessage(x).AsString()).ToList());
+                await _messageEnqueuer.AddAsync(data
+                    .Select(x => NameVersionSerializer.SerializeMessage(schemaName, schemaVersion, x).AsString())
+                    .ToList());
                 return;
             }
 
