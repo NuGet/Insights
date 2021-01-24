@@ -60,12 +60,6 @@
         ],
         "x-ms-meta-SHA512": [
           "q/kbBSqu/KJpoucUnm3VWVUv+JWDIvKnuajEZn5LKUBrtyf2qRcJnjFZTQN55BsWKANEzpMISWxHtuezMW5mTw=="
-        ],
-        "x-ms-request-id": [
-          "b7634af6-401e-0006-0c14-f2c72d000000"
-        ],
-        "x-ms-version": [
-          "2013-08-15"
         ]
       },
       "MZipHash": "93b5d42822bef8c70907eaae6801409dc26ccbc24b3f231ae34ce383ff5555a1"
@@ -132,12 +126,6 @@
         ],
         "x-ms-meta-SHA512": [
           "o+/nMymBAcd5IYWZtLjjLqYhogucOmJMuavF8gmHP0TFQ80aTx/FWIvAy9TG7ZfSIybC2Q8HaD1qU/R4/erAsw=="
-        ],
-        "x-ms-request-id": [
-          "b7634ba4-401e-0006-1a14-f2c72d000000"
-        ],
-        "x-ms-version": [
-          "2013-08-15"
         ]
       },
       "MZipHash": "5a5f73de38746f65e1eda816e1cf5df1a4dcdafb944b69d2f1e9675b5c62a370"
@@ -204,12 +192,6 @@
         ],
         "x-ms-meta-SHA512": [
           "TC/VJDQaFbSh8XAWcsE9U0opxVwKO/8JVLQ7hQUYZokUtjl2Mpge3u+u2akT41fW62t/mGCqmvOJVs07poFhJg=="
-        ],
-        "x-ms-request-id": [
-          "a41850b4-901e-0087-2716-f2657a000000"
-        ],
-        "x-ms-version": [
-          "2013-08-15"
         ]
       },
       "MZipHash": "062d0434b1691f90e6c4a1cc3b07a7b77dc56c75341abd92d524f905756b082f"
@@ -276,12 +258,6 @@
         ],
         "x-ms-meta-SHA512": [
           "IxIVHR8eIiBq+zll1/Idpf/XGYGWG6FcAFiYKrm4raU28Dvf4WeC3vZAaEYtAxxUa6D1R0kKMA8Yc8U4rJv9XA=="
-        ],
-        "x-ms-request-id": [
-          "a4d70abc-501e-0074-5416-f2b613000000"
-        ],
-        "x-ms-version": [
-          "2013-08-15"
         ]
       },
       "MZipHash": "8ab1eba2ac39a3388d5b74b6400c2d5e52f75b2ec8fa048b6639cce8d7e60a8b"
@@ -348,12 +324,6 @@
         ],
         "x-ms-meta-SHA512": [
           "mXyEMwskL7R/DMZrxCx2p/2+LXzfTMuBBhqo8vMPJXQcxAQ0JEh6+UnTRBQVmjvqrJ/Pz17k/TItMrcPFKGhEQ=="
-        ],
-        "x-ms-request-id": [
-          "869786cf-701e-0027-3716-f2aa1c000000"
-        ],
-        "x-ms-version": [
-          "2013-08-15"
         ]
       },
       "MZipHash": "a35d82163cc0a244b21ddbce2b147567901aee7026237fff3a25f477428a9256"
@@ -420,12 +390,6 @@
         ],
         "x-ms-meta-SHA512": [
           "AniYDPO2GmR5UqPJVs6uEsG4Rc8NfdaoEGA5V2XWHKETRA3jPv4oFqasIrd1IbqPjwzU3PitVDy2WQNs6TAzXw=="
-        ],
-        "x-ms-request-id": [
-          "4c44b6e5-b01e-0013-1a14-f205b4000000"
-        ],
-        "x-ms-version": [
-          "2013-08-15"
         ]
       },
       "MZipHash": "2552430c0af62ac6a31a520b5bc97ca032a16853258815bbe902dd535d75b578"
@@ -492,12 +456,6 @@
         ],
         "x-ms-meta-SHA512": [
           "KU7lJ+VjCafd7Vw4ANJjfRwswHbjPRhb5mBXTrgOclAIUwLx+Ck5SH4sOfFTvcfteLGGfIEarNspFNOizZc+Jw=="
-        ],
-        "x-ms-request-id": [
-          "74845771-b01e-0090-5614-f2a519000000"
-        ],
-        "x-ms-version": [
-          "2013-08-15"
         ]
       },
       "MZipHash": "64a19300a3dd480733c5f6603e1b44ed19a9e9ba749075271a25f7f2eedf02aa"
@@ -564,12 +522,6 @@
         ],
         "x-ms-meta-SHA512": [
           "1Z5vrl7A2Y+5G5wEEd96zF73asMOM5AVvFWSnXpvgZSR2JZ3DJVQostj9yay8upLBNuDZAO5ClsJL+EKNZGs9A=="
-        ],
-        "x-ms-request-id": [
-          "868e0bdf-701e-0027-3714-f2aa1c000000"
-        ],
-        "x-ms-version": [
-          "2013-08-15"
         ]
       },
       "MZipHash": "c436411f81a7109903b6b17e5e258f824691b2da711d26271091f154b4d09ebe"
@@ -636,12 +588,6 @@
         ],
         "x-ms-meta-SHA512": [
           "D1SwPXzv8RvDFGTyu142JLnQ0StuZbIKOHqxZRoyB4wzwFHkvkHZSvewOlHKPdEe/X5Hq/vM+P1fe1+EUQiFYw=="
-        ],
-        "x-ms-request-id": [
-          "1678b9a2-a01e-0025-6f14-f2a8e6000000"
-        ],
-        "x-ms-version": [
-          "2013-08-15"
         ]
       },
       "MZipHash": "20a8271df146c0d8b11db19e8cf303508d9ccde3fe610f3d271b940531ee6cf9"
@@ -708,12 +654,6 @@
         ],
         "x-ms-meta-SHA512": [
           "HDet6DkhFo1aCwNNsiP2sBYKS6X1ZrIhA9FWhqlTUv0ld9JIYCSoDsPzTGX30IH/qsgFApa9KxEQKgrg+Kpu6A=="
-        ],
-        "x-ms-request-id": [
-          "e62992cf-601e-0038-5a14-f2710c000000"
-        ],
-        "x-ms-version": [
-          "2013-08-15"
         ]
       },
       "MZipHash": "96a57094bd046c43cb01725ecf3b42a8a4f6fd72058a841cc89bbfc8b4b63ffb"
@@ -780,12 +720,6 @@
         ],
         "x-ms-meta-SHA512": [
           "VUdSBHGV0A6oqV7Ug6tyBB37bubNMbG2oC6N283iC9GKwhHTZE5GzCBoBeTB4VbFqlLVL+Zg0Vm42vfhxEif1A=="
-        ],
-        "x-ms-request-id": [
-          "0b158bf1-301e-0046-2314-f2eec3000000"
-        ],
-        "x-ms-version": [
-          "2013-08-15"
         ]
       },
       "MZipHash": "aa03ed1815ac3509a07043b5141cb5c1395e4f89fb5b00167c5bd39ef66936dd"
@@ -852,12 +786,6 @@
         ],
         "x-ms-meta-SHA512": [
           "YJyrpaTUMjH/vx2NeQc48+kkQHUC5FO/MN1XV4D+INQdCbZlrnBDumrbEu7bJok+ZWw28jBDntUysVcyPSZn8g=="
-        ],
-        "x-ms-request-id": [
-          "5da02b83-101e-005a-7614-f236d4000000"
-        ],
-        "x-ms-version": [
-          "2013-08-15"
         ]
       },
       "MZipHash": "a1a9ff268341c77b736b0fda8008cc896da76cb10a9919a857c527cdc80eb043"
@@ -924,12 +852,6 @@
         ],
         "x-ms-meta-SHA512": [
           "mzxtm6JJEa/mC9vm+OAaz/z6777wYA7WRHMvnKUFQks7IUxj5pNt8cIPPmQae9t6Znif2qGgrtmnwI/IkMJbsA=="
-        ],
-        "x-ms-request-id": [
-          "cac15240-001e-004e-4214-f2f5b0000000"
-        ],
-        "x-ms-version": [
-          "2013-08-15"
         ]
       },
       "MZipHash": "a5daaba8fad862074268a2dc48a5bbba6950186b1a3b54366c81d97d17e41477"
@@ -996,12 +918,6 @@
         ],
         "x-ms-meta-SHA512": [
           "LhkKKDSS60ybnpyMTftLnE6e7y6pO5nZTfZZMqYdSbqM/4k2ibAeycRi+bzq4lbBHeFaely5CQcmDTiQEID2Cw=="
-        ],
-        "x-ms-request-id": [
-          "2e3250cf-701e-008d-1d14-f27cf3000000"
-        ],
-        "x-ms-version": [
-          "2013-08-15"
         ]
       },
       "MZipHash": "317916f3dee49a26e92d3507c4ea2a7818b35e0707587530e43050a68a5bed35"
@@ -1068,12 +984,6 @@
         ],
         "x-ms-meta-SHA512": [
           "HviFDLsrG4PMH+NVvsuy2/WQvzXdo/k2HedmJakvABOmzbdYqH/8QomVfAC7Di3hvodES8u+h30htWkD9aPiGA=="
-        ],
-        "x-ms-request-id": [
-          "9ef6428c-d01e-0080-6116-f293ff000000"
-        ],
-        "x-ms-version": [
-          "2013-08-15"
         ]
       },
       "MZipHash": "bdef714341fecead675b130019f03ba42e7945bff30886b29d5f46678889fd85"

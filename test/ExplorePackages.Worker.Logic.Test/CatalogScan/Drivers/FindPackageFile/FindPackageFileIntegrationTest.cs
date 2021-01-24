@@ -76,6 +76,13 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageFile
 
                     return null;
                 };
+
+                // Set the Last-Modified date for the etag
+                var downloadsFile = new FileInfo(Path.Combine(TestData, "behaviorsample.1.0.0.nupkg"))
+                {
+                    LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z")
+                };
+
                 var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
                 var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
                 var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
@@ -130,6 +137,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageFile
                         "Age",
                         "Date",
                         "Expires",
+                        "x-ms-request-id",
+                        "x-ms-version",
                     };
 
                     if (entity.V1.Available)

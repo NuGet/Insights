@@ -60,12 +60,6 @@
         ],
         "x-ms-meta-SHA512": [
           "2Vs5DBI4wXwFVRgQGypQ5oR178t+ittPd06rrzNWICKVKDZSsp24C2SNEDn3cQWS1aQjJU78pdyCohYeeQ1Fqg=="
-        ],
-        "x-ms-request-id": [
-          "b764f090-401e-0006-1514-f2c72d000000"
-        ],
-        "x-ms-version": [
-          "2013-08-15"
         ]
       },
       "MZipHash": "58e13d79c72725f01a25bac00f8ecb78465e0228d7df33fc4d653e4a4f796a56"
@@ -85,10 +79,10 @@
           "3243"
         ],
         "ETag": [
-          "\"1d6d7569b7f932b\""
+          "\"1d6ea9f13639cab\""
         ],
         "Last-Modified": [
-          "Mon, 21 Dec 2020 05:03:23 GMT"
+          "Thu, 14 Jan 2021 18:00:00 GMT"
         ]
       },
       "MZipHash": "e5eab7e9d45033b7445bd2197343d9e6ed8b42e8868fec693e63a162208d0319"
@@ -155,12 +149,6 @@
         ],
         "x-ms-meta-SHA512": [
           "5j3wKvgq6y7+g+xrHvBkxyxd1icevUzBhxCHHUf0bEPQw/iRuGGJkIp2GmNyXLJJvHFWotzMGD80KbC7cAXU/Q=="
-        ],
-        "x-ms-request-id": [
-          "3895064f-801e-0076-4014-f2b4e9000000"
-        ],
-        "x-ms-version": [
-          "2013-08-15"
         ]
       },
       "MZipHash": "4ee628684582744b4e2676a5c3a661ee2e7c8d5e50323bbd0d40709fb51b0ccc"
@@ -227,12 +215,6 @@
         ],
         "x-ms-meta-SHA512": [
           "JRVSc6/HVji2Tg2Ixp8sJt1+CAURtkadNCoOKqAu31aLluyW1qmL46TD55UkQcHcw/aX51aQjWPVkxsDXDtSAQ=="
-        ],
-        "x-ms-request-id": [
-          "fa001828-501e-0019-2c14-f21c3d000000"
-        ],
-        "x-ms-version": [
-          "2013-08-15"
         ]
       },
       "MZipHash": "6aabc7df2e71a836784a0f17caa8fecf9c3b6a0140953766cd66a857cb5214bd"
@@ -299,12 +281,6 @@
         ],
         "x-ms-meta-SHA512": [
           "z1sDXNtxP5q1Z3x8+UnKO14VJzgwLHUm6ixTFmSeNuggIqmc3HJGR+i53dklbdUB56t2erliRRSSXdcrda3qRw=="
-        ],
-        "x-ms-request-id": [
-          "c9f83da7-b01e-0057-7514-f2d9d8000000"
-        ],
-        "x-ms-version": [
-          "2013-08-15"
         ]
       },
       "MZipHash": "2b3aa9bc485d3d93b4cf8d02d5a68ecebd36af8a38b50e9cf4bffa2426f4048d"
@@ -371,12 +347,6 @@
         ],
         "x-ms-meta-SHA512": [
           "3X7biWepmnXFI3gAsvuHe5+ve0qaQ1fLkWCiTDufZgm0jugcDfFAyer11+hua/JZgkhZOohVyeoxrzcyQzuDsg=="
-        ],
-        "x-ms-request-id": [
-          "fdd2333c-a01e-002e-2314-f2b092000000"
-        ],
-        "x-ms-version": [
-          "2013-08-15"
         ]
       },
       "MZipHash": "e375c5d1b36416063c56dc7797458f7a3cf3d4b39254531ce742fb3b36391714"
@@ -443,12 +413,6 @@
         ],
         "x-ms-meta-SHA512": [
           "Kw+yIpvGdMxY191w4MXP1YXBzfpMD0p0zGKGEXtkdM787nfHGUgJy3otp1gTtEFzL4kuk1YTiALURBV2aUx3/A=="
-        ],
-        "x-ms-request-id": [
-          "379185f6-701e-0068-2214-f26e04000000"
-        ],
-        "x-ms-version": [
-          "2013-08-15"
         ]
       },
       "MZipHash": "fd497ab5d5a471ae84a797d8fd04a4cdf0e1dd1a4d0dbc0e1262fae2ce568722"
