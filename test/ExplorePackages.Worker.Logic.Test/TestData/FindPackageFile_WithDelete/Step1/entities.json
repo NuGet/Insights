@@ -27,9 +27,6 @@
         "Content-Type": [
           "application/octet-stream"
         ],
-        "Date": [
-          "Sun, 24 Jan 2021 06:44:07 GMT"
-        ],
         "ETag": [
           "0x8D8A4907FEF6282"
         ],
@@ -125,9 +122,6 @@
         "Content-Type": [
           "application/octet-stream"
         ],
-        "Date": [
-          "Sun, 24 Jan 2021 06:44:07 GMT"
-        ],
         "ETag": [
           "0x8D8A493B1536592"
         ],
@@ -199,9 +193,6 @@
         ],
         "Content-Type": [
           "application/octet-stream"
-        ],
-        "Date": [
-          "Sun, 24 Jan 2021 06:44:07 GMT"
         ],
         "ETag": [
           "0x8D8A4907FF57E4D"
@@ -275,9 +266,6 @@
         "Content-Type": [
           "application/octet-stream"
         ],
-        "Date": [
-          "Sun, 24 Jan 2021 06:44:08 GMT"
-        ],
         "ETag": [
           "0x8D8A4905AF1CCFE"
         ],
@@ -350,9 +338,6 @@
         "Content-Type": [
           "application/octet-stream"
         ],
-        "Date": [
-          "Sun, 24 Jan 2021 06:44:08 GMT"
-        ],
         "ETag": [
           "0x8D8A4905B1C1A5A"
         ],
@@ -424,9 +409,6 @@
         ],
         "Content-Type": [
           "application/octet-stream"
-        ],
-        "Date": [
-          "Sun, 24 Jan 2021 06:44:08 GMT"
         ],
         "ETag": [
           "0x8D8A4905AFFB2A3"

@@ -128,7 +128,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageFile
                     var ignoredHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
                     {
                         "Age",
-                        "Data",
+                        "Date",
                         "Expires",
                     };
 
