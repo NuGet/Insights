@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -57,24 +58,76 @@ namespace Knapcode.ExplorePackages
             return await reader.ReadAsync();
         }
 
+        public async Task<IReadOnlyDictionary<CatalogLeafItem, PackageFileInfo>> UpdateBatchAsync(string id, IReadOnlyCollection<CatalogLeafItem> leafItems)
+        {
+            var rowKeyToLeafItem = new Dictionary<string, CatalogLeafItem>();
+            foreach (var leafItem in leafItems)
+            {
+                if (!StringComparer.OrdinalIgnoreCase.Equals(id, leafItem.PackageId))
+                {
+                    throw new ArgumentException("All leaf items must have the same package ID.");
+                }
+
+                var rowKey = GetRowKey(leafItem.PackageVersion);
+                if (rowKeyToLeafItem.ContainsKey(rowKey))
+                {
+                    throw new ArgumentException("The leaf items must be unique by package version.");
+                }
+
+                rowKeyToLeafItem.Add(rowKey, leafItem);
+            }
+
+            var partitionKey = GetPartitionKey(id);
+
+            // Fetch get the latest data for all leaf items, where applicable. There are three possibilities for each
+            // row keys:
+            //   1. The row key does not exist. This means we must fetch the info and insert it into the table.
+            //   2. The row exists but the data is stale. This means we must fetch the info and replace it in the table.
+            //   3. The row exists and is not stale. We can just return the data in the table.
+            var batch = new List<WideEntityOperation>();
+            var output = new Dictionary<CatalogLeafItem, PackageFileInfo>();
+            foreach (var (rowKey, leafItem) in rowKeyToLeafItem)
+            {
+                (var existingEntity, var matchingInfo) = await GetExistingAsync(partitionKey, rowKey, leafItem);
+                if (matchingInfo == null)
+                {
+                    var newInfo = await GetInfoAsync(leafItem);
+                    var newBytes = Serialize(newInfo);
+                    if (existingEntity == null)
+                    {
+                        batch.Add(WideEntityOperation.Insert(partitionKey, rowKey, newBytes));
+                    }
+                    else
+                    {
+                        batch.Add(WideEntityOperation.Replace(existingEntity, newBytes));
+                    }
+
+                    output.Add(leafItem, newInfo);
+                }
+                else
+                {
+                    output.Add(leafItem, matchingInfo);
+                }
+            }
+
+            await _wideEntityService.ExecuteBatchAsync(_options.Value.PackageFileTableName, batch);
+
+            return output;
+        }
+
         public async Task<PackageFileInfo> GetOrUpdateInfoAsync(CatalogLeafItem leafItem)
         {
             var partitionKey = GetPartitionKey(leafItem.PackageId);
             var rowKey = GetRowKey(leafItem.PackageVersion);
 
-            var existingEntity = await _wideEntityService.RetrieveAsync(_options.Value.PackageFileTableName, partitionKey, rowKey);
-            if (existingEntity != null)
+            (var existingEntity, var matchingInfo) = await GetExistingAsync(partitionKey, rowKey, leafItem);
+            if (matchingInfo != null)
             {
-                var existingInfo = Deserialize(existingEntity);
-                if (existingInfo.CommitId == leafItem.CommitId
-                    && existingInfo.CommitTimestamp == leafItem.CommitTimestamp)
-                {
-                    return existingInfo;
-                }
+                return matchingInfo;
             }
 
             var newInfo = await GetInfoAsync(leafItem);
-            var newBytes = MessagePackSerializer.Serialize(newInfo, MessagePackSerializerOptions);
+            var newBytes = Serialize(newInfo);
 
             if (existingEntity != null)
             {
@@ -93,6 +146,29 @@ namespace Knapcode.ExplorePackages
             }
 
             return newInfo;
+        }
+
+        private static byte[] Serialize(PackageFileInfo newInfo)
+        {
+            return MessagePackSerializer.Serialize(newInfo, MessagePackSerializerOptions);
+        }
+
+        private async Task<(WideEntity ExistingEntity, PackageFileInfo MatchingInfo)> GetExistingAsync(string partitionKey, string rowKey, CatalogLeafItem leafItem)
+        {
+            var existingEntity = await _wideEntityService.RetrieveAsync(_options.Value.PackageFileTableName, partitionKey, rowKey);
+            if (existingEntity != null)
+            {
+                var existingInfo = Deserialize(existingEntity);
+                if (existingInfo.CommitId == leafItem.CommitId
+                    && existingInfo.CommitTimestamp == leafItem.CommitTimestamp)
+                {
+                    return (existingEntity, existingInfo);
+                }
+
+                return (existingEntity, null);
+            }
+
+            return (null, null);
         }
 
         private async Task<PackageFileInfo> GetInfoAsync(CatalogLeafItem leafItem)

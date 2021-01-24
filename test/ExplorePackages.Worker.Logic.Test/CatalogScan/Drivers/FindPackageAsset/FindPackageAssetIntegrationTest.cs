@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -230,6 +231,11 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
 
             await AssertExpectedStorageAsync();
             AssertOnlyInfoLogsOrLess();
+        }
+
+        protected override IEnumerable<string> GetExpectedTableNames()
+        {
+            return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageFileTableName });
         }
     }
 }

@@ -55,5 +55,18 @@ namespace Knapcode.ExplorePackages.Worker
         {
             return $"{scanId}-{pageId}";
         }
+
+        public CatalogLeafItem GetLeafItem()
+        {
+            return new CatalogLeafItem
+            {
+                Url = Url,
+                Type = ParsedLeafType,
+                CommitId = CommitId,
+                CommitTimestamp = CommitTimestamp,
+                PackageId = PackageId,
+                PackageVersion = PackageVersion,
+            };
+        }
     }
 }

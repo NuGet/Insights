@@ -36,16 +36,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task<DriverResult> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
-            var leafItem = new CatalogLeafItem
-            {
-                Url = leafScan.Url,
-                Type = leafScan.ParsedLeafType,
-                CommitId = leafScan.CommitId,
-                CommitTimestamp = leafScan.CommitTimestamp,
-                PackageId = leafScan.PackageId,
-                PackageVersion = leafScan.PackageVersion
-            };
-
+            var leafItem = leafScan.GetLeafItem();
             var result = await _driver.ProcessLeafAsync(leafItem);
             if (result.Type == DriverResultType.TryAgainLater)
             {
