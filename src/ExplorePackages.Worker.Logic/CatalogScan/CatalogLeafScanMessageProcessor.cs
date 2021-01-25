@@ -150,6 +150,9 @@ namespace Knapcode.ExplorePackages.Worker
                     var untilNextAttempt = scan.NextAttempt.Value - DateTimeOffset.UtcNow;
                     if (untilNextAttempt > TimeSpan.Zero)
                     {
+                        // To account for clock skew, wait an extra 5 seconds.
+                        untilNextAttempt += TimeSpan.FromSeconds(5);
+
                         var notBefore = TimeSpan.FromMinutes(10);
                         if (untilNextAttempt < notBefore)
                         {
