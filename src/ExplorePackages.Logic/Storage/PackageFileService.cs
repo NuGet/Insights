@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography.Pkcs;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.WideEntities;
 using Knapcode.MiniZip;
@@ -194,6 +195,14 @@ namespace Knapcode.ExplorePackages
             try
             {
                 using var reader = await _httpZipProvider.GetReaderAsync(new Uri(url));
+
+                var zipDirectory = await reader.ReadAsync();
+                var signatureEntry = zipDirectory.Entries.Single(x => x.GetName() == ".signature.p7s");
+                var signatureBytes = await reader.ReadUncompressedFileDataAsync(zipDirectory, signatureEntry);
+
+                var signedCms = new SignedCms();
+                signedCms.Decode(signatureBytes);
+
                 await _mzipFormat.WriteAsync(reader.Stream, destStream);
                 return new PackageFileInfoV1
                 {
@@ -201,6 +210,7 @@ namespace Knapcode.ExplorePackages
                     Available = true,
                     HttpHeaders = reader.Properties,
                     MZipBytes = new Memory<byte>(destStream.GetBuffer(), 0, (int)destStream.Length),
+                    SignatureBytes = signatureBytes.AsMemory(),
                 };
             }
             catch (MiniZipHttpStatusCodeException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
@@ -263,6 +273,9 @@ namespace Knapcode.ExplorePackages
 
             [Key(4)]
             public Memory<byte> MZipBytes { get; set; }
+
+            [Key(5)]
+            public Memory<byte> SignatureBytes { get; set; }
         }
     }
 }

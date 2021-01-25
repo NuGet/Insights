@@ -129,6 +129,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageFile
                     var entity = MessagePackSerializer.Deserialize<PackageFileService.PackageFileInfoVersions>(stream, options);
 
                     string mzipHash = null;
+                    string signatureHash = null;
                     SortedDictionary<string, List<string>> httpHeaders = null;
 
                     // These values are unstable
@@ -146,6 +147,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageFile
                     {
                         using var algorithm = SHA256.Create();
                         mzipHash = algorithm.ComputeHash(entity.V1.MZipBytes.ToArray()).ToHex();
+                        signatureHash = algorithm.ComputeHash(entity.V1.SignatureBytes.ToArray()).ToHex();
                         httpHeaders = new SortedDictionary<string, List<string>>(entity
                             .V1
                             .HttpHeaders
@@ -158,7 +160,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageFile
                         entity.V1.Available,
                         entity.V1.CommitTimestamp,
                         HttpHeaders = httpHeaders,
-                        MZipHash = mzipHash
+                        MZipHash = mzipHash,
+                        SignatureHash = signatureHash,
                     };
                 });
         }

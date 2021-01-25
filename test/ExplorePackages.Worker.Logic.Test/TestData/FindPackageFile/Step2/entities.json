@@ -58,7 +58,8 @@
           "q/kbBSqu/KJpoucUnm3VWVUv+JWDIvKnuajEZn5LKUBrtyf2qRcJnjFZTQN55BsWKANEzpMISWxHtuezMW5mTw=="
         ]
       },
-      "MZipHash": "93b5d42822bef8c70907eaae6801409dc26ccbc24b3f231ae34ce383ff5555a1"
+      "MZipHash": "93b5d42822bef8c70907eaae6801409dc26ccbc24b3f231ae34ce383ff5555a1",
+      "SignatureHash": "2b0c08f644c35cb7f7a9cd7946d17b566387cbc71e49280ecd162ba13e86190e"
     }
   },
   {
@@ -120,7 +121,8 @@
           "o+/nMymBAcd5IYWZtLjjLqYhogucOmJMuavF8gmHP0TFQ80aTx/FWIvAy9TG7ZfSIybC2Q8HaD1qU/R4/erAsw=="
         ]
       },
-      "MZipHash": "5a5f73de38746f65e1eda816e1cf5df1a4dcdafb944b69d2f1e9675b5c62a370"
+      "MZipHash": "5a5f73de38746f65e1eda816e1cf5df1a4dcdafb944b69d2f1e9675b5c62a370",
+      "SignatureHash": "c555cb6fd236fba06d8a12fd36a5d3f5097f6ae402b92b5995f7f5286896b6a1"
     }
   },
   {
@@ -182,7 +184,8 @@
           "TC/VJDQaFbSh8XAWcsE9U0opxVwKO/8JVLQ7hQUYZokUtjl2Mpge3u+u2akT41fW62t/mGCqmvOJVs07poFhJg=="
         ]
       },
-      "MZipHash": "062d0434b1691f90e6c4a1cc3b07a7b77dc56c75341abd92d524f905756b082f"
+      "MZipHash": "062d0434b1691f90e6c4a1cc3b07a7b77dc56c75341abd92d524f905756b082f",
+      "SignatureHash": "5bff0691aee850a9b9fdfb24cfaf0e07a96f76ed0ad1e8eabbd8dbe9fd60594f"
     }
   },
   {
@@ -244,7 +247,8 @@
           "IxIVHR8eIiBq+zll1/Idpf/XGYGWG6FcAFiYKrm4raU28Dvf4WeC3vZAaEYtAxxUa6D1R0kKMA8Yc8U4rJv9XA=="
         ]
       },
-      "MZipHash": "8ab1eba2ac39a3388d5b74b6400c2d5e52f75b2ec8fa048b6639cce8d7e60a8b"
+      "MZipHash": "8ab1eba2ac39a3388d5b74b6400c2d5e52f75b2ec8fa048b6639cce8d7e60a8b",
+      "SignatureHash": "899132f9816f21dfa957c9710f3115a1f47c12d38bcc1b41c7d8cc3a252d73d6"
     }
   },
   {
@@ -306,7 +310,8 @@
           "mXyEMwskL7R/DMZrxCx2p/2+LXzfTMuBBhqo8vMPJXQcxAQ0JEh6+UnTRBQVmjvqrJ/Pz17k/TItMrcPFKGhEQ=="
         ]
       },
-      "MZipHash": "a35d82163cc0a244b21ddbce2b147567901aee7026237fff3a25f477428a9256"
+      "MZipHash": "a35d82163cc0a244b21ddbce2b147567901aee7026237fff3a25f477428a9256",
+      "SignatureHash": "951fa0aa839367d6462b60a07d1d592fbfcce7eaa4c95fb77d4ac2fd3cabfdbc"
     }
   },
   {
@@ -368,7 +373,8 @@
           "AniYDPO2GmR5UqPJVs6uEsG4Rc8NfdaoEGA5V2XWHKETRA3jPv4oFqasIrd1IbqPjwzU3PitVDy2WQNs6TAzXw=="
         ]
       },
-      "MZipHash": "2552430c0af62ac6a31a520b5bc97ca032a16853258815bbe902dd535d75b578"
+      "MZipHash": "2552430c0af62ac6a31a520b5bc97ca032a16853258815bbe902dd535d75b578",
+      "SignatureHash": "ed830db23d794a27800d7f23b03fa38f7bae69097575979ef873e7ff1abe5e64"
     }
   },
   {
@@ -430,7 +436,8 @@
           "KU7lJ+VjCafd7Vw4ANJjfRwswHbjPRhb5mBXTrgOclAIUwLx+Ck5SH4sOfFTvcfteLGGfIEarNspFNOizZc+Jw=="
         ]
       },
-      "MZipHash": "64a19300a3dd480733c5f6603e1b44ed19a9e9ba749075271a25f7f2eedf02aa"
+      "MZipHash": "64a19300a3dd480733c5f6603e1b44ed19a9e9ba749075271a25f7f2eedf02aa",
+      "SignatureHash": "7150b80d7208051b3da645615ea5960417aac9110011802f81f7411193ad5805"
     }
   },
   {
@@ -492,7 +499,8 @@
           "1Z5vrl7A2Y+5G5wEEd96zF73asMOM5AVvFWSnXpvgZSR2JZ3DJVQostj9yay8upLBNuDZAO5ClsJL+EKNZGs9A=="
         ]
       },
-      "MZipHash": "c436411f81a7109903b6b17e5e258f824691b2da711d26271091f154b4d09ebe"
+      "MZipHash": "c436411f81a7109903b6b17e5e258f824691b2da711d26271091f154b4d09ebe",
+      "SignatureHash": "f82588b7feff750a3c48632a520e5d846854136caff6d960d9aa74501fc3b00b"
     }
   },
   {
@@ -554,7 +562,8 @@
           "D1SwPXzv8RvDFGTyu142JLnQ0StuZbIKOHqxZRoyB4wzwFHkvkHZSvewOlHKPdEe/X5Hq/vM+P1fe1+EUQiFYw=="
         ]
       },
-      "MZipHash": "20a8271df146c0d8b11db19e8cf303508d9ccde3fe610f3d271b940531ee6cf9"
+      "MZipHash": "20a8271df146c0d8b11db19e8cf303508d9ccde3fe610f3d271b940531ee6cf9",
+      "SignatureHash": "a78fa6d6ae2ad9f06df3cf4c04c7d6a26f748aaef4745052f17d72eeffdec8ee"
     }
   },
   {
@@ -616,7 +625,8 @@
           "HDet6DkhFo1aCwNNsiP2sBYKS6X1ZrIhA9FWhqlTUv0ld9JIYCSoDsPzTGX30IH/qsgFApa9KxEQKgrg+Kpu6A=="
         ]
       },
-      "MZipHash": "96a57094bd046c43cb01725ecf3b42a8a4f6fd72058a841cc89bbfc8b4b63ffb"
+      "MZipHash": "96a57094bd046c43cb01725ecf3b42a8a4f6fd72058a841cc89bbfc8b4b63ffb",
+      "SignatureHash": "cb7ac9a04821e2a07c85dffbc8435f5a608b6d506bbefe98da4092b1dec5236c"
     }
   },
   {
@@ -678,7 +688,8 @@
           "VUdSBHGV0A6oqV7Ug6tyBB37bubNMbG2oC6N283iC9GKwhHTZE5GzCBoBeTB4VbFqlLVL+Zg0Vm42vfhxEif1A=="
         ]
       },
-      "MZipHash": "aa03ed1815ac3509a07043b5141cb5c1395e4f89fb5b00167c5bd39ef66936dd"
+      "MZipHash": "aa03ed1815ac3509a07043b5141cb5c1395e4f89fb5b00167c5bd39ef66936dd",
+      "SignatureHash": "444318ef196a49d3404a900509a285b55e68ecbfa5e32127a26eb7efb5c74c88"
     }
   },
   {
@@ -740,7 +751,8 @@
           "YJyrpaTUMjH/vx2NeQc48+kkQHUC5FO/MN1XV4D+INQdCbZlrnBDumrbEu7bJok+ZWw28jBDntUysVcyPSZn8g=="
         ]
       },
-      "MZipHash": "a1a9ff268341c77b736b0fda8008cc896da76cb10a9919a857c527cdc80eb043"
+      "MZipHash": "a1a9ff268341c77b736b0fda8008cc896da76cb10a9919a857c527cdc80eb043",
+      "SignatureHash": "52e2473f2b04abf42cef3b7ca755115f38fa4a337dae9103fed8faee8ae9e11f"
     }
   },
   {
@@ -802,7 +814,8 @@
           "mzxtm6JJEa/mC9vm+OAaz/z6777wYA7WRHMvnKUFQks7IUxj5pNt8cIPPmQae9t6Znif2qGgrtmnwI/IkMJbsA=="
         ]
       },
-      "MZipHash": "a5daaba8fad862074268a2dc48a5bbba6950186b1a3b54366c81d97d17e41477"
+      "MZipHash": "a5daaba8fad862074268a2dc48a5bbba6950186b1a3b54366c81d97d17e41477",
+      "SignatureHash": "b1e6bb1af99f3e5e4e39cb869440e51702f19391cea44ce4af5d24d6a3143629"
     }
   },
   {
@@ -864,7 +877,8 @@
           "LhkKKDSS60ybnpyMTftLnE6e7y6pO5nZTfZZMqYdSbqM/4k2ibAeycRi+bzq4lbBHeFaely5CQcmDTiQEID2Cw=="
         ]
       },
-      "MZipHash": "317916f3dee49a26e92d3507c4ea2a7818b35e0707587530e43050a68a5bed35"
+      "MZipHash": "317916f3dee49a26e92d3507c4ea2a7818b35e0707587530e43050a68a5bed35",
+      "SignatureHash": "6e77f61b5eea4a1dae039e0d730b992817c212703f50351932d066eeb5588a60"
     }
   },
   {
@@ -926,7 +940,8 @@
           "HviFDLsrG4PMH+NVvsuy2/WQvzXdo/k2HedmJakvABOmzbdYqH/8QomVfAC7Di3hvodES8u+h30htWkD9aPiGA=="
         ]
       },
-      "MZipHash": "bdef714341fecead675b130019f03ba42e7945bff30886b29d5f46678889fd85"
+      "MZipHash": "bdef714341fecead675b130019f03ba42e7945bff30886b29d5f46678889fd85",
+      "SignatureHash": "358f2084e7b0affc8bb660bd306890bea5a393ddbfe01e75928273cb9459a8af"
     }
   }
 ]

@@ -42,7 +42,7 @@ namespace Knapcode.ExplorePackages.WideEntities
             // Add the segment size property.
             calculator.AddPropertyOverhead(1);
             calculator.AddInt32Data();
-            
+
             // We can have up to 16 chunks per entity.
             for (var i = 0; i < 16; i++)
             {
@@ -569,7 +569,7 @@ namespace Knapcode.ExplorePackages.WideEntities
                 {
                     break;
                 }
-                
+
                 // Account for the chunk property name and chunk length
                 remainingEntitySize -= binaryPropertyOverhead;
 
