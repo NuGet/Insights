@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -23,6 +24,7 @@ namespace Knapcode.ExplorePackages
         private readonly FlatContainerClient _flatContainerClient;
         private readonly HttpZipProvider _httpZipProvider;
         private readonly MZipFormat _mzipFormat;
+        private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<ExplorePackagesSettings> _options;
 
         public PackageFileService(
@@ -30,12 +32,14 @@ namespace Knapcode.ExplorePackages
             FlatContainerClient flatContainerClient,
             HttpZipProvider httpZipProvider,
             MZipFormat mzipFormat,
+            ITelemetryClient telemetryClient,
             IOptions<ExplorePackagesSettings> options)
         {
             _wideEntityService = wideEntityService;
             _flatContainerClient = flatContainerClient;
             _httpZipProvider = httpZipProvider;
             _mzipFormat = mzipFormat;
+            _telemetryClient = telemetryClient;
             _options = options;
         }
 
@@ -182,6 +186,10 @@ namespace Knapcode.ExplorePackages
             }
 
             var url = await GetPackageUrlAsync(leafItem.PackageId, leafItem.PackageVersion);
+
+            var metric = _telemetryClient.GetMetric($"{nameof(PackageFileService)}.{nameof(GetInfoAsync)}.DurationMs");
+            var sw = Stopwatch.StartNew();
+
             using var destStream = new MemoryStream();
             try
             {
@@ -198,6 +206,10 @@ namespace Knapcode.ExplorePackages
             catch (MiniZipHttpStatusCodeException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {
                 return MakeDeletedInfo(leafItem);
+            }
+            finally
+            {
+                metric.TrackValue(sw.ElapsedMilliseconds);
             }
         }
 

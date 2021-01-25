@@ -431,7 +431,9 @@ namespace Knapcode.ExplorePackages.WideEntities
         public WideEntityServiceTest(Fixture fixture, ITestOutputHelper output)
         {
             _fixture = fixture;
-            Target = new WideEntityService(_fixture.ServiceClientFactory);
+            Target = new WideEntityService(
+                _fixture.ServiceClientFactory,
+                output.GetTelemetryClient());
         }
 
         public string TableName => _fixture.TableName;

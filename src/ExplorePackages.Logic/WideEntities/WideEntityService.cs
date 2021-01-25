@@ -56,11 +56,13 @@ namespace Knapcode.ExplorePackages.WideEntities
         private const string ContentTooLargeMessage = "The content is too large.";
 
         private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly ITelemetryClient _telemetryClient;
         private readonly int _maxEntitySize;
 
-        public WideEntityService(ServiceClientFactory serviceClientFactory)
+        public WideEntityService(ServiceClientFactory serviceClientFactory, ITelemetryClient telemetryClient)
         {
             _serviceClientFactory = serviceClientFactory ?? throw new ArgumentNullException(nameof(serviceClientFactory));
+            _telemetryClient = telemetryClient ?? throw new ArgumentNullException(nameof(telemetryClient));
 
             if (_serviceClientFactory.GetStorageAccount().TableEndpoint.IsLoopback)
             {
@@ -113,6 +115,8 @@ namespace Knapcode.ExplorePackages.WideEntities
 
         public async Task<IReadOnlyList<WideEntity>> RetrieveAsync(string tableName, string partitionKey, string minRowKey, string maxRowKey, bool includeData)
         {
+            using var metrics = _telemetryClient.StartQueryLoopMetrics(memberName: tableName + nameof(RetrieveAsync));
+
             var noRowKeys = false;
             if (minRowKey == null)
             {
@@ -204,9 +208,15 @@ namespace Knapcode.ExplorePackages.WideEntities
             string currentRowKeyPrefix = null;
             var segments = new List<WideEntitySegment>();
             TableContinuationToken token = null;
+
             do
             {
-                var entitySegment = await table.ExecuteQuerySegmentedAsync(query, token);
+                TableQuerySegment<WideEntitySegment> entitySegment;
+                using (metrics.TrackQuery())
+                {
+                    entitySegment = await table.ExecuteQuerySegmentedAsync(query, token);
+                }
+
                 token = entitySegment.ContinuationToken;
 
                 if (!entitySegment.Results.Any())
