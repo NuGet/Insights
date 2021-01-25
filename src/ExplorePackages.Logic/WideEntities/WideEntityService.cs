@@ -9,13 +9,13 @@ namespace Knapcode.ExplorePackages.WideEntities
     public class WideEntityService
     {
         /// <summary>
-        /// 70% of 4 MiB. We use 70% since Base64 encoding of the binary will bring us down to 75% of 4 MiB and we'll
-        /// leave the remaining 5% for the other metadata included in the entity request. Remember, the 4 MiB considers
+        /// 72% of 4 MiB. We use 72% since Base64 encoding of the binary will bring us down to 75% of 4 MiB and we'll
+        /// leave the remaining 3% for the other metadata included in the entity request. Remember, the 4 MiB considers
         /// the entire request body size, not the sum total size of the entities. The request body includes things like
         /// multi-part boundaries and entity identifiers.
         /// See: https://docs.microsoft.com/en-us/rest/api/storageservices/performing-entity-group-transactions#requirements-for-entity-group-transactions
         /// </summary>
-        public const int MaxTotalEntitySize = (int)(0.70 * 1024 * 1024 * 4);
+        private const int MaxTotalEntitySize = (int)(0.72 * 1024 * 1024 * 4);
 
         /// <summary>
         /// 64 KiB
@@ -23,7 +23,37 @@ namespace Knapcode.ExplorePackages.WideEntities
         /// </summary>
         private const int MaxBinaryPropertySize = 64 * 1024;
 
-        private const string ContentTooLargetMessage = "The content is too large.";
+        /// <summary>
+        /// This must be smaller than <see cref="MaxTotalEntitySize"/> to allow for entity overhead and property
+        /// overhead per entity. This represents that maximum content length allowed in a wide entity. We use around
+        /// </summary>
+        public static readonly int MaxTotalDataSize;
+
+        static WideEntityService()
+        {
+            // We calculate the max total data size by subtracting the largest possible entity overhead size times the
+            // maximum number of segments. For storage emulator this is 8 segments and 3 for Azure. So we use 8.
+
+            var calculator = new TableEntitySizeCalculator();
+            calculator.AddEntityOverhead();
+            calculator.AddPartitionKey(512); // Max partition key size = 1 KiB (512 UTF-16 characters)
+            calculator.AddRowKey(512); // Max row key size = 1 KiB (512 UTF-16 characters)
+
+            // Add the segment size property.
+            calculator.AddPropertyOverhead(1);
+            calculator.AddInt32Data();
+            
+            // We can have up to 16 chunks per entity.
+            for (var i = 0; i < 16; i++)
+            {
+                // Add the overhead for a binary property.
+                calculator.AddBinaryData(0);
+            }
+
+            MaxTotalDataSize = MaxTotalEntitySize - 8 * calculator.Size;
+        }
+
+        private const string ContentTooLargeMessage = "The content is too large.";
 
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly int _maxEntitySize;
@@ -216,13 +246,15 @@ namespace Knapcode.ExplorePackages.WideEntities
             return output;
         }
 
-        public async Task<IReadOnlyList<WideEntity>> ExecuteBatchAsync(string tableName, IEnumerable<WideEntityOperation> batch)
+        public async Task<IReadOnlyList<WideEntity>> ExecuteBatchAsync(string tableName, IEnumerable<WideEntityOperation> batch, bool allowBatchSplits)
         {
             var tableOperationBatch = new TableBatchOperation();
             var segmentsList = new List<List<WideEntitySegment>>();
-
             foreach (var operation in batch)
             {
+                // Keep track of the number of table operations in the batch prior to adding the next wide entity
+                // operation, just in case we have to remove the operations for a batch split.
+                var previousOperationCount = tableOperationBatch.Count;
                 switch (operation)
                 {
                     case WideEntityInsertOperation insert:
@@ -241,9 +273,36 @@ namespace Knapcode.ExplorePackages.WideEntities
                     default:
                         throw new NotImplementedException();
                 }
+
+                if (allowBatchSplits
+                    && tableOperationBatch.Count > previousOperationCount
+                    && previousOperationCount > 0
+                    && segmentsList.Sum(x => x.Sum(y => y.GetEntitySize())) > MaxTotalEntitySize)
+                {
+                    // Remove the table operations added by this wide entity operation since it made the batch too large.
+                    var addedOperations = new Stack<TableOperation>();
+                    while (tableOperationBatch.Count > previousOperationCount)
+                    {
+                        addedOperations.Push(tableOperationBatch.Last());
+                        tableOperationBatch.RemoveAt(tableOperationBatch.Count - 1);
+                    }
+
+                    // Execute the batch, now that it is within the size limit.
+                    await GetTable(tableName).ExecuteBatchAsync(tableOperationBatch);
+
+                    // Start a new batch with the table operations associated with this entity operation.
+                    tableOperationBatch.Clear();
+                    while (addedOperations.Any())
+                    {
+                        tableOperationBatch.Add(addedOperations.Pop());
+                    }
+                }
             }
 
-            await GetTable(tableName).ExecuteBatchAsync(tableOperationBatch);
+            if (tableOperationBatch.Any())
+            {
+                await GetTable(tableName).ExecuteBatchAsync(tableOperationBatch);
+            }
 
             var output = new List<WideEntity>();
             foreach (var segments in segmentsList)
@@ -340,9 +399,9 @@ namespace Knapcode.ExplorePackages.WideEntities
             string rowKey,
             ReadOnlyMemory<byte> content)
         {
-            if (content.Length > MaxTotalEntitySize)
+            if (content.Length > MaxTotalDataSize)
             {
-                throw new ArgumentException(ContentTooLargetMessage, nameof(content));
+                throw new ArgumentException(ContentTooLargeMessage, nameof(content));
             }
 
             var segments = MakeSegments(partitionKey, rowKey, content);
@@ -442,12 +501,12 @@ namespace Knapcode.ExplorePackages.WideEntities
                 calculator.Reset();
 
                 // Now, we drain the total entity size by filling with max size entities. Each max size entity will contain
-                // chunks of the compressed data.
+                // chunks of the data.
                 var remainingTotalEntitySize = MaxTotalEntitySize;
                 var dataStart = 0;
                 while (dataStart < content.Length)
                 {
-                    var segment = MakeSegmentOrNull(
+                    (var segment, var segmentSize) = MakeSegmentOrNull(
                         partitionKey,
                         rowKey,
                         index: segments.Count,
@@ -459,9 +518,10 @@ namespace Knapcode.ExplorePackages.WideEntities
 
                     if (segment == null)
                     {
-                        throw new ArgumentException(ContentTooLargetMessage, nameof(content));
+                        throw new ArgumentException(ContentTooLargeMessage, nameof(content));
                     }
 
+                    remainingTotalEntitySize -= segmentSize;
                     segments.Add(segment);
                 }
             }
@@ -471,7 +531,7 @@ namespace Knapcode.ExplorePackages.WideEntities
             return segments;
         }
 
-        private WideEntitySegment MakeSegmentOrNull(
+        private (WideEntitySegment Segment, int SegmentSize) MakeSegmentOrNull(
             string partitionKey,
             string rowKey,
             int index,
@@ -481,29 +541,51 @@ namespace Knapcode.ExplorePackages.WideEntities
             ref int dataStart,
             ReadOnlyMemory<byte> data)
         {
-            WideEntitySegment wideEntity = null;
-            var remainingEntitySize = maxEntitySize;
+            WideEntitySegment segment = null;
+
+            var remainingEntitySize = maxEntitySize - entityOverhead;
+            var binaryPropertyOverhead = propertyOverhead + 4;
+
+            if (index == 0)
+            {
+                // Account for the segment count entity: property name plus the integer
+                remainingEntitySize -= propertyOverhead + 4;
+            }
+
             while (dataStart < data.Length && remainingEntitySize > 0)
             {
-                remainingEntitySize -= entityOverhead + propertyOverhead;
-
-                var binarySize = Math.Min(remainingEntitySize, Math.Min(data.Length - dataStart, MaxBinaryPropertySize));
+                var binarySize = Math.Min(remainingEntitySize - binaryPropertyOverhead, Math.Min(data.Length - dataStart, MaxBinaryPropertySize));
                 if (binarySize <= 0)
                 {
                     break;
                 }
+                
+                // Account for the chunk property name and chunk length
+                remainingEntitySize -= binaryPropertyOverhead;
 
-                if (wideEntity == null)
+                if (segment == null)
                 {
-                    wideEntity = new WideEntitySegment(partitionKey, rowKey, index);
+                    segment = new WideEntitySegment(partitionKey, rowKey, index);
                 }
 
-                wideEntity.Chunks.Add(data.Slice(dataStart, binarySize));
+                segment.Chunks.Add(data.Slice(dataStart, binarySize));
                 dataStart += binarySize;
+
+                // Account for the chunk data
                 remainingEntitySize -= binarySize;
             }
 
-            return wideEntity;
+            var segmentSize = maxEntitySize - remainingEntitySize;
+            if (segment != null)
+            {
+                var actual = segment.GetEntitySize();
+                if (actual != segmentSize)
+                {
+                    throw new InvalidOperationException($"The segment size calculation is incorrect. Expected: {segment}. Actual: {actual}.");
+                }
+            }
+
+            return (segment, segmentSize);
         }
 
         private CloudTable GetTable(string tableName)

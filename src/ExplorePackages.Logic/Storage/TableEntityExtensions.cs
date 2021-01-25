@@ -41,6 +41,7 @@ namespace Knapcode.ExplorePackages
             }
 
             var calculator = new TableEntitySizeCalculator();
+            calculator.AddEntityOverhead();
             calculator.AddPartitionKeyRowKey(partitionKey, rowKey);
 
             foreach (var property in properties)
@@ -50,6 +51,5 @@ namespace Knapcode.ExplorePackages
 
             return calculator.Size;
         }
-
     }
 }

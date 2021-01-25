@@ -14,6 +14,43 @@ namespace Knapcode.ExplorePackages.WideEntities
 {
     public class WideEntityServiceTest : IClassFixture<WideEntityServiceTest.Fixture>
     {
+        public class ExecuteBatchAsync : WideEntityServiceTest
+        {
+            [Fact]
+            public async Task SplitsBatches()
+            {
+                // Arrange
+                var partitionKey = StorageUtility.GenerateDescendingId().ToString();
+                var batch = new[]
+                {
+                    WideEntityOperation.Insert(partitionKey, "rk-1", Bytes.Slice(100, WideEntityService.MaxTotalDataSize)),
+                    WideEntityOperation.Insert(partitionKey, "rk-2", Bytes.Slice(200, WideEntityService.MaxTotalDataSize)),
+                    WideEntityOperation.Insert(partitionKey, "rk-3", Bytes.Slice(300, WideEntityService.MaxTotalDataSize)),
+                    WideEntityOperation.Insert(partitionKey, "rk-4", Bytes.Slice(400, WideEntityService.MaxTotalDataSize)),
+                };
+
+                // Act
+                var inserted = await Target.ExecuteBatchAsync(TableName, batch, allowBatchSplits: true);
+
+                // Assert
+                var retrieved = await Target.RetrieveAsync(TableName, partitionKey);
+                Assert.Equal(retrieved.Count, inserted.Count);
+                for (var i = 0; i < inserted.Count; i++)
+                {
+                    Assert.Equal(retrieved[i].PartitionKey, inserted[i].PartitionKey);
+                    Assert.Equal(retrieved[i].RowKey, inserted[i].RowKey);
+                    Assert.Equal(retrieved[i].ETag, inserted[i].ETag);
+                    Assert.Equal(retrieved[i].Timestamp, inserted[i].Timestamp);
+                    Assert.Equal(retrieved[i].SegmentCount, inserted[i].SegmentCount);
+                    Assert.Equal(retrieved[i].ToByteArray(), inserted[i].ToByteArray());
+                }
+            }
+
+            public ExecuteBatchAsync(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
+            {
+            }
+        }
+
         public class InsertOrReplaceAsync : WideEntityServiceTest
         {
             [Fact]
@@ -65,6 +102,19 @@ namespace Knapcode.ExplorePackages.WideEntities
 
         public class InsertAsync : WideEntityServiceTest
         {
+            [Fact]
+            public async Task FailsWhenEntityIsTooLarge()
+            {
+                // Arrange
+                var content = Bytes.Slice(0, WideEntityService.MaxTotalDataSize + 1);
+                var partitionKey = StorageUtility.GenerateDescendingId().ToString();
+                var rowKey = "rk";
+
+                // Act & Assert
+                var ex = await Assert.ThrowsAsync<ArgumentException>(() => Target.InsertAsync(TableName, partitionKey, rowKey, content));
+                Assert.Equal("The content is too large. (Parameter 'content')", ex.Message);
+            }
+
             [Fact]
             public async Task FailsWhenEntityExists()
             {
@@ -320,7 +370,7 @@ namespace Knapcode.ExplorePackages.WideEntities
             public async Task PopulatesWideEntityProperties()
             {
                 // Arrange
-                var src = Bytes.Slice(0, WideEntityService.MaxTotalEntitySize);
+                var src = Bytes.Slice(0, WideEntityService.MaxTotalDataSize);
                 var partitionKey = StorageUtility.GenerateDescendingId().ToString();
                 var rowKey = "rk";
 
@@ -356,17 +406,17 @@ namespace Knapcode.ExplorePackages.WideEntities
                         yield return current;
                         current *= 2;
                     }
-                    while (current <= WideEntityService.MaxTotalEntitySize);
+                    while (current <= WideEntityService.MaxTotalDataSize);
 
                     for (var i = 16; i >= 0; i--)
                     {
-                        yield return WideEntityService.MaxTotalEntitySize;
+                        yield return WideEntityService.MaxTotalDataSize - i;
                     }
 
                     var random = new Random(0);
-                    for (var i = 0; i < 26; i++)
+                    for (var i = 0; i < 10; i++)
                     {
-                        yield return random.Next(0, WideEntityService.MaxTotalEntitySize);
+                        yield return random.Next(0, WideEntityService.MaxTotalDataSize);
                     }
                 }
             }

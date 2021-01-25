@@ -10,7 +10,7 @@ namespace Knapcode.ExplorePackages
     {
         // Entity overhead of 4 plus a magic, discovered value.
         // See: https://github.com/MicrosoftDocs/azure-docs/issues/68661
-        private const int InitialSize = 4 + 88;
+        private const int InitialSize = 4 + (48 + 88);
 
         public int Size { get; private set; }
 
@@ -51,21 +51,25 @@ namespace Knapcode.ExplorePackages
 
         public void AddPropertyOverhead(int nameLength)
         {
-            Size += 8 + nameLength * 2;
+            Size += GetPropertyOverhead(nameLength);
         }
 
-        public void AddEntityWithoutProperties(ITableEntity entity)
+        public void AddBinaryData(int binaryLength)
         {
-            AddEntityOverhead();
-            AddPartitionKeyRowKey(entity.PartitionKey, entity.RowKey);
+            Size += GetBinaryDataSize(binaryLength);
+        }
+
+        public void AddInt32Data()
+        {
+            Size += GetInt32DataSize();
         }
 
         public void AddProperty(string name, EntityProperty value)
         {
-            Size += GetEntityPropertySize(name, value);
+            Size += GetEntityPropertySize(name.Length, value);
         }
 
-        private static int GetEntityPropertySize(string name, EntityProperty value)
+        private static int GetEntityPropertySize(int nameLength, EntityProperty value)
         {
             int size;
             switch (value.PropertyType)
@@ -100,7 +104,7 @@ namespace Knapcode.ExplorePackages
                     size = 8;
                     break;
                 case EdmType.Int32:
-                    size = 4;
+                    size = GetInt32DataSize();
                     break;
                 case EdmType.Int64:
                     size = 8;
@@ -109,14 +113,29 @@ namespace Knapcode.ExplorePackages
                     size = 1;
                     break;
                 case EdmType.Binary:
-                    size = value.BinaryValue.Length + 4;
+                    size = GetBinaryDataSize(value.BinaryValue.Length);
                     break;
 
                 default:
                     throw new NotImplementedException();
             };
 
-            return 8 + name.Length * 2 + size;
+            return GetPropertyOverhead(nameLength) + size;
+        }
+
+        private static int GetPropertyOverhead(int nameLength)
+        {
+            return 8 + nameLength * 2;
+        }
+
+        private static int GetInt32DataSize()
+        {
+            return 4;
+        }
+
+        private static int GetBinaryDataSize(int binaryLength)
+        {
+            return binaryLength + 4;
         }
     }
 }

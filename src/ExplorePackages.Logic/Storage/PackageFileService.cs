@@ -110,7 +110,7 @@ namespace Knapcode.ExplorePackages
                 }
             }
 
-            await _wideEntityService.ExecuteBatchAsync(_options.Value.PackageFileTableName, batch);
+            await _wideEntityService.ExecuteBatchAsync(_options.Value.PackageFileTableName, batch, allowBatchSplits: true);
 
             return output;
         }
