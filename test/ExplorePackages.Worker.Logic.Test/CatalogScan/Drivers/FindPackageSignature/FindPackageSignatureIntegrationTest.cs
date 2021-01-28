@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -14,6 +13,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
     {
         private const string FindPackageSignatureDir = nameof(FindPackageSignature);
         private const string FindPackageSignature_AuthorSignatureDir = nameof(FindPackageSignature_AuthorSignature);
+        private const string FindPackageSignature_BadTimestampDir = nameof(FindPackageSignature_BadTimestamp);
         private const string FindPackageSignature_WithDeleteDir = nameof(FindPackageSignature_WithDelete);
 
         public FindPackageSignatureIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
@@ -64,6 +64,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
                 AssertOnlyInfoLogsOrLess();
             }
         }
+
         public class FindPackageSignature_AuthorSignature : FindPackageSignatureIntegrationTest
         {
             public FindPackageSignature_AuthorSignature(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
@@ -90,6 +91,37 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
 
                 // Assert
                 await AssertOutputAsync(FindPackageSignature_AuthorSignatureDir, Step1, 0);
+                await AssertExpectedStorageAsync();
+                AssertOnlyInfoLogsOrLess();
+            }
+        }
+
+        public class FindPackageSignature_BadTimestamp : FindPackageSignatureIntegrationTest
+        {
+            public FindPackageSignature_BadTimestamp(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+                : base(output, factory)
+            {
+            }
+
+            [Fact]
+            public async Task Execute()
+            {
+                ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
+
+                Logger.LogInformation("Settings: " + Environment.NewLine + JsonConvert.SerializeObject(Options.Value, Formatting.Indented));
+
+                // Arrange
+                var min0 = DateTimeOffset.Parse("2020-11-04T15:12:14Z");
+                var max1 = DateTimeOffset.Parse("2020-11-04T15:12:15.7221964Z");
+
+                await CatalogScanService.InitializeAsync();
+                await SetCursorAsync(min0);
+
+                // Act
+                await UpdateAsync(max1);
+
+                // Assert
+                await AssertOutputAsync(FindPackageSignature_BadTimestampDir, Step1, 0);
                 await AssertExpectedStorageAsync();
                 AssertOnlyInfoLogsOrLess();
             }

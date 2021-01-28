@@ -39,19 +39,21 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
         public DateTimeOffset? AuthorTimestampNotBefore { get; set; }
         public DateTimeOffset? AuthorTimestampNotAfter { get; set; }
         public DateTimeOffset? AuthorTimestampValue { get; set; }
+        public bool AuthorTimestampHasASN1Error { get; set; }
 
         public string RepositorySHA1 { get; set; }
         public string RepositorySHA256 { get; set; }
         public string RepositorySubject { get; set; }
-        public DateTimeOffset RepositoryNotBefore { get; set; }
-        public DateTimeOffset RepositoryNotAfter { get; set; }
+        public DateTimeOffset? RepositoryNotBefore { get; set; }
+        public DateTimeOffset? RepositoryNotAfter { get; set; }
 
         public string RepositoryTimestampSHA1 { get; set; }
         public string RepositoryTimestampSHA256 { get; set; }
         public string RepositoryTimestampSubject { get; set; }
-        public DateTimeOffset RepositoryTimestampNotBefore { get; set; }
-        public DateTimeOffset RepositoryTimestampNotAfter { get; set; }
-        public DateTimeOffset RepositoryTimestampValue { get; set; }
+        public DateTimeOffset? RepositoryTimestampNotBefore { get; set; }
+        public DateTimeOffset? RepositoryTimestampNotAfter { get; set; }
+        public DateTimeOffset? RepositoryTimestampValue { get; set; }
+        public bool RepositoryTimestampHasASN1Error { get; set; }
 
         public string PackageOwners { get; set; }
     }

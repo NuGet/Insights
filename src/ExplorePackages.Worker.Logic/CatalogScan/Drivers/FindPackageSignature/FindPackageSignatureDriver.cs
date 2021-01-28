@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Knapcode.MiniZip;
 using Microsoft.Extensions.Logging;
@@ -114,12 +115,12 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
             output.AuthorTimestampNotBefore = info.TimestampNotBefore;
             output.AuthorTimestampNotAfter = info.TimestampNotAfter;
             output.AuthorTimestampValue = info.TimestampValue;
+            output.AuthorTimestampHasASN1Error = info.TimestampHasASN1Error;
         }
+
         private void ApplyRepositorySignature<T>(PackageSignature output, T signature) where T : Signature, IRepositorySignature
         {
             var info = GetInfo(signature);
-
-            output.PackageOwners = JsonConvert.SerializeObject(signature.PackageOwners);
 
             output.RepositorySHA1 = info.SHA1;
             output.RepositorySHA256 = info.SHA256;
@@ -133,31 +134,48 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
             output.RepositoryTimestampNotBefore = info.TimestampNotBefore;
             output.RepositoryTimestampNotAfter = info.TimestampNotAfter;
             output.RepositoryTimestampValue = info.TimestampValue;
+            output.RepositoryTimestampHasASN1Error = info.TimestampHasASN1Error;
+            output.PackageOwners = JsonConvert.SerializeObject(signature.PackageOwners);
         }
 
         private SignatureInfo GetInfo(Signature signature)
         {
-            var timestamp = signature.Timestamps.Single();
+            Timestamp timestamp;
+            bool timestampHasASN1Error;
+            try
+            {
+                timestamp = signature.Timestamps.Single();
+                timestampHasASN1Error = false;
+            }
+            catch (CryptographicException ex) when (ex.Message == "The ASN.1 data is invalid.")
+            {
+                timestamp = null;
+                timestampHasASN1Error = true;
+            }
 
             return new SignatureInfo
             {
+                TimestampHasASN1Error = timestampHasASN1Error,
+
                 SHA1 = signature.SignerInfo.Certificate.Thumbprint,
-                SHA256 = CertificateUtility.GetHashString(signature.SignerInfo.Certificate, HashAlgorithmName.SHA256),
+                SHA256 = CertificateUtility.GetHashString(signature.SignerInfo.Certificate, NuGet.Common.HashAlgorithmName.SHA256),
                 Subject = signature.SignerInfo.Certificate.Subject,
                 NotBefore = signature.SignerInfo.Certificate.NotBefore.ToUniversalTime(),
                 NotAfter = signature.SignerInfo.Certificate.NotAfter.ToUniversalTime(),
 
-                TimestampSHA1 = timestamp.SignerInfo.Certificate.Thumbprint,
-                TimestampSHA256 = CertificateUtility.GetHashString(timestamp.SignerInfo.Certificate, HashAlgorithmName.SHA256),
-                TimestampSubject = timestamp.SignerInfo.Certificate.Subject,
-                TimestampNotBefore = timestamp.SignerInfo.Certificate.NotBefore.ToUniversalTime(),
-                TimestampNotAfter = timestamp.SignerInfo.Certificate.NotAfter.ToUniversalTime(),
-                TimestampValue = timestamp.GeneralizedTime.ToUniversalTime(),
+                TimestampSHA1 = timestamp?.SignerInfo.Certificate.Thumbprint,
+                TimestampSHA256 = timestamp != null ? CertificateUtility.GetHashString(timestamp.SignerInfo.Certificate, NuGet.Common.HashAlgorithmName.SHA256) : null,
+                TimestampSubject = timestamp?.SignerInfo.Certificate.Subject,
+                TimestampNotBefore = timestamp?.SignerInfo.Certificate.NotBefore.ToUniversalTime(),
+                TimestampNotAfter = timestamp?.SignerInfo.Certificate.NotAfter.ToUniversalTime(),
+                TimestampValue = timestamp?.GeneralizedTime.ToUniversalTime(),
             };
         }
 
         private record SignatureInfo
         {
+            public bool TimestampHasASN1Error { get; init; }
+
             public string SHA1 { get; init; }
             public string SHA256 { get; init; }
             public string Subject { get; init; }
@@ -167,10 +185,9 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
             public string TimestampSHA1 { get; init; }
             public string TimestampSHA256 { get; init; }
             public string TimestampSubject { get; init; }
-            public DateTimeOffset TimestampNotBefore { get; init; }
-            public DateTimeOffset TimestampNotAfter { get; init; }
-
-            public DateTimeOffset TimestampValue { get; init; }
+            public DateTimeOffset? TimestampNotBefore { get; init; }
+            public DateTimeOffset? TimestampNotAfter { get; init; }
+            public DateTimeOffset? TimestampValue { get; init; }
         }
     }
 }
