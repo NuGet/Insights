@@ -135,11 +135,14 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageFile
                     // These values are unstable
                     var ignoredHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
                     {
+                        "Access-Control-Expose-Headers",
+                        "X-Cache",
                         "Age",
                         "Date",
                         "Expires",
                         "Server",
                         "x-ms-request-id",
+                        "x-ms-lease-state",
                         "x-ms-version",
                     };
 
@@ -152,6 +155,30 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageFile
                             .V1
                             .HttpHeaders
                             .Where(x => !ignoredHeaders.Contains(x.Key))
+                            .Select(grouping =>
+                            {
+                                if (grouping.Key == "ETag")
+                                {
+                                    var values = new List<string>();
+                                    foreach (var value in grouping)
+                                    {
+                                        if (!value.StartsWith("\""))
+                                        {
+                                            values.Add("\"" + value + "\"");
+                                        }
+                                        else
+                                        {
+                                            values.Add(value);
+                                        }
+                                    }
+
+                                    return values.GroupBy(x => grouping.Key).Single();
+                                }
+                                else
+                                {
+                                    return grouping;
+                                }
+                            })
                             .ToDictionary(x => x.Key, x => x.ToList()));
                     }
 

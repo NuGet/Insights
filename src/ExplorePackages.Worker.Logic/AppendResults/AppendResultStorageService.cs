@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
@@ -110,7 +111,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         private async Task AppendToBlobAsync<T>(CloudAppendBlob blob, IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
         {
-            using var memoryStream = SerializeRecords(records);
+            using var memoryStream = SerializeRecords(records, gzip: false);
             try
             {
                 await blob.AppendBlockAsync(memoryStream);
@@ -202,9 +203,9 @@ namespace Knapcode.ExplorePackages.Worker
             };
         }
 
-        private ICloudBlobWrapper GetBlob(string container, string prefix, int bucket)
+        private ICloudBlobWrapper GetAppendBlobWrapper(string container, int bucket)
         {
-            return GetContainer(container).GetBlobReference($"{prefix}{bucket}.csv");
+            return GetContainer(container).GetBlobReference($"{AppendPrefix}{bucket}.csv");
         }
 
         private CloudAppendBlob GetAppendBlob(string container, int bucket)
@@ -214,7 +215,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         private ICloudBlockBlobWrapper GetCompactBlob(string container, int bucket)
         {
-            return GetContainer(container).GetBlockBlobReference($"{CompactPrefix}{bucket}.csv");
+            return GetContainer(container).GetBlockBlobReference($"{CompactPrefix}{bucket}.csv.gz");
         }
 
         public async Task CompactAsync<T>(
@@ -252,10 +253,10 @@ namespace Knapcode.ExplorePackages.Worker
 
             if (!force || srcContainer != null)
             {
-                var blob = GetBlob(srcContainer, AppendPrefix, bucket);
+                var blob = GetAppendBlobWrapper(srcContainer, bucket);
                 if (await blob.ExistsAsync())
                 {
-                    var records = await DeserializeBlobAsync<T>(blob, csvReader);
+                    var records = await DeserializeBlobAsync<T>(blob, csvReader, gzip: false);
                     appendRecords.AddRange(records);
                 }
                 else if (!force)
@@ -315,7 +316,7 @@ namespace Knapcode.ExplorePackages.Worker
             var accessCondition = AccessCondition.GenerateIfNotExistsCondition();
             if (mergeExisting && await compactBlob.ExistsAsync())
             {
-                var records = await DeserializeBlobAsync<T>(compactBlob, csvReader);
+                var records = await DeserializeBlobAsync<T>(compactBlob, csvReader, compactBlob.Properties.ContentEncoding == "gzip");
                 allRecords.AddRange(records);
                 accessCondition = AccessCondition.GenerateIfMatchCondition(compactBlob.Properties.ETag);
             }
@@ -324,21 +325,33 @@ namespace Knapcode.ExplorePackages.Worker
             if (allRecords.Any())
             {
                 var prunedRecords = prune(allRecords);
-                stream = SerializeRecords(prunedRecords);
+                stream = SerializeRecords(prunedRecords, gzip: true);
             }
 
             compactBlob.Properties.ContentType = ContentType;
+            compactBlob.Properties.ContentEncoding = "gzip";
             stream.Position = 0;
             await compactBlob.UploadFromStreamAsync(stream, accessCondition, options: null, operationContext: null);
         }
 
-        private static async Task<List<T>> DeserializeBlobAsync<T>(ICloudBlobWrapper blob, ICsvReader csvReader) where T : ICsvRecord<T>, new()
+        private static async Task<List<T>> DeserializeBlobAsync<T>(ICloudBlobWrapper blob, ICsvReader csvReader, bool gzip) where T : ICsvRecord<T>, new()
         {
-            using var memoryStream = new MemoryStream();
-            await blob.DownloadToStreamAsync(memoryStream);
-            memoryStream.Position = 0;
-            using var reader = new StreamReader(memoryStream);
-            return csvReader.GetRecords<T>(reader);
+            using var blobStream = await blob.OpenReadAsync();
+            var readStream = blobStream;
+            try
+            {
+                if (gzip)
+                {
+                    readStream = new GZipStream(blobStream, CompressionMode.Decompress);
+                }
+
+                using var reader = new StreamReader(readStream);
+                return csvReader.GetRecords<T>(reader);
+            }
+            finally
+            {
+                readStream?.Dispose();
+            }
         }
 
         public async Task<List<int>> GetWrittenBucketsAsync(string containerName)
@@ -383,15 +396,26 @@ namespace Knapcode.ExplorePackages.Worker
             return markerEntities.Select(x => int.Parse(x.RowKey)).ToList();
         }
 
-        private static MemoryStream SerializeRecords<T>(IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
+        private static MemoryStream SerializeRecords<T>(IReadOnlyList<T> records, bool gzip) where T : ICsvRecord<T>, new()
         {
             var memoryStream = new MemoryStream();
-            using (var streamWriter = new StreamWriter(memoryStream, new UTF8Encoding(false), bufferSize: 1024, leaveOpen: true))
+            if (gzip)
             {
-                SerializeRecords(records, streamWriter);
+                using var gzipStream = new GZipStream(memoryStream, CompressionLevel.Optimal, leaveOpen: true);
+                SerializeRecords(records, gzipStream);
+            }
+            else
+            {
+                SerializeRecords(records, memoryStream);
             }
 
             return memoryStream;
+        }
+
+        private static void SerializeRecords<T>(IReadOnlyList<T> records, Stream destination) where T : ICsvRecord<T>, new()
+        {
+            using var streamWriter = new StreamWriter(destination, new UTF8Encoding(false), bufferSize: 1024, leaveOpen: true);
+            SerializeRecords(records, streamWriter);
         }
 
         private static void SerializeRecords<T>(IReadOnlyList<T> records, TextWriter streamWriter) where T : ICsvRecord<T>, new()

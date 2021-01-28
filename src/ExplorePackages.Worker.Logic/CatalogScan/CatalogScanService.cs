@@ -122,9 +122,9 @@ namespace Knapcode.ExplorePackages.Worker
                     }
                     return await UpdateFindLatestLeafAsync(max);
                 case CatalogScanDriverType.FindPackageAssembly:
-                    return await UpdateFindPackageAssemblyAsync(onlyLatestLeaves.GetValueOrDefault(true), max);
                 case CatalogScanDriverType.FindPackageAsset:
-                    return await UpdateFindPackageAssetAsync(onlyLatestLeaves.GetValueOrDefault(true), max);
+                case CatalogScanDriverType.FindPackageSignature:
+                    return await UpdateCatalogLeafToCsvAsync(driverType, onlyLatestLeaves.GetValueOrDefault(true), max);
                 case CatalogScanDriverType.FindPackageFile:
                     if (onlyLatestLeaves.HasValue && !onlyLatestLeaves.Value)
                     {
@@ -165,16 +165,6 @@ namespace Knapcode.ExplorePackages.Worker
                 parameters: _serializer.Serialize(parameters).AsString(),
                 min: DateTimeOffset.MinValue,
                 max);
-        }
-
-        public async Task<CatalogIndexScan> UpdateFindPackageAssemblyAsync(bool onlyLatestLeaves, DateTimeOffset? max)
-        {
-            return await UpdateCatalogLeafToCsvAsync(CatalogScanDriverType.FindPackageAssembly, onlyLatestLeaves, max);
-        }
-
-        public async Task<CatalogIndexScan> UpdateFindPackageAssetAsync(bool onlyLatestLeaves, DateTimeOffset? max)
-        {
-            return await UpdateCatalogLeafToCsvAsync(CatalogScanDriverType.FindPackageAsset, onlyLatestLeaves, max);
         }
 
         private async Task<CatalogIndexScan> UpdateCatalogLeafToCsvAsync(CatalogScanDriverType driverType, bool onlyLatestLeaves, DateTimeOffset? max)

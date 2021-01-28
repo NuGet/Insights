@@ -8,5 +8,6 @@
         FindPackageAssembly,
         FindPackageAsset,
         FindPackageFile,
+        FindPackageSignature,
     }
 }

@@ -15,7 +15,7 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.10" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.1.10" />
     <PackageReference Include="Microsoft.Toolkit.HighPerformance" Version="6.1.1" />
-    <PackageReference Include="NuGet.Commands" Version="5.8.0" />
+    <PackageReference Include="NuGet.Commands" Version="5.9.0-zlocal.46921" />
     <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />
   </ItemGroup>
 </Project>

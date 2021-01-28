@@ -11,6 +11,7 @@ using Knapcode.MiniZip;
 using MessagePack;
 using Microsoft.Extensions.Options;
 using Microsoft.Toolkit.HighPerformance.Extensions;
+using NuGet.Packaging.Signing;
 using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages
@@ -47,6 +48,18 @@ namespace Knapcode.ExplorePackages
         public async Task InitializeAsync()
         {
             await _wideEntityService.InitializeAsync(_options.Value.PackageFileTableName);
+        }
+
+        public async Task<PrimarySignature> GetPrimarySignatureAsync(CatalogLeafItem leafItem)
+        {
+            var info = await GetOrUpdateInfoAsync(leafItem);
+            if (!info.Available)
+            {
+                return null;
+            }
+
+            using var srcStream = info.SignatureBytes.AsStream();
+            return PrimarySignature.Load(srcStream);
         }
 
         public async Task<ZipDirectory> GetZipDirectoryAsync(CatalogLeafItem leafItem)

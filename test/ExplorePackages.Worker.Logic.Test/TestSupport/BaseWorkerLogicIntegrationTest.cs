@@ -51,6 +51,7 @@ namespace Knapcode.ExplorePackages.Worker
             x.LatestPackageLeafTableName = $"{StoragePrefix}1lpl1";
             x.PackageAssetContainerName = $"{StoragePrefix}1fpa1";
             x.PackageAssemblyContainerName = $"{StoragePrefix}1fpi1";
+            x.PackageSignatureContainerName = $"{StoragePrefix}1fps1";
             x.RealRestoreContainerName = $"{StoragePrefix}1rrr1";
             x.CatalogLeafItemContainerName = $"{StoragePrefix}1fcli1";
             x.PackageDownloadsContainerName = $"{StoragePrefix}1pd1";
@@ -146,7 +147,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         protected async Task AssertCompactAsync(string containerName, string testName, string stepName, int bucket)
         {
-            await AssertBlobAsync(containerName, testName, stepName, $"compact_{bucket}.csv");
+            await AssertBlobAsync(containerName, testName, stepName, $"compact_{bucket}.csv.gz", gzip: true);
         }
     }
 }

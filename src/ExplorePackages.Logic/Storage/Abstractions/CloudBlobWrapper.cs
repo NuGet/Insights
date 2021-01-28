@@ -20,6 +20,11 @@ namespace Knapcode.ExplorePackages
             await _inner.DownloadToStreamAsync(target);
         }
 
+        public async Task<Stream> OpenReadAsync()
+        {
+            return await _inner.OpenReadAsync();
+        }
+
         public async Task<bool> ExistsAsync()
         {
             return await _inner.ExistsAsync();

@@ -12,9 +12,6 @@
         "Access-Control-Allow-Origin": [
           "*"
         ],
-        "Access-Control-Expose-Headers": [
-          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
-        ],
         "Cache-Control": [
           "max-age=86400"
         ],
@@ -28,16 +25,13 @@
           "application/octet-stream"
         ],
         "ETag": [
-          "0x8D8930B9A676EB0"
+          "\"0x8D8930B9A676EB0\""
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:31 GMT"
         ],
         "Strict-Transport-Security": [
           "max-age=31536000"
-        ],
-        "X-Cache": [
-          "HIT"
         ],
         "X-CDN-Rewrite": [
           "Root path in dist"
@@ -75,9 +69,6 @@
         "Access-Control-Allow-Origin": [
           "*"
         ],
-        "Access-Control-Expose-Headers": [
-          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
-        ],
         "Cache-Control": [
           "max-age=86400"
         ],
@@ -91,16 +82,13 @@
           "application/octet-stream"
         ],
         "ETag": [
-          "0x8D8930B9A377AC4"
+          "\"0x8D8930B9A377AC4\""
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:31 GMT"
         ],
         "Strict-Transport-Security": [
           "max-age=31536000"
-        ],
-        "X-Cache": [
-          "HIT"
         ],
         "X-CDN-Rewrite": [
           "Root path in dist"
@@ -138,9 +126,6 @@
         "Access-Control-Allow-Origin": [
           "*"
         ],
-        "Access-Control-Expose-Headers": [
-          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
-        ],
         "Cache-Control": [
           "max-age=86400"
         ],
@@ -154,16 +139,13 @@
           "application/octet-stream"
         ],
         "ETag": [
-          "0x8D8930B99873EE0"
+          "\"0x8D8930B99873EE0\""
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:30 GMT"
         ],
         "Strict-Transport-Security": [
           "max-age=31536000"
-        ],
-        "X-Cache": [
-          "HIT"
         ],
         "X-CDN-Rewrite": [
           "Root path in dist"
@@ -201,9 +183,6 @@
         "Access-Control-Allow-Origin": [
           "*"
         ],
-        "Access-Control-Expose-Headers": [
-          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
-        ],
         "Cache-Control": [
           "max-age=86400"
         ],
@@ -217,16 +196,13 @@
           "application/octet-stream"
         ],
         "ETag": [
-          "0x8D8930B9BE5FC5C"
+          "\"0x8D8930B9BE5FC5C\""
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:34 GMT"
         ],
         "Strict-Transport-Security": [
           "max-age=31536000"
-        ],
-        "X-Cache": [
-          "HIT"
         ],
         "X-CDN-Rewrite": [
           "Root path in dist"
@@ -264,9 +240,6 @@
         "Access-Control-Allow-Origin": [
           "*"
         ],
-        "Access-Control-Expose-Headers": [
-          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
-        ],
         "Cache-Control": [
           "max-age=86400"
         ],
@@ -280,16 +253,13 @@
           "application/octet-stream"
         ],
         "ETag": [
-          "0x8D8930B9A76DB4A"
+          "\"0x8D8930B9A76DB4A\""
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:31 GMT"
         ],
         "Strict-Transport-Security": [
           "max-age=31536000"
-        ],
-        "X-Cache": [
-          "HIT"
         ],
         "X-CDN-Rewrite": [
           "Root path in dist"
@@ -327,9 +297,6 @@
         "Access-Control-Allow-Origin": [
           "*"
         ],
-        "Access-Control-Expose-Headers": [
-          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
-        ],
         "Cache-Control": [
           "max-age=86400"
         ],
@@ -343,16 +310,13 @@
           "application/octet-stream"
         ],
         "ETag": [
-          "0x8D8930B9BE62378"
+          "\"0x8D8930B9BE62378\""
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:34 GMT"
         ],
         "Strict-Transport-Security": [
           "max-age=31536000"
-        ],
-        "X-Cache": [
-          "HIT"
         ],
         "X-CDN-Rewrite": [
           "Root path in dist"
@@ -390,9 +354,6 @@
         "Access-Control-Allow-Origin": [
           "*"
         ],
-        "Access-Control-Expose-Headers": [
-          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
-        ],
         "Cache-Control": [
           "max-age=86400"
         ],
@@ -406,16 +367,13 @@
           "application/octet-stream"
         ],
         "ETag": [
-          "0x8D8930B9A66AB3E"
+          "\"0x8D8930B9A66AB3E\""
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:31 GMT"
         ],
         "Strict-Transport-Security": [
           "max-age=31536000"
-        ],
-        "X-Cache": [
-          "HIT"
         ],
         "X-CDN-Rewrite": [
           "Root path in dist"
@@ -453,9 +411,6 @@
         "Access-Control-Allow-Origin": [
           "*"
         ],
-        "Access-Control-Expose-Headers": [
-          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
-        ],
         "Cache-Control": [
           "max-age=86400"
         ],
@@ -469,16 +424,13 @@
           "application/octet-stream"
         ],
         "ETag": [
-          "0x8D8930B9AB5C687"
+          "\"0x8D8930B9AB5C687\""
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:32 GMT"
         ],
         "Strict-Transport-Security": [
           "max-age=31536000"
-        ],
-        "X-Cache": [
-          "HIT"
         ],
         "X-CDN-Rewrite": [
           "Root path in dist"
@@ -516,9 +468,6 @@
         "Access-Control-Allow-Origin": [
           "*"
         ],
-        "Access-Control-Expose-Headers": [
-          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
-        ],
         "Cache-Control": [
           "max-age=86400"
         ],
@@ -532,16 +481,13 @@
           "application/octet-stream"
         ],
         "ETag": [
-          "0x8D8930B9AAE4ADC"
+          "\"0x8D8930B9AAE4ADC\""
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:32 GMT"
         ],
         "Strict-Transport-Security": [
           "max-age=31536000"
-        ],
-        "X-Cache": [
-          "HIT"
         ],
         "X-CDN-Rewrite": [
           "Root path in dist"
@@ -579,9 +525,6 @@
         "Access-Control-Allow-Origin": [
           "*"
         ],
-        "Access-Control-Expose-Headers": [
-          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
-        ],
         "Cache-Control": [
           "max-age=86400"
         ],
@@ -595,16 +538,13 @@
           "application/octet-stream"
         ],
         "ETag": [
-          "0x8D8930B9B6FEFA3"
+          "\"0x8D8930B9B6FEFA3\""
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:33 GMT"
         ],
         "Strict-Transport-Security": [
           "max-age=31536000"
-        ],
-        "X-Cache": [
-          "HIT"
         ],
         "X-CDN-Rewrite": [
           "Root path in dist"
@@ -642,9 +582,6 @@
         "Access-Control-Allow-Origin": [
           "*"
         ],
-        "Access-Control-Expose-Headers": [
-          "x-ms-request-id,Server,x-ms-version,Content-Length,Date,Transfer-Encoding"
-        ],
         "Cache-Control": [
           "max-age=86400"
         ],
@@ -658,16 +595,13 @@
           "application/octet-stream"
         ],
         "ETag": [
-          "0x8D8930B9AA56F52"
+          "\"0x8D8930B9AA56F52\""
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:32 GMT"
         ],
         "Strict-Transport-Security": [
           "max-age=31536000"
-        ],
-        "X-Cache": [
-          "HIT"
         ],
         "X-CDN-Rewrite": [
           "Root path in dist"

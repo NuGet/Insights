@@ -9,5 +9,6 @@ namespace Knapcode.ExplorePackages
         BlobProperties Properties { get; }
         Task<bool> ExistsAsync();
         Task DownloadToStreamAsync(Stream stream);
+        Task<Stream> OpenReadAsync();
     }
 }
