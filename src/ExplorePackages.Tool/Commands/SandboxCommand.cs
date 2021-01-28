@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Worker;
 using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
+using Knapcode.ExplorePackages.Worker.FindPackageSignature;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using McMaster.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
@@ -27,19 +28,25 @@ namespace Knapcode.ExplorePackages.Tool
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
         private readonly TableScanService<LatestPackageLeaf> _tableScanService;
+        private readonly PackageFileService _packageFileService;
+        private readonly ICatalogLeafToCsvDriver<PackageSignature> _driver;
 
         public SandboxCommand(
             IMessageEnqueuer messageEnqueuer,
             TaskStateStorageService taskStateStorageService,
             ServiceClientFactory serviceClientFactory,
             IRawMessageEnqueuer rawMessageEnqueuer,
-            TableScanService<LatestPackageLeaf> tableScanService)
+            TableScanService<LatestPackageLeaf> tableScanService,
+            PackageFileService packageFileService,
+            ICatalogLeafToCsvDriver<PackageSignature> driver)
         {
             _messageEnqueuer = messageEnqueuer;
             _taskStateStorageService = taskStateStorageService;
             _serviceClientFactory = serviceClientFactory;
             _rawMessageEnqueuer = rawMessageEnqueuer;
             _tableScanService = tableScanService;
+            _packageFileService = packageFileService;
+            _driver = driver;
         }
 
         public void Configure(CommandLineApplication app)
@@ -50,15 +57,15 @@ namespace Knapcode.ExplorePackages.Tool
         {
             await Task.Yield();
 
-            await RunTestAsync(1, 1);
-
-            for (var i = 1; i <= 5; i++)
+            await _driver.ProcessLeafAsync(new CatalogLeafItem
             {
-                for (var j = 1; j <= 5; j++)
-                {
-                    await RunTestAsync(i, j);
-                }
-            }
+                CommitTimestamp = DateTimeOffset.MinValue,
+                PackageId = "igniteui.mvc.4",
+                PackageVersion = "20.1.15",
+                Type = CatalogLeafType.PackageDetails,
+                CommitId = "3c870eaf-62bb-4ecc-9212-e3167765c10f",
+                Url = "https://api.nuget.org/v3/catalog0/data/2020.11.04.15.12.15/igniteui.mvc.4.20.1.15.json",
+            });
         }
 
         private async Task RunTestAsync(int i, int j)
