@@ -108,12 +108,14 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
             output.AuthorSubject = info.Subject;
             output.AuthorNotBefore = info.NotBefore;
             output.AuthorNotAfter = info.NotAfter;
+            output.AuthorIssuer = info.Issuer;
 
             output.AuthorTimestampSHA1 = info.TimestampSHA1;
             output.AuthorTimestampSHA256 = info.TimestampSHA256;
             output.AuthorTimestampSubject = info.TimestampSubject;
             output.AuthorTimestampNotBefore = info.TimestampNotBefore;
             output.AuthorTimestampNotAfter = info.TimestampNotAfter;
+            output.AuthorTimestampIssuer = info.TimestampIssuer;
             output.AuthorTimestampValue = info.TimestampValue;
             output.AuthorTimestampHasASN1Error = info.TimestampHasASN1Error;
         }
@@ -127,12 +129,14 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
             output.RepositorySubject = info.Subject;
             output.RepositoryNotBefore = info.NotBefore;
             output.RepositoryNotAfter = info.NotAfter;
+            output.RepositoryIssuer = info.Issuer;
 
             output.RepositoryTimestampSHA1 = info.TimestampSHA1;
             output.RepositoryTimestampSHA256 = info.TimestampSHA256;
             output.RepositoryTimestampSubject = info.TimestampSubject;
             output.RepositoryTimestampNotBefore = info.TimestampNotBefore;
             output.RepositoryTimestampNotAfter = info.TimestampNotAfter;
+            output.RepositoryTimestampIssuer = info.TimestampIssuer;
             output.RepositoryTimestampValue = info.TimestampValue;
             output.RepositoryTimestampHasASN1Error = info.TimestampHasASN1Error;
             output.PackageOwners = JsonConvert.SerializeObject(signature.PackageOwners);
@@ -162,12 +166,14 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
                 Subject = signature.SignerInfo.Certificate.Subject,
                 NotBefore = signature.SignerInfo.Certificate.NotBefore.ToUniversalTime(),
                 NotAfter = signature.SignerInfo.Certificate.NotAfter.ToUniversalTime(),
+                Issuer = signature.SignerInfo.Certificate.Issuer,
 
                 TimestampSHA1 = timestamp?.SignerInfo.Certificate.Thumbprint,
                 TimestampSHA256 = timestamp != null ? CertificateUtility.GetHashString(timestamp.SignerInfo.Certificate, NuGet.Common.HashAlgorithmName.SHA256) : null,
                 TimestampSubject = timestamp?.SignerInfo.Certificate.Subject,
                 TimestampNotBefore = timestamp?.SignerInfo.Certificate.NotBefore.ToUniversalTime(),
                 TimestampNotAfter = timestamp?.SignerInfo.Certificate.NotAfter.ToUniversalTime(),
+                TimestampIssuer = timestamp?.SignerInfo.Certificate.Issuer,
                 TimestampValue = timestamp?.GeneralizedTime.ToUniversalTime(),
             };
         }
@@ -181,12 +187,14 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
             public string Subject { get; init; }
             public DateTimeOffset NotBefore { get; init; }
             public DateTimeOffset NotAfter { get; init; }
+            public string Issuer { get; init; }
 
             public string TimestampSHA1 { get; init; }
             public string TimestampSHA256 { get; init; }
             public string TimestampSubject { get; init; }
             public DateTimeOffset? TimestampNotBefore { get; init; }
             public DateTimeOffset? TimestampNotAfter { get; init; }
+            public string TimestampIssuer { get; init; }
             public DateTimeOffset? TimestampValue { get; init; }
         }
     }

@@ -32,12 +32,14 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
         public string AuthorSubject { get; set; }
         public DateTimeOffset? AuthorNotBefore { get; set; }
         public DateTimeOffset? AuthorNotAfter { get; set; }
+        public string AuthorIssuer { get; set; }
 
         public string AuthorTimestampSHA1 { get; set; }
         public string AuthorTimestampSHA256 { get; set; }
         public string AuthorTimestampSubject { get; set; }
         public DateTimeOffset? AuthorTimestampNotBefore { get; set; }
         public DateTimeOffset? AuthorTimestampNotAfter { get; set; }
+        public string AuthorTimestampIssuer { get; set; }
         public DateTimeOffset? AuthorTimestampValue { get; set; }
         public bool AuthorTimestampHasASN1Error { get; set; }
 
@@ -46,12 +48,14 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
         public string RepositorySubject { get; set; }
         public DateTimeOffset? RepositoryNotBefore { get; set; }
         public DateTimeOffset? RepositoryNotAfter { get; set; }
+        public string RepositoryIssuer { get; set; }
 
         public string RepositoryTimestampSHA1 { get; set; }
         public string RepositoryTimestampSHA256 { get; set; }
         public string RepositoryTimestampSubject { get; set; }
         public DateTimeOffset? RepositoryTimestampNotBefore { get; set; }
         public DateTimeOffset? RepositoryTimestampNotAfter { get; set; }
+        public string RepositoryTimestampIssuer { get; set; }
         public DateTimeOffset? RepositoryTimestampValue { get; set; }
         public bool RepositoryTimestampHasASN1Error { get; set; }
 

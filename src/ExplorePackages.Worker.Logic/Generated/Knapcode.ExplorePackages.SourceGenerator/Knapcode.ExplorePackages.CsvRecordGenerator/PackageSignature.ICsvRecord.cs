@@ -26,11 +26,13 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
         AuthorSubject: string,
         AuthorNotBefore: datetime,
         AuthorNotAfter: datetime,
+        AuthorIssuer: string,
         AuthorTimestampSHA1: string,
         AuthorTimestampSHA256: string,
         AuthorTimestampSubject: string,
         AuthorTimestampNotBefore: datetime,
         AuthorTimestampNotAfter: datetime,
+        AuthorTimestampIssuer: string,
         AuthorTimestampValue: datetime,
         AuthorTimestampHasASN1Error: bool,
         RepositorySHA1: string,
@@ -38,11 +40,13 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
         RepositorySubject: string,
         RepositoryNotBefore: datetime,
         RepositoryNotAfter: datetime,
+        RepositoryIssuer: string,
         RepositoryTimestampSHA1: string,
         RepositoryTimestampSHA256: string,
         RepositoryTimestampSubject: string,
         RepositoryTimestampNotBefore: datetime,
         RepositoryTimestampNotAfter: datetime,
+        RepositoryTimestampIssuer: string,
         RepositoryTimestampValue: datetime,
         RepositoryTimestampHasASN1Error: bool,
         PackageOwners: string
@@ -64,26 +68,30 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
         '{"Column":"AuthorSubject","DataType":"string","Properties":{"Ordinal":11}},'
         '{"Column":"AuthorNotBefore","DataType":"datetime","Properties":{"Ordinal":12}},'
         '{"Column":"AuthorNotAfter","DataType":"datetime","Properties":{"Ordinal":13}},'
-        '{"Column":"AuthorTimestampSHA1","DataType":"string","Properties":{"Ordinal":14}},'
-        '{"Column":"AuthorTimestampSHA256","DataType":"string","Properties":{"Ordinal":15}},'
-        '{"Column":"AuthorTimestampSubject","DataType":"string","Properties":{"Ordinal":16}},'
-        '{"Column":"AuthorTimestampNotBefore","DataType":"datetime","Properties":{"Ordinal":17}},'
-        '{"Column":"AuthorTimestampNotAfter","DataType":"datetime","Properties":{"Ordinal":18}},'
-        '{"Column":"AuthorTimestampValue","DataType":"datetime","Properties":{"Ordinal":19}},'
-        '{"Column":"AuthorTimestampHasASN1Error","DataType":"bool","Properties":{"Ordinal":20}},'
-        '{"Column":"RepositorySHA1","DataType":"string","Properties":{"Ordinal":21}},'
-        '{"Column":"RepositorySHA256","DataType":"string","Properties":{"Ordinal":22}},'
-        '{"Column":"RepositorySubject","DataType":"string","Properties":{"Ordinal":23}},'
-        '{"Column":"RepositoryNotBefore","DataType":"datetime","Properties":{"Ordinal":24}},'
-        '{"Column":"RepositoryNotAfter","DataType":"datetime","Properties":{"Ordinal":25}},'
-        '{"Column":"RepositoryTimestampSHA1","DataType":"string","Properties":{"Ordinal":26}},'
-        '{"Column":"RepositoryTimestampSHA256","DataType":"string","Properties":{"Ordinal":27}},'
-        '{"Column":"RepositoryTimestampSubject","DataType":"string","Properties":{"Ordinal":28}},'
-        '{"Column":"RepositoryTimestampNotBefore","DataType":"datetime","Properties":{"Ordinal":29}},'
-        '{"Column":"RepositoryTimestampNotAfter","DataType":"datetime","Properties":{"Ordinal":30}},'
-        '{"Column":"RepositoryTimestampValue","DataType":"datetime","Properties":{"Ordinal":31}},'
-        '{"Column":"RepositoryTimestampHasASN1Error","DataType":"bool","Properties":{"Ordinal":32}},'
-        '{"Column":"PackageOwners","DataType":"string","Properties":{"Ordinal":33}}'
+        '{"Column":"AuthorIssuer","DataType":"string","Properties":{"Ordinal":14}},'
+        '{"Column":"AuthorTimestampSHA1","DataType":"string","Properties":{"Ordinal":15}},'
+        '{"Column":"AuthorTimestampSHA256","DataType":"string","Properties":{"Ordinal":16}},'
+        '{"Column":"AuthorTimestampSubject","DataType":"string","Properties":{"Ordinal":17}},'
+        '{"Column":"AuthorTimestampNotBefore","DataType":"datetime","Properties":{"Ordinal":18}},'
+        '{"Column":"AuthorTimestampNotAfter","DataType":"datetime","Properties":{"Ordinal":19}},'
+        '{"Column":"AuthorTimestampIssuer","DataType":"string","Properties":{"Ordinal":20}},'
+        '{"Column":"AuthorTimestampValue","DataType":"datetime","Properties":{"Ordinal":21}},'
+        '{"Column":"AuthorTimestampHasASN1Error","DataType":"bool","Properties":{"Ordinal":22}},'
+        '{"Column":"RepositorySHA1","DataType":"string","Properties":{"Ordinal":23}},'
+        '{"Column":"RepositorySHA256","DataType":"string","Properties":{"Ordinal":24}},'
+        '{"Column":"RepositorySubject","DataType":"string","Properties":{"Ordinal":25}},'
+        '{"Column":"RepositoryNotBefore","DataType":"datetime","Properties":{"Ordinal":26}},'
+        '{"Column":"RepositoryNotAfter","DataType":"datetime","Properties":{"Ordinal":27}},'
+        '{"Column":"RepositoryIssuer","DataType":"string","Properties":{"Ordinal":28}},'
+        '{"Column":"RepositoryTimestampSHA1","DataType":"string","Properties":{"Ordinal":29}},'
+        '{"Column":"RepositoryTimestampSHA256","DataType":"string","Properties":{"Ordinal":30}},'
+        '{"Column":"RepositoryTimestampSubject","DataType":"string","Properties":{"Ordinal":31}},'
+        '{"Column":"RepositoryTimestampNotBefore","DataType":"datetime","Properties":{"Ordinal":32}},'
+        '{"Column":"RepositoryTimestampNotAfter","DataType":"datetime","Properties":{"Ordinal":33}},'
+        '{"Column":"RepositoryTimestampIssuer","DataType":"string","Properties":{"Ordinal":34}},'
+        '{"Column":"RepositoryTimestampValue","DataType":"datetime","Properties":{"Ordinal":35}},'
+        '{"Column":"RepositoryTimestampHasASN1Error","DataType":"bool","Properties":{"Ordinal":36}},'
+        '{"Column":"PackageOwners","DataType":"string","Properties":{"Ordinal":37}}'
     ']'
 
     */
@@ -119,6 +127,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
             writer.Write(',');
             writer.Write(CsvUtility.FormatDateTimeOffset(AuthorNotAfter));
             writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, AuthorIssuer);
+            writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, AuthorTimestampSHA1);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, AuthorTimestampSHA256);
@@ -128,6 +138,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
             writer.Write(CsvUtility.FormatDateTimeOffset(AuthorTimestampNotBefore));
             writer.Write(',');
             writer.Write(CsvUtility.FormatDateTimeOffset(AuthorTimestampNotAfter));
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, AuthorTimestampIssuer);
             writer.Write(',');
             writer.Write(CsvUtility.FormatDateTimeOffset(AuthorTimestampValue));
             writer.Write(',');
@@ -143,6 +155,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
             writer.Write(',');
             writer.Write(CsvUtility.FormatDateTimeOffset(RepositoryNotAfter));
             writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, RepositoryIssuer);
+            writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, RepositoryTimestampSHA1);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, RepositoryTimestampSHA256);
@@ -152,6 +166,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
             writer.Write(CsvUtility.FormatDateTimeOffset(RepositoryTimestampNotBefore));
             writer.Write(',');
             writer.Write(CsvUtility.FormatDateTimeOffset(RepositoryTimestampNotAfter));
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, RepositoryTimestampIssuer);
             writer.Write(',');
             writer.Write(CsvUtility.FormatDateTimeOffset(RepositoryTimestampValue));
             writer.Write(',');
@@ -191,6 +207,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
             await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(AuthorNotAfter));
             await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, AuthorIssuer);
+            await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, AuthorTimestampSHA1);
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, AuthorTimestampSHA256);
@@ -200,6 +218,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
             await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(AuthorTimestampNotBefore));
             await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(AuthorTimestampNotAfter));
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, AuthorTimestampIssuer);
             await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(AuthorTimestampValue));
             await writer.WriteAsync(',');
@@ -215,6 +235,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
             await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(RepositoryNotAfter));
             await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, RepositoryIssuer);
+            await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, RepositoryTimestampSHA1);
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, RepositoryTimestampSHA256);
@@ -224,6 +246,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
             await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(RepositoryTimestampNotBefore));
             await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(RepositoryTimestampNotAfter));
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, RepositoryTimestampIssuer);
             await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(RepositoryTimestampValue));
             await writer.WriteAsync(',');
@@ -251,11 +275,13 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
                 AuthorSubject = getNextField(),
                 AuthorNotBefore = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
                 AuthorNotAfter = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
+                AuthorIssuer = getNextField(),
                 AuthorTimestampSHA1 = getNextField(),
                 AuthorTimestampSHA256 = getNextField(),
                 AuthorTimestampSubject = getNextField(),
                 AuthorTimestampNotBefore = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
                 AuthorTimestampNotAfter = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
+                AuthorTimestampIssuer = getNextField(),
                 AuthorTimestampValue = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
                 AuthorTimestampHasASN1Error = bool.Parse(getNextField()),
                 RepositorySHA1 = getNextField(),
@@ -263,11 +289,13 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
                 RepositorySubject = getNextField(),
                 RepositoryNotBefore = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
                 RepositoryNotAfter = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
+                RepositoryIssuer = getNextField(),
                 RepositoryTimestampSHA1 = getNextField(),
                 RepositoryTimestampSHA256 = getNextField(),
                 RepositoryTimestampSubject = getNextField(),
                 RepositoryTimestampNotBefore = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
                 RepositoryTimestampNotAfter = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
+                RepositoryTimestampIssuer = getNextField(),
                 RepositoryTimestampValue = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
                 RepositoryTimestampHasASN1Error = bool.Parse(getNextField()),
                 PackageOwners = getNextField(),
