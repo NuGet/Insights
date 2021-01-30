@@ -58,7 +58,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             var cursorName = GetCursorName(driverType);
             var indexScan = await _catalogScanStorageService.GetIndexScanAsync(cursorName, scanId);
-            if (indexScan.ParsedState != CatalogScanState.Waiting)
+            if (indexScan.ParsedState != CatalogScanState.Working)
             {
                 return;
             }

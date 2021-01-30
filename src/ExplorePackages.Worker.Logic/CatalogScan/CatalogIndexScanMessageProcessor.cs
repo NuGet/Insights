@@ -91,13 +91,13 @@ namespace Knapcode.ExplorePackages.Worker
                 var pageScans = await lazyPageScansTask.Value;
                 await EnqueueAsync(pageScans);
 
-                scan.ParsedState = CatalogScanState.Waiting;
+                scan.ParsedState = CatalogScanState.Working;
                 message.AttemptCount = 0;
                 await _storageService.ReplaceAsync(scan);
             }
 
             // Waiting: wait for the page scans and subsequent leaf scans to complete
-            if (scan.ParsedState == CatalogScanState.Waiting)
+            if (scan.ParsedState == CatalogScanState.Working)
             {
                 if (!await ArePageScansCompleteAsync(scan) || !await AreLeafScansCompleteAsync(scan))
                 {
@@ -176,13 +176,13 @@ namespace Knapcode.ExplorePackages.Worker
                         _storageService.GetLeafScanTable(scan.StorageSuffix).Name);
                 }
 
-                scan.ParsedState = CatalogScanState.Waiting;
+                scan.ParsedState = CatalogScanState.Working;
                 message.AttemptCount = 0;
                 await _storageService.ReplaceAsync(scan);
             }
 
             // Waiting: wait for the table scan and subsequent leaf scans to complete
-            if (scan.ParsedState == CatalogScanState.Waiting)
+            if (scan.ParsedState == CatalogScanState.Working)
             {
                 if (!await AreTableScanStepsCompleteAsync(taskStateKey) || !await AreLeafScansCompleteAsync(scan))
                 {

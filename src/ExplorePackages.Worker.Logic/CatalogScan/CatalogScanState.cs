@@ -6,7 +6,7 @@
         WaitingOnDependency,
         Expanding,
         Enqueuing,
-        Waiting,
+        Working,
         StartingAggregate,
         Aggregating,
         Finalizing,
