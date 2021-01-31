@@ -134,11 +134,18 @@ namespace Knapcode.ExplorePackages.Worker
             await AppendToTableAsync(bucket, tableName, records);
 
             // Append a marker to show that this bucket has data.
-            await _wideEntityService.InsertOrReplaceAsync(
-               tableName,
-               partitionKey: string.Empty,
-               rowKey: bucket.ToString(),
-               content: Array.Empty<byte>());
+            try
+            {
+                await _wideEntityService.InsertAsync(
+                   tableName,
+                   partitionKey: string.Empty,
+                   rowKey: bucket.ToString(),
+                   content: Array.Empty<byte>());
+            }
+            catch (StorageException ex) when (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.Conflict)
+            {
+                // This is okay. The marker already exists.
+            }
         }
 
         private async Task AppendToTableAsync<T>(int bucket, string tableName, IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
