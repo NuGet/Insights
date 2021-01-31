@@ -1,0 +1,14 @@
+{
+  "Microsoft.Extensions.Logging": [
+    "Microsoft",
+    "aspnet",
+    "dotnetframework"
+  ],
+  "Knapcode.TorSharp": [
+    "joelverhagen"
+  ],
+  "OwnerlessPackage": [],
+  "Castle.Core": [
+    "castleproject"
+  ]
+}

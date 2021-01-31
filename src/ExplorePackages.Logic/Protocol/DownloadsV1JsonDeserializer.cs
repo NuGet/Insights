@@ -10,11 +10,6 @@ namespace Knapcode.ExplorePackages
 {
     public class DownloadsV1JsonDeserializer
     {
-        public IAsyncEnumerable<PackageDownloads> DeserializeAsync(TextReader reader)
-        {
-            return DeserializeAsync(reader, new Stack<IDisposable>(), NullThrottle.Instance);
-        }
-
         public IAsyncEnumerable<PackageDownloads> DeserializeAsync(TextReader reader, Stack<IDisposable> disposables, IThrottle throttle)
         {
             var jsonReader = new JsonTextReader(reader);
