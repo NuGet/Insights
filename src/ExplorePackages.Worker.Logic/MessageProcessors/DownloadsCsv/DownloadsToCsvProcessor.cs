@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.WindowsAzure.Storage;
 using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
@@ -116,15 +117,24 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
             destBlob.Properties.ContentType = "text/plain";
             destBlob.Properties.ContentEncoding = "gzip";
 
-            using var destStream = await destBlob.OpenWriteAsync();
-            using var gzipStream = new GZipStream(destStream, CompressionLevel.Optimal);
-            using var writer = new StreamWriter(gzipStream);
+            long uncompressedLength;
+            using (var destStream = await destBlob.OpenWriteAsync())
+            {
+                using var gzipStream = new GZipStream(destStream, CompressionLevel.Optimal);
+                using var countingWriterStream = new CountingWriterStream(gzipStream);
+                using var writer = new StreamWriter(countingWriterStream);
 
-            await WriteAsync(set.Downloads, set.AsOfTimestamp, writer);
+                await WriteAsync(set.Downloads, set.AsOfTimestamp, writer);
 
-            await writer.FlushAsync();
-            await gzipStream.FlushAsync();
-            await destStream.FlushAsync();
+                await writer.FlushAsync();
+                await gzipStream.FlushAsync();
+                await destStream.FlushAsync();
+
+                uncompressedLength = countingWriterStream.Length;
+            }
+
+            destBlob.Metadata["rawSizeBytes"] = uncompressedLength.ToString(); // See: https://docs.microsoft.com/en-us/azure/data-explorer/lightingest#recommendations
+            await destBlob.SetMetadataAsync(AccessCondition.GenerateIfMatchCondition(destBlob.Properties.ETag), options: null, operationContext: null);
 
             return true;
         }

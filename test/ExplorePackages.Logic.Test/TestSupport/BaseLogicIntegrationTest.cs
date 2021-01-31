@@ -129,8 +129,18 @@ namespace Knapcode.ExplorePackages
                 using var destStream = new MemoryStream();
                 await blob.DownloadToStreamAsync(destStream);
                 destStream.Position = 0;
+
+                Assert.Contains("rawSizeBytes", blob.Metadata);
+                var uncompressedLength = long.Parse(blob.Metadata["rawSizeBytes"]);
+
                 using var gzipStream = new GZipStream(destStream, CompressionMode.Decompress);
-                using var reader = new StreamReader(gzipStream);
+                using var decompressedStream = new MemoryStream();
+                await gzipStream.CopyToAsync(decompressedStream);
+                decompressedStream.Position = 0;
+
+                Assert.Equal(uncompressedLength, decompressedStream.Length);
+
+                using var reader = new StreamReader(decompressedStream);
                 actual = await reader.ReadToEndAsync();
 
                 if (blobName.EndsWith(".gz"))

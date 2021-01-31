@@ -110,7 +110,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         private async Task AppendToBlobAsync<T>(CloudAppendBlob blob, IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
         {
-            using var memoryStream = SerializeRecords(records, gzip: false);
+            using var memoryStream = SerializeRecords(records, gzip: false, out var _);
             try
             {
                 await blob.AppendBlockAsync(memoryStream);
@@ -301,14 +301,16 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             var stream = Stream.Null;
+            long uncompressedLength = 0;
             if (allRecords.Any())
             {
                 var prunedRecords = prune(allRecords);
-                stream = SerializeRecords(prunedRecords, gzip: true);
+                stream = SerializeRecords(prunedRecords, gzip: true, out uncompressedLength);
             }
 
             compactBlob.Properties.ContentType = ContentType;
             compactBlob.Properties.ContentEncoding = "gzip";
+            compactBlob.Metadata["rawSizeBytes"] = uncompressedLength.ToString(); // See: https://docs.microsoft.com/en-us/azure/data-explorer/lightingest#recommendations
             stream.Position = 0;
             await compactBlob.UploadFromStreamAsync(stream, accessCondition, options: null, operationContext: null);
         }
@@ -374,17 +376,21 @@ namespace Knapcode.ExplorePackages.Worker
             return markerEntities.Select(x => int.Parse(x.RowKey)).ToList();
         }
 
-        private static MemoryStream SerializeRecords<T>(IReadOnlyList<T> records, bool gzip) where T : ICsvRecord<T>, new()
+        private static MemoryStream SerializeRecords<T>(IReadOnlyList<T> records, bool gzip, out long uncompressedLength) where T : ICsvRecord<T>, new()
         {
             var memoryStream = new MemoryStream();
             if (gzip)
             {
                 using var gzipStream = new GZipStream(memoryStream, CompressionLevel.Optimal, leaveOpen: true);
-                SerializeRecords(records, gzipStream);
+                using var countingStream = new CountingWriterStream(gzipStream);
+                SerializeRecords(records, countingStream);
+                uncompressedLength = countingStream.Length;
             }
             else
             {
-                SerializeRecords(records, memoryStream);
+                using var countingStream = new CountingWriterStream(memoryStream);
+                SerializeRecords(records, countingStream);
+                uncompressedLength = countingStream.Length;
             }
 
             return memoryStream;

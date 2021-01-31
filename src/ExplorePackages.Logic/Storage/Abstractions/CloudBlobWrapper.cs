@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Blob;
 
@@ -14,6 +15,7 @@ namespace Knapcode.ExplorePackages
         }
 
         public BlobProperties Properties => _inner.Properties;
+        public IDictionary<string, string> Metadata => _inner.Metadata;
 
         public async Task DownloadToStreamAsync(Stream target)
         {
