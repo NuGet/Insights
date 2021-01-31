@@ -126,6 +126,9 @@ namespace Knapcode.ExplorePackages
             var fileName = blobName;
             if (gzip)
             {
+                Assert.EndsWith(".gz", blobName);
+                fileName = blobName.Substring(0, blobName.Length - ".gz".Length);
+
                 using var destStream = new MemoryStream();
                 await blob.DownloadToStreamAsync(destStream);
                 destStream.Position = 0;
@@ -142,11 +145,6 @@ namespace Knapcode.ExplorePackages
 
                 using var reader = new StreamReader(decompressedStream);
                 actual = await reader.ReadToEndAsync();
-
-                if (blobName.EndsWith(".gz"))
-                {
-                    fileName = blobName.Substring(0, blobName.Length - ".gz".Length);
-                }
             }
             else
             {
