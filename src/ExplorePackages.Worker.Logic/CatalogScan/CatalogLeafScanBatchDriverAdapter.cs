@@ -47,7 +47,7 @@ namespace Knapcode.ExplorePackages.Worker
                             throw new NotImplementedException();
                     }
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (leafScans.Count != 1)
                 {
                     _logger.LogError(ex, "A catalog leaf scan failed.");
                     failed.Add(leafScan);

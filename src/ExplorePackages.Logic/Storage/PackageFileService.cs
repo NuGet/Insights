@@ -18,10 +18,6 @@ namespace Knapcode.ExplorePackages
 {
     public class PackageFileService
     {
-        public static readonly MessagePackSerializerOptions MessagePackSerializerOptions = MessagePackSerializerOptions
-            .Standard
-            .WithCompression(MessagePackCompression.Lz4Block);
-
         private readonly WideEntityService _wideEntityService;
         private readonly FlatContainerClient _flatContainerClient;
         private readonly HttpZipProvider _httpZipProvider;
@@ -47,7 +43,7 @@ namespace Knapcode.ExplorePackages
 
         public async Task InitializeAsync()
         {
-            await _wideEntityService.InitializeAsync(_options.Value.PackageFileTableName);
+            await _wideEntityService.CreateTableAsync(_options.Value.PackageFileTableName);
         }
 
         public async Task<PrimarySignature> GetPrimarySignatureAsync(CatalogLeafItem leafItem)
@@ -168,9 +164,7 @@ namespace Knapcode.ExplorePackages
 
         private static byte[] Serialize(PackageFileInfoV1 newInfo)
         {
-            return MessagePackSerializer.Serialize(
-                new PackageFileInfoVersions { V1 = newInfo },
-                MessagePackSerializerOptions);
+            return MessagePackSerializer.Serialize(new PackageFileInfoVersions { V1 = newInfo }, ExplorePackagesMessagePack.Options);
         }
 
         private async Task<(WideEntity ExistingEntity, PackageFileInfoV1 MatchingInfo)> GetExistingAsync(string partitionKey, string rowKey, CatalogLeafItem leafItem)
@@ -261,7 +255,7 @@ namespace Knapcode.ExplorePackages
 
         private static PackageFileInfoV1 Deserialize(WideEntity entity)
         {
-            var info = MessagePackSerializer.Deserialize<PackageFileInfoVersions>(entity.GetStream(), MessagePackSerializerOptions);
+            var info = MessagePackSerializer.Deserialize<PackageFileInfoVersions>(entity.GetStream(), ExplorePackagesMessagePack.Options);
             return info.V1;
         }
 

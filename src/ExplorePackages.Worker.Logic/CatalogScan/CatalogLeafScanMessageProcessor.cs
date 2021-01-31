@@ -31,6 +31,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task<BatchMessageProcessorResult<CatalogLeafScanMessage>> ProcessAsync(IReadOnlyList<CatalogLeafScanMessage> messages, int dequeueCount)
         {
+            var throwOnException = messages.Count == 1;
             var failed = new List<CatalogLeafScanMessage>();
             var tryAgainLater = new List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan, TimeSpan NotBefore)>();
             var noMatchingScan = new List<CatalogLeafScanMessage>();
@@ -52,11 +53,11 @@ namespace Knapcode.ExplorePackages.Worker
                     var batchDriver = _driverFactory.CreateBatchDriverOrNull(driverType);
                     if (batchDriver != null)
                     {
-                        await ProcessBatchAsync(batchDriver, dequeueCount, failed, tryAgainLater, toProcess);
+                        await ProcessBatchAsync(batchDriver, dequeueCount, failed, tryAgainLater, toProcess, throwOnException);
                     }
                     else
                     {
-                        await ProcessOneByOneAsync(dequeueCount, failed, tryAgainLater, toProcess);
+                        await ProcessOneByOneAsync(dequeueCount, failed, tryAgainLater, toProcess, throwOnException);
                     }
                 }
             }
@@ -179,7 +180,8 @@ namespace Knapcode.ExplorePackages.Worker
             int dequeueCount,
             List<CatalogLeafScanMessage> failed,
             List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan, TimeSpan NotBefore)> tryAgainLater,
-            List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan)> toProcess)
+            List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan)> toProcess,
+            bool throwOnException)
         {
             _logger.LogInformation("Attempting batch of {Count} catalog leaf scans.", toProcess.Count);
 
@@ -200,7 +202,7 @@ namespace Knapcode.ExplorePackages.Worker
             {
                 result = await batchDriver.ProcessLeavesAsync(scans);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!throwOnException)
             {
                 _logger.LogError(ex, "Processing a catalog leaf scan batch failed.");
                 failed.AddRange(scans.Select(x => scanToMessage[x]));
@@ -238,7 +240,8 @@ namespace Knapcode.ExplorePackages.Worker
             int dequeueCount,
             List<CatalogLeafScanMessage> failed,
             List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan, TimeSpan NotBefore)> tryAgainLater,
-            List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan)> toProcess)
+            List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan)> toProcess,
+            bool throwOnException)
         {
             foreach ((var message, var scan) in toProcess)
             {
@@ -272,7 +275,7 @@ namespace Knapcode.ExplorePackages.Worker
                             throw new NotImplementedException();
                     }
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (!throwOnException)
                 {
                     _logger.LogError(ex, "Processing a catalog leaf scan failed.");
                     failed.Add(message);

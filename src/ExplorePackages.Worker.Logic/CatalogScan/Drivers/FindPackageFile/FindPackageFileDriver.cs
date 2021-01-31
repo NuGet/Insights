@@ -40,7 +40,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageFile
                 {
                     await _packageFileService.UpdateBatchAsync(group.Key, leafItems);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (leafScans.Count != 1)
                 {
                     _logger.LogError(ex, "Updating package file info failed for {Id} with {Count} versions.", group.Key, leafItems.Count);
                     failed.AddRange(group);

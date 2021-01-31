@@ -7,12 +7,12 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Knapcode.ExplorePackages.WideEntities;
+using MessagePack;
 using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Shared.Protocol;
-using Microsoft.WindowsAzure.Storage.Table;
-using Microsoft.WindowsAzure.Storage.Table.Protocol;
 
 namespace Knapcode.ExplorePackages.Worker
 {
@@ -21,18 +21,17 @@ namespace Knapcode.ExplorePackages.Worker
         private const string ContentType = "text/plain";
         private const string AppendPrefix = "append_";
         private const string CompactPrefix = "compact_";
-        private const int MaximumPropertyLength = 32 * 1024;
         private readonly IServiceClientFactory _serviceClientFactory;
-        private readonly ITelemetryClient _telemetryClient;
+        private readonly WideEntityService _wideEntityService;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
         public AppendResultStorageService(
             IServiceClientFactory serviceClientFactory,
-            ITelemetryClient telemetryClient,
+            WideEntityService wideEntityService,
             IOptions<ExplorePackagesWorkerSettings> options)
         {
             _serviceClientFactory = serviceClientFactory;
-            _telemetryClient = telemetryClient;
+            _wideEntityService = wideEntityService;
             _options = options;
         }
 
@@ -41,7 +40,7 @@ namespace Knapcode.ExplorePackages.Worker
             switch (_options.Value.AppendResultStorageMode)
             {
                 case AppendResultStorageMode.Table:
-                    await GetTable(srcContainer).CreateIfNotExistsAsync(retry: true);
+                    await _wideEntityService.CreateTableAsync(srcContainer);
                     break;
                 case AppendResultStorageMode.AppendBlob:
                     await GetContainer(srcContainer).CreateIfNotExistsAsync(retry: true);
@@ -58,7 +57,7 @@ namespace Knapcode.ExplorePackages.Worker
             switch (_options.Value.AppendResultStorageMode)
             {
                 case AppendResultStorageMode.Table:
-                    await GetTable(containerName).DeleteIfExistsAsync();
+                    await _wideEntityService.DeleteTableAsync(containerName);
                     break;
                 case AppendResultStorageMode.AppendBlob:
                     await GetContainer(containerName).DeleteIfExistsAsync();
@@ -130,77 +129,39 @@ namespace Knapcode.ExplorePackages.Worker
         private async Task AppendToTableAsync<T>(string tableName, int bucketCount, string bucketKey, IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
         {
             var bucket = GetBucket(bucketCount, bucketKey);
-            var table = GetTable(tableName);
 
             // Append the data.
-            await AppendToTableAsync(bucket, table, records);
+            await AppendToTableAsync(bucket, tableName, records);
 
             // Append a marker to show that this bucket has data.
-            var markerEntity = new TableEntity(string.Empty, bucket.ToString());
-            await table.ExecuteAsync(TableOperation.InsertOrReplace(markerEntity));
+            await _wideEntityService.InsertOrReplaceAsync(
+               tableName,
+               partitionKey: string.Empty,
+               rowKey: bucket.ToString(),
+               content: Array.Empty<byte>());
         }
 
-        private static async Task AppendToTableAsync<T>(int bucket, ICloudTable table, IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
+        private async Task AppendToTableAsync<T>(int bucket, string tableName, IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
         {
-            var dataEntity = SerializeToTableEntity(records, bucket);
-
-            var entities = new List<AppendResultEntity>();
-            if (dataEntity.Data.Length >= MaximumPropertyLength)
-            {
-                var entityCount = Math.Min(
-                    records.Count,
-                    (int)(1.5 * ((dataEntity.Data.Length / MaximumPropertyLength) + 1)));
-
-                if (entityCount > 1)
-                {
-                    var minRecordCount = records.Count / entityCount;
-                    for (var i = 0; i < entityCount; i++)
-                    {
-                        var entityRecords = records.Skip(i * minRecordCount);
-                        if (i < entityCount - 1)
-                        {
-                            entityRecords = entityRecords.Take(minRecordCount);
-                        }
-
-                        entities.Add(SerializeToTableEntity(entityRecords.ToList(), bucket));
-                    }
-                }
-            }
-
-            if (!entities.Any())
-            {
-                entities.Add(dataEntity);
-            }
-
+            var bytes = Serialize(records);
             try
             {
-                await table.InsertEntitiesAsync(entities);
+                await _wideEntityService.InsertAsync(
+                    tableName,
+                    partitionKey: bucket.ToString(),
+                    rowKey: StorageUtility.GenerateDescendingId().ToString(),
+                    content: bytes);
             }
             catch (StorageException ex) when (
-                records.Count >= 2 && (
-                    (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.BadRequest
-                     && (ex.RequestInformation?.ExtendedErrorInformation?.ErrorCode == TableErrorCodeStrings.PropertyValueTooLarge
-                         || ex.RequestInformation?.ExtendedErrorInformation?.ErrorCode == TableErrorCodeStrings.EntityTooLarge))
-                    ||
-                    (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.RequestEntityTooLarge
-                     && ex.RequestInformation?.ExtendedErrorInformation?.ErrorCode == StorageErrorCodeStrings.RequestBodyTooLarge)))
+                records.Count >= 2
+                && ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.RequestEntityTooLarge
+                && ex.RequestInformation?.ExtendedErrorInformation?.ErrorCode == StorageErrorCodeStrings.RequestBodyTooLarge)
             {
                 var firstHalf = records.Take(records.Count / 2).ToList();
                 var secondHalf = records.Skip(firstHalf.Count).ToList();
-                await AppendToTableAsync(bucket, table, firstHalf);
-                await AppendToTableAsync(bucket, table, secondHalf);
+                await AppendToTableAsync(bucket, tableName, firstHalf);
+                await AppendToTableAsync(bucket, tableName, secondHalf);
             }
-        }
-
-        private static AppendResultEntity SerializeToTableEntity<T>(IReadOnlyList<T> records, int bucket) where T : ICsvRecord<T>, new()
-        {
-            using var stringWriter = new StringWriter();
-            SerializeRecords(records, stringWriter);
-
-            return new AppendResultEntity(bucket, StorageUtility.GenerateDescendingId().ToString())
-            {
-                Data = stringWriter.ToString(),
-            };
         }
 
         private ICloudBlobWrapper GetAppendBlobWrapper(string container, int bucket)
@@ -282,14 +243,15 @@ namespace Knapcode.ExplorePackages.Worker
 
             if (!force || srcTable != null)
             {
-                var table = GetTable(srcTable);
-                var entities = await table.GetEntitiesAsync<AppendResultEntity>(bucket.ToString(), _telemetryClient.StartQueryLoopMetrics());
+                var entities = await _wideEntityService.RetrieveAsync(srcTable, partitionKey: bucket.ToString());
+
                 if (entities.Any())
                 {
                     foreach (var entity in entities)
                     {
-                        using var stringReader = new StringReader(entity.Data);
-                        appendRecords.AddRange(csvReader.GetRecords<T>(stringReader));
+                        using var stream = entity.GetStream();
+                        var records = Deserialize<T>(stream);
+                        appendRecords.AddRange(records);
                     }
                 }
                 else if (!force)
@@ -300,6 +262,16 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             await CompactAsync(appendRecords, destContainer, bucket, mergeExisting, prune, csvReader);
+        }
+
+        private static byte[] Serialize<T>(IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
+        {
+            return MessagePackSerializer.Serialize(records, ExplorePackagesMessagePack.Options);
+        }
+
+        private static IReadOnlyList<T> Deserialize<T>(Stream stream) where T : ICsvRecord<T>, new()
+        {
+            return MessagePackSerializer.Deserialize<List<T>>(stream, ExplorePackagesMessagePack.Options);
         }
 
         private async Task CompactAsync<T>(
@@ -391,8 +363,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         private async Task<List<int>> GetWrittenAppendTableBucketsAsync(string tableName)
         {
-            var table = GetTable(tableName);
-            var markerEntities = await table.GetEntitiesAsync<TableEntity>(string.Empty, _telemetryClient.StartQueryLoopMetrics());
+            var markerEntities = await _wideEntityService.RetrieveAsync(tableName, partitionKey: string.Empty);
             return markerEntities.Select(x => int.Parse(x.RowKey)).ToList();
         }
 
@@ -436,13 +407,6 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             return bucket;
-        }
-
-        private ICloudTable GetTable(string name)
-        {
-            var storageAccount = _serviceClientFactory.GetAbstractedStorageAccount();
-            var client = storageAccount.CreateCloudTableClient();
-            return client.GetTableReference(name);
         }
 
         private ICloudBlobContainer GetContainer(string name)

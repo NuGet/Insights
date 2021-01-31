@@ -3,12 +3,12 @@ using Microsoft.CodeAnalysis;
 
 namespace Knapcode.ExplorePackages
 {
-    public class WriteAsyncBuilder : IPropertyVisitor
+    public class WriteAsyncTextWriterBuilder : IPropertyVisitor
     {
         private readonly int _indent;
         private readonly StringBuilder _builder;
 
-        public WriteAsyncBuilder(int indent)
+        public WriteAsyncTextWriterBuilder(int indent)
         {
             _indent = indent;
             _builder = new StringBuilder();
@@ -35,8 +35,10 @@ namespace Knapcode.ExplorePackages
                 case "System.Guid?":
                 case "System.TimeSpan":
                 case "System.TimeSpan?":
-                case "System.Version":
                     _builder.AppendFormat("await writer.WriteAsync({0}.ToString());", symbol.Name);
+                    break;
+                case "System.Version":
+                    _builder.AppendFormat("await writer.WriteAsync({0}?.ToString());", symbol.Name);
                     break;
                 case "bool":
                 case "bool?":

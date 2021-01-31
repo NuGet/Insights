@@ -1,20 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using Knapcode.MiniZip;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using NuGet.Client;
-using NuGet.Common;
-using NuGet.ContentModel;
-using NuGet.Frameworks;
 using NuGet.Packaging.Signing;
-using NuGet.RuntimeModel;
 
 namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
 {

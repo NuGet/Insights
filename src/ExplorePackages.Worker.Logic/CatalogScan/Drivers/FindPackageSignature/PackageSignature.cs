@@ -1,6 +1,5 @@
 ﻿using System;
 using NuGet.Common;
-using NuGet.Packaging.Signing;
 
 namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
 {

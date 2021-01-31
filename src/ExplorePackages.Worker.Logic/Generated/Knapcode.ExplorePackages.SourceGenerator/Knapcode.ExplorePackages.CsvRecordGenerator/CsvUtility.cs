@@ -53,12 +53,12 @@ namespace Knapcode.ExplorePackages
 
         public static T ParseReference<T>(string input, Func<string, T> parse) where T : class
         {
-            return input.Length > 0 ? parse(input) : null;
+            return string.IsNullOrEmpty(input) ? null : parse(input);
         }
 
         public static T? ParseNullable<T>(string input, Func<string, T> parse) where T : struct
         {
-            return input.Length > 0 ? parse(input) : new T?();
+            return string.IsNullOrEmpty(input) ? new T?() : parse(input);
         }
 
         public static string FormatBool(bool input)
