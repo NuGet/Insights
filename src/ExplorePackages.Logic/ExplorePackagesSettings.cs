@@ -14,6 +14,7 @@ namespace Knapcode.ExplorePackages
             V2BaseUrl = "https://www.nuget.org/api/v2";
             V3ServiceIndex = "https://api.nuget.org/v3/index.json";
             DownloadsV1Url = null;
+            OwnersV2Url = null;
             StorageConnectionString = "UseDevelopmentStorage=true";
             StorageContainerName = "packages";
             LeaseContainerName = "leases";
@@ -31,6 +32,7 @@ namespace Knapcode.ExplorePackages
         public string V2BaseUrl { get; set; }
         public string V3ServiceIndex { get; set; }
         public string DownloadsV1Url { get; set; }
+        public string OwnersV2Url { get; set; }
         public string StorageConnectionString { get; set; }
         public string StorageContainerName { get; set; }
         public string LeaseContainerName { get; set; }
