@@ -11,6 +11,7 @@ using System.Security;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using Knapcode.MiniZip;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -19,6 +20,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
     public class FindPackageAssemblyDriver : ICatalogLeafToCsvDriver<PackageAssembly>
     {
         private readonly CatalogClient _catalogClient;
+        private readonly PackageFileService _packageFileService;
         private readonly FlatContainerClient _flatContainerClient;
         private readonly TempStreamService _tempStreamService;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
@@ -28,12 +30,14 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
 
         public FindPackageAssemblyDriver(
             CatalogClient catalogClient,
+            PackageFileService packageFileService,
             FlatContainerClient flatContainerClient,
             TempStreamService tempStreamService,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<FindPackageAssemblyDriver> logger)
         {
             _catalogClient = catalogClient;
+            _packageFileService = packageFileService;
             _flatContainerClient = flatContainerClient;
             _tempStreamService = tempStreamService;
             _options = options;
@@ -46,9 +50,9 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
             return PackageRecord.Prune(records);
         }
 
-        public Task InitializeAsync()
+        public async Task InitializeAsync()
         {
-            return Task.CompletedTask;
+            await _packageFileService.InitializeAsync();
         }
 
         public async Task<DriverResult<List<PackageAssembly>>> ProcessLeafAsync(CatalogLeafItem item)
@@ -70,6 +74,18 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
             {
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
 
+                var zipDirectory = await _packageFileService.GetZipDirectoryAsync(item);
+
+                if (zipDirectory == null)
+                {
+                    return MakeEmptyResults();
+                }
+
+                if (!zipDirectory.Entries.Any(x => FileExtensions.Contains(Path.GetExtension(x.GetName()))))
+                {
+                    return MakeNoAssemblies(scanId, scanTimestamp, leaf);
+                }
+
                 using var result = await _flatContainerClient.DownloadPackageContentToFileAsync(
                     item.PackageId,
                     item.PackageVersion,
@@ -77,8 +93,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
 
                 if (result == null)
                 {
-                    // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted asset record.
-                    return DriverResult.Success(new List<PackageAssembly>());
+                    return MakeEmptyResults();
                 }
 
                 if (result.Type == TempStreamResultType.SemaphoreNotAvailable)
@@ -94,7 +109,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
 
                 if (!entries.Any())
                 {
-                    return DriverResult.Success(new List<PackageAssembly> { new PackageAssembly(scanId, scanTimestamp, leaf, PackageAssemblyResultType.NoAssemblies) });
+                    return MakeNoAssemblies(scanId, scanTimestamp, leaf);
                 }
 
                 var assemblies = new List<PackageAssembly>();
@@ -111,6 +126,17 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
 
                 return DriverResult.Success(assemblies);
             }
+        }
+
+        private static DriverResult<List<PackageAssembly>> MakeEmptyResults()
+        {
+            // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted asset record.
+            return DriverResult.Success(new List<PackageAssembly>());
+        }
+
+        private static DriverResult<List<PackageAssembly>> MakeNoAssemblies(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf)
+        {
+            return DriverResult.Success(new List<PackageAssembly> { new PackageAssembly(scanId, scanTimestamp, leaf, PackageAssemblyResultType.NoAssemblies) });
         }
 
         private async Task<DriverResult<PackageAssembly>> AnalyzeAsync(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, ZipArchiveEntry entry)

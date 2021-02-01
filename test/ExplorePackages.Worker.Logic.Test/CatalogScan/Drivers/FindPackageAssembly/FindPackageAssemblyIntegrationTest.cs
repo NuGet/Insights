@@ -264,10 +264,15 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
                 .Requests
                 .Where(x => x.RequestUri.AbsolutePath.EndsWith("/gosms.ge-sms-api.1.0.1.nupkg"))
                 .ToList();
-            Assert.Equal(OnlyLatestLeaves ? 1 : 2, duplicatePackageRequests.Count);
+            Assert.Equal(OnlyLatestLeaves ? 3 : 6, duplicatePackageRequests.Count);
 
             await AssertExpectedStorageAsync();
             AssertOnlyInfoLogsOrLess();
+        }
+
+        protected override IEnumerable<string> GetExpectedTableNames()
+        {
+            return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageFileTableName });
         }
     }
 }

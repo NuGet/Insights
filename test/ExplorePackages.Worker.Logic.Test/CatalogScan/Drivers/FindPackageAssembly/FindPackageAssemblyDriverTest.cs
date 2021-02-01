@@ -25,6 +25,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
                 PackageId = "SharePointPnPCoreOnline",
                 PackageVersion = "2.21.1712",
             };
+            await Target.InitializeAsync();
 
             var output = await Target.ProcessLeafAsync(leaf);
 
@@ -48,6 +49,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
                 PackageId = "EnyuTryNuget",
                 PackageVersion = "1.0.0",
             };
+            await Target.InitializeAsync();
 
             var output = await Target.ProcessLeafAsync(leaf);
 
@@ -69,6 +71,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
                 PackageId = "getAddress.AzureTableStorage",
                 PackageVersion = "1.0.0",
             };
+            await Target.InitializeAsync();
 
             var output = await Target.ProcessLeafAsync(leaf);
 
@@ -91,6 +94,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
                 PackageId = "Microsoft.DotNet.Interop",
                 PackageVersion = "1.0.0-prerelease-0002",
             };
+            await Target.InitializeAsync();
 
             var output = await Target.ProcessLeafAsync(leaf);
 
@@ -111,6 +115,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
                 tempDir.MaxConcurrentWriters = 1;
             };
             await Host.Services.GetRequiredService<StorageLeaseService>().InitializeAsync();
+            await Target.InitializeAsync();
 
             using (var serviceScope = Host.Services.CreateScope())
             {
@@ -134,7 +139,6 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
                 // Assert
                 Assert.Equal(DriverResultType.TryAgainLater, output.Type);
             }
-
         }
     }
 }
