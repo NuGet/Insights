@@ -28,6 +28,7 @@
             RealRestoreContainerName = "realrestores";
             CatalogLeafItemContainerName = "catalogleafitems";
             PackageDownloadsContainerName = "packagedownloads";
+            PackageOwnersContainerName = "packageowners";
         }
 
         public bool UseBulkEnqueueStrategy { get; set; }
@@ -54,5 +55,6 @@
         public string RealRestoreContainerName { get; set; }
         public string CatalogLeafItemContainerName { get; set; }
         public string PackageDownloadsContainerName { get; set; }
+        public string PackageOwnersContainerName { get; set; }
     }
 }

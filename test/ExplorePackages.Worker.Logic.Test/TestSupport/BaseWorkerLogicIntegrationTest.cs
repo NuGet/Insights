@@ -55,6 +55,7 @@ namespace Knapcode.ExplorePackages.Worker
             x.RealRestoreContainerName = $"{StoragePrefix}1rrr1";
             x.CatalogLeafItemContainerName = $"{StoragePrefix}1fcli1";
             x.PackageDownloadsContainerName = $"{StoragePrefix}1pd1";
+            x.PackageOwnersContainerName = $"{StoragePrefix}1po1";
 
             ConfigureDefaultsAndSettings((ExplorePackagesSettings)x);
 

@@ -5,6 +5,7 @@ using Knapcode.ExplorePackages.Worker.FindCatalogLeafItem;
 using Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan;
 using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
 using Knapcode.ExplorePackages.Worker.FindPackageFile;
+using Knapcode.ExplorePackages.Worker.OwnersToCsv;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using Knapcode.ExplorePackages.Worker.TableCopy;
 using Microsoft.Extensions.DependencyInjection;
@@ -50,6 +51,7 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddRunRealRestore();
             serviceCollection.AddTableCopy();
             serviceCollection.AddDownloadsToCsv();
+            serviceCollection.AddOwnersToCsv();
 
             foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(IMessageProcessor<>)))
             {
@@ -71,6 +73,23 @@ namespace Knapcode.ExplorePackages.Worker
                 serviceCollection.AddTransient(
                     typeof(IMessageProcessor<>).MakeGenericType(messageType),
                     typeof(TaskStateMessageProcessor<>).MakeGenericType(messageType));
+            }
+
+            foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ILoopingMessageProcessor<>)))
+            {
+                // Add the task state message processor
+                serviceCollection.AddTransient(serviceType, implementationType);
+
+                // Add the message processor
+                var messageType = serviceType.GenericTypeArguments.Single();
+                serviceCollection.AddTransient(
+                    typeof(IMessageProcessor<>).MakeGenericType(messageType),
+                    typeof(TaskStateMessageProcessor<>).MakeGenericType(messageType));
+
+                // Add the task state message processor
+                serviceCollection.AddTransient(
+                    typeof(ITaskStateMessageProcessor<>).MakeGenericType(messageType),
+                    typeof(LoopingMessageProcessor<>).MakeGenericType(messageType));
             }
 
             foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ICsvCompactor<>)))
@@ -102,6 +121,11 @@ namespace Knapcode.ExplorePackages.Worker
         private static void AddDownloadsToCsv(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddTransient<DownloadsToCsvService>();
+        }
+
+        private static void AddOwnersToCsv(this IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddTransient<OwnersToCsvService>();
         }
 
         private static void AddTableCopy(this IServiceCollection serviceCollection)
