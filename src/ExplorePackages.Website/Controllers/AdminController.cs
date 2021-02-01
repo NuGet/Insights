@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Website.Models;
 using Knapcode.ExplorePackages.Worker;
 using Knapcode.ExplorePackages.Worker.DownloadsToCsv;
+using Knapcode.ExplorePackages.Worker.OwnersToCsv;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,18 +17,21 @@ namespace Knapcode.ExplorePackages.Website.Controllers
         private readonly CatalogScanStorageService _catalogScanStorageService;
         private readonly CatalogScanService _catalogScanService;
         private readonly DownloadsToCsvService _downloadsToCsvService;
+        private readonly OwnersToCsvService _ownersToCsvService;
         private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
 
         public AdminController(
             IRawMessageEnqueuer rawMessageEnqueuer,
             CatalogScanStorageService catalogScanStorageService,
             CatalogScanService catalogScanService,
-            DownloadsToCsvService downloadsToCsvService)
+            DownloadsToCsvService downloadsToCsvService,
+            OwnersToCsvService ownersToCsvService)
         {
             _rawMessageEnqueuer = rawMessageEnqueuer;
             _catalogScanStorageService = catalogScanStorageService;
             _catalogScanService = catalogScanService;
             _downloadsToCsvService = downloadsToCsvService;
+            _ownersToCsvService = ownersToCsvService;
         }
 
         public async Task<ViewResult> Index()
@@ -48,13 +52,15 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 .ToList();
 
             var isDownloadsToCsvRunningTask = _downloadsToCsvService.IsRunningAsync();
+            var isOwnersToCsvRunningTask = _ownersToCsvService.IsRunningAsync();
 
             await Task.WhenAll(
                 approximateMessageCountTask,
                 poisonApproximateMessageCountTask,
                 availableMessageCountLowerBoundTask,
                 poisonAvailableMessageCountLowerBoundTask,
-                isDownloadsToCsvRunningTask);
+                isDownloadsToCsvRunningTask,
+                isOwnersToCsvRunningTask);
 
             var catalogScans = await Task.WhenAll(catalogScanTasks);
 
@@ -66,6 +72,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 PoisonAvailableMessageCountLowerBound = await poisonAvailableMessageCountLowerBoundTask,
                 CatalogScans = catalogScans,
                 IsDownloadsToCsvRunning = await isDownloadsToCsvRunningTask,
+                IsOwnersToCsvRunning = await isOwnersToCsvRunningTask,
             };
 
             model.AvailableMessageCountIsExact = model.AvailableMessageCountLowerBound < messageCount;
@@ -84,7 +91,8 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             await Task.WhenAll(
                 _rawMessageEnqueuer.InitializeAsync(),
                 _catalogScanService.InitializeAsync(),
-                _downloadsToCsvService.InitializeAsync());
+                _downloadsToCsvService.InitializeAsync(),
+                _ownersToCsvService.InitializeAsync());
 
             _isInitialized = true;
         }
@@ -125,6 +133,13 @@ namespace Knapcode.ExplorePackages.Website.Controllers
         {
             await _downloadsToCsvService.StartAsync(loop, notBefore: TimeSpan.Zero);
             return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment: "DownloadsToCsv");
+        }
+
+        [HttpPost]
+        public async Task<RedirectToActionResult> StartOwnersToCsv(bool loop)
+        {
+            await _ownersToCsvService.StartAsync(loop, notBefore: TimeSpan.Zero);
+            return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment: "OwnersToCsv");
         }
     }
 }

@@ -32,5 +32,17 @@
             </div>
             <button type="submit" class="btn btn-default">Start Downloads2Csv</button>
         </form>
+        
+        <a name="OwnersToCsv" class="anchor"></a>
+        <h3>OwnersToCsv</h3>
+        <p><b>Is running?</b> @Model.IsOwnersToCsvRunning</p>
+        <form asp-action="StartOwnersToCsv" method="post" class="form-inline">
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" name="loop" value="true" /> Loop
+                </label>
+            </div>
+            <button type="submit" class="btn btn-default">Start Owners2Csv</button>
+        </form>
     </div>
 </div>
