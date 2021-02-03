@@ -216,15 +216,15 @@ namespace Knapcode.ExplorePackages.Worker
             min = new[] { cursor.Value, min }.Max();
             max = max.GetValueOrDefault(index.CommitTimestamp);
 
-            if (min >= max)
-            {
-                return null;
-            }
-
             var dependencyMax = await GetDependencyMaxAsync(driverType);
             if (max > dependencyMax)
             {
                 max = dependencyMax;
+            }
+
+            if (min >= max)
+            {
+                return null;
             }
 
             await using (var lease = await _leaseService.TryAcquireAsync($"Start-{cursor.Name}"))
