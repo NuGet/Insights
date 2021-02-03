@@ -67,7 +67,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             var cursorName = GetCursorName(driverType);
             var indexScan = await _catalogScanStorageService.GetIndexScanAsync(cursorName, scanId);
-            if (indexScan.ParsedState != CatalogScanState.Working)
+            if (indexScan.ParsedState != CatalogIndexScanState.Working)
             {
                 return;
             }
@@ -317,7 +317,7 @@ namespace Knapcode.ExplorePackages.Worker
             {
                 ParsedDriverType = driverType,
                 DriverParameters = parameters,
-                ParsedState = CatalogScanState.Created,
+                ParsedState = CatalogIndexScanState.Created,
                 Min = min,
                 Max = max.Value,
             };
@@ -330,7 +330,7 @@ namespace Knapcode.ExplorePackages.Worker
         private async Task<CatalogIndexScan> GetLatestIncompleteScanAsync(string cursorName)
         {
             var latestScans = await _catalogScanStorageService.GetLatestIndexScans(cursorName);
-            var incompleteScans = latestScans.Where(x => x.ParsedState != CatalogScanState.Complete);
+            var incompleteScans = latestScans.Where(x => x.ParsedState != CatalogIndexScanState.Complete);
             if (incompleteScans.Any())
             {
                 return incompleteScans.First();

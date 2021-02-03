@@ -63,34 +63,34 @@ namespace Knapcode.ExplorePackages.Worker
             var lazyLeafScansTask = new Lazy<Task<List<CatalogLeafScan>>>(() => InitializeLeavesAsync(scan, excludeRedundantLeaves));
 
             // Created: no-op
-            if (scan.ParsedState == CatalogScanState.Created)
+            if (scan.ParsedState == CatalogPageScanState.Created)
             {
-                scan.ParsedState = CatalogScanState.Expanding;
+                scan.ParsedState = CatalogPageScanState.Expanding;
                 await _storageService.ReplaceAsync(scan);
             }
 
             // Expanding: create a record for each leaf
-            if (scan.ParsedState == CatalogScanState.Expanding)
+            if (scan.ParsedState == CatalogPageScanState.Expanding)
             {
                 var leafScans = await lazyLeafScansTask.Value;
                 await InsertLeafScansAsync(scan.StorageSuffix, scan.ScanId, scan.PageId, leafScans);
 
-                scan.ParsedState = CatalogScanState.Enqueuing;
+                scan.ParsedState = CatalogPageScanState.Enqueuing;
                 await _storageService.ReplaceAsync(scan);
             }
 
             // Enqueueing: enqueue a message for each leaf
-            if (scan.ParsedState == CatalogScanState.Enqueuing)
+            if (scan.ParsedState == CatalogPageScanState.Enqueuing)
             {
                 var leafScans = await lazyLeafScansTask.Value;
                 await _expandService.EnqueueLeafScansAsync(leafScans);
 
-                scan.ParsedState = CatalogScanState.Complete;
+                scan.ParsedState = CatalogPageScanState.Complete;
                 await _storageService.ReplaceAsync(scan);
             }
 
             // Complete -> Deleted
-            if (scan.ParsedState == CatalogScanState.Complete)
+            if (scan.ParsedState == CatalogPageScanState.Complete)
             {
                 await _storageService.DeleteAsync(scan);
             }

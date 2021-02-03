@@ -42,6 +42,8 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 
         public async Task<bool> ProcessAsync(DownloadsToCsvMessage message, int dequeueCount)
         {
+            await InitializeAsync();
+
             await using var set = await _packageDownloadsClient.GetPackageDownloadSetAsync(etag: null);
 
             var destBlob = _serviceClientFactory
@@ -79,6 +81,15 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
             await destBlob.SetMetadataAsync(AccessCondition.GenerateIfMatchCondition(destBlob.Properties.ETag), options: null, operationContext: null);
 
             return true;
+        }
+
+        private async Task InitializeAsync()
+        {
+            await _serviceClientFactory
+                .GetStorageAccount()
+                .CreateCloudBlobClient()
+                .GetContainerReference(_options.Value.PackageDownloadsContainerName)
+                .CreateIfNotExistsAsync(retry: true);
         }
 
         private async Task WriteAsync(IAsyncEnumerable<PackageDownloads> entries, DateTimeOffset asOfTimestamp, StreamWriter writer)

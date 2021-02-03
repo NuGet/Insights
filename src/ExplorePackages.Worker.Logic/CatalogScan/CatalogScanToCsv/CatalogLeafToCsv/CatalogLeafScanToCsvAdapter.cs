@@ -20,13 +20,16 @@ namespace Knapcode.ExplorePackages.Worker
             _driver = driver;
         }
 
-        public async Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
+        public async Task InitializeAsync(CatalogIndexScan indexScan)
         {
             await _adapter.InitializeAsync(indexScan, _driver.ResultsContainerName);
             await _driver.InitializeAsync();
+        }
 
+        public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
+        {
             var parameters = (CatalogLeafToCsvParameters)_schemaSerializer.Deserialize(indexScan.DriverParameters).Data;
-            return parameters.OnlyLatestLeaves ? CatalogIndexScanResult.ExpandLatestLeaves : CatalogIndexScanResult.ExpandAllLeaves;
+            return Task.FromResult(parameters.OnlyLatestLeaves ? CatalogIndexScanResult.ExpandLatestLeaves : CatalogIndexScanResult.ExpandAllLeaves);
         }
 
         public Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan)

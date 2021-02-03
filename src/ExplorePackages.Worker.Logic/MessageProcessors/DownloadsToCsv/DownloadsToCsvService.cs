@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 {
@@ -11,22 +10,16 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly TaskStateStorageService _taskStateStorageService;
-        private readonly ServiceClientFactory _serviceClientFactory;
         private readonly AutoRenewingStorageLeaseService _leaseService;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
         public DownloadsToCsvService(
             IMessageEnqueuer messageEnqueuer,
             TaskStateStorageService taskStateStorageService,
-            AutoRenewingStorageLeaseService leaseService,
-            ServiceClientFactory serviceClientFactory,
-            IOptions<ExplorePackagesWorkerSettings> options)
+            AutoRenewingStorageLeaseService leaseService)
         {
             _messageEnqueuer = messageEnqueuer;
             _taskStateStorageService = taskStateStorageService;
-            _serviceClientFactory = serviceClientFactory;
             _leaseService = leaseService;
-            _options = options;
         }
 
         public async Task InitializeAsync()
@@ -34,11 +27,6 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
             await _leaseService.InitializeAsync();
             await _messageEnqueuer.InitializeAsync();
             await _taskStateStorageService.InitializeAsync(StorageSuffix);
-            await _serviceClientFactory
-                .GetStorageAccount()
-                .CreateCloudBlobClient()
-                .GetContainerReference(_options.Value.PackageDownloadsContainerName)
-                .CreateIfNotExistsAsync(retry: true);
         }
 
         public async Task StartAsync(bool loop, TimeSpan notBefore)

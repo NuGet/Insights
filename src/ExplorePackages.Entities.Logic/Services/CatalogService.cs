@@ -18,7 +18,6 @@ namespace Knapcode.ExplorePackages.Entities
         private readonly ILogger<CatalogService> _logger;
 
         public CatalogService(
-            ServiceIndexCache serviceIndexCache,
             CatalogClient catalogClient,
             EntityContextFactory entityContextFactory,
             ILogger<CatalogService> logger)

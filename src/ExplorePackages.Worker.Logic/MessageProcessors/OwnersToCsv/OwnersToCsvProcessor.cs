@@ -42,6 +42,8 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
 
         public async Task<bool> ProcessAsync(OwnersToCsvMessage message, int dequeueCount)
         {
+            await InitializeAsync();
+
             await using var set = await _packageOwnersClient.GetPackageOwnerSetAsync();
 
             var destBlob = _serviceClientFactory
@@ -79,6 +81,15 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
             await destBlob.SetMetadataAsync(AccessCondition.GenerateIfMatchCondition(destBlob.Properties.ETag), options: null, operationContext: null);
 
             return true;
+        }
+
+        private async Task InitializeAsync()
+        {
+            await _serviceClientFactory
+                .GetStorageAccount()
+                .CreateCloudBlobClient()
+                .GetContainerReference(_options.Value.PackageOwnersContainerName)
+                .CreateIfNotExistsAsync(retry: true);
         }
 
         private async Task WriteAsync(IAsyncEnumerable<PackageOwner> entries, DateTimeOffset asOfTimestamp, StreamWriter writer)

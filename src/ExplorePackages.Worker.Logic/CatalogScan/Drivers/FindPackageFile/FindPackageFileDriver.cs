@@ -17,11 +17,15 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageFile
             _logger = logger;
         }
 
-        public async Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
+        public async Task InitializeAsync(CatalogIndexScan indexScan)
         {
             await _packageFileService.InitializeAsync();
+        }
 
-            return CatalogIndexScanResult.ExpandLatestLeaves;
+        public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
+        {
+
+            return Task.FromResult(CatalogIndexScanResult.ExpandLatestLeaves);
         }
 
         public Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan)

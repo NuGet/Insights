@@ -29,11 +29,14 @@ namespace Knapcode.ExplorePackages.Worker
             _logger = logger;
         }
 
-        public async Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
+        public async Task InitializeAsync(CatalogIndexScan indexScan)
         {
             await _storageFactory.InitializeAsync(indexScan);
+        }
 
-            return CatalogIndexScanResult.ExpandAllLeaves;
+        public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
+        {
+            return Task.FromResult(CatalogIndexScanResult.ExpandAllLeaves);
         }
 
         public async Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan)

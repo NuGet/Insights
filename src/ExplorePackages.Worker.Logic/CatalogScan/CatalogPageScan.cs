@@ -24,9 +24,9 @@ namespace Knapcode.ExplorePackages.Worker
         public string PageId => RowKey;
 
         [IgnoreProperty]
-        public CatalogScanState ParsedState
+        public CatalogPageScanState ParsedState
         {
-            get => Enum.Parse<CatalogScanState>(State);
+            get => Enum.Parse<CatalogPageScanState>(State);
             set => State = value.ToString();
         }
 

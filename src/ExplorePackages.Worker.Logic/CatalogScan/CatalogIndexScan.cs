@@ -24,9 +24,9 @@ namespace Knapcode.ExplorePackages.Worker
         public string ScanId => RowKey;
 
         [IgnoreProperty]
-        public CatalogScanState ParsedState
+        public CatalogIndexScanState ParsedState
         {
-            get => Enum.Parse<CatalogScanState>(State);
+            get => Enum.Parse<CatalogIndexScanState>(State);
             set => State = value.ToString();
         }
 
@@ -37,6 +37,13 @@ namespace Knapcode.ExplorePackages.Worker
             set => DriverType = value.ToString();
         }
 
+        [IgnoreProperty]
+        public CatalogIndexScanResult? ParsedResult
+        {
+            get => Result != null ? Enum.Parse<CatalogIndexScanResult>(Result) : null;
+            set => Result = value.ToString();
+        }
+
         public string StorageSuffix { get; set; }
         public DateTimeOffset Created { get; set; }
         public string State { get; set; }
@@ -45,6 +52,7 @@ namespace Knapcode.ExplorePackages.Worker
         public DateTimeOffset? Min { get; set; }
         public DateTimeOffset? Max { get; set; }
         public DateTimeOffset? Started { get; set; }
+        public string Result { get; set; }
         public DateTimeOffset? Completed { get; set; }
     }
 }

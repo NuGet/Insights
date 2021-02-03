@@ -94,7 +94,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
             {
                 ParsedDriverType = CatalogScanDriverType.FindPackageAsset,
                 DriverParameters = "parent-parameters",
-                ParsedState = CatalogScanState.Created,
+                ParsedState = CatalogIndexScanState.Created,
                 Min = DateTimeOffset.Parse("2020-01-01T00:00:00Z"),
                 Max = DateTimeOffset.Parse("2020-01-02T00:00:00Z"),
             };

@@ -52,9 +52,24 @@ namespace Knapcode.ExplorePackages.Worker
 
             var driver = _driverFactory.Create(scan.ParsedDriverType);
 
-            var result = await driver.ProcessIndexAsync(scan);
+            // Created: initialize the storage for the driver and set the started time
+            if (scan.ParsedState == CatalogIndexScanState.Created)
+            {
+                await driver.InitializeAsync(scan);
 
-            switch (result)
+                scan.ParsedState = CatalogIndexScanState.Initialized;
+                scan.Started = DateTimeOffset.UtcNow;
+                await _storageService.ReplaceAsync(scan);
+            }
+
+            // Created with null result: determine the index scan result, i.e. the mode
+            if (scan.ParsedState == CatalogIndexScanState.Initialized && !scan.ParsedResult.HasValue)
+            {
+                scan.ParsedResult = await driver.ProcessIndexAsync(scan);
+                await _storageService.ReplaceAsync(scan);
+            }
+
+            switch (scan.ParsedResult.Value)
             {
                 case CatalogIndexScanResult.ExpandAllLeaves:
                     await ExpandAllLeavesAsync(message, scan, driver);
@@ -63,41 +78,42 @@ namespace Knapcode.ExplorePackages.Worker
                     await ExpandLatestLeavesAsync(message, scan, driver);
                     break;
                 case CatalogIndexScanResult.Processed:
+                    await CompleteAsync(scan);
                     break;
                 default:
-                    throw new NotSupportedException($"Catalog index scan result '{result}' is not supported.");
+                    throw new NotSupportedException($"Catalog index scan result '{scan.ParsedResult}' is not supported.");
             }
         }
 
         private async Task ExpandAllLeavesAsync(CatalogIndexScanMessage message, CatalogIndexScan scan, ICatalogScanDriver driver)
         {
-            var lazyIndexTask = await HandleCreateStateAsync(scan, nextState: CatalogScanState.Expanding);
+            var lazyIndexTask = await HandleInitializedStateAsync(scan, nextState: CatalogIndexScanState.Expanding);
 
             var lazyPageScansTask = new Lazy<Task<List<CatalogPageScan>>>(async () => GetPageScans(scan, await lazyIndexTask.Value));
 
             // Expanding: create a record for each page
-            if (scan.ParsedState == CatalogScanState.Expanding)
+            if (scan.ParsedState == CatalogIndexScanState.Expanding)
             {
                 var pageScans = await lazyPageScansTask.Value;
                 await ExpandAsync(scan, pageScans);
 
-                scan.ParsedState = CatalogScanState.Enqueuing;
+                scan.ParsedState = CatalogIndexScanState.Enqueuing;
                 await _storageService.ReplaceAsync(scan);
             }
 
             // Enqueueing: enqueue a message for each page
-            if (scan.ParsedState == CatalogScanState.Enqueuing)
+            if (scan.ParsedState == CatalogIndexScanState.Enqueuing)
             {
                 var pageScans = await lazyPageScansTask.Value;
                 await EnqueueAsync(pageScans);
 
-                scan.ParsedState = CatalogScanState.Working;
+                scan.ParsedState = CatalogIndexScanState.Working;
                 message.AttemptCount = 0;
                 await _storageService.ReplaceAsync(scan);
             }
 
             // Waiting: wait for the page scans and subsequent leaf scans to complete
-            if (scan.ParsedState == CatalogScanState.Working)
+            if (scan.ParsedState == CatalogIndexScanState.Working)
             {
                 if (!await ArePageScansCompleteAsync(scan) || !await AreLeafScansCompleteAsync(scan))
                 {
@@ -107,7 +123,7 @@ namespace Knapcode.ExplorePackages.Worker
                 }
                 else
                 {
-                    scan.ParsedState = CatalogScanState.StartingAggregate;
+                    scan.ParsedState = CatalogIndexScanState.StartingAggregate;
                     await _storageService.ReplaceAsync(scan);
                 }
             }
@@ -120,11 +136,10 @@ namespace Knapcode.ExplorePackages.Worker
             var findLatestLeafScanId = scan.ScanId + "-flcls";
             var taskStateKey = new TaskStateKey(scan.StorageSuffix, $"{scan.ScanId}-{TableScanDriverType.EnqueueCatalogLeafScans}", "start");
 
-            // Created: determine the real time bounds for the scan.
-            await HandleCreateStateAsync(scan, nextState: CatalogScanState.WaitingOnDependency);
+            await HandleInitializedStateAsync(scan, nextState: CatalogIndexScanState.WaitingOnDependency);
 
             // WaitingOnDependency: start and wait on a "find latest leaves" scan for the range of this parent scan
-            if (scan.ParsedState == CatalogScanState.WaitingOnDependency)
+            if (scan.ParsedState == CatalogIndexScanState.WaitingOnDependency)
             {
                 var findLatestLeavesScan = await _catalogScanService.GetOrStartFindLatestCatalogLeafScanAsync(
                     scanId: findLatestLeafScanId,
@@ -133,7 +148,7 @@ namespace Knapcode.ExplorePackages.Worker
                     scan.Min.Value,
                     scan.Max.Value);
 
-                if (findLatestLeavesScan.ParsedState != CatalogScanState.Complete)
+                if (findLatestLeavesScan.ParsedState != CatalogIndexScanState.Complete)
                 {
                     _logger.LogInformation("Still finding latest catalog leaf scans.");
                     message.AttemptCount++;
@@ -144,13 +159,13 @@ namespace Knapcode.ExplorePackages.Worker
                 {
                     _logger.LogInformation("Finding the latest catalog leaf scans is complete.");
 
-                    scan.ParsedState = CatalogScanState.Expanding;
+                    scan.ParsedState = CatalogIndexScanState.Expanding;
                     await _storageService.ReplaceAsync(scan);
                 }
             }
 
             // Expanding: create task state for the table scan of the latest leaves table
-            if (scan.ParsedState == CatalogScanState.Expanding)
+            if (scan.ParsedState == CatalogIndexScanState.Expanding)
             {
                 // Since the find latest leaves catalog scan is complete, delete the record.
                 var findLatestLeavesScan = await _storageService.GetIndexScanAsync(cursorName: string.Empty, findLatestLeafScanId);
@@ -161,12 +176,12 @@ namespace Knapcode.ExplorePackages.Worker
 
                 await _taskStateStorageService.InitializeAsync(scan.StorageSuffix);
                 await _taskStateStorageService.GetOrAddAsync(taskStateKey);
-                scan.ParsedState = CatalogScanState.Enqueuing;
+                scan.ParsedState = CatalogIndexScanState.Enqueuing;
                 await _storageService.ReplaceAsync(scan);
             }
 
             // Enqueueing: start the table scan of the latest leaves table
-            if (scan.ParsedState == CatalogScanState.Enqueuing)
+            if (scan.ParsedState == CatalogIndexScanState.Enqueuing)
             {
                 var taskState = await _taskStateStorageService.GetOrAddAsync(taskStateKey);
                 if (taskState != null)
@@ -176,13 +191,13 @@ namespace Knapcode.ExplorePackages.Worker
                         _storageService.GetLeafScanTable(scan.StorageSuffix).Name);
                 }
 
-                scan.ParsedState = CatalogScanState.Working;
+                scan.ParsedState = CatalogIndexScanState.Working;
                 message.AttemptCount = 0;
                 await _storageService.ReplaceAsync(scan);
             }
 
             // Waiting: wait for the table scan and subsequent leaf scans to complete
-            if (scan.ParsedState == CatalogScanState.Working)
+            if (scan.ParsedState == CatalogIndexScanState.Working)
             {
                 if (!await AreTableScanStepsCompleteAsync(taskStateKey) || !await AreLeafScansCompleteAsync(scan))
                 {
@@ -192,7 +207,7 @@ namespace Knapcode.ExplorePackages.Worker
                 }
                 else
                 {
-                    scan.ParsedState = CatalogScanState.StartingAggregate;
+                    scan.ParsedState = CatalogIndexScanState.StartingAggregate;
                     await _storageService.ReplaceAsync(scan);
                 }
             }
@@ -240,12 +255,12 @@ namespace Knapcode.ExplorePackages.Worker
             return true;
         }
 
-        private async Task<Lazy<Task<CatalogIndex>>> HandleCreateStateAsync(CatalogIndexScan scan, CatalogScanState nextState)
+        private async Task<Lazy<Task<CatalogIndex>>> HandleInitializedStateAsync(CatalogIndexScan scan, CatalogIndexScanState nextState)
         {
             var lazyIndexTask = new Lazy<Task<CatalogIndex>>(() => GetCatalogIndexAsync());
 
-            // Created: determine the real time bounds for the scan.
-            if (scan.ParsedState == CatalogScanState.Created)
+            // Initialized: determine the real time bounds for the scan.
+            if (scan.ParsedState == CatalogIndexScanState.Initialized)
             {
                 var catalogIndex = await lazyIndexTask.Value;
 
@@ -269,17 +284,17 @@ namespace Knapcode.ExplorePackages.Worker
         private async Task HandleAggregateAndFinalizeStatesAsync(CatalogIndexScanMessage message, CatalogIndexScan scan, ICatalogScanDriver driver)
         {
             // StartAggregating: call into the driver to start aggregating.
-            if (scan.ParsedState == CatalogScanState.StartingAggregate)
+            if (scan.ParsedState == CatalogIndexScanState.StartingAggregate)
             {
                 await driver.StartAggregateAsync(scan);
 
-                scan.ParsedState = CatalogScanState.Aggregating;
+                scan.ParsedState = CatalogIndexScanState.Aggregating;
                 message.AttemptCount = 0;
                 await _storageService.ReplaceAsync(scan);
             }
 
             // Aggregating: wait for the aggregation step is complete
-            if (scan.ParsedState == CatalogScanState.Aggregating)
+            if (scan.ParsedState == CatalogIndexScanState.Aggregating)
             {
                 if (!await driver.IsAggregateCompleteAsync(scan))
                 {
@@ -290,13 +305,13 @@ namespace Knapcode.ExplorePackages.Worker
                 }
                 else
                 {
-                    scan.ParsedState = CatalogScanState.Finalizing;
+                    scan.ParsedState = CatalogIndexScanState.Finalizing;
                     await _storageService.ReplaceAsync(scan);
                 }
             }
 
             // Finalizing: perform clean-up steps
-            if (scan.ParsedState == CatalogScanState.Finalizing)
+            if (scan.ParsedState == CatalogIndexScanState.Finalizing)
             {
                 // Finalize the driver.
                 await driver.FinalizeAsync(scan);
@@ -321,11 +336,15 @@ namespace Knapcode.ExplorePackages.Worker
                 }
 
                 _logger.LogInformation("The catalog scan is complete.");
-
-                scan.ParsedState = CatalogScanState.Complete;
-                scan.Completed = DateTimeOffset.UtcNow;
-                await _storageService.ReplaceAsync(scan);
+                await CompleteAsync(scan);
             }
+        }
+
+        private async Task CompleteAsync(CatalogIndexScan scan)
+        {
+            scan.ParsedState = CatalogIndexScanState.Complete;
+            scan.Completed = DateTimeOffset.UtcNow;
+            await _storageService.ReplaceAsync(scan);
         }
 
         private async Task<CatalogIndex> GetCatalogIndexAsync()
@@ -363,7 +382,7 @@ namespace Knapcode.ExplorePackages.Worker
             {
                 ParsedDriverType = scan.ParsedDriverType,
                 DriverParameters = scan.DriverParameters,
-                ParsedState = CatalogScanState.Created,
+                ParsedState = CatalogPageScanState.Created,
                 Min = scan.Min.Value,
                 Max = scan.Max.Value,
                 Url = url,

@@ -34,10 +34,14 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
                 .ToList();
         }
 
-        public async Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
+        public async Task InitializeAsync(CatalogIndexScan indexScan)
         {
             await _adapter.InitializeAsync(indexScan, ResultsContainerName);
-            return CatalogIndexScanResult.ExpandAllLeaves;
+        }
+
+        public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
+        {
+            return Task.FromResult(CatalogIndexScanResult.ExpandAllLeaves);
         }
 
         public async Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan)

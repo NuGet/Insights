@@ -86,7 +86,7 @@ namespace Knapcode.ExplorePackages.Worker
             {
                 indexScan = await CatalogScanStorageService.GetIndexScanAsync(indexScan.CursorName, indexScan.ScanId);
 
-                if (indexScan.ParsedState != CatalogScanState.Complete)
+                if (indexScan.ParsedState != CatalogIndexScanState.Complete)
                 {
                     await Task.Delay(TimeSpan.FromMilliseconds(100));
                     return false;

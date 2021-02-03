@@ -16,6 +16,11 @@ namespace Knapcode.ExplorePackages.Worker
             _logger = logger;
         }
 
+        public async Task InitializeAsync(CatalogIndexScan indexScan)
+        {
+            await _inner.InitializeAsync(indexScan);
+        }
+
         public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
         {
             return _inner.ProcessIndexAsync(indexScan);
