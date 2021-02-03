@@ -82,7 +82,6 @@ namespace Knapcode.ExplorePackages.Entities
                 x.GetRequiredService<ILogger<SingletonService>>()));
             serviceCollection.AddTransient<ICommitCondition, LeaseCommitCondition>();
 
-            serviceCollection.AddTransient<RemoteCursorService>();
             serviceCollection.AddTransient<PackageQueryContextBuilder>();
             serviceCollection.AddTransient<BlobStorageMigrator>();
 

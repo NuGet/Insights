@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using Newtonsoft.Json;
-using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
 {

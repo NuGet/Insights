@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -42,11 +43,20 @@ namespace Knapcode.ExplorePackages.Worker
             var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
             var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
 
-            await SetCursorAsync(CatalogScanDriverType.FindLatestPackageLeaf, min0);
-            var initial = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindLatestPackageLeaf, max1, onlyLatestLeaves: null);
+            await SetCursorAsync(CatalogScanDriverType.FindPackageFile, min0);
+            await SetCursorAsync(CatalogScanDriverType.FindPackageAsset, min0);
+            await SetCursorAsync(CatalogScanDriverType.FindPackageSignature, min0);
 
             // Act
-            await UpdateAsync(initial);
+            var findPackageFile = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindPackageFile, max1, onlyLatestLeaves: null);
+            await UpdateAsync(findPackageFile);
+            var findPackageFileNupkgRequestCount = HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsoluteUri.EndsWith(".nupkg"));
+
+            var findPackageAsset = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindPackageAsset, max1, onlyLatestLeaves: null);
+            var findPackageSignature = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindPackageSignature, max1, onlyLatestLeaves: null);
+            await UpdateAsync(findPackageAsset);
+            await UpdateAsync(findPackageSignature);
+            var finalFileRequestNupkgCount = HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsoluteUri.EndsWith(".nupkg"));
 
             // Assert
             var rawMessageEnqueuer = Host.Services.GetRequiredService<IRawMessageEnqueuer>();
@@ -54,6 +64,9 @@ namespace Knapcode.ExplorePackages.Worker
             Assert.Equal(0, await rawMessageEnqueuer.GetAvailableMessageCountLowerBoundAsync(32));
             Assert.Equal(0, await rawMessageEnqueuer.GetPoisonApproximateMessageCountAsync());
             Assert.Equal(0, await rawMessageEnqueuer.GetPoisonAvailableMessageCountLowerBoundAsync(32));
+
+            Assert.NotEqual(0, findPackageFileNupkgRequestCount);
+            Assert.Equal(findPackageFileNupkgRequestCount, finalFileRequestNupkgCount);
         }
     }
 }

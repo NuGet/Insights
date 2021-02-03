@@ -24,7 +24,11 @@ namespace Knapcode.ExplorePackages
             },
         };
 
-        public static async Task<bool> UrlExistsAsync(this HttpSource httpSource, string url, ILogger logger)
+        public static async Task<bool> UrlExistsAsync(
+            this HttpSource httpSource,
+            string url,
+            ILogger logger,
+            CancellationToken token = default)
         {
             var nuGetLogger = logger.ToNuGetLogger();
             return await httpSource.ProcessResponseAsync(
@@ -47,21 +51,23 @@ namespace Knapcode.ExplorePackages
                         $"The request to {url} return HTTP {(int)response.StatusCode} {response.ReasonPhrase}.");
                 },
                 nuGetLogger,
-                CancellationToken.None);
+                token);
         }
 
         public static Task<T> DeserializeUrlAsync<T>(
             this HttpSource httpSource,
             string url,
             bool ignoreNotFounds,
-            ILogger logger)
+            ILogger logger,
+            CancellationToken token = default)
         {
             return httpSource.DeserializeUrlAsync<T>(
                 url,
                 ignoreNotFounds,
                 maxTries: DefaultMaxTries,
                 serializer: Serializer,
-                logger: logger);
+                logger: logger,
+                token: token);
         }
 
         public static Task<T> DeserializeUrlAsync<T>(
@@ -69,14 +75,16 @@ namespace Knapcode.ExplorePackages
             string url,
             bool ignoreNotFounds,
             int maxTries,
-            ILogger logger)
+            ILogger logger,
+            CancellationToken token = default)
         {
             return httpSource.DeserializeUrlAsync<T>(
                 url,
                 ignoreNotFounds,
                 maxTries,
                 serializer: Serializer,
-                logger: logger);
+                logger: logger,
+                token: token);
         }
 
         public static async Task<T> DeserializeUrlAsync<T>(
@@ -85,7 +93,8 @@ namespace Knapcode.ExplorePackages
             bool ignoreNotFounds,
             int maxTries,
             JsonSerializer serializer,
-            ILogger logger)
+            ILogger logger,
+            CancellationToken token = default)
         {
             var nuGetLogger = logger.ToNuGetLogger();
             return await httpSource.ProcessStreamAsync(
@@ -118,10 +127,14 @@ namespace Knapcode.ExplorePackages
                     }
                 },
                 nuGetLogger,
-                CancellationToken.None);
+                token);
         }
 
-        public static async Task<BlobMetadata> GetBlobMetadataAsync(this HttpSource httpSource, string url, ILogger logger)
+        public static async Task<BlobMetadata> GetBlobMetadataAsync(
+            this HttpSource httpSource,
+            string url,
+            ILogger logger,
+            CancellationToken token = default)
         {
             var nuGetLogger = logger.ToNuGetLogger();
 
@@ -153,7 +166,7 @@ namespace Knapcode.ExplorePackages
                     return Task.FromResult<BlobMetadata>(null);
                 },
                 nuGetLogger,
-                CancellationToken.None);
+                token);
 
             if (blobMetadata != null)
             {
@@ -187,7 +200,7 @@ namespace Knapcode.ExplorePackages
                     }
                 },
                 nuGetLogger,
-                CancellationToken.None);
+                token);
         }
     }
 }

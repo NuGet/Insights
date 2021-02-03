@@ -18,6 +18,7 @@ namespace Knapcode.ExplorePackages.Worker
         private readonly SchemaSerializer _serializer;
         private readonly CatalogScanStorageService _catalogScanStorageService;
         private readonly AutoRenewingStorageLeaseService _leaseService;
+        private readonly RemoteCursorClient _remoteCursorClient;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<CatalogScanService> _logger;
 
@@ -28,6 +29,7 @@ namespace Knapcode.ExplorePackages.Worker
             SchemaSerializer serializer,
             CatalogScanStorageService catalogScanStorageService,
             AutoRenewingStorageLeaseService leaseService,
+            RemoteCursorClient remoteCursorClient,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<CatalogScanService> logger)
         {
@@ -37,6 +39,7 @@ namespace Knapcode.ExplorePackages.Worker
             _serializer = serializer;
             _catalogScanStorageService = catalogScanStorageService;
             _leaseService = leaseService;
+            _remoteCursorClient = remoteCursorClient;
             _options = options;
             _logger = logger;
         }
@@ -52,6 +55,12 @@ namespace Knapcode.ExplorePackages.Worker
         public async Task<CursorTableEntity> GetCursorAsync(CatalogScanDriverType driverType)
         {
             return await _cursorStorageService.GetOrCreateAsync(GetCursorName(driverType));
+        }
+
+        public async Task<DateTimeOffset> GetCursorValueAsync(CatalogScanDriverType driverType)
+        {
+            var entity = await GetCursorAsync(driverType);
+            return entity.Value;
         }
 
         public async Task RequeueAsync(CatalogScanDriverType driverType, string scanId)
@@ -211,6 +220,12 @@ namespace Knapcode.ExplorePackages.Worker
                 return null;
             }
 
+            var dependencyMax = await GetDependencyMaxAsync(driverType);
+            if (max > dependencyMax)
+            {
+                max = dependencyMax;
+            }
+
             await using (var lease = await _leaseService.TryAcquireAsync($"Start-{cursor.Name}"))
             {
                 if (!lease.Acquired)
@@ -322,6 +337,53 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             return null;
+        }
+
+        private static readonly IReadOnlyList<Func<CatalogScanService, Task<DateTimeOffset>>> DefaultDependencies = new Func<CatalogScanService, Task<DateTimeOffset>>[]
+        {
+            x => x.GetCursorValueAsync(CatalogScanDriverType.FindPackageFile),
+        };
+
+        private static readonly Func<CatalogScanService, Task<DateTimeOffset>>[] NoDependencies = Array.Empty<Func<CatalogScanService, Task<DateTimeOffset>>>();
+
+        private static readonly IReadOnlyDictionary<CatalogScanDriverType, IReadOnlyList<Func<CatalogScanService, Task<DateTimeOffset>>>> Dependencies = new Dictionary<CatalogScanDriverType, Func<CatalogScanService, Task<DateTimeOffset>>[]>
+        {
+            {
+                CatalogScanDriverType.FindCatalogLeafItem,
+                NoDependencies
+            },
+            {
+                CatalogScanDriverType.FindLatestPackageLeaf,
+                NoDependencies
+            },
+            {
+                CatalogScanDriverType.FindPackageFile,
+                new Func<CatalogScanService, Task<DateTimeOffset>>[]
+                {
+                    x => x._remoteCursorClient.GetFlatContainerAsync(),
+                }
+            },
+        }.ToDictionary(x => x.Key, x => (IReadOnlyList<Func<CatalogScanService, Task<DateTimeOffset>>>)x.Value.ToList());
+
+        private async Task<DateTimeOffset> GetDependencyMaxAsync(CatalogScanDriverType driverType)
+        {
+            var max = DateTimeOffset.MaxValue;
+
+            if (!Dependencies.TryGetValue(driverType, out var getCursors))
+            {
+                getCursors = DefaultDependencies;
+            }
+
+            foreach (var getCursor in getCursors)
+            {
+                var dependency = await getCursor(this);
+                if (max > dependency)
+                {
+                    max = dependency;
+                }
+            }
+
+            return max;
         }
     }
 }
