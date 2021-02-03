@@ -10,22 +10,22 @@
           "bytes"
         ],
         "Cache-Control": [
-          "max-age=86400"
+          "max-age=120"
         ],
         "Content-Length": [
-          "34399"
+          "754"
         ],
         "Content-MD5": [
-          "kONDG4tr8ljtslFzP0LsVg=="
+          "kWzA08rd9rn6NpTMd207Mw=="
         ],
         "Content-Type": [
-          "application/octet-stream"
+          "text/xml"
         ],
         "ETag": [
-          "\"0x8D8930B9A676EB0\""
+          "\"0x8D8930B98D10E3E\""
         ],
         "Last-Modified": [
-          "Fri, 27 Nov 2020 19:35:31 GMT"
+          "Fri, 27 Nov 2020 19:35:29 GMT"
         ],
         "Strict-Transport-Security": [
           "max-age=31536000"
@@ -41,16 +41,9 @@
         ],
         "x-ms-lease-status": [
           "unlocked"
-        ],
-        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
-          "ad3f30a4-c571-41ce-9a5c-987ccca26722"
-        ],
-        "x-ms-meta-SHA512": [
-          "q/kbBSqu/KJpoucUnm3VWVUv+JWDIvKnuajEZn5LKUBrtyf2qRcJnjFZTQN55BsWKANEzpMISWxHtuezMW5mTw=="
         ]
       },
-      "MZipHash": "93b5d42822bef8c70907eaae6801409dc26ccbc24b3f231ae34ce383ff5555a1",
-      "SignatureHash": "2b0c08f644c35cb7f7a9cd7946d17b566387cbc71e49280ecd162ba13e86190e"
+      "ManifestHash": "ffc004999ccac71d113d1531c82dff53ad2f7958c2031207d0b70d057c4d80ff"
     }
   },
   {
@@ -64,22 +57,22 @@
           "bytes"
         ],
         "Cache-Control": [
-          "max-age=86400"
+          "max-age=120"
         ],
         "Content-Length": [
-          "56508"
+          "500"
         ],
         "Content-MD5": [
-          "JzfKS/FdD56p6T3zYUxh4g=="
+          "6jGmr/6BGyigXRJfoChvoA=="
         ],
         "Content-Type": [
-          "application/octet-stream"
+          "text/xml"
         ],
         "ETag": [
-          "\"0x8D8930B9A377AC4\""
+          "\"0x8D8930B99043725\""
         ],
         "Last-Modified": [
-          "Fri, 27 Nov 2020 19:35:31 GMT"
+          "Fri, 27 Nov 2020 19:35:29 GMT"
         ],
         "Strict-Transport-Security": [
           "max-age=31536000"
@@ -95,16 +88,150 @@
         ],
         "x-ms-lease-status": [
           "unlocked"
-        ],
-        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
-          "4f8f4828-a881-4002-bd62-96c077abf27d"
-        ],
-        "x-ms-meta-SHA512": [
-          "o+/nMymBAcd5IYWZtLjjLqYhogucOmJMuavF8gmHP0TFQ80aTx/FWIvAy9TG7ZfSIybC2Q8HaD1qU/R4/erAsw=="
         ]
       },
-      "MZipHash": "5a5f73de38746f65e1eda816e1cf5df1a4dcdafb944b69d2f1e9675b5c62a370",
-      "SignatureHash": "c555cb6fd236fba06d8a12fd36a5d3f5097f6ae402b92b5995f7f5286896b6a1"
+      "ManifestHash": "0bfa20a1aa56f77a3c42866d4f20d8dd8ea5361cc648dd1e7159aded0734e1f5"
+    }
+  },
+  {
+    "PartitionKey": "dnt.deskly",
+    "RowKey": "1.1.0",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:36:50.4909042+00:00",
+      "HttpHeaders": {
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Cache-Control": [
+          "max-age=120"
+        ],
+        "Content-Length": [
+          "1659"
+        ],
+        "Content-MD5": [
+          "BX4ECDcnS3Bf2m2wyjXj8w=="
+        ],
+        "Content-Type": [
+          "text/xml"
+        ],
+        "ETag": [
+          "\"0x8D8930BD55418A4\""
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:37:10 GMT"
+        ],
+        "Strict-Transport-Security": [
+          "max-age=31536000"
+        ],
+        "X-CDN-Rewrite": [
+          "Root path in dist"
+        ],
+        "X-Content-Type-Options": [
+          "nosniff"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ]
+      },
+      "ManifestHash": "48a4d2eaab584c26e0f288e4a22d1f470b3e8682242fbef75ffb68b0e397837a"
+    }
+  },
+  {
+    "PartitionKey": "dnt.deskly.efcore",
+    "RowKey": "1.1.0",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:36:50.4909042+00:00",
+      "HttpHeaders": {
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Cache-Control": [
+          "max-age=120"
+        ],
+        "Content-Length": [
+          "1640"
+        ],
+        "Content-MD5": [
+          "S0UqZgTqPtHiLI4oRyobkQ=="
+        ],
+        "Content-Type": [
+          "text/xml"
+        ],
+        "ETag": [
+          "\"0x8D8930BD53D305F\""
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:37:10 GMT"
+        ],
+        "Strict-Transport-Security": [
+          "max-age=31536000"
+        ],
+        "X-CDN-Rewrite": [
+          "Root path in dist"
+        ],
+        "X-Content-Type-Options": [
+          "nosniff"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ]
+      },
+      "ManifestHash": "4a105f900c41196354c2b1f8fc8ebdbc66150020fa9f061cd975b4a744669956"
+    }
+  },
+  {
+    "PartitionKey": "dnt.deskly.efcore.identity",
+    "RowKey": "1.1.0",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:36:50.4909042+00:00",
+      "HttpHeaders": {
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Cache-Control": [
+          "max-age=120"
+        ],
+        "Content-Length": [
+          "1375"
+        ],
+        "Content-MD5": [
+          "/y3H9K+22IJhf0NipqaKfA=="
+        ],
+        "Content-Type": [
+          "text/xml"
+        ],
+        "ETag": [
+          "\"0x8D8930BD5568A2A\""
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:37:10 GMT"
+        ],
+        "Strict-Transport-Security": [
+          "max-age=31536000"
+        ],
+        "X-CDN-Rewrite": [
+          "Root path in dist"
+        ],
+        "X-Content-Type-Options": [
+          "nosniff"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ]
+      },
+      "ManifestHash": "4d8f75cd13ba02e766886b22b9d33cd4de0037622c1ad54baccae64e67a74964"
     }
   },
   {
@@ -118,22 +245,22 @@
           "bytes"
         ],
         "Cache-Control": [
-          "max-age=86400"
+          "max-age=120"
         ],
         "Content-Length": [
-          "1070696"
+          "827"
         ],
         "Content-MD5": [
-          "o5PUDrdXHUlODvIIuGQ62w=="
+          "kr0QvAW1hZEQeDRbKbV7QA=="
         ],
         "Content-Type": [
-          "application/octet-stream"
+          "text/xml"
         ],
         "ETag": [
-          "\"0x8D8930B99873EE0\""
+          "\"0x8D8930B990E999F\""
         ],
         "Last-Modified": [
-          "Fri, 27 Nov 2020 19:35:30 GMT"
+          "Fri, 27 Nov 2020 19:35:29 GMT"
         ],
         "Strict-Transport-Security": [
           "max-age=31536000"
@@ -149,16 +276,9 @@
         ],
         "x-ms-lease-status": [
           "unlocked"
-        ],
-        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
-          "b490fb0e-c053-42f8-9aa9-35c47da3b801"
-        ],
-        "x-ms-meta-SHA512": [
-          "AniYDPO2GmR5UqPJVs6uEsG4Rc8NfdaoEGA5V2XWHKETRA3jPv4oFqasIrd1IbqPjwzU3PitVDy2WQNs6TAzXw=="
         ]
       },
-      "MZipHash": "2552430c0af62ac6a31a520b5bc97ca032a16853258815bbe902dd535d75b578",
-      "SignatureHash": "ed830db23d794a27800d7f23b03fa38f7bae69097575979ef873e7ff1abe5e64"
+      "ManifestHash": "54aed575b84c8e81eae112e855f788e13f6d1546fcebc520c943f08d93400a9f"
     }
   },
   {
@@ -172,22 +292,22 @@
           "bytes"
         ],
         "Cache-Control": [
-          "max-age=86400"
+          "max-age=120"
         ],
         "Content-Length": [
-          "80549"
+          "2518"
         ],
         "Content-MD5": [
-          "gjppk3lZHTO2RnNlfEY1Mw=="
+          "yHhYzrhUCaLOdojqdF1t2w=="
         ],
         "Content-Type": [
-          "application/octet-stream"
+          "text/xml"
         ],
         "ETag": [
-          "\"0x8D8930B9BE5FC5C\""
+          "\"0x8D8930B994EBD9F\""
         ],
         "Last-Modified": [
-          "Fri, 27 Nov 2020 19:35:34 GMT"
+          "Fri, 27 Nov 2020 19:35:29 GMT"
         ],
         "Strict-Transport-Security": [
           "max-age=31536000"
@@ -203,16 +323,9 @@
         ],
         "x-ms-lease-status": [
           "unlocked"
-        ],
-        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
-          "a5d06a5f-30ad-4af0-8c7a-8feeb52b729d"
-        ],
-        "x-ms-meta-SHA512": [
-          "KU7lJ+VjCafd7Vw4ANJjfRwswHbjPRhb5mBXTrgOclAIUwLx+Ck5SH4sOfFTvcfteLGGfIEarNspFNOizZc+Jw=="
         ]
       },
-      "MZipHash": "64a19300a3dd480733c5f6603e1b44ed19a9e9ba749075271a25f7f2eedf02aa",
-      "SignatureHash": "7150b80d7208051b3da645615ea5960417aac9110011802f81f7411193ad5805"
+      "ManifestHash": "0f4d4f08076a6186517d506a3e9647c47a32400efbaf41b8ae28b7702ac7c509"
     }
   },
   {
@@ -226,22 +339,22 @@
           "bytes"
         ],
         "Cache-Control": [
-          "max-age=86400"
+          "max-age=120"
         ],
         "Content-Length": [
-          "199102"
+          "1594"
         ],
         "Content-MD5": [
-          "ah3n3Mk7/iQFIWVxXNNWGw=="
+          "EVIe1Gg1Tag5GzfdQwe1lQ=="
         ],
         "Content-Type": [
-          "application/octet-stream"
+          "text/xml"
         ],
         "ETag": [
-          "\"0x8D8930B9A76DB4A\""
+          "\"0x8D8930B99200276\""
         ],
         "Last-Modified": [
-          "Fri, 27 Nov 2020 19:35:31 GMT"
+          "Fri, 27 Nov 2020 19:35:29 GMT"
         ],
         "Strict-Transport-Security": [
           "max-age=31536000"
@@ -257,16 +370,9 @@
         ],
         "x-ms-lease-status": [
           "unlocked"
-        ],
-        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
-          "d54fff0e-af03-44bf-9154-bde6b2f21890"
-        ],
-        "x-ms-meta-SHA512": [
-          "1Z5vrl7A2Y+5G5wEEd96zF73asMOM5AVvFWSnXpvgZSR2JZ3DJVQostj9yay8upLBNuDZAO5ClsJL+EKNZGs9A=="
         ]
       },
-      "MZipHash": "c436411f81a7109903b6b17e5e258f824691b2da711d26271091f154b4d09ebe",
-      "SignatureHash": "f82588b7feff750a3c48632a520e5d846854136caff6d960d9aa74501fc3b00b"
+      "ManifestHash": "629570dc8f207b2bc19f03d2804961cdc0e9d6c58930ff30b22cead7b691d7fe"
     }
   },
   {
@@ -280,22 +386,22 @@
           "bytes"
         ],
         "Cache-Control": [
-          "max-age=86400"
+          "max-age=120"
         ],
         "Content-Length": [
-          "198711"
+          "1736"
         ],
         "Content-MD5": [
-          "8AxZGY1VewxI6VMj4g3ZDA=="
+          "ePr+Srbl4CZ2qfshWZ5IcA=="
         ],
         "Content-Type": [
-          "application/octet-stream"
+          "text/xml"
         ],
         "ETag": [
-          "\"0x8D8930B9BE62378\""
+          "\"0x8D8930B995B1C56\""
         ],
         "Last-Modified": [
-          "Fri, 27 Nov 2020 19:35:34 GMT"
+          "Fri, 27 Nov 2020 19:35:29 GMT"
         ],
         "Strict-Transport-Security": [
           "max-age=31536000"
@@ -311,16 +417,9 @@
         ],
         "x-ms-lease-status": [
           "unlocked"
-        ],
-        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
-          "9639b645-3147-4307-82be-9dd4b38b7cd8"
-        ],
-        "x-ms-meta-SHA512": [
-          "D1SwPXzv8RvDFGTyu142JLnQ0StuZbIKOHqxZRoyB4wzwFHkvkHZSvewOlHKPdEe/X5Hq/vM+P1fe1+EUQiFYw=="
         ]
       },
-      "MZipHash": "20a8271df146c0d8b11db19e8cf303508d9ccde3fe610f3d271b940531ee6cf9",
-      "SignatureHash": "a78fa6d6ae2ad9f06df3cf4c04c7d6a26f748aaef4745052f17d72eeffdec8ee"
+      "ManifestHash": "4966b530dacd522f614e9ed2f0217aad1d0bc803648b63afc530a7ecaae2c6d8"
     }
   },
   {
@@ -334,22 +433,22 @@
           "bytes"
         ],
         "Cache-Control": [
-          "max-age=86400"
+          "max-age=120"
         ],
         "Content-Length": [
-          "198723"
+          "1779"
         ],
         "Content-MD5": [
-          "Kwz4FKoMchQZ3x/qLyLZkA=="
+          "Q6WlKZnFherigH6c1FRCtg=="
         ],
         "Content-Type": [
-          "application/octet-stream"
+          "text/xml"
         ],
         "ETag": [
-          "\"0x8D8930B9A66AB3E\""
+          "\"0x8D8930B98C46156\""
         ],
         "Last-Modified": [
-          "Fri, 27 Nov 2020 19:35:31 GMT"
+          "Fri, 27 Nov 2020 19:35:28 GMT"
         ],
         "Strict-Transport-Security": [
           "max-age=31536000"
@@ -365,16 +464,9 @@
         ],
         "x-ms-lease-status": [
           "unlocked"
-        ],
-        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
-          "ce26ff6d-d369-4431-b4ca-59394a4665ab"
-        ],
-        "x-ms-meta-SHA512": [
-          "HDet6DkhFo1aCwNNsiP2sBYKS6X1ZrIhA9FWhqlTUv0ld9JIYCSoDsPzTGX30IH/qsgFApa9KxEQKgrg+Kpu6A=="
         ]
       },
-      "MZipHash": "96a57094bd046c43cb01725ecf3b42a8a4f6fd72058a841cc89bbfc8b4b63ffb",
-      "SignatureHash": "cb7ac9a04821e2a07c85dffbc8435f5a608b6d506bbefe98da4092b1dec5236c"
+      "ManifestHash": "eaae014cd3738c877fef390ea4fcc92e9f4847ea6816bfcbc68e245490d161b1"
     }
   },
   {
@@ -388,22 +480,22 @@
           "bytes"
         ],
         "Cache-Control": [
-          "max-age=86400"
+          "max-age=120"
         ],
         "Content-Length": [
-          "3860384"
+          "2002"
         ],
         "Content-MD5": [
-          "Mixh38c7Pkrh05UKgQNBeg=="
+          "7wH5CW/s3n4rXv0j7SfGfg=="
         ],
         "Content-Type": [
-          "application/octet-stream"
+          "text/xml"
         ],
         "ETag": [
-          "\"0x8D8930B9AB5C687\""
+          "\"0x8D8930B99235EA0\""
         ],
         "Last-Modified": [
-          "Fri, 27 Nov 2020 19:35:32 GMT"
+          "Fri, 27 Nov 2020 19:35:29 GMT"
         ],
         "Strict-Transport-Security": [
           "max-age=31536000"
@@ -419,16 +511,9 @@
         ],
         "x-ms-lease-status": [
           "unlocked"
-        ],
-        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
-          "ea38adaa-d833-4a4b-aac9-3495a857d90b"
-        ],
-        "x-ms-meta-SHA512": [
-          "VUdSBHGV0A6oqV7Ug6tyBB37bubNMbG2oC6N283iC9GKwhHTZE5GzCBoBeTB4VbFqlLVL+Zg0Vm42vfhxEif1A=="
         ]
       },
-      "MZipHash": "aa03ed1815ac3509a07043b5141cb5c1395e4f89fb5b00167c5bd39ef66936dd",
-      "SignatureHash": "444318ef196a49d3404a900509a285b55e68ecbfa5e32127a26eb7efb5c74c88"
+      "ManifestHash": "ae2695abfc46c63a567c970a9d69fdf2b36aabeaf4efd9772001a86cd74b3d73"
     }
   },
   {
@@ -442,22 +527,22 @@
           "bytes"
         ],
         "Cache-Control": [
-          "max-age=86400"
+          "max-age=120"
         ],
         "Content-Length": [
-          "708111"
+          "2174"
         ],
         "Content-MD5": [
-          "QCmHynRBZmO0G1uzIaktMw=="
+          "Nqx01KRN2gXtteR2+N/BVw=="
         ],
         "Content-Type": [
-          "application/octet-stream"
+          "text/xml"
         ],
         "ETag": [
-          "\"0x8D8930B9AAE4ADC\""
+          "\"0x8D8930B992E0F42\""
         ],
         "Last-Modified": [
-          "Fri, 27 Nov 2020 19:35:32 GMT"
+          "Fri, 27 Nov 2020 19:35:29 GMT"
         ],
         "Strict-Transport-Security": [
           "max-age=31536000"
@@ -473,16 +558,9 @@
         ],
         "x-ms-lease-status": [
           "unlocked"
-        ],
-        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
-          "ccedfc7d-7fc8-4a75-abfd-19240adc7d7b"
-        ],
-        "x-ms-meta-SHA512": [
-          "YJyrpaTUMjH/vx2NeQc48+kkQHUC5FO/MN1XV4D+INQdCbZlrnBDumrbEu7bJok+ZWw28jBDntUysVcyPSZn8g=="
         ]
       },
-      "MZipHash": "a1a9ff268341c77b736b0fda8008cc896da76cb10a9919a857c527cdc80eb043",
-      "SignatureHash": "52e2473f2b04abf42cef3b7ca755115f38fa4a337dae9103fed8faee8ae9e11f"
+      "ManifestHash": "c8b0553eb860ba7eb48a8d79e5b114925819cd0bea421e4f5cb76a7bf0a066a6"
     }
   },
   {
@@ -496,22 +574,22 @@
           "bytes"
         ],
         "Cache-Control": [
-          "max-age=86400"
+          "max-age=120"
         ],
         "Content-Length": [
-          "903993"
+          "2459"
         ],
         "Content-MD5": [
-          "ipbVExKieOF36LTKoRgrog=="
+          "atJYOjlwmZjL+hwBC0W5Uw=="
         ],
         "Content-Type": [
-          "application/octet-stream"
+          "text/xml"
         ],
         "ETag": [
-          "\"0x8D8930B9B6FEFA3\""
+          "\"0x8D8930B994A9E0D\""
         ],
         "Last-Modified": [
-          "Fri, 27 Nov 2020 19:35:33 GMT"
+          "Fri, 27 Nov 2020 19:35:29 GMT"
         ],
         "Strict-Transport-Security": [
           "max-age=31536000"
@@ -527,16 +605,9 @@
         ],
         "x-ms-lease-status": [
           "unlocked"
-        ],
-        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
-          "d80d2fa7-3d20-4e72-9097-81a10444b60b"
-        ],
-        "x-ms-meta-SHA512": [
-          "mzxtm6JJEa/mC9vm+OAaz/z6777wYA7WRHMvnKUFQks7IUxj5pNt8cIPPmQae9t6Znif2qGgrtmnwI/IkMJbsA=="
         ]
       },
-      "MZipHash": "a5daaba8fad862074268a2dc48a5bbba6950186b1a3b54366c81d97d17e41477",
-      "SignatureHash": "b1e6bb1af99f3e5e4e39cb869440e51702f19391cea44ce4af5d24d6a3143629"
+      "ManifestHash": "ef2cdcfb80f6c5b9843ba79f1700c2647ea7365dc44560a432f3d4f1e2e88bae"
     }
   },
   {
@@ -550,22 +621,22 @@
           "bytes"
         ],
         "Cache-Control": [
-          "max-age=86400"
+          "max-age=120"
         ],
         "Content-Length": [
-          "40745"
+          "1720"
         ],
         "Content-MD5": [
-          "Fn+ur6gF+F0NMUoGWrv1MA=="
+          "Yn7ikMMn3RmguBN4spBpQw=="
         ],
         "Content-Type": [
-          "application/octet-stream"
+          "text/xml"
         ],
         "ETag": [
-          "\"0x8D8930B9AA56F52\""
+          "\"0x8D8930B98FF05E8\""
         ],
         "Last-Modified": [
-          "Fri, 27 Nov 2020 19:35:32 GMT"
+          "Fri, 27 Nov 2020 19:35:29 GMT"
         ],
         "Strict-Transport-Security": [
           "max-age=31536000"
@@ -581,16 +652,56 @@
         ],
         "x-ms-lease-status": [
           "unlocked"
-        ],
-        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
-          "14f7f0c2-aade-47df-a1c7-558a15f69189"
-        ],
-        "x-ms-meta-SHA512": [
-          "LhkKKDSS60ybnpyMTftLnE6e7y6pO5nZTfZZMqYdSbqM/4k2ibAeycRi+bzq4lbBHeFaely5CQcmDTiQEID2Cw=="
         ]
       },
-      "MZipHash": "317916f3dee49a26e92d3507c4ea2a7818b35e0707587530e43050a68a5bed35",
-      "SignatureHash": "6e77f61b5eea4a1dae039e0d730b992817c212703f50351932d066eeb5588a60"
+      "ManifestHash": "e14e33e35c3dbf94ce77e6cffcddc5e299febd527e0b658a5935e6387ec9049c"
+    }
+  },
+  {
+    "PartitionKey": "opheliasuitev2.core.brm.runtime.core",
+    "RowKey": "2.0.6.13",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:35:25.4893329+00:00",
+      "HttpHeaders": {
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Cache-Control": [
+          "max-age=120"
+        ],
+        "Content-Length": [
+          "1277"
+        ],
+        "Content-MD5": [
+          "EvlK177XabTBx1RYmjRd8Q=="
+        ],
+        "Content-Type": [
+          "text/xml"
+        ],
+        "ETag": [
+          "\"0x8D8930BAFB30EE2\""
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:36:07 GMT"
+        ],
+        "Strict-Transport-Security": [
+          "max-age=31536000"
+        ],
+        "X-CDN-Rewrite": [
+          "Root path in dist"
+        ],
+        "X-Content-Type-Options": [
+          "nosniff"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ]
+      },
+      "ManifestHash": "ebe0d0c09cca54994e17b12973913ada01f5cb3de1ceae29adef98c5f2f14350"
     }
   }
 ]

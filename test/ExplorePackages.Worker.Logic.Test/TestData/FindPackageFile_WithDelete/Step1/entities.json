@@ -9,9 +9,6 @@
         "Accept-Ranges": [
           "bytes"
         ],
-        "Access-Control-Allow-Origin": [
-          "*"
-        ],
         "Cache-Control": [
           "max-age=86400"
         ],
@@ -90,9 +87,6 @@
         "Accept-Ranges": [
           "bytes"
         ],
-        "Access-Control-Allow-Origin": [
-          "*"
-        ],
         "Cache-Control": [
           "max-age=86400"
         ],
@@ -146,9 +140,6 @@
       "HttpHeaders": {
         "Accept-Ranges": [
           "bytes"
-        ],
-        "Access-Control-Allow-Origin": [
-          "*"
         ],
         "Cache-Control": [
           "max-age=86400"
@@ -204,9 +195,6 @@
         "Accept-Ranges": [
           "bytes"
         ],
-        "Access-Control-Allow-Origin": [
-          "*"
-        ],
         "Cache-Control": [
           "max-age=86400"
         ],
@@ -261,9 +249,6 @@
         "Accept-Ranges": [
           "bytes"
         ],
-        "Access-Control-Allow-Origin": [
-          "*"
-        ],
         "Cache-Control": [
           "max-age=86400"
         ],
@@ -317,9 +302,6 @@
       "HttpHeaders": {
         "Accept-Ranges": [
           "bytes"
-        ],
-        "Access-Control-Allow-Origin": [
-          "*"
         ],
         "Cache-Control": [
           "max-age=86400"

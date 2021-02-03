@@ -135,11 +135,12 @@ namespace Knapcode.ExplorePackages.Worker
                 case CatalogScanDriverType.FindPackageSignature:
                     return await UpdateCatalogLeafToCsvAsync(driverType, onlyLatestLeaves.GetValueOrDefault(true), max);
                 case CatalogScanDriverType.FindPackageFile:
+                case CatalogScanDriverType.FindPackageManifest:
                     if (onlyLatestLeaves.HasValue && !onlyLatestLeaves.Value)
                     {
-                        throw new NotSupportedException("When finding package files, only the latest leaves will be reported.");
+                        throw new NotSupportedException("For catalog scan drivers that don't support parameters, only the latest leaves will be reported.");
                     }
-                    return await UpdateFindPackageFilesAsync(max);
+                    return await UpdateParameterlessAsync(driverType, max);
                 default:
                     throw new NotSupportedException();
             }
@@ -191,10 +192,10 @@ namespace Knapcode.ExplorePackages.Worker
                 max);
         }
 
-        private async Task<CatalogIndexScan> UpdateFindPackageFilesAsync(DateTimeOffset? max)
+        private async Task<CatalogIndexScan> UpdateParameterlessAsync(CatalogScanDriverType driverType, DateTimeOffset? max)
         {
             return await UpdateAsync(
-                CatalogScanDriverType.FindPackageFile,
+                driverType,
                 parameters: null,
                 min: DateTimeOffset.MinValue,
                 max);
@@ -346,23 +347,17 @@ namespace Knapcode.ExplorePackages.Worker
 
         private static readonly Func<CatalogScanService, Task<DateTimeOffset>>[] NoDependencies = Array.Empty<Func<CatalogScanService, Task<DateTimeOffset>>>();
 
+        private static readonly Func<CatalogScanService, Task<DateTimeOffset>>[] FlatContainer = new Func<CatalogScanService, Task<DateTimeOffset>>[]
+        {
+            x => x._remoteCursorClient.GetFlatContainerAsync(),
+        };
+
         private static readonly IReadOnlyDictionary<CatalogScanDriverType, IReadOnlyList<Func<CatalogScanService, Task<DateTimeOffset>>>> Dependencies = new Dictionary<CatalogScanDriverType, Func<CatalogScanService, Task<DateTimeOffset>>[]>
         {
-            {
-                CatalogScanDriverType.FindCatalogLeafItem,
-                NoDependencies
-            },
-            {
-                CatalogScanDriverType.FindLatestPackageLeaf,
-                NoDependencies
-            },
-            {
-                CatalogScanDriverType.FindPackageFile,
-                new Func<CatalogScanService, Task<DateTimeOffset>>[]
-                {
-                    x => x._remoteCursorClient.GetFlatContainerAsync(),
-                }
-            },
+            { CatalogScanDriverType.FindCatalogLeafItem, NoDependencies },
+            { CatalogScanDriverType.FindLatestPackageLeaf, NoDependencies },
+            { CatalogScanDriverType.FindPackageFile, FlatContainer },
+            { CatalogScanDriverType.FindPackageManifest, FlatContainer },
         }.ToDictionary(x => x.Key, x => (IReadOnlyList<Func<CatalogScanService, Task<DateTimeOffset>>>)x.Value.ToList());
 
         private async Task<DateTimeOffset> GetDependencyMaxAsync(CatalogScanDriverType driverType)

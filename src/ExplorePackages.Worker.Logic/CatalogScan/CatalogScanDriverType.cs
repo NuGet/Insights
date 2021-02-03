@@ -9,5 +9,6 @@
         FindPackageAsset,
         FindPackageFile,
         FindPackageSignature,
+        FindPackageManifest,
     }
 }

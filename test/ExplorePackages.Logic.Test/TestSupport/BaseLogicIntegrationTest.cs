@@ -84,6 +84,7 @@ namespace Knapcode.ExplorePackages
             x.StorageContainerName = $"{StoragePrefix}1p1";
             x.LeaseContainerName = $"{StoragePrefix}1l1";
             x.PackageFileTableName = $"{StoragePrefix}1pf1";
+            x.PackageManifestTableName = $"{StoragePrefix}1pm1";
 
             if (ConfigureSettings != null)
             {

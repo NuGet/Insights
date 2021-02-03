@@ -85,7 +85,7 @@ namespace Knapcode.ExplorePackages
                 return MakeDeletedInfo(leafItem);
             }
 
-            var url = await _flatContainerClient.GetPackageContentUrlAsync(leafItem.PackageId, leafItem.PackageVersion);
+            var url = await _flatContainerClient.GetPackageManifestUrlAsync(leafItem.PackageId, leafItem.PackageVersion);
             var metric = _telemetryClient.GetMetric($"{nameof(PackageManifestService)}.{nameof(GetInfoAsync)}.DurationMs");
             var sw = Stopwatch.StartNew();
             var nuGetLog = _logger.ToNuGetLogger();

@@ -33,6 +33,52 @@ namespace Knapcode.ExplorePackages.Worker
             return UpdateAsync(DriverType, onlyLatestLeaves: null, max);
         }
 
+        protected static SortedDictionary<string, List<string>> NormalizeHeaders(ILookup<string, string> headers)
+        {
+            // These headers are unstable
+            var ignoredHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Access-Control-Allow-Origin",
+                "Access-Control-Expose-Headers",
+                "X-Cache",
+                "Age",
+                "Date",
+                "Expires",
+                "Server",
+                "x-ms-request-id",
+                "x-ms-lease-state",
+                "x-ms-version",
+            };
+
+            return new SortedDictionary<string, List<string>>(headers
+                .Where(x => !ignoredHeaders.Contains(x.Key))
+                .Select(grouping =>
+                {
+                    if (grouping.Key == "ETag")
+                    {
+                        var values = new List<string>();
+                        foreach (var value in grouping)
+                        {
+                            if (!value.StartsWith("\""))
+                            {
+                                values.Add("\"" + value + "\"");
+                            }
+                            else
+                            {
+                                values.Add(value);
+                            }
+                        }
+
+                        return values.GroupBy(x => grouping.Key).Single();
+                    }
+                    else
+                    {
+                        return grouping;
+                    }
+                })
+                .ToDictionary(x => x.Key, x => x.ToList()));
+        }
+
         protected async Task VerifyEntityOutputAsync<T>(CloudTable table, string dir, Action<T> cleanEntity = null) where T : ITableEntity, new()
         {
             var entities = await table.GetEntitiesAsync<T>(TelemetryClient.StartQueryLoopMetrics());

@@ -5,6 +5,7 @@ using Knapcode.ExplorePackages.Worker.FindCatalogLeafItem;
 using Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan;
 using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
 using Knapcode.ExplorePackages.Worker.FindPackageFile;
+using Knapcode.ExplorePackages.Worker.FindPackageManifest;
 using Knapcode.ExplorePackages.Worker.OwnersToCsv;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using Knapcode.ExplorePackages.Worker.TableCopy;
@@ -48,6 +49,7 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddFindCatalogLeafItem();
             serviceCollection.AddFindLatestLeaf();
             serviceCollection.AddFindPackageFile();
+            serviceCollection.AddFindPackageManifest();
             serviceCollection.AddRunRealRestore();
             serviceCollection.AddTableCopy();
             serviceCollection.AddDownloadsToCsv();
@@ -159,6 +161,11 @@ namespace Knapcode.ExplorePackages.Worker
         private static void AddFindPackageFile(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddTransient<FindPackageFileDriver>();
+        }
+
+        private static void AddFindPackageManifest(this IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddTransient<FindPackageManifestDriver>();
         }
 
         private static void AddRunRealRestore(this IServiceCollection serviceCollection)

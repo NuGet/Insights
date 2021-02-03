@@ -40,7 +40,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
                 };
 
                 // Set the Last-Modified date
-                var ownersFile = new FileInfo(Path.Combine(TestData, OwnersToCsvDir, "owners.v2.json"))
+                var file = new FileInfo(Path.Combine(TestData, OwnersToCsvDir, "owners.v2.json"))
                 {
                     LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z")
                 };
