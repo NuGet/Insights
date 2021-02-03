@@ -46,6 +46,12 @@ namespace Knapcode.ExplorePackages
             return url;
         }
 
+        public async Task<string> GetPackageManifestUrlAsync(string id, string version)
+        {
+            var baseUrl = await GetBaseUrlAsync();
+            return GetPackageManifestUrl(baseUrl, id, version);
+        }
+
         public string GetPackageManifestUrl(string baseUrl, string id, string version)
         {
             var lowerId = id.ToLowerInvariant();

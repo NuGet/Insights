@@ -125,8 +125,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageFile
                 Path.Combine(testName, stepName),
                 stream =>
                 {
-                    var options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4Block);
-                    var entity = MessagePackSerializer.Deserialize<PackageFileService.PackageFileInfoVersions>(stream, options);
+                    var entity = MessagePackSerializer.Deserialize<PackageFileService.PackageFileInfoVersions>(stream, ExplorePackagesMessagePack.Options);
 
                     string mzipHash = null;
                     string signatureHash = null;
