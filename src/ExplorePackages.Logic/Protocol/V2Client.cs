@@ -24,29 +24,6 @@ namespace Knapcode.ExplorePackages
             _logger = logger;
         }
 
-        public async Task<IReadOnlyList<V2Package>> GetPackagesAsync(string baseUrl, V2OrderByTimestamp orderBy, DateTimeOffset start, int top)
-        {
-            string filterField;
-            switch (orderBy)
-            {
-                case V2OrderByTimestamp.Created:
-                    filterField = "Created";
-                    break;
-                case V2OrderByTimestamp.LastEdited:
-                    filterField = "LastEdited";
-                    break;
-                default:
-                    throw new NotSupportedException($"The {nameof(orderBy)} value is not supported.");
-            }
-
-            var filterValue = $"{filterField} gt DateTime'{start.UtcDateTime:O}'";
-            var orderByValue = $"{filterField} asc";
-
-            var url = $"{baseUrl.TrimEnd('/')}/Packages?$select={Projection}&semVerLevel=2.0.0&$top={top}&$orderby={Uri.EscapeDataString(orderByValue)}&$filter={Uri.EscapeDataString(filterValue)}";
-
-            return await ParseV2PageAsync(url);
-        }
-
         public async Task<V2Package> GetPackageOrNullAsync(string baseUrl, string id, string version)
         {
             var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();

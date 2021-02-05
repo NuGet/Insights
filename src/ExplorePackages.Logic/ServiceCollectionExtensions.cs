@@ -110,16 +110,9 @@ namespace Knapcode.ExplorePackages
                 });
             serviceCollection.AddTransient<MZipFormat>();
 
-            serviceCollection.AddTransient<NuspecStore>();
-            serviceCollection.AddTransient<MZipStore>();
-            serviceCollection.AddTransient<IPortTester, PortTester>();
-            serviceCollection.AddTransient<IPortDiscoverer, SimplePortDiscoverer>();
             serviceCollection.AddTransient<SearchServiceCursorReader>();
             serviceCollection.AddTransient<IProgressReporter, NullProgressReporter>();
             serviceCollection.AddTransient<LatestCatalogCommitFetcher>();
-            serviceCollection.AddTransient<PackageBlobNameProvider>();
-            serviceCollection.AddTransient<IFileStorageService, FileStorageService>();
-            serviceCollection.AddTransient<IBlobStorageService, BlobStorageService>();
             serviceCollection.AddTransient<StorageLeaseService>();
             serviceCollection.AddTransient<AutoRenewingStorageLeaseService>();
             serviceCollection.AddTransient<StorageSemaphoreLeaseService>();
@@ -143,7 +136,6 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<FlatContainerClient>();
             serviceCollection.AddTransient<RegistrationClient>();
             serviceCollection.AddTransient<SearchClient>();
-            serviceCollection.AddTransient<AutocompleteClient>();
             serviceCollection.AddTransient<IPackageDownloadsClient, PackageDownloadsClient>();
             serviceCollection.AddTransient<DownloadsV1JsonDeserializer>();
             serviceCollection.AddTransient<PackageOwnersClient>();
