@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Entities;
 using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Tool
@@ -9,16 +8,13 @@ namespace Knapcode.ExplorePackages.Tool
     public class CommandExecutor
     {
         private readonly ICommand _command;
-        private readonly ISingletonService _singletonService;
         private readonly ILogger<CommandExecutor> _logger;
 
         public CommandExecutor(
             ICommand command,
-            ISingletonService singletonService,
             ILogger<CommandExecutor> logger)
         {
             _command = command;
-            _singletonService = singletonService;
             _logger = logger;
         }
 
@@ -35,13 +31,6 @@ namespace Knapcode.ExplorePackages.Tool
             bool success;
             try
             {
-                // Acquire the singleton lease.
-                if (_command.IsSingleton())
-                {
-                    _logger.LogInformation("Ensuring that this job is a singleton.");
-                    await _singletonService.AcquireOrRenewAsync();
-                }
-
                 await _command.ExecuteAsync(token);
                 success = true;
             }

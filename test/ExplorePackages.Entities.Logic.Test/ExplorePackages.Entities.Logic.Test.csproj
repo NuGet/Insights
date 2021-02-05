@@ -15,7 +15,6 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ExplorePackages.Entities.Logic\ExplorePackages.Entities.Logic.csproj" />
     <ProjectReference Include="..\ExplorePackages.Logic.Test\ExplorePackages.Logic.Test.csproj" />
   </ItemGroup>
 </Project>

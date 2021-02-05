@@ -135,9 +135,6 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<TempStreamWriter>();
             serviceCollection.AddScoped<TempStreamLeaseScope>();
 
-            serviceCollection.AddSingleton<IBatchSizeProvider, BatchSizeProvider>();
-            serviceCollection.AddTransient<CommitEnumerator>();
-
             serviceCollection.AddTransient<V2Parser>();
             serviceCollection.AddSingleton<ServiceIndexCache>();
             serviceCollection.AddTransient<GalleryClient>();

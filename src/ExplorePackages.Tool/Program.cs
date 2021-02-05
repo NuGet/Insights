@@ -4,10 +4,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Entities;
 using Knapcode.ExplorePackages.Worker;
 using McMaster.Extensions.CommandLineUtils;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -16,33 +14,9 @@ namespace Knapcode.ExplorePackages.Tool
 {
     public class Program
     {
-        private static readonly TimeSpan ReleaseInDuration = TimeSpan.FromSeconds(15);
-
         private static readonly IReadOnlyDictionary<string, Type> Commands = new Dictionary<string, Type>
         {
-            { "backup-database", typeof(BackupDatabaseCommand) },
-            { "break-singleton-lease", typeof(BreakSingletonLeaseCommand) },
-            { "catalog-to-database", typeof(CatalogToDatabaseCommand) },
-            { "nuspecs", typeof(NuspecsCommand) },
-            { "check-package", typeof(CheckPackageCommand) },
-            { "dependencies-to-database", typeof(DependenciesToDatabaseCommand) },
-            { "dependency-packages-to-database", typeof(DependencyPackagesToDatabaseCommand) },
-            { "downloads-to-database", typeof(DownloadsToDatabaseCommand) },
-            { "fetch-cursors", typeof(FetchCursorsCommand) },
-            { "migrate", typeof(MigrateCommand) },
-            { "mzips", typeof(MZipsCommand) },
-            { "mzip-to-database", typeof(MZipToDatabaseCommand) },
-            { "package-queries", typeof(PackageQueriesCommand) },
-            { "reprocess-cross-check-discrepancies", typeof(ReprocessCrossCheckDiscrepanciesCommand) },
-            { "reset-cursor", typeof(ResetCursorCommand) },
             { "sandbox", typeof(SandboxCommand) },
-            { "show-problems", typeof(ShowProblemsCommand) },
-            { "show-query-results", typeof(ShowQueryResultsCommand) },
-            { "show-repositories", typeof(ShowRepositoriesCommand) },
-            { "show-weird-dependencies", typeof(ShowWeirdDependenciesCommand) },
-            { "show-weird-metadata", typeof(ShowWeirdMetadataCommand) },
-            { "update", typeof(UpdateCommand) },
-            { "v2-to-database", typeof(V2ToDatabaseCommand) },
         };
 
         public static int Main(string[] args)
@@ -83,18 +57,8 @@ namespace Knapcode.ExplorePackages.Tool
             IServiceProvider serviceProvider)
         {
             var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
-            var singletonService = serviceProvider.GetRequiredService<ISingletonService>();
             await cancelEvent.WaitAsync();
             logger.LogWarning("Cancelling...");
-
-            try
-            {
-                await singletonService.ReleaseInAsync(ReleaseInDuration);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "An unexpected exception occured while cancelling.");
-            }
 
             return 1;
         }
@@ -111,7 +75,6 @@ namespace Knapcode.ExplorePackages.Tool
             app.OnExecute(() => app.ShowHelp());
 
             var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
-            var singletonService = serviceProvider.GetRequiredService<ISingletonService>();
 
             foreach (var pair in Commands)
             {
@@ -120,13 +83,10 @@ namespace Knapcode.ExplorePackages.Tool
 
             try
             {
-                var output = app.Execute(args);
-                await singletonService.ReleaseInAsync(output == 0 ? TimeSpan.Zero : ReleaseInDuration);
-                return output;
+                return app.Execute(args);
             }
             catch (Exception ex)
             {
-                await singletonService.ReleaseInAsync(ReleaseInDuration);
                 logger.LogError(ex, "An unexpected exception occured.");
                 return 1;
             }
@@ -141,8 +101,6 @@ namespace Knapcode.ExplorePackages.Tool
             CancellationToken token)
         {
             var command = (ICommand)serviceProvider.GetRequiredService(commandType);
-            var singletonService = serviceProvider.GetRequiredService<ISingletonService>();
-            var batchSizeProvider = serviceProvider.GetRequiredService<IBatchSizeProvider>();
 
             app.Command(
                 commandName,
@@ -166,10 +124,6 @@ namespace Knapcode.ExplorePackages.Tool
                         "--failure-sleep",
                         "The number of seconds to sleep when the command failed and running as a daemon. Defaults to 30 seconds.",
                         CommandOptionType.SingleValue);
-                    var batchSizeOption = x.Option<int>(
-                        "--batch-size",
-                        "The batch size to use. This overrides the default batch size specific to each operation.",
-                        CommandOptionType.SingleValue);
 
                     command.Configure(x);
 
@@ -183,17 +137,6 @@ namespace Knapcode.ExplorePackages.Tool
                         var successSleepDuration = TimeSpan.FromSeconds(successSleepOption.HasValue() ? successSleepOption.ParsedValue : 1);
                         var failureSleepDuration = TimeSpan.FromSeconds(failureSleepOption.HasValue() ? failureSleepOption.ParsedValue : 30);
 
-                        if (command.IsInitializationRequired())
-                        {
-                            await serviceProvider.InitializeGlobalStateAsync<Program>(
-                                command.IsDatabaseRequired());
-                        }
-
-                        if (batchSizeOption.HasValue())
-                        {
-                            batchSizeProvider.Set(batchSizeOption.ParsedValue);
-                        }
-
                         bool success;
                         do
                         {
@@ -201,7 +144,6 @@ namespace Knapcode.ExplorePackages.Tool
 
                             var commandRunner = new CommandExecutor(
                                    command,
-                                   singletonService,
                                    serviceProvider.GetRequiredService<ILogger<CommandExecutor>>());
 
                             success = await commandRunner.ExecuteAsync(token);
@@ -210,7 +152,6 @@ namespace Knapcode.ExplorePackages.Tool
                             {
                                 if (success)
                                 {
-                                    batchSizeProvider.Increase();
                                     logger.LogInformation(
                                         "Waiting for {SuccessSleepDurationMs}ms since the command completed successfully." + Environment.NewLine,
                                         successSleepDuration.TotalMilliseconds);
@@ -218,7 +159,6 @@ namespace Knapcode.ExplorePackages.Tool
                                 }
                                 else
                                 {
-                                    batchSizeProvider.Decrease();
                                     logger.LogInformation("Waiting for {FailureSleepDurationMs}ms since the command failed." + Environment.NewLine,
                                         failureSleepDuration.TotalMilliseconds);
                                     await Task.Delay(failureSleepDuration);
@@ -238,13 +178,11 @@ namespace Knapcode.ExplorePackages.Tool
 
             serviceCollection.AddExplorePackages("Knapcode.ExplorePackages.Tool");
             serviceCollection.AddExplorePackagesWorker();
-            serviceCollection.AddExplorePackagesEntities();
             AddExplorePackagesSettings<Program>(serviceCollection);
 
             serviceCollection.AddLogging(o =>
             {
                 o.SetMinimumLevel(LogLevel.Trace);
-                o.AddFilter(DbLoggerCategory.Name, LogLevel.Warning);
                 o.AddMinimalConsole();
             });
 
@@ -281,7 +219,6 @@ namespace Knapcode.ExplorePackages.Tool
 
             serviceCollection.Configure<ExplorePackagesSettings>(configuration.GetSection(ExplorePackagesSettings.DefaultSectionName));
             serviceCollection.Configure<ExplorePackagesWorkerSettings>(configuration.GetSection(ExplorePackagesSettings.DefaultSectionName));
-            serviceCollection.Configure<ExplorePackagesEntitiesSettings>(configuration.GetSection(ExplorePackagesSettings.DefaultSectionName));
 
             return serviceCollection;
         }
