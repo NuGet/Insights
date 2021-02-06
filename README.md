@@ -13,7 +13,7 @@ leaf.
 Results are stored in different ways but so far it's either results in Azure Table Storage (super cheap and scalable) or
 Azure Blob Storage CSV files (easy import to Kusto a.k.a Azure Data Explorer).
 
-The main drivers for learning about pacakges are:
+The main drivers for learning about packages are:
 
 - [`FindPackageAssembly`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindPackageAssembly/FindPackageAssemblyDriver.cs) - find stuff like public key tokens for assemblie using `System.Reflection.Metadata`
 - [`FindPackageAsset`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindPackageAsset/FindPackageAssetDriver.cs) - find assets recognized by NuGet restore
