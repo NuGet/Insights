@@ -24,6 +24,29 @@ Azure Blob Storage CSV files (easy import to Kusto a.k.a Azure Data Explorer).
 
 #### Performance and cost
 
+##### Results (February 2021)
+
+Tested timestamp range:
+- Min: `2015-02-01T06:22:45.8488496Z`
+- Max: `2021-02-05T15:55:33.3608941Z`
+
+Results:
+- `FindPackageFile`
+  - **Runtime: 37 minutes, 19 seconds**
+  - **Total cost - $3.37**
+  - Azure Functions cost - $2.77
+    - bandwidth / data transfer out - $1.62
+    - functions / execution time - $1.13
+    - functions / total executions - $0.01
+  - Azure Storage cost - $0.60
+    - storage / tables / scan operations - $0.26
+    - storage / tables / batch write operations - $0.15
+    - storage / queues v2 / lrs class 1 operations - $0.13
+    - storage / tiered block blob / all other operations - $0.01
+    - storage / files / protocol operations - $0.01
+
+##### Results (January 2021)
+
 Tested timestamp ranges:
 - From the beginning of the catalog:
   - Min: `2015-02-01T06:22:45.8488496Z`
