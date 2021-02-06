@@ -6,9 +6,6 @@
       "Available": true,
       "CommitTimestamp": "2020-12-20T02:39:20.5757299+00:00",
       "HttpHeaders": {
-        "Accept-Ranges": [
-          "bytes"
-        ],
         "Cache-Control": [
           "max-age=86400"
         ],
@@ -71,9 +68,6 @@
       "Available": true,
       "CommitTimestamp": "2020-12-20T03:01:57.2082154+00:00",
       "HttpHeaders": {
-        "Accept-Ranges": [
-          "bytes"
-        ],
         "Cache-Control": [
           "max-age=86400"
         ],
@@ -125,9 +119,6 @@
       "Available": true,
       "CommitTimestamp": "2020-12-20T02:39:20.5757299+00:00",
       "HttpHeaders": {
-        "Accept-Ranges": [
-          "bytes"
-        ],
         "Cache-Control": [
           "max-age=86400"
         ],
@@ -179,9 +170,6 @@
       "Available": true,
       "CommitTimestamp": "2020-12-20T02:37:52.9649363+00:00",
       "HttpHeaders": {
-        "Accept-Ranges": [
-          "bytes"
-        ],
         "Cache-Control": [
           "max-age=86400"
         ],
@@ -233,9 +221,6 @@
       "Available": true,
       "CommitTimestamp": "2020-12-20T02:37:52.9649363+00:00",
       "HttpHeaders": {
-        "Accept-Ranges": [
-          "bytes"
-        ],
         "Cache-Control": [
           "max-age=86400"
         ],
@@ -287,9 +272,6 @@
       "Available": true,
       "CommitTimestamp": "2020-12-20T02:37:52.9649363+00:00",
       "HttpHeaders": {
-        "Accept-Ranges": [
-          "bytes"
-        ],
         "Cache-Control": [
           "max-age=86400"
         ],

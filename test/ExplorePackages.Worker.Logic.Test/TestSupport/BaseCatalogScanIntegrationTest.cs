@@ -38,15 +38,16 @@ namespace Knapcode.ExplorePackages.Worker
             // These headers are unstable
             var ignoredHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
+                "Accept-Ranges",
                 "Access-Control-Allow-Origin",
                 "Access-Control-Expose-Headers",
-                "X-Cache",
                 "Age",
                 "Date",
                 "Expires",
                 "Server",
-                "x-ms-request-id",
+                "X-Cache",
                 "x-ms-lease-state",
+                "x-ms-request-id",
                 "x-ms-version",
             };
 
