@@ -18,8 +18,8 @@ Azure Blob Storage CSV files (easy import to Kusto a.k.a Azure Data Explorer).
 
 The main drivers for learning about pacakges are:
 
-- [`FindPackageAssembly`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindPackageAssembly/FindPackageAssemblyDriver.cs) - find information like public key tokens for all assemblies on NuGet.org using `System.Reflection.Metadata`
-- [`FindPackageAsset`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindPackageAsset/FindPackageAssetDriver.cs) - find all assets recognized by NuGet restore
+- [`FindPackageAssembly`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindPackageAssembly/FindPackageAssemblyDriver.cs) - find stuff like public key tokens for assemblies on NuGet.org using `System.Reflection.Metadata`
+- [`FindPackageAsset`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindPackageAsset/FindPackageAssetDriver.cs) - find assets recognized by NuGet restore
 - [`FindPackageSignature`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindPackageSignature/FindPackageSignatureDriver.cs) - parse the NuGet package signature
 
 Several other supporting drivers exist:
