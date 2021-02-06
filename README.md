@@ -4,10 +4,7 @@ Explore packages on a V3 NuGet package source that has a catalog (NuGet.org!).
 
 ## Purpose
 
-The purpose of this repository is to explore oddities and inconsistencies on NuGet.org's available packages. To support
-this goal, I've built several generic ways of writing "queries" which search for packages with arbitrary characteristics.
-
-### Parallelized queries on Azure Functions
+The purpose of this repository is to explore oddities and inconsistencies on NuGet.org's available packages.
 
 I've built several "drivers" that implement what to do for each unit of work. A unit of work is represented by a queue
 message that Azure Functions is triggered on. The unit of work can be based on a catalog index, catalog page, or catalog
@@ -28,11 +25,11 @@ Several other supporting drivers exist:
 - [`FindPackageManifest`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindPackageManifest/FindPackageManifestDriver.cs) - fetch the .nuspec and put it in Table Storage
 - [`FindCatalogLeafItem`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindCatalogLeafItem/FindCatalogLeafItemDriver.cs) - write all catalog leaf items to big CSVs for analysis
 - [`LatestLeaf`](src/ExplorePackages.Worker.Logic/CatalogScan/LatestLeaf/FindLatestLeafDriver.cs) - infrastructure to find the latest leaf per package ID and version
-  - [`FindLatestPackageLeaf`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindLatestPackageLeaf) - uses this generic infrastructure to write latest leaves to table storage
+  - [`FindLatestPackageLeaf`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/FindLatestPackageLeaf) - uses this generic infrastructure to write latest leaves to Table Storage
 
-#### Performance and cost
+### Performance and cost
 
-##### Results (February 2021)
+#### Results (February 2021)
 
 Tested timestamp range:
 - Min: `2015-02-01T06:22:45.8488496Z`
@@ -53,7 +50,7 @@ Results:
     - storage / tiered block blob / all other operations - $0.01
     - storage / files / protocol operations - $0.01
 
-##### Results (January 2021)
+#### Results (January 2021)
 
 Tested timestamp ranges:
 - From the beginning of the catalog:
