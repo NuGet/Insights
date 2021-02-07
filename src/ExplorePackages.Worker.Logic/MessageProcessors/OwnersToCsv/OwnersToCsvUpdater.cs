@@ -64,6 +64,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
         {
             foreach (var pair in idToOwners)
             {
+                record.LowerId = pair.Key.ToLowerInvariant();
                 record.Id = pair.Key;
                 record.Owners = JsonConvert.SerializeObject(pair.Value.OrderBy(x => x, StringComparer.OrdinalIgnoreCase));
                 await record.WriteAsync(writer);

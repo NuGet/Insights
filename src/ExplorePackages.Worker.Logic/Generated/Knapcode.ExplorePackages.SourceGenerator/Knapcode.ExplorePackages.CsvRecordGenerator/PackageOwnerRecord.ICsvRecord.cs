@@ -14,6 +14,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
 
     .create table JverPackageOwners (
         AsOfTimestamp: datetime,
+        LowerId: string,
         Id: string,
         Owners: string
     );
@@ -21,18 +22,20 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
     .create table JverPackageOwners ingestion csv mapping 'JverPackageOwners_mapping'
     '['
         '{"Column":"AsOfTimestamp","DataType":"datetime","Properties":{"Ordinal":0}},'
-        '{"Column":"Id","DataType":"string","Properties":{"Ordinal":1}},'
-        '{"Column":"Owners","DataType":"string","Properties":{"Ordinal":2}}'
+        '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":1}},'
+        '{"Column":"Id","DataType":"string","Properties":{"Ordinal":2}},'
+        '{"Column":"Owners","DataType":"string","Properties":{"Ordinal":3}}'
     ']'
 
     */
     partial record PackageOwnerRecord
     {
-        public int FieldCount => 3;
+        public int FieldCount => 4;
 
         public void Write(List<string> fields)
         {
             fields.Add(CsvUtility.FormatDateTimeOffset(AsOfTimestamp));
+            fields.Add(LowerId);
             fields.Add(Id);
             fields.Add(Owners);
         }
@@ -40,6 +43,8 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
         public void Write(TextWriter writer)
         {
             writer.Write(CsvUtility.FormatDateTimeOffset(AsOfTimestamp));
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, LowerId);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, Id);
             writer.Write(',');
@@ -50,6 +55,8 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
         public async Task WriteAsync(TextWriter writer)
         {
             await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(AsOfTimestamp));
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, LowerId);
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, Id);
             await writer.WriteAsync(',');
@@ -62,6 +69,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
             return new PackageOwnerRecord
             {
                 AsOfTimestamp = CsvUtility.ParseDateTimeOffset(getNextField()),
+                LowerId = getNextField(),
                 Id = getNextField(),
                 Owners = getNextField(),
             };

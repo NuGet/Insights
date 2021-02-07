@@ -27,12 +27,16 @@ namespace Knapcode.ExplorePackages.Worker
             ScanTimestamp = scanTimestamp;
             Id = id;
             Version = NuGetVersion.Parse(version).ToNormalizedString();
+            LowerId = id.ToLowerInvariant();
+            Identity = $"{LowerId}/{Version.ToLowerInvariant()}";
             CatalogCommitTimestamp = catalogCommitTimestamp;
             Created = created;
         }
 
         public Guid? ScanId { get; set; }
         public DateTimeOffset? ScanTimestamp { get; set; }
+        public string LowerId { get; set; }
+        public string Identity { get; set; }
         public string Id { get; set; }
         public string Version { get; set; }
         public DateTimeOffset CatalogCommitTimestamp { get; set; }

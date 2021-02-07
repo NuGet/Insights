@@ -32,6 +32,8 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
             Duration = duration;
             Id = package.Id;
             Version = package.Version.ToNormalizedString();
+            LowerId = package.Id.ToLowerInvariant();
+            Identity = $"{LowerId}/{Version.ToLowerInvariant()}";
             Framework = projectProfile.Framework.GetShortFolderName();
             Template = projectProfile.TemplateName;
 
@@ -92,6 +94,8 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
         public string DotnetVersion { get; set; }
         public TimeSpan Duration { get; set; }
 
+        public string LowerId { get; set; }
+        public string Identity { get; set; }
         public string Id { get; set; }
         public string Version { get; set; }
         public string Framework { get; set; }

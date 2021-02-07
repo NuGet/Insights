@@ -15,12 +15,12 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
     .create table JverCatalogLeafItems (
         CommitId: string,
         CommitTimestamp: datetime,
+        LowerId: string,
+        Identity: string,
         Id: string,
         Version: string,
         Type: string,
         Url: string,
-        LowerId: string,
-        LowerNormalizedVersion: string,
         PageUrl: string
     );
 
@@ -28,12 +28,12 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
     '['
         '{"Column":"CommitId","DataType":"string","Properties":{"Ordinal":0}},'
         '{"Column":"CommitTimestamp","DataType":"datetime","Properties":{"Ordinal":1}},'
-        '{"Column":"Id","DataType":"string","Properties":{"Ordinal":2}},'
-        '{"Column":"Version","DataType":"string","Properties":{"Ordinal":3}},'
-        '{"Column":"Type","DataType":"string","Properties":{"Ordinal":4}},'
-        '{"Column":"Url","DataType":"string","Properties":{"Ordinal":5}},'
-        '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":6}},'
-        '{"Column":"LowerNormalizedVersion","DataType":"string","Properties":{"Ordinal":7}},'
+        '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":2}},'
+        '{"Column":"Identity","DataType":"string","Properties":{"Ordinal":3}},'
+        '{"Column":"Id","DataType":"string","Properties":{"Ordinal":4}},'
+        '{"Column":"Version","DataType":"string","Properties":{"Ordinal":5}},'
+        '{"Column":"Type","DataType":"string","Properties":{"Ordinal":6}},'
+        '{"Column":"Url","DataType":"string","Properties":{"Ordinal":7}},'
         '{"Column":"PageUrl","DataType":"string","Properties":{"Ordinal":8}}'
     ']'
 
@@ -46,12 +46,12 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
         {
             fields.Add(CommitId);
             fields.Add(CsvUtility.FormatDateTimeOffset(CommitTimestamp));
+            fields.Add(LowerId);
+            fields.Add(Identity);
             fields.Add(Id);
             fields.Add(Version);
             fields.Add(Type.ToString());
             fields.Add(Url);
-            fields.Add(LowerId);
-            fields.Add(LowerNormalizedVersion);
             fields.Add(PageUrl);
         }
 
@@ -61,6 +61,10 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
             writer.Write(',');
             writer.Write(CsvUtility.FormatDateTimeOffset(CommitTimestamp));
             writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, LowerId);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, Identity);
+            writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, Id);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, Version);
@@ -68,10 +72,6 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
             writer.Write(Type);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, Url);
-            writer.Write(',');
-            CsvUtility.WriteWithQuotes(writer, LowerId);
-            writer.Write(',');
-            CsvUtility.WriteWithQuotes(writer, LowerNormalizedVersion);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, PageUrl);
             writer.WriteLine();
@@ -83,6 +83,10 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
             await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(CommitTimestamp));
             await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, LowerId);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, Identity);
+            await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, Id);
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, Version);
@@ -90,10 +94,6 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
             await writer.WriteAsync(Type.ToString());
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, Url);
-            await writer.WriteAsync(',');
-            await CsvUtility.WriteWithQuotesAsync(writer, LowerId);
-            await writer.WriteAsync(',');
-            await CsvUtility.WriteWithQuotesAsync(writer, LowerNormalizedVersion);
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, PageUrl);
             await writer.WriteLineAsync();
@@ -105,12 +105,12 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
             {
                 CommitId = getNextField(),
                 CommitTimestamp = CsvUtility.ParseDateTimeOffset(getNextField()),
+                LowerId = getNextField(),
+                Identity = getNextField(),
                 Id = getNextField(),
                 Version = getNextField(),
                 Type = Enum.Parse<Knapcode.ExplorePackages.CatalogLeafType>(getNextField()),
                 Url = getNextField(),
-                LowerId = getNextField(),
-                LowerNormalizedVersion = getNextField(),
                 PageUrl = getNextField(),
             };
         }

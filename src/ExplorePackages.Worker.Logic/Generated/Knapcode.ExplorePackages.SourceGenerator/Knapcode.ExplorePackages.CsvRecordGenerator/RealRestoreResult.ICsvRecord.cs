@@ -16,6 +16,8 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
         Timestamp: datetime,
         DotnetVersion: string,
         Duration: timespan,
+        LowerId: string,
+        Identity: string,
         Id: string,
         Version: string,
         Framework: string,
@@ -50,45 +52,49 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
         '{"Column":"Timestamp","DataType":"datetime","Properties":{"Ordinal":0}},'
         '{"Column":"DotnetVersion","DataType":"string","Properties":{"Ordinal":1}},'
         '{"Column":"Duration","DataType":"timespan","Properties":{"Ordinal":2}},'
-        '{"Column":"Id","DataType":"string","Properties":{"Ordinal":3}},'
-        '{"Column":"Version","DataType":"string","Properties":{"Ordinal":4}},'
-        '{"Column":"Framework","DataType":"string","Properties":{"Ordinal":5}},'
-        '{"Column":"Template","DataType":"string","Properties":{"Ordinal":6}},'
-        '{"Column":"TargetCount","DataType":"int","Properties":{"Ordinal":7}},'
-        '{"Column":"LibraryCount","DataType":"int","Properties":{"Ordinal":8}},'
-        '{"Column":"RestoreSucceeded","DataType":"bool","Properties":{"Ordinal":9}},'
-        '{"Column":"BuildSucceeded","DataType":"bool","Properties":{"Ordinal":10}},'
-        '{"Column":"DependencyCount","DataType":"int","Properties":{"Ordinal":11}},'
-        '{"Column":"FrameworkAssemblyCount","DataType":"int","Properties":{"Ordinal":12}},'
-        '{"Column":"FrameworkReferenceCount","DataType":"int","Properties":{"Ordinal":13}},'
-        '{"Column":"RuntimeAssemblyCount","DataType":"int","Properties":{"Ordinal":14}},'
-        '{"Column":"ResourceAssemblyCount","DataType":"int","Properties":{"Ordinal":15}},'
-        '{"Column":"CompileTimeAssemblyCount","DataType":"int","Properties":{"Ordinal":16}},'
-        '{"Column":"NativeLibraryCount","DataType":"int","Properties":{"Ordinal":17}},'
-        '{"Column":"BuildCount","DataType":"int","Properties":{"Ordinal":18}},'
-        '{"Column":"BuildMultiTargetingCount","DataType":"int","Properties":{"Ordinal":19}},'
-        '{"Column":"ContentFileCount","DataType":"int","Properties":{"Ordinal":20}},'
-        '{"Column":"RuntimeTargetCount","DataType":"int","Properties":{"Ordinal":21}},'
-        '{"Column":"ToolAssemblyCount","DataType":"int","Properties":{"Ordinal":22}},'
-        '{"Column":"EmbedAssemblyCount","DataType":"int","Properties":{"Ordinal":23}},'
-        '{"Column":"ErrorBlobPath","DataType":"string","Properties":{"Ordinal":24}},'
-        '{"Column":"RestoreLogMessageCodes","DataType":"string","Properties":{"Ordinal":25}},'
-        '{"Column":"OnlyNU1202","DataType":"bool","Properties":{"Ordinal":26}},'
-        '{"Column":"OnlyNU1213","DataType":"bool","Properties":{"Ordinal":27}},'
-        '{"Column":"BuildErrorCodes","DataType":"string","Properties":{"Ordinal":28}},'
-        '{"Column":"OnlyMSB3644","DataType":"bool","Properties":{"Ordinal":29}}'
+        '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":3}},'
+        '{"Column":"Identity","DataType":"string","Properties":{"Ordinal":4}},'
+        '{"Column":"Id","DataType":"string","Properties":{"Ordinal":5}},'
+        '{"Column":"Version","DataType":"string","Properties":{"Ordinal":6}},'
+        '{"Column":"Framework","DataType":"string","Properties":{"Ordinal":7}},'
+        '{"Column":"Template","DataType":"string","Properties":{"Ordinal":8}},'
+        '{"Column":"TargetCount","DataType":"int","Properties":{"Ordinal":9}},'
+        '{"Column":"LibraryCount","DataType":"int","Properties":{"Ordinal":10}},'
+        '{"Column":"RestoreSucceeded","DataType":"bool","Properties":{"Ordinal":11}},'
+        '{"Column":"BuildSucceeded","DataType":"bool","Properties":{"Ordinal":12}},'
+        '{"Column":"DependencyCount","DataType":"int","Properties":{"Ordinal":13}},'
+        '{"Column":"FrameworkAssemblyCount","DataType":"int","Properties":{"Ordinal":14}},'
+        '{"Column":"FrameworkReferenceCount","DataType":"int","Properties":{"Ordinal":15}},'
+        '{"Column":"RuntimeAssemblyCount","DataType":"int","Properties":{"Ordinal":16}},'
+        '{"Column":"ResourceAssemblyCount","DataType":"int","Properties":{"Ordinal":17}},'
+        '{"Column":"CompileTimeAssemblyCount","DataType":"int","Properties":{"Ordinal":18}},'
+        '{"Column":"NativeLibraryCount","DataType":"int","Properties":{"Ordinal":19}},'
+        '{"Column":"BuildCount","DataType":"int","Properties":{"Ordinal":20}},'
+        '{"Column":"BuildMultiTargetingCount","DataType":"int","Properties":{"Ordinal":21}},'
+        '{"Column":"ContentFileCount","DataType":"int","Properties":{"Ordinal":22}},'
+        '{"Column":"RuntimeTargetCount","DataType":"int","Properties":{"Ordinal":23}},'
+        '{"Column":"ToolAssemblyCount","DataType":"int","Properties":{"Ordinal":24}},'
+        '{"Column":"EmbedAssemblyCount","DataType":"int","Properties":{"Ordinal":25}},'
+        '{"Column":"ErrorBlobPath","DataType":"string","Properties":{"Ordinal":26}},'
+        '{"Column":"RestoreLogMessageCodes","DataType":"string","Properties":{"Ordinal":27}},'
+        '{"Column":"OnlyNU1202","DataType":"bool","Properties":{"Ordinal":28}},'
+        '{"Column":"OnlyNU1213","DataType":"bool","Properties":{"Ordinal":29}},'
+        '{"Column":"BuildErrorCodes","DataType":"string","Properties":{"Ordinal":30}},'
+        '{"Column":"OnlyMSB3644","DataType":"bool","Properties":{"Ordinal":31}}'
     ']'
 
     */
     partial record RealRestoreResult
     {
-        public int FieldCount => 30;
+        public int FieldCount => 32;
 
         public void Write(List<string> fields)
         {
             fields.Add(CsvUtility.FormatDateTimeOffset(Timestamp));
             fields.Add(DotnetVersion);
             fields.Add(Duration.ToString());
+            fields.Add(LowerId);
+            fields.Add(Identity);
             fields.Add(Id);
             fields.Add(Version);
             fields.Add(Framework);
@@ -125,6 +131,10 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
             CsvUtility.WriteWithQuotes(writer, DotnetVersion);
             writer.Write(',');
             writer.Write(Duration);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, LowerId);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, Identity);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, Id);
             writer.Write(',');
@@ -190,6 +200,10 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
             await writer.WriteAsync(',');
             await writer.WriteAsync(Duration.ToString());
             await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, LowerId);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, Identity);
+            await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, Id);
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, Version);
@@ -253,6 +267,8 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
                 Timestamp = CsvUtility.ParseDateTimeOffset(getNextField()),
                 DotnetVersion = getNextField(),
                 Duration = TimeSpan.Parse(getNextField()),
+                LowerId = getNextField(),
+                Identity = getNextField(),
                 Id = getNextField(),
                 Version = getNextField(),
                 Framework = getNextField(),

@@ -29,8 +29,7 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
             return records
                 .Distinct()
                 .OrderBy(x => x.CommitTimestamp)
-                .ThenBy(x => x.Id)
-                .ThenBy(x => x.LowerNormalizedVersion)
+                .ThenBy(x => x.Identity, StringComparer.OrdinalIgnoreCase)
                 .ToList();
         }
 
@@ -53,13 +52,12 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
                 {
                     CommitId = x.CommitId,
                     CommitTimestamp = x.CommitTimestamp,
+                    LowerId = x.PackageId.ToLowerInvariant(),
+                    Identity = $"{x.PackageId}/{x.ParsePackageVersion().ToNormalizedString()}".ToLowerInvariant(),
                     Id = x.PackageId,
                     Version = x.PackageVersion,
                     Type = x.Type,
                     Url = x.Url,
-
-                    LowerId = x.PackageId.ToLowerInvariant(),
-                    LowerNormalizedVersion = x.ParsePackageVersion().ToNormalizedString(),
 
                     PageUrl = pageScan.Url,
                 })

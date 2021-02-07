@@ -15,6 +15,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
     .create table JverPackageSignatures (
         ScanId: guid,
         ScanTimestamp: datetime,
+        LowerId: string,
+        Identity: string,
         Id: string,
         Version: string,
         CatalogCommitTimestamp: datetime,
@@ -57,53 +59,57 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
     '['
         '{"Column":"ScanId","DataType":"guid","Properties":{"Ordinal":0}},'
         '{"Column":"ScanTimestamp","DataType":"datetime","Properties":{"Ordinal":1}},'
-        '{"Column":"Id","DataType":"string","Properties":{"Ordinal":2}},'
-        '{"Column":"Version","DataType":"string","Properties":{"Ordinal":3}},'
-        '{"Column":"CatalogCommitTimestamp","DataType":"datetime","Properties":{"Ordinal":4}},'
-        '{"Column":"Created","DataType":"datetime","Properties":{"Ordinal":5}},'
-        '{"Column":"ResultType","DataType":"string","Properties":{"Ordinal":6}},'
-        '{"Column":"HashAlgorithm","DataType":"string","Properties":{"Ordinal":7}},'
-        '{"Column":"HashValue","DataType":"string","Properties":{"Ordinal":8}},'
-        '{"Column":"AuthorSHA1","DataType":"string","Properties":{"Ordinal":9}},'
-        '{"Column":"AuthorSHA256","DataType":"string","Properties":{"Ordinal":10}},'
-        '{"Column":"AuthorSubject","DataType":"string","Properties":{"Ordinal":11}},'
-        '{"Column":"AuthorNotBefore","DataType":"datetime","Properties":{"Ordinal":12}},'
-        '{"Column":"AuthorNotAfter","DataType":"datetime","Properties":{"Ordinal":13}},'
-        '{"Column":"AuthorIssuer","DataType":"string","Properties":{"Ordinal":14}},'
-        '{"Column":"AuthorTimestampSHA1","DataType":"string","Properties":{"Ordinal":15}},'
-        '{"Column":"AuthorTimestampSHA256","DataType":"string","Properties":{"Ordinal":16}},'
-        '{"Column":"AuthorTimestampSubject","DataType":"string","Properties":{"Ordinal":17}},'
-        '{"Column":"AuthorTimestampNotBefore","DataType":"datetime","Properties":{"Ordinal":18}},'
-        '{"Column":"AuthorTimestampNotAfter","DataType":"datetime","Properties":{"Ordinal":19}},'
-        '{"Column":"AuthorTimestampIssuer","DataType":"string","Properties":{"Ordinal":20}},'
-        '{"Column":"AuthorTimestampValue","DataType":"datetime","Properties":{"Ordinal":21}},'
-        '{"Column":"AuthorTimestampHasASN1Error","DataType":"bool","Properties":{"Ordinal":22}},'
-        '{"Column":"RepositorySHA1","DataType":"string","Properties":{"Ordinal":23}},'
-        '{"Column":"RepositorySHA256","DataType":"string","Properties":{"Ordinal":24}},'
-        '{"Column":"RepositorySubject","DataType":"string","Properties":{"Ordinal":25}},'
-        '{"Column":"RepositoryNotBefore","DataType":"datetime","Properties":{"Ordinal":26}},'
-        '{"Column":"RepositoryNotAfter","DataType":"datetime","Properties":{"Ordinal":27}},'
-        '{"Column":"RepositoryIssuer","DataType":"string","Properties":{"Ordinal":28}},'
-        '{"Column":"RepositoryTimestampSHA1","DataType":"string","Properties":{"Ordinal":29}},'
-        '{"Column":"RepositoryTimestampSHA256","DataType":"string","Properties":{"Ordinal":30}},'
-        '{"Column":"RepositoryTimestampSubject","DataType":"string","Properties":{"Ordinal":31}},'
-        '{"Column":"RepositoryTimestampNotBefore","DataType":"datetime","Properties":{"Ordinal":32}},'
-        '{"Column":"RepositoryTimestampNotAfter","DataType":"datetime","Properties":{"Ordinal":33}},'
-        '{"Column":"RepositoryTimestampIssuer","DataType":"string","Properties":{"Ordinal":34}},'
-        '{"Column":"RepositoryTimestampValue","DataType":"datetime","Properties":{"Ordinal":35}},'
-        '{"Column":"RepositoryTimestampHasASN1Error","DataType":"bool","Properties":{"Ordinal":36}},'
-        '{"Column":"PackageOwners","DataType":"string","Properties":{"Ordinal":37}}'
+        '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":2}},'
+        '{"Column":"Identity","DataType":"string","Properties":{"Ordinal":3}},'
+        '{"Column":"Id","DataType":"string","Properties":{"Ordinal":4}},'
+        '{"Column":"Version","DataType":"string","Properties":{"Ordinal":5}},'
+        '{"Column":"CatalogCommitTimestamp","DataType":"datetime","Properties":{"Ordinal":6}},'
+        '{"Column":"Created","DataType":"datetime","Properties":{"Ordinal":7}},'
+        '{"Column":"ResultType","DataType":"string","Properties":{"Ordinal":8}},'
+        '{"Column":"HashAlgorithm","DataType":"string","Properties":{"Ordinal":9}},'
+        '{"Column":"HashValue","DataType":"string","Properties":{"Ordinal":10}},'
+        '{"Column":"AuthorSHA1","DataType":"string","Properties":{"Ordinal":11}},'
+        '{"Column":"AuthorSHA256","DataType":"string","Properties":{"Ordinal":12}},'
+        '{"Column":"AuthorSubject","DataType":"string","Properties":{"Ordinal":13}},'
+        '{"Column":"AuthorNotBefore","DataType":"datetime","Properties":{"Ordinal":14}},'
+        '{"Column":"AuthorNotAfter","DataType":"datetime","Properties":{"Ordinal":15}},'
+        '{"Column":"AuthorIssuer","DataType":"string","Properties":{"Ordinal":16}},'
+        '{"Column":"AuthorTimestampSHA1","DataType":"string","Properties":{"Ordinal":17}},'
+        '{"Column":"AuthorTimestampSHA256","DataType":"string","Properties":{"Ordinal":18}},'
+        '{"Column":"AuthorTimestampSubject","DataType":"string","Properties":{"Ordinal":19}},'
+        '{"Column":"AuthorTimestampNotBefore","DataType":"datetime","Properties":{"Ordinal":20}},'
+        '{"Column":"AuthorTimestampNotAfter","DataType":"datetime","Properties":{"Ordinal":21}},'
+        '{"Column":"AuthorTimestampIssuer","DataType":"string","Properties":{"Ordinal":22}},'
+        '{"Column":"AuthorTimestampValue","DataType":"datetime","Properties":{"Ordinal":23}},'
+        '{"Column":"AuthorTimestampHasASN1Error","DataType":"bool","Properties":{"Ordinal":24}},'
+        '{"Column":"RepositorySHA1","DataType":"string","Properties":{"Ordinal":25}},'
+        '{"Column":"RepositorySHA256","DataType":"string","Properties":{"Ordinal":26}},'
+        '{"Column":"RepositorySubject","DataType":"string","Properties":{"Ordinal":27}},'
+        '{"Column":"RepositoryNotBefore","DataType":"datetime","Properties":{"Ordinal":28}},'
+        '{"Column":"RepositoryNotAfter","DataType":"datetime","Properties":{"Ordinal":29}},'
+        '{"Column":"RepositoryIssuer","DataType":"string","Properties":{"Ordinal":30}},'
+        '{"Column":"RepositoryTimestampSHA1","DataType":"string","Properties":{"Ordinal":31}},'
+        '{"Column":"RepositoryTimestampSHA256","DataType":"string","Properties":{"Ordinal":32}},'
+        '{"Column":"RepositoryTimestampSubject","DataType":"string","Properties":{"Ordinal":33}},'
+        '{"Column":"RepositoryTimestampNotBefore","DataType":"datetime","Properties":{"Ordinal":34}},'
+        '{"Column":"RepositoryTimestampNotAfter","DataType":"datetime","Properties":{"Ordinal":35}},'
+        '{"Column":"RepositoryTimestampIssuer","DataType":"string","Properties":{"Ordinal":36}},'
+        '{"Column":"RepositoryTimestampValue","DataType":"datetime","Properties":{"Ordinal":37}},'
+        '{"Column":"RepositoryTimestampHasASN1Error","DataType":"bool","Properties":{"Ordinal":38}},'
+        '{"Column":"PackageOwners","DataType":"string","Properties":{"Ordinal":39}}'
     ']'
 
     */
     partial record PackageSignature
     {
-        public int FieldCount => 38;
+        public int FieldCount => 40;
 
         public void Write(List<string> fields)
         {
             fields.Add(ScanId.ToString());
             fields.Add(CsvUtility.FormatDateTimeOffset(ScanTimestamp));
+            fields.Add(LowerId);
+            fields.Add(Identity);
             fields.Add(Id);
             fields.Add(Version);
             fields.Add(CsvUtility.FormatDateTimeOffset(CatalogCommitTimestamp));
@@ -147,6 +153,10 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
             writer.Write(ScanId);
             writer.Write(',');
             writer.Write(CsvUtility.FormatDateTimeOffset(ScanTimestamp));
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, LowerId);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, Identity);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, Id);
             writer.Write(',');
@@ -228,6 +238,10 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
             await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(ScanTimestamp));
             await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, LowerId);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, Identity);
+            await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, Id);
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, Version);
@@ -308,6 +322,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
             {
                 ScanId = CsvUtility.ParseNullable(getNextField(), Guid.Parse),
                 ScanTimestamp = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
+                LowerId = getNextField(),
+                Identity = getNextField(),
                 Id = getNextField(),
                 Version = getNextField(),
                 CatalogCommitTimestamp = CsvUtility.ParseDateTimeOffset(getNextField()),

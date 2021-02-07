@@ -14,6 +14,8 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 
     .create table JverPackageDownloads (
         AsOfTimestamp: datetime,
+        LowerId: string,
+        Identity: string,
         Id: string,
         Version: string,
         Downloads: long,
@@ -23,20 +25,24 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
     .create table JverPackageDownloads ingestion csv mapping 'JverPackageDownloads_mapping'
     '['
         '{"Column":"AsOfTimestamp","DataType":"datetime","Properties":{"Ordinal":0}},'
-        '{"Column":"Id","DataType":"string","Properties":{"Ordinal":1}},'
-        '{"Column":"Version","DataType":"string","Properties":{"Ordinal":2}},'
-        '{"Column":"Downloads","DataType":"long","Properties":{"Ordinal":3}},'
-        '{"Column":"TotalDownloads","DataType":"long","Properties":{"Ordinal":4}}'
+        '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":1}},'
+        '{"Column":"Identity","DataType":"string","Properties":{"Ordinal":2}},'
+        '{"Column":"Id","DataType":"string","Properties":{"Ordinal":3}},'
+        '{"Column":"Version","DataType":"string","Properties":{"Ordinal":4}},'
+        '{"Column":"Downloads","DataType":"long","Properties":{"Ordinal":5}},'
+        '{"Column":"TotalDownloads","DataType":"long","Properties":{"Ordinal":6}}'
     ']'
 
     */
     partial record PackageDownloadRecord
     {
-        public int FieldCount => 5;
+        public int FieldCount => 7;
 
         public void Write(List<string> fields)
         {
             fields.Add(CsvUtility.FormatDateTimeOffset(AsOfTimestamp));
+            fields.Add(LowerId);
+            fields.Add(Identity);
             fields.Add(Id);
             fields.Add(Version);
             fields.Add(Downloads.ToString());
@@ -46,6 +52,10 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
         public void Write(TextWriter writer)
         {
             writer.Write(CsvUtility.FormatDateTimeOffset(AsOfTimestamp));
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, LowerId);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, Identity);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, Id);
             writer.Write(',');
@@ -60,6 +70,10 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
         public async Task WriteAsync(TextWriter writer)
         {
             await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(AsOfTimestamp));
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, LowerId);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, Identity);
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, Id);
             await writer.WriteAsync(',');
@@ -76,6 +90,8 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
             return new PackageDownloadRecord
             {
                 AsOfTimestamp = CsvUtility.ParseDateTimeOffset(getNextField()),
+                LowerId = getNextField(),
+                Identity = getNextField(),
                 Id = getNextField(),
                 Version = getNextField(),
                 Downloads = long.Parse(getNextField()),

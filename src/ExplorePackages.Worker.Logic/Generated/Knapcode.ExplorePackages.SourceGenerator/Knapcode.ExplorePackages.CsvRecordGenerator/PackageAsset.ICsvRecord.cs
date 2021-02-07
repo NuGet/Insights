@@ -15,6 +15,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
     .create table JverPackageAssets (
         ScanId: guid,
         ScanTimestamp: datetime,
+        LowerId: string,
+        Identity: string,
         Id: string,
         Version: string,
         CatalogCommitTimestamp: datetime,
@@ -45,41 +47,45 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
     '['
         '{"Column":"ScanId","DataType":"guid","Properties":{"Ordinal":0}},'
         '{"Column":"ScanTimestamp","DataType":"datetime","Properties":{"Ordinal":1}},'
-        '{"Column":"Id","DataType":"string","Properties":{"Ordinal":2}},'
-        '{"Column":"Version","DataType":"string","Properties":{"Ordinal":3}},'
-        '{"Column":"CatalogCommitTimestamp","DataType":"datetime","Properties":{"Ordinal":4}},'
-        '{"Column":"Created","DataType":"datetime","Properties":{"Ordinal":5}},'
-        '{"Column":"ResultType","DataType":"string","Properties":{"Ordinal":6}},'
-        '{"Column":"PatternSet","DataType":"string","Properties":{"Ordinal":7}},'
-        '{"Column":"PropertyAnyValue","DataType":"string","Properties":{"Ordinal":8}},'
-        '{"Column":"PropertyCodeLanguage","DataType":"string","Properties":{"Ordinal":9}},'
-        '{"Column":"PropertyTargetFrameworkMoniker","DataType":"string","Properties":{"Ordinal":10}},'
-        '{"Column":"PropertyLocale","DataType":"string","Properties":{"Ordinal":11}},'
-        '{"Column":"PropertyManagedAssembly","DataType":"string","Properties":{"Ordinal":12}},'
-        '{"Column":"PropertyMSBuild","DataType":"string","Properties":{"Ordinal":13}},'
-        '{"Column":"PropertyRuntimeIdentifier","DataType":"string","Properties":{"Ordinal":14}},'
-        '{"Column":"PropertySatelliteAssembly","DataType":"string","Properties":{"Ordinal":15}},'
-        '{"Column":"Path","DataType":"string","Properties":{"Ordinal":16}},'
-        '{"Column":"FileName","DataType":"string","Properties":{"Ordinal":17}},'
-        '{"Column":"FileExtension","DataType":"string","Properties":{"Ordinal":18}},'
-        '{"Column":"TopLevelFolder","DataType":"string","Properties":{"Ordinal":19}},'
-        '{"Column":"RoundTripTargetFrameworkMoniker","DataType":"string","Properties":{"Ordinal":20}},'
-        '{"Column":"FrameworkName","DataType":"string","Properties":{"Ordinal":21}},'
-        '{"Column":"FrameworkVersion","DataType":"string","Properties":{"Ordinal":22}},'
-        '{"Column":"FrameworkProfile","DataType":"string","Properties":{"Ordinal":23}},'
-        '{"Column":"PlatformName","DataType":"string","Properties":{"Ordinal":24}},'
-        '{"Column":"PlatformVersion","DataType":"string","Properties":{"Ordinal":25}}'
+        '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":2}},'
+        '{"Column":"Identity","DataType":"string","Properties":{"Ordinal":3}},'
+        '{"Column":"Id","DataType":"string","Properties":{"Ordinal":4}},'
+        '{"Column":"Version","DataType":"string","Properties":{"Ordinal":5}},'
+        '{"Column":"CatalogCommitTimestamp","DataType":"datetime","Properties":{"Ordinal":6}},'
+        '{"Column":"Created","DataType":"datetime","Properties":{"Ordinal":7}},'
+        '{"Column":"ResultType","DataType":"string","Properties":{"Ordinal":8}},'
+        '{"Column":"PatternSet","DataType":"string","Properties":{"Ordinal":9}},'
+        '{"Column":"PropertyAnyValue","DataType":"string","Properties":{"Ordinal":10}},'
+        '{"Column":"PropertyCodeLanguage","DataType":"string","Properties":{"Ordinal":11}},'
+        '{"Column":"PropertyTargetFrameworkMoniker","DataType":"string","Properties":{"Ordinal":12}},'
+        '{"Column":"PropertyLocale","DataType":"string","Properties":{"Ordinal":13}},'
+        '{"Column":"PropertyManagedAssembly","DataType":"string","Properties":{"Ordinal":14}},'
+        '{"Column":"PropertyMSBuild","DataType":"string","Properties":{"Ordinal":15}},'
+        '{"Column":"PropertyRuntimeIdentifier","DataType":"string","Properties":{"Ordinal":16}},'
+        '{"Column":"PropertySatelliteAssembly","DataType":"string","Properties":{"Ordinal":17}},'
+        '{"Column":"Path","DataType":"string","Properties":{"Ordinal":18}},'
+        '{"Column":"FileName","DataType":"string","Properties":{"Ordinal":19}},'
+        '{"Column":"FileExtension","DataType":"string","Properties":{"Ordinal":20}},'
+        '{"Column":"TopLevelFolder","DataType":"string","Properties":{"Ordinal":21}},'
+        '{"Column":"RoundTripTargetFrameworkMoniker","DataType":"string","Properties":{"Ordinal":22}},'
+        '{"Column":"FrameworkName","DataType":"string","Properties":{"Ordinal":23}},'
+        '{"Column":"FrameworkVersion","DataType":"string","Properties":{"Ordinal":24}},'
+        '{"Column":"FrameworkProfile","DataType":"string","Properties":{"Ordinal":25}},'
+        '{"Column":"PlatformName","DataType":"string","Properties":{"Ordinal":26}},'
+        '{"Column":"PlatformVersion","DataType":"string","Properties":{"Ordinal":27}}'
     ']'
 
     */
     partial record PackageAsset
     {
-        public int FieldCount => 26;
+        public int FieldCount => 28;
 
         public void Write(List<string> fields)
         {
             fields.Add(ScanId.ToString());
             fields.Add(CsvUtility.FormatDateTimeOffset(ScanTimestamp));
+            fields.Add(LowerId);
+            fields.Add(Identity);
             fields.Add(Id);
             fields.Add(Version);
             fields.Add(CsvUtility.FormatDateTimeOffset(CatalogCommitTimestamp));
@@ -111,6 +117,10 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
             writer.Write(ScanId);
             writer.Write(',');
             writer.Write(CsvUtility.FormatDateTimeOffset(ScanTimestamp));
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, LowerId);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, Identity);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, Id);
             writer.Write(',');
@@ -168,6 +178,10 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
             await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(ScanTimestamp));
             await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, LowerId);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, Identity);
+            await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, Id);
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, Version);
@@ -224,6 +238,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
             {
                 ScanId = CsvUtility.ParseNullable(getNextField(), Guid.Parse),
                 ScanTimestamp = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
+                LowerId = getNextField(),
+                Identity = getNextField(),
                 Id = getNextField(),
                 Version = getNextField(),
                 CatalogCommitTimestamp = CsvUtility.ParseDateTimeOffset(getNextField()),

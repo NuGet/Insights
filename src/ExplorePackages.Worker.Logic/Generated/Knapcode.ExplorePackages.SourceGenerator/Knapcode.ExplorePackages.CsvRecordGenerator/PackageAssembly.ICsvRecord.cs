@@ -15,6 +15,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
     .create table JverPackageAssemblies (
         ScanId: guid,
         ScanTimestamp: datetime,
+        LowerId: string,
+        Identity: string,
         Id: string,
         Version: string,
         CatalogCommitTimestamp: datetime,
@@ -46,42 +48,46 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
     '['
         '{"Column":"ScanId","DataType":"guid","Properties":{"Ordinal":0}},'
         '{"Column":"ScanTimestamp","DataType":"datetime","Properties":{"Ordinal":1}},'
-        '{"Column":"Id","DataType":"string","Properties":{"Ordinal":2}},'
-        '{"Column":"Version","DataType":"string","Properties":{"Ordinal":3}},'
-        '{"Column":"CatalogCommitTimestamp","DataType":"datetime","Properties":{"Ordinal":4}},'
-        '{"Column":"Created","DataType":"datetime","Properties":{"Ordinal":5}},'
-        '{"Column":"ResultType","DataType":"string","Properties":{"Ordinal":6}},'
-        '{"Column":"Path","DataType":"string","Properties":{"Ordinal":7}},'
-        '{"Column":"FileName","DataType":"string","Properties":{"Ordinal":8}},'
-        '{"Column":"FileExtension","DataType":"string","Properties":{"Ordinal":9}},'
-        '{"Column":"TopLevelFolder","DataType":"string","Properties":{"Ordinal":10}},'
-        '{"Column":"CompressedLength","DataType":"long","Properties":{"Ordinal":11}},'
-        '{"Column":"EntryUncompressedLength","DataType":"long","Properties":{"Ordinal":12}},'
-        '{"Column":"ActualUncompressedLength","DataType":"long","Properties":{"Ordinal":13}},'
-        '{"Column":"FileSHA256","DataType":"string","Properties":{"Ordinal":14}},'
-        '{"Column":"HasException","DataType":"bool","Properties":{"Ordinal":15}},'
-        '{"Column":"AssemblyName","DataType":"string","Properties":{"Ordinal":16}},'
-        '{"Column":"AssemblyVersion","DataType":"string","Properties":{"Ordinal":17}},'
-        '{"Column":"Culture","DataType":"string","Properties":{"Ordinal":18}},'
-        '{"Column":"AssemblyNameHasCultureNotFoundException","DataType":"bool","Properties":{"Ordinal":19}},'
-        '{"Column":"AssemblyNameHasFileLoadException","DataType":"bool","Properties":{"Ordinal":20}},'
-        '{"Column":"PublicKeyToken","DataType":"string","Properties":{"Ordinal":21}},'
-        '{"Column":"PublicKeyTokenHasSecurityException","DataType":"bool","Properties":{"Ordinal":22}},'
-        '{"Column":"HashAlgorithm","DataType":"string","Properties":{"Ordinal":23}},'
-        '{"Column":"HasPublicKey","DataType":"bool","Properties":{"Ordinal":24}},'
-        '{"Column":"PublicKeyLength","DataType":"int","Properties":{"Ordinal":25}},'
-        '{"Column":"PublicKeySHA1","DataType":"string","Properties":{"Ordinal":26}}'
+        '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":2}},'
+        '{"Column":"Identity","DataType":"string","Properties":{"Ordinal":3}},'
+        '{"Column":"Id","DataType":"string","Properties":{"Ordinal":4}},'
+        '{"Column":"Version","DataType":"string","Properties":{"Ordinal":5}},'
+        '{"Column":"CatalogCommitTimestamp","DataType":"datetime","Properties":{"Ordinal":6}},'
+        '{"Column":"Created","DataType":"datetime","Properties":{"Ordinal":7}},'
+        '{"Column":"ResultType","DataType":"string","Properties":{"Ordinal":8}},'
+        '{"Column":"Path","DataType":"string","Properties":{"Ordinal":9}},'
+        '{"Column":"FileName","DataType":"string","Properties":{"Ordinal":10}},'
+        '{"Column":"FileExtension","DataType":"string","Properties":{"Ordinal":11}},'
+        '{"Column":"TopLevelFolder","DataType":"string","Properties":{"Ordinal":12}},'
+        '{"Column":"CompressedLength","DataType":"long","Properties":{"Ordinal":13}},'
+        '{"Column":"EntryUncompressedLength","DataType":"long","Properties":{"Ordinal":14}},'
+        '{"Column":"ActualUncompressedLength","DataType":"long","Properties":{"Ordinal":15}},'
+        '{"Column":"FileSHA256","DataType":"string","Properties":{"Ordinal":16}},'
+        '{"Column":"HasException","DataType":"bool","Properties":{"Ordinal":17}},'
+        '{"Column":"AssemblyName","DataType":"string","Properties":{"Ordinal":18}},'
+        '{"Column":"AssemblyVersion","DataType":"string","Properties":{"Ordinal":19}},'
+        '{"Column":"Culture","DataType":"string","Properties":{"Ordinal":20}},'
+        '{"Column":"AssemblyNameHasCultureNotFoundException","DataType":"bool","Properties":{"Ordinal":21}},'
+        '{"Column":"AssemblyNameHasFileLoadException","DataType":"bool","Properties":{"Ordinal":22}},'
+        '{"Column":"PublicKeyToken","DataType":"string","Properties":{"Ordinal":23}},'
+        '{"Column":"PublicKeyTokenHasSecurityException","DataType":"bool","Properties":{"Ordinal":24}},'
+        '{"Column":"HashAlgorithm","DataType":"string","Properties":{"Ordinal":25}},'
+        '{"Column":"HasPublicKey","DataType":"bool","Properties":{"Ordinal":26}},'
+        '{"Column":"PublicKeyLength","DataType":"int","Properties":{"Ordinal":27}},'
+        '{"Column":"PublicKeySHA1","DataType":"string","Properties":{"Ordinal":28}}'
     ']'
 
     */
     partial record PackageAssembly
     {
-        public int FieldCount => 27;
+        public int FieldCount => 29;
 
         public void Write(List<string> fields)
         {
             fields.Add(ScanId.ToString());
             fields.Add(CsvUtility.FormatDateTimeOffset(ScanTimestamp));
+            fields.Add(LowerId);
+            fields.Add(Identity);
             fields.Add(Id);
             fields.Add(Version);
             fields.Add(CsvUtility.FormatDateTimeOffset(CatalogCommitTimestamp));
@@ -114,6 +120,10 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
             writer.Write(ScanId);
             writer.Write(',');
             writer.Write(CsvUtility.FormatDateTimeOffset(ScanTimestamp));
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, LowerId);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, Identity);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, Id);
             writer.Write(',');
@@ -173,6 +183,10 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
             await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(ScanTimestamp));
             await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, LowerId);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, Identity);
+            await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, Id);
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, Version);
@@ -231,6 +245,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
             {
                 ScanId = CsvUtility.ParseNullable(getNextField(), Guid.Parse),
                 ScanTimestamp = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
+                LowerId = getNextField(),
+                Identity = getNextField(),
                 Id = getNextField(),
                 Version = getNextField(),
                 CatalogCommitTimestamp = CsvUtility.ParseDateTimeOffset(getNextField()),

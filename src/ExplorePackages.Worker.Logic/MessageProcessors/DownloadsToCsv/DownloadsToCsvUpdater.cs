@@ -66,11 +66,13 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
             foreach (var idPair in idToVersions)
             {
                 record.Id = idPair.Key;
+                record.LowerId = idPair.Key.ToLowerInvariant();
                 record.TotalDownloads = idPair.Value.Sum(x => x.Value);
 
                 foreach (var versionPair in idPair.Value)
                 {
                     record.Version = versionPair.Key;
+                    record.Identity = $"{record.LowerId}/{record.Version.ToLowerInvariant()}";
                     record.Downloads = versionPair.Value;
 
                     await record.WriteAsync(writer);
