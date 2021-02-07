@@ -7,12 +7,16 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
 using Newtonsoft.Json;
 
 namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
 {
     public class OwnersToCsvProcessor : ILoopingMessageProcessor<OwnersToCsvMessage>
     {
+        private const string AsOfTimestampMetadata = "asOfTimestamp";
+        private const string RawSizeBytesMetadata = "rawSizeBytes";
+
         private readonly PackageOwnersClient _packageOwnersClient;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly OwnersToCsvService _service;
@@ -46,18 +50,69 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
 
             await using var set = await _packageOwnersClient.GetPackageOwnerSetAsync();
 
-            var destBlob = _serviceClientFactory
-                .GetStorageAccount()
-                .CreateCloudBlobClient()
-                .GetContainerReference(_options.Value.PackageOwnersContainerName)
-                .GetBlockBlobReference($"owners_{StorageUtility.GetDescendingId(set.AsOfTimestamp)}.csv.gz");
-
-            if (await destBlob.ExistsAsync())
+            var latestBlob = GetBlob($"latest_owners.csv.gz");
+            if (await latestBlob.ExistsAsync()
+                && latestBlob.Metadata.TryGetValue(AsOfTimestampMetadata, out var unparsedAsOfTimestamp)
+                && DateTimeOffset.TryParse(unparsedAsOfTimestamp, out var latestAsOfTimestamp)
+                && latestAsOfTimestamp == set.AsOfTimestamp)
             {
                 _logger.LogInformation("The owners from {AsOfTimestamp:O} already exists.", set.AsOfTimestamp);
                 return true;
             }
 
+            var ownersBlob = GetBlob($"owners_{StorageUtility.GetDescendingId(set.AsOfTimestamp)}.csv.gz");
+
+            await WriteOwnersAsync(set, ownersBlob);
+            await CopyLatestAsync(set.AsOfTimestamp, ownersBlob, latestBlob);
+
+            return true;
+        }
+
+        private static async Task CopyLatestAsync(DateTimeOffset asOfTimestamp, CloudBlockBlob ownersBlob, CloudBlockBlob latestBlob)
+        {
+            var sourceAccessCondition = AccessCondition.GenerateIfMatchCondition(ownersBlob.Properties.ETag);
+
+            AccessCondition destAccessCondition;
+            if (latestBlob.Properties.ETag == null)
+            {
+                destAccessCondition = AccessCondition.GenerateIfNotExistsCondition();
+            }
+            else
+            {
+                destAccessCondition = AccessCondition.GenerateIfMatchCondition(latestBlob.Properties.ETag);
+            }
+
+            latestBlob.Metadata[RawSizeBytesMetadata] = ownersBlob.Metadata[RawSizeBytesMetadata];
+            latestBlob.Metadata[AsOfTimestampMetadata] = asOfTimestamp.ToString("O");
+
+            await latestBlob.StartCopyAsync(
+                ownersBlob,
+                sourceAccessCondition,
+                destAccessCondition,
+                options: null,
+                operationContext: null);
+
+            var first = true;
+            do
+            {
+                if (!first)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(1));
+                    first = false;
+                }
+
+                await latestBlob.FetchAttributesAsync();
+            }
+            while (latestBlob.CopyState.Status == CopyStatus.Pending);
+
+            if (latestBlob.CopyState.Status != CopyStatus.Success)
+            {
+                throw new InvalidOperationException($"Copying the owners blob ended with an unexpected status: {latestBlob.CopyState.Status}");
+            }
+        }
+
+        private async Task WriteOwnersAsync(PackageOwnerSet set, CloudBlockBlob destBlob)
+        {
             destBlob.Properties.ContentType = "text/plain";
             destBlob.Properties.ContentEncoding = "gzip";
 
@@ -79,8 +134,15 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
 
             destBlob.Metadata["rawSizeBytes"] = uncompressedLength.ToString(); // See: https://docs.microsoft.com/en-us/azure/data-explorer/lightingest#recommendations
             await destBlob.SetMetadataAsync(AccessCondition.GenerateIfMatchCondition(destBlob.Properties.ETag), options: null, operationContext: null);
+        }
 
-            return true;
+        private CloudBlockBlob GetBlob(string blobName)
+        {
+            return _serviceClientFactory
+                .GetStorageAccount()
+                .CreateCloudBlobClient()
+                .GetContainerReference(_options.Value.PackageOwnersContainerName)
+                .GetBlockBlobReference(blobName);
         }
 
         private async Task InitializeAsync()

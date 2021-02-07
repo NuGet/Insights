@@ -25,28 +25,32 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
             public async Task ExecuteAsync()
             {
                 // Arrange
-                var ownersV2Url = $"http://localhost/{TestData}/{OwnersToCsvDir}/owners.v2.json";
-                ConfigureSettings = x => x.OwnersV2Url = ownersV2Url;
+                ConfigureSettings = x => x.OwnersV2Url = $"http://localhost/{TestData}/{OwnersToCsvDir}/owners.v2.json";
+
+                // Set the Last-Modified date
+                var fileA = new FileInfo(Path.Combine(TestData, OwnersToCsvDir, Step1, "owners.v2.json"))
+                {
+                    LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z")
+                };
+                var fileB = new FileInfo(Path.Combine(TestData, OwnersToCsvDir, Step2, "owners.v2.json"))
+                {
+                    LastWriteTimeUtc = DateTime.Parse("2021-01-15T19:00:00Z")
+                };
+
+                var service = Host.Services.GetRequiredService<OwnersToCsvService>();
+                await service.InitializeAsync();
+
                 HttpMessageHandlerFactory.OnSendAsync = async req =>
                 {
                     if (req.RequestUri.AbsolutePath.EndsWith("/owners.v2.json"))
                     {
                         var newReq = Clone(req);
-                        newReq.RequestUri = new Uri(ownersV2Url);
+                        newReq.RequestUri = new Uri($"http://localhost/{TestData}/{OwnersToCsvDir}/{Step1}/owners.v2.json");
                         return await TestDataHttpClient.SendAsync(newReq);
                     }
 
                     return null;
                 };
-
-                // Set the Last-Modified date
-                var file = new FileInfo(Path.Combine(TestData, OwnersToCsvDir, "owners.v2.json"))
-                {
-                    LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z")
-                };
-
-                var service = Host.Services.GetRequiredService<OwnersToCsvService>();
-                await service.InitializeAsync();
 
                 await service.StartAsync(loop: false, notBefore: TimeSpan.Zero);
 
@@ -55,6 +59,30 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
 
                 // Assert
                 await AssertBlobAsync(Options.Value.PackageOwnersContainerName, OwnersToCsvDir, Step1, "owners_08585909596854775807.csv.gz", gzip: true);
+                await AssertBlobAsync(Options.Value.PackageOwnersContainerName, OwnersToCsvDir, Step1, "latest_owners.csv.gz", gzip: true);
+
+                // Arrange
+                HttpMessageHandlerFactory.OnSendAsync = async req =>
+                {
+                    if (req.RequestUri.AbsolutePath.EndsWith("/owners.v2.json"))
+                    {
+                        var newReq = Clone(req);
+                        newReq.RequestUri = new Uri($"http://localhost/{TestData}/{OwnersToCsvDir}/{Step2}/owners.v2.json");
+                        return await TestDataHttpClient.SendAsync(newReq);
+                    }
+
+                    return null;
+                };
+
+                await service.StartAsync(loop: false, notBefore: TimeSpan.Zero);
+
+                // Act
+                await ProcessQueueAsync(() => { }, async () => !await service.IsRunningAsync());
+
+                // Assert
+                await AssertBlobAsync(Options.Value.PackageOwnersContainerName, OwnersToCsvDir, Step1, "owners_08585909596854775807.csv.gz", gzip: true);
+                await AssertBlobAsync(Options.Value.PackageOwnersContainerName, OwnersToCsvDir, Step2, "owners_08585908696854775807.csv.gz", gzip: true);
+                await AssertBlobAsync(Options.Value.PackageOwnersContainerName, OwnersToCsvDir, Step2, "latest_owners.csv.gz", gzip: true);
                 AssertOnlyInfoLogsOrLess();
             }
         }

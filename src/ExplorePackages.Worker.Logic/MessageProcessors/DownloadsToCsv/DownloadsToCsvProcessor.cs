@@ -7,12 +7,16 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
 using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 {
     public class DownloadsToCsvProcessor : ILoopingMessageProcessor<DownloadsToCsvMessage>
     {
+        private const string AsOfTimestampMetadata = "asOfTimestamp";
+        private const string RawSizeBytesMetadata = "rawSizeBytes";
+
         private readonly IPackageDownloadsClient _packageDownloadsClient;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly DownloadsToCsvService _service;
@@ -46,18 +50,69 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 
             await using var set = await _packageDownloadsClient.GetPackageDownloadSetAsync(etag: null);
 
-            var destBlob = _serviceClientFactory
-                .GetStorageAccount()
-                .CreateCloudBlobClient()
-                .GetContainerReference(_options.Value.PackageDownloadsContainerName)
-                .GetBlockBlobReference($"downloads_{StorageUtility.GetDescendingId(set.AsOfTimestamp)}.csv.gz");
-
-            if (await destBlob.ExistsAsync())
+            var latestBlob = GetBlob($"latest_downloads.csv.gz");
+            if (await latestBlob.ExistsAsync()
+                && latestBlob.Metadata.TryGetValue(AsOfTimestampMetadata, out var unparsedAsOfTimestamp)
+                && DateTimeOffset.TryParse(unparsedAsOfTimestamp, out var latestAsOfTimestamp)
+                && latestAsOfTimestamp == set.AsOfTimestamp)
             {
                 _logger.LogInformation("The downloads from {AsOfTimestamp:O} already exists.", set.AsOfTimestamp);
                 return true;
             }
 
+            var downloadsBlob = GetBlob($"downloads_{StorageUtility.GetDescendingId(set.AsOfTimestamp)}.csv.gz");
+
+            await WriteDownloadsAsync(set, downloadsBlob);
+            await CopyLatestAsync(set.AsOfTimestamp, downloadsBlob, latestBlob);
+
+            return true;
+        }
+
+        private static async Task CopyLatestAsync(DateTimeOffset asOfTimestamp, CloudBlockBlob downloadsBlob, CloudBlockBlob latestBlob)
+        {
+            var sourceAccessCondition = AccessCondition.GenerateIfMatchCondition(downloadsBlob.Properties.ETag);
+
+            AccessCondition destAccessCondition;
+            if (latestBlob.Properties.ETag == null)
+            {
+                destAccessCondition = AccessCondition.GenerateIfNotExistsCondition();
+            }
+            else
+            {
+                destAccessCondition = AccessCondition.GenerateIfMatchCondition(latestBlob.Properties.ETag);
+            }
+
+            latestBlob.Metadata[RawSizeBytesMetadata] = downloadsBlob.Metadata[RawSizeBytesMetadata];
+            latestBlob.Metadata[AsOfTimestampMetadata] = asOfTimestamp.ToString("O");
+
+            await latestBlob.StartCopyAsync(
+                downloadsBlob,
+                sourceAccessCondition,
+                destAccessCondition,
+                options: null,
+                operationContext: null);
+
+            var first = true;
+            do
+            {
+                if (!first)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(1));
+                    first = false;
+                }
+
+                await latestBlob.FetchAttributesAsync();
+            }
+            while (latestBlob.CopyState.Status == CopyStatus.Pending);
+
+            if (latestBlob.CopyState.Status != CopyStatus.Success)
+            {
+                throw new InvalidOperationException($"Copying the downloads blob ended with an unexpected status: {latestBlob.CopyState.Status}");
+            }
+        }
+
+        private async Task WriteDownloadsAsync(PackageDownloadSet set, CloudBlockBlob destBlob)
+        {
             destBlob.Properties.ContentType = "text/plain";
             destBlob.Properties.ContentEncoding = "gzip";
 
@@ -77,10 +132,17 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
                 uncompressedLength = countingWriterStream.Length;
             }
 
-            destBlob.Metadata["rawSizeBytes"] = uncompressedLength.ToString(); // See: https://docs.microsoft.com/en-us/azure/data-explorer/lightingest#recommendations
+            destBlob.Metadata[RawSizeBytesMetadata] = uncompressedLength.ToString(); // See: https://docs.microsoft.com/en-us/azure/data-explorer/lightingest#recommendations
             await destBlob.SetMetadataAsync(AccessCondition.GenerateIfMatchCondition(destBlob.Properties.ETag), options: null, operationContext: null);
+        }
 
-            return true;
+        private CloudBlockBlob GetBlob(string blobName)
+        {
+            return _serviceClientFactory
+                .GetStorageAccount()
+                .CreateCloudBlobClient()
+                .GetContainerReference(_options.Value.PackageDownloadsContainerName)
+                .GetBlockBlobReference(blobName);
         }
 
         private async Task InitializeAsync()
