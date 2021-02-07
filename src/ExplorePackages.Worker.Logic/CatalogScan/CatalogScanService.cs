@@ -10,8 +10,6 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class CatalogScanService
     {
-        private const string NoParameters = "";
-
         private readonly CatalogClient _catalogClient;
         private readonly CursorStorageService _cursorStorageService;
         private readonly IMessageEnqueuer _messageEnqueuer;
@@ -123,7 +121,7 @@ namespace Knapcode.ExplorePackages.Worker
                     {
                         throw new NotSupportedException("When finding catalog leaf items all leaves will be reported, not just the latest.");
                     }
-                    return await UpdateAsync(driverType, NoParameters, DateTimeOffset.MinValue, max);
+                    return await UpdateAsync(driverType, parameters: null, DateTimeOffset.MinValue, max);
                 case CatalogScanDriverType.FindLatestPackageLeaf:
                     if (onlyLatestLeaves.HasValue && !onlyLatestLeaves.Value)
                     {
