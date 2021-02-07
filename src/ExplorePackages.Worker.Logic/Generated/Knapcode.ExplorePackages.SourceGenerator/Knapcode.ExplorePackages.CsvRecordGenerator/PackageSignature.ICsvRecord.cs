@@ -10,7 +10,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
 {
     /* Kusto DDL:
 
-    .drop table JverPackageSignatures;
+    .drop table JverPackageSignatures ifexists;
 
     .create table JverPackageSignatures (
         ScanId: guid,

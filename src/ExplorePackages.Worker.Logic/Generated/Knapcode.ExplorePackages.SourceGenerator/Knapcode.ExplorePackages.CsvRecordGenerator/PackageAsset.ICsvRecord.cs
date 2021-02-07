@@ -10,7 +10,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
 {
     /* Kusto DDL:
 
-    .drop table JverPackageAssets;
+    .drop table JverPackageAssets ifexists;
 
     .create table JverPackageAssets (
         ScanId: guid,

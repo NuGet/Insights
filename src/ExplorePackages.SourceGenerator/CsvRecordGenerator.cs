@@ -30,7 +30,7 @@ namespace {0}
 {{
     /* Kusto DDL:
 
-    .drop table {1};
+    .drop table {1} ifexists;
 
     .create table {1} (
 {2}

@@ -10,7 +10,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
 {
     /* Kusto DDL:
 
-    .drop table JverPackageAssemblies;
+    .drop table JverPackageAssemblies ifexists;
 
     .create table JverPackageAssemblies (
         ScanId: guid,

@@ -10,7 +10,7 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
 {
     /* Kusto DDL:
 
-    .drop table JverRealRestoreResults;
+    .drop table JverRealRestoreResults ifexists;
 
     .create table JverRealRestoreResults (
         Timestamp: datetime,

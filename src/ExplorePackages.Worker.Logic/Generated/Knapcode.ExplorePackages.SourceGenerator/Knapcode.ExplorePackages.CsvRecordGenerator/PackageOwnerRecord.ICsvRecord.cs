@@ -10,7 +10,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
 {
     /* Kusto DDL:
 
-    .drop table JverPackageOwners;
+    .drop table JverPackageOwners ifexists;
 
     .create table JverPackageOwners (
         AsOfTimestamp: datetime,

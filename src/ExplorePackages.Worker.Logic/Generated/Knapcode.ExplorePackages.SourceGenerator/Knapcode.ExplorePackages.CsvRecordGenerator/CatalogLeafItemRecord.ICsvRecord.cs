@@ -10,7 +10,7 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
 {
     /* Kusto DDL:
 
-    .drop table JverCatalogLeafItems;
+    .drop table JverCatalogLeafItems ifexists;
 
     .create table JverCatalogLeafItems (
         CommitId: string,

@@ -12,7 +12,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
         public PackageSignature(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDeleteCatalogLeaf leaf)
             : base(scanId, scanTimestamp, leaf)
         {
-            ResultType = PackageSignatureResultType.Available;
+            ResultType = PackageSignatureResultType.Deleted;
         }
 
         public PackageSignature(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf)

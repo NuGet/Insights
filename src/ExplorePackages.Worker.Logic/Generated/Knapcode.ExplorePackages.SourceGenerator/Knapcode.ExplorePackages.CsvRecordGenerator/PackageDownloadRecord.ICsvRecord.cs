@@ -10,7 +10,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 {
     /* Kusto DDL:
 
-    .drop table JverPackageDownloads;
+    .drop table JverPackageDownloads ifexists;
 
     .create table JverPackageDownloads (
         AsOfTimestamp: datetime,
