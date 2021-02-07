@@ -18,8 +18,8 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
             IPackageDownloadsClient packageDownloadsClient,
             IOptions<ExplorePackagesWorkerSettings> options)
         {
-           _packageDownloadsClient = packageDownloadsClient;
-           _options = options;
+            _packageDownloadsClient = packageDownloadsClient;
+            _options = options;
         }
 
         public string OperationName => "DownloadsToCsv";
