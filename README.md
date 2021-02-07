@@ -11,7 +11,7 @@ message that Azure Functions is triggered on. The unit of work can be based on a
 leaf.
 
 Results are stored in different ways but so far it's either results in Azure Table Storage (super cheap and scalable) or
-Azure Blob Storage CSV files (easy import to Kusto a.k.a Azure Data Explorer).
+Azure Blob Storage CSV files (easy import to Kusto a.k.a. Azure Data Explorer).
 
 The main drivers for learning about packages are:
 
