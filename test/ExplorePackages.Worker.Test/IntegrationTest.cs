@@ -77,8 +77,9 @@ namespace Knapcode.ExplorePackages.Worker
             Assert.Equal(findPackageManifestNuspecRequestCount, finalFileRequestNuspecCount);
 
             var userAgents = HttpMessageHandlerFactory.Requests.Select(r => r.Headers.UserAgent.ToString()).Distinct();
-            Assert.All(userAgents, ua => Assert.StartsWith("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0; AppInsights)", ua));
-            Assert.All(userAgents, ua => Assert.Matches(@"(NuGet Test Client)/?(\d+)?\.?(\d+)?\.?(\d+)?", ua.ToString()));
+            var userAgent = Assert.Single(userAgents);
+            Assert.StartsWith("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0; AppInsights)", userAgent);
+            Assert.Matches(@"(NuGet Test Client)/?(\d+)?\.?(\d+)?\.?(\d+)?", userAgent);
         }
 
         private int GetNuspecRequestCount()

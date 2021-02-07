@@ -39,7 +39,14 @@ namespace Knapcode.ExplorePackages
                     return new NullDelegatingHandler();
                 })
                 .AddHttpMessageHandler<UrlReporterHandler>()
-                .ConfigureHttpClient(UserAgent.SetUserAgent);
+                .ConfigureHttpClient(x =>
+                {
+                    if (x.DefaultRequestHeaders.UserAgent == null
+                        || x.DefaultRequestHeaders.UserAgent.Count == 0)
+                    {
+                        UserAgent.SetUserAgent(x);
+                    }
+                });
         }
 
         public static IServiceCollection AddExplorePackages(
