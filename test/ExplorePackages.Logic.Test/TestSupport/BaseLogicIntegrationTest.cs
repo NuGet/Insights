@@ -117,6 +117,14 @@ namespace Knapcode.ExplorePackages
             Assert.Empty(warningOrGreater);
         }
 
+        protected async Task AssertBlobCountAsync(string containerName, int expected)
+        {
+            var client = ServiceClientFactory.GetStorageAccount().CreateCloudBlobClient();
+            var container = client.GetContainerReference(containerName);
+            var blobs = await container.ListBlobsAsync(TelemetryClient.StartQueryLoopMetrics());
+            Assert.Equal(expected, blobs.Count);
+        }
+
         protected async Task AssertBlobAsync(string containerName, string testName, string stepName, string blobName, bool gzip = false)
         {
             var client = ServiceClientFactory.GetStorageAccount().CreateCloudBlobClient();

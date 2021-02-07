@@ -3,6 +3,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 
@@ -17,17 +18,20 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IStreamWriterUpdater<T> _updater;
         private readonly IStreamWriterUpdaterService<T> _service;
+        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<StreamWriterUpdaterProcessor<T>> _logger;
 
         public StreamWriterUpdaterProcessor(
             ServiceClientFactory serviceClientFactory,
             IStreamWriterUpdater<T> processor,
             IStreamWriterUpdaterService<T> service,
+            IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<StreamWriterUpdaterProcessor<T>> logger)
         {
             _serviceClientFactory = serviceClientFactory;
             _updater = processor;
             _service = service;
+            _options = options;
             _logger = logger;
         }
 
@@ -45,19 +49,27 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
             await using var data = await _updater.GetDataAsync();
 
             var latestBlob = GetBlob($"latest_{_updater.BlobName}.csv.gz");
-            if (await latestBlob.ExistsAsync()
-                && latestBlob.Metadata.TryGetValue(AsOfTimestampMetadata, out var unparsedAsOfTimestamp)
-                && DateTimeOffset.TryParse(unparsedAsOfTimestamp, out var latestAsOfTimestamp)
-                && latestAsOfTimestamp == data.AsOfTimestamp)
+
+            if (_options.Value.OnlyKeepLatestInStreamWriterUpdater)
             {
-                _logger.LogInformation("The {OperationName} data from {AsOfTimestamp:O} already exists.", _updater.OperationName, data.AsOfTimestamp);
-                return true;
+                await WriteDataAsync(data, latestBlob);
             }
+            else
+            {
+                if (await latestBlob.ExistsAsync()
+                    && latestBlob.Metadata.TryGetValue(AsOfTimestampMetadata, out var unparsedAsOfTimestamp)
+                    && DateTimeOffset.TryParse(unparsedAsOfTimestamp, out var latestAsOfTimestamp)
+                    && latestAsOfTimestamp == data.AsOfTimestamp)
+                {
+                    _logger.LogInformation("The {OperationName} data from {AsOfTimestamp:O} already exists.", _updater.OperationName, data.AsOfTimestamp);
+                    return true;
+                }
 
-            var dataBlob = GetBlob($"{_updater.BlobName}_{StorageUtility.GetDescendingId(data.AsOfTimestamp)}.csv.gz");
+                var dataBlob = GetBlob($"{_updater.BlobName}_{StorageUtility.GetDescendingId(data.AsOfTimestamp)}.csv.gz");
 
-            await WriteDataAsync(data, dataBlob);
-            await CopyLatestAsync(data.AsOfTimestamp, dataBlob, latestBlob);
+                await WriteDataAsync(data, dataBlob);
+                await CopyLatestAsync(data.AsOfTimestamp, dataBlob, latestBlob);
+            }
 
             return true;
         }

@@ -12,6 +12,7 @@
             AppendResultUniqueIds = true;
             AllowBatching = true;
             RunAllCatalogScanDriversAsBatch = false;
+            OnlyKeepLatestInStreamWriterUpdater = true;
 
             WorkerQueueName = "workerqueue";
             CursorTableName = "cursors";
@@ -39,6 +40,7 @@
         public bool AppendResultUniqueIds { get; set; }
         public bool AllowBatching { get; set; }
         public bool RunAllCatalogScanDriversAsBatch { get; set; }
+        public bool OnlyKeepLatestInStreamWriterUpdater { get; set; }
 
         public string WorkerQueueName { get; set; }
         public string CursorTableName { get; set; }
