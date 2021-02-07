@@ -162,6 +162,15 @@ namespace Knapcode.ExplorePackages
         {
             var builder = new StringBuilder();
 
+            // Ignored by the statistics pipeline here:
+            // https://github.com/NuGet/NuGet.Jobs/blob/062f7501e34d34a12abf780f6a01629e66b7f28b/src/Stats.ImportAzureCdnStatistics/StatisticsParser.cs#L41
+            builder.Append("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0; AppInsights)");
+            builder.Append(" ");
+
+            // Parsed by the statistics pipeline here:
+            // https://github.com/NuGet/NuGet.Jobs/blob/062f7501e34d34a12abf780f6a01629e66b7f28b/src/Stats.LogInterpretation/knownclients.yaml#L156-L158
+            // Ignored by the statistics pipeline here:
+            // https://github.com/NuGet/NuGet.Jobs/blob/062f7501e34d34a12abf780f6a01629e66b7f28b/src/Stats.Warehouse/Programmability/Functions/dbo.IsUnknownClient.sql#L19
             builder.Append(new UserAgentStringBuilder("NuGet Test Client")
                 .WithOSDescription(RuntimeInformation.OSDescription)
                 .Build());

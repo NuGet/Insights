@@ -44,19 +44,25 @@ namespace Knapcode.ExplorePackages.Worker
             var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
 
             await SetCursorAsync(CatalogScanDriverType.FindPackageFile, min0);
+            await SetCursorAsync(CatalogScanDriverType.FindPackageManifest, min0);
             await SetCursorAsync(CatalogScanDriverType.FindPackageAsset, min0);
             await SetCursorAsync(CatalogScanDriverType.FindPackageSignature, min0);
 
             // Act
             var findPackageFile = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindPackageFile, max1, onlyLatestLeaves: null);
             await UpdateAsync(findPackageFile);
-            var findPackageFileNupkgRequestCount = HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsoluteUri.EndsWith(".nupkg"));
+            var findPackageFileNupkgRequestCount = GetNupkgRequestCount();
+
+            var findPackageManifest = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindPackageManifest, max1, onlyLatestLeaves: null);
+            await UpdateAsync(findPackageManifest);
+            var findPackageManifestNuspecRequestCount = GetNuspecRequestCount();
 
             var findPackageAsset = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindPackageAsset, max1, onlyLatestLeaves: null);
             var findPackageSignature = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindPackageSignature, max1, onlyLatestLeaves: null);
             await UpdateAsync(findPackageAsset);
             await UpdateAsync(findPackageSignature);
-            var finalFileRequestNupkgCount = HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsoluteUri.EndsWith(".nupkg"));
+            var finalFileRequestNupkgCount = GetNupkgRequestCount();
+            var finalFileRequestNuspecCount = GetNuspecRequestCount();
 
             // Assert
             var rawMessageEnqueuer = Host.Services.GetRequiredService<IRawMessageEnqueuer>();
@@ -66,7 +72,23 @@ namespace Knapcode.ExplorePackages.Worker
             Assert.Equal(0, await rawMessageEnqueuer.GetPoisonAvailableMessageCountLowerBoundAsync(32));
 
             Assert.NotEqual(0, findPackageFileNupkgRequestCount);
+            Assert.NotEqual(0, findPackageManifestNuspecRequestCount);
             Assert.Equal(findPackageFileNupkgRequestCount, finalFileRequestNupkgCount);
+            Assert.Equal(findPackageManifestNuspecRequestCount, finalFileRequestNuspecCount);
+
+            var userAgents = HttpMessageHandlerFactory.Requests.Select(r => r.Headers.UserAgent.ToString()).Distinct();
+            Assert.All(userAgents, ua => Assert.StartsWith("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0; AppInsights)", ua));
+            Assert.All(userAgents, ua => Assert.Matches(@"(NuGet Test Client)/?(\d+)?\.?(\d+)?\.?(\d+)?", ua.ToString()));
+        }
+
+        private int GetNuspecRequestCount()
+        {
+            return HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsoluteUri.EndsWith(".nuspec"));
+        }
+
+        private int GetNupkgRequestCount()
+        {
+            return HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsoluteUri.EndsWith(".nupkg"));
         }
     }
 }
