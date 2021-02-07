@@ -15,16 +15,16 @@ namespace Knapcode.ExplorePackages.Website.Controllers
         private static bool _isInitialized;
         private readonly CatalogScanStorageService _catalogScanStorageService;
         private readonly CatalogScanService _catalogScanService;
-        private readonly StreamWriterUpdaterService<PackageDownloadSet> _downloadsToCsvService;
-        private readonly StreamWriterUpdaterService<PackageOwnerSet> _ownersToCsvService;
+        private readonly IStreamWriterUpdaterService<PackageDownloadSet> _downloadsToCsvService;
+        private readonly IStreamWriterUpdaterService<PackageOwnerSet> _ownersToCsvService;
         private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
 
         public AdminController(
             IRawMessageEnqueuer rawMessageEnqueuer,
             CatalogScanStorageService catalogScanStorageService,
             CatalogScanService catalogScanService,
-            StreamWriterUpdaterService<PackageDownloadSet> downloadsToCsvService,
-            StreamWriterUpdaterService<PackageOwnerSet> ownersToCsvService)
+            IStreamWriterUpdaterService<PackageDownloadSet> downloadsToCsvService,
+            IStreamWriterUpdaterService<PackageOwnerSet> ownersToCsvService)
         {
             _rawMessageEnqueuer = rawMessageEnqueuer;
             _catalogScanStorageService = catalogScanStorageService;
