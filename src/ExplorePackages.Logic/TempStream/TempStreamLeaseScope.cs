@@ -36,6 +36,8 @@ namespace Knapcode.ExplorePackages
                 throw new InvalidOperationException("The scope is already owned.");
             }
 
+            _logger.LogInformation("Took ownership of the lease scope.");
+
             return new Ownership(this);
         }
 
