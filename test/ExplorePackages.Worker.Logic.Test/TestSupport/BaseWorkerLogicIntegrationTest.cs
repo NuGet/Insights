@@ -32,11 +32,11 @@ namespace Knapcode.ExplorePackages.Worker
             hostBuilder.ConfigureServices(serviceCollection =>
             {
                 serviceCollection.AddExplorePackagesWorker();
-                serviceCollection.Configure((Action<ExplorePackagesWorkerSettings>)ConfigureDefaultsAndSettings);
+                serviceCollection.Configure((Action<ExplorePackagesWorkerSettings>)ConfigureWorkerDefaultsAndSettings);
             });
         }
 
-        private void ConfigureDefaultsAndSettings(ExplorePackagesWorkerSettings x)
+        protected void ConfigureWorkerDefaultsAndSettings(ExplorePackagesWorkerSettings x)
         {
             x.AppendResultStorageBucketCount = 3;
             x.AppendResultUniqueIds = false;
@@ -57,7 +57,7 @@ namespace Knapcode.ExplorePackages.Worker
             x.PackageDownloadsContainerName = $"{StoragePrefix}1pd1";
             x.PackageOwnersContainerName = $"{StoragePrefix}1po1";
 
-            ConfigureDefaultsAndSettings((ExplorePackagesSettings)x);
+            ConfigureDefaultsAndSettings(x);
 
             if (ConfigureWorkerSettings != null)
             {

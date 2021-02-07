@@ -25,6 +25,9 @@ namespace Knapcode.ExplorePackages.Worker
                 {
                     serviceCollection.AddTransient(s => Output.GetTelemetryClient());
                     serviceCollection.AddTransient<WorkerQueueFunction>();
+
+                    serviceCollection.Configure((Action<ExplorePackagesSettings>)ConfigureDefaultsAndSettings);
+                    serviceCollection.Configure((Action<ExplorePackagesWorkerSettings>)ConfigureWorkerDefaultsAndSettings);
                 });
         }
 
@@ -37,6 +40,12 @@ namespace Knapcode.ExplorePackages.Worker
         [Fact]
         public async Task ProcessesMessageAsync()
         {
+            ConfigureSettings = x =>
+            {
+                x.MaxTempMemoryStreamSize = 0;
+                x.TempDirectories[0].MaxConcurrentWriters = 1;
+            };
+
             // Arrange
             await CatalogScanService.InitializeAsync();
 
@@ -45,24 +54,30 @@ namespace Knapcode.ExplorePackages.Worker
 
             await SetCursorAsync(CatalogScanDriverType.FindPackageFile, min0);
             await SetCursorAsync(CatalogScanDriverType.FindPackageManifest, min0);
+            await SetCursorAsync(CatalogScanDriverType.FindPackageAssembly, min0);
             await SetCursorAsync(CatalogScanDriverType.FindPackageAsset, min0);
             await SetCursorAsync(CatalogScanDriverType.FindPackageSignature, min0);
 
             // Act
-            var findPackageFile = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindPackageFile, max1, onlyLatestLeaves: null);
-            await UpdateAsync(findPackageFile);
-            var findPackageFileNupkgRequestCount = GetNupkgRequestCount();
-
             var findPackageManifest = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindPackageManifest, max1, onlyLatestLeaves: null);
             await UpdateAsync(findPackageManifest);
-            var findPackageManifestNuspecRequestCount = GetNuspecRequestCount();
+            var startingNuspecRequestCount = GetNuspecRequestCount();
+
+            var findPackageFile = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindPackageFile, max1, onlyLatestLeaves: null);
+            await UpdateAsync(findPackageFile);
+
+            var findPackageAssembly = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindPackageAssembly, max1, onlyLatestLeaves: null);
+            await UpdateAsync(findPackageAssembly);
+
+            var startingNupkgRequestCount = GetNupkgRequestCount();
 
             var findPackageAsset = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindPackageAsset, max1, onlyLatestLeaves: null);
             var findPackageSignature = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindPackageSignature, max1, onlyLatestLeaves: null);
             await UpdateAsync(findPackageAsset);
             await UpdateAsync(findPackageSignature);
-            var finalFileRequestNupkgCount = GetNupkgRequestCount();
-            var finalFileRequestNuspecCount = GetNuspecRequestCount();
+
+            var finalNupkgRequestCount = GetNupkgRequestCount();
+            var finalNuspecRequestCount = GetNuspecRequestCount();
 
             // Assert
             var rawMessageEnqueuer = Host.Services.GetRequiredService<IRawMessageEnqueuer>();
@@ -71,10 +86,10 @@ namespace Knapcode.ExplorePackages.Worker
             Assert.Equal(0, await rawMessageEnqueuer.GetPoisonApproximateMessageCountAsync());
             Assert.Equal(0, await rawMessageEnqueuer.GetPoisonAvailableMessageCountLowerBoundAsync(32));
 
-            Assert.NotEqual(0, findPackageFileNupkgRequestCount);
-            Assert.NotEqual(0, findPackageManifestNuspecRequestCount);
-            Assert.Equal(findPackageFileNupkgRequestCount, finalFileRequestNupkgCount);
-            Assert.Equal(findPackageManifestNuspecRequestCount, finalFileRequestNuspecCount);
+            Assert.NotEqual(0, startingNupkgRequestCount);
+            Assert.NotEqual(0, startingNuspecRequestCount);
+            Assert.Equal(startingNupkgRequestCount, finalNupkgRequestCount);
+            Assert.Equal(startingNuspecRequestCount, finalNuspecRequestCount);
 
             var userAgents = HttpMessageHandlerFactory.Requests.Select(r => r.Headers.UserAgent.ToString()).Distinct();
             var userAgent = Assert.Single(userAgents);
