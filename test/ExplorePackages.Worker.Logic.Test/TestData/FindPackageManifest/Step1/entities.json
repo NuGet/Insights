@@ -6,9 +6,6 @@
       "Available": true,
       "CommitTimestamp": "2020-11-27T19:35:06.0046046+00:00",
       "HttpHeaders": {
-        "Cache-Control": [
-          "max-age=120"
-        ],
         "Content-Length": [
           "754"
         ],
@@ -23,15 +20,6 @@
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
-        ],
-        "Strict-Transport-Security": [
-          "max-age=31536000"
-        ],
-        "X-CDN-Rewrite": [
-          "Root path in dist"
-        ],
-        "X-Content-Type-Options": [
-          "nosniff"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -50,9 +38,6 @@
       "Available": true,
       "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
       "HttpHeaders": {
-        "Cache-Control": [
-          "max-age=120"
-        ],
         "Content-Length": [
           "500"
         ],
@@ -67,15 +52,6 @@
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
-        ],
-        "Strict-Transport-Security": [
-          "max-age=31536000"
-        ],
-        "X-CDN-Rewrite": [
-          "Root path in dist"
-        ],
-        "X-Content-Type-Options": [
-          "nosniff"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -94,9 +70,6 @@
       "Available": true,
       "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
       "HttpHeaders": {
-        "Cache-Control": [
-          "max-age=120"
-        ],
         "Content-Length": [
           "827"
         ],
@@ -111,15 +84,6 @@
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
-        ],
-        "Strict-Transport-Security": [
-          "max-age=31536000"
-        ],
-        "X-CDN-Rewrite": [
-          "Root path in dist"
-        ],
-        "X-Content-Type-Options": [
-          "nosniff"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -138,9 +102,6 @@
       "Available": true,
       "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
       "HttpHeaders": {
-        "Cache-Control": [
-          "max-age=120"
-        ],
         "Content-Length": [
           "2518"
         ],
@@ -155,15 +116,6 @@
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
-        ],
-        "Strict-Transport-Security": [
-          "max-age=31536000"
-        ],
-        "X-CDN-Rewrite": [
-          "Root path in dist"
-        ],
-        "X-Content-Type-Options": [
-          "nosniff"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -182,9 +134,6 @@
       "Available": true,
       "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
       "HttpHeaders": {
-        "Cache-Control": [
-          "max-age=120"
-        ],
         "Content-Length": [
           "1594"
         ],
@@ -199,15 +148,6 @@
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
-        ],
-        "Strict-Transport-Security": [
-          "max-age=31536000"
-        ],
-        "X-CDN-Rewrite": [
-          "Root path in dist"
-        ],
-        "X-Content-Type-Options": [
-          "nosniff"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -226,9 +166,6 @@
       "Available": true,
       "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
       "HttpHeaders": {
-        "Cache-Control": [
-          "max-age=120"
-        ],
         "Content-Length": [
           "1736"
         ],
@@ -243,15 +180,6 @@
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
-        ],
-        "Strict-Transport-Security": [
-          "max-age=31536000"
-        ],
-        "X-CDN-Rewrite": [
-          "Root path in dist"
-        ],
-        "X-Content-Type-Options": [
-          "nosniff"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -270,9 +198,6 @@
       "Available": true,
       "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
       "HttpHeaders": {
-        "Cache-Control": [
-          "max-age=120"
-        ],
         "Content-Length": [
           "1779"
         ],
@@ -287,15 +212,6 @@
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:28 GMT"
-        ],
-        "Strict-Transport-Security": [
-          "max-age=31536000"
-        ],
-        "X-CDN-Rewrite": [
-          "Root path in dist"
-        ],
-        "X-Content-Type-Options": [
-          "nosniff"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -314,9 +230,6 @@
       "Available": true,
       "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
       "HttpHeaders": {
-        "Cache-Control": [
-          "max-age=120"
-        ],
         "Content-Length": [
           "2002"
         ],
@@ -331,15 +244,6 @@
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
-        ],
-        "Strict-Transport-Security": [
-          "max-age=31536000"
-        ],
-        "X-CDN-Rewrite": [
-          "Root path in dist"
-        ],
-        "X-Content-Type-Options": [
-          "nosniff"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -358,9 +262,6 @@
       "Available": true,
       "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
       "HttpHeaders": {
-        "Cache-Control": [
-          "max-age=120"
-        ],
         "Content-Length": [
           "2174"
         ],
@@ -375,15 +276,6 @@
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
-        ],
-        "Strict-Transport-Security": [
-          "max-age=31536000"
-        ],
-        "X-CDN-Rewrite": [
-          "Root path in dist"
-        ],
-        "X-Content-Type-Options": [
-          "nosniff"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -402,9 +294,6 @@
       "Available": true,
       "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
       "HttpHeaders": {
-        "Cache-Control": [
-          "max-age=120"
-        ],
         "Content-Length": [
           "2459"
         ],
@@ -419,15 +308,6 @@
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
-        ],
-        "Strict-Transport-Security": [
-          "max-age=31536000"
-        ],
-        "X-CDN-Rewrite": [
-          "Root path in dist"
-        ],
-        "X-Content-Type-Options": [
-          "nosniff"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -446,9 +326,6 @@
       "Available": true,
       "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
       "HttpHeaders": {
-        "Cache-Control": [
-          "max-age=120"
-        ],
         "Content-Length": [
           "1720"
         ],
@@ -463,15 +340,6 @@
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
-        ],
-        "Strict-Transport-Security": [
-          "max-age=31536000"
-        ],
-        "X-CDN-Rewrite": [
-          "Root path in dist"
-        ],
-        "X-Content-Type-Options": [
-          "nosniff"
         ],
         "x-ms-blob-type": [
           "BlockBlob"

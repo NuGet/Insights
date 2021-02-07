@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NuGet.Protocol;
 using NuGet.Versioning;
 
@@ -12,17 +13,20 @@ namespace Knapcode.ExplorePackages
         private readonly ServiceIndexCache _serviceIndexCache;
         private readonly HttpSource _httpSource;
         private readonly TempStreamService _tempStreamService;
+        private readonly IOptions<ExplorePackagesSettings> _options;
         private readonly ILogger<FlatContainerClient> _logger;
 
         public FlatContainerClient(
             ServiceIndexCache serviceIndexCache,
             HttpSource httpSource,
             TempStreamService tempStreamService,
+            IOptions<ExplorePackagesSettings> options,
             ILogger<FlatContainerClient> logger)
         {
             _serviceIndexCache = serviceIndexCache;
             _httpSource = httpSource;
             _tempStreamService = tempStreamService;
+            _options = options;
             _logger = logger;
         }
 
@@ -165,6 +169,11 @@ namespace Knapcode.ExplorePackages
 
         private async Task<string> GetBaseUrlAsync()
         {
+            if (_options.Value.FlatContainerBaseUrlOverride != null)
+            {
+                return _options.Value.FlatContainerBaseUrlOverride;
+            }
+
             return await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.FlatContainer);
         }
     }

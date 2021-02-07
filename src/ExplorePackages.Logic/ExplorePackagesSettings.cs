@@ -13,6 +13,7 @@ namespace Knapcode.ExplorePackages
             PackagesContainerBaseUrl = "https://globalcdn.nuget.org/packages";
             V2BaseUrl = "https://www.nuget.org/api/v2";
             V3ServiceIndex = "https://api.nuget.org/v3/index.json";
+            FlatContainerBaseUrlOverride = null;
             DownloadsV1Url = null;
             OwnersV2Url = null;
             StorageConnectionString = "UseDevelopmentStorage=true";
@@ -32,6 +33,7 @@ namespace Knapcode.ExplorePackages
         public string PackagesContainerBaseUrl { get; set; }
         public string V2BaseUrl { get; set; }
         public string V3ServiceIndex { get; set; }
+        public string FlatContainerBaseUrlOverride { get; set; }
         public string DownloadsV1Url { get; set; }
         public string OwnersV2Url { get; set; }
         public string StorageConnectionString { get; set; }
