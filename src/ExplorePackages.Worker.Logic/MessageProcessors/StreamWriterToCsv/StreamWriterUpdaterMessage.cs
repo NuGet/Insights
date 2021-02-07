@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 
-namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
+namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
 {
-    public class DownloadsToCsvMessage : ILoopingMessage
+    public class StreamWriterUpdaterMessage<T> : ILoopingMessage
     {
         [JsonProperty("ts")]
         public TaskStateKey TaskStateKey { get; set; }

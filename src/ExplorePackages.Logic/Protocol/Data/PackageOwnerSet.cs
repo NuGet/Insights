@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages
 {
-    public class PackageOwnerSet : IAsyncDisposable
+    public class PackageOwnerSet : IAsyncDisposable, IAsOfData
     {
         public PackageOwnerSet(DateTimeOffset asOfTimestamp, string url, string etag, IAsyncEnumerable<PackageOwner> owners)
         {

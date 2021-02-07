@@ -8,6 +8,7 @@ using Knapcode.ExplorePackages.Worker.FindPackageFile;
 using Knapcode.ExplorePackages.Worker.FindPackageManifest;
 using Knapcode.ExplorePackages.Worker.OwnersToCsv;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
+using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
 using Knapcode.ExplorePackages.Worker.TableCopy;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.WindowsAzure.Storage.Table;
@@ -52,8 +53,6 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddFindPackageManifest();
             serviceCollection.AddRunRealRestore();
             serviceCollection.AddTableCopy();
-            serviceCollection.AddDownloadsToCsv();
-            serviceCollection.AddOwnersToCsv();
 
             foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(IMessageProcessor<>)))
             {
@@ -63,6 +62,34 @@ namespace Knapcode.ExplorePackages.Worker
             foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(IBatchMessageProcessor<>)))
             {
                 serviceCollection.AddTransient(serviceType, implementationType);
+            }
+
+            foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(IStreamWriterUpdater<>)))
+            {
+                serviceCollection.AddTransient(serviceType, implementationType);
+
+                var dataType = serviceType.GenericTypeArguments.Single();
+                var messageType = typeof(StreamWriterUpdaterMessage<>).MakeGenericType(dataType);
+
+                // Add the service
+                serviceCollection.AddTransient(
+                    typeof(IStreamWriterUpdaterService<>).MakeGenericType(dataType),
+                    typeof(StreamWriterUpdaterService<>).MakeGenericType(dataType));
+
+                // Add the message processor
+                serviceCollection.AddTransient(
+                    typeof(IMessageProcessor<>).MakeGenericType(messageType),
+                    typeof(TaskStateMessageProcessor<>).MakeGenericType(messageType));
+
+                // Add the task state message processor
+                serviceCollection.AddTransient(
+                    typeof(ITaskStateMessageProcessor<>).MakeGenericType(messageType),
+                    typeof(LoopingMessageProcessor<>).MakeGenericType(messageType));
+
+                // Add the looping message processor
+                serviceCollection.AddTransient(
+                    typeof(ILoopingMessageProcessor<>).MakeGenericType(messageType),
+                    typeof(StreamWriterUpdaterProcessor<>).MakeGenericType(dataType));
             }
 
             foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ITaskStateMessageProcessor<>)))
@@ -118,16 +145,6 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             return serviceCollection;
-        }
-
-        private static void AddDownloadsToCsv(this IServiceCollection serviceCollection)
-        {
-            serviceCollection.AddTransient<DownloadsToCsvService>();
-        }
-
-        private static void AddOwnersToCsv(this IServiceCollection serviceCollection)
-        {
-            serviceCollection.AddTransient<OwnersToCsvService>();
         }
 
         private static void AddTableCopy(this IServiceCollection serviceCollection)

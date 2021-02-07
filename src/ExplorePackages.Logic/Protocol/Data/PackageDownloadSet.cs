@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages
 {
-    public class PackageDownloadSet : IAsyncDisposable
+    public class PackageDownloadSet : IAsyncDisposable, IAsOfData
     {
         public PackageDownloadSet(DateTimeOffset asOfTimestamp, string url, string etag, IAsyncEnumerable<PackageDownloads> downloads)
         {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Xunit.Abstractions;
@@ -37,7 +38,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
                     LastWriteTimeUtc = DateTime.Parse("2021-01-15T19:00:00Z")
                 };
 
-                var service = Host.Services.GetRequiredService<OwnersToCsvService>();
+                var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageOwnerSet>>();
                 await service.InitializeAsync();
 
                 HttpMessageHandlerFactory.OnSendAsync = async req =>

@@ -3,8 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Website.Models;
 using Knapcode.ExplorePackages.Worker;
-using Knapcode.ExplorePackages.Worker.DownloadsToCsv;
-using Knapcode.ExplorePackages.Worker.OwnersToCsv;
+using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,16 +15,16 @@ namespace Knapcode.ExplorePackages.Website.Controllers
         private static bool _isInitialized;
         private readonly CatalogScanStorageService _catalogScanStorageService;
         private readonly CatalogScanService _catalogScanService;
-        private readonly DownloadsToCsvService _downloadsToCsvService;
-        private readonly OwnersToCsvService _ownersToCsvService;
+        private readonly StreamWriterUpdaterService<PackageDownloadSet> _downloadsToCsvService;
+        private readonly StreamWriterUpdaterService<PackageOwnerSet> _ownersToCsvService;
         private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
 
         public AdminController(
             IRawMessageEnqueuer rawMessageEnqueuer,
             CatalogScanStorageService catalogScanStorageService,
             CatalogScanService catalogScanService,
-            DownloadsToCsvService downloadsToCsvService,
-            OwnersToCsvService ownersToCsvService)
+            StreamWriterUpdaterService<PackageDownloadSet> downloadsToCsvService,
+            StreamWriterUpdaterService<PackageOwnerSet> ownersToCsvService)
         {
             _rawMessageEnqueuer = rawMessageEnqueuer;
             _catalogScanStorageService = catalogScanStorageService;

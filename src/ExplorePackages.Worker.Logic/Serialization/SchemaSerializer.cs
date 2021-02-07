@@ -9,6 +9,7 @@ using Knapcode.ExplorePackages.Worker.FindPackageAsset;
 using Knapcode.ExplorePackages.Worker.FindPackageSignature;
 using Knapcode.ExplorePackages.Worker.OwnersToCsv;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
+using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
 using Knapcode.ExplorePackages.Worker.TableCopy;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
@@ -41,8 +42,8 @@ namespace Knapcode.ExplorePackages.Worker
 
             new SchemaV1<TableRowCopyMessage<LatestPackageLeaf>>("trc.lpf"),
 
-            new SchemaV1<DownloadsToCsvMessage>("d2c"),
-            new SchemaV1<OwnersToCsvMessage>("o2c"),
+            new SchemaV1<StreamWriterUpdaterMessage<PackageDownloadSet>>("d2c"),
+            new SchemaV1<StreamWriterUpdaterMessage<PackageOwnerSet>>("o2c"),
 
             // Parameters
             new SchemaV1<TablePrefixScanStartParameters>("tps.s"),

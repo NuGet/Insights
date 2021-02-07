@@ -1,22 +1,24 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
+namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
 {
-    public class DownloadsToCsvService
+    public class StreamWriterUpdaterService<T> : IStreamWriterUpdaterService<T> where T : IAsyncDisposable, IAsOfData
     {
         private static readonly string StorageSuffix = string.Empty;
-        private static readonly string PartitionKey = "DownloadsToCsv";
 
+        private readonly IStreamWriterUpdater<T> _updater;
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly TaskStateStorageService _taskStateStorageService;
         private readonly AutoRenewingStorageLeaseService _leaseService;
 
-        public DownloadsToCsvService(
+        public StreamWriterUpdaterService(
+            IStreamWriterUpdater<T> updater,
             IMessageEnqueuer messageEnqueuer,
             TaskStateStorageService taskStateStorageService,
             AutoRenewingStorageLeaseService leaseService)
         {
+            _updater = updater;
             _messageEnqueuer = messageEnqueuer;
             _taskStateStorageService = taskStateStorageService;
             _leaseService = leaseService;
@@ -31,25 +33,25 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 
         public async Task StartAsync(bool loop, TimeSpan notBefore)
         {
-            await using (var lease = await _leaseService.TryAcquireAsync("Start-DownloadsToCsv"))
+            await using (var lease = await _leaseService.TryAcquireAsync($"Start-{_updater.OperationName}"))
             {
                 if (!lease.Acquired)
                 {
-                    throw new InvalidOperationException("Another actor is already starting DownloadsToCsv.");
+                    throw new InvalidOperationException($"Another actor is already starting {_updater.OperationName}.");
                 }
 
                 var taskStateKey = new TaskStateKey(
                     StorageSuffix,
-                    PartitionKey,
+                    _updater.OperationName,
                     StorageUtility.GenerateDescendingId().ToString());
-                await _messageEnqueuer.EnqueueAsync(new[] { new DownloadsToCsvMessage { TaskStateKey = taskStateKey, Loop = loop } }, notBefore);
+                await _messageEnqueuer.EnqueueAsync(new[] { new StreamWriterUpdaterMessage<T> { TaskStateKey = taskStateKey, Loop = loop } }, notBefore);
                 await _taskStateStorageService.GetOrAddAsync(taskStateKey);
             }
         }
 
         public async Task<bool> IsRunningAsync()
         {
-            var countLowerBound = await _taskStateStorageService.GetCountLowerBoundAsync(StorageSuffix, PartitionKey);
+            var countLowerBound = await _taskStateStorageService.GetCountLowerBoundAsync(StorageSuffix, _updater.OperationName);
             return countLowerBound > 0;
         }
     }
