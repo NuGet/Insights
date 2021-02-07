@@ -52,7 +52,7 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
 
             if (_options.Value.OnlyKeepLatestInStreamWriterUpdater)
             {
-                await WriteDataAsync(data, latestBlob);
+                await WriteDataAsync(data, latestBlob, writeAsOfTimestamp: true);
             }
             else
             {
@@ -67,14 +67,14 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
 
                 var dataBlob = GetBlob($"{_updater.BlobName}_{StorageUtility.GetDescendingId(data.AsOfTimestamp)}.csv.gz");
 
-                await WriteDataAsync(data, dataBlob);
+                await WriteDataAsync(data, dataBlob, writeAsOfTimestamp: false);
                 await CopyLatestAsync(data.AsOfTimestamp, dataBlob, latestBlob);
             }
 
             return true;
         }
 
-        private async Task WriteDataAsync(T data, CloudBlockBlob destBlob)
+        private async Task WriteDataAsync(T data, CloudBlockBlob destBlob, bool writeAsOfTimestamp)
         {
             destBlob.Properties.ContentType = "text/plain";
             destBlob.Properties.ContentEncoding = "gzip";
@@ -95,7 +95,13 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
                 uncompressedLength = countingWriterStream.Length;
             }
 
-            destBlob.Metadata["rawSizeBytes"] = uncompressedLength.ToString(); // See: https://docs.microsoft.com/en-us/azure/data-explorer/lightingest#recommendations
+            destBlob.Metadata[RawSizeBytesMetadata] = uncompressedLength.ToString(); // See: https://docs.microsoft.com/en-us/azure/data-explorer/lightingest#recommendations
+
+            if (writeAsOfTimestamp)
+            {
+                destBlob.Metadata[AsOfTimestampMetadata] = data.AsOfTimestamp.ToString("O");
+            }
+
             await destBlob.SetMetadataAsync(AccessCondition.GenerateIfMatchCondition(destBlob.Properties.ETag), options: null, operationContext: null);
         }
 
