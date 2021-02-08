@@ -46,7 +46,7 @@ if (!$StorageSas) {
         --services b `
         --resource-types co `
         --permissions lr `
-        --expiry ((Get-Date).ToUniversalTime().AddDays(7).ToString("yyyy-MM-dd'T'HH:mm'Z'")) `
+        --expiry ((Get-Date).ToUniversalTime().AddDays(1).ToString("yyyy-MM-dd'T'HH:mm'Z'")) `
         --output tsv
 }
 
