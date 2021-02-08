@@ -65,6 +65,8 @@ Results:
     - storage / queues v2 / lrs class 1 operations - $0.13
     - storage / tiered block blob / all other operations - $0.01
     - storage / files / protocol operations - $0.01
+- `FindPackageSignature`
+  - **Runtime: 1 hour, 11 minutes, 29 seconds**
 
 #### Results (January 2021)
 
