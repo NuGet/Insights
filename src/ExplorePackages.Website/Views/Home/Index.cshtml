@@ -241,7 +241,7 @@
                 <td>{{yesno registrationSemVer2.isInIndex}}</td>
             </tr>
             <tr>
-                <th>Has leaf? <a target="_blank" href="https://github.com/NuGet/NuGetGallery/issues/4475">*</a></th>
+                <th>Has leaf?</th>
                 <td>{{yesno registrationOriginal.hasLeaf}}</td>
                 <td>{{yesno registrationGzipped.hasLeaf}}</td>
                 <td>{{yesno registrationSemVer2.hasLeaf}}</td>
@@ -501,7 +501,7 @@
 
             $packageId.add($packageVersion).on("paste", function (e) {
                 var pastedText = (e.originalEvent.clipboardData.getData("text") || "").trim();
-                var pieces = pastedText.split(/[ \/]/, 2);
+                var pieces = pastedText.split(/[ \/,]/, 2);
                 if (pieces.length > 1) {
                     $packageId.val(pieces[0].trim());
                     $packageVersion.val(pieces[1].trim());

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -45,9 +46,17 @@ namespace Knapcode.ExplorePackages
         {
             var nuGetLogger = _logger.ToNuGetLogger();
             return await _httpSource.ProcessStreamAsync(
-                new HttpSourceRequest(url, nuGetLogger),
+                new HttpSourceRequest(url, nuGetLogger)
+                {
+                    IgnoreNotFounds = true,
+                },
                 stream =>
                 {
+                    if (stream == null)
+                    {
+                        return Task.FromResult<IReadOnlyList<V2Package>>(Array.Empty<V2Package>());
+                    }
+
                     var document = XmlUtility.LoadXml(stream);
                     var page = _parser.ParsePage(document);
                     return Task.FromResult(page);
