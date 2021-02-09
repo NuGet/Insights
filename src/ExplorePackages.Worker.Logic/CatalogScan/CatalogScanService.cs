@@ -121,7 +121,11 @@ namespace Knapcode.ExplorePackages.Worker
                     {
                         throw new NotSupportedException("When finding catalog leaf items all leaves will be reported, not just the latest.");
                     }
-                    return await UpdateAsync(driverType, parameters: null, DateTimeOffset.MinValue, max);
+                    return await UpdateAsync(
+                        driverType,
+                        parameters: null,
+                        CatalogClient.NuGetOrgMin,
+                        max);
                 case CatalogScanDriverType.FindLatestPackageLeaf:
                     if (onlyLatestLeaves.HasValue && !onlyLatestLeaves.Value)
                     {
@@ -171,7 +175,7 @@ namespace Knapcode.ExplorePackages.Worker
             return await UpdateAsync(
                 CatalogScanDriverType.FindLatestPackageLeaf,
                 parameters: _serializer.Serialize(parameters).AsString(),
-                min: DateTimeOffset.MinValue,
+                min: CatalogClient.NuGetOrgMinDeleted,
                 max);
         }
 
@@ -186,7 +190,7 @@ namespace Knapcode.ExplorePackages.Worker
             return await UpdateAsync(
                 driverType,
                 parameters: _serializer.Serialize(parameters).AsString(),
-                min: onlyLatestLeaves ? DateTimeOffset.MinValue : CatalogClient.NuGetOrgMin,
+                min: onlyLatestLeaves ? CatalogClient.NuGetOrgMinDeleted : CatalogClient.NuGetOrgMinAvailable,
                 max);
         }
 
@@ -195,7 +199,7 @@ namespace Knapcode.ExplorePackages.Worker
             return await UpdateAsync(
                 driverType,
                 parameters: null,
-                min: DateTimeOffset.MinValue,
+                min: CatalogClient.NuGetOrgMinDeleted,
                 max);
         }
 

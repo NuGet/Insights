@@ -25,12 +25,29 @@ namespace Knapcode.ExplorePackages
         */
 
         /// <summary>
-        /// This is the point in time that nuget.org started repository signing packages that had already been
-        /// published and includes all packages that were repository signed at push time. In other words, we can start
-        /// start cursors just before this time and still see all packages.
+        /// This is the absolute min in the NuGet.org catalog.
         /// </summary>
         public static readonly DateTimeOffset NuGetOrgMin = DateTimeOffset
+            .Parse("2015-02-01T06:22:45.8488496Z")
+            .Subtract(TimeSpan.FromTicks(1));
+
+        /// <summary>
+        /// This is the point in time that nuget.org started repository signing packages that had already been
+        /// published and includes all packages that were repository signed at push time. In other words, we can start
+        /// start cursors just before this time and still see all available packages. Using this as a min skips
+        /// 2,331,705 catalog leaves (4,251 pages). This is about 35% of the total, as of February, 2021.
+        /// </summary>
+        public static readonly DateTimeOffset NuGetOrgMinAvailable = DateTimeOffset
             .Parse("2018-08-08T16:29:16.4488298Z")
+            .Subtract(TimeSpan.FromTicks(1));
+
+        /// <summary>
+        /// This is the point in time that nuget.org package deletion was introduced. In other words, we can start
+        /// cursors just before this time and still all deleted and available packages. Using this as a min skips
+        /// 630,960 catalog leaves (1,165 pages). This is about 9% of the total, as of February, 2021.
+        /// </summary>
+        public static readonly DateTimeOffset NuGetOrgMinDeleted = DateTimeOffset
+            .Parse("2015-10-28T10:22:26.4686283Z")
             .Subtract(TimeSpan.FromTicks(1));
 
         private readonly HttpSource _httpSource;
