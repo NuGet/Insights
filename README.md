@@ -10,21 +10,21 @@ Or, if you want a sales pitch:
  
 ## Architecture
 
-The purpose of this repository is to explore charicteristics, oddities, and inconsistencies of NuGet.org's available
+The purpose of this repository is to explore the characteristics, oddities, and inconsistencies of NuGet.org's available
 packages.
 
 Fundamentally, the project uses the [NuGet.org catalog](https://docs.microsoft.com/en-us/nuget/api/catalog-resource) to
 enumerate all package IDs and versions. For each ID and version, some unit of work is performed. This unit of work can
 be some custom analysis that you want to do on a package. There are some helper classes to write the results out to big
-CSVs for importing into Kusto or the like but in general you can do whatever you want per package.
+CSVs for importing into Kusto or the like but in general, you can do whatever you want per package.
 
-The custom logic to run on a per package (or per catalog leaf/page) is referred to as a "driver".
+The custom logic to run on a per-package (or per catalog leaf/page) is referred to as a "driver".
 
-The enumeration of the catalog is called a "catalog scan". The catalog scan is within an specified time range in the
+The enumeration of the catalog is called a "catalog scan". The catalog scan is within a specified time range in the
 catalog, with respect to the catalog commit timestamp. A catalog scan finds all catalog leaves in the provided min and
 max commit timestamp and then executes a "driver" for each package ID and version found.
 
-All work is executed in the context of Azure Functions that reads a single worker queue (Azure Storage Queue).
+All work is executed in the context of an Azure Function that reads a single worker queue (Azure Storage Queue).
 
 The general flow of a catalog scan is:
 
@@ -65,7 +65,7 @@ Note that you cannot use Azurite since the latest version of it does not support
 
 ## Projects
 
-Here's a high level description of main projects in this repository:
+Here's a high-level description of main projects in this repository:
 
 - [`ExplorePackages.Worker`](src/ExplorePackages.Worker) - the Azure Function itself, a thin adapter between core logic and Azure Functions
 - [`ExplorePackages.Website`](src/ExplorePackages.Website) - a website for checking [consistency](#consistency) and an admin panel for starting scans
@@ -76,7 +76,7 @@ Other projects are:
 
 - [`ExplorePackages.Infrastructure`](src/ExplorePackages.Infrastructure) - Pulumi infrastructure-as-code for deploying to Azure
 - [`ExplorePackages.SourceGenerator`](src/ExplorePackages.SourceGenerator) - AOT source generation logic for reading and writing CSVs
-- [`ExplorePackages.Tool`](src/ExplorePackages.Tool) - a command line app used for pretty much just prototyping code
+- [`ExplorePackages.Tool`](src/ExplorePackages.Tool) - a command-line app used for pretty much just prototyping code
 
 ## Notable classes
 
