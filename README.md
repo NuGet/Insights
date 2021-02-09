@@ -6,7 +6,7 @@ Or, if you want a sales pitch:
 
 > Process all of NuGet.org in less than an hour for less than $10.*
 
- (*depending on what you want to know 😅)
+(*depending on what you want to know 😅)
 
 ## Running locally
 
@@ -21,9 +21,9 @@ Note that you cannot use Azurite since the latest version of it does not support
    - You will get an **access denied** first time. View the claims on the error page to update the `appsettings.json`.
    - `HashedTenantId` config = hashed `http://schemas.microsoft.com/identity/claims/tenantid` claim.
    - `HashedObjectId` config = hashed `http://schemas.microsoft.com/identity/claims/objectidentifier` claim.
-2. Start one of the catalog scans, e.g. Find Package File.
-   - When starting out, use a timestamp like `2015-02-01T06:22:45.8488496Z` and clicking "Start Custom Scan".
-   - This old timestamp represents the first commit to the catalog and will run quickly.
+2. Start one of the catalog scans, e.g. Find Package Manifest.
+   - When starting out, use a timestamp like `2015-02-01T06:22:45.8488496Z` and click "Start Custom Scan".
+   - This timestamp is the first commit to the catalog and will run quickly, only processing 20 packages.
    - Pressing "Start Full Scan" will process the entire catalog and will take a very long time locally.
 3. Stop the website.
 4. Start the function app (ExplorePackages.Worker).
@@ -31,6 +31,19 @@ Note that you cannot use Azurite since the latest version of it does not support
    - This can be seen by looking at the `workerqueue` queue or by looking at the admin panel seen above.
 
 ## Screenshots
+
+### Azure Function running locally
+
+This is what the Azure Function looks like running locally, for the Find Package Manifest driver.
+
+![Azure Function running locally](docs/local-azure-function.png)
+
+### Results running locally
+
+This is what the results look like in Azure Table Storage. Each row is a package .nuspec stored as compressed
+MessagePack bytes.
+
+![Results running locally](docs/local-results.png)
 
 ### Admin panel
 

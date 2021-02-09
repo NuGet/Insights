@@ -1,0 +1,9 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "Knapcode.ExplorePackages:StorageConnectionString": "UseDevelopmentStorage=true",
+    "Knapcode.ExplorePackages:WorkerQueueName": "workerqueue"
+  }
+}
