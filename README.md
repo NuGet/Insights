@@ -7,7 +7,50 @@ Or, if you want a sales pitch:
 > Process all of NuGet.org in less than an hour for less than $10.*
 
  (*depending on what you want to know 😅)
- 
+
+## Running locally
+
+To run locally, all you need is [Azure Storage Emulator](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-emulator).
+Note that you cannot use Azurite since the latest version of it does not support Azure Table Storage.
+
+1. Clone the repository.
+1. Open the solution in Visual Studio (ExplorePackages.sln).
+1. Make sure the Azure Storage Emulator is running.
+1. Press F5 to launch the website (ExplorePackages.Website). It's the default startup project.
+1. Click on the "Admin" link in the navigation bar.
+   - You will get an **access denied** first time. View the claims on the error page to update the `appsettings.json`.
+   - `HashedTenantId` config = hashed `http://schemas.microsoft.com/identity/claims/tenantid` claim.
+   - `HashedObjectId` config = hashed `http://schemas.microsoft.com/identity/claims/objectidentifier` claim.
+2. Start one of the catalog scans, e.g. Find Package File.
+   - When starting out, use a timestamp like `2015-02-01T06:22:45.8488496Z` and clicking "Start Custom Scan".
+   - This old timestamp represents the first commit to the catalog and will run quickly.
+   - Pressing "Start Full Scan" will process the entire catalog and will take a very long time locally.
+3. Stop the website.
+4. Start the function app (ExplorePackages.Worker).
+5. Wait until the catalog scan is done.
+   - This can be seen by looking at the `workerqueue` queue or by looking at the admin panel seen above.
+
+## Screenshots
+
+### Admin panel
+
+This is what the admin panel looks like to start catalog scans.
+
+![Admin panel](docs/admin-panel.png)
+
+### Find Package File
+
+This is the driver that reads the file list and package signature from all NuGet packages on NuGet.org and loads them
+into Azure Table Storage. It took about 35 minutes to this this and costed about $3.37.
+
+#### Azure Functions Execution Count
+
+![Azure Functions Execution Count](docs/find-package-files-exucution-count.png)
+
+#### Azure Functions Execution Count
+
+![Azure Functions Execution Units](docs/find-package-files-execution-units.png)
+
 ## Architecture
 
 The purpose of this repository is to explore the characteristics, oddities, and inconsistencies of NuGet.org's available
@@ -40,28 +83,6 @@ of the driver, this may yield duplicated effort and is often not desired.
 
 The implementation is geared towards Azure Functions Consumption Plan for compute (cheap) and Azure Storage for
 persistence (cheap).
-
-## Running locally
-
-To run locally, all you need is [Azure Storage Emulator](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-emulator).
-Note that you cannot use Azurite since the latest version of it does not support Azure Table Storage.
-
-1. Clone the repository.
-1. Open the solution in Visual Studio (ExplorePackages.sln).
-1. Make sure the Azure Storage Emulator is running.
-1. Press F5 to launch the website (ExplorePackages.Website). It's the default startup project.
-1. Click on the "Admin" link in the navigation bar.
-   - You will get an **access denied** first time. View the claims on the error page to update the `appsettings.json`.
-   - `HashedTenantId` config = hashed `http://schemas.microsoft.com/identity/claims/tenantid` claim.
-   - `HashedObjectId` config = hashed `http://schemas.microsoft.com/identity/claims/objectidentifier` claim.
-2. Start one of the catalog scans, e.g. Find Package File.
-   - When starting out, use a timestamp like `2015-02-01T06:22:45.8488496Z` and clicking "Start Custom Scan".
-   - This old timestamp represents the first commit to the catalog and will run quickly.
-   - Pressing "Start Full Scan" will process the entire catalog and will take a very long time locally.
-3. Stop the website.
-4. Start the function app (ExplorePackages.Worker).
-5. Wait until the catalog scan is done.
-   - This can be seen by looking at the `workerqueue` queue or by looking at the admin panel seen above.
 
 ## Projects
 
