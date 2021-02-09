@@ -1,17 +1,80 @@
 # ExplorePackages
 
-Explore packages on a V3 NuGet package source that has a catalog (NuGet.org!).
+Explore packages on a V3 NuGet package source that has a catalog (NuGet.org!) in a highly distributed manner.
 
-## Purpose
+Process all of NuGet.org in less than an hour (*depending on what you want to know 😅).
 
-The purpose of this repository is to explore oddities and inconsistencies on NuGet.org's available packages.
+## Architecture
 
-I've built several "drivers" that implement what to do for each unit of work. A unit of work is represented by a queue
-message that Azure Functions is triggered on. The unit of work can be based on a catalog index, catalog page, or catalog
-leaf.
+The purpose of this repository is to explore charicteristics, oddities, and inconsistencies of NuGet.org's available
+packages.
 
-Results are stored in different ways but so far it's either results in Azure Table Storage (super cheap and scalable) or
-Azure Blob Storage CSV files (easy import to Kusto a.k.a. Azure Data Explorer).
+Fundamentally, the project uses the [NuGet.org catalog](https://docs.microsoft.com/en-us/nuget/api/catalog-resource) to
+enumerate all package IDs and versions. For each ID and version, some unit of work is performed. This unit of work can
+be some custom analysis that you want to do on a package. There are some helper classes to write the results out to big
+CSVs for importing into Kusto or the like but in general you can do whatever you want per package.
+
+The custom logic to run on a per package (or per catalog leaf/page) is referred to as a "driver".
+
+The enumeration of the catalog is called a "catalog scan". The catalog scan is within an specified time range in the
+catalog, with respect to the catalog commit timestamp. A catalog scan finds all catalog leaves in the provided min and
+max commit timestamp and then executes a "driver" for each package ID and version found.
+
+All work is executed in the context of Azure Functions that reads a single worker queue (Azure Storage Queue).
+
+The general flow of a catalog scan is:
+
+1. Download the catalog index.
+1. Find all catalog pages in the time range.
+1. For each page, enumerate all leaf items per page in the time range.
+1. For each leaf item, write the ID and version to Azure Table Storage to find the latest leaf.
+1. After all leaf items have been written to Table Storage, enqueue one message per row.
+1. For each queue message, execute the driver.
+
+Note there is an option to disable step 4 and run the driver for every single catalog leaf item. Depending on the logic
+of the driver, this may yield duplicated effort and is often not desired.
+
+The implementation is geared towards Azure Functions Consumption Plan for compute (cheap) and Azure Storage for
+persistence (cheap).
+
+## Running locally
+
+To run locally, all you need is [Azure Storage Emulator](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-emulator).
+Note that you cannot use Azurite since the latest version of it does not support Azure Table Storage.
+
+1. Clone the repository.
+1. Open the solution in Visual Studio (ExplorePackages.sln).
+1. Make sure the Azure Storage Emulator is running.
+1. Press F5 to launch the website (ExplorePackages.Website). It's the default startup project.
+1. Click on the "Admin" link in the navigation bar.
+   - You will get an access denied error first time. View the claims reported on the error page and update the `appsettings.json`.
+   - `HashedTenantId` in config is the hashed `http://schemas.microsoft.com/identity/claims/tenantid` claim.
+   - `HashedObjectId` in config is the hashed `http://schemas.microsoft.com/identity/claims/objectidentifier` claim.
+1. Start one of the catalog scans, e.g. Find Package File.
+   - When starting out, consider using a timestamp like `2015-02-01T06:22:45.8488496Z` and clicking "Start Custom Scan".
+   - This old timestamp represents the first commit to the catalog and will run quickly.
+   - Pressing "Start Full Scan" will process the entire catalog and will take a very long time locally.
+1. Stop the website.
+1. Start the function app (ExplorePackages.Worker).
+1. Wait until the catalog scan is done.
+   - This can be seen by looking at the `workerqueue` queue or by looking at the admin panel seen above.
+
+## Projects
+
+Here's a high level description of main projects in this repository:
+
+- [`ExplorePackages.Worker`](src/ExplorePackages.Worker) - the Azure Function itself, a thin adapter between core logic and Azure Functions
+- [`ExplorePackages.Website`](src/ExplorePackages.Website) - a website for checking package [consistency](#consistency) and an admin panel for starting catalog scans
+- [`ExplorePackages.Worker.Logic`](src/ExplorePackages.Worker.Logic) - all of the catalog scan and driver logic, this is the most interesting project
+- [`ExplorePackages.Logic`](src/ExplorePackages.Logic) - contains more generic logic related to NuGet.org protocol and is not directly related to distributed processing
+
+Other projects are:
+
+- [`ExplorePackages.Infrastructure`](src/ExplorePackages.Infrastructure) - Pulumi infrastructure-as-code for deploying to Azure
+- [`ExplorePackages.SourceGenerator`](src/ExplorePackages.SourceGenerator) - AOT source generation logic for reading and writing CSVs
+- [`ExplorePackages.Tool`](src/ExplorePackages.Tool) - a command line app used for pretty much just prototyping code
+
+## Notable classes
 
 The main drivers for learning about packages are:
 
@@ -43,9 +106,10 @@ Finally, some interesting generic services were built to enable this analysis:
 - [`TempStreamService`](src/ExplorePackages.Logic/TempStream/TempStreamService.cs) - buffer to local storage (memory or disk), great for Azure Functions Consumption Plan
 - [`WideEntityService`](src/ExplorePackages.Logic/WideEntities/WideEntityService.cs) - Blob Storage-like semantics with Azure Table Storage, enables batch operations
 
-### Performance and cost
 
-#### Results (February 2021)
+## Performance and cost
+
+### Results (February 2021)
 
 Tested timestamp range:
 - Min: `2015-02-01T06:22:45.8488496Z`
@@ -68,7 +132,7 @@ Results:
 - `FindPackageSignature`
   - **Runtime: 1 hour, 11 minutes, 29 seconds**
 
-#### Results (January 2021)
+### Results (January 2021)
 
 Tested timestamp ranges:
 - From the beginning of the catalog:
@@ -117,7 +181,7 @@ Results:
    - Runtime: 2 minutes, 28 seconds
    - Cost: <$0.01
 
-### Consistency
+## Consistency
 
 I've also used this framework to look for inconsistencies in the V2 and V3 endpoints. To make this easier, I made a
 little website to see if your package is fully propagated on NuGet.org (that is, the indexing is complete).
