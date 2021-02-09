@@ -2,8 +2,12 @@
 
 Explore packages on a V3 NuGet package source that has a catalog (NuGet.org!) in a highly distributed manner.
 
-Process all of NuGet.org in less than an hour (*depending on what you want to know 😅).
+Or, if you want a sales pitch:
 
+> Process all of NuGet.org in less than an hour for less than $10.*
+
+ (*depending on what you want to know 😅)
+ 
 ## Architecture
 
 The purpose of this repository is to explore charicteristics, oddities, and inconsistencies of NuGet.org's available
@@ -47,16 +51,16 @@ Note that you cannot use Azurite since the latest version of it does not support
 1. Make sure the Azure Storage Emulator is running.
 1. Press F5 to launch the website (ExplorePackages.Website). It's the default startup project.
 1. Click on the "Admin" link in the navigation bar.
-   - You will get an access denied error first time. View the claims reported on the error page and update the `appsettings.json`.
-   - `HashedTenantId` in config is the hashed `http://schemas.microsoft.com/identity/claims/tenantid` claim.
-   - `HashedObjectId` in config is the hashed `http://schemas.microsoft.com/identity/claims/objectidentifier` claim.
-1. Start one of the catalog scans, e.g. Find Package File.
-   - When starting out, consider using a timestamp like `2015-02-01T06:22:45.8488496Z` and clicking "Start Custom Scan".
+   - You will get an **access denied** first time. View the claims on the error page to update the `appsettings.json`.
+   - `HashedTenantId` config = hashed `http://schemas.microsoft.com/identity/claims/tenantid` claim.
+   - `HashedObjectId` config = hashed `http://schemas.microsoft.com/identity/claims/objectidentifier` claim.
+2. Start one of the catalog scans, e.g. Find Package File.
+   - When starting out, use a timestamp like `2015-02-01T06:22:45.8488496Z` and clicking "Start Custom Scan".
    - This old timestamp represents the first commit to the catalog and will run quickly.
    - Pressing "Start Full Scan" will process the entire catalog and will take a very long time locally.
-1. Stop the website.
-1. Start the function app (ExplorePackages.Worker).
-1. Wait until the catalog scan is done.
+3. Stop the website.
+4. Start the function app (ExplorePackages.Worker).
+5. Wait until the catalog scan is done.
    - This can be seen by looking at the `workerqueue` queue or by looking at the admin panel seen above.
 
 ## Projects
@@ -64,7 +68,7 @@ Note that you cannot use Azurite since the latest version of it does not support
 Here's a high level description of main projects in this repository:
 
 - [`ExplorePackages.Worker`](src/ExplorePackages.Worker) - the Azure Function itself, a thin adapter between core logic and Azure Functions
-- [`ExplorePackages.Website`](src/ExplorePackages.Website) - a website for checking package [consistency](#consistency) and an admin panel for starting catalog scans
+- [`ExplorePackages.Website`](src/ExplorePackages.Website) - a website for checking [consistency](#consistency) and an admin panel for starting scans
 - [`ExplorePackages.Worker.Logic`](src/ExplorePackages.Worker.Logic) - all of the catalog scan and driver logic, this is the most interesting project
 - [`ExplorePackages.Logic`](src/ExplorePackages.Logic) - contains more generic logic related to NuGet.org protocol and is not directly related to distributed processing
 
