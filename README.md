@@ -169,6 +169,25 @@ Results:
     - storage / files / protocol operations - $0.01
 - `FindPackageSignature`
   - **Runtime: 1 hour, 11 minutes, 29 seconds**
+  - **Total cost - $6.30**
+  - Azure Functions cost - $4.97
+<details>
+    - functions / execution time - $4.14
+    - bandwidth / data transfer out - $0.81
+    - functions / total executions - $0.02
+</details>
+  - Azure Storage cost - $1.33
+    - storage / tables / scan operations - $0.26
+    - storage / tables / batch write operations - $0.36
+    - storage / queues v2 / lrs class 1 operations - $0.14
+    - storage / tiered block blob / all other operations - $0.05
+    - storage / files / protocol operations - $0.4
+    - storage / tables / delete operations - $0.13
+    - storage / tables / write operations - $0.13
+    - storage / queues v2 / class 2 operations - $0.04
+    - storage / files / lrs write operations - $0.02
+    - storage / tables / read operations - $0.01
+    - storage / tables / lrs class 1 additional io - $0.01
 
 ### Results (January 2021)
 
