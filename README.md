@@ -159,6 +159,8 @@ Results:
   - **Total cost - $3.37**
 
 <details>
+<summary>Detailed cost</summary>
+
 - Azure Functions cost - $2.77
   - bandwidth / data transfer out - $1.62
   - functions / execution time - $1.13
@@ -169,6 +171,7 @@ Results:
   - storage / queues v2 / lrs class 1 operations - $0.13
   - storage / tiered block blob / all other operations - $0.01
   - storage / files / protocol operations - $0.01
+
 </details>
 
 - `FindPackageSignature`
@@ -176,6 +179,8 @@ Results:
   - **Total cost - $6.30**
 
 <details>
+<summary>Detailed cost</summary>
+
 - Azure Functions cost - $4.97
   - functions / execution time - $4.14
   - bandwidth / data transfer out - $0.81
@@ -192,6 +197,7 @@ Results:
   - storage / files / lrs write operations - $0.02
   - storage / tables / read operations - $0.01
   - storage / tables / lrs class 1 additional io - $0.01
+
 </details>
 
 ### Results (January 2021)
