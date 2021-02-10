@@ -104,7 +104,31 @@ namespace Knapcode.ExplorePackages
 
             var aadApp = new Application("Knapcode.ExplorePackages-" + _stackAlpha);
 
-            var defaultSettings = new ExplorePackagesWebsiteSettings();
+            var configuredSettings = _config.GetObject<ExplorePackagesWebsiteSettings>("AppSettings");
+
+            var appSettings = new InputMap<string>
+            {
+                { "WEBSITE_RUN_FROM_PACKAGE", deploymentBlobUrl },
+                { "APPINSIGHTS_INSTRUMENTATIONKEY", _appInsights.InstrumentationKey },
+                { "APPLICATIONINSIGHTS_CONNECTION_STRING", _appInsights.ConnectionString },
+                { "ApplicationInsightsAgent_EXTENSION_VERSION", "~2" },
+                { "AzureAd:Instance", "https://login.microsoftonline.com/" },
+                { "AzureAd:ClientId", aadApp.ApplicationId },
+                { "AzureAd:TenantId", "common" },
+                { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesSettings.StorageConnectionString)}", _storageAccount.PrimaryConnectionString },
+                { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.ShowAdminLink)}", configuredSettings.ShowAdminLink.ToString() },
+            };
+
+            for (var i = 0; i < configuredSettings.AllowedUsers.Count; i++)
+            {
+                var allowedUser = configuredSettings.AllowedUsers[i];
+                appSettings.Add(
+                    $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.AllowedUsers)}:{i}:{nameof(AllowedUser.HashedTenantId)}",
+                    allowedUser.HashedTenantId);
+                appSettings.Add(
+                    $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.AllowedUsers)}:{i}:{nameof(AllowedUser.HashedObjectId)}",
+                    allowedUser.HashedObjectId);
+            }
 
             var appServiceArgs = new AppServiceArgs
             {
@@ -128,24 +152,7 @@ namespace Knapcode.ExplorePackages
                         },
                     },
                 },
-                AppSettings = new InputMap<string>
-                {
-                    { "WEBSITE_RUN_FROM_PACKAGE", deploymentBlobUrl },
-                    { "APPINSIGHTS_INSTRUMENTATIONKEY", _appInsights.InstrumentationKey },
-                    { "APPLICATIONINSIGHTS_CONNECTION_STRING", _appInsights.ConnectionString },
-                    { "ApplicationInsightsAgent_EXTENSION_VERSION", "~2" },
-                    { "AzureAd:Instance", "https://login.microsoftonline.com/" },
-                    { "AzureAd:ClientId", aadApp.ApplicationId },
-                    { "AzureAd:TenantId", "common" },
-                    { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesSettings.StorageConnectionString)}", _storageAccount.PrimaryConnectionString },
-                    { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.ShowAdminLink)}", (_config.GetBoolean("ShowAdminLink") ?? defaultSettings.ShowAdminLink).ToString() },
-                    // My personal Microsoft account
-                    { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.AllowedUsers)}:0:{nameof(AllowedUser.HashedTenantId)}", "ba11237b5a4c119a16898a3b09c0b61315567aa7787df898c2557e03e8e371b4" },
-                    { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.AllowedUsers)}:0:{nameof(AllowedUser.HashedObjectId)}", "51a4221f6b956ad8ed53188dbeb067d2e68ee772ad901cc602a4ff6d43d11b40" },
-                    // My work account
-                    { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.AllowedUsers)}:1:{nameof(AllowedUser.HashedTenantId)}", "42b3755ec2b6929d7ed3589fad70f30656b8fb9d7b3b561430efab5bf197f7a0" },
-                    { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.AllowedUsers)}:1:{nameof(AllowedUser.HashedObjectId)}", "e2bface8eb40fbf1f24e407f3daa7a71705fcad26f584a9e55636b9feed472be" },
-                },
+                AppSettings = appSettings,
             };
 
             var appServiceName = _config.Get("AppServiceName");

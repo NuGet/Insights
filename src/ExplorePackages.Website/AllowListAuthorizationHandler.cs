@@ -12,10 +12,12 @@ namespace Knapcode.ExplorePackages.Website
     public class AllowListAuthorizationHandler : AuthorizationHandler<AllowListRequirement>
     {
         public const string PolicyName = "AllowList";
+        private readonly bool _restrictUsers;
         private readonly Dictionary<string, HashSet<string>> _allowedUsers;
 
         public AllowListAuthorizationHandler(IOptions<ExplorePackagesWebsiteSettings> options)
         {
+            _restrictUsers = options.Value.RestrictUsers;
             _allowedUsers = options
                 .Value
                 .AllowedUsers
@@ -35,23 +37,30 @@ namespace Knapcode.ExplorePackages.Website
 
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, AllowListRequirement requirement)
         {
-            var tenantId = context.User.FindFirst(ClaimConstants.TenantId);
-            if (tenantId == null
-                || !_allowedUsers.TryGetValue(HashValue(tenantId.Value), out var hashedObjectIds))
+            if (!_restrictUsers)
             {
-                context.Fail();
+                context.Succeed(requirement);
             }
             else
             {
-                var objectId = context.User.FindFirst(ClaimConstants.ObjectId);
-                if (objectId == null
-                    || !hashedObjectIds.Contains(HashValue(objectId.Value)))
+                var tenantId = context.User.FindFirst(ClaimConstants.TenantId);
+                if (tenantId == null
+                    || !_allowedUsers.TryGetValue(HashValue(tenantId.Value), out var hashedObjectIds))
                 {
                     context.Fail();
                 }
                 else
                 {
-                    context.Succeed(requirement);
+                    var objectId = context.User.FindFirst(ClaimConstants.ObjectId);
+                    if (objectId == null
+                        || !hashedObjectIds.Contains(HashValue(objectId.Value)))
+                    {
+                        context.Fail();
+                    }
+                    else
+                    {
+                        context.Succeed(requirement);
+                    }
                 }
             }
 
