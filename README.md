@@ -157,7 +157,8 @@ Results:
 - `FindPackageFile`
   - **Runtime: 37 minutes, 19 seconds**
   - **Total cost - $3.37**
-  - <details>
+
+<details>
 <summary>Detailed cost</summary>
 
 - Azure Functions cost - $2.77
@@ -176,7 +177,8 @@ Results:
 - `FindPackageSignature`
   - **Runtime: 1 hour, 11 minutes, 29 seconds**
   - **Total cost - $6.30**
-  - <details>
+
+<details>
 <summary>Detailed cost</summary>
 
 - Azure Functions cost - $4.97
