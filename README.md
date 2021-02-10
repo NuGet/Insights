@@ -18,9 +18,6 @@ Note that you cannot use Azurite since the latest version of it does not support
 1. Make sure the Azure Storage Emulator is running.
 1. Press F5 to launch the website (ExplorePackages.Website). It's the default startup project.
 1. Click on the "Admin" link in the navigation bar.
-   - You will get an **access denied** first time. View the claims on the error page to update the `appsettings.json`.
-   - `HashedTenantId` config = hashed `http://schemas.microsoft.com/identity/claims/tenantid` claim.
-   - `HashedObjectId` config = hashed `http://schemas.microsoft.com/identity/claims/objectidentifier` claim.
 2. Start one of the catalog scans, e.g. Find Package Manifest.
    - When starting out, use a timestamp like `2015-02-01T06:22:45.8488496Z` and click "Start Custom Scan".
    - This timestamp is the first commit to the catalog and will run quickly, only processing 20 packages.
