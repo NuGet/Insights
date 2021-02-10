@@ -31,7 +31,7 @@ $tableNameToContainerName = @{
     "JverPackageSignatures" = "packagesignatures";
 }
 
-if (!$tableNameToContainerName[$ImportTableName]) {
+if ($ImportTableName -and !$tableNameToContainerName[$ImportTableName]) {
     Write-Error "Table $ImportTableName is not recognized"
 }
 
@@ -89,7 +89,7 @@ foreach ($model in $models) {
         continue
     }
 
-    if ($ImportTableName -ne $null -and $tableName -ne $ImportTableName) {
+    if ($ImportTableName -and $tableName -ne $ImportTableName) {
         Write-Warning "Skipping undesired table $tableName."
         continue
     }
