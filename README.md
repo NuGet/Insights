@@ -155,8 +155,8 @@ Tested timestamp range:
 
 Results:
 - `FindPackageFile`
-  - **Runtime: 37 minutes, 19 seconds**
-  - **Total cost - $3.37**
+  - Runtime: 37 minutes, 19 seconds
+  - Total cost: $3.37
 
 <details>
 <summary>Detailed cost</summary>
@@ -175,8 +175,8 @@ Results:
 </details>
 
 - `FindPackageSignature`
-  - **Runtime: 1 hour, 11 minutes, 29 seconds**
-  - **Total cost - $6.30**
+  - Runtime: 1 hour, 11 minutes, 29 seconds
+  - Total cost: $6.30
 
 <details>
 <summary>Detailed cost</summary>
