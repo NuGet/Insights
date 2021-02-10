@@ -24,6 +24,19 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
         PageUrl: string
     );
 
+    .alter table JverCatalogLeafItems policy partitioning '{'
+      '"PartitionKeys": ['
+        '{'
+          '"ColumnName": "Identity",'
+          '"Kind": "Hash",'
+          '"Properties": {'
+            '"Function": "XxHash64",'
+            '"MaxPartitionCount": 256'
+          '}'
+        '}'
+      ']'
+    '}'
+
     .create table JverCatalogLeafItems ingestion csv mapping 'JverCatalogLeafItems_mapping'
     '['
         '{"Column":"CommitId","DataType":"string","Properties":{"Ordinal":0}},'

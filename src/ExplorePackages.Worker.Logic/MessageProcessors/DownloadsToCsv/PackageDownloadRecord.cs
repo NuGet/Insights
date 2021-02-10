@@ -6,7 +6,10 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
     {
         public DateTimeOffset AsOfTimestamp { get; set; }
         public string LowerId { get; set; }
+
+        [KustoPartitionKey]
         public string Identity { get; set; }
+
         public string Id { get; set; }
         public string Version { get; set; }
         public long Downloads { get; set; }

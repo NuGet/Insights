@@ -44,6 +44,19 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
         PublicKeySHA1: string
     );
 
+    .alter table JverPackageAssemblies policy partitioning '{'
+      '"PartitionKeys": ['
+        '{'
+          '"ColumnName": "Identity",'
+          '"Kind": "Hash",'
+          '"Properties": {'
+            '"Function": "XxHash64",'
+            '"MaxPartitionCount": 256'
+          '}'
+        '}'
+      ']'
+    '}'
+
     .create table JverPackageAssemblies ingestion csv mapping 'JverPackageAssemblies_mapping'
     '['
         '{"Column":"ScanId","DataType":"guid","Properties":{"Ordinal":0}},'

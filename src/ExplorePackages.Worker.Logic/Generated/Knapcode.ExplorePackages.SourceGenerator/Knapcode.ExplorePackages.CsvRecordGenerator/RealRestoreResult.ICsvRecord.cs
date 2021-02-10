@@ -47,6 +47,19 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
         OnlyMSB3644: bool
     );
 
+    .alter table JverRealRestoreResults policy partitioning '{'
+      '"PartitionKeys": ['
+        '{'
+          '"ColumnName": "Identity",'
+          '"Kind": "Hash",'
+          '"Properties": {'
+            '"Function": "XxHash64",'
+            '"MaxPartitionCount": 256'
+          '}'
+        '}'
+      ']'
+    '}'
+
     .create table JverRealRestoreResults ingestion csv mapping 'JverRealRestoreResults_mapping'
     '['
         '{"Column":"Timestamp","DataType":"datetime","Properties":{"Ordinal":0}},'

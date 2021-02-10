@@ -55,6 +55,19 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
         PackageOwners: string
     );
 
+    .alter table JverPackageSignatures policy partitioning '{'
+      '"PartitionKeys": ['
+        '{'
+          '"ColumnName": "Identity",'
+          '"Kind": "Hash",'
+          '"Properties": {'
+            '"Function": "XxHash64",'
+            '"MaxPartitionCount": 256'
+          '}'
+        '}'
+      ']'
+    '}'
+
     .create table JverPackageSignatures ingestion csv mapping 'JverPackageSignatures_mapping'
     '['
         '{"Column":"ScanId","DataType":"guid","Properties":{"Ordinal":0}},'

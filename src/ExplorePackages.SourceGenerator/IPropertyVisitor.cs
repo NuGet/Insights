@@ -4,8 +4,8 @@ namespace Knapcode.ExplorePackages
 {
     public interface IPropertyVisitor
     {
-        void OnProperty(INamedTypeSymbol nullable, IPropertySymbol symbol, string prettyPropType);
-        void Finish();
+        void OnProperty(GeneratorExecutionContext context, INamedTypeSymbol nullable, IPropertySymbol symbol, string prettyPropType);
+        void Finish(GeneratorExecutionContext context);
         string GetResult();
     }
 }

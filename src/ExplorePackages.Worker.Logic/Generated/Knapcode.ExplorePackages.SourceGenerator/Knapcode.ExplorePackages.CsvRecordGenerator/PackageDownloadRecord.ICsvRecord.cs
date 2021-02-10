@@ -22,6 +22,19 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
         TotalDownloads: long
     );
 
+    .alter table JverPackageDownloads policy partitioning '{'
+      '"PartitionKeys": ['
+        '{'
+          '"ColumnName": "Identity",'
+          '"Kind": "Hash",'
+          '"Properties": {'
+            '"Function": "XxHash64",'
+            '"MaxPartitionCount": 256'
+          '}'
+        '}'
+      ']'
+    '}'
+
     .create table JverPackageDownloads ingestion csv mapping 'JverPackageDownloads_mapping'
     '['
         '{"Column":"AsOfTimestamp","DataType":"datetime","Properties":{"Ordinal":0}},'

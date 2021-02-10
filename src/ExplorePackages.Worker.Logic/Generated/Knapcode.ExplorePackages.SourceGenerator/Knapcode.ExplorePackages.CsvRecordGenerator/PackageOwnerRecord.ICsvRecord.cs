@@ -19,6 +19,19 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
         Owners: string
     );
 
+    .alter table JverPackageOwners policy partitioning '{'
+      '"PartitionKeys": ['
+        '{'
+          '"ColumnName": "LowerId",'
+          '"Kind": "Hash",'
+          '"Properties": {'
+            '"Function": "XxHash64",'
+            '"MaxPartitionCount": 256'
+          '}'
+        '}'
+      ']'
+    '}'
+
     .create table JverPackageOwners ingestion csv mapping 'JverPackageOwners_mapping'
     '['
         '{"Column":"AsOfTimestamp","DataType":"datetime","Properties":{"Ordinal":0}},'

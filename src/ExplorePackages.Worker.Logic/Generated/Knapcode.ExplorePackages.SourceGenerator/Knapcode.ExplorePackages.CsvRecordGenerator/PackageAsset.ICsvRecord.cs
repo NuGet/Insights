@@ -43,6 +43,19 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
         PlatformVersion: string
     );
 
+    .alter table JverPackageAssets policy partitioning '{'
+      '"PartitionKeys": ['
+        '{'
+          '"ColumnName": "Identity",'
+          '"Kind": "Hash",'
+          '"Properties": {'
+            '"Function": "XxHash64",'
+            '"MaxPartitionCount": 256'
+          '}'
+        '}'
+      ']'
+    '}'
+
     .create table JverPackageAssets ingestion csv mapping 'JverPackageAssets_mapping'
     '['
         '{"Column":"ScanId","DataType":"guid","Properties":{"Ordinal":0}},'

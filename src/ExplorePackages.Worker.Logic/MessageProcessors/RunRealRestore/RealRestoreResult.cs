@@ -95,7 +95,10 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
         public TimeSpan Duration { get; set; }
 
         public string LowerId { get; set; }
+
+        [KustoPartitionKey]
         public string Identity { get; set; }
+
         public string Id { get; set; }
         public string Version { get; set; }
         public string Framework { get; set; }

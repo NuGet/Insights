@@ -36,7 +36,10 @@ namespace Knapcode.ExplorePackages.Worker
         public Guid? ScanId { get; set; }
         public DateTimeOffset? ScanTimestamp { get; set; }
         public string LowerId { get; set; }
+
+        [KustoPartitionKey]
         public string Identity { get; set; }
+
         public string Id { get; set; }
         public string Version { get; set; }
         public DateTimeOffset CatalogCommitTimestamp { get; set; }

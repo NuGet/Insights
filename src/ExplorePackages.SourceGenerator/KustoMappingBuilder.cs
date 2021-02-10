@@ -17,7 +17,7 @@ namespace Knapcode.ExplorePackages
             _nextOrdinal = 0;
         }
 
-        public void OnProperty(INamedTypeSymbol nullable, IPropertySymbol symbol, string prettyPropType)
+        public void OnProperty(GeneratorExecutionContext context, INamedTypeSymbol nullable, IPropertySymbol symbol, string prettyPropType)
         {
             var field = new DataMapping
             {
@@ -41,7 +41,7 @@ namespace Knapcode.ExplorePackages
             _builder.Append(JsonConvert.SerializeObject(field).Replace("'", "\\'"));
         }
 
-        public void Finish()
+        public void Finish(GeneratorExecutionContext context)
         {
             _builder.Append("'");
         }

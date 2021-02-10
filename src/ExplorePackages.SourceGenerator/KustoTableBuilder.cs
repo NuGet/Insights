@@ -14,7 +14,7 @@ namespace Knapcode.ExplorePackages
             _builder = new StringBuilder();
         }
 
-        public void OnProperty(INamedTypeSymbol nullable, IPropertySymbol symbol, string prettyPropType)
+        public void OnProperty(GeneratorExecutionContext context, INamedTypeSymbol nullable, IPropertySymbol symbol, string prettyPropType)
         {
             if (_builder.Length > 0)
             {
@@ -26,7 +26,7 @@ namespace Knapcode.ExplorePackages
             _builder.AppendFormat("{0}: {1}", symbol.Name, PropertyHelper.GetKustoDataType(nullable, symbol));
         }
 
-        public void Finish()
+        public void Finish(GeneratorExecutionContext context)
         {
         }
 

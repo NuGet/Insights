@@ -14,7 +14,7 @@ namespace Knapcode.ExplorePackages
             _builder = new StringBuilder();
         }
 
-        public void OnProperty(INamedTypeSymbol nullable, IPropertySymbol symbol, string prettyPropType)
+        public void OnProperty(GeneratorExecutionContext context, INamedTypeSymbol nullable, IPropertySymbol symbol, string prettyPropType)
         {
             if (_builder.Length > 0)
             {
@@ -64,7 +64,7 @@ namespace Knapcode.ExplorePackages
             }
         }
 
-        public void Finish()
+        public void Finish(GeneratorExecutionContext context)
         {
             _builder.AppendLine();
             _builder.Append(' ', _indent);

@@ -15,7 +15,7 @@ namespace Knapcode.ExplorePackages
     [Generator]
     public class CsvRecordGenerator : ISourceGenerator
     {
-        private const string Category = "Knapcode.ExplorePackages.SourceGenerator";
+        internal const string Category = "Knapcode.ExplorePackages.SourceGenerator";
         private const string InterfaceNamePrefix = "ICsvRecord";
         private const string FullInterfaceName = "Knapcode.ExplorePackages.ICsvRecord`1";
 
@@ -36,36 +36,38 @@ namespace {0}
 {2}
     );
 
+    .alter table {1} policy partitioning {3}
+
     .create table {1} ingestion csv mapping '{1}_mapping'
     '['
-{3}
+{4}
     ']'
 
     */
-    partial {4} {5}
+    partial {5} {6}
     {{
-        public int FieldCount => {6};
+        public int FieldCount => {7};
 
         public void Write(List<string> fields)
-        {{
-{7}
-        }}
-
-        public void Write(TextWriter writer)
         {{
 {8}
         }}
 
-        public async Task WriteAsync(TextWriter writer)
+        public void Write(TextWriter writer)
         {{
 {9}
         }}
 
-        public {5} Read(Func<string> getNextField)
+        public async Task WriteAsync(TextWriter writer)
         {{
-            return new {5}
-            {{
 {10}
+        }}
+
+        public {6} Read(Func<string> getNextField)
+        {{
+            return new {6}
+            {{
+{11}
             }};
         }}
     }}
@@ -137,7 +139,8 @@ namespace {0}
                 var typeNamespacePrefix = symbol.ContainingNamespace.ToString() + ".";
 
                 var kustoTableBuilder = new KustoTableBuilder(indent: 8);
-                var kustoMappingBuilder = new KustoMappingBuilder(8);
+                var kustoPartitioningPolicyBuilder = new KustoPartitioningPolicyBuilder(indent: 4);
+                var kustoMappingBuilder = new KustoMappingBuilder(indent: 8);
                 var writeListBuilder = new WriteListBuilder(indent: 12);
                 var writeTextWriterBuilder = new WriteTextWriterBuilder(indent: 12);
                 var writeAsyncTextWriterBuilder = new WriteAsyncTextWriterBuilder(indent: 12);
@@ -146,6 +149,7 @@ namespace {0}
                 var visitors = new IPropertyVisitor[]
                 {
                     kustoTableBuilder,
+                    kustoPartitioningPolicyBuilder,
                     kustoMappingBuilder,
                     writeListBuilder,
                     writeTextWriterBuilder,
@@ -176,13 +180,13 @@ namespace {0}
                     var prettyType = PropertyHelper.GetPrettyType(typeNamespacePrefix, propertyNames, propertySymbol);
                     foreach (var visitor in visitors)
                     {
-                        visitor.OnProperty(nullable, propertySymbol, prettyType);
+                        visitor.OnProperty(context, nullable, propertySymbol, prettyType);
                     }
                 }
 
                 foreach (var visitor in visitors)
                 {
-                    visitor.Finish();
+                    visitor.Finish(context);
                 }
 
                 var typeName = info.Identifier.Text;
@@ -210,6 +214,7 @@ namespace {0}
                             symbol.ContainingNamespace,
                             kustoTableName,
                             kustoTableBuilder.GetResult(),
+                            kustoPartitioningPolicyBuilder.GetResult(),
                             kustoMappingBuilder.GetResult(),
                             info.Keyword,
                             typeName,
