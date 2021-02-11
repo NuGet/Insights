@@ -58,7 +58,7 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
           '}'
         '}'
       ']'
-    '}'
+    '}';
 
     .create table JverRealRestoreResults ingestion csv mapping 'JverRealRestoreResults_mapping'
     '['

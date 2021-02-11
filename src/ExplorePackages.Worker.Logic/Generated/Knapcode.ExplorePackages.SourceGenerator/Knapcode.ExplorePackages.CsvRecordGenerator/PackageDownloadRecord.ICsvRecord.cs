@@ -33,7 +33,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
           '}'
         '}'
       ']'
-    '}'
+    '}';
 
     .create table JverPackageDownloads ingestion csv mapping 'JverPackageDownloads_mapping'
     '['

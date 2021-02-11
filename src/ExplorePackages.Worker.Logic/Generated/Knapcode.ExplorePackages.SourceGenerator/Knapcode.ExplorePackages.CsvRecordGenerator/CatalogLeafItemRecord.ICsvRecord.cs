@@ -35,7 +35,7 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
           '}'
         '}'
       ']'
-    '}'
+    '}';
 
     .create table JverCatalogLeafItems ingestion csv mapping 'JverCatalogLeafItems_mapping'
     '['

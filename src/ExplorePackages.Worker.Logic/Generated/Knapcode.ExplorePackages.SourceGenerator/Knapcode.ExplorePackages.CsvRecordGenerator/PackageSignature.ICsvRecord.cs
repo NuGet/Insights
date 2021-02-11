@@ -66,7 +66,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
           '}'
         '}'
       ']'
-    '}'
+    '}';
 
     .create table JverPackageSignatures ingestion csv mapping 'JverPackageSignatures_mapping'
     '['

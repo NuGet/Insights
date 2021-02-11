@@ -54,7 +54,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
           '}'
         '}'
       ']'
-    '}'
+    '}';
 
     .create table JverPackageAssets ingestion csv mapping 'JverPackageAssets_mapping'
     '['

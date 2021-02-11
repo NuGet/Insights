@@ -36,7 +36,7 @@ namespace {0}
 {2}
     );
 
-    .alter table {1} policy partitioning {3}
+    .alter table {1} policy partitioning {3};
 
     .create table {1} ingestion csv mapping '{1}_mapping'
     '['

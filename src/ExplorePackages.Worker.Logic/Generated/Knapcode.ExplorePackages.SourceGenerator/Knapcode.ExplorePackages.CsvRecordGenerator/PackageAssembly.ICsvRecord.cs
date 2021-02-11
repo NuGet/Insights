@@ -55,7 +55,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
           '}'
         '}'
       ']'
-    '}'
+    '}';
 
     .create table JverPackageAssemblies ingestion csv mapping 'JverPackageAssemblies_mapping'
     '['

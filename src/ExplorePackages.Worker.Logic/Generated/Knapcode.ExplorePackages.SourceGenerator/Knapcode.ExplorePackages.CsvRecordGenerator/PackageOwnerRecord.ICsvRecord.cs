@@ -30,7 +30,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
           '}'
         '}'
       ']'
-    '}'
+    '}';
 
     .create table JverPackageOwners ingestion csv mapping 'JverPackageOwners_mapping'
     '['
