@@ -43,6 +43,11 @@ namespace Knapcode.ExplorePackages
 
         public async Task<bool> WaitAsync(TempStreamDirectory dir)
         {
+            if (!dir.MaxConcurrentWriters.HasValue)
+            {
+                return true;
+            }
+
             if (_disposing)
             {
                 throw new ObjectDisposedException(nameof(TempStreamLeaseScope));
@@ -51,11 +56,6 @@ namespace Knapcode.ExplorePackages
             if (_owned == 0)
             {
                 throw new InvalidOperationException("The scope is not owned yet and therefore can't acquire leases.");
-            }
-
-            if (!dir.MaxConcurrentWriters.HasValue)
-            {
-                return true;
             }
 
             string dirHash;
