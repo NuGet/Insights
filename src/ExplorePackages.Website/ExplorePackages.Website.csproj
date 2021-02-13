@@ -6,6 +6,7 @@
     <UserSecretsId>fc241d56-9e3d-46f4-8c4b-40209befb209</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="BuildBundlerMinifier" Version="3.2.449" />
     <PackageReference Include="Humanizer.Core" Version="2.8.26" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="3.1.10" />
     <PackageReference Include="Microsoft.Identity.Web.UI" Version="1.4.1" />
