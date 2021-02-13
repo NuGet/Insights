@@ -15,7 +15,7 @@ namespace Knapcode.ExplorePackages.Worker
         private readonly SchemaSerializer _serializer;
         private readonly CatalogScanStorageService _catalogScanStorageService;
         private readonly AutoRenewingStorageLeaseService _leaseService;
-        private readonly RemoteCursorClient _remoteCursorClient;
+        private readonly IRemoteCursorClient _remoteCursorClient;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<CatalogScanService> _logger;
 
@@ -25,7 +25,7 @@ namespace Knapcode.ExplorePackages.Worker
             SchemaSerializer serializer,
             CatalogScanStorageService catalogScanStorageService,
             AutoRenewingStorageLeaseService leaseService,
-            RemoteCursorClient remoteCursorClient,
+            IRemoteCursorClient remoteCursorClient,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<CatalogScanService> logger)
         {
@@ -245,7 +245,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             if (min > max)
             {
-                return new CatalogScanServiceResult(CatalogScanServiceResultType.MinAfterMax, dependencyName, scan: null);
+                return new CatalogScanServiceResult(CatalogScanServiceResultType.MinAfterMax, dependencyName: null, scan: null);
             }
 
             if (min == dependencyMax)
@@ -255,21 +255,21 @@ namespace Knapcode.ExplorePackages.Worker
 
             if (min == max)
             {
-                return new CatalogScanServiceResult(CatalogScanServiceResultType.FullyCaughtUpWithMax, dependencyName, scan: null);
+                return new CatalogScanServiceResult(CatalogScanServiceResultType.FullyCaughtUpWithMax, dependencyName: null, scan: null);
             }
 
             await using (var lease = await _leaseService.TryAcquireAsync($"Start-{cursor.Name}"))
             {
                 if (!lease.Acquired)
                 {
-                    return new CatalogScanServiceResult(CatalogScanServiceResultType.UnavailableLease, dependencyName, scan: null);
+                    return new CatalogScanServiceResult(CatalogScanServiceResultType.UnavailableLease, dependencyName: null, scan: null);
                 }
 
                 // Check if a scan is already running, inside the lease.
                 incompleteScan = await GetLatestIncompleteScanAsync(cursor.Name);
                 if (incompleteScan != null)
                 {
-                    return new CatalogScanServiceResult(CatalogScanServiceResultType.AlreadyRunning, dependencyName, incompleteScan);
+                    return new CatalogScanServiceResult(CatalogScanServiceResultType.AlreadyRunning, dependencyName: null, incompleteScan);
                 }
 
                 var descendingId = StorageUtility.GenerateDescendingId();
@@ -282,7 +282,7 @@ namespace Knapcode.ExplorePackages.Worker
                     min,
                     max.Value);
 
-                return new CatalogScanServiceResult(CatalogScanServiceResultType.NewStarted, dependencyName, newScan);
+                return new CatalogScanServiceResult(CatalogScanServiceResultType.NewStarted, dependencyName: null, newScan);
             }
         }
 

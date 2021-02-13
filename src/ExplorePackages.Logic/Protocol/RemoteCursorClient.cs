@@ -7,7 +7,7 @@ using NuGet.Protocol;
 
 namespace Knapcode.ExplorePackages
 {
-    public class RemoteCursorClient
+    public class RemoteCursorClient : IRemoteCursorClient
     {
         private readonly CatalogClient _catalogClient;
         private readonly ServiceIndexCache _serviceIndexCache;
@@ -54,7 +54,7 @@ namespace Knapcode.ExplorePackages
             return await _searchServiceCursorReader.GetCursorAsync();
         }
 
-        public async Task<DateTimeOffset> GetJsonCursorAsync(string url, CancellationToken token = default)
+        private async Task<DateTimeOffset> GetJsonCursorAsync(string url, CancellationToken token = default)
         {
             var cursor = await _httpSource.DeserializeUrlAsync<JsonCursor>(
                 url,

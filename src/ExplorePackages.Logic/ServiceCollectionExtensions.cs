@@ -148,7 +148,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<PackageOwnersClient>();
             serviceCollection.AddTransient<OwnersV2JsonDeserializer>();
             serviceCollection.AddTransient<CatalogClient>();
-            serviceCollection.AddTransient<RemoteCursorClient>();
+            serviceCollection.AddTransient<IRemoteCursorClient, RemoteCursorClient>();
 
             serviceCollection.AddTransient<PackageConsistencyContextBuilder>();
             serviceCollection.AddTransient<GalleryConsistencyService>();
