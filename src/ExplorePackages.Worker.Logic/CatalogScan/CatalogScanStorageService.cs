@@ -30,9 +30,13 @@ namespace Knapcode.ExplorePackages.Worker
             await GetIndexScanTable().CreateIfNotExistsAsync(retry: true);
         }
 
-        public async Task InitializeChildTablesAsync(string storageSuffix)
+        public async Task InitializePageScanTableAsync(string storageSuffix)
         {
             await GetPageScanTable(storageSuffix).CreateIfNotExistsAsync(retry: true);
+        }
+
+        public async Task InitializeLeafScanTableAsync(string storageSuffix)
+        {
             await GetLeafScanTable(storageSuffix).CreateIfNotExistsAsync(retry: true);
         }
 

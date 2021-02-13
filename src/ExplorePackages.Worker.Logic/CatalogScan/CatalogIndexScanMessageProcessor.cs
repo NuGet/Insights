@@ -55,7 +55,6 @@ namespace Knapcode.ExplorePackages.Worker
             // Created: initialize the storage for the driver and set the started time
             if (scan.ParsedState == CatalogIndexScanState.Created)
             {
-                await _storageService.InitializeChildTablesAsync(scan.StorageSuffix);
                 await driver.InitializeAsync(scan);
 
                 scan.ParsedState = CatalogIndexScanState.Initialized;
@@ -63,10 +62,26 @@ namespace Knapcode.ExplorePackages.Worker
                 await _storageService.ReplaceAsync(scan);
             }
 
-            // Created with null result: determine the index scan result, i.e. the mode
+            // Created with null result: determine the index scan result, i.e. the mode and initialize the child tables
             if (scan.ParsedState == CatalogIndexScanState.Initialized && !scan.ParsedResult.HasValue)
             {
                 scan.ParsedResult = await driver.ProcessIndexAsync(scan);
+
+                switch (scan.ParsedResult.Value)
+                {
+                    case CatalogIndexScanResult.ExpandAllLeaves:
+                        await _storageService.InitializePageScanTableAsync(scan.StorageSuffix);
+                        await _storageService.InitializeLeafScanTableAsync(scan.StorageSuffix);
+                        break;
+                    case CatalogIndexScanResult.ExpandLatestLeaves:
+                        await _storageService.InitializeLeafScanTableAsync(scan.StorageSuffix);
+                        break;
+                    case CatalogIndexScanResult.Processed:
+                        break;
+                    default:
+                        throw new NotSupportedException($"Catalog index scan result '{scan.ParsedResult}' is not supported.");
+                }
+
                 await _storageService.ReplaceAsync(scan);
             }
 

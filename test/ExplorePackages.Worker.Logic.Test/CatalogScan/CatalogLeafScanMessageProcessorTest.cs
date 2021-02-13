@@ -455,7 +455,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             foreach (var storageSuffix in scans.Select(x => x.StorageSuffix).Distinct())
             {
-                await CatalogScanStorageService.InitializeChildTablesAsync(storageSuffix);
+                await CatalogScanStorageService.InitializeLeafScanTableAsync(storageSuffix);
             }
 
             await CatalogScanStorageService.InsertAsync(scans);
