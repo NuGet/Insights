@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage.Queue;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages.Worker
@@ -76,12 +77,13 @@ namespace Knapcode.ExplorePackages.Worker
 
         protected async Task<CatalogIndexScan> UpdateAsync(CatalogScanDriverType driverType, bool? onlyLatestLeaves, DateTimeOffset max)
         {
-            var indexScan = await CatalogScanService.UpdateAsync(driverType, max, onlyLatestLeaves);
-            return await UpdateAsync(indexScan);
+            var result = await CatalogScanService.UpdateAsync(driverType, max, onlyLatestLeaves);
+            return await UpdateAsync(result.Scan);
         }
 
         protected async Task<CatalogIndexScan> UpdateAsync(CatalogIndexScan indexScan)
         {
+            Assert.NotNull(indexScan);
             await ProcessQueueAsync(() => { }, async () =>
             {
                 indexScan = await CatalogScanStorageService.GetIndexScanAsync(indexScan.CursorName, indexScan.ScanId);

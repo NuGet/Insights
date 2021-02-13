@@ -1,58 +1,90 @@
 ﻿@model CatalogScanViewModel
 
 <a name="@Model.DriverType" class="anchor"></a>
-<h3>@Model.DriverType.ToString().Humanize()</h3>
-<ul class="list-unstyled">
-    <li><b>Cursor value:</b> @Model.Cursor.Value.ToString("O")</li>
-    <li><b>Cursor age:</b> @Model.CursorAge</li>
-</ul>
-<table class="table">
-    <caption>Latest catalog scans</caption>
-    <thead>
-        <tr>
-            <th>Scan ID</th>
-            <th>State</th>
-            <th>Min</th>
-            <th>Max</th>
-            <th>Runtime</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var scan in Model.LatestScans)
+@{ 
+    var error = TempData[Model.DriverType + ".Error"]?.ToString();
+    var success = TempData[Model.DriverType + ".Success"]?.ToString();
+    var hasError = !string.IsNullOrEmpty(error);
+    var hasSuccess = !hasError && !string.IsNullOrEmpty(success);
+    var message = error ?? success;
+    var panelClass = hasError ? "panel-danger" : (hasSuccess ? "panel-success" : "panel-default");
+    var messageClass = hasError ? "list-group-item-danger" : (hasSuccess ? "list-group-item-success" : string.Empty);
+}
+<div class="panel @panelClass">
+    <div class="panel-heading"><h3 class="panel-title">@Model.DriverType.ToString().Humanize()</h3></div>
+
+    <ul class="list-group list-unstyled">
+        <li class="list-group-item"><b>Cursor value:</b> @Model.Cursor.Value.ToString("O")</li>
+        <li class="list-group-item"><b>Cursor age:</b> @Model.CursorAge.Humanize(precision: 7, maxUnit: Humanizer.Localisation.TimeUnit.Year, minUnit: Humanizer.Localisation.TimeUnit.Second)</li>
+        @if (message != null)
         {
-            <tr>
-                <td>@scan.ScanId</td>
-                <td>@scan.ParsedState</td>
-                <td>@scan.Min?.ToString("O")</td>
-                <td>@scan.Max?.ToString("O")</td>
-                <td>
-                    @if (scan.Started.HasValue)
-                    {
-                        var runtime = scan.Completed.GetValueOrDefault(DateTimeOffset.UtcNow) - scan.Started.Value;
-                        var runtimeStr = runtime.ToString("d\\.hh\\:mm\\:ss");
-                        if (runtimeStr.StartsWith("0."))
-                        {
-                            runtimeStr = runtimeStr.Substring(2); 
-                        }
-                        <text>@runtimeStr</text>
-                    }
-                </td>
-            </tr>
+            <li class="list-group-item @messageClass">@Html.Raw(message)</li>
         }
-    </tbody>
-</table>
-<form asp-action="UpdateCatalogScan" method="post" class="form-inline">
-    <input type="hidden" name="driverType" value="@Model.DriverType" />
-    <button type="submit" name="shortTest" value="true" class="btn btn-default">Start test scan</button>
-    <button type="submit" name="shortTest" value="false" class="btn btn-default">Start full scan</button>
-    <div class="form-group">
-        <label for="max">Custom max</label>
-        <input type="text" class="form-control" name="max" id="max" value="2018-09-20T01:46:19.1755275Z">
+    </ul>
+
+    <div class="panel-body">
+        <form asp-action="UpdateCatalogScan" method="post">
+            <input type="hidden" name="driverType" value="@Model.DriverType" />
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" name="useCustomMax" value="true" /> Use custom max
+                </label>
+            </div>
+            <div class="form-group hidden custom-max">
+                <label for="max">Custom max</label>
+                <input type="text" class="form-control" name="max" id="max" value="@Model.DefaultMax.ToString("O")">
+            </div>
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" name="onlyLatestLeaves" checked="@Model.DefaultOnlyLatestLeaves" value="true" /> Only latest leaves
+                </label>
+            </div>
+            <button type="submit" class="btn btn-primary">Start</button>
+        </form>
     </div>
-    <div class="checkbox">
-        <label>
-            <input type="checkbox" name="onlyLatestLeaves" checked="@Model.DefaultOnlyLatestLeaves" value="true" /> Only latest leaves
-        </label>
-    </div>
-    <button type="submit" class="btn btn-default">Start custom scan</button>
-</form>
+
+    <table class="table">
+        <caption>Latest scans</caption>
+        <thead>
+            <tr>
+                <th>Scan ID</th>
+                <th>State</th>
+                <th>Min</th>
+                <th>Max</th>
+                <th>Runtime</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var scan in Model.LatestScans)
+            {
+                <tr>
+                    <td>@scan.ScanId</td>
+                    <td>@scan.ParsedState</td>
+                    <td>@scan.Min?.ToString("O")</td>
+                    <td>@scan.Max?.ToString("O")</td>
+                    <td>
+                        @if (scan.Started.HasValue)
+                        {
+                            var runtime = scan.Completed.GetValueOrDefault(DateTimeOffset.UtcNow) - scan.Started.Value;
+                            var runtimeStr = runtime.ToString("d\\.hh\\:mm\\:ss");
+                            if (runtimeStr.StartsWith("0."))
+                            {
+                                runtimeStr = runtimeStr.Substring(2);
+                            }
+                            <text>@runtimeStr</text>
+                        }
+                    </td>
+                </tr>
+            }
+
+            @if (Model.LatestScans.Count == 0)
+            {
+                <tr>
+                    <td colspan="5" class="text-center">
+                        <i>No scans have been started.</i>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

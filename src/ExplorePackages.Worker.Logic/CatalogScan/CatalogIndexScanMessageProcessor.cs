@@ -55,6 +55,7 @@ namespace Knapcode.ExplorePackages.Worker
             // Created: initialize the storage for the driver and set the started time
             if (scan.ParsedState == CatalogIndexScanState.Created)
             {
+                await _storageService.InitializeChildTablesAsync(scan.StorageSuffix);
                 await driver.InitializeAsync(scan);
 
                 scan.ParsedState = CatalogIndexScanState.Initialized;

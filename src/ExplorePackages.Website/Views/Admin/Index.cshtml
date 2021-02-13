@@ -7,42 +7,61 @@
     <div class="col-xs-12">
         <h2>@ViewData["Title"]</h2>
 
-        <h3>Worker Queue</h3>
-        <ul class="list-unstyled">
-            <li><b>Total message count:</b> @(Model.ApproximateMessageCount + Model.PoisonApproximateMessageCount)</li>
-            <li><b>Approximate message count:</b> @Model.ApproximateMessageCount</li>
-            <li><b>Available messages:</b> @(Model.AvailableMessageCountIsExact ? string.Empty : "≥") @Model.AvailableMessageCountLowerBound</li>
-            <li><b>Poison - approximate message count:</b> @Model.PoisonApproximateMessageCount</li>
-            <li><b>Poison - available messages:</b> @(Model.PoisonAvailableMessageCountIsExact ? string.Empty : "≥") @Model.PoisonAvailableMessageCountLowerBound</li>
-        </ul>
+        <div class="panel panel-default">
+            <div class="panel-heading"><h3 class="panel-title">Worker queue</h3></div>
+
+            <ul class="list-group list-unstyled">
+                <li class="list-group-item"><b>Total message count:</b> @(Model.ApproximateMessageCount + Model.PoisonApproximateMessageCount)</li>
+                <li class="list-group-item"><b>Main - approximate message count:</b> @Model.ApproximateMessageCount</li>
+                <li class="list-group-item"><b>Main - available messages:</b> @(Model.AvailableMessageCountIsExact ? string.Empty : "≥") @Model.AvailableMessageCountLowerBound</li>
+                <li class="list-group-item"><b>Poison - approximate message count:</b> @Model.PoisonApproximateMessageCount</li>
+                <li class="list-group-item"><b>Poison - available messages:</b> @(Model.PoisonAvailableMessageCountIsExact ? string.Empty : "≥") @Model.PoisonAvailableMessageCountLowerBound</li>
+            </ul>
+        </div>
 
         @foreach (var catalogScan in Model.CatalogScans)
         {
             @await Html.PartialAsync("_CatalogScan", catalogScan)
         }
-        
+
         <a name="DownloadsToCsv" class="anchor"></a>
-        <h3>DownloadsToCsv</h3>
-        <p><b>Is running?</b> @Model.IsDownloadsToCsvRunning</p>
-        <form asp-action="StartDownloadsToCsv" method="post" class="form-inline">
-            <div class="checkbox">
-                <label>
-                    <input type="checkbox" name="loop" value="true" /> Loop
-                </label>
+        <div class="panel panel-default">
+            <div class="panel-heading"><h3 class="panel-title">DownloadsToCsv</h3></div>
+
+            <ul class="list-group list-unstyled">
+                <li class="list-group-item"><b>Is running?</b> @Model.IsDownloadsToCsvRunning</li>
+            </ul>
+
+            <div class="panel-body">
+                <form asp-action="StartDownloadsToCsv" method="post" class="form-inline">
+                    <button type="submit" class="btn btn-primary">Start</button>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="loop" value="true" /> Loop
+                        </label>
+                    </div>
+                </form>
             </div>
-            <button type="submit" class="btn btn-default">Start Downloads2Csv</button>
-        </form>
-        
+        </div>
+
         <a name="OwnersToCsv" class="anchor"></a>
-        <h3>OwnersToCsv</h3>
-        <p><b>Is running?</b> @Model.IsOwnersToCsvRunning</p>
-        <form asp-action="StartOwnersToCsv" method="post" class="form-inline">
-            <div class="checkbox">
-                <label>
-                    <input type="checkbox" name="loop" value="true" /> Loop
-                </label>
+        <div class="panel panel-default">
+            <div class="panel-heading"><h3 class="panel-title">OwnersToCsv</h3></div>
+
+            <ul class="list-group list-unstyled">
+                <li class="list-group-item"><b>Is running?</b> @Model.IsOwnersToCsvRunning</li>
+            </ul>
+
+            <div class="panel-body">
+                <form asp-action="StartOwnersToCsv" method="post" class="form-inline">
+                    <button type="submit" class="btn btn-primary">Start</button>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="loop" value="true" /> Loop
+                        </label>
+                    </div>
+                </form>
             </div>
-            <button type="submit" class="btn btn-default">Start Owners2Csv</button>
-        </form>
+        </div>
     </div>
 </div>

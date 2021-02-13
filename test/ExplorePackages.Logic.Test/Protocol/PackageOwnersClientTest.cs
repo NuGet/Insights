@@ -20,7 +20,7 @@ namespace Knapcode.ExplorePackages
         public async Task ExecuteAsync()
         {
             // Arrange
-            var ownersV2Url = $"http://localhost/{TestData}/{OwnersToCsvDir}/owners.v2.json";
+            var ownersV2Url = $"http://localhost/{TestData}/{OwnersToCsvDir}/{Step1}/owners.v2.json";
             ConfigureSettings = x => x.OwnersV2Url = ownersV2Url;
             HttpMessageHandlerFactory.OnSendAsync = async req =>
             {
@@ -36,7 +36,7 @@ namespace Knapcode.ExplorePackages
 
             // Set the Last-Modified date
             var asOfTimestamp = DateTime.Parse("2021-01-14T18:00:00Z");
-            var downloadsFile = new FileInfo(Path.Combine(TestData, OwnersToCsvDir, "owners.v2.json"))
+            var downloadsFile = new FileInfo(Path.Combine(TestData, OwnersToCsvDir, Step1, "owners.v2.json"))
             {
                 LastWriteTimeUtc = asOfTimestamp,
             };

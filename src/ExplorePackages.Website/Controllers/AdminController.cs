@@ -110,21 +110,55 @@ namespace Knapcode.ExplorePackages.Website.Controllers
         }
 
         [HttpPost]
-        public async Task<RedirectToActionResult> UpdateCatalogScan(CatalogScanDriverType driverType, bool? shortTest, bool onlyLatestLeaves, string max)
+        public async Task<RedirectToActionResult> UpdateCatalogScan(CatalogScanDriverType driverType, bool useCustomMax, bool onlyLatestLeaves, string max)
         {
-            DateTimeOffset? parsedMax = null;
-            if (shortTest.HasValue)
+            (var success, var message) = await GetUpdateCatalogScanErrorAsync(driverType, useCustomMax, onlyLatestLeaves, max);
+            if (success)
             {
-                parsedMax = shortTest.Value ? DateTimeOffset.Parse("2018-09-20T01:46:19.1755275Z") : (DateTimeOffset?)null;
+                TempData[driverType + ".Success"] = message;
             }
-            else if (!string.IsNullOrWhiteSpace(max))
+            else
             {
-                parsedMax = DateTimeOffset.Parse(max);
+                TempData[driverType + ".Error"] = message;
             }
-
-            await _catalogScanService.UpdateAsync(driverType, parsedMax, onlyLatestLeaves);
 
             return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment: driverType.ToString());
+        }
+
+        private async Task<(bool Success, string Message)> GetUpdateCatalogScanErrorAsync(CatalogScanDriverType driverType, bool useCustomMax, bool onlyLatestLeaves, string max)
+        {
+            DateTimeOffset? parsedMax = null;
+            if (useCustomMax)
+            {
+                if (!DateTimeOffset.TryParse(max, out var parsedMaxValue))
+                {
+                    return (false, "Unable to parse the custom max value.");
+                }
+
+                parsedMax = parsedMaxValue;
+            }
+
+            var result = await _catalogScanService.UpdateAsync(driverType, parsedMax, onlyLatestLeaves);
+
+            switch (result.Type)
+            {
+                case CatalogScanServiceResultType.AlreadyRunning:
+                    return (false, $"Scan <code>{result.Scan.ScanId}</code> is already running.");
+                case CatalogScanServiceResultType.BlockedByDependency:
+                    return (false, $"The scan can't use that max because it's beyond the <b>{result.DependencyName}</b> cursor.");
+                case CatalogScanServiceResultType.FullyCaughtUpWithDependency:
+                    return (true, $"The scan is fully caught up with the <b>{result.DependencyName}</b> cursor.");
+                case CatalogScanServiceResultType.MinAfterMax:
+                    return (false, $"The provided max is less than the current cursor position.");
+                case CatalogScanServiceResultType.NewStarted:
+                    return (true, $"Catalog scan <code>{result.Scan.ScanId}</code> has been started.");
+                case CatalogScanServiceResultType.UnavailableLease:
+                    return (false, $"The lease to start the catalog scan is not available.");
+                case CatalogScanServiceResultType.FullyCaughtUpWithMax:
+                    return (true, $"The scan is fully caught up with the provided max value.");
+                default:
+                    throw new NotSupportedException($"The result type {result.Type} is not supported.");
+            }
         }
 
         [HttpPost]

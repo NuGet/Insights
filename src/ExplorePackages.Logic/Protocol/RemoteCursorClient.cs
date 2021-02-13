@@ -9,21 +9,30 @@ namespace Knapcode.ExplorePackages
 {
     public class RemoteCursorClient
     {
+        private readonly CatalogClient _catalogClient;
         private readonly ServiceIndexCache _serviceIndexCache;
         private readonly HttpSource _httpSource;
         private readonly SearchServiceCursorReader _searchServiceCursorReader;
         private readonly ILogger<RemoteCursorClient> _logger;
 
         public RemoteCursorClient(
+            CatalogClient catalogClient,
             ServiceIndexCache serviceIndexCache,
             HttpSource httpSource,
             SearchServiceCursorReader searchServiceCursorReader,
             ILogger<RemoteCursorClient> logger)
         {
+            _catalogClient = catalogClient;
             _serviceIndexCache = serviceIndexCache;
             _httpSource = httpSource;
             _searchServiceCursorReader = searchServiceCursorReader;
             _logger = logger;
+        }
+
+        public async Task<DateTimeOffset> GetCatalogAsync(CancellationToken token = default)
+        {
+            var index = await _catalogClient.GetCatalogIndexAsync();
+            return index.CommitTimestamp;
         }
 
         public async Task<DateTimeOffset> GetFlatContainerAsync(CancellationToken token = default)

@@ -2,13 +2,16 @@
 {
     public enum CatalogScanDriverType
     {
-        FindCatalogLeafItem,
-        FindLatestCatalogLeafScan,
-        FindLatestPackageLeaf,
+        FindPackageFile,
+        FindPackageManifest,
+
         FindPackageAssembly,
         FindPackageAsset,
-        FindPackageFile,
         FindPackageSignature,
-        FindPackageManifest,
+
+        FindCatalogLeafItem,
+        FindLatestPackageLeaf,
+
+        FindLatestCatalogLeafScan,
     }
 }

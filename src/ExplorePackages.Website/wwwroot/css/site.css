@@ -1,9 +1,4 @@
-﻿body {
-    padding-top: 50px;
-    padding-bottom: 20px;
-}
-
-/* Wrapping element */
+﻿/* Wrapping element */
 /* Set some basic padding to keep content from hitting the edges */
 .body-content {
     padding-left: 15px;
@@ -27,9 +22,6 @@
     white-space: nowrap;
 }
 
-a.anchor {
-    display: block;
-    position: relative;
-    top: -50px;
-    visibility: hidden;
+.panel-title {
+    font-weight: bold;
 }

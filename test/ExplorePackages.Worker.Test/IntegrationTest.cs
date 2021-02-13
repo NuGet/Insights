@@ -60,21 +60,21 @@ namespace Knapcode.ExplorePackages.Worker
 
             // Act
             var findPackageManifest = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindPackageManifest, max1, onlyLatestLeaves: null);
-            await UpdateAsync(findPackageManifest);
+            await UpdateAsync(findPackageManifest.Scan);
             var startingNuspecRequestCount = GetNuspecRequestCount();
 
             var findPackageFile = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindPackageFile, max1, onlyLatestLeaves: null);
-            await UpdateAsync(findPackageFile);
+            await UpdateAsync(findPackageFile.Scan);
 
             var findPackageAssembly = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindPackageAssembly, max1, onlyLatestLeaves: null);
-            await UpdateAsync(findPackageAssembly);
+            await UpdateAsync(findPackageAssembly.Scan);
 
             var startingNupkgRequestCount = GetNupkgRequestCount();
 
             var findPackageAsset = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindPackageAsset, max1, onlyLatestLeaves: null);
             var findPackageSignature = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindPackageSignature, max1, onlyLatestLeaves: null);
-            await UpdateAsync(findPackageAsset);
-            await UpdateAsync(findPackageSignature);
+            await UpdateAsync(findPackageAsset.Scan);
+            await UpdateAsync(findPackageSignature.Scan);
 
             var finalNupkgRequestCount = GetNupkgRequestCount();
             var finalNuspecRequestCount = GetNuspecRequestCount();
