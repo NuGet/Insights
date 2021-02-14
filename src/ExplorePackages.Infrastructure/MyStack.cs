@@ -280,6 +280,7 @@ namespace Knapcode.ExplorePackages
                     { "APPINSIGHTS_INSTRUMENTATIONKEY", _appInsights.InstrumentationKey },
                     { "APPLICATIONINSIGHTS_CONNECTION_STRING", _appInsights.ConnectionString },
                     { "FUNCTIONS_WORKER_RUNTIME", "dotnet" },
+                    { "AzureFunctionsJobHost__logging__LogLevel__Default", "Warning" },
                     // Workaround for a bug. Source: https://github.com/Azure/azure-functions-host/issues/5098#issuecomment-704206997
                     { "AzureWebJobsFeatureFlags", "EnableEnhancedScopes" },
                     { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesSettings.StorageConnectionString)}", _storageAccount.PrimaryConnectionString },
