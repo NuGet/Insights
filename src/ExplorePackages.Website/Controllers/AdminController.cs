@@ -99,7 +99,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
         private async Task<CatalogScanViewModel> GetCatalogScanAsync(CatalogScanDriverType driverType)
         {
             var cursor = await _catalogScanService.GetCursorAsync(driverType);
-            var latestScans = await _catalogScanStorageService.GetLatestIndexScans(cursor.Name, maxEntities: 10);
+            var latestScans = await _catalogScanStorageService.GetLatestIndexScans(cursor.Name, maxEntities: 5);
 
             return new CatalogScanViewModel
             {
