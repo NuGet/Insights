@@ -143,7 +143,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             switch (result.Type)
             {
                 case CatalogScanServiceResultType.AlreadyRunning:
-                    return (false, $"Scan <code>{result.Scan.ScanId}</code> is already running.");
+                    return (false, $"Scan <b>{result.Scan.ScanId}</b> is already running.");
                 case CatalogScanServiceResultType.BlockedByDependency:
                     return (false, $"The scan can't use that max because it's beyond the <b>{result.DependencyName}</b> cursor.");
                 case CatalogScanServiceResultType.FullyCaughtUpWithDependency:
@@ -151,7 +151,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 case CatalogScanServiceResultType.MinAfterMax:
                     return (false, $"The provided max is less than the current cursor position.");
                 case CatalogScanServiceResultType.NewStarted:
-                    return (true, $"Catalog scan <code>{result.Scan.ScanId}</code> has been started.");
+                    return (true, $"Catalog scan <b>{result.Scan.ScanId}</b> has been started.");
                 case CatalogScanServiceResultType.UnavailableLease:
                     return (false, $"The lease to start the catalog scan is not available.");
                 case CatalogScanServiceResultType.FullyCaughtUpWithMax:

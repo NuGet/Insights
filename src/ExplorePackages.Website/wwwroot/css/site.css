@@ -1,13 +1,21 @@
-﻿/* Wrapping element */
-/* Set some basic padding to keep content from hitting the edges */
-.body-content {
-    padding-left: 15px;
-    padding-right: 15px;
+﻿footer {
+    line-height: 60px;
 }
 
 .table-report tr th:first-child {
     text-align: right;
-    width: 160px;
+    width: 11rem;
+}
+
+#report .table-report thead tr:first-child th {
+    border-bottom-width: 0;
+}
+
+#urls table tr td:nth-child(2) {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 600px;
 }
 
 .notransition {
@@ -17,11 +25,18 @@
     transition: none !important;
 }
 
-#urls {
-    overflow: auto;
-    white-space: nowrap;
+.card .list-group-item, .card-body, .card-header {
+    padding: 0.75rem;
 }
 
 .panel-title {
     font-weight: bold;
+}
+
+.nav-item .nav-link {
+    padding: 0.5rem 0.75rem !important;
+}
+
+.smaller-text {
+    font-size: 0.9rem;
 }

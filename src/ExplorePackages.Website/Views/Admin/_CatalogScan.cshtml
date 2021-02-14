@@ -7,44 +7,46 @@
     var hasError = !string.IsNullOrEmpty(error);
     var hasSuccess = !hasError && !string.IsNullOrEmpty(success);
     var message = error ?? success;
-    var panelClass = hasError ? "panel-danger" : (hasSuccess ? "panel-success" : "panel-default");
-    var messageClass = hasError ? "list-group-item-danger" : (hasSuccess ? "list-group-item-success" : string.Empty);
+    var messageFontClass = hasError || hasSuccess ? "text-white" : string.Empty;
+    var messageBgClass = hasError ? "bg-danger" : (hasSuccess ? "bg-success" : string.Empty);
+    var borderClass = hasError ? "border-danger" : (hasSuccess ? "border-success" : string.Empty);
 }
-<div class="panel @panelClass">
-    <div class="panel-heading"><h3 class="panel-title">@Model.DriverType.ToString().Humanize()</h3></div>
+<div class="card @borderClass mt-3">
+    <h4 class="card-header">@Model.DriverType.ToString().Humanize()</h4>
 
-    <ul class="list-group list-unstyled">
-        <li class="list-group-item"><b>Cursor value:</b> @Model.Cursor.Value.ToString("O")</li>
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item"><b>Cursor value:</b> @Model.Cursor.Value.ToZulu()</li>
         <li class="list-group-item"><b>Cursor age:</b> @Model.CursorAge.Humanize(precision: 7, maxUnit: Humanizer.Localisation.TimeUnit.Year, minUnit: Humanizer.Localisation.TimeUnit.Second)</li>
-        @if (message != null)
-        {
-            <li class="list-group-item @messageClass">@Html.Raw(message)</li>
-        }
     </ul>
 
-    <div class="panel-body">
+    <div class="card-body">
         <form asp-action="UpdateCatalogScan" method="post">
             <input type="hidden" name="driverType" value="@Model.DriverType" />
-            <div class="checkbox">
-                <label>
-                    <input type="checkbox" name="useCustomMax" value="true" /> Use custom max
-                </label>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="@Model.DriverType.ToString()-useCustomMax" name="useCustomMax" value="true" />
+                <label class="form-check-label" for="@Model.DriverType.ToString()-useCustomMax">Use custom max</label>
             </div>
-            <div class="form-group hidden custom-max">
-                <label for="max">Custom max</label>
-                <input type="text" class="form-control" name="max" id="max" value="@Model.DefaultMax.ToString("O")">
+            <div class="form-group custom-max" style="display: none">
+                <label for="@Model.DriverType-max">Custom max</label>
+                <input type="text" class="form-control" name="max" id="@Model.DriverType-max" value="@Model.DefaultMax.ToZulu()">
             </div>
-            <div class="checkbox">
-                <label>
-                    <input type="checkbox" name="onlyLatestLeaves" checked="@Model.DefaultOnlyLatestLeaves" value="true" /> Only latest leaves
-                </label>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="@Model.DriverType.ToString()-onlyLatestLeaves" name="onlyLatestLeaves" checked="@Model.DefaultOnlyLatestLeaves" value="true" />
+                <label class="form-check-label" for="@Model.DriverType.ToString()-onlyLatestLeaves">Only latest leaves</label>
             </div>
             <button type="submit" class="btn btn-primary">Start</button>
         </form>
     </div>
 
+
+    @if (message != null)
+    {
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item @messageFontClass @messageBgClass">@Html.Raw(message)</li>
+        </ul>
+    }
+
     <table class="table">
-        <caption>Latest scans</caption>
         <thead>
             <tr>
                 <th>Scan ID</th>
@@ -54,14 +56,14 @@
                 <th>Runtime</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody class="smaller-text">
             @foreach (var scan in Model.LatestScans)
             {
                 <tr>
                     <td>@scan.ScanId</td>
                     <td>@scan.ParsedState</td>
-                    <td>@scan.Min?.ToString("O")</td>
-                    <td>@scan.Max?.ToString("O")</td>
+                    <td>@scan.Min?.ToZulu()</td>
+                    <td>@scan.Max?.ToZulu()</td>
                     <td>
                         @if (scan.Started.HasValue)
                         {

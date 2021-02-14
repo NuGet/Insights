@@ -1,75 +1,63 @@
 ﻿@model ExploreViewModel
 @using Knapcode.ExplorePackages.Website.Logic;
 @{
-    ViewData["Title"] = "Home";
+    ViewData["Title"] = "Consistency";
 }
 
-<div class="row">
-    <div class="col-xs-12">
-        <h2>@ViewData["Title"]</h2>
+<h2>@ViewData["Title"]</h2>
 
-        <p>Enter a package ID and version below to check its consistency on the various NuGet API endpoints on NuGet.org.</p>
-        <form id="getReportForm">
-            <div class="form-group">
-                <label for="packageId">Package ID</label>
-                <input type="text" class="form-control" name="id" id="packageId" value="@Model.Id">
-            </div>
-            <div class="form-group">
-                <label for="packageVersion">Package Version</label>
-                <input type="text" class="form-control" name="version" id="packageVersion" value="@Model.Version">
-            </div>
-            <button type="submit" id="getReport" class="btn btn-primary">Explore</button>
-            <button type="button" id="getLatestCatalog" class="btn btn-default">Find Latest Catalog Package</button>
-        </form>
+<p>Enter a package ID and version below to check its consistency on the various NuGet API endpoints on NuGet.org.</p>
 
-        <hr />
+<form id="getReportForm">
+    <div class="form-group">
+        <label for="packageId">Package ID</label>
+        <input type="text" class="form-control" name="id" id="packageId" value="@Model.Id">
+    </div>
+    <div class="form-group">
+        <label for="packageVersion">Package Version</label>
+        <input type="text" class="form-control" name="version" id="packageVersion" value="@Model.Version">
+    </div>
+    <button type="submit" id="getReport" class="btn btn-success">Explore</button>
+    <button type="button" id="getLatestCatalog" class="btn btn-secondary">Find Latest Catalog Package</button>
+</form>
 
-        <div>
-            <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active">
-                    <a href="#progress" aria-controls="progress" role="tab" data-toggle="tab" id="progressTab">
-                        Progress
-                    </a>
-                </li>
-                <li role="presentation">
-                    <a href="#urls" aria-controls="urls" role="tab" data-toggle="tab" id="urlsTab">
-                        URLs
-                    </a>
-                </li>
-                <li role="presentation" class="disabled">
-                    <a href="#report" aria-controls="report" role="tab" data-toggle="tab" id="reportTab">
-                        Report
-                    </a>
-                <li role="presentation" class="disabled">
-                    <a href="#reportData" aria-controls="reportData" role="tab" data-toggle="tab" id="reportDataTab">
-                        Data
-                    </a>
-                </li>
-            </ul>
-            <br />
-            <div class="tab-content">
-                <div role="tabpanel" class="tab-pane active" id="progress">
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-striped" role="progressbar" aria-valuenow="0" aria-valuemin="0"
-                             aria-valuemax="100" style="width: 0%;" id="progressBar">
-                            <span class="sr-only">0% Complete</span>
-                        </div>
-                    </div>
-                    <div id="statuses"></div>
-                </div>
-                <div role="tabpanel" class="tab-pane" id="report">
-                </div>
-                <div role="tabpanel" class="tab-pane" id="reportData">
-                </div>
-                <div role="tabpanel" class="tab-pane" id="urls">
+<hr />
+
+<div>
+    <ul class="nav nav-pills" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link active" id="progressTab" data-toggle="tab" href="#progress" role="tab" aria-controls="progress" aria-selected="true">Progress</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="urlsTab" data-toggle="tab" href="#urls" role="tab" aria-controls="urls" aria-selected="false">URLs</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link disabled" tabindex="-1" aria-disabled="true" id="reportTab" data-toggle="tab" href="#report" role="tab" aria-controls="report" aria-selected="false">Report</a>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link disabled" tabindex="-1" aria-disabled="true" id="reportDataTab" data-toggle="tab" href="#reportData" role="tab" aria-controls="reportData" aria-selected="false">Data</a>
+        </li>
+    </ul>
+    <div class="mt-3 tab-content">
+        <div class="tab-pane active" role="tabpanel" id="progress" aria-labelledby="progressTab">
+            <div class="progress">
+                <div class="progress-bar progress-bar-striped" role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                     aria-valuemax="100" style="width: 0%;" id="progressBar">
+                    <span class="sr-only">0% Complete</span>
                 </div>
             </div>
+            <div class="mt-3" id="statuses"></div>
+        </div>
+        <div class="tab-pane" role="tabpanel" id="urls" aria-labelledby="urlsTab">
+        </div>
+        <div class="tab-pane" role="tabpanel" id="report" aria-labelledby="reportTab">
+        </div>
+        <div class="tab-pane" role="tabpanel" id="reportData" aria-labelledby="reportDataTab">
         </div>
     </div>
 </div>
 
 <script id="http-sessions-template" type="text/x-handlebars-template">
-    <table class="table table-condensed">
+    <table class="table table-sm">
         <thead>
             <tr>
                 <th>Method</th>
@@ -85,11 +73,11 @@
 <script id="http-session-template" type="text/x-handlebars-template">
     <tr>
         <td>{{method}}</td>
-        <td><a href="{{requestUri}}" target="_blank">{{requestUri}}</a></td>
+        <td><a href="{{requestUri}}">{{requestUri}}</a></td>
         <td>{{statusCode}} {{reasonPhrase}}</td>
         <td>
             {{#if duration}}
-                {{duration}} seconds
+            {{duration}} seconds
             {{/if}}
         </td>
     </tr>
@@ -97,7 +85,7 @@
 
 <script id="report-template" type="text/x-handlebars-template">
     <h3>Overview</h3>
-    <table class="table table-condensed table-report">
+    <table class="table table-sm table-report">
         <tbody>
             <tr class="{{consistentclass @@root}}">
                 <th>Consistent?</th>
@@ -131,7 +119,7 @@
     </table>
 
     <h3>V2</h3>
-    <table class="table table-condensed table-report">
+    <table class="table table-sm table-report">
         <tbody>
             <tr class="{{consistentclass v2}}">
                 <th>Consistent?</th>
@@ -145,7 +133,7 @@
     </table>
 
     <h3>Packages container</h3>
-    <table class="table table-condensed table-report">
+    <table class="table table-sm table-report">
         <tbody>
             <tr class="{{consistentclass packagesContainer}}">
                 <th>Consistent?</th>
@@ -159,21 +147,22 @@
                 <th>Package MD5</th>
                 <td>
                     {{#if packagesContainer.packageContentMetadata.contentMD5}}
-                        <code>{{packagesContainer.packageContentMetadata.contentMD5}}</code>
-                        (<code>{{hextobase64 packagesContainer.packageContentMetadata.contentMD5}}</code>)
+                    <code>{{packagesContainer.packageContentMetadata.contentMD5}}</code>
+                    (<code>{{hextobase64 packagesContainer.packageContentMetadata.contentMD5}}</code>)
                     {{/if}}
                 </td>
             </tr>
             <tr>
                 <th>Has MD5 header?</th>
-                <td>{{yesno packagesContainer.packageContentMetadata.hasContentMD5Header}}
+                <td>
+                    {{yesno packagesContainer.packageContentMetadata.hasContentMD5Header}}
                 </td>
             </tr>
         </tbody>
     </table>
 
     <h3>Flat container</h3>
-    <table class="table table-condensed table-report">
+    <table class="table table-sm table-report">
         <tbody>
             <tr class="{{consistentclass flatContainer}}">
                 <th>Consistent?</th>
@@ -214,7 +203,7 @@
     </table>
 
     <h3>Registration hives</h3>
-    <table class="table table-condensed table-report">
+    <table class="table table-sm table-report">
         <thead>
             <tr class="{{consistentclass registration}}">
                 <th>Consistent?</th>
@@ -262,7 +251,7 @@
     </table>
 
     <h3>Search service</h3>
-    <table class="table table-condensed table-report">
+    <table class="table table-sm table-report">
         <thead>
             <tr class="{{consistentclass search}}">
                 <th>Consistent?</th>
@@ -304,7 +293,7 @@
     </table>
 
     <h3>Cross check</h3>
-    <table class="table table-condensed table-report">
+    <table class="table table-sm table-report">
         <tbody>
             <tr class="{{consistentclass crossCheck}}">
                 <th>Consistent?</th>
@@ -319,6 +308,8 @@
 </script>
 
 @section Scripts {
+    <script src="~/lib/handlebars/handlebars.min.js"></script>
+    <script src="~/lib/signalr/dist/browser/signalr.min.js"></script>
     <script>
         Handlebars.registerHelper('yesno', function (value) {
             return value ? "Yes" : "No";
@@ -329,7 +320,7 @@
         });
 
         Handlebars.registerHelper('consistentclass', function (report) {
-            return report.isConsistent ? "success" : "danger";
+            return report.isConsistent ? "bg-success" : "bg-danger";
         });
 
         var httpSessionsTemplate = Handlebars.compile($("#http-sessions-template").html());
@@ -369,7 +360,7 @@
 
                 if (self.$row) {
                     self.$row.replaceWith($newRow);
-                } 
+                }
 
                 self.$row = $newRow;
             }
@@ -510,13 +501,13 @@
             });
 
             $reportTab.click(function () {
-                if ($reportTab.parent().hasClass("disabled")) {
+                if ($reportTab.hasClass("disabled")) {
                     return false;
                 }
             });
 
             $reportDataTab.click(function () {
-                if ($reportDataTab.parent().hasClass("disabled")) {
+                if ($reportDataTab.hasClass("disabled")) {
                     return false;
                 }
             });
@@ -550,8 +541,8 @@
                 $reportData.empty();
                 $statuses.empty();
                 $urls.empty();
-                $reportTab.parent().attr("class", "disabled");
-                $reportDataTab.parent().attr("class", "disabled");
+                $reportTab.addClass("disabled");
+                $reportDataTab.addClass("disabled");
                 $progressTab.tab('show');
                 setProgress(0);
                 httpSessions = {};
@@ -645,7 +636,7 @@
                     $pre = $("<pre></pre>");
                     $pre.html(JSON.stringify(data, null, 2));
                     $reportData.append($pre);
-                    $reportDataTab.parent().attr("class", "");
+                    $reportDataTab.removeClass("disabled");
 
                     unlockForm();
                 });
@@ -654,12 +645,12 @@
                     addStatus('Complete.');
 
                     $report.append(reportTemplate(new ViewModel(report)));
-                    $reportTab.parent().attr("class", "");
+                    $reportTab.removeClass("disabled");
 
                     $pre = $("<pre></pre>");
                     $pre.html(JSON.stringify(report, null, 2));
                     $reportData.append($pre);
-                    $reportDataTab.parent().attr("class", "");
+                    $reportDataTab.removeClass("disabled");
 
                     $reportTab.tab('show');
 
