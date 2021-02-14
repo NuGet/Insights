@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -305,38 +306,63 @@ namespace Knapcode.ExplorePackages
 
         private async Task CopyAndSeekAsync(Stream src, long length, HashAlgorithm hashAlgorithm, Stream dest)
         {
-            var buffer = new byte[BufferSize];
-
-            long copiedBytes = 0;
-            double previousPercent = -1;
-            while (true)
+            var pool = ArrayPool<byte>.Shared;
+            var buffer = pool.Rent(BufferSize);
+            try
             {
-                var bytesRead = await src.ReadAsync(buffer, 0, buffer.Length);
-                copiedBytes += bytesRead;
-                var percent = 1.0 * copiedBytes / length;
-                var logLevel = bytesRead == 0 || (int)(percent * 100) != (int)(previousPercent * 100) ? LogLevel.Information : LogLevel.Debug;
-                _logger.Log(logLevel, "Read {BufferBytes} bytes ({CopiedBytes} of {TotalBytes}, {Percent:P2}).", bytesRead, copiedBytes, length, percent);
-
-                if (bytesRead == 0)
+                long copiedBytes = 0;
+                double previousPercent = -1;
+                while (true)
                 {
-                    hashAlgorithm?.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
-                    break;
+                    // Spend up to 5 second trying to fill up the buffer. This results is less chattiness on the "write" side
+                    // of the copy operation.
+                    var bytesRead = await ReadForDurationAsync(src, buffer, TimeSpan.FromSeconds(5));
+
+                    copiedBytes += bytesRead;
+                    var percent = 1.0 * copiedBytes / length;
+                    var logLevel = bytesRead == 0 || (int)(percent * 100) != (int)(previousPercent * 100) ? LogLevel.Information : LogLevel.Debug;
+                    _logger.Log(logLevel, "Read {BufferBytes} bytes ({CopiedBytes} of {TotalBytes}, {Percent:P2}).", bytesRead, copiedBytes, length, percent);
+
+                    if (bytesRead == 0)
+                    {
+                        hashAlgorithm?.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+                        break;
+                    }
+
+                    hashAlgorithm?.TransformBlock(buffer, 0, bytesRead, buffer, 0);
+
+                    await dest.WriteAsync(buffer, 0, bytesRead);
+                    _logger.Log(logLevel, "Wrote {BufferBytes} bytes ({CopiedBytes} of {TotalBytes}, {Percent:P2}).", bytesRead, copiedBytes, length, percent);
+                    previousPercent = percent;
                 }
 
-                hashAlgorithm?.TransformBlock(buffer, 0, bytesRead, buffer, 0);
+                if (copiedBytes < dest.Length)
+                {
+                    _logger.LogInformation("Shortening destination stream from {OldLength} to {NewLength}.", dest.Length, copiedBytes);
+                    dest.SetLength(copiedBytes);
+                }
 
-                await dest.WriteAsync(buffer, 0, bytesRead);
-                _logger.Log(logLevel, "Wrote {BufferBytes} bytes ({CopiedBytes} of {TotalBytes}, {Percent:P2}).", bytesRead, copiedBytes, length, percent);
-                previousPercent = percent;
+                dest.Position = 0;
             }
-
-            if (copiedBytes < dest.Length)
+            finally
             {
-                _logger.LogInformation("Shortening destination stream from {OldLength} to {NewLength}.", dest.Length, copiedBytes);
-                dest.SetLength(copiedBytes);
+                pool.Return(buffer);
             }
+        }
 
-            dest.Position = 0;
+        private static async Task<int> ReadForDurationAsync(Stream src, byte[] buffer, TimeSpan timeLimit)
+        {
+            var sw = Stopwatch.StartNew();
+            var totalRead = 0;
+            int read;
+            do
+            {
+                read = await src.ReadAsync(buffer, totalRead, buffer.Length - totalRead);
+                totalRead += read;
+            }
+            while (read > 0 && totalRead < buffer.Length && sw.Elapsed < timeLimit);
+
+            return totalRead;
         }
     }
 }
