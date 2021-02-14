@@ -97,7 +97,7 @@ namespace Knapcode.ExplorePackages
                 StorageAccountName = _storageAccount.Name,
                 StorageContainerName = _deploymentContainer.Name,
                 Type = "Block",
-                Source = new FileArchive("../../artifacts/ExplorePackages/ExplorePackages.Website/bin/Release/netcoreapp3.1/publish"),
+                Source = new FileArchive("../../artifacts/ExplorePackages/ExplorePackages.Website/bin/Release/net5.0/publish"),
             });
 
             var deploymentBlobUrl = SharedAccessSignature.SignedBlobReadUrl(deploymentBlob, _storageAccount);
@@ -142,6 +142,7 @@ namespace Knapcode.ExplorePackages
                 SiteConfig = new AppServiceSiteConfigArgs
                 {
                     WebsocketsEnabled = true,
+                    DotnetFrameworkVersion = "v5.0",
                 },
                 // Workaround for a bug. Source: https://github.com/pulumi/pulumi-azure/issues/740#issuecomment-734054001
                 Logs = new AppServiceLogsArgs
