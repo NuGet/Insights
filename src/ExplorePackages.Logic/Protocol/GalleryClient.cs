@@ -131,6 +131,7 @@ namespace Knapcode.ExplorePackages
 
                 state.PackageDeletedStatus = PackageDeletedStatus.Unknown;
                 state.IsListed = false;
+                state.HasIcon = false;
                 return state;
             }
 
