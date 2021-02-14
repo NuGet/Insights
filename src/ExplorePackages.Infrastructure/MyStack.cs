@@ -102,7 +102,10 @@ namespace Knapcode.ExplorePackages
 
             var deploymentBlobUrl = SharedAccessSignature.SignedBlobReadUrl(deploymentBlob, _storageAccount);
 
-            var aadApp = new Application("Knapcode.ExplorePackages-" + _stackAlpha);
+            var aadApp = new Application("Knapcode.ExplorePackages-" + _stackAlpha, new ApplicationArgs
+            {
+                DisplayName = "Knapcode.ExplorePackages-" + _stackAlpha,
+            });
 
             var configuredSettings = _config.GetObject<ExplorePackagesWebsiteSettings>("AppSettings");
 
@@ -186,6 +189,7 @@ namespace Knapcode.ExplorePackages
                                 signInAudience = "AzureADandPersonalMicrosoftAccount",
                                 web = new
                                 {
+                                    homePageUrl = $"https://{defaultSiteHostname}",
                                     redirectUris = new[]
                                     {
                                         $"https://{defaultSiteHostname}/signin-oidc",

@@ -2,14 +2,14 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>Knapcode.ExplorePackages</RootNamespace>
     <AssemblyName>Knapcode.ExplorePackages.Infrastructure</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Pulumi.Azure" Version="3.40.0" />
-    <PackageReference Include="Pulumi.AzureAD" Version="3.1.0" />
+    <PackageReference Include="Pulumi.Azure" Version="3.46.0" />
+    <PackageReference Include="Pulumi.AzureAD" Version="3.3.0" />
   </ItemGroup>
 
   <ItemGroup>
