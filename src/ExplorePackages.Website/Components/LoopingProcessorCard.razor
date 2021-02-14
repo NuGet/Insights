@@ -1,0 +1,26 @@
+﻿<CollapseCard IdPrefix="@IdPrefix" Title="@Title">
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item"><b>Is running?</b> @IsRunning</li>
+    </ul>
+
+    <div class="card-body">
+        <form asp-action="Start@(IdPrefix)" method="post" class="form-inline">
+            <button type="submit" class="btn btn-primary mr-1">Start</button>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="@IdPrefix-loop" name="loop" value="true" />
+                <label class="form-check-label" for="@IdPrefix-loop">Loop</label>
+            </div>
+        </form>
+    </div>
+</CollapseCard>
+
+@code {
+    [Parameter]
+    public string IdPrefix { get; set; }
+
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public bool IsRunning { get; set; }
+}

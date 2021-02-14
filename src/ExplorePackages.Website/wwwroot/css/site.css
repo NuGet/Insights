@@ -40,3 +40,26 @@
 .smaller-text {
     font-size: 0.9rem;
 }
+
+.card-header .bi {
+    display: inline-flex;
+    font-size: 1rem;
+}
+
+/*
+.card .show {
+    border-top: 1px solid rgba(0,0,0,.125);
+}
+*/
+
+[data-toggle="collapse"].card-header {
+    border-bottom-width: 0;
+}
+
+[data-toggle="collapse"] .bi::before {
+    content: "\f282";
+}
+
+[data-toggle="collapse"].collapsed .bi::before {
+    content: "\f285";
+}

@@ -1,7 +1,4 @@
-﻿@model CatalogScanViewModel
-
-<a name="@Model.DriverType" class="anchor"></a>
-@{ 
+﻿@{ 
     var error = TempData[Model.DriverType + ".Error"]?.ToString();
     var success = TempData[Model.DriverType + ".Success"]?.ToString();
     var hasError = !string.IsNullOrEmpty(error);
@@ -11,9 +8,7 @@
     var messageBgClass = hasError ? "bg-danger" : (hasSuccess ? "bg-success" : string.Empty);
     var borderClass = hasError ? "border-danger" : (hasSuccess ? "border-success" : string.Empty);
 }
-<div class="card @borderClass mt-3">
-    <h4 class="card-header">@Model.DriverType.ToString().Humanize()</h4>
-
+<CollapseCard IdPrefix="@Model.DriverType.ToString()" Title="@Model.DriverType.ToString().Humanize()" BorderClass="@borderClass">
     <ul class="list-group list-group-flush">
         <li class="list-group-item"><b>Cursor value:</b> @Model.Cursor.Value.ToZulu()</li>
         <li class="list-group-item"><b>Cursor age:</b> @Model.CursorAge.Humanize(precision: 7, maxUnit: Humanizer.Localisation.TimeUnit.Year, minUnit: Humanizer.Localisation.TimeUnit.Second)</li>
@@ -37,7 +32,6 @@
             <button type="submit" class="btn btn-primary">Start</button>
         </form>
     </div>
-
 
     @if (message != null)
     {
@@ -89,4 +83,15 @@
             }
         </tbody>
     </table>
-</div>
+</CollapseCard>
+
+@code {
+    [Parameter]
+    public CatalogScanViewModel Model { get; set; }
+
+    [Parameter]
+    public ITempDataDictionary TempData { get; set; }
+
+    [Parameter]
+    public IHtmlHelper Html { get;  set; } 
+}

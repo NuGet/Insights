@@ -1,0 +1,26 @@
+﻿<a name="@IdPrefix" class="anchor"></a>
+<div id="@IdPrefix-accordian">
+    <div class="card @BorderClass mt-3">
+        <h4 class="card-header" id="@IdPrefix-heading" role="button" data-toggle="collapse" data-target="#@IdPrefix-content" aria-expanded="true" aria-controls="@IdPrefix-content">
+            <i class="bi bi-chevron-down" aria-hidden="true"></i> @Title
+        </h4>
+
+        <div id="@IdPrefix-content" class="collapse show" aria-labelledby="@IdPrefix-heading" data-parent="#@IdPrefix-accordian">
+            @ChildContent
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string IdPrefix { get; set; }
+
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public string BorderClass { get; set; } 
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+}
