@@ -1,11 +1,11 @@
 ﻿<a name="@IdPrefix" class="anchor"></a>
 <div id="@IdPrefix-accordian">
     <div class="card @BorderClass mt-3">
-        <h4 class="card-header" id="@IdPrefix-heading" role="button" data-toggle="collapse" data-target="#@IdPrefix-content" aria-expanded="true" aria-controls="@IdPrefix-content">
+        <h4 class="card-header @(Collapsed ? "collapsed" : string.Empty)" id="@IdPrefix-heading" role="button" data-toggle="collapse" data-target="#@IdPrefix-content" aria-expanded="true" aria-controls="@IdPrefix-content">
             <i class="bi bi-chevron-down" aria-hidden="true"></i> @Title
         </h4>
 
-        <div id="@IdPrefix-content" class="collapse show" aria-labelledby="@IdPrefix-heading" data-parent="#@IdPrefix-accordian">
+        <div id="@IdPrefix-content" class="collapse-remember collapse @(Collapsed ? string.Empty : "show")" aria-labelledby="@IdPrefix-heading" data-parent="#@IdPrefix-accordian">
             @ChildContent
         </div>
     </div>
@@ -19,8 +19,11 @@
     public string Title { get; set; }
 
     [Parameter]
-    public string BorderClass { get; set; } 
+    public string BorderClass { get; set; }
+
+    [Parameter]
+    public bool Collapsed { get; set; } = true;
 
     [Parameter]
     public RenderFragment ChildContent { get; set; }
-}
+}

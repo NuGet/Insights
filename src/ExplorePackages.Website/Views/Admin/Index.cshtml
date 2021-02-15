@@ -15,19 +15,24 @@
         render-mode="Static"
         param-Model="catalogScan"
         param-TempData="TempData"
-        param-Html="Html" />
+        param-Html="Html"
+        param-Url="Url" />
 }
 
 <component
     type="typeof(LoopingProcessorCard)"
     render-mode="Static"
     param-IdPrefix='"DownloadsToCsv"'
+    param-StartAction='"StartDownloadsToCsv"'
     param-Title='"Downloads to CSV"'
-    param-IsRunning="@Model.IsDownloadsToCsvRunning" />
+    param-IsRunning="@Model.IsDownloadsToCsvRunning"
+    param-Url="Url" />
 
 <component
     type="typeof(LoopingProcessorCard)"
     render-mode="Static"
     param-IdPrefix='"OwnersToCsv"'
+    param-StartAction='"StartOwnersToCsv"'
     param-Title='"Owners to CSV"'
-    param-IsRunning="@Model.IsOwnersToCsvRunning" />
+    param-IsRunning="@Model.IsOwnersToCsvRunning"
+    param-Url="Url" />
