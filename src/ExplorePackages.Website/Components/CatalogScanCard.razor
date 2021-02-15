@@ -36,7 +36,7 @@
     @if (message != null)
     {
         <ul class="list-group list-group-flush">
-            <li class="list-group-item @messageFontClass @messageBgClass">@Html.Raw(message)</li>
+            <li class="list-group-item @messageFontClass @messageBgClass">@((MarkupString)message)</li>
         </ul>
     }
 
@@ -91,9 +91,6 @@
 
     [Parameter]
     public ITempDataDictionary TempData { get; set; }
-
-    [Parameter]
-    public IHtmlHelper Html { get;  set; } 
 
     [Parameter]
     public IUrlHelper Url { get;  set; } 
