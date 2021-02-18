@@ -142,9 +142,9 @@ Finally, some interesting generic services were built to enable this analysis:
 - [`WideEntityService`](src/ExplorePackages.Logic/WideEntities/WideEntityService.cs) - Blob Storage-like semantics with Azure Table Storage, enables batch operations
 
 
-## Performance and cost
+## Performance and cost ()
 
-### Results (February 2021)
+*As of February 2021.*
 
 Tested timestamp range:
 - Min: `2015-02-01T06:22:45.8488496Z`
@@ -249,56 +249,6 @@ Results:
   - storage / tables / lrs class 1 additional io - $0.01
 
 </details>
-
-
-### Results (January 2021)
-
-Tested timestamp ranges:
-- From the beginning of the catalog:
-  - Min: `2015-02-01T06:22:45.8488496Z`
-  - Max: `2020-12-27T08:10:52.8300258Z`
-  - Page count: 11,621
-  - Leaf count: 6,339,112
-  - Unique packages: 3,597,830
-  - Drivers that used this range:
-    - `FindLatestLeaf`
-    - `FindCatalogLeafItem`
-- Mininum commit to get all **non-deleted** packages:
-  - Min: `2018-08-08T16:29:16.4488297Z`
-  - Max: `2020-12-27T08:10:52.8300258Z`
-  - Page count: 7,435
-  - Leaf count: 4,007,407
-  - Unique packages: 3,593,656
-  - Tests that used this range:
-    - `FindPackageAssembly`
-    - `FindPackageAsset`
-    - `FindLatestLeaf`
-
-Results:
-- `FindPackageAssembly`
-   - Runtime: 4 hours, 38 minutes, 35 seconds
-   - Cost:
-       - Functions: $8.73
-       - Storage: $2.83
-- `FindPackageAsset`
-   - Runtime: 48 minutes, 23 seconds
-   - Cost: 
-       - Functions: $0.96
-       - Storage: $0.21
-- `FindPackageAsset` with latest leaf de-duping
-   - Runtime: 41 minutes, 38 seconds
-   - Cost: 
-       - Functions: $1.49
-       - Storage: $0.29
-- `FindLatestLeaf` from "available min"
-   - Runtime: 7 minutes, 56 seconds
-   - Cost: <$0.01
-- `FindLatestLeaf` from "absolute min"
-   - Runtime: 8 minutes, 25 seconds
-   - Cost: $0.01
-- `FindCatalogLeafItem`
-   - Runtime: 2 minutes, 28 seconds
-   - Cost: <$0.01
 
 ## Consistency
 
