@@ -32,7 +32,6 @@ namespace Knapcode.ExplorePackages
 
         private const int MB = 1024 * 1024;
         private const int GB = 1024 * MB;
-        private const int BufferSize = 80 * 1024;
         private const string Memory = "memory";
         private static readonly ReadOnlyMemory<byte> OneByte = new ReadOnlyMemory<byte>(new[] { (byte)0 });
 
@@ -125,7 +124,7 @@ namespace Knapcode.ExplorePackages
 
                     if (dest != null)
                     {
-                        return await CopyAndSeekAsync(src, length, hashAlgorithm, dest, Memory);
+                        return await CopyAndSeekAsync(src, length, hashAlgorithm, dest, Memory, TempStreamDirectory.DefaultBufferSize);
                     }
                 }
 
@@ -191,7 +190,7 @@ namespace Knapcode.ExplorePackages
                             FileMode.Create,
                             FileAccess.ReadWrite,
                             FileShare.None,
-                            BufferSize,
+                            bufferSize: 4096, // default
                             FileOptions.Asynchronous | FileOptions.DeleteOnClose);
 
                         if (tempDir.PreallocateFile)
@@ -202,7 +201,7 @@ namespace Knapcode.ExplorePackages
                         }
 
                         consumedSource = true;
-                        return await CopyAndSeekAsync(src, length, hashAlgorithm, dest, tempPath);
+                        return await CopyAndSeekAsync(src, length, hashAlgorithm, dest, tempPath, tempDir.BufferSize);
                     }
                     catch (IOException ex)
                     {
@@ -282,7 +281,7 @@ namespace Knapcode.ExplorePackages
             }
         }
 
-        private async Task<TempStreamResult> CopyAndSeekAsync(Stream src, long length, HashAlgorithm hashAlgorithm, Stream dest, string location)
+        private async Task<TempStreamResult> CopyAndSeekAsync(Stream src, long length, HashAlgorithm hashAlgorithm, Stream dest, string location, int bufferSize)
         {
             _logger.LogInformation(
                 "Starting copy of a {TypeName} stream with length {LengthBytes} bytes to {Location}.",
@@ -291,7 +290,7 @@ namespace Knapcode.ExplorePackages
                 location);
 
             var sw = Stopwatch.StartNew();
-            await CopyAndSeekAsync(src, length, hashAlgorithm, dest);
+            await CopyAndSeekAsync(src, length, hashAlgorithm, dest, bufferSize);
             sw.Stop();
 
             _logger.LogInformation(
@@ -304,10 +303,10 @@ namespace Knapcode.ExplorePackages
             return TempStreamResult.Success(dest, hashAlgorithm?.Hash);
         }
 
-        private async Task CopyAndSeekAsync(Stream src, long length, HashAlgorithm hashAlgorithm, Stream dest)
+        private async Task CopyAndSeekAsync(Stream src, long length, HashAlgorithm hashAlgorithm, Stream dest, int bufferSize)
         {
             var pool = ArrayPool<byte>.Shared;
-            var buffer = pool.Rent(BufferSize);
+            var buffer = pool.Rent(bufferSize);
             try
             {
                 long copiedBytes = 0;
@@ -315,8 +314,9 @@ namespace Knapcode.ExplorePackages
                 while (true)
                 {
                     // Spend up to 5 second trying to fill up the buffer. This results is less chattiness on the "write" side
-                    // of the copy operation.
-                    var bytesRead = await ReadForDurationAsync(src, buffer, TimeSpan.FromSeconds(5));
+                    // of the copy operation. We pass the buffer size here because we want to observe the provided buffer size.
+                    // The memory pool that gave us the buffer may have given us a buffer larger than the provided buffer size.
+                    var bytesRead = await ReadForDurationAsync(src, buffer, bufferSize, TimeSpan.FromSeconds(5));
 
                     copiedBytes += bytesRead;
                     var percent = 1.0 * copiedBytes / length;
@@ -350,17 +350,17 @@ namespace Knapcode.ExplorePackages
             }
         }
 
-        private static async Task<int> ReadForDurationAsync(Stream src, byte[] buffer, TimeSpan timeLimit)
+        private static async Task<int> ReadForDurationAsync(Stream src, byte[] buffer, int bufferSize, TimeSpan timeLimit)
         {
             var sw = Stopwatch.StartNew();
             var totalRead = 0;
             int read;
             do
             {
-                read = await src.ReadAsync(buffer, totalRead, buffer.Length - totalRead);
+                read = await src.ReadAsync(buffer, totalRead, bufferSize - totalRead);
                 totalRead += read;
             }
-            while (read > 0 && totalRead < buffer.Length && sw.Elapsed < timeLimit);
+            while (read > 0 && totalRead < bufferSize && sw.Elapsed < timeLimit);
 
             return totalRead;
         }
