@@ -141,6 +141,14 @@ Finally, some interesting generic services were built to enable this analysis:
 - [`TempStreamService`](src/ExplorePackages.Logic/TempStream/TempStreamService.cs) - buffer to local storage (memory or disk), great for Azure Functions Consumption Plan
 - [`WideEntityService`](src/ExplorePackages.Logic/WideEntities/WideEntityService.cs) - Blob Storage-like semantics with Azure Table Storage, enables batch operations
 
+## Blog posts
+
+I've written several blog posts based on findings in this project:
+
+- [Disk write performance on Azure Functions](https://www.joelverhagen.com/blog/2021/02/azure-function-disk-performance) - use the Azure File Share efficiently in Consumption plan
+- [How to run a distributed scan of Azure Table Storage](https://www.joelverhagen.com/blog/2020/12/distributed-scan-of-azure-tables) - 10 minute Azure Functions limit and big Table Storage
+- [The fastest CSV parser in .NET](https://www.joelverhagen.com/blog/2020/12/fastest-net-csv-parsers) - comparing the performance of .NET CSV parsers on NuGet.org
+- [The fastest way to dynamically activate objects in .NET](https://www.joelverhagen.com/blog/2020/11/dynamically-activate-objects-net) - ILEmit vs. `Activator` vs. `new T()`, etc.
 
 ## Performance and cost
 
