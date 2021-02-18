@@ -142,9 +142,9 @@ Finally, some interesting generic services were built to enable this analysis:
 - [`WideEntityService`](src/ExplorePackages.Logic/WideEntities/WideEntityService.cs) - Blob Storage-like semantics with Azure Table Storage, enables batch operations
 
 
-## Performance and cost ()
+## Performance and cost
 
-*As of February 2021.*
+*As of February 2021*
 
 Tested timestamp range:
 - Min: `2015-02-01T06:22:45.8488496Z`
