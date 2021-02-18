@@ -223,6 +223,34 @@ Results:
 
 </details>
 
+- `FindPackageAssembly`
+  - Runtime: 1 hour, 33 minutes, 25 seconds
+  - Total cost: $6.37
+
+<details>
+<summary>Detailed cost</summary>
+
+- Azure Functions cost - $6.37
+  - functions / execution time - $0.63
+  - bandwidth / data transfer out - $0.87
+  - functions / total executions - $0.04
+- Azure Storage cost - $4.74
+  - storage / queues v2 / lrs class 1 operations - $3.08
+  - storage / files / lrs write operations - $0.48
+  - storage / tables / batch write operations - $0.35
+  - storage / tables / scan operations - $0.24
+  - storage / tiered block blob / all other operations - $0.14
+  - storage / tables / delete operations - $0.13
+  - storage / tables / write operations - $0.13
+  - storage / tables / read operations - $0.13
+  - storage / files / protocol operations - $0.01
+  - storage / files / read operations - $0.01
+  - storage / queues v2 / class 2 operations - $0.01
+  - storage / tables / lrs class 1 additional io - $0.01
+
+</details>
+
+
 ### Results (January 2021)
 
 Tested timestamp ranges:
