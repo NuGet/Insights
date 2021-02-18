@@ -56,6 +56,7 @@ namespace Knapcode.ExplorePackages.Worker
                 {
                     Path = networkDir,
                     MaxConcurrentWriters = 32,
+                    BufferSize = 4 * 1024 * 1024,
                 });
             }
         }
