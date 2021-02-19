@@ -92,6 +92,7 @@ namespace Knapcode.ExplorePackages.Worker
                     schemaVersion,
                     deserializer.Deserialize(schemaVersion, data[0]),
                     dequeueCount);
+                return;
             }
 
             var serializer = _serializer.GetGenericSerializer(deserializer.Type);

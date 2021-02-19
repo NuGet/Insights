@@ -47,7 +47,7 @@ namespace Knapcode.ExplorePackages
             }
 
             var message = formatter(state, exception);
-            _output.WriteLine(message);
+            _output.WriteLine($"[{logLevel.ToString().Substring(0, 3).ToUpperInvariant()}] {message}");
             if (exception != null)
             {
                 _output.WriteLine(exception.ToString());
