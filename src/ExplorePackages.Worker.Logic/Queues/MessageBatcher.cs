@@ -42,10 +42,11 @@ namespace Knapcode.ExplorePackages.Worker
                         clsm.ScanId,
                         clsm.PageId,
                         clsm.LeafId);
-                    if (catalogLeafScan.ParsedDriverType == CatalogScanDriverType.FindPackageAsset
-                        || catalogLeafScan.ParsedDriverType == CatalogScanDriverType.FindPackageFile
-                        || catalogLeafScan.ParsedDriverType == CatalogScanDriverType.FindPackageManifest
-                        || catalogLeafScan.ParsedDriverType == CatalogScanDriverType.FindPackageSignature)
+                    if (catalogLeafScan.ParsedDriverType == CatalogScanDriverType.FindPackageAssembly)
+                    {
+                        batchSize = 10;
+                    }
+                    else
                     {
                         batchSize = 30;
                     }
