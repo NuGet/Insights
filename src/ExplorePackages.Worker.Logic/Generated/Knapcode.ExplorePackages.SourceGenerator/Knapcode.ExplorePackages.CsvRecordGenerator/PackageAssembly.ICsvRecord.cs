@@ -44,6 +44,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
         PublicKeySHA1: string
     );
 
+    .alter-merge table JverPackageAssemblies policy retention softdelete = 30d;
+
     .alter table JverPackageAssemblies policy partitioning '{'
       '"PartitionKeys": ['
         '{'

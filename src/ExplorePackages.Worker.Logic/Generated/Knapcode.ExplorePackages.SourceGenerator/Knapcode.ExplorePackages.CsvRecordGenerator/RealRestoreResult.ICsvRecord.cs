@@ -47,6 +47,8 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
         OnlyMSB3644: bool
     );
 
+    .alter-merge table JverRealRestoreResults policy retention softdelete = 30d;
+
     .alter table JverRealRestoreResults policy partitioning '{'
       '"PartitionKeys": ['
         '{'

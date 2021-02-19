@@ -24,6 +24,8 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
         PageUrl: string
     );
 
+    .alter-merge table JverCatalogLeafItems policy retention softdelete = 30d;
+
     .alter table JverCatalogLeafItems policy partitioning '{'
       '"PartitionKeys": ['
         '{'

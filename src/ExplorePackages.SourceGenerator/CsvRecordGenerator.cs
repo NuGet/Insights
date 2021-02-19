@@ -36,6 +36,8 @@ namespace {0}
 {2}
     );
 
+    .alter-merge table {1} policy retention softdelete = 30d;
+
     .alter table {1} policy partitioning {3};
 
     .create table {1} ingestion csv mapping '{1}_mapping'

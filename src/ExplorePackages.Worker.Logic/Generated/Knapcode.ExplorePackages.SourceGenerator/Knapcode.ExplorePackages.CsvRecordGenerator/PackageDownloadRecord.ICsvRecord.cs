@@ -22,6 +22,8 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
         TotalDownloads: long
     );
 
+    .alter-merge table JverPackageDownloads policy retention softdelete = 30d;
+
     .alter table JverPackageDownloads policy partitioning '{'
       '"PartitionKeys": ['
         '{'

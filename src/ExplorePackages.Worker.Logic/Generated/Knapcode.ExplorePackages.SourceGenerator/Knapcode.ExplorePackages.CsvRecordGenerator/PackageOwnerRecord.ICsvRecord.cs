@@ -19,6 +19,8 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
         Owners: string
     );
 
+    .alter-merge table JverPackageOwners policy retention softdelete = 30d;
+
     .alter table JverPackageOwners policy partitioning '{'
       '"PartitionKeys": ['
         '{'

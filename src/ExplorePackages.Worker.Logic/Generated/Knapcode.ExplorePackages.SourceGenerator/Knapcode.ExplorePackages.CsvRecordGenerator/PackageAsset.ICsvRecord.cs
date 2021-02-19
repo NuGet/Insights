@@ -43,6 +43,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
         PlatformVersion: string
     );
 
+    .alter-merge table JverPackageAssets policy retention softdelete = 30d;
+
     .alter table JverPackageAssets policy partitioning '{'
       '"PartitionKeys": ['
         '{'

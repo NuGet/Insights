@@ -55,6 +55,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
         PackageOwners: string
     );
 
+    .alter-merge table JverPackageSignatures policy retention softdelete = 30d;
+
     .alter table JverPackageSignatures policy partitioning '{'
       '"PartitionKeys": ['
         '{'
