@@ -51,7 +51,7 @@ This is what the admin panel looks like to start catalog scans.
 ### Find Package File
 
 This is the driver that reads the file list and package signature from all NuGet packages on NuGet.org and loads them
-into Azure Table Storage. It took about 35 minutes to this this and costed about $3.37.
+into Azure Table Storage. It took about 35 minutes to do this and costed about $3.37.
 
 #### Azure Functions Execution Count
 
