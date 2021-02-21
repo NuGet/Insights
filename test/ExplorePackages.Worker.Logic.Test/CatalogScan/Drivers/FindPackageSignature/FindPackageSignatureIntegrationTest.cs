@@ -42,7 +42,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
                 var max2 = DateTimeOffset.Parse("2020-11-27T19:36:50.4909042Z");
 
                 await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(CatalogScanDriverType.FindPackageFile, max2);
+                await SetCursorAsync(CatalogScanDriverType.LoadPackageFile, max2);
                 await SetCursorAsync(min0);
 
                 // Act
@@ -85,7 +85,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
                 var max1 = DateTimeOffset.Parse("2020-03-04T22:56:51.1816512Z");
 
                 await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(CatalogScanDriverType.FindPackageFile, max1);
+                await SetCursorAsync(CatalogScanDriverType.LoadPackageFile, max1);
                 await SetCursorAsync(min0);
 
                 // Act
@@ -117,7 +117,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
                 var max1 = DateTimeOffset.Parse("2020-11-04T15:12:15.7221964Z");
 
                 await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(CatalogScanDriverType.FindPackageFile, max1);
+                await SetCursorAsync(CatalogScanDriverType.LoadPackageFile, max1);
                 await SetCursorAsync(min0);
 
                 // Act
@@ -159,7 +159,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
                 var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
 
                 await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(CatalogScanDriverType.FindPackageFile, max2);
+                await SetCursorAsync(CatalogScanDriverType.LoadPackageFile, max2);
                 await SetCursorAsync(min0);
 
                 // Act
@@ -185,7 +185,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
 
         protected override IEnumerable<string> GetExpectedCursorNames()
         {
-            return base.GetExpectedCursorNames().Concat(new[] { "CatalogScan-FindPackageFile" });
+            return base.GetExpectedCursorNames().Concat(new[] { "CatalogScan-" + CatalogScanDriverType.LoadPackageFile });
         }
 
         protected override IEnumerable<string> GetExpectedTableNames()

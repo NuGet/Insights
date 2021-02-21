@@ -52,19 +52,19 @@ namespace Knapcode.ExplorePackages.Worker
             var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
             var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
 
-            await SetCursorAsync(CatalogScanDriverType.FindPackageFile, min0);
-            await SetCursorAsync(CatalogScanDriverType.FindPackageManifest, min0);
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageFile, min0);
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageManifest, min0);
             await SetCursorAsync(CatalogScanDriverType.FindPackageAssembly, min0);
             await SetCursorAsync(CatalogScanDriverType.FindPackageAsset, min0);
             await SetCursorAsync(CatalogScanDriverType.FindPackageSignature, min0);
 
             // Act
-            var findPackageManifest = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindPackageManifest, max1, onlyLatestLeaves: null);
-            await UpdateAsync(findPackageManifest.Scan);
+            var loadPackageManifest = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageManifest, max1, onlyLatestLeaves: null);
+            await UpdateAsync(loadPackageManifest.Scan);
             var startingNuspecRequestCount = GetNuspecRequestCount();
 
-            var findPackageFile = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindPackageFile, max1, onlyLatestLeaves: null);
-            await UpdateAsync(findPackageFile.Scan);
+            var loadPackageFile = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageFile, max1, onlyLatestLeaves: null);
+            await UpdateAsync(loadPackageFile.Scan);
 
             var findPackageAssembly = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindPackageAssembly, max1, onlyLatestLeaves: null);
             await UpdateAsync(findPackageAssembly.Scan);

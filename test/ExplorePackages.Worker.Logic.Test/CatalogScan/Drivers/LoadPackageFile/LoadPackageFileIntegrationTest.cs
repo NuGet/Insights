@@ -10,16 +10,16 @@ using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker.FindPackageManifest
+namespace Knapcode.ExplorePackages.Worker.LoadPackageFile
 {
-    public class FindPackageManifestIntegrationTest : BaseCatalogScanIntegrationTest
+    public class LoadPackageFileIntegrationTest : BaseCatalogScanIntegrationTest
     {
-        public const string FindPackageManifestDir = nameof(FindPackageManifest);
-        public const string FindPackageManifest_WithDeleteDir = nameof(FindPackageManifest_WithDelete);
+        public const string LoadPackageFileDir = nameof(LoadPackageFile);
+        public const string LoadPackageFile_WithDeleteDir = nameof(LoadPackageFile_WithDelete);
 
-        public class FindPackageManifest : FindPackageManifestIntegrationTest
+        public class LoadPackageFile : LoadPackageFileIntegrationTest
         {
-            public FindPackageManifest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public LoadPackageFile(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -41,20 +41,20 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageManifest
                 await UpdateAsync(max1);
 
                 // Assert
-                await VerifyOutputAsync(FindPackageManifestDir, Step1);
+                await VerifyOutputAsync(LoadPackageFileDir, Step1);
 
                 // Act
                 await UpdateAsync(max2);
 
                 // Assert
-                await VerifyOutputAsync(FindPackageManifestDir, Step2);
+                await VerifyOutputAsync(LoadPackageFileDir, Step2);
                 AssertOnlyInfoLogsOrLess();
             }
         }
 
-        public class FindPackageManifest_WithDelete : FindPackageManifestIntegrationTest
+        public class LoadPackageFile_WithDelete : LoadPackageFileIntegrationTest
         {
-            public FindPackageManifest_WithDelete(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public LoadPackageFile_WithDelete(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -67,10 +67,10 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageManifest
                 // Arrange
                 HttpMessageHandlerFactory.OnSendAsync = async req =>
                 {
-                    if (req.RequestUri.AbsolutePath.EndsWith("/behaviorsample.nuspec"))
+                    if (req.RequestUri.AbsolutePath.EndsWith("/behaviorsample.1.0.0.nupkg"))
                     {
                         var newReq = Clone(req);
-                        newReq.RequestUri = new Uri($"http://localhost/{TestData}/behaviorsample.1.0.0.nuspec");
+                        newReq.RequestUri = new Uri($"http://localhost/{TestData}/behaviorsample.1.0.0.nupkg");
                         return await TestDataHttpClient.SendAsync(newReq);
                     }
 
@@ -78,7 +78,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageManifest
                 };
 
                 // Set the Last-Modified date for the etag
-                var file = new FileInfo(Path.Combine(TestData, "behaviorsample.1.0.0.nuspec"))
+                var file = new FileInfo(Path.Combine(TestData, "behaviorsample.1.0.0.nupkg"))
                 {
                     LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z")
                 };
@@ -94,13 +94,13 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageManifest
                 await UpdateAsync(max1);
 
                 // Assert
-                await VerifyOutputAsync(FindPackageManifest_WithDeleteDir, Step1);
+                await VerifyOutputAsync(LoadPackageFile_WithDeleteDir, Step1);
 
                 // Act
                 await UpdateAsync(max2);
 
                 // Assert
-                await VerifyOutputAsync(FindPackageManifest_WithDeleteDir, Step2);
+                await VerifyOutputAsync(LoadPackageFile_WithDeleteDir, Step2);
                 AssertOnlyInfoLogsOrLess();
             }
         }
@@ -109,34 +109,33 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageManifest
 
         protected override IEnumerable<string> GetExpectedTableNames()
         {
-            return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageManifestTableName });
+            return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageFileTableName });
         }
 
-        public FindPackageManifestIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+        public LoadPackageFileIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
         }
 
-        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.FindPackageManifest;
+        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.LoadPackageFile;
 
         private async Task VerifyOutputAsync(string testName, string stepName)
         {
-            Assert.Empty(HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.AbsoluteUri.EndsWith(".nupkg")));
-            Assert.NotEmpty(HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.AbsoluteUri.EndsWith(".nuspec")));
-
             await VerifyWideEntityOutputAsync(
-                Options.Value.PackageManifestTableName,
+                Options.Value.PackageFileTableName,
                 Path.Combine(testName, stepName),
                 stream =>
                 {
-                    var entity = MessagePackSerializer.Deserialize<PackageManifestService.PackageManifestInfoVersions>(stream, ExplorePackagesMessagePack.Options);
+                    var entity = MessagePackSerializer.Deserialize<PackageFileService.PackageFileInfoVersions>(stream, ExplorePackagesMessagePack.Options);
 
-                    string manifestHash = null;
+                    string mzipHash = null;
+                    string signatureHash = null;
                     SortedDictionary<string, List<string>> httpHeaders = null;
 
                     if (entity.V1.Available)
                     {
                         using var algorithm = SHA256.Create();
-                        manifestHash = algorithm.ComputeHash(entity.V1.ManifestBytes.ToArray()).ToHex();
+                        mzipHash = algorithm.ComputeHash(entity.V1.MZipBytes.ToArray()).ToHex();
+                        signatureHash = algorithm.ComputeHash(entity.V1.SignatureBytes.ToArray()).ToHex();
                         httpHeaders = NormalizeHeaders(entity.V1.HttpHeaders);
                     }
 
@@ -145,7 +144,8 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageManifest
                         entity.V1.Available,
                         entity.V1.CommitTimestamp,
                         HttpHeaders = httpHeaders,
-                        ManifestHash = manifestHash,
+                        MZipHash = mzipHash,
+                        SignatureHash = signatureHash,
                     };
                 });
         }

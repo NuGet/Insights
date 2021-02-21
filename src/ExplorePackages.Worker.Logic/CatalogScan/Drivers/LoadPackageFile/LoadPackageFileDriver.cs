@@ -4,22 +4,22 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Knapcode.ExplorePackages.Worker.FindPackageManifest
+namespace Knapcode.ExplorePackages.Worker.LoadPackageFile
 {
-    public class FindPackageManifestDriver : ICatalogLeafScanBatchDriver
+    public class LoadPackageFileDriver : ICatalogLeafScanBatchDriver
     {
-        private readonly PackageManifestService _packageManifestService;
-        private readonly ILogger<FindPackageManifestDriver> _logger;
+        private readonly PackageFileService _packageFileService;
+        private readonly ILogger<LoadPackageFileDriver> _logger;
 
-        public FindPackageManifestDriver(PackageManifestService packageManifestService, ILogger<FindPackageManifestDriver> logger)
+        public LoadPackageFileDriver(PackageFileService packageFileService, ILogger<LoadPackageFileDriver> logger)
         {
-            _packageManifestService = packageManifestService;
+            _packageFileService = packageFileService;
             _logger = logger;
         }
 
         public async Task InitializeAsync(CatalogIndexScan indexScan)
         {
-            await _packageManifestService.InitializeAsync();
+            await _packageFileService.InitializeAsync();
         }
 
         public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
@@ -42,11 +42,11 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageManifest
                 var leafItems = group.Select(x => x.GetLeafItem()).ToList();
                 try
                 {
-                    await _packageManifestService.UpdateBatchAsync(group.Key, leafItems);
+                    await _packageFileService.UpdateBatchAsync(group.Key, leafItems);
                 }
                 catch (Exception ex) when (leafScans.Count != 1)
                 {
-                    _logger.LogError(ex, "Updating package manifest info failed for {Id} with {Count} versions.", group.Key, leafItems.Count);
+                    _logger.LogError(ex, "Updating package file info failed for {Id} with {Count} versions.", group.Key, leafItems.Count);
                     failed.AddRange(group);
                 }
             }
