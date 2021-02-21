@@ -32,7 +32,7 @@ Note that you cannot use Azurite since the latest version of it does not support
 If you want to deploy this to Azure:
 
 1. [Install Pulumi and configure it for Azure](https://www.pulumi.com/docs/get-started/azure/).
-1. Install my Pulumi plug-in for workaround around some problems ([context](https://github.com/joelverhagen/pulumi-knapcode)).
+1. Install my Pulumi plug-in for workaround around some problems ([context](https://github.com/joelverhagen/pulumi-knapcode#full-explanation)).
    ```
    pulumi plugin install resource knapcode v0.0.1 --server https://github.com/joelverhagen/pulumi-knapcode/releases/download/v0.0.1
    ```
@@ -56,7 +56,7 @@ If you want to deploy this to Azure:
 
 You will need to update the configuration with your hashed tenant ID and object ID claims to gain access to the admin
 panel. The "access denied" page of the admin panel will list all of your claims so you can grab the values there then
-baked them into your Pulumi stack's YAML config file for subsequent deployments.
+bake them into your Pulumi stack's YAML config file for subsequent deployments.
 
 ## Screenshots
 
