@@ -8,8 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Pulumi.Azure" Version="3.46.0" />
-    <PackageReference Include="Pulumi.AzureAD" Version="3.3.0" />
+    <PackageReference Include="Pulumi.Azure" Version="3.48.0" />
+    <PackageReference Include="Pulumi.AzureAD" Version="3.4.0" />
+    <PackageReference Include="Pulumi.Knapcode" Version="0.0.1" />
   </ItemGroup>
 
   <ItemGroup>

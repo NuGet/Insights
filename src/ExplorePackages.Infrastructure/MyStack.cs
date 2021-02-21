@@ -1,14 +1,7 @@
-using System;
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Website;
 using Knapcode.ExplorePackages.Worker;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Pulumi;
 using Pulumi.Azure.AppInsights;
 using Pulumi.Azure.AppService;
@@ -65,9 +58,6 @@ namespace Knapcode.ExplorePackages
 
         [Output]
         public Output<string> WebsiteUrl { get; private set; }
-
-        [Output]
-        public Output<bool> AadAppUpdated { get; private set; }
 
         private void CreateWebsite()
         {
@@ -167,81 +157,13 @@ namespace Knapcode.ExplorePackages
 
             var appService = new AppService("ExplorePackagesWebsite" + _stackAlpha, appServiceArgs);
 
-            WebsiteUrl = appService.DefaultSiteHostname.Apply(defaultSiteHostname => $"https://{defaultSiteHostname}");
-
-            AadAppUpdated = aadApp.ApplicationId.Apply(clientId =>
+            var aadAppUpdate = new Pulumi.Knapcode.PrepareAppForWebSignIn("PrepareAppForWebSignIn", new Pulumi.Knapcode.PrepareAppForWebSignInArgs
             {
-                var objectId = ExecuteJson("cmd", "/c", "az", "ad", "app", "show", "--id", clientId).Value<string>("objectId");
-
-                return appService.DefaultSiteHostname.Apply(defaultSiteHostname =>
-                {
-                    if (!Deployment.Instance.IsDryRun)
-                    {
-                        Execute("cmd", "/c", "az", "rest",
-                            "--method", "PATCH",
-                            "--headers", "Content-Type=application/json",
-                            "--uri", $"https://graph.microsoft.com/v1.0/applications/{objectId}",
-                            "--body", JsonConvert.SerializeObject(new
-                            {
-                                api = new
-                                {
-                                    requestedAccessTokenVersion = 2,
-                                },
-                                signInAudience = "AzureADandPersonalMicrosoftAccount",
-                                web = new
-                                {
-                                    homePageUrl = $"https://{defaultSiteHostname}",
-                                    redirectUris = new[]
-                                    {
-                                        $"https://{defaultSiteHostname}/signin-oidc",
-                                    },
-                                    logoutUrl = $"https://{defaultSiteHostname}/signout-oidc",
-                                },
-                            }));
-                    }
-
-                    return true;
-                });
+                ObjectId = aadApp.ObjectId,
+                HostName = appService.DefaultSiteHostname,
             });
-        }
 
-        private string Execute(string fileName, params string[] arguments)
-        {
-            using (var process = new Process())
-            {
-                process.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
-                process.StartInfo.FileName = fileName;
-                foreach (var argument in arguments)
-                {
-                    process.StartInfo.ArgumentList.Add(argument);
-                }
-                process.StartInfo.RedirectStandardOutput = true;
-                process.StartInfo.RedirectStandardError = true;
-                process.StartInfo.UseShellExecute = false;
-                var output = new ConcurrentQueue<(bool isOutput, string data)>();
-                process.OutputDataReceived += (sender, args) => output.Enqueue((true, args.Data));
-                process.ErrorDataReceived += (sender, args) => output.Enqueue((false, args.Data));
-                process.Start();
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
-                process.WaitForExit();
-
-                if (process.ExitCode != 0)
-                {
-                    throw new InvalidOperationException(
-                        $"Command failed: {fileName} {string.Join(' ', arguments)}" +
-                        System.Environment.NewLine +
-                        string.Join(System.Environment.NewLine, output.Select(x => x.data)));
-                }
-
-                return string.Join(System.Environment.NewLine, output.Where(x => x.isOutput).Select(x => x.data));
-            }
-        }
-
-        private JToken ExecuteJson(string fileName, params string[] arguments)
-        {
-            var output = Execute(fileName, arguments);
-            return JToken.Parse(output);
+            WebsiteUrl = appService.DefaultSiteHostname.Apply(defaultSiteHostname => $"https://{defaultSiteHostname}");
         }
 
         private void CreateWorker()

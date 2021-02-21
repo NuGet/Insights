@@ -27,6 +27,35 @@ Note that you cannot use Azurite since the latest version of it does not support
 5. Wait until the catalog scan is done.
    - This can be seen by looking at the `workerqueue` queue or by looking at the admin panel seen above.
 
+## Deploying to Azure
+
+If you want to deploy this to Azure:
+
+1. [Install Pulumi and configure it for Azure](https://www.pulumi.com/docs/get-started/azure/).
+1. Install my Pulumi plug-in for workaround around some problems ([context](https://github.com/joelverhagen/pulumi-knapcode))
+   ```
+   pulumi plugin install resource knapcode v0.0.1 --server https://github.com/joelverhagen/pulumi-knapcode/releases/download/v0.0.1
+   ```
+1. Go to the infrastructure directory
+   ```
+   cd src/ExplorePackages.Infrastructure
+   ```
+1. Select a stack (or make a new one).
+   ```
+   pulumi stack select dev
+   ```
+1. Publish the worker and website.
+   ```
+   dotnet publish ../ExplorePackages.Worker -c Release
+   dotnet publish ../ExplorePackages.Website -c Release
+   ```
+1. Deploy!
+   ```
+   pulumi up
+   ```
+
+You will need to update 
+
 ## Screenshots
 
 ### Azure Function running locally
@@ -60,6 +89,10 @@ into Azure Table Storage. It took about 35 minutes to this this and costed about
 #### Azure Functions Execution Count
 
 ![Azure Functions Execution Units](docs/find-package-files-execution-units.png)
+
+#### Deploying to Azure using Pulumi
+
+![Deploying to Azure using Pulumi](docs/azure-deploy-pulumi.png)
 
 ## Architecture
 
