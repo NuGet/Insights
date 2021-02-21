@@ -19,7 +19,7 @@ Note that you cannot use Azurite since the latest version of it does not support
 1. Press F5 to launch the website (ExplorePackages.Website). It's the default startup project.
 1. Click on the "Admin" link in the navigation bar.
 2. Start one of the catalog scans, e.g. Find Package Manifest.
-   - When starting out, use a timestamp like `2015-02-01T06:22:45.8488496Z` and click "Start Custom Scan".
+   - When starting out, use a custom max timestamp like `2015-02-01T06:22:45.8488496Z` and click "Start Custom Scan".
    - This timestamp is the first commit to the catalog and will run quickly, only processing 20 packages.
    - Pressing "Start Full Scan" will process the entire catalog and will take a very long time locally.
 3. Stop the website.
@@ -82,7 +82,7 @@ This is what the admin panel looks like to start catalog scans.
 ### Find Package File
 
 This is the driver that reads the file list and package signature from all NuGet packages on NuGet.org and loads them
-into Azure Table Storage. It took about 35 minutes to this this and costed about $3.37.
+into Azure Table Storage. It took about 35 minutes to do this and costed about $3.37.
 
 #### Azure Functions Execution Count
 
