@@ -42,18 +42,18 @@
         PackageSignatureToCsv,
 
         /// <summary>
-        /// Implemented by <see cref="CatalogLeafItemToCsv.CatalogLeafItemToCsvDriver"/>. Reads all catalog leaf items
-        /// and their associated page metadata. The catalog leaf item is described here:
-        /// https://docs.microsoft.com/en-us/nuget/api/catalog-resource#catalog-item-object-in-a-page
-        /// </summary>
-        CatalogLeafItemToCsv,
-
-        /// <summary>
         /// Implemented by <see cref="PackageManifestToCsv.PackageManifestToCsvDriver"/>. This driver reads all package
         /// manifests (a.k.a. .nuspec files) and dumps the metadata to CSV. This implementation uses NuGet's
         /// <see cref="NuGet.Packaging.NuspecReader"/> to interpret the data as the NuGet client would.
         /// </summary>
         PackageManifestToCsv,
+
+        /// <summary>
+        /// Implemented by <see cref="CatalogLeafItemToCsv.CatalogLeafItemToCsvDriver"/>. Reads all catalog leaf items
+        /// and their associated page metadata. The catalog leaf item is described here:
+        /// https://docs.microsoft.com/en-us/nuget/api/catalog-resource#catalog-item-object-in-a-page
+        /// </summary>
+        CatalogLeafItemToCsv,
 
         /// <summary>
         /// Implemented by <see cref="FindLatestPackageLeaf.LatestPackageLeafStorage"/> and <see cref="FindLatestLeafDriver{T}"/>.
