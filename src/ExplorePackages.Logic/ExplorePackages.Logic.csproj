@@ -6,7 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AngleSharp" Version="0.14.0" />
-    <PackageReference Include="Knapcode.MiniZip" Version="0.15.0" />
+    <PackageReference Include="Knapcode.MiniZip" Version="0.16.0" />
     <PackageReference Include="MessagePack" Version="2.2.85" />
     <PackageReference Include="MessagePackAnalyzer" Version="2.2.85" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />

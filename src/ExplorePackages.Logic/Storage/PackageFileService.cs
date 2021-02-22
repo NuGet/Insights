@@ -8,6 +8,8 @@ using System.Security.Cryptography.Pkcs;
 using System.Threading.Tasks;
 using Knapcode.MiniZip;
 using MessagePack;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Toolkit.HighPerformance.Extensions;
 using NuGet.Packaging.Signing;
@@ -22,6 +24,7 @@ namespace Knapcode.ExplorePackages
         private readonly MZipFormat _mzipFormat;
         private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<ExplorePackagesSettings> _options;
+        private readonly ILogger<PackageFileService> _logger;
 
         public PackageFileService(
             PackageWideEntityService wideEntityService,
@@ -29,7 +32,8 @@ namespace Knapcode.ExplorePackages
             HttpZipProvider httpZipProvider,
             MZipFormat mzipFormat,
             ITelemetryClient telemetryClient,
-            IOptions<ExplorePackagesSettings> options)
+            IOptions<ExplorePackagesSettings> options,
+            ILogger<PackageFileService> logger)
         {
             _wideEntityService = wideEntityService;
             _flatContainerClient = flatContainerClient;
@@ -37,6 +41,7 @@ namespace Knapcode.ExplorePackages
             _mzipFormat = mzipFormat;
             _telemetryClient = telemetryClient;
             _options = options;
+            _logger = logger;
         }
 
         public async Task InitializeAsync()
@@ -93,12 +98,26 @@ namespace Knapcode.ExplorePackages
 
         private async Task<PackageFileInfoV1> GetInfoAsync(CatalogLeafItem leafItem)
         {
+            return await GetInfoAsync(leafItem, isRetry: false);
+        }
+
+        private async Task<PackageFileInfoV1> GetInfoAsync(CatalogLeafItem leafItem, bool isRetry)
+        {
             if (leafItem.Type == CatalogLeafType.PackageDelete)
             {
                 return MakeDeletedInfo(leafItem);
             }
 
             var url = await _flatContainerClient.GetPackageContentUrlAsync(leafItem.PackageId, leafItem.PackageVersion);
+
+            // I've noticed cases where NuGet.org CDN caches a request with a specific If-* condition header in the
+            // request. When subsequent requests come with a different If-* condition header, Blob Storage errors out
+            // with an HTTP 400 and a "MultipleConditionHeadersNotSupported" error code. This seems like a bug in the
+            // NuGet CDN, where a "Vary: If-Match" or similar is missing.
+            if (isRetry)
+            {
+                url = QueryHelpers.AddQueryString(url, "cache-bust", Guid.NewGuid().ToString());
+            }
 
             var metric = _telemetryClient.GetMetric($"{nameof(PackageFileService)}.{nameof(GetInfoAsync)}.DurationMs");
             var sw = Stopwatch.StartNew();
@@ -125,9 +144,14 @@ namespace Knapcode.ExplorePackages
                     SignatureBytes = signatureBytes.AsMemory(),
                 };
             }
-            catch (MiniZipHttpStatusCodeException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            catch (MiniZipHttpException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {
                 return MakeDeletedInfo(leafItem);
+            }
+            catch (MiniZipHttpException ex) when (!isRetry)
+            {
+                _logger.LogWarning(ex, "Fetching package {Id} {Version} failed using MiniZip. Trying again with cache busting.", leafItem.PackageId, leafItem.PackageVersion);
+                return await GetInfoAsync(leafItem, isRetry: true);
             }
             finally
             {

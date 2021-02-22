@@ -8,6 +8,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Worker;
 using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
+using Knapcode.ExplorePackages.Worker.LoadPackageArchive;
+using Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv;
 using Knapcode.ExplorePackages.Worker.PackageManifestToCsv;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using McMaster.Extensions.CommandLineUtils;
@@ -29,7 +31,9 @@ namespace Knapcode.ExplorePackages.Tool
         private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
         private readonly TableScanService<LatestPackageLeaf> _tableScanService;
         private readonly PackageFileService _packageFileService;
-        private readonly ICatalogLeafToCsvDriver<PackageManifestRecord> _driver;
+        private readonly ICatalogLeafToCsvDriver<PackageManifestRecord> _packageManifestDriver;
+        private readonly ICatalogLeafToCsvDriver<PackageAssembly> _packageAssemblyDriver;
+        private readonly LoadPackageArchiveDriver _loadPackageArchiveDriver;
 
         public SandboxCommand(
             IMessageEnqueuer messageEnqueuer,
@@ -38,7 +42,9 @@ namespace Knapcode.ExplorePackages.Tool
             IRawMessageEnqueuer rawMessageEnqueuer,
             TableScanService<LatestPackageLeaf> tableScanService,
             PackageFileService packageFileService,
-            ICatalogLeafToCsvDriver<PackageManifestRecord> driver)
+            ICatalogLeafToCsvDriver<PackageManifestRecord> packageManifestDriver,
+            ICatalogLeafToCsvDriver<PackageAssembly> packageAssemblyDriver,
+            LoadPackageArchiveDriver loadPackageArchiveDriver)
         {
             _messageEnqueuer = messageEnqueuer;
             _taskStateStorageService = taskStateStorageService;
@@ -46,7 +52,9 @@ namespace Knapcode.ExplorePackages.Tool
             _rawMessageEnqueuer = rawMessageEnqueuer;
             _tableScanService = tableScanService;
             _packageFileService = packageFileService;
-            _driver = driver;
+            _packageManifestDriver = packageManifestDriver;
+            _packageAssemblyDriver = packageAssemblyDriver;
+            _loadPackageArchiveDriver = loadPackageArchiveDriver;
         }
 
         public void Configure(CommandLineApplication app)
@@ -57,17 +65,21 @@ namespace Knapcode.ExplorePackages.Tool
         {
             await Task.Yield();
 
-            await _driver.InitializeAsync();
+            await _packageManifestDriver.InitializeAsync();
+            await _packageAssemblyDriver.InitializeAsync();
 
-            var record = await _driver.ProcessLeafAsync(new CatalogLeafItem
+            var leaf = new CatalogLeafItem
             {
-                Url = "https://api.nuget.org/v3/catalog0/data/2021.01.14.05.44.02/openfindesktop.16.8.0.json",
+                Url = "https://api.nuget.org/v3/catalog0/data/2021.02.21.12.39.12/olive.1.0.104.json",
                 Type = CatalogLeafType.PackageDetails,
-                PackageId = "OpenfinDesktop",
-                PackageVersion = "16.8.0",
-            });
+                PackageId = "Olive",
+                PackageVersion = "1.0.105",
+            };
 
-            Console.WriteLine(JsonConvert.SerializeObject(record, Formatting.Indented));
+            await _packageFileService.UpdateBatchAsync("olive", new[] { leaf });
+
+            // Console.WriteLine(JsonConvert.SerializeObject(await _packageManifestDriver.ProcessLeafAsync(leaf), Formatting.Indented));
+            // Console.WriteLine(JsonConvert.SerializeObject(await _packageAssemblyDriver.ProcessLeafAsync(leaf), Formatting.Indented));
         }
 
         private async Task RunTestAsync(int i, int j)
