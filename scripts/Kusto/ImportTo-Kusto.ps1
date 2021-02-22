@@ -16,7 +16,7 @@ param (
     [string]$ModelsPath,
 
     [Parameter(Mandatory = $false)]
-    [ValidateSet("JverCatalogLeafItems", "JverPackageAssemblies", "JverPackageAssets", "JverPackageDownloads", "JverPackageOwners", "JverPackageSignatures")]
+    [ValidateSet("JverCatalogLeafItems", "JverPackageAssemblies", "JverPackageAssets", "JverPackageDownloads", "JverPackageManifests", "JverPackageOwners", "JverPackageSignatures")]
     [string]$ImportTableName,
 
     [Parameter(Mandatory = $false)]
@@ -33,6 +33,7 @@ $tableNameToContainerName = @{
     "JverPackageAssemblies" = "packageassemblies";
     "JverPackageAssets" = "packageassets";
     "JverPackageDownloads" = "packagedownloads";
+    "JverPackageManifests" = "packagemanifests";
     "JverPackageOwners" = "packageowners";
     "JverPackageSignatures" = "packagesignatures";
 }
