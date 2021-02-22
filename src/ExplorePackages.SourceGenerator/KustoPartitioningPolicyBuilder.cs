@@ -11,7 +11,7 @@ namespace Knapcode.ExplorePackages
     public class KustoPartitioningPolicyBuilder : IPropertyVisitor
     {
         private const string AttributeName = "KustoPartitionKeyAttribute";
-        private int _intent;
+        private readonly int _intent;
         private readonly StringBuilder _builder;
 
         public KustoPartitioningPolicyBuilder(int indent)

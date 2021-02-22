@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Knapcode.ExplorePackages.Worker
+﻿namespace Knapcode.ExplorePackages.Worker
 {
     public class CatalogScanServiceResult
     {

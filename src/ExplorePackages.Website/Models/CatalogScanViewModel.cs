@@ -11,13 +11,7 @@ namespace Knapcode.ExplorePackages.Website.Models
         public CursorTableEntity Cursor { get; set; }
         public IReadOnlyList<CatalogIndexScan> LatestScans { get; set; }
 
-        public DateTimeOffset DefaultMax
-        {
-            get
-            {
-                return DateTimeOffset.Parse("2015-02-01T06:22:45.8488496Z");
-            }
-        }
+        public DateTimeOffset DefaultMax => DateTimeOffset.Parse("2015-02-01T06:22:45.8488496Z");
 
         public bool DefaultOnlyLatestLeaves
         {

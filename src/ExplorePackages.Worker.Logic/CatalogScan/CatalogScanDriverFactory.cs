@@ -3,13 +3,13 @@ using Knapcode.ExplorePackages.Worker.FindCatalogLeafItem;
 using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
 using Knapcode.ExplorePackages.Worker.FindPackageAssembly;
 using Knapcode.ExplorePackages.Worker.FindPackageAsset;
+using Knapcode.ExplorePackages.Worker.FindPackageSignature;
 using Knapcode.ExplorePackages.Worker.LoadPackageFile;
 using Knapcode.ExplorePackages.Worker.LoadPackageManifest;
-using Knapcode.ExplorePackages.Worker.FindPackageSignature;
+using Knapcode.ExplorePackages.Worker.PackageManifestToCsv;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Knapcode.ExplorePackages.Worker.PackageManifestToCsv;
 
 namespace Knapcode.ExplorePackages.Worker
 {

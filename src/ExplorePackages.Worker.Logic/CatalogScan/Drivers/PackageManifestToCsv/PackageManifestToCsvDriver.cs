@@ -182,10 +182,14 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             public PropertyRenameAndIgnoreSerializerContractResolver IgnoreProperty(Type type, params string[] jsonPropertyNames)
             {
                 if (!_ignores.ContainsKey(type))
+                {
                     _ignores[type] = new HashSet<string>();
+                }
 
                 foreach (var prop in jsonPropertyNames)
+                {
                     _ignores[type].Add(prop);
+                }
 
                 return this;
             }
@@ -193,7 +197,9 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             public PropertyRenameAndIgnoreSerializerContractResolver RenameProperty(Type type, string propertyName, string newJsonPropertyName)
             {
                 if (!_renames.ContainsKey(type))
+                {
                     _renames[type] = new Dictionary<string, string>();
+                }
 
                 _renames[type][propertyName] = newJsonPropertyName;
 
@@ -211,7 +217,9 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
                 }
 
                 if (IsRenamed(property.DeclaringType, property.PropertyName, out var newJsonPropertyName))
+                {
                     property.PropertyName = newJsonPropertyName;
+                }
 
                 return property;
             }
@@ -219,16 +227,17 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             private bool IsIgnored(Type type, string jsonPropertyName)
             {
                 if (!_ignores.ContainsKey(type))
+                {
                     return false;
+                }
 
                 return _ignores[type].Contains(jsonPropertyName);
             }
 
             private bool IsRenamed(Type type, string jsonPropertyName, out string newJsonPropertyName)
             {
-                Dictionary<string, string> renames;
 
-                if (!_renames.TryGetValue(type, out renames) || !renames.TryGetValue(jsonPropertyName, out newJsonPropertyName))
+                if (!_renames.TryGetValue(type, out var renames) || !renames.TryGetValue(jsonPropertyName, out newJsonPropertyName))
                 {
                     newJsonPropertyName = null;
                     return false;
