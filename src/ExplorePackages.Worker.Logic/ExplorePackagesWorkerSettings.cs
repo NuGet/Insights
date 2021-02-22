@@ -25,6 +25,7 @@
             LatestPackageLeafTableName = "latestpackageleaves";
             PackageAssetContainerName = "packageassets";
             PackageAssemblyContainerName = "packageassemblies";
+            PackageManifestContainerName = "packagemanifests";
             PackageSignatureContainerName = "packagesignatures";
             RealRestoreContainerName = "realrestores";
             CatalogLeafItemContainerName = "catalogleafitems";
@@ -53,6 +54,7 @@
         public string LatestPackageLeafTableName { get; set; }
         public string PackageAssetContainerName { get; set; }
         public string PackageAssemblyContainerName { get; set; }
+        public string PackageManifestContainerName { get; set; }
         public string PackageSignatureContainerName { get; set; }
         public string RealRestoreContainerName { get; set; }
         public string CatalogLeafItemContainerName { get; set; }

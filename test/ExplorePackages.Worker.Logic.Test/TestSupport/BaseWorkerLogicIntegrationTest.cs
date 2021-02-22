@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,6 +54,7 @@ namespace Knapcode.ExplorePackages.Worker
             x.LatestPackageLeafTableName = $"{StoragePrefix}1lpl1";
             x.PackageAssetContainerName = $"{StoragePrefix}1fpa1";
             x.PackageAssemblyContainerName = $"{StoragePrefix}1fpi1";
+            x.PackageManifestContainerName = $"{StoragePrefix}1pm2c1";
             x.PackageSignatureContainerName = $"{StoragePrefix}1fps1";
             x.RealRestoreContainerName = $"{StoragePrefix}1rrr1";
             x.CatalogLeafItemContainerName = $"{StoragePrefix}1fcli1";
@@ -64,6 +67,8 @@ namespace Knapcode.ExplorePackages.Worker
             {
                 ConfigureWorkerSettings(x);
             }
+
+            VerifyStoragePrefix(x);
         }
 
         protected async Task SetCursorAsync(CatalogScanDriverType driverType, DateTimeOffset min)

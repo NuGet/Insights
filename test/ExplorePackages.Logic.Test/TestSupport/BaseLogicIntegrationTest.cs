@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
@@ -90,6 +93,25 @@ namespace Knapcode.ExplorePackages
             {
                 ConfigureSettings(x);
             }
+
+            VerifyStoragePrefix(x);
+        }
+
+        protected void VerifyStoragePrefix(object x)
+        {
+            // Verify all container names are prefixed, so that parallel tests and cleanup work properly.
+            var storageNameProperties = x
+                .GetType()
+                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                .Where(x => x.Name.EndsWith("QueueName") || x.Name.EndsWith("TableName") || x.Name.EndsWith("ContainerName"));
+            var storageNames = new HashSet<string>();
+            foreach (var property in storageNameProperties)
+            {
+                var value = (string)property.GetMethod.Invoke(x, null);
+                Assert.StartsWith(StoragePrefix, value);
+                Assert.DoesNotContain(value, storageNames); // Make sure there are no duplicates
+                storageNames.Add(value);
+            }
         }
 
         public ITestOutputHelper Output { get; }
@@ -159,6 +181,10 @@ namespace Knapcode.ExplorePackages
             {
                 actual = await blob.DownloadTextAsync();
             }
+
+            // Normalize line ending, since there are all kinds of nasty mixtures between Environment.NewLine and Git
+            // settings.
+            actual = Regex.Replace(actual, @"\r\n|\n", Environment.NewLine);
 
             if (OverwriteTestData)
             {

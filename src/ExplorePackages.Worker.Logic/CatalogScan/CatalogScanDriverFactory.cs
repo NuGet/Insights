@@ -9,6 +9,7 @@ using Knapcode.ExplorePackages.Worker.FindPackageSignature;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Knapcode.ExplorePackages.Worker.PackageManifestToCsv;
 
 namespace Knapcode.ExplorePackages.Worker
 {
@@ -54,7 +55,7 @@ namespace Knapcode.ExplorePackages.Worker
             {
                 case CatalogScanDriverType.FindCatalogLeafItem:
                     return _serviceProvider.GetRequiredService<FindCatalogLeafItemDriver>();
-                case CatalogScanDriverType.FindLatestCatalogLeafScan:
+                case CatalogScanDriverType.Internal_FindLatestCatalogLeafScan:
                     return _serviceProvider.GetRequiredService<FindLatestLeafDriver<CatalogLeafScan>>();
                 case CatalogScanDriverType.FindLatestPackageLeaf:
                     return _serviceProvider.GetRequiredService<FindLatestLeafDriver<LatestPackageLeaf>>();
@@ -64,6 +65,8 @@ namespace Knapcode.ExplorePackages.Worker
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<PackageAsset>>();
                 case CatalogScanDriverType.FindPackageSignature:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<PackageSignature>>();
+                case CatalogScanDriverType.PackageManifestToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<PackageManifestRecord>>();
                 default:
                     throw new NotSupportedException($"Catalog scan driver type '{driverType}' is not supported.");
             }

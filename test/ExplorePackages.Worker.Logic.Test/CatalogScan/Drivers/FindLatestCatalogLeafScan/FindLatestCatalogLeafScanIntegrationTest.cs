@@ -21,7 +21,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
         {
         }
 
-        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.FindLatestCatalogLeafScan;
+        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.Internal_FindLatestCatalogLeafScan;
 
         public class FindLatestCatalogLeafScan : FindLatestCatalogLeafScanIntegrationTest
         {

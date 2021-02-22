@@ -198,7 +198,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             if (OnlyLatestLeaves)
             {
-                yield return $"Start-CatalogScan-{CatalogScanDriverType.FindLatestCatalogLeafScan}";
+                yield return $"Start-CatalogScan-{CatalogScanDriverType.Internal_FindLatestCatalogLeafScan}";
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
@@ -132,6 +133,7 @@ namespace Knapcode.ExplorePackages.Worker
                 case CatalogScanDriverType.FindPackageAssembly:
                 case CatalogScanDriverType.FindPackageAsset:
                 case CatalogScanDriverType.FindPackageSignature:
+                case CatalogScanDriverType.PackageManifestToCsv:
                     return await UpdateCatalogLeafToCsvAsync(driverType, onlyLatestLeaves.GetValueOrDefault(true), max);
                 case CatalogScanDriverType.LoadPackageFile:
                 case CatalogScanDriverType.LoadPackageManifest:
@@ -155,7 +157,7 @@ namespace Knapcode.ExplorePackages.Worker
             return await GetOrStartCursorlessAsync(
                 scanId,
                 storageSuffix,
-                CatalogScanDriverType.FindLatestCatalogLeafScan,
+                CatalogScanDriverType.Internal_FindLatestCatalogLeafScan,
                 parameters: _serializer.Serialize(parentScanMessage).AsString(),
                 min,
                 max);
@@ -224,9 +226,11 @@ namespace Knapcode.ExplorePackages.Worker
                 return new CatalogScanServiceResult(CatalogScanServiceResultType.BlockedByDependency, dependencyName, scan: null);
             }
 
+            var tookDependencyMax = false;
             if (!max.HasValue)
             {
                 max = dependencyMax;
+                tookDependencyMax = true;
             }
             else
             {
@@ -248,14 +252,14 @@ namespace Knapcode.ExplorePackages.Worker
                 return new CatalogScanServiceResult(CatalogScanServiceResultType.MinAfterMax, dependencyName: null, scan: null);
             }
 
+            if (!tookDependencyMax && min == max)
+            {
+                return new CatalogScanServiceResult(CatalogScanServiceResultType.FullyCaughtUpWithMax, dependencyName: null, scan: null);
+            }
+
             if (min == dependencyMax)
             {
                 return new CatalogScanServiceResult(CatalogScanServiceResultType.FullyCaughtUpWithDependency, dependencyName, scan: null);
-            }
-
-            if (min == max)
-            {
-                return new CatalogScanServiceResult(CatalogScanServiceResultType.FullyCaughtUpWithMax, dependencyName: null, scan: null);
             }
 
             await using (var lease = await _leaseService.TryAcquireAsync($"Start-{cursor.Name}"))
@@ -377,6 +381,11 @@ namespace Knapcode.ExplorePackages.Worker
             (CatalogScanDriverType.LoadPackageFile.ToString(), x => x.GetCursorValueAsync(CatalogScanDriverType.LoadPackageFile)),
         };
 
+        private static readonly (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[] LoadPackageManifest = new (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[]
+        {
+            (CatalogScanDriverType.LoadPackageManifest.ToString(), x => x.GetCursorValueAsync(CatalogScanDriverType.LoadPackageManifest)),
+        };
+
         private static readonly (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[] Catalog = new (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[]
         {
             ("NuGet.org catalog", x => x._remoteCursorClient.GetCatalogAsync()),
@@ -396,6 +405,7 @@ namespace Knapcode.ExplorePackages.Worker
             { CatalogScanDriverType.FindPackageAsset, LoadPackageFile },
             { CatalogScanDriverType.FindPackageAssembly, LoadPackageFile },
             { CatalogScanDriverType.FindPackageSignature, LoadPackageFile },
+            { CatalogScanDriverType.PackageManifestToCsv, LoadPackageManifest },
         }.ToDictionary(x => x.Key, x => (IReadOnlyList<(string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)>)x.Value.ToList());
 
         private async Task<(string Name, DateTimeOffset Value)> GetDependencyMaxAsync(CatalogScanDriverType driverType)

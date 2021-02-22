@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,29 +53,50 @@ namespace Knapcode.ExplorePackages.Worker
             var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
             var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
 
-            await SetCursorAsync(CatalogScanDriverType.LoadPackageFile, min0);
-            await SetCursorAsync(CatalogScanDriverType.LoadPackageManifest, min0);
-            await SetCursorAsync(CatalogScanDriverType.FindPackageAssembly, min0);
-            await SetCursorAsync(CatalogScanDriverType.FindPackageAsset, min0);
-            await SetCursorAsync(CatalogScanDriverType.FindPackageSignature, min0);
+            var driverTypes = Enum
+                .GetValues(typeof(CatalogScanDriverType))
+                .Cast<CatalogScanDriverType>()
+                .Where(x => x != CatalogScanDriverType.Internal_FindLatestCatalogLeafScan)
+                .ToList();
+            foreach (var type in driverTypes)
+            {
+                await SetCursorAsync(type, min0);
+            }
 
             // Act
+
+            // Load the manifests
             var loadPackageManifest = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageManifest, max1, onlyLatestLeaves: null);
             await UpdateAsync(loadPackageManifest.Scan);
             var startingNuspecRequestCount = GetNuspecRequestCount();
 
+            // Load the packages and process package assemblies. The package assembly catalog scan is a special case
+            // because it downloads packages on its own so the .nupkg request counter must be baselined after this scan
+            // finishes.
             var loadPackageFile = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageFile, max1, onlyLatestLeaves: null);
             await UpdateAsync(loadPackageFile.Scan);
-
             var findPackageAssembly = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindPackageAssembly, max1, onlyLatestLeaves: null);
             await UpdateAsync(findPackageAssembly.Scan);
-
             var startingNupkgRequestCount = GetNupkgRequestCount();
 
-            var findPackageAsset = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindPackageAsset, max1, onlyLatestLeaves: null);
-            var findPackageSignature = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindPackageSignature, max1, onlyLatestLeaves: null);
-            await UpdateAsync(findPackageAsset.Scan);
-            await UpdateAsync(findPackageSignature.Scan);
+            // Start all of the scans
+            var startedScans = new List<CatalogIndexScan>();
+            foreach (var type in driverTypes)
+            {
+                var startedScan = await CatalogScanService.UpdateAsync(type, max1, onlyLatestLeaves: null);
+                if (startedScan.Type == CatalogScanServiceResultType.FullyCaughtUpWithMax)
+                {
+                    continue;
+                }
+                Assert.Equal(CatalogScanServiceResultType.NewStarted, startedScan.Type);
+                startedScans.Add(startedScan.Scan);
+            }
+
+            // Wait for all of the scans to complete.
+            foreach (var scan in startedScans)
+            {
+                await UpdateAsync(scan);
+            }
 
             var finalNupkgRequestCount = GetNupkgRequestCount();
             var finalNuspecRequestCount = GetNuspecRequestCount();

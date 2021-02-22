@@ -52,6 +52,13 @@
         /// <see cref="CatalogIndexScanResult.ExpandLatestLeaves"/>. This allows another driver to only process the latest
         /// catalog leaf per version instead of duplicating effort per version which is inevitable in the NuGet.org catalog.
         /// </summary>
-        FindLatestCatalogLeafScan,
+        Internal_FindLatestCatalogLeafScan,
+
+        /// <summary>
+        /// Implemented by <see cref="PackageManifestToCsv.PackageManifestToCsvDriver"/>. This driver reads all package
+        /// manifests (a.k.a. .nuspec files) and dumps the metadata to CSV. This implementation uses NuGet's
+        /// <see cref="NuGet.Packaging.NuspecReader"/> to interpret the data as the NuGet client would.
+        /// </summary>
+        PackageManifestToCsv,
     }
 }
