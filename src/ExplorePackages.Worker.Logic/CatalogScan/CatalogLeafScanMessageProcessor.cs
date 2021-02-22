@@ -154,7 +154,7 @@ namespace Knapcode.ExplorePackages.Worker
                         // To account for clock skew, wait an extra 5 seconds.
                         untilNextAttempt += TimeSpan.FromSeconds(5);
 
-                        var notBefore = TimeSpan.FromMinutes(10);
+                        var notBefore = TimeSpan.FromMinutes(5);
                         if (untilNextAttempt < notBefore)
                         {
                             notBefore = untilNextAttempt;
