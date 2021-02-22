@@ -53,5 +53,8 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
         public string DependencyGroups { get; set; }
         public string FrameworkAssemblyGroups { get; set; }
         public string FrameworkRefGroups { get; set; }
+
+        public bool ContentFilesHasFormatException { get; set; }
+        public bool DependencyGroupsHasMissingId { get; set; }
     }
 }

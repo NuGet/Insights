@@ -74,8 +74,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
         private PackageManifestRecord GetRecord(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, XDocument manifest)
         {
             var nuspecReader = new NuspecReader(manifest);
-
-            return new PackageManifestRecord(scanId, scanTimestamp, leaf)
+            var record = new PackageManifestRecord(scanId, scanTimestamp, leaf)
             {
                 // From NuspecCoreReaderBase
                 DevelopmentDependency = nuspecReader.GetDevelopmentDependency(),
@@ -87,9 +86,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
 
                 // From NuspecReader
                 Authors = nuspecReader.GetAuthors(),
-                ContentFiles = JsonSerialize(nuspecReader.GetContentFiles()),
                 Copyright = nuspecReader.GetCopyright(),
-                DependencyGroups = JsonSerialize(nuspecReader.GetDependencyGroups()),
                 Description = nuspecReader.GetDescription(),
                 FrameworkAssemblyGroups = JsonSerialize(nuspecReader.GetFrameworkAssemblyGroups()),
                 FrameworkRefGroups = JsonSerialize(nuspecReader.GetFrameworkRefGroups()),
@@ -108,6 +105,38 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
                 Tags = nuspecReader.GetTags(),
                 Title = nuspecReader.GetTitle(),
             };
+
+            ReadContentFiles(nuspecReader, record);
+            ReadDependencyGroups(nuspecReader, record);
+
+            return record;
+        }
+
+        private static void ReadContentFiles(NuspecReader nuspecReader, PackageManifestRecord record)
+        {
+            try
+            {
+                record.ContentFiles = JsonSerialize(nuspecReader.GetContentFiles());
+            }
+            catch (FormatException ex) when (ex.Message.Contains("Index (zero based) must be greater than or equal to zero and less than the size of the argument list."))
+            {
+                // See: https://github.com/NuGet/NuGet.Client/pull/3914
+                record.ContentFilesHasFormatException = true;
+                record.ResultType = PackageManifestRecordResultType.Error;
+            }
+        }
+
+        private static void ReadDependencyGroups(NuspecReader nuspecReader, PackageManifestRecord record)
+        {
+            try
+            {
+                record.DependencyGroups = JsonSerialize(nuspecReader.GetDependencyGroups());
+            }
+            catch (ArgumentException ex) when (ex.Message.Contains("The argument cannot be null or empty.") && ex.ParamName == "id")
+            {
+                record.DependencyGroupsHasMissingId = true;
+                record.ResultType = PackageManifestRecordResultType.Error;
+            }
         }
 
         private static string JsonSerialize(object input)

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Worker;
 using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
 using Knapcode.ExplorePackages.Worker.FindPackageSignature;
+using Knapcode.ExplorePackages.Worker.PackageManifestToCsv;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using McMaster.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
@@ -29,7 +30,7 @@ namespace Knapcode.ExplorePackages.Tool
         private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
         private readonly TableScanService<LatestPackageLeaf> _tableScanService;
         private readonly PackageFileService _packageFileService;
-        private readonly ICatalogLeafToCsvDriver<PackageSignature> _driver;
+        private readonly ICatalogLeafToCsvDriver<PackageManifestRecord> _driver;
 
         public SandboxCommand(
             IMessageEnqueuer messageEnqueuer,
@@ -38,7 +39,7 @@ namespace Knapcode.ExplorePackages.Tool
             IRawMessageEnqueuer rawMessageEnqueuer,
             TableScanService<LatestPackageLeaf> tableScanService,
             PackageFileService packageFileService,
-            ICatalogLeafToCsvDriver<PackageSignature> driver)
+            ICatalogLeafToCsvDriver<PackageManifestRecord> driver)
         {
             _messageEnqueuer = messageEnqueuer;
             _taskStateStorageService = taskStateStorageService;
@@ -57,15 +58,17 @@ namespace Knapcode.ExplorePackages.Tool
         {
             await Task.Yield();
 
-            await _driver.ProcessLeafAsync(new CatalogLeafItem
+            await _driver.InitializeAsync();
+
+            var record = await _driver.ProcessLeafAsync(new CatalogLeafItem
             {
-                CommitTimestamp = DateTimeOffset.MinValue,
-                PackageId = "igniteui.mvc.4",
-                PackageVersion = "20.1.15",
+                Url = "https://api.nuget.org/v3/catalog0/data/2021.01.14.05.44.02/openfindesktop.16.8.0.json",
                 Type = CatalogLeafType.PackageDetails,
-                CommitId = "3c870eaf-62bb-4ecc-9212-e3167765c10f",
-                Url = "https://api.nuget.org/v3/catalog0/data/2020.11.04.15.12.15/igniteui.mvc.4.20.1.15.json",
+                PackageId = "OpenfinDesktop",
+                PackageVersion = "16.8.0",
             });
+
+            Console.WriteLine(JsonConvert.SerializeObject(record, Formatting.Indented));
         }
 
         private async Task RunTestAsync(int i, int j)

@@ -4,5 +4,6 @@
     {
         Deleted,
         Available,
+        Error,
     }
 }

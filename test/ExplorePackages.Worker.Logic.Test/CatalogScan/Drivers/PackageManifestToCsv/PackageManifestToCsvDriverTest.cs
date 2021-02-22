@@ -79,6 +79,48 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
         }
 
         [Fact]
+        public async Task HandlesFormatExceptionFromContentFiles()
+        {
+            await Target.InitializeAsync();
+            var leaf = new CatalogLeafItem
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2019.10.31.20.06.37/apploggersenner007.1.1.8.json",
+                Type = CatalogLeafType.PackageDetails,
+                PackageId = "AppLoggerSenner007",
+                PackageVersion = "1.1.8",
+            };
+
+            var output = await Target.ProcessLeafAsync(leaf);
+
+            Assert.Equal(DriverResultType.Success, output.Type);
+            var record = Assert.Single(output.Value);
+            Assert.Equal(PackageManifestRecordResultType.Error, record.ResultType);
+            Assert.Null(record.ContentFiles);
+            Assert.True(record.ContentFilesHasFormatException);
+        }
+
+        [Fact]
+        public async Task HandlesMissingIdFromDependencyGroups()
+        {
+            await Target.InitializeAsync();
+            var leaf = new CatalogLeafItem
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2018.11.02.00.39.04/baseline.0.5.0.3.json",
+                Type = CatalogLeafType.PackageDetails,
+                PackageId = "Baseline",
+                PackageVersion = "0.5.0.3",
+            };
+
+            var output = await Target.ProcessLeafAsync(leaf);
+
+            Assert.Equal(DriverResultType.Success, output.Type);
+            var record = Assert.Single(output.Value);
+            Assert.Equal(PackageManifestRecordResultType.Error, record.ResultType);
+            Assert.Null(record.DependencyGroups);
+            Assert.True(record.DependencyGroupsHasMissingId);
+        }
+
+        [Fact]
         public async Task SerializesPackageTypes()
         {
             await Target.InitializeAsync();

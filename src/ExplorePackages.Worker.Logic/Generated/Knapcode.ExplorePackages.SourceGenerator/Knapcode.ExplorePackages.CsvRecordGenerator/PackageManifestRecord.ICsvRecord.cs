@@ -48,7 +48,9 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
         ContentFiles: string,
         DependencyGroups: string,
         FrameworkAssemblyGroups: string,
-        FrameworkRefGroups: string
+        FrameworkRefGroups: string,
+        ContentFilesHasFormatException: bool,
+        DependencyGroupsHasMissingId: bool
     );
 
     .alter-merge table JverPackageManifests policy retention softdelete = 30d;
@@ -103,13 +105,15 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
         '{"Column":"ContentFiles","DataType":"string","Properties":{"Ordinal":32}},'
         '{"Column":"DependencyGroups","DataType":"string","Properties":{"Ordinal":33}},'
         '{"Column":"FrameworkAssemblyGroups","DataType":"string","Properties":{"Ordinal":34}},'
-        '{"Column":"FrameworkRefGroups","DataType":"string","Properties":{"Ordinal":35}}'
+        '{"Column":"FrameworkRefGroups","DataType":"string","Properties":{"Ordinal":35}},'
+        '{"Column":"ContentFilesHasFormatException","DataType":"bool","Properties":{"Ordinal":36}},'
+        '{"Column":"DependencyGroupsHasMissingId","DataType":"bool","Properties":{"Ordinal":37}}'
     ']'
 
     */
     partial record PackageManifestRecord
     {
-        public int FieldCount => 36;
+        public int FieldCount => 38;
 
         public void Write(List<string> fields)
         {
@@ -149,6 +153,8 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             fields.Add(DependencyGroups);
             fields.Add(FrameworkAssemblyGroups);
             fields.Add(FrameworkRefGroups);
+            fields.Add(CsvUtility.FormatBool(ContentFilesHasFormatException));
+            fields.Add(CsvUtility.FormatBool(DependencyGroupsHasMissingId));
         }
 
         public void Write(TextWriter writer)
@@ -224,6 +230,10 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             CsvUtility.WriteWithQuotes(writer, FrameworkAssemblyGroups);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, FrameworkRefGroups);
+            writer.Write(',');
+            writer.Write(CsvUtility.FormatBool(ContentFilesHasFormatException));
+            writer.Write(',');
+            writer.Write(CsvUtility.FormatBool(DependencyGroupsHasMissingId));
             writer.WriteLine();
         }
 
@@ -300,6 +310,10 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             await CsvUtility.WriteWithQuotesAsync(writer, FrameworkAssemblyGroups);
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, FrameworkRefGroups);
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatBool(ContentFilesHasFormatException));
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatBool(DependencyGroupsHasMissingId));
             await writer.WriteLineAsync();
         }
 
@@ -343,6 +357,8 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
                 DependencyGroups = getNextField(),
                 FrameworkAssemblyGroups = getNextField(),
                 FrameworkRefGroups = getNextField(),
+                ContentFilesHasFormatException = bool.Parse(getNextField()),
+                DependencyGroupsHasMissingId = bool.Parse(getNextField()),
             };
         }
     }
