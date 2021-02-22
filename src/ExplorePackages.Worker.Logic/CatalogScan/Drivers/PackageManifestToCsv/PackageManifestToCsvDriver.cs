@@ -93,23 +93,49 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
                 Icon = nuspecReader.GetIcon(),
                 IconUrl = nuspecReader.GetIconUrl(),
                 Language = nuspecReader.GetLanguage(),
-                LicenseMetadata = JsonSerialize(nuspecReader.GetLicenseMetadata()),
                 LicenseUrl = nuspecReader.GetLicenseUrl(),
                 Owners = nuspecReader.GetOwners(),
                 ProjectUrl = nuspecReader.GetProjectUrl(),
                 ReferenceGroups = JsonSerialize(nuspecReader.GetReferenceGroups()),
                 ReleaseNotes = nuspecReader.GetReleaseNotes(),
-                RepositoryMetadata = JsonSerialize(nuspecReader.GetRepositoryMetadata()),
                 RequireLicenseAcceptance = nuspecReader.GetRequireLicenseAcceptance(),
                 Summary = nuspecReader.GetSummary(),
                 Tags = nuspecReader.GetTags(),
                 Title = nuspecReader.GetTitle(),
             };
 
+            ReadLicenseMetadata(nuspecReader, record);
+            ReadRepositoryMetadata(nuspecReader, record);
             ReadContentFiles(nuspecReader, record);
             ReadDependencyGroups(nuspecReader, record);
 
             return record;
+        }
+
+        private static void ReadLicenseMetadata(NuspecReader nuspecReader, PackageManifestRecord record)
+        {
+            var metadata = nuspecReader.GetLicenseMetadata();
+            if (metadata == null)
+            {
+                return;
+            }
+
+            record.LicenseMetadata = JsonSerialize(metadata);
+        }
+
+        private static void ReadRepositoryMetadata(NuspecReader nuspecReader, PackageManifestRecord record)
+        {
+            var metadata = nuspecReader.GetRepositoryMetadata();
+            if (metadata == null
+                || (string.IsNullOrEmpty(metadata.Type)
+                    && string.IsNullOrEmpty(metadata.Url)
+                    && string.IsNullOrEmpty(metadata.Branch)
+                    && string.IsNullOrEmpty(metadata.Commit)))
+            {
+                return;
+            }
+
+            record.RepositoryMetadata = JsonSerialize(metadata);
         }
 
         private static void ReadContentFiles(NuspecReader nuspecReader, PackageManifestRecord record)

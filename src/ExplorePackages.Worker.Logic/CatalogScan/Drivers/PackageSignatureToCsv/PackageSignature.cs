@@ -1,7 +1,7 @@
 ﻿using System;
 using NuGet.Common;
 
-namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
+namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
 {
     public partial record PackageSignature : PackageRecord, ICsvRecord<PackageSignature>
     {

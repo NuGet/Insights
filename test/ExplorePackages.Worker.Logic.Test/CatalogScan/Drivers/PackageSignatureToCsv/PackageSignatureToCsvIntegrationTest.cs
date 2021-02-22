@@ -7,26 +7,26 @@ using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
+namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
 {
-    public class FindPackageSignatureIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest
+    public class PackageSignatureToCsvIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest
     {
-        private const string FindPackageSignatureDir = nameof(FindPackageSignature);
-        private const string FindPackageSignature_AuthorSignatureDir = nameof(FindPackageSignature_AuthorSignature);
-        private const string FindPackageSignature_BadTimestampDir = nameof(FindPackageSignature_BadTimestamp);
-        private const string FindPackageSignature_WithDeleteDir = nameof(FindPackageSignature_WithDelete);
+        private const string PackageSignatureToCsvDir = nameof(PackageSignatureToCsv);
+        private const string PackageSignatureToCsv_AuthorSignatureDir = nameof(PackageSignatureToCsv_AuthorSignature);
+        private const string PackageSignatureToCsv_BadTimestampDir = nameof(PackageSignatureToCsv_BadTimestamp);
+        private const string PackageSignatureToCsv_WithDeleteDir = nameof(PackageSignatureToCsv_WithDelete);
 
-        public FindPackageSignatureIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+        public PackageSignatureToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
             : base(output, factory)
         {
         }
 
         protected override string DestinationContainerName => Options.Value.PackageSignatureContainerName;
-        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.FindPackageSignature;
+        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageSignatureToCsv;
 
-        public class FindPackageSignature : FindPackageSignatureIntegrationTest
+        public class PackageSignatureToCsv : PackageSignatureToCsvIntegrationTest
         {
-            public FindPackageSignature(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public PackageSignatureToCsv(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -49,26 +49,26 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
                 await UpdateAsync(max1);
 
                 // Assert
-                await AssertOutputAsync(FindPackageSignatureDir, Step1, 0);
-                await AssertOutputAsync(FindPackageSignatureDir, Step1, 1);
-                await AssertOutputAsync(FindPackageSignatureDir, Step1, 2);
+                await AssertOutputAsync(PackageSignatureToCsvDir, Step1, 0);
+                await AssertOutputAsync(PackageSignatureToCsvDir, Step1, 1);
+                await AssertOutputAsync(PackageSignatureToCsvDir, Step1, 2);
 
                 // Act
                 await UpdateAsync(max2);
 
                 // Assert
-                await AssertOutputAsync(FindPackageSignatureDir, Step2, 0);
-                await AssertOutputAsync(FindPackageSignatureDir, Step1, 1); // This file is unchanged.
-                await AssertOutputAsync(FindPackageSignatureDir, Step2, 2);
+                await AssertOutputAsync(PackageSignatureToCsvDir, Step2, 0);
+                await AssertOutputAsync(PackageSignatureToCsvDir, Step1, 1); // This file is unchanged.
+                await AssertOutputAsync(PackageSignatureToCsvDir, Step2, 2);
 
                 await AssertExpectedStorageAsync();
                 AssertOnlyInfoLogsOrLess();
             }
         }
 
-        public class FindPackageSignature_AuthorSignature : FindPackageSignatureIntegrationTest
+        public class PackageSignatureToCsv_AuthorSignature : PackageSignatureToCsvIntegrationTest
         {
-            public FindPackageSignature_AuthorSignature(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public PackageSignatureToCsv_AuthorSignature(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -92,15 +92,15 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
                 await UpdateAsync(max1);
 
                 // Assert
-                await AssertOutputAsync(FindPackageSignature_AuthorSignatureDir, Step1, 0);
+                await AssertOutputAsync(PackageSignatureToCsv_AuthorSignatureDir, Step1, 0);
                 await AssertExpectedStorageAsync();
                 AssertOnlyInfoLogsOrLess();
             }
         }
 
-        public class FindPackageSignature_BadTimestamp : FindPackageSignatureIntegrationTest
+        public class PackageSignatureToCsv_BadTimestamp : PackageSignatureToCsvIntegrationTest
         {
-            public FindPackageSignature_BadTimestamp(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public PackageSignatureToCsv_BadTimestamp(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -124,15 +124,15 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
                 await UpdateAsync(max1);
 
                 // Assert
-                await AssertOutputAsync(FindPackageSignature_BadTimestampDir, Step1, 0);
+                await AssertOutputAsync(PackageSignatureToCsv_BadTimestampDir, Step1, 0);
                 await AssertExpectedStorageAsync();
                 AssertOnlyInfoLogsOrLess();
             }
         }
 
-        public class FindPackageSignature_WithDelete : FindPackageSignatureIntegrationTest
+        public class PackageSignatureToCsv_WithDelete : PackageSignatureToCsvIntegrationTest
         {
-            public FindPackageSignature_WithDelete(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public PackageSignatureToCsv_WithDelete(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -166,17 +166,17 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
                 await UpdateAsync(max1);
 
                 // Assert
-                await AssertOutputAsync(FindPackageSignature_WithDeleteDir, Step1, 0);
-                await AssertOutputAsync(FindPackageSignature_WithDeleteDir, Step1, 1);
-                await AssertOutputAsync(FindPackageSignature_WithDeleteDir, Step1, 2);
+                await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step1, 0);
+                await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step1, 1);
+                await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step1, 2);
 
                 // Act
                 await UpdateAsync(max2);
 
                 // Assert
-                await AssertOutputAsync(FindPackageSignature_WithDeleteDir, Step1, 0); // This file is unchanged.
-                await AssertOutputAsync(FindPackageSignature_WithDeleteDir, Step1, 1); // This file is unchanged.
-                await AssertOutputAsync(FindPackageSignature_WithDeleteDir, Step2, 2);
+                await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
+                await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
+                await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step2, 2);
 
                 await AssertExpectedStorageAsync();
                 AssertOnlyInfoLogsOrLess();

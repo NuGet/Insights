@@ -8,25 +8,25 @@ using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
+namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
 {
-    public class FindPackageAssetIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest
+    public class PackageAssetToCsvIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest
     {
-        private const string FindPackageAssetDir = nameof(FindPackageAsset);
-        private const string FindPackageAsset_WithDeleteDir = nameof(FindPackageAsset_WithDelete);
-        private const string FindPackageAsset_WithDuplicatesDir = nameof(FindPackageAsset_WithDuplicates);
+        private const string PackageAssetToCsvDir = nameof(PackageAssetToCsv);
+        private const string PackageAssetToCsv_WithDeleteDir = nameof(PackageAssetToCsv_WithDelete);
+        private const string PackageAssetToCsv_WithDuplicatesDir = nameof(PackageAssetToCsv_WithDuplicates);
 
-        public FindPackageAssetIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+        public PackageAssetToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
             : base(output, factory)
         {
         }
 
         protected override string DestinationContainerName => Options.Value.PackageAssetContainerName;
-        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.FindPackageAsset;
+        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageAssetToCsv;
 
-        public class FindPackageAsset : FindPackageAssetIntegrationTest
+        public class PackageAssetToCsv : PackageAssetToCsvIntegrationTest
         {
-            public FindPackageAsset(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public PackageAssetToCsv(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -49,26 +49,26 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
                 await UpdateAsync(max1);
 
                 // Assert
-                await AssertOutputAsync(FindPackageAssetDir, Step1, 0);
-                await AssertOutputAsync(FindPackageAssetDir, Step1, 1);
-                await AssertOutputAsync(FindPackageAssetDir, Step1, 2);
+                await AssertOutputAsync(PackageAssetToCsvDir, Step1, 0);
+                await AssertOutputAsync(PackageAssetToCsvDir, Step1, 1);
+                await AssertOutputAsync(PackageAssetToCsvDir, Step1, 2);
 
                 // Act
                 await UpdateAsync(max2);
 
                 // Assert
-                await AssertOutputAsync(FindPackageAssetDir, Step2, 0);
-                await AssertOutputAsync(FindPackageAssetDir, Step1, 1); // This file is unchanged.
-                await AssertOutputAsync(FindPackageAssetDir, Step2, 2);
+                await AssertOutputAsync(PackageAssetToCsvDir, Step2, 0);
+                await AssertOutputAsync(PackageAssetToCsvDir, Step1, 1); // This file is unchanged.
+                await AssertOutputAsync(PackageAssetToCsvDir, Step2, 2);
 
                 await AssertExpectedStorageAsync();
                 AssertOnlyInfoLogsOrLess();
             }
         }
 
-        public class FindPackageAsset_WithoutBatching : FindPackageAssetIntegrationTest
+        public class PackageAssetToCsv_WithoutBatching : PackageAssetToCsvIntegrationTest
         {
-            public FindPackageAsset_WithoutBatching(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public PackageAssetToCsv_WithoutBatching(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -92,18 +92,18 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
                 await UpdateAsync(max1);
 
                 // Assert
-                await AssertOutputAsync(FindPackageAssetDir, Step1, 0);
-                await AssertOutputAsync(FindPackageAssetDir, Step1, 1);
-                await AssertOutputAsync(FindPackageAssetDir, Step1, 2);
+                await AssertOutputAsync(PackageAssetToCsvDir, Step1, 0);
+                await AssertOutputAsync(PackageAssetToCsvDir, Step1, 1);
+                await AssertOutputAsync(PackageAssetToCsvDir, Step1, 2);
 
                 await AssertExpectedStorageAsync();
                 AssertOnlyInfoLogsOrLess();
             }
         }
 
-        public class FindPackageAsset_WithDelete : FindPackageAssetIntegrationTest
+        public class PackageAssetToCsv_WithDelete : PackageAssetToCsvIntegrationTest
         {
-            public FindPackageAsset_WithDelete(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public PackageAssetToCsv_WithDelete(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -137,26 +137,26 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
                 await UpdateAsync(max1);
 
                 // Assert
-                await AssertOutputAsync(FindPackageAsset_WithDeleteDir, Step1, 0);
-                await AssertOutputAsync(FindPackageAsset_WithDeleteDir, Step1, 1);
-                await AssertOutputAsync(FindPackageAsset_WithDeleteDir, Step1, 2);
+                await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step1, 0);
+                await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step1, 1);
+                await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step1, 2);
 
                 // Act
                 await UpdateAsync(max2);
 
                 // Assert
-                await AssertOutputAsync(FindPackageAsset_WithDeleteDir, Step1, 0); // This file is unchanged.
-                await AssertOutputAsync(FindPackageAsset_WithDeleteDir, Step1, 1); // This file is unchanged.
-                await AssertOutputAsync(FindPackageAsset_WithDeleteDir, Step2, 2);
+                await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
+                await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
+                await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step2, 2);
 
                 await AssertExpectedStorageAsync();
                 AssertOnlyInfoLogsOrLess();
             }
         }
 
-        public class FindPackageAsset_WithDuplicates_OnlyLatestLeaves : FindPackageAssetIntegrationTest
+        public class PackageAssetToCsv_WithDuplicates_OnlyLatestLeaves : PackageAssetToCsvIntegrationTest
         {
-            public FindPackageAsset_WithDuplicates_OnlyLatestLeaves(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public PackageAssetToCsv_WithDuplicates_OnlyLatestLeaves(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -166,13 +166,13 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
             [Fact]
             public Task Execute()
             {
-                return FindPackageAsset_WithDuplicates(batchProcessing: false);
+                return PackageAssetToCsv_WithDuplicates(batchProcessing: false);
             }
         }
 
-        public class FindPackageAsset_WithDuplicates_AllLeaves : FindPackageAssetIntegrationTest
+        public class PackageAssetToCsv_WithDuplicates_AllLeaves : PackageAssetToCsvIntegrationTest
         {
-            public FindPackageAsset_WithDuplicates_AllLeaves(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public PackageAssetToCsv_WithDuplicates_AllLeaves(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -182,13 +182,13 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
             [Fact]
             public async Task Execute()
             {
-                await FindPackageAsset_WithDuplicates(batchProcessing: false);
+                await PackageAssetToCsv_WithDuplicates(batchProcessing: false);
             }
         }
 
-        public class FindPackageAsset_WithDuplicates_BatchProcessing : FindPackageAssetIntegrationTest
+        public class PackageAssetToCsv_WithDuplicates_BatchProcessing : PackageAssetToCsvIntegrationTest
         {
-            public FindPackageAsset_WithDuplicates_BatchProcessing(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public PackageAssetToCsv_WithDuplicates_BatchProcessing(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -198,11 +198,11 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
             [Fact]
             public Task Execute()
             {
-                return FindPackageAsset_WithDuplicates(batchProcessing: true);
+                return PackageAssetToCsv_WithDuplicates(batchProcessing: true);
             }
         }
 
-        private async Task FindPackageAsset_WithDuplicates(bool batchProcessing)
+        private async Task PackageAssetToCsv_WithDuplicates(bool batchProcessing)
         {
             ConfigureWorkerSettings = x =>
             {
@@ -224,7 +224,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
             await UpdateAsync(max1);
 
             // Assert
-            await AssertOutputAsync(FindPackageAsset_WithDuplicatesDir, Step1, 0);
+            await AssertOutputAsync(PackageAssetToCsv_WithDuplicatesDir, Step1, 0);
 
             var duplicatePackageRequests = HttpMessageHandlerFactory
                 .Requests

@@ -8,20 +8,20 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using NuGet.Packaging.Signing;
 
-namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
+namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
 {
-    public class FindPackageSignatureDriver : ICatalogLeafToCsvDriver<PackageSignature>
+    public class PackageSignatureToCsvDriver : ICatalogLeafToCsvDriver<PackageSignature>
     {
         private readonly CatalogClient _catalogClient;
         private readonly PackageFileService _packageFileService;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
-        private readonly ILogger<FindPackageSignatureDriver> _logger;
+        private readonly ILogger<PackageSignatureToCsvDriver> _logger;
 
-        public FindPackageSignatureDriver(
+        public PackageSignatureToCsvDriver(
             CatalogClient catalogClient,
             PackageFileService packageFileService,
             IOptions<ExplorePackagesWorkerSettings> options,
-            ILogger<FindPackageSignatureDriver> logger)
+            ILogger<PackageSignatureToCsvDriver> logger)
         {
             _catalogClient = catalogClient;
             _packageFileService = packageFileService;

@@ -4,15 +4,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
+namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
 {
-    public class FindCatalogLeafItemDriver : ICatalogLeafScanNonBatchDriver, ICsvCompactor<CatalogLeafItemRecord>
+    public class CatalogLeafItemToCsvDriver : ICatalogLeafScanNonBatchDriver, ICsvCompactor<CatalogLeafItemRecord>
     {
         private readonly CatalogScanToCsvAdapter<CatalogLeafItemRecord> _adapter;
         private readonly CatalogClient _catalogClient;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
-        public FindCatalogLeafItemDriver(
+        public CatalogLeafItemToCsvDriver(
             CatalogScanToCsvAdapter<CatalogLeafItemRecord> adapter,
             CatalogClient catalogClient,
             IOptions<ExplorePackagesWorkerSettings> options)

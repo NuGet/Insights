@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Knapcode.ExplorePackages.Worker.FindCatalogLeafItem;
+using Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv;
 using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
-using Knapcode.ExplorePackages.Worker.FindPackageAssembly;
-using Knapcode.ExplorePackages.Worker.FindPackageAsset;
-using Knapcode.ExplorePackages.Worker.FindPackageSignature;
+using Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv;
+using Knapcode.ExplorePackages.Worker.PackageAssetToCsv;
 using Knapcode.ExplorePackages.Worker.PackageManifestToCsv;
+using Knapcode.ExplorePackages.Worker.PackageSignatureToCsv;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
 using Knapcode.ExplorePackages.Worker.TableCopy;

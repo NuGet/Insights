@@ -1,12 +1,12 @@
 ﻿using System;
-using Knapcode.ExplorePackages.Worker.FindCatalogLeafItem;
+using Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv;
 using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
-using Knapcode.ExplorePackages.Worker.FindPackageAssembly;
-using Knapcode.ExplorePackages.Worker.FindPackageAsset;
-using Knapcode.ExplorePackages.Worker.FindPackageSignature;
 using Knapcode.ExplorePackages.Worker.LoadPackageArchive;
 using Knapcode.ExplorePackages.Worker.LoadPackageManifest;
+using Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv;
+using Knapcode.ExplorePackages.Worker.PackageAssetToCsv;
 using Knapcode.ExplorePackages.Worker.PackageManifestToCsv;
+using Knapcode.ExplorePackages.Worker.PackageSignatureToCsv;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -53,17 +53,17 @@ namespace Knapcode.ExplorePackages.Worker
         {
             switch (driverType)
             {
-                case CatalogScanDriverType.FindCatalogLeafItem:
-                    return _serviceProvider.GetRequiredService<FindCatalogLeafItemDriver>();
+                case CatalogScanDriverType.CatalogLeafItemToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafItemToCsvDriver>();
                 case CatalogScanDriverType.Internal_FindLatestCatalogLeafScan:
                     return _serviceProvider.GetRequiredService<FindLatestLeafDriver<CatalogLeafScan>>();
                 case CatalogScanDriverType.FindLatestPackageLeaf:
                     return _serviceProvider.GetRequiredService<FindLatestLeafDriver<LatestPackageLeaf>>();
-                case CatalogScanDriverType.FindPackageAssembly:
+                case CatalogScanDriverType.PackageAssemblyToCsv:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<PackageAssembly>>();
-                case CatalogScanDriverType.FindPackageAsset:
+                case CatalogScanDriverType.PackageAssetToCsv:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<PackageAsset>>();
-                case CatalogScanDriverType.FindPackageSignature:
+                case CatalogScanDriverType.PackageSignatureToCsv:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<PackageSignature>>();
                 case CatalogScanDriverType.PackageManifestToCsv:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<PackageManifestRecord>>();

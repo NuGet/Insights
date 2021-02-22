@@ -75,8 +75,8 @@ namespace Knapcode.ExplorePackages.Worker
             // finishes.
             var loadPackageArchive = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageArchive, max1, onlyLatestLeaves: null);
             await UpdateAsync(loadPackageArchive.Scan);
-            var findPackageAssembly = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindPackageAssembly, max1, onlyLatestLeaves: null);
-            await UpdateAsync(findPackageAssembly.Scan);
+            var packageAssemblyToCsv = await CatalogScanService.UpdateAsync(CatalogScanDriverType.PackageAssemblyToCsv, max1, onlyLatestLeaves: null);
+            await UpdateAsync(packageAssemblyToCsv.Scan);
             var startingNupkgRequestCount = GetNupkgRequestCount();
 
             // Start all of the scans

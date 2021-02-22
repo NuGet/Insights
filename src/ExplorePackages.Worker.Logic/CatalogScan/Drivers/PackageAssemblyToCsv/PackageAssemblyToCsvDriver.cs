@@ -15,26 +15,26 @@ using Knapcode.MiniZip;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
+namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
 {
-    public class FindPackageAssemblyDriver : ICatalogLeafToCsvDriver<PackageAssembly>
+    public class PackageAssemblyToCsvDriver : ICatalogLeafToCsvDriver<PackageAssembly>
     {
         private readonly CatalogClient _catalogClient;
         private readonly PackageFileService _packageFileService;
         private readonly FlatContainerClient _flatContainerClient;
         private readonly TempStreamService _tempStreamService;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
-        private readonly ILogger<FindPackageAssemblyDriver> _logger;
+        private readonly ILogger<PackageAssemblyToCsvDriver> _logger;
 
         private static readonly HashSet<string> FileExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".dll", ".exe" };
 
-        public FindPackageAssemblyDriver(
+        public PackageAssemblyToCsvDriver(
             CatalogClient catalogClient,
             PackageFileService packageFileService,
             FlatContainerClient flatContainerClient,
             TempStreamService tempStreamService,
             IOptions<ExplorePackagesWorkerSettings> options,
-            ILogger<FindPackageAssemblyDriver> logger)
+            ILogger<PackageAssemblyToCsvDriver> logger)
         {
             _catalogClient = catalogClient;
             _packageFileService = packageFileService;

@@ -6,7 +6,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages;
 
-namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
+namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
 {
     /* Kusto DDL:
 

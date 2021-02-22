@@ -12,20 +12,20 @@ using NuGet.ContentModel;
 using NuGet.Frameworks;
 using NuGet.RuntimeModel;
 
-namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
+namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
 {
-    public class FindPackageAssetDriver : ICatalogLeafToCsvDriver<PackageAsset>
+    public class PackageAssetToCsvDriver : ICatalogLeafToCsvDriver<PackageAsset>
     {
         private readonly CatalogClient _catalogClient;
         private readonly PackageFileService _packageFileService;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
-        private readonly ILogger<FindPackageAssetDriver> _logger;
+        private readonly ILogger<PackageAssetToCsvDriver> _logger;
 
-        public FindPackageAssetDriver(
+        public PackageAssetToCsvDriver(
             CatalogClient catalogClient,
             PackageFileService packageFileService,
             IOptions<ExplorePackagesWorkerSettings> options,
-            ILogger<FindPackageAssetDriver> logger)
+            ILogger<PackageAssetToCsvDriver> logger)
         {
             _catalogClient = catalogClient;
             _packageFileService = packageFileService;

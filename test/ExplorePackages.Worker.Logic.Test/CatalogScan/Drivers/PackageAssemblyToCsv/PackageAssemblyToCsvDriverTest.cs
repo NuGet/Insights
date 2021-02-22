@@ -4,11 +4,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
+namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
 {
-    public class FindPackageAssemblyDriverTest : BaseWorkerLogicIntegrationTest
+    public class PackageAssemblyToCsvDriverTest : BaseWorkerLogicIntegrationTest
     {
-        public FindPackageAssemblyDriverTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+        public PackageAssemblyToCsvDriverTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
             : base(output, factory)
         {
         }

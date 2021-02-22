@@ -1,4 +1,4 @@
-﻿namespace Knapcode.ExplorePackages.Worker.FindPackageSignature
+﻿namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
 {
     public enum PackageSignatureResultType
     {

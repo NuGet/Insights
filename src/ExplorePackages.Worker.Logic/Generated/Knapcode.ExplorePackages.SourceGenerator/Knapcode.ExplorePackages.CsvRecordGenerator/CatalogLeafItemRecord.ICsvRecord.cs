@@ -6,7 +6,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages;
 
-namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
+namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
 {
     /* Kusto DDL:
 

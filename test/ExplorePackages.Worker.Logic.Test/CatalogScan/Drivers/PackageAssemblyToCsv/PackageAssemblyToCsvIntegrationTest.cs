@@ -10,27 +10,27 @@ using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
+namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
 {
-    public class FindPackageAssemblyIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest
+    public class PackageAssemblyToCsvIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest
     {
-        private const string FindPackageAssemblyDir = nameof(FindPackageAssembly);
-        private const string FindPackageAssembly_WithDeleteDir = nameof(FindPackageAssembly_WithDelete);
-        private const string FindPackageAssembly_WithUnmanagedDir = nameof(FindPackageAssembly_WithUnmanaged);
-        private const string FindPackageAssembly_WithDuplicatesDir = nameof(FindPackageAssembly_WithDuplicates);
+        private const string PackageAssemblyToCsvDir = nameof(PackageAssemblyToCsv);
+        private const string PackageAssemblyToCsv_WithDeleteDir = nameof(PackageAssemblyToCsv_WithDelete);
+        private const string PackageAssemblyToCsv_WithUnmanagedDir = nameof(PackageAssemblyToCsv_WithUnmanaged);
+        private const string PackageAssemblyToCsv_WithDuplicatesDir = nameof(PackageAssemblyToCsv_WithDuplicates);
 
-        public FindPackageAssemblyIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+        public PackageAssemblyToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
             : base(output, factory)
         {
         }
 
         protected override string DestinationContainerName => Options.Value.PackageAssemblyContainerName;
 
-        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.FindPackageAssembly;
+        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageAssemblyToCsv;
 
-        public class FindPackageAssembly : FindPackageAssemblyIntegrationTest
+        public class PackageAssemblyToCsv : PackageAssemblyToCsvIntegrationTest
         {
-            public FindPackageAssembly(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public PackageAssemblyToCsv(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -53,26 +53,26 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
                 await UpdateAsync(max1);
 
                 // Assert
-                await AssertOutputAsync(FindPackageAssemblyDir, Step1, 0);
-                await AssertOutputAsync(FindPackageAssemblyDir, Step1, 1);
-                await AssertOutputAsync(FindPackageAssemblyDir, Step1, 2);
+                await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 0);
+                await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 1);
+                await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 2);
 
                 // Act
                 await UpdateAsync(max2);
 
                 // Assert
-                await AssertOutputAsync(FindPackageAssemblyDir, Step2, 0);
-                await AssertOutputAsync(FindPackageAssemblyDir, Step1, 1); // This file is unchanged.
-                await AssertOutputAsync(FindPackageAssemblyDir, Step2, 2);
+                await AssertOutputAsync(PackageAssemblyToCsvDir, Step2, 0);
+                await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 1); // This file is unchanged.
+                await AssertOutputAsync(PackageAssemblyToCsvDir, Step2, 2);
 
                 await AssertExpectedStorageAsync();
                 AssertOnlyInfoLogsOrLess();
             }
         }
 
-        public class FindPackageAssembly_WithDiskBuffering : FindPackageAssemblyIntegrationTest
+        public class PackageAssemblyToCsv_WithDiskBuffering : PackageAssemblyToCsvIntegrationTest
         {
-            public FindPackageAssembly_WithDiskBuffering(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public PackageAssemblyToCsv_WithDiskBuffering(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -100,9 +100,9 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
                 await UpdateAsync(max1);
 
                 // Assert
-                await AssertOutputAsync(FindPackageAssemblyDir, Step1, 0);
-                await AssertOutputAsync(FindPackageAssemblyDir, Step1, 1);
-                await AssertOutputAsync(FindPackageAssemblyDir, Step1, 2);
+                await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 0);
+                await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 1);
+                await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 2);
 
                 await AssertExpectedStorageAsync();
                 AssertOnlyInfoLogsOrLess();
@@ -127,9 +127,9 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
             }
         }
 
-        public class FindPackageAssembly_WithDelete : FindPackageAssemblyIntegrationTest
+        public class PackageAssemblyToCsv_WithDelete : PackageAssemblyToCsvIntegrationTest
         {
-            public FindPackageAssembly_WithDelete(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public PackageAssemblyToCsv_WithDelete(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -163,26 +163,26 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
                 await UpdateAsync(max1);
 
                 // Assert
-                await AssertOutputAsync(FindPackageAssembly_WithDeleteDir, Step1, 0);
-                await AssertOutputAsync(FindPackageAssembly_WithDeleteDir, Step1, 1);
-                await AssertOutputAsync(FindPackageAssembly_WithDeleteDir, Step1, 2);
+                await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step1, 0);
+                await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step1, 1);
+                await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step1, 2);
 
                 // Act
                 await UpdateAsync(max2);
 
                 // Assert
-                await AssertOutputAsync(FindPackageAssembly_WithDeleteDir, Step1, 0); // This file is unchanged.
-                await AssertOutputAsync(FindPackageAssembly_WithDeleteDir, Step1, 1); // This file is unchanged.
-                await AssertOutputAsync(FindPackageAssembly_WithDeleteDir, Step2, 2);
+                await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
+                await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
+                await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step2, 2);
 
                 await AssertExpectedStorageAsync();
                 AssertOnlyInfoLogsOrLess();
             }
         }
 
-        public class FindPackageAssembly_WithUnmanaged : FindPackageAssemblyIntegrationTest
+        public class PackageAssemblyToCsv_WithUnmanaged : PackageAssemblyToCsvIntegrationTest
         {
-            public FindPackageAssembly_WithUnmanaged(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public PackageAssemblyToCsv_WithUnmanaged(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -206,16 +206,16 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
                 await UpdateAsync(max1);
 
                 // Assert
-                await AssertOutputAsync(FindPackageAssembly_WithUnmanagedDir, Step1, 0);
+                await AssertOutputAsync(PackageAssemblyToCsv_WithUnmanagedDir, Step1, 0);
 
                 await AssertExpectedStorageAsync();
                 AssertOnlyInfoLogsOrLess();
             }
         }
 
-        public class FindPackageAssembly_WithDuplicates_OnlyLatestLeaves : FindPackageAssemblyIntegrationTest
+        public class PackageAssemblyToCsv_WithDuplicates_OnlyLatestLeaves : PackageAssemblyToCsvIntegrationTest
         {
-            public FindPackageAssembly_WithDuplicates_OnlyLatestLeaves(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public PackageAssemblyToCsv_WithDuplicates_OnlyLatestLeaves(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -225,13 +225,13 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
             [Fact]
             public Task Execute()
             {
-                return FindPackageAssembly_WithDuplicates();
+                return PackageAssemblyToCsv_WithDuplicates();
             }
         }
 
-        public class FindPackageAssembly_WithDuplicates_AllLeaves : FindPackageAssemblyIntegrationTest
+        public class PackageAssemblyToCsv_WithDuplicates_AllLeaves : PackageAssemblyToCsvIntegrationTest
         {
-            public FindPackageAssembly_WithDuplicates_AllLeaves(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public PackageAssemblyToCsv_WithDuplicates_AllLeaves(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -241,11 +241,11 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
             [Fact]
             public Task Execute()
             {
-                return FindPackageAssembly_WithDuplicates();
+                return PackageAssemblyToCsv_WithDuplicates();
             }
         }
 
-        private async Task FindPackageAssembly_WithDuplicates()
+        private async Task PackageAssemblyToCsv_WithDuplicates()
         {
             ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
 
@@ -263,7 +263,7 @@ namespace Knapcode.ExplorePackages.Worker.FindPackageAssembly
             await UpdateAsync(max1);
 
             // Assert
-            await AssertOutputAsync(FindPackageAssembly_WithDuplicatesDir, Step1, 0);
+            await AssertOutputAsync(PackageAssemblyToCsv_WithDuplicatesDir, Step1, 0);
 
             var duplicatePackageRequests = HttpMessageHandlerFactory
                 .Requests

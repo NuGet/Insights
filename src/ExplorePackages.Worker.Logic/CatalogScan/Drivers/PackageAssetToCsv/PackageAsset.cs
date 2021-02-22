@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Knapcode.ExplorePackages.Worker.FindPackageAsset
+namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
 {
     public partial record PackageAsset : PackageRecord, ICsvRecord<PackageAsset>
     {

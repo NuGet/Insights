@@ -1,6 +1,6 @@
 ﻿using System.Linq;
+using Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv;
 using Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan;
-using Knapcode.ExplorePackages.Worker.FindCatalogLeafItem;
 using Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan;
 using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
 using Knapcode.ExplorePackages.Worker.LoadPackageArchive;
@@ -45,7 +45,7 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient<TaskStateStorageService>();
             serviceCollection.AddTransient<ICsvReader, NRecoCsvReader>();
 
-            serviceCollection.AddFindCatalogLeafItem();
+            serviceCollection.AddCatalogLeafItemToCsv();
             serviceCollection.AddFindLatestLeaf();
             serviceCollection.AddLoadPackageArchive();
             serviceCollection.AddLoadPackageManifest();
@@ -161,9 +161,9 @@ namespace Knapcode.ExplorePackages.Worker
                 typeof(TableRowCopyMessageProcessor<>).MakeGenericType(entityType));
         }
 
-        private static void AddFindCatalogLeafItem(this IServiceCollection serviceCollection)
+        private static void AddCatalogLeafItemToCsv(this IServiceCollection serviceCollection)
         {
-            serviceCollection.AddTransient<FindCatalogLeafItemDriver>();
+            serviceCollection.AddTransient<CatalogLeafItemToCsvDriver>();
         }
 
         private static void AddFindLatestLeaf(this IServiceCollection serviceCollection)

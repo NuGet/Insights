@@ -92,7 +92,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
             // Arrange
             var parentScan = new CatalogIndexScan("parent-cursor", "parent-scan-id", ParentStorageSuffix)
             {
-                ParsedDriverType = CatalogScanDriverType.FindPackageAsset,
+                ParsedDriverType = CatalogScanDriverType.PackageAssetToCsv,
                 DriverParameters = "parent-parameters",
                 ParsedState = CatalogIndexScanState.Created,
                 Min = DateTimeOffset.Parse("2020-01-01T00:00:00Z"),

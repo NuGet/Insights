@@ -225,7 +225,7 @@ namespace Knapcode.ExplorePackages.Worker
             },
 
             {
-                CatalogScanDriverType.FindPackageAssembly,
+                CatalogScanDriverType.PackageAssemblyToCsv,
                 new DriverInfo
                 {
                     DefaultMin = CatalogClient.NuGetOrgMinDeleted,
@@ -237,7 +237,7 @@ namespace Knapcode.ExplorePackages.Worker
             },
 
             {
-                CatalogScanDriverType.FindPackageAsset,
+                CatalogScanDriverType.PackageAssetToCsv,
                 new DriverInfo
                 {
                     DefaultMin = CatalogClient.NuGetOrgMinDeleted,
@@ -249,7 +249,7 @@ namespace Knapcode.ExplorePackages.Worker
             },
 
             {
-                CatalogScanDriverType.FindPackageSignature,
+                CatalogScanDriverType.PackageSignatureToCsv,
                 new DriverInfo
                 {
                     DefaultMin = CatalogClient.NuGetOrgMinDeleted,
@@ -261,7 +261,7 @@ namespace Knapcode.ExplorePackages.Worker
             },
 
             {
-                CatalogScanDriverType.FindCatalogLeafItem,
+                CatalogScanDriverType.CatalogLeafItemToCsv,
                 new DriverInfo
                 {
                     DefaultMin = CatalogClient.NuGetOrgMin,
@@ -312,7 +312,7 @@ namespace Knapcode.ExplorePackages.Worker
             CatalogCursor = DateTimeOffset.Parse("2021-02-03T16:00:00Z");
             FlatContainerCursor = DateTimeOffset.Parse("2021-02-02T16:00:00Z");
             CursorValue = DateTimeOffset.Parse("2021-02-01T16:00:00Z");
-            DriverType = CatalogScanDriverType.FindPackageAsset;
+            DriverType = CatalogScanDriverType.PackageAssetToCsv;
 
             RemoteCursorClient.Setup(x => x.GetCatalogAsync(It.IsAny<CancellationToken>())).ReturnsAsync(() => CatalogCursor);
             RemoteCursorClient.Setup(x => x.GetFlatContainerAsync(It.IsAny<CancellationToken>())).ReturnsAsync(() => FlatContainerCursor);

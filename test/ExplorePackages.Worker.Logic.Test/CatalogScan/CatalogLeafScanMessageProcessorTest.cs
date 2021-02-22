@@ -371,7 +371,7 @@ namespace Knapcode.ExplorePackages.Worker
             StorageSuffixB = "ssb";
             ScanId = "si";
             PageId = "pi";
-            DriverType = CatalogScanDriverType.FindPackageAsset;
+            DriverType = CatalogScanDriverType.PackageAssetToCsv;
         }
 
         private async Task AssertSuccessAsync(BatchMessageProcessorResult<CatalogLeafScanMessage> result)

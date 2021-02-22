@@ -23,36 +23,30 @@
         LoadPackageManifest,
 
         /// <summary>
-        /// Implemented by <see cref="FindPackageAssembly.FindPackageAssemblyDriver"/>. For packages that contain
+        /// Implemented by <see cref="PackageAssemblyToCsv.PackageAssemblyToCsvDriver"/>. For packages that contain
         /// assemblies, downloads the entire .nupkg and extract metadata about each assembly.
         /// </summary>
-        FindPackageAssembly,
+        PackageAssemblyToCsv,
 
         /// <summary>
-        /// Implemented by <see cref="FindPackageAsset.FindPackageAssetDriver"/>. Runs NuGet restore pattern sets against
+        /// Implemented by <see cref="PackageAssetToCsv.PackageAssetToCsvDriver"/>. Runs NuGet restore pattern sets against
         /// all files in each packages. This essentially determines all package assets the NuGet PackageReference restore
         /// recognizes.
         /// </summary>
-        FindPackageAsset,
+        PackageAssetToCsv,
 
         /// <summary>
-        /// Implemented by <see cref="FindPackageSignature.FindPackageSignatureDriver"/>. Extracts information from each
+        /// Implemented by <see cref="PackageSignatureToCsv.PackageSignatureToCsvDriver"/>. Extracts information from each
         /// NuGet package signature, determining things like certificate issuers and whether the package is author signed.
         /// </summary>
-        FindPackageSignature,
+        PackageSignatureToCsv,
 
         /// <summary>
-        /// Implemented by <see cref="FindCatalogLeafItem.FindCatalogLeafItemDriver"/>. Reads all catalog leaf items
+        /// Implemented by <see cref="CatalogLeafItemToCsv.CatalogLeafItemToCsvDriver"/>. Reads all catalog leaf items
         /// and their associated page metadata. The catalog leaf item is described here:
         /// https://docs.microsoft.com/en-us/nuget/api/catalog-resource#catalog-item-object-in-a-page
         /// </summary>
-        FindCatalogLeafItem,
-
-        /// <summary>
-        /// Implemented by <see cref="FindLatestPackageLeaf.LatestPackageLeafStorage"/> and <see cref="FindLatestLeafDriver{T}"/>.
-        /// This driver records the latest catalog leaf URL for each package version to Azure Table Storage.
-        /// </summary>
-        FindLatestPackageLeaf,
+        CatalogLeafItemToCsv,
 
         /// <summary>
         /// Implemented by <see cref="PackageManifestToCsv.PackageManifestToCsvDriver"/>. This driver reads all package
@@ -60,5 +54,11 @@
         /// <see cref="NuGet.Packaging.NuspecReader"/> to interpret the data as the NuGet client would.
         /// </summary>
         PackageManifestToCsv,
+
+        /// <summary>
+        /// Implemented by <see cref="FindLatestPackageLeaf.LatestPackageLeafStorage"/> and <see cref="FindLatestLeafDriver{T}"/>.
+        /// This driver records the latest catalog leaf URL for each package version to Azure Table Storage.
+        /// </summary>
+        FindLatestPackageLeaf,
     }
 }

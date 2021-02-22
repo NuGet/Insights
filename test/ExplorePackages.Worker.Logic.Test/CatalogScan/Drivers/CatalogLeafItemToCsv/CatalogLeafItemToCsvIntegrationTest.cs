@@ -5,24 +5,24 @@ using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
+namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
 {
-    public class FindCatalogLeafItemIntegrationTest : BaseCatalogScanToCsvIntegrationTest
+    public class CatalogLeafItemToCsvIntegrationTest : BaseCatalogScanToCsvIntegrationTest
     {
-        private const string FindCatalogLeafItemDir = nameof(FindCatalogLeafItem);
-        private const string FindCatalogLeafItem_WithDuplicatesDir = nameof(FindCatalogLeafItem_WithDuplicates);
+        private const string CatalogLeafItemToCsvDir = nameof(CatalogLeafItemToCsv);
+        private const string CatalogLeafItemToCsv_WithDuplicatesDir = nameof(CatalogLeafItemToCsv_WithDuplicates);
 
-        public FindCatalogLeafItemIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+        public CatalogLeafItemToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
             : base(output, factory)
         {
         }
 
         protected override string DestinationContainerName => Options.Value.CatalogLeafItemContainerName;
-        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.FindCatalogLeafItem;
+        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.CatalogLeafItemToCsv;
 
-        public class FindCatalogLeafItem : FindCatalogLeafItemIntegrationTest
+        public class CatalogLeafItemToCsv : CatalogLeafItemToCsvIntegrationTest
         {
-            public FindCatalogLeafItem(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public CatalogLeafItemToCsv(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -45,15 +45,15 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
                 await UpdateAsync(max1);
 
                 // Assert
-                await AssertOutputAsync(FindCatalogLeafItemDir, Step1, 0);
+                await AssertOutputAsync(CatalogLeafItemToCsvDir, Step1, 0);
                 await AssertExpectedStorageAsync();
                 AssertOnlyInfoLogsOrLess();
             }
         }
 
-        public class FindCatalogLeafItem_WithDuplicates : FindCatalogLeafItemIntegrationTest
+        public class CatalogLeafItemToCsv_WithDuplicates : CatalogLeafItemToCsvIntegrationTest
         {
-            public FindCatalogLeafItem_WithDuplicates(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public CatalogLeafItemToCsv_WithDuplicates(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -76,7 +76,7 @@ namespace Knapcode.ExplorePackages.Worker.FindCatalogLeafItem
                 await UpdateAsync(max1);
 
                 // Assert
-                await AssertOutputAsync(FindCatalogLeafItem_WithDuplicatesDir, Step1, 0);
+                await AssertOutputAsync(CatalogLeafItemToCsv_WithDuplicatesDir, Step1, 0);
                 await AssertExpectedStorageAsync();
                 AssertOnlyInfoLogsOrLess();
             }
