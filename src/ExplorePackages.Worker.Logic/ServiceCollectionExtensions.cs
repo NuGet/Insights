@@ -3,7 +3,7 @@ using Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan;
 using Knapcode.ExplorePackages.Worker.FindCatalogLeafItem;
 using Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan;
 using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
-using Knapcode.ExplorePackages.Worker.LoadPackageFile;
+using Knapcode.ExplorePackages.Worker.LoadPackageArchive;
 using Knapcode.ExplorePackages.Worker.LoadPackageManifest;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
@@ -47,7 +47,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             serviceCollection.AddFindCatalogLeafItem();
             serviceCollection.AddFindLatestLeaf();
-            serviceCollection.AddLoadPackageFile();
+            serviceCollection.AddLoadPackageArchive();
             serviceCollection.AddLoadPackageManifest();
             serviceCollection.AddRunRealRestore();
             serviceCollection.AddTableCopy();
@@ -173,9 +173,9 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient<FindLatestLeafDriver<LatestPackageLeaf>>();
         }
 
-        private static void AddLoadPackageFile(this IServiceCollection serviceCollection)
+        private static void AddLoadPackageArchive(this IServiceCollection serviceCollection)
         {
-            serviceCollection.AddTransient<LoadPackageFileDriver>();
+            serviceCollection.AddTransient<LoadPackageArchiveDriver>();
         }
 
         private static void AddLoadPackageManifest(this IServiceCollection serviceCollection)

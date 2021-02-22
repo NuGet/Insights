@@ -10,16 +10,16 @@ using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker.LoadPackageFile
+namespace Knapcode.ExplorePackages.Worker.LoadPackageArchive
 {
-    public class LoadPackageFileIntegrationTest : BaseCatalogScanIntegrationTest
+    public class LoadPackageArchiveIntegrationTest : BaseCatalogScanIntegrationTest
     {
-        public const string LoadPackageFileDir = nameof(LoadPackageFile);
-        public const string LoadPackageFile_WithDeleteDir = nameof(LoadPackageFile_WithDelete);
+        public const string LoadPackageArchiveDir = nameof(LoadPackageArchive);
+        public const string LoadPackageArchive_WithDeleteDir = nameof(LoadPackageArchive_WithDelete);
 
-        public class LoadPackageFile : LoadPackageFileIntegrationTest
+        public class LoadPackageArchive : LoadPackageArchiveIntegrationTest
         {
-            public LoadPackageFile(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public LoadPackageArchive(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -41,20 +41,20 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageFile
                 await UpdateAsync(max1);
 
                 // Assert
-                await VerifyOutputAsync(LoadPackageFileDir, Step1);
+                await VerifyOutputAsync(LoadPackageArchiveDir, Step1);
 
                 // Act
                 await UpdateAsync(max2);
 
                 // Assert
-                await VerifyOutputAsync(LoadPackageFileDir, Step2);
+                await VerifyOutputAsync(LoadPackageArchiveDir, Step2);
                 AssertOnlyInfoLogsOrLess();
             }
         }
 
-        public class LoadPackageFile_WithDelete : LoadPackageFileIntegrationTest
+        public class LoadPackageArchive_WithDelete : LoadPackageArchiveIntegrationTest
         {
-            public LoadPackageFile_WithDelete(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public LoadPackageArchive_WithDelete(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -94,13 +94,13 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageFile
                 await UpdateAsync(max1);
 
                 // Assert
-                await VerifyOutputAsync(LoadPackageFile_WithDeleteDir, Step1);
+                await VerifyOutputAsync(LoadPackageArchive_WithDeleteDir, Step1);
 
                 // Act
                 await UpdateAsync(max2);
 
                 // Assert
-                await VerifyOutputAsync(LoadPackageFile_WithDeleteDir, Step2);
+                await VerifyOutputAsync(LoadPackageArchive_WithDeleteDir, Step2);
                 AssertOnlyInfoLogsOrLess();
             }
         }
@@ -109,19 +109,19 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageFile
 
         protected override IEnumerable<string> GetExpectedTableNames()
         {
-            return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageFileTableName });
+            return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageArchiveTableName });
         }
 
-        public LoadPackageFileIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+        public LoadPackageArchiveIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
         }
 
-        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.LoadPackageFile;
+        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.LoadPackageArchive;
 
         private async Task VerifyOutputAsync(string testName, string stepName)
         {
             await VerifyWideEntityOutputAsync(
-                Options.Value.PackageFileTableName,
+                Options.Value.PackageArchiveTableName,
                 Path.Combine(testName, stepName),
                 stream =>
                 {

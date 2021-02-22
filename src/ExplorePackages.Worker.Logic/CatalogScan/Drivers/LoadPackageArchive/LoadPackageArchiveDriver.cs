@@ -4,14 +4,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Knapcode.ExplorePackages.Worker.LoadPackageFile
+namespace Knapcode.ExplorePackages.Worker.LoadPackageArchive
 {
-    public class LoadPackageFileDriver : ICatalogLeafScanBatchDriver
+    public class LoadPackageArchiveDriver : ICatalogLeafScanBatchDriver
     {
         private readonly PackageFileService _packageFileService;
-        private readonly ILogger<LoadPackageFileDriver> _logger;
+        private readonly ILogger<LoadPackageArchiveDriver> _logger;
 
-        public LoadPackageFileDriver(PackageFileService packageFileService, ILogger<LoadPackageFileDriver> logger)
+        public LoadPackageArchiveDriver(PackageFileService packageFileService, ILogger<LoadPackageArchiveDriver> logger)
         {
             _packageFileService = packageFileService;
             _logger = logger;

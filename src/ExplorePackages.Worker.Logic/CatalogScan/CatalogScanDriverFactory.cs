@@ -4,7 +4,7 @@ using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
 using Knapcode.ExplorePackages.Worker.FindPackageAssembly;
 using Knapcode.ExplorePackages.Worker.FindPackageAsset;
 using Knapcode.ExplorePackages.Worker.FindPackageSignature;
-using Knapcode.ExplorePackages.Worker.LoadPackageFile;
+using Knapcode.ExplorePackages.Worker.LoadPackageArchive;
 using Knapcode.ExplorePackages.Worker.LoadPackageManifest;
 using Knapcode.ExplorePackages.Worker.PackageManifestToCsv;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,8 +33,8 @@ namespace Knapcode.ExplorePackages.Worker
         {
             switch (driverType)
             {
-                case CatalogScanDriverType.LoadPackageFile:
-                    return _serviceProvider.GetRequiredService<LoadPackageFileDriver>();
+                case CatalogScanDriverType.LoadPackageArchive:
+                    return _serviceProvider.GetRequiredService<LoadPackageArchiveDriver>();
                 case CatalogScanDriverType.LoadPackageManifest:
                     return _serviceProvider.GetRequiredService<LoadPackageManifestDriver>();
                 default:

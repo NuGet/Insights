@@ -134,7 +134,7 @@ namespace Knapcode.ExplorePackages.Worker
                 case CatalogScanDriverType.FindPackageSignature:
                 case CatalogScanDriverType.PackageManifestToCsv:
                     return await UpdateCatalogLeafToCsvAsync(driverType, onlyLatestLeaves.GetValueOrDefault(true), max);
-                case CatalogScanDriverType.LoadPackageFile:
+                case CatalogScanDriverType.LoadPackageArchive:
                 case CatalogScanDriverType.LoadPackageManifest:
                     if (onlyLatestLeaves.HasValue && !onlyLatestLeaves.Value)
                     {
@@ -375,9 +375,9 @@ namespace Knapcode.ExplorePackages.Worker
             return null;
         }
 
-        private static readonly (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[] LoadPackageFile = new (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[]
+        private static readonly (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[] LoadPackageArchive = new (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[]
         {
-            (CatalogScanDriverType.LoadPackageFile.ToString(), x => x.GetCursorValueAsync(CatalogScanDriverType.LoadPackageFile)),
+            (CatalogScanDriverType.LoadPackageArchive.ToString(), x => x.GetCursorValueAsync(CatalogScanDriverType.LoadPackageArchive)),
         };
 
         private static readonly (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[] LoadPackageManifest = new (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[]
@@ -399,11 +399,11 @@ namespace Knapcode.ExplorePackages.Worker
         {
             { CatalogScanDriverType.FindCatalogLeafItem, Catalog },
             { CatalogScanDriverType.FindLatestPackageLeaf, Catalog },
-            { CatalogScanDriverType.LoadPackageFile, FlatContainer },
+            { CatalogScanDriverType.LoadPackageArchive, FlatContainer },
             { CatalogScanDriverType.LoadPackageManifest, FlatContainer },
-            { CatalogScanDriverType.FindPackageAsset, LoadPackageFile },
-            { CatalogScanDriverType.FindPackageAssembly, LoadPackageFile },
-            { CatalogScanDriverType.FindPackageSignature, LoadPackageFile },
+            { CatalogScanDriverType.FindPackageAsset, LoadPackageArchive },
+            { CatalogScanDriverType.FindPackageAssembly, LoadPackageArchive },
+            { CatalogScanDriverType.FindPackageSignature, LoadPackageArchive },
             { CatalogScanDriverType.PackageManifestToCsv, LoadPackageManifest },
         }.ToDictionary(x => x.Key, x => (IReadOnlyList<(string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)>)x.Value.ToList());
 

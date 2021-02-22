@@ -442,7 +442,7 @@ namespace Knapcode.ExplorePackages.Worker
             Assert.Empty(result.Failed);
             (var actualNotBefore, var tryAgainLater) = Assert.Single(result.TryAgainLater);
             Assert.Equal(scan.LeafId, Assert.Single(tryAgainLater).LeafId);
-            Assert.Equal(TimeSpan.FromMinutes(10), actualNotBefore);
+            Assert.Equal(TimeSpan.FromMinutes(5), actualNotBefore);
             Assert.Equal(1, await CatalogScanStorageService.GetLeafScanCountLowerBoundAsync(StorageSuffixA, ScanId));
             Assert.Equal(0, await CatalogScanStorageService.GetLeafScanCountLowerBoundAsync(StorageSuffixB, ScanId));
             var remaining = Assert.Single(await CatalogScanStorageService.GetLeafScansAsync(StorageSuffixA, ScanId, PageId));

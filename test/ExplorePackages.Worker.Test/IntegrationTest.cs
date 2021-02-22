@@ -73,8 +73,8 @@ namespace Knapcode.ExplorePackages.Worker
             // Load the packages and process package assemblies. The package assembly catalog scan is a special case
             // because it downloads packages on its own so the .nupkg request counter must be baselined after this scan
             // finishes.
-            var loadPackageFile = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageFile, max1, onlyLatestLeaves: null);
-            await UpdateAsync(loadPackageFile.Scan);
+            var loadPackageArchive = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageArchive, max1, onlyLatestLeaves: null);
+            await UpdateAsync(loadPackageArchive.Scan);
             var findPackageAssembly = await CatalogScanService.UpdateAsync(CatalogScanDriverType.FindPackageAssembly, max1, onlyLatestLeaves: null);
             await UpdateAsync(findPackageAssembly.Scan);
             var startingNupkgRequestCount = GetNupkgRequestCount();

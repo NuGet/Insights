@@ -42,7 +42,7 @@ namespace Knapcode.ExplorePackages.Worker
             // Assert
             Assert.Equal(CatalogScanServiceResultType.BlockedByDependency, result.Type);
             Assert.Null(result.Scan);
-            Assert.Equal(CatalogScanDriverType.LoadPackageFile.ToString(), result.DependencyName);
+            Assert.Equal(CatalogScanDriverType.LoadPackageArchive.ToString(), result.DependencyName);
         }
 
         [Fact]
@@ -58,7 +58,7 @@ namespace Knapcode.ExplorePackages.Worker
             // Assert
             Assert.Equal(CatalogScanServiceResultType.BlockedByDependency, result.Type);
             Assert.Null(result.Scan);
-            Assert.Equal(CatalogScanDriverType.LoadPackageFile.ToString(), result.DependencyName);
+            Assert.Equal(CatalogScanDriverType.LoadPackageArchive.ToString(), result.DependencyName);
         }
 
         [Fact]
@@ -91,7 +91,7 @@ namespace Knapcode.ExplorePackages.Worker
             // Assert
             Assert.Equal(CatalogScanServiceResultType.FullyCaughtUpWithDependency, result.Type);
             Assert.Null(result.Scan);
-            Assert.Equal(CatalogScanDriverType.LoadPackageFile.ToString(), result.DependencyName);
+            Assert.Equal(CatalogScanDriverType.LoadPackageArchive.ToString(), result.DependencyName);
         }
 
         [Fact]
@@ -199,7 +199,7 @@ namespace Knapcode.ExplorePackages.Worker
         private static Dictionary<CatalogScanDriverType, DriverInfo> TypeToInfo => new Dictionary<CatalogScanDriverType, DriverInfo>
         {
             {
-                CatalogScanDriverType.LoadPackageFile,
+                CatalogScanDriverType.LoadPackageArchive,
                 new DriverInfo
                 {
                     DefaultMin = CatalogClient.NuGetOrgMinDeleted,
@@ -231,7 +231,7 @@ namespace Knapcode.ExplorePackages.Worker
                     DefaultMin = CatalogClient.NuGetOrgMinDeleted,
                     SetDependencyCursorAsync = async (self, x) =>
                     {
-                        await self.SetCursorAsync(CatalogScanDriverType.LoadPackageFile, x);
+                        await self.SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, x);
                     },
                 }
             },
@@ -243,7 +243,7 @@ namespace Knapcode.ExplorePackages.Worker
                     DefaultMin = CatalogClient.NuGetOrgMinDeleted,
                     SetDependencyCursorAsync = async (self, x) =>
                     {
-                        await self.SetCursorAsync(CatalogScanDriverType.LoadPackageFile, x);
+                        await self.SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, x);
                     },
                 }
             },
@@ -255,7 +255,7 @@ namespace Knapcode.ExplorePackages.Worker
                     DefaultMin = CatalogClient.NuGetOrgMinDeleted,
                     SetDependencyCursorAsync = async (self, x) =>
                     {
-                        await self.SetCursorAsync(CatalogScanDriverType.LoadPackageFile, x);
+                        await self.SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, x);
                     },
                 }
             },

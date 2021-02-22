@@ -41,7 +41,7 @@ namespace Knapcode.ExplorePackages
 
         public async Task InitializeAsync()
         {
-            await _wideEntityService.InitializeAsync(_options.Value.PackageFileTableName);
+            await _wideEntityService.InitializeAsync(_options.Value.PackageArchiveTableName);
         }
 
         public async Task<PrimarySignature> GetPrimarySignatureAsync(CatalogLeafItem leafItem)
@@ -73,7 +73,7 @@ namespace Knapcode.ExplorePackages
         public async Task<IReadOnlyDictionary<CatalogLeafItem, PackageFileInfoV1>> UpdateBatchAsync(string id, IReadOnlyCollection<CatalogLeafItem> leafItems)
         {
             return await _wideEntityService.UpdateBatchAsync(
-                _options.Value.PackageFileTableName,
+                _options.Value.PackageArchiveTableName,
                 id,
                 leafItems,
                 GetInfoAsync,
@@ -84,7 +84,7 @@ namespace Knapcode.ExplorePackages
         public async Task<PackageFileInfoV1> GetOrUpdateInfoAsync(CatalogLeafItem leafItem)
         {
             return await _wideEntityService.GetOrUpdateInfoAsync(
-                _options.Value.PackageFileTableName,
+                _options.Value.PackageArchiveTableName,
                 leafItem,
                 GetInfoAsync,
                 OutputToData,

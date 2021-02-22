@@ -3,10 +3,10 @@
     public enum CatalogScanDriverType
     {
         /// <summary>
-        /// Implemented by <see cref="LoadPackageFile.LoadPackageFileDriver"/>. Downloads interesting parts of the .nupkg
+        /// Implemented by <see cref="LoadPackageArchive.LoadPackageArchiveDriver"/>. Downloads interesting parts of the .nupkg
         /// file stored in the V3 flat container and stores the data in Azure Table Storage for other drivers to use.
         /// </summary>
-        LoadPackageFile,
+        LoadPackageArchive,
 
         /// <summary>
         /// Implemented by <see cref="LoadPackageManifest.LoadPackageManifestDriver"/>. Downloads the .nuspec from the
