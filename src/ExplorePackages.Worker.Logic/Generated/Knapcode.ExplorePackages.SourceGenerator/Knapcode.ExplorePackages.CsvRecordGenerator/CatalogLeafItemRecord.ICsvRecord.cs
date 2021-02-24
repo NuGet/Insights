@@ -57,6 +57,11 @@ namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
     {
         public int FieldCount => 9;
 
+        public void WriteHeader(TextWriter writer)
+        {
+            writer.WriteLine("CommitId,CommitTimestamp,LowerId,Identity,Id,Version,Type,Url,PageUrl");
+        }
+
         public void Write(List<string> fields)
         {
             fields.Add(CommitId);

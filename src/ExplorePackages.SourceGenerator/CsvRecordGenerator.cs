@@ -50,26 +50,31 @@ namespace {0}
     {{
         public int FieldCount => {7};
 
-        public void Write(List<string> fields)
+        public void WriteHeader(TextWriter writer)
         {{
 {8}
         }}
 
-        public void Write(TextWriter writer)
+        public void Write(List<string> fields)
         {{
 {9}
         }}
 
-        public async Task WriteAsync(TextWriter writer)
+        public void Write(TextWriter writer)
         {{
 {10}
+        }}
+
+        public async Task WriteAsync(TextWriter writer)
+        {{
+{11}
         }}
 
         public {6} Read(Func<string> getNextField)
         {{
             return new {6}
             {{
-{11}
+{12}
             }};
         }}
     }}
@@ -143,6 +148,7 @@ namespace {0}
                 var kustoTableBuilder = new KustoTableBuilder(indent: 8);
                 var kustoPartitioningPolicyBuilder = new KustoPartitioningPolicyBuilder(indent: 4);
                 var kustoMappingBuilder = new KustoMappingBuilder(indent: 8);
+                var writeHeaderBuilder = new WriteHeaderBuilder(indent: 12);
                 var writeListBuilder = new WriteListBuilder(indent: 12);
                 var writeTextWriterBuilder = new WriteTextWriterBuilder(indent: 12);
                 var writeAsyncTextWriterBuilder = new WriteAsyncTextWriterBuilder(indent: 12);
@@ -153,6 +159,7 @@ namespace {0}
                     kustoTableBuilder,
                     kustoPartitioningPolicyBuilder,
                     kustoMappingBuilder,
+                    writeHeaderBuilder,
                     writeListBuilder,
                     writeTextWriterBuilder,
                     writeAsyncTextWriterBuilder,
@@ -221,6 +228,7 @@ namespace {0}
                             info.Keyword,
                             typeName,
                             propertyNames.Count,
+                            writeHeaderBuilder.GetResult(),
                             writeListBuilder.GetResult(),
                             writeTextWriterBuilder.GetResult(),
                             writeAsyncTextWriterBuilder.GetResult(),

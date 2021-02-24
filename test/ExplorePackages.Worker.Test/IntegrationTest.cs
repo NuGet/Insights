@@ -46,6 +46,10 @@ namespace Knapcode.ExplorePackages.Worker
                 x.MaxTempMemoryStreamSize = 0;
                 x.TempDirectories[0].MaxConcurrentWriters = 1;
             };
+            ConfigureWorkerSettings = x =>
+            {
+                x.AppendResultStorageBucketCount = 1;
+            };
 
             // Arrange
             await CatalogScanService.InitializeAsync();

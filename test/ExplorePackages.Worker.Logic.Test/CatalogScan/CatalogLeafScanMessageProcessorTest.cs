@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;
@@ -364,6 +365,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public CatalogLeafScanMessageProcessorTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
+            ThrowOnLogLevel = LogLevel.None;
             MockMessageEnqueuer = new Mock<IMessageEnqueuer>();
             MockDriverFactory = new Mock<ICatalogScanDriverFactory>();
 

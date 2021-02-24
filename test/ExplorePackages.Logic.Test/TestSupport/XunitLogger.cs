@@ -16,6 +16,7 @@ namespace Knapcode.ExplorePackages
         private readonly LogLevel _minLogLevel;
         private readonly ITestOutputHelper _output;
         private readonly ConcurrentDictionary<LogLevel, int> _logLevelToCount;
+        private readonly LogLevel _throwOn;
 
         public XunitLogger(ITestOutputHelper output, string category, LogLevel minLogLevel)
         {
@@ -23,14 +24,16 @@ namespace Knapcode.ExplorePackages
             _category = category;
             _output = output;
             _logLevelToCount = null;
+            _throwOn = LogLevel.None;
         }
 
-        public XunitLogger(ITestOutputHelper output, string category, LogLevel minLogLevel, ConcurrentDictionary<LogLevel, int> logLevelToCount)
+        public XunitLogger(ITestOutputHelper output, string category, LogLevel minLogLevel, ConcurrentDictionary<LogLevel, int> logLevelToCount, LogLevel throwOn)
         {
             _minLogLevel = minLogLevel;
             _category = category;
             _output = output;
             _logLevelToCount = logLevelToCount;
+            _throwOn = throwOn;
         }
 
         public void Log<TState>(
@@ -51,6 +54,11 @@ namespace Knapcode.ExplorePackages
             if (exception != null)
             {
                 _output.WriteLine(exception.ToString());
+            }
+
+            if (logLevel >= _throwOn)
+            {
+                throw new InvalidOperationException($"Failing early due to an {logLevel} log.");
             }
         }
 

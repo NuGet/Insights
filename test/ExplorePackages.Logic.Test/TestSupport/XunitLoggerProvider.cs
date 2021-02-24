@@ -13,6 +13,7 @@ namespace Knapcode.ExplorePackages
         private readonly ITestOutputHelper _output;
         private readonly LogLevel _minLevel;
         private readonly ConcurrentDictionary<LogLevel, int> _logLevelToCount;
+        private readonly LogLevel _throwOn;
 
         public XunitLoggerProvider(ITestOutputHelper output)
             : this(output, LogLevel.Trace)
@@ -23,18 +24,20 @@ namespace Knapcode.ExplorePackages
         {
             _output = output;
             _minLevel = minLevel;
+            _throwOn = LogLevel.None;
         }
 
-        public XunitLoggerProvider(ITestOutputHelper output, LogLevel minLevel, ConcurrentDictionary<LogLevel, int> logLevelToCount)
+        public XunitLoggerProvider(ITestOutputHelper output, LogLevel minLevel, ConcurrentDictionary<LogLevel, int> logLevelToCount, LogLevel throwOn)
         {
             _output = output;
             _minLevel = minLevel;
             _logLevelToCount = logLevelToCount;
+            _throwOn = throwOn;
         }
 
         public ILogger CreateLogger(string categoryName)
         {
-            return new XunitLogger(_output, categoryName, _minLevel, _logLevelToCount);
+            return new XunitLogger(_output, categoryName, _minLevel, _logLevelToCount, _throwOn);
         }
 
         public void Dispose()

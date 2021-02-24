@@ -1,3 +1,4 @@
+CommitId,CommitTimestamp,LowerId,Identity,Id,Version,Type,Url,PageUrl
 950d36ae-c7b3-461a-86d4-8274c36792aa,2020-11-27T22:00:05.4957339+00:00,esolutions.alexandria.logic,esolutions.alexandria.logic/1.0.0,ESolutions.Alexandria.Logic,1.0.0,PackageDetails,https://api.nuget.org/v3/catalog0/data/2020.11.27.22.00.05/esolutions.alexandria.logic.1.0.0.json,https://api.nuget.org/v3/catalog0/page11421.json
 615e0436-1f3e-4f05-ad05-dffc76f7a0d6,2020-11-27T22:00:54.8558302+00:00,p6m7g8.p6namer,p6m7g8.p6namer/0.2.1,P6m7g8.P6Namer,0.2.1,PackageDetails,https://api.nuget.org/v3/catalog0/data/2020.11.27.22.00.54/p6m7g8.p6namer.0.2.1.json,https://api.nuget.org/v3/catalog0/page11421.json
 a0f2c128-e9a8-4319-84c5-6650c789a51c,2020-11-27T22:01:44.9504650+00:00,ambientservices,ambientservices/3.1.49,AmbientServices,3.1.49,PackageDetails,https://api.nuget.org/v3/catalog0/data/2020.11.27.22.01.44/ambientservices.3.1.49.json,https://api.nuget.org/v3/catalog0/page11421.json

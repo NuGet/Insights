@@ -47,6 +47,11 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
     {
         public int FieldCount => 4;
 
+        public void WriteHeader(TextWriter writer)
+        {
+            writer.WriteLine("AsOfTimestamp,LowerId,Id,Owners");
+        }
+
         public void Write(List<string> fields)
         {
             fields.Add(CsvUtility.FormatDateTimeOffset(AsOfTimestamp));

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -18,6 +19,8 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class AppendResultStorageService
     {
+        private static readonly ConcurrentDictionary<Type, string> TypeToHeader = new ConcurrentDictionary<Type, string>();
+
         private const string ContentType = "text/plain";
         private const string AppendPrefix = "append_";
         private const string CompactPrefix = "compact_";
@@ -88,21 +91,25 @@ namespace Knapcode.ExplorePackages.Worker
             var blob = GetAppendBlob(containerName, bucket);
             if (!await blob.ExistsAsync())
             {
+                AccessCondition accessCondition;
                 try
                 {
                     await blob.CreateOrReplaceAsync(
                         accessCondition: AccessCondition.GenerateIfNotExistsCondition(),
                         options: null,
                         operationContext: null);
-                }
-                catch (StorageException ex) when (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.Conflict)
-                {
-                    // Ignore this exception.
-                }
+                    accessCondition = AccessCondition.GenerateIfMatchCondition(blob.Properties.ETag);
 
-                // Best effort, will not be re-executed on retry since the blob will exist at that point.
-                blob.Properties.ContentType = ContentType;
-                await blob.SetPropertiesAsync();
+                    blob.Properties.ContentType = ContentType;
+                    await blob.AppendTextAsync(GetHeader<T>() + Environment.NewLine, new UTF8Encoding(false), accessCondition, options: null, operationContext: null);
+                }
+                catch (StorageException ex) when (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.Conflict
+                                               || ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.PreconditionFailed)
+                {
+                    // Best effort, will not be re-executed on retry since the blob will exist at that point. If this code
+                    // path was used more we do could some optimistic concurrency stuff to gate on the first line (header)
+                    // and content type being set, but that's too much work.
+                }
             }
 
             await AppendToBlobAsync(blob, records);
@@ -110,7 +117,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         private async Task AppendToBlobAsync<T>(CloudAppendBlob blob, IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
         {
-            using var memoryStream = SerializeRecords(records, gzip: false, out var _);
+            using var memoryStream = SerializeRecords(records, writeHeader: false, gzip: false, out var _);
             try
             {
                 await blob.AppendBlockAsync(memoryStream);
@@ -305,13 +312,12 @@ namespace Knapcode.ExplorePackages.Worker
             if (allRecords.Any())
             {
                 var prunedRecords = prune(allRecords);
-                stream = SerializeRecords(prunedRecords, gzip: true, out uncompressedLength);
+                stream = SerializeRecords(prunedRecords, writeHeader: true, gzip: true, out uncompressedLength);
             }
 
             compactBlob.Properties.ContentType = ContentType;
             compactBlob.Properties.ContentEncoding = "gzip";
             compactBlob.Metadata["rawSizeBytes"] = uncompressedLength.ToString(); // See: https://docs.microsoft.com/en-us/azure/data-explorer/lightingest#recommendations
-            stream.Position = 0;
             await compactBlob.UploadFromStreamAsync(stream, accessCondition, options: null, operationContext: null);
         }
 
@@ -327,6 +333,17 @@ namespace Knapcode.ExplorePackages.Worker
                 }
 
                 using var reader = new StreamReader(readStream);
+
+                var actualHeader = reader.ReadLine();
+                var expectedHeader = GetHeader<T>();
+                if (actualHeader != expectedHeader)
+                {
+                    throw new InvalidOperationException(
+                        "The header in the blob doesn't match the header for the readers being added." + Environment.NewLine +
+                        "Expected: " + expectedHeader + Environment.NewLine +
+                        "Actual: " + actualHeader);
+                }
+
                 return csvReader.GetRecords<T>(reader);
             }
             finally
@@ -376,29 +393,36 @@ namespace Knapcode.ExplorePackages.Worker
             return markerEntities.Select(x => int.Parse(x.RowKey)).ToList();
         }
 
-        private static MemoryStream SerializeRecords<T>(IReadOnlyList<T> records, bool gzip, out long uncompressedLength) where T : ICsvRecord<T>, new()
+        private static MemoryStream SerializeRecords<T>(IReadOnlyList<T> records, bool writeHeader, bool gzip, out long uncompressedLength) where T : ICsvRecord<T>, new()
         {
             var memoryStream = new MemoryStream();
             if (gzip)
             {
                 using var gzipStream = new GZipStream(memoryStream, CompressionLevel.Optimal, leaveOpen: true);
                 using var countingStream = new CountingWriterStream(gzipStream);
-                SerializeRecords(records, countingStream);
+                SerializeRecords(records, countingStream, writeHeader);
                 uncompressedLength = countingStream.Length;
             }
             else
             {
                 using var countingStream = new CountingWriterStream(memoryStream);
-                SerializeRecords(records, countingStream);
+                SerializeRecords(records, countingStream, writeHeader);
                 uncompressedLength = countingStream.Length;
             }
 
+            memoryStream.Position = 0;
             return memoryStream;
         }
 
-        private static void SerializeRecords<T>(IReadOnlyList<T> records, Stream destination) where T : ICsvRecord<T>, new()
+        private static void SerializeRecords<T>(IReadOnlyList<T> records, Stream destination, bool writeHeader) where T : ICsvRecord<T>, new()
         {
             using var streamWriter = new StreamWriter(destination, new UTF8Encoding(false), bufferSize: 1024, leaveOpen: true);
+
+            if (writeHeader)
+            {
+                streamWriter.WriteLine(GetHeader<T>());
+            }
+
             SerializeRecords(records, streamWriter);
         }
 
@@ -427,6 +451,18 @@ namespace Knapcode.ExplorePackages.Worker
             var storageAccount = _serviceClientFactory.GetAbstractedStorageAccount();
             var client = storageAccount.CreateCloudBlobClient();
             return client.GetContainerReference(name);
+        }
+
+        private static string GetHeader<T>() where T : ICsvRecord<T>, new()
+        {
+            var type = typeof(T);
+            return TypeToHeader.GetOrAdd(type, _ =>
+            {
+                var headerWriter = new T();
+                using var stringWriter = new StringWriter();
+                headerWriter.WriteHeader(stringWriter);
+                return stringWriter.ToString().TrimEnd();
+            });
         }
     }
 }

@@ -53,6 +53,11 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
     {
         public int FieldCount => 7;
 
+        public void WriteHeader(TextWriter writer)
+        {
+            writer.WriteLine("AsOfTimestamp,LowerId,Identity,Id,Version,Downloads,TotalDownloads");
+        }
+
         public void Write(List<string> fields)
         {
             fields.Add(CsvUtility.FormatDateTimeOffset(AsOfTimestamp));

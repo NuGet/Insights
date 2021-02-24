@@ -67,7 +67,7 @@ namespace Knapcode.ExplorePackages
                     serviceCollection.AddLogging(o =>
                     {
                         o.SetMinimumLevel(LogLevel.Trace);
-                        o.AddProvider(new XunitLoggerProvider(output, LogLevel.Trace, LogLevelToCount));
+                        o.AddProvider(new XunitLoggerProvider(output, LogLevel.Trace, LogLevelToCount, ThrowOnLogLevel));
                     });
 
                     serviceCollection.Configure((Action<ExplorePackagesSettings>)ConfigureDefaultsAndSettings);
@@ -77,6 +77,8 @@ namespace Knapcode.ExplorePackages
 
             return hostBuilder.Build();
         }
+
+        protected LogLevel ThrowOnLogLevel { get; set; } = LogLevel.Warning;
 
         protected virtual void ConfigureHostBuilder(IHostBuilder hostBuilder)
         {

@@ -8,6 +8,7 @@ namespace Knapcode.ExplorePackages
     public interface ICsvRecord<T> where T : new()
     {
         int FieldCount { get; }
+        void WriteHeader(TextWriter writer);
         void Write(List<string> fields);
         void Write(TextWriter writer);
         Task WriteAsync(TextWriter writer);

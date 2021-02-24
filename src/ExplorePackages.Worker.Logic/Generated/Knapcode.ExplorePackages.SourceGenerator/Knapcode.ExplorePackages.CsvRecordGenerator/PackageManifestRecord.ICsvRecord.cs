@@ -115,6 +115,11 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
     {
         public int FieldCount => 38;
 
+        public void WriteHeader(TextWriter writer)
+        {
+            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,OriginalId,OriginalVersion,MinClientVersion,DevelopmentDependency,IsServiceable,Authors,Copyright,Description,Icon,IconUrl,Language,LicenseUrl,Owners,ProjectUrl,ReleaseNotes,RequireLicenseAcceptance,Summary,Tags,Title,PackageTypes,LicenseMetadata,RepositoryMetadata,ReferenceGroups,ContentFiles,DependencyGroups,FrameworkAssemblyGroups,FrameworkRefGroups,ContentFilesHasFormatException,DependencyGroupsHasMissingId");
+        }
+
         public void Write(List<string> fields)
         {
             fields.Add(ScanId.ToString());

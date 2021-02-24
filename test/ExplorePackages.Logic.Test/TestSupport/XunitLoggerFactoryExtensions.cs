@@ -22,9 +22,14 @@ namespace Knapcode.ExplorePackages
             return loggerFactory;
         }
 
-        public static ILoggerFactory AddXunit(this ILoggerFactory loggerFactory, ITestOutputHelper output, LogLevel minLevel, ConcurrentDictionary<LogLevel, int> logLevelToCount)
+        public static ILoggerFactory AddXunit(
+            this ILoggerFactory loggerFactory,
+            ITestOutputHelper output,
+            LogLevel minLevel,
+            ConcurrentDictionary<LogLevel, int> logLevelToCount,
+            LogLevel throwOn)
         {
-            loggerFactory.AddProvider(new XunitLoggerProvider(output, minLevel, logLevelToCount));
+            loggerFactory.AddProvider(new XunitLoggerProvider(output, minLevel, logLevelToCount, throwOn));
             return loggerFactory;
         }
     }

@@ -97,6 +97,11 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
     {
         public int FieldCount => 29;
 
+        public void WriteHeader(TextWriter writer)
+        {
+            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Path,FileName,FileExtension,TopLevelFolder,CompressedLength,EntryUncompressedLength,ActualUncompressedLength,FileSHA256,HasException,AssemblyName,AssemblyVersion,Culture,AssemblyNameHasCultureNotFoundException,AssemblyNameHasFileLoadException,PublicKeyToken,PublicKeyTokenHasSecurityException,HashAlgorithm,HasPublicKey,PublicKeyLength,PublicKeySHA1");
+        }
+
         public void Write(List<string> fields)
         {
             fields.Add(ScanId.ToString());

@@ -103,6 +103,11 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
     {
         public int FieldCount => 32;
 
+        public void WriteHeader(TextWriter writer)
+        {
+            writer.WriteLine("Timestamp,DotnetVersion,Duration,LowerId,Identity,Id,Version,Framework,Template,TargetCount,LibraryCount,RestoreSucceeded,BuildSucceeded,DependencyCount,FrameworkAssemblyCount,FrameworkReferenceCount,RuntimeAssemblyCount,ResourceAssemblyCount,CompileTimeAssemblyCount,NativeLibraryCount,BuildCount,BuildMultiTargetingCount,ContentFileCount,RuntimeTargetCount,ToolAssemblyCount,EmbedAssemblyCount,ErrorBlobPath,RestoreLogMessageCodes,OnlyNU1202,OnlyNU1213,BuildErrorCodes,OnlyMSB3644");
+        }
+
         public void Write(List<string> fields)
         {
             fields.Add(CsvUtility.FormatDateTimeOffset(Timestamp));

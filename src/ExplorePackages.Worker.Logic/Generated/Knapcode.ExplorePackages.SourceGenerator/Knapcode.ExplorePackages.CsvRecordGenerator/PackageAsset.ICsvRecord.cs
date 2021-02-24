@@ -95,6 +95,11 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
     {
         public int FieldCount => 28;
 
+        public void WriteHeader(TextWriter writer)
+        {
+            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,PatternSet,PropertyAnyValue,PropertyCodeLanguage,PropertyTargetFrameworkMoniker,PropertyLocale,PropertyManagedAssembly,PropertyMSBuild,PropertyRuntimeIdentifier,PropertySatelliteAssembly,Path,FileName,FileExtension,TopLevelFolder,RoundTripTargetFrameworkMoniker,FrameworkName,FrameworkVersion,FrameworkProfile,PlatformName,PlatformVersion");
+        }
+
         public void Write(List<string> fields)
         {
             fields.Add(ScanId.ToString());
