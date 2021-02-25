@@ -153,14 +153,23 @@ foreach ($model in $models) {
     # Import the data into the temp table
     $sourceUrl = "$($storageBaseUrl.TrimEnd('/'))/$containerName$StorageSas"
     $lightIngestConnection = $kustoConnection.Replace("https://", "https://ingest-")
-    "" | & $lightIngest $lightIngestConnection -database:$KustoDatabaseName -table:$tempTableName -source:$sourceUrl -pattern:"*.csv.gz" -format:csv -mappingRef:"$($tableName)_mapping"
+    "" | & $lightIngest $lightIngestConnection `
+        -database:$KustoDatabaseName `
+        -table:$tempTableName `
+        -source:$sourceUrl `
+        -pattern:"*.csv.gz" `
+        -format:csv `
+        -mappingRef:"$($tableName)_mapping" `
+        -ignoreFirstRow:true
     if ($LASTEXITCODE) {
         throw "Running LightIngest to import data failed."
     }
 
     # Swap the temp table with the existing table
     $oldTableName = "$($tableName)_Old"
-    & $kustoCli $kustoCliConnection -execute:".rename tables $oldTableName=$tableName ifexists, $tableName=$tempTableName" -execute:".drop table $oldTableName ifexists"
+    & $kustoCli $kustoCliConnection `
+        -execute:".rename tables $oldTableName=$tableName ifexists, $tableName=$tempTableName" `
+        -execute:".drop table $oldTableName ifexists"
     if ($LASTEXITCODE) {
         throw "Running Kusto.Cli to swap tables failed."
     }
