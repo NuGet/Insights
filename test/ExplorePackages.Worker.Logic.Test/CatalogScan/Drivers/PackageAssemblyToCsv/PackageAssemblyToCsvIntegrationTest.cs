@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
 {
-    public class PackageAssemblyToCsvIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest
+    public class PackageAssemblyToCsvIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest<PackageAssembly>
     {
         private const string PackageAssemblyToCsvDir = nameof(PackageAssemblyToCsv);
         private const string PackageAssemblyToCsv_WithDeleteDir = nameof(PackageAssemblyToCsv_WithDelete);

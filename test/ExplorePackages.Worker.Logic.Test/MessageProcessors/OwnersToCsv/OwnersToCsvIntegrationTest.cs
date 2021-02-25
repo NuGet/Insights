@@ -60,8 +60,8 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
                 await ProcessQueueAsync(() => { }, async () => !await service.IsRunningAsync());
 
                 // Assert
-                await AssertBlobAsync(Options.Value.PackageOwnersContainerName, OwnersToCsvDir, Step1, "owners_08585909596854775807.csv.gz", gzip: true);
-                await AssertBlobAsync(Options.Value.PackageOwnersContainerName, OwnersToCsvDir, Step1, "latest_owners.csv.gz", gzip: true);
+                await AssertCsvBlobAsync(OwnersToCsvDir, Step1, "owners_08585909596854775807.csv.gz");
+                await AssertCsvBlobAsync(OwnersToCsvDir, Step1, "latest_owners.csv.gz");
 
                 // Arrange
                 HttpMessageHandlerFactory.OnSendAsync = async req =>
@@ -83,9 +83,9 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
 
                 // Assert
                 await AssertBlobCountAsync(Options.Value.PackageOwnersContainerName, 3);
-                await AssertBlobAsync(Options.Value.PackageOwnersContainerName, OwnersToCsvDir, Step1, "owners_08585909596854775807.csv.gz", gzip: true);
-                await AssertBlobAsync(Options.Value.PackageOwnersContainerName, OwnersToCsvDir, Step2, "owners_08585908696854775807.csv.gz", gzip: true);
-                await AssertBlobAsync(Options.Value.PackageOwnersContainerName, OwnersToCsvDir, Step2, "latest_owners.csv.gz", gzip: true);
+                await AssertCsvBlobAsync(OwnersToCsvDir, Step1, "owners_08585909596854775807.csv.gz");
+                await AssertCsvBlobAsync(OwnersToCsvDir, Step2, "owners_08585908696854775807.csv.gz");
+                await AssertCsvBlobAsync(OwnersToCsvDir, Step2, "latest_owners.csv.gz");
                 AssertOnlyInfoLogsOrLess();
             }
         }
@@ -133,7 +133,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
                 await ProcessQueueAsync(() => { }, async () => !await service.IsRunningAsync());
 
                 // Assert
-                await AssertBlobAsync(Options.Value.PackageOwnersContainerName, OwnersToCsvDir, Step1, "latest_owners.csv.gz", gzip: true);
+                await AssertCsvBlobAsync(OwnersToCsvDir, Step1, "latest_owners.csv.gz");
 
                 // Arrange
                 HttpMessageHandlerFactory.OnSendAsync = async req =>
@@ -155,9 +155,14 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
 
                 // Assert
                 await AssertBlobCountAsync(Options.Value.PackageOwnersContainerName, 1);
-                await AssertBlobAsync(Options.Value.PackageOwnersContainerName, OwnersToCsvDir, Step2, "latest_owners.csv.gz", gzip: true);
+                await AssertCsvBlobAsync(OwnersToCsvDir, Step2, "latest_owners.csv.gz");
                 AssertOnlyInfoLogsOrLess();
             }
+        }
+
+        protected Task AssertCsvBlobAsync(string testName, string stepName, string blobName)
+        {
+            return AssertCsvBlobAsync<PackageOwnerRecord>(Options.Value.PackageOwnersContainerName, testName, stepName, blobName);
         }
     }
 }

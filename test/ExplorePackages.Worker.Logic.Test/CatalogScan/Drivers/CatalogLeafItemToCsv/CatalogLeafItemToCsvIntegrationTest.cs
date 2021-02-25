@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
 {
-    public class CatalogLeafItemToCsvIntegrationTest : BaseCatalogScanToCsvIntegrationTest
+    public class CatalogLeafItemToCsvIntegrationTest : BaseCatalogScanToCsvIntegrationTest<CatalogLeafItemRecord>
     {
         private const string CatalogLeafItemToCsvDir = nameof(CatalogLeafItemToCsv);
         private const string CatalogLeafItemToCsv_WithDuplicatesDir = nameof(CatalogLeafItemToCsv_WithDuplicates);

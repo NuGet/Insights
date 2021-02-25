@@ -35,6 +35,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
         public async Task WriteAsync(PackageOwnerSet data, StreamWriter writer)
         {
             var record = new PackageOwnerRecord { AsOfTimestamp = data.AsOfTimestamp };
+            record.WriteHeader(writer);
 
             var idToOwners = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
             await foreach (var entry in data.Owners)

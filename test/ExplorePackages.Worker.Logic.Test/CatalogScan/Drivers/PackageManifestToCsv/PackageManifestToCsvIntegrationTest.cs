@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
 {
-    public class PackageManifestToCsvIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest
+    public class PackageManifestToCsvIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest<PackageManifestRecord>
     {
         private const string PackageManifestToCsvDir = nameof(PackageManifestToCsv);
         private const string PackageManifestToCsv_WithDeleteDir = nameof(PackageManifestToCsv_WithDelete);

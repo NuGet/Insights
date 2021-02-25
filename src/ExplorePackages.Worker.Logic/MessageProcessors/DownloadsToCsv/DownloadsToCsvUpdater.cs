@@ -35,6 +35,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
         public async Task WriteAsync(PackageDownloadSet data, StreamWriter writer)
         {
             var record = new PackageDownloadRecord { AsOfTimestamp = data.AsOfTimestamp };
+            record.WriteHeader(writer);
 
             var idToVersions = new Dictionary<string, Dictionary<string, long>>(StringComparer.OrdinalIgnoreCase);
             await foreach (var entry in data.Downloads)

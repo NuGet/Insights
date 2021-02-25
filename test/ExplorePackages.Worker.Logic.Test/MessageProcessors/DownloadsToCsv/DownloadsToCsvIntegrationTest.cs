@@ -60,8 +60,8 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
                 await ProcessQueueAsync(() => { }, async () => !await service.IsRunningAsync());
 
                 // Assert
-                await AssertBlobAsync(Options.Value.PackageDownloadsContainerName, DownloadsToCsvDir, Step1, "downloads_08585909596854775807.csv.gz", gzip: true);
-                await AssertBlobAsync(Options.Value.PackageDownloadsContainerName, DownloadsToCsvDir, Step1, "latest_downloads.csv.gz", gzip: true);
+                await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "downloads_08585909596854775807.csv.gz");
+                await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "latest_downloads.csv.gz");
 
                 // Arrange
                 HttpMessageHandlerFactory.OnSendAsync = async req =>
@@ -83,9 +83,9 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 
                 // Assert
                 await AssertBlobCountAsync(Options.Value.PackageDownloadsContainerName, 3);
-                await AssertBlobAsync(Options.Value.PackageDownloadsContainerName, DownloadsToCsvDir, Step1, "downloads_08585909596854775807.csv.gz", gzip: true);
-                await AssertBlobAsync(Options.Value.PackageDownloadsContainerName, DownloadsToCsvDir, Step2, "downloads_08585908696854775807.csv.gz", gzip: true);
-                await AssertBlobAsync(Options.Value.PackageDownloadsContainerName, DownloadsToCsvDir, Step2, "latest_downloads.csv.gz", gzip: true);
+                await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "downloads_08585909596854775807.csv.gz");
+                await AssertCsvBlobAsync(DownloadsToCsvDir, Step2, "downloads_08585908696854775807.csv.gz");
+                await AssertCsvBlobAsync(DownloadsToCsvDir, Step2, "latest_downloads.csv.gz");
                 AssertOnlyInfoLogsOrLess();
             }
         }
@@ -133,7 +133,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
                 await ProcessQueueAsync(() => { }, async () => !await service.IsRunningAsync());
 
                 // Assert
-                await AssertBlobAsync(Options.Value.PackageDownloadsContainerName, DownloadsToCsvDir, Step1, "latest_downloads.csv.gz", gzip: true);
+                await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "latest_downloads.csv.gz");
 
                 // Arrange
                 HttpMessageHandlerFactory.OnSendAsync = async req =>
@@ -155,9 +155,14 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 
                 // Assert
                 await AssertBlobCountAsync(Options.Value.PackageDownloadsContainerName, 1);
-                await AssertBlobAsync(Options.Value.PackageDownloadsContainerName, DownloadsToCsvDir, Step2, "latest_downloads.csv.gz", gzip: true);
+                await AssertCsvBlobAsync(DownloadsToCsvDir, Step2, "latest_downloads.csv.gz");
                 AssertOnlyInfoLogsOrLess();
             }
+        }
+
+        protected Task AssertCsvBlobAsync(string testName, string stepName, string blobName)
+        {
+            return AssertCsvBlobAsync<PackageDownloadRecord>(Options.Value.PackageDownloadsContainerName, testName, stepName, blobName);
         }
     }
 }

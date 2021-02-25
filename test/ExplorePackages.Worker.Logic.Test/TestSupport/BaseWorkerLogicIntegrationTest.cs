@@ -151,9 +151,9 @@ namespace Knapcode.ExplorePackages.Worker
             await messageProcessor.ProcessSingleAsync(message.AsString, message.DequeueCount);
         }
 
-        protected async Task AssertCompactAsync(string containerName, string testName, string stepName, int bucket)
+        protected async Task AssertCompactAsync<T>(string containerName, string testName, string stepName, int bucket) where T : ICsvRecord<T>, new()
         {
-            await AssertBlobAsync(containerName, testName, stepName, $"compact_{bucket}.csv.gz", gzip: true);
+            await AssertCsvBlobAsync<T>(containerName, testName, stepName, $"compact_{bucket}.csv.gz");
         }
     }
 }

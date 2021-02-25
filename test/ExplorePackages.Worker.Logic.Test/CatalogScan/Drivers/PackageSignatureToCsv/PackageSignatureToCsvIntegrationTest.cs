@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
 {
-    public class PackageSignatureToCsvIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest
+    public class PackageSignatureToCsvIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest<PackageSignature>
     {
         private const string PackageSignatureToCsvDir = nameof(PackageSignatureToCsv);
         private const string PackageSignatureToCsv_AuthorSignatureDir = nameof(PackageSignatureToCsv_AuthorSignature);

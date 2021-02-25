@@ -149,7 +149,17 @@ namespace Knapcode.ExplorePackages
             Assert.Equal(expected, blobs.Count);
         }
 
-        protected async Task AssertBlobAsync(string containerName, string testName, string stepName, string blobName, bool gzip = false)
+        protected async Task AssertCsvBlobAsync<T>(string containerName, string testName, string stepName, string blobName) where T : ICsvRecord<T>, new()
+        {
+            Assert.EndsWith(".csv.gz", blobName);
+            var actual = await AssertBlobAsync(containerName, testName, stepName, blobName, gzip: true);
+            var headerFactory = new T();
+            var stringWriter = new StringWriter();
+            headerFactory.WriteHeader(stringWriter);
+            Assert.StartsWith(stringWriter.ToString(), actual);
+        }
+
+        protected async Task<string> AssertBlobAsync(string containerName, string testName, string stepName, string blobName, bool gzip = false)
         {
             var client = ServiceClientFactory.GetStorageAccount().CreateCloudBlobClient();
             var container = client.GetContainerReference(containerName);
@@ -195,6 +205,8 @@ namespace Knapcode.ExplorePackages
             }
             var expected = File.ReadAllText(Path.Combine(TestData, testName, stepName, fileName));
             Assert.Equal(expected, actual);
+
+            return actual;
         }
 
         public Task InitializeAsync()

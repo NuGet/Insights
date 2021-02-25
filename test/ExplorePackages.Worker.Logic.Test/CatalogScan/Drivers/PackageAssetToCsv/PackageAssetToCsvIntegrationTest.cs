@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
 {
-    public class PackageAssetToCsvIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest
+    public class PackageAssetToCsvIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest<PackageAsset>
     {
         private const string PackageAssetToCsvDir = nameof(PackageAssetToCsv);
         private const string PackageAssetToCsv_WithDeleteDir = nameof(PackageAssetToCsv_WithDelete);
