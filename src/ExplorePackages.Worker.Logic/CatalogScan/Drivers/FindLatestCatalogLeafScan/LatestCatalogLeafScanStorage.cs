@@ -1,4 +1,5 @@
-﻿using Microsoft.WindowsAzure.Storage.Table;
+﻿using System.Threading.Tasks;
+using Microsoft.WindowsAzure.Storage.Table;
 using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
@@ -15,6 +16,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
 
         public CloudTable Table { get; }
         public string CommitTimestampColumnName => nameof(CatalogLeafScan.CommitTimestamp);
+
         public string GetPartitionKey(string packageId)
         {
             return CatalogLeafScan.GetPartitionKey(_indexScan.ScanId, GetPageId(packageId));
@@ -25,9 +27,9 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
             return GetLeafId(packageVersion);
         }
 
-        public CatalogLeafScan Map(CatalogLeafItem item)
+        public Task<CatalogLeafScan> MapAsync(CatalogLeafItem item)
         {
-            return new CatalogLeafScan(_indexScan.StorageSuffix, _indexScan.ScanId, GetPageId(item.PackageId), GetLeafId(item.PackageVersion))
+            return Task.FromResult(new CatalogLeafScan(_indexScan.StorageSuffix, _indexScan.ScanId, GetPageId(item.PackageId), GetLeafId(item.PackageVersion))
             {
                 ParsedDriverType = _indexScan.ParsedDriverType,
                 DriverParameters = _indexScan.DriverParameters,
@@ -37,7 +39,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
                 CommitTimestamp = item.CommitTimestamp,
                 PackageId = item.PackageId,
                 PackageVersion = item.PackageVersion,
-            };
+            });
         }
 
         private static string GetPageId(string packageId)

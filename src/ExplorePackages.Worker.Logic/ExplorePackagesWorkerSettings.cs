@@ -53,6 +53,7 @@
         public object CsvRecordTableName { get; set; }
 
         public string LatestPackageLeafTableName { get; set; }
+        public string PackageVersionTableName { get; set; }
         public string PackageAssetContainerName { get; set; }
         public string PackageAssemblyContainerName { get; set; }
         public string PackageManifestContainerName { get; set; }

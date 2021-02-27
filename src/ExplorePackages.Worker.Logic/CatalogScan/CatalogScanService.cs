@@ -137,6 +137,7 @@ namespace Knapcode.ExplorePackages.Worker
                     return await UpdateCatalogLeafToCsvAsync(driverType, onlyLatestLeaves.GetValueOrDefault(true), max);
                 case CatalogScanDriverType.LoadPackageArchive:
                 case CatalogScanDriverType.LoadPackageManifest:
+                case CatalogScanDriverType.LoadPackageVersion:
                     if (onlyLatestLeaves.HasValue && !onlyLatestLeaves.Value)
                     {
                         throw new NotSupportedException("For catalog scan drivers that don't support parameters, only the latest leaves will be reported.");
@@ -402,6 +403,7 @@ namespace Knapcode.ExplorePackages.Worker
             { CatalogScanDriverType.FindLatestPackageLeaf, Catalog },
             { CatalogScanDriverType.LoadPackageArchive, FlatContainer },
             { CatalogScanDriverType.LoadPackageManifest, FlatContainer },
+            { CatalogScanDriverType.LoadPackageVersion, Catalog },
             { CatalogScanDriverType.PackageArchiveEntryToCsv, LoadPackageArchive },
             { CatalogScanDriverType.PackageAssetToCsv, LoadPackageArchive },
             { CatalogScanDriverType.PackageAssemblyToCsv, LoadPackageArchive },

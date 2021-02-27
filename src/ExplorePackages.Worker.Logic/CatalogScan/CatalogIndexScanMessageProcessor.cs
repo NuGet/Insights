@@ -91,7 +91,10 @@ namespace Knapcode.ExplorePackages.Worker
                     await ExpandAllLeavesAsync(message, scan, driver);
                     break;
                 case CatalogIndexScanResult.ExpandLatestLeaves:
-                    await ExpandLatestLeavesAsync(message, scan, driver);
+                    await ExpandLatestLeavesAsync(message, scan, driver, perId: false);
+                    break;
+                case CatalogIndexScanResult.ExpandLatestLeavesPerId:
+                    await ExpandLatestLeavesAsync(message, scan, driver, perId: true);
                     break;
                 case CatalogIndexScanResult.Processed:
                     await CompleteAsync(scan);
@@ -147,7 +150,7 @@ namespace Knapcode.ExplorePackages.Worker
             await HandleAggregateAndFinalizeStatesAsync(message, scan, driver);
         }
 
-        private async Task ExpandLatestLeavesAsync(CatalogIndexScanMessage message, CatalogIndexScan scan, ICatalogScanDriver driver)
+        private async Task ExpandLatestLeavesAsync(CatalogIndexScanMessage message, CatalogIndexScan scan, ICatalogScanDriver driver, bool perId)
         {
             var findLatestLeafScanId = scan.ScanId + "-flcls";
             var taskStateKey = new TaskStateKey(scan.StorageSuffix, $"{scan.ScanId}-{TableScanDriverType.EnqueueCatalogLeafScans}", "start");
@@ -204,7 +207,8 @@ namespace Knapcode.ExplorePackages.Worker
                 {
                     await _tableScanService.StartEnqueueCatalogLeafScansAsync(
                         taskStateKey,
-                        _storageService.GetLeafScanTable(scan.StorageSuffix).Name);
+                        _storageService.GetLeafScanTable(scan.StorageSuffix).Name,
+                        oneMessagePerId: perId);
                 }
 
                 scan.ParsedState = CatalogIndexScanState.Working;

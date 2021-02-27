@@ -12,6 +12,7 @@ using MessagePack;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Toolkit.HighPerformance.Extensions;
+using NuGet.Packaging;
 using NuGet.Protocol;
 
 namespace Knapcode.ExplorePackages
@@ -44,6 +45,17 @@ namespace Knapcode.ExplorePackages
         public async Task InitializeAsync()
         {
             await _wideEntityService.InitializeAsync(_options.Value.PackageManifestTableName);
+        }
+
+        public async Task<NuspecReader> GetNuspecReaderAsync(CatalogLeafItem leafItem)
+        {
+            var manifest = await GetManifestAsync(leafItem);
+            if (manifest == null)
+            {
+                return null;
+            }
+
+            return new NuspecReader(manifest);
         }
 
         public async Task<XDocument> GetManifestAsync(CatalogLeafItem leafItem)

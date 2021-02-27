@@ -5,6 +5,7 @@ using Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan;
 using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
 using Knapcode.ExplorePackages.Worker.LoadPackageArchive;
 using Knapcode.ExplorePackages.Worker.LoadPackageManifest;
+using Knapcode.ExplorePackages.Worker.LoadPackageVersion;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
 using Knapcode.ExplorePackages.Worker.TableCopy;
@@ -27,6 +28,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             serviceCollection.AddTransient(typeof(TableScanService<>));
             serviceCollection.AddTransient(typeof(TableScanDriverFactory<>));
+            serviceCollection.AddTransient(typeof(LatestLeafStorageService<>));
 
             serviceCollection.AddTransient<CatalogScanStorageService>();
             serviceCollection.AddTransient<ICatalogScanDriverFactory, CatalogScanDriverFactory>();
@@ -49,6 +51,7 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddFindLatestLeaf();
             serviceCollection.AddLoadPackageArchive();
             serviceCollection.AddLoadPackageManifest();
+            serviceCollection.AddLoadPackageVersion();
             serviceCollection.AddRunRealRestore();
             serviceCollection.AddTableCopy();
 
@@ -181,6 +184,12 @@ namespace Knapcode.ExplorePackages.Worker
         private static void AddLoadPackageManifest(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddTransient<LoadPackageManifestDriver>();
+        }
+
+        private static void AddLoadPackageVersion(this IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddTransient<LoadPackageVersionDriver>();
+            serviceCollection.AddTransient<PackageVersionStorage>();
         }
 
         private static void AddRunRealRestore(this IServiceCollection serviceCollection)

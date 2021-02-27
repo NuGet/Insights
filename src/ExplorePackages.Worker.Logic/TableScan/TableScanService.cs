@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan;
 using Knapcode.ExplorePackages.Worker.TableCopy;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json.Linq;
@@ -21,7 +22,8 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task StartEnqueueCatalogLeafScansAsync(
             TaskStateKey taskStateKey,
-            string tableName)
+            string tableName,
+            bool oneMessagePerId)
         {
             await StartTableScanAsync(
                 taskStateKey,
@@ -29,10 +31,14 @@ namespace Knapcode.ExplorePackages.Worker
                 tableName,
                 TableScanStrategy.PrefixScan,
                 StorageUtility.MaxTakeCount,
+                expandPartitionKeys: !oneMessagePerId,
                 partitionKeyPrefix: string.Empty,
                 segmentsPerFirstPrefix: 1,
                 segmentsPerSubsequentPrefix: 1,
-                driverParameters: null);
+                _serializer.Serialize(new EnqueueCatalogLeafScansParameters
+                {
+                    OneMessagePerId = oneMessagePerId,
+                }).AsJToken());
         }
 
         public async Task StartTableCopyAsync(
@@ -51,6 +57,7 @@ namespace Knapcode.ExplorePackages.Worker
                 sourceTable,
                 strategy,
                 takeCount,
+                expandPartitionKeys: true,
                 partitionKeyPrefix,
                 segmentsPerFirstPrefix,
                 segmentsPerSubsequentPrefix,
@@ -66,6 +73,7 @@ namespace Knapcode.ExplorePackages.Worker
             string sourceTable,
             TableScanStrategy strategy,
             int takeCount,
+            bool expandPartitionKeys,
             string partitionKeyPrefix,
             int segmentsPerFirstPrefix,
             int segmentsPerSubsequentPrefix,
@@ -98,6 +106,7 @@ namespace Knapcode.ExplorePackages.Worker
                     Strategy = strategy,
                     DriverType = driverType,
                     TakeCount = takeCount,
+                    ExpandPartitionKeys = expandPartitionKeys,
                     PartitionKeyPrefix = partitionKeyPrefix,
                     ScanParameters = scanParameters,
                     DriverParameters = driverParameters,

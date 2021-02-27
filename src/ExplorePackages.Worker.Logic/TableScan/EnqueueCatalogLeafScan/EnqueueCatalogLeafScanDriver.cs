@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
@@ -13,12 +15,17 @@ namespace Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan
             nameof(CatalogLeafScan.StorageSuffix),
             nameof(CatalogLeafScan.ScanId),
             nameof(CatalogLeafScan.PageId),
+            nameof(CatalogLeafScan.PackageId),
         };
 
+        private readonly SchemaSerializer _serializer;
         private readonly CatalogScanExpandService _expandService;
 
-        public EnqueueCatalogLeafScansDriver(CatalogScanExpandService expandService)
+        public EnqueueCatalogLeafScansDriver(
+            SchemaSerializer schemaSerializer,
+            CatalogScanExpandService expandService)
         {
+            _serializer = schemaSerializer;
             _expandService = expandService;
         }
 
@@ -31,6 +38,16 @@ namespace Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan
 
         public async Task ProcessEntitySegmentAsync(string tableName, JToken parameters, List<CatalogLeafScan> entities)
         {
+            var deserializedParameters = (EnqueueCatalogLeafScansParameters)_serializer.Deserialize(parameters).Data;
+
+            if (deserializedParameters.OneMessagePerId)
+            {
+                entities = entities
+                    .GroupBy(x => x.PackageId, StringComparer.OrdinalIgnoreCase)
+                    .Select(g => g.First())
+                    .ToList();
+            }
+
             await _expandService.EnqueueLeafScansAsync(entities);
         }
     }

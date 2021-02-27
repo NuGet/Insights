@@ -23,6 +23,12 @@
         LoadPackageManifest,
 
         /// <summary>
+        /// Implemented by <see cref="LoadPackageVersion.LoadPackageVersionDriver"/>. Determines the deleted, listed,
+        /// and SemVer status for every package version and stores it in Azure Table Storage for other drivers to use.
+        /// </summary>
+        LoadPackageVersion,
+
+        /// <summary>
         /// Implemented by <see cref="PackageArchiveEntryToCsv.PackageArchiveEntryToCsvDriver"/>.
         /// Extracts metadata about each entry in a package's ZIP archive.
         /// </summary>

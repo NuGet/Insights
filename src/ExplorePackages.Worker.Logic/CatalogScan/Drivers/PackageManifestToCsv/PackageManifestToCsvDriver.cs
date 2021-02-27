@@ -60,20 +60,19 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             {
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
 
-                var manifest = await _packageManifestService.GetManifestAsync(item);
-                if (manifest == null)
+                var nuspecReader = await _packageManifestService.GetNuspecReaderAsync(item);
+                if (nuspecReader == null)
                 {
                     // Ignore packages where the .nuspec is missing. A subsequent scan will produce a deleted asset record.
                     return DriverResult.Success(new List<PackageManifestRecord>());
                 }
 
-                return DriverResult.Success(new List<PackageManifestRecord> { GetRecord(scanId, scanTimestamp, leaf, manifest) });
+                return DriverResult.Success(new List<PackageManifestRecord> { GetRecord(scanId, scanTimestamp, leaf, nuspecReader) });
             }
         }
 
-        private PackageManifestRecord GetRecord(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, XDocument manifest)
+        private PackageManifestRecord GetRecord(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, NuspecReader nuspecReader)
         {
-            var nuspecReader = new NuspecReader(manifest);
             var record = new PackageManifestRecord(scanId, scanTimestamp, leaf)
             {
                 // From NuspecCoreReaderBase

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf
@@ -25,6 +26,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf
         }
 
         public CloudTable Table { get; }
+
         public string GetPartitionKey(string packageId)
         {
             return LatestPackageLeaf.GetPartitionKey(_prefix, packageId);
@@ -37,9 +39,14 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf
 
         public string CommitTimestampColumnName => nameof(LatestPackageLeaf.CommitTimestamp);
 
-        public LatestPackageLeaf Map(CatalogLeafItem item)
+        public Task<LatestPackageLeaf> MapAsync(CatalogLeafItem item)
         {
-            return new LatestPackageLeaf(_prefix, item, _leafItemToRank[item], _pageRank, _pageUrl);
+            return Task.FromResult(new LatestPackageLeaf(
+                _prefix,
+                item,
+                _leafItemToRank[item],
+                _pageRank,
+                _pageUrl));
         }
     }
 }

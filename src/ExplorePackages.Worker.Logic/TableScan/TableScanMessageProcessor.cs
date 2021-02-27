@@ -67,7 +67,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         private async Task ProcessSerialAsync(TableScanMessage<T> message)
         {
-            if (message.PartitionKeyPrefix != string.Empty)
+            if (message.PartitionKeyPrefix != string.Empty || !message.ExpandPartitionKeys)
             {
                 throw new NotImplementedException();
             }
@@ -108,7 +108,7 @@ namespace Knapcode.ExplorePackages.Worker
                 GetTable(message.TableName),
                 driver.SelectColumns,
                 message.TakeCount,
-                expandPartitionKeys: true);
+                message.ExpandPartitionKeys);
 
             int segmentsPerFirstPrefix;
             int segmentsPerSubsequentPrefix;
@@ -190,7 +190,7 @@ namespace Knapcode.ExplorePackages.Worker
             //   2. Table copy messages (recursion)
 
             var entities = new List<T>();
-            var tableCopyMessages = new List<TableScanMessage<T>>();
+            var tableScanMessages = new List<TableScanMessage<T>>();
             var taskStates = new List<TaskState>();
 
             foreach (var nextStep in nextSteps)
@@ -201,7 +201,7 @@ namespace Knapcode.ExplorePackages.Worker
                         entities.AddRange(segment.Entities);
                         break;
                     case TablePrefixScanPartitionKeyQuery partitionKeyQuery:
-                        tableCopyMessages.Add(GetPrefixScanMessage(
+                        tableScanMessages.Add(GetPrefixScanMessage(
                             originalMessage,
                             new TablePrefixScanPartitionKeyQueryParameters
                             {
@@ -214,7 +214,7 @@ namespace Knapcode.ExplorePackages.Worker
                             taskStates));
                         break;
                     case TablePrefixScanPrefixQuery prefixQuery:
-                        tableCopyMessages.Add(GetPrefixScanMessage(
+                        tableScanMessages.Add(GetPrefixScanMessage(
                             originalMessage,
                             new TablePrefixScanPrefixQueryParameters
                             {
@@ -236,14 +236,14 @@ namespace Knapcode.ExplorePackages.Worker
                 await driver.ProcessEntitySegmentAsync(originalMessage.TableName, originalMessage.DriverParameters, entities);
             }
 
-            if (tableCopyMessages.Any())
+            if (tableScanMessages.Any())
             {
                 await _taskStateStorageService.GetOrAddAsync(
                     originalMessage.TaskStateKey.StorageSuffix,
                     originalMessage.TaskStateKey.PartitionKey,
                     taskStates);
 
-                await _enqueuer.EnqueueAsync(tableCopyMessages);
+                await _enqueuer.EnqueueAsync(tableScanMessages);
             }
         }
 

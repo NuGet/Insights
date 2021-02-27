@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv;
+using Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan;
 using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
 using Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv;
 using Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv;
@@ -55,6 +56,7 @@ namespace Knapcode.ExplorePackages.Worker
             new SchemaV1<LatestPackageLeafParameters>("fll"),
             new SchemaV1<CatalogLeafToCsvParameters>("cl2c"),
 
+            new SchemaV1<EnqueueCatalogLeafScansParameters>("ecls"),
             new SchemaV1<TableCopyParameters>("tc"),
         });
 

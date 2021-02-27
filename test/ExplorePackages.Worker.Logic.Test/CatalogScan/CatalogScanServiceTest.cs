@@ -225,6 +225,19 @@ namespace Knapcode.ExplorePackages.Worker
             },
 
             {
+                CatalogScanDriverType.LoadPackageVersion,
+                new DriverInfo
+                {
+                    DefaultMin = CatalogClient.NuGetOrgMinDeleted,
+                    SetDependencyCursorAsync = (self, x) =>
+                    {
+                        self.CatalogCursor = x;
+                        return Task.CompletedTask;
+                    },
+                }
+            },
+
+            {
                 CatalogScanDriverType.PackageArchiveEntryToCsv,
                 new DriverInfo
                 {

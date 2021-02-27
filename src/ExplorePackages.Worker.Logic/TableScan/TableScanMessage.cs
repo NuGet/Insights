@@ -28,6 +28,9 @@ namespace Knapcode.ExplorePackages.Worker
         [JsonProperty("p")]
         public string PartitionKeyPrefix { get; set; }
 
+        [JsonProperty("e")]
+        public bool ExpandPartitionKeys { get; set; }
+
         [JsonProperty("v")]
         public JToken ScanParameters { get; set; }
 
