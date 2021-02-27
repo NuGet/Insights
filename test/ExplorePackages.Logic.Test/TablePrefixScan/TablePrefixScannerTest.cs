@@ -66,7 +66,14 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
                 new TestEntity("BP", "1"),
             });
 
-            var segments = await Target.ListSegmentsAsync<TestEntity>(table, string.Empty, MinSelectColumns, takeCount, segmentsPerFirstPrefix, segmentsPerSubsequentPrefix);
+            var segments = await Target.ListSegmentsAsync<TestEntity>(
+                table,
+                string.Empty,
+                MinSelectColumns,
+                takeCount,
+                expandPartitionKeys: true,
+                segmentsPerFirstPrefix,
+                segmentsPerSubsequentPrefix);
 
             var actual = string.Join(" ", segments.Select(x => "[" + string.Join(", ", x.Select(x => x.PartitionKey)) + "]"));
             Assert.Equal(expected, actual);
@@ -198,6 +205,34 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
             var actual = await Target.ListAsync<TestEntity>(table, "P", MinSelectColumns, takeCount);
 
             Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public async Task AllowsNotExpandingPartitionKeys()
+        {
+            (var table, var all) = await _fixture.SortAndInsertAsync(GenerateTestEntities("P", 8, 3));
+            var expected = Enumerable
+                .Empty<TestEntity>()
+                .Concat(all.Take(4))
+                .Concat(all.Skip(6).Take(4))
+                .Concat(all.Skip(12).Take(4))
+                .Concat(all.Skip(18).Take(4));
+
+            var actual = await Target.ListAsync<TestEntity>(
+                table,
+                partitionKeyPrefix: string.Empty,
+                selectColumns: null,
+                takeCount: 4,
+                expandPartitionKeys: false,
+                segmentsPerFirstPrefix: 1,
+                segmentsPerSubsequentPrefix: 1);
+
+            Assert.Equal(
+                expected.ToArray(),
+                actual.ToArray());
+            Assert.Equal(
+                all.Select(x => x.PartitionKey).Distinct().ToList(),
+                actual.Select(x => x.PartitionKey).Distinct().ToList());
         }
 
         [Theory]

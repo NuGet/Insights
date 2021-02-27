@@ -107,7 +107,8 @@ namespace Knapcode.ExplorePackages.Worker
             var tableQueryParameters = new TableQueryParameters(
                 GetTable(message.TableName),
                 driver.SelectColumns,
-                message.TakeCount);
+                message.TakeCount,
+                expandPartitionKeys: true);
 
             int segmentsPerFirstPrefix;
             int segmentsPerSubsequentPrefix;

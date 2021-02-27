@@ -45,6 +45,7 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
                 partitionKeyPrefix,
                 selectColumns,
                 takeCount,
+                expandPartitionKeys: true,
                 segmentsPerFirstPrefix: 1,
                 segmentsPerSubsequentPrefix: 1);
         }
@@ -54,6 +55,7 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
             string partitionKeyPrefix,
             IList<string> selectColumns,
             int takeCount,
+            bool expandPartitionKeys,
             int segmentsPerFirstPrefix,
             int segmentsPerSubsequentPrefix)
             where T : ITableEntity, new()
@@ -63,6 +65,7 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
                 partitionKeyPrefix,
                 selectColumns,
                 takeCount,
+                expandPartitionKeys,
                 segmentsPerFirstPrefix,
                 segmentsPerSubsequentPrefix,
                 addSegment: (x, o) => o.AddRange(x));
@@ -77,6 +80,7 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
             string partitionKeyPrefix,
             IList<string> selectColumns,
             int takeCount,
+            bool expandPartitionKeys,
             int segmentsPerFirstPrefix,
             int segmentsPerSubsequentPrefix)
             where T : ITableEntity, new()
@@ -86,6 +90,7 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
                 partitionKeyPrefix,
                 selectColumns,
                 takeCount,
+                expandPartitionKeys,
                 segmentsPerFirstPrefix,
                 segmentsPerSubsequentPrefix,
                 addSegment: (x, o) => o.Add(x));
@@ -100,6 +105,7 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
             string partitionKeyPrefix,
             IList<string> selectColumns,
             int takeCount,
+            bool expandPartitionKeys,
             int segmentsPerFirstPrefix,
             int segmentsPerSubsequentPrefix,
             Action<List<T>, List<TOutput>> addSegment) where T : ITableEntity, new()
@@ -119,7 +125,7 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
                 segmentsPerSubsequentPrefix);
 
             var output = new List<TOutput>();
-            var parameters = new TableQueryParameters(table, selectColumns, takeCount);
+            var parameters = new TableQueryParameters(table, selectColumns, takeCount, expandPartitionKeys);
             var start = new TablePrefixScanStart(parameters, partitionKeyPrefix);
             var initialSteps = Start(start);
             initialSteps.Reverse();
@@ -164,7 +170,7 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
             // Originally I have a NULL character '\0' for both the row key and partition key prefix lower bound but
             // the Azure Storage Emulator behaved different for this. It looked like it completely ignored the '\0'
             // included in the query. Real Azure Table Storage does not ignore the NULL byte.
-            if (start.PartitionKeyPrefix.Length > 0)
+            if (start.PartitionKeyPrefix.Length > 0 && start.Parameters.ExpandPartitionKeys)
             {
                 steps.Add(new TablePrefixScanPartitionKeyQuery(start.Parameters, nextDepth, start.PartitionKeyPrefix, rowKeySkip: null));
             }
@@ -372,11 +378,14 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
             {
                 var last = results.Last();
 
-                // Find the remaining row keys for the partition key that straddles the current and subsequent page.
-                // It's possible that this partition key has very few rows or even only has a single row meaning that this
-                // yield query may not result in very many records. That's OK. We don't want to read too far into the
-                // prefix in a serial fashion.
-                yield return new TablePrefixScanPartitionKeyQuery(step.Parameters, nextDepth, last.PartitionKey, last.RowKey);
+                if (step.Parameters.ExpandPartitionKeys)
+                {
+                    // Find the remaining row keys for the partition key that straddles the current and subsequent page.
+                    // It's possible that this partition key has very few rows or even only has a single row meaning that this
+                    // yield query may not result in very many records. That's OK. We don't want to read too far into the
+                    // prefix in a serial fashion.
+                    yield return new TablePrefixScanPartitionKeyQuery(step.Parameters, nextDepth, last.PartitionKey, last.RowKey);
+                }
 
                 // Expand the next prefix of the last partition key.
                 var nextPrefix = IncrementPrefix(step.PartitionKeyPrefix, last.PartitionKey);

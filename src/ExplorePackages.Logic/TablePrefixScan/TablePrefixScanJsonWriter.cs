@@ -32,7 +32,7 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
                     throw new NotImplementedException();
             }
 
-            var queryParameters = new TableQueryParameters(table, StorageUtility.MinSelectColumns, 2);
+            var queryParameters = new TableQueryParameters(table, StorageUtility.MinSelectColumns, 2, expandPartitionKeys: true);
             var firstPrefix = "";
             remainingSteps.Add(null, new TablePrefixScanStart(queryParameters, firstPrefix));
 
