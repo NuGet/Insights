@@ -152,10 +152,10 @@ namespace Knapcode.ExplorePackages.Worker
             var findLatestLeafScanId = scan.ScanId + "-flcls";
             var taskStateKey = new TaskStateKey(scan.StorageSuffix, $"{scan.ScanId}-{TableScanDriverType.EnqueueCatalogLeafScans}", "start");
 
-            await HandleInitializedStateAsync(scan, nextState: CatalogIndexScanState.WaitingOnDependency);
+            await HandleInitializedStateAsync(scan, nextState: CatalogIndexScanState.FindingLatest);
 
             // WaitingOnDependency: start and wait on a "find latest leaves" scan for the range of this parent scan
-            if (scan.ParsedState == CatalogIndexScanState.WaitingOnDependency)
+            if (scan.ParsedState == CatalogIndexScanState.FindingLatest)
             {
                 var findLatestLeavesScan = await _catalogScanService.GetOrStartFindLatestCatalogLeafScanAsync(
                     scanId: findLatestLeafScanId,

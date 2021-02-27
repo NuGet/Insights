@@ -4,7 +4,7 @@
     {
         Created, // Initial state before any work is done
         Initialized, // The driver has been initialized
-        WaitingOnDependency, // Waiting on dependency scan
+        FindingLatest, // Waiting on the "find latest leaves" scan
         Expanding, // Expanding child entities in storage
         Enqueuing, // Enqueueing messages for child entities
         Working, // Waiting for child entities to be completed
