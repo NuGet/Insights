@@ -23,6 +23,12 @@
         LoadPackageManifest,
 
         /// <summary>
+        /// Implemented by <see cref="PackageArchiveEntryToCsv.PackageArchiveEntryToCsvDriver"/>.
+        /// Extracts metadata about each entry in a package's ZIP archive.
+        /// </summary>
+        PackageArchiveEntryToCsv,
+
+        /// <summary>
         /// Implemented by <see cref="PackageAssemblyToCsv.PackageAssemblyToCsvDriver"/>. For packages that contain
         /// assemblies, downloads the entire .nupkg and extract metadata about each assembly.
         /// </summary>
