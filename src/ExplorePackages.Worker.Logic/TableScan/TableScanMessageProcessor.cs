@@ -275,6 +275,7 @@ namespace Knapcode.ExplorePackages.Worker
                 TableName = originalMessage.TableName,
                 Strategy = TableScanStrategy.PrefixScan,
                 TakeCount = originalMessage.TakeCount,
+                ExpandPartitionKeys = originalMessage.ExpandPartitionKeys,
                 PartitionKeyPrefix = originalMessage.PartitionKeyPrefix,
                 ScanParameters = serializedParameters.AsJToken(),
                 DriverParameters = originalMessage.DriverParameters,
