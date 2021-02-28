@@ -9,12 +9,12 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
     public class LoadPackageVersionDriver : ICatalogLeafScanBatchDriver
     {
         private readonly PackageVersionStorage _storage;
-        private readonly LatestLeafStorageService<PackageVersionRecord> _storageService;
+        private readonly LatestLeafStorageService<PackageVersionEntity> _storageService;
         private readonly ILogger<LoadPackageVersionDriver> _logger;
 
         public LoadPackageVersionDriver(
             PackageVersionStorage storage,
-            LatestLeafStorageService<PackageVersionRecord> storageService,
+            LatestLeafStorageService<PackageVersionEntity> storageService,
             ILogger<LoadPackageVersionDriver> logger)
         {
             _storage = storage;

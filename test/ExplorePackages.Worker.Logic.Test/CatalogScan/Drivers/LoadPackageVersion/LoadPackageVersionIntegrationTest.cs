@@ -125,7 +125,7 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
                 .CreateCloudTableClient()
                 .GetTableReference(Options.Value.PackageVersionTableName);
 
-            await VerifyEntityOutputAsync<PackageVersionRecord>(table, Path.Combine(dir, stepName));
+            await VerifyEntityOutputAsync<PackageVersionEntity>(table, Path.Combine(dir, stepName));
         }
     }
 }

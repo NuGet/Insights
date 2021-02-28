@@ -4,7 +4,7 @@ using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
 {
-    public class PackageVersionStorage : ILatestPackageLeafStorage<PackageVersionRecord>
+    public class PackageVersionStorage : ILatestPackageLeafStorage<PackageVersionEntity>
     {
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly CatalogClient _catalogClient;
@@ -26,23 +26,23 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
         }
 
         public CloudTable Table { get; }
-        public string CommitTimestampColumnName => nameof(PackageVersionRecord.CommitTimestamp);
+        public string CommitTimestampColumnName => nameof(PackageVersionEntity.CommitTimestamp);
 
         public string GetPartitionKey(string packageId)
         {
-            return PackageVersionRecord.GetPartitionKey(packageId);
+            return PackageVersionEntity.GetPartitionKey(packageId);
         }
 
         public string GetRowKey(string packageVersion)
         {
-            return PackageVersionRecord.GetRowKey(packageVersion);
+            return PackageVersionEntity.GetRowKey(packageVersion);
         }
 
-        public async Task<PackageVersionRecord> MapAsync(CatalogLeafItem item)
+        public async Task<PackageVersionEntity> MapAsync(CatalogLeafItem item)
         {
             if (item.Type == CatalogLeafType.PackageDelete)
             {
-                return new PackageVersionRecord(
+                return new PackageVersionEntity(
                     item,
                     listed: null,
                     semVerType: null);
@@ -50,7 +50,7 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
 
             var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item);
 
-            return new PackageVersionRecord(
+            return new PackageVersionEntity(
                 item,
                 leaf.IsListed(),
                 leaf.GetSemVerType());

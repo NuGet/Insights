@@ -4,9 +4,9 @@ using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
 {
-    public class PackageVersionRecord : TableEntity, ILatestPackageLeaf
+    public class PackageVersionEntity : TableEntity, ILatestPackageLeaf
     {
-        public PackageVersionRecord(
+        public PackageVersionEntity(
             CatalogLeafItem item,
             bool? listed,
             SemVerType? semVerType)
@@ -23,7 +23,7 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
             ParsedSemVerType = semVerType;
         }
 
-        public PackageVersionRecord()
+        public PackageVersionEntity()
         {
         }
 
