@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage.Table;
 
@@ -14,15 +15,18 @@ namespace Knapcode.ExplorePackages.Worker
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly ILogger<CatalogScanStorageService> _logger;
 
         public CatalogScanStorageService(
             ServiceClientFactory serviceClientFactory,
             ITelemetryClient telemetryClient,
-            IOptions<ExplorePackagesWorkerSettings> options)
+            IOptions<ExplorePackagesWorkerSettings> options,
+            ILogger<CatalogScanStorageService> logger)
         {
             _serviceClientFactory = serviceClientFactory;
             _telemetryClient = telemetryClient;
             _options = options;
+            _logger = logger;
         }
 
         public async Task InitializeAsync()
@@ -133,6 +137,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task ReplaceAsync(CatalogIndexScan indexScan)
         {
+            _logger.LogInformation("Replacing catalog index scan {ScanId}, state: {State}.", indexScan.ScanId, indexScan.ParsedState);
             await GetIndexScanTable().ReplaceAsync(indexScan);
         }
 

@@ -76,6 +76,8 @@ namespace Knapcode.ExplorePackages.Worker
                     }
                 }
             }
+
+            _logger.LogInformation("Updated latest leaf entities for {Count} items.", items.Count);
         }
 
         public Task<DriverResult> ProcessLeafAsync(CatalogLeafScan leafScan)

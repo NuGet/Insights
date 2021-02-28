@@ -158,7 +158,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             await HandleInitializedStateAsync(scan, nextState: CatalogIndexScanState.FindingLatest);
 
-            // WaitingOnDependency: start and wait on a "find latest leaves" scan for the range of this parent scan
+            // FindingLatest: start and wait on a "find latest leaves" scan for the range of this parent scan
             if (scan.ParsedState == CatalogIndexScanState.FindingLatest)
             {
                 var storageSuffix = scan.StorageSuffix + "fl";
