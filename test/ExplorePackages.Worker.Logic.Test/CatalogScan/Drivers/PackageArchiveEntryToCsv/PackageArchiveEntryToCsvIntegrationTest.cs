@@ -14,7 +14,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
     {
         private const string PackageArchiveEntryToCsvDir = nameof(PackageArchiveEntryToCsv);
         private const string PackageArchiveEntryToCsv_WithDeleteDir = nameof(PackageArchiveEntryToCsv_WithDelete);
-        private const string PackageArchiveEntryToCsv_WithDuplicatesDir = nameof(PackageArchiveEntryToCsv_WithDuplicates);
+        private const string PackageArchiveEntryToCsv_WithDuplicateEntriesDir = nameof(PackageArchiveEntryToCsv_WithDuplicateEntries);
 
         public PackageArchiveEntryToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
             : base(output, factory)
@@ -60,41 +60,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
                 await AssertOutputAsync(PackageArchiveEntryToCsvDir, Step2, 0);
                 await AssertOutputAsync(PackageArchiveEntryToCsvDir, Step1, 1); // This file is unchanged.
                 await AssertOutputAsync(PackageArchiveEntryToCsvDir, Step2, 2);
-
-                await AssertExpectedStorageAsync();
-                AssertOnlyInfoLogsOrLess();
-            }
-        }
-
-        public class PackageArchiveEntryToCsv_WithoutBatching : PackageArchiveEntryToCsvIntegrationTest
-        {
-            public PackageArchiveEntryToCsv_WithoutBatching(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
-
-            [Fact]
-            public async Task Execute()
-            {
-                ConfigureWorkerSettings = x => x.AllowBatching = false;
-
-                Logger.LogInformation("Settings: " + Environment.NewLine + JsonConvert.SerializeObject(Options.Value, Formatting.Indented));
-
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
-                var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
-
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
-                await SetCursorAsync(min0);
-
-                // Act
-                await UpdateAsync(max1);
-
-                // Assert
-                await AssertOutputAsync(PackageArchiveEntryToCsvDir, Step1, 0);
-                await AssertOutputAsync(PackageArchiveEntryToCsvDir, Step1, 1);
-                await AssertOutputAsync(PackageArchiveEntryToCsvDir, Step1, 2);
 
                 await AssertExpectedStorageAsync();
                 AssertOnlyInfoLogsOrLess();
@@ -154,87 +119,37 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
             }
         }
 
-        public class PackageArchiveEntryToCsv_WithDuplicates_OnlyLatestLeaves : PackageArchiveEntryToCsvIntegrationTest
+        public class PackageArchiveEntryToCsv_WithDuplicateEntries : PackageArchiveEntryToCsvIntegrationTest
         {
-            public PackageArchiveEntryToCsv_WithDuplicates_OnlyLatestLeaves(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public PackageArchiveEntryToCsv_WithDuplicateEntries(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
-
-            public override bool OnlyLatestLeaves => true;
-
-            [Fact]
-            public Task Execute()
-            {
-                return PackageArchiveEntryToCsv_WithDuplicates(batchProcessing: false);
-            }
-        }
-
-        public class PackageArchiveEntryToCsv_WithDuplicates_AllLeaves : PackageArchiveEntryToCsvIntegrationTest
-        {
-            public PackageArchiveEntryToCsv_WithDuplicates_AllLeaves(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
-
-            public override bool OnlyLatestLeaves => false;
 
             [Fact]
             public async Task Execute()
             {
-                await PackageArchiveEntryToCsv_WithDuplicates(batchProcessing: false);
+                Logger.LogInformation("Settings: " + Environment.NewLine + JsonConvert.SerializeObject(Options.Value, Formatting.Indented));
+
+                // Arrange
+                var min0 = DateTimeOffset.Parse("2019-12-03T16:44:42.3383514Z");
+                var max1 = DateTimeOffset.Parse("2019-12-03T16:44:55.0668686Z");
+
+                await CatalogScanService.InitializeAsync();
+                await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
+                await SetCursorAsync(min0);
+
+                // Act
+                await UpdateAsync(max1);
+
+                // Assert
+                await AssertOutputAsync(PackageArchiveEntryToCsv_WithDuplicateEntriesDir, Step1, 0);
+                await AssertOutputAsync(PackageArchiveEntryToCsv_WithDuplicateEntriesDir, Step1, 1);
+                await AssertOutputAsync(PackageArchiveEntryToCsv_WithDuplicateEntriesDir, Step1, 2);
+
+                await AssertExpectedStorageAsync();
+                AssertOnlyInfoLogsOrLess();
             }
-        }
-
-        public class PackageArchiveEntryToCsv_WithDuplicates_BatchProcessing : PackageArchiveEntryToCsvIntegrationTest
-        {
-            public PackageArchiveEntryToCsv_WithDuplicates_BatchProcessing(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
-
-            public override bool OnlyLatestLeaves => false;
-
-            [Fact]
-            public Task Execute()
-            {
-                return PackageArchiveEntryToCsv_WithDuplicates(batchProcessing: true);
-            }
-        }
-
-        private async Task PackageArchiveEntryToCsv_WithDuplicates(bool batchProcessing)
-        {
-            ConfigureWorkerSettings = x =>
-            {
-                x.AppendResultStorageBucketCount = 1;
-                x.RunAllCatalogScanDriversAsBatch = batchProcessing;
-            };
-
-            Logger.LogInformation("Settings: " + Environment.NewLine + JsonConvert.SerializeObject(Options.Value, Formatting.Indented));
-
-            // Arrange
-            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z");
-            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
-
-            await CatalogScanService.InitializeAsync();
-            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
-            await SetCursorAsync(min0);
-
-            // Act
-            await UpdateAsync(max1);
-
-            // Assert
-            await AssertOutputAsync(PackageArchiveEntryToCsv_WithDuplicatesDir, Step1, 0);
-
-            var duplicatePackageRequests = HttpMessageHandlerFactory
-                .Requests
-                .Where(x => x.RequestUri.AbsolutePath.EndsWith("/gosms.ge-sms-api.1.0.1.nupkg"))
-                .ToList();
-            Assert.Equal(OnlyLatestLeaves ? 1 : 2, duplicatePackageRequests.Where(x => x.Method == HttpMethod.Head).Count());
-            Assert.Equal(OnlyLatestLeaves ? 1 : 2, duplicatePackageRequests.Where(x => x.Method == HttpMethod.Get).Count());
-
-            await AssertExpectedStorageAsync();
-            AssertOnlyInfoLogsOrLess();
         }
 
         protected override IEnumerable<string> GetExpectedCursorNames()
