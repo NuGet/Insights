@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
