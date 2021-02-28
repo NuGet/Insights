@@ -30,6 +30,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
         }
 
         public string ResultsContainerName => _options.Value.PackageManifestContainerName;
+        public bool SingleMessagePerId => false;
 
         public List<PackageManifestRecord> Prune(List<PackageManifestRecord> records)
         {

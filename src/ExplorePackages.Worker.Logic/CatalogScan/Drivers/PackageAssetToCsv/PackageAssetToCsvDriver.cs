@@ -34,6 +34,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
         }
 
         public string ResultsContainerName => _options.Value.PackageAssetContainerName;
+        public bool SingleMessagePerId => false;
 
         public List<PackageAsset> Prune(List<PackageAsset> records)
         {

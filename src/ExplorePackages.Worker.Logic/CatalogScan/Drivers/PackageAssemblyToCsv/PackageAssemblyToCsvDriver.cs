@@ -45,6 +45,8 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
         }
 
         public string ResultsContainerName => _options.Value.PackageAssemblyContainerName;
+        public bool SingleMessagePerId => false;
+
         public List<PackageAssembly> Prune(List<PackageAssembly> records)
         {
             return PackageRecord.Prune(records);

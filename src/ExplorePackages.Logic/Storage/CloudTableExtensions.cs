@@ -9,24 +9,68 @@ namespace Knapcode.ExplorePackages
 {
     public static class CloudTableExtensions
     {
-        public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(this CloudTable table, string partitionKey, string minRowKey, string maxRowKey, QueryLoopMetrics metrics) where T : ITableEntity, new()
+        public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(
+            this CloudTable table,
+            string partitionKey,
+            string minRowKey,
+            string maxRowKey,
+            QueryLoopMetrics metrics) where T : ITableEntity, new()
         {
-            return await GetEntitiesAsync<T>(table.ExecuteQuerySegmentedAsync, partitionKey, minRowKey, maxRowKey, metrics, maxEntities: null);
+            return await GetEntitiesAsync<T>(
+                table.ExecuteQuerySegmentedAsync,
+                partitionKey,
+                minRowKey,
+                maxRowKey,
+                maxEntities: null,
+                selectColumns: null,
+                metrics);
         }
 
-        public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(this CloudTable table, QueryLoopMetrics metrics) where T : ITableEntity, new()
+        public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(
+            this CloudTable table,
+            QueryLoopMetrics metrics) where T : ITableEntity, new()
         {
-            return await GetEntitiesAsync<T>(table.ExecuteQuerySegmentedAsync, partitionKey: null, minRowKey: null, maxRowKey: null, metrics, maxEntities: null);
+            return await GetEntitiesAsync<T>(
+                table.ExecuteQuerySegmentedAsync,
+                partitionKey: null,
+                minRowKey: null,
+                maxRowKey: null,
+                maxEntities: null,
+                selectColumns: null,
+                metrics);
         }
 
-        public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(this CloudTable table, string partitionKey, QueryLoopMetrics metrics, int? maxEntities = null) where T : ITableEntity, new()
+        public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(
+            this CloudTable table,
+            string partitionKey,
+            QueryLoopMetrics metrics,
+            int? maxEntities = null,
+            IList<string> selectColumns = null) where T : ITableEntity, new()
         {
-            return await GetEntitiesAsync<T>(table.ExecuteQuerySegmentedAsync, partitionKey, minRowKey: null, maxRowKey: null, metrics, maxEntities);
+            return await GetEntitiesAsync<T>(
+                table.ExecuteQuerySegmentedAsync,
+                partitionKey,
+                minRowKey: null,
+                maxRowKey: null,
+                maxEntities,
+                selectColumns,
+                metrics);
         }
 
-        public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(this ICloudTable table, string partitionKey, QueryLoopMetrics metrics, int? maxEntities = null) where T : ITableEntity, new()
+        public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(
+            this ICloudTable table,
+            string partitionKey,
+            QueryLoopMetrics metrics,
+            int? maxEntities = null) where T : ITableEntity, new()
         {
-            return await GetEntitiesAsync<T>(table.ExecuteQuerySegmentedAsync, partitionKey, minRowKey: null, maxRowKey: null, metrics, maxEntities);
+            return await GetEntitiesAsync<T>(
+                table.ExecuteQuerySegmentedAsync,
+                partitionKey,
+                minRowKey: null,
+                maxRowKey: null,
+                maxEntities,
+                selectColumns: null,
+                metrics);
         }
 
         private static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(
@@ -34,8 +78,9 @@ namespace Knapcode.ExplorePackages
             string partitionKey,
             string minRowKey,
             string maxRowKey,
-            QueryLoopMetrics metrics,
-            int? maxEntities = null) where T : ITableEntity, new()
+            int? maxEntities,
+            IList<string> selectColumns,
+            QueryLoopMetrics metrics) where T : ITableEntity, new()
         {
             using (metrics)
             {
@@ -43,6 +88,7 @@ namespace Knapcode.ExplorePackages
                 var query = new TableQuery<T>
                 {
                     TakeCount = MaxTakeCount,
+                    SelectColumns = selectColumns,
                 };
 
                 if (partitionKey != null)

@@ -189,7 +189,7 @@ namespace Knapcode.ExplorePackages.Worker
         private static void AddLoadPackageVersion(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddTransient<LoadPackageVersionDriver>();
-            serviceCollection.AddTransient<PackageVersionStorage>();
+            serviceCollection.AddTransient<PackageVersionStorageService>();
         }
 
         private static void AddRunRealRestore(this IServiceCollection serviceCollection)

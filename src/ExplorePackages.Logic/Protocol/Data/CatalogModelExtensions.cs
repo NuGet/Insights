@@ -189,6 +189,11 @@ namespace Knapcode.ExplorePackages
             return leaf.Published.Year != 1900;
         }
 
+        public static bool IsSemVer2(this SemVerType type)
+        {
+            return (type & SemVerType.SemVer2) != 0;
+        }
+
         /// <summary>
         /// Determines if the provied package details leaf represents a SemVer 2.0.0 package. A package is considered
         /// SemVer 2.0.0 if it's version is SemVer 2.0.0 or one of its dependency version ranges is SemVer 2.0.0.

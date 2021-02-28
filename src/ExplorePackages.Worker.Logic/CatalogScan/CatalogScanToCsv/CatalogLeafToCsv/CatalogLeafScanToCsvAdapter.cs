@@ -29,7 +29,18 @@ namespace Knapcode.ExplorePackages.Worker
         public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
         {
             var parameters = (CatalogLeafToCsvParameters)_schemaSerializer.Deserialize(indexScan.DriverParameters).Data;
-            return Task.FromResult(parameters.OnlyLatestLeaves ? CatalogIndexScanResult.ExpandLatestLeaves : CatalogIndexScanResult.ExpandAllLeaves);
+
+            CatalogIndexScanResult result;
+            if (parameters.OnlyLatestLeaves)
+            {
+                result = _driver.SingleMessagePerId ? CatalogIndexScanResult.ExpandLatestLeavesPerId : CatalogIndexScanResult.ExpandLatestLeaves;
+            }
+            else
+            {
+                result = CatalogIndexScanResult.ExpandAllLeaves;
+            }
+
+            return Task.FromResult(result);
         }
 
         public Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan)

@@ -51,6 +51,7 @@ namespace Knapcode.ExplorePackages.Worker
             x.CsvRecordTableName = $"{StoragePrefix}1cr1";
             x.LatestPackageLeafTableName = $"{StoragePrefix}1lpl1";
             x.PackageVersionTableName = $"{StoragePrefix}1pv1";
+            x.PackageVersionContainerName = $"{StoragePrefix}1pvc1";
             x.PackageAssetContainerName = $"{StoragePrefix}1fpa1";
             x.PackageAssemblyContainerName = $"{StoragePrefix}1fpi1";
             x.PackageManifestContainerName = $"{StoragePrefix}1pm2c1";

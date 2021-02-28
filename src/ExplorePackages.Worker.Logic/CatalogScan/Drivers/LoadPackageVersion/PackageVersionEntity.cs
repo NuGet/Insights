@@ -8,6 +8,7 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
     {
         public PackageVersionEntity(
             CatalogLeafItem item,
+            DateTimeOffset? created,
             bool? listed,
             SemVerType? semVerType)
         {
@@ -19,7 +20,8 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
             CommitTimestamp = item.CommitTimestamp;
             PackageId = item.PackageId;
             PackageVersion = item.PackageVersion;
-            Listed = listed;
+            Created = created;
+            IsListed = listed;
             ParsedSemVerType = semVerType;
         }
 
@@ -51,7 +53,8 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
         public DateTimeOffset CommitTimestamp { get; set; }
         public string PackageId { get; set; }
         public string PackageVersion { get; set; }
-        public bool? Listed { get; set; }
+        public DateTimeOffset? Created { get; set; }
+        public bool? IsListed { get; set; }
         public string SemVerType { get; set; }
 
         public static string GetPartitionKey(string id)

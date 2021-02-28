@@ -8,12 +8,12 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
 {
     public class LoadPackageVersionDriver : ICatalogLeafScanBatchDriver
     {
-        private readonly PackageVersionStorage _storage;
+        private readonly PackageVersionStorageService _storage;
         private readonly LatestLeafStorageService<PackageVersionEntity> _storageService;
         private readonly ILogger<LoadPackageVersionDriver> _logger;
 
         public LoadPackageVersionDriver(
-            PackageVersionStorage storage,
+            PackageVersionStorageService storage,
             LatestLeafStorageService<PackageVersionEntity> storageService,
             ILogger<LoadPackageVersionDriver> logger)
         {
@@ -24,7 +24,7 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
 
         public async Task InitializeAsync(CatalogIndexScan indexScan)
         {
-            await _storage.Table.CreateIfNotExistsAsync(retry: true);
+            await _storage.InitializeAsync();
         }
 
         public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)

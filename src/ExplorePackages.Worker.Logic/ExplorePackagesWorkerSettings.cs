@@ -32,6 +32,8 @@
             PackageDownloadsContainerName = "packagedownloads";
             PackageOwnersContainerName = "packageowners";
             PackageArchiveEntryContainerName = "packagearchiveentries";
+            PackageVersionTableName = "packageversions";
+            PackageVersionContainerName = "packageversions";
         }
 
         public bool UseBulkEnqueueStrategy { get; set; }
@@ -53,7 +55,6 @@
         public object CsvRecordTableName { get; set; }
 
         public string LatestPackageLeafTableName { get; set; }
-        public string PackageVersionTableName { get; set; }
         public string PackageAssetContainerName { get; set; }
         public string PackageAssemblyContainerName { get; set; }
         public string PackageManifestContainerName { get; set; }
@@ -63,5 +64,7 @@
         public string PackageDownloadsContainerName { get; set; }
         public string PackageOwnersContainerName { get; set; }
         public string PackageArchiveEntryContainerName { get; set; }
+        public string PackageVersionTableName { get; set; }
+        public string PackageVersionContainerName { get; set; }
     }
 }
