@@ -2,7 +2,7 @@
 {
     public enum PackageArchiveEntryResultType
     {
-        AvailableItems,
+        AvailableEntries,
         Deleted
     }
 }

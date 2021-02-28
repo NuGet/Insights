@@ -69,14 +69,15 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
                 {
                     var path = entry.GetName();
 
-                    items.Add(new PackageArchiveEntry(scanId, scanTimestamp, leaf, PackageArchiveEntryResultType.AvailableItems)
+                    items.Add(new PackageArchiveEntry(scanId, scanTimestamp, leaf, PackageArchiveEntryResultType.AvailableEntries)
                     {
+                        SequenceNumber = i++,
+
                         Path = path,
                         FileName = Path.GetFileName(path),
                         FileExtension = Path.GetExtension(path),
                         TopLevelFolder = PathUtility.GetTopLevelFolder(path),
 
-                        SequenceNumber = i++,
                         UncompressedSize = entry.UncompressedSize,
                         Crc32 = entry.Crc32,
                     });

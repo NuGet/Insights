@@ -26,12 +26,13 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
 
         public PackageArchiveEntryResultType ResultType { get; set; }
 
+        public int SequenceNumber { get; set; }
+
         public string Path { get; set; }
         public string FileName { get; set; }
         public string FileExtension { get; set; }
         public string TopLevelFolder { get; set; }
 
-        public int SequenceNumber { get; set; }
         public long UncompressedSize { get; set; }
         public long Crc32 { get; set; }
     }

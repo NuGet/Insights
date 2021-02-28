@@ -22,11 +22,11 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
         CatalogCommitTimestamp: datetime,
         Created: datetime,
         ResultType: string,
+        SequenceNumber: int,
         Path: string,
         FileName: string,
         FileExtension: string,
         TopLevelFolder: string,
-        SequenceNumber: int,
         UncompressedSize: long,
         Crc32: long
     );
@@ -57,11 +57,11 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
         '{"Column":"CatalogCommitTimestamp","DataType":"datetime","Properties":{"Ordinal":6}},'
         '{"Column":"Created","DataType":"datetime","Properties":{"Ordinal":7}},'
         '{"Column":"ResultType","DataType":"string","Properties":{"Ordinal":8}},'
-        '{"Column":"Path","DataType":"string","Properties":{"Ordinal":9}},'
-        '{"Column":"FileName","DataType":"string","Properties":{"Ordinal":10}},'
-        '{"Column":"FileExtension","DataType":"string","Properties":{"Ordinal":11}},'
-        '{"Column":"TopLevelFolder","DataType":"string","Properties":{"Ordinal":12}},'
-        '{"Column":"SequenceNumber","DataType":"int","Properties":{"Ordinal":13}},'
+        '{"Column":"SequenceNumber","DataType":"int","Properties":{"Ordinal":9}},'
+        '{"Column":"Path","DataType":"string","Properties":{"Ordinal":10}},'
+        '{"Column":"FileName","DataType":"string","Properties":{"Ordinal":11}},'
+        '{"Column":"FileExtension","DataType":"string","Properties":{"Ordinal":12}},'
+        '{"Column":"TopLevelFolder","DataType":"string","Properties":{"Ordinal":13}},'
         '{"Column":"UncompressedSize","DataType":"long","Properties":{"Ordinal":14}},'
         '{"Column":"Crc32","DataType":"long","Properties":{"Ordinal":15}}'
     ']'
@@ -73,7 +73,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
 
         public void WriteHeader(TextWriter writer)
         {
-            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Path,FileName,FileExtension,TopLevelFolder,SequenceNumber,UncompressedSize,Crc32");
+            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,SequenceNumber,Path,FileName,FileExtension,TopLevelFolder,UncompressedSize,Crc32");
         }
 
         public void Write(List<string> fields)
@@ -87,11 +87,11 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
             fields.Add(CsvUtility.FormatDateTimeOffset(CatalogCommitTimestamp));
             fields.Add(CsvUtility.FormatDateTimeOffset(Created));
             fields.Add(ResultType.ToString());
+            fields.Add(SequenceNumber.ToString());
             fields.Add(Path);
             fields.Add(FileName);
             fields.Add(FileExtension);
             fields.Add(TopLevelFolder);
-            fields.Add(SequenceNumber.ToString());
             fields.Add(UncompressedSize.ToString());
             fields.Add(Crc32.ToString());
         }
@@ -116,6 +116,8 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
             writer.Write(',');
             writer.Write(ResultType);
             writer.Write(',');
+            writer.Write(SequenceNumber);
+            writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, Path);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, FileName);
@@ -123,8 +125,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
             CsvUtility.WriteWithQuotes(writer, FileExtension);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, TopLevelFolder);
-            writer.Write(',');
-            writer.Write(SequenceNumber);
             writer.Write(',');
             writer.Write(UncompressedSize);
             writer.Write(',');
@@ -152,6 +152,8 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
             await writer.WriteAsync(',');
             await writer.WriteAsync(ResultType.ToString());
             await writer.WriteAsync(',');
+            await writer.WriteAsync(SequenceNumber.ToString());
+            await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, Path);
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, FileName);
@@ -159,8 +161,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
             await CsvUtility.WriteWithQuotesAsync(writer, FileExtension);
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, TopLevelFolder);
-            await writer.WriteAsync(',');
-            await writer.WriteAsync(SequenceNumber.ToString());
             await writer.WriteAsync(',');
             await writer.WriteAsync(UncompressedSize.ToString());
             await writer.WriteAsync(',');
@@ -181,11 +181,11 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
                 CatalogCommitTimestamp = CsvUtility.ParseDateTimeOffset(getNextField()),
                 Created = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
                 ResultType = Enum.Parse<PackageArchiveEntryResultType>(getNextField()),
+                SequenceNumber = int.Parse(getNextField()),
                 Path = getNextField(),
                 FileName = getNextField(),
                 FileExtension = getNextField(),
                 TopLevelFolder = getNextField(),
-                SequenceNumber = int.Parse(getNextField()),
                 UncompressedSize = long.Parse(getNextField()),
                 Crc32 = long.Parse(getNextField()),
             };
