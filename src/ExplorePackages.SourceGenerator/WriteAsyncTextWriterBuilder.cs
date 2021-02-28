@@ -54,7 +54,7 @@ namespace Knapcode.ExplorePackages
                 default:
                     if (symbol.Type.TypeKind == TypeKind.Enum || PropertyHelper.IsNullableEnum(nullable, symbol))
                     {
-                        _builder.AppendFormat("await writer.WriteAsync({0}.ToString());", symbol.Name);
+                        _builder.AppendFormat("await CsvUtility.WriteWithQuotesAsync(writer, {0}.ToString());", symbol.Name);
                     }
                     else
                     {

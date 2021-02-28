@@ -52,7 +52,7 @@ namespace Knapcode.ExplorePackages
                 default:
                     if (symbol.Type.TypeKind == TypeKind.Enum || PropertyHelper.IsNullableEnum(nullable, symbol))
                     {
-                        _builder.AppendFormat("writer.Write({0});", symbol.Name);
+                        _builder.AppendFormat("CsvUtility.WriteWithQuotes(writer, {0}.ToString());", symbol.Name);
                     }
                     else
                     {
