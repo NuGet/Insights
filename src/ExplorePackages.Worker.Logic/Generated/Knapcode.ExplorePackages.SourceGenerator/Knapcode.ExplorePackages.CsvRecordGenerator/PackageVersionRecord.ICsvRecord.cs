@@ -23,7 +23,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
         Created: datetime,
         ResultType: string,
         IsListed: bool,
-        SemVer2: bool,
+        IsSemVer2: bool,
         SemVerType: string,
         IsLatest: bool,
         IsLatestStable: bool,
@@ -58,7 +58,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
         '{"Column":"Created","DataType":"datetime","Properties":{"Ordinal":7}},'
         '{"Column":"ResultType","DataType":"string","Properties":{"Ordinal":8}},'
         '{"Column":"IsListed","DataType":"bool","Properties":{"Ordinal":9}},'
-        '{"Column":"SemVer2","DataType":"bool","Properties":{"Ordinal":10}},'
+        '{"Column":"IsSemVer2","DataType":"bool","Properties":{"Ordinal":10}},'
         '{"Column":"SemVerType","DataType":"string","Properties":{"Ordinal":11}},'
         '{"Column":"IsLatest","DataType":"bool","Properties":{"Ordinal":12}},'
         '{"Column":"IsLatestStable","DataType":"bool","Properties":{"Ordinal":13}},'
@@ -73,7 +73,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
 
         public void WriteHeader(TextWriter writer)
         {
-            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,IsListed,SemVer2,SemVerType,IsLatest,IsLatestStable,IsLatestSemVer2,IsLatestStableSemVer2");
+            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,IsListed,IsSemVer2,SemVerType,IsLatest,IsLatestStable,IsLatestSemVer2,IsLatestStableSemVer2");
         }
 
         public void Write(List<string> fields)
@@ -88,7 +88,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
             fields.Add(CsvUtility.FormatDateTimeOffset(Created));
             fields.Add(ResultType.ToString());
             fields.Add(CsvUtility.FormatBool(IsListed));
-            fields.Add(CsvUtility.FormatBool(SemVer2));
+            fields.Add(CsvUtility.FormatBool(IsSemVer2));
             fields.Add(SemVerType.ToString());
             fields.Add(CsvUtility.FormatBool(IsLatest));
             fields.Add(CsvUtility.FormatBool(IsLatestStable));
@@ -114,13 +114,13 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
             writer.Write(',');
             writer.Write(CsvUtility.FormatDateTimeOffset(Created));
             writer.Write(',');
-            writer.Write(ResultType);
+            CsvUtility.WriteWithQuotes(writer, ResultType.ToString());
             writer.Write(',');
             writer.Write(CsvUtility.FormatBool(IsListed));
             writer.Write(',');
-            writer.Write(CsvUtility.FormatBool(SemVer2));
+            writer.Write(CsvUtility.FormatBool(IsSemVer2));
             writer.Write(',');
-            writer.Write(SemVerType);
+            CsvUtility.WriteWithQuotes(writer, SemVerType.ToString());
             writer.Write(',');
             writer.Write(CsvUtility.FormatBool(IsLatest));
             writer.Write(',');
@@ -150,13 +150,13 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
             await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(Created));
             await writer.WriteAsync(',');
-            await writer.WriteAsync(ResultType.ToString());
+            await CsvUtility.WriteWithQuotesAsync(writer, ResultType.ToString());
             await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatBool(IsListed));
             await writer.WriteAsync(',');
-            await writer.WriteAsync(CsvUtility.FormatBool(SemVer2));
+            await writer.WriteAsync(CsvUtility.FormatBool(IsSemVer2));
             await writer.WriteAsync(',');
-            await writer.WriteAsync(SemVerType.ToString());
+            await CsvUtility.WriteWithQuotesAsync(writer, SemVerType.ToString());
             await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatBool(IsLatest));
             await writer.WriteAsync(',');
@@ -182,7 +182,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
                 Created = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
                 ResultType = Enum.Parse<PackageVersionResultType>(getNextField()),
                 IsListed = CsvUtility.ParseNullable(getNextField(), bool.Parse),
-                SemVer2 = CsvUtility.ParseNullable(getNextField(), bool.Parse),
+                IsSemVer2 = CsvUtility.ParseNullable(getNextField(), bool.Parse),
                 SemVerType = CsvUtility.ParseNullable(getNextField(), Enum.Parse<Knapcode.ExplorePackages.SemVerType>),
                 IsLatest = bool.Parse(getNextField()),
                 IsLatestStable = bool.Parse(getNextField()),

@@ -89,7 +89,7 @@ namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, Version);
             writer.Write(',');
-            writer.Write(Type);
+            CsvUtility.WriteWithQuotes(writer, Type.ToString());
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, Url);
             writer.Write(',');
@@ -111,7 +111,7 @@ namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, Version);
             await writer.WriteAsync(',');
-            await writer.WriteAsync(Type.ToString());
+            await CsvUtility.WriteWithQuotesAsync(writer, Type.ToString());
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, Url);
             await writer.WriteAsync(',');

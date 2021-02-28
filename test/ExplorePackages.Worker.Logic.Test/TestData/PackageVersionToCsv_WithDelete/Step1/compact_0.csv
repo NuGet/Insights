@@ -1,0 +1,2 @@
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,IsListed,IsSemVer2,SemVerType,IsLatest,IsLatestStable,IsLatestSemVer2,IsLatestStableSemVer2
+,,nut.mediatr.behaviors.fluentvalidation,nut.mediatr.behaviors.fluentvalidation/0.0.0-preview.0.44,Nut.MediatR.Behaviors.FluentValidation,0.0.0-preview.0.44,2020-12-20T02:37:52.9649363+00:00,2020-12-20T02:35:16.7330000+00:00,Available,true,true,VersionHasPrereleaseDots,false,false,true,false

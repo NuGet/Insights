@@ -60,7 +60,8 @@ namespace Knapcode.ExplorePackages.Worker
             var driverTypes = Enum
                 .GetValues(typeof(CatalogScanDriverType))
                 .Cast<CatalogScanDriverType>()
-                .Where(x => x != CatalogScanDriverType.Internal_FindLatestCatalogLeafScan)
+                .Where(x => x != CatalogScanDriverType.Internal_FindLatestCatalogLeafScan
+                         && x != CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId)
                 .ToList();
             foreach (var type in driverTypes)
             {
@@ -82,6 +83,10 @@ namespace Knapcode.ExplorePackages.Worker
             var packageAssemblyToCsv = await CatalogScanService.UpdateAsync(CatalogScanDriverType.PackageAssemblyToCsv, max1, onlyLatestLeaves: null);
             await UpdateAsync(packageAssemblyToCsv.Scan);
             var startingNupkgRequestCount = GetNupkgRequestCount();
+
+            // Load the versions
+            var loadPackageVersion = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageVersion, max1, onlyLatestLeaves: null);
+            await UpdateAsync(loadPackageVersion.Scan);
 
             // Start all of the scans
             var startedScans = new List<CatalogIndexScan>();

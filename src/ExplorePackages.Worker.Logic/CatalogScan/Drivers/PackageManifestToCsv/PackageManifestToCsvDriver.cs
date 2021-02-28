@@ -170,6 +170,11 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             return JsonConvert.SerializeObject(input, JsonSerializerSettings);
         }
 
+        public string GetBucketKey(CatalogLeafItem item)
+        {
+            return PackageRecord.GetBucketKey(item);
+        }
+
         private static readonly JsonSerializerSettings JsonSerializerSettings = new JsonSerializerSettings
         {
             Converters =

@@ -74,6 +74,7 @@ namespace Knapcode.ExplorePackages.Worker
                         await _storageService.InitializeLeafScanTableAsync(scan.StorageSuffix);
                         break;
                     case CatalogIndexScanResult.ExpandLatestLeaves:
+                    case CatalogIndexScanResult.ExpandLatestLeavesPerId:
                         await _storageService.InitializeLeafScanTableAsync(scan.StorageSuffix);
                         break;
                     case CatalogIndexScanResult.Processed:
@@ -152,7 +153,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         private async Task ExpandLatestLeavesAsync(CatalogIndexScanMessage message, CatalogIndexScan scan, ICatalogScanDriver driver, bool perId)
         {
-            var findLatestLeafScanId = scan.ScanId + "-flcls";
+            var findLatestLeafScanId = scan.ScanId + "-fl";
             var taskStateKey = new TaskStateKey(scan.StorageSuffix, $"{scan.ScanId}-{TableScanDriverType.EnqueueCatalogLeafScans}", "start");
 
             await HandleInitializedStateAsync(scan, nextState: CatalogIndexScanState.FindingLatest);
@@ -160,14 +161,28 @@ namespace Knapcode.ExplorePackages.Worker
             // WaitingOnDependency: start and wait on a "find latest leaves" scan for the range of this parent scan
             if (scan.ParsedState == CatalogIndexScanState.FindingLatest)
             {
-                var findLatestLeavesScan = await _catalogScanService.GetOrStartFindLatestCatalogLeafScanAsync(
-                    scanId: findLatestLeafScanId,
-                    storageSuffix: scan.StorageSuffix + "flcls",
-                    parentScanMessage: message,
-                    scan.Min.Value,
-                    scan.Max.Value);
+                var storageSuffix = scan.StorageSuffix + "fl";
+                CatalogIndexScan findLatestScan;
+                if (perId)
+                {
+                    findLatestScan = await _catalogScanService.GetOrStartFindLatestCatalogLeafScanPerIdAsync(
+                        scanId: findLatestLeafScanId,
+                        storageSuffix,
+                        parentScanMessage: message,
+                        scan.Min.Value,
+                        scan.Max.Value);
+                }
+                else
+                {
+                    findLatestScan = await _catalogScanService.GetOrStartFindLatestCatalogLeafScanAsync(
+                        scanId: findLatestLeafScanId,
+                        storageSuffix,
+                        parentScanMessage: message,
+                        scan.Min.Value,
+                        scan.Max.Value);
+                }
 
-                if (findLatestLeavesScan.ParsedState != CatalogIndexScanState.Complete)
+                if (findLatestScan.ParsedState != CatalogIndexScanState.Complete)
                 {
                     _logger.LogInformation("Still finding latest catalog leaf scans.");
                     message.AttemptCount++;
@@ -205,6 +220,12 @@ namespace Knapcode.ExplorePackages.Worker
                 var taskState = await _taskStateStorageService.GetOrAddAsync(taskStateKey);
                 if (taskState != null)
                 {
+                    // NOTE: this table scan does not strictly need to be only on partition key. Since we are only
+                    // writing a single leaf scan per package ID (where leaf scan partition key is scoped at the package
+                    // ID level), we can simply process all leaf scans. However this is a defensive approach to ensure
+                    // to ensure the preceding logic is working as expected.
+                    //
+                    // Also, I implemented this partition key scanning logic and I want to leverage it here ^_^
                     await _tableScanService.StartEnqueueCatalogLeafScansAsync(
                         taskStateKey,
                         _storageService.GetLeafScanTable(scan.StorageSuffix).Name,

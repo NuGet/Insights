@@ -292,5 +292,10 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
                 assembly.PublicKeyToken = publicKeyTokenBytes.ToHex();
             }
         }
+
+        public string GetBucketKey(CatalogLeafItem item)
+        {
+            return PackageRecord.GetBucketKey(item);
+        }
     }
 }

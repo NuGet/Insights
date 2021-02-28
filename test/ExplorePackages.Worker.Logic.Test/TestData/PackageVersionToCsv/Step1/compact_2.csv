@@ -1,0 +1,5 @@
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,IsListed,IsSemVer2,SemVerType,IsLatest,IsLatestStable,IsLatestSemVer2,IsLatestStableSemVer2
+,,danilovsoft.microorm,danilovsoft.microorm/3.3.4,DanilovSoft.MicroORM,3.3.4,2020-11-27T19:34:44.6917011+00:00,2020-11-27T19:33:08.0230000+00:00,Available,true,false,SemVer1,true,true,true,true
+,,eto.platform.mac64,eto.platform.mac64/2.5.8,Eto.Platform.Mac64,2.5.8,2020-11-27T19:34:44.6917011+00:00,2020-11-27T19:32:28.1370000+00:00,Available,true,false,SemVer1,true,true,true,true
+,,eto.platform.wpf,eto.platform.wpf/2.5.8,Eto.Platform.Wpf,2.5.8,2020-11-27T19:34:44.6917011+00:00,2020-11-27T19:32:26.3670000+00:00,Available,true,false,SemVer1,true,true,true,true
+,,eto.serialization.xaml,eto.serialization.xaml/2.5.8,Eto.Serialization.Xaml,2.5.8,2020-11-27T19:34:44.6917011+00:00,2020-11-27T19:32:26.7430000+00:00,Available,true,false,SemVer1,true,true,true,true

@@ -28,7 +28,8 @@ namespace Knapcode.ExplorePackages.Worker
         {
             (var rowKeyToItem, var rowKeyToETag) = await GetExistingsRowsAsync(packageId, items, storage);
 
-            // Add the row keys that remain. These are the versions that are not in Table Storage.
+            // Add the row keys that remain. These are the versions that are not in Table Storage or are newer than the
+            // commit timestamp in Table Storage.
             var rowKeysToUpsert = new List<string>();
             rowKeysToUpsert.AddRange(rowKeyToItem.Keys);
             rowKeysToUpsert.Sort(StringComparer.Ordinal);

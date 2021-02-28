@@ -187,7 +187,8 @@ namespace Knapcode.ExplorePackages.Worker
         public static IEnumerable<object[]> StartableTypes => Enum
             .GetValues(typeof(CatalogScanDriverType))
             .Cast<CatalogScanDriverType>()
-            .Where(x => x != CatalogScanDriverType.Internal_FindLatestCatalogLeafScan) // This type is not start directly. It is used by a catalog scan internally.
+            .Where(x => x != CatalogScanDriverType.Internal_FindLatestCatalogLeafScan
+                     && x != CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId) // These type is not start directly. They are used by a catalog scan internally.
             .Select(x => new object[] { x });
 
         private async Task SetDependencyCursorAsync(CatalogScanDriverType type, DateTimeOffset min)
@@ -319,6 +320,18 @@ namespace Knapcode.ExplorePackages.Worker
                     SetDependencyCursorAsync = async (self, x) =>
                     {
                         await self.SetCursorAsync(CatalogScanDriverType.LoadPackageManifest, x);
+                    },
+                }
+            },
+
+            {
+                CatalogScanDriverType.PackageVersionToCsv,
+                new DriverInfo
+                {
+                    DefaultMin = CatalogClient.NuGetOrgMinDeleted,
+                    SetDependencyCursorAsync = async (self, x) =>
+                    {
+                        await self.SetCursorAsync(CatalogScanDriverType.LoadPackageVersion, x);
                     },
                 }
             },

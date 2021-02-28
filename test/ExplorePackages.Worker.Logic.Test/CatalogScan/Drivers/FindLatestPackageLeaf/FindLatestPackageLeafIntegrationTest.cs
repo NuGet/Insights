@@ -43,7 +43,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf
                 await UpdateAsync(max1);
 
                 // Assert
-                await VerifyOutputAsync(FindLatestPackageLeavesDir);
+                await AssertOutputAsync(FindLatestPackageLeavesDir);
                 AssertOnlyInfoLogsOrLess();
             }
         }
@@ -71,7 +71,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf
                 await UpdateAsync(max1);
 
                 // Assert
-                await VerifyOutputAsync(FindLatestPackageLeaves_WithDuplicatesDir);
+                await AssertOutputAsync(FindLatestPackageLeaves_WithDuplicatesDir);
                 AssertOnlyInfoLogsOrLess();
             }
         }
@@ -81,13 +81,13 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf
             yield return Options.Value.LatestPackageLeafTableName;
         }
 
-        private async Task VerifyOutputAsync(string dir)
+        private async Task AssertOutputAsync(string dir)
         {
             var table = ServiceClientFactory
                 .GetStorageAccount()
                 .CreateCloudTableClient()
                 .GetTableReference(Options.Value.LatestPackageLeafTableName);
-            await VerifyEntityOutputAsync<LatestPackageLeaf>(table, dir);
+            await AssertEntityOutputAsync<LatestPackageLeaf>(table, dir);
         }
     }
 }

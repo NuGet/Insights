@@ -62,7 +62,7 @@ namespace Knapcode.ExplorePackages.Worker
                 return result;
             }
 
-            var bucketKey = $"{leafScan.PackageId}/{NuGetVersion.Parse(leafScan.PackageVersion).ToNormalizedString()}".ToLowerInvariant();
+            var bucketKey = _driver.GetBucketKey(leafItem);
             var parameters = (CatalogLeafToCsvParameters)_schemaSerializer.Deserialize(leafScan.DriverParameters).Data;
             await _adapter.AppendAsync(leafScan.StorageSuffix, parameters.BucketCount, bucketKey, result.Value);
             return result;

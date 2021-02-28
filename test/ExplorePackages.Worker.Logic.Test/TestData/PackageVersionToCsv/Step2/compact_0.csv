@@ -1,0 +1,7 @@
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,IsListed,IsSemVer2,SemVerType,IsLatest,IsLatestStable,IsLatestSemVer2,IsLatestStableSemVer2
+,,archimedes.library,archimedes.library/1.0.245,Archimedes.Library,1.0.245,2020-11-27T19:35:06.0046046+00:00,2020-11-27T19:33:25.6870000+00:00,Available,true,false,SemVer1,true,true,true,true
+,,dnt.deskly,dnt.deskly/1.1.0,DNT.Deskly,1.1.0,2020-11-27T19:36:50.4909042+00:00,2020-11-27T19:34:17.1830000+00:00,Available,true,false,SemVer1,true,true,true,true
+,,dnt.deskly.efcore,dnt.deskly.efcore/1.1.0,DNT.Deskly.EFCore,1.1.0,2020-11-27T19:36:50.4909042+00:00,2020-11-27T19:34:45.3870000+00:00,Available,true,false,SemVer1,true,true,true,true
+,,eto.platform.gtk,eto.platform.gtk/2.5.8,Eto.Platform.Gtk,2.5.8,2020-11-27T19:34:44.6917011+00:00,2020-11-27T19:32:27.1570000+00:00,Available,true,false,SemVer1,true,true,true,true
+,,eto.platform.gtk2,eto.platform.gtk2/2.5.8,Eto.Platform.Gtk2,2.5.8,2020-11-27T19:34:44.6917011+00:00,2020-11-27T19:32:29.1400000+00:00,Available,true,false,SemVer1,true,true,true,true
+,,eto.platform.gtk3,eto.platform.gtk3/2.5.8,Eto.Platform.Gtk3,2.5.8,2020-11-27T19:34:44.6917011+00:00,2020-11-27T19:32:30.2600000+00:00,Available,true,false,SemVer1,true,true,true,true

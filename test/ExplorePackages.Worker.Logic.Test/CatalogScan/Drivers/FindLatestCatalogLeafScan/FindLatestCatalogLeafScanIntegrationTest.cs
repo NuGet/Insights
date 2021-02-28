@@ -45,7 +45,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
                 await UpdateAsync(min0, max1);
 
                 // Assert
-                await VerifyOutputAsync(FindLatestCatalogLeafScanDir);
+                await AssertOutputAsync(FindLatestCatalogLeafScanDir);
                 AssertOnlyInfoLogsOrLess();
             }
         }
@@ -72,7 +72,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
                 await UpdateAsync(min0, max1);
 
                 // Assert
-                await VerifyOutputAsync(FindLatestCatalogLeafScan_WithDuplicatesDir);
+                await AssertOutputAsync(FindLatestCatalogLeafScan_WithDuplicatesDir);
                 AssertOnlyInfoLogsOrLess();
             }
         }
@@ -119,9 +119,9 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
             await UpdateAsync(scan);
         }
 
-        private async Task VerifyOutputAsync(string dir)
+        private async Task AssertOutputAsync(string dir)
         {
-            await VerifyEntityOutputAsync<CatalogLeafScan>(
+            await AssertEntityOutputAsync<CatalogLeafScan>(
                 GetLeafScanTable(),
                 dir,
                 cleanEntity: x => x.Created = DateTimeOffset.Parse("2020-01-03T00:00:00Z"));

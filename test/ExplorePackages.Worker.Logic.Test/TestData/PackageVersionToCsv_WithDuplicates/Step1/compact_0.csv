@@ -1,0 +1,10 @@
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,IsListed,IsSemVer2,SemVerType,IsLatest,IsLatestStable,IsLatestSemVer2,IsLatestStableSemVer2
+,,akinzekeel.blazorgrid.abstractions,akinzekeel.blazorgrid.abstractions/0.9.1-beta,Akinzekeel.BlazorGrid.Abstractions,0.9.1-beta,2020-11-27T22:09:02.7017175+00:00,2020-11-27T22:07:11.7570000+00:00,Available,true,false,SemVer1,true,false,true,false
+,,ambientservices,ambientservices/3.1.49,AmbientServices,3.1.49,2020-11-27T22:01:44.9504650+00:00,2020-11-27T21:59:41.5900000+00:00,Available,true,false,SemVer1,true,true,true,true
+,,aptacode.pathfinder,aptacode.pathfinder/1.0.4-ci-20201127-220435,Aptacode.PathFinder,1.0.4-CI-20201127-220435,2020-11-27T22:07:03.4184021+00:00,2020-11-27T22:04:46.4130000+00:00,Available,true,false,SemVer1,true,false,true,false
+,,dnt.deskly.efcore.services,dnt.deskly.efcore.services/1.1.3,DNT.Deskly.EFCore.Services,1.1.3,2020-11-27T22:01:44.9504650+00:00,2020-11-27T21:59:16.3970000+00:00,Available,true,false,SemVer1,true,true,true,true
+,,dogged,dogged/0.1.0,Dogged,0.1.0,2020-11-27T22:09:56.3587144+00:00,2020-11-27T22:07:50.2730000+00:00,Available,true,false,SemVer1,true,true,true,true
+,,dogged.native,dogged.native/0.1.0,Dogged.Native,0.1.0,2020-11-27T22:09:02.7017175+00:00,2020-11-27T22:07:24.3000000+00:00,Available,true,false,SemVer1,true,true,true,true
+,,esolutions.alexandria.logic,esolutions.alexandria.logic/1.0.0,ESolutions.Alexandria.Logic,1.0.0,2020-11-27T22:00:05.4957339+00:00,2020-11-27T21:57:39.6970000+00:00,Available,true,false,SemVer1,true,true,true,true
+,,gosms.ge-sms-api,gosms.ge-sms-api/1.0.1,Gosms.ge-sms-api,1.0.1,2020-11-27T22:04:27.1811992+00:00,2019-06-18T16:55:03.9600000+00:00,Available,true,false,SemVer1,true,true,true,true
+,,p6m7g8.p6namer,p6m7g8.p6namer/0.2.1,P6m7g8.P6Namer,0.2.1,2020-11-27T22:00:54.8558302+00:00,2020-11-27T21:58:15.2630000+00:00,Available,true,false,SemVer1,true,true,true,true

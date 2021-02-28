@@ -41,13 +41,13 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageArchive
                 await UpdateAsync(max1);
 
                 // Assert
-                await VerifyOutputAsync(LoadPackageArchiveDir, Step1);
+                await AssertOutputAsync(LoadPackageArchiveDir, Step1);
 
                 // Act
                 await UpdateAsync(max2);
 
                 // Assert
-                await VerifyOutputAsync(LoadPackageArchiveDir, Step2);
+                await AssertOutputAsync(LoadPackageArchiveDir, Step2);
                 AssertOnlyInfoLogsOrLess();
             }
         }
@@ -94,13 +94,13 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageArchive
                 await UpdateAsync(max1);
 
                 // Assert
-                await VerifyOutputAsync(LoadPackageArchive_WithDeleteDir, Step1);
+                await AssertOutputAsync(LoadPackageArchive_WithDeleteDir, Step1);
 
                 // Act
                 await UpdateAsync(max2);
 
                 // Assert
-                await VerifyOutputAsync(LoadPackageArchive_WithDeleteDir, Step2);
+                await AssertOutputAsync(LoadPackageArchive_WithDeleteDir, Step2);
                 AssertOnlyInfoLogsOrLess();
             }
         }
@@ -118,9 +118,9 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageArchive
 
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.LoadPackageArchive;
 
-        private async Task VerifyOutputAsync(string testName, string stepName)
+        private async Task AssertOutputAsync(string testName, string stepName)
         {
-            await VerifyWideEntityOutputAsync(
+            await AssertWideEntityOutputAsync(
                 Options.Value.PackageArchiveTableName,
                 Path.Combine(testName, stepName),
                 stream =>

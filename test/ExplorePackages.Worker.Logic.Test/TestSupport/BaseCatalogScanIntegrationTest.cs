@@ -22,6 +22,7 @@ namespace Knapcode.ExplorePackages.Worker
         protected abstract CatalogScanDriverType DriverType { get; }
 
         public virtual bool OnlyLatestLeaves => false;
+        public virtual bool OnlyLatestLeavesPerId => false;
 
         protected Task SetCursorAsync(DateTimeOffset min)
         {
@@ -84,7 +85,7 @@ namespace Knapcode.ExplorePackages.Worker
                 .ToDictionary(x => x.Key, x => x.ToList()));
         }
 
-        protected async Task VerifyEntityOutputAsync<T>(CloudTable table, string dir, Action<T> cleanEntity = null) where T : ITableEntity, new()
+        protected async Task AssertEntityOutputAsync<T>(CloudTable table, string dir, Action<T> cleanEntity = null) where T : ITableEntity, new()
         {
             var entities = await table.GetEntitiesAsync<T>(TelemetryClient.StartQueryLoopMetrics());
 
@@ -110,7 +111,7 @@ namespace Knapcode.ExplorePackages.Worker
             await AssertExpectedStorageAsync();
         }
 
-        protected async Task VerifyWideEntityOutputAsync<T>(string tableName, string dir, Func<Stream, T> deserializeEntity)
+        protected async Task AssertWideEntityOutputAsync<T>(string tableName, string dir, Func<Stream, T> deserializeEntity)
         {
             var service = Host.Services.GetRequiredService<WideEntityService>();
 
@@ -198,6 +199,11 @@ namespace Knapcode.ExplorePackages.Worker
             if (OnlyLatestLeaves)
             {
                 yield return $"Start-CatalogScan-{CatalogScanDriverType.Internal_FindLatestCatalogLeafScan}";
+            }
+
+            if (OnlyLatestLeavesPerId)
+            {
+                yield return $"Start-CatalogScan-{CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId}";
             }
         }
 

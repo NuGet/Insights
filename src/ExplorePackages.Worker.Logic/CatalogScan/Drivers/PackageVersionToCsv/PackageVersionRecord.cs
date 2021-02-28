@@ -20,13 +20,14 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
         {
             ResultType = entity.ParsedLeafType == CatalogLeafType.PackageDelete ? PackageVersionResultType.Deleted : PackageVersionResultType.Available;
             IsListed = entity.IsListed;
-            SemVer2 = entity.ParsedSemVerType.HasValue ? entity.ParsedSemVerType.Value.IsSemVer2() : null;
+            IsSemVer2 = entity.ParsedSemVerType.HasValue ? entity.ParsedSemVerType.Value.IsSemVer2() : null;
+            SemVerType = entity.ParsedSemVerType;
         }
 
         public PackageVersionResultType ResultType { get; set; }
 
         public bool? IsListed { get; set; }
-        public bool? SemVer2 { get; set; }
+        public bool? IsSemVer2 { get; set; }
         public SemVerType? SemVerType { get; set; }
 
         public bool IsLatest { get; set; }

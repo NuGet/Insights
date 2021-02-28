@@ -190,5 +190,10 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
                 ex.Message.StartsWith("Invalid portable frameworks '")
                 && ex.Message.EndsWith("'. A hyphen may not be in any of the portable framework names.");
         }
+
+        public string GetBucketKey(CatalogLeafItem item)
+        {
+            return PackageRecord.GetBucketKey(item);
+        }
     }
 }

@@ -171,6 +171,11 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
             };
         }
 
+        public string GetBucketKey(CatalogLeafItem item)
+        {
+            return PackageRecord.GetBucketKey(item);
+        }
+
         private record SignatureInfo
         {
             public bool TimestampHasASN1Error { get; init; }

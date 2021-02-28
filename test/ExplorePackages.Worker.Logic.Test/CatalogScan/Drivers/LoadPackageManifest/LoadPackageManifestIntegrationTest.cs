@@ -41,13 +41,13 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageManifest
                 await UpdateAsync(max1);
 
                 // Assert
-                await VerifyOutputAsync(LoadPackageManifestDir, Step1);
+                await AssertOutputAsync(LoadPackageManifestDir, Step1);
 
                 // Act
                 await UpdateAsync(max2);
 
                 // Assert
-                await VerifyOutputAsync(LoadPackageManifestDir, Step2);
+                await AssertOutputAsync(LoadPackageManifestDir, Step2);
                 AssertOnlyInfoLogsOrLess();
             }
         }
@@ -94,13 +94,13 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageManifest
                 await UpdateAsync(max1);
 
                 // Assert
-                await VerifyOutputAsync(LoadPackageManifest_WithDeleteDir, Step1);
+                await AssertOutputAsync(LoadPackageManifest_WithDeleteDir, Step1);
 
                 // Act
                 await UpdateAsync(max2);
 
                 // Assert
-                await VerifyOutputAsync(LoadPackageManifest_WithDeleteDir, Step2);
+                await AssertOutputAsync(LoadPackageManifest_WithDeleteDir, Step2);
                 AssertOnlyInfoLogsOrLess();
             }
         }
@@ -118,12 +118,12 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageManifest
 
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.LoadPackageManifest;
 
-        private async Task VerifyOutputAsync(string testName, string stepName)
+        private async Task AssertOutputAsync(string testName, string stepName)
         {
             Assert.Empty(HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.AbsoluteUri.EndsWith(".nupkg")));
             Assert.NotEmpty(HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.AbsoluteUri.EndsWith(".nuspec")));
 
-            await VerifyWideEntityOutputAsync(
+            await AssertWideEntityOutputAsync(
                 Options.Value.PackageManifestTableName,
                 Path.Combine(testName, stepName),
                 stream =>

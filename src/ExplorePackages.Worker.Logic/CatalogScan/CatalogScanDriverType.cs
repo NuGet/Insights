@@ -6,9 +6,17 @@
         /// Implemented by <see cref="FindLatestCatalogLeafScan.LatestCatalogLeafScanStorage"/> and <see cref="FindLatestLeafDriver{T}"/>.
         /// This is a helper catalog scan used by <see cref="CatalogIndexScanMessageProcessor"/> when the driver returns
         /// <see cref="CatalogIndexScanResult.ExpandLatestLeaves"/>. This allows another driver to only process the latest
-        /// catalog leaf per version instead of duplicating effort per version which is inevitable in the NuGet.org catalog.
+        /// catalog leaf per version instead of duplicating effort which is inevitable in the NuGet.org catalog.
         /// </summary>
         Internal_FindLatestCatalogLeafScan,
+
+        /// <summary>
+        /// Implemented by <see cref="FindLatestCatalogLeafScanPerId.LatestCatalogLeafScanPerIdStorage"/> and <see cref="FindLatestLeafDriver{T}"/>.
+        /// This is a helper catalog scan used by <see cref="CatalogIndexScanMessageProcessor"/> when the driver returns
+        /// <see cref="CatalogIndexScanResult.ExpandLatestLeavesPerId"/>. This allows another driver to only process the latest
+        /// catalog leaf per ID instead of duplicating effort which is inevitable in the NuGet.org catalog.
+        /// </summary>
+        Internal_FindLatestCatalogLeafScanPerId,
 
         /// <summary>
         /// Implemented by <see cref="LoadPackageArchive.LoadPackageArchiveDriver"/>. Downloads interesting parts of the .nupkg
@@ -59,6 +67,12 @@
         /// <see cref="NuGet.Packaging.NuspecReader"/> to interpret the data as the NuGet client would.
         /// </summary>
         PackageManifestToCsv,
+
+        /// <summary>
+        /// Implemented by <see cref="PackageVersionToCsv.PackageVersionToCsvDriver"/>. This driver determines the
+        /// latest version per package ID by using the data set up by <see cref="LoadPackageVersion"/>.
+        /// </summary>
+        PackageVersionToCsv,
 
         /// <summary>
         /// Implemented by <see cref="CatalogLeafItemToCsv.CatalogLeafItemToCsvDriver"/>. Reads all catalog leaf items

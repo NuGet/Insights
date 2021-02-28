@@ -1,0 +1,5 @@
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,IsListed,IsSemVer2,SemVerType,IsLatest,IsLatestStable,IsLatestSemVer2,IsLatestStableSemVer2
+,,eto.forms.templates,eto.forms.templates/2.5.8,Eto.Forms.Templates,2.5.8,2020-11-27T19:34:44.6917011+00:00,2020-11-27T19:32:25.9370000+00:00,Available,true,false,SemVer1,true,true,true,true
+,,eto.platform.direct2d,eto.platform.direct2d/2.5.8,Eto.Platform.Direct2D,2.5.8,2020-11-27T19:34:44.6917011+00:00,2020-11-27T19:32:28.4330000+00:00,Available,true,false,SemVer1,true,true,true,true
+,,eto.platform.windows,eto.platform.windows/2.5.8,Eto.Platform.Windows,2.5.8,2020-11-27T19:34:44.6917011+00:00,2020-11-27T19:32:29.8870000+00:00,Available,true,false,SemVer1,true,true,true,true
+,,opheliasuitev2.core.brm.runtime.core,opheliasuitev2.core.brm.runtime.core/2.0.6.13,OpheliaSuiteV2.Core.BRM.Runtime.Core,2.0.6.13,2020-11-27T19:35:25.4893329+00:00,2020-11-27T19:33:42.7570000+00:00,Available,true,false,SemVer1,true,true,true,true

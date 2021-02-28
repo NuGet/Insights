@@ -45,7 +45,7 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
                 await UpdateAsync(max1);
 
                 // Assert
-                await VerifyOutputAsync(LoadPackageVersionDir, Step1);
+                await AssertOutputAsync(LoadPackageVersionDir, Step1);
                 AssertOnlyInfoLogsOrLess();
             }
         }
@@ -74,13 +74,13 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
                 await UpdateAsync(max1);
 
                 // Assert
-                await VerifyOutputAsync(LoadPackageVersion_WithDeleteDir, Step1);
+                await AssertOutputAsync(LoadPackageVersion_WithDeleteDir, Step1);
 
                 // Act
                 await UpdateAsync(max2);
 
                 // Assert
-                await VerifyOutputAsync(LoadPackageVersion_WithDeleteDir, Step2);
+                await AssertOutputAsync(LoadPackageVersion_WithDeleteDir, Step2);
                 AssertOnlyInfoLogsOrLess();
             }
         }
@@ -108,7 +108,7 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
                 await UpdateAsync(max1);
 
                 // Assert
-                await VerifyOutputAsync(LoadPackageVersion_WithDuplicatesDir, Step1);
+                await AssertOutputAsync(LoadPackageVersion_WithDuplicatesDir, Step1);
                 AssertOnlyInfoLogsOrLess();
             }
         }
@@ -118,14 +118,14 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
             yield return Options.Value.PackageVersionTableName;
         }
 
-        private async Task VerifyOutputAsync(string dir, string stepName)
+        private async Task AssertOutputAsync(string dir, string stepName)
         {
             var table = ServiceClientFactory
                 .GetStorageAccount()
                 .CreateCloudTableClient()
                 .GetTableReference(Options.Value.PackageVersionTableName);
 
-            await VerifyEntityOutputAsync<PackageVersionEntity>(table, Path.Combine(dir, stepName));
+            await AssertEntityOutputAsync<PackageVersionEntity>(table, Path.Combine(dir, stepName));
         }
     }
 }

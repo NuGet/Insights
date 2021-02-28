@@ -134,6 +134,7 @@ namespace Knapcode.ExplorePackages.Worker
                 case CatalogScanDriverType.PackageAssetToCsv:
                 case CatalogScanDriverType.PackageSignatureToCsv:
                 case CatalogScanDriverType.PackageManifestToCsv:
+                case CatalogScanDriverType.PackageVersionToCsv:
                     return await UpdateCatalogLeafToCsvAsync(driverType, onlyLatestLeaves.GetValueOrDefault(true), max);
                 case CatalogScanDriverType.LoadPackageArchive:
                 case CatalogScanDriverType.LoadPackageManifest:
@@ -159,6 +160,22 @@ namespace Knapcode.ExplorePackages.Worker
                 scanId,
                 storageSuffix,
                 CatalogScanDriverType.Internal_FindLatestCatalogLeafScan,
+                parameters: _serializer.Serialize(parentScanMessage).AsString(),
+                min,
+                max);
+        }
+
+        public async Task<CatalogIndexScan> GetOrStartFindLatestCatalogLeafScanPerIdAsync(
+            string scanId,
+            string storageSuffix,
+            CatalogIndexScanMessage parentScanMessage,
+            DateTimeOffset min,
+            DateTimeOffset max)
+        {
+            return await GetOrStartCursorlessAsync(
+                scanId,
+                storageSuffix,
+                CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId,
                 parameters: _serializer.Serialize(parentScanMessage).AsString(),
                 min,
                 max);
@@ -387,6 +404,11 @@ namespace Knapcode.ExplorePackages.Worker
             (CatalogScanDriverType.LoadPackageManifest.ToString(), x => x.GetCursorValueAsync(CatalogScanDriverType.LoadPackageManifest)),
         };
 
+        private static readonly (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[] LoadPackageVersion = new (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[]
+        {
+            (CatalogScanDriverType.LoadPackageVersion.ToString(), x => x.GetCursorValueAsync(CatalogScanDriverType.LoadPackageVersion)),
+        };
+
         private static readonly (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[] Catalog = new (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[]
         {
             ("NuGet.org catalog", x => x._remoteCursorClient.GetCatalogAsync()),
@@ -409,6 +431,7 @@ namespace Knapcode.ExplorePackages.Worker
             { CatalogScanDriverType.PackageAssemblyToCsv, LoadPackageArchive },
             { CatalogScanDriverType.PackageSignatureToCsv, LoadPackageArchive },
             { CatalogScanDriverType.PackageManifestToCsv, LoadPackageManifest },
+            { CatalogScanDriverType.PackageVersionToCsv, LoadPackageVersion },
         }.ToDictionary(x => x.Key, x => (IReadOnlyList<(string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)>)x.Value.ToList());
 
         private async Task<(string Name, DateTimeOffset Value)> GetDependencyMaxAsync(CatalogScanDriverType driverType)

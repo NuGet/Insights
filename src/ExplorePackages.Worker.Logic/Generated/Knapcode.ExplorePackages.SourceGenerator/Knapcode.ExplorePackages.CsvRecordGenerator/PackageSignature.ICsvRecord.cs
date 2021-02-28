@@ -186,9 +186,9 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
             writer.Write(',');
             writer.Write(CsvUtility.FormatDateTimeOffset(Created));
             writer.Write(',');
-            writer.Write(ResultType);
+            CsvUtility.WriteWithQuotes(writer, ResultType.ToString());
             writer.Write(',');
-            writer.Write(HashAlgorithm);
+            CsvUtility.WriteWithQuotes(writer, HashAlgorithm.ToString());
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, HashValue);
             writer.Write(',');
@@ -270,9 +270,9 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
             await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(Created));
             await writer.WriteAsync(',');
-            await writer.WriteAsync(ResultType.ToString());
+            await CsvUtility.WriteWithQuotesAsync(writer, ResultType.ToString());
             await writer.WriteAsync(',');
-            await writer.WriteAsync(HashAlgorithm.ToString());
+            await CsvUtility.WriteWithQuotesAsync(writer, HashAlgorithm.ToString());
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, HashValue);
             await writer.WriteAsync(',');

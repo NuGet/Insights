@@ -2,6 +2,7 @@
 using Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv;
 using Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan;
 using Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan;
+using Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScanPerId;
 using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
 using Knapcode.ExplorePackages.Worker.LoadPackageArchive;
 using Knapcode.ExplorePackages.Worker.LoadPackageManifest;
@@ -37,8 +38,13 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient(typeof(CatalogScanToCsvAdapter<>));
             AddTableScan<LatestPackageLeaf>(serviceCollection);
             AddTableScan<CatalogLeafScan>(serviceCollection);
+
             serviceCollection.AddTransient<ILatestPackageLeafStorageFactory<CatalogLeafScan>, LatestCatalogLeafScanStorageFactory>();
             serviceCollection.AddTransient<FindLatestLeafDriver<CatalogLeafScan>>();
+
+            serviceCollection.AddTransient<ILatestPackageLeafStorageFactory<CatalogLeafScanPerId>, LatestCatalogLeafScanPerIdStorageFactory>();
+            serviceCollection.AddTransient<FindLatestLeafDriver<CatalogLeafScanPerId>>();
+
             serviceCollection.AddTransient<EnqueueCatalogLeafScansDriver>();
 
             serviceCollection.AddTransient<CursorStorageService>();

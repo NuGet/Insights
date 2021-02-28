@@ -36,9 +36,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
 
         public async Task<DriverResult<List<PackageVersionRecord>>> ProcessLeafAsync(CatalogLeafItem item)
         {
-            // TODO: use the table scan that only returns partition keys
-            // TODO: make sure the prune make sense for this new package ID processing
-
             Guid? scanId = null;
             DateTimeOffset? scanTimestamp = null;
             if (_options.Value.AppendResultUniqueIds)
@@ -69,10 +66,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
             var records = entities
                 .Select(x => new PackageVersionRecord(scanId, scanTimestamp, x)
                 {
-                    IsListed = x.IsListed,
-                    SemVer2 = x.ParsedSemVerType.HasValue ? x.ParsedSemVerType.Value.IsSemVer2() : null,
-                    SemVerType = x.ParsedSemVerType,
-
                     IsLatest = ReferenceEquals(x, latest.Entity),
                     IsLatestStable = ReferenceEquals(x, latestStable.Entity),
                     IsLatestSemVer2 = ReferenceEquals(x, latestSemVer2.Entity),
@@ -81,6 +74,11 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
                 .ToList();
 
             return new DriverResult<List<PackageVersionRecord>>(DriverResultType.Success, records);
+        }
+
+        public string GetBucketKey(CatalogLeafItem item)
+        {
+            return item.PackageId.ToLowerInvariant();
         }
     }
 }
