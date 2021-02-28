@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Knapcode.MiniZip;
 using Microsoft.Extensions.Logging;
@@ -81,6 +82,13 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
                         UncompressedSize = entry.UncompressedSize,
                         Crc32 = entry.Crc32,
                     });
+                }
+
+                // NuGet packages must contain contain at least a .nuspec file.
+                if (!items.Any())
+                {
+                    throw new InvalidOperationException(
+                        $"ZIP archive has no entries for catalog leaf item {item.Url}");
                 }
 
                 return DriverResult.Success(items);
