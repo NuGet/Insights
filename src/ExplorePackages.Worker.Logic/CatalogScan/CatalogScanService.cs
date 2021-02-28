@@ -129,6 +129,7 @@ namespace Knapcode.ExplorePackages.Worker
                         throw new NotSupportedException("When finding latest leaves, only the latest leaves will be reported.");
                     }
                     return await UpdateFindLatestLeafAsync(max);
+                case CatalogScanDriverType.PackageArchiveEntryToCsv:
                 case CatalogScanDriverType.PackageAssemblyToCsv:
                 case CatalogScanDriverType.PackageAssetToCsv:
                 case CatalogScanDriverType.PackageSignatureToCsv:
@@ -401,6 +402,7 @@ namespace Knapcode.ExplorePackages.Worker
             { CatalogScanDriverType.FindLatestPackageLeaf, Catalog },
             { CatalogScanDriverType.LoadPackageArchive, FlatContainer },
             { CatalogScanDriverType.LoadPackageManifest, FlatContainer },
+            { CatalogScanDriverType.PackageArchiveEntryToCsv, LoadPackageArchive },
             { CatalogScanDriverType.PackageAssetToCsv, LoadPackageArchive },
             { CatalogScanDriverType.PackageAssemblyToCsv, LoadPackageArchive },
             { CatalogScanDriverType.PackageSignatureToCsv, LoadPackageArchive },

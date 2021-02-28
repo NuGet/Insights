@@ -31,6 +31,7 @@
             CatalogLeafItemContainerName = "catalogleafitems";
             PackageDownloadsContainerName = "packagedownloads";
             PackageOwnersContainerName = "packageowners";
+            PackageArchiveEntryContainerName = "packagearchiveentries";
         }
 
         public bool UseBulkEnqueueStrategy { get; set; }
@@ -60,5 +61,6 @@
         public string CatalogLeafItemContainerName { get; set; }
         public string PackageDownloadsContainerName { get; set; }
         public string PackageOwnersContainerName { get; set; }
+        public string PackageArchiveEntryContainerName { get; set; }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv;
 using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
+using Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv;
 using Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv;
 using Knapcode.ExplorePackages.Worker.PackageAssetToCsv;
 using Knapcode.ExplorePackages.Worker.PackageManifestToCsv;
@@ -29,6 +30,7 @@ namespace Knapcode.ExplorePackages.Worker
             new SchemaV1<CatalogLeafScanMessage>("cls"),
 
             new SchemaV1<CsvCompactMessage<CatalogLeafItemRecord>>("cc.fcli"),
+            new SchemaV1<CsvCompactMessage<PackageArchiveEntry>>("cc.pae2c"),
             new SchemaV1<CsvCompactMessage<PackageAsset>>("cc.fpa"),
             new SchemaV1<CsvCompactMessage<PackageAssembly>>("cc.fpi"),
             new SchemaV1<CsvCompactMessage<PackageManifestRecord>>("cc.pm2c"),

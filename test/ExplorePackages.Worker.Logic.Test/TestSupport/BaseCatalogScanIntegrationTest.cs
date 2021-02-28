@@ -186,7 +186,6 @@ namespace Knapcode.ExplorePackages.Worker
             Assert.Equal(
                 ExpectedCatalogIndexScans.Select(x => (x.PartitionKey, x.RowKey)).OrderBy(x => x).ToArray(),
                 catalogIndexScans.Select(x => (x.PartitionKey, x.RowKey)).ToArray());
-
         }
 
         protected virtual IEnumerable<string> GetExpectedCursorNames()
