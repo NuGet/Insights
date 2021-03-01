@@ -26,6 +26,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
         }
 
         public string ResultsContainerName => _options.Value.PackageArchiveEntryContainerName;
+        public bool SingleMessagePerId => false;
 
         public List<PackageArchiveEntry> Prune(List<PackageArchiveEntry> records)
         {
@@ -93,6 +94,11 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
 
                 return DriverResult.Success(items);
             }
+        }
+
+        public string GetBucketKey(CatalogLeafItem item)
+        {
+            return PackageRecord.GetBucketKey(item);
         }
     }
 }

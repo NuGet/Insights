@@ -114,7 +114,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
             writer.Write(',');
             writer.Write(CsvUtility.FormatDateTimeOffset(Created));
             writer.Write(',');
-            writer.Write(ResultType);
+            CsvUtility.WriteWithQuotes(writer, ResultType.ToString());
             writer.Write(',');
             writer.Write(SequenceNumber);
             writer.Write(',');
@@ -150,7 +150,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
             await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(Created));
             await writer.WriteAsync(',');
-            await writer.WriteAsync(ResultType.ToString());
+            await CsvUtility.WriteWithQuotesAsync(writer, ResultType.ToString());
             await writer.WriteAsync(',');
             await writer.WriteAsync(SequenceNumber.ToString());
             await writer.WriteAsync(',');
