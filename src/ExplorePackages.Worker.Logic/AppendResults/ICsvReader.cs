@@ -1,10 +1,9 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 
 namespace Knapcode.ExplorePackages.Worker
 {
     public interface ICsvReader
     {
-        List<T> GetRecords<T>(TextReader reader) where T : ICsvRecord<T>, new();
+        CsvReaderResult<T> GetRecords<T>(TextReader reader, int bufferSize) where T : ICsvRecord<T>, new();
     }
 }

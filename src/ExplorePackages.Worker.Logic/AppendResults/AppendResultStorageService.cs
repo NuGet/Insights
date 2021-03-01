@@ -323,6 +323,25 @@ namespace Knapcode.ExplorePackages.Worker
 
         private static async Task<List<T>> DeserializeBlobAsync<T>(ICloudBlobWrapper blob, ICsvReader csvReader, bool gzip) where T : ICsvRecord<T>, new()
         {
+            int bufferSize = 32 * 1024;
+            do
+            {
+                var result = await DeserializeBlobAsync<T>(blob, csvReader, gzip, bufferSize);
+                if (result.Type == CsvReaderResultType.Success)
+                {
+                    return result.Records;
+                }
+
+                bufferSize *= 2;
+            }
+            while (bufferSize <= NRecoCsvReader.MaxBufferSize);
+
+            throw new InvalidOperationException($"Could not deserialize blob after trying buffers up to {bufferSize} bytes in size.");
+        }
+
+        private static async Task<CsvReaderResult<T>> DeserializeBlobAsync<T>(ICloudBlobWrapper blob, ICsvReader csvReader, bool gzip, int bufferSize)
+            where T : ICsvRecord<T>, new()
+        {
             using var blobStream = await blob.OpenReadAsync();
             var readStream = blobStream;
             try
@@ -344,7 +363,7 @@ namespace Knapcode.ExplorePackages.Worker
                         "Actual: " + actualHeader);
                 }
 
-                return csvReader.GetRecords<T>(reader);
+                return csvReader.GetRecords<T>(reader, bufferSize);
             }
             finally
             {
