@@ -29,7 +29,7 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
 
         public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
         {
-            return Task.FromResult(CatalogIndexScanResult.ExpandAllLeaves);
+            return Task.FromResult(CatalogIndexScanResult.ExpandLatestLeaves);
         }
 
         public Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan)

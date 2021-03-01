@@ -22,6 +22,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
         }
 
         public override bool OnlyLatestLeavesPerId => true;
+        public override bool OnlyLatestLeaves => true;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageVersionToCsv;
         protected override string DestinationContainerName => Options.Value.PackageVersionContainerName;
 

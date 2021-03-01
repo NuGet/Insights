@@ -20,6 +20,7 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
         {
         }
 
+        public override bool OnlyLatestLeaves => true;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.LoadPackageVersion;
 
         public class LoadPackageVersion : LoadPackageVersionIntegrationTest
