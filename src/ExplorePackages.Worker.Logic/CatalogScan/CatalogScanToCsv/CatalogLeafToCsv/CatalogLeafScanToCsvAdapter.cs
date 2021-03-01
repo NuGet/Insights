@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker
 {

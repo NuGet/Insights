@@ -1,6 +1,5 @@
 ﻿using System;
 using Knapcode.ExplorePackages.Worker.LoadPackageVersion;
-using NuGet.Common;
 
 namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
 {

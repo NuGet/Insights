@@ -13,7 +13,7 @@ namespace Knapcode.ExplorePackages.Worker
         /// </summary>
         public const int MaxBufferSize = 4 * 1024 * 1024;
 
-        private ILogger<NRecoCsvReader> _logger;
+        private readonly ILogger<NRecoCsvReader> _logger;
 
         public NRecoCsvReader(ILogger<NRecoCsvReader> logger)
         {

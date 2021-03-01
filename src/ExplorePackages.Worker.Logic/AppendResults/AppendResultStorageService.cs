@@ -323,7 +323,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         private static async Task<List<T>> DeserializeBlobAsync<T>(ICloudBlobWrapper blob, ICsvReader csvReader, bool gzip) where T : ICsvRecord<T>, new()
         {
-            int bufferSize = 32 * 1024;
+            var bufferSize = 32 * 1024;
             do
             {
                 var result = await DeserializeBlobAsync<T>(blob, csvReader, gzip, bufferSize);

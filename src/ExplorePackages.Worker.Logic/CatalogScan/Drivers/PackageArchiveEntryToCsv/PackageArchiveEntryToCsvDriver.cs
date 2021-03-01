@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Knapcode.MiniZip;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
