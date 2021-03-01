@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using static Knapcode.ExplorePackages.StorageUtility;
 
@@ -23,8 +25,35 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task AddAsync(
             string packageId,
-            IEnumerable<CatalogLeafItem> items,
-            ILatestPackageLeafStorage<T> storage)
+            IReadOnlyList<CatalogLeafItem> items,
+            ILatestPackageLeafStorage<T> storage,
+            bool allowRetries)
+        {
+            var maxAttempts = allowRetries ? 5 : 1;
+            var attempt = 0;
+            while (true)
+            {
+                attempt++;
+                try
+                {
+                    await AddAsync(packageId, items, storage);
+                    break;
+                }
+                catch (StorageException ex) when (attempt < maxAttempts
+                    && (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.Conflict
+                        || ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.PreconditionFailed))
+                {
+                    _logger.LogWarning(
+                        ex,
+                        "Attempt {Attempt}: adding entities for package ID {PackageId} failed due to an HTTP {StatusCode}. Trying again.",
+                        attempt,
+                        packageId,
+                        ex.RequestInformation.HttpStatusCode);
+                }
+            }
+        }
+
+        private async Task AddAsync(string packageId, IReadOnlyList<CatalogLeafItem> items, ILatestPackageLeafStorage<T> storage)
         {
             (var rowKeyToItem, var rowKeyToETag) = await GetExistingsRowsAsync(packageId, items, storage);
 

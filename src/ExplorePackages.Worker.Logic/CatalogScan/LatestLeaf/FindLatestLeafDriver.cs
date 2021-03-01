@@ -56,25 +56,9 @@ namespace Knapcode.ExplorePackages.Worker
         private async Task AddAsync(List<CatalogLeafItem> items, ILatestPackageLeafStorage<T> storage)
         {
             var packageIdGroups = items.GroupBy(x => x.PackageId, StringComparer.OrdinalIgnoreCase);
-            const int maxAttempts = 5;
             foreach (var group in packageIdGroups)
             {
-                var attempt = 0;
-                while (true)
-                {
-                    attempt++;
-                    try
-                    {
-                        await _storageService.AddAsync(group.Key, group, storage);
-                        break;
-                    }
-                    catch (StorageException ex) when (attempt < maxAttempts
-                        && (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.Conflict
-                            || ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.PreconditionFailed))
-                    {
-                        _logger.LogWarning(ex, "Attempt {Attempt}: adding entities for package ID {PackageId} failed due to a conflict. Trying again.", attempt, group.Key);
-                    }
-                }
+                await _storageService.AddAsync(group.Key, group.ToList(), storage, allowRetries: true);
             }
 
             _logger.LogInformation("Updated latest leaf entities for {Count} items.", items.Count);

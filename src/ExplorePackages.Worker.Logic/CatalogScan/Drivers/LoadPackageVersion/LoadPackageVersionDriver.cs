@@ -48,7 +48,7 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
 
                 try
                 {
-                    await _storageService.AddAsync(packageId, leafItems, _storage);
+                    await _storageService.AddAsync(packageId, leafItems, _storage, allowRetries: true);
                 }
                 catch (Exception ex) when (leafScans.Count != 1)
                 {
