@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Worker;
 using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
 using Knapcode.ExplorePackages.Worker.LoadPackageArchive;
+using Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv;
 using Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv;
 using Knapcode.ExplorePackages.Worker.PackageManifestToCsv;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
@@ -33,7 +34,9 @@ namespace Knapcode.ExplorePackages.Tool
         private readonly PackageFileService _packageFileService;
         private readonly ICatalogLeafToCsvDriver<PackageManifestRecord> _packageManifestDriver;
         private readonly ICatalogLeafToCsvDriver<PackageAssembly> _packageAssemblyDriver;
+        private readonly CatalogLeafScanToCsvAdapter<PackageArchiveEntry> _packageArchiveEntryDriver;
         private readonly LoadPackageArchiveDriver _loadPackageArchiveDriver;
+        private readonly SchemaSerializer _schemaSerializer;
 
         public SandboxCommand(
             IMessageEnqueuer messageEnqueuer,
@@ -44,7 +47,9 @@ namespace Knapcode.ExplorePackages.Tool
             PackageFileService packageFileService,
             ICatalogLeafToCsvDriver<PackageManifestRecord> packageManifestDriver,
             ICatalogLeafToCsvDriver<PackageAssembly> packageAssemblyDriver,
-            LoadPackageArchiveDriver loadPackageArchiveDriver)
+            CatalogLeafScanToCsvAdapter<PackageArchiveEntry> packageArchiveEntryDriver,
+            LoadPackageArchiveDriver loadPackageArchiveDriver,
+            SchemaSerializer schemaSerializer)
         {
             _messageEnqueuer = messageEnqueuer;
             _taskStateStorageService = taskStateStorageService;
@@ -54,7 +59,9 @@ namespace Knapcode.ExplorePackages.Tool
             _packageFileService = packageFileService;
             _packageManifestDriver = packageManifestDriver;
             _packageAssemblyDriver = packageAssemblyDriver;
+            _packageArchiveEntryDriver = packageArchiveEntryDriver;
             _loadPackageArchiveDriver = loadPackageArchiveDriver;
+            _schemaSerializer = schemaSerializer;
         }
 
         public void Configure(CommandLineApplication app)
@@ -68,15 +75,26 @@ namespace Knapcode.ExplorePackages.Tool
             await _packageManifestDriver.InitializeAsync();
             await _packageAssemblyDriver.InitializeAsync();
 
-            var leaf = new CatalogLeafItem
+            var scan = new CatalogLeafScan
             {
-                Url = "https://api.nuget.org/v3/catalog0/data/2021.02.21.12.39.12/olive.1.0.104.json",
-                Type = CatalogLeafType.PackageDetails,
-                PackageId = "Olive",
-                PackageVersion = "1.0.105",
+                Url = "https://api.nuget.org/v3/catalog0/data/2018.12.13.03.19.10/midiator.webclient.1.0.100.json",
+                ParsedLeafType = CatalogLeafType.PackageDetails,
+                PackageId = "MIDIator.WebClient",
+                PackageVersion = "1.0.100",
+                StorageSuffix = "ze3rl2kvj7henf5c335anuiq2u",
+                DriverParameters = _schemaSerializer.Serialize(new CatalogLeafToCsvParameters
+                {
+                    BucketCount = 1000,
+                }).AsString(),
             };
 
-            await _packageFileService.UpdateBatchAsync("olive", new[] { leaf });
+            var leaf = scan.GetLeafItem();
+
+            await _packageArchiveEntryDriver.InitializeAsync(new CatalogIndexScan
+            {
+                StorageSuffix = scan.StorageSuffix,
+            });
+            var output = await _packageArchiveEntryDriver.ProcessLeafAsync(scan);
 
             // Console.WriteLine(JsonConvert.SerializeObject(await _packageManifestDriver.ProcessLeafAsync(leaf), Formatting.Indented));
             // Console.WriteLine(JsonConvert.SerializeObject(await _packageAssemblyDriver.ProcessLeafAsync(leaf), Formatting.Indented));
