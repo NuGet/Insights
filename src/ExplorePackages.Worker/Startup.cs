@@ -51,6 +51,17 @@ namespace Knapcode.ExplorePackages.Worker
         {
             if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("HOME")))
             {
+                var home = Path.GetFullPath(Environment.GetEnvironmentVariable("HOME"));
+                var newTemp = Path.Combine(home, "Knapcode.ExplorePackages", "temp");
+                
+                if (!Directory.Exists(newTemp))
+                {
+                    Directory.CreateDirectory(newTemp);
+                }
+                
+                Environment.SetEnvironmentVariable("TMP", newTemp);
+                Environment.SetEnvironmentVariable("TEMP", newTemp);
+
                 var networkDir = Environment.ExpandEnvironmentVariables(Path.Combine("%HOME%", "Knapcode.ExplorePackages", "home"));
                 settings.TempDirectories.Add(new TempStreamDirectory
                 {
