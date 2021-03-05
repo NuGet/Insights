@@ -5,6 +5,7 @@ using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
 using Knapcode.ExplorePackages.Worker.LoadPackageArchive;
 using Knapcode.ExplorePackages.Worker.LoadPackageManifest;
 using Knapcode.ExplorePackages.Worker.LoadPackageVersion;
+using Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv;
 using Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv;
 using Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv;
 using Knapcode.ExplorePackages.Worker.PackageAssetToCsv;
@@ -80,6 +81,8 @@ namespace Knapcode.ExplorePackages.Worker
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<PackageManifestRecord>>();
                 case CatalogScanDriverType.PackageVersionToCsv:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<PackageVersionRecord>>();
+                case CatalogScanDriverType.NuGetPackageExplorerToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<NuGetPackageExplorerRecord>>();
                 default:
                     throw new NotSupportedException($"Catalog scan driver type '{driverType}' is not supported.");
             }

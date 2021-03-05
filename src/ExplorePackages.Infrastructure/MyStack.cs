@@ -53,7 +53,7 @@ namespace Knapcode.ExplorePackages
 
             CreateWebsite();
 
-            CreateWorker();
+            CreateWorkers(1);
         }
 
         [Output]
@@ -166,19 +166,8 @@ namespace Knapcode.ExplorePackages
             WebsiteUrl = appService.DefaultSiteHostname.Apply(defaultSiteHostname => $"https://{defaultSiteHostname}");
         }
 
-        private void CreateWorker()
+        private void CreateWorkers(int count)
         {
-            var plan = new Plan("ExplorePackagesWorker" + _stackAlpha, new PlanArgs
-            {
-                ResourceGroupName = _resourceGroup.Name,
-                Kind = "FunctionApp",
-                Sku = new PlanSkuArgs
-                {
-                    Tier = "Dynamic",
-                    Size = "Y1",
-                },
-            });
-
             var deploymentBlob = new Blob("Knapcode.ExplorerPackages.Worker", new BlobArgs
             {
                 StorageAccountName = _storageAccount.Name,
@@ -189,9 +178,28 @@ namespace Knapcode.ExplorePackages
 
             var deploymentBlobUrl = SharedAccessSignature.SignedBlobReadUrl(deploymentBlob, _storageAccount);
 
+            for (var instance = 0; instance < count; instance++)
+            {
+                CreateWorker(deploymentBlobUrl, instance);
+            }
+        }
+
+        private void CreateWorker(Output<string> deploymentBlobUrl, int instance)
+        {
             var defaultSettings = new ExplorePackagesWorkerSettings();
 
-            var app = new FunctionApp("ExplorePackagesWorker" + _stackAlpha, new FunctionAppArgs
+            var plan = new Plan("ExplorePackagesWorker" + _stackAlpha + "-" + instance, new PlanArgs
+            {
+                ResourceGroupName = _resourceGroup.Name,
+                Kind = "FunctionApp",
+                Sku = new PlanSkuArgs
+                {
+                    Tier = "Dynamic",
+                    Size = "Y1",
+                },
+            });
+
+            var app = new FunctionApp("ExplorePackagesWorker" + _stackAlpha + "-" + instance, new FunctionAppArgs
             {
                 ResourceGroupName = _resourceGroup.Name,
                 AppServicePlanId = plan.Id,

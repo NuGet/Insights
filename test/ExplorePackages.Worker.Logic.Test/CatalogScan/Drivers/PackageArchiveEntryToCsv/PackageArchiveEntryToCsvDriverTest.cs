@@ -28,7 +28,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
             };
             await Target.InitializeAsync();
 
-            var output = await Target.ProcessLeafAsync(leaf);
+            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value);
@@ -48,7 +48,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
             };
             await Target.InitializeAsync();
 
-            var output = await Target.ProcessLeafAsync(leaf);
+            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             Assert.Empty(output.Value);
@@ -66,7 +66,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
             };
             await Target.InitializeAsync();
 
-            var output = await Target.ProcessLeafAsync(leaf);
+            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             Assert.Equal(6, output.Value.Count);
@@ -138,7 +138,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
             };
             await Target.InitializeAsync();
 
-            var output = await Target.ProcessLeafAsync(leaf);
+            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             Assert.Equal(11, output.Value.Count);

@@ -34,7 +34,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
             await _storage.InitializeAsync();
         }
 
-        public async Task<DriverResult<List<PackageVersionRecord>>> ProcessLeafAsync(CatalogLeafItem item)
+        public async Task<DriverResult<List<PackageVersionRecord>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
         {
             Guid? scanId = null;
             DateTimeOffset? scanTimestamp = null;

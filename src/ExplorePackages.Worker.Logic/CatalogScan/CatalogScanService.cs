@@ -135,6 +135,7 @@ namespace Knapcode.ExplorePackages.Worker
                 case CatalogScanDriverType.PackageSignatureToCsv:
                 case CatalogScanDriverType.PackageManifestToCsv:
                 case CatalogScanDriverType.PackageVersionToCsv:
+                case CatalogScanDriverType.NuGetPackageExplorerToCsv:
                     return await UpdateCatalogLeafToCsvAsync(driverType, onlyLatestLeaves.GetValueOrDefault(true), max);
                 case CatalogScanDriverType.LoadPackageArchive:
                 case CatalogScanDriverType.LoadPackageManifest:
@@ -432,6 +433,7 @@ namespace Knapcode.ExplorePackages.Worker
             { CatalogScanDriverType.PackageSignatureToCsv, LoadPackageArchive },
             { CatalogScanDriverType.PackageManifestToCsv, LoadPackageManifest },
             { CatalogScanDriverType.PackageVersionToCsv, LoadPackageVersion },
+            { CatalogScanDriverType.NuGetPackageExplorerToCsv, FlatContainer },
         }.ToDictionary(x => x.Key, x => (IReadOnlyList<(string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)>)x.Value.ToList());
 
         private async Task<(string Name, DateTimeOffset Value)> GetDependencyMaxAsync(CatalogScanDriverType driverType)

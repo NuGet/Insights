@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Worker;
 using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
 using Knapcode.ExplorePackages.Worker.LoadPackageArchive;
+using Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv;
 using Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv;
 using Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv;
 using Knapcode.ExplorePackages.Worker.PackageManifestToCsv;
@@ -35,6 +36,7 @@ namespace Knapcode.ExplorePackages.Tool
         private readonly ICatalogLeafToCsvDriver<PackageManifestRecord> _packageManifestDriver;
         private readonly ICatalogLeafToCsvDriver<PackageAssembly> _packageAssemblyDriver;
         private readonly CatalogLeafScanToCsvAdapter<PackageArchiveEntry> _packageArchiveEntryDriver;
+        private readonly ICatalogLeafToCsvDriver<NuGetPackageExplorerRecord> _nuGetPackageExplorerToCsvDriver;
         private readonly LoadPackageArchiveDriver _loadPackageArchiveDriver;
         private readonly SchemaSerializer _schemaSerializer;
 
@@ -48,6 +50,7 @@ namespace Knapcode.ExplorePackages.Tool
             ICatalogLeafToCsvDriver<PackageManifestRecord> packageManifestDriver,
             ICatalogLeafToCsvDriver<PackageAssembly> packageAssemblyDriver,
             CatalogLeafScanToCsvAdapter<PackageArchiveEntry> packageArchiveEntryDriver,
+            ICatalogLeafToCsvDriver<NuGetPackageExplorerRecord> nuGetPackageExplorerToCsvDriver,
             LoadPackageArchiveDriver loadPackageArchiveDriver,
             SchemaSerializer schemaSerializer)
         {
@@ -60,6 +63,7 @@ namespace Knapcode.ExplorePackages.Tool
             _packageManifestDriver = packageManifestDriver;
             _packageAssemblyDriver = packageAssemblyDriver;
             _packageArchiveEntryDriver = packageArchiveEntryDriver;
+            _nuGetPackageExplorerToCsvDriver = nuGetPackageExplorerToCsvDriver;
             _loadPackageArchiveDriver = loadPackageArchiveDriver;
             _schemaSerializer = schemaSerializer;
         }
@@ -77,24 +81,32 @@ namespace Knapcode.ExplorePackages.Tool
 
             var scan = new CatalogLeafScan
             {
-                Url = "https://api.nuget.org/v3/catalog0/data/2018.12.13.03.19.10/midiator.webclient.1.0.100.json",
+                Url = "https://api.nuget.org/v3/catalog0/data/2015.02.01.08.09.35/takeio.spreadsheet.1.0.0.1.json",
                 ParsedLeafType = CatalogLeafType.PackageDetails,
-                PackageId = "MIDIator.WebClient",
-                PackageVersion = "1.0.100",
-                StorageSuffix = "ze3rl2kvj7henf5c335anuiq2u",
-                DriverParameters = _schemaSerializer.Serialize(new CatalogLeafToCsvParameters
-                {
-                    BucketCount = 1000,
-                }).AsString(),
+                PackageId = "TakeIo.Spreadsheet",
+                PackageVersion = "1.0.0.1",
             };
+
+            scan = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2021.01.31.04.23.00/newtonsoft.json.13.0.1-beta1.json",
+                ParsedLeafType = CatalogLeafType.PackageDetails,
+                PackageId = "Newtonsoft.Json",
+                PackageVersion = "13.0.1-beta1",
+            };
+
+            scan = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2018.10.02.18.27.13/aardvark.base.1.5.2.json",
+                ParsedLeafType = CatalogLeafType.PackageDetails,
+                PackageId = "Aardvark.Base",
+                PackageVersion = "1.5.2",
+            };
+
 
             var leaf = scan.GetLeafItem();
 
-            await _packageArchiveEntryDriver.InitializeAsync(new CatalogIndexScan
-            {
-                StorageSuffix = scan.StorageSuffix,
-            });
-            var output = await _packageArchiveEntryDriver.ProcessLeafAsync(scan);
+            Console.WriteLine(JsonConvert.SerializeObject(await _nuGetPackageExplorerToCsvDriver.ProcessLeafAsync(leaf, 0), Formatting.Indented));
 
             // Console.WriteLine(JsonConvert.SerializeObject(await _packageManifestDriver.ProcessLeafAsync(leaf), Formatting.Indented));
             // Console.WriteLine(JsonConvert.SerializeObject(await _packageAssemblyDriver.ProcessLeafAsync(leaf), Formatting.Indented));

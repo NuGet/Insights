@@ -7,7 +7,7 @@ namespace Knapcode.ExplorePackages.Worker
     {
         bool SingleMessagePerId { get; }
         Task InitializeAsync();
-        Task<DriverResult<List<T>>> ProcessLeafAsync(CatalogLeafItem item);
+        Task<DriverResult<List<T>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount);
         string GetBucketKey(CatalogLeafItem item);
     }
 }

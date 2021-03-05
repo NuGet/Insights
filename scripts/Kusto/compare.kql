@@ -1,0 +1,25 @@
+// Catalog-based tables should all have the same count
+JverCatalogLeafItems | distinct Identity | extend Table = "JverCatalogLeafItems"
+| union (JverNuGetPackageExplorers | distinct Identity | extend Table = "JverNuGetPackageExplorers")
+| union (JverPackageArchiveEntries | distinct Identity | extend Table = "JverPackageArchiveEntries")
+| union (JverPackageAssemblies | distinct Identity | extend Table = "JverPackageAssemblies")
+| union (JverPackageAssets | distinct Identity | extend Table = "JverPackageAssets")
+| union (JverPackageManifests | distinct Identity | extend Table = "JverPackageManifests")
+| union (JverPackageSignatures | distinct Identity | extend Table = "JverPackageSignatures")
+| union (JverPackageVersions | distinct Identity | extend Table = "JverPackageVersions")
+| summarize dcount(Identity) by Table
+
+JverCatalogLeafItems
+| distinct Identity
+| join kind=fullouter (JverPackageDownloads | distinct Identity) on Identity
+| where isempty(Identity) or isempty(Identity1)
+
+JverCatalogLeafItems
+| distinct LowerId
+| join kind=fullouter (JverPackageDownloads | distinct LowerId) on LowerId
+| where isempty(LowerId) or isempty(LowerId1)
+
+JverCatalogLeafItems
+| distinct LowerId
+| join kind=fullouter (JverPackageOwners | distinct LowerId) on LowerId
+| where isempty(LowerId) or isempty(LowerId1)

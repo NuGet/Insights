@@ -90,7 +90,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
                 PackageVersion = "1.1.8",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf);
+            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value);
@@ -111,7 +111,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
                 PackageVersion = "0.5.0.3",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf);
+            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value);
@@ -132,7 +132,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
                 PackageVersion = "4.8.6",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf);
+            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value);
@@ -161,7 +161,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
                 PackageVersion = "1.0.2",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf);
+            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value);
@@ -206,7 +206,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
                 PackageVersion = "24.0.1",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf);
+            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value);
@@ -234,7 +234,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
                 PackageVersion = "2.5.0",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf);
+            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value);
@@ -290,7 +290,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
                 PackageVersion = "2.5.0",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf);
+            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value);
@@ -322,7 +322,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
                 PackageVersion = "1.9.69",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf);
+            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value);
@@ -352,7 +352,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
                 PackageVersion = "4.0.18",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf);
+            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value);
@@ -378,7 +378,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
                 PackageVersion = "6.1.2",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf);
+            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value);

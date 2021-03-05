@@ -74,6 +74,8 @@
         /// </summary>
         PackageVersionToCsv,
 
+        NuGetPackageExplorerToCsv,
+
         /// <summary>
         /// Implemented by <see cref="CatalogLeafItemToCsv.CatalogLeafItemToCsvDriver"/>. Reads all catalog leaf items
         /// and their associated page metadata. The catalog leaf item is described here:

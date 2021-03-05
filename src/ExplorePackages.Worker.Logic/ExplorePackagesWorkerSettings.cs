@@ -34,6 +34,7 @@
             PackageArchiveEntryContainerName = "packagearchiveentries";
             PackageVersionTableName = "packageversions";
             PackageVersionContainerName = "packageversions";
+            NuGetPackageExplorerContainerName = "nugetpackageexplorer";
         }
 
         public bool UseBulkEnqueueStrategy { get; set; }
@@ -66,5 +67,6 @@
         public string PackageArchiveEntryContainerName { get; set; }
         public string PackageVersionTableName { get; set; }
         public string PackageVersionContainerName { get; set; }
+        public string NuGetPackageExplorerContainerName { get; set; }
     }
 }

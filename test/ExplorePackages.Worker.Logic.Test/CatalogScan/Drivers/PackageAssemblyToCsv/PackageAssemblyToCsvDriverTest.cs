@@ -29,7 +29,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
             };
             await Target.InitializeAsync();
 
-            var output = await Target.ProcessLeafAsync(leaf);
+            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value);
@@ -53,7 +53,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
             };
             await Target.InitializeAsync();
 
-            var output = await Target.ProcessLeafAsync(leaf);
+            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value);
@@ -75,7 +75,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
             };
             await Target.InitializeAsync();
 
-            var output = await Target.ProcessLeafAsync(leaf);
+            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             Assert.Equal(2, output.Value.Count);
@@ -98,7 +98,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
             };
             await Target.InitializeAsync();
 
-            var output = await Target.ProcessLeafAsync(leaf);
+            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             Assert.All(output.Value, x => Assert.Equal(PackageAssemblyResultType.InvalidZipEntry, x.ResultType));
@@ -136,7 +136,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
                 };
 
                 // Act
-                var output = await Target.ProcessLeafAsync(leaf);
+                var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
                 // Assert
                 Assert.Equal(DriverResultType.TryAgainLater, output.Type);

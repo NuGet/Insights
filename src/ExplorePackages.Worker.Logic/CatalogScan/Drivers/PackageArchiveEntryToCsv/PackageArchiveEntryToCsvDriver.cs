@@ -37,7 +37,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
             await _packageFileService.InitializeAsync();
         }
 
-        public async Task<DriverResult<List<PackageArchiveEntry>>> ProcessLeafAsync(CatalogLeafItem item)
+        public async Task<DriverResult<List<PackageArchiveEntry>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
         {
             Guid? scanId = null;
             DateTimeOffset? scanTimestamp = null;

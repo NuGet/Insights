@@ -16,7 +16,7 @@ param (
     [string]$ModelsPath,
 
     [Parameter(Mandatory = $false)]
-    [ValidateSet("JverCatalogLeafItems", "JverPackageArchiveEntries", "JverPackageAssemblies", "JverPackageAssets", "JverPackageDownloads", "JverPackageManifests", "JverPackageOwners", "JverPackageSignatures", "JverPackageVersions")]
+    [ValidateSet("JverCatalogLeafItems", "JverPackageArchiveEntries", "JverPackageAssemblies", "JverPackageAssets", "JverPackageDownloads", "JverPackageManifests", "JverPackageOwners", "JverPackageSignatures", "JverPackageVersions", "JverNuGetPackageExplorers")]
     [string]$ImportTableName,
 
     [Parameter(Mandatory = $false)]
@@ -38,6 +38,7 @@ $tableNameToContainerName = @{
     "JverPackageOwners" = "packageowners";
     "JverPackageSignatures" = "packagesignatures";
     "JverPackageVersions" = "packageversions";
+    "JverNuGetPackageExplorers" = "nugetpackageexplorer";
 }
 
 if ($ImportTableName -and !$tableNameToContainerName[$ImportTableName]) {
@@ -116,6 +117,16 @@ if (!$StorageSas) {
 
 $StorageSas = "?" + $StorageSas.TrimStart("?")
 
+Write-Host "Enumerating available containers using the az CLI."
+$containers = az storage container list `
+    --account-name $StorageAccountName `
+    --query "[].name" `
+    --output tsv `
+    --only-show-errors
+if ($LASTEXITCODE) {
+    throw "Enumerating containers in the storage account failed."
+}
+
 $models = Get-ChildItem (Join-Path $ModelsPath "*.ICsvRecord.cs") -Recurse
 foreach ($model in $models) {
     $content = Get-Content $model -Raw
@@ -135,6 +146,12 @@ foreach ($model in $models) {
     }
 
     $containerName = $tableNameToContainerName[$tableName]
+
+    # Check if the container exists
+    if (!($containerName -in $containers)) {
+        Write-Warning "Skipping missing storage container $containerName in storage account $StorageAccountName."
+        continue
+    }
 
     # Create a temp table for the import.
     $tempTableName = "$($tableName)_Temp"
