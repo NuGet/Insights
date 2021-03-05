@@ -18,7 +18,6 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
         private readonly CatalogClient _catalogClient;
         private readonly FlatContainerClient _flatContainerClient;
         private readonly HttpSource _httpSource;
-        private readonly TempStreamLeaseScope _leaseScope;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<NuGetPackageExplorerToCsvDriver> _logger;
 
@@ -26,14 +25,12 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             CatalogClient catalogClient,
             FlatContainerClient flatContainerClient,
             HttpSource httpSource,
-            TempStreamLeaseScope leaseScope,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<NuGetPackageExplorerToCsvDriver> logger)
         {
             _catalogClient = catalogClient;
             _flatContainerClient = flatContainerClient;
             _httpSource = httpSource;
-            _leaseScope = leaseScope;
             _options = options;
             _logger = logger;
         }
@@ -71,8 +68,9 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
 
                 // TODO: understand the failure categories and fix them or assign more specific result types
-                if (attemptCount > 7)
+                if (attemptCount > 5)
                 {
+                    _logger.LogWarning("Package {Id} {Version} failed due to too many attempts.", leaf.PackageId, leaf.PackageVersion);
                     return DriverResult.Success(new List<NuGetPackageExplorerRecord>
                     {
                         new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf)
@@ -132,6 +130,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                     }
                     catch (Exception ex) when (ex is InvalidDataException || ex is ArgumentException || ex is PackagingException)
                     {
+                        _logger.LogWarning(ex, "Package {Id} {Version} had metadata.", leaf.PackageId, leaf.PackageVersion);
                         return DriverResult.Success(new List<NuGetPackageExplorerRecord>
                         {
                             new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf)
@@ -154,8 +153,9 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                             var resultTask = await Task.WhenAny(delayTask, symbolValidatorTask);
                             if (resultTask == delayTask)
                             {
-                                if (attemptCount > 3)
+                                if (attemptCount > 2)
                                 {
+                                    _logger.LogWarning("Package {Id} {Version} had its symbol validation time out.", leaf.PackageId, leaf.PackageVersion);
                                     return DriverResult.Success(new List<NuGetPackageExplorerRecord>
                                     {
                                         new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf)

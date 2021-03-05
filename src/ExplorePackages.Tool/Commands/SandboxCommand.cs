@@ -16,6 +16,7 @@ using Knapcode.ExplorePackages.Worker.PackageManifestToCsv;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using McMaster.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Protocol;
@@ -119,9 +120,26 @@ namespace Knapcode.ExplorePackages.Tool
                 PackageVersion = "19.0.69",
             };
 
+            scan = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2018.10.08.04.11.29/microsoft.net.native.sharedlibrary-arm.2.0.0.json",
+                ParsedLeafType = CatalogLeafType.PackageDetails,
+                PackageId = "Microsoft.Net.Native.SharedLibrary-arm",
+                PackageVersion = "2.0.0",
+            };
+
             var leaf = scan.GetLeafItem();
 
-            Console.WriteLine(JsonConvert.SerializeObject(await _nuGetPackageExplorerToCsvDriver.ProcessLeafAsync(leaf, 0), Formatting.Indented));
+            Console.WriteLine(JsonConvert.SerializeObject(
+                await _nuGetPackageExplorerToCsvDriver.ProcessLeafAsync(leaf, 0),
+                new JsonSerializerSettings
+                {
+                    Formatting = Formatting.Indented,
+                    Converters =
+                    {
+                        new StringEnumConverter(),
+                    },
+                }));
 
             // Console.WriteLine(JsonConvert.SerializeObject(await _packageManifestDriver.ProcessLeafAsync(leaf), Formatting.Indented));
             // Console.WriteLine(JsonConvert.SerializeObject(await _packageAssemblyDriver.ProcessLeafAsync(leaf), Formatting.Indented));
