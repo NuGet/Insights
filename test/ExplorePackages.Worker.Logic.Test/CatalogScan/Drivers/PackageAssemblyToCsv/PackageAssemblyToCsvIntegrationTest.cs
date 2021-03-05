@@ -19,15 +19,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
         private const string PackageAssemblyToCsv_WithUnmanagedDir = nameof(PackageAssemblyToCsv_WithUnmanaged);
         private const string PackageAssemblyToCsv_WithDuplicatesDir = nameof(PackageAssemblyToCsv_WithDuplicates);
 
-        public PackageAssemblyToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-            : base(output, factory)
-        {
-        }
-
-        protected override string DestinationContainerName => Options.Value.PackageAssemblyContainerName;
-
-        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageAssemblyToCsv;
-
         public class PackageAssemblyToCsv : PackageAssemblyToCsvIntegrationTest
         {
             public PackageAssemblyToCsv(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
@@ -244,6 +235,17 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
                 return PackageAssemblyToCsv_WithDuplicates();
             }
         }
+
+        public PackageAssemblyToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            : base(output, factory)
+        {
+        }
+
+        protected override string DestinationContainerName => Options.Value.PackageAssemblyContainerName;
+
+        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageAssemblyToCsv;
+        public override bool OnlyLatestLeaves => true;
+        public override bool OnlyLatestLeavesPerId => false;
 
         private async Task PackageAssemblyToCsv_WithDuplicates()
         {

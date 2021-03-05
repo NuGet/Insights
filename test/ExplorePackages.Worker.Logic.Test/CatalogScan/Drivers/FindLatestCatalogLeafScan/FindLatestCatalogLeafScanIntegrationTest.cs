@@ -14,15 +14,6 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
         private const string FindLatestCatalogLeafScanDir = nameof(FindLatestCatalogLeafScan);
         private const string FindLatestCatalogLeafScan_WithDuplicatesDir = nameof(FindLatestCatalogLeafScan_WithDuplicates);
 
-        private const string ParentStorageSuffix = "parentstoragesuffix";
-
-        public FindLatestCatalogLeafScanIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-            : base(output, factory)
-        {
-        }
-
-        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.Internal_FindLatestCatalogLeafScan;
-
         public class FindLatestCatalogLeafScan : FindLatestCatalogLeafScanIntegrationTest
         {
             public FindLatestCatalogLeafScan(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
@@ -76,6 +67,17 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
                 AssertOnlyInfoLogsOrLess();
             }
         }
+
+        private const string ParentStorageSuffix = "parentstoragesuffix";
+
+        public FindLatestCatalogLeafScanIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            : base(output, factory)
+        {
+        }
+
+        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.Internal_FindLatestCatalogLeafScan;
+        public override bool OnlyLatestLeaves => false;
+        public override bool OnlyLatestLeavesPerId => false;
 
         protected override IEnumerable<string> GetExpectedTableNames()
         {

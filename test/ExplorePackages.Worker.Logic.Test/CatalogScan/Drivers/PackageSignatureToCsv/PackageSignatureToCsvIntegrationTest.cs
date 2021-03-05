@@ -12,17 +12,10 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
     public class PackageSignatureToCsvIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest<PackageSignature>
     {
         private const string PackageSignatureToCsvDir = nameof(PackageSignatureToCsv);
+        private const string PackageSignatureToCsv_WithDuplicatesDir = nameof(PackageSignatureToCsv_WithDuplicates);
         private const string PackageSignatureToCsv_AuthorSignatureDir = nameof(PackageSignatureToCsv_AuthorSignature);
         private const string PackageSignatureToCsv_BadTimestampDir = nameof(PackageSignatureToCsv_BadTimestamp);
         private const string PackageSignatureToCsv_WithDeleteDir = nameof(PackageSignatureToCsv_WithDelete);
-
-        public PackageSignatureToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-            : base(output, factory)
-        {
-        }
-
-        protected override string DestinationContainerName => Options.Value.PackageSignatureContainerName;
-        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageSignatureToCsv;
 
         public class PackageSignatureToCsv : PackageSignatureToCsvIntegrationTest
         {
@@ -60,6 +53,48 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
                 await AssertOutputAsync(PackageSignatureToCsvDir, Step2, 0);
                 await AssertOutputAsync(PackageSignatureToCsvDir, Step1, 1); // This file is unchanged.
                 await AssertOutputAsync(PackageSignatureToCsvDir, Step2, 2);
+
+                await AssertExpectedStorageAsync();
+                AssertOnlyInfoLogsOrLess();
+            }
+        }
+
+        public class PackageSignatureToCsv_WithDuplicates : PackageSignatureToCsvIntegrationTest
+        {
+            public PackageSignatureToCsv_WithDuplicates(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+                : base(output, factory)
+            {
+            }
+
+            [Fact]
+            public async Task Execute()
+            {
+                Logger.LogInformation("Settings: " + Environment.NewLine + JsonConvert.SerializeObject(Options.Value, Formatting.Indented));
+
+                // Arrange
+                var min0 = DateTimeOffset.Parse("2018-03-23T08:55:02.1875809Z");
+                var max1 = DateTimeOffset.Parse("2018-03-23T08:55:20.0232708Z");
+                var max2 = DateTimeOffset.Parse("2018-03-23T08:55:38.0342003Z");
+
+                await CatalogScanService.InitializeAsync();
+                await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max2);
+                await SetCursorAsync(min0);
+
+                // Act
+                await UpdateAsync(max1);
+
+                // Assert
+                await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesDir, Step1, 0);
+                await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesDir, Step1, 1);
+                await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesDir, Step1, 2);
+
+                // Act
+                await UpdateAsync(max2);
+
+                // Assert
+                await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesDir, Step1, 0); // This file is unchanged.
+                await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesDir, Step2, 1);
+                await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesDir, Step2, 2);
 
                 await AssertExpectedStorageAsync();
                 AssertOnlyInfoLogsOrLess();
@@ -182,6 +217,16 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
                 AssertOnlyInfoLogsOrLess();
             }
         }
+
+        public PackageSignatureToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            : base(output, factory)
+        {
+        }
+
+        protected override string DestinationContainerName => Options.Value.PackageSignatureContainerName;
+        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageSignatureToCsv;
+        public override bool OnlyLatestLeaves => true;
+        public override bool OnlyLatestLeavesPerId => false;
 
         protected override IEnumerable<string> GetExpectedCursorNames()
         {

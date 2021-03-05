@@ -105,8 +105,6 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageManifest
             }
         }
 
-        public override bool OnlyLatestLeaves => true;
-
         protected override IEnumerable<string> GetExpectedTableNames()
         {
             return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageManifestTableName });
@@ -117,6 +115,8 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageManifest
         }
 
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.LoadPackageManifest;
+        public override bool OnlyLatestLeaves => true;
+        public override bool OnlyLatestLeavesPerId => false;
 
         private async Task AssertOutputAsync(string testName, string stepName)
         {

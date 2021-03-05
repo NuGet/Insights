@@ -20,9 +20,8 @@ namespace Knapcode.ExplorePackages.Worker
         }
 
         protected abstract CatalogScanDriverType DriverType { get; }
-
-        public virtual bool OnlyLatestLeaves => false;
-        public virtual bool OnlyLatestLeavesPerId => false;
+        public abstract bool OnlyLatestLeaves { get; }
+        public abstract bool OnlyLatestLeavesPerId { get; }
 
         protected Task SetCursorAsync(DateTimeOffset min)
         {

@@ -16,14 +16,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
         private const string PackageAssetToCsv_WithDeleteDir = nameof(PackageAssetToCsv_WithDelete);
         private const string PackageAssetToCsv_WithDuplicatesDir = nameof(PackageAssetToCsv_WithDuplicates);
 
-        public PackageAssetToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-            : base(output, factory)
-        {
-        }
-
-        protected override string DestinationContainerName => Options.Value.PackageAssetContainerName;
-        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageAssetToCsv;
-
         public class PackageAssetToCsv : PackageAssetToCsvIntegrationTest
         {
             public PackageAssetToCsv(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
@@ -201,6 +193,16 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
                 return PackageAssetToCsv_WithDuplicates(batchProcessing: true);
             }
         }
+
+        public PackageAssetToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            : base(output, factory)
+        {
+        }
+
+        protected override string DestinationContainerName => Options.Value.PackageAssetContainerName;
+        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageAssetToCsv;
+        public override bool OnlyLatestLeaves => true;
+        public override bool OnlyLatestLeavesPerId => false;
 
         private async Task PackageAssetToCsv_WithDuplicates(bool batchProcessing)
         {

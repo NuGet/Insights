@@ -105,18 +105,18 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageArchive
             }
         }
 
-        public override bool OnlyLatestLeaves => true;
-
-        protected override IEnumerable<string> GetExpectedTableNames()
-        {
-            return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageArchiveTableName });
-        }
-
         public LoadPackageArchiveIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
         }
 
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.LoadPackageArchive;
+        public override bool OnlyLatestLeaves => true;
+        public override bool OnlyLatestLeavesPerId => false;
+
+        protected override IEnumerable<string> GetExpectedTableNames()
+        {
+            return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageArchiveTableName });
+        }
 
         private async Task AssertOutputAsync(string testName, string stepName)
         {

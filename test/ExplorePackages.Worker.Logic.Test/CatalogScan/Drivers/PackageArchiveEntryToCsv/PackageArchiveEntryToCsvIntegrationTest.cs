@@ -15,14 +15,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
         private const string PackageArchiveEntryToCsv_WithDeleteDir = nameof(PackageArchiveEntryToCsv_WithDelete);
         private const string PackageArchiveEntryToCsv_WithDuplicateEntriesDir = nameof(PackageArchiveEntryToCsv_WithDuplicateEntries);
 
-        public PackageArchiveEntryToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-            : base(output, factory)
-        {
-        }
-
-        protected override string DestinationContainerName => Options.Value.PackageArchiveEntryContainerName;
-        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageArchiveEntryToCsv;
-
         public class PackageArchiveEntryToCsv : PackageArchiveEntryToCsvIntegrationTest
         {
             public PackageArchiveEntryToCsv(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
@@ -150,6 +142,16 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
                 AssertOnlyInfoLogsOrLess();
             }
         }
+
+        public PackageArchiveEntryToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            : base(output, factory)
+        {
+        }
+
+        protected override string DestinationContainerName => Options.Value.PackageArchiveEntryContainerName;
+        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageArchiveEntryToCsv;
+        public override bool OnlyLatestLeaves => true;
+        public override bool OnlyLatestLeavesPerId => false;
 
         protected override IEnumerable<string> GetExpectedCursorNames()
         {

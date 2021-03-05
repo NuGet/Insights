@@ -15,14 +15,6 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
         private const string LoadPackageVersion_WithDeleteDir = nameof(LoadPackageVersion_WithDelete);
         private const string LoadPackageVersion_WithDuplicatesDir = nameof(LoadPackageVersion_WithDuplicates);
 
-        public LoadPackageVersionIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-            : base(output, factory)
-        {
-        }
-
-        public override bool OnlyLatestLeaves => true;
-        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.LoadPackageVersion;
-
         public class LoadPackageVersion : LoadPackageVersionIntegrationTest
         {
             public LoadPackageVersion(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
@@ -113,6 +105,15 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
                 AssertOnlyInfoLogsOrLess();
             }
         }
+
+        public LoadPackageVersionIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            : base(output, factory)
+        {
+        }
+
+        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.LoadPackageVersion;
+        public override bool OnlyLatestLeaves => true;
+        public override bool OnlyLatestLeavesPerId => false;
 
         protected override IEnumerable<string> GetExpectedTableNames()
         {

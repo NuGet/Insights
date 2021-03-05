@@ -14,14 +14,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
         private const string PackageManifestToCsvDir = nameof(PackageManifestToCsv);
         private const string PackageManifestToCsv_WithDeleteDir = nameof(PackageManifestToCsv_WithDelete);
 
-        public PackageManifestToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-            : base(output, factory)
-        {
-        }
-
-        protected override string DestinationContainerName => Options.Value.PackageManifestContainerName;
-        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageManifestToCsv;
-
         public class PackageManifestToCsv : PackageManifestToCsvIntegrationTest
         {
             public PackageManifestToCsv(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
@@ -116,6 +108,16 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
                 AssertOnlyInfoLogsOrLess();
             }
         }
+
+        public PackageManifestToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            : base(output, factory)
+        {
+        }
+
+        protected override string DestinationContainerName => Options.Value.PackageManifestContainerName;
+        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageManifestToCsv;
+        public override bool OnlyLatestLeaves => true;
+        public override bool OnlyLatestLeavesPerId => false;
 
         protected override IEnumerable<string> GetExpectedCursorNames()
         {

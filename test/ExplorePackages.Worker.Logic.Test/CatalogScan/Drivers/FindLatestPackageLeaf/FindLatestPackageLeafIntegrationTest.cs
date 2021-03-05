@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -12,13 +13,6 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf
     {
         private const string FindLatestPackageLeavesDir = nameof(FindLatestPackageLeaf);
         private const string FindLatestPackageLeaves_WithDuplicatesDir = nameof(FindLatestPackageLeaf_WithDuplicates);
-
-        public FindLatestPackageLeafIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-            : base(output, factory)
-        {
-        }
-
-        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.FindLatestPackageLeaf;
 
         public class FindLatestPackageLeaf : FindLatestPackageLeafIntegrationTest
         {
@@ -43,7 +37,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf
                 await UpdateAsync(max1);
 
                 // Assert
-                await AssertOutputAsync(FindLatestPackageLeavesDir);
+                await AssertOutputAsync(FindLatestPackageLeavesDir, Step1);
                 AssertOnlyInfoLogsOrLess();
             }
         }
@@ -61,8 +55,9 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf
                 Logger.LogInformation("Settings: " + Environment.NewLine + JsonConvert.SerializeObject(Options.Value, Formatting.Indented));
 
                 // Arrange
-                var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z");
-                var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
+                var min0 = DateTimeOffset.Parse("2018-03-23T08:55:02.1875809Z");
+                var max1 = DateTimeOffset.Parse("2018-03-23T08:55:20.0232708Z");
+                var max2 = DateTimeOffset.Parse("2018-03-23T08:55:38.0342003Z");
 
                 await CatalogScanService.InitializeAsync();
                 await SetCursorAsync(min0);
@@ -71,23 +66,40 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf
                 await UpdateAsync(max1);
 
                 // Assert
-                await AssertOutputAsync(FindLatestPackageLeaves_WithDuplicatesDir);
+                await AssertOutputAsync(FindLatestPackageLeaves_WithDuplicatesDir, Step1);
+
+                // Act
+                await UpdateAsync(max2);
+
+                // Assert
+                await AssertOutputAsync(FindLatestPackageLeaves_WithDuplicatesDir, Step2);
+
+                await AssertExpectedStorageAsync();
                 AssertOnlyInfoLogsOrLess();
             }
         }
+
+        public FindLatestPackageLeafIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            : base(output, factory)
+        {
+        }
+
+        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.FindLatestPackageLeaf;
+        public override bool OnlyLatestLeaves => false;
+        public override bool OnlyLatestLeavesPerId => false;
 
         protected override IEnumerable<string> GetExpectedTableNames()
         {
             yield return Options.Value.LatestPackageLeafTableName;
         }
 
-        private async Task AssertOutputAsync(string dir)
+        private async Task AssertOutputAsync(string dir, string step)
         {
             var table = ServiceClientFactory
                 .GetStorageAccount()
                 .CreateCloudTableClient()
                 .GetTableReference(Options.Value.LatestPackageLeafTableName);
-            await AssertEntityOutputAsync<LatestPackageLeaf>(table, dir);
+            await AssertEntityOutputAsync<LatestPackageLeaf>(table, Path.Combine(dir, step));
         }
     }
 }

@@ -12,14 +12,6 @@ namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
         private const string CatalogLeafItemToCsvDir = nameof(CatalogLeafItemToCsv);
         private const string CatalogLeafItemToCsv_WithDuplicatesDir = nameof(CatalogLeafItemToCsv_WithDuplicates);
 
-        public CatalogLeafItemToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-            : base(output, factory)
-        {
-        }
-
-        protected override string DestinationContainerName => Options.Value.CatalogLeafItemContainerName;
-        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.CatalogLeafItemToCsv;
-
         public class CatalogLeafItemToCsv : CatalogLeafItemToCsvIntegrationTest
         {
             public CatalogLeafItemToCsv(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
@@ -81,5 +73,15 @@ namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
                 AssertOnlyInfoLogsOrLess();
             }
         }
+
+        public CatalogLeafItemToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            : base(output, factory)
+        {
+        }
+
+        protected override string DestinationContainerName => Options.Value.CatalogLeafItemContainerName;
+        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.CatalogLeafItemToCsv;
+        public override bool OnlyLatestLeaves => false;
+        public override bool OnlyLatestLeavesPerId => false;
     }
 }

@@ -16,16 +16,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
         private const string PackageVersionToCsv_WithDuplicatesDir = nameof(PackageVersionToCsv_WithDuplicates);
         private const string PackageVersionToCsv_WithAllLatestDir = nameof(PackageVersionToCsv_WithAllLatest);
 
-        public PackageVersionToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-            : base(output, factory)
-        {
-        }
-
-        public override bool OnlyLatestLeavesPerId => true;
-        public override bool OnlyLatestLeaves => true;
-        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageVersionToCsv;
-        protected override string DestinationContainerName => Options.Value.PackageVersionContainerName;
-
         public class PackageVersionToCsv : PackageVersionToCsvIntegrationTest
         {
             public PackageVersionToCsv(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
@@ -179,6 +169,16 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
                 AssertOnlyInfoLogsOrLess();
             }
         }
+
+        public PackageVersionToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            : base(output, factory)
+        {
+        }
+
+        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageVersionToCsv;
+        protected override string DestinationContainerName => Options.Value.PackageVersionContainerName;
+        public override bool OnlyLatestLeaves => true;
+        public override bool OnlyLatestLeavesPerId => true;
 
         protected override IEnumerable<string> GetExpectedLeaseNames()
         {
