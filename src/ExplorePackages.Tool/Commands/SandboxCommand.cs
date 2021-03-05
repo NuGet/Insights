@@ -103,6 +103,21 @@ namespace Knapcode.ExplorePackages.Tool
                 PackageVersion = "1.5.2",
             };
 
+            scan = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2020.02.05.10.45.06/grpc.core.2.27.0.json",
+                ParsedLeafType = CatalogLeafType.PackageDetails,
+                PackageId = "Grpc.Core",
+                PackageVersion = "2.27.0",
+            };
+
+            scan = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2019.02.28.17.47.40/eo.webbrowser.19.0.69.json",
+                ParsedLeafType = CatalogLeafType.PackageDetails,
+                PackageId = "EO.WebBrowser",
+                PackageVersion = "19.0.69",
+            };
 
             var leaf = scan.GetLeafItem();
 
