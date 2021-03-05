@@ -30,7 +30,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
         }
 
         public string ResultsContainerName => _options.Value.PackageSignatureContainerName;
-        public bool SingleMessagePerId => true;
+        public bool SingleMessagePerId => false;
 
         public List<PackageSignature> Prune(List<PackageSignature> records)
         {
