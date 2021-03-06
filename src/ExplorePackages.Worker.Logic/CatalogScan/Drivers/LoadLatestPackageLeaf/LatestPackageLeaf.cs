@@ -2,15 +2,14 @@
 using Microsoft.WindowsAzure.Storage.Table;
 using NuGet.Versioning;
 
-namespace Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf
+namespace Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf
 {
     public class LatestPackageLeaf : TableEntity, ILatestPackageLeaf
     {
-        public LatestPackageLeaf(string prefix, CatalogLeafItem item, int leafRank, int pageRank, string pageUrl)
+        public LatestPackageLeaf(CatalogLeafItem item, int leafRank, int pageRank, string pageUrl)
         {
-            PartitionKey = GetPartitionKey(prefix, item.PackageId);
+            PartitionKey = GetPartitionKey(item.PackageId);
             RowKey = GetRowKey(item.PackageVersion);
-            Prefix = prefix;
             Url = item.Url;
             ParsedLeafType = item.Type;
             CommitId = item.CommitId;
@@ -36,7 +35,6 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf
             set => LeafType = value.ToString();
         }
 
-        public string Prefix { get; set; }
         public string Url { get; set; }
         public string LeafType { get; set; }
         public string CommitId { get; set; }
@@ -47,9 +45,9 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf
         public int PageRank { get; set; }
         public string PageUrl { get; set; }
 
-        public static string GetPartitionKey(string prefix, string id)
+        public static string GetPartitionKey(string id)
         {
-            return $"{prefix}${id.ToLowerInvariant()}";
+            return id.ToLowerInvariant();
         }
 
         public static string GetRowKey(string version)

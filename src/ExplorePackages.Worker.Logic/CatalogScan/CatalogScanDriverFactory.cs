@@ -1,7 +1,7 @@
 ﻿using System;
 using Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv;
 using Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScanPerId;
-using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
+using Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf;
 using Knapcode.ExplorePackages.Worker.LoadPackageArchive;
 using Knapcode.ExplorePackages.Worker.LoadPackageManifest;
 using Knapcode.ExplorePackages.Worker.LoadPackageVersion;
@@ -67,7 +67,7 @@ namespace Knapcode.ExplorePackages.Worker
 
                 case CatalogScanDriverType.CatalogLeafItemToCsv:
                     return _serviceProvider.GetRequiredService<CatalogLeafItemToCsvDriver>();
-                case CatalogScanDriverType.FindLatestPackageLeaf:
+                case CatalogScanDriverType.LoadLatestPackageLeaf:
                     return _serviceProvider.GetRequiredService<FindLatestLeafDriver<LatestPackageLeaf>>();
                 case CatalogScanDriverType.PackageArchiveEntryToCsv:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<PackageArchiveEntry>>();

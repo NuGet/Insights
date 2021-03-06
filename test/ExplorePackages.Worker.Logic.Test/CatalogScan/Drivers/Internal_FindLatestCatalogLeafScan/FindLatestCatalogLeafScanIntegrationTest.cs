@@ -11,12 +11,12 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
 {
     public class FindLatestCatalogLeafScanIntegrationTest : BaseCatalogScanIntegrationTest
     {
-        private const string FindLatestCatalogLeafScanDir = nameof(FindLatestCatalogLeafScan);
-        private const string FindLatestCatalogLeafScan_WithDuplicatesDir = nameof(FindLatestCatalogLeafScan_WithDuplicates);
+        private const string FindLatestCatalogLeafScanDir = nameof(Internal_FindLatestCatalogLeafScan);
+        private const string FindLatestCatalogLeafScan_WithDuplicatesDir = nameof(Internal_FindLatestCatalogLeafScan_WithDuplicates);
 
-        public class FindLatestCatalogLeafScan : FindLatestCatalogLeafScanIntegrationTest
+        public class Internal_FindLatestCatalogLeafScan : FindLatestCatalogLeafScanIntegrationTest
         {
-            public FindLatestCatalogLeafScan(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public Internal_FindLatestCatalogLeafScan(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -41,9 +41,9 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
             }
         }
 
-        public class FindLatestCatalogLeafScan_WithDuplicates : FindLatestCatalogLeafScanIntegrationTest
+        public class Internal_FindLatestCatalogLeafScan_WithDuplicates : FindLatestCatalogLeafScanIntegrationTest
         {
-            public FindLatestCatalogLeafScan_WithDuplicates(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public Internal_FindLatestCatalogLeafScan_WithDuplicates(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }

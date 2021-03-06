@@ -75,13 +75,13 @@ namespace Knapcode.ExplorePackages.Worker
             await UpdateAsync(loadPackageManifest.Scan);
             var startingNuspecRequestCount = GetNuspecRequestCount();
 
-            // Load the packages and process package assemblies. The package assembly catalog scan is a special case
-            // because it downloads packages on its own so the .nupkg request counter must be baselined after this scan
-            // finishes.
+            // Load the packages, process package assemblies, and run NuGet Package Explorer.
             var loadPackageArchive = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageArchive, max1);
             await UpdateAsync(loadPackageArchive.Scan);
             var packageAssemblyToCsv = await CatalogScanService.UpdateAsync(CatalogScanDriverType.PackageAssemblyToCsv, max1);
+            var nuGetPackageExplorerToCsv = await CatalogScanService.UpdateAsync(CatalogScanDriverType.NuGetPackageExplorerToCsv, max1);
             await UpdateAsync(packageAssemblyToCsv.Scan);
+            await UpdateAsync(nuGetPackageExplorerToCsv.Scan);
             var startingNupkgRequestCount = GetNupkgRequestCount();
 
             // Load the versions

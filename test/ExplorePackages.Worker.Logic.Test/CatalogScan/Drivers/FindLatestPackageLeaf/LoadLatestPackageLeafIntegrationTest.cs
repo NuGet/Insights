@@ -7,16 +7,16 @@ using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf
+namespace Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf
 {
-    public class FindLatestPackageLeafIntegrationTest : BaseCatalogScanIntegrationTest
+    public class LoadLatestPackageLeafIntegrationTest : BaseCatalogScanIntegrationTest
     {
-        private const string FindLatestPackageLeavesDir = nameof(FindLatestPackageLeaf);
-        private const string FindLatestPackageLeaves_WithDuplicatesDir = nameof(FindLatestPackageLeaf_WithDuplicates);
+        private const string LoadLatestPackageLeavesDir = nameof(LoadLatestPackageLeaf);
+        private const string LoadLatestPackageLeaves_WithDuplicatesWithDuplicatesInCommitDir = nameof(LoadLatestPackageLeaf_WithDuplicatesInCommit);
 
-        public class FindLatestPackageLeaf : FindLatestPackageLeafIntegrationTest
+        public class LoadLatestPackageLeaf : LoadLatestPackageLeafIntegrationTest
         {
-            public FindLatestPackageLeaf(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public LoadLatestPackageLeaf(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -37,14 +37,14 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf
                 await UpdateAsync(max1);
 
                 // Assert
-                await AssertOutputAsync(FindLatestPackageLeavesDir, Step1);
+                await AssertOutputAsync(LoadLatestPackageLeavesDir, Step1);
                 AssertOnlyInfoLogsOrLess();
             }
         }
 
-        public class FindLatestPackageLeaf_WithDuplicates : FindLatestPackageLeafIntegrationTest
+        public class LoadLatestPackageLeaf_WithDuplicatesInCommit : LoadLatestPackageLeafIntegrationTest
         {
-            public FindLatestPackageLeaf_WithDuplicates(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public LoadLatestPackageLeaf_WithDuplicatesInCommit(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -66,25 +66,25 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf
                 await UpdateAsync(max1);
 
                 // Assert
-                await AssertOutputAsync(FindLatestPackageLeaves_WithDuplicatesDir, Step1);
+                await AssertOutputAsync(LoadLatestPackageLeaves_WithDuplicatesWithDuplicatesInCommitDir, Step1);
 
                 // Act
                 await UpdateAsync(max2);
 
                 // Assert
-                await AssertOutputAsync(FindLatestPackageLeaves_WithDuplicatesDir, Step2);
+                await AssertOutputAsync(LoadLatestPackageLeaves_WithDuplicatesWithDuplicatesInCommitDir, Step2);
 
                 await AssertExpectedStorageAsync();
                 AssertOnlyInfoLogsOrLess();
             }
         }
 
-        public FindLatestPackageLeafIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+        public LoadLatestPackageLeafIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
             : base(output, factory)
         {
         }
 
-        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.FindLatestPackageLeaf;
+        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.LoadLatestPackageLeaf;
         public override bool OnlyLatestLeaves => false;
         public override bool OnlyLatestLeavesPerId => false;
 

@@ -300,7 +300,7 @@ namespace Knapcode.ExplorePackages.Worker
             },
 
             {
-                CatalogScanDriverType.FindLatestPackageLeaf,
+                CatalogScanDriverType.LoadLatestPackageLeaf,
                 new DriverInfo
                 {
                     DefaultMin = CatalogClient.NuGetOrgMinDeleted,
@@ -332,6 +332,19 @@ namespace Knapcode.ExplorePackages.Worker
                     SetDependencyCursorAsync = async (self, x) =>
                     {
                         await self.SetCursorAsync(CatalogScanDriverType.LoadPackageVersion, x);
+                    },
+                }
+            },
+
+            {
+                CatalogScanDriverType.NuGetPackageExplorerToCsv,
+                new DriverInfo
+                {
+                    DefaultMin = CatalogClient.NuGetOrgMinDeleted,
+                    SetDependencyCursorAsync = (self, x) =>
+                    {
+                        self.FlatContainerCursor = x;
+                        return Task.CompletedTask;
                     },
                 }
             },

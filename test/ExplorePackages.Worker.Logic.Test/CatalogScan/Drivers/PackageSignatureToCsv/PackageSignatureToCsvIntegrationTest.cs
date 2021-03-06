@@ -12,7 +12,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
     public class PackageSignatureToCsvIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest<PackageSignature>
     {
         private const string PackageSignatureToCsvDir = nameof(PackageSignatureToCsv);
-        private const string PackageSignatureToCsv_WithDuplicatesDir = nameof(PackageSignatureToCsv_WithDuplicates);
+        private const string PackageSignatureToCsv_WithDuplicatesInCommitDir = nameof(PackageSignatureToCsv_WithDuplicatesInCommit);
         private const string PackageSignatureToCsv_AuthorSignatureDir = nameof(PackageSignatureToCsv_AuthorSignature);
         private const string PackageSignatureToCsv_BadTimestampDir = nameof(PackageSignatureToCsv_BadTimestamp);
         private const string PackageSignatureToCsv_WithDeleteDir = nameof(PackageSignatureToCsv_WithDelete);
@@ -59,9 +59,9 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
             }
         }
 
-        public class PackageSignatureToCsv_WithDuplicates : PackageSignatureToCsvIntegrationTest
+        public class PackageSignatureToCsv_WithDuplicatesInCommit : PackageSignatureToCsvIntegrationTest
         {
-            public PackageSignatureToCsv_WithDuplicates(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public PackageSignatureToCsv_WithDuplicatesInCommit(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -84,17 +84,17 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
                 await UpdateAsync(max1);
 
                 // Assert
-                await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesDir, Step1, 0);
-                await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesDir, Step1, 1);
-                await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesDir, Step1, 2);
+                await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step1, 0);
+                await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step1, 1);
+                await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step1, 2);
 
                 // Act
                 await UpdateAsync(max2);
 
                 // Assert
-                await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesDir, Step1, 0); // This file is unchanged.
-                await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesDir, Step2, 1);
-                await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesDir, Step2, 2);
+                await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step1, 0); // This file is unchanged.
+                await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step2, 1);
+                await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step2, 2);
 
                 await AssertExpectedStorageAsync();
                 AssertOnlyInfoLogsOrLess();

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
+using Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
@@ -49,8 +49,8 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
             var max1 = DateTimeOffset.Parse("2020-11-27T23:41:30.2461308Z");
 
             await CatalogScanService.InitializeAsync();
-            await SetCursorAsync(CatalogScanDriverType.FindLatestPackageLeaf, min0);
-            await UpdateAsync(CatalogScanDriverType.FindLatestPackageLeaf, onlyLatestLeaves: null, max1);
+            await SetCursorAsync(CatalogScanDriverType.LoadLatestPackageLeaf, min0);
+            await UpdateAsync(CatalogScanDriverType.LoadLatestPackageLeaf, onlyLatestLeaves: null, max1);
 
             var serviceClientFactory = Host.Services.GetRequiredService<ServiceClientFactory>();
             var destTableName = StoragePrefix + "1d1";

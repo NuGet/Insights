@@ -37,6 +37,12 @@
         LoadPackageVersion,
 
         /// <summary>
+        /// Implemented by <see cref="LoadLatestPackageLeaf.LatestPackageLeafStorage"/> and <see cref="FindLatestLeafDriver{T}"/>.
+        /// This driver records the latest catalog leaf URL for each package version to Azure Table Storage.
+        /// </summary>
+        LoadLatestPackageLeaf,
+
+        /// <summary>
         /// Implemented by <see cref="PackageArchiveEntryToCsv.PackageArchiveEntryToCsvDriver"/>.
         /// Extracts metadata about each entry in a package's ZIP archive.
         /// </summary>
@@ -74,6 +80,10 @@
         /// </summary>
         PackageVersionToCsv,
 
+        /// <summary>
+        /// Implemented by <see cref="NuGetPackageExplorerToCsv.NuGetPackageExplorerToCsvDriver"/>. This driver runs
+        /// NuGet Package Explorer (NPE) assembly and symbol verification logic.
+        /// </summary>
         NuGetPackageExplorerToCsv,
 
         /// <summary>
@@ -82,11 +92,5 @@
         /// https://docs.microsoft.com/en-us/nuget/api/catalog-resource#catalog-item-object-in-a-page
         /// </summary>
         CatalogLeafItemToCsv,
-
-        /// <summary>
-        /// Implemented by <see cref="FindLatestPackageLeaf.LatestPackageLeafStorage"/> and <see cref="FindLatestLeafDriver{T}"/>.
-        /// This driver records the latest catalog leaf URL for each package version to Azure Table Storage.
-        /// </summary>
-        FindLatestPackageLeaf,
     }
 }

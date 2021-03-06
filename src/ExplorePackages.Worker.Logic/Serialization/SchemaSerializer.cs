@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv;
 using Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan;
-using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
+using Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf;
 using Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv;
 using Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv;
 using Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv;
@@ -59,7 +59,6 @@ namespace Knapcode.ExplorePackages.Worker
             new SchemaV1<TablePrefixScanPartitionKeyQueryParameters>("tps.pkq"),
             new SchemaV1<TablePrefixScanPrefixQueryParameters>("tps.pq"),
 
-            new SchemaV1<LatestPackageLeafParameters>("fll"),
             new SchemaV1<CatalogLeafToCsvParameters>("cl2c"),
 
             new SchemaV1<EnqueueCatalogLeafScansParameters>("ecls"),

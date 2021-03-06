@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf;
+using Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -128,7 +128,7 @@ namespace Knapcode.ExplorePackages.Worker
                 case CatalogScanDriverType.CatalogLeafItemToCsv:
                     return false;
 
-                case CatalogScanDriverType.FindLatestPackageLeaf:
+                case CatalogScanDriverType.LoadLatestPackageLeaf:
                     return true;
 
                 case CatalogScanDriverType.PackageArchiveEntryToCsv:
@@ -203,9 +203,6 @@ namespace Knapcode.ExplorePackages.Worker
                         CatalogClient.NuGetOrgMin,
                         max);
 
-                case CatalogScanDriverType.FindLatestPackageLeaf:
-                    return await UpdateFindLatestLeafAsync(max);
-
                 case CatalogScanDriverType.PackageArchiveEntryToCsv:
                 case CatalogScanDriverType.PackageAssemblyToCsv:
                 case CatalogScanDriverType.PackageAssetToCsv:
@@ -218,10 +215,15 @@ namespace Knapcode.ExplorePackages.Worker
                         onlyLatestLeaves.GetValueOrDefault(true),
                         max);
 
+                case CatalogScanDriverType.LoadLatestPackageLeaf:
                 case CatalogScanDriverType.LoadPackageArchive:
                 case CatalogScanDriverType.LoadPackageManifest:
                 case CatalogScanDriverType.LoadPackageVersion:
-                    return await UpdateParameterlessAsync(driverType, max);
+                    return await UpdateAsync(
+                        driverType,
+                        parameters: null,
+                        min: CatalogClient.NuGetOrgMinDeleted,
+                        max);
 
                 default:
                     throw new NotSupportedException();
@@ -257,21 +259,6 @@ namespace Knapcode.ExplorePackages.Worker
                 CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId,
                 parameters: _serializer.Serialize(parentScanMessage).AsString(),
                 min,
-                max);
-        }
-
-        private async Task<CatalogScanServiceResult> UpdateFindLatestLeafAsync(DateTimeOffset? max)
-        {
-            var parameters = new LatestPackageLeafParameters
-            {
-                Prefix = string.Empty,
-                StorageSuffix = string.Empty,
-            };
-
-            return await UpdateAsync(
-                CatalogScanDriverType.FindLatestPackageLeaf,
-                parameters: _serializer.Serialize(parameters).AsString(),
-                min: CatalogClient.NuGetOrgMinDeleted,
                 max);
         }
 
@@ -314,15 +301,6 @@ namespace Knapcode.ExplorePackages.Worker
                 driverType,
                 parameters: _serializer.Serialize(parameters).AsString(),
                 onlyLatestLeaves ? CatalogClient.NuGetOrgMinDeleted : CatalogClient.NuGetOrgMinAvailable,
-                max);
-        }
-
-        private async Task<CatalogScanServiceResult> UpdateParameterlessAsync(CatalogScanDriverType driverType, DateTimeOffset? max)
-        {
-            return await UpdateAsync(
-                driverType,
-                parameters: null,
-                min: CatalogClient.NuGetOrgMinDeleted,
                 max);
         }
 
@@ -528,7 +506,7 @@ namespace Knapcode.ExplorePackages.Worker
         private static readonly IReadOnlyDictionary<CatalogScanDriverType, IReadOnlyList<(string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)>> Dependencies = new Dictionary<CatalogScanDriverType, (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[]>
         {
             { CatalogScanDriverType.CatalogLeafItemToCsv, Catalog },
-            { CatalogScanDriverType.FindLatestPackageLeaf, Catalog },
+            { CatalogScanDriverType.LoadLatestPackageLeaf, Catalog },
             { CatalogScanDriverType.LoadPackageArchive, FlatContainer },
             { CatalogScanDriverType.LoadPackageManifest, FlatContainer },
             { CatalogScanDriverType.LoadPackageVersion, Catalog },

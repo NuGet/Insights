@@ -2,24 +2,21 @@
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Table;
 
-namespace Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf
+namespace Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf
 {
     public class LatestPackageLeafStorage : ILatestPackageLeafStorage<LatestPackageLeaf>
     {
-        private readonly string _prefix;
         private readonly IReadOnlyDictionary<CatalogLeafItem, int> _leafItemToRank;
         private readonly int _pageRank;
         private readonly string _pageUrl;
 
         public LatestPackageLeafStorage(
             CloudTable table,
-            string prefix,
             IReadOnlyDictionary<CatalogLeafItem, int> leafItemToRank,
             int pageRank,
             string pageUrl)
         {
             Table = table;
-            _prefix = prefix;
             _leafItemToRank = leafItemToRank;
             _pageRank = pageRank;
             _pageUrl = pageUrl;
@@ -29,7 +26,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf
 
         public string GetPartitionKey(string packageId)
         {
-            return LatestPackageLeaf.GetPartitionKey(_prefix, packageId);
+            return LatestPackageLeaf.GetPartitionKey(packageId);
         }
 
         public string GetRowKey(string packageVersion)
@@ -42,7 +39,6 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestPackageLeaf
         public Task<LatestPackageLeaf> MapAsync(CatalogLeafItem item)
         {
             return Task.FromResult(new LatestPackageLeaf(
-                _prefix,
                 item,
                 _leafItemToRank[item],
                 _pageRank,
