@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Worker
@@ -30,17 +31,19 @@ namespace Knapcode.ExplorePackages.Worker
             var parameters = (CatalogLeafToCsvParameters)_schemaSerializer.Deserialize(indexScan.DriverParameters).Data;
 
             CatalogIndexScanResult result;
-            if (parameters.Reprocess)
+            switch (parameters.Mode)
             {
-                result = CatalogIndexScanResult.ExpandCustom;
-            }
-            else if (parameters.OnlyLatestLeaves)
-            {
-                result = _driver.SingleMessagePerId ? CatalogIndexScanResult.ExpandLatestLeavesPerId : CatalogIndexScanResult.ExpandLatestLeaves;
-            }
-            else
-            {
-                result = CatalogIndexScanResult.ExpandAllLeaves;
+                case CatalogLeafToCsvMode.AllLeaves:
+                    result = CatalogIndexScanResult.ExpandAllLeaves;
+                    break;
+                case CatalogLeafToCsvMode.LatestLeaves:
+                    result = _driver.SingleMessagePerId ? CatalogIndexScanResult.ExpandLatestLeavesPerId : CatalogIndexScanResult.ExpandLatestLeaves;
+                    break;
+                case CatalogLeafToCsvMode.Reprocess:
+                    result = CatalogIndexScanResult.CustomExpand;
+                    break;
+                default:
+                    throw new NotImplementedException();
             }
 
             return Task.FromResult(result);

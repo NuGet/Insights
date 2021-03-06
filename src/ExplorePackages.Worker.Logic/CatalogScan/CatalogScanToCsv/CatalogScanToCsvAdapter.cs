@@ -38,7 +38,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             var buckets = await _storageService.GetCompactedBucketsAsync(resultsContainerName);
 
-            var partitionKey = GetExpandCustomPartitionKey(indexScan);
+            var partitionKey = GetCustomExpandPartitionKey(indexScan);
 
             await _taskStateStorageService.GetOrAddAsync(
                 indexScan.StorageSuffix,
@@ -64,7 +64,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             var countLowerBound = await _taskStateStorageService.GetCountLowerBoundAsync(
                 indexScan.StorageSuffix,
-                GetExpandCustomPartitionKey(indexScan));
+                GetCustomExpandPartitionKey(indexScan));
             _logger.LogInformation("There are at least {Count} expand custom tasks pending.", countLowerBound);
             return countLowerBound == 0;
         }
@@ -108,9 +108,9 @@ namespace Knapcode.ExplorePackages.Worker
             return countLowerBound == 0;
         }
 
-        private static string GetExpandCustomPartitionKey(CatalogIndexScan indexScan)
+        private static string GetCustomExpandPartitionKey(CatalogIndexScan indexScan)
         {
-            return $"{indexScan.ScanId}-{nameof(CatalogScanToCsvAdapter<T>)}-expand-custom";
+            return $"{indexScan.ScanId}-{nameof(CatalogScanToCsvAdapter<T>)}-custom-expand";
         }
 
         private static string GetAggregateTasksPartitionKey(CatalogIndexScan indexScan)

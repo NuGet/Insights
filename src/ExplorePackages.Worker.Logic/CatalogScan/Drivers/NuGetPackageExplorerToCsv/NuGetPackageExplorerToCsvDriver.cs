@@ -70,7 +70,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             var catalogLeaf = await _catalogClient.GetCatalogLeafAsync(CatalogLeafType.PackageDetails, registrationLeaf.CatalogEntry);
 
             return new CatalogLeafItem
-            { 
+            {
                 CommitId = catalogLeaf.CommitId,
                 CommitTimestamp = catalogLeaf.CommitTimestamp,
                 PackageId = record.Id,

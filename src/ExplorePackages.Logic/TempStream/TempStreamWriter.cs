@@ -195,7 +195,7 @@ namespace Knapcode.ExplorePackages
                         {
                             // Pre-allocate the full file size, to encounter full disk exceptions prior to reading the source stream.
                             _logger.LogInformation("Pre-allocating file at location {TempPath} to {Length} bytes.", tempPath, length);
-                            await dest.SetLengthAndWriteAsync( length);
+                            await dest.SetLengthAndWriteAsync(length);
                         }
 
                         consumedSource = true;

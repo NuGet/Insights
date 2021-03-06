@@ -61,6 +61,7 @@ namespace Knapcode.ExplorePackages.Worker
             x.PackageDownloadsContainerName = $"{StoragePrefix}1pd1";
             x.PackageOwnersContainerName = $"{StoragePrefix}1po1";
             x.PackageArchiveEntryContainerName = $"{StoragePrefix}1pae2c1";
+            x.NuGetPackageExplorerContainerName = $"{StoragePrefix}1npe2c1";
 
             ConfigureDefaultsAndSettings(x);
 
@@ -83,7 +84,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         protected async Task<CatalogIndexScan> UpdateAsync(CatalogScanDriverType driverType, bool? onlyLatestLeaves, DateTimeOffset max)
         {
-            var result = await CatalogScanService.UpdateAsync(driverType, max, onlyLatestLeaves, reprocess: null);
+            var result = await CatalogScanService.UpdateAsync(driverType, max, onlyLatestLeaves);
             return await UpdateAsync(result.Scan);
         }
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using NuGetPe;
 
 namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv

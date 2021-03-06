@@ -7,10 +7,7 @@ namespace Knapcode.ExplorePackages.Worker
         [JsonProperty("bc")]
         public int BucketCount { get; set; }
 
-        [JsonProperty("ll")]
-        public bool OnlyLatestLeaves { get; set; }
-
-        [JsonProperty("r")]
-        public bool Reprocess { get; set; }
+        [JsonProperty("m")]
+        public CatalogLeafToCsvMode Mode { get; set; }
     }
 }

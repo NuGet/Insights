@@ -53,12 +53,12 @@ namespace Knapcode.ExplorePackages.Worker
             {
                 var home = Path.GetFullPath(Environment.GetEnvironmentVariable("HOME"));
                 var newTemp = Path.Combine(home, "Knapcode.ExplorePackages", "temp");
-                
+
                 if (!Directory.Exists(newTemp))
                 {
                     Directory.CreateDirectory(newTemp);
                 }
-                
+
                 Environment.SetEnvironmentVariable("TMP", newTemp);
                 Environment.SetEnvironmentVariable("TEMP", newTemp);
 

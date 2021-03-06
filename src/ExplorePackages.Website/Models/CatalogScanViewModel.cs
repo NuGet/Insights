@@ -13,18 +13,7 @@ namespace Knapcode.ExplorePackages.Website.Models
 
         public DateTimeOffset DefaultMax => DateTimeOffset.Parse("2015-02-01T06:22:45.8488496Z");
 
-        public bool DefaultOnlyLatestLeaves
-        {
-            get
-            {
-                switch (DriverType)
-                {
-                    case CatalogScanDriverType.CatalogLeafItemToCsv:
-                        return false;
-                    default:
-                        return true;
-                }
-            }
-        }
+        public bool SupportsReprocess { get; set; }
+        public bool? OnlyLatestLeavesSupport { get; set; }
     }
 }

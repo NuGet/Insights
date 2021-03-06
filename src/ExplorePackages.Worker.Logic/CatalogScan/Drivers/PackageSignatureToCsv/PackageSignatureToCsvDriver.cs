@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using NuGet.Packaging.Signing;
@@ -15,18 +14,15 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
         private readonly CatalogClient _catalogClient;
         private readonly PackageFileService _packageFileService;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
-        private readonly ILogger<PackageSignatureToCsvDriver> _logger;
 
         public PackageSignatureToCsvDriver(
             CatalogClient catalogClient,
             PackageFileService packageFileService,
-            IOptions<ExplorePackagesWorkerSettings> options,
-            ILogger<PackageSignatureToCsvDriver> logger)
+            IOptions<ExplorePackagesWorkerSettings> options)
         {
             _catalogClient = catalogClient;
             _packageFileService = packageFileService;
             _options = options;
-            _logger = logger;
         }
 
         public string ResultsContainerName => _options.Value.PackageSignatureContainerName;

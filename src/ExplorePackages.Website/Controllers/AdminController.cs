@@ -107,6 +107,8 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 DriverType = driverType,
                 Cursor = cursor,
                 LatestScans = latestScans,
+                SupportsReprocess = _catalogScanService.SupportsReprocess(driverType),
+                OnlyLatestLeavesSupport = _catalogScanService.GetOnlyLatestLeavesSupport(driverType),
             };
         }
 
@@ -154,7 +156,15 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 parsedMax = parsedMaxValue;
             }
 
-            var result = await _catalogScanService.UpdateAsync(driverType, parsedMax, onlyLatestLeaves, reprocess);
+            CatalogScanServiceResult result;
+            if (reprocess)
+            {
+                result = await _catalogScanService.ReprocessAsync(driverType);
+            }
+            else
+            {
+                result = await _catalogScanService.UpdateAsync(driverType, parsedMax, onlyLatestLeaves);
+            }
 
             switch (result.Type)
             {

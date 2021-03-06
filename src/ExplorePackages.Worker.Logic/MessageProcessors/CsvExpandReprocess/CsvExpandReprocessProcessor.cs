@@ -24,7 +24,7 @@ namespace Knapcode.ExplorePackages.Worker
             _appendResultStorageService = appendResultStorageService;
             _taskStateStorageService = taskStateStorageService;
             _catalogScanStorageService = catalogScanStorageService;
-             _driver = compactor;
+            _driver = compactor;
             _logger = logger;
         }
 

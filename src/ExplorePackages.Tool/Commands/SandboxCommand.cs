@@ -152,6 +152,14 @@ namespace Knapcode.ExplorePackages.Tool
                 PackageVersion = "1.2.0",
             };
 
+            scan = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2020.11.09.23.54.44/microsoft.extensions.logging.5.0.0.json",
+                ParsedLeafType = CatalogLeafType.PackageDetails,
+                PackageId = "Microsoft.Extensions.Logging",
+                PackageVersion = "5.0.0",
+            };
+
             var leaf = scan.GetLeafItem();
 
             Console.WriteLine(JsonConvert.SerializeObject(
