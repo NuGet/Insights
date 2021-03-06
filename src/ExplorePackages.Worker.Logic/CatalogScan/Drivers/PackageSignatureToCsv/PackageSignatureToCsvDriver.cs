@@ -176,6 +176,11 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
             return PackageRecord.GetBucketKey(item);
         }
 
+        public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(PackageSignature record)
+        {
+            throw new NotImplementedException();
+        }
+
         private record SignatureInfo
         {
             public bool TimestampHasASN1Error { get; init; }

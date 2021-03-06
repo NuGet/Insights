@@ -109,7 +109,7 @@ namespace Knapcode.ExplorePackages.Worker
             return $"CatalogScan-{driverType}";
         }
 
-        public async Task<CatalogScanServiceResult> UpdateAsync(CatalogScanDriverType driverType, DateTimeOffset? max, bool? onlyLatestLeaves)
+        public async Task<CatalogScanServiceResult> UpdateAsync(CatalogScanDriverType driverType, DateTimeOffset? max, bool? onlyLatestLeaves, bool? reprocess)
         {
             switch (driverType)
             {
@@ -118,25 +118,50 @@ namespace Knapcode.ExplorePackages.Worker
                     {
                         throw new NotSupportedException("When finding catalog leaf items all leaves will be reported, not just the latest.");
                     }
+                    if (reprocess.HasValue && reprocess.Value)
+                    {
+                        throw new NotSupportedException("Reprocessing is not supported.");
+                    }
                     return await UpdateAsync(
                         driverType,
                         parameters: null,
                         CatalogClient.NuGetOrgMin,
                         max);
+
                 case CatalogScanDriverType.FindLatestPackageLeaf:
                     if (onlyLatestLeaves.HasValue && !onlyLatestLeaves.Value)
                     {
                         throw new NotSupportedException("When finding latest leaves, only the latest leaves will be reported.");
                     }
+                    if (reprocess.HasValue && reprocess.Value)
+                    {
+                        throw new NotSupportedException("Reprocessing is not supported.");
+                    }
                     return await UpdateFindLatestLeafAsync(max);
+
                 case CatalogScanDriverType.PackageArchiveEntryToCsv:
                 case CatalogScanDriverType.PackageAssemblyToCsv:
                 case CatalogScanDriverType.PackageAssetToCsv:
                 case CatalogScanDriverType.PackageSignatureToCsv:
                 case CatalogScanDriverType.PackageManifestToCsv:
                 case CatalogScanDriverType.PackageVersionToCsv:
+                    if (reprocess.HasValue && reprocess.Value)
+                    {
+                        throw new NotSupportedException("Reprocessing is not supported.");
+                    }
+                    return await UpdateCatalogLeafToCsvAsync(
+                        driverType,
+                        onlyLatestLeaves.GetValueOrDefault(true),
+                        reprocess: false,
+                        max);
+
                 case CatalogScanDriverType.NuGetPackageExplorerToCsv:
-                    return await UpdateCatalogLeafToCsvAsync(driverType, onlyLatestLeaves.GetValueOrDefault(true), max);
+                    return await UpdateCatalogLeafToCsvAsync(
+                        driverType,
+                        onlyLatestLeaves.GetValueOrDefault(true),
+                        reprocess.GetValueOrDefault(false),
+                        max);
+
                 case CatalogScanDriverType.LoadPackageArchive:
                 case CatalogScanDriverType.LoadPackageManifest:
                 case CatalogScanDriverType.LoadPackageVersion:
@@ -144,7 +169,12 @@ namespace Knapcode.ExplorePackages.Worker
                     {
                         throw new NotSupportedException("For catalog scan drivers that don't support parameters, only the latest leaves will be reported.");
                     }
+                    if (reprocess.HasValue && reprocess.Value)
+                    {
+                        throw new NotSupportedException("Reprocessing is not supported.");
+                    }
                     return await UpdateParameterlessAsync(driverType, max);
+
                 default:
                     throw new NotSupportedException();
             }
@@ -197,19 +227,43 @@ namespace Knapcode.ExplorePackages.Worker
                 max);
         }
 
-        private async Task<CatalogScanServiceResult> UpdateCatalogLeafToCsvAsync(CatalogScanDriverType driverType, bool onlyLatestLeaves, DateTimeOffset? max)
+        private async Task<CatalogScanServiceResult> UpdateCatalogLeafToCsvAsync(
+            CatalogScanDriverType driverType,
+            bool onlyLatestLeaves,
+            bool reprocess,
+            DateTimeOffset? max)
         {
             var parameters = new CatalogLeafToCsvParameters
             {
                 BucketCount = _options.Value.AppendResultStorageBucketCount,
                 OnlyLatestLeaves = onlyLatestLeaves,
+                Reprocess = reprocess,
             };
 
-            return await UpdateAsync(
-                driverType,
-                parameters: _serializer.Serialize(parameters).AsString(),
-                min: onlyLatestLeaves ? CatalogClient.NuGetOrgMinDeleted : CatalogClient.NuGetOrgMinAvailable,
-                max);
+            var min = onlyLatestLeaves ? CatalogClient.NuGetOrgMinDeleted : CatalogClient.NuGetOrgMinAvailable;
+            var serializedParameters = _serializer.Serialize(parameters).AsString();
+
+            if (reprocess)
+            {
+                var cursor = await GetCursorAsync(driverType);
+                var scanId = StorageUtility.GenerateDescendingId();
+                var scan = await GetOrStartCursorlessAsync(
+                    scanId.ToString(),
+                    scanId.Unique,
+                    driverType,
+                    serializedParameters,
+                    min,
+                    cursor.Value);
+                return new CatalogScanServiceResult(CatalogScanServiceResultType.NewStarted, null, scan);
+            }
+            else
+            {
+                return await UpdateAsync(
+                    driverType,
+                    serializedParameters,
+                    min,
+                    max);
+            }
         }
 
         private async Task<CatalogScanServiceResult> UpdateParameterlessAsync(CatalogScanDriverType driverType, DateTimeOffset? max)

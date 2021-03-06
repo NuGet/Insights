@@ -81,5 +81,15 @@ namespace Knapcode.ExplorePackages.Worker
         {
             return Task.CompletedTask;
         }
+
+        public Task StartCustomExpandAsync(CatalogIndexScan indexScan)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> IsCustomExpandCompleteAsync(CatalogIndexScan indexScan)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

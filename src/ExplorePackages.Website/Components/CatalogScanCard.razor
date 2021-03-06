@@ -29,6 +29,10 @@
                 <input class="form-check-input" type="checkbox" id="@Model.DriverType.ToString()-onlyLatestLeaves" name="onlyLatestLeaves" checked="@Model.DefaultOnlyLatestLeaves" value="true" />
                 <label class="form-check-label" for="@Model.DriverType.ToString()-onlyLatestLeaves">Only latest leaves</label>
             </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="@Model.DriverType.ToString()-reprocess" name="reprocess" value="true" />
+                <label class="form-check-label" for="@Model.DriverType.ToString()-reprocess">Reprocess</label>
+            </div>
             <button type="submit" class="btn btn-primary">Start</button>
         </form>
     </div>

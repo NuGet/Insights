@@ -149,6 +149,11 @@ namespace Knapcode.ExplorePackages.Worker
                 var recordType = serviceType.GenericTypeArguments.Single();
                 serviceCollection.AddTransient(
                     typeof(CatalogLeafScanToCsvAdapter<>).MakeGenericType(recordType));
+
+                // Add custom expand processor
+                serviceCollection.AddTransient(
+                    typeof(IMessageProcessor<>).MakeGenericType(typeof(CsvExpandReprocessMessage<>).MakeGenericType(recordType)),
+                    typeof(CsvExpandReprocessProcessor<>).MakeGenericType(recordType));
             }
 
             return serviceCollection;

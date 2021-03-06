@@ -111,9 +111,14 @@ namespace Knapcode.ExplorePackages.Website.Controllers
         }
 
         [HttpPost]
-        public async Task<RedirectToActionResult> UpdateCatalogScan(CatalogScanDriverType driverType, bool useCustomMax, bool onlyLatestLeaves, string max)
+        public async Task<RedirectToActionResult> UpdateCatalogScan(
+            CatalogScanDriverType driverType,
+            bool useCustomMax,
+            bool onlyLatestLeaves,
+            bool reprocess,
+            string max)
         {
-            (var success, var message) = await GetUpdateCatalogScanErrorAsync(driverType, useCustomMax, onlyLatestLeaves, max);
+            (var success, var message) = await GetUpdateCatalogScanErrorAsync(driverType, useCustomMax, onlyLatestLeaves, reprocess, max);
             if (success)
             {
                 TempData[driverType + ".Success"] = message;
@@ -126,11 +131,21 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment: driverType.ToString());
         }
 
-        private async Task<(bool Success, string Message)> GetUpdateCatalogScanErrorAsync(CatalogScanDriverType driverType, bool useCustomMax, bool onlyLatestLeaves, string max)
+        private async Task<(bool Success, string Message)> GetUpdateCatalogScanErrorAsync(
+            CatalogScanDriverType driverType,
+            bool useCustomMax,
+            bool onlyLatestLeaves,
+            bool reprocess,
+            string max)
         {
             DateTimeOffset? parsedMax = null;
             if (useCustomMax)
             {
+                if (reprocess)
+                {
+                    return (false, "Unable to reprocess with a custom max value.");
+                }
+
                 if (!DateTimeOffset.TryParse(max, out var parsedMaxValue))
                 {
                     return (false, "Unable to parse the custom max value.");
@@ -139,7 +154,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 parsedMax = parsedMaxValue;
             }
 
-            var result = await _catalogScanService.UpdateAsync(driverType, parsedMax, onlyLatestLeaves);
+            var result = await _catalogScanService.UpdateAsync(driverType, parsedMax, onlyLatestLeaves, reprocess);
 
             switch (result.Type)
             {

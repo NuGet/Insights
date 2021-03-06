@@ -75,6 +75,7 @@ namespace Knapcode.ExplorePackages.Worker
                         break;
                     case CatalogIndexScanResult.ExpandLatestLeaves:
                     case CatalogIndexScanResult.ExpandLatestLeavesPerId:
+                    case CatalogIndexScanResult.ExpandCustom:
                         await _storageService.InitializeLeafScanTableAsync(scan.StorageSuffix);
                         break;
                     case CatalogIndexScanResult.Processed:
@@ -96,6 +97,9 @@ namespace Knapcode.ExplorePackages.Worker
                     break;
                 case CatalogIndexScanResult.ExpandLatestLeavesPerId:
                     await ExpandLatestLeavesAsync(message, scan, driver, perId: true);
+                    break;
+                case CatalogIndexScanResult.ExpandCustom:
+                    await ExpandCustomAsync(message, scan, driver);
                     break;
                 case CatalogIndexScanResult.Processed:
                     await CompleteAsync(scan);
@@ -214,46 +218,55 @@ namespace Knapcode.ExplorePackages.Worker
                 await _storageService.ReplaceAsync(scan);
             }
 
-            // Enqueueing: start the table scan of the latest leaves table
-            if (scan.ParsedState == CatalogIndexScanState.Enqueuing)
-            {
-                var taskState = await _taskStateStorageService.GetOrAddAsync(taskStateKey);
-                if (taskState != null)
-                {
-                    // NOTE: this table scan does not strictly need to be only on partition key. Since we are only
-                    // writing a single leaf scan per package ID (where leaf scan partition key is scoped at the package
-                    // ID level), we can simply process all leaf scans. However this is a defensive approach to ensure
-                    // to ensure the preceding logic is working as expected.
-                    //
-                    // Also, I implemented this partition key scanning logic and I want to leverage it here ^_^
-                    await _tableScanService.StartEnqueueCatalogLeafScansAsync(
-                        taskStateKey,
-                        _storageService.GetLeafScanTable(scan.StorageSuffix).Name,
-                        oneMessagePerId: perId);
-                }
+            // NOTE: this table scan does not strictly need to be only on partition key. Since we are only
+            // writing a single leaf scan per package ID (where leaf scan partition key is scoped at the package
+            // ID level), we can simply process all leaf scans. However this is a defensive approach to ensure
+            // to ensure the preceding logic is working as expected.
+            //
+            // Also, I implemented this partition key scanning logic and I want to leverage it here ^_^
+            var enqueuePerId = perId;
 
-                scan.ParsedState = CatalogIndexScanState.Working;
-                message.AttemptCount = 0;
+            await HandleEnqueueAggregateAndFinalizeStatesAsync(message, scan, driver, taskStateKey, enqueuePerId);
+        }
+
+        private async Task ExpandCustomAsync(CatalogIndexScanMessage message, CatalogIndexScan scan, ICatalogScanDriver driver)
+        {
+            var taskStateKey = new TaskStateKey(scan.StorageSuffix, $"{scan.ScanId}-{TableScanDriverType.EnqueueCatalogLeafScans}", "start");
+
+            await HandleInitializedStateAsync(scan, nextState: CatalogIndexScanState.StartingExpand);
+
+            // StartingExpand: start the custom expand flow provided by the driver
+            if (scan.ParsedState == CatalogIndexScanState.StartingExpand)
+            {
+                await driver.StartCustomExpandAsync(scan);
+
+                scan.ParsedState = CatalogIndexScanState.Expanding;
                 await _storageService.ReplaceAsync(scan);
             }
 
-            // Waiting: wait for the table scan and subsequent leaf scans to complete
-            if (scan.ParsedState == CatalogIndexScanState.Working)
+            // Expanding: wait for the custom expand flow to complete
+            if (scan.ParsedState == CatalogIndexScanState.Expanding)
             {
-                if (!await AreTableScanStepsCompleteAsync(taskStateKey) || !await AreLeafScansCompleteAsync(scan))
+                if (!await driver.IsCustomExpandCompleteAsync(scan))
                 {
+                    _logger.LogInformation("The custom expand is still running.");
                     message.AttemptCount++;
                     await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
                     return;
                 }
                 else
                 {
-                    scan.ParsedState = CatalogIndexScanState.StartingAggregate;
+                    await _taskStateStorageService.InitializeAsync(scan.StorageSuffix);
+                    await _taskStateStorageService.GetOrAddAsync(taskStateKey);
+                    scan.ParsedState = CatalogIndexScanState.Enqueuing;
                     await _storageService.ReplaceAsync(scan);
                 }
             }
 
-            await HandleAggregateAndFinalizeStatesAsync(message, scan, driver);
+            // NOTE: we never need to enqueue per ID since the custom expand logic can create any granularity of leaf
+            // item that it wants.
+            var enqueuePerId = false;
+            await HandleEnqueueAggregateAndFinalizeStatesAsync(message, scan, driver, taskStateKey, enqueuePerId);
         }
 
         private async Task<bool> ArePageScansCompleteAsync(CatalogIndexScan scan)
@@ -320,6 +333,49 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             return lazyIndexTask;
+        }
+
+        private async Task HandleEnqueueAggregateAndFinalizeStatesAsync(
+            CatalogIndexScanMessage message,
+            CatalogIndexScan scan,
+            ICatalogScanDriver driver,
+            TaskStateKey taskStateKey,
+            bool enqueuePerId)
+        {
+            // Enqueueing: start the table scan of the latest leaves table
+            if (scan.ParsedState == CatalogIndexScanState.Enqueuing)
+            {
+                var taskState = await _taskStateStorageService.GetOrAddAsync(taskStateKey);
+                if (taskState != null)
+                {
+                    await _tableScanService.StartEnqueueCatalogLeafScansAsync(
+                        taskStateKey,
+                        _storageService.GetLeafScanTable(scan.StorageSuffix).Name,
+                        oneMessagePerId: enqueuePerId);
+                }
+
+                scan.ParsedState = CatalogIndexScanState.Working;
+                message.AttemptCount = 0;
+                await _storageService.ReplaceAsync(scan);
+            }
+
+            // Waiting: wait for the table scan and subsequent leaf scans to complete
+            if (scan.ParsedState == CatalogIndexScanState.Working)
+            {
+                if (!await AreTableScanStepsCompleteAsync(taskStateKey) || !await AreLeafScansCompleteAsync(scan))
+                {
+                    message.AttemptCount++;
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
+                    return;
+                }
+                else
+                {
+                    scan.ParsedState = CatalogIndexScanState.StartingAggregate;
+                    await _storageService.ReplaceAsync(scan);
+                }
+            }
+
+            await HandleAggregateAndFinalizeStatesAsync(message, scan, driver);
         }
 
         private async Task HandleAggregateAndFinalizeStatesAsync(CatalogIndexScanMessage message, CatalogIndexScan scan, ICatalogScanDriver driver)

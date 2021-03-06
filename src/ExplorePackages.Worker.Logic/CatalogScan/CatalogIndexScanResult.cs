@@ -6,5 +6,6 @@
         ExpandAllLeaves,
         ExpandLatestLeaves,
         ExpandLatestLeavesPerId,
+        ExpandCustom,
     }
 }

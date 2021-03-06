@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.WideEntities;
 using MessagePack;
@@ -26,15 +27,18 @@ namespace Knapcode.ExplorePackages.Worker
         private const string CompactPrefix = "compact_";
         private readonly IServiceClientFactory _serviceClientFactory;
         private readonly WideEntityService _wideEntityService;
+        private readonly ICsvReader _csvReader;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
         public AppendResultStorageService(
             IServiceClientFactory serviceClientFactory,
             WideEntityService wideEntityService,
+            ICsvReader csvReader,
             IOptions<ExplorePackagesWorkerSettings> options)
         {
             _serviceClientFactory = serviceClientFactory;
             _wideEntityService = wideEntityService;
+            _csvReader = csvReader;
             _options = options;
         }
 
@@ -83,6 +87,17 @@ namespace Knapcode.ExplorePackages.Worker
                 default:
                     throw new NotImplementedException();
             }
+        }
+
+        public async Task<IReadOnlyList<T>> ReadAsync<T>(string containerName, int bucket) where T : ICsvRecord<T>, new()
+        {
+            var compactBlob = GetCompactBlob(containerName, bucket);
+            if (!await compactBlob.ExistsAsync())
+            {
+                return Array.Empty<T>();
+            }
+
+            return await DeserializeBlobAsync<T>(compactBlob, compactBlob.Properties.ContentEncoding == "gzip");
         }
 
         private async Task AppendToBlobAsync<T>(string containerName, int bucketCount, string bucketKey, IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
@@ -231,7 +246,7 @@ namespace Knapcode.ExplorePackages.Worker
                 var blob = GetAppendBlobWrapper(srcContainer, bucket);
                 if (await blob.ExistsAsync())
                 {
-                    var records = await DeserializeBlobAsync<T>(blob, csvReader, gzip: false);
+                    var records = await DeserializeBlobAsync<T>(blob, gzip: false);
                     appendRecords.AddRange(records);
                 }
                 else if (!force)
@@ -241,7 +256,7 @@ namespace Knapcode.ExplorePackages.Worker
                 }
             }
 
-            await CompactAsync(appendRecords, destContainer, bucket, mergeExisting, prune, csvReader);
+            await CompactAsync(appendRecords, destContainer, bucket, mergeExisting, prune);
         }
 
         private async Task CompactFromTableAsync<T>(
@@ -275,7 +290,7 @@ namespace Knapcode.ExplorePackages.Worker
                 }
             }
 
-            await CompactAsync(appendRecords, destContainer, bucket, mergeExisting, prune, csvReader);
+            await CompactAsync(appendRecords, destContainer, bucket, mergeExisting, prune);
         }
 
         private static byte[] Serialize<T>(IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
@@ -293,8 +308,7 @@ namespace Knapcode.ExplorePackages.Worker
             string destContainer,
             int bucket,
             bool mergeExisting,
-            Func<List<T>, List<T>> prune,
-            ICsvReader csvReader) where T : ICsvRecord<T>, new()
+            Func<List<T>, List<T>> prune) where T : ICsvRecord<T>, new()
         {
             var allRecords = new List<T>(appendRecords);
 
@@ -302,7 +316,7 @@ namespace Knapcode.ExplorePackages.Worker
             var accessCondition = AccessCondition.GenerateIfNotExistsCondition();
             if (mergeExisting && await compactBlob.ExistsAsync())
             {
-                var records = await DeserializeBlobAsync<T>(compactBlob, csvReader, compactBlob.Properties.ContentEncoding == "gzip");
+                var records = await DeserializeBlobAsync<T>(compactBlob, compactBlob.Properties.ContentEncoding == "gzip");
                 allRecords.AddRange(records);
                 accessCondition = AccessCondition.GenerateIfMatchCondition(compactBlob.Properties.ETag);
             }
@@ -321,12 +335,12 @@ namespace Knapcode.ExplorePackages.Worker
             await compactBlob.UploadFromStreamAsync(stream, accessCondition, options: null, operationContext: null);
         }
 
-        private static async Task<List<T>> DeserializeBlobAsync<T>(ICloudBlobWrapper blob, ICsvReader csvReader, bool gzip) where T : ICsvRecord<T>, new()
+        private async Task<List<T>> DeserializeBlobAsync<T>(ICloudBlobWrapper blob, bool gzip) where T : ICsvRecord<T>, new()
         {
             var bufferSize = 32 * 1024;
             do
             {
-                var result = await DeserializeBlobAsync<T>(blob, csvReader, gzip, bufferSize);
+                var result = await DeserializeBlobAsync<T>(blob, gzip, bufferSize);
                 if (result.Type == CsvReaderResultType.Success)
                 {
                     return result.Records;
@@ -339,7 +353,7 @@ namespace Knapcode.ExplorePackages.Worker
             throw new InvalidOperationException($"Could not deserialize blob after trying buffers up to {bufferSize} bytes in size.");
         }
 
-        private static async Task<CsvReaderResult<T>> DeserializeBlobAsync<T>(ICloudBlobWrapper blob, ICsvReader csvReader, bool gzip, int bufferSize)
+        private async Task<CsvReaderResult<T>> DeserializeBlobAsync<T>(ICloudBlobWrapper blob, bool gzip, int bufferSize)
             where T : ICsvRecord<T>, new()
         {
             using var blobStream = await blob.OpenReadAsync();
@@ -363,7 +377,7 @@ namespace Knapcode.ExplorePackages.Worker
                         "Actual: " + actualHeader);
                 }
 
-                return csvReader.GetRecords<T>(reader, bufferSize);
+                return _csvReader.GetRecords<T>(reader, bufferSize);
             }
             finally
             {
@@ -371,34 +385,39 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        public async Task<List<int>> GetWrittenBucketsAsync(string containerName)
+        public async Task<List<int>> GetAppendedBucketsAsync(string containerName)
         {
             switch (_options.Value.AppendResultStorageMode)
             {
                 case AppendResultStorageMode.Table:
                     return await GetWrittenAppendTableBucketsAsync(containerName);
                 case AppendResultStorageMode.AppendBlob:
-                    return await GetWrittenAppendBlobBucketsAsync(containerName);
+                    return await GetWrittenBlobBucketsAsync(containerName, AppendPrefix);
                 default:
                     throw new NotImplementedException();
             }
         }
 
-        private async Task<List<int>> GetWrittenAppendBlobBucketsAsync(string containerName)
+        public async Task<List<int>> GetCompactedBucketsAsync(string containerName)
+        {
+            return await GetWrittenBlobBucketsAsync(containerName, CompactPrefix);
+        }
+
+        private async Task<List<int>> GetWrittenBlobBucketsAsync(string containerName, string prefix)
         {
             var container = GetContainer(containerName);
             var buckets = new List<int>();
             BlobContinuationToken token = null;
+            var regex = new Regex(Regex.Escape(prefix) + @"(\d+)");
             do
             {
-                var segment = await container.ListBlobsSegmentedAsync(AppendPrefix, token);
+                var segment = await container.ListBlobsSegmentedAsync(prefix, token);
                 token = segment.ContinuationToken;
                 var segmentBuckets = segment
                     .Results
                     .OfType<ICloudBlob>()
-                    .Select(x => Path.GetFileNameWithoutExtension(x.Name))
-                    .Select(x => x.Substring(x.LastIndexOf('_') + 1))
-                    .Select(int.Parse);
+                    .Select(x => regex.Match(x.Name).Groups[1].Value)
+                    .Select(x => int.Parse(x));
                 buckets.AddRange(segmentBuckets);
             }
             while (token != null);

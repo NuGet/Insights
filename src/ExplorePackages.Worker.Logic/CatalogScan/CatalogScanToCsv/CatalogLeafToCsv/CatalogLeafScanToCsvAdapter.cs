@@ -30,7 +30,11 @@ namespace Knapcode.ExplorePackages.Worker
             var parameters = (CatalogLeafToCsvParameters)_schemaSerializer.Deserialize(indexScan.DriverParameters).Data;
 
             CatalogIndexScanResult result;
-            if (parameters.OnlyLatestLeaves)
+            if (parameters.Reprocess)
+            {
+                result = CatalogIndexScanResult.ExpandCustom;
+            }
+            else if (parameters.OnlyLatestLeaves)
             {
                 result = _driver.SingleMessagePerId ? CatalogIndexScanResult.ExpandLatestLeavesPerId : CatalogIndexScanResult.ExpandLatestLeaves;
             }
@@ -40,6 +44,16 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             return Task.FromResult(result);
+        }
+
+        public Task StartCustomExpandAsync(CatalogIndexScan indexScan)
+        {
+            return _adapter.StartCustomExpandAsync(indexScan, _driver.ResultsContainerName);
+        }
+
+        public Task<bool> IsCustomExpandCompleteAsync(CatalogIndexScan indexScan)
+        {
+            return _adapter.IsCustomExpandCompleteAsync(indexScan);
         }
 
         public Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan)

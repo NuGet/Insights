@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -18,6 +20,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
         private readonly CatalogClient _catalogClient;
         private readonly FlatContainerClient _flatContainerClient;
         private readonly HttpSource _httpSource;
+        private readonly RegistrationClient _registrationClient;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<NuGetPackageExplorerToCsvDriver> _logger;
 
@@ -25,12 +28,14 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             CatalogClient catalogClient,
             FlatContainerClient flatContainerClient,
             HttpSource httpSource,
+            RegistrationClient registrationClient,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<NuGetPackageExplorerToCsvDriver> logger)
         {
             _catalogClient = catalogClient;
             _flatContainerClient = flatContainerClient;
             _httpSource = httpSource;
+            _registrationClient = registrationClient;
             _options = options;
             _logger = logger;
         }
@@ -46,6 +51,33 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
         public Task InitializeAsync()
         {
             return Task.CompletedTask;
+        }
+
+        public async Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(NuGetPackageExplorerRecord record)
+        {
+            if (record.ResultType != NuGetPackageExplorerResultType.Failed)
+            {
+                return null;
+            }
+
+            // TODO: use latest leaf Table Storage or put required leaf information in the record.
+            var registrationLeaf = await _registrationClient.GetRegistrationLeafOrNullAsync(record.Id, record.Version);
+            if (registrationLeaf == null)
+            {
+                return null;
+            }
+
+            var catalogLeaf = await _catalogClient.GetCatalogLeafAsync(CatalogLeafType.PackageDetails, registrationLeaf.CatalogEntry);
+
+            return new CatalogLeafItem
+            { 
+                CommitId = catalogLeaf.CommitId,
+                CommitTimestamp = catalogLeaf.CommitTimestamp,
+                PackageId = record.Id,
+                PackageVersion = record.Version,
+                Type = CatalogLeafType.PackageDetails,
+                Url = registrationLeaf.CatalogEntry,
+            };
         }
 
         public async Task<DriverResult<List<NuGetPackageExplorerRecord>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
@@ -68,7 +100,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
 
                 // TODO: understand the failure categories and fix them or assign more specific result types
-                if (attemptCount > 5)
+                if (attemptCount > 3)
                 {
                     _logger.LogWarning("Package {Id} {Version} failed due to too many attempts.", leaf.PackageId, leaf.PackageVersion);
                     return DriverResult.Success(new List<NuGetPackageExplorerRecord>
@@ -92,24 +124,35 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                     var contentUrl = await _flatContainerClient.GetPackageContentUrlAsync(leaf.PackageId, leaf.PackageVersion);
                     var nuGetLogger = _logger.ToNuGetLogger();
 
-                    var exists = await _httpSource.ProcessStreamAsync(
+                    var exists = await _httpSource.ProcessResponseAsync(
                         new HttpSourceRequest(contentUrl, nuGetLogger) { IgnoreNotFounds = true },
-                        async stream =>
+                        async response =>
                         {
-                            if (stream == null)
+                            if (response.StatusCode == HttpStatusCode.NotFound)
                             {
                                 return false;
                             }
 
+                            response.EnsureSuccessStatusCode();
+
+                            var length = response.Content.Headers.ContentLength.Value;
+
+                            using (var source = await response.Content.ReadAsStreamAsync())
                             using (var destination = new FileStream(
-                                    tempPath,
-                                    FileMode.Create,
-                                    FileAccess.ReadWrite,
-                                    FileShare.Read,
-                                    bufferSize: 4096,
-                                    FileOptions.Asynchronous))
+                                tempPath,
+                                FileMode.Create,
+                                FileAccess.ReadWrite,
+                                FileShare.Read,
+                                bufferSize: 4096,
+                                FileOptions.Asynchronous))
                             {
-                                await stream.CopyToAsync(destination, bufferSize: 1024 * 1024);
+                                await destination.SetLengthAndWriteAsync(length);
+                                await source.CopyToSlowAsync(
+                                    length,
+                                    destination,
+                                    bufferSize: 4 * 1024 * 1024,
+                                    hashAlgorithm: null,
+                                    _logger);
                             }
 
                             return true;
@@ -128,9 +171,18 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                     {
                         zipPackage = new ZipPackage(tempPath);
                     }
-                    catch (Exception ex) when (ex is InvalidDataException || ex is ArgumentException || ex is PackagingException)
+                    catch (Exception ex) when (ex is InvalidDataException
+                                            || ex is ArgumentException
+                                            || ex is PackagingException
+                                            || ex is XmlException
+                                            || ex is InvalidOperationException
+                                            || ex.Message.Contains("Enabling license acceptance requires a license or a licenseUrl to be specified.")
+                                            || ex.Message.Contains("Authors is required.")
+                                            || ex.Message.Contains("Description is required.")
+                                            || ex.Message.Contains("Url cannot be empty.")
+                                            || (ex.Message.Contains("Assembly reference ") && ex.Message.Contains(" contains invalid characters.")))
                     {
-                        _logger.LogWarning(ex, "Package {Id} {Version} had metadata.", leaf.PackageId, leaf.PackageVersion);
+                        _logger.LogWarning(ex, "Package {Id} {Version} had invalid metadata.", leaf.PackageId, leaf.PackageVersion);
                         return DriverResult.Success(new List<NuGetPackageExplorerRecord>
                         {
                             new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf)
@@ -153,7 +205,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                             var resultTask = await Task.WhenAny(delayTask, symbolValidatorTask);
                             if (resultTask == delayTask)
                             {
-                                if (attemptCount > 2)
+                                if (attemptCount > 1)
                                 {
                                     _logger.LogWarning("Package {Id} {Version} had its symbol validation time out.", leaf.PackageId, leaf.PackageVersion);
                                     return DriverResult.Success(new List<NuGetPackageExplorerRecord>
@@ -190,21 +242,35 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
 
                         var output = new List<NuGetPackageExplorerRecord>();
 
-                        foreach (var file in symbolValidator.GetAllFiles())
+                        try
                         {
-                            var compilerFlags = file.DebugData?.CompilerFlags.ToDictionary(k => k.Key, v => v.Value);
-
-                            output.Add(baseRecord with
+                            foreach (var file in symbolValidator.GetAllFiles())
                             {
-                                Name = file.Name,
-                                Extension = file.Extension,
-                                TargetFramework = file.TargetFramework?.FullName,
-                                TargetFrameworkIdentifier = file.TargetFramework?.Identifier,
-                                TargetFrameworkVersion = file.TargetFramework?.Version.ToString(),
-                                HasCompilerFlags = file.DebugData?.HasCompilerFlags,
-                                HasSourceLink = file.DebugData?.HasSourceLink,
-                                HasDebugInfo = file.DebugData?.HasDebugInfo,
-                                CompilerFlags = compilerFlags != null ? JsonConvert.SerializeObject(compilerFlags) : null,
+                                var compilerFlags = file.DebugData?.CompilerFlags.ToDictionary(k => k.Key, v => v.Value);
+
+                                output.Add(baseRecord with
+                                {
+                                    Name = file.Name,
+                                    Extension = file.Extension,
+                                    TargetFramework = file.TargetFramework?.FullName,
+                                    TargetFrameworkIdentifier = file.TargetFramework?.Identifier,
+                                    TargetFrameworkVersion = file.TargetFramework?.Version.ToString(),
+                                    HasCompilerFlags = file.DebugData?.HasCompilerFlags,
+                                    HasSourceLink = file.DebugData?.HasSourceLink,
+                                    HasDebugInfo = file.DebugData?.HasDebugInfo,
+                                    CompilerFlags = compilerFlags != null ? JsonConvert.SerializeObject(compilerFlags) : null,
+                                });
+                            }
+                        }
+                        catch (FileNotFoundException ex)
+                        {
+                            _logger.LogWarning(ex, "Could not get symbol validator files for {Id} {Version}.", leaf.PackageId, leaf.PackageVersion);
+                            return DriverResult.Success(new List<NuGetPackageExplorerRecord>
+                            {
+                                new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf)
+                                {
+                                    ResultType = NuGetPackageExplorerResultType.InvalidMetadata,
+                                }
                             });
                         }
 

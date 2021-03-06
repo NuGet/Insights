@@ -80,5 +80,10 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
         {
             return item.PackageId.ToLowerInvariant();
         }
+
+        public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(PackageVersionRecord record)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

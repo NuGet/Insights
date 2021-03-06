@@ -34,6 +34,41 @@ namespace Knapcode.ExplorePackages.Worker
             await _taskStateStorageService.InitializeAsync(indexScan.StorageSuffix);
         }
 
+        public async Task StartCustomExpandAsync(CatalogIndexScan indexScan, string resultsContainerName)
+        {
+            var buckets = await _storageService.GetCompactedBucketsAsync(resultsContainerName);
+
+            var partitionKey = GetExpandCustomPartitionKey(indexScan);
+
+            await _taskStateStorageService.GetOrAddAsync(
+                indexScan.StorageSuffix,
+                partitionKey,
+                buckets.Select(x => x.ToString()).ToList());
+
+            var messages = buckets
+                .Select(b => new CsvExpandReprocessMessage<T>
+                {
+                    CursorName = indexScan.CursorName,
+                    ScanId = indexScan.ScanId,
+                    Bucket = b,
+                    TaskStateKey = new TaskStateKey(
+                        indexScan.StorageSuffix,
+                        partitionKey,
+                        b.ToString()),
+                })
+                .ToList();
+            await _messageEnqueuer.EnqueueAsync(messages);
+        }
+
+        public async Task<bool> IsCustomExpandCompleteAsync(CatalogIndexScan indexScan)
+        {
+            var countLowerBound = await _taskStateStorageService.GetCountLowerBoundAsync(
+                indexScan.StorageSuffix,
+                GetExpandCustomPartitionKey(indexScan));
+            _logger.LogInformation("There are at least {Count} expand custom tasks pending.", countLowerBound);
+            return countLowerBound == 0;
+        }
+
         public async Task AppendAsync(string storageSuffix, int bucketCount, string bucketKey, IReadOnlyList<T> records)
         {
             await _storageService.AppendAsync(GetTableName(storageSuffix), bucketCount, bucketKey, records);
@@ -41,7 +76,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task StartAggregateAsync(CatalogIndexScan indexScan)
         {
-            var buckets = await _storageService.GetWrittenBucketsAsync(GetTableName(indexScan.StorageSuffix));
+            var buckets = await _storageService.GetAppendedBucketsAsync(GetTableName(indexScan.StorageSuffix));
 
             var partitionKey = GetAggregateTasksPartitionKey(indexScan);
 
@@ -69,13 +104,18 @@ namespace Knapcode.ExplorePackages.Worker
             var countLowerBound = await _taskStateStorageService.GetCountLowerBoundAsync(
                 indexScan.StorageSuffix,
                 GetAggregateTasksPartitionKey(indexScan));
-            _logger.LogInformation("There are at least {Count} compact tasks pending.", countLowerBound);
+            _logger.LogInformation("There are at least {Count} aggregate tasks pending.", countLowerBound);
             return countLowerBound == 0;
+        }
+
+        private static string GetExpandCustomPartitionKey(CatalogIndexScan indexScan)
+        {
+            return $"{indexScan.ScanId}-{nameof(CatalogScanToCsvAdapter<T>)}-expand-custom";
         }
 
         private static string GetAggregateTasksPartitionKey(CatalogIndexScan indexScan)
         {
-            return $"{indexScan.ScanId}-{nameof(CatalogScanToCsvAdapter<T>)}";
+            return $"{indexScan.ScanId}-{nameof(CatalogScanToCsvAdapter<T>)}-aggregate";
         }
 
         public async Task FinalizeAsync(CatalogIndexScan indexScan)

@@ -19,10 +19,10 @@ namespace Knapcode.ExplorePackages.Worker
             // Arrange
             await CatalogScanService.InitializeAsync();
             await SetDependencyCursorAsync(DriverType, CursorValue);
-            var first = await CatalogScanService.UpdateAsync(DriverType, max: null, onlyLatestLeaves: null);
+            var first = await CatalogScanService.UpdateAsync(DriverType, max: null, onlyLatestLeaves: null, reprocess: null);
 
             // Act
-            var result = await CatalogScanService.UpdateAsync(DriverType, max: null, onlyLatestLeaves: null);
+            var result = await CatalogScanService.UpdateAsync(DriverType, max: null, onlyLatestLeaves: null, reprocess: null);
 
             // Assert
             Assert.Equal(CatalogScanServiceResultType.AlreadyRunning, result.Type);
@@ -37,7 +37,7 @@ namespace Knapcode.ExplorePackages.Worker
             await SetDependencyCursorAsync(DriverType, CursorTableEntity.Min);
 
             // Act
-            var result = await CatalogScanService.UpdateAsync(DriverType, max: null, onlyLatestLeaves: null);
+            var result = await CatalogScanService.UpdateAsync(DriverType, max: null, onlyLatestLeaves: null, reprocess: null);
 
             // Assert
             Assert.Equal(CatalogScanServiceResultType.BlockedByDependency, result.Type);
@@ -53,7 +53,7 @@ namespace Knapcode.ExplorePackages.Worker
             await SetDependencyCursorAsync(DriverType, CursorValue);
 
             // Act
-            var result = await CatalogScanService.UpdateAsync(DriverType, max: CursorValue.AddTicks(1), onlyLatestLeaves: null);
+            var result = await CatalogScanService.UpdateAsync(DriverType, max: CursorValue.AddTicks(1), onlyLatestLeaves: null, reprocess: null);
 
             // Assert
             Assert.Equal(CatalogScanServiceResultType.BlockedByDependency, result.Type);
@@ -69,7 +69,7 @@ namespace Knapcode.ExplorePackages.Worker
             await SetDependencyCursorAsync(DriverType, CursorValue);
 
             // Act
-            var result = await CatalogScanService.UpdateAsync(DriverType, max: CursorTableEntity.Min.AddTicks(-1), onlyLatestLeaves: null);
+            var result = await CatalogScanService.UpdateAsync(DriverType, max: CursorTableEntity.Min.AddTicks(-1), onlyLatestLeaves: null, reprocess: null);
 
             // Assert
             Assert.Equal(CatalogScanServiceResultType.MinAfterMax, result.Type);
@@ -86,7 +86,7 @@ namespace Knapcode.ExplorePackages.Worker
             await SetCursorAsync(DriverType, CursorValue);
 
             // Act
-            var result = await CatalogScanService.UpdateAsync(DriverType, max: null, onlyLatestLeaves: null);
+            var result = await CatalogScanService.UpdateAsync(DriverType, max: null, onlyLatestLeaves: null, reprocess: null);
 
             // Assert
             Assert.Equal(CatalogScanServiceResultType.FullyCaughtUpWithDependency, result.Type);
@@ -103,7 +103,7 @@ namespace Knapcode.ExplorePackages.Worker
             await SetCursorAsync(DriverType, CursorValue);
 
             // Act
-            var result = await CatalogScanService.UpdateAsync(DriverType, max: CursorValue, onlyLatestLeaves: null);
+            var result = await CatalogScanService.UpdateAsync(DriverType, max: CursorValue, onlyLatestLeaves: null, reprocess: null);
 
             // Assert
             Assert.Equal(CatalogScanServiceResultType.FullyCaughtUpWithMax, result.Type);
@@ -121,7 +121,7 @@ namespace Knapcode.ExplorePackages.Worker
             await SetDependencyCursorAsync(DriverType, CursorValue);
 
             // Act
-            var result = await CatalogScanService.UpdateAsync(DriverType, max: null, onlyLatestLeaves: null);
+            var result = await CatalogScanService.UpdateAsync(DriverType, max: null, onlyLatestLeaves: null, reprocess: null);
 
             // Assert
             Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);
@@ -140,7 +140,7 @@ namespace Knapcode.ExplorePackages.Worker
             await SetDependencyCursorAsync(DriverType, CursorValue.AddMinutes(10));
 
             // Act
-            var result = await CatalogScanService.UpdateAsync(DriverType, max: CursorValue, onlyLatestLeaves: null);
+            var result = await CatalogScanService.UpdateAsync(DriverType, max: CursorValue, onlyLatestLeaves: null, reprocess: null);
 
             // Assert
             Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);
@@ -158,7 +158,7 @@ namespace Knapcode.ExplorePackages.Worker
             await SetDependencyCursorAsync(type, CursorValue);
 
             // Act
-            var result = await CatalogScanService.UpdateAsync(type, max: null, onlyLatestLeaves: null);
+            var result = await CatalogScanService.UpdateAsync(type, max: null, onlyLatestLeaves: null, reprocess: null);
 
             // Assert
             Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);
@@ -177,7 +177,7 @@ namespace Knapcode.ExplorePackages.Worker
             await SetDependencyCursorAsync(type, CursorValue);
 
             // Act
-            var result = await CatalogScanService.UpdateAsync(type, max: null, onlyLatestLeaves: null);
+            var result = await CatalogScanService.UpdateAsync(type, max: null, onlyLatestLeaves: null, reprocess: null);
 
             // Assert
             Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);

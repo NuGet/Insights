@@ -34,7 +34,7 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
 
         public Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan)
         {
-            return Task.FromResult(CatalogPageScanResult.ExpandRemoveDuplicates);
+            throw new NotImplementedException();
         }
 
         public async Task<BatchMessageProcessorResult<CatalogLeafScan>> ProcessLeavesAsync(IReadOnlyList<CatalogLeafScan> leafScans)
@@ -73,6 +73,16 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
         public Task FinalizeAsync(CatalogIndexScan indexScan)
         {
             return Task.CompletedTask;
+        }
+
+        public Task StartCustomExpandAsync(CatalogIndexScan indexScan)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> IsCustomExpandCompleteAsync(CatalogIndexScan indexScan)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -9,11 +9,16 @@ namespace Knapcode.ExplorePackages
     public class RegistrationClient
     {
         private readonly HttpSource _httpSource;
+        private readonly ServiceIndexCache _serviceIndexCache;
         private readonly ILogger<RegistrationClient> _logger;
 
-        public RegistrationClient(HttpSource httpSource, ILogger<RegistrationClient> logger)
+        public RegistrationClient(
+            HttpSource httpSource,
+            ServiceIndexCache serviceIndexCache,
+            ILogger<RegistrationClient> logger)
         {
             _httpSource = httpSource;
+            _serviceIndexCache = serviceIndexCache;
             _logger = logger;
         }
 
@@ -22,6 +27,12 @@ namespace Knapcode.ExplorePackages
             var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
             var leafUrl = $"{baseUrl.TrimEnd('/')}/{id.ToLowerInvariant()}/{normalizedVersion.ToLowerInvariant()}.json";
             return await _httpSource.DeserializeUrlAsync<RegistrationLeaf>(leafUrl, ignoreNotFounds: true, logger: _logger);
+        }
+
+        public async Task<RegistrationLeaf> GetRegistrationLeafOrNullAsync(string id, string version)
+        {
+            var baseUrl = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.RegistrationSemVer2);
+            return await GetRegistrationLeafOrNullAsync(baseUrl, id, version);
         }
 
         public async Task<RegistrationLeafItem> GetRegistrationLeafItemOrNullAsync(string baseUrl, string id, string version)

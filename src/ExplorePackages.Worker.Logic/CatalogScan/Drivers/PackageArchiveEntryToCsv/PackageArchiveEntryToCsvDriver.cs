@@ -99,5 +99,10 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
         {
             return PackageRecord.GetBucketKey(item);
         }
+
+        public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(PackageArchiveEntry record)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

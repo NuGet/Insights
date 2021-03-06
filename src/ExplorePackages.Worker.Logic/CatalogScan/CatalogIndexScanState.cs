@@ -5,6 +5,7 @@
         Created, // Initial state before any work is done
         Initialized, // The driver has been initialized
         FindingLatest, // Waiting on the "find latest leaves" scan
+        StartingExpand, // Starting a custom, driver-provided expand flow
         Expanding, // Expanding child entities in storage
         Enqueuing, // Enqueueing messages for child entities
         Working, // Waiting for child entities to be completed

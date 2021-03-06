@@ -9,5 +9,8 @@ namespace Knapcode.ExplorePackages.Worker
 
         [JsonProperty("ll")]
         public bool OnlyLatestLeaves { get; set; }
+
+        [JsonProperty("r")]
+        public bool Reprocess { get; set; }
     }
 }

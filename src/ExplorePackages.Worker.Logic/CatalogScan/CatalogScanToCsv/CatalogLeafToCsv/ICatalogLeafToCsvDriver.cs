@@ -9,5 +9,6 @@ namespace Knapcode.ExplorePackages.Worker
         Task InitializeAsync();
         Task<DriverResult<List<T>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount);
         string GetBucketKey(CatalogLeafItem item);
+        Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(T record);
     }
 }

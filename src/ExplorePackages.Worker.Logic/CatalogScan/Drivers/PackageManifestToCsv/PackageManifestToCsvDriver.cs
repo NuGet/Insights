@@ -174,6 +174,11 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             return PackageRecord.GetBucketKey(item);
         }
 
+        public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(PackageManifestRecord record)
+        {
+            throw new NotImplementedException();
+        }
+
         private static readonly JsonSerializerSettings JsonSerializerSettings = new JsonSerializerSettings
         {
             Converters =

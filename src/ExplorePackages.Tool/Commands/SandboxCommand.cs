@@ -128,6 +128,30 @@ namespace Knapcode.ExplorePackages.Tool
                 PackageVersion = "2.0.0",
             };
 
+            scan = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2019.05.02.21.24.07/luisgen.2.1.0.json",
+                ParsedLeafType = CatalogLeafType.PackageDetails,
+                PackageId = "LUISGen",
+                PackageVersion = "2.1.0",
+            };
+
+            scan = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2019.05.06.14.58.12/amazon.lambda.tools.3.2.1.json",
+                ParsedLeafType = CatalogLeafType.PackageDetails,
+                PackageId = "Amazon.Lambda.Tools",
+                PackageVersion = "3.2.1",
+            };
+
+            scan = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2018.12.19.16.49.43/xtoappdev.1.2.0.json",
+                ParsedLeafType = CatalogLeafType.PackageDetails,
+                PackageId = "XTOAppDev",
+                PackageVersion = "1.2.0",
+            };
+
             var leaf = scan.GetLeafItem();
 
             Console.WriteLine(JsonConvert.SerializeObject(

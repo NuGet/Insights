@@ -90,5 +90,15 @@ namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
         {
             return _adapter.FinalizeAsync(indexScan);
         }
+
+        public Task StartCustomExpandAsync(CatalogIndexScan indexScan)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> IsCustomExpandCompleteAsync(CatalogIndexScan indexScan)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

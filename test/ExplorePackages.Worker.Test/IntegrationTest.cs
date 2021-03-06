@@ -71,28 +71,28 @@ namespace Knapcode.ExplorePackages.Worker
             // Act
 
             // Load the manifests
-            var loadPackageManifest = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageManifest, max1, onlyLatestLeaves: null);
+            var loadPackageManifest = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageManifest, max1, onlyLatestLeaves: null, reprocess: null);
             await UpdateAsync(loadPackageManifest.Scan);
             var startingNuspecRequestCount = GetNuspecRequestCount();
 
             // Load the packages and process package assemblies. The package assembly catalog scan is a special case
             // because it downloads packages on its own so the .nupkg request counter must be baselined after this scan
             // finishes.
-            var loadPackageArchive = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageArchive, max1, onlyLatestLeaves: null);
+            var loadPackageArchive = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageArchive, max1, onlyLatestLeaves: null, reprocess: null);
             await UpdateAsync(loadPackageArchive.Scan);
-            var packageAssemblyToCsv = await CatalogScanService.UpdateAsync(CatalogScanDriverType.PackageAssemblyToCsv, max1, onlyLatestLeaves: null);
+            var packageAssemblyToCsv = await CatalogScanService.UpdateAsync(CatalogScanDriverType.PackageAssemblyToCsv, max1, onlyLatestLeaves: null, reprocess: null);
             await UpdateAsync(packageAssemblyToCsv.Scan);
             var startingNupkgRequestCount = GetNupkgRequestCount();
 
             // Load the versions
-            var loadPackageVersion = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageVersion, max1, onlyLatestLeaves: null);
+            var loadPackageVersion = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageVersion, max1, onlyLatestLeaves: null, reprocess: null);
             await UpdateAsync(loadPackageVersion.Scan);
 
             // Start all of the scans
             var startedScans = new List<CatalogIndexScan>();
             foreach (var type in driverTypes)
             {
-                var startedScan = await CatalogScanService.UpdateAsync(type, max1, onlyLatestLeaves: null);
+                var startedScan = await CatalogScanService.UpdateAsync(type, max1, onlyLatestLeaves: null, reprocess: null);
                 if (startedScan.Type == CatalogScanServiceResultType.FullyCaughtUpWithMax)
                 {
                     continue;
