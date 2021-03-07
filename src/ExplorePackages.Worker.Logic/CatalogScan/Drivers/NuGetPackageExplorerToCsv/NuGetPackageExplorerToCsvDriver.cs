@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -21,6 +22,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
         private readonly CatalogClient _catalogClient;
         private readonly FlatContainerClient _flatContainerClient;
         private readonly HttpSource _httpSource;
+        private readonly HttpClient _httpClient;
         private readonly LatestPackageLeafService _latestPackageLeafService;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<NuGetPackageExplorerToCsvDriver> _logger;
@@ -29,6 +31,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             CatalogClient catalogClient,
             FlatContainerClient flatContainerClient,
             HttpSource httpSource,
+            HttpClient httpClient,
             LatestPackageLeafService latestPackageLeafService,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<NuGetPackageExplorerToCsvDriver> logger)
@@ -36,6 +39,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             _catalogClient = catalogClient;
             _flatContainerClient = flatContainerClient;
             _httpSource = httpSource;
+            _httpClient = httpClient;
             _latestPackageLeafService = latestPackageLeafService;
             _options = options;
             _logger = logger;
@@ -184,7 +188,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
 
                     using (zipPackage)
                     {
-                        var symbolValidator = new SymbolValidator(zipPackage, zipPackage.Source, null);
+                        var symbolValidator = new SymbolValidator(zipPackage, zipPackage.Source, rootFolder: null, _httpClient);
 
                         SymbolValidatorResult symbolValidatorResult;
                         using (var cts = new CancellationTokenSource())

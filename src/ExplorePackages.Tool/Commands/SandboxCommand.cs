@@ -8,15 +8,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Worker;
 using Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf;
-using Knapcode.ExplorePackages.Worker.LoadPackageArchive;
-using Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv;
-using Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv;
-using Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv;
-using Knapcode.ExplorePackages.Worker.PackageManifestToCsv;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using McMaster.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Protocol;
@@ -33,40 +27,19 @@ namespace Knapcode.ExplorePackages.Tool
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
         private readonly TableScanService<LatestPackageLeaf> _tableScanService;
-        private readonly PackageFileService _packageFileService;
-        private readonly ICatalogLeafToCsvDriver<PackageManifestRecord> _packageManifestDriver;
-        private readonly ICatalogLeafToCsvDriver<PackageAssembly> _packageAssemblyDriver;
-        private readonly CatalogLeafScanToCsvAdapter<PackageArchiveEntry> _packageArchiveEntryDriver;
-        private readonly ICatalogLeafToCsvDriver<NuGetPackageExplorerRecord> _nuGetPackageExplorerToCsvDriver;
-        private readonly LoadPackageArchiveDriver _loadPackageArchiveDriver;
-        private readonly SchemaSerializer _schemaSerializer;
 
         public SandboxCommand(
             IMessageEnqueuer messageEnqueuer,
             TaskStateStorageService taskStateStorageService,
             ServiceClientFactory serviceClientFactory,
             IRawMessageEnqueuer rawMessageEnqueuer,
-            TableScanService<LatestPackageLeaf> tableScanService,
-            PackageFileService packageFileService,
-            ICatalogLeafToCsvDriver<PackageManifestRecord> packageManifestDriver,
-            ICatalogLeafToCsvDriver<PackageAssembly> packageAssemblyDriver,
-            CatalogLeafScanToCsvAdapter<PackageArchiveEntry> packageArchiveEntryDriver,
-            ICatalogLeafToCsvDriver<NuGetPackageExplorerRecord> nuGetPackageExplorerToCsvDriver,
-            LoadPackageArchiveDriver loadPackageArchiveDriver,
-            SchemaSerializer schemaSerializer)
+            TableScanService<LatestPackageLeaf> tableScanService)
         {
             _messageEnqueuer = messageEnqueuer;
             _taskStateStorageService = taskStateStorageService;
             _serviceClientFactory = serviceClientFactory;
             _rawMessageEnqueuer = rawMessageEnqueuer;
             _tableScanService = tableScanService;
-            _packageFileService = packageFileService;
-            _packageManifestDriver = packageManifestDriver;
-            _packageAssemblyDriver = packageAssemblyDriver;
-            _packageArchiveEntryDriver = packageArchiveEntryDriver;
-            _nuGetPackageExplorerToCsvDriver = nuGetPackageExplorerToCsvDriver;
-            _loadPackageArchiveDriver = loadPackageArchiveDriver;
-            _schemaSerializer = schemaSerializer;
         }
 
         public void Configure(CommandLineApplication app)
@@ -76,105 +49,6 @@ namespace Knapcode.ExplorePackages.Tool
         public async Task ExecuteAsync(CancellationToken token)
         {
             await Task.Yield();
-
-            await _packageManifestDriver.InitializeAsync();
-            await _packageAssemblyDriver.InitializeAsync();
-
-            var scan = new CatalogLeafScan
-            {
-                Url = "https://api.nuget.org/v3/catalog0/data/2015.02.01.08.09.35/takeio.spreadsheet.1.0.0.1.json",
-                ParsedLeafType = CatalogLeafType.PackageDetails,
-                PackageId = "TakeIo.Spreadsheet",
-                PackageVersion = "1.0.0.1",
-            };
-
-            scan = new CatalogLeafScan
-            {
-                Url = "https://api.nuget.org/v3/catalog0/data/2021.01.31.04.23.00/newtonsoft.json.13.0.1-beta1.json",
-                ParsedLeafType = CatalogLeafType.PackageDetails,
-                PackageId = "Newtonsoft.Json",
-                PackageVersion = "13.0.1-beta1",
-            };
-
-            scan = new CatalogLeafScan
-            {
-                Url = "https://api.nuget.org/v3/catalog0/data/2018.10.02.18.27.13/aardvark.base.1.5.2.json",
-                ParsedLeafType = CatalogLeafType.PackageDetails,
-                PackageId = "Aardvark.Base",
-                PackageVersion = "1.5.2",
-            };
-
-            scan = new CatalogLeafScan
-            {
-                Url = "https://api.nuget.org/v3/catalog0/data/2020.02.05.10.45.06/grpc.core.2.27.0.json",
-                ParsedLeafType = CatalogLeafType.PackageDetails,
-                PackageId = "Grpc.Core",
-                PackageVersion = "2.27.0",
-            };
-
-            scan = new CatalogLeafScan
-            {
-                Url = "https://api.nuget.org/v3/catalog0/data/2019.02.28.17.47.40/eo.webbrowser.19.0.69.json",
-                ParsedLeafType = CatalogLeafType.PackageDetails,
-                PackageId = "EO.WebBrowser",
-                PackageVersion = "19.0.69",
-            };
-
-            scan = new CatalogLeafScan
-            {
-                Url = "https://api.nuget.org/v3/catalog0/data/2018.10.08.04.11.29/microsoft.net.native.sharedlibrary-arm.2.0.0.json",
-                ParsedLeafType = CatalogLeafType.PackageDetails,
-                PackageId = "Microsoft.Net.Native.SharedLibrary-arm",
-                PackageVersion = "2.0.0",
-            };
-
-            scan = new CatalogLeafScan
-            {
-                Url = "https://api.nuget.org/v3/catalog0/data/2019.05.02.21.24.07/luisgen.2.1.0.json",
-                ParsedLeafType = CatalogLeafType.PackageDetails,
-                PackageId = "LUISGen",
-                PackageVersion = "2.1.0",
-            };
-
-            scan = new CatalogLeafScan
-            {
-                Url = "https://api.nuget.org/v3/catalog0/data/2019.05.06.14.58.12/amazon.lambda.tools.3.2.1.json",
-                ParsedLeafType = CatalogLeafType.PackageDetails,
-                PackageId = "Amazon.Lambda.Tools",
-                PackageVersion = "3.2.1",
-            };
-
-            scan = new CatalogLeafScan
-            {
-                Url = "https://api.nuget.org/v3/catalog0/data/2018.12.19.16.49.43/xtoappdev.1.2.0.json",
-                ParsedLeafType = CatalogLeafType.PackageDetails,
-                PackageId = "XTOAppDev",
-                PackageVersion = "1.2.0",
-            };
-
-            scan = new CatalogLeafScan
-            {
-                Url = "https://api.nuget.org/v3/catalog0/data/2020.11.09.23.54.44/microsoft.extensions.logging.5.0.0.json",
-                ParsedLeafType = CatalogLeafType.PackageDetails,
-                PackageId = "Microsoft.Extensions.Logging",
-                PackageVersion = "5.0.0",
-            };
-
-            var leaf = scan.ToLeafItem();
-
-            Console.WriteLine(JsonConvert.SerializeObject(
-                await _nuGetPackageExplorerToCsvDriver.ProcessLeafAsync(leaf, 0),
-                new JsonSerializerSettings
-                {
-                    Formatting = Formatting.Indented,
-                    Converters =
-                    {
-                        new StringEnumConverter(),
-                    },
-                }));
-
-            // Console.WriteLine(JsonConvert.SerializeObject(await _packageManifestDriver.ProcessLeafAsync(leaf), Formatting.Indented));
-            // Console.WriteLine(JsonConvert.SerializeObject(await _packageAssemblyDriver.ProcessLeafAsync(leaf), Formatting.Indented));
         }
 
         private async Task RunTestAsync(int i, int j)

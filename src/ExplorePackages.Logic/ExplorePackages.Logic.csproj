@@ -17,7 +17,7 @@
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.1.12" />
     <PackageReference Include="Microsoft.Toolkit.HighPerformance" Version="6.1.1" />
     <PackageReference Include="NuGet.Commands" Version="5.10.0-xprivate.60024" />
-    <PackageReference Include="NuGetPackageExplorer.Core" Version="5.9.94" />
+    <PackageReference Include="NuGetPackageExplorer.Core" Version="5.9.101" />
     <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />
   </ItemGroup>
 </Project>
