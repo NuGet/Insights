@@ -116,7 +116,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
         public async Task<RedirectToActionResult> UpdateCatalogScan(
             CatalogScanDriverType driverType,
             bool useCustomMax,
-            bool onlyLatestLeaves,
+            bool? onlyLatestLeaves,
             bool reprocess,
             string max)
         {
@@ -136,7 +136,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
         private async Task<(bool Success, string Message)> GetUpdateCatalogScanErrorAsync(
             CatalogScanDriverType driverType,
             bool useCustomMax,
-            bool onlyLatestLeaves,
+            bool? onlyLatestLeaves,
             bool reprocess,
             string max)
         {
