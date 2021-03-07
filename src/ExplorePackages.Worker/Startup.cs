@@ -17,6 +17,24 @@ namespace Knapcode.ExplorePackages.Worker
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
+            FixCustomMetrics(builder);
+            HandleMoveTempToHome(builder);
+
+            AddOptions<ExplorePackagesSettings>(builder, ExplorePackagesSettings.DefaultSectionName);
+            AddOptions<ExplorePackagesWorkerSettings>(builder, ExplorePackagesSettings.DefaultSectionName);
+
+            builder.Services.Configure<ExplorePackagesSettings>(Configure);
+            builder.Services.Configure<ExplorePackagesWorkerSettings>(Configure);
+
+            builder.Services.AddExplorePackages("Knapcode.ExplorePackages.Worker");
+            builder.Services.AddExplorePackagesWorker();
+
+            builder.Services.AddSingleton<IQueueProcessorFactory, UnencodedQueueProcessorFactory>();
+            builder.Services.AddSingleton<ITelemetryClient, TelemetryClientWrapper>();
+        }
+
+        private static void FixCustomMetrics(IFunctionsHostBuilder builder)
+        {
             var serviceDescriptor = builder.Services.SingleOrDefault(tc => tc.ServiceType == typeof(TelemetryConfiguration));
             if (serviceDescriptor?.ImplementationFactory != null)
             {
@@ -33,27 +51,24 @@ namespace Knapcode.ExplorePackages.Worker
                     return null;
                 });
             }
-
-            AddOptions<ExplorePackagesSettings>(builder, ExplorePackagesSettings.DefaultSectionName);
-            AddOptions<ExplorePackagesWorkerSettings>(builder, ExplorePackagesSettings.DefaultSectionName);
-
-            builder.Services.Configure<ExplorePackagesSettings>(Configure);
-            builder.Services.Configure<ExplorePackagesWorkerSettings>(Configure);
-
-            builder.Services.AddExplorePackages("Knapcode.ExplorePackages.Worker");
-            builder.Services.AddExplorePackagesWorker();
-
-            builder.Services.AddSingleton<IQueueProcessorFactory, UnencodedQueueProcessorFactory>();
-            builder.Services.AddSingleton<ITelemetryClient, TelemetryClientWrapper>();
         }
 
-        private static void Configure(ExplorePackagesSettings settings)
+        private static void HandleMoveTempToHome(IFunctionsHostBuilder builder)
         {
-            if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("HOME")))
-            {
-                var home = Path.GetFullPath(Environment.GetEnvironmentVariable("HOME"));
-                var newTemp = Path.Combine(home, "Knapcode.ExplorePackages", "temp");
+            var settings = builder
+                .GetContext()
+                .Configuration
+                .GetSection(ExplorePackagesSettings.DefaultSectionName)
+                .Get<ExplorePackagesWorkerSettings>();
 
+            if (settings.MoveTempToHome)
+            {
+                if (!DoesHomeExist())
+                {
+                    throw new InvalidOperationException("The HOME environment variable does not point to an existing directory.");
+                }
+
+                var newTemp = Environment.ExpandEnvironmentVariables(Path.Combine("%HOME%", "Knapcode.ExplorePackages", "temp"));
                 if (!Directory.Exists(newTemp))
                 {
                     Directory.CreateDirectory(newTemp);
@@ -61,7 +76,13 @@ namespace Knapcode.ExplorePackages.Worker
 
                 Environment.SetEnvironmentVariable("TMP", newTemp);
                 Environment.SetEnvironmentVariable("TEMP", newTemp);
+            }
+        }
 
+        private static void Configure(ExplorePackagesSettings settings)
+        {
+            if (DoesHomeExist())
+            {
                 var networkDir = Environment.ExpandEnvironmentVariables(Path.Combine("%HOME%", "Knapcode.ExplorePackages", "home"));
                 settings.TempDirectories.Add(new TempStreamDirectory
                 {
@@ -70,6 +91,12 @@ namespace Knapcode.ExplorePackages.Worker
                     BufferSize = 4 * 1024 * 1024,
                 });
             }
+        }
+
+        private static bool DoesHomeExist()
+        {
+            var home = Environment.GetEnvironmentVariable("HOME");
+            return !string.IsNullOrWhiteSpace(home) && Directory.Exists(home);
         }
 
         private static void AddOptions<TOptions>(IFunctionsHostBuilder builder, string sectionName) where TOptions : class

@@ -53,7 +53,7 @@ namespace Knapcode.ExplorePackages
 
             CreateWebsite();
 
-            CreateWorkers(20);
+            CreateWorkers(_config.GetInt32("WorkerCount") ?? 1);
         }
 
         [Output]
@@ -97,7 +97,7 @@ namespace Knapcode.ExplorePackages
                 DisplayName = "Knapcode.ExplorePackages-" + _stackAlpha,
             });
 
-            var configuredSettings = _config.GetObject<ExplorePackagesWebsiteSettings>("AppSettings");
+            var configuredSettings = _config.GetObject<ExplorePackagesWebsiteSettings>("WebsiteSettings");
 
             var appSettings = new InputMap<string>
             {
@@ -186,8 +186,6 @@ namespace Knapcode.ExplorePackages
 
         private void CreateWorker(Output<string> deploymentBlobUrl, int instance)
         {
-            var defaultSettings = new ExplorePackagesWorkerSettings();
-
             var plan = new Plan("ExplorePackagesWorker" + _stackAlpha + "-" + instance, new PlanArgs
             {
                 ResourceGroupName = _resourceGroup.Name,
@@ -199,6 +197,34 @@ namespace Knapcode.ExplorePackages
                 },
             });
 
+            var configuredSettings = _config.GetObject<ExplorePackagesWorkerSettings>("WorkerSettings");
+
+            var appSettings = new InputMap<string>
+            {
+                { "WEBSITE_RUN_FROM_PACKAGE", deploymentBlobUrl },
+                { "APPINSIGHTS_INSTRUMENTATIONKEY", _appInsights.InstrumentationKey },
+                { "APPLICATIONINSIGHTS_CONNECTION_STRING", _appInsights.ConnectionString },
+                { "FUNCTIONS_WORKER_RUNTIME", "dotnet" },
+                { "AzureFunctionsJobHost__logging__LogLevel__Default", "Warning" },
+                // Workaround for a bug. Source: https://github.com/Azure/azure-functions-host/issues/5098#issuecomment-704206997
+                { "AzureWebJobsFeatureFlags", "EnableEnhancedScopes" },
+                { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesSettings.StorageConnectionString)}", _storageAccount.PrimaryConnectionString },
+                { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWorkerSettings.WorkerQueueName)}", configuredSettings.WorkerQueueName },
+                { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWorkerSettings.MoveTempToHome)}", configuredSettings.MoveTempToHome.ToString().ToLowerInvariant() },
+            };
+
+            var maxWorkerScaleOut = _config.GetInt32("MaxWorkerScaleOut");
+            if (maxWorkerScaleOut.HasValue)
+            {
+                appSettings.Add("WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT", maxWorkerScaleOut.Value.ToString());
+            }
+
+            var workerQueueBatchSize = _config.GetInt32("WorkerQueueBatchSize");
+            if (workerQueueBatchSize.HasValue)
+            {
+                appSettings.Add("AzureFunctionsJobHost__extensions__queues__batchSize", workerQueueBatchSize.Value.ToString());
+            }
+
             var app = new FunctionApp("ExplorePackagesWorker" + _stackAlpha + "-" + instance, new FunctionAppArgs
             {
                 ResourceGroupName = _resourceGroup.Name,
@@ -209,19 +235,7 @@ namespace Knapcode.ExplorePackages
                 Version = "~3",
                 ClientAffinityEnabled = false,
                 HttpsOnly = true,
-                AppSettings = new InputMap<string>
-                {
-                    { "WEBSITE_RUN_FROM_PACKAGE", deploymentBlobUrl },
-                    { "APPINSIGHTS_INSTRUMENTATIONKEY", _appInsights.InstrumentationKey },
-                    { "APPLICATIONINSIGHTS_CONNECTION_STRING", _appInsights.ConnectionString },
-                    { "FUNCTIONS_WORKER_RUNTIME", "dotnet" },
-                    { "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT", "16" },
-                    { "AzureFunctionsJobHost__logging__LogLevel__Default", "Warning" },
-                    // Workaround for a bug. Source: https://github.com/Azure/azure-functions-host/issues/5098#issuecomment-704206997
-                    { "AzureWebJobsFeatureFlags", "EnableEnhancedScopes" },
-                    { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesSettings.StorageConnectionString)}", _storageAccount.PrimaryConnectionString },
-                    { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWorkerSettings.WorkerQueueName)}", defaultSettings.WorkerQueueName },
-                },
+                AppSettings = appSettings,
             });
         }
     }

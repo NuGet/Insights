@@ -13,6 +13,7 @@
             AllowBatching = true;
             RunAllCatalogScanDriversAsBatch = false;
             OnlyKeepLatestInStreamWriterUpdater = true;
+            MoveTempToHome = false;
 
             WorkerQueueName = "workerqueue";
             CursorTableName = "cursors";
@@ -46,6 +47,7 @@
         public bool AllowBatching { get; set; }
         public bool RunAllCatalogScanDriversAsBatch { get; set; }
         public bool OnlyKeepLatestInStreamWriterUpdater { get; set; }
+        public bool MoveTempToHome { get; set; }
 
         public string WorkerQueueName { get; set; }
         public string CursorTableName { get; set; }

@@ -1,5 +1,10 @@
 config:
-  ExplorePackages:AppSettings:
+  ExplorePackages:WorkerCount: 20
+  ExplorePackages:MaxWorkerScaleOut: 16
+  ExplorePackages:WorkerQueueBatchSize: 1
+  ExplorePackages:WorkerSettings:
+    MoveTempToHome: true
+  ExplorePackages:WebsiteSettings:
     AllowedUsers:
     - HashedTenantId: 42b3755ec2b6929d7ed3589fad70f30656b8fb9d7b3b561430efab5bf197f7a0
       HashedObjectId: e2bface8eb40fbf1f24e407f3daa7a71705fcad26f584a9e55636b9feed472be

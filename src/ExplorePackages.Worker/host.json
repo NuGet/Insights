@@ -9,15 +9,5 @@
       "enablePerformanceCountersCollection": false
     }
   },
-  "functionTimeout": "00:10:00",
-  "extensions": {
-    "queues": {
-      "batchSize": 1,
-      "maxDequeueCount": 10
-    }
-  },
-  "queues": {
-    "batchSize": 1,
-    "maxDequeueCount": 10
-  }
+  "functionTimeout": "00:10:00"
 }
