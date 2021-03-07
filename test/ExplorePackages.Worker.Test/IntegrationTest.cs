@@ -75,6 +75,10 @@ namespace Knapcode.ExplorePackages.Worker
             await UpdateAsync(loadPackageManifest.Scan);
             var startingNuspecRequestCount = GetNuspecRequestCount();
 
+            // Load latest package leaves
+            var loadLatestPackageLeaf = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadLatestPackageLeaf, max1);
+            await UpdateAsync(loadLatestPackageLeaf.Scan);
+
             // Load the packages, process package assemblies, and run NuGet Package Explorer.
             var loadPackageArchive = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageArchive, max1);
             await UpdateAsync(loadPackageArchive.Scan);
