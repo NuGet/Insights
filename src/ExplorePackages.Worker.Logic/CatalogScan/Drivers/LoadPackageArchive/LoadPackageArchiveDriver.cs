@@ -39,7 +39,7 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageArchive
 
             foreach (var group in leafScans.GroupBy(x => x.PackageId, StringComparer.OrdinalIgnoreCase))
             {
-                var leafItems = group.Select(x => x.GetLeafItem()).ToList();
+                var leafItems = group.Select(x => x.ToLeafItem()).ToList();
                 try
                 {
                     await _packageFileService.UpdateBatchAsync(group.Key, leafItems);

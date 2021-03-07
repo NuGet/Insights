@@ -44,7 +44,7 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
             foreach (var group in leafScans.GroupBy(x => x.PackageId, StringComparer.OrdinalIgnoreCase))
             {
                 var packageId = group.Key;
-                var leafItems = group.Select(x => x.GetLeafItem()).ToList();
+                var leafItems = group.Select(x => x.ToLeafItem()).ToList();
 
                 try
                 {

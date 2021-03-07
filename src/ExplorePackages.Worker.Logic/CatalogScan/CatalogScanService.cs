@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -493,6 +492,11 @@ namespace Knapcode.ExplorePackages.Worker
             (CatalogScanDriverType.LoadPackageVersion.ToString(), x => x.GetCursorValueAsync(CatalogScanDriverType.LoadPackageVersion)),
         };
 
+        private static readonly (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[] LoadLatestPackageLeaf = new (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[]
+        {
+            (CatalogScanDriverType.LoadLatestPackageLeaf.ToString(), x => x.GetCursorValueAsync(CatalogScanDriverType.LoadLatestPackageLeaf)),
+        };
+
         private static readonly (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[] Catalog = new (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[]
         {
             ("NuGet.org catalog", x => x._remoteCursorClient.GetCatalogAsync()),
@@ -516,7 +520,10 @@ namespace Knapcode.ExplorePackages.Worker
             { CatalogScanDriverType.PackageSignatureToCsv, LoadPackageArchive },
             { CatalogScanDriverType.PackageManifestToCsv, LoadPackageManifest },
             { CatalogScanDriverType.PackageVersionToCsv, LoadPackageVersion },
-            { CatalogScanDriverType.NuGetPackageExplorerToCsv, FlatContainer },
+            {
+                CatalogScanDriverType.NuGetPackageExplorerToCsv,
+                FlatContainer.Concat(LoadLatestPackageLeaf).ToArray()
+            },
         }.ToDictionary(x => x.Key, x => (IReadOnlyList<(string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)>)x.Value.ToList());
 
         private async Task<(string Name, DateTimeOffset Value)> GetDependencyMaxAsync(CatalogScanDriverType driverType)

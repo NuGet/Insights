@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -24,8 +22,6 @@ namespace Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf
             [Fact]
             public async Task Execute()
             {
-                Logger.LogInformation("Settings: " + Environment.NewLine + JsonConvert.SerializeObject(Options.Value, Formatting.Indented));
-
                 // Arrange
                 var min0 = DateTimeOffset.Parse("2020-12-27T05:06:30.4180312Z");
                 var max1 = DateTimeOffset.Parse("2020-12-27T05:07:21.9968244Z");
@@ -52,8 +48,6 @@ namespace Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf
             [Fact]
             public async Task Execute()
             {
-                Logger.LogInformation("Settings: " + Environment.NewLine + JsonConvert.SerializeObject(Options.Value, Formatting.Indented));
-
                 // Arrange
                 var min0 = DateTimeOffset.Parse("2018-03-23T08:55:02.1875809Z");
                 var max1 = DateTimeOffset.Parse("2018-03-23T08:55:20.0232708Z");

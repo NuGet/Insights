@@ -56,7 +56,7 @@ namespace Knapcode.ExplorePackages.Worker
             return $"{scanId}-{pageId}";
         }
 
-        public CatalogLeafItem GetLeafItem()
+        public CatalogLeafItem ToLeafItem()
         {
             return new CatalogLeafItem
             {

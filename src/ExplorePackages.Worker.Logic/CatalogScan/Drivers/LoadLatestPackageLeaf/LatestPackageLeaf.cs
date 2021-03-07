@@ -45,6 +45,19 @@ namespace Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf
         public int PageRank { get; set; }
         public string PageUrl { get; set; }
 
+        public CatalogLeafItem ToLeafItem()
+        {
+            return new CatalogLeafItem
+            {
+                Url = Url,
+                Type = ParsedLeafType,
+                CommitId = CommitId,
+                CommitTimestamp = CommitTimestamp,
+                PackageId = PackageId,
+                PackageVersion = PackageVersion,
+            };
+        }
+
         public static string GetPartitionKey(string id)
         {
             return id.ToLowerInvariant();

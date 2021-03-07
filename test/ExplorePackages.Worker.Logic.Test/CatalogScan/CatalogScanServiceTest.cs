@@ -341,10 +341,10 @@ namespace Knapcode.ExplorePackages.Worker
                 new DriverInfo
                 {
                     DefaultMin = CatalogClient.NuGetOrgMinDeleted,
-                    SetDependencyCursorAsync = (self, x) =>
+                    SetDependencyCursorAsync = async (self, x) =>
                     {
                         self.FlatContainerCursor = x;
-                        return Task.CompletedTask;
+                        await self.SetCursorAsync(CatalogScanDriverType.LoadLatestPackageLeaf, x);
                     },
                 }
             },

@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -20,7 +21,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
         private readonly CatalogClient _catalogClient;
         private readonly FlatContainerClient _flatContainerClient;
         private readonly HttpSource _httpSource;
-        private readonly RegistrationClient _registrationClient;
+        private readonly LatestPackageLeafService _latestPackageLeafService;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<NuGetPackageExplorerToCsvDriver> _logger;
 
@@ -28,14 +29,14 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             CatalogClient catalogClient,
             FlatContainerClient flatContainerClient,
             HttpSource httpSource,
-            RegistrationClient registrationClient,
+            LatestPackageLeafService latestPackageLeafService,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<NuGetPackageExplorerToCsvDriver> logger)
         {
             _catalogClient = catalogClient;
             _flatContainerClient = flatContainerClient;
             _httpSource = httpSource;
-            _registrationClient = registrationClient;
+            _latestPackageLeafService = latestPackageLeafService;
             _options = options;
             _logger = logger;
         }
@@ -60,24 +61,13 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                 return null;
             }
 
-            // TODO: use latest leaf Table Storage or put required leaf information in the record.
-            var registrationLeaf = await _registrationClient.GetRegistrationLeafOrNullAsync(record.Id, record.Version);
-            if (registrationLeaf == null)
+            var leaf = await _latestPackageLeafService.GetOrNullAsync(record.Id, record.Version);
+            if (leaf == null)
             {
                 return null;
             }
 
-            var catalogLeaf = await _catalogClient.GetCatalogLeafAsync(CatalogLeafType.PackageDetails, registrationLeaf.CatalogEntry);
-
-            return new CatalogLeafItem
-            {
-                CommitId = catalogLeaf.CommitId,
-                CommitTimestamp = catalogLeaf.CommitTimestamp,
-                PackageId = record.Id,
-                PackageVersion = record.Version,
-                Type = CatalogLeafType.PackageDetails,
-                Url = registrationLeaf.CatalogEntry,
-            };
+            return leaf.ToLeafItem();
         }
 
         public async Task<DriverResult<List<NuGetPackageExplorerRecord>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)

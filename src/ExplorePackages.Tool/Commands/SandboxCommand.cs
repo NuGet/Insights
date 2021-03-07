@@ -160,7 +160,7 @@ namespace Knapcode.ExplorePackages.Tool
                 PackageVersion = "5.0.0",
             };
 
-            var leaf = scan.GetLeafItem();
+            var leaf = scan.ToLeafItem();
 
             Console.WriteLine(JsonConvert.SerializeObject(
                 await _nuGetPackageExplorerToCsvDriver.ProcessLeafAsync(leaf, 0),

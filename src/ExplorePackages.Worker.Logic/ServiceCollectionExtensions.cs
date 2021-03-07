@@ -54,7 +54,7 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient<ICsvReader, NRecoCsvReader>();
 
             serviceCollection.AddCatalogLeafItemToCsv();
-            serviceCollection.AddFindLatestLeaf();
+            serviceCollection.AddLoadLatestPackageLeaf();
             serviceCollection.AddLoadPackageArchive();
             serviceCollection.AddLoadPackageManifest();
             serviceCollection.AddLoadPackageVersion();
@@ -180,8 +180,9 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient<CatalogLeafItemToCsvDriver>();
         }
 
-        private static void AddFindLatestLeaf(this IServiceCollection serviceCollection)
+        private static void AddLoadLatestPackageLeaf(this IServiceCollection serviceCollection)
         {
+            serviceCollection.AddTransient<LatestPackageLeafService>();
             serviceCollection.AddTransient<LatestPackageLeafStorageFactory>();
             serviceCollection.AddTransient<ILatestPackageLeafStorageFactory<LatestPackageLeaf>, LatestPackageLeafStorageFactory>();
             serviceCollection.AddTransient<FindLatestLeafDriver<LatestPackageLeaf>>();
