@@ -60,7 +60,9 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
 
         public async Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(NuGetPackageExplorerRecord record)
         {
-            if (record.ResultType != NuGetPackageExplorerResultType.Failed)
+            if (record.ResultType != NuGetPackageExplorerResultType.Failed
+                && record.ResultType != NuGetPackageExplorerResultType.Timeout
+                && record.ResultType != NuGetPackageExplorerResultType.InvalidMetadata)
             {
                 return null;
             }
