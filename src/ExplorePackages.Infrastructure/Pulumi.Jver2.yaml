@@ -1,5 +1,5 @@
 config:
-  ExplorePackages:WorkerCount: 20
+  ExplorePackages:WorkerCount: 2
   ExplorePackages:MaxWorkerScaleOut: 16
   ExplorePackages:WorkerQueueBatchSize: 1
   ExplorePackages:WorkerSettings:

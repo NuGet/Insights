@@ -94,7 +94,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
 
                 // TODO: understand the failure categories and fix them or assign more specific result types
-                if (attemptCount > 3)
+                if (attemptCount > 5)
                 {
                     _logger.LogWarning("Package {Id} {Version} failed due to too many attempts.", leaf.PackageId, leaf.PackageVersion);
                     return DriverResult.Success(new List<NuGetPackageExplorerRecord>
@@ -199,7 +199,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                             var resultTask = await Task.WhenAny(delayTask, symbolValidatorTask);
                             if (resultTask == delayTask)
                             {
-                                if (attemptCount > 1)
+                                if (attemptCount > 3)
                                 {
                                     _logger.LogWarning("Package {Id} {Version} had its symbol validation time out.", leaf.PackageId, leaf.PackageVersion);
                                     return DriverResult.Success(new List<NuGetPackageExplorerRecord>
