@@ -168,6 +168,7 @@ Several message processors exist to emit other useful data:
 
 ## Other docs
 
+- **[Adding a new driver](docs/new-driver.md) - a guide to help you enhance ExplorePackages to suit your needs.**
 - [Blog posts](docs/blog-posts.md) - blog posts about lessons learned from this project
 - [Consistency](docs/consistency.md) - a consistency checker for packages published to NuGet.org
 - [Cost](docs/cost.md) - how much it costs to run several of the implemented catalog scans
