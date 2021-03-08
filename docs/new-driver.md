@@ -9,11 +9,11 @@ Follow these steps to write a new catalog scan **driver**.
 
 If you don't want to follow a long guide, consider these steps:
 
-1. Copy-paste an existing driver similar to you what you want to do.
+1. Copy-paste an existing driver similar to do what you want to do.
 1. Start the Azure Storage Emulator.
 1. Start the [`ExplorePackages.Website`](../src/ExplorePackages.Website) website locally.
 1. Navigate to the admin panel ("Admin" in the navbar).
-1. Start a very short catalog scan for your new driver.
+1. Start a very short catalog scan for your new driver (e.g. **Use custom max** then specify `2015-02-01T06:22:45.8488496Z`)
 1. Start the [`ExplorePackages.Worker`](../src/ExplorePackages.Worker) Azure Function locally.
 1. Address errors as they come up. 🆒
 
