@@ -2,7 +2,7 @@ name: Build
 
 on:
   schedule:
-    - cron: '0 2 * * *'
+    - cron: '0 12 * * *'
   pull_request:
     branches: [ main ]
     types: [ opened, synchronize, reopened, labeled ]
