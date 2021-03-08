@@ -60,9 +60,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
 
         public async Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(NuGetPackageExplorerRecord record)
         {
-            if (record.ResultType != NuGetPackageExplorerResultType.Failed
-                && record.ResultType != NuGetPackageExplorerResultType.Timeout
-                && record.ResultType != NuGetPackageExplorerResultType.InvalidMetadata)
+            if (record.ResultType != NuGetPackageExplorerResultType.Failed)
             {
                 return null;
             }
@@ -95,8 +93,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             {
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
 
-                // TODO: understand the failure categories and fix them or assign more specific result types
-                if (attemptCount > 5)
+                if (attemptCount > 4)
                 {
                     _logger.LogWarning("Package {Id} {Version} failed due to too many attempts.", leaf.PackageId, leaf.PackageVersion);
                     return DriverResult.Success(new List<NuGetPackageExplorerRecord>
@@ -119,6 +116,12 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                 {
                     var contentUrl = await _flatContainerClient.GetPackageContentUrlAsync(leaf.PackageId, leaf.PackageVersion);
                     var nuGetLogger = _logger.ToNuGetLogger();
+
+                    _logger.LogInformation(
+                        "Downloading .nupkg for {Id} {Version} on attempt {AttemptCount}.",
+                        leaf.PackageId,
+                        leaf.PackageVersion,
+                        attemptCount);
 
                     var exists = await _httpSource.ProcessResponseAsync(
                         new HttpSourceRequest(contentUrl, nuGetLogger) { IgnoreNotFounds = true },
@@ -162,6 +165,12 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                         return DriverResult.Success(new List<NuGetPackageExplorerRecord>());
                     }
 
+                    _logger.LogInformation(
+                        "Loading ZIP package for {Id} {Version} on attempt {AttemptCount}.",
+                        leaf.PackageId,
+                        leaf.PackageVersion,
+                        attemptCount);
+
                     ZipPackage zipPackage;
                     try
                     {
@@ -195,15 +204,22 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                         SymbolValidatorResult symbolValidatorResult;
                         using (var cts = new CancellationTokenSource())
                         {
-                            var delayTask = Task.Delay(TimeSpan.FromMinutes(5), cts.Token);
+                            var delayTask = Task.Delay(TimeSpan.FromMinutes(3), cts.Token);
+                            _logger.LogInformation(
+                                "Starting symbol validation for {Id} {Version} on attempt {AttemptCount}.",
+                                leaf.PackageId,
+                                leaf.PackageVersion,
+                                attemptCount);
                             var symbolValidatorTask = symbolValidator.Validate(cts.Token);
 
                             var resultTask = await Task.WhenAny(delayTask, symbolValidatorTask);
                             if (resultTask == delayTask)
                             {
-                                if (attemptCount > 3)
+                                cts.Cancel();
+
+                                if (attemptCount > 2)
                                 {
-                                    _logger.LogWarning("Package {Id} {Version} had its symbol validation time out.", leaf.PackageId, leaf.PackageVersion);
+                                    _logger.LogWarning("Package {Id} {Version} had its symbol validation timeout.", leaf.PackageId, leaf.PackageVersion);
                                     return DriverResult.Success(new List<NuGetPackageExplorerRecord>
                                     {
                                         new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf)
@@ -224,6 +240,12 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                             }
                         }
 
+                        _logger.LogInformation(
+                            "Loading signature data for {Id} {Version} on attempt {AttemptCount}.",
+                            leaf.PackageId,
+                            leaf.PackageVersion,
+                            attemptCount);
+
                         await zipPackage.LoadSignatureDataAsync();
 
                         using var fileStream = zipPackage.GetStream();
@@ -240,6 +262,12 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
 
                         try
                         {
+                            _logger.LogInformation(
+                                "Getting all files for {Id} {Version} on attempt {AttemptCount}.",
+                                leaf.PackageId,
+                                leaf.PackageVersion,
+                                attemptCount);
+
                             foreach (var file in symbolValidator.GetAllFiles())
                             {
                                 var compilerFlags = file.DebugData?.CompilerFlags.ToDictionary(k => k.Key, v => v.Value);

@@ -8,9 +8,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Worker;
 using Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf;
+using Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using McMaster.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Protocol;
@@ -26,6 +28,7 @@ namespace Knapcode.ExplorePackages.Tool
         private readonly TaskStateStorageService _taskStateStorageService;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
+        private readonly ICatalogLeafToCsvDriver<NuGetPackageExplorerRecord> _driver;
         private readonly TableScanService<LatestPackageLeaf> _tableScanService;
 
         public SandboxCommand(
@@ -33,12 +36,14 @@ namespace Knapcode.ExplorePackages.Tool
             TaskStateStorageService taskStateStorageService,
             ServiceClientFactory serviceClientFactory,
             IRawMessageEnqueuer rawMessageEnqueuer,
+            ICatalogLeafToCsvDriver<NuGetPackageExplorerRecord> driver,
             TableScanService<LatestPackageLeaf> tableScanService)
         {
             _messageEnqueuer = messageEnqueuer;
             _taskStateStorageService = taskStateStorageService;
             _serviceClientFactory = serviceClientFactory;
             _rawMessageEnqueuer = rawMessageEnqueuer;
+            _driver = driver;
             _tableScanService = tableScanService;
         }
 
@@ -49,6 +54,29 @@ namespace Knapcode.ExplorePackages.Tool
         public async Task ExecuteAsync(CancellationToken token)
         {
             await Task.Yield();
+
+            await _driver.InitializeAsync();
+
+            var leafItem = new CatalogLeafItem
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2020.11.09.23.42.28/microsoft.windowsdesktop.app.runtime.win-x86.5.0.0.json",
+                PackageId = "microsoft.windowsdesktop.app.runtime.win-x86",
+                PackageVersion = "5.0.0",
+                Type = CatalogLeafType.PackageDetails,
+            };
+
+            var results = await _driver.ProcessLeafAsync(leafItem, attemptCount: 1);
+
+            Console.WriteLine(JsonConvert.SerializeObject(
+                results,
+                new JsonSerializerSettings
+                {
+                    Formatting = Formatting.Indented,
+                    Converters =
+                    {
+                        new StringEnumConverter(),
+                    }
+                }));
         }
 
         private async Task RunTestAsync(int i, int j)
