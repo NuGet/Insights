@@ -5,6 +5,17 @@ new about NuGet packages?
 
 Follow these steps to write a new catalog scan **driver**.
 
+## High level checklist
+
+1. Implement your driver
+1. Start a short time range catalog scan for your driver range using the website admin panel
+1. Execute the catalog scan by running the Azure Function
+1. Verify the results in Azure Storage
+1. Add integration tests
+1. Update the [README.md](../README.md#drivers) list to mention your driver
+1. If applicable, update [ImportTo-Kusto.ps1](../scripts/Kusto/ImportTo-Kusto.ps1) to include your new data
+1. Submit a PR. 🆒
+
 ## "Figure it out yourself" flow
 
 If you don't want to follow a long guide, consider these steps:
@@ -17,11 +28,9 @@ If you don't want to follow a long guide, consider these steps:
 1. Start the [`ExplorePackages.Worker`](../src/ExplorePackages.Worker) Azure Function locally.
 1. Address errors as they come up.
 
-🆒
-
 ## Guided flow
 
-If you want to read more, try this out.
+If you want more details regarding the steps of the checklist above, read on.
 
 ### Implement a driver interface
 
