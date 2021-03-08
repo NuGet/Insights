@@ -1,8 +1,6 @@
 # ExplorePackages
 
-Explore packages on a V3 NuGet package source that has a catalog (NuGet.org!) in a highly distributed manner.
-
-Or, if you want a sales pitch:
+Analyze packages NuGet.org in a highly distributed manner. Or, if you want a sales pitch:
 
 > Process all of NuGet.org in less than an hour for less than $10.*
 
@@ -106,7 +104,7 @@ enumerate all package IDs and versions. For each ID and version, some unit of wo
 be some custom analysis that you want to do on a package. There are some helper classes to write the results out to big
 CSVs for importing into Kusto or the like but in general, you can do whatever you want per package.
 
-The custom logic to run on a per-package (or per catalog leaf/page) is referred to as a "driver".
+The custom logic to run on a per-package (or per catalog leaf/page) is referred to as a **"driver"**.
 
 The enumeration of the catalog is called a "catalog scan". The catalog scan is within a specified time range in the
 catalog, with respect to the catalog commit timestamp. A catalog scan finds all catalog leaves in the provided min and
@@ -134,7 +132,7 @@ persistence (cheap).
 Here's a high-level description of main projects in this repository:
 
 - [`ExplorePackages.Worker`](src/ExplorePackages.Worker) - the Azure Function itself, a thin adapter between core logic and Azure Functions
-- [`ExplorePackages.Website`](src/ExplorePackages.Website) - a website for checking [consistency](#consistency) and an admin panel for starting scans
+- [`ExplorePackages.Website`](src/ExplorePackages.Website) - a website for checking [consistency](docs/consistency.md) and an admin panel for starting scans
 - [`ExplorePackages.Worker.Logic`](src/ExplorePackages.Worker.Logic) - all of the catalog scan and driver logic, this is the most interesting project
 - [`ExplorePackages.Logic`](src/ExplorePackages.Logic) - contains more generic logic related to NuGet.org protocol and is not directly related to distributed processing
 
@@ -144,9 +142,9 @@ Other projects are:
 - [`ExplorePackages.SourceGenerator`](src/ExplorePackages.SourceGenerator) - AOT source generation logic for reading and writing CSVs
 - [`ExplorePackages.Tool`](src/ExplorePackages.Tool) - a command-line app used for pretty much just prototyping code
 
-## Notable classes
+## Drivers
 
-The main drivers for learning about packages are:
+The current drivers for analyzing NuGet.org packages are:
 
 - [`CatalogLeafItemToCsv`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/CatalogLeafItemToCsv/CatalogLeafItemToCsvDriver.cs) - write all catalog leaf items to big CSVs for analysis
 - [`PackageArchiveEntryToCsv`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/PackageArchiveEntryToCsv/PackageArchiveEntryToCsvDriver.cs) - find info about all ZIP entries in the .nupkg
@@ -156,154 +154,21 @@ The main drivers for learning about packages are:
 - [`PackageSignatureToCsv`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/PackageSignatureToCsv/PackageSignatureToCsvDriver.cs) - parse the NuGet package signature
 - [`PackageVersionToCsv`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/PackageVersionToCsv/PackageVersionToCsvDriver.cs) - determine latest version per package ID
 
-Several other supporting drivers exist:
+Several other supporting drivers exist to populate storage with intermediate results:
 
 - [`LoadLatestPackageLeaf`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/LoadLatestPackageLeaf) - write the latest catalog leaf to Table Storage
 - [`LoadPackageArchive`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/LoadPackageArchive/LoadPackageArchiveDriver.cs) - fetch information from the .nupkg and put it in Table Storage
 - [`LoadPackageManifest`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/LoadPackageManifest/LoadPackageManifestDriver.cs) - fetch the .nuspec and put it in Table Storage
 - [`LoadPackageVersion`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/LoadPackageVersion/LoadPackageVersionDriver.cs) - determine listed and SemVer status and put it in Table Storage
 
-Several message processes exist for other purposes:
+Several message processors exist to emit other useful data:
 
 - [`DownloadsToCsv`](src/ExplorePackages.Worker.Logic/MessageProcessors/DownloadsToCsv/DownloadsToCsvUpdater.cs) - read `downloads.v1.json` and write it to CSV
 - [`OwnersToCsv`](src/ExplorePackages.Worker.Logic/MessageProcessors/OwnersToCsv/OwnersToCsvUpdater.cs) - read `owners.v2.json` and write it to CSV
-- [`RunRealRestore`](src/ExplorePackages.Worker.Logic/MessageProcessors/RunRealRestore/RunRealRestoreCompactProcessor.cs) - run `dotnet restore` to test package compatibility
 
-Finally, some interesting generic services were built to enable this analysis:
+## Other docs
 
-- [`AppendResultStorageService`](src/ExplorePackages.Worker.Logic/AppendResults/AppendResultStorageService.cs) - Azure Function result aggregation using Tables or append blobs
-- [`AutoRenewingStorageLeaseService`](src/ExplorePackages.Logic/Leasing/AutoRenewingStorageLeaseService.cs) - an `IAsyncDisposable` that keeps a global lease renewed
-- [`CsvRecordGenerator`](src/ExplorePackages.SourceGenerator/CsvRecordGenerator.cs) - AOT CSV reading and writing for a C# record/POCO
-- [`TableEntitySizeCalculator`](src/ExplorePackages.Logic/Storage/TableEntitySizeCalculator.cs) - calculate exact size in bytes for a Table Storage entity
-- [`TablePrefixScanner`](src/ExplorePackages.Logic/TablePrefixScan/TablePrefixScanner.cs) - run a distributed scan of a big Azure Storage Table, faster than serial scans
-- [`TempStreamService`](src/ExplorePackages.Logic/TempStream/TempStreamService.cs) - buffer to local storage (memory or disk), great for Azure Functions Consumption Plan
-- [`WideEntityService`](src/ExplorePackages.Logic/WideEntities/WideEntityService.cs) - Blob Storage-like semantics with Azure Table Storage, enables batch operations
-
-## Blog posts
-
-I've written several blog posts based on findings in this project:
-
-- [Disk write performance on Azure Functions](https://www.joelverhagen.com/blog/2021/02/azure-function-disk-performance) - use the Azure File Share efficiently in Consumption plan
-  - Recommendations are implemented in [`TempStreamWriter.cs`](src/ExplorePackages.Logic/TempStream/TempStreamWriter.cs).
-- [How to run a distributed scan of Azure Table Storage](https://www.joelverhagen.com/blog/2020/12/distributed-scan-of-azure-tables) - 10 minute Azure Functions limit and big Table Storage
-  - This trick is implemented in [`TablePrefixScan`](src/ExplorePackages.Logic/TablePrefixScan).
-- [The fastest CSV parser in .NET](https://www.joelverhagen.com/blog/2020/12/fastest-net-csv-parsers) - comparing the performance of .NET CSV parsers on NuGet.org
-  - I used one of the initial fastest implementations in [`NRecoCsvReader`](src/ExplorePackages.Worker.Logic/AppendResults/NRecoCsvReader.cs).
-- [The fastest way to dynamically activate objects in .NET](https://www.joelverhagen.com/blog/2020/11/dynamically-activate-objects-net) - ILEmit vs. `new T()` vs. `Activator`, etc.
-  - I used the fastest approach allowing generics in [`NRecoCsvReader`](src/ExplorePackages.Worker.Logic/AppendResults/NRecoCsvReader.cs), which is tied between `new T()` and `Activator`. I didn't use ILEmit since the overhead was too high for Azure Functions.
-
-## Performance and cost
-
-*As of February 2021*
-
-Tested timestamp range:
-- Min: `2015-02-01T06:22:45.8488496Z`
-- Max: `2021-02-05T15:55:33.3608941Z`
-
-Results:
-- `FindPackageFile`
-  - Runtime: 37 minutes, 19 seconds
-  - Total cost: $3.37
-
-<details>
-<summary>Detailed cost</summary>
-
-- Azure Functions cost - $2.77
-  - bandwidth / data transfer out - $1.62
-  - functions / execution time - $1.13
-  - functions / total executions - $0.01
-- Azure Storage cost - $0.60
-  - storage / tables / scan operations - $0.26
-  - storage / tables / batch write operations - $0.15
-  - storage / queues v2 / lrs class 1 operations - $0.13
-  - storage / tiered block blob / all other operations - $0.01
-  - storage / files / protocol operations - $0.01
-
-</details>
-
-- `FindPackageSignature`
-  - Runtime: 1 hour, 11 minutes, 29 seconds
-  - Total cost: $6.30
-
-<details>
-<summary>Detailed cost</summary>
-
-- Azure Functions cost - $4.97
-  - functions / execution time - $4.14
-  - bandwidth / data transfer out - $0.81
-  - functions / total executions - $0.02
-- Azure Storage cost - $1.33
-  - storage / tables / batch write operations - $0.36
-  - storage / tables / scan operations - $0.26
-  - storage / queues v2 / lrs class 1 operations - $0.14
-  - storage / tables / delete operations - $0.13
-  - storage / tables / write operations - $0.13
-  - storage / tiered block blob / all other operations - $0.05
-  - storage / files / protocol operations - $0.04
-  - storage / queues v2 / class 2 operations - $0.04
-  - storage / files / lrs write operations - $0.02
-  - storage / tables / read operations - $0.01
-  - storage / tables / lrs class 1 additional io - $0.01
-
-</details>
-
-- `FindPackageAsset`
-  - Runtime: 41 minutes, 34 seconds
-  - Total cost: $5.61
-
-<details>
-<summary>Detailed cost</summary>
-
-- Azure Functions cost - $4.11
-  - functions / execution time - $2.52
-  - bandwidth / data transfer out - $1.57
-  - functions / total executions - $0.02
-- Azure Storage cost - $1.50
-  - storage / tables / batch write operations - $0.35
-  - storage / tables / scan operations - $0.25
-  - storage / queues v2 / lrs class 1 operations - $0.13
-  - storage / tables / delete operations - $0.14
-  - storage / tables / write operations - $0.14
-  - storage / files / lrs write operations - $0.24
-  - storage / files / protocol operations - $0.20
-  - storage / tiered block blob / all other operations - $0.01
-  - storage / queues v2 / class 2 operations - $0.02
-  - storage / tables / read operations - $0.01
-  - storage / tables / lrs class 1 additional io - $0.01
-
-</details>
-
-- `FindPackageAssembly`
-  - Runtime: 1 hour, 33 minutes, 25 seconds
-  - Total cost: $6.37
-
-<details>
-<summary>Detailed cost</summary>
-
-- Azure Functions cost - $6.37
-  - functions / execution time - $0.63
-  - bandwidth / data transfer out - $0.87
-  - functions / total executions - $0.04
-- Azure Storage cost - $4.74
-  - storage / queues v2 / lrs class 1 operations - $3.08
-  - storage / files / lrs write operations - $0.48
-  - storage / tables / batch write operations - $0.35
-  - storage / tables / scan operations - $0.24
-  - storage / tiered block blob / all other operations - $0.14
-  - storage / tables / delete operations - $0.13
-  - storage / tables / write operations - $0.13
-  - storage / tables / read operations - $0.13
-  - storage / files / protocol operations - $0.01
-  - storage / files / read operations - $0.01
-  - storage / queues v2 / class 2 operations - $0.01
-  - storage / tables / lrs class 1 additional io - $0.01
-
-</details>
-
-## Consistency
-
-I've also used this framework to look for inconsistencies in the V2 and V3 endpoints. To make this easier, I made a
-little website to see if your package is fully propagated on NuGet.org (that is, the indexing is complete).
-
-https://explorepackages.azurewebsites.net/
-
+- [Blog posts](docs/blog-posts.md) - blog posts about lessons learned from this project
+- [Consistency](docs/consistency.md) - a consistency checker for packages published to NuGet.org
+- [Cost](docs/cost.md) - how much it costs to run several of the implemented catalog scans
+- [Notable classes](docs/notable-classes.md) - interesting or useful classes supporting this project
