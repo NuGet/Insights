@@ -190,7 +190,7 @@ namespace Knapcode.ExplorePackages
                 Duration = TimeSpan.FromSeconds(60);
                 Settings = new ExplorePackagesSettings
                 {
-                    StorageConnectionString = "UseDevelopmentStorage=true",
+                    StorageConnectionString = TestSettings.StorageConnectionString,
                     LeaseContainerName = ContainerName,
                 };
                 Options = new Mock<IOptions<ExplorePackagesSettings>>();

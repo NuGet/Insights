@@ -57,11 +57,11 @@ namespace Knapcode.ExplorePackages.Worker
         {
             var settings = builder
                 .GetContext()
-                .Configuration
+                .Configuration?
                 .GetSection(ExplorePackagesSettings.DefaultSectionName)
                 .Get<ExplorePackagesWorkerSettings>();
 
-            if (settings.MoveTempToHome)
+            if (settings?.MoveTempToHome == true)
             {
                 if (!DoesHomeExist())
                 {

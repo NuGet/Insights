@@ -328,8 +328,7 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
 
             public Fixture()
             {
-                var connectionString = "UseDevelopmentStorage=true";
-                StorageAccount = CloudStorageAccount.Parse(connectionString);
+                StorageAccount = CloudStorageAccount.Parse(TestSettings.StorageConnectionString);
             }
 
             public CloudStorageAccount StorageAccount { get; }

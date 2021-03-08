@@ -23,7 +23,7 @@ namespace Knapcode.ExplorePackages
         static BaseLogicIntegrationTest()
         {
             var oldTemp = Environment.GetEnvironmentVariable("TEMP");
-            var newTemp = Path.GetFullPath(Path.Join(oldTemp, "Knapcode.ExplorePackages.Tests"));
+            var newTemp = Path.GetFullPath(Path.Join(oldTemp, "Knapcode.ExplorePackages.Temp"));
             Directory.CreateDirectory(newTemp);
             Environment.SetEnvironmentVariable("TEMP", newTemp);
             Environment.SetEnvironmentVariable("TMP", newTemp);
@@ -95,6 +95,8 @@ namespace Knapcode.ExplorePackages
 
         protected void ConfigureDefaultsAndSettings(ExplorePackagesSettings x)
         {
+            x.StorageConnectionString = TestSettings.StorageConnectionString;
+
             x.StorageContainerName = $"{StoragePrefix}1p1";
             x.LeaseContainerName = $"{StoragePrefix}1l1";
             x.PackageArchiveTableName = $"{StoragePrefix}1pa1";

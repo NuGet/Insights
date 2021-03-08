@@ -445,7 +445,10 @@ namespace Knapcode.ExplorePackages.WideEntities
             public Fixture()
             {
                 Options = new Mock<IOptions<ExplorePackagesSettings>>();
-                Settings = new ExplorePackagesSettings();
+                Settings = new ExplorePackagesSettings
+                {
+                    StorageConnectionString = TestSettings.StorageConnectionString,
+                };
                 Options.Setup(x => x.Value).Returns(() => Settings);
                 ServiceClientFactory = new ServiceClientFactory(Options.Object);
                 TableName = "t" + StorageUtility.GenerateUniqueId().ToLowerInvariant();
