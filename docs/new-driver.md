@@ -15,7 +15,9 @@ If you don't want to follow a long guide, consider these steps:
 1. Navigate to the admin panel ("Admin" in the navbar).
 1. Start a very short catalog scan for your new driver (e.g. **Use custom max** then specify `2015-02-01T06:22:45.8488496Z`)
 1. Start the [`ExplorePackages.Worker`](../src/ExplorePackages.Worker) Azure Function locally.
-1. Address errors as they come up. 🆒
+1. Address errors as they come up.
+
+🆒
 
 ## Guided flow
 
