@@ -16,7 +16,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
         AsOfTimestamp: datetime,
         LowerId: string,
         Id: string,
-        Owners: string
+        Owners: dynamic
     );
 
     .alter-merge table JverPackageOwners policy retention softdelete = 30d;
@@ -39,7 +39,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
         '{"Column":"AsOfTimestamp","DataType":"datetime","Properties":{"Ordinal":0}},'
         '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":1}},'
         '{"Column":"Id","DataType":"string","Properties":{"Ordinal":2}},'
-        '{"Column":"Owners","DataType":"string","Properties":{"Ordinal":3}}'
+        '{"Column":"Owners","DataType":"dynamic","Properties":{"Ordinal":3}}'
     ']'
 
     */

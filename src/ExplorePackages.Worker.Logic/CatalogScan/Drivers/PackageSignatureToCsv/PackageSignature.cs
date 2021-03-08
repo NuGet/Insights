@@ -58,6 +58,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
         public DateTimeOffset? RepositoryTimestampValue { get; set; }
         public bool RepositoryTimestampHasASN1Error { get; set; }
 
+        [KustoType("dynamic")]
         public string PackageOwners { get; set; }
     }
 }

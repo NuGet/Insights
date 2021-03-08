@@ -32,7 +32,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
         TargetFramework: string,
         TargetFrameworkIdentifier: string,
         TargetFrameworkVersion: string,
-        CompilerFlags: string,
+        CompilerFlags: dynamic,
         HasCompilerFlags: bool,
         HasSourceLink: bool,
         HasDebugInfo: bool
@@ -74,7 +74,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
         '{"Column":"TargetFramework","DataType":"string","Properties":{"Ordinal":16}},'
         '{"Column":"TargetFrameworkIdentifier","DataType":"string","Properties":{"Ordinal":17}},'
         '{"Column":"TargetFrameworkVersion","DataType":"string","Properties":{"Ordinal":18}},'
-        '{"Column":"CompilerFlags","DataType":"string","Properties":{"Ordinal":19}},'
+        '{"Column":"CompilerFlags","DataType":"dynamic","Properties":{"Ordinal":19}},'
         '{"Column":"HasCompilerFlags","DataType":"bool","Properties":{"Ordinal":20}},'
         '{"Column":"HasSourceLink","DataType":"bool","Properties":{"Ordinal":21}},'
         '{"Column":"HasDebugInfo","DataType":"bool","Properties":{"Ordinal":22}}'

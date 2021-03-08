@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace Knapcode.ExplorePackages
@@ -31,15 +32,15 @@ namespace Knapcode.ExplorePackages
             return prettyPropType;
         }
 
-        public static bool IsNullableEnum(INamedTypeSymbol nullable, IPropertySymbol symbol)
+        public static bool IsNullableEnum(PropertyVisitorContext context, IPropertySymbol symbol)
         {
-            return IsNullable(nullable, symbol, out var innerType) && innerType.TypeKind == TypeKind.Enum;
+            return IsNullable(context, symbol, out var innerType) && innerType.TypeKind == TypeKind.Enum;
         }
 
-        public static bool IsNullable(INamedTypeSymbol nullable, IPropertySymbol symbol, out ITypeSymbol innerType)
+        public static bool IsNullable(PropertyVisitorContext context, IPropertySymbol symbol, out ITypeSymbol innerType)
         {
             if (symbol.Type is INamedTypeSymbol typeSymbol
-                && SymbolEqualityComparer.Default.Equals(typeSymbol.OriginalDefinition, nullable)
+                && SymbolEqualityComparer.Default.Equals(typeSymbol.OriginalDefinition, context.Nullable)
                 && typeSymbol.TypeArguments.Length == 1)
             {
                 innerType = typeSymbol.TypeArguments[0];
@@ -50,8 +51,17 @@ namespace Knapcode.ExplorePackages
             return false;
         }
 
-        public static string GetKustoDataType(INamedTypeSymbol nullable, IPropertySymbol symbol)
+        public static string GetKustoDataType(PropertyVisitorContext context, IPropertySymbol symbol)
         {
+            var attributeData = symbol
+                .GetAttributes()
+                .SingleOrDefault(x => x.AttributeClass.Equals(context.KustoTypeAttribute, SymbolEqualityComparer.Default));
+            if (attributeData != null)
+            {
+                var kustoType = attributeData.ConstructorArguments.Single().Value;
+                return kustoType.ToString();
+            }
+
             switch (symbol.Type.ToString())
             {
                 case "bool":
@@ -78,7 +88,7 @@ namespace Knapcode.ExplorePackages
                 case "string":
                     return "string";
                 default:
-                    if (symbol.Type.TypeKind == TypeKind.Enum || IsNullableEnum(nullable, symbol))
+                    if (symbol.Type.TypeKind == TypeKind.Enum || IsNullableEnum(context, symbol))
                     {
                         return "string";
                     }

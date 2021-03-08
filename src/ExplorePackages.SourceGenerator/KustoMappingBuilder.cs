@@ -17,12 +17,12 @@ namespace Knapcode.ExplorePackages
             _nextOrdinal = 0;
         }
 
-        public void OnProperty(GeneratorExecutionContext context, INamedTypeSymbol nullable, IPropertySymbol symbol, string prettyPropType)
+        public void OnProperty(PropertyVisitorContext context, IPropertySymbol symbol, string prettyPropType)
         {
             var field = new DataMapping
             {
                 Column = symbol.Name,
-                DataType = PropertyHelper.GetKustoDataType(nullable, symbol),
+                DataType = PropertyHelper.GetKustoDataType(context, symbol),
                 Properties = new CsvProperties
                 {
                     Ordinal = _nextOrdinal,
@@ -41,7 +41,7 @@ namespace Knapcode.ExplorePackages
             _builder.Append(JsonConvert.SerializeObject(field).Replace("'", "\\'"));
         }
 
-        public void Finish(GeneratorExecutionContext context)
+        public void Finish(PropertyVisitorContext context)
         {
             _builder.Append("'");
         }

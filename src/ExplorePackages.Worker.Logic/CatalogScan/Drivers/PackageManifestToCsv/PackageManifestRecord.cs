@@ -44,14 +44,28 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
         public string Tags { get; set; }
         public string Title { get; set; }
 
+        [KustoType("dynamic")]
         public string PackageTypes { get; set; }
+
+        [KustoType("dynamic")]
         public string LicenseMetadata { get; set; }
+
+        [KustoType("dynamic")]
         public string RepositoryMetadata { get; set; }
 
+        [KustoType("dynamic")]
         public string ReferenceGroups { get; set; }
+
+        [KustoType("dynamic")]
         public string ContentFiles { get; set; }
+
+        [KustoType("dynamic")]
         public string DependencyGroups { get; set; }
+
+        [KustoType("dynamic")]
         public string FrameworkAssemblyGroups { get; set; }
+
+        [KustoType("dynamic")]
         public string FrameworkRefGroups { get; set; }
 
         public bool ContentFilesHasFormatException { get; set; }

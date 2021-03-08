@@ -41,14 +41,14 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
         Summary: string,
         Tags: string,
         Title: string,
-        PackageTypes: string,
-        LicenseMetadata: string,
-        RepositoryMetadata: string,
-        ReferenceGroups: string,
-        ContentFiles: string,
-        DependencyGroups: string,
-        FrameworkAssemblyGroups: string,
-        FrameworkRefGroups: string,
+        PackageTypes: dynamic,
+        LicenseMetadata: dynamic,
+        RepositoryMetadata: dynamic,
+        ReferenceGroups: dynamic,
+        ContentFiles: dynamic,
+        DependencyGroups: dynamic,
+        FrameworkAssemblyGroups: dynamic,
+        FrameworkRefGroups: dynamic,
         ContentFilesHasFormatException: bool,
         DependencyGroupsHasMissingId: bool
     );
@@ -98,14 +98,14 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
         '{"Column":"Summary","DataType":"string","Properties":{"Ordinal":25}},'
         '{"Column":"Tags","DataType":"string","Properties":{"Ordinal":26}},'
         '{"Column":"Title","DataType":"string","Properties":{"Ordinal":27}},'
-        '{"Column":"PackageTypes","DataType":"string","Properties":{"Ordinal":28}},'
-        '{"Column":"LicenseMetadata","DataType":"string","Properties":{"Ordinal":29}},'
-        '{"Column":"RepositoryMetadata","DataType":"string","Properties":{"Ordinal":30}},'
-        '{"Column":"ReferenceGroups","DataType":"string","Properties":{"Ordinal":31}},'
-        '{"Column":"ContentFiles","DataType":"string","Properties":{"Ordinal":32}},'
-        '{"Column":"DependencyGroups","DataType":"string","Properties":{"Ordinal":33}},'
-        '{"Column":"FrameworkAssemblyGroups","DataType":"string","Properties":{"Ordinal":34}},'
-        '{"Column":"FrameworkRefGroups","DataType":"string","Properties":{"Ordinal":35}},'
+        '{"Column":"PackageTypes","DataType":"dynamic","Properties":{"Ordinal":28}},'
+        '{"Column":"LicenseMetadata","DataType":"dynamic","Properties":{"Ordinal":29}},'
+        '{"Column":"RepositoryMetadata","DataType":"dynamic","Properties":{"Ordinal":30}},'
+        '{"Column":"ReferenceGroups","DataType":"dynamic","Properties":{"Ordinal":31}},'
+        '{"Column":"ContentFiles","DataType":"dynamic","Properties":{"Ordinal":32}},'
+        '{"Column":"DependencyGroups","DataType":"dynamic","Properties":{"Ordinal":33}},'
+        '{"Column":"FrameworkAssemblyGroups","DataType":"dynamic","Properties":{"Ordinal":34}},'
+        '{"Column":"FrameworkRefGroups","DataType":"dynamic","Properties":{"Ordinal":35}},'
         '{"Column":"ContentFilesHasFormatException","DataType":"bool","Properties":{"Ordinal":36}},'
         '{"Column":"DependencyGroupsHasMissingId","DataType":"bool","Properties":{"Ordinal":37}}'
     ']'

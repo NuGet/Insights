@@ -34,7 +34,10 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
         public string TargetFramework { get; set; }
         public string TargetFrameworkIdentifier { get; set; }
         public string TargetFrameworkVersion { get; set; }
+
+        [KustoType("dynamic")]
         public string CompilerFlags { get; set; }
+
         public bool? HasCompilerFlags { get; set; }
         public bool? HasSourceLink { get; set; }
         public bool? HasDebugInfo { get; set; }

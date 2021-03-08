@@ -20,7 +20,7 @@ namespace Knapcode.ExplorePackages
             _builder = new StringBuilder();
         }
 
-        public void OnProperty(GeneratorExecutionContext context, INamedTypeSymbol nullable, IPropertySymbol symbol, string prettyPropType)
+        public void OnProperty(PropertyVisitorContext context, IPropertySymbol symbol, string prettyPropType)
         {
             if (!symbol.GetAttributes().Any(x => x.AttributeClass.Name == AttributeName))
             {
@@ -49,7 +49,7 @@ namespace Knapcode.ExplorePackages
 
             if (_builder.Length > 0)
             {
-                context.ReportDiagnostic(Diagnostic.Create(
+                context.GeneratorExecutionContext.ReportDiagnostic(Diagnostic.Create(
                     new DiagnosticDescriptor(
                         id: "EXP0003",
                         title: $"Multiple {AttributeName} attributes were defined on a single type.",
@@ -77,11 +77,11 @@ namespace Knapcode.ExplorePackages
             }
         }
 
-        public void Finish(GeneratorExecutionContext context)
+        public void Finish(PropertyVisitorContext context)
         {
             if (_builder.Length == 0)
             {
-                context.ReportDiagnostic(Diagnostic.Create(
+                context.GeneratorExecutionContext.ReportDiagnostic(Diagnostic.Create(
                     new DiagnosticDescriptor(
                         id: "EXP0003",
                         title: $"No {AttributeName} attributes were defined on a type.",

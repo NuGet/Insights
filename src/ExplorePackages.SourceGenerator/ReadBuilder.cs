@@ -14,7 +14,7 @@ namespace Knapcode.ExplorePackages
             _builder = new StringBuilder();
         }
 
-        public void OnProperty(GeneratorExecutionContext context, INamedTypeSymbol nullable, IPropertySymbol symbol, string prettyPropType)
+        public void OnProperty(PropertyVisitorContext context, IPropertySymbol symbol, string prettyPropType)
         {
             if (_builder.Length > 0)
             {
@@ -59,7 +59,7 @@ namespace Knapcode.ExplorePackages
                     {
                         _builder.AppendFormat("{0} = Enum.Parse<{1}>(getNextField()),", symbol.Name, prettyPropType);
                     }
-                    else if (PropertyHelper.IsNullableEnum(nullable, symbol))
+                    else if (PropertyHelper.IsNullableEnum(context, symbol))
                     {
                         _builder.AppendFormat("{0} = CsvUtility.ParseNullable(getNextField(), Enum.Parse<{1}>),", symbol.Name, prettyPropType);
                     }
@@ -71,7 +71,7 @@ namespace Knapcode.ExplorePackages
             }
         }
 
-        public void Finish(GeneratorExecutionContext context)
+        public void Finish(PropertyVisitorContext context)
         {
         }
 

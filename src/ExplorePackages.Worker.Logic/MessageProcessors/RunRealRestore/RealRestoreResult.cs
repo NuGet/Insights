@@ -126,10 +126,15 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
 
         public string ErrorBlobPath { get; set; }
 
+        [KustoType("dynamic")]
         public string RestoreLogMessageCodes { get; set; }
+
         public bool? OnlyNU1202 { get; set; }
         public bool? OnlyNU1213 { get; set; }
+
+        [KustoType("dynamic")]
         public string BuildErrorCodes { get; set; }
+
         public bool? OnlyMSB3644 { get; set; }
     }
 }

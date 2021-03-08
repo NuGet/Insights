@@ -14,7 +14,7 @@ namespace Knapcode.ExplorePackages
             _builder = new StringBuilder();
         }
 
-        public void OnProperty(GeneratorExecutionContext context, INamedTypeSymbol nullable, IPropertySymbol symbol, string prettyPropType)
+        public void OnProperty(PropertyVisitorContext context, IPropertySymbol symbol, string prettyPropType)
         {
             if (_builder.Length == 0)
             {
@@ -29,7 +29,7 @@ namespace Knapcode.ExplorePackages
             _builder.Append(symbol.Name);
         }
 
-        public void Finish(GeneratorExecutionContext context)
+        public void Finish(PropertyVisitorContext context)
         {
             _builder.Append("\");");
         }

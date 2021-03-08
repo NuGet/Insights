@@ -52,7 +52,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
         RepositoryTimestampIssuer: string,
         RepositoryTimestampValue: datetime,
         RepositoryTimestampHasASN1Error: bool,
-        PackageOwners: string
+        PackageOwners: dynamic
     );
 
     .alter-merge table JverPackageSignatures policy retention softdelete = 30d;
@@ -111,7 +111,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
         '{"Column":"RepositoryTimestampIssuer","DataType":"string","Properties":{"Ordinal":36}},'
         '{"Column":"RepositoryTimestampValue","DataType":"datetime","Properties":{"Ordinal":37}},'
         '{"Column":"RepositoryTimestampHasASN1Error","DataType":"bool","Properties":{"Ordinal":38}},'
-        '{"Column":"PackageOwners","DataType":"string","Properties":{"Ordinal":39}}'
+        '{"Column":"PackageOwners","DataType":"dynamic","Properties":{"Ordinal":39}}'
     ']'
 
     */

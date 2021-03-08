@@ -40,10 +40,10 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
         ToolAssemblyCount: int,
         EmbedAssemblyCount: int,
         ErrorBlobPath: string,
-        RestoreLogMessageCodes: string,
+        RestoreLogMessageCodes: dynamic,
         OnlyNU1202: bool,
         OnlyNU1213: bool,
-        BuildErrorCodes: string,
+        BuildErrorCodes: dynamic,
         OnlyMSB3644: bool
     );
 
@@ -91,10 +91,10 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
         '{"Column":"ToolAssemblyCount","DataType":"int","Properties":{"Ordinal":24}},'
         '{"Column":"EmbedAssemblyCount","DataType":"int","Properties":{"Ordinal":25}},'
         '{"Column":"ErrorBlobPath","DataType":"string","Properties":{"Ordinal":26}},'
-        '{"Column":"RestoreLogMessageCodes","DataType":"string","Properties":{"Ordinal":27}},'
+        '{"Column":"RestoreLogMessageCodes","DataType":"dynamic","Properties":{"Ordinal":27}},'
         '{"Column":"OnlyNU1202","DataType":"bool","Properties":{"Ordinal":28}},'
         '{"Column":"OnlyNU1213","DataType":"bool","Properties":{"Ordinal":29}},'
-        '{"Column":"BuildErrorCodes","DataType":"string","Properties":{"Ordinal":30}},'
+        '{"Column":"BuildErrorCodes","DataType":"dynamic","Properties":{"Ordinal":30}},'
         '{"Column":"OnlyMSB3644","DataType":"bool","Properties":{"Ordinal":31}}'
     ']'
 

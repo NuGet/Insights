@@ -14,7 +14,7 @@ namespace Knapcode.ExplorePackages
             _builder = new StringBuilder();
         }
 
-        public void OnProperty(GeneratorExecutionContext context, INamedTypeSymbol nullable, IPropertySymbol symbol, string prettyPropType)
+        public void OnProperty(PropertyVisitorContext context, IPropertySymbol symbol, string prettyPropType)
         {
             if (_builder.Length > 0)
             {
@@ -47,7 +47,7 @@ namespace Knapcode.ExplorePackages
                     _builder.AppendFormat("fields.Add({0});", symbol.Name);
                     break;
                 default:
-                    if (symbol.Type.TypeKind == TypeKind.Enum || PropertyHelper.IsNullableEnum(nullable, symbol))
+                    if (symbol.Type.TypeKind == TypeKind.Enum || PropertyHelper.IsNullableEnum(context, symbol))
                     {
                         _builder.AppendFormat("fields.Add({0}.ToString());", symbol.Name);
                     }
@@ -59,7 +59,7 @@ namespace Knapcode.ExplorePackages
             }
         }
 
-        public void Finish(GeneratorExecutionContext context)
+        public void Finish(PropertyVisitorContext context)
         {
         }
 

@@ -10,6 +10,8 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
         public string LowerId { get; set; }
 
         public string Id { get; set; }
+
+        [KustoType("dynamic")]
         public string Owners { get; set; }
     }
 }
