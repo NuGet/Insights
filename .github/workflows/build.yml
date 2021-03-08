@@ -29,3 +29,11 @@ jobs:
       run: dotnet test --no-build --verbosity normal
       env:
         EXPLOREPACKAGES_STORAGECONNECTIONSTRING: ${{ secrets.EXPLOREPACKAGES_STORAGECONNECTIONSTRING }}
+
+  markdown-link-check:
+  
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@master
+    - uses: gaurav-nelson/github-action-markdown-link-check@v1
