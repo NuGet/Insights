@@ -148,7 +148,7 @@ Other projects are:
 
 The main drivers for learning about packages are:
 
-- [`CatalogLeafItemToCsv`](src/ExplorePackages.Worker.Logic/CatalogScan2/Drivers/CatalogLeafItemToCsv/CatalogLeafItemToCsvDriver.cs) - write all catalog leaf items to big CSVs for analysis
+- [`CatalogLeafItemToCsv`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/CatalogLeafItemToCsv/CatalogLeafItemToCsvDriver.cs) - write all catalog leaf items to big CSVs for analysis
 - [`PackageArchiveEntryToCsv`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/PackageArchiveEntryToCsv/PackageArchiveEntryToCsvDriver.cs) - find info about all ZIP entries in the .nupkg
 - [`PackageAssemblyToCsv`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/PackageAssemblyToCsv/PackageAssemblyToCsvDriver.cs) - find stuff like public key tokens in assemblies using `System.Reflection.Metadata`
 - [`PackageAssetToCsv`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/PackageAssetToCsv/PackageAssetToCsvDriver.cs) - find assets recognized by NuGet restore
