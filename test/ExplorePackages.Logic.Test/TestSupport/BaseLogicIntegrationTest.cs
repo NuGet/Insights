@@ -20,6 +20,15 @@ namespace Knapcode.ExplorePackages
 {
     public abstract class BaseLogicIntegrationTest : IClassFixture<DefaultWebApplicationFactory<StaticFilesStartup>>, IAsyncLifetime
     {
+        static BaseLogicIntegrationTest()
+        {
+            var oldTemp = Environment.GetEnvironmentVariable("TEMP");
+            var newTemp = Path.GetFullPath(Path.Join(oldTemp, "Knapcode.ExplorePackages.Tests"));
+            Directory.CreateDirectory(newTemp);
+            Environment.SetEnvironmentVariable("TEMP", newTemp);
+            Environment.SetEnvironmentVariable("TMP", newTemp);
+        }
+
         public const string ProgramName = "Knapcode.ExplorePackages.Logic.Test";
         public const string TestData = "TestData";
         public const string Step1 = "Step1";
