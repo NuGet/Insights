@@ -20,6 +20,7 @@ namespace Knapcode.ExplorePackages.Worker
         public Action<ExplorePackagesWorkerSettings> ConfigureWorkerSettings { get; set; }
         public IOptions<ExplorePackagesWorkerSettings> Options => Host.Services.GetRequiredService<IOptions<ExplorePackagesWorkerSettings>>();
         public CatalogScanService CatalogScanService => Host.Services.GetRequiredService<CatalogScanService>();
+        public CatalogScanCursorService CatalogScanCursorService => Host.Services.GetRequiredService<CatalogScanCursorService>();
         public CursorStorageService CursorStorageService => Host.Services.GetRequiredService<CursorStorageService>();
         public CatalogScanStorageService CatalogScanStorageService => Host.Services.GetRequiredService<CatalogScanStorageService>();
         public TaskStateStorageService TaskStateStorageService => Host.Services.GetRequiredService<TaskStateStorageService>();
@@ -75,7 +76,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         protected async Task SetCursorAsync(CatalogScanDriverType driverType, DateTimeOffset min)
         {
-            var cursor = await CatalogScanService.GetCursorAsync(driverType);
+            var cursor = await CatalogScanCursorService.GetCursorAsync(driverType);
             cursor.Value = min;
             await CursorStorageService.UpdateAsync(cursor);
         }

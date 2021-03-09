@@ -18,7 +18,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             // Arrange
             await CatalogScanService.InitializeAsync();
-            await SetDependencyCursorAsync(DriverType, CursorValue);
+            await SetDependencyCursorsAsync(DriverType, CursorValue);
             var first = await CatalogScanService.UpdateAsync(DriverType);
 
             // Act
@@ -34,7 +34,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             // Arrange
             await CatalogScanService.InitializeAsync();
-            await SetDependencyCursorAsync(DriverType, CursorTableEntity.Min);
+            await SetDependencyCursorsAsync(DriverType, CursorTableEntity.Min);
 
             // Act
             var result = await CatalogScanService.UpdateAsync(DriverType);
@@ -50,7 +50,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             // Arrange
             await CatalogScanService.InitializeAsync();
-            await SetDependencyCursorAsync(DriverType, CursorValue);
+            await SetDependencyCursorsAsync(DriverType, CursorValue);
 
             // Act
             var result = await CatalogScanService.UpdateAsync(DriverType, max: CursorValue.AddTicks(1));
@@ -66,7 +66,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             // Arrange
             await CatalogScanService.InitializeAsync();
-            await SetDependencyCursorAsync(DriverType, CursorValue);
+            await SetDependencyCursorsAsync(DriverType, CursorValue);
 
             // Act
             var result = await CatalogScanService.UpdateAsync(DriverType, max: CursorTableEntity.Min.AddTicks(-1));
@@ -82,7 +82,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             // Arrange
             await CatalogScanService.InitializeAsync();
-            await SetDependencyCursorAsync(DriverType, CursorValue);
+            await SetDependencyCursorsAsync(DriverType, CursorValue);
             await SetCursorAsync(DriverType, CursorValue);
 
             // Act
@@ -99,7 +99,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             // Arrange
             await CatalogScanService.InitializeAsync();
-            await SetDependencyCursorAsync(DriverType, CursorValue.AddTicks(1));
+            await SetDependencyCursorsAsync(DriverType, CursorValue.AddTicks(1));
             await SetCursorAsync(DriverType, CursorValue);
 
             // Act
@@ -118,7 +118,7 @@ namespace Knapcode.ExplorePackages.Worker
             await CatalogScanService.InitializeAsync();
             var first = CursorValue.AddMinutes(-10);
             await SetCursorAsync(DriverType, first);
-            await SetDependencyCursorAsync(DriverType, CursorValue);
+            await SetDependencyCursorsAsync(DriverType, CursorValue);
 
             // Act
             var result = await CatalogScanService.UpdateAsync(DriverType);
@@ -137,7 +137,7 @@ namespace Knapcode.ExplorePackages.Worker
             await CatalogScanService.InitializeAsync();
             var first = CursorValue.AddMinutes(-10);
             await SetCursorAsync(DriverType, first);
-            await SetDependencyCursorAsync(DriverType, CursorValue.AddMinutes(10));
+            await SetDependencyCursorsAsync(DriverType, CursorValue.AddMinutes(10));
 
             // Act
             var result = await CatalogScanService.UpdateAsync(DriverType, max: CursorValue);
@@ -155,7 +155,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             // Arrange
             await CatalogScanService.InitializeAsync();
-            await SetDependencyCursorAsync(type, CursorValue);
+            await SetDependencyCursorsAsync(type, CursorValue);
 
             // Act
             var result = await CatalogScanService.UpdateAsync(type);
@@ -174,7 +174,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             // Arrange
             await CatalogScanService.InitializeAsync();
-            await SetDependencyCursorAsync(type, CursorValue);
+            await SetDependencyCursorsAsync(type, CursorValue);
 
             // Act
             var result = await CatalogScanService.UpdateAsync(type);
@@ -184,14 +184,32 @@ namespace Knapcode.ExplorePackages.Worker
             Assert.Equal(CursorValue, result.Scan.Max);
         }
 
+        [Theory]
+        [MemberData(nameof(StartableTypes))]
+        public async Task HasExpectedDependents(CatalogScanDriverType type)
+        {
+            // Arrange
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(type, CursorValue);
+
+            // Act
+            var result = await CatalogScanService.UpdateDependentsAsync(type, CursorValue);
+
+            // Assert
+            Assert.Equal(
+                TypeToInfo[type].Dependents.OrderBy(x => x).ToArray(),
+                result.Select(x => x.Key).OrderBy(x => x).ToArray());
+            Assert.All(result, x => Assert.Equal(CatalogScanServiceResultType.NewStarted, x.Value.Type));
+        }
+
         public static IEnumerable<object[]> StartableTypes => Enum
             .GetValues(typeof(CatalogScanDriverType))
             .Cast<CatalogScanDriverType>()
             .Where(x => x != CatalogScanDriverType.Internal_FindLatestCatalogLeafScan
-                     && x != CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId) // These type is not start directly. They are used by a catalog scan internally.
+                     && x != CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId)
             .Select(x => new object[] { x });
 
-        private async Task SetDependencyCursorAsync(CatalogScanDriverType type, DateTimeOffset min)
+        private async Task SetDependencyCursorsAsync(CatalogScanDriverType type, DateTimeOffset min)
         {
             Assert.Contains(type, TypeToInfo.Keys);
             await TypeToInfo[type].SetDependencyCursorAsync(this, min);
@@ -209,6 +227,13 @@ namespace Knapcode.ExplorePackages.Worker
                         self.FlatContainerCursor = x;
                         return Task.CompletedTask;
                     },
+                    Dependents = new[]
+                    {
+                        CatalogScanDriverType.PackageArchiveEntryToCsv,
+                        CatalogScanDriverType.PackageAssemblyToCsv,
+                        CatalogScanDriverType.PackageAssetToCsv,
+                        CatalogScanDriverType.PackageSignatureToCsv,
+                    },
                 }
             },
 
@@ -221,6 +246,10 @@ namespace Knapcode.ExplorePackages.Worker
                     {
                         self.FlatContainerCursor = x;
                         return Task.CompletedTask;
+                    },
+                    Dependents = new[]
+                    {
+                        CatalogScanDriverType.PackageManifestToCsv,
                     },
                 }
             },
@@ -235,6 +264,10 @@ namespace Knapcode.ExplorePackages.Worker
                         self.CatalogCursor = x;
                         return Task.CompletedTask;
                     },
+                    Dependents = new[]
+                    {
+                        CatalogScanDriverType.PackageVersionToCsv,
+                    },
                 }
             },
 
@@ -247,6 +280,7 @@ namespace Knapcode.ExplorePackages.Worker
                     {
                         await self.SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, x);
                     },
+                    Dependents = Array.Empty<CatalogScanDriverType>(),
                 }
             },
 
@@ -259,6 +293,7 @@ namespace Knapcode.ExplorePackages.Worker
                     {
                         await self.SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, x);
                     },
+                    Dependents = Array.Empty<CatalogScanDriverType>(),
                 }
             },
 
@@ -271,6 +306,7 @@ namespace Knapcode.ExplorePackages.Worker
                     {
                         await self.SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, x);
                     },
+                    Dependents = Array.Empty<CatalogScanDriverType>(),
                 }
             },
 
@@ -283,6 +319,7 @@ namespace Knapcode.ExplorePackages.Worker
                     {
                         await self.SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, x);
                     },
+                    Dependents = Array.Empty<CatalogScanDriverType>(),
                 }
             },
 
@@ -296,6 +333,7 @@ namespace Knapcode.ExplorePackages.Worker
                         self.CatalogCursor = x;
                         return Task.CompletedTask;
                     },
+                    Dependents = Array.Empty<CatalogScanDriverType>(),
                 }
             },
 
@@ -309,6 +347,10 @@ namespace Knapcode.ExplorePackages.Worker
                         self.CatalogCursor = x;
                         return Task.CompletedTask;
                     },
+                    Dependents = new[]
+                    {
+                        CatalogScanDriverType.NuGetPackageExplorerToCsv,
+                    },
                 }
             },
 
@@ -321,6 +363,7 @@ namespace Knapcode.ExplorePackages.Worker
                     {
                         await self.SetCursorAsync(CatalogScanDriverType.LoadPackageManifest, x);
                     },
+                    Dependents = Array.Empty<CatalogScanDriverType>(),
                 }
             },
 
@@ -333,6 +376,7 @@ namespace Knapcode.ExplorePackages.Worker
                     {
                         await self.SetCursorAsync(CatalogScanDriverType.LoadPackageVersion, x);
                     },
+                    Dependents = Array.Empty<CatalogScanDriverType>(),
                 }
             },
 
@@ -346,6 +390,7 @@ namespace Knapcode.ExplorePackages.Worker
                         self.FlatContainerCursor = x;
                         await self.SetCursorAsync(CatalogScanDriverType.LoadLatestPackageLeaf, x);
                     },
+                    Dependents = Array.Empty<CatalogScanDriverType>(),
                 }
             },
         };
@@ -383,6 +428,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             public DateTimeOffset DefaultMin { get; set; }
             public Func<CatalogScanServiceTest, DateTimeOffset, Task> SetDependencyCursorAsync { get; set; }
+            public IReadOnlyList<CatalogScanDriverType> Dependents { get; set; }
         }
     }
 }

@@ -14,6 +14,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
     {
         private static bool _isInitialized;
         private readonly CatalogScanStorageService _catalogScanStorageService;
+        private readonly CatalogScanCursorService _catalogScanCursorService;
         private readonly CatalogScanService _catalogScanService;
         private readonly IStreamWriterUpdaterService<PackageDownloadSet> _downloadsToCsvService;
         private readonly IStreamWriterUpdaterService<PackageOwnerSet> _ownersToCsvService;
@@ -22,12 +23,14 @@ namespace Knapcode.ExplorePackages.Website.Controllers
         public AdminController(
             IRawMessageEnqueuer rawMessageEnqueuer,
             CatalogScanStorageService catalogScanStorageService,
+            CatalogScanCursorService catalogScanCursorService,
             CatalogScanService catalogScanService,
             IStreamWriterUpdaterService<PackageDownloadSet> downloadsToCsvService,
             IStreamWriterUpdaterService<PackageOwnerSet> ownersToCsvService)
         {
             _rawMessageEnqueuer = rawMessageEnqueuer;
             _catalogScanStorageService = catalogScanStorageService;
+            _catalogScanCursorService = catalogScanCursorService;
             _catalogScanService = catalogScanService;
             _downloadsToCsvService = downloadsToCsvService;
             _ownersToCsvService = ownersToCsvService;
@@ -43,11 +46,8 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             var availableMessageCountLowerBoundTask = _rawMessageEnqueuer.GetAvailableMessageCountLowerBoundAsync(messageCount);
             var poisonAvailableMessageCountLowerBoundTask = _rawMessageEnqueuer.GetPoisonAvailableMessageCountLowerBoundAsync(messageCount);
 
-            var catalogScanTasks = Enum
-                .GetValues(typeof(CatalogScanDriverType))
-                .Cast<CatalogScanDriverType>()
-                .Where(x => x != CatalogScanDriverType.Internal_FindLatestCatalogLeafScan
-                         && x != CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId)
+            var catalogScanTasks = _catalogScanCursorService
+                .StartableDriverTypes
                 .Select(GetCatalogScanAsync)
                 .ToList();
 
@@ -99,7 +99,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
 
         private async Task<CatalogScanViewModel> GetCatalogScanAsync(CatalogScanDriverType driverType)
         {
-            var cursor = await _catalogScanService.GetCursorAsync(driverType);
+            var cursor = await _catalogScanCursorService.GetCursorAsync(driverType);
             var latestScans = await _catalogScanStorageService.GetLatestIndexScans(cursor.Name, maxEntities: 5);
 
             return new CatalogScanViewModel

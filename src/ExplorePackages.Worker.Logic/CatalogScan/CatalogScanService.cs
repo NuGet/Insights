@@ -9,68 +9,54 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class CatalogScanService
     {
-        private readonly CursorStorageService _cursorStorageService;
+        private readonly CatalogScanCursorService _cursorService;
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly SchemaSerializer _serializer;
-        private readonly CatalogScanStorageService _catalogScanStorageService;
+        private readonly CatalogScanStorageService _storageService;
         private readonly AutoRenewingStorageLeaseService _leaseService;
-        private readonly IRemoteCursorClient _remoteCursorClient;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<CatalogScanService> _logger;
 
         public CatalogScanService(
-            CursorStorageService cursorStorageService,
+            CatalogScanCursorService cursorService,
             IMessageEnqueuer messageEnqueuer,
             SchemaSerializer serializer,
             CatalogScanStorageService catalogScanStorageService,
             AutoRenewingStorageLeaseService leaseService,
-            IRemoteCursorClient remoteCursorClient,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<CatalogScanService> logger)
         {
-            _cursorStorageService = cursorStorageService;
+            _cursorService = cursorService;
             _messageEnqueuer = messageEnqueuer;
             _serializer = serializer;
-            _catalogScanStorageService = catalogScanStorageService;
+            _storageService = catalogScanStorageService;
             _leaseService = leaseService;
-            _remoteCursorClient = remoteCursorClient;
             _options = options;
             _logger = logger;
         }
 
         public async Task InitializeAsync()
         {
-            await _cursorStorageService.InitializeAsync();
-            await _catalogScanStorageService.InitializeAsync();
+            await _cursorService.InitializeAsync();
+            await _storageService.InitializeAsync();
             await _messageEnqueuer.InitializeAsync();
             await _leaseService.InitializeAsync();
         }
 
-        public async Task<CursorTableEntity> GetCursorAsync(CatalogScanDriverType driverType)
-        {
-            return await _cursorStorageService.GetOrCreateAsync(GetCursorName(driverType));
-        }
-
-        public async Task<DateTimeOffset> GetCursorValueAsync(CatalogScanDriverType driverType)
-        {
-            var entity = await GetCursorAsync(driverType);
-            return entity.Value;
-        }
-
         public async Task RequeueAsync(CatalogScanDriverType driverType, string scanId)
         {
-            var cursorName = GetCursorName(driverType);
-            var indexScan = await _catalogScanStorageService.GetIndexScanAsync(cursorName, scanId);
+            var cursorName = _cursorService.GetCursorName(driverType);
+            var indexScan = await _storageService.GetIndexScanAsync(cursorName, scanId);
             if (indexScan.ParsedState != CatalogIndexScanState.Working)
             {
                 return;
             }
 
-            var pageScans = await _catalogScanStorageService.GetPageScansAsync(indexScan.StorageSuffix, indexScan.ScanId);
+            var pageScans = await _storageService.GetPageScansAsync(indexScan.StorageSuffix, indexScan.ScanId);
             var leafScans = new List<CatalogLeafScan>();
             foreach (var pageScan in pageScans)
             {
-                var pageLeafScans = await _catalogScanStorageService.GetLeafScansAsync(pageScan.StorageSuffix, pageScan.ScanId, pageScan.PageId);
+                var pageLeafScans = await _storageService.GetLeafScansAsync(pageScan.StorageSuffix, pageScan.ScanId, pageScan.PageId);
                 leafScans.AddRange(pageLeafScans);
             }
 
@@ -101,11 +87,6 @@ namespace Knapcode.ExplorePackages.Worker
                     ScanId = indexScan.ScanId,
                 },
             });
-        }
-
-        public string GetCursorName(CatalogScanDriverType driverType)
-        {
-            return $"CatalogScan-{driverType}";
         }
 
         public bool SupportsReprocess(CatalogScanDriverType driverType)
@@ -164,6 +145,18 @@ namespace Knapcode.ExplorePackages.Worker
                 default:
                     throw new NotImplementedException();
             }
+        }
+
+        public async Task<IReadOnlyDictionary<CatalogScanDriverType, CatalogScanServiceResult>> UpdateDependentsAsync(CatalogScanDriverType driverType, DateTimeOffset max)
+        {
+            var dependents = _cursorService.GetDependents(driverType);
+            var results = new Dictionary<CatalogScanDriverType, CatalogScanServiceResult>();
+            foreach (var dependent in dependents)
+            {
+                results.Add(dependent, await UpdateAsync(dependent, max));
+            }
+
+            return results;
         }
 
         public async Task<CatalogScanServiceResult> UpdateAsync(CatalogScanDriverType driverType)
@@ -269,7 +262,7 @@ namespace Knapcode.ExplorePackages.Worker
                 Mode = CatalogLeafToCsvMode.Reprocess,
             };
 
-            var cursor = await GetCursorAsync(driverType);
+            var cursorValue = await _cursorService.GetCursorValueAsync(driverType);
             var scanId = StorageUtility.GenerateDescendingId();
             var scan = await GetOrStartCursorlessAsync(
                 scanId.ToString(),
@@ -277,7 +270,7 @@ namespace Knapcode.ExplorePackages.Worker
                 driverType,
                 parameters: _serializer.Serialize(parameters).AsString(),
                 CatalogClient.NuGetOrgMinAvailable,
-                cursor.Value);
+                cursorValue);
 
             return new CatalogScanServiceResult(
                 CatalogScanServiceResultType.NewStarted,
@@ -306,7 +299,7 @@ namespace Knapcode.ExplorePackages.Worker
         private async Task<CatalogScanServiceResult> UpdateAsync(CatalogScanDriverType driverType, string parameters, DateTimeOffset min, DateTimeOffset? max)
         {
             // Check if a scan is already running, outside the lease.
-            var cursor = await GetCursorAsync(driverType);
+            var cursor = await _cursorService.GetCursorAsync(driverType);
             var incompleteScan = await GetLatestIncompleteScanAsync(cursor.Name);
             if (incompleteScan != null)
             {
@@ -320,7 +313,7 @@ namespace Knapcode.ExplorePackages.Worker
                 min = cursor.Value;
             }
 
-            (var dependencyName, var dependencyMax) = await GetDependencyMaxAsync(driverType);
+            (var dependencyName, var dependencyMax) = await _cursorService.GetDependencyMaxAsync(driverType);
 
             if (dependencyMax <= CursorTableEntity.Min)
             {
@@ -402,14 +395,14 @@ namespace Knapcode.ExplorePackages.Worker
             var cursorName = string.Empty;
 
             // Check if a scan is already running, outside the lease.
-            var incompleteScan = await _catalogScanStorageService.GetIndexScanAsync(cursorName, scanId);
+            var incompleteScan = await _storageService.GetIndexScanAsync(cursorName, scanId);
             if (incompleteScan != null)
             {
                 return incompleteScan;
             }
 
             // Use a rather generic lease, to simplify clean-up.
-            await using (var lease = await _leaseService.TryAcquireAsync($"Start-{GetCursorName(driverType)}"))
+            await using (var lease = await _leaseService.TryAcquireAsync($"Start-{_cursorService.GetCursorName(driverType)}"))
             {
                 if (!lease.Acquired)
                 {
@@ -417,7 +410,7 @@ namespace Knapcode.ExplorePackages.Worker
                 }
 
                 // Check if a scan is already running, inside the lease.
-                incompleteScan = await _catalogScanStorageService.GetIndexScanAsync(cursorName, scanId);
+                incompleteScan = await _storageService.GetIndexScanAsync(cursorName, scanId);
                 if (incompleteScan != null)
                 {
                     return incompleteScan;
@@ -460,14 +453,14 @@ namespace Knapcode.ExplorePackages.Worker
                 Min = min,
                 Max = max,
             };
-            await _catalogScanStorageService.InsertAsync(catalogIndexScan);
+            await _storageService.InsertAsync(catalogIndexScan);
 
             return catalogIndexScan;
         }
 
         private async Task<CatalogIndexScan> GetLatestIncompleteScanAsync(string cursorName)
         {
-            var latestScans = await _catalogScanStorageService.GetLatestIndexScans(cursorName);
+            var latestScans = await _storageService.GetLatestIndexScans(cursorName);
             var incompleteScans = latestScans.Where(x => x.ParsedState != CatalogIndexScanState.Complete);
             if (incompleteScans.Any())
             {
@@ -475,78 +468,6 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             return null;
-        }
-
-        private static readonly (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[] LoadPackageArchive = new (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[]
-        {
-            (CatalogScanDriverType.LoadPackageArchive.ToString(), x => x.GetCursorValueAsync(CatalogScanDriverType.LoadPackageArchive)),
-        };
-
-        private static readonly (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[] LoadPackageManifest = new (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[]
-        {
-            (CatalogScanDriverType.LoadPackageManifest.ToString(), x => x.GetCursorValueAsync(CatalogScanDriverType.LoadPackageManifest)),
-        };
-
-        private static readonly (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[] LoadPackageVersion = new (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[]
-        {
-            (CatalogScanDriverType.LoadPackageVersion.ToString(), x => x.GetCursorValueAsync(CatalogScanDriverType.LoadPackageVersion)),
-        };
-
-        private static readonly (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[] LoadLatestPackageLeaf = new (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[]
-        {
-            (CatalogScanDriverType.LoadLatestPackageLeaf.ToString(), x => x.GetCursorValueAsync(CatalogScanDriverType.LoadLatestPackageLeaf)),
-        };
-
-        private static readonly (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[] Catalog = new (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[]
-        {
-            ("NuGet.org catalog", x => x._remoteCursorClient.GetCatalogAsync()),
-        };
-
-        private static readonly (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[] FlatContainer = new (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[]
-        {
-            ("NuGet.org flat container", x => x._remoteCursorClient.GetFlatContainerAsync()),
-        };
-
-        private static readonly IReadOnlyDictionary<CatalogScanDriverType, IReadOnlyList<(string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)>> Dependencies = new Dictionary<CatalogScanDriverType, (string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)[]>
-        {
-            { CatalogScanDriverType.CatalogLeafItemToCsv, Catalog },
-            { CatalogScanDriverType.LoadLatestPackageLeaf, Catalog },
-            { CatalogScanDriverType.LoadPackageArchive, FlatContainer },
-            { CatalogScanDriverType.LoadPackageManifest, FlatContainer },
-            { CatalogScanDriverType.LoadPackageVersion, Catalog },
-            { CatalogScanDriverType.PackageArchiveEntryToCsv, LoadPackageArchive },
-            { CatalogScanDriverType.PackageAssetToCsv, LoadPackageArchive },
-            { CatalogScanDriverType.PackageAssemblyToCsv, LoadPackageArchive },
-            { CatalogScanDriverType.PackageSignatureToCsv, LoadPackageArchive },
-            { CatalogScanDriverType.PackageManifestToCsv, LoadPackageManifest },
-            { CatalogScanDriverType.PackageVersionToCsv, LoadPackageVersion },
-            {
-                CatalogScanDriverType.NuGetPackageExplorerToCsv,
-                FlatContainer.Concat(LoadLatestPackageLeaf).ToArray()
-            },
-        }.ToDictionary(x => x.Key, x => (IReadOnlyList<(string Name, Func<CatalogScanService, Task<DateTimeOffset>> GetValueAsync)>)x.Value.ToList());
-
-        private async Task<(string Name, DateTimeOffset Value)> GetDependencyMaxAsync(CatalogScanDriverType driverType)
-        {
-            string dependencyName = null;
-            var max = DateTimeOffset.MaxValue;
-
-            if (!Dependencies.TryGetValue(driverType, out var getCursors))
-            {
-                throw new InvalidOperationException($"No dependencies are defined for catalog scan driver {driverType}.");
-            }
-
-            foreach ((var name, var getCursor) in getCursors)
-            {
-                var dependencyMax = await getCursor(this);
-                if (max > dependencyMax)
-                {
-                    dependencyName = name;
-                    max = dependencyMax;
-                }
-            }
-
-            return (dependencyName, max);
         }
     }
 }

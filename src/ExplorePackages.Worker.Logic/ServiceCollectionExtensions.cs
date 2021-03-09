@@ -32,6 +32,7 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient(typeof(LatestLeafStorageService<>));
 
             serviceCollection.AddTransient<CatalogScanStorageService>();
+            serviceCollection.AddTransient<CatalogScanCursorService>();
             serviceCollection.AddTransient<ICatalogScanDriverFactory, CatalogScanDriverFactory>();
             serviceCollection.AddTransient<CatalogScanService>();
             serviceCollection.AddTransient<CatalogScanExpandService>();

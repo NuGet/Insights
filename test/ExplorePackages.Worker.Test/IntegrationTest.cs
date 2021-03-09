@@ -57,13 +57,7 @@ namespace Knapcode.ExplorePackages.Worker
             var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
             var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
 
-            var driverTypes = Enum
-                .GetValues(typeof(CatalogScanDriverType))
-                .Cast<CatalogScanDriverType>()
-                .Where(x => x != CatalogScanDriverType.Internal_FindLatestCatalogLeafScan
-                         && x != CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId)
-                .ToList();
-            foreach (var type in driverTypes)
+            foreach (var type in CatalogScanCursorService.StartableDriverTypes)
             {
                 await SetCursorAsync(type, min0);
             }
@@ -94,7 +88,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             // Start all of the scans
             var startedScans = new List<CatalogIndexScan>();
-            foreach (var type in driverTypes)
+            foreach (var type in CatalogScanCursorService.StartableDriverTypes)
             {
                 var startedScan = await CatalogScanService.UpdateAsync(type, max1);
                 if (startedScan.Type == CatalogScanServiceResultType.FullyCaughtUpWithMax)
