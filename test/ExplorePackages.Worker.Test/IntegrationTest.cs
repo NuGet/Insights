@@ -39,7 +39,63 @@ namespace Knapcode.ExplorePackages.Worker
         }
 
         [Fact]
-        public async Task ProcessesMessageAsync()
+        public async Task CanRunAllCatalogScansAsync()
+        {
+            ConfigureSettings = x =>
+            {
+                x.MaxTempMemoryStreamSize = 0;
+                x.TempDirectories[0].MaxConcurrentWriters = 1;
+            };
+            ConfigureWorkerSettings = x =>
+            {
+                x.AppendResultStorageBucketCount = 1;
+            };
+
+            // Arrange
+            await CatalogScanService.InitializeAsync();
+
+            var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
+            var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
+
+            foreach (var type in CatalogScanCursorService.StartableDriverTypes)
+            {
+                await SetCursorAsync(type, min0);
+            }
+
+            // Act
+            await CatalogScanService.UpdateInitialAsync(max1);
+            var attempts = 0;
+            await ProcessQueueAsync(
+                () => { },
+                async () =>
+                {
+                    var indexScans = await CatalogScanStorageService.GetIndexScans();
+                    if (indexScans.All(x => x.ParsedState == CatalogIndexScanState.Complete))
+                    {
+                        return true;
+                    }
+
+                    attempts++;
+                    if (attempts > 30)
+                    {
+                        return true;
+                    }
+
+                    await Task.Delay(1000);
+
+                    return false;
+                });
+
+            // Make sure all scans completed.
+            var indexScans = await CatalogScanStorageService.GetIndexScans();
+            Assert.All(indexScans, x => Assert.Equal(CatalogIndexScanState.Complete, x.ParsedState));
+            Assert.Equal(
+                CatalogScanCursorService.StartableDriverTypes.ToArray(),
+                indexScans.Select(x => x.ParsedDriverType).OrderBy(x => x).ToArray());
+        }
+
+        [Fact]
+        public async Task DownloadsNupkgsAndNuspecsInTheExpectedDrivers()
         {
             ConfigureSettings = x =>
             {
@@ -67,11 +123,14 @@ namespace Knapcode.ExplorePackages.Worker
             // Load the manifests
             var loadPackageManifest = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageManifest, max1);
             await UpdateAsync(loadPackageManifest.Scan);
+
             var startingNuspecRequestCount = GetNuspecRequestCount();
 
             // Load latest package leaves
             var loadLatestPackageLeaf = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadLatestPackageLeaf, max1);
             await UpdateAsync(loadLatestPackageLeaf.Scan);
+
+            Assert.Equal(0, GetNupkgRequestCount());
 
             // Load the packages, process package assemblies, and run NuGet Package Explorer.
             var loadPackageArchive = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageArchive, max1);
@@ -80,6 +139,7 @@ namespace Knapcode.ExplorePackages.Worker
             var nuGetPackageExplorerToCsv = await CatalogScanService.UpdateAsync(CatalogScanDriverType.NuGetPackageExplorerToCsv, max1);
             await UpdateAsync(packageAssemblyToCsv.Scan);
             await UpdateAsync(nuGetPackageExplorerToCsv.Scan);
+
             var startingNupkgRequestCount = GetNupkgRequestCount();
 
             // Load the versions

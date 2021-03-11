@@ -117,6 +117,12 @@ namespace Knapcode.ExplorePackages.Worker
             return entity.Value;
         }
 
+        public async Task<DateTimeOffset> GetSourceMaxAsync()
+        {
+            (var _, var value) = await GetDependencyValueAsync(FlatContainer);
+            return value;
+        }
+
         public async Task<KeyValuePair<string, DateTimeOffset>> GetDependencyMaxAsync(CatalogScanDriverType driverType)
         {
             string dependencyName = null;
@@ -140,11 +146,24 @@ namespace Knapcode.ExplorePackages.Worker
             return KeyValuePair.Create(dependencyName, max);
         }
 
+        public IReadOnlyList<CatalogScanDriverType> GetDependencies(CatalogScanDriverType driverType, bool onlyDrivers)
+        {
+            var edges = GetEdges(driverType, Dependencies);
+            return onlyDrivers ? edges.Intersect(ValidDriverTypes).ToList() : edges;
+        }
+
         public IReadOnlyList<CatalogScanDriverType> GetDependents(CatalogScanDriverType driverType)
+        {
+            return GetEdges(driverType, Dependents);
+        }
+
+        private static IReadOnlyList<CatalogScanDriverType> GetEdges(
+            CatalogScanDriverType driverType,
+            IReadOnlyDictionary<CatalogScanDriverType, IReadOnlyList<CatalogScanDriverType>> typeToEdges)
         {
             if (ValidDriverTypes.Contains(driverType))
             {
-                if (Dependents.TryGetValue(driverType, out var dependents))
+                if (typeToEdges.TryGetValue(driverType, out var dependents))
                 {
                     return dependents;
                 }

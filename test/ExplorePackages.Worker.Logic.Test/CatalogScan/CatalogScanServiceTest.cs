@@ -168,6 +168,70 @@ namespace Knapcode.ExplorePackages.Worker
         public static IEnumerable<object[]> SetsDefaultMinData => TypeToInfo
             .Select(x => new object[] { x.Key, x.Value.DefaultMin });
 
+        [Fact]
+        public async Task StartExpectedDependencylessDrivers()
+        {
+            // Arrange
+            await CatalogScanService.InitializeAsync();
+            FlatContainerCursor = CursorValue;
+
+            // Act
+            var results = await CatalogScanService.UpdateInitialAsync(CursorValue);
+
+            // Assert
+            Assert.Equal(
+                new[]
+                {
+                    CatalogScanDriverType.CatalogLeafItemToCsv,
+                    CatalogScanDriverType.LoadLatestPackageLeaf,
+                    CatalogScanDriverType.LoadPackageArchive,
+                    CatalogScanDriverType.LoadPackageManifest,
+                    CatalogScanDriverType.LoadPackageVersion,
+                },
+                results.Keys.OrderBy(x => x.ToString()).ToArray());
+            Assert.All(results, x => Assert.Equal(CatalogScanServiceResultType.NewStarted, x.Value.Type));
+        }
+
+        [Fact]
+        public async Task CanStartAllDriversWithUpdateInitialAndDependents()
+        {
+            // Arrange
+            await CatalogScanService.InitializeAsync();
+            FlatContainerCursor = CursorValue;
+            var finished = new Dictionary<CatalogScanDriverType, CatalogScanServiceResult>();
+            var started = new Queue<KeyValuePair<CatalogScanDriverType, CatalogScanServiceResult>>();
+
+            // Act & Assert
+            foreach (var pair in await CatalogScanService.UpdateInitialAsync(CursorValue))
+            {
+                Assert.Equal(CatalogScanServiceResultType.NewStarted, pair.Value.Type);
+                started.Enqueue(pair);
+            }
+
+            while (started.Any())
+            {
+                (var type, var value) = started.Dequeue();
+                await SetCursorAsync(type, value.Scan.Max.Value);
+                finished.Add(type, value);
+
+                foreach (var pair in await CatalogScanService.UpdateDependentsAsync(type, value.Scan.Max.Value))
+                {
+                    if (pair.Value.Type == CatalogScanServiceResultType.BlockedByDependency)
+                    {
+                        continue;
+                    }
+
+                    Assert.Equal(CatalogScanServiceResultType.NewStarted, pair.Value.Type);
+                    started.Enqueue(pair);
+                }
+            }
+
+            Assert.Equal(
+                CatalogScanCursorService.StartableDriverTypes,
+                finished.Keys.OrderBy(x => x).ToArray());
+            Assert.All(finished.Values, x => Assert.Equal(CursorValue, x.Scan.Max.Value));
+        }
+
         [Theory]
         [MemberData(nameof(StartableTypes))]
         public async Task MaxAlignsWithDependency(CatalogScanDriverType type)

@@ -36,7 +36,7 @@ namespace Knapcode.ExplorePackages.Worker
         /// <param name="item">T</param>
         /// <returns>The key used for bucketing returned CSV records.</returns>
         string GetBucketKey(CatalogLeafItem item);
-        
+
         /// <summary>
         /// Given a previously persisted CSV record, a catalog leaf item is returned if the record should be reprocessed.
         /// This method is only invoked during a special "reprocess" flow started by <see cref="CatalogScanService.ReprocessAsync(CatalogScanDriverType)"/>.

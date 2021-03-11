@@ -147,13 +147,32 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
+        /// <summary>
+        /// Starts a catalog scan for all driver types that only depend on the package source directly. 
+        /// </summary>
+        public async Task<IReadOnlyDictionary<CatalogScanDriverType, CatalogScanServiceResult>> UpdateInitialAsync(DateTimeOffset max)
+        {
+            var results = new Dictionary<CatalogScanDriverType, CatalogScanServiceResult>();
+            foreach (var driverType in _cursorService.StartableDriverTypes)
+            {
+                if (_cursorService.GetDependencies(driverType, onlyDrivers: true).Any())
+                {
+                    continue;
+                }
+
+                results.Add(driverType, await UpdateAsync(driverType, max, onlyLatestLeaves: null, continueWithDependents: true));
+            }
+
+            return results;
+        }
+
         public async Task<IReadOnlyDictionary<CatalogScanDriverType, CatalogScanServiceResult>> UpdateDependentsAsync(CatalogScanDriverType driverType, DateTimeOffset max)
         {
             var dependents = _cursorService.GetDependents(driverType);
             var results = new Dictionary<CatalogScanDriverType, CatalogScanServiceResult>();
             foreach (var dependent in dependents)
             {
-                results.Add(dependent, await UpdateAsync(dependent, max));
+                results.Add(dependent, await UpdateAsync(dependent, max, onlyLatestLeaves: null, continueWithDependents: true));
             }
 
             return results;
@@ -170,6 +189,11 @@ namespace Knapcode.ExplorePackages.Worker
         }
 
         public async Task<CatalogScanServiceResult> UpdateAsync(CatalogScanDriverType driverType, DateTimeOffset? max, bool? onlyLatestLeaves)
+        {
+            return await UpdateAsync(driverType, max, onlyLatestLeaves, continueWithDependents: false);
+        }
+
+        private async Task<CatalogScanServiceResult> UpdateAsync(CatalogScanDriverType driverType, DateTimeOffset? max, bool? onlyLatestLeaves, bool continueWithDependents)
         {
             var onlyLatestLeavesSupport = GetOnlyLatestLeavesSupport(driverType);
             if (onlyLatestLeavesSupport.HasValue
@@ -193,7 +217,8 @@ namespace Knapcode.ExplorePackages.Worker
                         driverType,
                         parameters: null,
                         CatalogClient.NuGetOrgMin,
-                        max);
+                        max,
+                        continueWithDependents);
 
                 case CatalogScanDriverType.PackageArchiveEntryToCsv:
                 case CatalogScanDriverType.PackageAssemblyToCsv:
@@ -205,7 +230,8 @@ namespace Knapcode.ExplorePackages.Worker
                     return await UpdateCatalogLeafToCsvAsync(
                         driverType,
                         onlyLatestLeaves.GetValueOrDefault(true),
-                        max);
+                        max,
+                        continueWithDependents);
 
                 case CatalogScanDriverType.LoadLatestPackageLeaf:
                 case CatalogScanDriverType.LoadPackageArchive:
@@ -215,7 +241,8 @@ namespace Knapcode.ExplorePackages.Worker
                         driverType,
                         parameters: null,
                         min: CatalogClient.NuGetOrgMinDeleted,
-                        max);
+                        max,
+                        continueWithDependents);
 
                 default:
                     throw new NotSupportedException();
@@ -281,7 +308,8 @@ namespace Knapcode.ExplorePackages.Worker
         private async Task<CatalogScanServiceResult> UpdateCatalogLeafToCsvAsync(
             CatalogScanDriverType driverType,
             bool onlyLatestLeaves,
-            DateTimeOffset? max)
+            DateTimeOffset? max,
+            bool continueWithDependents)
         {
             var parameters = new CatalogLeafToCsvParameters
             {
@@ -293,10 +321,16 @@ namespace Knapcode.ExplorePackages.Worker
                 driverType,
                 parameters: _serializer.Serialize(parameters).AsString(),
                 onlyLatestLeaves ? CatalogClient.NuGetOrgMinDeleted : CatalogClient.NuGetOrgMinAvailable,
-                max);
+                max,
+                continueWithDependents);
         }
 
-        private async Task<CatalogScanServiceResult> UpdateAsync(CatalogScanDriverType driverType, string parameters, DateTimeOffset min, DateTimeOffset? max)
+        private async Task<CatalogScanServiceResult> UpdateAsync(
+            CatalogScanDriverType driverType,
+            string parameters,
+            DateTimeOffset min,
+            DateTimeOffset? max,
+            bool continueWithDependents)
         {
             // Check if a scan is already running, outside the lease.
             var cursor = await _cursorService.GetCursorAsync(driverType);
@@ -378,7 +412,8 @@ namespace Knapcode.ExplorePackages.Worker
                     driverType,
                     parameters,
                     min,
-                    max.Value);
+                    max.Value,
+                    continueWithDependents);
 
                 return new CatalogScanServiceResult(CatalogScanServiceResultType.NewStarted, dependencyName: null, newScan);
             }
@@ -423,7 +458,8 @@ namespace Knapcode.ExplorePackages.Worker
                     driverType,
                     parameters,
                     min,
-                    max);
+                    max,
+                    continueWithDependents: false);
             }
         }
 
@@ -434,7 +470,8 @@ namespace Knapcode.ExplorePackages.Worker
             CatalogScanDriverType driverType,
             string parameters,
             DateTimeOffset min,
-            DateTimeOffset max)
+            DateTimeOffset max,
+            bool continueWithDependents)
         {
             // Start a new scan.
             _logger.LogInformation("Attempting to start a {DriverType} catalog index scan from ({Min}, {Max}].", driverType, min, max);
@@ -452,6 +489,7 @@ namespace Knapcode.ExplorePackages.Worker
                 ParsedState = CatalogIndexScanState.Created,
                 Min = min,
                 Max = max,
+                ContinueWithDependents = continueWithDependents,
             };
             await _storageService.InsertAsync(catalogIndexScan);
 

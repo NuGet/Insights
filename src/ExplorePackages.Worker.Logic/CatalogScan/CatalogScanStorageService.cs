@@ -113,6 +113,11 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
+        public async Task<IReadOnlyList<CatalogIndexScan>> GetIndexScans()
+        {
+            return await GetIndexScanTable().GetEntitiesAsync<CatalogIndexScan>(_telemetryClient.StartQueryLoopMetrics());
+        }
+
         public async Task<IReadOnlyList<CatalogIndexScan>> GetLatestIndexScans(string cursorName, int? maxEntities = 1000)
         {
             return await GetIndexScanTable().GetEntitiesAsync<CatalogIndexScan>(cursorName, _telemetryClient.StartQueryLoopMetrics(), maxEntities);
