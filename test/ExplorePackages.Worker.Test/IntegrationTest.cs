@@ -63,7 +63,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             // Act
-            await CatalogScanService.UpdateInitialAsync(max1);
+            await CatalogScanService.UpdateAsync(max1);
             var attempts = 0;
             await ProcessQueueAsync(
                 () => { },

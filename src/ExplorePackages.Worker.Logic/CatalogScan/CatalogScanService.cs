@@ -147,32 +147,13 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        /// <summary>
-        /// Starts a catalog scan for all driver types that only depend on the package source directly. 
-        /// </summary>
-        public async Task<IReadOnlyDictionary<CatalogScanDriverType, CatalogScanServiceResult>> UpdateInitialAsync(DateTimeOffset max)
+        public async Task<IReadOnlyDictionary<CatalogScanDriverType, CatalogScanServiceResult>> UpdateAsync(DateTimeOffset max)
         {
             var results = new Dictionary<CatalogScanDriverType, CatalogScanServiceResult>();
             foreach (var driverType in _cursorService.StartableDriverTypes)
             {
-                if (_cursorService.GetDependencies(driverType, onlyDrivers: true).Any())
-                {
-                    continue;
-                }
-
-                results.Add(driverType, await UpdateAsync(driverType, max, onlyLatestLeaves: null, continueWithDependents: true));
-            }
-
-            return results;
-        }
-
-        public async Task<IReadOnlyDictionary<CatalogScanDriverType, CatalogScanServiceResult>> UpdateDependentsAsync(CatalogScanDriverType driverType, DateTimeOffset max)
-        {
-            var dependents = _cursorService.GetDependents(driverType);
-            var results = new Dictionary<CatalogScanDriverType, CatalogScanServiceResult>();
-            foreach (var dependent in dependents)
-            {
-                results.Add(dependent, await UpdateAsync(dependent, max, onlyLatestLeaves: null, continueWithDependents: true));
+                var result = await UpdateAsync(driverType, max, onlyLatestLeaves: null, continueWithDependents: true);
+                results.Add(driverType, result);
             }
 
             return results;
@@ -489,7 +470,7 @@ namespace Knapcode.ExplorePackages.Worker
                 ParsedState = CatalogIndexScanState.Created,
                 Min = min,
                 Max = max,
-                ContinueWithDependents = continueWithDependents,
+                ContinueUpdate = continueWithDependents,
             };
             await _storageService.InsertAsync(catalogIndexScan);
 

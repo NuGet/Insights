@@ -432,10 +432,10 @@ namespace Knapcode.ExplorePackages.Worker
                     }
                 }
 
-                // If directed, start dependent scans.
-                if (scan.ContinueWithDependents)
+                // Continue the update, if directed.
+                if (scan.ContinueUpdate)
                 {
-                    var dependents = await _catalogScanService.UpdateDependentsAsync(scan.ParsedDriverType, scan.Max.Value);
+                    var dependents = await _catalogScanService.UpdateAsync(scan.Max.Value);
                     foreach (var pair in dependents)
                     {
                         switch (pair.Value.Type)
@@ -443,20 +443,9 @@ namespace Knapcode.ExplorePackages.Worker
                             case CatalogScanServiceResultType.NewStarted:
                                 _logger.LogInformation("Started {DriverType} dependent catalog scan {ScanId} with max {Max:O}.", pair.Key, pair.Value.Scan.ScanId, scan.Max.Value);
                                 break;
-                            case CatalogScanServiceResultType.AlreadyRunning:
-                                _logger.LogWarning("Dependent scan of type {DriverType} is already running.", pair.Key);
-                                break;
-                            case CatalogScanServiceResultType.BlockedByDependency:
-                                _logger.LogInformation("Dependent scan of type {DriverType} is blocked by the dependency {DependencyDriverType}.", pair.Key, pair.Value.DependencyName);
-                                break;
-                            case CatalogScanServiceResultType.FullyCaughtUpWithDependency:
-                                _logger.LogInformation("Dependent scan of type {DriverType} is fully caught up with its dependency {DependencyDriverType}.", pair.Key, pair.Value.DependencyName);
-                                break;
-                            case CatalogScanServiceResultType.FullyCaughtUpWithMax:
-                                _logger.LogInformation("Dependent scan of type {DriverType} is fully caught up with the provided max.", pair.Key, pair.Value.DependencyName);
-                                break;
                             default:
-                                throw new InvalidOperationException($"Unexpected catalog scan service result type of {pair.Value.Type}.");
+                                _logger.LogInformation("{DriverType} dependent catalog scan did not start due to: {ResultType}.", pair.Key, pair.Value.Type);
+                                break;
                         }
                     }
                 }

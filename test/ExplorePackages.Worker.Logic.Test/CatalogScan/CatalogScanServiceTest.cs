@@ -176,7 +176,7 @@ namespace Knapcode.ExplorePackages.Worker
             FlatContainerCursor = CursorValue;
 
             // Act
-            var results = await CatalogScanService.UpdateInitialAsync(CursorValue);
+            var results = await CatalogScanService.UpdateAsync(CursorValue);
 
             // Assert
             Assert.Equal(
@@ -188,43 +188,40 @@ namespace Knapcode.ExplorePackages.Worker
                     CatalogScanDriverType.LoadPackageManifest,
                     CatalogScanDriverType.LoadPackageVersion,
                 },
-                results.Keys.OrderBy(x => x.ToString()).ToArray());
-            Assert.All(results, x => Assert.Equal(CatalogScanServiceResultType.NewStarted, x.Value.Type));
+                results
+                    .Where(x => x.Value.Type == CatalogScanServiceResultType.NewStarted)
+                    .Select(x => x.Key)
+                    .OrderBy(x => x.ToString())
+                    .ToArray());
+            Assert.Equal(
+                CatalogScanCursorService.StartableDriverTypes,
+                results.Keys.Select(x => x).ToList());
         }
 
         [Fact]
-        public async Task CanStartAllDriversWithUpdateInitialAndDependents()
+        public async Task CanCompleteAllDriversWithUpdate()
         {
             // Arrange
             await CatalogScanService.InitializeAsync();
             FlatContainerCursor = CursorValue;
             var finished = new Dictionary<CatalogScanDriverType, CatalogScanServiceResult>();
-            var started = new Queue<KeyValuePair<CatalogScanDriverType, CatalogScanServiceResult>>();
 
             // Act & Assert
-            foreach (var pair in await CatalogScanService.UpdateInitialAsync(CursorValue))
+            int started;
+            do
             {
-                Assert.Equal(CatalogScanServiceResultType.NewStarted, pair.Value.Type);
-                started.Enqueue(pair);
-            }
-
-            while (started.Any())
-            {
-                (var type, var value) = started.Dequeue();
-                await SetCursorAsync(type, value.Scan.Max.Value);
-                finished.Add(type, value);
-
-                foreach (var pair in await CatalogScanService.UpdateDependentsAsync(type, value.Scan.Max.Value))
+                started = 0;
+                foreach (var pair in await CatalogScanService.UpdateAsync(CursorValue))
                 {
-                    if (pair.Value.Type == CatalogScanServiceResultType.BlockedByDependency)
+                    if (pair.Value.Type == CatalogScanServiceResultType.NewStarted)
                     {
-                        continue;
+                        started++;
+                        await SetCursorAsync(pair.Key, pair.Value.Scan.Max.Value);
+                        finished.Add(pair.Key, pair.Value);
                     }
-
-                    Assert.Equal(CatalogScanServiceResultType.NewStarted, pair.Value.Type);
-                    started.Enqueue(pair);
                 }
             }
+            while (started > 0);
 
             Assert.Equal(
                 CatalogScanCursorService.StartableDriverTypes,
@@ -246,24 +243,6 @@ namespace Knapcode.ExplorePackages.Worker
             // Assert
             Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);
             Assert.Equal(CursorValue, result.Scan.Max);
-        }
-
-        [Theory]
-        [MemberData(nameof(StartableTypes))]
-        public async Task HasExpectedDependents(CatalogScanDriverType type)
-        {
-            // Arrange
-            await CatalogScanService.InitializeAsync();
-            await SetCursorAsync(type, CursorValue);
-
-            // Act
-            var result = await CatalogScanService.UpdateDependentsAsync(type, CursorValue);
-
-            // Assert
-            Assert.Equal(
-                TypeToInfo[type].Dependents.OrderBy(x => x).ToArray(),
-                result.Select(x => x.Key).OrderBy(x => x).ToArray());
-            Assert.All(result, x => Assert.Equal(CatalogScanServiceResultType.NewStarted, x.Value.Type));
         }
 
         public static IEnumerable<object[]> StartableTypes => Enum
@@ -291,13 +270,6 @@ namespace Knapcode.ExplorePackages.Worker
                         self.FlatContainerCursor = x;
                         return Task.CompletedTask;
                     },
-                    Dependents = new[]
-                    {
-                        CatalogScanDriverType.PackageArchiveEntryToCsv,
-                        CatalogScanDriverType.PackageAssemblyToCsv,
-                        CatalogScanDriverType.PackageAssetToCsv,
-                        CatalogScanDriverType.PackageSignatureToCsv,
-                    },
                 }
             },
 
@@ -310,10 +282,6 @@ namespace Knapcode.ExplorePackages.Worker
                     {
                         self.FlatContainerCursor = x;
                         return Task.CompletedTask;
-                    },
-                    Dependents = new[]
-                    {
-                        CatalogScanDriverType.PackageManifestToCsv,
                     },
                 }
             },
@@ -328,10 +296,6 @@ namespace Knapcode.ExplorePackages.Worker
                         self.CatalogCursor = x;
                         return Task.CompletedTask;
                     },
-                    Dependents = new[]
-                    {
-                        CatalogScanDriverType.PackageVersionToCsv,
-                    },
                 }
             },
 
@@ -344,7 +308,6 @@ namespace Knapcode.ExplorePackages.Worker
                     {
                         await self.SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, x);
                     },
-                    Dependents = Array.Empty<CatalogScanDriverType>(),
                 }
             },
 
@@ -357,7 +320,6 @@ namespace Knapcode.ExplorePackages.Worker
                     {
                         await self.SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, x);
                     },
-                    Dependents = Array.Empty<CatalogScanDriverType>(),
                 }
             },
 
@@ -370,7 +332,6 @@ namespace Knapcode.ExplorePackages.Worker
                     {
                         await self.SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, x);
                     },
-                    Dependents = Array.Empty<CatalogScanDriverType>(),
                 }
             },
 
@@ -383,7 +344,6 @@ namespace Knapcode.ExplorePackages.Worker
                     {
                         await self.SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, x);
                     },
-                    Dependents = Array.Empty<CatalogScanDriverType>(),
                 }
             },
 
@@ -397,7 +357,6 @@ namespace Knapcode.ExplorePackages.Worker
                         self.CatalogCursor = x;
                         return Task.CompletedTask;
                     },
-                    Dependents = Array.Empty<CatalogScanDriverType>(),
                 }
             },
 
@@ -411,10 +370,6 @@ namespace Knapcode.ExplorePackages.Worker
                         self.CatalogCursor = x;
                         return Task.CompletedTask;
                     },
-                    Dependents = new[]
-                    {
-                        CatalogScanDriverType.NuGetPackageExplorerToCsv,
-                    },
                 }
             },
 
@@ -427,7 +382,6 @@ namespace Knapcode.ExplorePackages.Worker
                     {
                         await self.SetCursorAsync(CatalogScanDriverType.LoadPackageManifest, x);
                     },
-                    Dependents = Array.Empty<CatalogScanDriverType>(),
                 }
             },
 
@@ -440,7 +394,6 @@ namespace Knapcode.ExplorePackages.Worker
                     {
                         await self.SetCursorAsync(CatalogScanDriverType.LoadPackageVersion, x);
                     },
-                    Dependents = Array.Empty<CatalogScanDriverType>(),
                 }
             },
 
@@ -454,7 +407,6 @@ namespace Knapcode.ExplorePackages.Worker
                         self.FlatContainerCursor = x;
                         await self.SetCursorAsync(CatalogScanDriverType.LoadLatestPackageLeaf, x);
                     },
-                    Dependents = Array.Empty<CatalogScanDriverType>(),
                 }
             },
         };
@@ -492,7 +444,6 @@ namespace Knapcode.ExplorePackages.Worker
         {
             public DateTimeOffset DefaultMin { get; set; }
             public Func<CatalogScanServiceTest, DateTimeOffset, Task> SetDependencyCursorAsync { get; set; }
-            public IReadOnlyList<CatalogScanDriverType> Dependents { get; set; }
         }
     }
 }

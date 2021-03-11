@@ -54,6 +54,6 @@ namespace Knapcode.ExplorePackages.Worker
         public DateTimeOffset? Started { get; set; }
         public string Result { get; set; }
         public DateTimeOffset? Completed { get; set; }
-        public bool ContinueWithDependents { get; set; }
+        public bool ContinueUpdate { get; set; }
     }
 }
