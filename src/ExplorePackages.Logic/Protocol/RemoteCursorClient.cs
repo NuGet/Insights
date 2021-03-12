@@ -31,8 +31,7 @@ namespace Knapcode.ExplorePackages
 
         public async Task<DateTimeOffset> GetCatalogAsync(CancellationToken token = default)
         {
-            var index = await _catalogClient.GetCatalogIndexAsync();
-            return index.CommitTimestamp;
+            return await _catalogClient.GetCommitTimestampAsync();
         }
 
         public async Task<DateTimeOffset> GetFlatContainerAsync(CancellationToken token = default)

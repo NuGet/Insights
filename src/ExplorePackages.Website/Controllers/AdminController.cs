@@ -16,6 +16,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
         private readonly CatalogScanStorageService _catalogScanStorageService;
         private readonly CatalogScanCursorService _catalogScanCursorService;
         private readonly CatalogScanService _catalogScanService;
+        private readonly IRemoteCursorClient _remoteCursorClient;
         private readonly IStreamWriterUpdaterService<PackageDownloadSet> _downloadsToCsvService;
         private readonly IStreamWriterUpdaterService<PackageOwnerSet> _ownersToCsvService;
         private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
@@ -25,6 +26,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             CatalogScanStorageService catalogScanStorageService,
             CatalogScanCursorService catalogScanCursorService,
             CatalogScanService catalogScanService,
+            IRemoteCursorClient remoteCursorClient,
             IStreamWriterUpdaterService<PackageDownloadSet> downloadsToCsvService,
             IStreamWriterUpdaterService<PackageOwnerSet> ownersToCsvService)
         {
@@ -32,6 +34,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             _catalogScanStorageService = catalogScanStorageService;
             _catalogScanCursorService = catalogScanCursorService;
             _catalogScanService = catalogScanService;
+            _remoteCursorClient = remoteCursorClient;
             _downloadsToCsvService = downloadsToCsvService;
             _ownersToCsvService = ownersToCsvService;
         }
@@ -53,6 +56,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
 
             var isDownloadsToCsvRunningTask = _downloadsToCsvService.IsRunningAsync();
             var isOwnersToCsvRunningTask = _ownersToCsvService.IsRunningAsync();
+            var catalogCommitTimestampTask = _remoteCursorClient.GetCatalogAsync();
 
             await Task.WhenAll(
                 approximateMessageCountTask,
@@ -60,9 +64,23 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 availableMessageCountLowerBoundTask,
                 poisonAvailableMessageCountLowerBoundTask,
                 isDownloadsToCsvRunningTask,
-                isOwnersToCsvRunningTask);
+                isOwnersToCsvRunningTask,
+                catalogCommitTimestampTask);
 
             var catalogScans = await Task.WhenAll(catalogScanTasks);
+
+            // Calculate the cursor age.
+            var catalogCommitTimestamp = await catalogCommitTimestampTask;
+            foreach (var catalogScan in catalogScans)
+            {
+                var min = catalogScan.Cursor.Value;
+                if (min < CatalogClient.NuGetOrgMin)
+                {
+                    min = CatalogClient.NuGetOrgMin;
+                }
+
+                catalogScan.CursorAge = catalogCommitTimestamp - min;
+            }
 
             var model = new AdminViewModel
             {

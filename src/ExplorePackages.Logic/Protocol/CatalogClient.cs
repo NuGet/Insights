@@ -1,7 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using NuGet.Protocol;
 
 namespace Knapcode.ExplorePackages
@@ -72,6 +78,46 @@ namespace Knapcode.ExplorePackages
                 maxTries: 3,
                 serializer: CatalogJsonSerialization.Serializer,
                 logger: _logger);
+        }
+
+        public async Task<DateTimeOffset> GetCommitTimestampAsync()
+        {
+            var url = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.Catalog);
+            var length = 512;
+            var nuGetLogger = _logger.ToNuGetLogger();
+            var commitTimestamp = await _httpSource.ProcessResponseAsync(
+                new HttpSourceRequest(() =>
+                {
+                    var request = HttpRequestMessageFactory.Create(HttpMethod.Get, url, nuGetLogger);
+                    request.Headers.Range = new RangeHeaderValue(0, length);
+                    return request;
+                }),
+                async response =>
+                {
+                    if (response.StatusCode != HttpStatusCode.PartialContent)
+                    {
+                        throw new InvalidOperationException("Expected an HTTP 206 Partial Content response.");
+                    }
+
+                    using var stream = await response.Content.ReadAsStreamAsync();
+                    using var reader = new StreamReader(stream);
+                    using var jsonReader = new JsonTextReader(reader);
+                    while (jsonReader.Read())
+                    {
+                        if (jsonReader.TokenType == JsonToken.PropertyName
+                            && jsonReader.Depth == 1
+                            && (string)jsonReader.Value == "commitTimeStamp")
+                        {
+                            return jsonReader.ReadAsString();
+                        }
+                    }
+
+                    throw new InvalidOperationException($"Could not find the commit timestamp in the first {length} bytes of the catalog index.");
+                },
+                nuGetLogger,
+                CancellationToken.None);
+
+            return DateTimeOffset.Parse(commitTimestamp);
         }
 
         public async Task<CatalogIndex> GetCatalogIndexAsync()
