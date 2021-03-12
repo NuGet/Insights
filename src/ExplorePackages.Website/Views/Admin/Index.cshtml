@@ -3,35 +3,37 @@
     ViewData["Title"] = "Admin";
 }
 
-<component
-    type="typeof(WorkerQueueCard)"
-    render-mode="Static"
-    param-Model="Model" />
+<component type="typeof(WorkerQueueCard)"
+           render-mode="Static"
+           param-Model="Model" />
+
+<component type="typeof(CatalogScansCard)"
+           render-mode="Static"
+           param-Model="Model"
+           param-TempData="TempData"
+           param-Url="Url" />
 
 @foreach (var catalogScan in Model.CatalogScans)
 {
-    <component
-        type="typeof(CatalogScanCard)"
-        render-mode="Static"
-        param-Model="catalogScan"
-        param-TempData="TempData"
-        param-Url="Url" />
+    <component type="typeof(CatalogScanCard)"
+               render-mode="Static"
+               param-Model="catalogScan"
+               param-TempData="TempData"
+               param-Url="Url" />
 }
 
-<component
-    type="typeof(LoopingProcessorCard)"
-    render-mode="Static"
-    param-IdPrefix='"DownloadsToCsv"'
-    param-StartAction='"StartDownloadsToCsv"'
-    param-Title='"Downloads to csv"'
-    param-IsRunning="@Model.IsDownloadsToCsvRunning"
-    param-Url="Url" />
+<component type="typeof(LoopingProcessorCard)"
+           render-mode="Static"
+           param-IdPrefix='"DownloadsToCsv"'
+           param-StartAction='"StartDownloadsToCsv"'
+           param-Title='"Downloads to CSV"'
+           param-IsRunning="@Model.IsDownloadsToCsvRunning"
+           param-Url="Url" />
 
-<component
-    type="typeof(LoopingProcessorCard)"
-    render-mode="Static"
-    param-IdPrefix='"OwnersToCsv"'
-    param-StartAction='"StartOwnersToCsv"'
-    param-Title='"Owners to csv"'
-    param-IsRunning="@Model.IsOwnersToCsvRunning"
-    param-Url="Url" />
+<component type="typeof(LoopingProcessorCard)"
+           render-mode="Static"
+           param-IdPrefix='"OwnersToCsv"'
+           param-StartAction='"StartOwnersToCsv"'
+           param-Title='"Owners to CSV"'
+           param-IsRunning="@Model.IsOwnersToCsvRunning"
+           param-Url="Url" />

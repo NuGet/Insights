@@ -176,7 +176,7 @@ namespace Knapcode.ExplorePackages.Worker
             FlatContainerCursor = CursorValue;
 
             // Act
-            var results = await CatalogScanService.UpdateAsync(CursorValue);
+            var results = await CatalogScanService.UpdateAllAsync(CursorValue);
 
             // Assert
             Assert.Equal(
@@ -211,7 +211,7 @@ namespace Knapcode.ExplorePackages.Worker
             do
             {
                 started = 0;
-                foreach (var pair in await CatalogScanService.UpdateAsync(CursorValue))
+                foreach (var pair in await CatalogScanService.UpdateAllAsync(CursorValue))
                 {
                     if (pair.Value.Type == CatalogScanServiceResultType.NewStarted)
                     {

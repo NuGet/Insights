@@ -131,6 +131,55 @@ namespace Knapcode.ExplorePackages.Website.Controllers
         }
 
         [HttpPost]
+        public async Task<RedirectToActionResult> UpdateAllCatalogScans(
+            bool useCustomMax,
+            string max)
+        {
+            (var success, var message, var fragment) = await UpdateAllCatalogScansAsync(useCustomMax, max);
+            if (success)
+            {
+                TempData[fragment + ".Success"] = message;
+            }
+            else
+            {
+                TempData[fragment + ".Error"] = message;
+            }
+
+            return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment);
+        }
+
+        private async Task<(bool Success, string Message, string Fragment)> UpdateAllCatalogScansAsync(
+            bool useCustomMax,
+            string max)
+        {
+            const string fragment = "CatalogScans";
+            var parsedMax = await _remoteCursorClient.GetCatalogAsync();
+            if (useCustomMax)
+            {
+                if (!DateTimeOffset.TryParse(max, out var parsedMaxValue))
+                {
+                    return (false, "Unable to parse the custom max value.", fragment);
+                }
+
+                parsedMax = parsedMaxValue;
+            }
+
+            var results = await _catalogScanService.UpdateAllAsync(parsedMax);
+            var newStarted = results
+                .Where(x => x.Value.Type == CatalogScanServiceResultType.NewStarted)
+                .OrderBy(x => x.Key)
+                .ToList();
+
+            if (newStarted.Count > 0)
+            {
+                var firstNewStarted = newStarted[0];
+                return (true, GetNewStartedMessage(firstNewStarted.Value), firstNewStarted.Key.ToString());
+            }
+
+            return (false, "No catalog scan could be started.", fragment);
+        }
+
+        [HttpPost]
         public async Task<RedirectToActionResult> UpdateCatalogScan(
             CatalogScanDriverType driverType,
             bool useCustomMax,
@@ -138,7 +187,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             bool reprocess,
             string max)
         {
-            (var success, var message) = await GetUpdateCatalogScanErrorAsync(driverType, useCustomMax, onlyLatestLeaves, reprocess, max);
+            (var success, var message) = await UpdateCatalogScanAsync(driverType, useCustomMax, onlyLatestLeaves, reprocess, max);
             if (success)
             {
                 TempData[driverType + ".Success"] = message;
@@ -151,7 +200,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment: driverType.ToString());
         }
 
-        private async Task<(bool Success, string Message)> GetUpdateCatalogScanErrorAsync(
+        private async Task<(bool Success, string Message)> UpdateCatalogScanAsync(
             CatalogScanDriverType driverType,
             bool useCustomMax,
             bool? onlyLatestLeaves,
@@ -195,7 +244,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 case CatalogScanServiceResultType.MinAfterMax:
                     return (false, $"The provided max is less than the current cursor position.");
                 case CatalogScanServiceResultType.NewStarted:
-                    return (true, $"Catalog scan <b>{result.Scan.ScanId}</b> has been started.");
+                    return (true, GetNewStartedMessage(result));
                 case CatalogScanServiceResultType.UnavailableLease:
                     return (false, $"The lease to start the catalog scan is not available.");
                 case CatalogScanServiceResultType.FullyCaughtUpWithMax:
@@ -203,6 +252,11 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 default:
                     throw new NotSupportedException($"The result type {result.Type} is not supported.");
             }
+        }
+
+        private static string GetNewStartedMessage(CatalogScanServiceResult result)
+        {
+            return $"Catalog scan <b>{result.Scan.ScanId}</b> has been started.";
         }
 
         [HttpPost]

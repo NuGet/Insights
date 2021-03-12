@@ -147,7 +147,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        public async Task<IReadOnlyDictionary<CatalogScanDriverType, CatalogScanServiceResult>> UpdateAsync(DateTimeOffset max)
+        public async Task<IReadOnlyDictionary<CatalogScanDriverType, CatalogScanServiceResult>> UpdateAllAsync(DateTimeOffset max)
         {
             var results = new Dictionary<CatalogScanDriverType, CatalogScanServiceResult>();
             foreach (var driverType in _cursorService.StartableDriverTypes)

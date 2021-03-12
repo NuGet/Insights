@@ -5,6 +5,11 @@
 
     function restoreCollapseState() {
         var state = localStorage.getItem(collapseStateKey);
+
+        // Check the hash (fragment) and expand the section if the hash matches the section.
+        var fragmentKey = (window.location.hash + "-content").substr(1);
+
+        console.log(fragmentKey);
         if (state) {
             state = JSON.parse(state);
             for (const id in state) {
@@ -16,7 +21,7 @@
                 var labelledBy = el.getAttribute('aria-labelledBy');
                 var labelledByEl = document.getElementById(labelledBy);
 
-                var hide = state[id];
+                var hide = state[id] && fragmentKey != id;
                 if (hide) {
                     el.classList.remove('show');
                     labelledByEl.classList.add('collapsed');

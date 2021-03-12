@@ -1,0 +1,51 @@
+﻿@{ 
+    var error = TempData["CatalogScans.Error"]?.ToString();
+    var success = TempData["CatalogScans.Success"]?.ToString();
+    var hasError = !string.IsNullOrEmpty(error);
+    var hasSuccess = !hasError && !string.IsNullOrEmpty(success);
+    var message = error ?? success;
+    var messageFontClass = hasError || hasSuccess ? "text-white" : string.Empty;
+    var messageBgClass = hasError ? "bg-danger" : (hasSuccess ? "bg-success" : string.Empty);
+    var borderClass = hasError ? "border-danger" : (hasSuccess ? "border-success" : string.Empty);
+
+    string statusText = null;
+    string statusTitle = null;
+    if (Model.CatalogScans.SelectMany(x => x.LatestScans).Any(x => x.ParsedState != CatalogIndexScanState.Complete))
+    {
+        statusText = "⌛";
+        statusTitle = "A catalog scan is running.";
+    }
+}
+<CollapseCard IdPrefix="CatalogScans" Title="Catalog scans" StatusText="@statusText" StatusTitle="@statusTitle" BorderClass="@borderClass">
+    <div class="card-body">
+        <form action="@Url.Action("UpdateAllCatalogScans")" method="post">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="CatalogScans-useCustomMax" name="useCustomMax" value="true" />
+                <label class="form-check-label" for="CatalogScans-useCustomMax">Use custom max</label>
+            </div>
+            <div class="form-group custom-max" style="display: none">
+                <label for="CatalogScans-max">Custom max</label>
+                <input type="text" class="form-control" name="max" id="CatalogScans-max" value="@Model.CatalogScans.Min(x => x.DefaultMax).ToZulu()">
+            </div>
+            <button type="submit" class="btn btn-primary">Start all</button>
+        </form>
+    </div>
+
+    @if (message != null)
+    {
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item @messageFontClass @messageBgClass">@((MarkupString)message)</li>
+        </ul>
+    }
+</CollapseCard>
+
+@code {
+    [Parameter]
+    public AdminViewModel Model { get; set; }
+
+    [Parameter]
+    public ITempDataDictionary TempData { get; set; }
+
+    [Parameter]
+    public IUrlHelper Url { get;  set; }
+}
