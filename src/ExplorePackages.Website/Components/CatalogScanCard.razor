@@ -7,11 +7,18 @@
     var messageFontClass = hasError || hasSuccess ? "text-white" : string.Empty;
     var messageBgClass = hasError ? "bg-danger" : (hasSuccess ? "bg-success" : string.Empty);
     var borderClass = hasError ? "border-danger" : (hasSuccess ? "border-success" : string.Empty);
+
+    string statusText = null;
+    string statusTitle = null;
+    if (Model.LatestScans.Any(x => x.ParsedState != CatalogIndexScanState.Complete))
+    {
+        statusText = "⌛";
+        statusTitle = "A catalog scan is running.";
+    }
 }
-<CollapseCard IdPrefix="@Model.DriverType.ToString()" Title="@Model.DriverType.ToString().Humanize()" BorderClass="@borderClass">
+<CollapseCard IdPrefix="@Model.DriverType.ToString()" Title="@Model.DriverType.ToString().Humanize()" StatusText="@statusText" StatusTitle="@statusTitle" BorderClass="@borderClass">
     <ul class="list-group list-group-flush">
-        <li class="list-group-item"><b>Cursor value:</b> @Model.Cursor.Value.ToZulu()</li>
-        <li class="list-group-item"><b>Cursor age:</b> @Model.CursorAge.Humanize(precision: 7, maxUnit: Humanizer.Localisation.TimeUnit.Year, minUnit: Humanizer.Localisation.TimeUnit.Second)</li>
+        <li class="list-group-item"><b>Cursor age:</b> @Model.CursorAge.Humanize(precision: 7, maxUnit: Humanizer.Localisation.TimeUnit.Year, minUnit: Humanizer.Localisation.TimeUnit.Minute)</li>
     </ul>
 
     <div class="card-body">

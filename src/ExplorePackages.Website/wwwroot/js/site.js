@@ -46,7 +46,13 @@
         });
 
         $('.collapse-remember').on('hide.bs.collapse show.bs.collapse', function (e) {
-            setCollapseState(e.target.id, e.type == "hide");
+            $(this).data('kc.hidden', e.type == 'hide');
+            setCollapseState(e.target.id, e.type == 'hide');
+        });
+
+        $('.card-header[role="button"]').dblclick(function () {
+            var hidden = $(this).parent().find('.collapse-remember').data('kc.hidden');
+            $('.collapse-remember').collapse(hidden ? 'hide' : 'show');
         });
     });
 
