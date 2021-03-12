@@ -3,6 +3,8 @@ name: Build
 on:
   schedule:
     - cron: '0 12 * * *'
+  push:
+    branches: [ main ]
   pull_request:
     branches: [ main ]
     types: [ opened, synchronize, reopened, labeled ]
