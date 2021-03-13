@@ -45,7 +45,7 @@ namespace Knapcode.ExplorePackages
                 StorageAccountName = _storageAccount.Name,
             });
 
-            _appInsights = new Insights("ExplorePackages" + _stackAlpha, new InsightsArgs
+            _appInsights = new Insights("ExplorePackages-" + _stackAlpha + "-", new InsightsArgs
             {
                 ResourceGroupName = _resourceGroup.Name,
                 ApplicationType = "web",
@@ -71,7 +71,7 @@ namespace Knapcode.ExplorePackages
             }
             else
             {
-                var plan = new Plan("ExplorePackagesWebsite" + _stackAlpha, new PlanArgs
+                var plan = new Plan("ExplorePackagesWebsite-" + _stackAlpha + "-", new PlanArgs
                 {
                     ResourceGroupName = _resourceGroup.Name,
                     Kind = "App",
@@ -144,7 +144,7 @@ namespace Knapcode.ExplorePackages
                 appServiceArgs.Name = appServiceName;
             }
 
-            var appService = new AppService("ExplorePackagesWebsite" + _stackAlpha, appServiceArgs);
+            var appService = new AppService("ExplorePackagesWebsite-" + _stackAlpha + "-", appServiceArgs);
 
             var aadAppUpdate = new Pulumi.Knapcode.PrepareAppForWebSignIn("PrepareAppForWebSignIn", new Pulumi.Knapcode.PrepareAppForWebSignInArgs
             {
@@ -167,15 +167,7 @@ namespace Knapcode.ExplorePackages
 
             var deploymentBlobUrl = SharedAccessSignature.SignedBlobReadUrl(deploymentBlob, _storageAccount);
 
-            for (var instance = 0; instance < count; instance++)
-            {
-                CreateWorker(deploymentBlobUrl, instance);
-            }
-        }
-
-        private void CreateWorker(Output<string> deploymentBlobUrl, int instance)
-        {
-            var plan = new Plan("ExplorePackagesWorker" + _stackAlpha + "-" + instance, new PlanArgs
+            var plan = new Plan("ExplorePackagesWorker-" + _stackAlpha + "-", new PlanArgs
             {
                 ResourceGroupName = _resourceGroup.Name,
                 Kind = "FunctionApp",
@@ -186,6 +178,14 @@ namespace Knapcode.ExplorePackages
                 },
             });
 
+            for (var instance = 0; instance < count; instance++)
+            {
+                CreateWorker(deploymentBlobUrl, instance, plan.Id);
+            }
+        }
+
+        private void CreateWorker(Output<string> deploymentBlobUrl, int instance, Output<string> planId)
+        {
             var appSettings = new InputMap<string>
             {
                 { "WEBSITE_RUN_FROM_PACKAGE", deploymentBlobUrl },
@@ -211,10 +211,10 @@ namespace Knapcode.ExplorePackages
                 appSettings.Add("AzureFunctionsJobHost__extensions__queues__batchSize", workerQueueBatchSize.Value.ToString());
             }
 
-            var app = new FunctionApp("ExplorePackagesWorker" + _stackAlpha + "-" + instance, new FunctionAppArgs
+            var app = new FunctionApp("ExplorePackagesWorker-" + _stackAlpha + "-" + instance + "-", new FunctionAppArgs
             {
                 ResourceGroupName = _resourceGroup.Name,
-                AppServicePlanId = plan.Id,
+                AppServicePlanId = planId,
                 StorageAccountName = _storageAccount.Name,
                 StorageAccountAccessKey = _storageAccount.PrimaryAccessKey,
                 EnableBuiltinLogging = false,
@@ -225,7 +225,7 @@ namespace Knapcode.ExplorePackages
             });
         }
 
-        private void AddWorkerSettings(InputMap<string> appSettings)
+        private void AddWorkerSettings(InputMap<string> appSettings, bool skipMoveTempToHome = false)
         {
             var configuredSettings = DeserializeConfig<ExplorePackagesWorkerSettings>("WorkerSettings");
 
@@ -237,9 +237,12 @@ namespace Knapcode.ExplorePackages
                $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWorkerSettings.WorkerQueueName)}",
                configuredSettings.WorkerQueueName);
 
-            appSettings.Add(
-               $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWorkerSettings.MoveTempToHome)}",
-               configuredSettings.MoveTempToHome.ToString().ToLowerInvariant());
+            if (!skipMoveTempToHome)
+            {
+                appSettings.Add(
+                   $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWorkerSettings.MoveTempToHome)}",
+                   configuredSettings.MoveTempToHome.ToString());
+            }
 
             var i = 0;
             foreach (var driver in configuredSettings.DisabledDrivers)
@@ -253,9 +256,13 @@ namespace Knapcode.ExplorePackages
 
         private void AddWebsiteSettings(InputMap<string> appSettings)
         {
-            AddWorkerSettings(appSettings);
+            AddWorkerSettings(appSettings, skipMoveTempToHome: true);
 
             var configuredSettings = DeserializeConfig<ExplorePackagesWebsiteSettings>("WebsiteSettings");
+
+            appSettings.Add(
+                $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWorkerSettings.MoveTempToHome)}",
+                configuredSettings.MoveTempToHome.ToString());
 
             appSettings.Add(
                $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.ShowAdminLink)}",
