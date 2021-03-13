@@ -313,6 +313,12 @@ namespace Knapcode.ExplorePackages.Worker
             DateTimeOffset? max,
             bool continueWithDependents)
         {
+            if (_options.Value.DisabledDrivers != null
+                && _options.Value.DisabledDrivers.Contains(driverType))
+            {
+                return new CatalogScanServiceResult(CatalogScanServiceResultType.Disabled, dependencyName: null, scan: null);
+            }
+
             // Check if a scan is already running, outside the lease.
             var cursor = await _cursorService.GetCursorAsync(driverType);
             var incompleteScan = await GetLatestIncompleteScanAsync(cursor.Name);

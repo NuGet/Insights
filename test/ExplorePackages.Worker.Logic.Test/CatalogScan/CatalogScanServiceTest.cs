@@ -46,6 +46,23 @@ namespace Knapcode.ExplorePackages.Worker
         }
 
         [Fact]
+        public async Task Disabled()
+        {
+            // Arrange
+            ConfigureWorkerSettings = x => x.DisabledDrivers.Add(DriverType);
+            await CatalogScanService.InitializeAsync();
+            await SetDependencyCursorsAsync(DriverType, CursorValue);
+
+            // Act
+            var result = await CatalogScanService.UpdateAsync(DriverType, CursorValue);
+
+            // Assert
+            Assert.Equal(CatalogScanServiceResultType.Disabled, result.Type);
+            Assert.Null(result.Scan);
+            Assert.Null(result.DependencyName);
+        }
+
+        [Fact]
         public async Task BlockedByDependency()
         {
             // Arrange

@@ -1,4 +1,6 @@
-﻿namespace Knapcode.ExplorePackages.Worker
+﻿using System.Collections.Generic;
+
+namespace Knapcode.ExplorePackages.Worker
 {
     public class ExplorePackagesWorkerSettings : ExplorePackagesSettings
     {
@@ -14,6 +16,7 @@
             RunAllCatalogScanDriversAsBatch = false;
             OnlyKeepLatestInStreamWriterUpdater = true;
             MoveTempToHome = false;
+            DisabledDrivers = new List<CatalogScanDriverType>();
 
             WorkerQueueName = "workerqueue";
             CursorTableName = "cursors";
@@ -48,6 +51,7 @@
         public bool RunAllCatalogScanDriversAsBatch { get; set; }
         public bool OnlyKeepLatestInStreamWriterUpdater { get; set; }
         public bool MoveTempToHome { get; set; }
+        public List<CatalogScanDriverType> DisabledDrivers { get; set; }
 
         public string WorkerQueueName { get; set; }
         public string CursorTableName { get; set; }

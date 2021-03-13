@@ -249,6 +249,8 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                     return (false, $"The lease to start the catalog scan is not available.");
                 case CatalogScanServiceResultType.FullyCaughtUpWithMax:
                     return (true, $"The scan is fully caught up with the provided max value.");
+                case CatalogScanServiceResultType.Disabled:
+                    return (false, $"This driver is disabled in configuration.");
                 default:
                     throw new NotSupportedException($"The result type {result.Type} is not supported.");
             }

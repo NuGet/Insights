@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Website;
@@ -97,8 +99,6 @@ namespace Knapcode.ExplorePackages
                 DisplayName = "Knapcode.ExplorePackages-" + _stackAlpha,
             });
 
-            var configuredSettings = _config.GetObject<ExplorePackagesWebsiteSettings>("WebsiteSettings");
-
             var appSettings = new InputMap<string>
             {
                 { "WEBSITE_RUN_FROM_PACKAGE", deploymentBlobUrl },
@@ -108,20 +108,9 @@ namespace Knapcode.ExplorePackages
                 { "AzureAd:Instance", "https://login.microsoftonline.com/" },
                 { "AzureAd:ClientId", aadApp.ApplicationId },
                 { "AzureAd:TenantId", "common" },
-                { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesSettings.StorageConnectionString)}", _storageAccount.PrimaryConnectionString },
-                { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.ShowAdminLink)}", configuredSettings.ShowAdminLink.ToString() },
             };
 
-            for (var i = 0; i < configuredSettings.AllowedUsers.Count; i++)
-            {
-                var allowedUser = configuredSettings.AllowedUsers[i];
-                appSettings.Add(
-                    $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.AllowedUsers)}:{i}:{nameof(AllowedUser.HashedTenantId)}",
-                    allowedUser.HashedTenantId);
-                appSettings.Add(
-                    $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.AllowedUsers)}:{i}:{nameof(AllowedUser.HashedObjectId)}",
-                    allowedUser.HashedObjectId);
-            }
+            AddWebsiteSettings(appSettings);
 
             var appServiceArgs = new AppServiceArgs
             {
@@ -197,8 +186,6 @@ namespace Knapcode.ExplorePackages
                 },
             });
 
-            var configuredSettings = _config.GetObject<ExplorePackagesWorkerSettings>("WorkerSettings");
-
             var appSettings = new InputMap<string>
             {
                 { "WEBSITE_RUN_FROM_PACKAGE", deploymentBlobUrl },
@@ -208,10 +195,9 @@ namespace Knapcode.ExplorePackages
                 { "AzureFunctionsJobHost__logging__LogLevel__Default", "Warning" },
                 // Workaround for a bug. Source: https://github.com/Azure/azure-functions-host/issues/5098#issuecomment-704206997
                 { "AzureWebJobsFeatureFlags", "EnableEnhancedScopes" },
-                { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesSettings.StorageConnectionString)}", _storageAccount.PrimaryConnectionString },
-                { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWorkerSettings.WorkerQueueName)}", configuredSettings.WorkerQueueName },
-                { $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWorkerSettings.MoveTempToHome)}", configuredSettings.MoveTempToHome.ToString().ToLowerInvariant() },
             };
+
+            AddWorkerSettings(appSettings);
 
             var maxWorkerScaleOut = _config.GetInt32("MaxWorkerScaleOut");
             if (maxWorkerScaleOut.HasValue)
@@ -236,6 +222,67 @@ namespace Knapcode.ExplorePackages
                 ClientAffinityEnabled = false,
                 HttpsOnly = true,
                 AppSettings = appSettings,
+            });
+        }
+
+        private void AddWorkerSettings(InputMap<string> appSettings)
+        {
+            var configuredSettings = DeserializeConfig<ExplorePackagesWorkerSettings>("WorkerSettings");
+
+            appSettings.Add(
+                $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesSettings.StorageConnectionString)}",
+                _storageAccount.PrimaryConnectionString);
+
+            appSettings.Add(
+               $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWorkerSettings.WorkerQueueName)}",
+               configuredSettings.WorkerQueueName);
+
+            appSettings.Add(
+               $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWorkerSettings.MoveTempToHome)}",
+               configuredSettings.MoveTempToHome.ToString().ToLowerInvariant());
+
+            var i = 0;
+            foreach (var driver in configuredSettings.DisabledDrivers)
+            {
+                appSettings.Add(
+                    $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWorkerSettings.DisabledDrivers)}:{i}",
+                    driver.ToString());
+                i++;
+            }
+        }
+
+        private void AddWebsiteSettings(InputMap<string> appSettings)
+        {
+            AddWorkerSettings(appSettings);
+
+            var configuredSettings = DeserializeConfig<ExplorePackagesWebsiteSettings>("WebsiteSettings");
+
+            appSettings.Add(
+               $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.ShowAdminLink)}",
+               configuredSettings.ShowAdminLink.ToString());
+
+            for (var i = 0; i < configuredSettings.AllowedUsers.Count; i++)
+            {
+                var allowedUser = configuredSettings.AllowedUsers[i];
+                appSettings.Add(
+                    $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.AllowedUsers)}:{i}:{nameof(AllowedUser.HashedTenantId)}",
+                    allowedUser.HashedTenantId);
+                appSettings.Add(
+                    $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.AllowedUsers)}:{i}:{nameof(AllowedUser.HashedObjectId)}",
+                    allowedUser.HashedObjectId);
+            }
+        }
+
+        private T DeserializeConfig<T>(string key)
+        {
+            using var jsonDocument = _config.GetObject<JsonDocument>(key);
+            var json = jsonDocument.RootElement.GetRawText();
+            return JsonSerializer.Deserialize<T>(json, new JsonSerializerOptions
+            {
+                Converters =
+                {
+                    new JsonStringEnumConverter(),
+                }
             });
         }
     }

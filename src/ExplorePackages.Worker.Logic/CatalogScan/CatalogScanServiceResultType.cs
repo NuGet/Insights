@@ -8,6 +8,7 @@
         BlockedByDependency,
         MinAfterMax,
         FullyCaughtUpWithDependency,
-        FullyCaughtUpWithMax
+        FullyCaughtUpWithMax,
+        Disabled,
     }
 }
