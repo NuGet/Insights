@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -62,6 +64,9 @@ namespace Knapcode.ExplorePackages
 
         [Output]
         public Output<string> WebsiteUrl { get; private set; }
+
+        [Output]
+        public Output<ImmutableArray<string>> WorkerUrls { get; private set; }
 
         private void CreateWebsite()
         {
@@ -154,7 +159,7 @@ namespace Knapcode.ExplorePackages
                 HostName = appService.DefaultSiteHostname,
             });
 
-            WebsiteUrl = appService.DefaultSiteHostname.Apply(defaultSiteHostname => $"https://{defaultSiteHostname}");
+            WebsiteUrl = appService.DefaultSiteHostname.Apply(x => $"https://{x}");
         }
 
         private void CreateWorkers(int count)
@@ -180,13 +185,16 @@ namespace Knapcode.ExplorePackages
                 },
             });
 
+            var outputs = new List<Output<string>>();
             for (var instance = 0; instance < count; instance++)
             {
-                CreateWorker(deploymentBlobUrl, instance, plan.Id);
+                outputs.Add(CreateWorker(deploymentBlobUrl, instance, plan.Id));
             }
+
+            WorkerUrls = Output.All(outputs);
         }
 
-        private void CreateWorker(Output<string> deploymentBlobUrl, int instance, Output<string> planId)
+        private Output<string> CreateWorker(Output<string> deploymentBlobUrl, int instance, Output<string> planId)
         {
             var appSettings = new InputMap<string>
             {
@@ -225,6 +233,8 @@ namespace Knapcode.ExplorePackages
                 HttpsOnly = true,
                 AppSettings = appSettings,
             });
+
+            return app.DefaultHostname.Apply(x => $"https://{x}");
         }
 
         private void AddWorkerSettings(InputMap<string> appSettings, bool skipMoveTempToHome = false)
