@@ -50,10 +50,18 @@ namespace Knapcode.ExplorePackages
             }
 
             var message = formatter(state, exception);
-            _output.WriteLine($"[{logLevel.ToString().Substring(0, 3).ToUpperInvariant()}] {message}");
-            if (exception != null)
+
+            try
             {
-                _output.WriteLine(exception.ToString());
+                _output.WriteLine($"[{logLevel.ToString().Substring(0, 3).ToUpperInvariant()}] {message}");
+                if (exception != null)
+                {
+                    _output.WriteLine(exception.ToString());
+                }
+            }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("There is no currently active test."))
+            {
+                // Ignore this failure. I've seen cases where an HttpClientFactory timer logs at a strange time.
             }
 
             if (logLevel >= _throwOn)
