@@ -10,7 +10,7 @@
   <ItemGroup>
     <PackageReference Include="Pulumi.Azure" Version="3.48.0" />
     <PackageReference Include="Pulumi.AzureAD" Version="3.4.0" />
-    <PackageReference Include="Pulumi.Knapcode" Version="0.0.1" />
+    <PackageReference Include="Pulumi.Knapcode" Version="0.0.3" />
   </ItemGroup>
 
   <ItemGroup>

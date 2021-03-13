@@ -1,3 +1,5 @@
+using System;
+using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
@@ -283,6 +285,12 @@ namespace Knapcode.ExplorePackages
         private T DeserializeConfig<T>(string key)
         {
             using var jsonDocument = _config.GetObject<JsonDocument>(key);
+
+            if (jsonDocument == null)
+            {
+                return Activator.CreateInstance<T>();
+            }
+
             var json = jsonDocument.RootElement.GetRawText();
             return JsonSerializer.Deserialize<T>(json, new JsonSerializerOptions
             {
