@@ -35,7 +35,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                 await UpdateAsync(max1);
 
                 // Assert
-                await AssertOutputAsync(NuGetPackageExplorerToCsvDir, Step1, 0);
+                await AssertBlobCountAsync(DestinationContainerName, 2); // bucket 0 does not exist
                 await AssertOutputAsync(NuGetPackageExplorerToCsvDir, Step1, 1);
                 await AssertOutputAsync(NuGetPackageExplorerToCsvDir, Step1, 2);
 
