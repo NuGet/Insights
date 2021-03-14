@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
 {
@@ -30,6 +31,8 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
             await _messageEnqueuer.InitializeAsync();
             await _taskStateStorageService.InitializeAsync(StorageSuffix);
         }
+
+        public bool IsEnabled => _updater.IsEnabled;
 
         public async Task StartAsync(bool loop, TimeSpan notBefore)
         {

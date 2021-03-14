@@ -9,6 +9,7 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
         string OperationName { get; }
         string BlobName { get; }
         string ContainerName { get; }
+        bool IsEnabled { get; }
         TimeSpan LoopFrequency { get; }
         Task<T> GetDataAsync();
         Task WriteAsync(T data, StreamWriter writer);
