@@ -45,6 +45,10 @@ namespace Knapcode.ExplorePackages.Timers
         public async Task InitializeAsync()
         {
             await GetTable().CreateIfNotExistsAsync(retry: true);
+            foreach (var timer in _timers)
+            {
+                await timer.InitializeAsync();
+            }
         }
 
         public async Task SetIsEnabled(string timerName, bool isEnabled)

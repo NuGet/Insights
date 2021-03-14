@@ -71,7 +71,7 @@ namespace Knapcode.ExplorePackages.Worker
                 ConfigureWorkerSettings(x);
             }
 
-            VerifyStoragePrefix(x);
+            AssertStoragePrefix(x);
         }
 
         protected async Task SetCursorAsync(CatalogScanDriverType driverType, DateTimeOffset min)

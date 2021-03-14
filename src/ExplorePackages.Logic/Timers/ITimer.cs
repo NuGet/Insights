@@ -8,6 +8,7 @@ namespace Knapcode.ExplorePackages.Timers
         string Name { get; }
         TimeSpan Frequency { get; }
         bool IsEnabled { get; }
+        Task InitializeAsync();
         Task ExecuteAsync();
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Timers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.WindowsAzure.Storage.Queue;
@@ -18,14 +19,12 @@ namespace Knapcode.ExplorePackages.Worker
 
         protected override void ConfigureHostBuilder(IHostBuilder hostBuilder)
         {
-            base.ConfigureHostBuilder(hostBuilder);
-
             hostBuilder
                 .ConfigureWebJobs(new Startup().Configure)
                 .ConfigureServices(serviceCollection =>
                 {
                     serviceCollection.AddTransient(s => Output.GetTelemetryClient());
-                    serviceCollection.AddTransient<WorkerQueueFunction>();
+                    serviceCollection.AddTransient<Functions>();
 
                     serviceCollection.Configure((Action<ExplorePackagesSettings>)ConfigureDefaultsAndSettings);
                     serviceCollection.Configure((Action<ExplorePackagesWorkerSettings>)ConfigureWorkerDefaultsAndSettings);
@@ -34,8 +33,56 @@ namespace Knapcode.ExplorePackages.Worker
 
         protected override async Task ProcessMessageAsync(IServiceProvider serviceProvider, CloudQueueMessage message)
         {
-            var target = serviceProvider.GetRequiredService<WorkerQueueFunction>();
-            await target.ProcessAsync(message);
+            await serviceProvider
+                .GetRequiredService<Functions>()
+                .WorkerQueueAsync(message);
+        }
+
+        public class CanRunTimersAsync : IntegrationTest
+        {
+            public CanRunTimersAsync(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            {
+            }
+
+            [Fact]
+            public async Task Execute()
+            {
+                ConfigureSettings = x =>
+                {
+                    x.DownloadsV1Url = $"http://localhost/{TestData}/DownloadsToCsv/{Step1}/downloads.v1.json";
+                    x.OwnersV2Url = $"http://localhost/{TestData}/OwnersToCsv/{Step1}/owners.v2.json";
+                };
+
+                // Arrange
+                HttpMessageHandlerFactory.OnSendAsync = async req =>
+                {
+                    if (req.RequestUri.AbsoluteUri == Options.Value.DownloadsV1Url
+                     || req.RequestUri.AbsoluteUri == Options.Value.OwnersV2Url)
+                    {
+                        return await TestDataHttpClient.SendAsync(Clone(req));
+                    }
+
+                    return null;
+                };
+
+                var service = Host.Services.GetRequiredService<TimerExecutionService>();
+                await service.InitializeAsync();
+
+                // Act
+                using (var scope = Host.Services.CreateScope())
+                {
+                    await scope
+                        .ServiceProvider
+                        .GetRequiredService<Functions>()
+                        .TimerAsync(timerInfo: null);
+                }
+
+                await ProcessQueueAsync(() => { }, () => Task.FromResult(true));
+
+                // Assert
+                await AssertBlobCountAsync(Options.Value.PackageDownloadsContainerName, 1);
+                await AssertBlobCountAsync(Options.Value.PackageOwnersContainerName, 1);
+            }
         }
 
         public class CanRunAllCatalogScansAsync : IntegrationTest

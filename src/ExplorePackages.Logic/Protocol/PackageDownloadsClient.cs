@@ -51,7 +51,6 @@ namespace Knapcode.ExplorePackages
 
                 await _throttle.WaitAsync();
                 var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-                var asOfTimestamp = response.Content.Headers.LastModified.Value.ToUniversalTime();
                 disposables.Push(response);
 
                 string newEtag;
@@ -78,6 +77,8 @@ namespace Knapcode.ExplorePackages
                     response.Dispose();
                     throw new HttpRequestException($"Response status code is not 200 OK: {((int)response.StatusCode)} ({response.ReasonPhrase})");
                 }
+
+                var asOfTimestamp = response.Content.Headers.LastModified.Value.ToUniversalTime();
 
                 return new PackageDownloadSet(
                     asOfTimestamp,

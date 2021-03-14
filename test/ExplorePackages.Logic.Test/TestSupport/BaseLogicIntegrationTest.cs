@@ -108,10 +108,10 @@ namespace Knapcode.ExplorePackages
                 ConfigureSettings(x);
             }
 
-            VerifyStoragePrefix(x);
+            AssertStoragePrefix(x);
         }
 
-        protected void VerifyStoragePrefix(object x)
+        protected void AssertStoragePrefix(object x)
         {
             // Verify all container names are prefixed, so that parallel tests and cleanup work properly.
             var storageNameProperties = x

@@ -1,30 +1,42 @@
 ﻿using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Timers;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage.Queue;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class WorkerQueueFunction
+    public class Functions
     {
         private const string WorkerQueue = ExplorePackagesSettings.DefaultSectionName + ":" + nameof(ExplorePackagesWorkerSettings.WorkerQueueName);
         private const string WorkerQueueVariable = "%" + WorkerQueue + "%";
         private const string StorageConnection = ExplorePackagesSettings.DefaultSectionName + ":" + nameof(ExplorePackagesSettings.StorageConnectionString);
 
         private readonly TempStreamLeaseScope _tempStreamLeaseScope;
+        private readonly TimerExecutionService _timerExecutionService;
         private readonly IGenericMessageProcessor _messageProcessor;
 
-        public WorkerQueueFunction(
+        public Functions(
             TempStreamLeaseScope tempStreamLeaseScope,
+            TimerExecutionService timerExecutionService,
             IGenericMessageProcessor messageProcessor,
-            ILogger<WorkerQueueFunction> logger)
+            ILogger<Functions> logger)
         {
             _tempStreamLeaseScope = tempStreamLeaseScope;
+            _timerExecutionService = timerExecutionService;
             _messageProcessor = messageProcessor;
         }
 
+        [FunctionName("TimerFunction")]
+        public async Task TimerAsync(
+            [TimerTrigger("0 */5 * * * *")]TimerInfo timerInfo)
+        {
+            await using var scopeOwnership = _tempStreamLeaseScope.TakeOwnership();
+            await _timerExecutionService.ExecuteAsync(isEnabledDefault: true);
+        }
+
         [FunctionName("WorkerQueueFunction")]
-        public async Task ProcessAsync(
+        public async Task WorkerQueueAsync(
             [QueueTrigger(WorkerQueueVariable, Connection = StorageConnection)] CloudQueueMessage message)
         {
             await using var scopeOwnership = _tempStreamLeaseScope.TakeOwnership();

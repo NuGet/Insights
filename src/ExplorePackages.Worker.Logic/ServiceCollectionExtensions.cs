@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Knapcode.ExplorePackages.Timers;
 using Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv;
 using Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan;
 using Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan;
@@ -50,6 +51,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             serviceCollection.AddTransient<CursorStorageService>();
 
+            serviceCollection.AddTransient<TimerExecutionService>();
             serviceCollection.AddTransient<AppendResultStorageService>();
             serviceCollection.AddTransient<TaskStateStorageService>();
             serviceCollection.AddTransient<ICsvReader, NRecoCsvReader>();
@@ -98,6 +100,11 @@ namespace Knapcode.ExplorePackages.Worker
                 serviceCollection.AddTransient(
                     typeof(ILoopingMessageProcessor<>).MakeGenericType(messageType),
                     typeof(StreamWriterUpdaterProcessor<>).MakeGenericType(dataType));
+
+                // Add the timer
+                serviceCollection.AddTransient(
+                    typeof(ITimer),
+                    typeof(StreamWriterUpdaterTimer<>).MakeGenericType(dataType));
             }
 
             foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ITaskStateMessageProcessor<>)))
