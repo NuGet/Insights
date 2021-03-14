@@ -16,7 +16,7 @@
         statusTitle = "A catalog scan is running.";
     }
 }
-<CollapseCard IdPrefix="CatalogScans" Title="Catalog scans" StatusText="@statusText" StatusTitle="@statusTitle" BorderClass="@borderClass">
+<CollapseCard IdPrefix="CatalogScans" Title="All catalog scans" StatusText="@statusText" StatusTitle="@statusTitle" BorderClass="@borderClass">
     <div class="card-body">
         <form action="@Url.Action("UpdateAllCatalogScans")" method="post">
             <div class="form-check">
