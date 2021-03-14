@@ -1,7 +1,11 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
@@ -21,6 +25,8 @@ namespace Knapcode.ExplorePackages
 {
     public class MyStack : Stack
     {
+        private static readonly HttpClient _httpClient = new HttpClient();
+
         private readonly Config _config;
         private readonly string _projectStack;
         private readonly string _stackAlpha;
@@ -63,7 +69,13 @@ namespace Knapcode.ExplorePackages
         }
 
         [Output]
+        public Output<bool> RestartedWebsite { get; private set; }
+
+        [Output]
         public Output<string> WebsiteUrl { get; private set; }
+
+        [Output]
+        public Output<bool> RestartedFunctionApps { get; private set; }
 
         [Output]
         public Output<ImmutableArray<string>> WorkerUrls { get; private set; }
@@ -159,7 +171,22 @@ namespace Knapcode.ExplorePackages
                 HostName = appService.DefaultSiteHostname,
             });
 
-            WebsiteUrl = appService.DefaultSiteHostname.Apply(x => $"https://{x}");
+            RestartedWebsite = _resourceGroup.Name.Apply(resourceGroupName =>
+            {
+                return appService.Name.Apply(name =>
+                {
+                    if (!Deployment.Instance.IsDryRun)
+                    {
+                        Console.WriteLine($"Restarting {name}...");
+                        Execute("cmd", "/c", "az", "webapp", "restart", "--resource-group", resourceGroupName, "--name", name);
+                        Console.WriteLine($"Done restarting {name}.");
+                    }
+
+                    return true;
+                });
+            });
+
+            WebsiteUrl = appService.DefaultSiteHostname.Apply(x => WarmUpAsync($"https://{x}"));
         }
 
         private void CreateWorkers(int count)
@@ -185,16 +212,34 @@ namespace Knapcode.ExplorePackages
                 },
             });
 
-            var outputs = new List<Output<string>>();
+            var functionApps = new List<FunctionApp>();
             for (var instance = 0; instance < count; instance++)
             {
-                outputs.Add(CreateWorker(deploymentBlobUrl, instance, plan.Id));
+                functionApps.Add(CreateWorker(deploymentBlobUrl, instance, plan.Id));
             }
 
-            WorkerUrls = Output.All(outputs);
+            RestartedFunctionApps = _resourceGroup.Name.Apply(resourceGroupName =>
+            {
+                return Output
+                    .All(functionApps
+                        .Select(x => x.Name.Apply(name =>
+                        {
+                            if (!Deployment.Instance.IsDryRun)
+                            {
+                                Console.WriteLine($"Restarting {name}...");
+                                Execute("cmd", "/c", "az", "functionapp", "restart", "--resource-group", resourceGroupName, "--name", name);
+                                Console.WriteLine($"Done restarting {name}.");
+                            }
+
+                            return true;
+                        })))
+                    .Apply(restarted => restarted.All(x => x));
+            });
+
+            WorkerUrls = Output.All(functionApps.Select(x => x.DefaultHostname.Apply(y => WarmUpAsync($"https://{y}"))));
         }
 
-        private Output<string> CreateWorker(Output<string> deploymentBlobUrl, int instance, Output<string> planId)
+        private FunctionApp CreateWorker(Output<string> deploymentBlobUrl, int instance, Output<string> planId)
         {
             var appSettings = new InputMap<string>
             {
@@ -234,7 +279,7 @@ namespace Knapcode.ExplorePackages
                 AppSettings = appSettings,
             });
 
-            return app.DefaultHostname.Apply(x => $"https://{x}");
+            return app;
         }
 
         private void AddWorkerSettings(InputMap<string> appSettings, bool skipMoveTempToHome = false)
@@ -309,6 +354,72 @@ namespace Knapcode.ExplorePackages
                     new JsonStringEnumConverter(),
                 }
             });
+        }
+
+        private async Task<string> WarmUpAsync(string url)
+        {
+            if (!Deployment.Instance.IsDryRun)
+            {
+                int attempt = 0;
+                const int maxAttempts = 5;
+                while (true)
+                {
+                    attempt++;
+
+                    if (attempt > 1)
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(5));
+                    }
+
+                    try
+                    {
+                        Console.WriteLine($"Warming up {url}... (attempt {attempt})");
+                        using var response = await _httpClient.GetAsync(url);
+                        Console.WriteLine($"URL {url} returned '{(int)response.StatusCode} {response.ReasonPhrase}'. (attempt {attempt})");
+                        response.EnsureSuccessStatusCode();
+                        break;
+                    }
+                    catch when (attempt < maxAttempts)
+                    {
+                        Console.WriteLine($"URL {url} threw an exception. Trying again. (attempt {attempt})");
+                    }
+                }
+            }
+
+            return url;
+        }
+
+        private string Execute(string fileName, params string[] arguments)
+        {
+            using (var process = new Process())
+            {
+                process.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
+                process.StartInfo.FileName = fileName;
+                foreach (var argument in arguments)
+                {
+                    process.StartInfo.ArgumentList.Add(argument);
+                }
+                process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.RedirectStandardError = true;
+                process.StartInfo.UseShellExecute = false;
+                var output = new ConcurrentQueue<(bool isOutput, string data)>();
+                process.OutputDataReceived += (sender, args) => output.Enqueue((true, args.Data));
+                process.ErrorDataReceived += (sender, args) => output.Enqueue((false, args.Data));
+                process.Start();
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+                process.WaitForExit();
+
+                if (process.ExitCode != 0)
+                {
+                    throw new InvalidOperationException(
+                        $"Command failed: {fileName} {string.Join(' ', arguments)}" +
+                        System.Environment.NewLine +
+                        string.Join(System.Environment.NewLine, output.Select(x => x.data)));
+                }
+
+                return string.Join(System.Environment.NewLine, output.Where(x => x.isOutput).Select(x => x.data));
+            }
         }
     }
 }

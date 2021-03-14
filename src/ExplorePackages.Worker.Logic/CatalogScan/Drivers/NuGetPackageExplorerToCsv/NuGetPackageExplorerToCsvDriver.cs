@@ -204,7 +204,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                         SymbolValidatorResult symbolValidatorResult;
                         using (var cts = new CancellationTokenSource())
                         {
-                            var delayTask = Task.Delay(TimeSpan.FromMinutes(3), cts.Token);
+                            var delayTask = Task.Delay(TimeSpan.FromMinutes(4), cts.Token);
                             _logger.LogInformation(
                                 "Starting symbol validation for {Id} {Version} on attempt {AttemptCount}.",
                                 leaf.PackageId,
@@ -217,7 +217,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                             {
                                 cts.Cancel();
 
-                                if (attemptCount > 2)
+                                if (attemptCount > 3)
                                 {
                                     _logger.LogWarning("Package {Id} {Version} had its symbol validation timeout.", leaf.PackageId, leaf.PackageVersion);
                                     return DriverResult.Success(new List<NuGetPackageExplorerRecord>
