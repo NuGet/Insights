@@ -1,4 +1,13 @@
-﻿<CollapseCard IdPrefix="@IdPrefix" Title="@Title">
+﻿@{
+    string statusText = null;
+    string statusTitle = null;
+    if (Model.IsRunning)
+    {
+        statusText = "⏱️";
+        statusTitle = "The processor is scheduled or running.";
+    }
+}
+<CollapseCard IdPrefix="@IdPrefix" Title="@Title" StatusText="@statusText" StatusTitle="@statusTitle">
     <ul class="list-group list-group-flush">
         <li class="list-group-item"><b>Is running?</b> @Model.IsRunning</li>
     </ul>

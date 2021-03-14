@@ -43,6 +43,13 @@
         LoadLatestPackageLeaf,
 
         /// <summary>
+        /// Implemented by <see cref="CatalogLeafItemToCsv.CatalogLeafItemToCsvDriver"/>. Reads all catalog leaf items
+        /// and their associated page metadata. The catalog leaf item is described here:
+        /// https://docs.microsoft.com/en-us/nuget/api/catalog-resource#catalog-item-object-in-a-page
+        /// </summary>
+        CatalogLeafItemToCsv,
+
+        /// <summary>
         /// Implemented by <see cref="PackageArchiveEntryToCsv.PackageArchiveEntryToCsvDriver"/>.
         /// Extracts metadata about each entry in a package's ZIP archive.
         /// </summary>
@@ -85,12 +92,5 @@
         /// NuGet Package Explorer (NPE) assembly and symbol verification logic.
         /// </summary>
         NuGetPackageExplorerToCsv,
-
-        /// <summary>
-        /// Implemented by <see cref="CatalogLeafItemToCsv.CatalogLeafItemToCsvDriver"/>. Reads all catalog leaf items
-        /// and their associated page metadata. The catalog leaf item is described here:
-        /// https://docs.microsoft.com/en-us/nuget/api/catalog-resource#catalog-item-object-in-a-page
-        /// </summary>
-        CatalogLeafItemToCsv,
     }
 }
