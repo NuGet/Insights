@@ -89,9 +89,9 @@ namespace Knapcode.ExplorePackages.Worker
             });
         }
 
-        public bool IsDisabled(CatalogScanDriverType type)
+        public bool IsEnabled(CatalogScanDriverType type)
         {
-            return _options.Value.DisabledDrivers != null && _options.Value.DisabledDrivers.Contains(type);
+            return _options.Value.DisabledDrivers == null || ! _options.Value.DisabledDrivers.Contains(type);
         }
 
         public bool SupportsReprocess(CatalogScanDriverType driverType)
@@ -318,7 +318,7 @@ namespace Knapcode.ExplorePackages.Worker
             DateTimeOffset? max,
             bool continueWithDependents)
         {
-            if (IsDisabled(driverType))
+            if (!IsEnabled(driverType))
             {
                 return new CatalogScanServiceResult(CatalogScanServiceResultType.Disabled, dependencyName: null, scan: null);
             }

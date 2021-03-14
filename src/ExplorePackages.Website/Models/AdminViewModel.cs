@@ -13,7 +13,7 @@ namespace Knapcode.ExplorePackages.Website.Models
 
         public IReadOnlyList<CatalogScanViewModel> CatalogScans { get; set; }
 
-        public bool IsDownloadsToCsvRunning { get; set; }
-        public bool IsOwnersToCsvRunning { get; set; }
+        public StreamWriterUpdaterViewModel DownloadsToCsv { get; set; }
+        public StreamWriterUpdaterViewModel OwnersToCsv { get; set; }
     }
 }

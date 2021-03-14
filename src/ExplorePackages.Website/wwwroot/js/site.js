@@ -9,7 +9,6 @@
         // Check the hash (fragment) and expand the section if the hash matches the section.
         var fragmentKey = (window.location.hash + "-content").substr(1);
 
-        console.log(fragmentKey);
         if (state) {
             state = JSON.parse(state);
             for (const id in state) {
@@ -55,8 +54,8 @@
             setCollapseState(e.target.id, e.type == 'hide');
         });
 
-        $('.card-header[role="button"]').dblclick(function () {
-            var hidden = $(this).parent().find('.collapse-remember').data('kc.hidden');
+        $('.card [data-toggle="collapse"]').dblclick(function () {
+            var hidden = $(this).parents(".card").find('.collapse-remember').data('kc.hidden');
             $('.collapse-remember').collapse(hidden ? 'hide' : 'show');
         });
     });

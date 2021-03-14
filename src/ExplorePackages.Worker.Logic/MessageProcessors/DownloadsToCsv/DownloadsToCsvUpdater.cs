@@ -26,6 +26,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
         public string BlobName => "downloads";
         public string ContainerName => _options.Value.PackageDownloadsContainerName;
         public TimeSpan LoopFrequency => TimeSpan.FromMinutes(30);
+        public bool IsEnabled => _options.Value.DownloadsV1Url != null;
 
         public async Task<PackageDownloadSet> GetDataAsync()
         {

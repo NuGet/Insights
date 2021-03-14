@@ -54,8 +54,8 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 .Select(GetCatalogScanAsync)
                 .ToList();
 
-            var isDownloadsToCsvRunningTask = _downloadsToCsvService.IsRunningAsync();
-            var isOwnersToCsvRunningTask = _ownersToCsvService.IsRunningAsync();
+            var downloadsToCsvTask = GetStreamWriterUpdaterAsync(_downloadsToCsvService);
+            var ownersToCsvTask = GetStreamWriterUpdaterAsync(_ownersToCsvService);
             var catalogCommitTimestampTask = _remoteCursorClient.GetCatalogAsync();
 
             await Task.WhenAll(
@@ -63,8 +63,8 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 poisonApproximateMessageCountTask,
                 availableMessageCountLowerBoundTask,
                 poisonAvailableMessageCountLowerBoundTask,
-                isDownloadsToCsvRunningTask,
-                isOwnersToCsvRunningTask,
+                downloadsToCsvTask,
+                ownersToCsvTask,
                 catalogCommitTimestampTask);
 
             var catalogScans = await Task.WhenAll(catalogScanTasks);
@@ -89,8 +89,8 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 PoisonApproximateMessageCount = await poisonApproximateMessageCountTask,
                 PoisonAvailableMessageCountLowerBound = await poisonAvailableMessageCountLowerBoundTask,
                 CatalogScans = catalogScans,
-                IsDownloadsToCsvRunning = await isDownloadsToCsvRunningTask,
-                IsOwnersToCsvRunning = await isOwnersToCsvRunningTask,
+                DownloadsToCsv = await downloadsToCsvTask,
+                OwnersToCsv = await ownersToCsvTask,
             };
 
             model.AvailableMessageCountIsExact = model.AvailableMessageCountLowerBound < messageCount;
@@ -127,6 +127,16 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 LatestScans = latestScans,
                 SupportsReprocess = _catalogScanService.SupportsReprocess(driverType),
                 OnlyLatestLeavesSupport = _catalogScanService.GetOnlyLatestLeavesSupport(driverType),
+                IsEnabled = _catalogScanService.IsEnabled(driverType),
+            };
+        }
+
+        private async Task<StreamWriterUpdaterViewModel> GetStreamWriterUpdaterAsync<T>(IStreamWriterUpdaterService<T> service)
+        {
+            return new StreamWriterUpdaterViewModel
+            {
+                IsRunning = await service.IsRunningAsync(),
+                IsEnabled = service.IsEnabled,
             };
         }
 

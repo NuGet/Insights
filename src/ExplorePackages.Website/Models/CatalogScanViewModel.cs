@@ -15,5 +15,6 @@ namespace Knapcode.ExplorePackages.Website.Models
 
         public bool SupportsReprocess { get; set; }
         public bool? OnlyLatestLeavesSupport { get; set; }
+        public bool IsEnabled { get; set; }
     }
 }

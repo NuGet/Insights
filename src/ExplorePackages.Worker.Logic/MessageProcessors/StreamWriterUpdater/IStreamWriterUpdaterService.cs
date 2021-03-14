@@ -8,5 +8,6 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
         Task InitializeAsync();
         Task StartAsync(bool loop, TimeSpan notBefore);
         Task<bool> IsRunningAsync();
+        bool IsEnabled { get; }
     }
 }

@@ -1,13 +1,16 @@
 ﻿<a name="@IdPrefix" class="anchor"></a>
 <div id="@IdPrefix-accordian">
     <div class="card @BorderClass mt-3">
-        <div class="card-header container-fluid @(Collapsed ? "collapsed" : string.Empty)" id="@IdPrefix-heading" role="button" data-toggle="collapse"
-            data-target="#@IdPrefix-content" aria-expanded="true" aria-controls="@IdPrefix-content">
+        <div class="card-header container-fluid">
             <div class="row">
                 <div class="col">
-                    <h4>
-                        <i class="bi bi-chevron-down" aria-hidden="true"></i> @Title
-                    </h4>
+                    <button class="btn btn-link @(Collapsed ? "collapsed" : string.Empty)" type="button" data-toggle="collapse"
+                        id="@IdPrefix-heading" data-target="#@IdPrefix-content" aria-controls="@IdPrefix-content" aria-expanded="@(!Collapsed)">
+                        <h4>
+                            <i class="bi bi-chevron-down" aria-hidden="true"></i>
+                            @Title
+                        </h4>
+                    </button>
                 </div>
                 @if (!string.IsNullOrWhiteSpace(StatusText))
                 {

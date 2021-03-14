@@ -46,6 +46,11 @@
     font-size: 1rem;
 }
 
+.card-header .btn-link {
+    text-decoration: none;
+    color: black;
+}
+
 [data-toggle="collapse"].card-header {
     border-bottom-width: 0;
 }
