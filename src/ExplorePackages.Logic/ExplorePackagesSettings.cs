@@ -21,6 +21,7 @@ namespace Knapcode.ExplorePackages
             LeaseContainerName = "leases";
             PackageArchiveTableName = "packagearchives";
             PackageManifestTableName = "packagemanifests";
+            TimerTableName = "timers";
             IsStorageContainerPublic = false;
             MaxTempMemoryStreamSize = 1024 * 1024 * 196;
             TempDirectories = new List<TempStreamDirectory>
@@ -41,6 +42,7 @@ namespace Knapcode.ExplorePackages
         public string LeaseContainerName { get; set; }
         public string PackageArchiveTableName { get; set; }
         public string PackageManifestTableName { get; set; }
+        public string TimerTableName { get; set; }
         public bool IsStorageContainerPublic { get; set; }
         public int MaxTempMemoryStreamSize { get; set; }
         public List<TempStreamDirectory> TempDirectories { get; set; }
