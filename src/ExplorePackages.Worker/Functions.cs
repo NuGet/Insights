@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage.Queue;
 
 namespace Knapcode.ExplorePackages.Worker
@@ -18,8 +17,7 @@ namespace Knapcode.ExplorePackages.Worker
         public Functions(
             TempStreamLeaseScope tempStreamLeaseScope,
             TimerExecutionService timerExecutionService,
-            IGenericMessageProcessor messageProcessor,
-            ILogger<Functions> logger)
+            IGenericMessageProcessor messageProcessor)
         {
             _tempStreamLeaseScope = tempStreamLeaseScope;
             _timerExecutionService = timerExecutionService;
