@@ -3,6 +3,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssemblyName>Knapcode.ExplorePackages.Logic</AssemblyName>
     <RootNamespace>Knapcode.ExplorePackages</RootNamespace>
+    <LangVersion>9.0</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AngleSharp" Version="0.14.0" />

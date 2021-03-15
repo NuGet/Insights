@@ -12,8 +12,6 @@ namespace Knapcode.ExplorePackages.Website.Models
         public bool PoisonAvailableMessageCountIsExact { get; set; }
 
         public IReadOnlyList<CatalogScanViewModel> CatalogScans { get; set; }
-
-        public StreamWriterUpdaterViewModel DownloadsToCsv { get; set; }
-        public StreamWriterUpdaterViewModel OwnersToCsv { get; set; }
+        public IReadOnlyList<TimerState> TimerStates { get; set; }
     }
 }

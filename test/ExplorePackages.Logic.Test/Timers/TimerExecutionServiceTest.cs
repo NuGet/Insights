@@ -8,7 +8,7 @@ using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Timers
+namespace Knapcode.ExplorePackages
 {
     public class TimerExecutionServiceTest : IClassFixture<TimerExecutionServiceTest.Fixture>
     {
@@ -66,6 +66,27 @@ namespace Knapcode.ExplorePackages.Timers
                 Assert.Equal(new[] { "IsEnabled", "LastExecuted" }, entity.Properties.Keys.OrderBy(x => x).ToArray());
                 Assert.Equal(isEnabled, entity.Properties["IsEnabled"].BooleanValue);
                 Assert.InRange(entity.Properties["LastExecuted"].DateTimeOffsetValue.Value, before, after);
+            }
+        }
+
+        public class TheExecuteNowAsyncMethod : TimerExecutionServiceTest
+        {
+            public TheExecuteNowAsyncMethod(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
+            {
+            }
+
+            [Fact]
+            public async Task IgnoresFrequency()
+            {
+                await Target.ExecuteNowAsync(TimerName);
+
+                var before = DateTimeOffset.UtcNow;
+                await Target.ExecuteNowAsync(TimerName);
+                var after = DateTimeOffset.UtcNow;
+
+                var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
+                Timer.Verify(x => x.ExecuteAsync(), Times.Exactly(2));
+                Assert.InRange(entity.LastExecuted.Value, before, after);
             }
         }
 
@@ -158,7 +179,7 @@ namespace Knapcode.ExplorePackages.Timers
             }
 
             [Fact]
-            public async Task DoesNotInsertNewTimerDisabledFromCode()
+            public async Task DoesNotInsertNewTimerDisabledFromConfig()
             {
                 Timer.Setup(x => x.IsEnabled).Returns(false);
 
@@ -169,7 +190,7 @@ namespace Knapcode.ExplorePackages.Timers
             }
 
             [Fact]
-            public async Task DoesNotExecuteExistingTimerDisabledFromCode()
+            public async Task DoesNotExecuteExistingTimerDisabledFromConfig()
             {
                 await Target.ExecuteAsync(isEnabledDefault: true);
                 var existingEntity = Assert.Single(await GetEntitiesAsync<TimerEntity>());

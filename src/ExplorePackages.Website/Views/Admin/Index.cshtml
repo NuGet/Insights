@@ -22,18 +22,10 @@
                param-Url="Url" />
 }
 
-<component type="typeof(LoopingProcessorCard)"
-           render-mode="Static"
-           param-IdPrefix='"DownloadsToCsv"'
-           param-StartAction='"StartDownloadsToCsv"'
-           param-Title='"Downloads to CSV"'
-           param-Model="@Model.DownloadsToCsv"
-           param-Url="Url" />
-
-<component type="typeof(LoopingProcessorCard)"
-           render-mode="Static"
-           param-IdPrefix='"OwnersToCsv"'
-           param-StartAction='"StartOwnersToCsv"'
-           param-Title='"Owners to CSV"'
-           param-Model="@Model.OwnersToCsv"
-           param-Url="Url" />
+@foreach (var timerState in Model.TimerStates)
+{
+    <component type="typeof(TimerCard)"
+               render-mode="Static"
+               param-Model="@timerState"
+               param-Url="Url" />
+}

@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using Knapcode.ExplorePackages.Timers;
 using Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv;
 using Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan;
 using Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan;

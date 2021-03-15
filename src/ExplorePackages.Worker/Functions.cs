@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Timers;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage.Queue;

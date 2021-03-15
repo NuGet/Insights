@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.WindowsAzure.Storage.Table;
 
-namespace Knapcode.ExplorePackages.Timers
+namespace Knapcode.ExplorePackages
 {
     public class TimerEntity : TableEntity
     {

@@ -1,0 +1,85 @@
+﻿@{
+    var title = Model.Name.Humanize().Replace("csv", "CSV");
+    var isEnabled = Model.IsEnabledInConfig && Model.IsEnabledInStorage != false;
+    
+    string statusText;
+    string statusTitle;
+    string inlineStatus;
+    string nextRun;
+
+    if (!isEnabled)
+    {
+        statusText = null;
+        statusTitle = null;
+        inlineStatus = "disabled";
+        nextRun = "disabled";
+    }
+    else
+    {
+        if (Model.IsRunning)
+        {
+            statusText = "⌛";
+            statusTitle = "The timer is running.";
+            inlineStatus = "running";
+        }
+        else
+        {
+            statusText = "⏱️";
+            statusTitle = "The timer is scheduled.";
+            inlineStatus = "scheduled";
+        }
+
+        var nextRunTimestamp = Model.LastExecuted.GetValueOrDefault(DateTimeOffset.MinValue) + Model.Frequency;
+        var untilNextRun = nextRunTimestamp - DateTimeOffset.UtcNow;
+        if (untilNextRun > TimeSpan.Zero)
+        {
+            nextRun = untilNextRun.Humanize(precision: 2, minUnit: Humanizer.Localisation.TimeUnit.Second);
+        }
+        else
+        {
+            nextRun = "any minute now";
+        }
+    }
+}
+<CollapseCard IdPrefix="@Model.Name" Title="@title" StatusText="@statusText" StatusTitle="@statusTitle">
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item">
+            <b>Status:</b> @inlineStatus
+        </li>
+        <li class="list-group-item">
+            <b>Last run:</b> @(Model.LastExecuted?.ToZulu() ?? "never")
+        </li>
+        <li class="list-group-item">
+            <b>Next run:</b> @nextRun
+        </li>
+    </ul>
+
+    <div class="card-body">
+        <form action="@Url.Action("UpdateTimer")" method="post" class="form-inline">
+            <input type="hidden" name="timerName" value="@Model.Name" />
+            <button type="submit" class="btn btn-primary mr-1" name="runNow" value="true" disabled="@(!isEnabled)">Run now</button>
+            @if (isEnabled)
+            {
+                <button type="submit" class="btn btn-danger" name="disable" value="true">Disable</button>
+            }
+            else
+            {
+                <button type="submit" class="btn btn-success" disabled="@(!Model.IsEnabledInConfig)" name="enable"
+                        value="true">Enable</button>
+            }
+
+            @if (!Model.IsEnabledInConfig)
+            {
+                <b class="ml-1">⚠️ This timer is disabled due to missing configuration.</b>
+            }
+        </form>
+    </div>
+</CollapseCard>
+
+@code {
+    [Parameter]
+    public TimerState Model { get; set; }
+
+    [Parameter]
+    public IUrlHelper Url { get; set; }
+}

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Timers;
 
 namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
 {
@@ -29,6 +28,11 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
         public async Task InitializeAsync()
         {
             await _service.InitializeAsync();
+        }
+
+        public async Task<bool> IsRunningAsync()
+        {
+            return await _service.IsRunningAsync();
         }
     }
 }

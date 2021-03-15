@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Website.Models;
 using Knapcode.ExplorePackages.Worker;
-using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,8 +16,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
         private readonly CatalogScanCursorService _catalogScanCursorService;
         private readonly CatalogScanService _catalogScanService;
         private readonly IRemoteCursorClient _remoteCursorClient;
-        private readonly IStreamWriterUpdaterService<PackageDownloadSet> _downloadsToCsvService;
-        private readonly IStreamWriterUpdaterService<PackageOwnerSet> _ownersToCsvService;
+        private readonly TimerExecutionService _timerExecutionService;
         private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
 
         public AdminController(
@@ -27,16 +25,14 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             CatalogScanCursorService catalogScanCursorService,
             CatalogScanService catalogScanService,
             IRemoteCursorClient remoteCursorClient,
-            IStreamWriterUpdaterService<PackageDownloadSet> downloadsToCsvService,
-            IStreamWriterUpdaterService<PackageOwnerSet> ownersToCsvService)
+            TimerExecutionService timerExecutionService)
         {
             _rawMessageEnqueuer = rawMessageEnqueuer;
             _catalogScanStorageService = catalogScanStorageService;
             _catalogScanCursorService = catalogScanCursorService;
             _catalogScanService = catalogScanService;
             _remoteCursorClient = remoteCursorClient;
-            _downloadsToCsvService = downloadsToCsvService;
-            _ownersToCsvService = ownersToCsvService;
+            _timerExecutionService = timerExecutionService;
         }
 
         public async Task<ViewResult> Index()
@@ -54,8 +50,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 .Select(GetCatalogScanAsync)
                 .ToList();
 
-            var downloadsToCsvTask = GetStreamWriterUpdaterAsync(_downloadsToCsvService);
-            var ownersToCsvTask = GetStreamWriterUpdaterAsync(_ownersToCsvService);
+            var timerStatesTask = _timerExecutionService.GetStateAsync();
             var catalogCommitTimestampTask = _remoteCursorClient.GetCatalogAsync();
 
             await Task.WhenAll(
@@ -63,8 +58,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 poisonApproximateMessageCountTask,
                 availableMessageCountLowerBoundTask,
                 poisonAvailableMessageCountLowerBoundTask,
-                downloadsToCsvTask,
-                ownersToCsvTask,
+                timerStatesTask,
                 catalogCommitTimestampTask);
 
             var catalogScans = await Task.WhenAll(catalogScanTasks);
@@ -89,8 +83,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 PoisonApproximateMessageCount = await poisonApproximateMessageCountTask,
                 PoisonAvailableMessageCountLowerBound = await poisonAvailableMessageCountLowerBoundTask,
                 CatalogScans = catalogScans,
-                DownloadsToCsv = await downloadsToCsvTask,
-                OwnersToCsv = await ownersToCsvTask,
+                TimerStates = await timerStatesTask,
             };
 
             model.AvailableMessageCountIsExact = model.AvailableMessageCountLowerBound < messageCount;
@@ -109,8 +102,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             await Task.WhenAll(
                 _rawMessageEnqueuer.InitializeAsync(),
                 _catalogScanService.InitializeAsync(),
-                _downloadsToCsvService.InitializeAsync(),
-                _ownersToCsvService.InitializeAsync());
+                _timerExecutionService.InitializeAsync());
 
             _isInitialized = true;
         }
@@ -128,15 +120,6 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 SupportsReprocess = _catalogScanService.SupportsReprocess(driverType),
                 OnlyLatestLeavesSupport = _catalogScanService.GetOnlyLatestLeavesSupport(driverType),
                 IsEnabled = _catalogScanService.IsEnabled(driverType),
-            };
-        }
-
-        private async Task<StreamWriterUpdaterViewModel> GetStreamWriterUpdaterAsync<T>(IStreamWriterUpdaterService<T> service)
-        {
-            return new StreamWriterUpdaterViewModel
-            {
-                IsRunning = await service.IsRunningAsync(),
-                IsEnabled = service.IsEnabled,
             };
         }
 
@@ -272,17 +255,22 @@ namespace Knapcode.ExplorePackages.Website.Controllers
         }
 
         [HttpPost]
-        public async Task<RedirectToActionResult> StartDownloadsToCsv(bool loop)
+        public async Task<RedirectToActionResult> UpdateTimer(string timerName, bool? runNow, bool? disable, bool? enable)
         {
-            await _downloadsToCsvService.StartAsync(loop, notBefore: TimeSpan.Zero);
-            return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment: "DownloadsToCsv");
-        }
+            if (runNow == true)
+            {
+                await _timerExecutionService.ExecuteNowAsync(timerName);
+            }
+            else if (disable == true)
+            {
+                await _timerExecutionService.SetIsEnabled(timerName, isEnabled: false);
+            }
+            else if (enable == true)
+            {
+                await _timerExecutionService.SetIsEnabled(timerName, isEnabled: true);
+            }
 
-        [HttpPost]
-        public async Task<RedirectToActionResult> StartOwnersToCsv(bool loop)
-        {
-            await _ownersToCsvService.StartAsync(loop, notBefore: TimeSpan.Zero);
-            return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment: "OwnersToCsv");
+            return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment: timerName);
         }
     }
 }
