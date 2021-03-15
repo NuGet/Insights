@@ -162,11 +162,11 @@ namespace Knapcode.ExplorePackages
                     if (isEnabledDefault)
                     {
                         toExecute.Add((timer, entity));
-                        _logger.LogInformation("Timer {Name} will be run for the first time.");
+                        _logger.LogInformation("Timer {Name} will be run for the first time.", timer.Name);
                     }
                     else
                     {
-                        _logger.LogInformation("Timer {Name} will be initialized without running.");
+                        _logger.LogInformation("Timer {Name} will be initialized without running.", timer.Name);
                     }
                 }
                 else if (!entity.IsEnabled)
@@ -175,17 +175,17 @@ namespace Knapcode.ExplorePackages
                 }
                 else if (!entity.LastExecuted.HasValue)
                 {
-                    _logger.LogInformation("Timer {Name} will be run because it has never been run before.");
+                    _logger.LogInformation("Timer {Name} will be run because it has never been run before.", timer.Name);
                     toExecute.Add((timer, entity));
                     batch.Replace(entity);
                 }
                 else if (!executeNow && (DateTimeOffset.UtcNow - entity.LastExecuted.Value) < timer.Frequency)
                 {
-                    _logger.LogInformation("Timer {Name} will not be run because it has been executed too recently.");
+                    _logger.LogInformation("Timer {Name} will not be run because it has been executed too recently.", timer.Name);
                 }
                 else
                 {
-                    _logger.LogInformation("Timer {Name} will be run because it has hasn't been run recently enough.");
+                    _logger.LogInformation("Timer {Name} will be run because it has hasn't been run recently enough.", timer.Name);
                     toExecute.Add((timer, entity));
                     batch.Replace(entity);
                 }
