@@ -229,6 +229,7 @@ namespace Knapcode.ExplorePackages
         public TimerExecutionService Target => new TimerExecutionService(
             _fixture.ServiceClientFactory,
             Timers,
+            _fixture.LeaseService,
             _fixture.Options.Object,
             _output.GetTelemetryClient(),
             _output.GetLogger<TimerExecutionService>());
@@ -252,23 +253,36 @@ namespace Knapcode.ExplorePackages
                 {
                     StorageConnectionString = TestSettings.StorageConnectionString,
                     TimerTableName = "t" + StorageUtility.GenerateUniqueId().ToLowerInvariant(),
+                    LeaseContainerName = "t" + StorageUtility.GenerateUniqueId().ToLowerInvariant(),
                 };
                 Options.Setup(x => x.Value).Returns(() => Settings);
                 ServiceClientFactory = new ServiceClientFactory(Options.Object);
+                LeaseService = new AutoRenewingStorageLeaseService(
+                    new StorageLeaseService(
+                        ServiceClientFactory,
+                        Options.Object));
             }
 
             public Mock<IOptions<ExplorePackagesSettings>> Options { get; }
             public ExplorePackagesSettings Settings { get; }
             public ServiceClientFactory ServiceClientFactory { get; }
+            public AutoRenewingStorageLeaseService LeaseService { get; }
 
-            public Task InitializeAsync()
+            public async Task InitializeAsync()
             {
-                return GetTable().CreateIfNotExistsAsync();
+                await LeaseService.InitializeAsync();
+                await GetTable().CreateIfNotExistsAsync();
             }
 
-            public Task DisposeAsync()
+            public async Task DisposeAsync()
             {
-                return GetTable().DeleteIfExistsAsync();
+                await ServiceClientFactory
+                    .GetStorageAccount()
+                    .CreateCloudBlobClient()
+                    .GetContainerReference(Options.Object.Value.LeaseContainerName)
+                    .DeleteIfExistsAsync();
+
+                await GetTable().DeleteIfExistsAsync();
             }
 
             public CloudTable GetTable()

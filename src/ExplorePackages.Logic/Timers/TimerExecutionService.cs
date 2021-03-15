@@ -14,6 +14,7 @@ namespace Knapcode.ExplorePackages
 
         private readonly IReadOnlyDictionary<string, ITimer> _nameToTimer;
         private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly IOptions<ExplorePackagesSettings> _options;
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<TimerExecutionService> _logger;
@@ -21,6 +22,7 @@ namespace Knapcode.ExplorePackages
         public TimerExecutionService(
             ServiceClientFactory serviceClientFactory,
             IEnumerable<ITimer> timers,
+            AutoRenewingStorageLeaseService leaseService,
             IOptions<ExplorePackagesSettings> options,
             ITelemetryClient telemetryClient,
             ILogger<TimerExecutionService> logger)
@@ -38,6 +40,7 @@ namespace Knapcode.ExplorePackages
 
             _nameToTimer = timerList.ToDictionary(x => x.Name);
             _serviceClientFactory = serviceClientFactory;
+            _leaseService = leaseService;
             _options = options;
             _telemetryClient = telemetryClient;
             _logger = logger;
@@ -45,6 +48,7 @@ namespace Knapcode.ExplorePackages
 
         public async Task InitializeAsync()
         {
+            await _leaseService.InitializeAsync();
             await GetTable().CreateIfNotExistsAsync(retry: true);
             foreach (var timer in _nameToTimer.Values)
             {
@@ -106,7 +110,16 @@ namespace Knapcode.ExplorePackages
 
         public async Task ExecuteAsync(bool isEnabledDefault)
         {
-            await ExecuteAsync(timerNames: null, isEnabledDefault, executeNow: false);
+            await using (var lease = await _leaseService.TryAcquireAsync(nameof(TimerExecutionService)))
+            {
+                if (!lease.Acquired)
+                {
+                    _logger.LogInformation("Another thread is executing this method.");
+                    return;
+                }
+
+                await ExecuteAsync(timerNames: null, isEnabledDefault, executeNow: false);
+            }
         }
 
         private async Task ExecuteAsync(ISet<string> timerNames, bool isEnabledDefault, bool executeNow)
