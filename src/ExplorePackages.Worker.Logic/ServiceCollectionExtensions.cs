@@ -94,11 +94,6 @@ namespace Knapcode.ExplorePackages.Worker
                 // Add the task state message processor
                 serviceCollection.AddTransient(
                     typeof(ITaskStateMessageProcessor<>).MakeGenericType(messageType),
-                    typeof(LoopingMessageProcessor<>).MakeGenericType(messageType));
-
-                // Add the looping message processor
-                serviceCollection.AddTransient(
-                    typeof(ILoopingMessageProcessor<>).MakeGenericType(messageType),
                     typeof(StreamWriterUpdaterProcessor<>).MakeGenericType(dataType));
 
                 // Add the timer
@@ -117,23 +112,6 @@ namespace Knapcode.ExplorePackages.Worker
                 serviceCollection.AddTransient(
                     typeof(IMessageProcessor<>).MakeGenericType(messageType),
                     typeof(TaskStateMessageProcessor<>).MakeGenericType(messageType));
-            }
-
-            foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ILoopingMessageProcessor<>)))
-            {
-                // Add the task state message processor
-                serviceCollection.AddTransient(serviceType, implementationType);
-
-                // Add the message processor
-                var messageType = serviceType.GenericTypeArguments.Single();
-                serviceCollection.AddTransient(
-                    typeof(IMessageProcessor<>).MakeGenericType(messageType),
-                    typeof(TaskStateMessageProcessor<>).MakeGenericType(messageType));
-
-                // Add the task state message processor
-                serviceCollection.AddTransient(
-                    typeof(ITaskStateMessageProcessor<>).MakeGenericType(messageType),
-                    typeof(LoopingMessageProcessor<>).MakeGenericType(messageType));
             }
 
             foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ICsvCompactor<>)))

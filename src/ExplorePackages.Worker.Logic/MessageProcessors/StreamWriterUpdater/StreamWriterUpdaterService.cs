@@ -46,7 +46,7 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
                     StorageSuffix,
                     _updater.OperationName,
                     StorageUtility.GenerateDescendingId().ToString());
-                await _messageEnqueuer.EnqueueAsync(new[] { new StreamWriterUpdaterMessage<T> { TaskStateKey = taskStateKey, Loop = loop } }, notBefore);
+                await _messageEnqueuer.EnqueueAsync(new[] { new StreamWriterUpdaterMessage<T> { TaskStateKey = taskStateKey } }, notBefore);
                 await _taskStateStorageService.GetOrAddAsync(taskStateKey);
             }
         }

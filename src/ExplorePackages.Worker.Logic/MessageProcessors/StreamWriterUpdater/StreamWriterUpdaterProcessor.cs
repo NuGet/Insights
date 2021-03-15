@@ -9,7 +9,7 @@ using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
 {
-    public class StreamWriterUpdaterProcessor<T> : ILoopingMessageProcessor<StreamWriterUpdaterMessage<T>>
+    public class StreamWriterUpdaterProcessor<T> : ITaskStateMessageProcessor<StreamWriterUpdaterMessage<T>>
         where T : IAsyncDisposable, IAsOfData
     {
         private const string AsOfTimestampMetadata = "asOfTimestamp";
@@ -17,29 +17,19 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
 
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IStreamWriterUpdater<T> _updater;
-        private readonly IStreamWriterUpdaterService<T> _service;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<StreamWriterUpdaterProcessor<T>> _logger;
 
         public StreamWriterUpdaterProcessor(
             ServiceClientFactory serviceClientFactory,
-            IStreamWriterUpdater<T> processor,
-            IStreamWriterUpdaterService<T> service,
+            IStreamWriterUpdater<T> updater,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<StreamWriterUpdaterProcessor<T>> logger)
         {
             _serviceClientFactory = serviceClientFactory;
-            _updater = processor;
-            _service = service;
+            _updater = updater;
             _options = options;
             _logger = logger;
-        }
-
-        public string LeaseName => _updater.OperationName;
-
-        public async Task StartAsync()
-        {
-            await _service.StartAsync(loop: true, _updater.LoopFrequency);
         }
 
         public async Task<bool> ProcessAsync(StreamWriterUpdaterMessage<T> message, int dequeueCount)

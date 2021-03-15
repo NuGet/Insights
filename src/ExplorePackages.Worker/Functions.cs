@@ -29,7 +29,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         [FunctionName("TimerFunction")]
         public async Task TimerAsync(
-            [TimerTrigger("0 */5 * * * *")]TimerInfo timerInfo)
+            [TimerTrigger("0 */5 * * * *")] TimerInfo timerInfo)
         {
             await using var scopeOwnership = _tempStreamLeaseScope.TakeOwnership();
             await _timerExecutionService.ExecuteAsync(isEnabledDefault: true);

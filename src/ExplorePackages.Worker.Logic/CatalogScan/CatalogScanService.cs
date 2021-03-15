@@ -91,7 +91,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public bool IsEnabled(CatalogScanDriverType type)
         {
-            return _options.Value.DisabledDrivers == null || ! _options.Value.DisabledDrivers.Contains(type);
+            return _options.Value.DisabledDrivers == null || !_options.Value.DisabledDrivers.Contains(type);
         }
 
         public bool SupportsReprocess(CatalogScanDriverType driverType)
