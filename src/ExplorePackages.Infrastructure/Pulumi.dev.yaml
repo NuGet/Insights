@@ -4,7 +4,5 @@ config:
     DisabledDrivers:
     - NuGetPackageExplorerToCsv
   ExplorePackages:WebsiteSettings:
-    AllowedUsers:
-    - HashedTenantId: ba11237b5a4c119a16898a3b09c0b61315567aa7787df898c2557e03e8e371b4
-      HashedObjectId: 51a4221f6b956ad8ed53188dbeb067d2e68ee772ad901cc602a4ff6d43d11b40
+    RestrictUsers: false
   azure:location: WestUS2

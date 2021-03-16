@@ -325,6 +325,10 @@ namespace Knapcode.ExplorePackages
                $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.ShowAdminLink)}",
                configuredSettings.ShowAdminLink.ToString());
 
+            appSettings.Add(
+               $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.RestrictUsers)}",
+               configuredSettings.RestrictUsers.ToString());
+
             for (var i = 0; i < configuredSettings.AllowedUsers.Count; i++)
             {
                 var allowedUser = configuredSettings.AllowedUsers[i];

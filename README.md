@@ -6,24 +6,73 @@ Analyze packages NuGet.org in a highly distributed manner. Or, if you want a sal
 
 (*depending on what you want to know 😅)
 
-## Running locally
+## Quickstart
 
-To run locally, all you need is [Azure Storage Emulator](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-emulator).
-Note that you cannot use Azurite since the latest version of it does not support Azure Table Storage.
+We follow a 4 step process to go from nothing to a completely deployed Azure solution.
 
-1. Clone the repository.
-1. Open the solution in Visual Studio (ExplorePackages.sln).
-1. Make sure the Azure Storage Emulator is running.
-1. Press F5 to launch the website (ExplorePackages.Website). It's the default startup project.
-1. Click on the "Admin" link in the navigation bar.
-2. Start one of the catalog scans, e.g. Find Package Manifest.
-   - When starting out, use a custom max timestamp like `2015-02-01T06:22:45.8488496Z` and click "Start Custom Scan".
-   - This timestamp is the first commit to the catalog and will run quickly, only processing 20 packages.
-   - Pressing "Start Full Scan" will process the entire catalog and will take a very long time locally.
-3. Stop the website.
-4. Start the function app (ExplorePackages.Worker).
-5. Wait until the catalog scan is done.
-   - This can be seen by looking at the `workerqueue` queue or by looking at the admin panel seen above.
+1. Build the code
+2. Set up Pulumi (an "infrastructure as code" solution)
+3. Deploy to Azure
+4. Start analysis from the admin panel
+
+### Build the code
+
+1. Ensure you have the .NET 5 SDK installed. [Install it](https://dotnet.microsoft.com/download) if needed.
+   ```
+   dotnet --info
+   ```
+2. Clone the repository.
+   ```
+   git clone https://github.com/joelverhagen/ExplorePackages.git
+   ```
+3. Run `dotnet publish` on the website and worker projects. This produces a directory that can be uploaded to Azure later.
+   ```
+   cd ExplorePackages
+   dotnet publish src/ExplorePackages.Worker -c Release
+   dotnet publish src/ExplorePackages.Website -c Release
+   ```
+
+### Set up Pulumi
+
+I use Pulumi to orchestrate the deployment of my code to Azure. This simplifies the dependencies between various
+Azure resources. It is not a Microsoft product but calls into Azure management APIs for provisioning resources and
+uploaded code to run.
+
+It is an "infrastructure as code" solution that is similar to [Bicep](https://github.com/Azure/bicep) and perhaps 
+"higher level" than Azure ARM templates. In short, I have
+[C# code that expresses the shape of my desired Azure resources](src/ExplorePackages.Infrastructure/MyStack.cs#) and
+Pulumi performs the Azure commands necessary to bring those resources into being.
+
+Follow the documentation on Pulumi's website to install Pulumi and configure it for Azure:
+[**Install Pulumi and configure it for Azure**](https://www.pulumi.com/docs/get-started/azure/).
+
+### Deploy to Azure
+
+1. Go to the infrastructure directory where the Azure resources are defined.
+   ```
+   cd src/ExplorePackages.Infrastructure
+   ```
+1. Select a "stack" (or make a new one). A stack is an individual instance of the deployment. A common use for stacks is
+   a clear separation between a "dev" or "pre-PROD" environment and your main "PROD" environment. **Note:** the admin
+   panel web page is open to anyone that has the URL (no authentication) by default. This should be secured by using
+   the `AllowedUsers` configuration like in [my PROD stack](src/ExplorePackages.Infrastructure/Pulumi.prod.yaml).
+   ```
+   pulumi stack select dev
+   ```
+1. Preview the deployment and confirm the deployment interactively by selecting "yes" in the Pulumi prompt.
+   ```
+   pulumi up
+   ```
+
+This will deploy several resources including:
+- an App Service, for starting scans
+- a Function App with Consumption plan, for running the scans
+- a Storage account, for maintaining state
+- an Application Insights instance, for investigating metrics and error logs
+
+### Start analysis from the admin panel
+
+When the deployment completes successfully, an 
 
 ## Deploying to Azure
 
@@ -55,6 +104,25 @@ If you want to deploy this to Azure:
 You will need to update the configuration with your hashed tenant ID and object ID claims to gain access to the admin
 panel. The "access denied" page of the admin panel will list all of your claims so you can grab the values there then
 bake them into your Pulumi stack's YAML config file for subsequent deployments.
+
+## Running locally
+
+To run locally, all you need is [Azure Storage Emulator](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-emulator).
+Note that you cannot use Azurite since the latest version of it does not support Azure Table Storage.
+
+1. Clone the repository.
+2. Open the solution in Visual Studio (ExplorePackages.sln).
+3. Make sure the Azure Storage Emulator is running.
+4. Press F5 to launch the website (ExplorePackages.Website). It's the default startup project.
+5. Click on the "Admin" link in the navigation bar.
+6. Start one of the catalog scans, e.g. Find Package Manifest.
+   - When starting out, use a custom max timestamp like `2015-02-01T06:22:45.8488496Z` and click "Start Custom Scan".
+   - This timestamp is the first commit to the catalog and will run quickly, only processing 20 packages.
+   - Pressing "Start Full Scan" will process the entire catalog and will take a very long time locally.
+7. Stop the website.
+8. Start the function app (ExplorePackages.Worker).
+9. Wait until the catalog scan is done.
+   - This can be seen by looking at the `workerqueue` queue or by looking at the admin panel seen above.
 
 ## Screenshots
 
