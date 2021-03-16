@@ -8,7 +8,7 @@ Analyze packages NuGet.org in a highly distributed manner. Or, if you want a sal
 
 ## Quickstart
 
-We follow a 4 step process to go from nothing to a completely deployed Azure solution.
+**We follow a 4 step process to go from nothing to a completely deployed Azure solution.**
 
 1. Build the code
 2. Set up Pulumi (an "infrastructure as code" solution)
@@ -17,7 +17,7 @@ We follow a 4 step process to go from nothing to a completely deployed Azure sol
 
 ### Build the code
 
-1. Ensure you have the .NET 5 SDK installed. [Install it](https://dotnet.microsoft.com/download) if needed.
+1. Ensure you have the .NET 5 SDK installed. [Install it if needed](https://dotnet.microsoft.com/download).
    ```
    dotnet --info
    ```
@@ -25,7 +25,7 @@ We follow a 4 step process to go from nothing to a completely deployed Azure sol
    ```
    git clone https://github.com/joelverhagen/ExplorePackages.git
    ```
-3. Run `dotnet publish` on the website and worker projects. This produces a directory that can be uploaded to Azure later.
+3. Run `dotnet publish` on the website and worker projects. This produces compiled directories that can be deployed to Azure later.
    ```
    cd ExplorePackages
    dotnet publish src/ExplorePackages.Worker -c Release
@@ -54,56 +54,41 @@ Follow the documentation on Pulumi's website to install Pulumi and configure it 
    ```
 1. Select a "stack" (or make a new one). A stack is an individual instance of the deployment. A common use for stacks is
    a clear separation between a "dev" or "pre-PROD" environment and your main "PROD" environment. **Note:** the admin
-   panel web page is open to anyone that has the URL (no authentication) by default. This should be secured by using
-   the `AllowedUsers` configuration like in [my PROD stack](src/ExplorePackages.Infrastructure/Pulumi.prod.yaml).
+   panel web page is open to anyone that has the URL (no authentication) by default in the `dev` stack. This should be
+   secured by using the `AllowedUsers` configuration like in [my `prod` stack](src/ExplorePackages.Infrastructure/Pulumi.prod.yaml).
    ```
    pulumi stack select dev
    ```
-1. Preview the deployment and confirm the deployment interactively by selecting "yes" in the Pulumi prompt.
+1. Preview and confirm the deployment interactively.
    ```
    pulumi up
    ```
 
 This will deploy several resources including:
-- an App Service, for starting scans
+- an App Service, containing a website for starting scans
 - a Function App with Consumption plan, for running the scans
-- a Storage account, for maintaining state
+- a Storage account, for maintaining intermediate state and results (CSV files)
 - an Application Insights instance, for investigating metrics and error logs
 
 ### Start analysis from the admin panel
 
-When the deployment completes successfully, an 
+When the deployment completes successfully, a "website URL" will be reporting in the console. You can use this to access
+the admin panel. The `pulumi up` output will look something like this:
 
-## Deploying to Azure
+```
+Outputs:
+    RestartedFunctionApps: true
+    RestartedWebsite     : true
+    WebsiteUrl           : "https://explorepackageswebsite-dev-00000000.azurewebsites.net"
+    WorkerUrls           : [
+        [0]: "https://explorepackagesworker-dev-0-00000000.azurewebsites.net"
+    ]
+```
 
-If you want to deploy this to Azure:
+You can go the `WebsiteUrl` link in your web browser click on the **Admin** link in the nav bar. Then, you can start 
+a short run using the "All catalog scans" section, "Use custom max" checkbox, and "Start all" button.
 
-1. [Install Pulumi and configure it for Azure](https://www.pulumi.com/docs/get-started/azure/).
-1. Install my Pulumi plug-in for workaround around some problems ([context](https://github.com/joelverhagen/pulumi-knapcode#full-explanation)).
-   ```
-   pulumi plugin install resource knapcode v0.0.1 --server https://github.com/joelverhagen/pulumi-knapcode/releases/download/v0.0.1
-   ```
-1. Go to the infrastructure directory.
-   ```
-   cd src/ExplorePackages.Infrastructure
-   ```
-1. Select a stack (or make a new one). Feel free to clear out my default `AllowedUsers` config.
-   ```
-   pulumi stack select dev
-   ```
-1. Publish the worker and website.
-   ```
-   dotnet publish ../ExplorePackages.Worker -c Release
-   dotnet publish ../ExplorePackages.Website -c Release
-   ```
-1. Deploy!
-   ```
-   pulumi up
-   ```
-
-You will need to update the configuration with your hashed tenant ID and object ID claims to gain access to the admin
-panel. The "access denied" page of the admin panel will list all of your claims so you can grab the values there then
-bake them into your Pulumi stack's YAML config file for subsequent deployments.
+![Azure Function running locally](docs/quickstart-admin.png)
 
 ## Running locally
 
