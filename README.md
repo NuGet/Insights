@@ -46,6 +46,14 @@ Pulumi performs the Azure commands necessary to bring those resources into being
 Follow the documentation on Pulumi's website to install Pulumi and configure it for Azure:
 [**Install Pulumi and configure it for Azure**](https://www.pulumi.com/docs/get-started/azure/).
 
+After setting up Pulumi, you also need a plug-in that I created for Pulumi to work around some issues related to
+circular dependencies between an Azure App Service and an Azure AD app registration used for web login
+([full context](https://github.com/joelverhagen/pulumi-knapcode#full-explanation)).
+
+```
+pulumi plugin install resource knapcode v0.0.3 --server https://github.com/joelverhagen/pulumi-knapcode/releases/download/v0.0.3
+```
+
 ### Deploy to Azure
 
 1. Go to the infrastructure directory where the Azure resources are defined.
