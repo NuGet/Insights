@@ -33,10 +33,15 @@ namespace Knapcode.ExplorePackages.Website
 
             services.AddSingleton<IAuthorizationHandler, AllowListAuthorizationHandler>();
 
-            services.AddLogging();
+            services.AddApplicationInsightsTelemetry(options =>
+            {
+                options.EnableAdaptiveSampling = false;
+            });
+
             services
                 .AddMvc()
                 .AddRazorRuntimeCompilation();
+
             services
                 .AddSignalR()
                 .AddJsonProtocol(options =>
