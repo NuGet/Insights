@@ -1,0 +1,100 @@
+[
+  [
+    [
+      "2020-12-27T05:07:21.9968244Z",
+      0
+    ],
+    {
+      "aiwins.blogging.admin.application.contracts": {
+        "4.9.9": false
+      },
+      "aiwins.clientsimulation.web": {
+        "4.9.9": false
+      },
+      "aiwins.docs.admin.httpapi.client": {
+        "4.9.9": false
+      },
+      "aiwins.docs.domain.shared": {
+        "4.9.9": false
+      },
+      "aiwins.rocket.featuremanagement.application.contracts": {
+        "4.9.9": false
+      },
+      "aiwins.rocket.identity.application.contracts": {
+        "4.9.9": false
+      },
+      "aiwins.rocket.identityserver.application": {
+        "4.9.9": false
+      },
+      "aiwins.rocket.identityserver.domain": {
+        "4.9.9": false
+      },
+      "aiwins.rocket.permissionmanagement.domain.shared": {
+        "4.9.9": false
+      },
+      "aiwins.rocket.permissionmanagement.entityframeworkcore": {
+        "4.9.9": false
+      },
+      "aiwins.rocket.permissionmanagement.httpapi.client": {
+        "4.9.9": false
+      },
+      "aiwins.rocket.settingmanagement.domain.shared": {
+        "4.9.9": false
+      },
+      "aiwins.rocket.storage.database.domain": {
+        "4.9.9": false
+      },
+      "aiwins.rocket.storage.database.mongodb": {
+        "4.9.9": false
+      },
+      "aiwins.rocket.tenantmanagement.application": {
+        "4.9.9": false
+      },
+      "aiwins.rocket.tenantmanagement.application.contracts": {
+        "4.9.9": false
+      },
+      "aiwins.rocket.tenantmanagement.domain": {
+        "4.9.9": false
+      },
+      "aiwins.rocket.tenantmanagement.entityframeworkcore": {
+        "4.9.9": false
+      },
+      "aiwins.rocket.tenantmanagement.httpapi.client": {
+        "4.9.9": false
+      },
+      "aiwins.rocket.tenantmanagement.web": {
+        "4.9.9": false
+      },
+      "aiwins.rocket.users.abstractions": {
+        "4.9.9": false
+      },
+      "aiwins.rocket.users.domain": {
+        "4.9.9": false
+      },
+      "aiwins.rocket.users.domain.shared": {
+        "4.9.9": false
+      },
+      "aiwins.rocket.users.mongodb": {
+        "4.9.9": false
+      },
+      "aiwins.rocket.virtualfileexplorer.web": {
+        "4.9.9": false
+      },
+      "aiwins.saas.domain": {
+        "4.9.9": false
+      },
+      "aiwins.saas.host.httpapi": {
+        "4.9.9": false
+      },
+      "aiwins.saas.tenant.application": {
+        "4.9.9": false
+      },
+      "aiwins.saas.tenant.httpapi.client": {
+        "4.9.9": false
+      },
+      "cloudmersive.apiclient.netcore.documentanddataconvert": {
+        "2.1.8": false
+      }
+    }
+  ]
+]

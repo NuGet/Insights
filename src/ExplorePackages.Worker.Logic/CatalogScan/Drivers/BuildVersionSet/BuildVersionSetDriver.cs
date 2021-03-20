@@ -36,17 +36,21 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
         {
             var page = await _catalogClient.GetCatalogPageAsync(pageScan.Url);
 
-            var leaves = page
-                .GetLeavesInBounds(pageScan.Min, pageScan.Max, excludeRedundantLeaves: true)
-                .Select(x => new CatalogLeafItemData(
-                    x.PackageId.ToLowerInvariant(),
-                    x.ParsePackageVersion().ToNormalizedString().ToLowerInvariant(),
-                    x.IsPackageDelete()))
-                .ToList();
+            var leafItems = page.GetLeavesInBounds(pageScan.Min, pageScan.Max, excludeRedundantLeaves: true);
 
-            var pageData = new CatalogPageData(page.CommitTimestamp, leaves);
+            if (leafItems.Any())
+            {
+                var batch = new CatalogLeafBatchData(
+                    leafItems.Max(x => x.CommitTimestamp),
+                    leafItems
+                        .Select(x => new CatalogLeafItemData(
+                            x.PackageId.ToLowerInvariant(),
+                            x.ParsePackageVersion().ToNormalizedString().ToLowerInvariant(),
+                            x.IsPackageDelete()))
+                        .ToList());
 
-            await _aggregateStorageService.AddPageAsync(pageScan.StorageSuffix, pageData);
+                await _aggregateStorageService.AddBatchAsync(pageScan.StorageSuffix, batch);
+            }
 
             return CatalogPageScanResult.Processed;
         }
@@ -58,13 +62,12 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
 
         public async Task StartAggregateAsync(CatalogIndexScan indexScan)
         {
-            var descendingPages = await _aggregateStorageService.GetDescendingPagesAsync(indexScan.StorageSuffix);
+            var descendingBatches = await _aggregateStorageService.GetDescendingBatchesAsync(indexScan.StorageSuffix);
 
             var idToVersionToDeleted = new SortedDictionary<string, SortedDictionary<string, bool>>();
-            
-            foreach (var page in descendingPages)
+            foreach (var batch in descendingBatches)
             {
-                foreach (var leaf in page.Leaves)
+                foreach (var leaf in batch.Leaves)
                 {
                     if (!idToVersionToDeleted.TryGetValue(leaf.LowerId, out var versions))
                     {

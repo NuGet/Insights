@@ -29,33 +29,33 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
             await _wideEntityService.DeleteTableAsync(GetTableName(storageSuffix));
         }
 
-        public async Task<IEnumerable<CatalogPageData>> GetDescendingPagesAsync(string storageSuffix)
+        public async Task<IEnumerable<CatalogLeafBatchData>> GetDescendingBatchesAsync(string storageSuffix)
         {
             var entities = await _wideEntityService.RetrieveAsync(GetTableName(storageSuffix));
-            return DeserializePages(entities);
+            return Deserialize(entities);
         }
 
-        private static IEnumerable<CatalogPageData> DeserializePages(IReadOnlyList<WideEntity> entities)
+        private static IEnumerable<CatalogLeafBatchData> Deserialize(IReadOnlyList<WideEntity> entities)
         {
             foreach (var entity in entities)
             {
                 using var stream = entity.GetStream();
-                yield return MessagePackSerializer.Deserialize<CatalogPageData>(
+                yield return MessagePackSerializer.Deserialize<CatalogLeafBatchData>(
                     stream,
                     ExplorePackagesMessagePack.Options);
             }
         }
 
-        public async Task AddPageAsync(string storageSuffix, CatalogPageData page)
+        public async Task AddBatchAsync(string storageSuffix, CatalogLeafBatchData batch)
         {
             var bytes = MessagePackSerializer.Serialize(
-                page,
+                batch,
                 ExplorePackagesMessagePack.Options);
 
-            // Insert pages in reverse chronological order.
+            // Insert batches in reverse chronological order.
             await _wideEntityService.InsertAsync(
                 GetTableName(storageSuffix),
-                partitionKey: StorageUtility.GetDescendingId(page.CommitTimestamp),
+                partitionKey: StorageUtility.GetDescendingId(batch.MaxCommitTimestamp),
                 rowKey: StorageUtility.GenerateDescendingId().ToString(),
                 bytes);
         }

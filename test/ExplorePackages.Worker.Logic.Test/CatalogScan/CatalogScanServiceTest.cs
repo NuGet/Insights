@@ -199,6 +199,7 @@ namespace Knapcode.ExplorePackages.Worker
             Assert.Equal(
                 new[]
                 {
+                    CatalogScanDriverType.BuildVersionSet,
                     CatalogScanDriverType.CatalogLeafItemToCsv,
                     CatalogScanDriverType.LoadLatestPackageLeaf,
                     CatalogScanDriverType.LoadPackageArchive,

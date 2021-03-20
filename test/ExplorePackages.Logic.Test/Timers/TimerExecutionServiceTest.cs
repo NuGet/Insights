@@ -219,8 +219,8 @@ namespace Knapcode.ExplorePackages
             Timer.Setup(x => x.Frequency).Returns(TimeSpan.FromMinutes(5));
         }
 
-        private Fixture _fixture;
-        private ITestOutputHelper _output;
+        private readonly Fixture _fixture;
+        private readonly ITestOutputHelper _output;
 
         public string TimerNamePrefix { get; }
         public string TimerName { get; }

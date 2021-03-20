@@ -27,7 +27,7 @@ namespace Knapcode.ExplorePackages.Worker
             var attribute = Assert.Single(parameterAttributes);
             var argument = Assert.Single(attribute.ConstructorArguments);
             var scheduleStr = Assert.IsType<string>(argument.Value);
-            
+
             var schedule = CrontabSchedule.Parse(scheduleStr, new CrontabSchedule.ParseOptions
             {
                 IncludingSeconds = true,

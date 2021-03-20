@@ -1,0 +1,34 @@
+[
+  [
+    [
+      "2020-12-20T03:01:57.2082154Z",
+      0
+    ],
+    {
+      "amazonks3": {
+        "1.5.0": false
+      },
+      "behaviorsample": {
+        "1.0.0": false
+      },
+      "lunabot.commands.public": {
+        "1.2.0": false
+      },
+      "lunabot.core": {
+        "1.0.4": false
+      },
+      "nut.mediatr.behaviors": {
+        "0.0.0-preview.0.44": false
+      },
+      "nut.mediatr.behaviors.fluentvalidation": {
+        "0.0.0-preview.0.44": false
+      },
+      "nut.mediatr.servicelike.dependencyinjection": {
+        "0.0.0-preview.0.44": false
+      },
+      "servicelikesample": {
+        "1.0.0": false
+      }
+    }
+  ]
+]

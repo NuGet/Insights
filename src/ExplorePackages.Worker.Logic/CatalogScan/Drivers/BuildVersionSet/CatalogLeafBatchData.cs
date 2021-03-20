@@ -5,16 +5,16 @@ using MessagePack;
 namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
 {
     [MessagePackObject]
-    public record CatalogPageData
+    public record CatalogLeafBatchData
     {
-        public CatalogPageData(DateTimeOffset commitTimestamp, List<CatalogLeafItemData> leaves)
+        public CatalogLeafBatchData(DateTimeOffset maxCommitTimestamp, List<CatalogLeafItemData> leaves)
         {
-            CommitTimestamp = commitTimestamp;
+            MaxCommitTimestamp = maxCommitTimestamp;
             Leaves = leaves;
         }
 
         [Key(0)]
-        public DateTimeOffset CommitTimestamp { get; }
+        public DateTimeOffset MaxCommitTimestamp { get; }
 
         [Key(1)]
         public List<CatalogLeafItemData> Leaves { get; }

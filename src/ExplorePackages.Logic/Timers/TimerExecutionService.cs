@@ -59,7 +59,7 @@ namespace Knapcode.ExplorePackages
         public async Task<IReadOnlyList<TimerState>> GetStateAsync()
         {
             var pairs = _nameToTimer.OrderBy(x => x.Key, StringComparer.OrdinalIgnoreCase).ToList();
-            
+
             var isRunningTask = Task.WhenAll(pairs.Select(x => x.Value.IsRunningAsync()));
             var entitiesTask = GetTable().GetEntitiesAsync<TimerEntity>(PartitionKey, _telemetryClient.StartQueryLoopMetrics());
 
