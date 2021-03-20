@@ -310,7 +310,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             // Then try in increments of more minutes.
-            const int incrementMinutes = 3;
+            const int incrementMinutes = 2;
             var minMinutes = incrementMinutes * (attemptCount - 1);
             var maxMinutes = minMinutes + incrementMinutes;
 
