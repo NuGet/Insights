@@ -19,7 +19,7 @@ namespace Knapcode.ExplorePackages.Worker
             _logger = logger;
         }
 
-        public async Task ProcessAsync(HomogeneousBatchMessage batch, int dequeueCount)
+        public async Task ProcessAsync(HomogeneousBatchMessage batch, long dequeueCount)
         {
             using (_logger.BeginScope("Processing homogeneous batch message with {Scope_Count} messages", batch.Messages.Count))
             {

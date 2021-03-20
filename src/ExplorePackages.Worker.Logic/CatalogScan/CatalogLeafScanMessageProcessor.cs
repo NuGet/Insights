@@ -29,7 +29,7 @@ namespace Knapcode.ExplorePackages.Worker
             _logger = logger;
         }
 
-        public async Task<BatchMessageProcessorResult<CatalogLeafScanMessage>> ProcessAsync(IReadOnlyList<CatalogLeafScanMessage> messages, int dequeueCount)
+        public async Task<BatchMessageProcessorResult<CatalogLeafScanMessage>> ProcessAsync(IReadOnlyList<CatalogLeafScanMessage> messages, long dequeueCount)
         {
             var throwOnException = messages.Count == 1;
             var failed = new List<CatalogLeafScanMessage>();
@@ -101,7 +101,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         private async Task CategorizeMessagesAsync(
             IGrouping<(string StorageSuffix, string ScanId, string PageId), CatalogLeafScanMessage> pageGroup,
-            int dequeueCount,
+            long dequeueCount,
             List<CatalogLeafScanMessage> noMatchingScan,
             List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan)> poison,
             List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan, TimeSpan NotBefore)> tryAgainLater,
@@ -177,7 +177,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         private async Task ProcessBatchAsync(
             ICatalogLeafScanBatchDriver batchDriver,
-            int dequeueCount,
+            long dequeueCount,
             List<CatalogLeafScanMessage> failed,
             List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan, TimeSpan NotBefore)> tryAgainLater,
             List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan)> toProcess,
@@ -237,7 +237,7 @@ namespace Knapcode.ExplorePackages.Worker
         }
 
         private async Task ProcessOneByOneAsync(
-            int dequeueCount,
+            long dequeueCount,
             List<CatalogLeafScanMessage> failed,
             List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan, TimeSpan NotBefore)> tryAgainLater,
             List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan)> toProcess,
@@ -283,7 +283,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        private static void StartAttempt(CatalogLeafScan scan, int dequeueCount)
+        private static void StartAttempt(CatalogLeafScan scan, long dequeueCount)
         {
             scan.AttemptCount++;
             scan.NextAttempt = DateTime.UtcNow + GetMessageDelay(GetTotalAttempts(scan, dequeueCount));
@@ -295,12 +295,12 @@ namespace Knapcode.ExplorePackages.Worker
             scan.NextAttempt = DateTime.UtcNow;
         }
 
-        private static int GetTotalAttempts(CatalogLeafScan scan, int dequeueCount)
+        private static long GetTotalAttempts(CatalogLeafScan scan, long dequeueCount)
         {
             return Math.Max(scan.AttemptCount + 1, dequeueCount);
         }
 
-        public static TimeSpan GetMessageDelay(int attemptCount)
+        public static TimeSpan GetMessageDelay(long attemptCount)
         {
             // First attempt, wait up to a minute.
             const int msPerMinute = 60 * 1000;
@@ -317,7 +317,7 @@ namespace Knapcode.ExplorePackages.Worker
             var minMs = minMinutes * msPerMinute;
             var maxMs = maxMinutes * msPerMinute;
 
-            return TimeSpan.FromMilliseconds(ThreadLocalRandom.Next(minMs, maxMs));
+            return TimeSpan.FromMilliseconds(ThreadLocalRandom.Next((int)minMs, (int)maxMs));
         }
     }
 }

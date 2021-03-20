@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure.Storage.Queues.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.WindowsAzure.Storage.Queue;
@@ -30,11 +31,11 @@ namespace Knapcode.ExplorePackages.Worker
                 });
         }
 
-        protected override async Task ProcessMessageAsync(IServiceProvider serviceProvider, CloudQueueMessage message)
+        protected override async Task ProcessMessageAsync(IServiceProvider serviceProvider, QueueMessage message)
         {
             await serviceProvider
                 .GetRequiredService<Functions>()
-                .WorkerQueueAsync(message);
+                .WorkerQueueAsync(new CloudQueueMessage(message.Body.ToString()));
         }
 
         public class CanRunTimersAsync : IntegrationTest
@@ -61,6 +62,11 @@ namespace Knapcode.ExplorePackages.Worker
                 {
                     x.DownloadsV1Url = $"http://localhost/{TestData}/DownloadsToCsv/{Step1}/downloads.v1.json";
                     x.OwnersV2Url = $"http://localhost/{TestData}/OwnersToCsv/{Step1}/owners.v2.json";
+                };
+                ConfigureWorkerSettings = x =>
+                {
+                    x.AutoStartDownloadToCsv = true;
+                    x.AutoStartOwnersToCsv = true;
                 };
 
                 // Arrange

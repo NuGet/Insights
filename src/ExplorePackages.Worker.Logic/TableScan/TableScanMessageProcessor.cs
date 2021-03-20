@@ -37,7 +37,7 @@ namespace Knapcode.ExplorePackages.Worker
             _telemetryClient = telemetryClient;
         }
 
-        public async Task ProcessAsync(TableScanMessage<T> message, int dequeueCount)
+        public async Task ProcessAsync(TableScanMessage<T> message, long dequeueCount)
         {
             var taskState = await _taskStateStorageService.GetAsync(message.TaskStateKey);
             if (taskState == null)

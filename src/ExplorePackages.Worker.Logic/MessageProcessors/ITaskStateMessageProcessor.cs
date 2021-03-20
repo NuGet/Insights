@@ -4,6 +4,6 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public interface ITaskStateMessageProcessor<T> where T : ITaskStateMessage
     {
-        Task<bool> ProcessAsync(T message, int dequeueCount);
+        Task<bool> ProcessAsync(T message, long dequeueCount);
     }
 }

@@ -33,7 +33,7 @@ namespace Knapcode.ExplorePackages.Worker
             _logger = logger;
         }
 
-        public async Task ProcessSingleAsync(string message, int dequeueCount)
+        public async Task ProcessSingleAsync(string message, long dequeueCount)
         {
             NameVersionMessage<object> deserializedMessage;
             try
@@ -53,7 +53,7 @@ namespace Knapcode.ExplorePackages.Worker
                 dequeueCount);
         }
 
-        private async Task ProcessSingleMessageAsync(string schemaName, int schameVersion, object data, int dequeueCount)
+        private async Task ProcessSingleMessageAsync(string schemaName, int schameVersion, object data, long dequeueCount)
         {
             var result = await ProcessAsync(
                 schemaName,
@@ -75,7 +75,7 @@ namespace Knapcode.ExplorePackages.Worker
             await ProcessResultAsync(messageCount: 1, serializer, result);
         }
 
-        public async Task ProcessBatchAsync(string schemaName, int schemaVersion, IReadOnlyList<JToken> data, int dequeueCount)
+        public async Task ProcessBatchAsync(string schemaName, int schemaVersion, IReadOnlyList<JToken> data, long dequeueCount)
         {
             if (data.Count == 0)
             {
@@ -143,7 +143,7 @@ namespace Knapcode.ExplorePackages.Worker
             int schemaVersion,
             Type messageType,
             IReadOnlyList<object> messages,
-            int dequeueCount,
+            long dequeueCount,
             bool throwOnException)
         {
             var batchProcessorType = typeof(IBatchMessageProcessor<>).MakeGenericType(messageType);

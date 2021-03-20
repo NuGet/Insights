@@ -19,7 +19,9 @@ namespace Knapcode.ExplorePackages.Worker
             MoveTempToHome = false;
             DisabledDrivers = new List<CatalogScanDriverType>();
 
-            AutoStartTimers = false;
+            AutoStartCatalogScanUpdate = false;
+            AutoStartDownloadToCsv = false;
+            AutoStartOwnersToCsv = false;
             CatalogScanUpdateFrequency = TimeSpan.FromHours(6);
             DownloadToCsvFrequency = TimeSpan.FromHours(3);
             OwnersToCsvFrequency = TimeSpan.FromHours(3);
@@ -61,10 +63,12 @@ namespace Knapcode.ExplorePackages.Worker
         public bool MoveTempToHome { get; set; }
         public List<CatalogScanDriverType> DisabledDrivers { get; set; }
 
-        public bool AutoStartTimers { get; }
-        public TimeSpan CatalogScanUpdateFrequency { get; }
-        public TimeSpan DownloadToCsvFrequency { get; }
-        public TimeSpan OwnersToCsvFrequency { get; }
+        public bool AutoStartCatalogScanUpdate { get; set; }
+        public bool AutoStartDownloadToCsv { get; set; }
+        public bool AutoStartOwnersToCsv { get; set; }
+        public TimeSpan CatalogScanUpdateFrequency { get; set; }
+        public TimeSpan DownloadToCsvFrequency { get; set; }
+        public TimeSpan OwnersToCsvFrequency { get; set; }
 
         public string WorkerQueueName { get; set; }
         public string CursorTableName { get; set; }

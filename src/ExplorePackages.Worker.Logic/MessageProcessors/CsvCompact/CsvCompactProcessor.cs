@@ -25,7 +25,7 @@ namespace Knapcode.ExplorePackages.Worker
             _logger = logger;
         }
 
-        public async Task ProcessAsync(CsvCompactMessage<T> message, int dequeueCount)
+        public async Task ProcessAsync(CsvCompactMessage<T> message, long dequeueCount)
         {
             TaskState taskState;
             if (message.Force && message.TaskStateKey == null)

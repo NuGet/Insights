@@ -4,6 +4,6 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public interface IMessageProcessor<T>
     {
-        Task ProcessAsync(T message, int dequeueCount);
+        Task ProcessAsync(T message, long dequeueCount);
     }
 }

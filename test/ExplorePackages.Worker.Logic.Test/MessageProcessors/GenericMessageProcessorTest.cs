@@ -38,7 +38,7 @@ namespace Knapcode.ExplorePackages.Worker
                     // Arrange
                     var expected = new InvalidOperationException("Processing this message failed for some reason.");
                     MessageProcessor
-                        .Setup(x => x.ProcessAsync(It.IsAny<IReadOnlyList<CatalogLeafScanMessage>>(), It.IsAny<int>()))
+                        .Setup(x => x.ProcessAsync(It.IsAny<IReadOnlyList<CatalogLeafScanMessage>>(), It.IsAny<long>()))
                         .ThrowsAsync(expected);
 
                     // Act
@@ -55,8 +55,8 @@ namespace Knapcode.ExplorePackages.Worker
                 {
                     // Arrange
                     MessageProcessor
-                        .Setup(x => x.ProcessAsync(It.IsAny<IReadOnlyList<CatalogLeafScanMessage>>(), It.IsAny<int>()))
-                        .Returns<IReadOnlyList<CatalogLeafScanMessage>, int>((m, _) => Task.FromResult(new BatchMessageProcessorResult<CatalogLeafScanMessage>(m)));
+                        .Setup(x => x.ProcessAsync(It.IsAny<IReadOnlyList<CatalogLeafScanMessage>>(), It.IsAny<long>()))
+                        .Returns<IReadOnlyList<CatalogLeafScanMessage>, long>((m, _) => Task.FromResult(new BatchMessageProcessorResult<CatalogLeafScanMessage>(m)));
 
                     // Act
                     var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => Target.ProcessSingleAsync(SingleMessage, dequeueCount: 1));
@@ -73,8 +73,8 @@ namespace Knapcode.ExplorePackages.Worker
                     // Arrange
                     var different = new CatalogLeafScanMessage { StorageSuffix = "different" };
                     MessageProcessor
-                        .Setup(x => x.ProcessAsync(It.IsAny<IReadOnlyList<CatalogLeafScanMessage>>(), It.IsAny<int>()))
-                        .Returns<IReadOnlyList<CatalogLeafScanMessage>, int>((m, _) => Task.FromResult(new BatchMessageProcessorResult<CatalogLeafScanMessage>(
+                        .Setup(x => x.ProcessAsync(It.IsAny<IReadOnlyList<CatalogLeafScanMessage>>(), It.IsAny<long>()))
+                        .Returns<IReadOnlyList<CatalogLeafScanMessage>, long>((m, _) => Task.FromResult(new BatchMessageProcessorResult<CatalogLeafScanMessage>(
                             failed: new[] { different })));
 
                     // Act
@@ -92,8 +92,8 @@ namespace Knapcode.ExplorePackages.Worker
                 {
                     // Arrange
                     MessageProcessor
-                        .Setup(x => x.ProcessAsync(It.IsAny<IReadOnlyList<CatalogLeafScanMessage>>(), It.IsAny<int>()))
-                        .Returns<IReadOnlyList<CatalogLeafScanMessage>, int>((m, _) => Task.FromResult(new BatchMessageProcessorResult<CatalogLeafScanMessage>(
+                        .Setup(x => x.ProcessAsync(It.IsAny<IReadOnlyList<CatalogLeafScanMessage>>(), It.IsAny<long>()))
+                        .Returns<IReadOnlyList<CatalogLeafScanMessage>, long>((m, _) => Task.FromResult(new BatchMessageProcessorResult<CatalogLeafScanMessage>(
                             failed: Array.Empty<CatalogLeafScanMessage>(),
                             tryAgainLater: m,
                             notBefore: TimeSpan.FromMinutes(3))));
@@ -114,8 +114,8 @@ namespace Knapcode.ExplorePackages.Worker
                     // Arrange
                     var different = new CatalogLeafScanMessage { StorageSuffix = "different" };
                     MessageProcessor
-                        .Setup(x => x.ProcessAsync(It.IsAny<IReadOnlyList<CatalogLeafScanMessage>>(), It.IsAny<int>()))
-                        .Returns<IReadOnlyList<CatalogLeafScanMessage>, int>((m, _) => Task.FromResult(new BatchMessageProcessorResult<CatalogLeafScanMessage>(
+                        .Setup(x => x.ProcessAsync(It.IsAny<IReadOnlyList<CatalogLeafScanMessage>>(), It.IsAny<long>()))
+                        .Returns<IReadOnlyList<CatalogLeafScanMessage>, long>((m, _) => Task.FromResult(new BatchMessageProcessorResult<CatalogLeafScanMessage>(
                             failed: Array.Empty<CatalogLeafScanMessage>(),
                             tryAgainLater: new[] { different },
                             notBefore: TimeSpan.FromMinutes(3))));
@@ -160,7 +160,7 @@ namespace Knapcode.ExplorePackages.Worker
                     // Arrange
                     var expected = new InvalidOperationException("Processing this message failed for some reason.");
                     MessageProcessor
-                        .Setup(x => x.ProcessAsync(It.IsAny<IReadOnlyList<CatalogLeafScanMessage>>(), It.IsAny<int>()))
+                        .Setup(x => x.ProcessAsync(It.IsAny<IReadOnlyList<CatalogLeafScanMessage>>(), It.IsAny<long>()))
                         .ThrowsAsync(expected);
 
                     // Act
@@ -178,8 +178,8 @@ namespace Knapcode.ExplorePackages.Worker
                 {
                     // Arrange
                     MessageProcessor
-                        .Setup(x => x.ProcessAsync(It.IsAny<IReadOnlyList<CatalogLeafScanMessage>>(), It.IsAny<int>()))
-                        .Returns<IReadOnlyList<CatalogLeafScanMessage>, int>((m, _) => Task.FromResult(new BatchMessageProcessorResult<CatalogLeafScanMessage>(
+                        .Setup(x => x.ProcessAsync(It.IsAny<IReadOnlyList<CatalogLeafScanMessage>>(), It.IsAny<long>()))
+                        .Returns<IReadOnlyList<CatalogLeafScanMessage>, long>((m, _) => Task.FromResult(new BatchMessageProcessorResult<CatalogLeafScanMessage>(
                             failed: m.Take(2))));
 
                     // Act
@@ -199,8 +199,8 @@ namespace Knapcode.ExplorePackages.Worker
                     var differentA = new CatalogLeafScanMessage { StorageSuffix = "differentA" };
                     var differentB = new CatalogLeafScanMessage { StorageSuffix = "differentB" };
                     MessageProcessor
-                        .Setup(x => x.ProcessAsync(It.IsAny<IReadOnlyList<CatalogLeafScanMessage>>(), It.IsAny<int>()))
-                        .Returns<IReadOnlyList<CatalogLeafScanMessage>, int>((m, _) => Task.FromResult(new BatchMessageProcessorResult<CatalogLeafScanMessage>(
+                        .Setup(x => x.ProcessAsync(It.IsAny<IReadOnlyList<CatalogLeafScanMessage>>(), It.IsAny<long>()))
+                        .Returns<IReadOnlyList<CatalogLeafScanMessage>, long>((m, _) => Task.FromResult(new BatchMessageProcessorResult<CatalogLeafScanMessage>(
                             failed: new[] { differentA, differentB })));
 
                     // Act
@@ -218,8 +218,8 @@ namespace Knapcode.ExplorePackages.Worker
                 {
                     // Arrange
                     MessageProcessor
-                        .Setup(x => x.ProcessAsync(It.IsAny<IReadOnlyList<CatalogLeafScanMessage>>(), It.IsAny<int>()))
-                        .Returns<IReadOnlyList<CatalogLeafScanMessage>, int>((m, _) => Task.FromResult(new BatchMessageProcessorResult<CatalogLeafScanMessage>(
+                        .Setup(x => x.ProcessAsync(It.IsAny<IReadOnlyList<CatalogLeafScanMessage>>(), It.IsAny<long>()))
+                        .Returns<IReadOnlyList<CatalogLeafScanMessage>, long>((m, _) => Task.FromResult(new BatchMessageProcessorResult<CatalogLeafScanMessage>(
                             failed: Array.Empty<CatalogLeafScanMessage>(),
                             tryAgainLater: m.Take(2),
                             notBefore: TimeSpan.FromMinutes(3))));
@@ -241,8 +241,8 @@ namespace Knapcode.ExplorePackages.Worker
                     var differentA = new CatalogLeafScanMessage { StorageSuffix = "differentA" };
                     var differentB = new CatalogLeafScanMessage { StorageSuffix = "differentB" };
                     MessageProcessor
-                        .Setup(x => x.ProcessAsync(It.IsAny<IReadOnlyList<CatalogLeafScanMessage>>(), It.IsAny<int>()))
-                        .Returns<IReadOnlyList<CatalogLeafScanMessage>, int>((m, _) => Task.FromResult(new BatchMessageProcessorResult<CatalogLeafScanMessage>(
+                        .Setup(x => x.ProcessAsync(It.IsAny<IReadOnlyList<CatalogLeafScanMessage>>(), It.IsAny<long>()))
+                        .Returns<IReadOnlyList<CatalogLeafScanMessage>, long>((m, _) => Task.FromResult(new BatchMessageProcessorResult<CatalogLeafScanMessage>(
                             failed: Array.Empty<CatalogLeafScanMessage>(),
                             tryAgainLater: new[] { differentA, differentB },
                             notBefore: TimeSpan.FromMinutes(3))));
@@ -269,9 +269,9 @@ namespace Knapcode.ExplorePackages.Worker
                 ProcessedBatches = new List<IReadOnlyList<CatalogLeafScanMessage>>();
 
                 MessageProcessor
-                    .Setup(x => x.ProcessAsync(It.IsAny<IReadOnlyList<CatalogLeafScanMessage>>(), It.IsAny<int>()))
+                    .Setup(x => x.ProcessAsync(It.IsAny<IReadOnlyList<CatalogLeafScanMessage>>(), It.IsAny<long>()))
                     .ReturnsAsync(() => Result)
-                    .Callback<IReadOnlyList<CatalogLeafScanMessage>, int>((x, _) => ProcessedBatches.Add(x));
+                    .Callback<IReadOnlyList<CatalogLeafScanMessage>, long>((x, _) => ProcessedBatches.Add(x));
 
                 ServiceProvider
                     .Setup(x => x.GetService(typeof(IBatchMessageProcessor<CatalogLeafScanMessage>)))
@@ -308,7 +308,7 @@ namespace Knapcode.ExplorePackages.Worker
                     // Arrange
                     var expected = new InvalidOperationException("Processing this message failed for some reason.");
                     MessageProcessor
-                        .Setup(x => x.ProcessAsync(It.IsAny<CatalogLeafScanMessage>(), It.IsAny<int>()))
+                        .Setup(x => x.ProcessAsync(It.IsAny<CatalogLeafScanMessage>(), It.IsAny<long>()))
                         .ThrowsAsync(expected);
 
                     // Act
@@ -349,7 +349,7 @@ namespace Knapcode.ExplorePackages.Worker
                     // Arrange
                     var expected = new InvalidOperationException("Processing this message failed for some reason.");
                     MessageProcessor
-                        .Setup(x => x.ProcessAsync(It.IsAny<CatalogLeafScanMessage>(), It.IsAny<int>()))
+                        .Setup(x => x.ProcessAsync(It.IsAny<CatalogLeafScanMessage>(), It.IsAny<long>()))
                         .ThrowsAsync(expected);
 
                     // Act
@@ -373,9 +373,9 @@ namespace Knapcode.ExplorePackages.Worker
                 ProcessedMessages = new List<CatalogLeafScanMessage>();
 
                 MessageProcessor
-                    .Setup(x => x.ProcessAsync(It.IsAny<CatalogLeafScanMessage>(), It.IsAny<int>()))
+                    .Setup(x => x.ProcessAsync(It.IsAny<CatalogLeafScanMessage>(), It.IsAny<long>()))
                     .Returns(Task.CompletedTask)
-                    .Callback<CatalogLeafScanMessage, int>((x, _) => ProcessedMessages.Add(x));
+                    .Callback<CatalogLeafScanMessage, long>((x, _) => ProcessedMessages.Add(x));
 
                 ServiceProvider
                     .Setup(x => x.GetService(typeof(IMessageProcessor<CatalogLeafScanMessage>)))

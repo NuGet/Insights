@@ -29,7 +29,7 @@ namespace Knapcode.ExplorePackages.Worker
             _logger = logger;
         }
 
-        public async Task ProcessAsync(CatalogPageScanMessage message, int dequeueCount)
+        public async Task ProcessAsync(CatalogPageScanMessage message, long dequeueCount)
         {
             var scan = await _storageService.GetPageScanAsync(message.StorageSuffix, message.ScanId, message.PageId);
             if (scan == null)

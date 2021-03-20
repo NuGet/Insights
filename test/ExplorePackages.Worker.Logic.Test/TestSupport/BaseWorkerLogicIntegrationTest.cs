@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using Azure.Storage.Queues.Models;
 using Knapcode.ExplorePackages.Worker.BuildVersionSet;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -134,12 +135,12 @@ namespace Knapcode.ExplorePackages.Worker
 
         protected async Task ProcessQueueAsync(Action foundMessage, Func<Task<bool>> isCompleteAsync)
         {
-            var queue = WorkerQueueFactory.GetQueue();
+            var queue = await WorkerQueueFactory.GetQueueAsync();
             bool isComplete;
             do
             {
-                CloudQueueMessage message;
-                while ((message = await queue.GetMessageAsync()) != null)
+                QueueMessage message;
+                while ((message = await queue.ReceiveMessageAsync()) != null)
                 {
                     foundMessage();
                     using (var scope = Host.Services.CreateScope())
@@ -147,7 +148,7 @@ namespace Knapcode.ExplorePackages.Worker
                         await ProcessMessageAsync(scope.ServiceProvider, message);
                     }
 
-                    await queue.DeleteMessageAsync(message);
+                    await queue.DeleteMessageAsync(message.MessageId, message.PopReceipt);
                 }
 
                 isComplete = await isCompleteAsync();
@@ -155,12 +156,12 @@ namespace Knapcode.ExplorePackages.Worker
             while (!isComplete);
         }
 
-        protected virtual async Task ProcessMessageAsync(IServiceProvider serviceProvider, CloudQueueMessage message)
+        protected virtual async Task ProcessMessageAsync(IServiceProvider serviceProvider, QueueMessage message)
         {
             var leaseScope = serviceProvider.GetRequiredService<TempStreamLeaseScope>();
             await using var scopeOwnership = leaseScope.TakeOwnership();
             var messageProcessor = serviceProvider.GetRequiredService<IGenericMessageProcessor>();
-            await messageProcessor.ProcessSingleAsync(message.AsString, message.DequeueCount);
+            await messageProcessor.ProcessSingleAsync(message.Body.ToString(), message.DequeueCount);
         }
 
         protected async Task AssertCompactAsync<T>(string containerName, string testName, string stepName, int bucket) where T : ICsvRecord<T>, new()

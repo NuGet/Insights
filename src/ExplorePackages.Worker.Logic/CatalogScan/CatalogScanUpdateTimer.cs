@@ -23,7 +23,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public string Name => "CatalogScanUpdate";
         public TimeSpan Frequency => _options.Value.CatalogScanUpdateFrequency;
-        public bool AutoStart => _options.Value.AutoStartTimers;
+        public bool AutoStart => _options.Value.AutoStartCatalogScanUpdate;
         public bool IsEnabled => true;
 
         public async Task ExecuteAsync()

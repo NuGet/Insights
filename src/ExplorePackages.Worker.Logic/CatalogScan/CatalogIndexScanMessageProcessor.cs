@@ -41,7 +41,7 @@ namespace Knapcode.ExplorePackages.Worker
             _logger = logger;
         }
 
-        public async Task ProcessAsync(CatalogIndexScanMessage message, int dequeueCount)
+        public async Task ProcessAsync(CatalogIndexScanMessage message, long dequeueCount)
         {
             var scan = await _storageService.GetIndexScanAsync(message.CursorName, message.ScanId);
             if (scan == null)

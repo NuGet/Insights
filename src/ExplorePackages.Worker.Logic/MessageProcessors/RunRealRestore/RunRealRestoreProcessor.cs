@@ -60,7 +60,7 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
             _logger = logger;
         }
 
-        public async Task ProcessAsync(RunRealRestoreMessage message, int dequeueCount)
+        public async Task ProcessAsync(RunRealRestoreMessage message, long dequeueCount)
         {
             if (IgnoredPackageIds.Contains(message.Id))
             {

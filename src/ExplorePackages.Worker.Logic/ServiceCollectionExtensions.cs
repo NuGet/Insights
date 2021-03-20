@@ -21,7 +21,7 @@ namespace Knapcode.ExplorePackages.Worker
         public static IServiceCollection AddExplorePackagesWorker(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddTransient<IRawMessageEnqueuer, QueueStorageEnqueuer>();
-            serviceCollection.AddTransient<IWorkerQueueFactory, UnencodedWorkerQueueFactory>();
+            serviceCollection.AddTransient<IWorkerQueueFactory, WorkerQueueFactory>();
 
             serviceCollection.AddTransient<IGenericMessageProcessor, GenericMessageProcessor>();
             serviceCollection.AddTransient<SchemaSerializer>();

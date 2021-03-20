@@ -85,6 +85,7 @@ namespace Knapcode.ExplorePackages
 
             serviceCollection.AddTransient<ServiceClientFactory>();
             serviceCollection.AddTransient<IServiceClientFactory>(x => x.GetRequiredService<ServiceClientFactory>());
+            serviceCollection.AddSingleton<NewServiceClientFactory>();
 
             serviceCollection.AddSingleton<IThrottle>(NullThrottle.Instance);
 

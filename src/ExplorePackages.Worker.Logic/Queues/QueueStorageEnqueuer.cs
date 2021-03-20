@@ -3,9 +3,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure.Storage.Queues;
+using Azure.Storage.Queues.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.WindowsAzure.Storage.Queue;
 
 namespace Knapcode.ExplorePackages.Worker
 {
@@ -36,36 +37,36 @@ namespace Knapcode.ExplorePackages.Worker
             await _workerQueueFactory.InitializeAsync();
         }
 
-        public Task<int> GetApproximateMessageCountAsync()
+        public async Task<int> GetApproximateMessageCountAsync()
         {
-            return GetApproximateMessageCountAsync(_workerQueueFactory.GetQueue());
+            return await GetApproximateMessageCountAsync(await _workerQueueFactory.GetQueueAsync());
         }
 
-        public Task<int> GetAvailableMessageCountLowerBoundAsync(int messageCount)
+        public async Task<int> GetAvailableMessageCountLowerBoundAsync(int messageCount)
         {
-            return GetAvailableMessageCountLowerBoundAsync(_workerQueueFactory.GetQueue(), messageCount);
+            return await GetAvailableMessageCountLowerBoundAsync(await _workerQueueFactory.GetQueueAsync(), messageCount);
         }
 
-        public Task<int> GetPoisonApproximateMessageCountAsync()
+        public async Task<int> GetPoisonApproximateMessageCountAsync()
         {
-            return GetApproximateMessageCountAsync(_workerQueueFactory.GetPoisonQueue());
+            return await GetApproximateMessageCountAsync(await _workerQueueFactory.GetPoisonQueueAsync());
         }
 
-        public Task<int> GetPoisonAvailableMessageCountLowerBoundAsync(int messageCount)
+        public async Task<int> GetPoisonAvailableMessageCountLowerBoundAsync(int messageCount)
         {
-            return GetAvailableMessageCountLowerBoundAsync(_workerQueueFactory.GetPoisonQueue(), messageCount);
+            return await GetAvailableMessageCountLowerBoundAsync(await _workerQueueFactory.GetPoisonQueueAsync(), messageCount);
         }
 
-        private static async Task<int> GetApproximateMessageCountAsync(CloudQueue queue)
+        private static async Task<int> GetApproximateMessageCountAsync(QueueClient queue)
         {
-            await queue.FetchAttributesAsync();
-            return queue.ApproximateMessageCount.Value;
+            QueueProperties properties = await queue.GetPropertiesAsync();
+            return properties.ApproximateMessagesCount;
         }
 
-        private static async Task<int> GetAvailableMessageCountLowerBoundAsync(CloudQueue queue, int messageCount)
+        private static async Task<int> GetAvailableMessageCountLowerBoundAsync(QueueClient queue, int messageCount)
         {
-            var messages = await queue.PeekMessagesAsync(messageCount);
-            return messages.Count();
+            PeekedMessage[] messages = await queue.PeekMessagesAsync(messageCount);
+            return messages.Length;
         }
 
         public async Task AddAsync(IReadOnlyList<string> messages)
@@ -75,7 +76,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task AddAsync(IReadOnlyList<string> messages, TimeSpan visibilityDelay)
         {
-            await AddAsync(_workerQueueFactory.GetQueue, messages, visibilityDelay);
+            await AddAsync(_workerQueueFactory.GetQueueAsync, messages, visibilityDelay);
         }
 
         public async Task AddPoisonAsync(IReadOnlyList<string> messages)
@@ -85,25 +86,25 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task AddPoisonAsync(IReadOnlyList<string> messages, TimeSpan visibilityDelay)
         {
-            await AddAsync(_workerQueueFactory.GetPoisonQueue, messages, visibilityDelay);
+            await AddAsync(_workerQueueFactory.GetPoisonQueueAsync, messages, visibilityDelay);
         }
 
-        private async Task AddAsync(Func<CloudQueue> getQueue, IReadOnlyList<string> messages, TimeSpan visibilityDelay)
+        private async Task AddAsync(Func<Task<QueueClient>> getQueueAsync, IReadOnlyList<string> messages, TimeSpan visibilityDelay)
         {
             if (messages.Count == 0)
             {
                 return;
             }
 
+            var queue = await getQueueAsync();
             var workers = Math.Min(messages.Count, _options.Value.EnqueueWorkers);
             if (workers < 2)
             {
-                var queue = getQueue();
                 _logger.LogInformation("Enqueueing {Count} individual messages to {QueueName}.", messages.Count, queue.Name);
                 var completedCount = 0;
                 foreach (var message in messages)
                 {
-                    await AddMessageAsync(queue, message, visibilityDelay);
+                    await SendMessageAsync(queue, message, visibilityDelay);
                     completedCount++;
                     if (completedCount % 500 == 0 && completedCount < messages.Count)
                     {
@@ -116,21 +117,19 @@ namespace Knapcode.ExplorePackages.Worker
             {
                 var work = new ConcurrentQueue<string>(messages);
 
-                var queueName = getQueue().Name;
                 _logger.LogInformation(
                     "Enqueueing {MessageCount} individual messages to {QueueName} with {WorkerCount} workers.",
                     messages.Count,
-                    queueName,
+                    queue.Name,
                     workers);
 
                 var tasks = Enumerable
                     .Range(0, workers)
                     .Select(async i =>
                     {
-                        var queue = getQueue();
                         while (work.TryDequeue(out var message))
                         {
-                            await AddMessageAsync(queue, message, visibilityDelay);
+                            await SendMessageAsync(queue, message, visibilityDelay);
                         }
                     })
                     .ToList();
@@ -140,19 +139,14 @@ namespace Knapcode.ExplorePackages.Worker
                 _logger.LogInformation(
                     "Done enqueueing {MessageCount} individual messages to {QueueName} with {WorkerCount} workers.",
                     messages.Count,
-                    queueName,
+                    queue.Name,
                     workers);
             }
         }
 
-        private async Task AddMessageAsync(CloudQueue queue, string message, TimeSpan initialVisibilityDelay)
+        private async Task SendMessageAsync(QueueClient queue, string message, TimeSpan visibilityTimeout)
         {
-            await queue.AddMessageAsync(
-                new CloudQueueMessage(message),
-                timeToLive: null,
-                initialVisibilityDelay: initialVisibilityDelay > TimeSpan.Zero ? initialVisibilityDelay : null,
-                options: null,
-                operationContext: null);
+            await queue.SendMessageAsync(message, visibilityTimeout > TimeSpan.Zero ? visibilityTimeout : null);
         }
     }
 }

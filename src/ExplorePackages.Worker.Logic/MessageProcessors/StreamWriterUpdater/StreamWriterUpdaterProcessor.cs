@@ -32,7 +32,7 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
             _logger = logger;
         }
 
-        public async Task<bool> ProcessAsync(StreamWriterUpdaterMessage<T> message, int dequeueCount)
+        public async Task<bool> ProcessAsync(StreamWriterUpdaterMessage<T> message, long dequeueCount)
         {
             await InitializeAsync();
 

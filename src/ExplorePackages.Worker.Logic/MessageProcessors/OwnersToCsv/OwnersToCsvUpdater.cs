@@ -31,7 +31,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
         public string ContainerName => _options.Value.PackageOwnersContainerName;
         public TimeSpan Frequency => _options.Value.OwnersToCsvFrequency;
         public bool IsEnabled => _options.Value.OwnersV2Url != null;
-        public bool AutoStart => _options.Value.AutoStartTimers;
+        public bool AutoStart => _options.Value.AutoStartOwnersToCsv;
 
         public async Task<PackageOwnerSet> GetDataAsync()
         {

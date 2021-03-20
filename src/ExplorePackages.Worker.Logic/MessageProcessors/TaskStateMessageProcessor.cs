@@ -22,7 +22,7 @@ namespace Knapcode.ExplorePackages.Worker
             _logger = logger;
         }
 
-        public async Task ProcessAsync(T message, int dequeueCount)
+        public async Task ProcessAsync(T message, long dequeueCount)
         {
             var taskState = await _taskStateStorageService.GetAsync(message.TaskStateKey);
             if (taskState == null)

@@ -23,7 +23,7 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
             _logger = logger;
         }
 
-        public async Task ProcessAsync(TableRowCopyMessage<T> message, int dequeueCount)
+        public async Task ProcessAsync(TableRowCopyMessage<T> message, long dequeueCount)
         {
             var rows = await GetSourceRowsAsync(message);
 
