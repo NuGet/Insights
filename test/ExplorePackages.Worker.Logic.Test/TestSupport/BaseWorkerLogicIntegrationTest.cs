@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Worker.BuildVersionSet;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage.Queue;
+using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -15,6 +17,7 @@ namespace Knapcode.ExplorePackages.Worker
     {
         protected BaseWorkerLogicIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
+            MockVersionSetProvider.Setup(x => x.GetAsync()).ReturnsAsync(() => MockVersionSet.Object);
         }
 
         public Action<ExplorePackagesWorkerSettings> ConfigureWorkerSettings { get; set; }
@@ -26,6 +29,8 @@ namespace Knapcode.ExplorePackages.Worker
         public TaskStateStorageService TaskStateStorageService => Host.Services.GetRequiredService<TaskStateStorageService>();
         public IMessageEnqueuer MessageEnqueuer => Host.Services.GetRequiredService<IMessageEnqueuer>();
         public IWorkerQueueFactory WorkerQueueFactory => Host.Services.GetRequiredService<IWorkerQueueFactory>();
+        public Mock<IVersionSetProvider> MockVersionSetProvider { get; } = new Mock<IVersionSetProvider>();
+        public Mock<IVersionSet> MockVersionSet { get; } = new Mock<IVersionSet>();
 
         protected override void ConfigureHostBuilder(IHostBuilder hostBuilder)
         {

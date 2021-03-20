@@ -365,7 +365,8 @@ namespace Knapcode.ExplorePackages.Worker
 
         public CatalogLeafScanMessageProcessorTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
-            ThrowOnLogLevel = LogLevel.None;
+            FailFastLogLevel = LogLevel.None;
+            AssertLogLevel = LogLevel.None;
             MockMessageEnqueuer = new Mock<IMessageEnqueuer>();
             MockDriverFactory = new Mock<ICatalogScanDriverFactory>();
 
@@ -383,7 +384,6 @@ namespace Knapcode.ExplorePackages.Worker
             Assert.Empty(result.TryAgainLater);
             Assert.Equal(0, await CatalogScanStorageService.GetLeafScanCountLowerBoundAsync(StorageSuffixA, ScanId));
             Assert.Equal(0, await CatalogScanStorageService.GetLeafScanCountLowerBoundAsync(StorageSuffixB, ScanId));
-            AssertOnlyInfoLogsOrLess();
         }
 
         private async Task AssertTryAgainLaterAsync(BatchMessageProcessorResult<CatalogLeafScanMessage> result, CatalogLeafScan scan, TimeSpan expectedNotBefore)

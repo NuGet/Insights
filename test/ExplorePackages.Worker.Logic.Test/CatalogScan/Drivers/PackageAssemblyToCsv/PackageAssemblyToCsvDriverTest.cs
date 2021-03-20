@@ -12,7 +12,8 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
         public PackageAssemblyToCsvDriverTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
             : base(output, factory)
         {
-            ThrowOnLogLevel = LogLevel.None;
+            FailFastLogLevel = LogLevel.None;
+            AssertLogLevel = LogLevel.None;
         }
 
         public ICatalogLeafToCsvDriver<PackageAssembly> Target => Host.Services.GetRequiredService<ICatalogLeafToCsvDriver<PackageAssembly>>();

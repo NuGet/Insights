@@ -76,7 +76,7 @@ namespace Knapcode.ExplorePackages
                     serviceCollection.AddLogging(o =>
                     {
                         o.SetMinimumLevel(LogLevel.Trace);
-                        o.AddProvider(new XunitLoggerProvider(output, LogLevel.Trace, LogLevelToCount, ThrowOnLogLevel));
+                        o.AddProvider(new XunitLoggerProvider(output, LogLevel.Trace, LogLevelToCount, FailFastLogLevel));
                     });
 
                     serviceCollection.Configure((Action<ExplorePackagesSettings>)ConfigureDefaultsAndSettings);
@@ -87,7 +87,8 @@ namespace Knapcode.ExplorePackages
             return hostBuilder.Build();
         }
 
-        protected LogLevel ThrowOnLogLevel { get; set; } = LogLevel.Warning;
+        protected LogLevel FailFastLogLevel { get; set; } = LogLevel.Error;
+        protected LogLevel AssertLogLevel { get; set; } = LogLevel.Warning;
 
         protected virtual void ConfigureHostBuilder(IHostBuilder hostBuilder)
         {
@@ -138,20 +139,6 @@ namespace Knapcode.ExplorePackages
         public ServiceClientFactory ServiceClientFactory => Host.Services.GetRequiredService<ServiceClientFactory>();
         public ITelemetryClient TelemetryClient => Host.Services.GetRequiredService<ITelemetryClient>();
         public ILogger Logger => Host.Services.GetRequiredService<ILogger<BaseLogicIntegrationTest>>();
-
-        protected void AssertOnlyInfoLogsOrLess()
-        {
-            var warningOrGreater = LogLevelToCount
-                .Where(x => x.Key >= LogLevel.Warning)
-                .Where(x => x.Value > 0)
-                .OrderByDescending(x => x.Key)
-                .ToList();
-            foreach ((var logLevel, var count) in warningOrGreater)
-            {
-                Logger.LogInformation("There were {Count} {LogLevel} log messages.", count, logLevel);
-            }
-            Assert.Empty(warningOrGreater);
-        }
 
         protected async Task AssertBlobCountAsync(string containerName, int expected)
         {
@@ -228,6 +215,8 @@ namespace Knapcode.ExplorePackages
 
         public async Task DisposeAsync()
         {
+            AssertOnlyInfoLogsOrLess();
+
             var account = ServiceClientFactory.GetStorageAccount();
 
             var containers = await account.CreateCloudBlobClient().ListContainersAsync(StoragePrefix);
@@ -247,6 +236,20 @@ namespace Knapcode.ExplorePackages
             {
                 await table.DeleteAsync();
             }
+        }
+
+        private void AssertOnlyInfoLogsOrLess()
+        {
+            var warningOrGreater = LogLevelToCount
+                .Where(x => x.Key >= AssertLogLevel)
+                .Where(x => x.Value > 0)
+                .OrderByDescending(x => x.Key)
+                .ToList();
+            foreach ((var logLevel, var count) in warningOrGreater)
+            {
+                Logger.LogInformation("There were {Count} {LogLevel} log messages.", count, logLevel);
+            }
+            Assert.Empty(warningOrGreater);
         }
 
         public static HttpRequestMessage Clone(HttpRequestMessage req)

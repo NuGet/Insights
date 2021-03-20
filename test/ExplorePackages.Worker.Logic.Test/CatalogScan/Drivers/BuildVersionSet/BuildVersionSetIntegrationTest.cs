@@ -40,7 +40,6 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
                 // Assert
                 await AssertOutputAsync(BuildVersionSetDir, Step1);
                 await AssertExpectedStorageAsync();
-                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -101,7 +100,6 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
                 Assert.False(versionSet2.DidVersionEverExist("doesnotexist", "1.0.0"));
 
                 await AssertExpectedStorageAsync();
-                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -135,7 +133,6 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
                 // Assert
                 await AssertOutputAsync(BuildVersionSet_WithDuplicatesDir, Step2);
                 await AssertExpectedStorageAsync();
-                AssertOnlyInfoLogsOrLess();
             }
         }
 

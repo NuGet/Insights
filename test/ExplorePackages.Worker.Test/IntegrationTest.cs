@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.WindowsAzure.Storage.Queue;
+using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -41,6 +42,17 @@ namespace Knapcode.ExplorePackages.Worker
         {
             public CanRunTimersAsync(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
             {
+                MockVersionSet.SetReturnsDefault(true);
+            }
+
+            protected override void ConfigureHostBuilder(IHostBuilder hostBuilder)
+            {
+                base.ConfigureHostBuilder(hostBuilder);
+
+                hostBuilder.ConfigureServices(serviceCollection =>
+                {
+                    serviceCollection.AddTransient(s => MockVersionSetProvider.Object);
+                });
             }
 
             [Fact]

@@ -1,11 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker.BuildVersionSet;
 using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -16,15 +14,9 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
         private const string OwnersToCsvDir = nameof(Worker.OwnersToCsv);
         private const string OwnersToCsvDir_NonExistentIdDir = nameof(OwnersToCsvDir_NonExistentId);
 
-        public Mock<IVersionSetProvider> VersionSetProvider { get; }
-        public Mock<IVersionSet> VersionSet { get; }
-
         public OwnersToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
-            VersionSetProvider = new Mock<IVersionSetProvider>();
-            VersionSet = new Mock<IVersionSet>();
-            VersionSetProvider.Setup(x => x.GetAsync()).ReturnsAsync(() => VersionSet.Object);
-            VersionSet.SetReturnsDefault(true);
+            MockVersionSet.SetReturnsDefault(true);
         }
 
         protected override void ConfigureHostBuilder(IHostBuilder hostBuilder)
@@ -33,7 +25,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
 
             hostBuilder.ConfigureServices(serviceCollection =>
             {
-                serviceCollection.AddTransient(s => VersionSetProvider.Object);
+                serviceCollection.AddTransient(s => MockVersionSetProvider.Object);
             });
         }
 
@@ -72,7 +64,6 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
                 await AssertCsvBlobAsync(OwnersToCsvDir, Step1, "owners_08585909596854775807.csv.gz");
                 await AssertCsvBlobAsync(OwnersToCsvDir, Step2, "owners_08585908696854775807.csv.gz");
                 await AssertCsvBlobAsync(OwnersToCsvDir, Step2, "latest_owners.csv.gz");
-                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -91,8 +82,8 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
                 var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageOwnerSet>>();
                 await service.InitializeAsync();
                 await service.StartAsync(loop: false, notBefore: TimeSpan.Zero);
-                VersionSet.Setup(x => x.DidIdEverExist("Knapcode.TorSharp")).Returns(false);
-                VersionSet.Setup(x => x.DidIdEverExist("Newtonsoft.Json")).Returns(false);
+                MockVersionSet.Setup(x => x.DidIdEverExist("Knapcode.TorSharp")).Returns(false);
+                MockVersionSet.Setup(x => x.DidIdEverExist("Newtonsoft.Json")).Returns(false);
 
                 // Act
                 await ProcessQueueAsync(service);
@@ -104,7 +95,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
                 // Arrange
                 SetData(Step2);
                 await service.StartAsync(loop: false, notBefore: TimeSpan.Zero);
-                VersionSet.Setup(x => x.DidIdEverExist("Knapcode.TorSharp")).Returns(true);
+                MockVersionSet.Setup(x => x.DidIdEverExist("Knapcode.TorSharp")).Returns(true);
 
                 // Act
                 await ProcessQueueAsync(service);
@@ -114,7 +105,6 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
                 await AssertCsvBlobAsync(OwnersToCsvDir_NonExistentIdDir, Step1, "owners_08585909596854775807.csv.gz");
                 await AssertCsvBlobAsync(OwnersToCsvDir_NonExistentIdDir, Step2, "owners_08585908696854775807.csv.gz");
                 await AssertCsvBlobAsync(OwnersToCsvDir_NonExistentIdDir, Step2, "latest_owners.csv.gz");
-                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -149,7 +139,6 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
                 // Assert
                 await AssertBlobCountAsync(Options.Value.PackageOwnersContainerName, 1);
                 await AssertCsvBlobAsync(OwnersToCsvDir, Step2, "latest_owners.csv.gz");
-                AssertOnlyInfoLogsOrLess();
             }
         }
 

@@ -35,7 +35,6 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
 
                 // Assert
                 await AssertOutputAsync(LoadPackageVersionDir, Step1);
-                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -68,7 +67,6 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
 
                 // Assert
                 await AssertOutputAsync(LoadPackageVersion_WithDeleteDir, Step2);
-                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -94,7 +92,6 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
 
                 // Assert
                 await AssertOutputAsync(LoadPackageVersion_WithDuplicatesDir, Step1);
-                AssertOnlyInfoLogsOrLess();
             }
         }
 

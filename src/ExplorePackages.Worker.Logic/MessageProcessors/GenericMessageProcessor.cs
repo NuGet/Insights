@@ -172,7 +172,9 @@ namespace Knapcode.ExplorePackages.Worker
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("An exception occurred." + Environment.NewLine + "{ExceptionString}", ex.ToString());
+                    // Log warning instead of error as to not trigger integration testing fail-fast.
+                    _logger.LogWarning("An exception occurred." + Environment.NewLine + "{ExceptionString}", ex.ToString());
+
                     if (throwOnException)
                     {
                         throw;
@@ -216,7 +218,9 @@ namespace Knapcode.ExplorePackages.Worker
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("An exception occurred." + Environment.NewLine + "{ExceptionString}", ex.ToString());
+                        // Log warning instead of error as to not trigger integration testing fail-fast.
+                        _logger.LogWarning("An exception occurred." + Environment.NewLine + "{ExceptionString}", ex.ToString());
+
                         if (throwOnException)
                         {
                             throw;

@@ -53,7 +53,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
                 await AssertOutputAsync(PackageAssemblyToCsvDir, Step2, 2);
 
                 await AssertExpectedStorageAsync();
-                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -90,7 +89,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
                 await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 2);
 
                 await AssertExpectedStorageAsync();
-                AssertOnlyInfoLogsOrLess();
             }
 
             public string TempDirLeaseName
@@ -159,7 +157,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
                 await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step2, 2);
 
                 await AssertExpectedStorageAsync();
-                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -190,7 +187,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
                 await AssertOutputAsync(PackageAssemblyToCsv_WithUnmanagedDir, Step1, 0);
 
                 await AssertExpectedStorageAsync();
-                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -262,7 +258,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
             Assert.Equal(OnlyLatestLeaves ? 3 : 6, duplicatePackageRequests.Count);
 
             await AssertExpectedStorageAsync();
-            AssertOnlyInfoLogsOrLess();
         }
 
         protected override IEnumerable<string> GetExpectedCursorNames()

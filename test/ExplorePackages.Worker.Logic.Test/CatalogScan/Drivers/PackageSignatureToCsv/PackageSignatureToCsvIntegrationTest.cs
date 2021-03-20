@@ -51,7 +51,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
                 await AssertOutputAsync(PackageSignatureToCsvDir, Step2, 2);
 
                 await AssertExpectedStorageAsync();
-                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -91,7 +90,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
                 await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step2, 2);
 
                 await AssertExpectedStorageAsync();
-                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -121,7 +119,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
                 // Assert
                 await AssertOutputAsync(PackageSignatureToCsv_AuthorSignatureDir, Step1, 0);
                 await AssertExpectedStorageAsync();
-                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -151,7 +148,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
                 // Assert
                 await AssertOutputAsync(PackageSignatureToCsv_BadTimestampDir, Step1, 0);
                 await AssertExpectedStorageAsync();
-                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -202,7 +198,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
                 await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step2, 2);
 
                 await AssertExpectedStorageAsync();
-                AssertOnlyInfoLogsOrLess();
             }
         }
 

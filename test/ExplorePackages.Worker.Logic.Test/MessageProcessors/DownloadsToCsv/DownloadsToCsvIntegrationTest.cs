@@ -1,11 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker.BuildVersionSet;
 using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -16,15 +14,9 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
         private const string DownloadsToCsvDir = nameof(DownloadsToCsv);
         private const string DownloadsToCsv_NonExistentVersionDir = nameof(DownloadsToCsv_NonExistentVersion);
 
-        public Mock<IVersionSetProvider> VersionSetProvider { get; }
-        public Mock<IVersionSet> VersionSet { get; }
-
         public DownloadsToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
-            VersionSetProvider = new Mock<IVersionSetProvider>();
-            VersionSet = new Mock<IVersionSet>();
-            VersionSetProvider.Setup(x => x.GetAsync()).ReturnsAsync(() => VersionSet.Object);
-            VersionSet.SetReturnsDefault(true);
+            MockVersionSet.SetReturnsDefault(true);
         }
 
         protected override void ConfigureHostBuilder(IHostBuilder hostBuilder)
@@ -33,7 +25,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 
             hostBuilder.ConfigureServices(serviceCollection =>
             {
-                serviceCollection.AddTransient(s => VersionSetProvider.Object);
+                serviceCollection.AddTransient(s => MockVersionSetProvider.Object);
             });
         }
 
@@ -72,7 +64,6 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
                 await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "downloads_08585909596854775807.csv.gz");
                 await AssertCsvBlobAsync(DownloadsToCsvDir, Step2, "downloads_08585908696854775807.csv.gz");
                 await AssertCsvBlobAsync(DownloadsToCsvDir, Step2, "latest_downloads.csv.gz");
-                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -91,8 +82,8 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
                 var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageDownloadSet>>();
                 await service.InitializeAsync();
                 await service.StartAsync(loop: false, notBefore: TimeSpan.Zero);
-                VersionSet.Setup(x => x.DidVersionEverExist("Knapcode.TorSharp", "2.0.7")).Returns(false);
-                VersionSet.Setup(x => x.DidVersionEverExist("Newtonsoft.Json", "10.5.0")).Returns(false);
+                MockVersionSet.Setup(x => x.DidVersionEverExist("Knapcode.TorSharp", "2.0.7")).Returns(false);
+                MockVersionSet.Setup(x => x.DidVersionEverExist("Newtonsoft.Json", "10.5.0")).Returns(false);
 
                 // Act
                 await ProcessQueueAsync(service);
@@ -104,7 +95,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
                 // Arrange
                 SetData(Step2);
                 await service.StartAsync(loop: false, notBefore: TimeSpan.Zero);
-                VersionSet.Setup(x => x.DidVersionEverExist("Knapcode.TorSharp", "2.0.7")).Returns(true);
+                MockVersionSet.Setup(x => x.DidVersionEverExist("Knapcode.TorSharp", "2.0.7")).Returns(true);
 
                 // Act
                 await ProcessQueueAsync(service);
@@ -114,7 +105,6 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
                 await AssertCsvBlobAsync(DownloadsToCsv_NonExistentVersionDir, Step1, "downloads_08585909596854775807.csv.gz");
                 await AssertCsvBlobAsync(DownloadsToCsv_NonExistentVersionDir, Step2, "downloads_08585908696854775807.csv.gz");
                 await AssertCsvBlobAsync(DownloadsToCsv_NonExistentVersionDir, Step2, "latest_downloads.csv.gz");
-                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -149,7 +139,6 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
                 // Assert
                 await AssertBlobCountAsync(Options.Value.PackageDownloadsContainerName, 1);
                 await AssertCsvBlobAsync(DownloadsToCsvDir, Step2, "latest_downloads.csv.gz");
-                AssertOnlyInfoLogsOrLess();
             }
         }
 

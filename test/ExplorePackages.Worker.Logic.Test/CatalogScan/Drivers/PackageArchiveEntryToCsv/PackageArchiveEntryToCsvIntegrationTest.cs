@@ -49,7 +49,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
                 await AssertOutputAsync(PackageArchiveEntryToCsvDir, Step2, 2);
 
                 await AssertExpectedStorageAsync();
-                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -100,7 +99,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
                 await AssertOutputAsync(PackageArchiveEntryToCsv_WithDeleteDir, Step2, 2);
 
                 await AssertExpectedStorageAsync();
-                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -131,7 +129,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
                 await AssertOutputAsync(PackageArchiveEntryToCsv_WithDuplicateEntriesDir, Step1, 2);
 
                 await AssertExpectedStorageAsync();
-                AssertOnlyInfoLogsOrLess();
             }
         }
 

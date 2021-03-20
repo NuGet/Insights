@@ -93,8 +93,6 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
                 taskState.Key.StorageSuffix,
                 taskState.Key.PartitionKey);
             Assert.Equal(0, countLowerBound);
-
-            AssertOnlyInfoLogsOrLess();
         }
     }
 }

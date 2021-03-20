@@ -44,7 +44,6 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageArchive
 
                 // Assert
                 await AssertOutputAsync(LoadPackageArchiveDir, Step2);
-                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -95,7 +94,6 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageArchive
 
                 // Assert
                 await AssertOutputAsync(LoadPackageArchive_WithDeleteDir, Step2);
-                AssertOnlyInfoLogsOrLess();
             }
         }
 

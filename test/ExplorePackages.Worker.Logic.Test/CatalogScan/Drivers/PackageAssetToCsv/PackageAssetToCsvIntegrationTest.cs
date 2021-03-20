@@ -50,7 +50,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
                 await AssertOutputAsync(PackageAssetToCsvDir, Step2, 2);
 
                 await AssertExpectedStorageAsync();
-                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -83,7 +82,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
                 await AssertOutputAsync(PackageAssetToCsvDir, Step1, 2);
 
                 await AssertExpectedStorageAsync();
-                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -134,7 +132,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
                 await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step2, 2);
 
                 await AssertExpectedStorageAsync();
-                AssertOnlyInfoLogsOrLess();
             }
         }
 
@@ -226,7 +223,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
             Assert.Equal(OnlyLatestLeaves ? 1 : 2, duplicatePackageRequests.Where(x => x.Method == HttpMethod.Get).Count());
 
             await AssertExpectedStorageAsync();
-            AssertOnlyInfoLogsOrLess();
         }
 
         protected override IEnumerable<string> GetExpectedCursorNames()
