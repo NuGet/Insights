@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using MessagePack;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -88,8 +89,9 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
             public async Task Execute()
             {
                 // Arrange
-                var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z");
-                var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
+                var min0 = DateTimeOffset.Parse("2018-07-10T14:12:46.2238831Z");
+                var max1 = DateTimeOffset.Parse("2018-07-10T15:49:02.4868485Z");
+                var max2 = DateTimeOffset.Parse("2018-07-10T16:13:45.1175648Z");
 
                 await CatalogScanService.InitializeAsync();
                 await SetCursorAsync(min0);
@@ -99,6 +101,12 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
 
                 // Assert
                 // await AssertOutputAsync(BuildVersionSet_WithDuplicatesDir, Step1);
+
+                // Act
+                await UpdateAsync(max2);
+
+                // Assert
+                // await AssertOutputAsync(BuildVersionSet_WithDuplicatesDir, Step2);
                 AssertOnlyInfoLogsOrLess();
             }
         }
@@ -111,5 +119,10 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.BuildVersionSet;
         public override bool OnlyLatestLeaves => false;
         public override bool OnlyLatestLeavesPerId => false;
+
+        protected async Task AssertOutputAsync(string testDir, string step)
+        {
+
+        }
     }
 }
