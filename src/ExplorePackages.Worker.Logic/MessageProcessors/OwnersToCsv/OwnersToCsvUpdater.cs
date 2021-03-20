@@ -29,8 +29,9 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
         public string OperationName => "OwnersToCsv";
         public string BlobName => "owners";
         public string ContainerName => _options.Value.PackageOwnersContainerName;
-        public TimeSpan LoopFrequency => TimeSpan.FromMinutes(10);
+        public TimeSpan Frequency => _options.Value.OwnersToCsvFrequency;
         public bool IsEnabled => _options.Value.OwnersV2Url != null;
+        public bool AutoStart => _options.Value.AutoStartTimers;
 
         public async Task<PackageOwnerSet> GetDataAsync()
         {

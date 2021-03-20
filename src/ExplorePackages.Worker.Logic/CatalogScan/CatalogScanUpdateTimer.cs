@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Worker
 {
@@ -8,18 +9,21 @@ namespace Knapcode.ExplorePackages.Worker
     {
         private readonly CatalogScanService _catalogScanService;
         private readonly CatalogScanStorageService _catalogScanStorageService;
+        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
         public CatalogScanUpdateTimer(
             CatalogScanService catalogScanService,
-            CatalogScanStorageService catalogScanStorageService)
+            CatalogScanStorageService catalogScanStorageService,
+            IOptions<ExplorePackagesWorkerSettings> options)
         {
             _catalogScanService = catalogScanService;
             _catalogScanStorageService = catalogScanStorageService;
+            _options = options;
         }
 
         public string Name => "CatalogScanUpdate";
-        public TimeSpan Frequency => TimeSpan.FromHours(1);
-        public bool AutoStart => false;
+        public TimeSpan Frequency => _options.Value.CatalogScanUpdateFrequency;
+        public bool AutoStart => _options.Value.AutoStartTimers;
         public bool IsEnabled => true;
 
         public async Task ExecuteAsync()

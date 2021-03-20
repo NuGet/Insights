@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Knapcode.ExplorePackages.Worker
 {
@@ -17,6 +18,11 @@ namespace Knapcode.ExplorePackages.Worker
             OnlyKeepLatestInStreamWriterUpdater = true;
             MoveTempToHome = false;
             DisabledDrivers = new List<CatalogScanDriverType>();
+
+            AutoStartTimers = false;
+            CatalogScanUpdateFrequency = TimeSpan.FromHours(6);
+            DownloadToCsvFrequency = TimeSpan.FromHours(3);
+            OwnersToCsvFrequency = TimeSpan.FromHours(3);
 
             WorkerQueueName = "workerqueue";
             CursorTableName = "cursors";
@@ -54,6 +60,11 @@ namespace Knapcode.ExplorePackages.Worker
         public bool OnlyKeepLatestInStreamWriterUpdater { get; set; }
         public bool MoveTempToHome { get; set; }
         public List<CatalogScanDriverType> DisabledDrivers { get; set; }
+
+        public bool AutoStartTimers { get; }
+        public TimeSpan CatalogScanUpdateFrequency { get; }
+        public TimeSpan DownloadToCsvFrequency { get; }
+        public TimeSpan OwnersToCsvFrequency { get; }
 
         public string WorkerQueueName { get; set; }
         public string CursorTableName { get; set; }

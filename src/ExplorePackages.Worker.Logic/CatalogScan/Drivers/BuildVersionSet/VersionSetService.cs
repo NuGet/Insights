@@ -36,7 +36,7 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
             var versionSet = await GetOrNullAsync();
             if (versionSet == null)
             {
-                 throw new InvalidOperationException($"No version set is available. Run the {nameof(CatalogScanDriverType.BuildVersionSet)} driver.");
+                throw new InvalidOperationException($"No version set is available. Run the {nameof(CatalogScanDriverType.BuildVersionSet)} driver.");
             }
 
             return versionSet;
