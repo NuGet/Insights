@@ -14,19 +14,19 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
 
         public DateTimeOffset CommitTimestamp { get; }
 
-        public bool IsPackageAvaiable(string id, string normalizedVersion)
+        public bool DidIdEverExist(string id)
+        {
+            return _idToVersionToDeleted.ContainsKey(id);
+        }
+
+        public bool DidVersionEverExist(string id, string normalizedVersion)
         {
             if (!_idToVersionToDeleted.TryGetValue(id, out var versionToDeleted))
             {
                 return false;
             }
 
-            if (!versionToDeleted.TryGetValue(normalizedVersion, out var deleted))
-            {
-                return false;
-            }
-
-            return !deleted;
+            return versionToDeleted.ContainsKey(normalizedVersion);
         }
     }
 }

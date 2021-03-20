@@ -5,6 +5,7 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
     public interface IVersionSet
     {
         DateTimeOffset CommitTimestamp { get; }
-        bool IsPackageAvaiable(string id, string version);
+        bool DidIdEverExist(string id);
+        bool DidVersionEverExist(string id, string version);
     }
 }

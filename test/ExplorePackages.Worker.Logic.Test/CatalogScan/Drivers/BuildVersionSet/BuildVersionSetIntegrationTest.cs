@@ -68,9 +68,15 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
 
                 // Assert
                 await AssertOutputAsync(BuildVersionSet_WithDeleteDir, Step1);
-                Assert.True(versionSet1.IsPackageAvaiable("Nut.MediatR.ServiceLike.DependencyInjection", "0.0.0-PREVIEW.0.44"));
-                Assert.True(versionSet1.IsPackageAvaiable("BehaviorSample", "1.0.0"));
-                Assert.False(versionSet1.IsPackageAvaiable("doesnotexist", "1.0.0"));
+
+                Assert.True(versionSet1.DidIdEverExist("Nut.MediatR.ServiceLike.DependencyInjection"));
+                Assert.True(versionSet1.DidVersionEverExist("Nut.MediatR.ServiceLike.DependencyInjection", "0.0.0-PREVIEW.0.44"));
+
+                Assert.True(versionSet1.DidIdEverExist("BehaviorSample"));
+                Assert.True(versionSet1.DidVersionEverExist("BehaviorSample", "1.0.0"));
+
+                Assert.False(versionSet1.DidIdEverExist("doesnotexist"));
+                Assert.False(versionSet1.DidVersionEverExist("doesnotexist", "1.0.0"));
 
                 // Act
                 await UpdateAsync(max2);
@@ -78,9 +84,16 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
 
                 // Assert
                 await AssertOutputAsync(BuildVersionSet_WithDeleteDir, Step2);
-                Assert.True(versionSet2.IsPackageAvaiable("Nut.MediatR.ServiceLike.DependencyInjection", "0.0.0-PREVIEW.0.44"));
-                Assert.False(versionSet2.IsPackageAvaiable("BehaviorSample", "1.0.0"));
-                Assert.False(versionSet2.IsPackageAvaiable("doesnotexist", "1.0.0"));
+
+                Assert.True(versionSet2.DidIdEverExist("Nut.MediatR.ServiceLike.DependencyInjection"));
+                Assert.True(versionSet2.DidVersionEverExist("Nut.MediatR.ServiceLike.DependencyInjection", "0.0.0-PREVIEW.0.44"));
+
+                Assert.True(versionSet2.DidIdEverExist("BehaviorSample"));
+                Assert.True(versionSet2.DidVersionEverExist("BehaviorSample", "1.0.0"));
+
+                Assert.False(versionSet2.DidIdEverExist("doesnotexist"));
+                Assert.False(versionSet2.DidVersionEverExist("doesnotexist", "1.0.0"));
+
                 await AssertExpectedStorageAsync();
                 AssertOnlyInfoLogsOrLess();
             }
