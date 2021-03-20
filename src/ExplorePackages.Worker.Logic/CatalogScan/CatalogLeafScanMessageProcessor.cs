@@ -309,8 +309,8 @@ namespace Knapcode.ExplorePackages.Worker
                 return TimeSpan.FromMilliseconds(ThreadLocalRandom.Next(0, msPerMinute));
             }
 
-            // Then try in increments of 5 minutes.
-            const int incrementMinutes = 5;
+            // Then try in increments of more minutes.
+            const int incrementMinutes = 3;
             var minMinutes = incrementMinutes * (attemptCount - 1);
             var maxMinutes = minMinutes + incrementMinutes;
 
