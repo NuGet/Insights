@@ -77,7 +77,7 @@ namespace Knapcode.ExplorePackages
                         Name = pair.Key,
                         IsRunning = isRunning,
                         IsEnabledInConfig = pair.Value.IsEnabled,
-                        IsEnabledInStorage = entity?.IsEnabled,
+                        IsEnabledInStorage = entity?.IsEnabled ?? pair.Value.AutoStart,
                         LastExecuted = entity?.LastExecuted,
                         Frequency = pair.Value.Frequency,
                     };
@@ -105,10 +105,10 @@ namespace Knapcode.ExplorePackages
 
         public async Task ExecuteNowAsync(string timerName)
         {
-            await ExecuteAsync(new HashSet<string> { timerName }, isEnabledDefault: true, executeNow: true);
+            await ExecuteAsync(new HashSet<string> { timerName }, executeNow: true);
         }
 
-        public async Task ExecuteAsync(bool isEnabledDefault)
+        public async Task ExecuteAsync()
         {
             await using (var lease = await _leaseService.TryAcquireAsync(nameof(TimerExecutionService)))
             {
@@ -118,11 +118,11 @@ namespace Knapcode.ExplorePackages
                     return;
                 }
 
-                await ExecuteAsync(timerNames: null, isEnabledDefault, executeNow: false);
+                await ExecuteAsync(timerNames: null, executeNow: false);
             }
         }
 
-        private async Task ExecuteAsync(ISet<string> timerNames, bool isEnabledDefault, bool executeNow)
+        private async Task ExecuteAsync(ISet<string> timerNames, bool executeNow)
         {
             if (timerNames != null)
             {
@@ -156,10 +156,10 @@ namespace Knapcode.ExplorePackages
                 }
                 else if (!nameToEntity.TryGetValue(timer.Name, out var entity))
                 {
-                    entity = new TimerEntity(timer.Name) { IsEnabled = isEnabledDefault };
+                    entity = new TimerEntity(timer.Name) { IsEnabled = timer.AutoStart };
                     batch.Insert(entity);
 
-                    if (isEnabledDefault)
+                    if (executeNow || entity.IsEnabled)
                     {
                         toExecute.Add((timer, entity));
                         _logger.LogInformation("Timer {Name} will be run for the first time.", timer.Name);
@@ -168,6 +168,12 @@ namespace Knapcode.ExplorePackages
                     {
                         _logger.LogInformation("Timer {Name} will be initialized without running.", timer.Name);
                     }
+                }
+                else if (executeNow)
+                {
+                    _logger.LogInformation("Timer {Name} will be run because it being run on demand.", timer.Name);
+                    toExecute.Add((timer, entity));
+                    batch.Replace(entity);
                 }
                 else if (!entity.IsEnabled)
                 {
@@ -179,7 +185,7 @@ namespace Knapcode.ExplorePackages
                     toExecute.Add((timer, entity));
                     batch.Replace(entity);
                 }
-                else if (!executeNow && (DateTimeOffset.UtcNow - entity.LastExecuted.Value) < timer.Frequency)
+                else if ((DateTimeOffset.UtcNow - entity.LastExecuted.Value) < timer.Frequency)
                 {
                     _logger.LogInformation("Timer {Name} will not be run because it has been executed too recently.", timer.Name);
                 }
@@ -191,8 +197,11 @@ namespace Knapcode.ExplorePackages
                 }
             }
 
-            // Execute all timers.
-            await Task.WhenAll(toExecute.Select(x => ExecuteAsync(x.timer, x.entity)));
+            if (toExecute.Count > 0)
+            {
+                // Execute all timers.
+                await Task.WhenAll(toExecute.Select(x => ExecuteAsync(x.timer, x.entity)));
+            }
 
             if (batch.Count > 0)
             {

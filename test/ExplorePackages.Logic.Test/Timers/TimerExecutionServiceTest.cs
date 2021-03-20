@@ -56,7 +56,7 @@ namespace Knapcode.ExplorePackages
             public async Task SetsIsEnabledOnExistingEntity(bool isEnabled)
             {
                 var before = DateTimeOffset.UtcNow;
-                await Target.ExecuteAsync(isEnabledDefault: true);
+                await Target.ExecuteAsync();
                 var after = DateTimeOffset.UtcNow;
 
                 await Target.SetIsEnabled(TimerName, isEnabled);
@@ -88,6 +88,20 @@ namespace Knapcode.ExplorePackages
                 Timer.Verify(x => x.ExecuteAsync(), Times.Exactly(2));
                 Assert.InRange(entity.LastExecuted.Value, before, after);
             }
+
+            [Fact]
+            public async Task RunsEvenIfAlreadyRunning()
+            {
+                Timer.Setup(x => x.IsRunningAsync()).ReturnsAsync(true);
+
+                var before = DateTimeOffset.UtcNow;
+                await Target.ExecuteNowAsync(TimerName);
+                var after = DateTimeOffset.UtcNow;
+
+                var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
+                Timer.Verify(x => x.ExecuteAsync(), Times.Once);
+                Assert.InRange(entity.LastExecuted.Value, before, after);
+            }
         }
 
         public class TheExecuteAsyncMethod : TimerExecutionServiceTest
@@ -99,19 +113,21 @@ namespace Knapcode.ExplorePackages
             [Theory]
             [InlineData(false)]
             [InlineData(true)]
-            public async Task SetsDefaultIsEnabled(bool isEnabledDefault)
+            public async Task ObservesAutoStartProperty(bool autoStart)
             {
-                await Target.ExecuteAsync(isEnabledDefault);
+                Timer.Setup(x => x.AutoStart).Returns(autoStart);
+
+                await Target.ExecuteAsync();
 
                 var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
-                Assert.Equal(isEnabledDefault, entity.IsEnabled);
+                Assert.Equal(autoStart, entity.IsEnabled);
             }
 
             [Fact]
             public async Task CanExecuteNewTimerByDefault()
             {
                 var before = DateTimeOffset.UtcNow;
-                await Target.ExecuteAsync(isEnabledDefault: true);
+                await Target.ExecuteAsync();
                 var after = DateTimeOffset.UtcNow;
 
                 var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
@@ -123,11 +139,25 @@ namespace Knapcode.ExplorePackages
             }
 
             [Fact]
+            public async Task RunsIfAlreadyRunning()
+            {
+                Timer.Setup(x => x.IsRunningAsync()).ReturnsAsync(true);
+
+                var before = DateTimeOffset.UtcNow;
+                await Target.ExecuteAsync();
+                var after = DateTimeOffset.UtcNow;
+
+                var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
+                Timer.Verify(x => x.ExecuteAsync(), Times.Once);
+                Assert.InRange(entity.LastExecuted.Value, before, after);
+            }
+
+            [Fact]
             public async Task DoesNotExecuteTimerDisabledFromStorage()
             {
                 await Target.SetIsEnabled(TimerName, isEnabled: false);
 
-                await Target.ExecuteAsync(isEnabledDefault: true);
+                await Target.ExecuteAsync();
 
                 var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
                 Timer.Verify(x => x.ExecuteAsync(), Times.Never);
@@ -138,9 +168,10 @@ namespace Knapcode.ExplorePackages
             public async Task ExecutesTimerEnabledForStorage()
             {
                 await Target.SetIsEnabled(TimerName, isEnabled: true);
+                Timer.Setup(x => x.AutoStart).Returns(false);
 
                 var before = DateTimeOffset.UtcNow;
-                await Target.ExecuteAsync(isEnabledDefault: false);
+                await Target.ExecuteAsync();
                 var after = DateTimeOffset.UtcNow;
 
                 var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
@@ -152,10 +183,10 @@ namespace Knapcode.ExplorePackages
             public async Task DoesNotRunATimerThatHasRunRecently()
             {
                 var before = DateTimeOffset.UtcNow;
-                await Target.ExecuteAsync(isEnabledDefault: true);
+                await Target.ExecuteAsync();
                 var after = DateTimeOffset.UtcNow;
 
-                await Target.ExecuteAsync(isEnabledDefault: true);
+                await Target.ExecuteAsync();
 
                 var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
                 Timer.Verify(x => x.ExecuteAsync(), Times.Once);
@@ -165,12 +196,12 @@ namespace Knapcode.ExplorePackages
             [Fact]
             public async Task RunsATimerAgainIfTheFrequencyAllows()
             {
-                await Target.ExecuteAsync(isEnabledDefault: true);
+                await Target.ExecuteAsync();
 
                 Timer.Setup(x => x.Frequency).Returns(TimeSpan.Zero);
 
                 var before = DateTimeOffset.UtcNow;
-                await Target.ExecuteAsync(isEnabledDefault: true);
+                await Target.ExecuteAsync();
                 var after = DateTimeOffset.UtcNow;
 
                 var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
@@ -183,7 +214,7 @@ namespace Knapcode.ExplorePackages
             {
                 Timer.Setup(x => x.IsEnabled).Returns(false);
 
-                await Target.ExecuteAsync(isEnabledDefault: true);
+                await Target.ExecuteAsync();
 
                 Assert.Empty(await GetEntitiesAsync<TimerEntity>());
                 Timer.Verify(x => x.ExecuteAsync(), Times.Never);
@@ -192,12 +223,12 @@ namespace Knapcode.ExplorePackages
             [Fact]
             public async Task DoesNotExecuteExistingTimerDisabledFromConfig()
             {
-                await Target.ExecuteAsync(isEnabledDefault: true);
+                await Target.ExecuteAsync();
                 var existingEntity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
                 Timer.Invocations.Clear();
                 Timer.Setup(x => x.IsEnabled).Returns(false);
 
-                await Target.ExecuteAsync(isEnabledDefault: true);
+                await Target.ExecuteAsync();
 
                 var newEntity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
                 Assert.Equal(existingEntity.ETag, newEntity.ETag);
@@ -216,6 +247,7 @@ namespace Knapcode.ExplorePackages
 
             Timer.Setup(x => x.Name).Returns(TimerName);
             Timer.Setup(x => x.IsEnabled).Returns(true);
+            Timer.Setup(x => x.AutoStart).Returns(true);
             Timer.Setup(x => x.Frequency).Returns(TimeSpan.FromMinutes(5));
         }
 

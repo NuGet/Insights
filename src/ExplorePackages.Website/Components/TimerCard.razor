@@ -1,34 +1,36 @@
 ﻿@{
     var title = Model.Name.Humanize().Replace("csv", "CSV");
     var isEnabled = Model.IsEnabledInConfig && Model.IsEnabledInStorage != false;
-    
+
     string statusText;
     string statusTitle;
     string inlineStatus;
-    string nextRun;
-
-    if (!isEnabled)
+    if (Model.IsRunning)
+    {
+        statusText = "⌛";
+        statusTitle = "The timer is running.";
+        inlineStatus = "running";
+    }
+    else if (!isEnabled)
     {
         statusText = null;
         statusTitle = null;
         inlineStatus = "disabled";
+    }
+    else
+    {
+        statusText = "⏱️";
+        statusTitle = "The timer is scheduled.";
+        inlineStatus = "scheduled";
+    }
+
+    string nextRun;
+    if (!isEnabled)
+    {
         nextRun = "disabled";
     }
     else
     {
-        if (Model.IsRunning)
-        {
-            statusText = "⌛";
-            statusTitle = "The timer is running.";
-            inlineStatus = "running";
-        }
-        else
-        {
-            statusText = "⏱️";
-            statusTitle = "The timer is scheduled.";
-            inlineStatus = "scheduled";
-        }
-
         var nextRunTimestamp = Model.LastExecuted.GetValueOrDefault(DateTimeOffset.MinValue) + Model.Frequency;
         var untilNextRun = nextRunTimestamp - DateTimeOffset.UtcNow;
         if (untilNextRun > TimeSpan.Zero)
@@ -40,6 +42,16 @@
             nextRun = "any minute now";
         }
     }
+
+    string lastStarted = null;
+    if (Model.LastExecuted.HasValue)
+    {
+        lastStarted = (DateTimeOffset.UtcNow - Model.LastExecuted.Value).Humanize(precision: 2) + " ago";
+    }
+    else
+    {
+        lastStarted = "never";
+    }
 }
 <CollapseCard IdPrefix="@Model.Name" Title="@title" StatusText="@statusText" StatusTitle="@statusTitle">
     <ul class="list-group list-group-flush">
@@ -47,7 +59,10 @@
             <b>Status:</b> @inlineStatus
         </li>
         <li class="list-group-item">
-            <b>Last run:</b> @(Model.LastExecuted?.ToZulu() ?? "never")
+            <b>Frequency:</b> @Model.Frequency.Humanize()
+        </li>
+        <li class="list-group-item">
+            <b>Last started:</b> @lastStarted
         </li>
         <li class="list-group-item">
             <b>Next run:</b> @nextRun
@@ -57,7 +72,7 @@
     <div class="card-body">
         <form action="@Url.Action("UpdateTimer")" method="post" class="form-inline">
             <input type="hidden" name="timerName" value="@Model.Name" />
-            <button type="submit" class="btn btn-primary mr-1" name="runNow" value="true" disabled="@(!isEnabled)">Run now</button>
+            <button type="submit" class="btn btn-primary mr-1" name="runNow" value="true" disabled="@(!Model.IsEnabledInConfig)">Run now</button>
             @if (isEnabled)
             {
                 <button type="submit" class="btn btn-danger" name="disable" value="true">Disable</button>

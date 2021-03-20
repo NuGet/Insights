@@ -1,6 +1,7 @@
 ﻿@model AdminViewModel
 @{
     ViewData["Title"] = "Admin";
+    ViewData["PageClass"] = "admin-index";
 }
 
 <component type="typeof(WorkerQueueCard)"
@@ -13,6 +14,8 @@
            param-TempData="TempData"
            param-Url="Url" />
 
+<h3>Catalog scan drivers</h3>
+
 @foreach (var catalogScan in Model.CatalogScans)
 {
     <component type="typeof(CatalogScanCard)"
@@ -21,6 +24,8 @@
                param-TempData="TempData"
                param-Url="Url" />
 }
+
+<h3>Timers</h3>
 
 @foreach (var timerState in Model.TimerStates)
 {

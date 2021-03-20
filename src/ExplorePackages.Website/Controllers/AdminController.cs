@@ -100,7 +100,6 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             }
 
             await Task.WhenAll(
-                _rawMessageEnqueuer.InitializeAsync(),
                 _catalogScanService.InitializeAsync(),
                 _timerExecutionService.InitializeAsync());
 
@@ -110,7 +109,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
         private async Task<CatalogScanViewModel> GetCatalogScanAsync(CatalogScanDriverType driverType)
         {
             var cursor = await _catalogScanCursorService.GetCursorAsync(driverType);
-            var latestScans = await _catalogScanStorageService.GetLatestIndexScans(cursor.Name, maxEntities: 5);
+            var latestScans = await _catalogScanStorageService.GetLatestIndexScansAsync(cursor.Name, maxEntities: 5);
 
             return new CatalogScanViewModel
             {
@@ -141,12 +140,11 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment);
         }
 
-        private async Task<(bool Success, string Message, string Fragment)> UpdateAllCatalogScansAsync(
-            bool useCustomMax,
-            string max)
+        private async Task<(bool Success, string Message, string Fragment)> UpdateAllCatalogScansAsync(bool useCustomMax, string max)
         {
             const string fragment = "CatalogScans";
-            var parsedMax = await _remoteCursorClient.GetCatalogAsync();
+
+            DateTimeOffset? parsedMax = null;
             if (useCustomMax)
             {
                 if (!DateTimeOffset.TryParse(max, out var parsedMaxValue))

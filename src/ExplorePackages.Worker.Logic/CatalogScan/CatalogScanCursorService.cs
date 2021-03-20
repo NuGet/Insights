@@ -7,6 +7,9 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class CatalogScanCursorService
     {
+        public const string CatalogCursorName = "NuGet.org catalog";
+        public const string FlatContainerCursorName = "NuGet.org flat container";
+
         private delegate Task<DateTimeOffset> GetCursorValue(CatalogScanCursorService service);
 
         private static readonly CatalogScanDriverType Catalog = (CatalogScanDriverType)int.MinValue;
@@ -186,11 +189,11 @@ namespace Knapcode.ExplorePackages.Worker
         {
             if (driverType == Catalog)
             {
-                return ("NuGet.org catalog", await _remoteCursorClient.GetCatalogAsync());
+                return (CatalogCursorName, await _remoteCursorClient.GetCatalogAsync());
             }
             else if (driverType == FlatContainer)
             {
-                return ("NuGet.org flat container", await _remoteCursorClient.GetFlatContainerAsync());
+                return (FlatContainerCursorName, await _remoteCursorClient.GetFlatContainerAsync());
             }
             else if (ValidDriverTypes.Contains(driverType))
             {

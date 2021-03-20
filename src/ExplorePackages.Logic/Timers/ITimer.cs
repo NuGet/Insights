@@ -7,6 +7,7 @@ namespace Knapcode.ExplorePackages
     {
         string Name { get; }
         TimeSpan Frequency { get; }
+        bool AutoStart { get; }
         bool IsEnabled { get; }
         Task<bool> IsRunningAsync();
         Task InitializeAsync();

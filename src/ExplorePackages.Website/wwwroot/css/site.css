@@ -2,37 +2,6 @@
     line-height: 60px;
 }
 
-.table-report tr th:first-child {
-    text-align: right;
-    width: 11rem;
-}
-
-#report .table-report thead tr:first-child th {
-    border-bottom-width: 0;
-}
-
-#urls table tr td:nth-child(2) {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-    max-width: 600px;
-}
-
-.notransition {
-    -webkit-transition: none !important;
-    -moz-transition: none !important;
-    -o-transition: none !important;
-    transition: none !important;
-}
-
-.card .list-group-item, .card-body, .card-header {
-    padding: 0.75rem;
-}
-
-.panel-title {
-    font-weight: bold;
-}
-
 .nav-item .nav-link {
     padding: 0.5rem 0.75rem !important;
 }
@@ -41,32 +10,83 @@
     font-size: 0.9rem;
 }
 
-.card-header .bi {
+/* Consistency */
+.consistency .table-report tr th:first-child {
+    text-align: right;
+    width: 11rem;
+}
+
+.consistency #report .table-report thead tr:first-child th {
+    border-bottom-width: 0;
+}
+
+.consistency #urls table tr td:nth-child(2) {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 600px;
+}
+
+.consistency .notransition {
+    -webkit-transition: none !important;
+    -moz-transition: none !important;
+    -o-transition: none !important;
+    transition: none !important;
+}
+
+/* Admin index */
+.admin-index h3 {
+    margin-top: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px dotted gray;
+    text-align: center;
+}
+
+.admin-index .table {
+    margin-bottom: 0.5rem;
+}
+
+.admin-index .table td,
+.admin-index .table th {
+    padding: 0.5rem;
+}
+
+.admin-index .panel-title {
+    font-weight: bold;
+}
+
+.admin-index .card-header .bi {
     display: inline-flex;
     font-size: 1rem;
 }
 
-.card-header h4 {
+.admin-index .card-header h4 {
     margin-bottom: 0;
 }
 
-.card-header button {
+.admin-index .card .list-group-item,
+.admin-index .card-body,
+.admin-index .card-header {
+    padding: 0.5rem;
+}
+
+.admin-index .card-header button {
     padding: .125rem;
 }
 
-.card-header .btn-link {
+.admin-index .card-header .btn-link {
     text-decoration: none;
     color: black;
 }
 
-[data-toggle="collapse"].card-header {
+.admin-index [data-toggle="collapse"].card-header {
     border-bottom-width: 0;
 }
 
-[data-toggle="collapse"] .bi::before {
+.admin-index [data-toggle="collapse"] .bi::before {
     content: "\f282";
 }
 
-[data-toggle="collapse"].collapsed .bi::before {
+.admin-index [data-toggle="collapse"].collapsed .bi::before {
     content: "\f285";
 }

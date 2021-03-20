@@ -133,7 +133,7 @@ namespace Knapcode.ExplorePackages.Worker
                     () => { },
                     async () =>
                     {
-                        var indexScans = await CatalogScanStorageService.GetIndexScans();
+                        var indexScans = await CatalogScanStorageService.GetIndexScansAsync();
                         if (indexScans.All(x => x.ParsedState == CatalogIndexScanState.Complete))
                         {
                             return true;
@@ -151,7 +151,7 @@ namespace Knapcode.ExplorePackages.Worker
                     });
 
                 // Make sure all scans completed.
-                var indexScans = await CatalogScanStorageService.GetIndexScans();
+                var indexScans = await CatalogScanStorageService.GetIndexScansAsync();
                 Assert.All(indexScans, x => Assert.Equal(CatalogIndexScanState.Complete, x.ParsedState));
                 Assert.Equal(
                     CatalogScanCursorService.StartableDriverTypes.ToArray(),

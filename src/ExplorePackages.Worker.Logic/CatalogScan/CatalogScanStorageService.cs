@@ -113,12 +113,12 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        public async Task<IReadOnlyList<CatalogIndexScan>> GetIndexScans()
+        public async Task<IReadOnlyList<CatalogIndexScan>> GetIndexScansAsync()
         {
             return await GetIndexScanTable().GetEntitiesAsync<CatalogIndexScan>(_telemetryClient.StartQueryLoopMetrics());
         }
 
-        public async Task<IReadOnlyList<CatalogIndexScan>> GetLatestIndexScans(string cursorName, int? maxEntities = 1000)
+        public async Task<IReadOnlyList<CatalogIndexScan>> GetLatestIndexScansAsync(string cursorName, int? maxEntities = 1000)
         {
             return await GetIndexScanTable().GetEntitiesAsync<CatalogIndexScan>(cursorName, _telemetryClient.StartQueryLoopMetrics(), maxEntities);
         }

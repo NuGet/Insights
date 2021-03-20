@@ -153,8 +153,13 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        public async Task<IReadOnlyDictionary<CatalogScanDriverType, CatalogScanServiceResult>> UpdateAllAsync(DateTimeOffset max)
+        public async Task<IReadOnlyDictionary<CatalogScanDriverType, CatalogScanServiceResult>> UpdateAllAsync(DateTimeOffset? max)
         {
+            if (!max.HasValue)
+            {
+                max = await _cursorService.GetSourceMaxAsync();
+            }
+
             var results = new Dictionary<CatalogScanDriverType, CatalogScanServiceResult>();
             foreach (var driverType in _cursorService.StartableDriverTypes)
             {
@@ -491,7 +496,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         private async Task<CatalogIndexScan> GetLatestIncompleteScanAsync(string cursorName)
         {
-            var latestScans = await _storageService.GetLatestIndexScans(cursorName);
+            var latestScans = await _storageService.GetLatestIndexScansAsync(cursorName);
             var incompleteScans = latestScans.Where(x => x.ParsedState != CatalogIndexScanState.Complete);
             if (incompleteScans.Any())
             {

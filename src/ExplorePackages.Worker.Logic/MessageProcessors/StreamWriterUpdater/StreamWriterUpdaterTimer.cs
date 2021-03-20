@@ -19,6 +19,7 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
         public string Name => _updater.OperationName;
         public TimeSpan Frequency => _updater.LoopFrequency;
         public bool IsEnabled => _service.IsEnabled;
+        public bool AutoStart => true;
 
         public async Task ExecuteAsync()
         {

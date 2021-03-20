@@ -36,6 +36,7 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient<CatalogScanCursorService>();
             serviceCollection.AddTransient<ICatalogScanDriverFactory, CatalogScanDriverFactory>();
             serviceCollection.AddTransient<CatalogScanService>();
+            serviceCollection.AddTransient<ITimer, CatalogScanUpdateTimer>();
             serviceCollection.AddTransient<CatalogScanExpandService>();
             serviceCollection.AddTransient(typeof(CatalogScanToCsvAdapter<>));
             AddTableScan<LatestPackageLeaf>(serviceCollection);
