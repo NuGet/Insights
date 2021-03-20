@@ -135,8 +135,16 @@ namespace Knapcode.ExplorePackages.Worker
 
         public override async Task DisposeAsync()
         {
-            await AssertExpectedStorageAsync();
-            await base.DisposeAsync();
+            try
+            {
+                // Global assertions
+                await AssertExpectedStorageAsync();
+            }
+            finally
+            {
+                // Clean up
+                await base.DisposeAsync();
+            }
         }
 
         private async Task AssertExpectedStorageAsync()

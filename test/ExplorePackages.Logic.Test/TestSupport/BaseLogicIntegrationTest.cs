@@ -33,6 +33,7 @@ namespace Knapcode.ExplorePackages
         public const string TestData = "TestData";
         public const string Step1 = "Step1";
         public const string Step2 = "Step2";
+        public static readonly Regex StoragePrefixPattern = new Regex(@"t(?<Date>\d{6})[a-z234567]{10}");
 
         /// <summary>
         /// This should only be on when generating new test data locally. It should never be checked in as true.
@@ -46,7 +47,12 @@ namespace Knapcode.ExplorePackages
             DefaultWebApplicationFactory<StaticFilesStartup> factory)
         {
             Output = output;
-            StoragePrefix = "t" + StorageUtility.GenerateUniqueId();
+
+            var randomBytes = new byte[6];
+            ThreadLocalRandom.NextBytes(randomBytes);
+            StoragePrefix = "t" + DateTimeOffset.UtcNow.ToString("yyMMdd") + randomBytes.ToTrimmedBase32();
+            Assert.Matches(StoragePrefixPattern, StoragePrefix);
+
             HttpMessageHandlerFactory = new TestHttpMessageHandlerFactory();
 
             var currentDirectory = Directory.GetCurrentDirectory();
@@ -215,26 +221,33 @@ namespace Knapcode.ExplorePackages
 
         public virtual async Task DisposeAsync()
         {
-            AssertOnlyInfoLogsOrLess();
-
-            var account = ServiceClientFactory.GetStorageAccount();
-
-            var containers = await account.CreateCloudBlobClient().ListContainersAsync(StoragePrefix);
-            foreach (var container in containers)
+            try
             {
-                await container.DeleteAsync();
+                // Global assertions
+                AssertOnlyInfoLogsOrLess();
             }
-
-            var queues = await account.CreateCloudQueueClient().ListQueuesAsync(StoragePrefix);
-            foreach (var queue in queues)
+            finally
             {
-                await queue.DeleteAsync();
-            }
+                // Clean up
+                var account = ServiceClientFactory.GetStorageAccount();
 
-            var tables = await account.CreateCloudTableClient().ListTablesAsync(StoragePrefix);
-            foreach (var table in tables)
-            {
-                await table.DeleteAsync();
+                var containers = await account.CreateCloudBlobClient().ListContainersAsync(StoragePrefix);
+                foreach (var container in containers)
+                {
+                    await container.DeleteAsync();
+                }
+
+                var queues = await account.CreateCloudQueueClient().ListQueuesAsync(StoragePrefix);
+                foreach (var queue in queues)
+                {
+                    await queue.DeleteAsync();
+                }
+
+                var tables = await account.CreateCloudTableClient().ListTablesAsync(StoragePrefix);
+                foreach (var table in tables)
+                {
+                    await table.DeleteAsync();
+                }
             }
         }
 
