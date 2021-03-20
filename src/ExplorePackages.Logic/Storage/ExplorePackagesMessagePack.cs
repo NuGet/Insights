@@ -1,5 +1,4 @@
-﻿using Knapcode.ExplorePackages.VersionSets;
-using MessagePack;
+﻿using MessagePack;
 using MessagePack.Formatters;
 using MessagePack.Resolvers;
 
@@ -12,7 +11,6 @@ namespace Knapcode.ExplorePackages
             .WithResolver(CompositeResolver.Create(
                 new IMessagePackFormatter[]
                 {
-                    VersionSetDictionaryFormatter.Instance,
                 },
                 new IFormatterResolver[]
                 {

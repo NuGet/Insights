@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Knapcode.ExplorePackages.VersionSets
+namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
 {
     public interface IVersionSet
     {

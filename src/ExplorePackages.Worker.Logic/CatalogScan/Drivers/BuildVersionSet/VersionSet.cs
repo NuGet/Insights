@@ -1,12 +1,12 @@
 ﻿using System;
 
-namespace Knapcode.ExplorePackages.VersionSets
+namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
 {
     public class VersionSet : IVersionSet
     {
-        private readonly VersionSetDictionary _idToVersionToDeleted;
+        private readonly CaseInsensitiveDictionary<CaseInsensitiveDictionary<bool>> _idToVersionToDeleted;
 
-        public VersionSet(DateTimeOffset commitTimestamp, VersionSetDictionary idToVersionToDeleted)
+        public VersionSet(DateTimeOffset commitTimestamp, CaseInsensitiveDictionary<CaseInsensitiveDictionary<bool>> idToVersionToDeleted)
         {
             CommitTimestamp = commitTimestamp;
             _idToVersionToDeleted = idToVersionToDeleted;

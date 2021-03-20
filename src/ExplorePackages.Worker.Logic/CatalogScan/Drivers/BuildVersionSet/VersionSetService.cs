@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.VersionSets;
 using MessagePack;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -34,10 +33,10 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
 
         public async Task<IVersionSet> ReadAsync()
         {
-            (var data, _) = await ReadOrNullAsync<VersionSetDictionary>();
+            (var data, _) = await ReadOrNullAsync<CaseInsensitiveDictionary<CaseInsensitiveDictionary<bool>>>();
             if (data == null)
             {
-                return new VersionSet(DateTimeOffset.MinValue, new VersionSetDictionary());
+                return new VersionSet(DateTimeOffset.MinValue, new CaseInsensitiveDictionary<CaseInsensitiveDictionary<bool>>());
             }
 
             return new VersionSet(data.V1.CommitTimestamp, data.V1.IdToVersionToDeleted);
