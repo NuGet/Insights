@@ -167,6 +167,7 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient<BuildVersionSetDriver>();
             serviceCollection.AddTransient<VersionSetAggregateStorageService>();
             serviceCollection.AddTransient<VersionSetService>();
+            serviceCollection.AddTransient<IVersionSetProvider, VersionSetService>();
         }
 
         private static void AddCatalogLeafItemToCsv(this IServiceCollection serviceCollection)

@@ -1,0 +1,3 @@
+AsOfTimestamp,LowerId,Id,Owners
+2021-01-14T18:00:00.0000000+00:00,microsoft.extensions.logging,Microsoft.Extensions.Logging,"[""aspnet"",""dotnetframework"",""Microsoft""]"
+2021-01-14T18:00:00.0000000+00:00,castle.core,Castle.Core,"[""castleproject""]"

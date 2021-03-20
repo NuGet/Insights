@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Worker.BuildVersionSet;
 using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
 using Microsoft.Extensions.Options;
 using NuGet.Versioning;
@@ -12,13 +13,16 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
     public class DownloadsToCsvUpdater : IStreamWriterUpdater<PackageDownloadSet>
     {
         private readonly IPackageDownloadsClient _packageDownloadsClient;
+        private readonly IVersionSetProvider _versionSetProvider;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
         public DownloadsToCsvUpdater(
             IPackageDownloadsClient packageDownloadsClient,
+            IVersionSetProvider versionSetProvider,
             IOptions<ExplorePackagesWorkerSettings> options)
         {
             _packageDownloadsClient = packageDownloadsClient;
+            _versionSetProvider = versionSetProvider;
             _options = options;
         }
 
@@ -35,12 +39,20 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 
         public async Task WriteAsync(PackageDownloadSet data, StreamWriter writer)
         {
+            var versionSet = await _versionSetProvider.GetAsync();
+
             var record = new PackageDownloadRecord { AsOfTimestamp = data.AsOfTimestamp };
             record.WriteHeader(writer);
 
             var idToVersions = new Dictionary<string, Dictionary<string, long>>(StringComparer.OrdinalIgnoreCase);
             await foreach (var entry in data.Downloads)
             {
+                var normalizedVersion = NuGetVersion.Parse(entry.Version).ToNormalizedString();
+                if (!versionSet.DidVersionEverExist(entry.Id, normalizedVersion))
+                {
+                    continue;
+                }
+
                 if (!idToVersions.TryGetValue(entry.Id, out var versionToDownloads))
                 {
                     // Only write when we move to the next ID. This ensures all of the versions of a given ID are in the same segment.
@@ -53,7 +65,6 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
                     idToVersions.Add(entry.Id, versionToDownloads);
                 }
 
-                var normalizedVersion = NuGetVersion.Parse(entry.Version).ToNormalizedString();
                 versionToDownloads[normalizedVersion] = entry.Downloads;
             }
 

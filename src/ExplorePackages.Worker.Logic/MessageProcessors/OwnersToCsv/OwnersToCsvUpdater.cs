@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Worker.BuildVersionSet;
 using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -12,13 +13,16 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
     public class OwnersToCsvUpdater : IStreamWriterUpdater<PackageOwnerSet>
     {
         private readonly PackageOwnersClient _packageOwnersClient;
+        private readonly IVersionSetProvider _versionSetProvider;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
         public OwnersToCsvUpdater(
             PackageOwnersClient packageOwnersClient,
+            IVersionSetProvider versionSetProvider,
             IOptions<ExplorePackagesWorkerSettings> options)
         {
             _packageOwnersClient = packageOwnersClient;
+            _versionSetProvider = versionSetProvider;
             _options = options;
         }
 
@@ -35,12 +39,19 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
 
         public async Task WriteAsync(PackageOwnerSet data, StreamWriter writer)
         {
+            var versionSet = await _versionSetProvider.GetAsync();
+
             var record = new PackageOwnerRecord { AsOfTimestamp = data.AsOfTimestamp };
             record.WriteHeader(writer);
 
             var idToOwners = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
             await foreach (var entry in data.Owners)
             {
+                if (!versionSet.DidIdEverExist(entry.Id))
+                {
+                    continue;
+                }
+
                 if (!idToOwners.TryGetValue(entry.Id, out var owners))
                 {
                     // Only write when we move to the next ID. This ensures all of the owners of a given ID are in the same record.

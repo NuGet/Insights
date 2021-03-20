@@ -63,8 +63,20 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
                 await SetCursorAsync(min0);
 
                 // Act
+                var versionSet0 = await VersionSetService.GetAsync();
+
+                Assert.False(versionSet0.DidIdEverExist("Nut.MediatR.ServiceLike.DependencyInjection"));
+                Assert.False(versionSet0.DidVersionEverExist("Nut.MediatR.ServiceLike.DependencyInjection", "0.0.0-PREVIEW.0.44"));
+
+                Assert.False(versionSet0.DidIdEverExist("BehaviorSample"));
+                Assert.False(versionSet0.DidVersionEverExist("BehaviorSample", "1.0.0"));
+
+                Assert.False(versionSet0.DidIdEverExist("doesnotexist"));
+                Assert.False(versionSet0.DidVersionEverExist("doesnotexist", "1.0.0"));
+
+                // Act
                 await UpdateAsync(max1);
-                var versionSet1 = await VersionSetService.ReadAsync();
+                var versionSet1 = await VersionSetService.GetAsync();
 
                 // Assert
                 await AssertOutputAsync(BuildVersionSet_WithDeleteDir, Step1);
@@ -80,7 +92,7 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
 
                 // Act
                 await UpdateAsync(max2);
-                var versionSet2 = await VersionSetService.ReadAsync();
+                var versionSet2 = await VersionSetService.GetAsync();
 
                 // Assert
                 await AssertOutputAsync(BuildVersionSet_WithDeleteDir, Step2);

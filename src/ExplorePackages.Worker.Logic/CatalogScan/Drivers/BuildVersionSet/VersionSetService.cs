@@ -10,7 +10,7 @@ using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
 {
-    public class VersionSetService
+    public class VersionSetService : IVersionSetProvider
     {
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
@@ -31,7 +31,7 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
             await GetBlob().Container.CreateIfNotExistsAsync(retry: true);
         }
 
-        public async Task<IVersionSet> ReadAsync()
+        public async Task<IVersionSet> GetAsync()
         {
             (var data, _) = await ReadOrNullAsync<CaseInsensitiveDictionary<CaseInsensitiveDictionary<bool>>>();
             if (data == null)
