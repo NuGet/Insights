@@ -25,6 +25,8 @@ namespace Knapcode.ExplorePackages.Worker
             CatalogLeafScanTableName = "catalogleafscans";
             TaskStateTableName = "taskstate";
             CsvRecordTableName = "csvrecords";
+            VersionSetAggregateTableName = "versionset";
+            VersionSetContainerName = "versionset";
 
             LatestPackageLeafTableName = "latestpackageleaves";
             PackageAssetContainerName = "packageassets";
@@ -59,7 +61,9 @@ namespace Knapcode.ExplorePackages.Worker
         public string CatalogPageScanTableName { get; set; }
         public string CatalogLeafScanTableName { get; set; }
         public string TaskStateTableName { get; set; }
-        public object CsvRecordTableName { get; set; }
+        public string CsvRecordTableName { get; set; }
+        public string VersionSetAggregateTableName { get; set; }
+        public string VersionSetContainerName { get; set; }
 
         public string LatestPackageLeafTableName { get; set; }
         public string PackageAssetContainerName { get; set; }

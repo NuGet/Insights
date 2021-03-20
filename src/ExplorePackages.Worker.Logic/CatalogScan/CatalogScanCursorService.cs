@@ -28,6 +28,10 @@ namespace Knapcode.ExplorePackages.Worker
         private static readonly IReadOnlyDictionary<CatalogScanDriverType, IReadOnlyList<CatalogScanDriverType>> Dependencies = new Dictionary<CatalogScanDriverType, CatalogScanDriverType[]>
         {
             {
+                CatalogScanDriverType.BuildVersionSet,
+                new[] { Catalog }
+            },
+            {
                 CatalogScanDriverType.CatalogLeafItemToCsv,
                 new[] { Catalog }
             },

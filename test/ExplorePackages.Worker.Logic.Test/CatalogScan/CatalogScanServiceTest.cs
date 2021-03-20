@@ -278,6 +278,19 @@ namespace Knapcode.ExplorePackages.Worker
         private static Dictionary<CatalogScanDriverType, DriverInfo> TypeToInfo => new Dictionary<CatalogScanDriverType, DriverInfo>
         {
             {
+                CatalogScanDriverType.BuildVersionSet,
+                new DriverInfo
+                {
+                    DefaultMin = CatalogClient.NuGetOrgMinDeleted,
+                    SetDependencyCursorAsync = (self, x) =>
+                    {
+                        self.CatalogCursor = x;
+                        return Task.CompletedTask;
+                    },
+                }
+            },
+
+            {
                 CatalogScanDriverType.LoadPackageArchive,
                 new DriverInfo
                 {

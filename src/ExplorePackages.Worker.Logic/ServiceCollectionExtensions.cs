@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Knapcode.ExplorePackages.Worker.BuildVersionSet;
 using Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv;
 using Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan;
 using Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan;
@@ -62,6 +63,7 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddLoadPackageVersion();
             serviceCollection.AddRunRealRestore();
             serviceCollection.AddTableCopy();
+            serviceCollection.AddBuildVersionSet();
 
             foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(IMessageProcessor<>)))
             {
@@ -158,6 +160,13 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient(
                 typeof(IMessageProcessor<>).MakeGenericType(typeof(TableRowCopyMessage<>).MakeGenericType(entityType)),
                 typeof(TableRowCopyMessageProcessor<>).MakeGenericType(entityType));
+        }
+
+        private static void AddBuildVersionSet(this IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddTransient<BuildVersionSetDriver>();
+            serviceCollection.AddTransient<VersionSetAggregateStorageService>();
+            serviceCollection.AddTransient<VersionSetService>();
         }
 
         private static void AddCatalogLeafItemToCsv(this IServiceCollection serviceCollection)

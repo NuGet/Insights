@@ -50,6 +50,8 @@ namespace Knapcode.ExplorePackages.Worker
             x.CatalogLeafScanTableName = $"{StoragePrefix}1cls1";
             x.TaskStateTableName = $"{StoragePrefix}1ts1";
             x.CsvRecordTableName = $"{StoragePrefix}1cr1";
+            x.VersionSetAggregateTableName = $"{StoragePrefix}1vsa1";
+            x.VersionSetContainerName = $"{StoragePrefix}1vs1";
             x.LatestPackageLeafTableName = $"{StoragePrefix}1lpl1";
             x.PackageVersionTableName = $"{StoragePrefix}1pv1";
             x.PackageVersionContainerName = $"{StoragePrefix}1pvc1";

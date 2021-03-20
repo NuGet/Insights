@@ -110,6 +110,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             switch (driverType)
             {
+                case CatalogScanDriverType.BuildVersionSet:
                 case CatalogScanDriverType.CatalogLeafItemToCsv:
                     return false;
 
@@ -219,6 +220,7 @@ namespace Knapcode.ExplorePackages.Worker
                         max,
                         continueWithDependents);
 
+                case CatalogScanDriverType.BuildVersionSet:
                 case CatalogScanDriverType.LoadLatestPackageLeaf:
                 case CatalogScanDriverType.LoadPackageArchive:
                 case CatalogScanDriverType.LoadPackageManifest:

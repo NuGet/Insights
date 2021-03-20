@@ -43,6 +43,12 @@
         LoadLatestPackageLeaf,
 
         /// <summary>
+        /// Implemented by <see cref="BuildVersionSet.BuildVersionSetDriver"/>. Builds a compact data structure that
+        /// can be loaded in memory to quickly determine if a package ID and version exists on NuGet.org.
+        /// </summary>
+        BuildVersionSet,
+
+        /// <summary>
         /// Implemented by <see cref="CatalogLeafItemToCsv.CatalogLeafItemToCsvDriver"/>. Reads all catalog leaf items
         /// and their associated page metadata. The catalog leaf item is described here:
         /// https://docs.microsoft.com/en-us/nuget/api/catalog-resource#catalog-item-object-in-a-page
