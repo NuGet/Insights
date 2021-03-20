@@ -66,8 +66,6 @@ namespace Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf
 
                 // Assert
                 await AssertOutputAsync(LoadLatestPackageLeaves_WithDuplicatesWithDuplicatesInCommitDir, Step2);
-
-                await AssertExpectedStorageAsync();
             }
         }
 

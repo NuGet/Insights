@@ -34,7 +34,6 @@ namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
 
                 // Assert
                 await AssertOutputAsync(CatalogLeafItemToCsvDir, Step1, 0);
-                await AssertExpectedStorageAsync();
             }
         }
 
@@ -62,7 +61,6 @@ namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
 
                 // Assert
                 await AssertOutputAsync(CatalogLeafItemToCsv_WithDuplicatesDir, Step1, 0);
-                await AssertExpectedStorageAsync();
             }
         }
 

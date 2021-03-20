@@ -47,8 +47,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
                 await AssertOutputAsync(PackageArchiveEntryToCsvDir, Step2, 0);
                 await AssertOutputAsync(PackageArchiveEntryToCsvDir, Step1, 1); // This file is unchanged.
                 await AssertOutputAsync(PackageArchiveEntryToCsvDir, Step2, 2);
-
-                await AssertExpectedStorageAsync();
             }
         }
 
@@ -97,8 +95,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
                 await AssertOutputAsync(PackageArchiveEntryToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
                 await AssertOutputAsync(PackageArchiveEntryToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
                 await AssertOutputAsync(PackageArchiveEntryToCsv_WithDeleteDir, Step2, 2);
-
-                await AssertExpectedStorageAsync();
             }
         }
 
@@ -127,8 +123,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
                 await AssertOutputAsync(PackageArchiveEntryToCsv_WithDuplicateEntriesDir, Step1, 0);
                 await AssertOutputAsync(PackageArchiveEntryToCsv_WithDuplicateEntriesDir, Step1, 1);
                 await AssertOutputAsync(PackageArchiveEntryToCsv_WithDuplicateEntriesDir, Step1, 2);
-
-                await AssertExpectedStorageAsync();
             }
         }
 

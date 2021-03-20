@@ -106,8 +106,6 @@ namespace Knapcode.ExplorePackages.Worker
             }
             var expected = File.ReadAllText(Path.Combine(TestData, dir, "entities.json"));
             Assert.Equal(expected, actual);
-
-            await AssertExpectedStorageAsync();
         }
 
         protected async Task AssertWideEntityOutputAsync<T>(string tableName, string dir, Func<Stream, T> deserializeEntity)
@@ -133,11 +131,15 @@ namespace Knapcode.ExplorePackages.Worker
             }
             var expected = File.ReadAllText(Path.Combine(TestData, dir, "entities.json"));
             Assert.Equal(expected, actual);
-
-            await AssertExpectedStorageAsync();
         }
 
-        protected async Task AssertExpectedStorageAsync()
+        public override async Task DisposeAsync()
+        {
+            await AssertExpectedStorageAsync();
+            await base.DisposeAsync();
+        }
+
+        private async Task AssertExpectedStorageAsync()
         {
             var account = ServiceClientFactory.GetStorageAccount();
 

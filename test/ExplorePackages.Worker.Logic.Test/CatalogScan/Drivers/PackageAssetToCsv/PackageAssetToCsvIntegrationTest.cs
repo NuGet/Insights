@@ -48,8 +48,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
                 await AssertOutputAsync(PackageAssetToCsvDir, Step2, 0);
                 await AssertOutputAsync(PackageAssetToCsvDir, Step1, 1); // This file is unchanged.
                 await AssertOutputAsync(PackageAssetToCsvDir, Step2, 2);
-
-                await AssertExpectedStorageAsync();
             }
         }
 
@@ -80,8 +78,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
                 await AssertOutputAsync(PackageAssetToCsvDir, Step1, 0);
                 await AssertOutputAsync(PackageAssetToCsvDir, Step1, 1);
                 await AssertOutputAsync(PackageAssetToCsvDir, Step1, 2);
-
-                await AssertExpectedStorageAsync();
             }
         }
 
@@ -130,8 +126,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
                 await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
                 await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
                 await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step2, 2);
-
-                await AssertExpectedStorageAsync();
             }
         }
 
@@ -221,8 +215,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
                 .ToList();
             Assert.Equal(OnlyLatestLeaves ? 1 : 2, duplicatePackageRequests.Where(x => x.Method == HttpMethod.Head).Count());
             Assert.Equal(OnlyLatestLeaves ? 1 : 2, duplicatePackageRequests.Where(x => x.Method == HttpMethod.Get).Count());
-
-            await AssertExpectedStorageAsync();
         }
 
         protected override IEnumerable<string> GetExpectedCursorNames()

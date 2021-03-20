@@ -51,8 +51,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
                 await AssertOutputAsync(PackageAssemblyToCsvDir, Step2, 0);
                 await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 1); // This file is unchanged.
                 await AssertOutputAsync(PackageAssemblyToCsvDir, Step2, 2);
-
-                await AssertExpectedStorageAsync();
             }
         }
 
@@ -87,8 +85,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
                 await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 0);
                 await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 1);
                 await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 2);
-
-                await AssertExpectedStorageAsync();
             }
 
             public string TempDirLeaseName
@@ -155,8 +151,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
                 await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
                 await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
                 await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step2, 2);
-
-                await AssertExpectedStorageAsync();
             }
         }
 
@@ -185,8 +179,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
 
                 // Assert
                 await AssertOutputAsync(PackageAssemblyToCsv_WithUnmanagedDir, Step1, 0);
-
-                await AssertExpectedStorageAsync();
             }
         }
 
@@ -256,8 +248,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
                 .Where(x => x.RequestUri.AbsolutePath.EndsWith("/gosms.ge-sms-api.1.0.1.nupkg"))
                 .ToList();
             Assert.Equal(OnlyLatestLeaves ? 3 : 6, duplicatePackageRequests.Count);
-
-            await AssertExpectedStorageAsync();
         }
 
         protected override IEnumerable<string> GetExpectedCursorNames()

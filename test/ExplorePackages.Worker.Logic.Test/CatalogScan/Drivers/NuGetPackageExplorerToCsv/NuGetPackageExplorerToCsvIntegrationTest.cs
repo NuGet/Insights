@@ -46,8 +46,6 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                 await AssertOutputAsync(NuGetPackageExplorerToCsvDir, Step2, 0);
                 await AssertOutputAsync(NuGetPackageExplorerToCsvDir, Step1, 1); // This file is unchanged.
                 await AssertOutputAsync(NuGetPackageExplorerToCsvDir, Step2, 2);
-
-                await AssertExpectedStorageAsync();
             }
         }
 
@@ -96,8 +94,6 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                 await AssertOutputAsync(NuGetPackageExplorerToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
                 await AssertOutputAsync(NuGetPackageExplorerToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
                 await AssertOutputAsync(NuGetPackageExplorerToCsv_WithDeleteDir, Step2, 2);
-
-                await AssertExpectedStorageAsync();
             }
         }
 

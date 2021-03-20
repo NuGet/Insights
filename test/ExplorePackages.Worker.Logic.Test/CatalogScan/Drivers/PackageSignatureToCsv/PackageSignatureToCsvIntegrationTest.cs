@@ -49,8 +49,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
                 await AssertOutputAsync(PackageSignatureToCsvDir, Step2, 0);
                 await AssertOutputAsync(PackageSignatureToCsvDir, Step1, 1); // This file is unchanged.
                 await AssertOutputAsync(PackageSignatureToCsvDir, Step2, 2);
-
-                await AssertExpectedStorageAsync();
             }
         }
 
@@ -88,8 +86,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
                 await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step1, 0); // This file is unchanged.
                 await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step2, 1);
                 await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step2, 2);
-
-                await AssertExpectedStorageAsync();
             }
         }
 
@@ -118,7 +114,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
 
                 // Assert
                 await AssertOutputAsync(PackageSignatureToCsv_AuthorSignatureDir, Step1, 0);
-                await AssertExpectedStorageAsync();
             }
         }
 
@@ -147,7 +142,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
 
                 // Assert
                 await AssertOutputAsync(PackageSignatureToCsv_BadTimestampDir, Step1, 0);
-                await AssertExpectedStorageAsync();
             }
         }
 
@@ -196,8 +190,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
                 await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
                 await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
                 await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step2, 2);
-
-                await AssertExpectedStorageAsync();
             }
         }
 

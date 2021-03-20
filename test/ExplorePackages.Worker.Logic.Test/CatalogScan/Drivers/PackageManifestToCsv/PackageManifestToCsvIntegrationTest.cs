@@ -46,8 +46,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
                 await AssertOutputAsync(PackageManifestToCsvDir, Step2, 0);
                 await AssertOutputAsync(PackageManifestToCsvDir, Step1, 1); // This file is unchanged.
                 await AssertOutputAsync(PackageManifestToCsvDir, Step2, 2);
-
-                await AssertExpectedStorageAsync();
             }
         }
 
@@ -96,8 +94,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
                 await AssertOutputAsync(PackageManifestToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
                 await AssertOutputAsync(PackageManifestToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
                 await AssertOutputAsync(PackageManifestToCsv_WithDeleteDir, Step2, 2);
-
-                await AssertExpectedStorageAsync();
             }
         }
 
