@@ -63,16 +63,10 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
                 await SetCursorAsync(min0);
 
                 // Act
-                var versionSet0 = await VersionSetService.GetAsync();
+                var versionSet0 = await VersionSetService.GetOrNullAsync();
 
-                Assert.False(versionSet0.DidIdEverExist("Nut.MediatR.ServiceLike.DependencyInjection"));
-                Assert.False(versionSet0.DidVersionEverExist("Nut.MediatR.ServiceLike.DependencyInjection", "0.0.0-PREVIEW.0.44"));
-
-                Assert.False(versionSet0.DidIdEverExist("BehaviorSample"));
-                Assert.False(versionSet0.DidVersionEverExist("BehaviorSample", "1.0.0"));
-
-                Assert.False(versionSet0.DidIdEverExist("doesnotexist"));
-                Assert.False(versionSet0.DidVersionEverExist("doesnotexist", "1.0.0"));
+                // Assert
+                Assert.Null(versionSet0);
 
                 // Act
                 await UpdateAsync(max1);

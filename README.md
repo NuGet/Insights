@@ -217,6 +217,7 @@ The current drivers for analyzing NuGet.org packages are:
 
 Several other supporting drivers exist to populate storage with intermediate results:
 
+- [`BuildVersionSet`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/BuildVersionSet/BuildVersionSetDriver.cs) - serializes all IDs and versions into a `Dictionary`, useful for fast checks
 - [`LoadLatestPackageLeaf`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/LoadLatestPackageLeaf) - write the latest catalog leaf to Table Storage
 - [`LoadPackageArchive`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/LoadPackageArchive/LoadPackageArchiveDriver.cs) - fetch information from the .nupkg and put it in Table Storage
 - [`LoadPackageManifest`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/LoadPackageManifest/LoadPackageManifestDriver.cs) - fetch the .nuspec and put it in Table Storage

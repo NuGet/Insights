@@ -33,10 +33,21 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
 
         public async Task<IVersionSet> GetAsync()
         {
+            var versionSet = await GetOrNullAsync();
+            if (versionSet == null)
+            {
+                 throw new InvalidOperationException($"No version set is available. Run the {nameof(CatalogScanDriverType.BuildVersionSet)} driver.");
+            }
+
+            return versionSet;
+        }
+
+        public async Task<IVersionSet> GetOrNullAsync()
+        {
             (var data, _) = await ReadOrNullAsync<CaseInsensitiveDictionary<CaseInsensitiveDictionary<bool>>>();
             if (data == null)
             {
-                return new VersionSet(DateTimeOffset.MinValue, new CaseInsensitiveDictionary<CaseInsensitiveDictionary<bool>>());
+                return null;
             }
 
             return new VersionSet(data.V1.CommitTimestamp, data.V1.IdToVersionToDeleted);

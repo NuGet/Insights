@@ -117,7 +117,7 @@ the actual output is compared against this expected test data.
 
 **To produce this test data for the first time:**
 
-1. Set the [`BaseLogicIntegrationTest`](..\test\ExplorePackages.Logic.Test\TestSupport\BaseLogicIntegrationTest.cs] `OverwriteTestData`
+1. Set the [`BaseLogicIntegrationTest`](../test/ExplorePackages.Logic.Test/TestSupport/BaseLogicIntegrationTest.cs) `OverwriteTestData`
    static property to `true`
 1. Run your new tests. 
 1. Go to `./artifacts/ExplorePackages/ExplorePackages.Worker.Logic.Test/bin/Debug/netcoreapp3.1/TestData`
