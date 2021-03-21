@@ -2,22 +2,24 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using Azure;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Specialized;
 using MessagePack;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
 {
     public class VersionSetService : IVersionSetProvider
     {
-        private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly NewServiceClientFactory _serviceClientFactory;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<VersionSetService> _logger;
 
         public VersionSetService(
-            ServiceClientFactory serviceClientFactory,
+            NewServiceClientFactory serviceClientFactory,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<VersionSetService> logger)
         {
@@ -28,7 +30,7 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
 
         public async Task InitializeAsync()
         {
-            await GetBlob().Container.CreateIfNotExistsAsync(retry: true);
+            await (await GetContainerAsync()).CreateIfNotExistsAsync(retry: true);
         }
 
         public async Task<IVersionSet> GetAsync()
@@ -53,25 +55,25 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
             return new VersionSet(data.V1.CommitTimestamp, data.V1.IdToVersionToDeleted);
         }
 
-        private async Task<(Versions<T> data, string etag)> ReadOrNullAsync<T>()
+        private async Task<(Versions<T> data, ETag etag)> ReadOrNullAsync<T>()
         {
             try
             {
                 _logger.LogInformation("Reading the version set from storage...");
-                var blob = GetBlob();
-                using var stream = await blob.OpenReadAsync();
-                var data = await MessagePackSerializer.DeserializeAsync<Versions<T>>(stream, ExplorePackagesMessagePack.Options);
+                var blob = await GetBlobAsync();
+                using BlobDownloadInfo info = await blob.DownloadAsync();
+                var data = await MessagePackSerializer.DeserializeAsync<Versions<T>>(info.Content, ExplorePackagesMessagePack.Options);
                 _logger.LogInformation(
                     "The version set exists with commit timestamp {CommitTimestamp:O} and etag {ETag} and is {Size} bytes.",
                     data.V1.CommitTimestamp,
-                    blob.Properties.ETag,
-                    stream.Length);
-                return (data, blob.Properties.ETag);
+                    info.Details.ETag,
+                    info.ContentLength);
+                return (data, info.Details.ETag);
             }
-            catch (StorageException ex) when (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.NotFound)
+            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
             {
                 _logger.LogInformation("The version set does not exist in storage.");
-                return (null, null);
+                return (null, default);
             }
         }
 
@@ -79,7 +81,7 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
         {
             // Read the existing data.
             (var data, var etag) = await ReadOrNullAsync<SortedDictionary<string, SortedDictionary<string, bool>>>();
-            AccessCondition accessCondition;
+            BlobRequestConditions requestConditions;
             if (data == null)
             {
                 data = new Versions<SortedDictionary<string, SortedDictionary<string, bool>>>
@@ -90,7 +92,7 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
                         IdToVersionToDeleted = idToVersionToDeleted
                     }
                 };
-                accessCondition = AccessCondition.GenerateIfNotExistsCondition();
+                requestConditions = new BlobRequestConditions { IfNoneMatch = ETag.All };
             }
             else
             {
@@ -144,22 +146,29 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
                     versionsUnchanged);
 
                 data.V1.CommitTimestamp = commitTimestamp;
-                accessCondition = AccessCondition.GenerateIfMatchCondition(etag);
+                requestConditions = new BlobRequestConditions { IfMatch = etag };
             }
 
             _logger.LogInformation("Writing the version set to storage with commit timestamp {CommitTimestamp:O}...", commitTimestamp);
-            using var stream = await GetBlob().OpenWriteAsync(accessCondition, options: null, operationContext: null);
+
+
+            using var stream = await (await GetBlobAsync()).OpenWriteAsync(overwrite: true, new BlockBlobOpenWriteOptions
+            {
+                OpenConditions = requestConditions,
+            });
             await MessagePackSerializer.SerializeAsync(stream, data, ExplorePackagesMessagePack.Options);
             _logger.LogInformation("Done writing the version set to storage.");
         }
 
-        private CloudBlockBlob GetBlob()
+        private async Task<BlockBlobClient> GetBlobAsync()
         {
-            return _serviceClientFactory
-                .GetStorageAccount()
-                .CreateCloudBlobClient()
-                .GetContainerReference(_options.Value.VersionSetContainerName)
-                .GetBlockBlobReference("version-set.dat");
+            return (await GetContainerAsync()).GetBlockBlobClient("version-set.dat");
+        }
+
+        private async Task<BlobContainerClient> GetContainerAsync()
+        {
+            return (await _serviceClientFactory.GetBlobServiceClientAsync())
+                .GetBlobContainerClient(_options.Value.VersionSetContainerName);
         }
 
         [MessagePackObject]
