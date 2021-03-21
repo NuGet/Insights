@@ -10,7 +10,6 @@ namespace Knapcode.ExplorePackages.Worker
             UseBulkEnqueueStrategy = true;
             BulkEnqueueThreshold = 10;
             EnqueueWorkers = 1;
-            AppendResultStorageMode = AppendResultStorageMode.Table;
             AppendResultStorageBucketCount = 1000; // Azure Data Explorer can only import up to 1000 blobs.
             AppendResultUniqueIds = true;
             AllowBatching = true;
@@ -54,7 +53,6 @@ namespace Knapcode.ExplorePackages.Worker
         public bool UseBulkEnqueueStrategy { get; set; }
         public int BulkEnqueueThreshold { get; set; }
         public int EnqueueWorkers { get; set; }
-        public AppendResultStorageMode AppendResultStorageMode { get; set; }
         public int AppendResultStorageBucketCount { get; set; }
         public bool AppendResultUniqueIds { get; set; }
         public bool AllowBatching { get; set; }

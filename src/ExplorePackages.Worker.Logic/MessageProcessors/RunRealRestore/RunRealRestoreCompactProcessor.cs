@@ -29,9 +29,7 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
                 _options.Value.RealRestoreContainerName,
                 message.Bucket,
                 force: true,
-                mergeExisting: true,
-                Prune,
-                _csvReader);
+                Prune);
         }
 
         private static List<RealRestoreResult> Prune(List<RealRestoreResult> allAssets)

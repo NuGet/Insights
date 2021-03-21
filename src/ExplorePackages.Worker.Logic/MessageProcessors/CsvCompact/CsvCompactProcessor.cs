@@ -8,20 +8,17 @@ namespace Knapcode.ExplorePackages.Worker
         private readonly AppendResultStorageService _storageService;
         private readonly TaskStateStorageService _taskStateStorageService;
         private readonly ICsvCompactor<T> _compactor;
-        private readonly ICsvReader _csvReader;
         private readonly ILogger<CsvCompactorProcessor<T>> _logger;
 
         public CsvCompactorProcessor(
             AppendResultStorageService storageService,
             TaskStateStorageService taskStateStorageService,
             ICsvCompactor<T> compactor,
-            ICsvReader csvReader,
             ILogger<CsvCompactorProcessor<T>> logger)
         {
             _storageService = storageService;
             _taskStateStorageService = taskStateStorageService;
             _compactor = compactor;
-            _csvReader = csvReader;
             _logger = logger;
         }
 
@@ -48,9 +45,7 @@ namespace Knapcode.ExplorePackages.Worker
                 _compactor.ResultsContainerName,
                 message.Bucket,
                 force: message.Force,
-                mergeExisting: true,
-                _compactor.Prune,
-                _csvReader);
+                _compactor.Prune);
 
             if (taskState != null)
             {

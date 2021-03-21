@@ -9,11 +9,12 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Azure;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Knapcode.ExplorePackages.WideEntities;
 using MessagePack;
-using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Shared.Protocol;
 
 namespace Knapcode.ExplorePackages.Worker
@@ -23,132 +24,34 @@ namespace Knapcode.ExplorePackages.Worker
         private static readonly ConcurrentDictionary<Type, string> TypeToHeader = new ConcurrentDictionary<Type, string>();
 
         private const string ContentType = "text/plain";
-        private const string AppendPrefix = "append_";
         private const string CompactPrefix = "compact_";
-        private readonly IServiceClientFactory _serviceClientFactory;
+
+        private readonly NewServiceClientFactory _serviceClientFactory;
         private readonly WideEntityService _wideEntityService;
         private readonly ICsvReader _csvReader;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
         public AppendResultStorageService(
-            IServiceClientFactory serviceClientFactory,
+            NewServiceClientFactory serviceClientFactory,
             WideEntityService wideEntityService,
-            ICsvReader csvReader,
-            IOptions<ExplorePackagesWorkerSettings> options)
+            ICsvReader csvReader)
         {
             _serviceClientFactory = serviceClientFactory;
             _wideEntityService = wideEntityService;
             _csvReader = csvReader;
-            _options = options;
         }
 
         public async Task InitializeAsync(string srcContainer, string destContainer)
         {
-            switch (_options.Value.AppendResultStorageMode)
-            {
-                case AppendResultStorageMode.Table:
-                    await _wideEntityService.CreateTableAsync(srcContainer);
-                    break;
-                case AppendResultStorageMode.AppendBlob:
-                    await GetContainer(srcContainer).CreateIfNotExistsAsync(retry: true);
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
-
-            await GetContainer(destContainer).CreateIfNotExistsAsync(retry: true);
+            await _wideEntityService.CreateTableAsync(srcContainer);
+            await (await GetContainerAsync(destContainer)).CreateIfNotExistsAsync(retry: true);
         }
 
         public async Task DeleteAsync(string containerName)
         {
-            switch (_options.Value.AppendResultStorageMode)
-            {
-                case AppendResultStorageMode.Table:
-                    await _wideEntityService.DeleteTableAsync(containerName);
-                    break;
-                case AppendResultStorageMode.AppendBlob:
-                    await GetContainer(containerName).DeleteIfExistsAsync();
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
+            await _wideEntityService.DeleteTableAsync(containerName);
         }
 
-        public async Task AppendAsync<T>(string containerName, int bucketCount, string bucketKey, IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
-        {
-            switch (_options.Value.AppendResultStorageMode)
-            {
-                case AppendResultStorageMode.Table:
-                    await AppendToTableAsync(containerName, bucketCount, bucketKey, records);
-                    break;
-                case AppendResultStorageMode.AppendBlob:
-                    await AppendToBlobAsync(containerName, bucketCount, bucketKey, records);
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
-        }
-
-        public async Task<IReadOnlyList<T>> ReadAsync<T>(string containerName, int bucket) where T : ICsvRecord<T>, new()
-        {
-            var compactBlob = GetCompactBlob(containerName, bucket);
-            if (!await compactBlob.ExistsAsync())
-            {
-                return Array.Empty<T>();
-            }
-
-            return await DeserializeBlobAsync<T>(compactBlob, compactBlob.Properties.ContentEncoding == "gzip");
-        }
-
-        private async Task AppendToBlobAsync<T>(string containerName, int bucketCount, string bucketKey, IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
-        {
-            var bucket = GetBucket(bucketCount, bucketKey);
-            var blob = GetAppendBlob(containerName, bucket);
-            if (!await blob.ExistsAsync())
-            {
-                AccessCondition accessCondition;
-                try
-                {
-                    await blob.CreateOrReplaceAsync(
-                        accessCondition: AccessCondition.GenerateIfNotExistsCondition(),
-                        options: null,
-                        operationContext: null);
-                    accessCondition = AccessCondition.GenerateIfMatchCondition(blob.Properties.ETag);
-
-                    blob.Properties.ContentType = ContentType;
-                    await blob.AppendTextAsync(GetHeader<T>() + Environment.NewLine, new UTF8Encoding(false), accessCondition, options: null, operationContext: null);
-                }
-                catch (StorageException ex) when (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.Conflict
-                                               || ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.PreconditionFailed)
-                {
-                    // Best effort, will not be re-executed on retry since the blob will exist at that point. If this code
-                    // path was used more we do could some optimistic concurrency stuff to gate on the first line (header)
-                    // and content type being set, but that's too much work.
-                }
-            }
-
-            await AppendToBlobAsync(blob, records);
-        }
-
-        private async Task AppendToBlobAsync<T>(CloudAppendBlob blob, IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
-        {
-            using var memoryStream = SerializeRecords(records, writeHeader: false, gzip: false, out var _);
-            try
-            {
-                await blob.AppendBlockAsync(memoryStream);
-            }
-            catch (StorageException ex) when (
-                records.Count >= 2
-                && ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.RequestEntityTooLarge)
-            {
-                var firstHalf = records.Take(records.Count / 2).ToList();
-                var secondHalf = records.Skip(firstHalf.Count).ToList();
-                await AppendToBlobAsync(blob, firstHalf);
-                await AppendToBlobAsync(blob, secondHalf);
-            }
-        }
-
-        private async Task AppendToTableAsync<T>(string tableName, int bucketCount, string bucketKey, IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
+        public async Task AppendAsync<T>(string tableName, int bucketCount, string bucketKey, IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
         {
             var bucket = GetBucket(bucketCount, bucketKey);
 
@@ -167,6 +70,21 @@ namespace Knapcode.ExplorePackages.Worker
             catch (StorageException ex) when (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.Conflict)
             {
                 // This is okay. The marker already exists.
+            }
+        }
+
+        public async Task<IReadOnlyList<T>> ReadAsync<T>(string containerName, int bucket) where T : ICsvRecord<T>, new()
+        {
+            var compactBlob = await GetCompactBlobAsync(containerName, bucket);
+
+            try
+            {
+                (var records, _) = await DeserializeBlobAsync<T>(compactBlob);
+                return records;
+            }
+            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
+            {
+                return Array.Empty<T>();
             }
         }
 
@@ -193,80 +111,12 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        private ICloudBlobWrapper GetAppendBlobWrapper(string container, int bucket)
-        {
-            return GetContainer(container).GetBlobReference($"{AppendPrefix}{bucket}.csv");
-        }
-
-        private CloudAppendBlob GetAppendBlob(string container, int bucket)
-        {
-            return GetContainer(container).GetAppendBlobReference($"{AppendPrefix}{bucket}.csv");
-        }
-
-        private ICloudBlockBlobWrapper GetCompactBlob(string container, int bucket)
-        {
-            return GetContainer(container).GetBlockBlobReference($"{CompactPrefix}{bucket}.csv.gz");
-        }
-
         public async Task CompactAsync<T>(
-            string srcContainer,
-            string destContainer,
-            int bucket,
-            bool force,
-            bool mergeExisting,
-            Func<List<T>, List<T>> prune,
-            ICsvReader csvReader) where T : ICsvRecord<T>, new()
-        {
-            switch (_options.Value.AppendResultStorageMode)
-            {
-                case AppendResultStorageMode.Table:
-                    await CompactFromTableAsync(srcContainer, destContainer, bucket, force, mergeExisting, prune, csvReader);
-                    break;
-                case AppendResultStorageMode.AppendBlob:
-                    await CompactFromBlobAsync(srcContainer, destContainer, bucket, force, mergeExisting, prune, csvReader);
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
-        }
-
-        private async Task CompactFromBlobAsync<T>(
-            string srcContainer,
-            string destContainer,
-            int bucket,
-            bool force,
-            bool mergeExisting,
-            Func<List<T>, List<T>> prune,
-            ICsvReader csvReader) where T : ICsvRecord<T>, new()
-        {
-            var appendRecords = new List<T>();
-
-            if (!force || srcContainer != null)
-            {
-                var blob = GetAppendBlobWrapper(srcContainer, bucket);
-                if (await blob.ExistsAsync())
-                {
-                    var records = await DeserializeBlobAsync<T>(blob, gzip: false);
-                    appendRecords.AddRange(records);
-                }
-                else if (!force)
-                {
-                    // If there is no append blob, then there's no new data. We can stop here.
-                    return;
-                }
-            }
-
-            await CompactAsync(appendRecords, destContainer, bucket, mergeExisting, prune);
-        }
-
-        private async Task CompactFromTableAsync<T>(
             string srcTable,
             string destContainer,
             int bucket,
             bool force,
-            bool mergeExisting,
-            Func<List<T>, List<T>> prune,
-            ICsvReader csvReader) where T : ICsvRecord<T>, new()
+            Func<List<T>, List<T>> prune) where T : ICsvRecord<T>, new()
         {
             var appendRecords = new List<T>();
 
@@ -290,79 +140,90 @@ namespace Knapcode.ExplorePackages.Worker
                 }
             }
 
-            await CompactAsync(appendRecords, destContainer, bucket, mergeExisting, prune);
-        }
-
-        private static byte[] Serialize<T>(IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
-        {
-            return MessagePackSerializer.Serialize(records, ExplorePackagesMessagePack.Options);
-        }
-
-        private static IReadOnlyList<T> Deserialize<T>(Stream stream) where T : ICsvRecord<T>, new()
-        {
-            return MessagePackSerializer.Deserialize<List<T>>(stream, ExplorePackagesMessagePack.Options);
+            await CompactAsync(appendRecords, destContainer, bucket, prune);
         }
 
         private async Task CompactAsync<T>(
-            List<T> appendRecords,
+            List<T> records,
             string destContainer,
             int bucket,
-            bool mergeExisting,
             Func<List<T>, List<T>> prune) where T : ICsvRecord<T>, new()
         {
-            var allRecords = new List<T>(appendRecords);
+            var compactBlob = await GetCompactBlobAsync(destContainer, bucket);
 
-            var compactBlob = GetCompactBlob(destContainer, bucket);
-            var accessCondition = AccessCondition.GenerateIfNotExistsCondition();
-            if (mergeExisting && await compactBlob.ExistsAsync())
+            BlobRequestConditions requestConditions;
+            try
             {
-                var records = await DeserializeBlobAsync<T>(compactBlob, compactBlob.Properties.ContentEncoding == "gzip");
-                allRecords.AddRange(records);
-                accessCondition = AccessCondition.GenerateIfMatchCondition(compactBlob.Properties.ETag);
+                (var existingRecords, var etag) = await DeserializeBlobAsync<T>(compactBlob);
+                records.AddRange(existingRecords);
+                requestConditions = new BlobRequestConditions { IfMatch = etag };
+            }
+            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
+            {
+                requestConditions = new BlobRequestConditions { IfNoneMatch = ETag.All };
             }
 
-            var stream = Stream.Null;
-            long uncompressedLength = 0;
-            if (allRecords.Any())
+            if (records.Any())
             {
-                var prunedRecords = prune(allRecords);
-                stream = SerializeRecords(prunedRecords, writeHeader: true, gzip: true, out uncompressedLength);
+                records = prune(records);
             }
 
-            compactBlob.Properties.ContentType = ContentType;
-            compactBlob.Properties.ContentEncoding = "gzip";
-            compactBlob.Metadata["rawSizeBytes"] = uncompressedLength.ToString(); // See: https://docs.microsoft.com/en-us/azure/data-explorer/lightingest#recommendations
-            await compactBlob.UploadFromStreamAsync(stream, accessCondition, options: null, operationContext: null);
+            using var stream = SerializeRecords(records, writeHeader: true, gzip: true, out var uncompressedLength);
+
+            await compactBlob.UploadAsync(
+                stream,
+                new BlobUploadOptions
+                {
+                    Conditions = requestConditions,
+                    HttpHeaders = new BlobHttpHeaders
+                    {
+                        ContentType = ContentType,
+                        ContentEncoding = "gzip",
+                    },
+                    Metadata = new Dictionary<string, string>
+                    {
+                        {
+                            "rawSizeBytes",
+                            uncompressedLength.ToString() // See: https://docs.microsoft.com/en-us/azure/data-explorer/lightingest#recommendations
+                        }
+                    },
+                });
         }
 
-        private async Task<List<T>> DeserializeBlobAsync<T>(ICloudBlobWrapper blob, bool gzip) where T : ICsvRecord<T>, new()
+        private async Task<(List<T> records, ETag etag)> DeserializeBlobAsync<T>(BlobClient blob) where T : ICsvRecord<T>, new()
         {
             var bufferSize = 32 * 1024;
             do
             {
-                var result = await DeserializeBlobAsync<T>(blob, gzip, bufferSize);
-                if (result.Type == CsvReaderResultType.Success)
+                (var result, var etag) = await DeserializeBlobAsync<T>(blob, bufferSize);
+                switch (result.Type)
                 {
-                    return result.Records;
-                }
+                    case CsvReaderResultType.Success:
+                        return (result.Records, etag);
 
-                bufferSize *= 2;
+                    case CsvReaderResultType.BufferTooSmall:
+                        bufferSize = NRecoCsvReader.MaxBufferSize;
+                        break;
+
+                    default:
+                        throw new NotImplementedException();
+                }
             }
             while (bufferSize <= NRecoCsvReader.MaxBufferSize);
 
             throw new InvalidOperationException($"Could not deserialize blob after trying buffers up to {bufferSize} bytes in size.");
         }
 
-        private async Task<CsvReaderResult<T>> DeserializeBlobAsync<T>(ICloudBlobWrapper blob, bool gzip, int bufferSize)
+        private async Task<(CsvReaderResult<T> result, ETag etag)> DeserializeBlobAsync<T>(BlobClient blob, int bufferSize)
             where T : ICsvRecord<T>, new()
         {
-            using var blobStream = await blob.OpenReadAsync();
-            var readStream = blobStream;
+            using BlobDownloadInfo info = await blob.DownloadAsync();
+            var readStream = info.Content;
             try
             {
-                if (gzip)
+                if (info.Details.ContentEncoding == "gzip")
                 {
-                    readStream = new GZipStream(blobStream, CompressionMode.Decompress);
+                    readStream = new GZipStream(readStream, CompressionMode.Decompress);
                 }
 
                 using var reader = new StreamReader(readStream);
@@ -377,7 +238,7 @@ namespace Knapcode.ExplorePackages.Worker
                         "Actual: " + actualHeader);
                 }
 
-                return _csvReader.GetRecords<T>(reader, bufferSize);
+                return (_csvReader.GetRecords<T>(reader, bufferSize), info.Details.ETag);
             }
             finally
             {
@@ -385,50 +246,39 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        public async Task<List<int>> GetAppendedBucketsAsync(string containerName)
+        public async Task<List<int>> GetAppendedBucketsAsync(string tableName)
         {
-            switch (_options.Value.AppendResultStorageMode)
-            {
-                case AppendResultStorageMode.Table:
-                    return await GetWrittenAppendTableBucketsAsync(containerName);
-                case AppendResultStorageMode.AppendBlob:
-                    return await GetWrittenBlobBucketsAsync(containerName, AppendPrefix);
-                default:
-                    throw new NotImplementedException();
-            }
+            var markerEntities = await _wideEntityService.RetrieveAsync(tableName, partitionKey: string.Empty);
+            return markerEntities.Select(x => int.Parse(x.RowKey)).ToList();
         }
 
         public async Task<List<int>> GetCompactedBucketsAsync(string containerName)
         {
-            return await GetWrittenBlobBucketsAsync(containerName, CompactPrefix);
-        }
-
-        private async Task<List<int>> GetWrittenBlobBucketsAsync(string containerName, string prefix)
-        {
-            var container = GetContainer(containerName);
+            var container = await GetContainerAsync(containerName);
             var buckets = new List<int>();
-            BlobContinuationToken token = null;
-            var regex = new Regex(Regex.Escape(prefix) + @"(\d+)");
-            do
+            var regex = new Regex(Regex.Escape(CompactPrefix) + @"(\d+)");
+            var blobs = container.GetBlobsAsync(prefix: CompactPrefix);
+            await foreach (var blob in blobs)
             {
-                var segment = await container.ListBlobsSegmentedAsync(prefix, token);
-                token = segment.ContinuationToken;
-                var segmentBuckets = segment
-                    .Results
-                    .OfType<ICloudBlob>()
-                    .Select(x => regex.Match(x.Name).Groups[1].Value)
-                    .Select(x => int.Parse(x));
-                buckets.AddRange(segmentBuckets);
+                buckets.Add(int.Parse(regex.Match(blob.Name).Groups[1].Value));
             }
-            while (token != null);
 
             return buckets;
         }
 
-        private async Task<List<int>> GetWrittenAppendTableBucketsAsync(string tableName)
+        private async Task<BlobClient> GetCompactBlobAsync(string container, int bucket)
         {
-            var markerEntities = await _wideEntityService.RetrieveAsync(tableName, partitionKey: string.Empty);
-            return markerEntities.Select(x => int.Parse(x.RowKey)).ToList();
+            return (await GetContainerAsync(container)).GetBlobClient($"{CompactPrefix}{bucket}.csv.gz");
+        }
+
+        private static byte[] Serialize<T>(IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
+        {
+            return MessagePackSerializer.Serialize(records, ExplorePackagesMessagePack.Options);
+        }
+
+        private static IReadOnlyList<T> Deserialize<T>(Stream stream) where T : ICsvRecord<T>, new()
+        {
+            return MessagePackSerializer.Deserialize<List<T>>(stream, ExplorePackagesMessagePack.Options);
         }
 
         private static MemoryStream SerializeRecords<T>(IReadOnlyList<T> records, bool writeHeader, bool gzip, out long uncompressedLength) where T : ICsvRecord<T>, new()
@@ -484,11 +334,10 @@ namespace Knapcode.ExplorePackages.Worker
             return bucket;
         }
 
-        private ICloudBlobContainer GetContainer(string name)
+        private async Task<BlobContainerClient> GetContainerAsync(string name)
         {
-            var storageAccount = _serviceClientFactory.GetAbstractedStorageAccount();
-            var client = storageAccount.CreateCloudBlobClient();
-            return client.GetContainerReference(name);
+            var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
+            return serviceClient.GetBlobContainerClient(name);
         }
 
         private static string GetHeader<T>() where T : ICsvRecord<T>, new()
