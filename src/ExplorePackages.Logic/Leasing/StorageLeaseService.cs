@@ -49,7 +49,7 @@ namespace Knapcode.ExplorePackages
                 {
                     await blob.UploadAsync(Stream.Null, overwrite: false);
                 }
-                catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.Conflict)
+                catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.Conflict || ex.Status == (int)HttpStatusCode.PreconditionFailed)
                 {
                     // Ignore this exception.
                 }
