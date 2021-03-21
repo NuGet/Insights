@@ -30,26 +30,6 @@ namespace Knapcode.ExplorePackages
             return output;
         }
 
-        public static async Task<List<CloudQueue>> ListQueuesAsync(this CloudQueueClient client, string prefix)
-        {
-            QueueContinuationToken token = null;
-            var output = new List<CloudQueue>();
-            do
-            {
-                var segment = await client.ListQueuesSegmentedAsync(prefix, token);
-                token = segment.ContinuationToken;
-                foreach (var item in segment.Results)
-                {
-                    output.Add(item);
-                }
-            }
-            while (token != null);
-
-            output = output.OrderBy(x => x.Name, StringComparer.Ordinal).ToList();
-
-            return output;
-        }
-
         public static async Task<List<CloudTable>> ListTablesAsync(this CloudTableClient client, string prefix)
         {
             TableContinuationToken token = null;

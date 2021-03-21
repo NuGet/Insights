@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure.Storage.Queues.Models;
 using Knapcode.ExplorePackages.WideEntities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.WindowsAzure.Storage.Table;
@@ -149,11 +150,9 @@ namespace Knapcode.ExplorePackages.Worker
 
         private async Task AssertExpectedStorageAsync()
         {
-            var account = ServiceClientFactory.GetStorageAccount();
-
-            var blobClient = account.CreateCloudBlobClient();
-            var queueClient = account.CreateCloudQueueClient();
-            var tableClient = account.CreateCloudTableClient();
+            var blobClient = ServiceClientFactory.GetStorageAccount().CreateCloudBlobClient();
+            var queueServiceClient = await NewServiceClientFactory.GetQueueServiceClientAsync();
+            var tableClient = ServiceClientFactory.GetStorageAccount().CreateCloudTableClient();
 
             var containers = await blobClient.ListContainersAsync(StoragePrefix);
             Assert.Equal(
@@ -167,15 +166,16 @@ namespace Knapcode.ExplorePackages.Worker
                 new[] { $"Start-CatalogScan-{DriverType}" }.Concat(GetExpectedLeaseNames()).OrderBy(x => x).ToArray(),
                 leaseBlobs.Select(x => x.Name).ToArray());
 
-            var queues = await queueClient.ListQueuesAsync(StoragePrefix);
+            var queueItems = await queueServiceClient.GetQueuesAsync(prefix: StoragePrefix).ToListAsync();
             Assert.Equal(
                 new[] { Options.Value.WorkerQueueName, Options.Value.WorkerQueueName + "-poison" },
-                queues.Select(x => x.Name).ToArray());
+                queueItems.Select(x => x.Name).ToArray());
 
-            foreach (var queue in queues)
+            foreach (var queueItem in queueItems)
             {
-                await queue.FetchAttributesAsync();
-                Assert.Equal(0, queue.ApproximateMessageCount);
+                var queueClient = await NewServiceClientFactory.GetQueueClientAsync(queueItem.Name);
+                QueueProperties properties = await queueClient.GetPropertiesAsync();
+                Assert.Equal(0, properties.ApproximateMessagesCount);
             }
 
             var tables = await tableClient.ListTablesAsync(StoragePrefix);

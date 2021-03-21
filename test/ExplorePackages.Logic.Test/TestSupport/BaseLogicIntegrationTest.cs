@@ -142,6 +142,7 @@ namespace Knapcode.ExplorePackages
         public ConcurrentDictionary<LogLevel, int> LogLevelToCount { get; }
         public Action<ExplorePackagesSettings> ConfigureSettings { get; set; }
         public IHost Host => _lazyHost.Value;
+        public NewServiceClientFactory NewServiceClientFactory => Host.Services.GetRequiredService<NewServiceClientFactory>();
         public ServiceClientFactory ServiceClientFactory => Host.Services.GetRequiredService<ServiceClientFactory>();
         public ITelemetryClient TelemetryClient => Host.Services.GetRequiredService<ITelemetryClient>();
         public ILogger Logger => Host.Services.GetRequiredService<ILogger<BaseLogicIntegrationTest>>();
@@ -237,10 +238,11 @@ namespace Knapcode.ExplorePackages
                     await container.DeleteAsync();
                 }
 
-                var queues = await account.CreateCloudQueueClient().ListQueuesAsync(StoragePrefix);
-                foreach (var queue in queues)
+                var queueServiceClient = await NewServiceClientFactory.GetQueueServiceClientAsync();
+                var queueItems = await queueServiceClient.GetQueuesAsync(prefix: StoragePrefix).ToListAsync();
+                foreach (var queueItem in queueItems)
                 {
-                    await queue.DeleteAsync();
+                    await queueServiceClient.DeleteQueueAsync(queueItem.Name);
                 }
 
                 var tables = await account.CreateCloudTableClient().ListTablesAsync(StoragePrefix);

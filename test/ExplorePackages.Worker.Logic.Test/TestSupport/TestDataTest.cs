@@ -33,11 +33,12 @@ namespace Knapcode.ExplorePackages.Worker
                 await container.DeleteAsync();
             }
 
-            var queues = await account.CreateCloudQueueClient().ListQueuesAsync(string.Empty);
-            foreach (var queue in queues.Where(x => IsOldStoragePrefix(x.Name)))
+            var queueServiceClient = await NewServiceClientFactory.GetQueueServiceClientAsync();
+            var queueItems = await queueServiceClient.GetQueuesAsync().ToListAsync();
+            foreach (var queueItem in queueItems.Where(x => IsOldStoragePrefix(x.Name)))
             {
-                Logger.LogInformation("Deleting old queue: {Name}", queue.Name);
-                await queue.DeleteAsync();
+                Logger.LogInformation("Deleting old queue: {Name}", queueItem.Name);
+                await queueServiceClient.DeleteQueueAsync(queueItem.Name);
             }
 
             var tables = await account.CreateCloudTableClient().ListTablesAsync(string.Empty);

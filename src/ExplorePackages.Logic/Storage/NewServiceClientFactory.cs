@@ -19,6 +19,11 @@ namespace Knapcode.ExplorePackages
                 () => Task.FromResult(new QueueServiceClient(options.Value.StorageConnectionString)));
         }
 
+        public async Task<QueueServiceClient> GetQueueServiceClientAsync()
+        {
+            return await _lazyQueueServiceClient.Value;
+        }
+
         public async Task<QueueClient> GetQueueClientAsync(string name)
         {
             return await _queueClients.GetOrAdd(name, _ => new Lazy<Task<QueueClient>>(async () =>

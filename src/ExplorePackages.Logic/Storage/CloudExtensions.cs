@@ -32,14 +32,6 @@ namespace Knapcode.ExplorePackages
                 BlobErrorCodeStrings.ContainerBeingDeleted);
         }
 
-        public static async Task CreateIfNotExistsAsync(this CloudQueue queue, bool retry)
-        {
-            await CreateIfNotExistsAsync(
-                () => queue.CreateIfNotExistsAsync(),
-                retry,
-                QueueErrorCodeStrings.QueueBeingDeleted);
-        }
-
         public static async Task CreateIfNotExistsAsync(this CloudTable table, bool retry)
         {
             await CreateIfNotExistsAsync(
