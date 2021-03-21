@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Net;
 using System.Threading.Tasks;
+using Azure;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
 {
@@ -15,13 +18,13 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
         private const string AsOfTimestampMetadata = "asOfTimestamp";
         private const string RawSizeBytesMetadata = "rawSizeBytes";
 
-        private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly NewServiceClientFactory _serviceClientFactory;
         private readonly IStreamWriterUpdater<T> _updater;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<StreamWriterUpdaterProcessor<T>> _logger;
 
         public StreamWriterUpdaterProcessor(
-            ServiceClientFactory serviceClientFactory,
+            NewServiceClientFactory serviceClientFactory,
             IStreamWriterUpdater<T> updater,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<StreamWriterUpdaterProcessor<T>> logger)
@@ -38,16 +41,13 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
 
             await using var data = await _updater.GetDataAsync();
 
-            var latestBlob = GetBlob($"latest_{_updater.BlobName}.csv.gz");
+            var latestBlob = await GetBlobAsync($"latest_{_updater.BlobName}.csv.gz");
 
-            if (_options.Value.OnlyKeepLatestInStreamWriterUpdater)
+            BlobRequestConditions latestRequestConditions;
+            try
             {
-                await WriteDataAsync(data, latestBlob, writeAsOfTimestamp: true);
-            }
-            else
-            {
-                if (await latestBlob.ExistsAsync()
-                    && latestBlob.Metadata.TryGetValue(AsOfTimestampMetadata, out var unparsedAsOfTimestamp)
+                BlobProperties properties = await latestBlob.GetPropertiesAsync();
+                if (properties.Metadata.TryGetValue(AsOfTimestampMetadata, out var unparsedAsOfTimestamp)
                     && DateTimeOffset.TryParse(unparsedAsOfTimestamp, out var latestAsOfTimestamp)
                     && latestAsOfTimestamp == data.AsOfTimestamp)
                 {
@@ -55,105 +55,126 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
                     return true;
                 }
 
-                var dataBlob = GetBlob($"{_updater.BlobName}_{StorageUtility.GetDescendingId(data.AsOfTimestamp)}.csv.gz");
+                latestRequestConditions = new BlobRequestConditions { IfMatch = properties.ETag };
+            }
+            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
+            {
+                latestRequestConditions = new BlobRequestConditions { IfNoneMatch = ETag.All };
+            }
 
-                await WriteDataAsync(data, dataBlob, writeAsOfTimestamp: false);
-                await CopyLatestAsync(data.AsOfTimestamp, dataBlob, latestBlob);
+            if (_options.Value.OnlyKeepLatestInStreamWriterUpdater)
+            {
+                await WriteDataAsync(data, latestBlob);
+            }
+            else
+            {
+                var dataBlob = await GetBlobAsync($"{_updater.BlobName}_{StorageUtility.GetDescendingId(data.AsOfTimestamp)}.csv.gz");
+                (var uncompressedLength, var etag) = await WriteDataAsync(data, dataBlob);
+                var dataRequestConditions = new BlobRequestConditions { IfMatch = etag };
+                await CopyLatestAsync(uncompressedLength, data.AsOfTimestamp, dataBlob, dataRequestConditions, latestBlob, latestRequestConditions);
             }
 
             return true;
         }
 
-        private async Task WriteDataAsync(T data, CloudBlockBlob destBlob, bool writeAsOfTimestamp)
+        private async Task<(long uncompressedLength, ETag etag)> WriteDataAsync(T data, BlobClient destBlob)
         {
-            destBlob.Properties.ContentType = "text/plain";
-            destBlob.Properties.ContentEncoding = "gzip";
+            (var stream, var uncompressedLength) = await SerializeDataAsync(data);
+
+            using (stream)
+            {
+                BlobContentInfo info = await destBlob.UploadAsync(
+                    stream,
+                    new BlobUploadOptions
+                    {
+                        HttpHeaders = new BlobHttpHeaders
+                        {
+                            ContentType = "text/plain",
+                            ContentEncoding = "gzip",
+                        },
+                        Metadata = new Dictionary<string, string>
+                        {
+                            {
+                                RawSizeBytesMetadata,
+                                uncompressedLength.ToString() // See: https://docs.microsoft.com/en-us/azure/data-explorer/lightingest#recommendations
+                            },
+                            {
+                                AsOfTimestampMetadata,
+                                data.AsOfTimestamp.ToString("O")
+                            },
+                        },
+                    });
+
+                return (uncompressedLength, info.ETag);
+            }
+        }
+
+        private async Task<(MemoryStream stream, long uncompressedLength)> SerializeDataAsync(T data)
+        {
+            var memoryStream = new MemoryStream();
 
             long uncompressedLength;
-            using (var destStream = await destBlob.OpenWriteAsync())
+            using (var gzipStream = new GZipStream(memoryStream, CompressionLevel.Optimal, leaveOpen: true))
             {
-                using var gzipStream = new GZipStream(destStream, CompressionLevel.Optimal);
-                using var countingWriterStream = new CountingWriterStream(gzipStream);
-                using var writer = new StreamWriter(countingWriterStream);
+                using var countingStream = new CountingWriterStream(gzipStream);
+                using var writer = new StreamWriter(countingStream);
 
                 await _updater.WriteAsync(data, writer);
 
                 await writer.FlushAsync();
                 await gzipStream.FlushAsync();
-                await destStream.FlushAsync();
 
-                uncompressedLength = countingWriterStream.Length;
+                uncompressedLength = countingStream.Length;
             }
 
-            destBlob.Metadata[RawSizeBytesMetadata] = uncompressedLength.ToString(); // See: https://docs.microsoft.com/en-us/azure/data-explorer/lightingest#recommendations
+            memoryStream.Position = 0;
 
-            if (writeAsOfTimestamp)
-            {
-                destBlob.Metadata[AsOfTimestampMetadata] = data.AsOfTimestamp.ToString("O");
-            }
-
-            await destBlob.SetMetadataAsync(AccessCondition.GenerateIfMatchCondition(destBlob.Properties.ETag), options: null, operationContext: null);
+            return (memoryStream, uncompressedLength);
         }
 
-        private async Task CopyLatestAsync(DateTimeOffset asOfTimestamp, CloudBlockBlob dataBlob, CloudBlockBlob latestBlob)
+        private async Task CopyLatestAsync(
+            long uncompressedLength,
+            DateTimeOffset asOfTimestamp,
+            BlobClient dataBlob,
+            BlobRequestConditions dataRequestConditions,
+            BlobClient latestBlob,
+            BlobRequestConditions latestRequestConditions)
         {
-            var sourceAccessCondition = AccessCondition.GenerateIfMatchCondition(dataBlob.Properties.ETag);
-
-            AccessCondition destAccessCondition;
-            if (latestBlob.Properties.ETag == null)
-            {
-                destAccessCondition = AccessCondition.GenerateIfNotExistsCondition();
-            }
-            else
-            {
-                destAccessCondition = AccessCondition.GenerateIfMatchCondition(latestBlob.Properties.ETag);
-            }
-
-            latestBlob.Metadata[RawSizeBytesMetadata] = dataBlob.Metadata[RawSizeBytesMetadata];
-            latestBlob.Metadata[AsOfTimestampMetadata] = asOfTimestamp.ToString("O");
-
-            await latestBlob.StartCopyAsync(
-                dataBlob,
-                sourceAccessCondition,
-                destAccessCondition,
-                options: null,
-                operationContext: null);
-
-            var first = true;
-            do
-            {
-                if (!first)
+            var operation = await latestBlob.StartCopyFromUriAsync(
+                dataBlob.Uri,
+                new BlobCopyFromUriOptions
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(1));
-                    first = false;
-                }
+                    SourceConditions = dataRequestConditions,
+                    DestinationConditions = latestRequestConditions,
+                    Metadata = new Dictionary<string, string>
+                    {
+                        {
+                            RawSizeBytesMetadata,
+                            uncompressedLength.ToString() // See: https://docs.microsoft.com/en-us/azure/data-explorer/lightingest#recommendations
+                        },
+                        {
+                            AsOfTimestampMetadata,
+                            asOfTimestamp.ToString("O")
+                        },
+                    },
+                });
 
-                await latestBlob.FetchAttributesAsync();
-            }
-            while (latestBlob.CopyState.Status == CopyStatus.Pending);
-
-            if (latestBlob.CopyState.Status != CopyStatus.Success)
-            {
-                throw new InvalidOperationException($"Copying the {_updater.OperationName} data to the latest ended with an unexpected status: {latestBlob.CopyState.Status}");
-            }
+            await operation.WaitForCompletionAsync();
         }
 
         private async Task InitializeAsync()
         {
-            await GetContainer().CreateIfNotExistsAsync(retry: true);
+            await (await GetContainerAsync()).CreateIfNotExistsAsync(retry: true);
         }
 
-        private CloudBlockBlob GetBlob(string blobName)
+        private async Task<BlobClient> GetBlobAsync(string blobName)
         {
-            return GetContainer().GetBlockBlobReference(blobName);
+            return (await GetContainerAsync()).GetBlobClient(blobName);
         }
 
-        private CloudBlobContainer GetContainer()
+        private async Task<BlobContainerClient> GetContainerAsync()
         {
-            return _serviceClientFactory
-                .GetStorageAccount()
-                .CreateCloudBlobClient()
-                .GetContainerReference(_updater.ContainerName);
+            return (await _serviceClientFactory.GetBlobServiceClientAsync()).GetBlobContainerClient(_updater.ContainerName);
         }
     }
 }

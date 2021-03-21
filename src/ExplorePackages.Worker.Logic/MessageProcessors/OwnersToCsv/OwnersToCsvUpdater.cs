@@ -58,7 +58,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
                     // Only write when we move to the next ID. This ensures all of the owners of a given ID are in the same record.
                     if (idToOwners.Any())
                     {
-                        await WriteAndClearAsync(writer, record, idToOwners);
+                        WriteAndClear(writer, record, idToOwners);
                     }
 
                     owners = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -70,18 +70,18 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
 
             if (idToOwners.Any())
             {
-                await WriteAndClearAsync(writer, record, idToOwners);
+                WriteAndClear(writer, record, idToOwners);
             }
         }
 
-        private static async Task WriteAndClearAsync(StreamWriter writer, PackageOwnerRecord record, Dictionary<string, HashSet<string>> idToOwners)
+        private static void WriteAndClear(StreamWriter writer, PackageOwnerRecord record, Dictionary<string, HashSet<string>> idToOwners)
         {
             foreach (var pair in idToOwners)
             {
                 record.LowerId = pair.Key.ToLowerInvariant();
                 record.Id = pair.Key;
                 record.Owners = JsonConvert.SerializeObject(pair.Value.OrderBy(x => x, StringComparer.OrdinalIgnoreCase));
-                await record.WriteAsync(writer);
+                record.Write(writer);
             }
 
             idToOwners.Clear();

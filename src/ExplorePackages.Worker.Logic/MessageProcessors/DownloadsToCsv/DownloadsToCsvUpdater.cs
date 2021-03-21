@@ -59,7 +59,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
                     // Only write when we move to the next ID. This ensures all of the versions of a given ID are in the same segment.
                     if (idToVersions.Any())
                     {
-                        await WriteAndClearAsync(writer, record, idToVersions);
+                        WriteAndClear(writer, record, idToVersions);
                     }
 
                     versionToDownloads = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
@@ -71,11 +71,11 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 
             if (idToVersions.Any())
             {
-                await WriteAndClearAsync(writer, record, idToVersions);
+                WriteAndClear(writer, record, idToVersions);
             }
         }
 
-        private static async Task WriteAndClearAsync(StreamWriter writer, PackageDownloadRecord record, Dictionary<string, Dictionary<string, long>> idToVersions)
+        private static void WriteAndClear(StreamWriter writer, PackageDownloadRecord record, Dictionary<string, Dictionary<string, long>> idToVersions)
         {
             foreach (var idPair in idToVersions)
             {
@@ -89,7 +89,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
                     record.Identity = $"{record.LowerId}/{record.Version.ToLowerInvariant()}";
                     record.Downloads = versionPair.Value;
 
-                    await record.WriteAsync(writer);
+                    record.Write(writer);
                 }
             }
 

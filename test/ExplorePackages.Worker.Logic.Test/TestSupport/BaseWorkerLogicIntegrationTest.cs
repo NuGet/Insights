@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Microsoft.WindowsAzure.Storage.Queue;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;

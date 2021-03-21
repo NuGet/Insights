@@ -185,7 +185,7 @@ namespace Knapcode.ExplorePackages.Worker
                         {
                             "rawSizeBytes",
                             uncompressedLength.ToString() // See: https://docs.microsoft.com/en-us/azure/data-explorer/lightingest#recommendations
-                        }
+                        },
                     },
                 });
         }
