@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Knapcode.ExplorePackages.Worker
@@ -109,7 +111,20 @@ namespace Knapcode.ExplorePackages.Worker
         {
             foreach (var group in leafScans.GroupBy(x => x.StorageSuffix))
             {
-                await GetLeafScanTable(group.Key).InsertEntitiesAsync(group.ToList());
+                var groupList = group.ToList();
+                try
+                {
+                    await GetLeafScanTable(group.Key).InsertEntitiesAsync(groupList);
+                }
+                catch (StorageException ex) when (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.Conflict)
+                {
+                    _logger.LogWarning(
+                        "Leaf scans failed to insert due to conflict, with storage suffix '{StorageSuffix}', partition key '{PartitionKey}', and first row key '{RowKey}'.",
+                        group.Key,
+                        groupList[0].PartitionKey,
+                        groupList[0].RowKey);
+                    throw;
+                }
             }
         }
 
