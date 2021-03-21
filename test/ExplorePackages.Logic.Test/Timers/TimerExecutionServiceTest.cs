@@ -289,15 +289,17 @@ namespace Knapcode.ExplorePackages
                 };
                 Options.Setup(x => x.Value).Returns(() => Settings);
                 ServiceClientFactory = new ServiceClientFactory(Options.Object);
+                NewServiceClientFactory = new NewServiceClientFactory(Options.Object);
                 LeaseService = new AutoRenewingStorageLeaseService(
                     new StorageLeaseService(
-                        ServiceClientFactory,
+                        NewServiceClientFactory,
                         Options.Object));
             }
 
             public Mock<IOptions<ExplorePackagesSettings>> Options { get; }
             public ExplorePackagesSettings Settings { get; }
             public ServiceClientFactory ServiceClientFactory { get; }
+            public NewServiceClientFactory NewServiceClientFactory { get; }
             public AutoRenewingStorageLeaseService LeaseService { get; }
 
             public async Task InitializeAsync()
@@ -308,10 +310,8 @@ namespace Knapcode.ExplorePackages
 
             public async Task DisposeAsync()
             {
-                await ServiceClientFactory
-                    .GetStorageAccount()
-                    .CreateCloudBlobClient()
-                    .GetContainerReference(Options.Object.Value.LeaseContainerName)
+                await (await NewServiceClientFactory.GetBlobServiceClientAsync())
+                    .GetBlobContainerClient(Options.Object.Value.LeaseContainerName)
                     .DeleteIfExistsAsync();
 
                 await GetTable().DeleteIfExistsAsync();

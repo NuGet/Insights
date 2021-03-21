@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
 using Azure;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 
@@ -18,6 +20,14 @@ namespace Knapcode.ExplorePackages
                 () => queueClient.CreateIfNotExistsAsync(),
                 retry,
                 QueueErrorCode.QueueBeingDeleted.ToString());
+        }
+
+        public static async Task CreateIfNotExistsAsync(this BlobContainerClient containerClient, bool retry)
+        {
+            await CreateIfNotExistsAsync(
+                () => containerClient.CreateIfNotExistsAsync(),
+                retry,
+                BlobErrorCode.ContainerBeingDeleted.ToString());
         }
 
         private static async Task CreateIfNotExistsAsync(Func<Task> createIfNotExistsAsync, bool retry, string errorCode)

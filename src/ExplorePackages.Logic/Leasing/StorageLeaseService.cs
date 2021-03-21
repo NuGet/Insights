@@ -1,19 +1,23 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Azure;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Specialized;
 using Microsoft.Extensions.Options;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace Knapcode.ExplorePackages
 {
     public class StorageLeaseService
     {
-        private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly NewServiceClientFactory _serviceClientFactory;
         private readonly IOptions<ExplorePackagesSettings> _options;
 
-        public StorageLeaseService(ServiceClientFactory serviceClientFactory, IOptions<ExplorePackagesSettings> options)
+        public StorageLeaseService(
+            NewServiceClientFactory serviceClientFactory, IOptions<ExplorePackagesSettings> options)
         {
             _serviceClientFactory = serviceClientFactory;
             _options = options;
@@ -21,7 +25,7 @@ namespace Knapcode.ExplorePackages
 
         public async Task InitializeAsync()
         {
-            await GetContainer().CreateIfNotExistsAsync(retry: true);
+            await (await GetContainerAsync()).CreateIfNotExistsAsync(retry: true);
         }
 
         public async Task<StorageLeaseResult> AcquireAsync(string name, TimeSpan leaseDuration)
@@ -36,21 +40,16 @@ namespace Knapcode.ExplorePackages
 
         private async Task<StorageLeaseResult> TryAcquireAsync(string name, TimeSpan leaseDuration, bool shouldThrow)
         {
-            var blob = GetBlob(name);
+            var blob = await GetBlobAsync(name);
+            var leaseClient = blob.GetBlobLeaseClient();
 
             if (!await blob.ExistsAsync())
             {
                 try
                 {
-                    await blob.UploadTextAsync(
-                        string.Empty,
-                        Encoding.ASCII,
-                        AccessCondition.GenerateIfNotExistsCondition(),
-                        options: null,
-                        operationContext: null);
+                    await blob.UploadAsync(Stream.Null, overwrite: false);
                 }
-                catch (StorageException ex) when (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.PreconditionFailed
-                                               || ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.Conflict)
+                catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.Conflict)
                 {
                     // Ignore this exception.
                 }
@@ -58,10 +57,10 @@ namespace Knapcode.ExplorePackages
 
             try
             {
-                var leaseId = await blob.AcquireLeaseAsync(leaseDuration);
-                return StorageLeaseResult.Leased(name, leaseId);
+                BlobLease lease = await leaseClient.AcquireAsync(leaseDuration);
+                return StorageLeaseResult.Leased(name, lease.LeaseId);
             }
-            catch (StorageException ex) when (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.Conflict)
+            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.Conflict)
             {
                 if (shouldThrow)
                 {
@@ -86,14 +85,15 @@ namespace Knapcode.ExplorePackages
 
         private async Task<bool> TryRenewAsync(StorageLeaseResult result, bool shouldThrow)
         {
-            var blob = GetBlob(result.Name);
+            var blob = await GetBlobAsync(result.Name);
+            var leaseClient = blob.GetBlobLeaseClient(result.Lease);
 
             try
             {
-                await blob.RenewLeaseAsync(AccessCondition.GenerateLeaseCondition(result.Lease));
+                await leaseClient.RenewAsync();
                 return true;
             }
-            catch (StorageException ex) when (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.Conflict)
+            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.Conflict)
             {
                 if (shouldThrow)
                 {
@@ -108,8 +108,9 @@ namespace Knapcode.ExplorePackages
 
         public async Task BreakAsync(string name)
         {
-            var blob = GetBlob(name);
-            await blob.BreakLeaseAsync(TimeSpan.Zero);
+            var blob = await GetBlobAsync(name);
+            var leaseClient = blob.GetBlobLeaseClient();
+            await leaseClient.BreakAsync(breakPeriod: TimeSpan.Zero);
         }
 
         public async Task<bool> TryReleaseAsync(StorageLeaseResult result)
@@ -124,14 +125,15 @@ namespace Knapcode.ExplorePackages
 
         private async Task<bool> TryReleaseAsync(StorageLeaseResult result, bool shouldThrow)
         {
-            var blob = GetBlob(result.Name);
+            var blob = await GetBlobAsync(result.Name);
+            var leaseClient = blob.GetBlobLeaseClient(result.Lease);
 
             try
             {
-                await blob.ReleaseLeaseAsync(AccessCondition.GenerateLeaseCondition(result.Lease));
+                await leaseClient.ReleaseAsync();
                 return true;
             }
-            catch (StorageException ex) when (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.Conflict)
+            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.Conflict)
             {
                 if (shouldThrow)
                 {
@@ -144,17 +146,16 @@ namespace Knapcode.ExplorePackages
             }
         }
 
-        private CloudBlockBlob GetBlob(string name)
+        private async Task<BlobClient> GetBlobAsync(string name)
         {
-            return GetContainer().GetBlockBlobReference(name);
+            return (await GetContainerAsync())
+                .GetBlobClient(name);
         }
 
-        private CloudBlobContainer GetContainer()
+        private async Task<BlobContainerClient> GetContainerAsync()
         {
-            return _serviceClientFactory
-                .GetStorageAccount()
-                .CreateCloudBlobClient()
-                .GetContainerReference(_options.Value.LeaseContainerName);
+            return (await _serviceClientFactory.GetBlobServiceClientAsync())
+                .GetBlobContainerClient(_options.Value.LeaseContainerName);
         }
     }
 }

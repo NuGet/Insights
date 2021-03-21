@@ -173,7 +173,8 @@ namespace Knapcode.ExplorePackages.Worker
 
             foreach (var queueItem in queueItems)
             {
-                var queueClient = await NewServiceClientFactory.GetQueueClientAsync(queueItem.Name);
+                var queueClient = (await NewServiceClientFactory.GetQueueServiceClientAsync())
+                    .GetQueueClient(queueItem.Name);
                 QueueProperties properties = await queueClient.GetPropertiesAsync();
                 Assert.Equal(0, properties.ApproximateMessagesCount);
             }

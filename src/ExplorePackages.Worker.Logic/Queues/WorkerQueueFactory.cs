@@ -25,12 +25,14 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task<QueueClient> GetQueueAsync()
         {
-            return await _serviceClientFactory.GetQueueClientAsync(_options.Value.WorkerQueueName);
+            return (await _serviceClientFactory.GetQueueServiceClientAsync())
+                .GetQueueClient(_options.Value.WorkerQueueName);
         }
 
         public async Task<QueueClient> GetPoisonQueueAsync()
         {
-            return await _serviceClientFactory.GetQueueClientAsync(_options.Value.WorkerQueueName + "-poison");
+            return (await _serviceClientFactory.GetQueueServiceClientAsync())
+                .GetQueueClient(_options.Value.WorkerQueueName + "-poison");
         }
     }
 }

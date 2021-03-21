@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -179,12 +180,37 @@ namespace Knapcode.ExplorePackages
                 Assert.True(resultA.Acquired);
                 Assert.False(resultB.Acquired);
             }
+
+            [Fact]
+            public async Task ManyThreadsDoNotCauseException()
+            {
+                await Task.WhenAll(Enumerable
+                    .Range(0, 16)
+                    .Select(async x =>
+                    {
+                        foreach (var i in Enumerable.Range(0, 50))
+                        {
+                            Output.WriteLine($"[{x}] Trying to acquire lease {i}...");
+                            var result = await Target.TryAcquireAsync(i.ToString(), TimeSpan.FromSeconds(15));
+                            if (result.Acquired)
+                            {
+                                Output.WriteLine($"[{x}] Releasing lease {i}...");
+                                await Target.ReleaseAsync(result);
+                            }
+                            else
+                            {
+                                Output.WriteLine($"[{x}] Could not acquire lease {i}.");
+                            }
+                        }
+                    }));
+            }
         }
 
         public abstract class BaseTest : IAsyncLifetime
         {
             public BaseTest(ITestOutputHelper output)
             {
+                Output = output;
                 ContainerName = Guid.NewGuid().ToString("N");
                 LeaseName = "some-lease";
                 Duration = TimeSpan.FromSeconds(60);
@@ -195,24 +221,23 @@ namespace Knapcode.ExplorePackages
                 };
                 Options = new Mock<IOptions<ExplorePackagesSettings>>();
                 Options.Setup(x => x.Value).Returns(() => Settings);
-                ServiceClientFactory = new ServiceClientFactory(Options.Object);
+                ServiceClientFactory = new NewServiceClientFactory(Options.Object);
                 Target = new StorageLeaseService(ServiceClientFactory, Options.Object);
             }
 
+            public ITestOutputHelper Output { get; }
             public string ContainerName { get; }
             public string LeaseName { get; }
             public TimeSpan Duration { get; }
             public ExplorePackagesSettings Settings { get; }
             public Mock<IOptions<ExplorePackagesSettings>> Options { get; }
-            public ServiceClientFactory ServiceClientFactory { get; }
+            public NewServiceClientFactory ServiceClientFactory { get; }
             public StorageLeaseService Target { get; }
 
             public async Task DisposeAsync()
             {
-                await ServiceClientFactory
-                    .GetStorageAccount()
-                    .CreateCloudBlobClient()
-                    .GetContainerReference(ContainerName)
+                await (await ServiceClientFactory.GetBlobServiceClientAsync())
+                    .GetBlobContainerClient(ContainerName)
                     .DeleteIfExistsAsync();
             }
 
