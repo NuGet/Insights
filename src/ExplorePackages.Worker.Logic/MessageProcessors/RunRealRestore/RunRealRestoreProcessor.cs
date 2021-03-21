@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -19,7 +21,7 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
     {
         private readonly ProjectHelper _projectHelper;
         private readonly AppendResultStorageService _storageService;
-        private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly NewServiceClientFactory _serviceClientFactory;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<RunRealRestoreProcessor> _logger;
 
@@ -49,7 +51,7 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
         public RunRealRestoreProcessor(
             ProjectHelper projectHelper,
             AppendResultStorageService storageService,
-            ServiceClientFactory serviceClientFactory,
+            NewServiceClientFactory serviceClientFactory,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<RunRealRestoreProcessor> logger)
         {
@@ -87,14 +89,22 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
 
             if (!commandSucceeded && !knownError)
             {
-                var account = _serviceClientFactory.GetStorageAccount();
-                var client = account.CreateCloudBlobClient();
-                var container = client.GetContainerReference(_options.Value.RealRestoreContainerName);
+                var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
+                var container = serviceClient.GetBlobContainerClient(_options.Value.RealRestoreContainerName);
                 result.ErrorBlobPath = $"errors/{StorageUtility.GenerateDescendingId()}_{package.Id}_{package.Version.ToNormalizedString()}_{framework.GetShortFolderName()}.json";
-                var blob = container.GetBlockBlobReference(result.ErrorBlobPath);
-                blob.Properties.ContentType = "application/json";
+                var blob = container.GetBlobClient(result.ErrorBlobPath);
+
                 var errorBlob = new RunRealRestoreErrorResult { Result = result, CommandResults = _projectHelper.CommandResults };
-                await blob.UploadTextAsync(JsonConvert.SerializeObject(errorBlob));
+                using var stream = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(errorBlob)));
+                await blob.UploadAsync(
+                    stream,
+                    new BlobUploadOptions
+                    {
+                        HttpHeaders = new BlobHttpHeaders
+                        {
+                            ContentType = "application/json",
+                        },
+                    });
             }
 
             var bucketKey = $"{package.Id}/{packageVersion.ToNormalizedString()}".ToLowerInvariant();
