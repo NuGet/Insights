@@ -24,23 +24,7 @@ namespace Knapcode.ExplorePackages
                 BlobErrorCodeStrings.ContainerBeingDeleted);
         }
 
-        public static async Task CreateIfNotExistsAsync(this ICloudBlobContainer table, bool retry)
-        {
-            await CreateIfNotExistsAsync(
-                () => table.CreateIfNotExistsAsync(),
-                retry,
-                BlobErrorCodeStrings.ContainerBeingDeleted);
-        }
-
         public static async Task CreateIfNotExistsAsync(this CloudTable table, bool retry)
-        {
-            await CreateIfNotExistsAsync(
-                () => table.CreateIfNotExistsAsync(),
-                retry,
-                TableErrorCodeStrings.TableBeingDeleted);
-        }
-
-        public static async Task CreateIfNotExistsAsync(this ICloudTable table, bool retry)
         {
             await CreateIfNotExistsAsync(
                 () => table.CreateIfNotExistsAsync(),

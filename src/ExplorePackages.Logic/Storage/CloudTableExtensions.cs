@@ -57,22 +57,6 @@ namespace Knapcode.ExplorePackages
                 metrics);
         }
 
-        public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(
-            this ICloudTable table,
-            string partitionKey,
-            QueryLoopMetrics metrics,
-            int? maxEntities = null) where T : ITableEntity, new()
-        {
-            return await GetEntitiesAsync<T>(
-                table.ExecuteQuerySegmentedAsync,
-                partitionKey,
-                minRowKey: null,
-                maxRowKey: null,
-                maxEntities,
-                selectColumns: null,
-                metrics);
-        }
-
         private static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(
             Func<TableQuery<T>, TableContinuationToken, Task<TableQuerySegment<T>>> executeQuerySegmentedAsync,
             string partitionKey,
@@ -159,17 +143,7 @@ namespace Knapcode.ExplorePackages
             await InsertEntitiesAsync(table.ExecuteBatchAsync, entities);
         }
 
-        public static async Task InsertEntitiesAsync<T>(this ICloudTable table, IReadOnlyList<T> entities) where T : ITableEntity
-        {
-            await InsertEntitiesAsync(table.ExecuteBatchAsync, entities);
-        }
-
         public static async Task InsertOrReplaceEntitiesAsync<T>(this CloudTable table, IReadOnlyList<T> entities) where T : ITableEntity
-        {
-            await InsertOrReplaceEntitiesAsync(table.ExecuteBatchAsync, entities);
-        }
-
-        public static async Task InsertOrReplaceEntitiesAsync<T>(this ICloudTable table, IReadOnlyList<T> entities) where T : ITableEntity
         {
             await InsertOrReplaceEntitiesAsync(table.ExecuteBatchAsync, entities);
         }
