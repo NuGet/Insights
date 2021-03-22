@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure.Data.Tables;
 using Microsoft.Extensions.Options;
-using Microsoft.WindowsAzure.Storage.Table;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;
@@ -44,10 +44,10 @@ namespace Knapcode.ExplorePackages
             {
                 await Target.SetIsEnabled(TimerName, isEnabled);
 
-                var entities = await GetEntitiesAsync<DynamicTableEntity>();
+                var entities = await GetEntitiesAsync<TableEntity>();
                 var entity = Assert.Single(entities);
-                Assert.Equal(new[] { "IsEnabled" }, entity.Properties.Keys.OrderBy(x => x).ToArray());
-                Assert.Equal(isEnabled, entity.Properties["IsEnabled"].BooleanValue);
+                Assert.Equal(new[] { "IsEnabled" }, entity.Keys.OrderBy(x => x).ToArray());
+                Assert.Equal(isEnabled, entity.GetBoolean("IsEnabled"));
             }
 
             [Theory]
@@ -61,11 +61,11 @@ namespace Knapcode.ExplorePackages
 
                 await Target.SetIsEnabled(TimerName, isEnabled);
 
-                var entities = await GetEntitiesAsync<DynamicTableEntity>();
+                var entities = await GetEntitiesAsync<TableEntity>();
                 var entity = Assert.Single(entities);
-                Assert.Equal(new[] { "IsEnabled", "LastExecuted" }, entity.Properties.Keys.OrderBy(x => x).ToArray());
-                Assert.Equal(isEnabled, entity.Properties["IsEnabled"].BooleanValue);
-                Assert.InRange(entity.Properties["LastExecuted"].DateTimeOffsetValue.Value, before, after);
+                Assert.Equal(new[] { "IsEnabled", "LastExecuted" }, entity.Keys.OrderBy(x => x).ToArray());
+                Assert.Equal(isEnabled, entity.GetBoolean("IsEnabled"));
+                Assert.InRange(entity.GetDateTimeOffset("LastExecuted").Value, before, after);
             }
         }
 
@@ -265,15 +265,15 @@ namespace Knapcode.ExplorePackages
             _fixture.Options.Object,
             _output.GetTelemetryClient(),
             _output.GetLogger<TimerExecutionService>());
-        public CloudTable Table => _fixture.GetTable();
+        public TableClient Table => _fixture.Table;
 
-        protected async Task<IReadOnlyList<T>> GetEntitiesAsync<T>() where T : ITableEntity, new()
+        protected async Task<IReadOnlyList<T>> GetEntitiesAsync<T>() where T : class, ITableEntity, new()
         {
-            return await Table.GetEntitiesAsync<T>(
-                partitionKey: string.Empty,
-                minRowKey: TimerNamePrefix,
-                maxRowKey: TimerNamePrefix + char.MaxValue,
-                _output.GetTelemetryClient().StartQueryLoopMetrics());
+            return await Table
+                .QueryAsync<T>(x => x.PartitionKey == string.Empty
+                                 && x.RowKey.CompareTo(TimerNamePrefix) >= 0
+                                 && x.RowKey.CompareTo(TimerNamePrefix + char.MaxValue) < 0)
+                .ToListAsync();
         }
 
         public class Fixture : IAsyncLifetime
@@ -288,7 +288,7 @@ namespace Knapcode.ExplorePackages
                     LeaseContainerName = TestSettings.NewStoragePrefix() + "1l1",
                 };
                 Options.Setup(x => x.Value).Returns(() => Settings);
-                ServiceClientFactory = new ServiceClientFactory(Options.Object);
+                ServiceClientFactory = new NewServiceClientFactory(Options.Object);
                 NewServiceClientFactory = new NewServiceClientFactory(Options.Object);
                 LeaseService = new AutoRenewingStorageLeaseService(
                     new StorageLeaseService(
@@ -298,14 +298,17 @@ namespace Knapcode.ExplorePackages
 
             public Mock<IOptions<ExplorePackagesSettings>> Options { get; }
             public ExplorePackagesSettings Settings { get; }
-            public ServiceClientFactory ServiceClientFactory { get; }
+            public NewServiceClientFactory ServiceClientFactory { get; }
             public NewServiceClientFactory NewServiceClientFactory { get; }
             public AutoRenewingStorageLeaseService LeaseService { get; }
+            public TableClient Table { get; private set; }
 
             public async Task InitializeAsync()
             {
                 await LeaseService.InitializeAsync();
-                await GetTable().CreateIfNotExistsAsync();
+                Table = (await ServiceClientFactory.GetTableServiceClientAsync())
+                    .GetTableClient(Options.Object.Value.TimerTableName);
+                await Table.CreateIfNotExistsAsync(retry: true);
             }
 
             public async Task DisposeAsync()
@@ -314,15 +317,7 @@ namespace Knapcode.ExplorePackages
                     .GetBlobContainerClient(Options.Object.Value.LeaseContainerName)
                     .DeleteIfExistsAsync();
 
-                await GetTable().DeleteIfExistsAsync();
-            }
-
-            public CloudTable GetTable()
-            {
-                return ServiceClientFactory
-                    .GetStorageAccount()
-                    .CreateCloudTableClient()
-                    .GetTableReference(Options.Object.Value.TimerTableName);
+                await Table.DeleteIfExistsAsync();
             }
         }
     }

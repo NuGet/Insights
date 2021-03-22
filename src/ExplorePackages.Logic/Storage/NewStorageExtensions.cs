@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
 using Azure;
+using Azure.Data.Tables;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Queues;
@@ -28,6 +29,26 @@ namespace Knapcode.ExplorePackages
                 () => containerClient.CreateIfNotExistsAsync(),
                 retry,
                 BlobErrorCode.ContainerBeingDeleted.ToString());
+        }
+
+        public static async Task CreateIfNotExistsAsync(this TableClient tableClient, bool retry)
+        {
+            await CreateIfNotExistsAsync(
+                () => tableClient.CreateIfNotExistsAsync(),
+                retry,
+                "TableBeingDeleted");
+        }
+
+        public static async Task DeleteIfExistsAsync(this TableClient tableClient)
+        {
+            try
+            {
+                await tableClient.DeleteAsync();
+            }
+            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
+            {
+                // Ignore.
+            }
         }
 
         private static async Task CreateIfNotExistsAsync(Func<Task> createIfNotExistsAsync, bool retry, string errorCode)

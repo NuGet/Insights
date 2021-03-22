@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Knapcode.ExplorePackages
 {
@@ -13,14 +14,14 @@ namespace Knapcode.ExplorePackages
         public static readonly string PartitionKey = string.Empty;
 
         private readonly IReadOnlyDictionary<string, ITimer> _nameToTimer;
-        private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly NewServiceClientFactory _serviceClientFactory;
         private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly IOptions<ExplorePackagesSettings> _options;
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<TimerExecutionService> _logger;
 
         public TimerExecutionService(
-            ServiceClientFactory serviceClientFactory,
+            NewServiceClientFactory serviceClientFactory,
             IEnumerable<ITimer> timers,
             AutoRenewingStorageLeaseService leaseService,
             IOptions<ExplorePackagesSettings> options,
@@ -49,7 +50,7 @@ namespace Knapcode.ExplorePackages
         public async Task InitializeAsync()
         {
             await _leaseService.InitializeAsync();
-            await GetTable().CreateIfNotExistsAsync(retry: true);
+            await (await GetTableAsync()).CreateIfNotExistsAsync(retry: true);
             foreach (var timer in _nameToTimer.Values)
             {
                 await timer.InitializeAsync();
@@ -61,7 +62,10 @@ namespace Knapcode.ExplorePackages
             var pairs = _nameToTimer.OrderBy(x => x.Key, StringComparer.OrdinalIgnoreCase).ToList();
 
             var isRunningTask = Task.WhenAll(pairs.Select(x => x.Value.IsRunningAsync()));
-            var entitiesTask = GetTable().GetEntitiesAsync<TimerEntity>(PartitionKey, _telemetryClient.StartQueryLoopMetrics());
+            var table = await GetTableAsync();
+            var entitiesTask = table
+                .QueryAsync<TimerEntity>(e => e.PartitionKey == PartitionKey)
+                .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
 
             await Task.WhenAll(isRunningTask, entitiesTask);
 
@@ -87,13 +91,13 @@ namespace Knapcode.ExplorePackages
 
         public async Task SetIsEnabled(string timerName, bool isEnabled)
         {
-            GetTimer(timerName);
-            var table = GetTable();
+            ValidateAndGetTimer(timerName);
+            var table = await GetTableAsync();
             var entity = new TimerEntity(timerName) { IsEnabled = isEnabled };
-            await table.ExecuteAsync(TableOperation.InsertOrMerge(entity));
+            await table.UpsertEntityAsync(entity);
         }
 
-        private ITimer GetTimer(string timerName)
+        private ITimer ValidateAndGetTimer(string timerName)
         {
             if (!_nameToTimer.TryGetValue(timerName, out var timer))
             {
@@ -129,20 +133,18 @@ namespace Knapcode.ExplorePackages
                 // Validate the provided timer names.
                 foreach (var timerName in timerNames)
                 {
-                    GetTimer(timerName);
+                    ValidateAndGetTimer(timerName);
                 }
             }
 
             // Get the existing timer entities.
-            var table = GetTable();
-            var entities = await table.GetEntitiesAsync<TimerEntity>(
-                PartitionKey,
-                _telemetryClient.StartQueryLoopMetrics());
+            var table = await GetTableAsync();
+            var entities = await table.QueryAsync<TimerEntity>(x => x.PartitionKey == PartitionKey).ToListAsync(_telemetryClient.StartQueryLoopMetrics());
             var nameToEntity = entities.ToDictionary(x => x.RowKey);
 
             // Determine what to do for each timer.
             var toExecute = new List<(ITimer timer, TimerEntity entity)>();
-            var batch = new TableBatchOperation();
+            var batch = table.CreateTransactionalBatch(PartitionKey);
             foreach (var timer in _nameToTimer.Values)
             {
                 if (timerNames != null && !timerNames.Contains(timer.Name))
@@ -157,15 +159,17 @@ namespace Knapcode.ExplorePackages
                 else if (!nameToEntity.TryGetValue(timer.Name, out var entity))
                 {
                     entity = new TimerEntity(timer.Name) { IsEnabled = timer.AutoStart };
-                    batch.Insert(entity);
 
                     if (executeNow || entity.IsEnabled)
                     {
                         toExecute.Add((timer, entity));
+                        entity.LastExecuted = DateTimeOffset.UtcNow;
+                        batch.AddEntity(entity);
                         _logger.LogInformation("Timer {Name} will be run for the first time.", timer.Name);
                     }
                     else
                     {
+                        batch.AddEntity(entity);
                         _logger.LogInformation("Timer {Name} will be initialized without running.", timer.Name);
                     }
                 }
@@ -173,7 +177,8 @@ namespace Knapcode.ExplorePackages
                 {
                     _logger.LogInformation("Timer {Name} will be run because it being run on demand.", timer.Name);
                     toExecute.Add((timer, entity));
-                    batch.Replace(entity);
+                    entity.LastExecuted = DateTimeOffset.UtcNow;
+                    batch.UpdateEntity(entity, entity.ETag, mode: TableUpdateMode.Replace);
                 }
                 else if (!entity.IsEnabled)
                 {
@@ -183,7 +188,8 @@ namespace Knapcode.ExplorePackages
                 {
                     _logger.LogInformation("Timer {Name} will be run because it has never been run before.", timer.Name);
                     toExecute.Add((timer, entity));
-                    batch.Replace(entity);
+                    entity.LastExecuted = DateTimeOffset.UtcNow;
+                    batch.UpdateEntity(entity, entity.ETag, mode: TableUpdateMode.Replace);
                 }
                 else if ((DateTimeOffset.UtcNow - entity.LastExecuted.Value) < timer.Frequency)
                 {
@@ -193,7 +199,8 @@ namespace Knapcode.ExplorePackages
                 {
                     _logger.LogInformation("Timer {Name} will be run because it has hasn't been run recently enough.", timer.Name);
                     toExecute.Add((timer, entity));
-                    batch.Replace(entity);
+                    entity.LastExecuted = DateTimeOffset.UtcNow;
+                    batch.UpdateEntity(entity, entity.ETag, mode: TableUpdateMode.Replace);
                 }
             }
 
@@ -203,12 +210,9 @@ namespace Knapcode.ExplorePackages
                 await Task.WhenAll(toExecute.Select(x => ExecuteAsync(x.timer, x.entity)));
             }
 
-            if (batch.Count > 0)
-            {
-                // Update table storage after the execute. In other words, if Table Storage fails, we could run the timers
-                // too frequently.
-                await table.ExecuteBatchAsync(batch);
-            }
+            // Update table storage after the execute. In other words, if Table Storage fails, we could run the timers
+            // too frequently.
+            await batch.SubmitBatchAsync();
         }
 
         private async Task ExecuteAsync(ITimer timer, TimerEntity entity)
@@ -222,16 +226,12 @@ namespace Knapcode.ExplorePackages
             {
                 _logger.LogError(ex, "Timer {Name} failed to execute.", timer.Name);
             }
-
-            entity.LastExecuted = DateTimeOffset.UtcNow;
         }
 
-        private CloudTable GetTable()
+        private async Task<TableClient> GetTableAsync()
         {
-            return _serviceClientFactory
-                .GetStorageAccount()
-                .CreateCloudTableClient()
-                .GetTableReference(_options.Value.TimerTableName);
+            return (await _serviceClientFactory.GetTableServiceClientAsync())
+                .GetTableClient(_options.Value.TimerTableName);
         }
     }
 }
