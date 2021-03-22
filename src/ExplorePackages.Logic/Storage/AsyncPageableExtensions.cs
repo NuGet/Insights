@@ -10,7 +10,7 @@ namespace Knapcode.ExplorePackages
         {
             using (metrics)
             {
-                IAsyncEnumerator<Page<T>> enumerator = asyncPageable.AsPages().GetAsyncEnumerator();
+                var enumerator = asyncPageable.AsPages().GetAsyncEnumerator();
                 try
                 {
                     var output = new List<T>();

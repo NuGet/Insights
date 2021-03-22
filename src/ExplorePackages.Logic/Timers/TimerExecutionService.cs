@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
@@ -145,6 +144,7 @@ namespace Knapcode.ExplorePackages
             // Determine what to do for each timer.
             var toExecute = new List<(ITimer timer, TimerEntity entity)>();
             var batch = table.CreateTransactionalBatch(PartitionKey);
+            var batchCount = 0;
             foreach (var timer in _nameToTimer.Values)
             {
                 if (timerNames != null && !timerNames.Contains(timer.Name))
@@ -165,11 +165,13 @@ namespace Knapcode.ExplorePackages
                         toExecute.Add((timer, entity));
                         entity.LastExecuted = DateTimeOffset.UtcNow;
                         batch.AddEntity(entity);
+                        batchCount++;
                         _logger.LogInformation("Timer {Name} will be run for the first time.", timer.Name);
                     }
                     else
                     {
                         batch.AddEntity(entity);
+                        batchCount++;
                         _logger.LogInformation("Timer {Name} will be initialized without running.", timer.Name);
                     }
                 }
@@ -179,6 +181,7 @@ namespace Knapcode.ExplorePackages
                     toExecute.Add((timer, entity));
                     entity.LastExecuted = DateTimeOffset.UtcNow;
                     batch.UpdateEntity(entity, entity.ETag, mode: TableUpdateMode.Replace);
+                    batchCount++;
                 }
                 else if (!entity.IsEnabled)
                 {
@@ -190,6 +193,7 @@ namespace Knapcode.ExplorePackages
                     toExecute.Add((timer, entity));
                     entity.LastExecuted = DateTimeOffset.UtcNow;
                     batch.UpdateEntity(entity, entity.ETag, mode: TableUpdateMode.Replace);
+                    batchCount++;
                 }
                 else if ((DateTimeOffset.UtcNow - entity.LastExecuted.Value) < timer.Frequency)
                 {
@@ -201,21 +205,25 @@ namespace Knapcode.ExplorePackages
                     toExecute.Add((timer, entity));
                     entity.LastExecuted = DateTimeOffset.UtcNow;
                     batch.UpdateEntity(entity, entity.ETag, mode: TableUpdateMode.Replace);
+                    batchCount++;
                 }
             }
 
             if (toExecute.Count > 0)
             {
                 // Execute all timers.
-                await Task.WhenAll(toExecute.Select(x => ExecuteAsync(x.timer, x.entity)));
+                await Task.WhenAll(toExecute.Select(x => ExecuteAsync(x.timer)));
             }
 
-            // Update table storage after the execute. In other words, if Table Storage fails, we could run the timers
-            // too frequently.
-            await batch.SubmitBatchAsync();
+            if (batchCount > 0)
+            {
+                // Update table storage after the execute. In other words, if Table Storage fails, we could run the timers
+                // too frequently.
+                await batch.SubmitBatchAsync();
+            }
         }
 
-        private async Task ExecuteAsync(ITimer timer, TimerEntity entity)
+        private async Task ExecuteAsync(ITimer timer)
         {
             try
             {

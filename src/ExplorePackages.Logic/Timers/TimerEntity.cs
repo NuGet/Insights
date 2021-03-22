@@ -14,16 +14,18 @@ namespace Knapcode.ExplorePackages
         {
             PartitionKey = string.Empty;
             RowKey = name;
-            Name = name;
         }
 
         public string PartitionKey { get; set; }
         public string RowKey { get; set; }
         public DateTimeOffset? Timestamp { get; set; }
         public ETag ETag { get; set; }
-
-        public string Name { get; set; }
         public DateTimeOffset? LastExecuted { get; set; }
         public bool IsEnabled { get; set; }
+
+        public string GetName()
+        {
+            return RowKey;
+        }
     }
 }

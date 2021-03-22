@@ -46,7 +46,7 @@ namespace Knapcode.ExplorePackages
 
                 var entities = await GetEntitiesAsync<TableEntity>();
                 var entity = Assert.Single(entities);
-                Assert.Equal(new[] { "IsEnabled" }, entity.Keys.OrderBy(x => x).ToArray());
+                Assert.Equal(new[] { "ETag", "IsEnabled", "PartitionKey", "RowKey", "Timestamp" }, entity.Keys.OrderBy(x => x).ToArray());
                 Assert.Equal(isEnabled, entity.GetBoolean("IsEnabled"));
             }
 
@@ -63,7 +63,7 @@ namespace Knapcode.ExplorePackages
 
                 var entities = await GetEntitiesAsync<TableEntity>();
                 var entity = Assert.Single(entities);
-                Assert.Equal(new[] { "IsEnabled", "LastExecuted" }, entity.Keys.OrderBy(x => x).ToArray());
+                Assert.Equal(new[] { "ETag", "IsEnabled", "LastExecuted", "PartitionKey", "RowKey", "Timestamp" }, entity.Keys.OrderBy(x => x).ToArray());
                 Assert.Equal(isEnabled, entity.GetBoolean("IsEnabled"));
                 Assert.InRange(entity.GetDateTimeOffset("LastExecuted").Value, before, after);
             }
@@ -241,6 +241,7 @@ namespace Knapcode.ExplorePackages
             _fixture = fixture;
             _output = output;
             TimerNamePrefix = StorageUtility.GenerateDescendingId().ToString();
+            output.WriteLine("Using timer name prefix: " + TimerNamePrefix);
             TimerName = TimerNamePrefix + "-a";
             Timer = new Mock<ITimer>();
             Timers = new List<ITimer> { Timer.Object };
