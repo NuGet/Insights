@@ -152,12 +152,12 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
             const string blobName = "version-set.dat";
             const string fileName = "data.json";
 
-            var client = ServiceClientFactory.GetStorageAccount().CreateCloudBlobClient();
-            var container = client.GetContainerReference(Options.Value.VersionSetContainerName);
-            var blob = container.GetBlockBlobReference(blobName);
+            var client = await NewServiceClientFactory.GetBlobServiceClientAsync();
+            var container = client.GetBlobContainerClient(Options.Value.VersionSetContainerName);
+            var blob = container.GetBlobClient(blobName);
 
             using var memoryStream = new MemoryStream();
-            await blob.DownloadToStreamAsync(memoryStream);
+            await blob.DownloadToAsync(memoryStream);
             var compactJson = MessagePackSerializer.ConvertToJson(memoryStream.ToArray(), ExplorePackagesMessagePack.Options);
             var parsedJson = JToken.Parse(compactJson);
             var actual = parsedJson.ToString();

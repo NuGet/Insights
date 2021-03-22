@@ -1,14 +1,54 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
+using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
+using Microsoft.WindowsAzure.Storage.Table.Protocol;
 using static Knapcode.ExplorePackages.StorageUtility;
 
 namespace Knapcode.ExplorePackages
 {
     public static class CloudTableExtensions
     {
+        public static async Task CreateIfNotExistsAsync(this CloudTable table, bool retry)
+        {
+            await CreateIfNotExistsAsync(
+                () => table.CreateIfNotExistsAsync(),
+                retry,
+                TableErrorCodeStrings.TableBeingDeleted);
+        }
+
+        private static async Task CreateIfNotExistsAsync(Func<Task> createIfNotExistsAsync, bool retry, string errorCode)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var firstTime = true;
+            do
+            {
+                if (!firstTime)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(5));
+                }
+
+                firstTime = false;
+
+                try
+                {
+                    await createIfNotExistsAsync();
+                    return;
+                }
+                catch (StorageException ex) when (
+                    ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.Conflict
+                    && ex.RequestInformation?.ExtendedErrorInformation?.ErrorCode == errorCode)
+                {
+                    // Retry in this case.
+                }
+            }
+            while (retry && stopwatch.Elapsed < NewStorageExtensions.MaxRetryDuration);
+        }
+
         public static async Task<IReadOnlyList<T>> GetEntitiesAsync<T>(
             this CloudTable table,
             string partitionKey,

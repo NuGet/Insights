@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -149,9 +150,9 @@ namespace Knapcode.ExplorePackages
 
         protected async Task AssertBlobCountAsync(string containerName, int expected)
         {
-            var client = ServiceClientFactory.GetStorageAccount().CreateCloudBlobClient();
-            var container = client.GetContainerReference(containerName);
-            var blobs = await container.ListBlobsAsync(TelemetryClient.StartQueryLoopMetrics());
+            var client = await NewServiceClientFactory.GetBlobServiceClientAsync();
+            var container = client.GetBlobContainerClient(containerName);
+            var blobs = await container.GetBlobsAsync().ToListAsync();
             Assert.Equal(expected, blobs.Count);
         }
 
@@ -167,9 +168,9 @@ namespace Knapcode.ExplorePackages
 
         protected async Task<string> AssertBlobAsync(string containerName, string testName, string stepName, string blobName, bool gzip = false)
         {
-            var client = ServiceClientFactory.GetStorageAccount().CreateCloudBlobClient();
-            var container = client.GetContainerReference(containerName);
-            var blob = container.GetBlockBlobReference(blobName);
+            var client = await NewServiceClientFactory.GetBlobServiceClientAsync();
+            var container = client.GetBlobContainerClient(containerName);
+            var blob = container.GetBlobClient(blobName);
 
             string actual;
             var fileName = blobName;
@@ -179,11 +180,12 @@ namespace Knapcode.ExplorePackages
                 fileName = blobName.Substring(0, blobName.Length - ".gz".Length);
 
                 using var destStream = new MemoryStream();
-                await blob.DownloadToStreamAsync(destStream);
+                using BlobDownloadInfo downloadInfo = await blob.DownloadAsync();
+                await downloadInfo.Content.CopyToAsync(destStream);
                 destStream.Position = 0;
 
-                Assert.Contains("rawSizeBytes", blob.Metadata);
-                var uncompressedLength = long.Parse(blob.Metadata["rawSizeBytes"]);
+                Assert.Contains("rawSizeBytes", downloadInfo.Details.Metadata);
+                var uncompressedLength = long.Parse(downloadInfo.Details.Metadata["rawSizeBytes"]);
 
                 using var gzipStream = new GZipStream(destStream, CompressionMode.Decompress);
                 using var decompressedStream = new MemoryStream();
@@ -197,7 +199,9 @@ namespace Knapcode.ExplorePackages
             }
             else
             {
-                actual = await blob.DownloadTextAsync();
+                using BlobDownloadInfo downloadInfo = await blob.DownloadAsync();
+                using var reader = new StreamReader(downloadInfo.Content);
+                actual = await reader.ReadToEndAsync();
             }
 
             // Normalize line ending, since there are all kinds of nasty mixtures between Environment.NewLine and Git
@@ -230,12 +234,11 @@ namespace Knapcode.ExplorePackages
             finally
             {
                 // Clean up
-                var account = ServiceClientFactory.GetStorageAccount();
-
-                var containers = await account.CreateCloudBlobClient().ListContainersAsync(StoragePrefix);
-                foreach (var container in containers)
+                var blobServiceClient = await NewServiceClientFactory.GetBlobServiceClientAsync();
+                var containerItems = await blobServiceClient.GetBlobContainersAsync(prefix: StoragePrefix).ToListAsync();
+                foreach (var containerItem in containerItems)
                 {
-                    await container.DeleteAsync();
+                    await blobServiceClient.DeleteBlobContainerAsync(containerItem.Name);
                 }
 
                 var queueServiceClient = await NewServiceClientFactory.GetQueueServiceClientAsync();
@@ -245,7 +248,7 @@ namespace Knapcode.ExplorePackages
                     await queueServiceClient.DeleteQueueAsync(queueItem.Name);
                 }
 
-                var tables = await account.CreateCloudTableClient().ListTablesAsync(StoragePrefix);
+                var tables = await ServiceClientFactory.GetStorageAccount().CreateCloudTableClient().ListTablesAsync(StoragePrefix);
                 foreach (var table in tables)
                 {
                     await table.DeleteAsync();

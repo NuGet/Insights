@@ -12,7 +12,7 @@ namespace Knapcode.ExplorePackages
 {
     public static class NewStorageExtensions
     {
-        private static readonly TimeSpan MaxRetryDuration = TimeSpan.FromMinutes(5);
+        internal static readonly TimeSpan MaxRetryDuration = TimeSpan.FromMinutes(5);
 
         public static async Task CreateIfNotExistsAsync(this QueueClient queueClient, bool retry)
         {

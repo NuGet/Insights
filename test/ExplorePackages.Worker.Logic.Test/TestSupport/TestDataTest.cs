@@ -26,11 +26,12 @@ namespace Knapcode.ExplorePackages.Worker
             // Clean up
             var account = ServiceClientFactory.GetStorageAccount();
 
-            var containers = await account.CreateCloudBlobClient().ListContainersAsync(string.Empty);
-            foreach (var container in containers.Where(x => IsOldStoragePrefix(x.Name)))
+            var blobServiceClient = await NewServiceClientFactory.GetBlobServiceClientAsync();
+            var containerItems = await blobServiceClient.GetBlobContainersAsync().ToListAsync();
+            foreach (var containerItem in containerItems.Where(x => IsOldStoragePrefix(x.Name)))
             {
-                Logger.LogInformation("Deleting old container: {Name}", container.Name);
-                await container.DeleteAsync();
+                Logger.LogInformation("Deleting old container: {Name}", containerItem.Name);
+                await blobServiceClient.DeleteBlobContainerAsync(containerItem.Name);
             }
 
             var queueServiceClient = await NewServiceClientFactory.GetQueueServiceClientAsync();

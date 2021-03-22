@@ -150,18 +150,19 @@ namespace Knapcode.ExplorePackages.Worker
 
         private async Task AssertExpectedStorageAsync()
         {
-            var blobClient = ServiceClientFactory.GetStorageAccount().CreateCloudBlobClient();
+            var blobServiceClient = await NewServiceClientFactory.GetBlobServiceClientAsync();
             var queueServiceClient = await NewServiceClientFactory.GetQueueServiceClientAsync();
             var tableClient = ServiceClientFactory.GetStorageAccount().CreateCloudTableClient();
 
-            var containers = await blobClient.ListContainersAsync(StoragePrefix);
+            var containers = await blobServiceClient.GetBlobContainersAsync(prefix: StoragePrefix).ToListAsync();
             Assert.Equal(
                 GetExpectedBlobContainerNames().Concat(new[] { Options.Value.LeaseContainerName }).OrderBy(x => x).ToArray(),
                 containers.Select(x => x.Name).ToArray());
 
-            var leaseBlobs = await blobClient
-                .GetContainerReference(Options.Value.LeaseContainerName)
-                .ListBlobsAsync(TelemetryClient.StartQueryLoopMetrics());
+            var leaseBlobs = await blobServiceClient
+                .GetBlobContainerClient(Options.Value.LeaseContainerName)
+                .GetBlobsAsync()
+                .ToListAsync();
             Assert.Equal(
                 new[] { $"Start-CatalogScan-{DriverType}" }.Concat(GetExpectedLeaseNames()).OrderBy(x => x).ToArray(),
                 leaseBlobs.Select(x => x.Name).ToArray());
