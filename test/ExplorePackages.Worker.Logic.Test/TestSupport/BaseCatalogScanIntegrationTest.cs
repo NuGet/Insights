@@ -152,7 +152,8 @@ namespace Knapcode.ExplorePackages.Worker
         {
             var blobServiceClient = await NewServiceClientFactory.GetBlobServiceClientAsync();
             var queueServiceClient = await NewServiceClientFactory.GetQueueServiceClientAsync();
-            var tableClient = ServiceClientFactory.GetStorageAccount().CreateCloudTableClient();
+            var tableServiceClient = await NewServiceClientFactory.GetTableServiceClientAsync();
+            var oldTableClient = ServiceClientFactory.GetStorageAccount().CreateCloudTableClient();
 
             var containers = await blobServiceClient.GetBlobContainersAsync(prefix: StoragePrefix).ToListAsync();
             Assert.Equal(
@@ -180,19 +181,20 @@ namespace Knapcode.ExplorePackages.Worker
                 Assert.Equal(0, properties.ApproximateMessagesCount);
             }
 
-            var tables = await tableClient.ListTablesAsync(StoragePrefix);
+            var tables = await oldTableClient.ListTablesAsync(StoragePrefix);
             Assert.Equal(
                 GetExpectedTableNames().Concat(new[] { Options.Value.CursorTableName, Options.Value.CatalogIndexScanTableName }).OrderBy(x => x).ToArray(),
                 tables.Select(x => x.Name).ToArray());
 
-            var cursors = await tableClient
-                .GetTableReference(Options.Value.CursorTableName)
-                .GetEntitiesAsync<CursorTableEntity>(TelemetryClient.StartQueryLoopMetrics());
+            var cursors = await tableServiceClient
+                .GetTableClient(Options.Value.CursorTableName)
+                .QueryAsync<CursorTableEntity>()
+                .ToListAsync();
             Assert.Equal(
                 GetExpectedCursorNames().OrderBy(x => x).ToArray(),
-                cursors.Select(x => x.RowKey).ToArray());
+                cursors.Select(x => x.GetName()).ToArray());
 
-            var catalogIndexScans = await tableClient
+            var catalogIndexScans = await oldTableClient
                 .GetTableReference(Options.Value.CatalogIndexScanTableName)
                 .GetEntitiesAsync<CatalogIndexScan>(TelemetryClient.StartQueryLoopMetrics());
             Assert.Equal(

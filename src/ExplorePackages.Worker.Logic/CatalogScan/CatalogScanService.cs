@@ -332,7 +332,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             // Check if a scan is already running, outside the lease.
             var cursor = await _cursorService.GetCursorAsync(driverType);
-            var incompleteScan = await GetLatestIncompleteScanAsync(cursor.Name);
+            var incompleteScan = await GetLatestIncompleteScanAsync(cursor.GetName());
             if (incompleteScan != null)
             {
                 return new CatalogScanServiceResult(CatalogScanServiceResultType.AlreadyRunning, dependencyName: null, incompleteScan);
@@ -388,7 +388,7 @@ namespace Knapcode.ExplorePackages.Worker
                 return new CatalogScanServiceResult(CatalogScanServiceResultType.FullyCaughtUpWithDependency, dependencyName, scan: null);
             }
 
-            await using (var lease = await _leaseService.TryAcquireAsync($"Start-{cursor.Name}"))
+            await using (var lease = await _leaseService.TryAcquireAsync($"Start-{cursor.GetName()}"))
             {
                 if (!lease.Acquired)
                 {
@@ -396,7 +396,7 @@ namespace Knapcode.ExplorePackages.Worker
                 }
 
                 // Check if a scan is already running, inside the lease.
-                incompleteScan = await GetLatestIncompleteScanAsync(cursor.Name);
+                incompleteScan = await GetLatestIncompleteScanAsync(cursor.GetName());
                 if (incompleteScan != null)
                 {
                     return new CatalogScanServiceResult(CatalogScanServiceResultType.AlreadyRunning, dependencyName: null, incompleteScan);
@@ -404,7 +404,7 @@ namespace Knapcode.ExplorePackages.Worker
 
                 var descendingId = StorageUtility.GenerateDescendingId();
                 var newScan = await StartWithoutLeaseAsync(
-                    cursor.Name,
+                    cursor.GetName(),
                     descendingId.ToString(),
                     descendingId.Unique,
                     driverType,
