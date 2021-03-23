@@ -1,12 +1,12 @@
 ﻿using System;
+using Azure.Data.Tables;
 using Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan;
 using Knapcode.ExplorePackages.Worker.TableCopy;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class TableScanDriverFactory<T> where T : ITableEntity, new()
+    public class TableScanDriverFactory<T> where T : class, ITableEntity, new()
     {
         private readonly IServiceProvider _serviceProvider;
 

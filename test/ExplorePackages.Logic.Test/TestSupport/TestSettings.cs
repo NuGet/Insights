@@ -6,6 +6,10 @@ namespace Knapcode.ExplorePackages
 {
     public static class TestSettings
     {
+        private const string StorageEmulatorConnectionString = "UseDevelopmentStorage=true";
+
+        public static bool IsStorageEmulator => StorageConnectionString == StorageEmulatorConnectionString;
+
         public static string StorageConnectionString
         {
             get
@@ -13,7 +17,7 @@ namespace Knapcode.ExplorePackages
                 var env = Environment.GetEnvironmentVariable("EXPLOREPACKAGES_STORAGECONNECTIONSTRING");
                 if (string.IsNullOrWhiteSpace(env))
                 {
-                    return "UseDevelopmentStorage=true";
+                    return StorageEmulatorConnectionString;
                 }
 
                 return env;

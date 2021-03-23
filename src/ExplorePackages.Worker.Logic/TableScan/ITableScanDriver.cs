@@ -8,6 +8,6 @@ namespace Knapcode.ExplorePackages.Worker
     {
         IList<string> SelectColumns { get; }
         Task InitializeAsync(JToken parameters);
-        Task ProcessEntitySegmentAsync(string tableName, JToken parameters, List<T> entities);
+        Task ProcessEntitySegmentAsync(string tableName, JToken parameters, IReadOnlyList<T> entities);
     }
 }

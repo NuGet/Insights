@@ -4,15 +4,16 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Azure.Data.Tables;
 using Knapcode.ExplorePackages.TablePrefixScan;
-using Microsoft.WindowsAzure.Storage.Table;
+using NuGet.Configuration;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class TableScanMessageProcessor<T> : IMessageProcessor<TableScanMessage<T>> where T : ITableEntity, new()
+    public class TableScanMessageProcessor<T> : IMessageProcessor<TableScanMessage<T>> where T : class, ITableEntity, new()
     {
         private readonly TaskStateStorageService _taskStateStorageService;
-        private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly NewServiceClientFactory _serviceClientFactory;
         private readonly IMessageEnqueuer _enqueuer;
         private readonly SchemaSerializer _serializer;
         private readonly TablePrefixScanner _prefixScanner;
@@ -21,7 +22,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public TableScanMessageProcessor(
             TaskStateStorageService taskStateStorageService,
-            ServiceClientFactory serviceClientFactory,
+            NewServiceClientFactory serviceClientFactory,
             IMessageEnqueuer enqueuer,
             SchemaSerializer serializer,
             TablePrefixScanner prefixScanner,
@@ -74,30 +75,16 @@ namespace Knapcode.ExplorePackages.Worker
 
             using var metrics = _telemetryClient.StartQueryLoopMetrics();
 
-            var sourceTable = GetTable(message.TableName);
+            var sourceTable = await GetTableAsync(message.TableName);
             var driver = _driverFactory.Create(message.DriverType);
             await driver.InitializeAsync(message.DriverParameters);
 
-            var tableQuery = new TableQuery<T>
+            var pages = sourceTable.QueryAsync<T>(select: driver.SelectColumns, maxPerPage: message.TakeCount).AsPages();
+            await using var enumerator = pages.GetAsyncEnumerator();
+            while (await enumerator.MoveNextAsync(metrics))
             {
-                SelectColumns = driver.SelectColumns,
-                TakeCount = message.TakeCount,
-            };
-
-            TableContinuationToken continuationToken = null;
-            do
-            {
-                TableQuerySegment<T> segment;
-                using (metrics.TrackQuery())
-                {
-                    segment = await sourceTable.ExecuteQuerySegmentedAsync(tableQuery, continuationToken);
-                }
-
-                await driver.ProcessEntitySegmentAsync(message.TableName, message.DriverParameters, segment.Results);
-
-                continuationToken = segment.ContinuationToken;
+                await driver.ProcessEntitySegmentAsync(message.TableName, message.DriverParameters, enumerator.Current.Values);
             }
-            while (continuationToken != null);
         }
 
         private async Task ProcessPrefixScanAsync(TableScanMessage<T> message)
@@ -105,7 +92,7 @@ namespace Knapcode.ExplorePackages.Worker
             var driver = _driverFactory.Create(message.DriverType);
 
             var tableQueryParameters = new TableQueryParameters(
-                GetTable(message.TableName),
+                await GetTableAsync(message.TableName),
                 driver.SelectColumns,
                 message.TakeCount,
                 message.ExpandPartitionKeys);
@@ -282,12 +269,9 @@ namespace Knapcode.ExplorePackages.Worker
             };
         }
 
-        private CloudTable GetTable(string name)
+        private async Task<TableClient> GetTableAsync(string name)
         {
-            return _serviceClientFactory
-                .GetStorageAccount()
-                .CreateCloudTableClient()
-                .GetTableReference(name);
+            return (await _serviceClientFactory.GetTableServiceClientAsync()).GetTableClient(name);
         }
     }
 }

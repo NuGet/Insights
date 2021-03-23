@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Table;
+using Azure;
+using Azure.Data.Tables;
+using Azure.Data.Tables.Models;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -16,18 +17,22 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
         public async Task AllowsProjection()
         {
             (var table, var expected) = await _fixture.SortAndInsertAsync(GenerateTestEntities("PK", 2, 2));
-            MinSelectColumns = new[] { nameof(TestEntity.FieldB) };
+            MinSelectColumns = new[] { StorageUtility.PartitionKey, StorageUtility.RowKey, nameof(TestEntity.FieldB) };
 
             var actual = await Target.ListAsync<TestEntity>(table, string.Empty, MinSelectColumns, takeCount: 1);
 
             Assert.Equal(expected.Count, actual.Count);
             Assert.All(expected.Zip(actual), (pair) =>
             {
-                // Built-in properties
+                // Built-in properties that are returned automatically
+                Assert.Equal(pair.First.ETag, pair.Second.ETag);
+
+                // Built-in properties that are required
                 Assert.Equal(pair.First.PartitionKey, pair.Second.PartitionKey);
                 Assert.Equal(pair.First.RowKey, pair.Second.RowKey);
-                Assert.Equal(pair.First.Timestamp, pair.Second.Timestamp);
-                Assert.Equal(pair.First.ETag, pair.Second.ETag);
+
+                // Built-in properties that are not required
+                Assert.Null(pair.Second.Timestamp);
 
                 // Custom properties
                 Assert.Null(pair.Second.FieldA);
@@ -98,8 +103,7 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
         {
             // For some reason the Azure Storage Emulator sorts the '𐐷' character before 'A'. Real Azure Table Storage
             // does not do this.
-            var isStorageEmulator = _fixture.StorageAccount == CloudStorageAccount.DevelopmentStorageAccount;
-            var hackPrefix = isStorageEmulator ? "A" : string.Empty;
+            var hackPrefix = TestSettings.IsStorageEmulator ? "A" : string.Empty;
 
             (var table, var expected) = await _fixture.SortAndInsertAsync(new[]
             {
@@ -324,20 +328,20 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
 
         public class Fixture : IAsyncLifetime
         {
-            private static readonly List<(IReadOnlyList<TestEntity> sortedEntities, CloudTable table)> _candidates = new List<(IReadOnlyList<TestEntity> sortedEntities, CloudTable table)>();
+            private static readonly List<(IReadOnlyList<TestEntity> sortedEntities, TableClient table)> _candidates = new List<(IReadOnlyList<TestEntity> sortedEntities, TableClient table)>();
 
             public Fixture()
             {
-                StorageAccount = CloudStorageAccount.Parse(TestSettings.StorageConnectionString);
+                Client = new TableServiceClient(TestSettings.StorageConnectionString);
             }
 
-            public CloudStorageAccount StorageAccount { get; }
+            public TableServiceClient Client { get; }
 
-            public async Task<(CloudTable table, IReadOnlyList<TestEntity> sortedEntities)> SortAndInsertAsync(IEnumerable<TestEntity> entities)
+            public async Task<(TableClient table, IReadOnlyList<TestEntity> sortedEntities)> SortAndInsertAsync(IEnumerable<TestEntity> entities)
             {
                 IReadOnlyList<TestEntity> sortedEntities = entities.OrderBy(x => x).ToList();
 
-                CloudTable table = null;
+                TableClient table = null;
                 foreach (var candidate in _candidates)
                 {
                     if (candidate.sortedEntities.SequenceEqual(sortedEntities, new PartitionKeyRowKeyComparer<TestEntity>()))
@@ -350,12 +354,21 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
 
                 if (table == null)
                 {
-                    table = StorageAccount.CreateCloudTableClient().GetTableReference(TestSettings.NewStoragePrefix() + "1ts1");
+                    table = Client.GetTableClient(TestSettings.NewStoragePrefix() + "1ts1");
                     await table.CreateIfNotExistsAsync();
+
                     await Task.WhenAll(sortedEntities
                         .GroupBy(x => x.PartitionKey)
-                        .Select(x => table.InsertEntitiesAsync(x.ToList()))
-                        .ToList());
+                        .Select(async group =>
+                        {
+                            var batch = table.CreateTransactionalBatch(group.Key);
+                            batch.AddEntities(group);
+                            TableBatchResponse response = await batch.SubmitBatchAsync();
+                            foreach (var item in group)
+                            {
+                                item.UpdateETagAndTimestamp(response.GetResponseForEntity(item.RowKey));
+                            }
+                        }));
                     _candidates.Add((sortedEntities, table));
                 }
 
@@ -396,17 +409,24 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
             }
         }
 
-        public class TestEntity : TableEntity, IEquatable<TestEntity>, IComparable<TestEntity>
+        public class TestEntity : ITableEntity, IEquatable<TestEntity>, IComparable<TestEntity>
         {
             public TestEntity()
             {
             }
 
-            public TestEntity(string partitionKey, string rowKey) : base(partitionKey, rowKey)
+            public TestEntity(string partitionKey, string rowKey)
             {
+                PartitionKey = partitionKey;
+                RowKey = rowKey;
                 FieldA = partitionKey + "/" + rowKey;
                 FieldB = rowKey + "/" + partitionKey;
             }
+
+            public string PartitionKey { get; set; }
+            public string RowKey { get; set; }
+            public DateTimeOffset? Timestamp { get; set; }
+            public ETag ETag { get; set; }
 
             public string FieldA { get; set; }
             public string FieldB { get; set; }

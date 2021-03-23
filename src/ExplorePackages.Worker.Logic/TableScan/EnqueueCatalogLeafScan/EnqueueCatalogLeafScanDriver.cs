@@ -36,7 +36,7 @@ namespace Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan
             return Task.CompletedTask;
         }
 
-        public async Task ProcessEntitySegmentAsync(string tableName, JToken parameters, List<CatalogLeafScan> entities)
+        public async Task ProcessEntitySegmentAsync(string tableName, JToken parameters, IReadOnlyList<CatalogLeafScan> entities)
         {
             var deserializedParameters = (EnqueueCatalogLeafScansParameters)_serializer.Deserialize(parameters).Data;
 

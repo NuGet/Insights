@@ -1,11 +1,11 @@
 ﻿using System;
-using Microsoft.WindowsAzure.Storage.Table;
+using Azure.Data.Tables;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class TableScanMessage<T> where T : ITableEntity, new()
+    public class TableScanMessage<T> where T : class, ITableEntity, new()
     {
         [JsonProperty("b")]
         public DateTimeOffset Started { get; set; }

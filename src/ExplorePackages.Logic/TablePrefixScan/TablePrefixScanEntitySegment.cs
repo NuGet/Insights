@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.WindowsAzure.Storage.Table;
+using Azure.Data.Tables;
 
 namespace Knapcode.ExplorePackages.TablePrefixScan
 {
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
     public class TablePrefixScanEntitySegment<T> : TablePrefixScanStep where T : ITableEntity, new()
     {
-        public TablePrefixScanEntitySegment(TableQueryParameters parameters, int depth, List<T> entities)
+        public TablePrefixScanEntitySegment(TableQueryParameters parameters, int depth, IReadOnlyList<T> entities)
             : base(parameters, depth)
         {
             Entities = entities ?? throw new ArgumentNullException(nameof(Entities));
@@ -37,6 +37,6 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
             }
         }
 
-        public List<T> Entities { get; }
+        public IReadOnlyList<T> Entities { get; }
     }
 }

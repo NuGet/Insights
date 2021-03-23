@@ -1,10 +1,11 @@
 ﻿using System;
+using Azure;
 using Microsoft.WindowsAzure.Storage.Table;
 using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf
 {
-    public class LatestPackageLeaf : TableEntity, ILatestPackageLeaf
+    public class LatestPackageLeaf : TableEntity, ILatestPackageLeaf, Azure.Data.Tables.ITableEntity
     {
         public LatestPackageLeaf(CatalogLeafItem item, int leafRank, int pageRank, string pageUrl)
         {
@@ -44,6 +45,18 @@ namespace Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf
         public int LeafRank { get; set; }
         public int PageRank { get; set; }
         public string PageUrl { get; set; }
+
+        DateTimeOffset? Azure.Data.Tables.ITableEntity.Timestamp
+        {
+            get => Timestamp;
+            set => Timestamp = value.Value;
+        }
+
+        ETag Azure.Data.Tables.ITableEntity.ETag
+        {
+            get => new ETag(ETag);
+            set => ETag = value.ToString();
+        }
 
         public CatalogLeafItem ToLeafItem()
         {

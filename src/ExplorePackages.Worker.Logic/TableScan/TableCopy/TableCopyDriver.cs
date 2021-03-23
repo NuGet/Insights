@@ -1,20 +1,20 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.WindowsAzure.Storage.Table;
+using Azure.Data.Tables;
 using Newtonsoft.Json.Linq;
 
 namespace Knapcode.ExplorePackages.Worker.TableCopy
 {
-    public class TableCopyDriver<T> : ITableScanDriver<T> where T : ITableEntity, new()
+    public class TableCopyDriver<T> : ITableScanDriver<T> where T : class, ITableEntity, new()
     {
         private readonly SchemaSerializer _serializer;
-        private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly NewServiceClientFactory _serviceClientFactory;
         private readonly IMessageEnqueuer _enqueuer;
 
         public TableCopyDriver(
             SchemaSerializer serializer,
-            ServiceClientFactory serviceClientFactory,
+            NewServiceClientFactory serviceClientFactory,
             IMessageEnqueuer enqueuer)
         {
             _serializer = serializer;
@@ -28,15 +28,13 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
         {
             var deserializedParameters = DeserializeParameters(parameters);
 
-            var table = _serviceClientFactory
-               .GetStorageAccount()
-               .CreateCloudTableClient()
-               .GetTableReference(deserializedParameters.DestinationTableName);
+            var table = (await _serviceClientFactory.GetTableServiceClientAsync())
+               .GetTableClient(deserializedParameters.DestinationTableName);
 
             await table.CreateIfNotExistsAsync(retry: true);
         }
 
-        public async Task ProcessEntitySegmentAsync(string tableName, JToken parameters, List<T> entities)
+        public async Task ProcessEntitySegmentAsync(string tableName, JToken parameters, IReadOnlyList<T> entities)
         {
             var deserializedParameters = DeserializeParameters(parameters);
 

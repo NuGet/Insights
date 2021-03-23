@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Azure.Data.Tables;
 using Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan;
 using Knapcode.ExplorePackages.Worker.TableCopy;
-using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json.Linq;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class TableScanService<T> where T : ITableEntity, new()
+    public class TableScanService<T> where T : class, ITableEntity, new()
     {
         private readonly IMessageEnqueuer _enqueuer;
         private readonly SchemaSerializer _serializer;

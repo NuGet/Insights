@@ -1,9 +1,10 @@
 ﻿using System;
+using Azure;
 using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class CatalogLeafScan : TableEntity, ILatestPackageLeaf
+    public class CatalogLeafScan : TableEntity, ILatestPackageLeaf, Azure.Data.Tables.ITableEntity
     {
         public CatalogLeafScan(string storageSuffix, string scanId, string pageId, string leafId)
         {
@@ -50,6 +51,18 @@ namespace Knapcode.ExplorePackages.Worker
         public string PackageVersion { get; set; }
         public DateTimeOffset? NextAttempt { get; set; }
         public int AttemptCount { get; set; }
+
+        DateTimeOffset? Azure.Data.Tables.ITableEntity.Timestamp
+        {
+            get => Timestamp;
+            set => Timestamp = value.Value;
+        }
+
+        ETag Azure.Data.Tables.ITableEntity.ETag
+        {
+            get => new ETag(ETag);
+            set => ETag = value.ToString();
+        }
 
         public static string GetPartitionKey(string scanId, string pageId)
         {

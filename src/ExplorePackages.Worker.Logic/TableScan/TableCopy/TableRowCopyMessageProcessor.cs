@@ -2,19 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
-using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Knapcode.ExplorePackages.Worker.TableCopy
 {
-    public class TableRowCopyMessageProcessor<T> : IMessageProcessor<TableRowCopyMessage<T>> where T : ITableEntity, new()
+    public class TableRowCopyMessageProcessor<T> : IMessageProcessor<TableRowCopyMessage<T>> where T : class, ITableEntity, new()
     {
-        private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly NewServiceClientFactory _serviceClientFactory;
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<TableRowCopyMessageProcessor<T>> _logger;
 
         public TableRowCopyMessageProcessor(
-            ServiceClientFactory serviceClientFactory,
+            NewServiceClientFactory serviceClientFactory,
             ITelemetryClient telemetryClient,
             ILogger<TableRowCopyMessageProcessor<T>> logger)
         {
@@ -25,71 +25,59 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
 
         public async Task ProcessAsync(TableRowCopyMessage<T> message, long dequeueCount)
         {
-            var rows = await GetSourceRowsAsync(message);
+            var client = await _serviceClientFactory.GetTableServiceClientAsync();
+            var sourceTable = client.GetTableClient(message.SourceTableName);
 
-            var destinationTable = _serviceClientFactory
-                .GetStorageAccount()
-                .CreateCloudTableClient()
-                .GetTableReference(message.DestinationTableName);
+            var rows = await GetSourceRowsAsync(sourceTable, message);
 
-            await destinationTable.InsertOrReplaceEntitiesAsync(rows);
+            var destinationTable = client.GetTableClient(message.DestinationTableName);
+
+            var batch = destinationTable.CreateTransactionalBatch(message.PartitionKey);
+            var batchCount = 0;
+            foreach (var entity in rows)
+            {
+                if (batchCount >= StorageUtility.MaxBatchSize)
+                {
+                    await batch.SubmitBatchAsync();
+                    batch = destinationTable.CreateTransactionalBatch(message.PartitionKey);
+                    batchCount = 0;
+                }
+
+                batch.UpsertEntity(entity, mode: TableUpdateMode.Replace);
+                batchCount++;
+            }
+
+            if (batchCount > 0)
+            {
+                await batch.SubmitBatchAsync();
+            }
         }
 
-        private async Task<List<T>> GetSourceRowsAsync(TableRowCopyMessage<T> message)
+        private async Task<List<T>> GetSourceRowsAsync(TableClient sourceTable, TableRowCopyMessage<T> message)
         {
             using var metrics = _telemetryClient.StartQueryLoopMetrics();
-
-            var sourceTable = _serviceClientFactory
-                .GetStorageAccount()
-                .CreateCloudTableClient()
-                .GetTableReference(message.SourceTableName);
 
             var sortedRowKeys = message.RowKeys.OrderBy(x => x, StringComparer.Ordinal).ToList();
             var minRowKey = sortedRowKeys.First();
             var maxRowKey = sortedRowKeys.Last();
             var rowKeys = message.RowKeys.ToHashSet();
 
-            var query = new TableQuery<T>
-            {
-                FilterString = TableQuery.CombineFilters(
-                    TableQuery.GenerateFilterCondition(
-                        StorageUtility.PartitionKey,
-                        QueryComparisons.Equal,
-                        message.PartitionKey),
-                    TableOperators.And,
-                    TableQuery.CombineFilters(
-                        TableQuery.GenerateFilterCondition(
-                            StorageUtility.RowKey,
-                            QueryComparisons.GreaterThanOrEqual,
-                            minRowKey),
-                        TableOperators.And,
-                        TableQuery.GenerateFilterCondition(
-                            StorageUtility.RowKey,
-                            QueryComparisons.LessThanOrEqual,
-                            maxRowKey))),
-                TakeCount = StorageUtility.MaxTakeCount,
-            };
+            var query = sourceTable.QueryAsync<T>(
+                x => x.PartitionKey == message.PartitionKey && x.RowKey.CompareTo(minRowKey) >= 0 && x.RowKey.CompareTo(maxRowKey) <= 0,
+                maxPerPage: StorageUtility.MaxTakeCount);
 
             var rows = new List<T>();
-            TableContinuationToken continuationToken = null;
-            do
+            await using var enumerator = query.AsPages().GetAsyncEnumerator();
+            while (await enumerator.MoveNextAsync(metrics))
             {
-                TableQuerySegment<T> segment;
-                using (metrics.TrackQuery())
-                {
-                    segment = await sourceTable.ExecuteQuerySegmentedAsync(query, continuationToken);
-                }
-
-                foreach (var row in segment.Results)
+                foreach (var row in enumerator.Current.Values)
                 {
                     if (rowKeys.Contains(row.RowKey))
                     {
                         rows.Add(row);
                     }
                 }
-                continuationToken = segment.ContinuationToken;
             }
-            while (continuationToken != null);
 
             if (rows.Count != rowKeys.Count)
             {

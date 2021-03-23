@@ -10,7 +10,7 @@ namespace Knapcode.ExplorePackages
         {
             using (metrics)
             {
-                var enumerator = asyncPageable.AsPages().GetAsyncEnumerator();
+                await using var enumerator = asyncPageable.AsPages().GetAsyncEnumerator();
                 try
                 {
                     var output = new List<T>();
@@ -25,10 +25,9 @@ namespace Knapcode.ExplorePackages
                     await enumerator.DisposeAsync();
                 }
             }
-
         }
 
-        private static async Task<bool> MoveNextAsync<T>(IAsyncEnumerator<Page<T>> enumerator, QueryLoopMetrics metrics)
+        public static async Task<bool> MoveNextAsync<T>(this IAsyncEnumerator<Page<T>> enumerator, QueryLoopMetrics metrics)
         {
             using (metrics.TrackQuery())
             {

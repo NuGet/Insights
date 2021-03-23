@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.WindowsAzure.Storage.Table;
+using Azure.Data.Tables;
 using Newtonsoft.Json;
 
 namespace Knapcode.ExplorePackages.TablePrefixScan
@@ -17,7 +17,7 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
             _scanner = scanner;
         }
 
-        public async Task WriteAsync(string path, CloudTable table, TablePrefixScanJsonType type, int segmentsPerFirstPrefix, int segmentsPerSubsequentPrefix)
+        public async Task WriteAsync(string path, TableClient table, TablePrefixScanJsonType type, int segmentsPerFirstPrefix, int segmentsPerSubsequentPrefix)
         {
             StepCollection remainingSteps;
             switch (type)

@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
-using Microsoft.WindowsAzure.Storage.Table;
+using Azure.Data.Tables;
 using Newtonsoft.Json;
 
 namespace Knapcode.ExplorePackages.Worker.TableCopy
 {
-    public class TableRowCopyMessage<T> where T : ITableEntity, new()
+    public class TableRowCopyMessage<T> where T : class, ITableEntity, new()
     {
         [JsonProperty("s")]
         public string SourceTableName { get; set; }
