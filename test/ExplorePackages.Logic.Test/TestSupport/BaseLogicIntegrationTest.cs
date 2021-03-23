@@ -34,7 +34,6 @@ namespace Knapcode.ExplorePackages
         public const string TestData = "TestData";
         public const string Step1 = "Step1";
         public const string Step2 = "Step2";
-        public static readonly Regex StoragePrefixPattern = new Regex(@"t(?<Date>\d{6})[a-z234567]{10}");
 
         /// <summary>
         /// This should only be on when generating new test data locally. It should never be checked in as true.
@@ -48,12 +47,7 @@ namespace Knapcode.ExplorePackages
             DefaultWebApplicationFactory<StaticFilesStartup> factory)
         {
             Output = output;
-
-            var randomBytes = new byte[6];
-            ThreadLocalRandom.NextBytes(randomBytes);
-            StoragePrefix = "t" + DateTimeOffset.UtcNow.ToString("yyMMdd") + randomBytes.ToTrimmedBase32();
-            Assert.Matches(StoragePrefixPattern, StoragePrefix);
-
+            StoragePrefix = TestSettings.NewStoragePrefix();
             HttpMessageHandlerFactory = new TestHttpMessageHandlerFactory();
 
             var currentDirectory = Directory.GetCurrentDirectory();

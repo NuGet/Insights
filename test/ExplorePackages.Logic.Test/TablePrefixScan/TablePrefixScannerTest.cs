@@ -350,7 +350,7 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
 
                 if (table == null)
                 {
-                    table = StorageAccount.CreateCloudTableClient().GetTableReference("t" + Guid.NewGuid().ToByteArray().ToTrimmedBase32());
+                    table = StorageAccount.CreateCloudTableClient().GetTableReference(TestSettings.NewStoragePrefix() + "1ts1");
                     await table.CreateIfNotExistsAsync();
                     await Task.WhenAll(sortedEntities
                         .GroupBy(x => x.PartitionKey)

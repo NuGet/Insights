@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Text.RegularExpressions;
+using Xunit;
 
 namespace Knapcode.ExplorePackages
 {
@@ -16,6 +18,17 @@ namespace Knapcode.ExplorePackages
 
                 return env;
             }
+        }
+
+        public static readonly Regex StoragePrefixPattern = new Regex(@"t(?<Date>\d{6})[a-z234567]{10}");
+
+        public static string NewStoragePrefix()
+        {
+            var randomBytes = new byte[6];
+            ThreadLocalRandom.NextBytes(randomBytes);
+            var storagePrefix = "t" + DateTimeOffset.UtcNow.ToString("yyMMdd") + randomBytes.ToTrimmedBase32();
+            Assert.Matches(StoragePrefixPattern, storagePrefix);
+            return storagePrefix;
         }
     }
 }

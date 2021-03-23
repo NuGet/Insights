@@ -52,7 +52,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         private bool IsOldStoragePrefix(string name)
         {
-            var match = StoragePrefixPattern.Match(name);
+            var match = TestSettings.StoragePrefixPattern.Match(name);
             if (!match.Success)
             {
                 return false;

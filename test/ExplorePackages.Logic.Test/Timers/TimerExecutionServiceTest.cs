@@ -284,8 +284,8 @@ namespace Knapcode.ExplorePackages
                 Settings = new ExplorePackagesSettings
                 {
                     StorageConnectionString = TestSettings.StorageConnectionString,
-                    TimerTableName = "t" + StorageUtility.GenerateUniqueId().ToLowerInvariant(),
-                    LeaseContainerName = "t" + StorageUtility.GenerateUniqueId().ToLowerInvariant(),
+                    TimerTableName = TestSettings.NewStoragePrefix() + "1t1",
+                    LeaseContainerName = TestSettings.NewStoragePrefix() + "1l1",
                 };
                 Options.Setup(x => x.Value).Returns(() => Settings);
                 ServiceClientFactory = new ServiceClientFactory(Options.Object);

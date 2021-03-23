@@ -211,7 +211,7 @@ namespace Knapcode.ExplorePackages
             public BaseTest(ITestOutputHelper output)
             {
                 Output = output;
-                ContainerName = Guid.NewGuid().ToString("N");
+                ContainerName = TestSettings.NewStoragePrefix() + "1l1";
                 LeaseName = "some-lease";
                 Duration = TimeSpan.FromSeconds(60);
                 Settings = new ExplorePackagesSettings

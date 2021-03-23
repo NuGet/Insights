@@ -451,7 +451,7 @@ namespace Knapcode.ExplorePackages.WideEntities
                 };
                 Options.Setup(x => x.Value).Returns(() => Settings);
                 ServiceClientFactory = new ServiceClientFactory(Options.Object);
-                TableName = "t" + StorageUtility.GenerateUniqueId().ToLowerInvariant();
+                TableName = TestSettings.NewStoragePrefix() + "1we1";
                 IsLoopback = GetTable().Uri.IsLoopback;
 
                 Bytes = new byte[4 * 1024 * 1024];
