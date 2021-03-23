@@ -38,7 +38,8 @@ namespace Knapcode.ExplorePackages.Worker
             {
                 cursor = new CursorTableEntity(name);
                 _logger.LogInformation("Creating cursor {Name} to timestamp {Value:O}.", name, cursor.Value);
-                await table.AddEntityAsync(cursor);
+                var response = await table.AddEntityAsync(cursor);
+                cursor.UpdateETagAndTimestamp(response);
                 return cursor;
             }
         }

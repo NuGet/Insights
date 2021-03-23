@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker;
+using Azure;
+using Azure.Data.Tables;
 using Microsoft.Extensions.Options;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Table;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;
@@ -24,7 +23,7 @@ namespace Knapcode.ExplorePackages.Worker
             public async Task ReturnsExistingCursor()
             {
                 var value = new DateTimeOffset(2020, 1, 1, 12, 30, 0, TimeSpan.Zero);
-                await Table.InsertEntitiesAsync(new[] { new CursorTableEntity(CursorName) { Value = value } });
+                await Table.AddEntityAsync(new CursorTableEntity(CursorName) { Value = value });
 
                 var cursor = await Target.GetOrCreateAsync(CursorName);
 
@@ -42,7 +41,7 @@ namespace Knapcode.ExplorePackages.Worker
                 Assert.Equal(cursor.Value, entity.Value);
                 Assert.Equal(cursor.PartitionKey, entity.PartitionKey);
                 Assert.Equal(cursor.RowKey, entity.RowKey);
-                Assert.Equal(CursorName, entity.Name);
+                Assert.Equal(CursorName, entity.GetName());
                 Assert.Equal(cursor.ETag, entity.ETag);
                 Assert.Equal(cursor.Timestamp, entity.Timestamp);
             }
@@ -52,9 +51,9 @@ namespace Knapcode.ExplorePackages.Worker
             {
                 var cursor = await Target.GetOrCreateAsync(CursorName);
 
-                var entities = await GetEntitiesAsync<DynamicTableEntity>();
+                var entities = await GetEntitiesAsync<TableEntity>();
                 var entity = Assert.Single(entities);
-                Assert.Equal(new[] { "Value" }, entity.Properties.Keys.OrderBy(x => x).ToArray());
+                Assert.Equal(new[] { "ETag", "PartitionKey", "RowKey", "Timestamp", "Value" }, entity.Keys.OrderBy(x => x).ToArray());
             }
         }
 
@@ -84,7 +83,7 @@ namespace Knapcode.ExplorePackages.Worker
                 await Target.UpdateAsync(await Target.GetOrCreateAsync(CursorName));
                 var value = new DateTimeOffset(2020, 1, 1, 12, 30, 0, TimeSpan.Zero);
 
-                await Assert.ThrowsAsync<StorageException>(() => Target.UpdateAsync(cursor));
+                await Assert.ThrowsAsync<RequestFailedException>(() => Target.UpdateAsync(cursor));
 
                 cursor = await Target.GetOrCreateAsync(CursorName);
                 Assert.Equal(CursorTableEntity.Min, cursor.Value);
@@ -108,15 +107,15 @@ namespace Knapcode.ExplorePackages.Worker
             _fixture.ServiceClientFactory,
             _fixture.Options.Object,
             _output.GetLogger<CursorStorageService>());
-        public CloudTable Table => _fixture.GetTable();
+        public TableClient Table => _fixture.Table;
 
-        protected async Task<IReadOnlyList<T>> GetEntitiesAsync<T>() where T : ITableEntity, new()
+        protected async Task<IReadOnlyList<T>> GetEntitiesAsync<T>() where T : class, ITableEntity, new()
         {
-            return await Table.GetEntitiesAsync<T>(
-                partitionKey: string.Empty,
-                minRowKey: CursorNamePrefix,
-                maxRowKey: CursorNamePrefix + char.MaxValue,
-                _output.GetTelemetryClient().StartQueryLoopMetrics());
+            return await Table
+                .QueryAsync<T>(x => x.PartitionKey == string.Empty
+                                 && x.RowKey.CompareTo(CursorNamePrefix) >= 0
+                                 && x.RowKey.CompareTo(CursorNamePrefix + char.MaxValue) < 0)
+                .ToListAsync();
         }
 
         public class Fixture : IAsyncLifetime
@@ -130,29 +129,29 @@ namespace Knapcode.ExplorePackages.Worker
                     CursorTableName = TestSettings.NewStoragePrefix() + "1c1",
                 };
                 Options.Setup(x => x.Value).Returns(() => Settings);
-                ServiceClientFactory = new ServiceClientFactory(Options.Object);
+                ServiceClientFactory = new NewServiceClientFactory(Options.Object);
             }
 
             public Mock<IOptions<ExplorePackagesWorkerSettings>> Options { get; }
             public ExplorePackagesWorkerSettings Settings { get; }
-            public ServiceClientFactory ServiceClientFactory { get; }
+            public NewServiceClientFactory ServiceClientFactory { get; }
+            public TableClient Table { get; private set; }
 
             public async Task InitializeAsync()
             {
-                await GetTable().CreateIfNotExistsAsync();
+                Table = await GetTableAsync();
+                await Table.CreateIfNotExistsAsync();
             }
 
             public async Task DisposeAsync()
             {
-                await GetTable().DeleteIfExistsAsync();
+                await (await GetTableAsync()).DeleteIfExistsAsync();
             }
 
-            public CloudTable GetTable()
+            public async Task<TableClient> GetTableAsync()
             {
-                return ServiceClientFactory
-                    .GetStorageAccount()
-                    .CreateCloudTableClient()
-                    .GetTableReference(Options.Object.Value.CursorTableName);
+                return (await ServiceClientFactory.GetTableServiceClientAsync())
+                    .GetTableClient(Options.Object.Value.CursorTableName);
             }
         }
     }
