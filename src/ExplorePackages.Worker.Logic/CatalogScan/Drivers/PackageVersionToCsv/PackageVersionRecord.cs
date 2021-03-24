@@ -17,10 +17,10 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
             entity.CommitTimestamp,
             entity.Created)
         {
-            ResultType = entity.ParsedLeafType == CatalogLeafType.PackageDelete ? PackageVersionResultType.Deleted : PackageVersionResultType.Available;
+            ResultType = entity.LeafType == CatalogLeafType.PackageDelete ? PackageVersionResultType.Deleted : PackageVersionResultType.Available;
             IsListed = entity.IsListed;
-            IsSemVer2 = entity.ParsedSemVerType.HasValue ? entity.ParsedSemVerType.Value.IsSemVer2() : null;
-            SemVerType = entity.ParsedSemVerType;
+            IsSemVer2 = entity.SemVerType != null ? entity.GetSemVerType().Value.IsSemVer2() : null;
+            SemVerType = entity.GetSemVerType();
         }
 
         public PackageVersionResultType ResultType { get; set; }

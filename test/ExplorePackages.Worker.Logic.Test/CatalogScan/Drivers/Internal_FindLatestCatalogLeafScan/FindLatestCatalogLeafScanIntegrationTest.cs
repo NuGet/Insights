@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.WindowsAzure.Storage.Table;
+using Azure.Data.Tables;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -96,7 +96,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
             await CatalogScanStorageService.InsertAsync(parentScan);
             ExpectedCatalogIndexScans.Add(parentScan);
 
-            await GetLeafScanTable().CreateIfNotExistsAsync();
+            await (await GetLeafScanTableAsync()).CreateIfNotExistsAsync();
 
             var scan = await CatalogScanService.GetOrStartFindLatestCatalogLeafScanAsync(
                 scanId: "flcls-scan-id",
@@ -116,14 +116,14 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
         private async Task AssertOutputAsync(string dir)
         {
             await AssertEntityOutputAsync<CatalogLeafScan>(
-                GetLeafScanTable(),
+                await GetLeafScanTableAsync(),
                 dir,
                 cleanEntity: x => x.Created = DateTimeOffset.Parse("2020-01-03T00:00:00Z"));
         }
 
-        private CloudTable GetLeafScanTable()
+        private async Task<TableClient> GetLeafScanTableAsync()
         {
-            return CatalogScanStorageService.GetLeafScanTable(ParentStorageSuffix);
+            return await CatalogScanStorageService.GetLeafScanTableAsync(ParentStorageSuffix);
         }
     }
 }

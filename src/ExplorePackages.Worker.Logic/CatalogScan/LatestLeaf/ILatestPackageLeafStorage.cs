@@ -1,11 +1,11 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.WindowsAzure.Storage.Table;
+using Azure.Data.Tables;
 
 namespace Knapcode.ExplorePackages.Worker
 {
     public interface ILatestPackageLeafStorage<T> where T : ILatestPackageLeaf
     {
-        CloudTable Table { get; }
+        TableClient Table { get; }
         Task<T> MapAsync(CatalogLeafItem item);
         string GetPartitionKey(string packageId);
         string GetRowKey(string packageVersion);

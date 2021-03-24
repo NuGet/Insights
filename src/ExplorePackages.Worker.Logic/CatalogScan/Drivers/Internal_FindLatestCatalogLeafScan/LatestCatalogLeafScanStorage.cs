@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.WindowsAzure.Storage.Table;
+using Azure.Data.Tables;
 using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
@@ -8,13 +8,13 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
     {
         private readonly CatalogIndexScan _indexScan;
 
-        public LatestCatalogLeafScanStorage(CloudTable table, CatalogIndexScan indexScan)
+        public LatestCatalogLeafScanStorage(TableClient table, CatalogIndexScan indexScan)
         {
             Table = table;
             _indexScan = indexScan;
         }
 
-        public CloudTable Table { get; }
+        public TableClient Table { get; }
         public string CommitTimestampColumnName => nameof(CatalogLeafScan.CommitTimestamp);
 
         public string GetPartitionKey(string packageId)

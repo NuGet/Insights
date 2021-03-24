@@ -1,8 +1,5 @@
 [
   {
-    "LowerVersion": "1.5.0",
-    "ParsedLeafType": "PackageDetails",
-    "ParsedSemVerType": "SemVer1",
     "Prefix": null,
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.20.02.39.20/amazonks3.1.5.0.json",
     "LeafType": "PackageDetails",
@@ -16,12 +13,9 @@
     "PartitionKey": "amazonks3",
     "RowKey": "1.5.0",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": {}
   },
   {
-    "LowerVersion": "1.0.0",
-    "ParsedLeafType": "PackageDelete",
-    "ParsedSemVerType": null,
     "Prefix": null,
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.20.03.03.53/behaviorsample.1.0.0.json",
     "LeafType": "PackageDelete",
@@ -35,12 +29,9 @@
     "PartitionKey": "behaviorsample",
     "RowKey": "1.0.0",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": {}
   },
   {
-    "LowerVersion": "1.2.0",
-    "ParsedLeafType": "PackageDetails",
-    "ParsedSemVerType": "SemVer1",
     "Prefix": null,
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.20.03.01.57/lunabot.commands.public.1.2.0.json",
     "LeafType": "PackageDetails",
@@ -54,12 +45,9 @@
     "PartitionKey": "lunabot.commands.public",
     "RowKey": "1.2.0",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": {}
   },
   {
-    "LowerVersion": "1.0.4",
-    "ParsedLeafType": "PackageDetails",
-    "ParsedSemVerType": "SemVer1",
     "Prefix": null,
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.20.02.39.20/lunabot.core.1.0.4.json",
     "LeafType": "PackageDetails",
@@ -73,12 +61,9 @@
     "PartitionKey": "lunabot.core",
     "RowKey": "1.0.4",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": {}
   },
   {
-    "LowerVersion": "0.0.0-preview.0.44",
-    "ParsedLeafType": "PackageDetails",
-    "ParsedSemVerType": "VersionHasPrereleaseDots",
     "Prefix": null,
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.20.02.37.52/nut.mediatr.behaviors.0.0.0-preview.0.44.json",
     "LeafType": "PackageDetails",
@@ -92,12 +77,9 @@
     "PartitionKey": "nut.mediatr.behaviors",
     "RowKey": "0.0.0-preview.0.44",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": {}
   },
   {
-    "LowerVersion": "0.0.0-preview.0.44",
-    "ParsedLeafType": "PackageDetails",
-    "ParsedSemVerType": "VersionHasPrereleaseDots",
     "Prefix": null,
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.20.02.37.52/nut.mediatr.behaviors.fluentvalidation.0.0.0-preview.0.44.json",
     "LeafType": "PackageDetails",
@@ -111,12 +93,9 @@
     "PartitionKey": "nut.mediatr.behaviors.fluentvalidation",
     "RowKey": "0.0.0-preview.0.44",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": {}
   },
   {
-    "LowerVersion": "0.0.0-preview.0.44",
-    "ParsedLeafType": "PackageDetails",
-    "ParsedSemVerType": "VersionHasPrereleaseDots, DependencyMinHasPrereleaseDots",
     "Prefix": null,
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.20.02.37.52/nut.mediatr.servicelike.dependencyinjection.0.0.0-preview.0.44.json",
     "LeafType": "PackageDetails",
@@ -130,12 +109,9 @@
     "PartitionKey": "nut.mediatr.servicelike.dependencyinjection",
     "RowKey": "0.0.0-preview.0.44",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": {}
   },
   {
-    "LowerVersion": "1.0.0",
-    "ParsedLeafType": "PackageDetails",
-    "ParsedSemVerType": "DependencyMinHasPrereleaseDots",
     "Prefix": null,
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.20.02.39.37/servicelikesample.1.0.0.json",
     "LeafType": "PackageDetails",
@@ -149,6 +125,6 @@
     "PartitionKey": "servicelikesample",
     "RowKey": "1.0.0",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": {}
   }
 ]

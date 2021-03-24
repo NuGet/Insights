@@ -10,14 +10,14 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
 {
     public class PackageVersionToCsvDriver : ICatalogLeafToCsvDriver<PackageVersionRecord>
     {
-        private readonly PackageVersionStorageService _storage;
+        private readonly PackageVersionStorageService _storageService;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
         public PackageVersionToCsvDriver(
-            PackageVersionStorageService storage,
+            PackageVersionStorageService storageService,
             IOptions<ExplorePackagesWorkerSettings> options)
         {
-            _storage = storage;
+            _storageService = storageService;
             _options = options;
         }
 
@@ -31,7 +31,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
 
         public async Task InitializeAsync()
         {
-            await _storage.InitializeAsync();
+            await _storageService.InitializeAsync();
         }
 
         public async Task<DriverResult<List<PackageVersionRecord>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
@@ -45,13 +45,13 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
             }
 
             // Fetch all of the known versions for this package ID.
-            var entities = await _storage.GetAsync(item.PackageId);
+            var entities = await _storageService.GetAsync(item.PackageId);
 
             // Find the set of versions that can possibly the latest.
             var versions = entities
-                .Where(x => x.ParsedLeafType != CatalogLeafType.PackageDelete) // Deleted versions can't be the latest
+                .Where(x => x.LeafType != CatalogLeafType.PackageDelete) // Deleted versions can't be the latest
                 .Where(x => x.IsListed.Value) // Only listed versions can be latest
-                .Select(x => (Entity: x, Version: NuGetVersion.Parse(x.PackageVersion), IsSemVer2: x.ParsedSemVerType.Value.IsSemVer2()))
+                .Select(x => (Entity: x, Version: NuGetVersion.Parse(x.PackageVersion), IsSemVer2: x.GetSemVerType().Value.IsSemVer2()))
                 .OrderByDescending(x => x.Version)
                 .ToList();
             var semVer1Versions = versions.Where(x => !x.IsSemVer2).ToList();

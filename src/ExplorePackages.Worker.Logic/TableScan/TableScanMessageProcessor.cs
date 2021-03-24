@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
 using Knapcode.ExplorePackages.TablePrefixScan;
-using NuGet.Configuration;
 
 namespace Knapcode.ExplorePackages.Worker
 {

@@ -5,7 +5,7 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public interface ILatestPackageLeafStorageFactory<T> where T : ILatestPackageLeaf
     {
-        Task InitializeAsync(CatalogIndexScan indexScan);
+        Task InitializeAsync();
 
         Task<ILatestPackageLeafStorage<T>> CreateAsync(
             CatalogPageScan pageScan,

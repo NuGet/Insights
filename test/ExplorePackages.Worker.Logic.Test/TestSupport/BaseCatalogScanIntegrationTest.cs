@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure.Data.Tables;
 using Azure.Storage.Queues.Models;
 using Knapcode.ExplorePackages.WideEntities;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
@@ -85,13 +85,13 @@ namespace Knapcode.ExplorePackages.Worker
                 .ToDictionary(x => x.Key, x => x.ToList()));
         }
 
-        protected async Task AssertEntityOutputAsync<T>(CloudTable table, string dir, Action<T> cleanEntity = null) where T : ITableEntity, new()
+        protected async Task AssertEntityOutputAsync<T>(TableClient table, string dir, Action<T> cleanEntity = null) where T : class, ITableEntity, new()
         {
-            var entities = await table.GetEntitiesAsync<T>(TelemetryClient.StartQueryLoopMetrics());
+            var entities = await table.QueryAsync<T>().ToListAsync();
 
             foreach (var entity in entities)
             {
-                entity.ETag = null;
+                entity.ETag = default;
                 entity.Timestamp = DateTimeOffset.MinValue;
                 cleanEntity?.Invoke(entity);
             }

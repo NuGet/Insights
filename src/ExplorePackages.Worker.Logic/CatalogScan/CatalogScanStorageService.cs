@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
@@ -14,18 +15,21 @@ namespace Knapcode.ExplorePackages.Worker
     {
         private static readonly IReadOnlyDictionary<string, CatalogLeafScan> EmptyLeafIdToLeafScans = new Dictionary<string, CatalogLeafScan>();
 
-        private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly NewServiceClientFactory _serviceClientFactory;
+        private readonly ServiceClientFactory _oldServiceClientFactory;
         private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<CatalogScanStorageService> _logger;
 
         public CatalogScanStorageService(
-            ServiceClientFactory serviceClientFactory,
+            NewServiceClientFactory serviceClientFactory,
+            ServiceClientFactory oldServiceClientFactory,
             ITelemetryClient telemetryClient,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<CatalogScanStorageService> logger)
         {
             _serviceClientFactory = serviceClientFactory;
+            _oldServiceClientFactory = oldServiceClientFactory;
             _telemetryClient = telemetryClient;
             _options = options;
             _logger = logger;
@@ -237,7 +241,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         private CloudTableClient GetClient()
         {
-            return _serviceClientFactory
+            return _oldServiceClientFactory
                 .GetStorageAccount()
                 .CreateCloudTableClient();
         }
@@ -255,6 +259,12 @@ namespace Knapcode.ExplorePackages.Worker
         public CloudTable GetLeafScanTable(string suffix)
         {
             return GetClient().GetTableReference($"{_options.Value.CatalogLeafScanTableName}{suffix}");
+        }
+
+        public async Task<TableClient> GetLeafScanTableAsync(string suffix)
+        {
+            return (await _serviceClientFactory.GetTableServiceClientAsync())
+                .GetTableClient($"{_options.Value.CatalogLeafScanTableName}{suffix}");
         }
     }
 }

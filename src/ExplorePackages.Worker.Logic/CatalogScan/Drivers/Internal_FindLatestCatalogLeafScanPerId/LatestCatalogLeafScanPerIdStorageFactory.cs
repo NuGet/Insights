@@ -16,7 +16,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScanPerId
             _storageService = storageService;
         }
 
-        public Task InitializeAsync(CatalogIndexScan indexScan)
+        public Task InitializeAsync()
         {
             return Task.CompletedTask;
         }
@@ -25,7 +25,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScanPerId
         {
             var parameters = (CatalogIndexScanMessage)_serializer.Deserialize(pageScan.DriverParameters).Data;
             var indexScan = await _storageService.GetIndexScanAsync(parameters.CursorName, parameters.ScanId);
-            var table = _storageService.GetLeafScanTable(indexScan.StorageSuffix);
+            var table = await _storageService.GetLeafScanTableAsync(indexScan.StorageSuffix);
             return new LatestCatalogLeafScanPerIdStorage(table, indexScan);
         }
     }

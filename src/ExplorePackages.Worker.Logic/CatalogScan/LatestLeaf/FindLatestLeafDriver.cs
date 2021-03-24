@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class FindLatestLeafDriver<T> : ICatalogLeafScanNonBatchDriver where T : ILatestPackageLeaf, new()
+    public class FindLatestLeafDriver<T> : ICatalogLeafScanNonBatchDriver where T : class, ILatestPackageLeaf, new()
     {
         private readonly CatalogClient _catalogClient;
         private readonly ILatestPackageLeafStorageFactory<T> _storageFactory;
@@ -27,7 +27,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task InitializeAsync(CatalogIndexScan indexScan)
         {
-            await _storageFactory.InitializeAsync(indexScan);
+            await _storageFactory.InitializeAsync();
         }
 
         public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)

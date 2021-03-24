@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using System.Threading.Tasks;
+using Azure;
+using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Table;
 using static Knapcode.ExplorePackages.StorageUtility;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class LatestLeafStorageService<T> where T : ILatestPackageLeaf, new()
+    public class LatestLeafStorageService<T> where T : class, ILatestPackageLeaf, new()
     {
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<LatestLeafStorageService<T>> _logger;
@@ -39,23 +40,24 @@ namespace Knapcode.ExplorePackages.Worker
                     await AddAsync(packageId, items, storage);
                     break;
                 }
-                catch (StorageException ex) when (attempt < maxAttempts
-                    && (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.Conflict
-                        || ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.PreconditionFailed))
+                catch (RequestFailedException ex) when (attempt < maxAttempts
+                    && (ex.Status == (int)HttpStatusCode.Conflict
+                        || ex.Status == (int)HttpStatusCode.PreconditionFailed))
                 {
                     _logger.LogWarning(
                         ex,
                         "Attempt {Attempt}: adding entities for package ID {PackageId} failed due to an HTTP {StatusCode}. Trying again.",
                         attempt,
                         packageId,
-                        ex.RequestInformation.HttpStatusCode);
+                        ex.Status);
                 }
             }
         }
 
         private async Task AddAsync(string packageId, IReadOnlyList<CatalogLeafItem> items, ILatestPackageLeafStorage<T> storage)
         {
-            (var rowKeyToItem, var rowKeyToETag) = await GetExistingsRowsAsync(packageId, items, storage);
+            var partitionKey = storage.GetPartitionKey(packageId);
+            (var rowKeyToItem, var rowKeyToETag) = await GetExistingsRowsAsync(partitionKey, items, storage);
 
             // Add the row keys that remain. These are the versions that are not in Table Storage or are newer than the
             // commit timestamp in Table Storage.
@@ -64,13 +66,15 @@ namespace Knapcode.ExplorePackages.Worker
             rowKeysToUpsert.Sort(StringComparer.Ordinal);
 
             // Update or insert the rows.
-            var batch = new TableBatchOperation();
+            var batch = storage.Table.CreateTransactionalBatch(partitionKey);
+            var batchCount = 0;
             for (var i = 0; i < rowKeysToUpsert.Count; i++)
             {
-                if (batch.Count >= MaxBatchSize)
+                if (batchCount >= MaxBatchSize)
                 {
-                    await ExecuteBatchAsync(storage.Table, batch);
-                    batch = new TableBatchOperation();
+                    await ExecuteBatchAsync(storage.Table, batch, batchCount);
+                    batch = storage.Table.CreateTransactionalBatch(partitionKey);
+                    batchCount = 0;
                 }
 
                 var rowKey = rowKeysToUpsert[i];
@@ -80,22 +84,24 @@ namespace Knapcode.ExplorePackages.Worker
                 if (rowKeyToETag.TryGetValue(rowKey, out var etag))
                 {
                     entity.ETag = etag;
-                    batch.Add(TableOperation.Replace(entity));
+                    batch.UpdateEntity(entity, entity.ETag, mode: TableUpdateMode.Replace);
+                    batchCount++;
                 }
                 else
                 {
-                    batch.Add(TableOperation.Insert(entity));
+                    batch.AddEntity(entity);
+                    batchCount++;
                 }
             }
 
-            if (batch.Count > 0)
+            if (batchCount > 0)
             {
-                await ExecuteBatchAsync(storage.Table, batch);
+                await ExecuteBatchAsync(storage.Table, batch, batchCount);
             }
         }
 
-        private async Task<(Dictionary<string, CatalogLeafItem> RowKeyToItem, Dictionary<string, string> RowKeyToETag)> GetExistingsRowsAsync(
-            string packageId,
+        private async Task<(Dictionary<string, CatalogLeafItem> RowKeyToItem, Dictionary<string, ETag> RowKeyToETag)> GetExistingsRowsAsync(
+            string partitionKey,
             IEnumerable<CatalogLeafItem> items,
             ILatestPackageLeafStorage<T> storage)
         {
@@ -110,45 +116,24 @@ namespace Knapcode.ExplorePackages.Worker
                 .Select(x => (x.Item, x.RowKey))
                 .ToList();
             var rowKeyToItem = itemList.ToDictionary(x => x.RowKey, x => x.Item);
-            var rowKeyToEtag = new Dictionary<string, string>();
+            var rowKeyToEtag = new Dictionary<string, ETag>();
 
             // Query for all of the version data in Table Storage, determining what needs to be updated.
-            var filterString = TableQuery.CombineFilters(
-                TableQuery.GenerateFilterCondition(
-                    PartitionKey,
-                    QueryComparisons.Equal,
-                    storage.GetPartitionKey(packageId)),
-                TableOperators.And,
-                TableQuery.CombineFilters(
-                    TableQuery.GenerateFilterCondition(
-                        RowKey,
-                        QueryComparisons.GreaterThanOrEqual,
-                        itemList.First().RowKey),
-                    TableOperators.And,
-                    TableQuery.GenerateFilterCondition(
-                        RowKey,
-                        QueryComparisons.LessThanOrEqual,
-                        itemList.Last().RowKey)));
+            Expression<Func<T, bool>> filter = x =>
+                x.PartitionKey == partitionKey
+                && x.RowKey.CompareTo(itemList.First().RowKey) >= 0
+                && x.RowKey.CompareTo(itemList.Last().RowKey) <= 0;
 
-            var query = new TableQuery<T>
+            var query = storage.Table
+                .QueryAsync(
+                    filter,
+                    maxPerPage: MaxTakeCount,
+                    select: new List<string> { RowKey, storage.CommitTimestampColumnName })
+                .AsPages();
+            await using var enumerator = query.GetAsyncEnumerator();
+            while (await enumerator.MoveNextAsync(metrics))
             {
-                FilterString = filterString,
-                SelectColumns = new List<string> { RowKey, storage.CommitTimestampColumnName },
-                TakeCount = MaxTakeCount,
-            };
-
-            TableContinuationToken token = null;
-            do
-            {
-                TableQuerySegment<T> segment;
-                using (metrics.TrackQuery())
-                {
-                    segment = await storage.Table.ExecuteQuerySegmentedAsync(query, token);
-                }
-
-                token = segment.ContinuationToken;
-
-                foreach (var result in segment.Results)
+                foreach (var result in enumerator.Current.Values)
                 {
                     if (rowKeyToItem.TryGetValue(result.RowKey, out var item))
                     {
@@ -165,15 +150,14 @@ namespace Knapcode.ExplorePackages.Worker
                     }
                 }
             }
-            while (token != null);
 
             return (rowKeyToItem, rowKeyToEtag);
         }
 
-        private async Task ExecuteBatchAsync(CloudTable table, TableBatchOperation batch)
+        private async Task ExecuteBatchAsync(TableClient table, TableTransactionalBatch batch, int batchCount)
         {
-            _logger.LogInformation("Upserting {Count} latest package leaf rows of type {T} into {TableName}.", batch.Count, typeof(T).FullName, table.Name);
-            await table.ExecuteBatchAsync(batch);
+            _logger.LogInformation("Upserting {Count} latest package leaf rows of type {T}.", batchCount, typeof(T).FullName);
+            await batch.SubmitBatchAsync();
         }
     }
 }

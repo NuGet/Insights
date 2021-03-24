@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.WindowsAzure.Storage.Table;
+using Azure.Data.Tables;
 
 namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScanPerId
 {
@@ -9,13 +9,13 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScanPerId
 
         private readonly CatalogIndexScan _indexScan;
 
-        public LatestCatalogLeafScanPerIdStorage(CloudTable table, CatalogIndexScan indexScan)
+        public LatestCatalogLeafScanPerIdStorage(TableClient table, CatalogIndexScan indexScan)
         {
             Table = table;
             _indexScan = indexScan;
         }
 
-        public CloudTable Table { get; }
+        public TableClient Table { get; }
         public string CommitTimestampColumnName => nameof(CatalogLeafScan.CommitTimestamp);
 
         public string GetPartitionKey(string packageId)

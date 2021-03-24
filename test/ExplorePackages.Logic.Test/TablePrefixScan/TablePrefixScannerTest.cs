@@ -357,18 +357,16 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
                     table = Client.GetTableClient(TestSettings.NewStoragePrefix() + "1ts1");
                     await table.CreateIfNotExistsAsync();
 
-                    await Task.WhenAll(sortedEntities
-                        .GroupBy(x => x.PartitionKey)
-                        .Select(async group =>
+                    foreach (var group in sortedEntities.GroupBy(x => x.PartitionKey))
+                    {
+                        var batch = table.CreateTransactionalBatch(group.Key);
+                        batch.AddEntities(group);
+                        TableBatchResponse response = await batch.SubmitBatchAsync();
+                        foreach (var item in group)
                         {
-                            var batch = table.CreateTransactionalBatch(group.Key);
-                            batch.AddEntities(group);
-                            TableBatchResponse response = await batch.SubmitBatchAsync();
-                            foreach (var item in group)
-                            {
-                                item.UpdateETagAndTimestamp(response.GetResponseForEntity(item.RowKey));
-                            }
-                        }));
+                            item.UpdateETagAndTimestamp(response.GetResponseForEntity(item.RowKey));
+                        }
+                    }
                     _candidates.Add((sortedEntities, table));
                 }
 

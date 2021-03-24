@@ -1,16 +1,16 @@
 ﻿using System.Threading.Tasks;
+using Azure.Data.Tables;
 using Microsoft.Extensions.Options;
-using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf
 {
     public class LatestPackageLeafService
     {
-        private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly NewServiceClientFactory _serviceClientFactory;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
         public LatestPackageLeafService(
-            ServiceClientFactory serviceClientFactory,
+            NewServiceClientFactory serviceClientFactory,
             IOptions<ExplorePackagesWorkerSettings> options)
         {
             _serviceClientFactory = serviceClientFactory;
@@ -19,22 +19,20 @@ namespace Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf
 
         public async Task InitializeAsync()
         {
-            await GetTable().CreateIfNotExistsAsync(retry: true);
+            await (await GetTableAsync()).CreateIfNotExistsAsync(retry: true);
         }
 
         public async Task<LatestPackageLeaf> GetOrNullAsync(string id, string version)
         {
-            return await GetTable().RetrieveAsync<LatestPackageLeaf>(
+            return await (await GetTableAsync()).GetEntityOrNullAsync<LatestPackageLeaf>(
                 LatestPackageLeaf.GetPartitionKey(id),
                 LatestPackageLeaf.GetRowKey(version));
         }
 
-        internal CloudTable GetTable()
+        internal async Task<TableClient> GetTableAsync()
         {
-            return _serviceClientFactory
-                .GetStorageAccount()
-                .CreateCloudTableClient()
-                .GetTableReference(_options.Value.LatestPackageLeafTableName);
+            return (await _serviceClientFactory.GetTableServiceClientAsync())
+                .GetTableClient(_options.Value.LatestPackageLeafTableName);
         }
     }
 }

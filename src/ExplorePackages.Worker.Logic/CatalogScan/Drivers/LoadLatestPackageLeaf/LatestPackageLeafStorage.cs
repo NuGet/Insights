@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.WindowsAzure.Storage.Table;
+using Azure.Data.Tables;
 
 namespace Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf
 {
@@ -11,7 +11,7 @@ namespace Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf
         private readonly string _pageUrl;
 
         public LatestPackageLeafStorage(
-            CloudTable table,
+            TableClient table,
             IReadOnlyDictionary<CatalogLeafItem, int> leafItemToRank,
             int pageRank,
             string pageUrl)
@@ -22,7 +22,7 @@ namespace Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf
             _pageUrl = pageUrl;
         }
 
-        public CloudTable Table { get; }
+        public TableClient Table { get; }
 
         public string GetPartitionKey(string packageId)
         {

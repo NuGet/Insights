@@ -12,19 +12,18 @@ namespace Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf
             _service = service;
         }
 
-        public async Task InitializeAsync(CatalogIndexScan indexScan)
+        public async Task InitializeAsync()
         {
             await _service.InitializeAsync();
         }
 
-        public Task<ILatestPackageLeafStorage<LatestPackageLeaf>> CreateAsync(CatalogPageScan pageScan, IReadOnlyDictionary<CatalogLeafItem, int> leafItemToRank)
+        public async Task<ILatestPackageLeafStorage<LatestPackageLeaf>> CreateAsync(CatalogPageScan pageScan, IReadOnlyDictionary<CatalogLeafItem, int> leafItemToRank)
         {
-            var storage = new LatestPackageLeafStorage(
-                _service.GetTable(),
+            return new LatestPackageLeafStorage(
+                await _service.GetTableAsync(),
                 leafItemToRank,
                 pageScan.Rank,
                 pageScan.Url);
-            return Task.FromResult<ILatestPackageLeafStorage<LatestPackageLeaf>>(storage);
         }
     }
 }

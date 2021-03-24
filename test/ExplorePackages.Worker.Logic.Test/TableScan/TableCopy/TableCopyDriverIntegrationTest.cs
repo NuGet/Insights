@@ -52,11 +52,11 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
             await SetCursorAsync(CatalogScanDriverType.LoadLatestPackageLeaf, min0);
             await UpdateAsync(CatalogScanDriverType.LoadLatestPackageLeaf, onlyLatestLeaves: null, max1);
 
-            var serviceClientFactory = Host.Services.GetRequiredService<ServiceClientFactory>();
+            var serviceClientFactory = Host.Services.GetRequiredService<NewServiceClientFactory>();
             var destTableName = StoragePrefix + "1d1";
-            var tableClient = serviceClientFactory.GetStorageAccount().CreateCloudTableClient();
-            var sourceTable = tableClient.GetTableReference(Options.Value.LatestPackageLeafTableName);
-            var destinationTable = tableClient.GetTableReference(destTableName);
+            var tableServiceClient = await serviceClientFactory.GetTableServiceClientAsync();
+            var sourceTable = tableServiceClient.GetTableClient(Options.Value.LatestPackageLeafTableName);
+            var destinationTable = tableServiceClient.GetTableClient(destTableName);
 
             var tableScanService = Host.Services.GetRequiredService<TableScanService<LatestPackageLeaf>>();
 
@@ -67,8 +67,8 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
             // Act
             await tableScanService.StartTableCopyAsync(
                 taskState.Key,
-                sourceTable.Name,
-                destinationTable.Name,
+                Options.Value.LatestPackageLeafTableName,
+                destTableName,
                 partitionKeyPrefix: string.Empty,
                 strategy,
                 takeCount: 10,
@@ -77,15 +77,15 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
             await UpdateAsync(taskState.Key);
 
             // Assert
-            var sourceEntities = await sourceTable.GetEntitiesAsync<LatestPackageLeaf>(TelemetryClient.StartQueryLoopMetrics());
-            var destinationEntities = await destinationTable.GetEntitiesAsync<LatestPackageLeaf>(TelemetryClient.StartQueryLoopMetrics());
+            var sourceEntities = await sourceTable.QueryAsync<LatestPackageLeaf>().ToListAsync();
+            var destinationEntities = await destinationTable.QueryAsync<LatestPackageLeaf>().ToListAsync();
 
             Assert.All(sourceEntities.Zip(destinationEntities), pair =>
             {
-                pair.First.Timestamp = DateTimeOffset.MinValue;
-                pair.First.ETag = string.Empty;
-                pair.Second.Timestamp = DateTimeOffset.MinValue;
-                pair.Second.ETag = string.Empty;
+                pair.First.Timestamp = default;
+                pair.First.ETag = default;
+                pair.Second.Timestamp = default;
+                pair.Second.ETag = default;
                 Assert.Equal(JsonConvert.SerializeObject(pair.First), JsonConvert.SerializeObject(pair.Second));
             });
 

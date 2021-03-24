@@ -8,23 +8,23 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
 {
     public class LoadPackageVersionDriver : ICatalogLeafScanBatchDriver
     {
-        private readonly PackageVersionStorageService _storage;
-        private readonly LatestLeafStorageService<PackageVersionEntity> _storageService;
+        private readonly PackageVersionStorageService _storageService;
+        private readonly LatestLeafStorageService<PackageVersionEntity> _latestLeafStorageService;
         private readonly ILogger<LoadPackageVersionDriver> _logger;
 
         public LoadPackageVersionDriver(
-            PackageVersionStorageService storage,
-            LatestLeafStorageService<PackageVersionEntity> storageService,
+            PackageVersionStorageService storageService,
+            LatestLeafStorageService<PackageVersionEntity> latestLeafStorageService,
             ILogger<LoadPackageVersionDriver> logger)
         {
-            _storage = storage;
             _storageService = storageService;
+            _latestLeafStorageService = latestLeafStorageService;
             _logger = logger;
         }
 
         public async Task InitializeAsync(CatalogIndexScan indexScan)
         {
-            await _storage.InitializeAsync();
+            await _storageService.InitializeAsync();
         }
 
         public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
@@ -40,7 +40,7 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
         public async Task<BatchMessageProcessorResult<CatalogLeafScan>> ProcessLeavesAsync(IReadOnlyList<CatalogLeafScan> leafScans)
         {
             var failed = new List<CatalogLeafScan>();
-
+            var storage = await _storageService.GetLatestPackageLeafStorageAsync();
             foreach (var group in leafScans.GroupBy(x => x.PackageId, StringComparer.OrdinalIgnoreCase))
             {
                 var packageId = group.Key;
@@ -48,7 +48,7 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
 
                 try
                 {
-                    await _storageService.AddAsync(packageId, leafItems, _storage, allowRetries: true);
+                    await _latestLeafStorageService.AddAsync(packageId, leafItems, storage, allowRetries: true);
                 }
                 catch (Exception ex) when (leafScans.Count != 1)
                 {

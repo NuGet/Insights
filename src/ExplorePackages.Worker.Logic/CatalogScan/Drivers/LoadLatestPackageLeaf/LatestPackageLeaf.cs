@@ -1,18 +1,18 @@
 ﻿using System;
 using Azure;
-using Microsoft.WindowsAzure.Storage.Table;
+using Azure.Data.Tables;
 using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf
 {
-    public class LatestPackageLeaf : TableEntity, ILatestPackageLeaf, Azure.Data.Tables.ITableEntity
+    public class LatestPackageLeaf : ILatestPackageLeaf, ITableEntity
     {
         public LatestPackageLeaf(CatalogLeafItem item, int leafRank, int pageRank, string pageUrl)
         {
             PartitionKey = GetPartitionKey(item.PackageId);
             RowKey = GetRowKey(item.PackageVersion);
             Url = item.Url;
-            ParsedLeafType = item.Type;
+            LeafType = item.Type;
             CommitId = item.CommitId;
             CommitTimestamp = item.CommitTimestamp;
             PackageId = item.PackageId;
@@ -26,18 +26,8 @@ namespace Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf
         {
         }
 
-        [IgnoreProperty]
-        public string LowerVersion => RowKey;
-
-        [IgnoreProperty]
-        public CatalogLeafType ParsedLeafType
-        {
-            get => Enum.Parse<CatalogLeafType>(LeafType);
-            set => LeafType = value.ToString();
-        }
-
         public string Url { get; set; }
-        public string LeafType { get; set; }
+        public CatalogLeafType LeafType { get; set; }
         public string CommitId { get; set; }
         public DateTimeOffset CommitTimestamp { get; set; }
         public string PackageId { get; set; }
@@ -46,29 +36,32 @@ namespace Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf
         public int PageRank { get; set; }
         public string PageUrl { get; set; }
 
-        DateTimeOffset? Azure.Data.Tables.ITableEntity.Timestamp
-        {
-            get => Timestamp;
-            set => Timestamp = value.Value;
-        }
-
-        ETag Azure.Data.Tables.ITableEntity.ETag
-        {
-            get => new ETag(ETag);
-            set => ETag = value.ToString();
-        }
+        public string PartitionKey { get; set; }
+        public string RowKey { get; set; }
+        public DateTimeOffset? Timestamp { get; set; }
+        public ETag ETag { get; set; }
 
         public CatalogLeafItem ToLeafItem()
         {
             return new CatalogLeafItem
             {
                 Url = Url,
-                Type = ParsedLeafType,
+                Type = LeafType,
                 CommitId = CommitId,
                 CommitTimestamp = CommitTimestamp,
                 PackageId = PackageId,
                 PackageVersion = PackageVersion,
             };
+        }
+
+        public string GetLowerId()
+        {
+            return PartitionKey;
+        }
+
+        public string GetLowerVersion()
+        {
+            return RowKey;
         }
 
         public static string GetPartitionKey(string id)

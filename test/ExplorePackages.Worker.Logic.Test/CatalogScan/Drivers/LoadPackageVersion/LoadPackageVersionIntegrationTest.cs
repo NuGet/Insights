@@ -111,10 +111,8 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
 
         private async Task AssertOutputAsync(string dir, string stepName)
         {
-            var table = ServiceClientFactory
-                .GetStorageAccount()
-                .CreateCloudTableClient()
-                .GetTableReference(Options.Value.PackageVersionTableName);
+            var table = (await NewServiceClientFactory.GetTableServiceClientAsync())
+                .GetTableClient(Options.Value.PackageVersionTableName);
 
             await AssertEntityOutputAsync<PackageVersionEntity>(table, Path.Combine(dir, stepName));
         }

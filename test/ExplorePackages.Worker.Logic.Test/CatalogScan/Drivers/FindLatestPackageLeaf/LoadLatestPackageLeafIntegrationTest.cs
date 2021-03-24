@@ -85,10 +85,8 @@ namespace Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf
 
         private async Task AssertOutputAsync(string dir, string step)
         {
-            var table = ServiceClientFactory
-                .GetStorageAccount()
-                .CreateCloudTableClient()
-                .GetTableReference(Options.Value.LatestPackageLeafTableName);
+            var table = (await NewServiceClientFactory.GetTableServiceClientAsync())
+                .GetTableClient(Options.Value.LatestPackageLeafTableName);
             await AssertEntityOutputAsync<LatestPackageLeaf>(table, Path.Combine(dir, step));
         }
     }
