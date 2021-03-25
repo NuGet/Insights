@@ -129,6 +129,23 @@ namespace Knapcode.ExplorePackages.Worker
         }
 
         [Fact]
+        public async Task DoesNotRevertMinWhenMaxIsSet()
+        {
+            // Arrange
+            await CatalogScanService.InitializeAsync();
+            await SetDependencyCursorsAsync(DriverType, CursorValue.AddTicks(1));
+            await SetCursorAsync(DriverType, CursorValue);
+
+            // Act
+            var result = await CatalogScanService.UpdateAsync(DriverType, max: CursorValue.AddTicks(-1));
+
+            // Assert
+            Assert.Equal(CatalogScanServiceResultType.MinAfterMax, result.Type);
+            Assert.Null(result.Scan);
+            Assert.Null(result.DependencyName);
+        }
+
+        [Fact]
         public async Task ContinuesFromCursorValueWithNoMaxSpecified()
         {
             // Arrange

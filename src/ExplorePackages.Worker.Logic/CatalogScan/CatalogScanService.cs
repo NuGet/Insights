@@ -338,11 +338,13 @@ namespace Knapcode.ExplorePackages.Worker
                 return new CatalogScanServiceResult(CatalogScanServiceResultType.AlreadyRunning, dependencyName: null, incompleteScan);
             }
 
+            var usedDefaultMin = true;
             if (cursor.Value > CursorTableEntity.Min)
             {
                 // Use the cursor value as the min if it's greater than the provided min. We don't want to process leaves
                 // that have already been scanned.
                 min = cursor.Value;
+                usedDefaultMin = false;
             }
 
             (var dependencyName, var dependencyMax) = await _cursorService.GetDependencyMaxAsync(driverType);
@@ -366,7 +368,7 @@ namespace Knapcode.ExplorePackages.Worker
                 }
             }
 
-            if (max < min)
+            if (usedDefaultMin && max < min)
             {
                 // If the provided max is less than the smart min, revert the min to the absolute min. This allows
                 // very short test runs from the beginning of the catalog.
