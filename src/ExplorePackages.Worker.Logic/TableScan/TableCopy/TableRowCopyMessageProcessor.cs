@@ -32,22 +32,19 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
 
             var destinationTable = client.GetTableClient(message.DestinationTableName);
 
-            var batch = destinationTable.CreateTransactionalBatch(message.PartitionKey);
-            var batchCount = 0;
+            var batch = new MutableTableTransactionalBatch(destinationTable);
             foreach (var entity in rows)
             {
-                if (batchCount >= StorageUtility.MaxBatchSize)
+                if (batch.Count >= StorageUtility.MaxBatchSize)
                 {
                     await batch.SubmitBatchAsync();
-                    batch = destinationTable.CreateTransactionalBatch(message.PartitionKey);
-                    batchCount = 0;
+                    batch = new MutableTableTransactionalBatch(destinationTable);
                 }
 
                 batch.UpsertEntity(entity, mode: TableUpdateMode.Replace);
-                batchCount++;
             }
 
-            if (batchCount > 0)
+            if (batch.Count > 0)
             {
                 await batch.SubmitBatchAsync();
             }

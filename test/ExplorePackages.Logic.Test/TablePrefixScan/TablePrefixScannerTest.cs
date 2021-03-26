@@ -359,13 +359,9 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
 
                     foreach (var group in sortedEntities.GroupBy(x => x.PartitionKey))
                     {
-                        var batch = table.CreateTransactionalBatch(group.Key);
+                        var batch = new MutableTableTransactionalBatch(table);
                         batch.AddEntities(group);
-                        TableBatchResponse response = await batch.SubmitBatchAsync();
-                        foreach (var item in group)
-                        {
-                            item.UpdateETagAndTimestamp(response.GetResponseForEntity(item.RowKey));
-                        }
+                        await batch.SubmitBatchAsync();
                     }
                     _candidates.Add((sortedEntities, table));
                 }

@@ -66,15 +66,13 @@ namespace Knapcode.ExplorePackages.Worker
             rowKeysToUpsert.Sort(StringComparer.Ordinal);
 
             // Update or insert the rows.
-            var batch = storage.Table.CreateTransactionalBatch(partitionKey);
-            var batchCount = 0;
+            var batch = new MutableTableTransactionalBatch(storage.Table);
             for (var i = 0; i < rowKeysToUpsert.Count; i++)
             {
-                if (batchCount >= MaxBatchSize)
+                if (batch.Count >= MaxBatchSize)
                 {
-                    await ExecuteBatchAsync(storage.Table, batch, batchCount);
-                    batch = storage.Table.CreateTransactionalBatch(partitionKey);
-                    batchCount = 0;
+                    await ExecuteBatchAsync(batch);
+                    batch = new MutableTableTransactionalBatch(storage.Table);
                 }
 
                 var rowKey = rowKeysToUpsert[i];
@@ -85,18 +83,16 @@ namespace Knapcode.ExplorePackages.Worker
                 {
                     entity.ETag = etag;
                     batch.UpdateEntity(entity, entity.ETag, mode: TableUpdateMode.Replace);
-                    batchCount++;
                 }
                 else
                 {
                     batch.AddEntity(entity);
-                    batchCount++;
                 }
             }
 
-            if (batchCount > 0)
+            if (batch.Count > 0)
             {
-                await ExecuteBatchAsync(storage.Table, batch, batchCount);
+                await ExecuteBatchAsync(batch);
             }
         }
 
@@ -154,9 +150,9 @@ namespace Knapcode.ExplorePackages.Worker
             return (rowKeyToItem, rowKeyToEtag);
         }
 
-        private async Task ExecuteBatchAsync(TableClient table, TableTransactionalBatch batch, int batchCount)
+        private async Task ExecuteBatchAsync(MutableTableTransactionalBatch batch)
         {
-            _logger.LogInformation("Upserting {Count} latest package leaf rows of type {T}.", batchCount, typeof(T).FullName);
+            _logger.LogInformation("Upserting {Count} latest package leaf rows of type {T}.", batch.Count, typeof(T).FullName);
             await batch.SubmitBatchAsync();
         }
     }

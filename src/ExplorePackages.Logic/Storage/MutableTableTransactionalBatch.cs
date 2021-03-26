@@ -18,6 +18,14 @@ namespace Knapcode.ExplorePackages
 
         public TableClient TableClient { get; }
 
+        public void AddEntities<T>(IEnumerable<T> entities) where T : class, ITableEntity, new()
+        {
+            foreach (var entity in entities)
+            {
+                AddEntity(entity);
+            }
+        }
+
         public void AddEntity<T>(T entity) where T : class, ITableEntity, new()
         {
             SetPartitionKey(entity.PartitionKey);
