@@ -5,6 +5,7 @@ namespace Knapcode.ExplorePackages.WideEntities
     public class WideEntityReplaceOperation : WideEntityOperation
     {
         public WideEntityReplaceOperation(WideEntity existing, ReadOnlyMemory<byte> content)
+            : base(existing.PartitionKey)
         {
             Existing = existing;
             Content = content;

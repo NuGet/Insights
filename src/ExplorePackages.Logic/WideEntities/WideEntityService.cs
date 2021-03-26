@@ -1,21 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Microsoft.WindowsAzure.Storage.Table;
+using Azure;
+using Azure.Data.Tables;
+using Azure.Data.Tables.Models;
+using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.WideEntities
 {
     public class WideEntityService
     {
         /// <summary>
-        /// 72% of 4 MiB. We use 72% since Base64 encoding of the binary will bring us down to 75% of 4 MiB and we'll
-        /// leave the remaining 3% for the other metadata included in the entity request. Remember, the 4 MiB considers
+        /// 68% of 4 MiB. We use 68% since Base64 encoding of the binary will bring us down to 75% of 4 MiB and we'll
+        /// leave the remaining % for the other metadata included in the entity request. Remember, the 4 MiB considers
         /// the entire request body size, not the sum total size of the entities. The request body includes things like
-        /// multi-part boundaries and entity identifiers.
+        /// multi-part boundaries, entity identifiers, and unicode escaped '+' signs.
         /// See: https://docs.microsoft.com/en-us/rest/api/storageservices/performing-entity-group-transactions#requirements-for-entity-group-transactions
+        /// See: https://github.com/Azure/azure-sdk-for-net/issues/19815
         /// </summary>
-        private const int MaxTotalEntitySize = (int)(0.72 * 1024 * 1024 * 4);
+        private const int MaxTotalEntitySize = (int)(0.68 * 1024 * 1024 * 4);
 
         /// <summary>
         /// 64 KiB
@@ -55,16 +60,19 @@ namespace Knapcode.ExplorePackages.WideEntities
 
         private const string ContentTooLargeMessage = "The content is too large.";
 
-        private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly NewServiceClientFactory _serviceClientFactory;
         private readonly ITelemetryClient _telemetryClient;
         private readonly int _maxEntitySize;
 
-        public WideEntityService(ServiceClientFactory serviceClientFactory, ITelemetryClient telemetryClient)
+        public WideEntityService(
+            NewServiceClientFactory serviceClientFactory,
+            ITelemetryClient telemetryClient,
+            IOptions<ExplorePackagesSettings> options)
         {
             _serviceClientFactory = serviceClientFactory ?? throw new ArgumentNullException(nameof(serviceClientFactory));
             _telemetryClient = telemetryClient ?? throw new ArgumentNullException(nameof(telemetryClient));
 
-            if (_serviceClientFactory.GetStorageAccount().TableEndpoint.IsLoopback)
+            if (options.Value.StorageConnectionString == StorageUtility.EmulatorConnectionString)
             {
                 // See: https://stackoverflow.com/a/65770156
                 _maxEntitySize = (int)(393250 * 0.99);
@@ -79,12 +87,12 @@ namespace Knapcode.ExplorePackages.WideEntities
 
         public async Task CreateTableAsync(string tableName)
         {
-            await GetTable(tableName).CreateIfNotExistsAsync(retry: true);
+            await (await GetTableAsync(tableName)).CreateIfNotExistsAsync(retry: true);
         }
 
         public async Task DeleteTableAsync(string tableName)
         {
-            await GetTable(tableName).DeleteIfExistsAsync();
+            await (await GetTableAsync(tableName)).DeleteIfExistsAsync();
         }
 
         public async Task<WideEntity> RetrieveAsync(string tableName, string partitionKey, string rowKey)
@@ -108,9 +116,19 @@ namespace Knapcode.ExplorePackages.WideEntities
             return await RetrieveAsync(tableName, partitionKey: null, minRowKey: null, maxRowKey: null, includeData: true);
         }
 
+        public async Task<IReadOnlyList<WideEntity>> RetrieveAsync(string tableName, bool includeData)
+        {
+            return await RetrieveAsync(tableName, partitionKey: null, minRowKey: null, maxRowKey: null, includeData);
+        }
+
         public async Task<IReadOnlyList<WideEntity>> RetrieveAsync(string tableName, string partitionKey)
         {
             return await RetrieveAsync(tableName, partitionKey, minRowKey: null, maxRowKey: null, includeData: true);
+        }
+
+        public async Task<IReadOnlyList<WideEntity>> RetrieveAsync(string tableName, string partitionKey, bool includeData)
+        {
+            return await RetrieveAsync(tableName, partitionKey, minRowKey: null, maxRowKey: null, includeData);
         }
 
         public async Task<IReadOnlyList<WideEntity>> RetrieveAsync(string tableName, string partitionKey, string minRowKey, string maxRowKey)
@@ -119,6 +137,12 @@ namespace Knapcode.ExplorePackages.WideEntities
         }
 
         public async Task<IReadOnlyList<WideEntity>> RetrieveAsync(string tableName, string partitionKey, string minRowKey, string maxRowKey, bool includeData)
+        {
+            var table = await GetTableAsync(tableName);
+            return await RetrieveAsync(tableName, table, partitionKey, minRowKey, maxRowKey, includeData);
+        }
+
+        public async Task<IReadOnlyList<WideEntity>> RetrieveAsync(string tableName, TableClient table, string partitionKey, string minRowKey, string maxRowKey, bool includeData)
         {
             using var metrics = _telemetryClient.StartQueryLoopMetrics(memberName: tableName + nameof(RetrieveAsync));
 
@@ -146,96 +170,87 @@ namespace Knapcode.ExplorePackages.WideEntities
             }
 
             IList<string> selectColumns;
-            string filterString;
+            Expression<Func<WideEntitySegment, bool>> filter;
             if (includeData)
             {
                 selectColumns = null;
+
                 if (partitionKey == null)
                 {
-                    filterString = null;
+                    filter = x => true;
                 }
                 else if (noRowKeys)
                 {
-                    filterString = PK_EQ(partitionKey);
+                    filter = x => x.PartitionKey == partitionKey;
                 }
                 else
                 {
-                    filterString = TableQuery.CombineFilters(
-                        PK_EQ(partitionKey),
-                        TableOperators.And,
-                        TableQuery.CombineFilters(
-                            RK_GTE(minRowKey, string.Empty), // Minimum possible row key with this prefix.
-                            TableOperators.And,
-                            RK_LTE(maxRowKey, char.MaxValue.ToString()))); // Maximum possible row key with this prefix.
+                    filter = x =>
+                        x.PartitionKey == partitionKey
+                        && x.RowKey.CompareTo($"{minRowKey}{WideEntitySegment.RowKeySeparator}") >= 0 // Minimum possible row key with this prefix.
+                        && x.RowKey.CompareTo($"{maxRowKey}{WideEntitySegment.RowKeySeparator}{char.MaxValue}") <= 0;  // Maximum possible row key with this prefix.
                 }
             }
             else
             {
-                selectColumns = new[] { WideEntitySegment.SegmentCountPropertyName };
+                selectColumns = new[]
+                {
+                    StorageUtility.PartitionKey,
+                    StorageUtility.RowKey,
+                    StorageUtility.Timestamp,
+                    WideEntitySegment.SegmentCountPropertyName,
+                };
+
                 if (partitionKey == null)
                 {
-                    filterString = null;
+                    filter = x => true;
                 }
                 else if (noRowKeys)
                 {
-                    filterString = PK_EQ(partitionKey);
+                    filter = x => x.PartitionKey == partitionKey;
                 }
                 else if (minRowKey == maxRowKey)
                 {
-                    filterString = TableQuery.CombineFilters(
-                        PK_EQ(partitionKey),
-                        TableOperators.And,
-                        RK_EQ(minRowKey, WideEntitySegment.Index0Suffix));
+                    filter = x =>
+                        x.PartitionKey == partitionKey
+                        && x.RowKey == $"{minRowKey}{WideEntitySegment.RowKeySeparator}{WideEntitySegment.Index0Suffix}";
                 }
                 else
                 {
-                    filterString = TableQuery.CombineFilters(
-                        PK_EQ(partitionKey),
-                        TableOperators.And,
-                        TableQuery.CombineFilters(
-                            RK_GTE(minRowKey, string.Empty),
-                            TableOperators.And,
-                            RK_LTE(maxRowKey, WideEntitySegment.Index0Suffix)));
+                    filter = x =>
+                        x.PartitionKey == partitionKey
+                        && x.RowKey.CompareTo($"{minRowKey}{WideEntitySegment.RowKeySeparator}") >= 0
+                        && x.RowKey.CompareTo($"{maxRowKey}{WideEntitySegment.RowKeySeparator}{WideEntitySegment.Index0Suffix}") <= 0;
                 }
             }
 
-            var query = new TableQuery<WideEntitySegment>
-            {
-                FilterString = filterString,
-                SelectColumns = selectColumns,
-                TakeCount = StorageUtility.MaxTakeCount,
-            };
+            var query = table.QueryAsync(
+                filter,
+                maxPerPage: StorageUtility.MaxTakeCount,
+                select: selectColumns);
 
-            var table = GetTable(tableName);
             var output = new List<WideEntity>();
 
             string currentPartitionKey = null;
             string currentRowKeyPrefix = null;
             var segments = new List<WideEntitySegment>();
-            TableContinuationToken token = null;
 
-            do
+            await using var enumerator = query.AsPages().GetAsyncEnumerator();
+            while (await enumerator.MoveNextAsync(metrics))
             {
-                TableQuerySegment<WideEntitySegment> entitySegment;
-                using (metrics.TrackQuery())
-                {
-                    entitySegment = await table.ExecuteQuerySegmentedAsync(query, token);
-                }
-
-                token = entitySegment.ContinuationToken;
-
-                if (!entitySegment.Results.Any())
+                var entitySegment = enumerator.Current.Values;
+                if (!entitySegment.Any())
                 {
                     continue;
                 }
 
                 if (currentPartitionKey == null)
                 {
-                    currentPartitionKey = entitySegment.Results.First().PartitionKey;
-                    currentRowKeyPrefix = entitySegment.Results.First().RowKeyPrefix;
+                    currentPartitionKey = entitySegment.First().PartitionKey;
+                    currentRowKeyPrefix = entitySegment.First().RowKeyPrefix;
                 }
 
-                foreach (var entity in entitySegment.Results)
+                foreach (var entity in entitySegment)
                 {
                     if (entity.PartitionKey == currentPartitionKey && entity.RowKeyPrefix == currentRowKeyPrefix)
                     {
@@ -251,7 +266,6 @@ namespace Knapcode.ExplorePackages.WideEntities
                     }
                 }
             }
-            while (token != null);
 
             if (segments.Any())
             {
@@ -263,26 +277,27 @@ namespace Knapcode.ExplorePackages.WideEntities
 
         public async Task<IReadOnlyList<WideEntity>> ExecuteBatchAsync(string tableName, IEnumerable<WideEntityOperation> batch, bool allowBatchSplits)
         {
-            var tableOperationBatch = new TableBatchOperation();
+            var table = await GetTableAsync(tableName);
+            var tableBatch = new MutableTableTransactionalBatch(table);
             var segmentsList = new List<List<WideEntitySegment>>();
             foreach (var operation in batch)
             {
                 // Keep track of the number of table operations in the batch prior to adding the next wide entity
                 // operation, just in case we have to remove the operations for a batch split.
-                var previousOperationCount = tableOperationBatch.Count;
+                var previousOperationCount = tableBatch.Count;
                 switch (operation)
                 {
                     case WideEntityInsertOperation insert:
-                        segmentsList.Add(await AddInsertAsync(insert.PartitionKey, insert.RowKey, insert.Content, tableOperationBatch));
+                        segmentsList.Add(await AddInsertAsync(insert.PartitionKey, insert.RowKey, insert.Content, tableBatch));
                         break;
                     case WideEntityReplaceOperation replace:
-                        segmentsList.Add(await AddReplaceAsync(replace.Existing, replace.Content, tableOperationBatch));
+                        segmentsList.Add(await AddReplaceAsync(replace.Existing, replace.Content, tableBatch));
                         break;
                     case WideEntityInsertOrReplaceOperation insertOrReplace:
-                        segmentsList.Add(await AddInsertOrReplaceAsync(tableName, insertOrReplace.PartitionKey, insertOrReplace.RowKey, insertOrReplace.Content, tableOperationBatch));
+                        segmentsList.Add(await AddInsertOrReplaceAsync(tableName, insertOrReplace.PartitionKey, insertOrReplace.RowKey, insertOrReplace.Content, tableBatch));
                         break;
                     case WideEntityDeleteOperation delete:
-                        AddDelete(delete.Existing, tableOperationBatch);
+                        AddDelete(delete.Existing, tableBatch);
                         segmentsList.Add(null);
                         break;
                     default:
@@ -290,33 +305,33 @@ namespace Knapcode.ExplorePackages.WideEntities
                 }
 
                 if (allowBatchSplits
-                    && tableOperationBatch.Count > previousOperationCount
+                    && tableBatch.Count > previousOperationCount
                     && previousOperationCount > 0
                     && segmentsList.Sum(x => x.Sum(y => y.GetEntitySize())) > MaxTotalEntitySize)
                 {
                     // Remove the table operations added by this wide entity operation since it made the batch too large.
-                    var addedOperations = new Stack<TableOperation>();
-                    while (tableOperationBatch.Count > previousOperationCount)
+                    var addedOperations = new Stack<TableTransactionalOperation>();
+                    while (tableBatch.Count > previousOperationCount)
                     {
-                        addedOperations.Push(tableOperationBatch.Last());
-                        tableOperationBatch.RemoveAt(tableOperationBatch.Count - 1);
+                        addedOperations.Push(tableBatch.Last());
+                        tableBatch.RemoveAt(tableBatch.Count - 1);
                     }
 
                     // Execute the batch, now that it is within the size limit.
-                    await GetTable(tableName).ExecuteBatchAsync(tableOperationBatch);
+                    TableBatchResponse response = await tableBatch.SubmitBatchAsync();
 
                     // Start a new batch with the table operations associated with this entity operation.
-                    tableOperationBatch.Clear();
+                    tableBatch.Clear();
                     while (addedOperations.Any())
                     {
-                        tableOperationBatch.Add(addedOperations.Pop());
+                        tableBatch.Add(addedOperations.Pop());
                     }
                 }
             }
 
-            if (tableOperationBatch.Any())
+            if (tableBatch.Any())
             {
-                await GetTable(tableName).ExecuteBatchAsync(tableOperationBatch);
+                await tableBatch.SubmitBatchAsync();
             }
 
             var output = new List<WideEntity>();
@@ -337,31 +352,36 @@ namespace Knapcode.ExplorePackages.WideEntities
 
         public async Task DeleteAsync(string tableName, WideEntity existing)
         {
-            var batch = new TableBatchOperation();
+            var table = await GetTableAsync(tableName);
+            var batch = new MutableTableTransactionalBatch(table);
             AddDelete(existing, batch);
-            await GetTable(tableName).ExecuteBatchAsync(batch);
+            await batch.SubmitBatchAsync();
         }
 
-        private static void AddDelete(WideEntity existing, TableBatchOperation batch)
+        private static void AddDelete(WideEntity existing, MutableTableTransactionalBatch batch)
         {
             // Use the etag on the first entity, for optimistic concurrency.
-            batch.Add(TableOperation.Delete(new WideEntitySegment(existing.PartitionKey, existing.RowKey, 0) { ETag = existing.ETag }));
+            batch.DeleteEntity(existing.PartitionKey, WideEntitySegment.GetRowKey(existing.RowKey, index: 0), existing.ETag);
 
             for (var index = 1; index < existing.SegmentCount; index++)
             {
-                batch.Add(TableOperation.Delete(new WideEntitySegment(existing.PartitionKey, existing.RowKey, index) { ETag = "*" }));
+                batch.DeleteEntity(existing.PartitionKey, WideEntitySegment.GetRowKey(existing.RowKey, index), ETag.All);
             }
         }
 
         public async Task<WideEntity> ReplaceAsync(string tableName, WideEntity existing, ReadOnlyMemory<byte> content)
         {
-            var batch = new TableBatchOperation();
+            var table = await GetTableAsync(tableName);
+            var batch = new MutableTableTransactionalBatch(table);
             var segments = await AddReplaceAsync(existing, content, batch);
-            await GetTable(tableName).ExecuteBatchAsync(batch);
+            await batch.SubmitBatchAsync();
             return new WideEntity(segments);
         }
 
-        private async Task<List<WideEntitySegment>> AddReplaceAsync(WideEntity existing, ReadOnlyMemory<byte> content, TableBatchOperation batch)
+        private async Task<List<WideEntitySegment>> AddReplaceAsync(
+            WideEntity existing,
+            ReadOnlyMemory<byte> content,
+            MutableTableTransactionalBatch batch)
         {
             return await AddInsertOrReplaceAsync(
                 batch,
@@ -373,13 +393,18 @@ namespace Knapcode.ExplorePackages.WideEntities
 
         public async Task<WideEntity> InsertAsync(string tableName, string partitionKey, string rowKey, ReadOnlyMemory<byte> content)
         {
-            var batch = new TableBatchOperation();
+            var table = await GetTableAsync(tableName);
+            var batch = new MutableTableTransactionalBatch(table);
             var segments = await AddInsertAsync(partitionKey, rowKey, content, batch);
-            await GetTable(tableName).ExecuteBatchAsync(batch);
+            await batch.SubmitBatchAsync();
             return new WideEntity(segments);
         }
 
-        private async Task<List<WideEntitySegment>> AddInsertAsync(string partitionKey, string rowKey, ReadOnlyMemory<byte> content, TableBatchOperation batch)
+        private async Task<List<WideEntitySegment>> AddInsertAsync(
+            string partitionKey,
+            string rowKey,
+            ReadOnlyMemory<byte> content,
+            MutableTableTransactionalBatch batch)
         {
             return await AddInsertOrReplaceAsync(
                 batch,
@@ -391,24 +416,36 @@ namespace Knapcode.ExplorePackages.WideEntities
 
         public async Task<WideEntity> InsertOrReplaceAsync(string tableName, string partitionKey, string rowKey, ReadOnlyMemory<byte> content)
         {
-            var batch = new TableBatchOperation();
+            var table = await GetTableAsync(tableName);
+            var batch = new MutableTableTransactionalBatch(table);
             var segments = await AddInsertOrReplaceAsync(tableName, partitionKey, rowKey, content, batch);
-            await GetTable(tableName).ExecuteBatchAsync(batch);
+            await batch.SubmitBatchAsync();
             return new WideEntity(segments);
         }
 
-        private Task<List<WideEntitySegment>> AddInsertOrReplaceAsync(string tableName, string partitionKey, string rowKey, ReadOnlyMemory<byte> content, TableBatchOperation batch)
+        private Task<List<WideEntitySegment>> AddInsertOrReplaceAsync(
+            string tableName,
+            string partitionKey,
+            string rowKey,
+            ReadOnlyMemory<byte> content,
+            MutableTableTransactionalBatch batch)
         {
             return AddInsertOrReplaceAsync(
                 batch,
-                () => RetrieveAsync(tableName, partitionKey, rowKey, includeData: false),
+                async () => (await RetrieveAsync(
+                    tableName,
+                    batch.TableClient,
+                    partitionKey,
+                    rowKey,
+                    rowKey,
+                    includeData: false)).SingleOrDefault(),
                 partitionKey,
                 rowKey,
                 content);
         }
 
         private async Task<List<WideEntitySegment>> AddInsertOrReplaceAsync(
-            TableBatchOperation batch,
+            MutableTableTransactionalBatch batch,
             Func<Task<WideEntity>> getExistingAsync,
             string partitionKey,
             string rowKey,
@@ -426,25 +463,24 @@ namespace Knapcode.ExplorePackages.WideEntities
             {
                 foreach (var segment in segments)
                 {
-                    batch.Add(TableOperation.Insert(segment));
+                    batch.AddEntity(segment);
                 }
             }
             else
             {
                 // Use the etag on the first entity, for optimistic concurrency.
-                segments[0].ETag = existing.ETag;
-                batch.Add(TableOperation.Replace(segments[0]));
+                batch.UpdateEntity(segments[0], existing.ETag, mode: TableUpdateMode.Replace);
 
                 // Blindly insert or replace the rest of the new segments, ignoring etags.
                 foreach (var segment in segments.Skip(1))
                 {
-                    batch.Add(TableOperation.InsertOrReplace(segment));
+                    batch.UpsertEntity(segment, mode: TableUpdateMode.Replace);
                 }
 
                 // Delete any extra segments existing on the old entity but not on the new one.
                 for (var index = segments.Count; index < existing.SegmentCount; index++)
                 {
-                    batch.Add(TableOperation.Delete(new WideEntitySegment(partitionKey, rowKey, index) { ETag = "*" }));
+                    batch.DeleteEntity(partitionKey, WideEntitySegment.GetRowKey(existing.RowKey, index), ETag.All);
                 }
             }
 
@@ -461,38 +497,6 @@ namespace Knapcode.ExplorePackages.WideEntities
             {
                 output.Add(new WideEntity(segments[0]));
             }
-        }
-
-        private static string PK_EQ(string partitionKey)
-        {
-            return TableQuery.GenerateFilterCondition(
-                StorageUtility.PartitionKey,
-                QueryComparisons.Equal,
-                partitionKey);
-        }
-
-        private static string RK_LTE(string rowKeyPrefix, string suffix)
-        {
-            return TableQuery.GenerateFilterCondition(
-                StorageUtility.RowKey,
-                QueryComparisons.LessThanOrEqual,
-                $"{rowKeyPrefix}{WideEntitySegment.RowKeySeparator}{suffix}");
-        }
-
-        private static string RK_GTE(string rowKeyPrefix, string suffix)
-        {
-            return TableQuery.GenerateFilterCondition(
-                StorageUtility.RowKey,
-                QueryComparisons.GreaterThanOrEqual,
-                $"{rowKeyPrefix}{WideEntitySegment.RowKeySeparator}{suffix}");
-        }
-
-        private static string RK_EQ(string rowKeyPrefix, string suffix)
-        {
-            return TableQuery.GenerateFilterCondition(
-                StorageUtility.RowKey,
-                QueryComparisons.Equal,
-                $"{rowKeyPrefix}{WideEntitySegment.RowKeySeparator}{suffix}");
         }
 
         private List<WideEntitySegment> MakeSegments(string partitionKey, string rowKey, ReadOnlyMemory<byte> content)
@@ -583,7 +587,7 @@ namespace Knapcode.ExplorePackages.WideEntities
                     segment = new WideEntitySegment(partitionKey, rowKey, index);
                 }
 
-                segment.Chunks.Add(data.Slice(dataStart, binarySize));
+                segment.AddChunk(data.Slice(dataStart, binarySize));
                 dataStart += binarySize;
 
                 // Account for the chunk data
@@ -603,12 +607,10 @@ namespace Knapcode.ExplorePackages.WideEntities
             return (segment, segmentSize);
         }
 
-        private CloudTable GetTable(string tableName)
+        private async Task<TableClient> GetTableAsync(string tableName)
         {
-            return _serviceClientFactory
-                .GetStorageAccount()
-                .CreateCloudTableClient()
-                .GetTableReference(tableName);
+            return (await _serviceClientFactory.GetTableServiceClientAsync())
+                .GetTableClient(tableName);
         }
     }
 }

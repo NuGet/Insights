@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Table;
+using Azure;
+using Azure.Data.Tables;
 
 namespace Knapcode.ExplorePackages.WideEntities
 {
-    internal class WideEntitySegment : ITableEntity
+    internal class WideEntitySegment : Dictionary<string, object>, ITableEntity
     {
         internal const string SegmentCountPropertyName = "C";
 
@@ -26,39 +25,41 @@ namespace Knapcode.ExplorePackages.WideEntities
         /// </summary>
         private static readonly IReadOnlyList<string> ChunkPropertyNames = new[] { "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S" };
 
-        private string _rowKey;
         private string _rowKeyPrefix;
         private int _index = -1;
-        private int _segmentCount;
+
+        public static string GetRowKey(string rowKeyPrefix, int index)
+        {
+            return $"{rowKeyPrefix}{RowKeySeparator}{index:D2}";
+        }
 
         public WideEntitySegment()
         {
+            Timestamp = default;
+            ETag = default;
         }
 
-        public WideEntitySegment(string partitionKey, string rowKeyPrefix, int index)
+        public WideEntitySegment(string partitionKey, string rowKeyPrefix, int index) : this()
         {
             PartitionKey = partitionKey ?? throw new ArgumentNullException(nameof(partitionKey));
-            RowKeyPrefix = rowKeyPrefix;
-            Index = index;
+            _rowKeyPrefix = rowKeyPrefix;
+            _index = index;
+            UpdateRowKey();
+            if (_index == 0)
+            {
+                this[SegmentCountPropertyName] = 0;
+            }
         }
 
-        public string PartitionKey { get; set; }
+        public string PartitionKey
+        {
+            get => (string)this[StorageUtility.PartitionKey];
+            set => this[StorageUtility.PartitionKey] = value;
+        }
 
         public string RowKey
         {
-            get
-            {
-                if (_rowKey == null)
-                {
-                    // We use "D2" since we will never have more than 2 digits: 00 - 99. This allows for up to 100
-                    // segments per wide entity. We use 100 because this is the maximum batch size allowed in Azure
-                    // Table Storage.
-                    _rowKey = $"{RowKeyPrefix}{RowKeySeparator}{_index:D2}";
-                }
-
-                return _rowKey;
-            }
-
+            get => (string)this[StorageUtility.RowKey];
             set
             {
                 if (value == null)
@@ -66,10 +67,33 @@ namespace Knapcode.ExplorePackages.WideEntities
                     throw new ArgumentNullException(nameof(value));
                 }
 
-                var tildeIndex = GetSeparatorIndex(value);
-                RowKeyPrefix = value.Substring(0, tildeIndex);
-                _index = int.Parse(value.Substring(tildeIndex + 1));
+                UpdateRowKeyPrefixAndIndex(value);
+                UpdateRowKey();
             }
+        }
+
+        public DateTimeOffset? Timestamp
+        {
+            get => (DateTimeOffset?)this[StorageUtility.Timestamp];
+            set => this[StorageUtility.Timestamp] = value;
+        }
+
+        public ETag ETag
+        {
+            get => new ETag((string)this[StorageUtility.ETag]);
+            set => this[StorageUtility.ETag] = value.ToString();
+        }
+
+        private void UpdateRowKeyPrefixAndIndex(string value)
+        {
+            var tildeIndex = value.LastIndexOf(RowKeySeparator);
+            if (tildeIndex < 0)
+            {
+                throw new ArgumentException($"The row key must container the separator '{RowKeySeparator}'.", nameof(value));
+            }
+
+            _rowKeyPrefix = value.Substring(0, tildeIndex);
+            _index = int.Parse(value.Substring(tildeIndex + 1));
         }
 
         public string RowKeyPrefix
@@ -78,13 +102,11 @@ namespace Knapcode.ExplorePackages.WideEntities
             {
                 if (_rowKeyPrefix == null)
                 {
-                    var tildeIndex = GetSeparatorIndex(RowKey);
-                    _rowKeyPrefix = RowKey.Substring(0, tildeIndex);
+                    UpdateRowKeyPrefixAndIndex(RowKey);
                 }
 
                 return _rowKeyPrefix;
             }
-
             set
             {
                 if (value == null)
@@ -94,10 +116,11 @@ namespace Knapcode.ExplorePackages.WideEntities
 
                 if (value.Contains(RowKeySeparator))
                 {
-                    throw new ArgumentException($"The row key prefix cannot contain the separator '{RowKeySeparator}'");
+                    throw new ArgumentException($"The row key prefix cannot contain the separator '{RowKeySeparator}'", nameof(value));
                 }
 
                 _rowKeyPrefix = value;
+                UpdateRowKey();
             }
         }
 
@@ -107,13 +130,11 @@ namespace Knapcode.ExplorePackages.WideEntities
             {
                 if (_index < 0)
                 {
-                    var tildeIndex = GetSeparatorIndex(RowKey);
-                    _index = int.Parse(RowKey.Substring(tildeIndex + 1));
+                    UpdateRowKeyPrefixAndIndex(RowKey);
                 }
 
                 return _index;
             }
-
             set
             {
                 if (value < 0 || value > StorageUtility.MaxBatchSize - 1)
@@ -122,11 +143,15 @@ namespace Knapcode.ExplorePackages.WideEntities
                 }
 
                 _index = value;
+                UpdateRowKey();
             }
         }
 
-        public DateTimeOffset Timestamp { get; set; }
-        public string ETag { get; set; }
+        private void UpdateRowKey()
+        {
+            this[StorageUtility.RowKey] = GetRowKey(_rowKeyPrefix, _index);
+        }
+
         public int SegmentCount
         {
             get
@@ -136,7 +161,7 @@ namespace Knapcode.ExplorePackages.WideEntities
                     throw new InvalidOperationException("The segment count is only available on segments with index 0.");
                 }
 
-                return _segmentCount;
+                return (int)this[SegmentCountPropertyName];
             }
 
             set
@@ -148,88 +173,42 @@ namespace Knapcode.ExplorePackages.WideEntities
 
                 if (value < 1 || value > StorageUtility.MaxBatchSize)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), value, $"The segment count must be between 1 and {StorageUtility.MaxBatchSize}, inclusive.");
+                    throw new ArgumentOutOfRangeException(nameof(value), value, $"The segment count must be between 0 and {StorageUtility.MaxBatchSize}, inclusive.");
                 }
 
-                _segmentCount = value;
+                this[SegmentCountPropertyName] = value;
             }
         }
 
-        public List<ReadOnlyMemory<byte>> Chunks { get; } = new List<ReadOnlyMemory<byte>>();
+        private int NonDataPropertyCount => Index == 0 ? 5 : 4;
 
-        private int GetSeparatorIndex(string value)
-        {
-            var tildeIndex = value.LastIndexOf(RowKeySeparator);
-
-            if (tildeIndex < 0)
-            {
-                throw new InvalidDataException($"The row key must container the separator '{RowKeySeparator}'.");
-            }
-
-            return tildeIndex;
-        }
-
-        public void ReadEntity(IDictionary<string, EntityProperty> properties, OperationContext operationContext)
+        public IEnumerable<ReadOnlyMemory<byte>> GetChunks()
         {
             // The first wide entity has a segment count property.
-            var nonDataPropertyCount = Index == 0 ? 1 : 0;
-            if (properties.Count > ChunkPropertyNames.Count + nonDataPropertyCount)
+            if (Count > ChunkPropertyNames.Count + NonDataPropertyCount)
             {
-                throw new ArgumentException($"For segment index {Index}, there cannot be more than {ChunkPropertyNames.Count + nonDataPropertyCount} properties.", nameof(properties));
+                throw new InvalidOperationException($"For segment index {Index}, there cannot be more than {ChunkPropertyNames.Count + NonDataPropertyCount} properties.");
             }
 
-            if (Index == 0)
+            for (var i = 0; i < Count - NonDataPropertyCount; i++)
             {
-                if (!properties.TryGetValue(SegmentCountPropertyName, out var property))
+                if (!TryGetValue(ChunkPropertyNames[i], out var property))
                 {
-                    throw new ArgumentException($"Property '{SegmentCountPropertyName}' could not be found.", nameof(properties));
+                    throw new InvalidOperationException($"Property '{ChunkPropertyNames[i]}' could not be found.");
                 }
 
-                if (property.PropertyType != EdmType.Int32)
+                if (property is not byte[] binaryValue)
                 {
-                    throw new ArgumentException($"Property '{SegmentCountPropertyName}' must be an Int32.", nameof(properties));
+                    throw new InvalidOperationException($"Property '{ChunkPropertyNames[i]}' must be binary.");
                 }
 
-                SegmentCount = property.Int32Value.Value;
-            }
-
-            Chunks.Clear();
-            for (var i = 0; i < properties.Count - nonDataPropertyCount; i++)
-            {
-                if (!properties.TryGetValue(ChunkPropertyNames[i], out var property))
-                {
-                    throw new ArgumentException($"Property '{ChunkPropertyNames[i]}' could not be found.", nameof(properties));
-                }
-
-                if (property.PropertyType != EdmType.Binary)
-                {
-                    throw new ArgumentException($"Property '{ChunkPropertyNames[i]}' must be binary.", nameof(properties));
-                }
-
-                Chunks.Add(property.BinaryValue.AsMemory());
+                yield return binaryValue.AsMemory();
             }
         }
 
-        public IDictionary<string, EntityProperty> WriteEntity(OperationContext operationContext)
+        public void AddChunk(ReadOnlyMemory<byte> chunk)
         {
-            if (Chunks.Count > ChunkPropertyNames.Count)
-            {
-                throw new InvalidOperationException($"There cannot be more than {ChunkPropertyNames.Count} chunks.");
-            }
-
-            var dictionary = new Dictionary<string, EntityProperty>();
-
-            if (Index == 0)
-            {
-                dictionary.Add(SegmentCountPropertyName, new EntityProperty(SegmentCount));
-            }
-
-            for (var i = 0; i < Chunks.Count; i++)
-            {
-                dictionary.Add(ChunkPropertyNames[i], new EntityProperty(Chunks[i].ToArray()));
-            }
-
-            return dictionary;
+            this[ChunkPropertyNames[Count - NonDataPropertyCount]] = chunk.ToArray();
         }
     }
 }

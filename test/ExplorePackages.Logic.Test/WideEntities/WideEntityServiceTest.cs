@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Azure;
+using Azure.Data.Tables;
 using Microsoft.Extensions.Options;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Table;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;
@@ -85,7 +85,7 @@ namespace Knapcode.ExplorePackages.WideEntities
                 var newEntity = await Target.InsertOrReplaceAsync(TableName, partitionKey, rowKey, newContent);
 
                 // Assert
-                Assert.Equal(default, newEntity.Timestamp);
+                Assert.NotNull(newEntity.Timestamp);
 
                 Assert.NotEqual(existingEntity.ETag, newEntity.ETag);
                 Assert.NotEqual(existingEntity.ToByteArray(), newEntity.ToByteArray());
@@ -126,8 +126,8 @@ namespace Knapcode.ExplorePackages.WideEntities
                 var existingEntity = await Target.InsertAsync(TableName, partitionKey, rowKey, existingContent);
 
                 // Act & Assert
-                var ex = await Assert.ThrowsAsync<StorageException>(() => Target.InsertAsync(TableName, partitionKey, rowKey, newContent));
-                Assert.Equal((int)HttpStatusCode.Conflict, ex.RequestInformation.HttpStatusCode);
+                var ex = await Assert.ThrowsAsync<RequestFailedException>(() => Target.InsertAsync(TableName, partitionKey, rowKey, newContent));
+                Assert.Equal((int)HttpStatusCode.Conflict, ex.Status);
                 var retrieved = await Target.RetrieveAsync(TableName, partitionKey, rowKey);
                 Assert.Equal(existingEntity.ETag, retrieved.ETag);
                 Assert.Equal(existingEntity.ToByteArray(), retrieved.ToByteArray());
@@ -154,7 +154,7 @@ namespace Knapcode.ExplorePackages.WideEntities
                 var newEntity = await Target.ReplaceAsync(TableName, existingEntity, newContent);
 
                 // Assert
-                Assert.Equal(default, newEntity.Timestamp);
+                Assert.NotNull(newEntity.Timestamp);
 
                 Assert.NotEqual(existingEntity.ETag, newEntity.ETag);
                 Assert.NotEqual(existingEntity.ToByteArray(), newEntity.ToByteArray());
@@ -175,8 +175,8 @@ namespace Knapcode.ExplorePackages.WideEntities
                 await Target.DeleteAsync(TableName, existingEntity);
 
                 // Act & Assert
-                var ex = await Assert.ThrowsAsync<StorageException>(() => Target.ReplaceAsync(TableName, existingEntity, content));
-                Assert.Equal((int)HttpStatusCode.NotFound, ex.RequestInformation.HttpStatusCode);
+                var ex = await Assert.ThrowsAsync<RequestFailedException>(() => Target.ReplaceAsync(TableName, existingEntity, content));
+                Assert.Equal((int)HttpStatusCode.NotFound, ex.Status);
                 Assert.Null(await Target.RetrieveAsync(TableName, partitionKey, rowKey));
             }
 
@@ -192,8 +192,8 @@ namespace Knapcode.ExplorePackages.WideEntities
                 var changedEntity = await Target.ReplaceAsync(TableName, existingEntity, existingContent);
 
                 // Act & Assert
-                var ex = await Assert.ThrowsAsync<StorageException>(() => Target.ReplaceAsync(TableName, existingEntity, newContent));
-                Assert.Equal((int)HttpStatusCode.PreconditionFailed, ex.RequestInformation.HttpStatusCode);
+                var ex = await Assert.ThrowsAsync<RequestFailedException>(() => Target.ReplaceAsync(TableName, existingEntity, newContent));
+                Assert.Equal((int)HttpStatusCode.PreconditionFailed, ex.Status);
                 var retrieved = await Target.RetrieveAsync(TableName, partitionKey, rowKey);
                 Assert.Equal(changedEntity.ETag, retrieved.ETag);
                 Assert.Equal(changedEntity.ToByteArray(), retrieved.ToByteArray());
@@ -204,7 +204,7 @@ namespace Knapcode.ExplorePackages.WideEntities
             }
         }
 
-        public class RetrieveRangeAsync : WideEntityServiceTest
+        public class RetrieveAsync_Range : WideEntityServiceTest
         {
             [Theory]
             [InlineData(false)]
@@ -256,6 +256,7 @@ namespace Knapcode.ExplorePackages.WideEntities
                     Assert.Equal(expected.PartitionKey, actual.PartitionKey);
                     Assert.Equal(expected.RowKey, actual.RowKey);
                     Assert.Equal(expected.ETag, actual.ETag);
+                    Assert.Equal(expected.Timestamp, actual.Timestamp);
                     Assert.Equal(expected.ToByteArray(), actual.ToByteArray());
                 }
             }
@@ -282,9 +283,9 @@ namespace Knapcode.ExplorePackages.WideEntities
                 Assert.Equal(rowKeys[1], actual[1].RowKey);
                 Assert.Equal(rowKeys[2], actual[2].RowKey);
                 var error = TimeSpan.FromMinutes(5);
-                Assert.All(actual, x => Assert.InRange(x.Timestamp, before.Subtract(error), after.Add(error)));
-                Assert.All(actual, x => Assert.NotEqual(default, x.Timestamp));
-                Assert.All(actual, x => Assert.NotNull(x.ETag));
+                Assert.All(actual, x => Assert.NotNull(x.Timestamp));
+                Assert.All(actual, x => Assert.InRange(x.Timestamp.Value, before.Subtract(error), after.Add(error)));
+                Assert.All(actual, x => Assert.NotEqual(default, x.ETag));
                 Assert.All(actual, x => Assert.Equal(1, x.SegmentCount));
                 Assert.All(actual, x =>
                 {
@@ -293,8 +294,105 @@ namespace Knapcode.ExplorePackages.WideEntities
                 });
             }
 
-            public RetrieveRangeAsync(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
+            public RetrieveAsync_Range(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
             {
+            }
+        }
+
+        public class RetrieveAsync_PartitionKey : WideEntityServiceTest
+        {
+            public RetrieveAsync_PartitionKey(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
+            {
+            }
+
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
+            public async Task ReturnsEmptyForNonExistentEntity(bool includeData)
+            {
+                // Arrange
+                var partitionKey = StorageUtility.GenerateDescendingId().ToString();
+                await Target.InsertAsync(TableName, partitionKey, "rk-1", Bytes.Slice(0, 1024));
+
+                // Act
+                var actual = await Target.RetrieveAsync(TableName, partitionKey + "different", includeData);
+
+                // Assert
+                Assert.Empty(actual);
+            }
+
+            [Fact]
+            public async Task ReturnsAllInPartitionKey()
+            {
+                // Arrange
+                var partitionKey = StorageUtility.GenerateDescendingId().ToString();
+                var a = await Target.InsertAsync(TableName, partitionKey, "rk-1", Bytes.Slice(0, 1024));
+                var b = await Target.InsertAsync(TableName, partitionKey, "rk-2", Bytes.Slice(1024, 1024));
+                var c = await Target.InsertAsync(TableName, partitionKey, "rk-3", Bytes.Slice(2048, 1024));
+                var all = new[] { a, b, c };
+
+                // Act
+                var entities = await Target.RetrieveAsync(TableName, partitionKey);
+
+                // Assert
+                Assert.Equal(all.Length, entities.Count);
+                for (var i = 0; i < all.Length; i++)
+                {
+                    var expected = all[i];
+                    var actual = entities[i];
+                    Assert.Equal(expected.PartitionKey, actual.PartitionKey);
+                    Assert.Equal(expected.RowKey, actual.RowKey);
+                    Assert.Equal(expected.ETag, actual.ETag);
+                    Assert.Equal(expected.Timestamp, actual.Timestamp);
+                    Assert.Equal(expected.ToByteArray(), actual.ToByteArray());
+                }
+            }
+        }
+
+
+        public class RetrieveAsync_All : WideEntityServiceTest
+        {
+            public RetrieveAsync_All(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
+            {
+            }
+
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
+            public async Task ReturnsEmptyForEmptyTable(bool includeData)
+            {
+                // Arrange & Act
+                var actual = await Target.RetrieveAsync(TableName, includeData);
+
+                // Assert
+                Assert.Empty(actual);
+            }
+
+            [Fact]
+            public async Task ReturnsAll()
+            {
+                // Arrange
+                var partitionKey = StorageUtility.GenerateDescendingId().ToString();
+                var a = await Target.InsertAsync(TableName, partitionKey + "-1", "rk-1", Bytes.Slice(0, 1024));
+                var b = await Target.InsertAsync(TableName, partitionKey + "-2", "rk-2", Bytes.Slice(1024, 1024));
+                var c = await Target.InsertAsync(TableName, partitionKey + "-3", "rk-3", Bytes.Slice(2048, 1024));
+                var all = new[] { a, b, c };
+
+                // Act
+                var entities = await Target.RetrieveAsync(TableName);
+
+                // Assert
+                Assert.Equal(all.Length, entities.Count);
+                for (var i = 0; i < all.Length; i++)
+                {
+                    var expected = all[i];
+                    var actual = entities[i];
+                    Assert.Equal(expected.PartitionKey, actual.PartitionKey);
+                    Assert.Equal(expected.RowKey, actual.RowKey);
+                    Assert.Equal(expected.ETag, actual.ETag);
+                    Assert.Equal(expected.Timestamp, actual.Timestamp);
+                    Assert.Equal(expected.ToByteArray(), actual.ToByteArray());
+                }
             }
         }
 
@@ -334,9 +432,9 @@ namespace Knapcode.ExplorePackages.WideEntities
                 Assert.Equal(partitionKey, wideEntity.PartitionKey);
                 Assert.Equal(rowKey, wideEntity.RowKey);
                 var error = TimeSpan.FromMinutes(5);
-                Assert.InRange(wideEntity.Timestamp, before.Subtract(error), after.Add(error));
-                Assert.NotEqual(default, wideEntity.Timestamp);
-                Assert.NotNull(wideEntity.ETag);
+                Assert.NotNull(wideEntity.Timestamp);
+                Assert.InRange(wideEntity.Timestamp.Value, before.Subtract(error), after.Add(error));
+                Assert.NotEqual(default, wideEntity.ETag);
                 Assert.Equal(1, wideEntity.SegmentCount);
                 var ex = Assert.Throws<InvalidOperationException>(() => wideEntity.GetStream());
                 Assert.Equal("The data was not included when retrieving this entity.", ex.Message);
@@ -384,10 +482,10 @@ namespace Knapcode.ExplorePackages.WideEntities
                 Assert.Equal(partitionKey, wideEntity.PartitionKey);
                 Assert.Equal(rowKey, wideEntity.RowKey);
                 var error = TimeSpan.FromMinutes(5);
-                Assert.InRange(wideEntity.Timestamp, before.Subtract(error), after.Add(error));
-                Assert.NotEqual(default, wideEntity.Timestamp);
-                Assert.NotNull(wideEntity.ETag);
-                Assert.Equal(_fixture.IsLoopback ? 8 : 3, wideEntity.SegmentCount);
+                Assert.NotNull(wideEntity.Timestamp);
+                Assert.InRange(wideEntity.Timestamp.Value, before.Subtract(error), after.Add(error));
+                Assert.NotEqual(default, wideEntity.ETag);
+                Assert.Equal(TestSettings.IsStorageEmulator ? 8 : 3, wideEntity.SegmentCount);
             }
 
             public static IEnumerable<object[]> RoundTripsBytesTestData => ByteArrayLengths
@@ -433,7 +531,8 @@ namespace Knapcode.ExplorePackages.WideEntities
             _fixture = fixture;
             Target = new WideEntityService(
                 _fixture.ServiceClientFactory,
-                output.GetTelemetryClient());
+                output.GetTelemetryClient(),
+                _fixture.Options.Object);
         }
 
         public string TableName => _fixture.TableName;
@@ -450,9 +549,8 @@ namespace Knapcode.ExplorePackages.WideEntities
                     StorageConnectionString = TestSettings.StorageConnectionString,
                 };
                 Options.Setup(x => x.Value).Returns(() => Settings);
-                ServiceClientFactory = new ServiceClientFactory(Options.Object);
+                ServiceClientFactory = new NewServiceClientFactory(Options.Object);
                 TableName = TestSettings.NewStoragePrefix() + "1we1";
-                IsLoopback = GetTable().Uri.IsLoopback;
 
                 Bytes = new byte[4 * 1024 * 1024];
                 var random = new Random(0);
@@ -461,24 +559,24 @@ namespace Knapcode.ExplorePackages.WideEntities
 
             public Mock<IOptions<ExplorePackagesSettings>> Options { get; }
             public ExplorePackagesSettings Settings { get; }
-            public ServiceClientFactory ServiceClientFactory { get; }
+            public NewServiceClientFactory ServiceClientFactory { get; }
             public string TableName { get; }
-            public bool IsLoopback { get; }
             public byte[] Bytes { get; }
 
-            public Task InitializeAsync()
+            public async Task InitializeAsync()
             {
-                return GetTable().CreateIfNotExistsAsync();
+                await (await GetTableAsync()).CreateIfNotExistsAsync();
             }
 
-            public Task DisposeAsync()
+            public async Task DisposeAsync()
             {
-                return GetTable().DeleteIfExistsAsync();
+                await (await GetTableAsync()).DeleteIfExistsAsync();
             }
 
-            private CloudTable GetTable()
+            private async Task<TableClient> GetTableAsync()
             {
-                return ServiceClientFactory.GetStorageAccount().CreateCloudTableClient().GetTableReference(TableName);
+                return (await ServiceClientFactory.GetTableServiceClientAsync())
+                    .GetTableClient(TableName);
             }
         }
     }

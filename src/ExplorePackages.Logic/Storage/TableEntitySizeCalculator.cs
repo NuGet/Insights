@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Knapcode.ExplorePackages
 {
@@ -22,11 +21,6 @@ namespace Knapcode.ExplorePackages
         public void AddEntityOverhead()
         {
             Size += InitialSize;
-        }
-
-        public void AddPartitionKeyRowKey(string partitionKey, string rowKey)
-        {
-            Size += (partitionKey.Length + rowKey.Length) * 2;
         }
 
         public void AddPartitionKey(string rowKey)
@@ -64,56 +58,44 @@ namespace Knapcode.ExplorePackages
             Size += GetInt32DataSize();
         }
 
-        public void AddProperty(string name, EntityProperty value)
+        public void AddProperty(string name, object value)
         {
             Size += GetEntityPropertySize(name.Length, value);
         }
 
-        private static int GetEntityPropertySize(int nameLength, EntityProperty value)
+        private static int GetEntityPropertySize(int nameLength, object value)
         {
-            int size;
-            switch (value.PropertyType)
+            if (value is null)
             {
-                case EdmType.String when value.StringValue == null:
-                    return 0;
-                case EdmType.DateTime when !value.DateTime.HasValue:
-                    return 0;
-                case EdmType.Guid when !value.GuidValue.HasValue:
-                    return 0;
-                case EdmType.Double when !value.DoubleValue.HasValue:
-                    return 0;
-                case EdmType.Int32 when !value.Int32Value.HasValue:
-                    return 0;
-                case EdmType.Int64 when !value.Int64Value.HasValue:
-                    return 0;
-                case EdmType.Boolean when !value.BooleanValue.HasValue:
-                    return 0;
-                case EdmType.Binary when value.BinaryValue == null:
-                    return 0;
+                return 0;
+            }
 
-                case EdmType.String:
-                    size = value.StringValue.Length * 2 + 4;
+            int size;
+            switch (value)
+            {
+                case string stringValue:
+                    size = stringValue.Length * 2 + 4;
                     break;
-                case EdmType.DateTime:
+                case DateTimeOffset:
                     size = 8;
                     break;
-                case EdmType.Guid:
+                case Guid:
                     size = 16;
                     break;
-                case EdmType.Double:
+                case double:
                     size = 8;
                     break;
-                case EdmType.Int32:
+                case int:
                     size = GetInt32DataSize();
                     break;
-                case EdmType.Int64:
+                case long:
                     size = 8;
                     break;
-                case EdmType.Boolean:
+                case bool:
                     size = 1;
                     break;
-                case EdmType.Binary:
-                    size = GetBinaryDataSize(value.BinaryValue.Length);
+                case byte[] binaryValue:
+                    size = GetBinaryDataSize(binaryValue.Length);
                     break;
 
                 default:

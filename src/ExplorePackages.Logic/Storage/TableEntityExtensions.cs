@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.WindowsAzure.Storage.Table;
+using Azure.Data.Tables;
 
 namespace Knapcode.ExplorePackages
 {
@@ -13,28 +13,16 @@ namespace Knapcode.ExplorePackages
                 throw new ArgumentNullException(nameof(entity));
             }
 
-            if (entity is DynamicTableEntity dte)
+            if (entity is IEnumerable<KeyValuePair<string, object>> properties)
             {
-                return GetEntitySize(dte.PartitionKey, dte.RowKey, dte.Properties);
+                return GetEntitySize(properties);
             }
 
-            var properties = entity.WriteEntity(operationContext: null);
-
-            return GetEntitySize(entity.PartitionKey, entity.RowKey, properties);
+            throw new NotImplementedException();
         }
 
-        private static int GetEntitySize(string partitionKey, string rowKey, IEnumerable<KeyValuePair<string, EntityProperty>> properties)
+        private static int GetEntitySize(IEnumerable<KeyValuePair<string, object>> properties)
         {
-            if (partitionKey == null)
-            {
-                throw new ArgumentNullException(nameof(partitionKey));
-            }
-
-            if (rowKey == null)
-            {
-                throw new ArgumentNullException(nameof(rowKey));
-            }
-
             if (properties == null)
             {
                 throw new ArgumentNullException(nameof(properties));
@@ -42,11 +30,25 @@ namespace Knapcode.ExplorePackages
 
             var calculator = new TableEntitySizeCalculator();
             calculator.AddEntityOverhead();
-            calculator.AddPartitionKeyRowKey(partitionKey, rowKey);
 
             foreach (var property in properties)
             {
-                calculator.AddProperty(property.Key, property.Value);
+                switch (property.Key)
+                {
+                    case StorageUtility.PartitionKey:
+                        calculator.AddPartitionKey((string)property.Value);
+                        break;
+                    case StorageUtility.RowKey:
+                        calculator.AddRowKey((string)property.Value);
+                        break;
+                    case StorageUtility.Timestamp:
+                    case StorageUtility.ETag:
+                        // Skip these since they are not serialized as user properties.
+                        break;
+                    default:
+                        calculator.AddProperty(property.Key, property.Value);
+                        break;
+                }
             }
 
             return calculator.Size;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Azure;
 
 namespace Knapcode.ExplorePackages.WideEntities
 {
@@ -47,14 +48,14 @@ namespace Knapcode.ExplorePackages.WideEntities
             }
 
             SegmentCount = segments.Count;
-            _chunks = orderedSegments.SelectMany(x => x.Chunks).ToList();
+            _chunks = orderedSegments.SelectMany(x => x.GetChunks()).ToList();
             _withoutData = new WideEntity(firstSegment);
         }
 
         public string PartitionKey { get; }
         public string RowKey { get; }
-        public DateTimeOffset Timestamp { get; }
-        public string ETag { get; }
+        public DateTimeOffset? Timestamp { get; }
+        public ETag ETag { get; }
         public int SegmentCount { get; }
 
         public WideEntity CloneWithoutData()

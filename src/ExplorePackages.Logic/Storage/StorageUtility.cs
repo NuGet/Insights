@@ -7,8 +7,13 @@ namespace Knapcode.ExplorePackages
     {
         public const int MaxBatchSize = 100;
         public const int MaxTakeCount = 1000;
+
         public const string PartitionKey = "PartitionKey";
         public const string RowKey = "RowKey";
+        public const string Timestamp = "Timestamp";
+        public const string ETag = "ETag";
+
+        public const string EmulatorConnectionString = "UseDevelopmentStorage=true";
 
         public static readonly IList<string> MinSelectColumns = new[] { PartitionKey, RowKey };
 

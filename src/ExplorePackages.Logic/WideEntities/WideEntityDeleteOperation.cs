@@ -3,6 +3,7 @@
     public class WideEntityDeleteOperation : WideEntityOperation
     {
         public WideEntityDeleteOperation(WideEntity existing)
+            : base(existing.PartitionKey)
         {
             Existing = existing;
         }

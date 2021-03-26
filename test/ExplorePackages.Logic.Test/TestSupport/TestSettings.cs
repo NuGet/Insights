@@ -6,7 +6,7 @@ namespace Knapcode.ExplorePackages
 {
     public static class TestSettings
     {
-        private const string StorageEmulatorConnectionString = "UseDevelopmentStorage=true";
+        private const string StorageEmulatorConnectionString = StorageUtility.EmulatorConnectionString;
 
         public static bool IsStorageEmulator => StorageConnectionString == StorageEmulatorConnectionString;
 

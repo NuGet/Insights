@@ -14,8 +14,6 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Knapcode.ExplorePackages.WideEntities;
 using MessagePack;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Shared.Protocol;
 
 namespace Knapcode.ExplorePackages.Worker
 {
@@ -67,7 +65,7 @@ namespace Knapcode.ExplorePackages.Worker
                    rowKey: bucket.ToString(),
                    content: Array.Empty<byte>());
             }
-            catch (StorageException ex) when (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.Conflict)
+            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.Conflict)
             {
                 // This is okay. The marker already exists.
             }
@@ -99,10 +97,10 @@ namespace Knapcode.ExplorePackages.Worker
                     rowKey: StorageUtility.GenerateDescendingId().ToString(),
                     content: bytes);
             }
-            catch (StorageException ex) when (
+            catch (RequestFailedException ex) when (
                 records.Count >= 2
-                && ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.RequestEntityTooLarge
-                && ex.RequestInformation?.ExtendedErrorInformation?.ErrorCode == StorageErrorCodeStrings.RequestBodyTooLarge)
+                && ex.Status == (int)HttpStatusCode.RequestEntityTooLarge
+                && ex.ErrorCode == "RequestBodyTooLarge")
             {
                 var firstHalf = records.Take(records.Count / 2).ToList();
                 var secondHalf = records.Skip(firstHalf.Count).ToList();

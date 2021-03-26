@@ -16,7 +16,7 @@ namespace Knapcode.ExplorePackages
             FlatContainerBaseUrlOverride = null;
             DownloadsV1Url = null;
             OwnersV2Url = null;
-            StorageConnectionString = "UseDevelopmentStorage=true";
+            StorageConnectionString = StorageUtility.EmulatorConnectionString;
             StorageContainerName = "packages";
             LeaseContainerName = "leases";
             PackageArchiveTableName = "packagearchives";
