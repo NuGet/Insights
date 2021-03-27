@@ -13,14 +13,14 @@ namespace Knapcode.ExplorePackages
         public static readonly string PartitionKey = string.Empty;
 
         private readonly IReadOnlyDictionary<string, ITimer> _nameToTimer;
-        private readonly NewServiceClientFactory _serviceClientFactory;
+        private readonly ServiceClientFactory _serviceClientFactory;
         private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly IOptions<ExplorePackagesSettings> _options;
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<TimerExecutionService> _logger;
 
         public TimerExecutionService(
-            NewServiceClientFactory serviceClientFactory,
+            ServiceClientFactory serviceClientFactory,
             IEnumerable<ITimer> timers,
             AutoRenewingStorageLeaseService leaseService,
             IOptions<ExplorePackagesSettings> options,

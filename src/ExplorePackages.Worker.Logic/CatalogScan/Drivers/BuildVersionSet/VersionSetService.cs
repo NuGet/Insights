@@ -14,12 +14,12 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
 {
     public class VersionSetService : IVersionSetProvider
     {
-        private readonly NewServiceClientFactory _serviceClientFactory;
+        private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<VersionSetService> _logger;
 
         public VersionSetService(
-            NewServiceClientFactory serviceClientFactory,
+            ServiceClientFactory serviceClientFactory,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<VersionSetService> logger)
         {

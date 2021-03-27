@@ -137,14 +137,13 @@ namespace Knapcode.ExplorePackages
         public ConcurrentDictionary<LogLevel, int> LogLevelToCount { get; }
         public Action<ExplorePackagesSettings> ConfigureSettings { get; set; }
         public IHost Host => _lazyHost.Value;
-        public NewServiceClientFactory NewServiceClientFactory => Host.Services.GetRequiredService<NewServiceClientFactory>();
         public ServiceClientFactory ServiceClientFactory => Host.Services.GetRequiredService<ServiceClientFactory>();
         public ITelemetryClient TelemetryClient => Host.Services.GetRequiredService<ITelemetryClient>();
         public ILogger Logger => Host.Services.GetRequiredService<ILogger<BaseLogicIntegrationTest>>();
 
         protected async Task AssertBlobCountAsync(string containerName, int expected)
         {
-            var client = await NewServiceClientFactory.GetBlobServiceClientAsync();
+            var client = await ServiceClientFactory.GetBlobServiceClientAsync();
             var container = client.GetBlobContainerClient(containerName);
             var blobs = await container.GetBlobsAsync().ToListAsync();
             Assert.Equal(expected, blobs.Count);
@@ -162,7 +161,7 @@ namespace Knapcode.ExplorePackages
 
         protected async Task<string> AssertBlobAsync(string containerName, string testName, string stepName, string blobName, bool gzip = false)
         {
-            var client = await NewServiceClientFactory.GetBlobServiceClientAsync();
+            var client = await ServiceClientFactory.GetBlobServiceClientAsync();
             var container = client.GetBlobContainerClient(containerName);
             var blob = container.GetBlobClient(blobName);
 
@@ -228,24 +227,25 @@ namespace Knapcode.ExplorePackages
             finally
             {
                 // Clean up
-                var blobServiceClient = await NewServiceClientFactory.GetBlobServiceClientAsync();
+                var blobServiceClient = await ServiceClientFactory.GetBlobServiceClientAsync();
                 var containerItems = await blobServiceClient.GetBlobContainersAsync(prefix: StoragePrefix).ToListAsync();
                 foreach (var containerItem in containerItems)
                 {
                     await blobServiceClient.DeleteBlobContainerAsync(containerItem.Name);
                 }
 
-                var queueServiceClient = await NewServiceClientFactory.GetQueueServiceClientAsync();
+                var queueServiceClient = await ServiceClientFactory.GetQueueServiceClientAsync();
                 var queueItems = await queueServiceClient.GetQueuesAsync(prefix: StoragePrefix).ToListAsync();
                 foreach (var queueItem in queueItems)
                 {
                     await queueServiceClient.DeleteQueueAsync(queueItem.Name);
                 }
 
-                var tables = await ServiceClientFactory.GetStorageAccount().CreateCloudTableClient().ListTablesAsync(StoragePrefix);
-                foreach (var table in tables)
+                var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
+                var tableItems = await tableServiceClient.GetTablesAsync(prefix: StoragePrefix).ToListAsync();
+                foreach (var tableItem in tableItems)
                 {
-                    await table.DeleteAsync();
+                    await tableServiceClient.DeleteTableAsync(tableItem.TableName);
                 }
             }
         }

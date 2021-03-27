@@ -6,11 +6,11 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class WorkerQueueFactory : IWorkerQueueFactory
     {
-        private readonly NewServiceClientFactory _serviceClientFactory;
+        private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
         public WorkerQueueFactory(
-            NewServiceClientFactory serviceClientFactory,
+            ServiceClientFactory serviceClientFactory,
             IOptions<ExplorePackagesWorkerSettings> options)
         {
             _serviceClientFactory = serviceClientFactory;

@@ -7,12 +7,12 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class CursorStorageService
     {
-        private readonly NewServiceClientFactory _serviceClientFactory;
+        private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<CursorStorageService> _logger;
 
         public CursorStorageService(
-            NewServiceClientFactory serviceClientFactory,
+            ServiceClientFactory serviceClientFactory,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<CursorStorageService> logger)
         {

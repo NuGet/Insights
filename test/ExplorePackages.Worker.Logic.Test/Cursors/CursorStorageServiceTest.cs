@@ -146,12 +146,12 @@ namespace Knapcode.ExplorePackages.Worker
                     CursorTableName = TestSettings.NewStoragePrefix() + "1c1",
                 };
                 Options.Setup(x => x.Value).Returns(() => Settings);
-                ServiceClientFactory = new NewServiceClientFactory(Options.Object);
+                ServiceClientFactory = new ServiceClientFactory(Options.Object);
             }
 
             public Mock<IOptions<ExplorePackagesWorkerSettings>> Options { get; }
             public ExplorePackagesWorkerSettings Settings { get; }
-            public NewServiceClientFactory ServiceClientFactory { get; }
+            public ServiceClientFactory ServiceClientFactory { get; }
             public TableClient Table { get; private set; }
 
             public async Task InitializeAsync()

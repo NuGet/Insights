@@ -83,8 +83,7 @@ namespace Knapcode.ExplorePackages
                 o.AddFilter("System.Net.Http.HttpClient", LogLevel.Warning);
             });
 
-            serviceCollection.AddTransient<ServiceClientFactory>();
-            serviceCollection.AddSingleton<NewServiceClientFactory>();
+            serviceCollection.AddSingleton<ServiceClientFactory>();
 
             serviceCollection.AddSingleton<IThrottle>(NullThrottle.Instance);
 

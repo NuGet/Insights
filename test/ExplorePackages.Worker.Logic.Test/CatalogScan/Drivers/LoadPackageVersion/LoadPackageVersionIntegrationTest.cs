@@ -111,7 +111,7 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
 
         private async Task AssertOutputAsync(string dir, string stepName)
         {
-            var table = (await NewServiceClientFactory.GetTableServiceClientAsync())
+            var table = (await ServiceClientFactory.GetTableServiceClientAsync())
                 .GetTableClient(Options.Value.PackageVersionTableName);
 
             await AssertEntityOutputAsync<PackageVersionEntity>(table, Path.Combine(dir, stepName));

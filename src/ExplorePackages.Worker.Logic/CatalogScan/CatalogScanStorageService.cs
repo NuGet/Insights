@@ -13,13 +13,13 @@ namespace Knapcode.ExplorePackages.Worker
     {
         private static readonly IReadOnlyDictionary<string, CatalogLeafScan> EmptyLeafIdToLeafScans = new Dictionary<string, CatalogLeafScan>();
 
-        private readonly NewServiceClientFactory _serviceClientFactory;
+        private readonly ServiceClientFactory _serviceClientFactory;
         private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<CatalogScanStorageService> _logger;
 
         public CatalogScanStorageService(
-            NewServiceClientFactory serviceClientFactory,
+            ServiceClientFactory serviceClientFactory,
             ITelemetryClient telemetryClient,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<CatalogScanStorageService> logger)

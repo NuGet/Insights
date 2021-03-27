@@ -12,11 +12,11 @@ namespace Knapcode.ExplorePackages
 {
     public class StorageLeaseService
     {
-        private readonly NewServiceClientFactory _serviceClientFactory;
+        private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IOptions<ExplorePackagesSettings> _options;
 
         public StorageLeaseService(
-            NewServiceClientFactory serviceClientFactory, IOptions<ExplorePackagesSettings> options)
+            ServiceClientFactory serviceClientFactory, IOptions<ExplorePackagesSettings> options)
         {
             _serviceClientFactory = serviceClientFactory;
             _options = options;

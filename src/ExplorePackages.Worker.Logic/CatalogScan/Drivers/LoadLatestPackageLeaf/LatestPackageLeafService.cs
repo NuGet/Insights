@@ -6,11 +6,11 @@ namespace Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf
 {
     public class LatestPackageLeafService
     {
-        private readonly NewServiceClientFactory _serviceClientFactory;
+        private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
         public LatestPackageLeafService(
-            NewServiceClientFactory serviceClientFactory,
+            ServiceClientFactory serviceClientFactory,
             IOptions<ExplorePackagesWorkerSettings> options)
         {
             _serviceClientFactory = serviceClientFactory;

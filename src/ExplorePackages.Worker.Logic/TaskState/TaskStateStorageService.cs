@@ -9,12 +9,12 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class TaskStateStorageService
     {
-        private readonly NewServiceClientFactory _serviceClientFactory;
+        private readonly ServiceClientFactory _serviceClientFactory;
         private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
         public TaskStateStorageService(
-            NewServiceClientFactory serviceClientFactory,
+            ServiceClientFactory serviceClientFactory,
             ITelemetryClient telemetryClient,
             IOptions<ExplorePackagesWorkerSettings> options)
         {

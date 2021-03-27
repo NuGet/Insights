@@ -20,9 +20,9 @@
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="3.1.12" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.1.12" />
     <PackageReference Include="Microsoft.Toolkit.HighPerformance" Version="6.1.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.2" />
     <PackageReference Include="NuGet.Commands" Version="5.10.0-xprivate.60024" />
     <PackageReference Include="NuGetPackageExplorer.Core" Version="5.9.105" />
     <PackageReference Include="System.Linq.Async" Version="5.0.0" />
-    <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />
   </ItemGroup>
 </Project>

@@ -24,12 +24,12 @@ namespace Knapcode.ExplorePackages.Worker
         private const string ContentType = "text/plain";
         private const string CompactPrefix = "compact_";
 
-        private readonly NewServiceClientFactory _serviceClientFactory;
+        private readonly ServiceClientFactory _serviceClientFactory;
         private readonly WideEntityService _wideEntityService;
         private readonly ICsvReader _csvReader;
 
         public AppendResultStorageService(
-            NewServiceClientFactory serviceClientFactory,
+            ServiceClientFactory serviceClientFactory,
             WideEntityService wideEntityService,
             ICsvReader csvReader)
         {

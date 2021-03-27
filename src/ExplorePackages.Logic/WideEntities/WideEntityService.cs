@@ -59,12 +59,12 @@ namespace Knapcode.ExplorePackages.WideEntities
 
         private const string ContentTooLargeMessage = "The content is too large.";
 
-        private readonly NewServiceClientFactory _serviceClientFactory;
+        private readonly ServiceClientFactory _serviceClientFactory;
         private readonly ITelemetryClient _telemetryClient;
         private readonly int _maxEntitySize;
 
         public WideEntityService(
-            NewServiceClientFactory serviceClientFactory,
+            ServiceClientFactory serviceClientFactory,
             ITelemetryClient telemetryClient,
             IOptions<ExplorePackagesSettings> options)
         {

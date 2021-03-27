@@ -18,13 +18,13 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
         private const string AsOfTimestampMetadata = "asOfTimestamp";
         private const string RawSizeBytesMetadata = "rawSizeBytes";
 
-        private readonly NewServiceClientFactory _serviceClientFactory;
+        private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IStreamWriterUpdater<T> _updater;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<StreamWriterUpdaterProcessor<T>> _logger;
 
         public StreamWriterUpdaterProcessor(
-            NewServiceClientFactory serviceClientFactory,
+            ServiceClientFactory serviceClientFactory,
             IStreamWriterUpdater<T> updater,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<StreamWriterUpdaterProcessor<T>> logger)

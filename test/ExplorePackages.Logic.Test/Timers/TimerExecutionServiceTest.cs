@@ -289,18 +289,13 @@ namespace Knapcode.ExplorePackages
                     LeaseContainerName = TestSettings.NewStoragePrefix() + "1l1",
                 };
                 Options.Setup(x => x.Value).Returns(() => Settings);
-                ServiceClientFactory = new NewServiceClientFactory(Options.Object);
-                NewServiceClientFactory = new NewServiceClientFactory(Options.Object);
-                LeaseService = new AutoRenewingStorageLeaseService(
-                    new StorageLeaseService(
-                        NewServiceClientFactory,
-                        Options.Object));
+                ServiceClientFactory = new ServiceClientFactory(Options.Object);
+                LeaseService = new AutoRenewingStorageLeaseService(new StorageLeaseService(ServiceClientFactory, Options.Object));
             }
 
             public Mock<IOptions<ExplorePackagesSettings>> Options { get; }
             public ExplorePackagesSettings Settings { get; }
-            public NewServiceClientFactory ServiceClientFactory { get; }
-            public NewServiceClientFactory NewServiceClientFactory { get; }
+            public ServiceClientFactory ServiceClientFactory { get; }
             public AutoRenewingStorageLeaseService LeaseService { get; }
             public TableClient Table { get; private set; }
 
@@ -314,7 +309,7 @@ namespace Knapcode.ExplorePackages
 
             public async Task DisposeAsync()
             {
-                await (await NewServiceClientFactory.GetBlobServiceClientAsync())
+                await (await ServiceClientFactory.GetBlobServiceClientAsync())
                     .GetBlobContainerClient(Options.Object.Value.LeaseContainerName)
                     .DeleteIfExistsAsync();
 

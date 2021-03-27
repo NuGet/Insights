@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Azure.Storage.Queues.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.WindowsAzure.Storage.Queue;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -34,7 +35,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             await serviceProvider
                 .GetRequiredService<Functions>()
-                .WorkerQueueAsync(new Microsoft.WindowsAzure.Storage.Queue.CloudQueueMessage(message.Body.ToString()));
+                .WorkerQueueAsync(new CloudQueueMessage(message.Body.ToString()));
         }
 
         public class CanRunTimersAsync : IntegrationTest

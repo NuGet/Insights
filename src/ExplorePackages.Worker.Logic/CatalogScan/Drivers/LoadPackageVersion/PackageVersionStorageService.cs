@@ -7,13 +7,13 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
 {
     public class PackageVersionStorageService
     {
-        private readonly NewServiceClientFactory _serviceClientFactory;
+        private readonly ServiceClientFactory _serviceClientFactory;
         private readonly CatalogClient _catalogClient;
         private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
         public PackageVersionStorageService(
-            NewServiceClientFactory serviceClientFactory,
+            ServiceClientFactory serviceClientFactory,
             CatalogClient catalogClient,
             ITelemetryClient telemetryClient,
             IOptions<ExplorePackagesWorkerSettings> options)

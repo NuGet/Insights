@@ -549,7 +549,7 @@ namespace Knapcode.ExplorePackages.WideEntities
                     StorageConnectionString = TestSettings.StorageConnectionString,
                 };
                 Options.Setup(x => x.Value).Returns(() => Settings);
-                ServiceClientFactory = new NewServiceClientFactory(Options.Object);
+                ServiceClientFactory = new ServiceClientFactory(Options.Object);
                 TableName = TestSettings.NewStoragePrefix() + "1we1";
 
                 Bytes = new byte[4 * 1024 * 1024];
@@ -559,7 +559,7 @@ namespace Knapcode.ExplorePackages.WideEntities
 
             public Mock<IOptions<ExplorePackagesSettings>> Options { get; }
             public ExplorePackagesSettings Settings { get; }
-            public NewServiceClientFactory ServiceClientFactory { get; }
+            public ServiceClientFactory ServiceClientFactory { get; }
             public string TableName { get; }
             public byte[] Bytes { get; }
 

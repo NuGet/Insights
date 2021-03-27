@@ -12,7 +12,7 @@ namespace Knapcode.ExplorePackages.Worker
     public class TableScanMessageProcessor<T> : IMessageProcessor<TableScanMessage<T>> where T : class, ITableEntity, new()
     {
         private readonly TaskStateStorageService _taskStateStorageService;
-        private readonly NewServiceClientFactory _serviceClientFactory;
+        private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IMessageEnqueuer _enqueuer;
         private readonly SchemaSerializer _serializer;
         private readonly TablePrefixScanner _prefixScanner;
@@ -21,7 +21,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public TableScanMessageProcessor(
             TaskStateStorageService taskStateStorageService,
-            NewServiceClientFactory serviceClientFactory,
+            ServiceClientFactory serviceClientFactory,
             IMessageEnqueuer enqueuer,
             SchemaSerializer serializer,
             TablePrefixScanner prefixScanner,

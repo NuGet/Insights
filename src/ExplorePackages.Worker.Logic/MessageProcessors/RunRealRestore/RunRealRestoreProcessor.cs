@@ -21,7 +21,7 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
     {
         private readonly ProjectHelper _projectHelper;
         private readonly AppendResultStorageService _storageService;
-        private readonly NewServiceClientFactory _serviceClientFactory;
+        private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<RunRealRestoreProcessor> _logger;
 
@@ -51,7 +51,7 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
         public RunRealRestoreProcessor(
             ProjectHelper projectHelper,
             AppendResultStorageService storageService,
-            NewServiceClientFactory serviceClientFactory,
+            ServiceClientFactory serviceClientFactory,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<RunRealRestoreProcessor> logger)
         {

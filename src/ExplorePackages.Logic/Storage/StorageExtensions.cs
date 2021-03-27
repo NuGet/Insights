@@ -11,7 +11,7 @@ using Azure.Storage.Queues.Models;
 
 namespace Knapcode.ExplorePackages
 {
-    public static class NewStorageExtensions
+    public static class StorageExtensions
     {
         internal static readonly TimeSpan MaxRetryDuration = TimeSpan.FromMinutes(5);
 

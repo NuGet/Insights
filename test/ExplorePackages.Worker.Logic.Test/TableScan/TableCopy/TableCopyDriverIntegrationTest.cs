@@ -52,7 +52,7 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
             await SetCursorAsync(CatalogScanDriverType.LoadLatestPackageLeaf, min0);
             await UpdateAsync(CatalogScanDriverType.LoadLatestPackageLeaf, onlyLatestLeaves: null, max1);
 
-            var serviceClientFactory = Host.Services.GetRequiredService<NewServiceClientFactory>();
+            var serviceClientFactory = Host.Services.GetRequiredService<ServiceClientFactory>();
             var destTableName = StoragePrefix + "1d1";
             var tableServiceClient = await serviceClientFactory.GetTableServiceClientAsync();
             var sourceTable = tableServiceClient.GetTableClient(Options.Value.LatestPackageLeafTableName);

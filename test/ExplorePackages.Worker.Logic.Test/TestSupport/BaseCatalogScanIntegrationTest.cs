@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
-using Azure.Data.Tables.Models;
 using Azure.Storage.Queues.Models;
 using Knapcode.ExplorePackages.WideEntities;
 using Microsoft.Extensions.DependencyInjection;
@@ -151,9 +150,9 @@ namespace Knapcode.ExplorePackages.Worker
 
         private async Task AssertExpectedStorageAsync()
         {
-            var blobServiceClient = await NewServiceClientFactory.GetBlobServiceClientAsync();
-            var queueServiceClient = await NewServiceClientFactory.GetQueueServiceClientAsync();
-            var tableServiceClient = await NewServiceClientFactory.GetTableServiceClientAsync();
+            var blobServiceClient = await ServiceClientFactory.GetBlobServiceClientAsync();
+            var queueServiceClient = await ServiceClientFactory.GetQueueServiceClientAsync();
+            var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
 
             var containers = await blobServiceClient.GetBlobContainersAsync(prefix: StoragePrefix).ToListAsync();
             Assert.Equal(
@@ -175,16 +174,13 @@ namespace Knapcode.ExplorePackages.Worker
 
             foreach (var queueItem in queueItems)
             {
-                var queueClient = (await NewServiceClientFactory.GetQueueServiceClientAsync())
+                var queueClient = (await ServiceClientFactory.GetQueueServiceClientAsync())
                     .GetQueueClient(queueItem.Name);
                 QueueProperties properties = await queueClient.GetPropertiesAsync();
                 Assert.Equal(0, properties.ApproximateMessagesCount);
             }
 
-            var prefixQuery = TableClient.CreateQueryFilter<TableItem>(
-                x => x.TableName.CompareTo(StoragePrefix) >= 0
-                  && x.TableName.CompareTo(StoragePrefix + char.MaxValue) <= 0);
-            var tables = await tableServiceClient.GetTablesAsync(prefixQuery).ToListAsync();
+            var tables = await tableServiceClient.GetTablesAsync(prefix: StoragePrefix).ToListAsync();
             Assert.Equal(
                 GetExpectedTableNames().Concat(new[] { Options.Value.CursorTableName, Options.Value.CatalogIndexScanTableName }).OrderBy(x => x).ToArray(),
                 tables.Select(x => x.TableName).ToArray());

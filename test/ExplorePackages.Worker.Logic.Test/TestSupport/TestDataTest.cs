@@ -24,9 +24,7 @@ namespace Knapcode.ExplorePackages.Worker
         public async Task DeleteOldContainers()
         {
             // Clean up
-            var account = ServiceClientFactory.GetStorageAccount();
-
-            var blobServiceClient = await NewServiceClientFactory.GetBlobServiceClientAsync();
+            var blobServiceClient = await ServiceClientFactory.GetBlobServiceClientAsync();
             var containerItems = await blobServiceClient.GetBlobContainersAsync().ToListAsync();
             foreach (var containerItem in containerItems.Where(x => IsOldStoragePrefix(x.Name)))
             {
@@ -34,7 +32,7 @@ namespace Knapcode.ExplorePackages.Worker
                 await blobServiceClient.DeleteBlobContainerAsync(containerItem.Name);
             }
 
-            var queueServiceClient = await NewServiceClientFactory.GetQueueServiceClientAsync();
+            var queueServiceClient = await ServiceClientFactory.GetQueueServiceClientAsync();
             var queueItems = await queueServiceClient.GetQueuesAsync().ToListAsync();
             foreach (var queueItem in queueItems.Where(x => IsOldStoragePrefix(x.Name)))
             {
@@ -42,11 +40,12 @@ namespace Knapcode.ExplorePackages.Worker
                 await queueServiceClient.DeleteQueueAsync(queueItem.Name);
             }
 
-            var tables = await account.CreateCloudTableClient().ListTablesAsync(string.Empty);
-            foreach (var table in tables.Where(x => IsOldStoragePrefix(x.Name)))
+            var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
+            var tableItems = await tableServiceClient.GetTablesAsync().ToListAsync();
+            foreach (var tableItem in tableItems.Where(x => IsOldStoragePrefix(x.TableName)))
             {
-                Logger.LogInformation("Deleting old table: {Name}", table.Name);
-                await table.DeleteAsync();
+                Logger.LogInformation("Deleting old table: {Name}", tableItem.TableName);
+                await tableServiceClient.DeleteTableAsync(tableItem.TableName);
             }
         }
 

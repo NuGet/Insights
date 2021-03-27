@@ -26,7 +26,7 @@ namespace Knapcode.ExplorePackages.Tool
     {
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly TaskStateStorageService _taskStateStorageService;
-        private readonly NewServiceClientFactory _serviceClientFactory;
+        private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
         private readonly ICatalogLeafToCsvDriver<NuGetPackageExplorerRecord> _driver;
         private readonly TableScanService<LatestPackageLeaf> _tableScanService;
@@ -34,7 +34,7 @@ namespace Knapcode.ExplorePackages.Tool
         public SandboxCommand(
             IMessageEnqueuer messageEnqueuer,
             TaskStateStorageService taskStateStorageService,
-            NewServiceClientFactory serviceClientFactory,
+            ServiceClientFactory serviceClientFactory,
             IRawMessageEnqueuer rawMessageEnqueuer,
             ICatalogLeafToCsvDriver<NuGetPackageExplorerRecord> driver,
             TableScanService<LatestPackageLeaf> tableScanService)

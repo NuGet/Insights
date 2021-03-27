@@ -6,11 +6,21 @@ using System.Net;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
+using Azure.Data.Tables.Models;
 
 namespace Knapcode.ExplorePackages
 {
-    public static class TableClientExtensions
+    public static class TableExtensions
     {
+        public static AsyncPageable<TableItem> GetTablesAsync(this TableServiceClient client, string prefix)
+        {
+            var prefixQuery = TableClient.CreateQueryFilter<TableItem>(
+                x => x.TableName.CompareTo(prefix) >= 0
+                  && x.TableName.CompareTo(prefix + char.MaxValue) <= 0);
+
+            return client.GetTablesAsync(filter: prefixQuery);
+        }
+
         public static async Task<T> GetEntityOrNullAsync<T>(this TableClient table, string partitionKey, string rowKey) where T : class, ITableEntity, new()
         {
             try

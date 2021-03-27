@@ -221,7 +221,7 @@ namespace Knapcode.ExplorePackages
                 };
                 Options = new Mock<IOptions<ExplorePackagesSettings>>();
                 Options.Setup(x => x.Value).Returns(() => Settings);
-                ServiceClientFactory = new NewServiceClientFactory(Options.Object);
+                ServiceClientFactory = new ServiceClientFactory(Options.Object);
                 Target = new StorageLeaseService(ServiceClientFactory, Options.Object);
             }
 
@@ -231,7 +231,7 @@ namespace Knapcode.ExplorePackages
             public TimeSpan Duration { get; }
             public ExplorePackagesSettings Settings { get; }
             public Mock<IOptions<ExplorePackagesSettings>> Options { get; }
-            public NewServiceClientFactory ServiceClientFactory { get; }
+            public ServiceClientFactory ServiceClientFactory { get; }
             public StorageLeaseService Target { get; }
 
             public async Task DisposeAsync()

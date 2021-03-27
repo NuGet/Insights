@@ -9,12 +9,12 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
 {
     public class TableRowCopyMessageProcessor<T> : IMessageProcessor<TableRowCopyMessage<T>> where T : class, ITableEntity, new()
     {
-        private readonly NewServiceClientFactory _serviceClientFactory;
+        private readonly ServiceClientFactory _serviceClientFactory;
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<TableRowCopyMessageProcessor<T>> _logger;
 
         public TableRowCopyMessageProcessor(
-            NewServiceClientFactory serviceClientFactory,
+            ServiceClientFactory serviceClientFactory,
             ITelemetryClient telemetryClient,
             ILogger<TableRowCopyMessageProcessor<T>> logger)
         {
