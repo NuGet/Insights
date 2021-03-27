@@ -365,7 +365,7 @@ namespace Knapcode.ExplorePackages
             if (!Deployment.Instance.IsDryRun)
             {
                 var attempt = 0;
-                const int maxAttempts = 5;
+                const int maxAttempts = 12;
                 while (true)
                 {
                     attempt++;
