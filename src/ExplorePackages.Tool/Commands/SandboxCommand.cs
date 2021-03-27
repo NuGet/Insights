@@ -84,7 +84,7 @@ namespace Knapcode.ExplorePackages.Tool
             var taskStateKey = new TaskStateKey("copy", "copy", "copy");
             await _taskStateStorageService.InitializeAsync(taskStateKey.StorageSuffix);
 
-            await _taskStateStorageService.GetOrAddAsync(taskStateKey);
+            await _taskStateStorageService.AddAsync(taskStateKey);
 
             var tableName = "latestpackageleavesps";
             var table = (await _serviceClientFactory.GetTableServiceClientAsync()).GetTableClient(tableName);

@@ -213,7 +213,7 @@ namespace Knapcode.ExplorePackages.Worker
                 }
 
                 await _taskStateStorageService.InitializeAsync(scan.StorageSuffix);
-                await _taskStateStorageService.GetOrAddAsync(taskStateKey);
+                await _taskStateStorageService.AddAsync(taskStateKey);
                 scan.State = CatalogIndexScanState.Enqueuing;
                 await _storageService.ReplaceAsync(scan);
             }
@@ -257,7 +257,7 @@ namespace Knapcode.ExplorePackages.Worker
                 else
                 {
                     await _taskStateStorageService.InitializeAsync(scan.StorageSuffix);
-                    await _taskStateStorageService.GetOrAddAsync(taskStateKey);
+                    await _taskStateStorageService.AddAsync(taskStateKey);
                     scan.State = CatalogIndexScanState.Enqueuing;
                     await _storageService.ReplaceAsync(scan);
                 }
@@ -345,14 +345,11 @@ namespace Knapcode.ExplorePackages.Worker
             // Enqueueing: start the table scan of the latest leaves table
             if (scan.State == CatalogIndexScanState.Enqueuing)
             {
-                var taskState = await _taskStateStorageService.GetOrAddAsync(taskStateKey);
-                if (taskState != null)
-                {
-                    await _tableScanService.StartEnqueueCatalogLeafScansAsync(
-                        taskStateKey,
-                        _storageService.GetLeafScanTableName(scan.StorageSuffix),
-                        oneMessagePerId: enqueuePerId);
-                }
+                await _taskStateStorageService.AddAsync(taskStateKey);
+                await _tableScanService.StartEnqueueCatalogLeafScansAsync(
+                    taskStateKey,
+                    _storageService.GetLeafScanTableName(scan.StorageSuffix),
+                    oneMessagePerId: enqueuePerId);
 
                 scan.State = CatalogIndexScanState.Working;
                 message.AttemptCount = 0;

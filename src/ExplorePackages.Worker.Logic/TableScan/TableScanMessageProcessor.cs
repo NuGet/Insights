@@ -224,7 +224,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             if (tableScanMessages.Any())
             {
-                await _taskStateStorageService.GetOrAddAsync(
+                await _taskStateStorageService.AddAsync(
                     originalMessage.TaskStateKey.StorageSuffix,
                     originalMessage.TaskStateKey.PartitionKey,
                     taskStates);

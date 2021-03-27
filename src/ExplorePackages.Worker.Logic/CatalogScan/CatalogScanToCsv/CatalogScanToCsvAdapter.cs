@@ -40,7 +40,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             var partitionKey = GetCustomExpandPartitionKey(indexScan);
 
-            await _taskStateStorageService.GetOrAddAsync(
+            await _taskStateStorageService.AddAsync(
                 indexScan.StorageSuffix,
                 partitionKey,
                 buckets.Select(x => x.ToString()).ToList());
@@ -80,7 +80,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             var partitionKey = GetAggregateTasksPartitionKey(indexScan);
 
-            await _taskStateStorageService.GetOrAddAsync(
+            await _taskStateStorageService.AddAsync(
                 indexScan.StorageSuffix,
                 partitionKey,
                 buckets.Select(x => x.ToString()).ToList());
