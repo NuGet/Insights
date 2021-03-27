@@ -27,7 +27,7 @@ namespace Knapcode.ExplorePackages.Worker
                     StorageSuffix = x.StorageSuffix,
                     ScanId = x.ScanId,
                     PageId = x.PageId,
-                    LeafId = x.LeafId,
+                    LeafId = x.GetLeafId(),
                 })
                 .ToList());
         }

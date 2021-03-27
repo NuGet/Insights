@@ -86,9 +86,9 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
             // Arrange
             var parentScan = new CatalogIndexScan("parent-cursor", "parent-scan-id", ParentStorageSuffix)
             {
-                ParsedDriverType = CatalogScanDriverType.PackageAssetToCsv,
+                DriverType = CatalogScanDriverType.PackageAssetToCsv,
                 DriverParameters = "parent-parameters",
-                ParsedState = CatalogIndexScanState.Created,
+                State = CatalogIndexScanState.Created,
                 Min = DateTimeOffset.Parse("2020-01-01T00:00:00Z"),
                 Max = DateTimeOffset.Parse("2020-01-02T00:00:00Z"),
             };
@@ -103,8 +103,8 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
                 storageSuffix: "flclsstoragesuffix",
                 parentScanMessage: new CatalogIndexScanMessage
                 {
-                    CursorName = parentScan.CursorName,
-                    ScanId = parentScan.ScanId,
+                    CursorName = parentScan.GetCursorName(),
+                    ScanId = parentScan.GetScanId(),
                 },
                 min0,
                 max1);

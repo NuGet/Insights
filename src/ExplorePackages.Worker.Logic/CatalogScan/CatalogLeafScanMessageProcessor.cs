@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Azure;
 using Microsoft.Extensions.Logging;
-using Microsoft.WindowsAzure.Storage;
 
 namespace Knapcode.ExplorePackages.Worker
 {
@@ -118,7 +118,7 @@ namespace Knapcode.ExplorePackages.Worker
                     pageGroup.Key.PageId,
                     leafIdToMessage.Keys);
             }
-            catch (StorageException ex) when (ex.RequestInformation?.HttpStatusCode == (int)HttpStatusCode.NotFound)
+            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
             {
                 // Handle the missing table case.
                 noMatchingScan.AddRange(pageGroup);
@@ -165,10 +165,10 @@ namespace Knapcode.ExplorePackages.Worker
                     }
                 }
 
-                if (!driverTypeToProcess.TryGetValue(scan.ParsedDriverType, out var toProcess))
+                if (!driverTypeToProcess.TryGetValue(scan.DriverType, out var toProcess))
                 {
                     toProcess = new List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan)>();
-                    driverTypeToProcess.Add(scan.ParsedDriverType, toProcess);
+                    driverTypeToProcess.Add(scan.DriverType, toProcess);
                 }
 
                 toProcess.Add((message, scan));
@@ -246,7 +246,7 @@ namespace Knapcode.ExplorePackages.Worker
             foreach ((var message, var scan) in toProcess)
             {
                 // Rebuild the driver for each message, to minimize interactions.
-                var nonBatchDriver = _driverFactory.CreateNonBatchDriver(scan.ParsedDriverType);
+                var nonBatchDriver = _driverFactory.CreateNonBatchDriver(scan.DriverType);
 
                 _logger.LogInformation("Attempting catalog leaf scan.");
 

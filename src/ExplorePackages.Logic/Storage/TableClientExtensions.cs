@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Globalization;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using System.Threading.Tasks;
 using Azure;
@@ -21,18 +23,54 @@ namespace Knapcode.ExplorePackages
             }
         }
 
+        public static async Task<bool> ExistsAsync(this TableClient table)
+        {
+            try
+            {
+                await table
+                    .QueryAsync<TableEntity>(x => true, maxPerPage: 1, select: new[] { StorageUtility.PartitionKey })
+                    .FirstAsync();
+                return true;
+            }
+            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
+            {
+                return false;
+            }
+        }
+
+        public static async Task DeleteEntityAsync<T>(this TableClient table, T entity, ETag ifMatch) where T : class, ITableEntity, new()
+        {
+            await table.DeleteEntityAsync(entity.PartitionKey, entity.RowKey, ifMatch);
+        }
+
         public static async Task<int> GetEntityCountLowerBoundAsync(this TableClient table, string partitionKey, QueryLoopMetrics metrics)
+        {
+            return await GetEntityCountLowerBoundAsync<TableEntity>(
+                table,
+                x => x.PartitionKey == partitionKey,
+                metrics);
+        }
+
+        public static async Task<int> GetEntityCountLowerBoundAsync(this TableClient table, string minPartitionKey, string maxPartitionKey, QueryLoopMetrics metrics)
+        {
+            return await GetEntityCountLowerBoundAsync<TableEntity>(
+                table,
+                x => x.PartitionKey.CompareTo(minPartitionKey) >= 0 && x.PartitionKey.CompareTo(maxPartitionKey) <= 0,
+                metrics);
+        }
+
+        private static async Task<int> GetEntityCountLowerBoundAsync<T>(TableClient table, Expression<Func<T, bool>> filter, QueryLoopMetrics metrics)
+            where T : class, ITableEntity, new()
         {
             using (metrics)
             {
-                var pages = table
-                    .QueryAsync<TableEntity>(
-                        filter: x => x.PartitionKey == partitionKey,
+                await using var enumerator = table
+                    .QueryAsync<T>(
+                        filter,
                         maxPerPage: 1000,
                         select: new[] { StorageUtility.RowKey })
-                    .AsPages();
-
-                await using var enumerator = pages.GetAsyncEnumerator();
+                    .AsPages()
+                    .GetAsyncEnumerator();
 
                 if (await enumerator.MoveNextAsync(metrics))
                 {

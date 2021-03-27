@@ -10,7 +10,7 @@
 
     string statusText = null;
     string statusTitle = null;
-    if (Model.LatestScans.Any(x => x.ParsedState != CatalogIndexScanState.Complete))
+    if (Model.LatestScans.Any(x => x.State != CatalogIndexScanState.Complete))
     {
         statusText = "⌛";
         statusTitle = "A catalog scan is running.";
@@ -83,8 +83,8 @@
             @foreach (var scan in Model.LatestScans)
             {
                 <tr>
-                    <td>@scan.ScanId</td>
-                    <td>@scan.ParsedState</td>
+                    <td>@scan.GetScanId()</td>
+                    <td>@scan.State</td>
                     <td>@scan.Min?.ToZulu()</td>
                     <td>@scan.Max?.ToZulu()</td>
                     <td>

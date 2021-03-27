@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
+using Azure.Data.Tables.Models;
 using Azure.Storage.Queues.Models;
 using Knapcode.ExplorePackages.WideEntities;
 using Microsoft.Extensions.DependencyInjection;
@@ -153,7 +154,6 @@ namespace Knapcode.ExplorePackages.Worker
             var blobServiceClient = await NewServiceClientFactory.GetBlobServiceClientAsync();
             var queueServiceClient = await NewServiceClientFactory.GetQueueServiceClientAsync();
             var tableServiceClient = await NewServiceClientFactory.GetTableServiceClientAsync();
-            var oldTableClient = ServiceClientFactory.GetStorageAccount().CreateCloudTableClient();
 
             var containers = await blobServiceClient.GetBlobContainersAsync(prefix: StoragePrefix).ToListAsync();
             Assert.Equal(
@@ -181,10 +181,13 @@ namespace Knapcode.ExplorePackages.Worker
                 Assert.Equal(0, properties.ApproximateMessagesCount);
             }
 
-            var tables = await oldTableClient.ListTablesAsync(StoragePrefix);
+            var prefixQuery = TableClient.CreateQueryFilter<TableItem>(
+                x => x.TableName.CompareTo(StoragePrefix) >= 0
+                  && x.TableName.CompareTo(StoragePrefix + char.MaxValue) <= 0);
+            var tables = await tableServiceClient.GetTablesAsync(prefixQuery).ToListAsync();
             Assert.Equal(
                 GetExpectedTableNames().Concat(new[] { Options.Value.CursorTableName, Options.Value.CatalogIndexScanTableName }).OrderBy(x => x).ToArray(),
-                tables.Select(x => x.Name).ToArray());
+                tables.Select(x => x.TableName).ToArray());
 
             var cursors = await tableServiceClient
                 .GetTableClient(Options.Value.CursorTableName)
@@ -194,9 +197,10 @@ namespace Knapcode.ExplorePackages.Worker
                 GetExpectedCursorNames().OrderBy(x => x).ToArray(),
                 cursors.Select(x => x.GetName()).ToArray());
 
-            var catalogIndexScans = await oldTableClient
-                .GetTableReference(Options.Value.CatalogIndexScanTableName)
-                .GetEntitiesAsync<CatalogIndexScan>(TelemetryClient.StartQueryLoopMetrics());
+            var catalogIndexScans = await tableServiceClient
+                .GetTableClient(Options.Value.CatalogIndexScanTableName)
+                .QueryAsync<CatalogIndexScan>()
+                .ToListAsync();
             Assert.Equal(
                 ExpectedCatalogIndexScans.Select(x => (x.PartitionKey, x.RowKey)).OrderBy(x => x).ToArray(),
                 catalogIndexScans.Select(x => (x.PartitionKey, x.RowKey)).ToArray());

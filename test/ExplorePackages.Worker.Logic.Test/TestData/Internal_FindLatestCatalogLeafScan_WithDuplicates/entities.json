@@ -1,8 +1,5 @@
 [
   {
-    "LeafId": "0.9.1-beta",
-    "ParsedDriverType": "PackageAssetToCsv",
-    "ParsedLeafType": "PackageDetails",
     "StorageSuffix": "parentstoragesuffix",
     "Created": "2020-01-03T00:00:00+00:00",
     "DriverType": "PackageAssetToCsv",
@@ -20,12 +17,9 @@
     "PartitionKey": "parent-scan-id-akinzekeel.blazorgrid.abstractions",
     "RowKey": "0.9.1-beta",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": {}
   },
   {
-    "LeafId": "3.1.49",
-    "ParsedDriverType": "PackageAssetToCsv",
-    "ParsedLeafType": "PackageDetails",
     "StorageSuffix": "parentstoragesuffix",
     "Created": "2020-01-03T00:00:00+00:00",
     "DriverType": "PackageAssetToCsv",
@@ -43,12 +37,9 @@
     "PartitionKey": "parent-scan-id-ambientservices",
     "RowKey": "3.1.49",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": {}
   },
   {
-    "LeafId": "1.0.4-ci-20201127-220435",
-    "ParsedDriverType": "PackageAssetToCsv",
-    "ParsedLeafType": "PackageDetails",
     "StorageSuffix": "parentstoragesuffix",
     "Created": "2020-01-03T00:00:00+00:00",
     "DriverType": "PackageAssetToCsv",
@@ -66,12 +57,9 @@
     "PartitionKey": "parent-scan-id-aptacode.pathfinder",
     "RowKey": "1.0.4-ci-20201127-220435",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": {}
   },
   {
-    "LeafId": "1.1.3",
-    "ParsedDriverType": "PackageAssetToCsv",
-    "ParsedLeafType": "PackageDetails",
     "StorageSuffix": "parentstoragesuffix",
     "Created": "2020-01-03T00:00:00+00:00",
     "DriverType": "PackageAssetToCsv",
@@ -89,12 +77,9 @@
     "PartitionKey": "parent-scan-id-dnt.deskly.efcore.services",
     "RowKey": "1.1.3",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": {}
   },
   {
-    "LeafId": "0.1.0",
-    "ParsedDriverType": "PackageAssetToCsv",
-    "ParsedLeafType": "PackageDetails",
     "StorageSuffix": "parentstoragesuffix",
     "Created": "2020-01-03T00:00:00+00:00",
     "DriverType": "PackageAssetToCsv",
@@ -112,12 +97,9 @@
     "PartitionKey": "parent-scan-id-dogged",
     "RowKey": "0.1.0",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": {}
   },
   {
-    "LeafId": "0.1.0",
-    "ParsedDriverType": "PackageAssetToCsv",
-    "ParsedLeafType": "PackageDetails",
     "StorageSuffix": "parentstoragesuffix",
     "Created": "2020-01-03T00:00:00+00:00",
     "DriverType": "PackageAssetToCsv",
@@ -135,12 +117,9 @@
     "PartitionKey": "parent-scan-id-dogged.native",
     "RowKey": "0.1.0",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": {}
   },
   {
-    "LeafId": "1.0.0",
-    "ParsedDriverType": "PackageAssetToCsv",
-    "ParsedLeafType": "PackageDetails",
     "StorageSuffix": "parentstoragesuffix",
     "Created": "2020-01-03T00:00:00+00:00",
     "DriverType": "PackageAssetToCsv",
@@ -158,12 +137,9 @@
     "PartitionKey": "parent-scan-id-esolutions.alexandria.logic",
     "RowKey": "1.0.0",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": {}
   },
   {
-    "LeafId": "1.0.1",
-    "ParsedDriverType": "PackageAssetToCsv",
-    "ParsedLeafType": "PackageDetails",
     "StorageSuffix": "parentstoragesuffix",
     "Created": "2020-01-03T00:00:00+00:00",
     "DriverType": "PackageAssetToCsv",
@@ -181,12 +157,9 @@
     "PartitionKey": "parent-scan-id-gosms.ge-sms-api",
     "RowKey": "1.0.1",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": {}
   },
   {
-    "LeafId": "0.2.1",
-    "ParsedDriverType": "PackageAssetToCsv",
-    "ParsedLeafType": "PackageDetails",
     "StorageSuffix": "parentstoragesuffix",
     "Created": "2020-01-03T00:00:00+00:00",
     "DriverType": "PackageAssetToCsv",
@@ -204,6 +177,6 @@
     "PartitionKey": "parent-scan-id-p6m7g8.p6namer",
     "RowKey": "0.2.1",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": {}
   }
 ]

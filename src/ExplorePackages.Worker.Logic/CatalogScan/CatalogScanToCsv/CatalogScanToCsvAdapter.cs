@@ -48,8 +48,8 @@ namespace Knapcode.ExplorePackages.Worker
             var messages = buckets
                 .Select(b => new CsvExpandReprocessMessage<T>
                 {
-                    CursorName = indexScan.CursorName,
-                    ScanId = indexScan.ScanId,
+                    CursorName = indexScan.GetCursorName(),
+                    ScanId = indexScan.GetScanId(),
                     Bucket = b,
                     TaskStateKey = new TaskStateKey(
                         indexScan.StorageSuffix,
@@ -110,12 +110,12 @@ namespace Knapcode.ExplorePackages.Worker
 
         private static string GetCustomExpandPartitionKey(CatalogIndexScan indexScan)
         {
-            return $"{indexScan.ScanId}-{nameof(CatalogScanToCsvAdapter<T>)}-custom-expand";
+            return $"{indexScan.GetScanId()}-{nameof(CatalogScanToCsvAdapter<T>)}-custom-expand";
         }
 
         private static string GetAggregateTasksPartitionKey(CatalogIndexScan indexScan)
         {
-            return $"{indexScan.ScanId}-{nameof(CatalogScanToCsvAdapter<T>)}-aggregate";
+            return $"{indexScan.GetScanId()}-{nameof(CatalogScanToCsvAdapter<T>)}-aggregate";
         }
 
         public async Task FinalizeAsync(CatalogIndexScan indexScan)

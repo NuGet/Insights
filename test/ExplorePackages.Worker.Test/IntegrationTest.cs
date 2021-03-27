@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Azure.Storage.Queues.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.WindowsAzure.Storage.Queue;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -35,7 +34,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             await serviceProvider
                 .GetRequiredService<Functions>()
-                .WorkerQueueAsync(new CloudQueueMessage(message.Body.ToString()));
+                .WorkerQueueAsync(new Microsoft.WindowsAzure.Storage.Queue.CloudQueueMessage(message.Body.ToString()));
         }
 
         public class CanRunTimersAsync : IntegrationTest
@@ -139,7 +138,7 @@ namespace Knapcode.ExplorePackages.Worker
                     async () =>
                     {
                         var indexScans = await CatalogScanStorageService.GetIndexScansAsync();
-                        if (indexScans.All(x => x.ParsedState == CatalogIndexScanState.Complete))
+                        if (indexScans.All(x => x.State == CatalogIndexScanState.Complete))
                         {
                             return true;
                         }
@@ -157,10 +156,10 @@ namespace Knapcode.ExplorePackages.Worker
 
                 // Make sure all scans completed.
                 var indexScans = await CatalogScanStorageService.GetIndexScansAsync();
-                Assert.All(indexScans, x => Assert.Equal(CatalogIndexScanState.Complete, x.ParsedState));
+                Assert.All(indexScans, x => Assert.Equal(CatalogIndexScanState.Complete, x.State));
                 Assert.Equal(
                     CatalogScanCursorService.StartableDriverTypes.ToArray(),
-                    indexScans.Select(x => x.ParsedDriverType).OrderBy(x => x).ToArray());
+                    indexScans.Select(x => x.DriverType).OrderBy(x => x).ToArray());
             }
         }
 

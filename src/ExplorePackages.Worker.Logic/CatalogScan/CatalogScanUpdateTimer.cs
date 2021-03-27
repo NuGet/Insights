@@ -39,7 +39,7 @@ namespace Knapcode.ExplorePackages.Worker
         public async Task<bool> IsRunningAsync()
         {
             var indexScans = await _catalogScanStorageService.GetIndexScansAsync();
-            return indexScans.Any(x => x.ParsedState != CatalogIndexScanState.Complete);
+            return indexScans.Any(x => x.State != CatalogIndexScanState.Complete);
         }
     }
 }

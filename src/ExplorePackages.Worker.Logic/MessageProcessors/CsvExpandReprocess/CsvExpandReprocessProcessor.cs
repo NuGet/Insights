@@ -57,12 +57,12 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             var reprocessLeaves = items
-                .Select(x => new CatalogLeafScan(indexScan.StorageSuffix, indexScan.ScanId, GetPageId(x.PackageId), GetLeafId(x.PackageVersion))
+                .Select(x => new CatalogLeafScan(indexScan.StorageSuffix, indexScan.GetScanId(), GetPageId(x.PackageId), GetLeafId(x.PackageVersion))
                 {
-                    ParsedDriverType = indexScan.ParsedDriverType,
+                    DriverType = indexScan.DriverType,
                     DriverParameters = indexScan.DriverParameters,
                     Url = x.Url,
-                    ParsedLeafType = x.Type,
+                    LeafType = x.Type,
                     CommitId = x.CommitId,
                     CommitTimestamp = x.CommitTimestamp,
                     PackageId = x.PackageId,

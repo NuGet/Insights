@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
-using Azure.Data.Tables.Models;
 using Xunit;
 using Xunit.Abstractions;
 

@@ -1,11 +1,16 @@
 ﻿using System;
-using Microsoft.WindowsAzure.Storage.Table;
+using Azure;
+using Azure.Data.Tables;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class CatalogIndexScan : TableEntity
+    public class CatalogIndexScan : ITableEntity
     {
-        public CatalogIndexScan(string cursorName, string scanId, string storageSuffix) : this()
+        public CatalogIndexScan()
+        {
+        }
+
+        public CatalogIndexScan(string cursorName, string scanId, string storageSuffix)
         {
             PartitionKey = cursorName ?? throw new ArgumentNullException(nameof(cursorName)); // empty string is allowed
             RowKey = scanId;
@@ -13,41 +18,30 @@ namespace Knapcode.ExplorePackages.Worker
             Created = DateTimeOffset.UtcNow;
         }
 
-        public CatalogIndexScan()
+        public string GetCursorName()
         {
+            return PartitionKey;
         }
 
-        [IgnoreProperty]
-        public string CursorName => PartitionKey;
-
-        [IgnoreProperty]
-        public string ScanId => RowKey;
-
-        [IgnoreProperty]
-        public CatalogIndexScanState ParsedState
+        public string GetScanId()
         {
-            get => Enum.Parse<CatalogIndexScanState>(State);
-            set => State = value.ToString();
+            return RowKey;
         }
 
-        [IgnoreProperty]
-        public CatalogScanDriverType ParsedDriverType
+        public CatalogIndexScanResult? GetResult()
         {
-            get => Enum.Parse<CatalogScanDriverType>(DriverType);
-            set => DriverType = value.ToString();
+            return Result != null ? Enum.Parse<CatalogIndexScanResult>(Result) : null;
         }
 
-        [IgnoreProperty]
-        public CatalogIndexScanResult? ParsedResult
+        public void SetResult(CatalogIndexScanResult result)
         {
-            get => Result != null ? Enum.Parse<CatalogIndexScanResult>(Result) : null;
-            set => Result = value.ToString();
+            Result = result.ToString();
         }
 
         public string StorageSuffix { get; set; }
         public DateTimeOffset Created { get; set; }
-        public string State { get; set; }
-        public string DriverType { get; set; }
+        public CatalogIndexScanState State { get; set; }
+        public CatalogScanDriverType DriverType { get; set; }
         public string DriverParameters { get; set; }
         public DateTimeOffset? Min { get; set; }
         public DateTimeOffset? Max { get; set; }
@@ -55,5 +49,10 @@ namespace Knapcode.ExplorePackages.Worker
         public string Result { get; set; }
         public DateTimeOffset? Completed { get; set; }
         public bool ContinueUpdate { get; set; }
+
+        public string PartitionKey { get; set; }
+        public string RowKey { get; set; }
+        public DateTimeOffset? Timestamp { get; set; }
+        public ETag ETag { get; set; }
     }
 }

@@ -38,7 +38,7 @@ namespace Knapcode.ExplorePackages.Worker
                 return;
             }
 
-            var drvier = _driverFactory.Create(scan.ParsedDriverType);
+            var drvier = _driverFactory.Create(scan.DriverType);
 
             var result = await drvier.ProcessPageAsync(scan);
 
@@ -63,34 +63,34 @@ namespace Knapcode.ExplorePackages.Worker
             var lazyLeafScansTask = new Lazy<Task<List<CatalogLeafScan>>>(() => InitializeLeavesAsync(scan, excludeRedundantLeaves));
 
             // Created: no-op
-            if (scan.ParsedState == CatalogPageScanState.Created)
+            if (scan.State == CatalogPageScanState.Created)
             {
-                scan.ParsedState = CatalogPageScanState.Expanding;
+                scan.State = CatalogPageScanState.Expanding;
                 await _storageService.ReplaceAsync(scan);
             }
 
             // Expanding: create a record for each leaf
-            if (scan.ParsedState == CatalogPageScanState.Expanding)
+            if (scan.State == CatalogPageScanState.Expanding)
             {
                 var leafScans = await lazyLeafScansTask.Value;
-                await InsertLeafScansAsync(scan.StorageSuffix, scan.ScanId, scan.PageId, leafScans);
+                await InsertLeafScansAsync(scan.StorageSuffix, scan.GetScanId(), scan.GetPageId(), leafScans);
 
-                scan.ParsedState = CatalogPageScanState.Enqueuing;
+                scan.State = CatalogPageScanState.Enqueuing;
                 await _storageService.ReplaceAsync(scan);
             }
 
             // Enqueueing: enqueue a message for each leaf
-            if (scan.ParsedState == CatalogPageScanState.Enqueuing)
+            if (scan.State == CatalogPageScanState.Enqueuing)
             {
                 var leafScans = await lazyLeafScansTask.Value;
                 await _expandService.EnqueueLeafScansAsync(leafScans);
 
-                scan.ParsedState = CatalogPageScanState.Complete;
+                scan.State = CatalogPageScanState.Complete;
                 await _storageService.ReplaceAsync(scan);
             }
 
             // Complete -> Deleted
-            if (scan.ParsedState == CatalogPageScanState.Complete)
+            if (scan.State == CatalogPageScanState.Complete)
             {
                 await _storageService.DeleteAsync(scan);
             }
@@ -134,14 +134,14 @@ namespace Knapcode.ExplorePackages.Worker
                 .OrderBy(x => leafItemToRank[x])
                 .Select(x => new CatalogLeafScan(
                     scan.StorageSuffix,
-                    scan.ScanId,
-                    scan.PageId,
+                    scan.GetScanId(),
+                    scan.GetPageId(),
                     "L" + leafItemToRank[x].ToString(CultureInfo.InvariantCulture).PadLeft(10, '0'))
                 {
-                    ParsedDriverType = scan.ParsedDriverType,
+                    DriverType = scan.DriverType,
                     DriverParameters = scan.DriverParameters,
                     Url = x.Url,
-                    ParsedLeafType = x.Type,
+                    LeafType = x.Type,
                     CommitId = x.CommitId,
                     CommitTimestamp = x.CommitTimestamp,
                     PackageId = x.PackageId,

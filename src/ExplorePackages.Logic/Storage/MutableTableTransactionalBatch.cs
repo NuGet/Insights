@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
-using Azure.Data.Tables.Models;
 
 namespace Knapcode.ExplorePackages
 {
@@ -48,7 +47,17 @@ namespace Knapcode.ExplorePackages
             Add(new TableTransactionalOperation(entity: null, x => x.DeleteEntity(rowKey, ifMatch)));
         }
 
-        public async Task<Response<TableBatchResponse>> SubmitBatchAsync()
+        public async Task SubmitBatchIfNotEmptyAsync()
+        {
+            if (Count == 0)
+            {
+                return;
+            }
+
+            await SubmitBatchAsync();
+        }
+
+        public async Task SubmitBatchAsync()
         {
             if (Count == 0)
             {
@@ -70,8 +79,6 @@ namespace Knapcode.ExplorePackages
                     operation.Entity.UpdateETagAndTimestamp(entityResponse);
                 }
             }
-
-            return batchResponse;
         }
 
         public void UpdateEntity<T>(T entity, ETag ifMatch, TableUpdateMode mode) where T : class, ITableEntity, new()

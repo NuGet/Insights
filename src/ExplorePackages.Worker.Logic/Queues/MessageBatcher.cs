@@ -42,11 +42,11 @@ namespace Knapcode.ExplorePackages.Worker
                         clsm.ScanId,
                         clsm.PageId,
                         clsm.LeafId);
-                    if (catalogLeafScan.ParsedDriverType == CatalogScanDriverType.NuGetPackageExplorerToCsv)
+                    if (catalogLeafScan.DriverType == CatalogScanDriverType.NuGetPackageExplorerToCsv)
                     {
                         batchSize = 1;
                     }
-                    else if (catalogLeafScan.ParsedDriverType == CatalogScanDriverType.PackageAssemblyToCsv)
+                    else if (catalogLeafScan.DriverType == CatalogScanDriverType.PackageAssemblyToCsv)
                     {
                         batchSize = 10;
                     }

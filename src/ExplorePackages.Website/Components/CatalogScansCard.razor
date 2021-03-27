@@ -10,7 +10,7 @@
 
     string statusText = null;
     string statusTitle = null;
-    if (Model.CatalogScans.SelectMany(x => x.LatestScans).Any(x => x.ParsedState != CatalogIndexScanState.Complete))
+    if (Model.CatalogScans.SelectMany(x => x.LatestScans).Any(x => x.State != CatalogIndexScanState.Complete))
     {
         statusText = "⌛";
         statusTitle = "A catalog scan is running.";

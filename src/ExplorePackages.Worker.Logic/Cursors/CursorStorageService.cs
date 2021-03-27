@@ -48,7 +48,8 @@ namespace Knapcode.ExplorePackages.Worker
         {
             var table = await GetTableAsync();
             _logger.LogInformation("Updating cursor {Name} to timestamp {NewValue:O}.", cursor.GetName(), cursor.Value);
-            await table.UpdateEntityAsync(cursor, cursor.ETag);
+            var response = await table.UpdateEntityAsync(cursor, cursor.ETag);
+            cursor.UpdateETagAndTimestamp(response);
         }
 
         private async Task<TableClient> GetTableAsync()

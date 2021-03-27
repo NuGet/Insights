@@ -26,7 +26,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             // Assert
             Assert.Equal(CatalogScanServiceResultType.AlreadyRunning, result.Type);
-            Assert.Equal(first.Scan.ScanId, result.Scan.ScanId);
+            Assert.Equal(first.Scan.GetScanId(), result.Scan.GetScanId());
         }
 
         [Fact]

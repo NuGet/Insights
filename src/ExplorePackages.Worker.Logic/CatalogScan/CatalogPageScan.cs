@@ -1,10 +1,15 @@
 ﻿using System;
-using Microsoft.WindowsAzure.Storage.Table;
+using Azure;
+using Azure.Data.Tables;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class CatalogPageScan : TableEntity
+    public class CatalogPageScan : ITableEntity
     {
+        public CatalogPageScan()
+        {
+        }
+
         public CatalogPageScan(string storageSuffix, string scanId, string pageId)
         {
             StorageSuffix = storageSuffix;
@@ -13,38 +18,29 @@ namespace Knapcode.ExplorePackages.Worker
             Created = DateTimeOffset.UtcNow;
         }
 
-        public CatalogPageScan()
+        public string GetScanId()
         {
+            return PartitionKey;
         }
 
-        [IgnoreProperty]
-        public string ScanId => PartitionKey;
-
-        [IgnoreProperty]
-        public string PageId => RowKey;
-
-        [IgnoreProperty]
-        public CatalogPageScanState ParsedState
+        public string GetPageId()
         {
-            get => Enum.Parse<CatalogPageScanState>(State);
-            set => State = value.ToString();
-        }
-
-        [IgnoreProperty]
-        public CatalogScanDriverType ParsedDriverType
-        {
-            get => Enum.Parse<CatalogScanDriverType>(DriverType);
-            set => DriverType = value.ToString();
+            return RowKey;
         }
 
         public string StorageSuffix { get; set; }
         public DateTimeOffset Created { get; set; }
-        public string State { get; set; }
-        public string DriverType { get; set; }
+        public CatalogPageScanState State { get; set; }
+        public CatalogScanDriverType DriverType { get; set; }
         public string DriverParameters { get; set; }
         public DateTimeOffset Min { get; set; }
         public DateTimeOffset Max { get; set; }
         public string Url { get; set; }
         public int Rank { get; set; }
+
+        public string PartitionKey { get; set; }
+        public string RowKey { get; set; }
+        public DateTimeOffset? Timestamp { get; set; }
+        public ETag ETag { get; set; }
     }
 }

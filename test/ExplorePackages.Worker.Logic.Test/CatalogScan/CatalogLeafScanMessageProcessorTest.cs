@@ -21,10 +21,10 @@ namespace Knapcode.ExplorePackages.Worker
                 // Arrange
                 var scans = new[]
                 {
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { ParsedDriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
                 };
                 await InitializeScansAsync(scans);
                 var messages = MakeMessages(scans);
@@ -43,10 +43,10 @@ namespace Knapcode.ExplorePackages.Worker
                 // Arrange
                 var scans = new[]
                 {
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { ParsedDriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
                 };
                 await InitializeScansAsync(scans);
                 var messages = MakeMessages(scans);
@@ -72,10 +72,10 @@ namespace Knapcode.ExplorePackages.Worker
                 // Arrange
                 var scans = new[]
                 {
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { ParsedDriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
                 };
                 await InitializeScansAsync(scans);
                 var messages = MakeMessages(scans);
@@ -99,10 +99,10 @@ namespace Knapcode.ExplorePackages.Worker
                 // Arrange
                 var scans = new[]
                 {
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { ParsedDriverType = DriverType, AttemptCount = 11 },
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { ParsedDriverType = DriverType, AttemptCount = 11 },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { ParsedDriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType, AttemptCount = 11 },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType, AttemptCount = 11 },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
                 };
                 await InitializeScansAsync(scans);
                 var messages = MakeMessages(scans);
@@ -112,7 +112,7 @@ namespace Knapcode.ExplorePackages.Worker
 
                 // Assert
                 AssertProcessedScans(scans.Where(x => x.AttemptCount <= 10).ToList());
-                await AssertPoisonAsync(result, scans, messages);
+                await AssertPoisonAsync(result, messages);
             }
 
             [Fact]
@@ -121,10 +121,10 @@ namespace Knapcode.ExplorePackages.Worker
                 // Arrange
                 var scans = new[]
                 {
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { ParsedDriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
                 };
                 await InitializeScansAsync(scans.Skip(2).ToList());
                 var messages = MakeMessages(scans);
@@ -143,10 +143,10 @@ namespace Knapcode.ExplorePackages.Worker
                 // Arrange
                 var scans = new[]
                 {
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { ParsedDriverType = DriverType, NextAttempt = DateTimeOffset.UtcNow + TimeSpan.FromDays(7), },
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { ParsedDriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType, NextAttempt = DateTimeOffset.UtcNow + TimeSpan.FromDays(7), },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
                 };
                 await InitializeScansAsync(scans);
                 var messages = MakeMessages(scans);
@@ -183,7 +183,7 @@ namespace Knapcode.ExplorePackages.Worker
                 {
                     batchCount++;
                     MockBatchDriver.Verify(
-                        x => x.ProcessLeavesAsync(It.Is<IReadOnlyList<CatalogLeafScan>>(y => y.Select(z => z.LeafId).SequenceEqual(batch.Select(z => z.LeafId)))),
+                        x => x.ProcessLeavesAsync(It.Is<IReadOnlyList<CatalogLeafScan>>(y => y.Select(z => z.GetLeafId()).SequenceEqual(batch.Select(z => z.GetLeafId())))),
                         Times.Once);
                 }
 
@@ -201,10 +201,10 @@ namespace Knapcode.ExplorePackages.Worker
                 // Arrange
                 var scans = new[]
                 {
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { ParsedDriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
                 };
                 await InitializeScansAsync(scans);
                 var messages = MakeMessages(scans);
@@ -223,16 +223,16 @@ namespace Knapcode.ExplorePackages.Worker
                 // Arrange
                 var scans = new[]
                 {
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { ParsedDriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
                 };
                 await InitializeScansAsync(scans);
                 var messages = MakeMessages(scans);
 
                 MockNonBatchDriver
-                    .Setup(x => x.ProcessLeafAsync(It.Is<CatalogLeafScan>(l => l.LeafId == scans[0].LeafId)))
+                    .Setup(x => x.ProcessLeafAsync(It.Is<CatalogLeafScan>(l => l.GetLeafId() == scans[0].GetLeafId())))
                     .ReturnsAsync(DriverResult.TryAgainLater());
 
                 // Act
@@ -249,16 +249,16 @@ namespace Knapcode.ExplorePackages.Worker
                 // Arrange
                 var scans = new[]
                 {
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { ParsedDriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
                 };
                 await InitializeScansAsync(scans);
                 var messages = MakeMessages(scans);
 
                 MockNonBatchDriver
-                    .Setup(x => x.ProcessLeafAsync(It.Is<CatalogLeafScan>(l => l.LeafId == scans[0].LeafId)))
+                    .Setup(x => x.ProcessLeafAsync(It.Is<CatalogLeafScan>(l => l.GetLeafId() == scans[0].GetLeafId())))
                     .ThrowsAsync(new InvalidOperationException("Oops, this scan failed for some reason."));
 
                 // Act
@@ -275,10 +275,10 @@ namespace Knapcode.ExplorePackages.Worker
                 // Arrange
                 var scans = new[]
                 {
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { ParsedDriverType = DriverType, AttemptCount = 11 },
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { ParsedDriverType = DriverType, AttemptCount = 11 },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { ParsedDriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType, AttemptCount = 11 },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType, AttemptCount = 11 },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
                 };
                 await InitializeScansAsync(scans);
                 var messages = MakeMessages(scans);
@@ -288,7 +288,7 @@ namespace Knapcode.ExplorePackages.Worker
 
                 // Assert
                 AssertProcessedScansOneByOne(scans.Where(x => x.AttemptCount <= 10).ToList());
-                await AssertPoisonAsync(result, scans, messages);
+                await AssertPoisonAsync(result, messages);
             }
 
             [Fact]
@@ -297,10 +297,10 @@ namespace Knapcode.ExplorePackages.Worker
                 // Arrange
                 var scans = new[]
                 {
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { ParsedDriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
                 };
                 await InitializeScansAsync(scans.Skip(2).ToList());
                 var messages = MakeMessages(scans);
@@ -319,10 +319,10 @@ namespace Knapcode.ExplorePackages.Worker
                 // Arrange
                 var scans = new[]
                 {
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { ParsedDriverType = DriverType, NextAttempt = DateTimeOffset.UtcNow + TimeSpan.FromDays(7), },
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { ParsedDriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { ParsedDriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType, NextAttempt = DateTimeOffset.UtcNow + TimeSpan.FromDays(7), },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
                 };
                 await InitializeScansAsync(scans);
                 var messages = MakeMessages(scans);
@@ -339,7 +339,7 @@ namespace Knapcode.ExplorePackages.Worker
             {
                 foreach (var scan in scans)
                 {
-                    MockNonBatchDriver.Verify(x => x.ProcessLeafAsync(It.Is<CatalogLeafScan>(l => l.LeafId == scan.LeafId)), Times.Once);
+                    MockNonBatchDriver.Verify(x => x.ProcessLeafAsync(It.Is<CatalogLeafScan>(l => l.GetLeafId() == scan.GetLeafId())), Times.Once);
                 }
 
                 MockNonBatchDriver.Verify(x => x.ProcessLeafAsync(It.IsAny<CatalogLeafScan>()), Times.Exactly(scans.Count));
@@ -391,12 +391,12 @@ namespace Knapcode.ExplorePackages.Worker
             Assert.Empty(MockMessageEnqueuer.Invocations);
             Assert.Empty(result.Failed);
             (var actualNotBefore, var tryAgainLater) = Assert.Single(result.TryAgainLater);
-            Assert.Equal(scan.LeafId, Assert.Single(tryAgainLater).LeafId);
+            Assert.Equal(scan.GetLeafId(), Assert.Single(tryAgainLater).LeafId);
             Assert.Equal(expectedNotBefore, actualNotBefore);
             Assert.Equal(1, await CatalogScanStorageService.GetLeafScanCountLowerBoundAsync(StorageSuffixA, ScanId));
             Assert.Equal(0, await CatalogScanStorageService.GetLeafScanCountLowerBoundAsync(StorageSuffixB, ScanId));
             var remaining = Assert.Single(await CatalogScanStorageService.GetLeafScansAsync(StorageSuffixA, ScanId, PageId));
-            Assert.Equal(scan.LeafId, remaining.LeafId);
+            Assert.Equal(scan.GetLeafId(), remaining.GetLeafId());
             Assert.Equal(0, remaining.AttemptCount);
             Assert.True(remaining.NextAttempt.Value < DateTimeOffset.UtcNow);
         }
@@ -404,17 +404,17 @@ namespace Knapcode.ExplorePackages.Worker
         private async Task AssertFailureAsync(BatchMessageProcessorResult<CatalogLeafScanMessage> result, CatalogLeafScan scan)
         {
             Assert.Empty(MockMessageEnqueuer.Invocations);
-            Assert.Equal(scan.LeafId, Assert.Single(result.Failed).LeafId);
+            Assert.Equal(scan.GetLeafId(), Assert.Single(result.Failed).LeafId);
             Assert.Empty(result.TryAgainLater);
             Assert.Equal(1, await CatalogScanStorageService.GetLeafScanCountLowerBoundAsync(StorageSuffixA, ScanId));
             Assert.Equal(0, await CatalogScanStorageService.GetLeafScanCountLowerBoundAsync(StorageSuffixB, ScanId));
             var remaining = Assert.Single(await CatalogScanStorageService.GetLeafScansAsync(StorageSuffixA, ScanId, PageId));
-            Assert.Equal(scan.LeafId, remaining.LeafId);
+            Assert.Equal(scan.GetLeafId(), remaining.GetLeafId());
             Assert.Equal(1, remaining.AttemptCount);
             Assert.True(remaining.NextAttempt.Value > DateTimeOffset.UtcNow);
         }
 
-        private async Task AssertPoisonAsync(BatchMessageProcessorResult<CatalogLeafScanMessage> result, IEnumerable<CatalogLeafScan> scans, List<CatalogLeafScanMessage> messages)
+        private async Task AssertPoisonAsync(BatchMessageProcessorResult<CatalogLeafScanMessage> result, List<CatalogLeafScanMessage> messages)
         {
             Assert.Equal(2, MockMessageEnqueuer.Invocations.Count);
             MockMessageEnqueuer.Verify(
@@ -434,7 +434,7 @@ namespace Knapcode.ExplorePackages.Worker
             Assert.Empty(MockMessageEnqueuer.Invocations);
             Assert.Empty(result.Failed);
             Assert.Empty(result.TryAgainLater);
-            Assert.False(await CatalogScanStorageService.GetLeafScanTable(StorageSuffixA).ExistsAsync());
+            Assert.False(await (await CatalogScanStorageService.GetLeafScanTableAsync(StorageSuffixA)).ExistsAsync());
             Assert.Equal(0, await CatalogScanStorageService.GetLeafScanCountLowerBoundAsync(StorageSuffixB, ScanId));
         }
 
@@ -443,12 +443,12 @@ namespace Knapcode.ExplorePackages.Worker
             Assert.Empty(MockMessageEnqueuer.Invocations);
             Assert.Empty(result.Failed);
             (var actualNotBefore, var tryAgainLater) = Assert.Single(result.TryAgainLater);
-            Assert.Equal(scan.LeafId, Assert.Single(tryAgainLater).LeafId);
+            Assert.Equal(scan.GetLeafId(), Assert.Single(tryAgainLater).LeafId);
             Assert.Equal(TimeSpan.FromMinutes(5), actualNotBefore);
             Assert.Equal(1, await CatalogScanStorageService.GetLeafScanCountLowerBoundAsync(StorageSuffixA, ScanId));
             Assert.Equal(0, await CatalogScanStorageService.GetLeafScanCountLowerBoundAsync(StorageSuffixB, ScanId));
             var remaining = Assert.Single(await CatalogScanStorageService.GetLeafScansAsync(StorageSuffixA, ScanId, PageId));
-            Assert.Equal(scan.LeafId, remaining.LeafId);
+            Assert.Equal(scan.GetLeafId(), remaining.GetLeafId());
             Assert.Equal(0, remaining.AttemptCount);
             Assert.Equal(scan.NextAttempt, remaining.NextAttempt);
         }
@@ -470,7 +470,7 @@ namespace Knapcode.ExplorePackages.Worker
                 StorageSuffix = x.StorageSuffix,
                 ScanId = x.ScanId,
                 PageId = x.PageId,
-                LeafId = x.LeafId,
+                LeafId = x.GetLeafId(),
             }).ToList();
         }
 

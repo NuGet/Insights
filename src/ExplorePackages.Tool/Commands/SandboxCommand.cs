@@ -26,7 +26,7 @@ namespace Knapcode.ExplorePackages.Tool
     {
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly TaskStateStorageService _taskStateStorageService;
-        private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly NewServiceClientFactory _serviceClientFactory;
         private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
         private readonly ICatalogLeafToCsvDriver<NuGetPackageExplorerRecord> _driver;
         private readonly TableScanService<LatestPackageLeaf> _tableScanService;
@@ -34,7 +34,7 @@ namespace Knapcode.ExplorePackages.Tool
         public SandboxCommand(
             IMessageEnqueuer messageEnqueuer,
             TaskStateStorageService taskStateStorageService,
-            ServiceClientFactory serviceClientFactory,
+            NewServiceClientFactory serviceClientFactory,
             IRawMessageEnqueuer rawMessageEnqueuer,
             ICatalogLeafToCsvDriver<NuGetPackageExplorerRecord> driver,
             TableScanService<LatestPackageLeaf> tableScanService)
@@ -86,7 +86,8 @@ namespace Knapcode.ExplorePackages.Tool
 
             await _taskStateStorageService.GetOrAddAsync(taskStateKey);
 
-            var table = _serviceClientFactory.GetStorageAccount().CreateCloudTableClient().GetTableReference("latestpackageleavesps");
+            var tableName = "latestpackageleavesps";
+            var table = (await _serviceClientFactory.GetTableServiceClientAsync()).GetTableClient(tableName);
             await table.DeleteIfExistsAsync();
             await table.CreateIfNotExistsAsync(retry: true);
 
@@ -94,7 +95,7 @@ namespace Knapcode.ExplorePackages.Tool
             await _tableScanService.StartTableCopyAsync(
                 taskStateKey,
                 "latestpackageleaves",
-                table.Name,
+                tableName,
                 string.Empty,
                 TableScanStrategy.PrefixScan,
                 StorageUtility.MaxTakeCount,

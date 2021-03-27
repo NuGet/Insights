@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
-using Azure.Data.Tables.Models;
 using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.WideEntities
@@ -318,7 +317,7 @@ namespace Knapcode.ExplorePackages.WideEntities
                     }
 
                     // Execute the batch, now that it is within the size limit.
-                    TableBatchResponse response = await tableBatch.SubmitBatchAsync();
+                    await tableBatch.SubmitBatchAsync();
 
                     // Start a new batch with the table operations associated with this entity operation.
                     tableBatch.Clear();
@@ -329,10 +328,7 @@ namespace Knapcode.ExplorePackages.WideEntities
                 }
             }
 
-            if (tableBatch.Any())
-            {
-                await tableBatch.SubmitBatchAsync();
-            }
+            await tableBatch.SubmitBatchIfNotEmptyAsync();
 
             var output = new List<WideEntity>();
             foreach (var segments in segmentsList)

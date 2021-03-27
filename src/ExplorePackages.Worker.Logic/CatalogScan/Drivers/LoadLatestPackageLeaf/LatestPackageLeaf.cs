@@ -1,12 +1,15 @@
 ﻿using System;
 using Azure;
-using Azure.Data.Tables;
 using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf
 {
-    public class LatestPackageLeaf : ILatestPackageLeaf, ITableEntity
+    public class LatestPackageLeaf : ILatestPackageLeaf
     {
+        public LatestPackageLeaf()
+        {
+        }
+
         public LatestPackageLeaf(CatalogLeafItem item, int leafRank, int pageRank, string pageUrl)
         {
             PartitionKey = GetPartitionKey(item.PackageId);
@@ -20,10 +23,6 @@ namespace Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf
             LeafRank = leafRank;
             PageRank = pageRank;
             PageUrl = pageUrl;
-        }
-
-        public LatestPackageLeaf()
-        {
         }
 
         public string Url { get; set; }

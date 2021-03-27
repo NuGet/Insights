@@ -101,9 +101,9 @@ namespace Knapcode.ExplorePackages.Worker
             Assert.NotNull(indexScan);
             await ProcessQueueAsync(() => { }, async () =>
             {
-                indexScan = await CatalogScanStorageService.GetIndexScanAsync(indexScan.CursorName, indexScan.ScanId);
+                indexScan = await CatalogScanStorageService.GetIndexScanAsync(indexScan.GetCursorName(), indexScan.GetScanId());
 
-                if (indexScan.ParsedState != CatalogIndexScanState.Complete)
+                if (indexScan.State != CatalogIndexScanState.Complete)
                 {
                     await Task.Delay(TimeSpan.FromMilliseconds(100));
                     return false;

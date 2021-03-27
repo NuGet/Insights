@@ -47,16 +47,16 @@ namespace Knapcode.ExplorePackages.Worker
         {
             var cursorName = _cursorService.GetCursorName(driverType);
             var indexScan = await _storageService.GetIndexScanAsync(cursorName, scanId);
-            if (indexScan.ParsedState != CatalogIndexScanState.Working)
+            if (indexScan.State != CatalogIndexScanState.Working)
             {
                 return;
             }
 
-            var pageScans = await _storageService.GetPageScansAsync(indexScan.StorageSuffix, indexScan.ScanId);
+            var pageScans = await _storageService.GetPageScansAsync(indexScan.StorageSuffix, indexScan.GetScanId());
             var leafScans = new List<CatalogLeafScan>();
             foreach (var pageScan in pageScans)
             {
-                var pageLeafScans = await _storageService.GetLeafScansAsync(pageScan.StorageSuffix, pageScan.ScanId, pageScan.PageId);
+                var pageLeafScans = await _storageService.GetLeafScansAsync(pageScan.StorageSuffix, pageScan.GetScanId(), pageScan.GetPageId());
                 leafScans.AddRange(pageLeafScans);
             }
 
@@ -66,7 +66,7 @@ namespace Knapcode.ExplorePackages.Worker
                     StorageSuffix = x.StorageSuffix,
                     ScanId = x.ScanId,
                     PageId = x.PageId,
-                    LeafId = x.LeafId,
+                    LeafId = x.GetLeafId(),
                 })
                 .ToList());
 
@@ -74,8 +74,8 @@ namespace Knapcode.ExplorePackages.Worker
                 .Select(x => new CatalogPageScanMessage
                 {
                     StorageSuffix = x.StorageSuffix,
-                    ScanId = x.ScanId,
-                    PageId = x.PageId,
+                    ScanId = x.GetScanId(),
+                    PageId = x.GetPageId(),
                 })
                 .ToList());
 
@@ -83,8 +83,8 @@ namespace Knapcode.ExplorePackages.Worker
             {
                 new CatalogIndexScanMessage
                 {
-                    CursorName = indexScan.CursorName,
-                    ScanId = indexScan.ScanId,
+                    CursorName = indexScan.GetCursorName(),
+                    ScanId = indexScan.GetScanId(),
                 },
             });
         }
@@ -484,9 +484,9 @@ namespace Knapcode.ExplorePackages.Worker
             await _messageEnqueuer.EnqueueAsync(new[] { catalogIndexScanMessage });
             var catalogIndexScan = new CatalogIndexScan(cursorName, scanId, storageSuffix)
             {
-                ParsedDriverType = driverType,
+                DriverType = driverType,
                 DriverParameters = parameters,
-                ParsedState = CatalogIndexScanState.Created,
+                State = CatalogIndexScanState.Created,
                 Min = min,
                 Max = max,
                 ContinueUpdate = continueWithDependents,
@@ -498,8 +498,8 @@ namespace Knapcode.ExplorePackages.Worker
 
         private async Task<CatalogIndexScan> GetLatestIncompleteScanAsync(string cursorName)
         {
-            var latestScans = await _storageService.GetLatestIndexScansAsync(cursorName);
-            var incompleteScans = latestScans.Where(x => x.ParsedState != CatalogIndexScanState.Complete);
+            var latestScans = await _storageService.GetLatestIndexScansAsync(cursorName, maxEntities: 20);
+            var incompleteScans = latestScans.Where(x => x.State != CatalogIndexScanState.Complete);
             if (incompleteScans.Any())
             {
                 return incompleteScans.First();

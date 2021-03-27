@@ -203,18 +203,12 @@ namespace Knapcode.ExplorePackages
                 }
             }
 
-            if (toExecute.Count > 0)
-            {
-                // Execute all timers.
-                await Task.WhenAll(toExecute.Select(x => ExecuteAsync(x.timer)));
-            }
+            // Execute all timers.
+            await Task.WhenAll(toExecute.Select(x => ExecuteAsync(x.timer)));
 
-            if (batch.Count > 0)
-            {
-                // Update table storage after the execute. In other words, if Table Storage fails, we could run the timers
-                // too frequently.
-                await batch.SubmitBatchAsync();
-            }
+            // Update table storage after the execute. In other words, if Table Storage fails, we could run the timers
+            // too frequently.
+            await batch.SubmitBatchIfNotEmptyAsync();
         }
 
         private async Task ExecuteAsync(ITimer timer)

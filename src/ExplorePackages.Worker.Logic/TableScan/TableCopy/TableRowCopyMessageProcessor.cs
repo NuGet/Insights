@@ -44,10 +44,7 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
                 batch.UpsertEntity(entity, mode: TableUpdateMode.Replace);
             }
 
-            if (batch.Count > 0)
-            {
-                await batch.SubmitBatchAsync();
-            }
+            await batch.SubmitBatchIfNotEmptyAsync();
         }
 
         private async Task<List<T>> GetSourceRowsAsync(TableClient sourceTable, TableRowCopyMessage<T> message)

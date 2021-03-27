@@ -19,7 +19,7 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
 
         public string GetPartitionKey(string packageId)
         {
-            return CatalogLeafScan.GetPartitionKey(_indexScan.ScanId, GetPageId(packageId));
+            return CatalogLeafScan.GetPartitionKey(_indexScan.GetScanId(), GetPageId(packageId));
         }
 
         public string GetRowKey(string packageVersion)
@@ -29,12 +29,12 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
 
         public Task<CatalogLeafScan> MapAsync(CatalogLeafItem item)
         {
-            return Task.FromResult(new CatalogLeafScan(_indexScan.StorageSuffix, _indexScan.ScanId, GetPageId(item.PackageId), GetLeafId(item.PackageVersion))
+            return Task.FromResult(new CatalogLeafScan(_indexScan.StorageSuffix, _indexScan.GetScanId(), GetPageId(item.PackageId), GetLeafId(item.PackageVersion))
             {
-                ParsedDriverType = _indexScan.ParsedDriverType,
+                DriverType = _indexScan.DriverType,
                 DriverParameters = _indexScan.DriverParameters,
                 Url = item.Url,
-                ParsedLeafType = item.Type,
+                LeafType = item.Type,
                 CommitId = item.CommitId,
                 CommitTimestamp = item.CommitTimestamp,
                 PackageId = item.PackageId,

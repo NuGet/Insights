@@ -77,6 +77,23 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             [Fact]
+            public async Task AllowsSubsequentUpdates()
+            {
+                var value = new DateTimeOffset(2020, 1, 1, 12, 30, 0, TimeSpan.Zero);
+                var cursor = await Target.GetOrCreateAsync(CursorName);
+                cursor.Value = value;
+
+                await Target.UpdateAsync(cursor);
+                cursor.Value = cursor.Value.AddMinutes(1);
+                await Target.UpdateAsync(cursor);
+                cursor.Value = cursor.Value.AddMinutes(1);
+                await Target.UpdateAsync(cursor);
+
+                cursor = await Target.GetOrCreateAsync(CursorName);
+                Assert.Equal(value.AddMinutes(2), cursor.Value);
+            }
+
+            [Fact]
             public async Task FailsIfAnotherActorUpdatedEntity()
             {
                 var cursor = await Target.GetOrCreateAsync(CursorName);
