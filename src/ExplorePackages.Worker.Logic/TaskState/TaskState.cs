@@ -1,25 +1,33 @@
-﻿using Microsoft.WindowsAzure.Storage.Table;
+﻿using System;
+using Azure;
+using Azure.Data.Tables;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class TaskState : TableEntity
+    public class TaskState : ITableEntity
     {
-        public TaskState(string storageSuffix, string partitionKey, string rowKey) : this()
+        public TaskState()
+        {
+        }
+
+        public TaskState(string storageSuffix, string partitionKey, string rowKey)
         {
             StorageSuffix = storageSuffix;
             PartitionKey = partitionKey;
             RowKey = rowKey;
         }
 
-        public TaskState()
+        public TaskStateKey GetKey()
         {
+            return new TaskStateKey(StorageSuffix, PartitionKey, RowKey);
         }
 
-        [IgnoreProperty]
-        public TaskStateKey Key => new TaskStateKey(StorageSuffix, PartitionKey, RowKey);
-
         public string StorageSuffix { get; set; }
-
         public string Parameters { get; set; }
+
+        public string PartitionKey { get; set; }
+        public string RowKey { get; set; }
+        public DateTimeOffset? Timestamp { get; set; }
+        public ETag ETag { get; set; }
     }
 }

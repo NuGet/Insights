@@ -2,19 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure.Data.Tables;
 using Microsoft.Extensions.Options;
-using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Knapcode.ExplorePackages.Worker
 {
     public class TaskStateStorageService
     {
-        private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly NewServiceClientFactory _serviceClientFactory;
         private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
         public TaskStateStorageService(
-            ServiceClientFactory serviceClientFactory,
+            NewServiceClientFactory serviceClientFactory,
             ITelemetryClient telemetryClient,
             IOptions<ExplorePackagesWorkerSettings> options)
         {
@@ -25,12 +25,12 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task InitializeAsync(string storageSuffix)
         {
-            await GetTable(storageSuffix).CreateIfNotExistsAsync(retry: true);
+            await (await GetTableAsync(storageSuffix)).CreateIfNotExistsAsync(retry: true);
         }
 
         public async Task DeleteTableAsync(string storageSuffix)
         {
-            await GetTable(storageSuffix).DeleteIfExistsAsync();
+            await (await GetTableAsync(storageSuffix)).DeleteIfExistsAsync();
         }
 
         public async Task<TaskState> GetOrAddAsync(TaskStateKey taskStateKey)
@@ -78,47 +78,50 @@ namespace Knapcode.ExplorePackages.Worker
 
         private async Task<IReadOnlyList<TaskState>> GetAllAsync(string storageSuffix, string partitionKey)
         {
-            return await GetTable(storageSuffix).GetEntitiesAsync<TaskState>(partitionKey, _telemetryClient.StartQueryLoopMetrics());
+            return await (await GetTableAsync(storageSuffix))
+                .QueryAsync<TaskState>(x => x.PartitionKey == partitionKey)
+                .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
         }
 
         private async Task InsertAsync(IReadOnlyList<TaskState> taskStates)
         {
             foreach (var group in taskStates.GroupBy(x => x.StorageSuffix))
             {
-                await GetTable(group.Key).InsertEntitiesAsync(group.ToList());
+                var table = await GetTableAsync(group.Key);
+                var batch = new MutableTableTransactionalBatch(table);
+                batch.AddEntities(group);
+                await batch.SubmitBatchAsync();
             }
         }
 
         public async Task<int> GetCountLowerBoundAsync(string storageSuffix, string partitionKey)
         {
-            return await GetTable(storageSuffix).GetEntityCountLowerBoundAsync<TaskState>(partitionKey, _telemetryClient.StartQueryLoopMetrics());
+            return await (await GetTableAsync(storageSuffix))
+                .GetEntityCountLowerBoundAsync(partitionKey, _telemetryClient.StartQueryLoopMetrics());
         }
 
         public async Task<TaskState> GetAsync(TaskStateKey key)
         {
-            return await GetTable(key.StorageSuffix).RetrieveAsync<TaskState>(key.PartitionKey, key.RowKey);
+            return await (await GetTableAsync(key.StorageSuffix))
+                .GetEntityAsync<TaskState>(key.PartitionKey, key.RowKey);
         }
 
         public async Task ReplaceAsync(TaskState taskState)
         {
-            await GetTable(taskState.StorageSuffix).ReplaceAsync(taskState);
+            await (await GetTableAsync(taskState.StorageSuffix))
+                .UpdateEntityAsync(taskState, taskState.ETag);
         }
 
         public async Task DeleteAsync(TaskState taskState)
         {
-            await GetTable(taskState.StorageSuffix).DeleteAsync(taskState);
+            await (await GetTableAsync(taskState.StorageSuffix))
+                .DeleteEntityAsync(taskState.PartitionKey, taskState.RowKey);
         }
 
-        private CloudTableClient GetClient()
+        private async Task<TableClient> GetTableAsync(string suffix)
         {
-            return _serviceClientFactory
-                .GetStorageAccount()
-                .CreateCloudTableClient();
-        }
-
-        private CloudTable GetTable(string suffix)
-        {
-            return GetClient().GetTableReference($"{_options.Value.TaskStateTableName}{suffix}");
+            return (await _serviceClientFactory.GetTableServiceClientAsync())
+                .GetTableClient($"{_options.Value.TaskStateTableName}{suffix}");
         }
     }
 }

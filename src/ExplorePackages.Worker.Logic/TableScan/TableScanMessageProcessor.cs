@@ -256,7 +256,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             return new TableScanMessage<T>
             {
-                TaskStateKey = taskState.Key,
+                TaskStateKey = taskState.GetKey(),
                 DriverType = originalMessage.DriverType,
                 TableName = originalMessage.TableName,
                 Strategy = TableScanStrategy.PrefixScan,

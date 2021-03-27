@@ -66,7 +66,7 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
 
             // Act
             await tableScanService.StartTableCopyAsync(
-                taskState.Key,
+                taskState.GetKey(),
                 Options.Value.LatestPackageLeafTableName,
                 destTableName,
                 partitionKeyPrefix: string.Empty,
@@ -74,7 +74,7 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
                 takeCount: 10,
                 segmentsPerFirstPrefix: 1,
                 segmentsPerSubsequentPrefix: 1);
-            await UpdateAsync(taskState.Key);
+            await UpdateAsync(taskState.GetKey());
 
             // Assert
             var sourceEntities = await sourceTable.QueryAsync<LatestPackageLeaf>().ToListAsync();
@@ -90,8 +90,8 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
             });
 
             var countLowerBound = await TaskStateStorageService.GetCountLowerBoundAsync(
-                taskState.Key.StorageSuffix,
-                taskState.Key.PartitionKey);
+                taskState.GetKey().StorageSuffix,
+                taskState.GetKey().PartitionKey);
             Assert.Equal(0, countLowerBound);
         }
     }

@@ -21,6 +21,28 @@ namespace Knapcode.ExplorePackages
             }
         }
 
+        public static async Task<int> GetEntityCountLowerBoundAsync(this TableClient table, string partitionKey, QueryLoopMetrics metrics)
+        {
+            using (metrics)
+            {
+                var pages = table
+                    .QueryAsync<TableEntity>(
+                        filter: x => x.PartitionKey == partitionKey,
+                        maxPerPage: 1000,
+                        select: new[] { StorageUtility.RowKey })
+                    .AsPages();
+
+                await using var enumerator = pages.GetAsyncEnumerator();
+
+                if (await enumerator.MoveNextAsync(metrics))
+                {
+                    return enumerator.Current.Values.Count;
+                }
+
+                return 0;
+            }
+        }
+
         /// <summary>
         /// See: https://github.com/Azure/azure-sdk-for-net/issues/19723
         /// </summary>
