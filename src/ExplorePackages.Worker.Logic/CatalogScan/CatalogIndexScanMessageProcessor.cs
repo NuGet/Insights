@@ -447,6 +447,9 @@ namespace Knapcode.ExplorePackages.Worker
                     }
                 }
 
+                // Delete old scans
+                await _storageService.DeleteOldIndexScansAsync(scan.GetCursorName(), scan.GetScanId());
+
                 _logger.LogInformation("The catalog scan is complete.");
                 await CompleteAsync(scan);
             }

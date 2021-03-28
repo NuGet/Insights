@@ -176,6 +176,37 @@ namespace Knapcode.ExplorePackages.Worker
                 .ToListAsync();
         }
 
+        public async Task DeleteOldIndexScansAsync(string cursorName, string currentScanId)
+        {
+            var table = await GetIndexScanTableAsync();
+            var oldScans = await table
+                .QueryAsync<CatalogIndexScan>(x => x.PartitionKey == cursorName
+                                                && x.RowKey.CompareTo(currentScanId) > 0)
+                .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
+
+            var oldScansToDelete = oldScans
+                .OrderByDescending(x => x.Created)
+                .Skip(_options.Value.OldCatalogIndexScansToKeep)
+                .OrderBy(x => x.Created)
+                .Where(x => x.State == CatalogIndexScanState.Complete)
+                .ToList();
+            _logger.LogInformation("Deleting {Count} old catalog index scans.", oldScansToDelete.Count);
+
+            var batch = new MutableTableTransactionalBatch(table);
+            foreach (var scan in oldScansToDelete)
+            {
+                if (batch.Count >= StorageUtility.MaxBatchSize)
+                {
+                    await batch.SubmitBatchAsync();
+                    batch = new MutableTableTransactionalBatch(table);
+                }
+
+                batch.DeleteEntity(scan.PartitionKey, scan.RowKey, scan.ETag);
+            }
+
+            await batch.SubmitBatchIfNotEmptyAsync();
+        }
+
         public async Task<CatalogIndexScan> GetIndexScanAsync(string cursorName, string scanId)
         {
             return await (await GetIndexScanTableAsync())

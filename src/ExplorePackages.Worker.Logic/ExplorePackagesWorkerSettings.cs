@@ -17,6 +17,7 @@ namespace Knapcode.ExplorePackages.Worker
             OnlyKeepLatestInStreamWriterUpdater = true;
             MoveTempToHome = false;
             DisabledDrivers = new List<CatalogScanDriverType>();
+            OldCatalogIndexScansToKeep = 20;
 
             AutoStartCatalogScanUpdate = false;
             AutoStartDownloadToCsv = false;
@@ -60,6 +61,7 @@ namespace Knapcode.ExplorePackages.Worker
         public bool OnlyKeepLatestInStreamWriterUpdater { get; set; }
         public bool MoveTempToHome { get; set; }
         public List<CatalogScanDriverType> DisabledDrivers { get; set; }
+        public int OldCatalogIndexScansToKeep { get; set; }
 
         public bool AutoStartCatalogScanUpdate { get; set; }
         public bool AutoStartDownloadToCsv { get; set; }
