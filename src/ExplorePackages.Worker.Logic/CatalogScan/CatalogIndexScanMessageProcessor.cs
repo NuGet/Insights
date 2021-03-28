@@ -46,7 +46,7 @@ namespace Knapcode.ExplorePackages.Worker
             var scan = await _storageService.GetIndexScanAsync(message.CursorName, message.ScanId);
             if (scan == null)
             {
-                await Task.Delay(TimeSpan.FromSeconds(10));
+                await Task.Delay(TimeSpan.FromSeconds(dequeueCount * 15));
                 throw new InvalidOperationException("The catalog index scan should have already been created.");
             }
 
