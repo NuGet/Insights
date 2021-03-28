@@ -9,7 +9,7 @@ namespace Knapcode.ExplorePackages
     {
         // Entity overhead of 4 plus a magic, discovered value.
         // See: https://github.com/MicrosoftDocs/azure-docs/issues/68661
-        private const int InitialSize = 4 + (88 + 48 + 16);
+        private const int InitialSize = 4 + (88 + 48 + 16 + 8);
 
         public int Size { get; private set; }
 
