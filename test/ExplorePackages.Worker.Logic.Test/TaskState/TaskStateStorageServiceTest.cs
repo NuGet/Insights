@@ -11,6 +11,21 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class TaskStateStorageServiceTest : IClassFixture<TaskStateStorageServiceTest.Fixture>
     {
+        public class TheGetAsyncMethod : TaskStateStorageServiceTest
+        {
+            public TheGetAsyncMethod(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
+            {
+            }
+
+            [Fact]
+            public async Task ReturnsNullForMissingTaskState()
+            {
+                var result = await Target.GetAsync(new TaskStateKey(StorageSuffix, PartitionKey, "foo"));
+
+                Assert.Null(result);
+            }
+        }
+
         public class TheAddAsyncMethod : TaskStateStorageServiceTest
         {
             public TheAddAsyncMethod(Fixture fixture, ITestOutputHelper output) : base(fixture, output)

@@ -102,7 +102,7 @@ namespace Knapcode.ExplorePackages.Worker
         public async Task<TaskState> GetAsync(TaskStateKey key)
         {
             return await (await GetTableAsync(key.StorageSuffix))
-                .GetEntityAsync<TaskState>(key.PartitionKey, key.RowKey);
+                .GetEntityOrNullAsync<TaskState>(key.PartitionKey, key.RowKey);
         }
 
         public async Task DeleteAsync(TaskState taskState)
