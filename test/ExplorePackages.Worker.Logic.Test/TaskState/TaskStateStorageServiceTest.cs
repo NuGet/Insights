@@ -52,7 +52,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             [Fact]
-            public async Task DoesNotConflictWithExistin()
+            public async Task DoesNotConflictWithExisting()
             {
                 var rowKeysA = Enumerable.Range(10, 10).Select(x => x.ToString()).ToList();
                 var rowKeysB = Enumerable.Range(10, 20).Select(x => x.ToString()).ToList();
