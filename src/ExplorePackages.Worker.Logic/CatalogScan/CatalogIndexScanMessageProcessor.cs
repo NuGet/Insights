@@ -47,7 +47,7 @@ namespace Knapcode.ExplorePackages.Worker
             if (scan == null)
             {
                 await Task.Delay(TimeSpan.FromSeconds(dequeueCount * 15));
-                throw new InvalidOperationException("The catalog index scan should have already been created.");
+                throw new InvalidOperationException($"The catalog index scan '{message.ScanId}' with cursor '{message.CursorName}' should have already been created.");
             }
 
             var driver = _driverFactory.Create(scan.DriverType);
