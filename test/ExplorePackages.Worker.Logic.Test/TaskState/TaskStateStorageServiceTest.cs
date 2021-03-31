@@ -120,7 +120,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public class Fixture : IAsyncLifetime
         {
-            public Fixture()
+            public Fixture(ITestOutputHelper output)
             {
                 Options = new Mock<IOptions<ExplorePackagesWorkerSettings>>();
                 Settings = new ExplorePackagesWorkerSettings
@@ -129,7 +129,7 @@ namespace Knapcode.ExplorePackages.Worker
                     TaskStateTableName = TestSettings.NewStoragePrefix() + "1ts1",
                 };
                 Options.Setup(x => x.Value).Returns(() => Settings);
-                ServiceClientFactory = new ServiceClientFactory(Options.Object);
+                ServiceClientFactory = new ServiceClientFactory(Options.Object, output.GetLogger<ServiceClientFactory>());
                 StorageSuffix = "suffix";
             }
 

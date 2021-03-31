@@ -541,7 +541,7 @@ namespace Knapcode.ExplorePackages.WideEntities
 
         public class Fixture : IAsyncLifetime
         {
-            public Fixture()
+            public Fixture(ITestOutputHelper output)
             {
                 Options = new Mock<IOptions<ExplorePackagesSettings>>();
                 Settings = new ExplorePackagesSettings
@@ -549,7 +549,7 @@ namespace Knapcode.ExplorePackages.WideEntities
                     StorageConnectionString = TestSettings.StorageConnectionString,
                 };
                 Options.Setup(x => x.Value).Returns(() => Settings);
-                ServiceClientFactory = new ServiceClientFactory(Options.Object);
+                ServiceClientFactory = new ServiceClientFactory(Options.Object, output.GetLogger<ServiceClientFactory>());
                 TableName = TestSettings.NewStoragePrefix() + "1we1";
 
                 Bytes = new byte[4 * 1024 * 1024];

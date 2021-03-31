@@ -35,6 +35,7 @@ namespace Knapcode.ExplorePackages.Website
 
             services.AddApplicationInsightsTelemetry(options =>
             {
+                options.InstrumentationKey = Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
                 options.EnableAdaptiveSampling = false;
             });
 

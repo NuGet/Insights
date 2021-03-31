@@ -137,7 +137,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public class Fixture : IAsyncLifetime
         {
-            public Fixture()
+            public Fixture(ITestOutputHelper output)
             {
                 Options = new Mock<IOptions<ExplorePackagesWorkerSettings>>();
                 Settings = new ExplorePackagesWorkerSettings
@@ -146,7 +146,7 @@ namespace Knapcode.ExplorePackages.Worker
                     CursorTableName = TestSettings.NewStoragePrefix() + "1c1",
                 };
                 Options.Setup(x => x.Value).Returns(() => Settings);
-                ServiceClientFactory = new ServiceClientFactory(Options.Object);
+                ServiceClientFactory = new ServiceClientFactory(Options.Object, output.GetLogger<ServiceClientFactory>());
             }
 
             public Mock<IOptions<ExplorePackagesWorkerSettings>> Options { get; }

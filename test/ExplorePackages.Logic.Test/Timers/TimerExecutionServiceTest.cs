@@ -279,7 +279,7 @@ namespace Knapcode.ExplorePackages
 
         public class Fixture : IAsyncLifetime
         {
-            public Fixture()
+            public Fixture(ITestOutputHelper output)
             {
                 Options = new Mock<IOptions<ExplorePackagesSettings>>();
                 Settings = new ExplorePackagesSettings
@@ -289,7 +289,7 @@ namespace Knapcode.ExplorePackages
                     LeaseContainerName = TestSettings.NewStoragePrefix() + "1l1",
                 };
                 Options.Setup(x => x.Value).Returns(() => Settings);
-                ServiceClientFactory = new ServiceClientFactory(Options.Object);
+                ServiceClientFactory = new ServiceClientFactory(Options.Object, output.GetLogger<ServiceClientFactory>());
                 LeaseService = new AutoRenewingStorageLeaseService(new StorageLeaseService(ServiceClientFactory, Options.Object));
             }
 

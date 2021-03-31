@@ -16,6 +16,8 @@ namespace Knapcode.ExplorePackages
             FlatContainerBaseUrlOverride = null;
             DownloadsV1Url = null;
             OwnersV2Url = null;
+            StorageAccountName = null;
+            StorageSharedAccessSignature = null;
             StorageConnectionString = StorageUtility.EmulatorConnectionString;
             StorageContainerName = "packages";
             LeaseContainerName = "leases";
@@ -37,6 +39,8 @@ namespace Knapcode.ExplorePackages
         public string FlatContainerBaseUrlOverride { get; set; }
         public string DownloadsV1Url { get; set; }
         public string OwnersV2Url { get; set; }
+        public object StorageAccountName { get; set; }
+        public string StorageSharedAccessSignature { get; set; }
         public string StorageConnectionString { get; set; }
         public string StorageContainerName { get; set; }
         public string LeaseContainerName { get; set; }

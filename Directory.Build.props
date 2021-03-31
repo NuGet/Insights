@@ -2,9 +2,11 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))"
           Condition="exists($([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../')))" />
   <PropertyGroup>
-  	<ArtifactsDirectory Condition="'$(ArtifactsDirectory)' == ''">$(MSBuildThisFileDirectory)artifacts</ArtifactsDirectory>
-  	<SolutionName Condition="'$(SolutionName)' == ''">ExplorePackages</SolutionName>
-    <_ProjectArtifactsDirectory>$(ArtifactsDirectory)\$(SolutionName)\$(MSBuildProjectName)\</_ProjectArtifactsDirectory>
+    <ArtifactsSubdirectory Condition="'$(ArtifactsDirectory)' != ''">ExplorePackages\</ArtifactsSubdirectory>
+    <ArtifactsSubdirectory Condition="'$(ArtifactsDirectory)' == ''"></ArtifactsSubdirectory>
+    <ArtifactsDirectory Condition="'$(ArtifactsDirectory)' == ''">$(MSBuildThisFileDirectory)artifacts</ArtifactsDirectory>
+    <DeployDirectory>$(ArtifactsDirectory)\deploy</DeployDirectory>
+    <_ProjectArtifactsDirectory>$(ArtifactsDirectory)\$(ArtifactsSubdirectory)$(MSBuildProjectName)\</_ProjectArtifactsDirectory>
     <BaseIntermediateOutputPath>$(_ProjectArtifactsDirectory)obj\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\</IntermediateOutputPath>
     <BaseOutputPath>$(_ProjectArtifactsDirectory)bin\</BaseOutputPath>

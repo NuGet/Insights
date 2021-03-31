@@ -221,7 +221,7 @@ namespace Knapcode.ExplorePackages
                 };
                 Options = new Mock<IOptions<ExplorePackagesSettings>>();
                 Options.Setup(x => x.Value).Returns(() => Settings);
-                ServiceClientFactory = new ServiceClientFactory(Options.Object);
+                ServiceClientFactory = new ServiceClientFactory(Options.Object, output.GetLogger<ServiceClientFactory>());
                 Target = new StorageLeaseService(ServiceClientFactory, Options.Object);
             }
 

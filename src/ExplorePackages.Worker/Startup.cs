@@ -30,6 +30,8 @@ namespace Knapcode.ExplorePackages.Worker
             builder.Services.AddExplorePackagesWorker();
 
             builder.Services.AddSingleton<IQueueProcessorFactory, UnencodedQueueProcessorFactory>();
+            builder.Services.AddSingleton<INameResolver, CustomNameResolver>();
+            builder.Services.AddSingleton<StorageAccountProvider, CustomStorageAccountProvider>();
             builder.Services.AddSingleton<ITelemetryClient, TelemetryClientWrapper>();
         }
 

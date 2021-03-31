@@ -1,0 +1,8 @@
+<Project>
+  <Target Name="ZipPublishDir" AfterTargets="Publish">
+    <ZipDirectory
+      SourceDirectory="$(PublishDir)"
+      DestinationFile="$(DeployDirectory)\$(MSBuildProjectName).zip"
+      Overwrite="true" />
+  </Target>
+</Project>
