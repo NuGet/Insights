@@ -2,14 +2,16 @@
 param stackName string
 
 param storageAccountName string
+param keyVaultName string
+
 param storageKeySecretName string
 param sasDefinitionName string
-
-param keyVaultName string
 
 param websitePlanId string
 param websiteAadClientId string
 param websiteConfig array
+@secure()
+param websiteZipUrl string
 
 param workerConfig array
 @allowed([
@@ -17,25 +19,15 @@ param workerConfig array
   'Information'
 ])
 param workerLogLevel string = 'Warning'
+@secure()
+param workerZipUrl string
 @minValue(1)
 param workerCount int
 param existingWorkerCount int
 
-// Shared resources
-resource insights 'Microsoft.Insights/components@2015-05-01' = {
-  name: 'ExplorePackages-${stackName}'
-  location: resourceGroup().location
-  kind: 'web'
-  properties: {
-    Application_Type: 'web'
-  }
-}
+// Variables and output
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2019-06-01' existing = {
-  name: storageAccountName
-}
-
-// Cannot use a KeyVault reference for initial deployment.
+// Cannot use a Key Vault reference for initial deployment.
 // https://github.com/Azure/azure-functions-host/issues/7094
 var storageSecretValue = 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};AccountKey=${listkeys(storageAccount.id, storageAccount.apiVersion).keys[0].value};EndpointSuffix=core.windows.net'
 var storageSecretReference = '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${storageKeySecretName})'
@@ -44,8 +36,6 @@ var workerSecret = existingWorkerCount >= workerCount ? storageSecretReference :
 output needsAnotherDeploy bool = workerSecret != storageSecretReference
 output websiteDefaultHostName string = website.properties.defaultHostName
 output websiteHostNames array = website.properties.hostNames
-output websiteId string = website.id
-output workerIds array = [for i in range(0, workerCount): workers[i].id]
 
 var sharedConfig = [
   {
@@ -74,42 +64,29 @@ var sharedConfig = [
   }
 ]
 
-resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
-  name: keyVaultName
-  location: resourceGroup().location
-  properties: {
-    tenantId: subscription().tenantId
-    sku: {
-      family: 'A'
-      name: 'standard'
-    }
-    accessPolicies: [for i in range(0, workerCount + 1): {
+// Shared resources
+module storageAndKv './storage-and-kv.bicep' = {
+  name: '${deployment().name}-storage-and-kv'
+  params: {
+    storageAccountName: storageAccountName
+    keyVaultName: keyVaultName
+    identities: [for i in range(0, workerCount + 1): {
       tenantId: i == 0 ? website.identity.tenantId : workers[i - 1].identity.tenantId
       objectId: i == 0 ? website.identity.principalId : workers[i - 1].identity.principalId
-      permissions: {
-        secrets: [
-          'get'
-        ]
-      }
     }]
   }
 }
-  
-resource keyVaultDiagnostics 'microsoft.insights/diagnosticSettings@2017-05-01-preview' = {
-  scope: keyVault
-  name: '${keyVaultName}-diagnostics'
+
+resource storageAccount 'Microsoft.Storage/storageAccounts@2019-06-01' existing = {
+  name: storageAccountName
+}
+
+resource insights 'Microsoft.Insights/components@2015-05-01' = {
+  name: 'ExplorePackages-${stackName}'
+  location: resourceGroup().location
+  kind: 'web'
   properties: {
-    storageAccountId: storageAccount.id
-    logs: [
-      {
-        category: 'AuditEvent'
-        enabled: true
-        retentionPolicy: {
-          enabled: true
-          days: 30
-        }
-      }
-    ]
+    Application_Type: 'web'
   }
 }
 
@@ -142,6 +119,13 @@ resource website 'Microsoft.Web/sites@2020-09-01' = {
           value: 'common'
         }
       ], sharedConfig, websiteConfig)
+    }
+  }
+
+  resource deploy 'extensions' = {
+    name: 'ZipDeploy'
+    properties: {
+      packageUri: websiteZipUrl
     }
   }
 }
@@ -199,5 +183,13 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
         }
       ], sharedConfig, workerConfig)
     }
+  }
+}]
+
+resource workerDeployments 'Microsoft.Web/sites/extensions@2020-09-01' = [for i in range(0, workerCount): {
+  name: 'ZipDeploy'
+  parent: workers[i]
+  properties: {
+    packageUri: workerZipUrl
   }
 }]

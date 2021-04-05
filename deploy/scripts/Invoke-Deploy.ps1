@@ -23,121 +23,194 @@ param (
     [Hashtable]$WorkerConfig = @{}
 )
 
-$ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "common.ps1")
 
+# Shared variables
+$root = Join-Path $PSScriptRoot "../.."
 $resourceGroupName = "ExplorePackages-$StackName"
 $storageAccountName = "explore$StackName"
 $keyVaultName = "explore$StackName"
 $aadAppName = "ExplorePackages-$StackName-Website"
+$websitePlanName = "ExplorePackages-$StackName-WebsitePlan"
 $storageKeySecretName = "$storageAccountName-FullAccessConnectionString"
 $sasDefinitionName = "BlobQueueTableFullAccessSas"
+$deploymentContainerName = "deployment"
+
+$deploymentId = (Get-Date).ToUniversalTime().ToString("yyyyMMddHHmmss")
+
+# Helper functions
+function Publish-Project ($ProjectName) {
+    Write-Status "Publishing project '$ProjectName' with deployment ID '$deploymentId'..."
+    dotnet publish (Join-Path $root "src/$ProjectName") --configuration Release | Out-Default
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to publish $ProjectName."
+    }
+    
+    $oldPath = Join-Path $deployDir "$ProjectName.zip"
+    $blobName = "$deploymentId-$ProjectName.zip"
+    $newPath = Join-Path $deployDir $blobName
+    Move-Item $oldPath $newPath -Force
+    $newPath = Resolve-Path $newPath
+    Write-Host "Moved the ZIP to $newPath."
+
+    return @($newPath, $blobName)
+}
+
+function New-DeploymentZip ($ZipPath, $BlobName) {
+    Write-Status "Uploading the ZIP to '$BlobName'..."
+    Set-AzStorageBlobContent `
+        -Context $storageContext `
+        -Container $deploymentContainerName `
+        -File $ZipPath `
+        -Blob $BlobName | Out-Default
+    
+    Write-Status "Generating SAS for deployment..."
+    $sas = New-AzStorageBlobSASToken `
+        -Context $storageContext `
+        -Container $deploymentContainerName `
+        -Blob $BlobName `
+        -FullUri `
+        -Protocol HttpsOnly `
+        -Permission "r" `
+        -ExpiryTime (Get-Date).ToUniversalTime().AddHours(3)
+    return $sas
+}
+
+function New-Deployment($DeploymentName, $BicepPath, $Parameters) {
+    $DeploymentName = "$deploymentId-$DeploymentName"
+
+    # Docs: https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files
+    $deploymentParameters = @{
+        "`$schema" = "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#";
+        contentVersion = "1.0.0.0";
+        parameters = @{}
+    }
+
+    foreach ($key in $Parameters.Keys) {
+        $deploymentParameters.parameters.$key = @{ value = $parameters.$key }
+    }
+
+    $parametersPath = Join-Path $deployDir "$deploymentName.deploymentParameters.json"
+    $deploymentParameters | ConvertTo-Json -Depth 100 | Out-File $parametersPath -Encoding UTF8
+
+    return New-AzResourceGroupDeployment `
+        -TemplateFile (Join-Path $PSScriptRoot $BicepPath) `
+        -ResourceGroupName $resourceGroupName `
+        -Name $deploymentName `
+        -TemplateParameterFile $parametersPath
+}
 
 # Publish the projects
 $deployDir = Join-Path $root "artifacts/deploy"
-if (Test-Path $deployDir) {
-    Remove-Item $deployDir -Recurse
-}
-New-Item $deployDir -Type Directory | Out-Null
-
-function Publish-Project ($projectName) {
-    Write-Status "Publishing project '$projectName'..."
-    Invoke-Call { dotnet publish (Join-Path $root "src/$projectName") --configuration Release } | Out-Host
-    return Join-Path $deployDir "$projectName.zip"
+if (!(Test-Path $deployDir)) {
+    New-Item $deployDir -Type Directory | Out-Null
 }
 
-$websiteZipPath = Publish-Project ExplorePackages.Website
-$workerZipPath = Publish-Project ExplorePackages.Worker
+$websiteZipPath, $websiteZipBlobName = Publish-Project "ExplorePackages.Website"
+$workerZipPath, $workerZipBlobName = Publish-Project "ExplorePackages.Worker"
 
 # Make sure the resource group is created
 Write-Status "Ensuring the resource group '$resourceGroupName' exists..."
-Invoke-Call { az group create `
-    --name $resourceGroupName `
-    --location $Location `
-    --output tsv `
-    --query 'id' }
+New-AzResourceGroup -Name $resourceGroupName -Location $Location -Force
 
-# Make sure the storage account is created
-Write-Status "Ensuring the storage account '$storageAccountName' exists..."
-Invoke-Call { az storage account create `
-    --name $storageAccountName `
-    --resource-group $resourceGroupName `
-    --location $Location `
-    --kind 'StorageV2' `
-    --sku 'Standard_LRS' `
-    --min-tls-version 'TLS1_2' `
-    --output tsv `
-    --query 'id' } | Tee-Object -Variable 'storageAccountId'
-
-# Make sure the KeyVault is created
-Write-Status "Ensuring the KeyVault '$keyVaultName' exists..."
-Invoke-Call { az keyvault list `
-    --resource-group $resourceGroupName `
-    --query "[?name=='$keyVaultName'] | length(@)" } | Tee-Object -Variable 'matchedKeyVaults'
-$matchedKeyVaults = [int]$matchedKeyVaults
-if ($matchedKeyVaults -eq 0) {
-    Write-Status "Creating KeyVault '$keyVaultName'..."
-    Invoke-Call { az keyvault create `
-        --name $keyVaultName `
-        --resource-group $resourceGroupName `
-        --location $Location `
-        --output tsv `
-        --query 'id' }
+# Fetch the existing access policy identities, if any.
+# Workaround for https://github.com/Azure/bicep/issues/784#issuecomment-800591002
+Write-Status "Finding access policies on the Key Vault '$keyVaultName'..."
+$existingKeyVault = Get-AzKeyVault `
+    -ResourceGroupName $resourceGroupName `
+    | Where-Object { $_.VaultName -eq $keyVaultName }
+if ($existingKeyVault) {
+    $existingKeyVault = Get-AzKeyVault `
+        -ResourceGroupName $resourceGroupName `
+        -VaultName $keyVaultName
+    $identities = @($existingKeyVault.AccessPolicies `
+        | ForEach-Object { @{ tenantId = $_.TenantId; objectId = $_.ObjectId } })
+} else {
+    $identities = @()
 }
 
-# Get the current user
-Write-Status "Determining the current user principal name for KeyVault operations..."
-Invoke-Call { az ad signed-in-user show `
-    --query "userPrincipalName" `
-    --output tsv } | Tee-Object -Variable 'upn'
+# Ensure all of the identities are service principals
+$servicePrincipals = @()
+foreach ($identity in $identities) {
+    $servicePrincipal = Get-AzADServicePrincipal -ObjectId $identity.objectId
+    if (!$servicePrincipal) {
+        Write-Warning "Removing access policy for object $($identity.objectId) (tenant $($identity.tenantId))."
+    } else {
+        $servicePrincipals += $identity
+    }
+}
 
-# Manage the storage account in KeyVault
-& (Join-Path $PSScriptRoot "Set-KeyVaultManagedStorage.ps1") `
+# Deploy the storage account, Key Vault, and deployment container.
+Write-Status "Ensuring the storage account, Key Vault, and deployment container exist..."
+$deployment = New-Deployment `
+    -DeploymentName "storage-and-kv" `
+    -BicepPath "../storage-and-kv.bicep" `
+    -Parameters @{
+        storageAccountName = $storageAccountName;
+        keyVaultName = $keyVaultName;
+        identities = $servicePrincipals;
+        deploymentContainerName = $deploymentContainerName
+    }
+
+# Get the current user
+Write-Status "Determining the current user principal name for Key Vault operations..."
+$graphToken = Get-AzAccessToken -Resource "https://graph.microsoft.com/"
+$graphHeaders = @{ Authorization = "Bearer $($graphToken.Token)" }
+$currentUser = Invoke-RestMethod -Uri "https://graph.microsoft.com/v1.0/me" -Headers $graphHeaders
+$upn = $currentUser.userPrincipalName
+
+# Manage the storage account in Key Vault
+. (Join-Path $PSScriptRoot "Set-KeyVaultManagedStorage.ps1") `
+    -ResourceGroupName $resourceGroupName `
     -KeyVaultName $keyVaultName `
     -StorageAccountName $storageAccountName `
-    -StorageAccountId $storageAccountId `
     -UserPrincipalName $upn `
     -SasDefinitionName $sasDefinitionName
 
-# Set the currently active key in KeyVault. This is needed for Azure Functions which cannot use SAS in all places.
-& (Join-Path $PSScriptRoot "Set-LatestStorageKey.ps1") `
-    -KeyVaultName $keyVaultName `
+# Set the currently active key in Key Vault. This is needed for Azure Functions which cannot use SAS in all places.
+$activeStorageKey = . (Join-Path $PSScriptRoot "Set-LatestStorageKey.ps1") `
     -ResourceGroupName $resourceGroupName `
+    -KeyVaultName $keyVaultName `
     -StorageAccountName $storageAccountName `
     -StorageKeySecretName $storageKeySecretName `
     -UserPrincipalName $upn
 
 # Deploy the server farm, if not provided
 if (!$ExistingWebsitePlanId) {
-    $websitePlanName = "ExplorePackages-$StackName-WebsitePlan"
     Write-Status "Ensuring the website plan '$websitePlanName'..."
-    Invoke-Call { az appservice plan create `
-        --name $websitePlanName `
-        --resource-group $resourceGroupName `
-        --location $Location `
-        --sku 'B1' `
-        --output tsv `
-        --query 'id' } | Tee-Object -Variable 'websitePlan'
-    $websitePlan = $websitePlan | ConvertFrom-Json
+    $websitePlan = Get-AzAppServicePlan -ResourceGroupName $resourceGroupName -Name $websitePlanName
+    if (!$websitePlan) {
+        $websitePlan = New-AzAppServicePlan `
+            -Name $websitePlanName `
+            -ResourceGroupName $resourceGroupName `
+            -Location $Location `
+            -Tier Basic `
+            -WorkerSize Small
+    }
     $websitePlanId = $websitePlan.id
 } else {
     $websitePlanId = $ExistingWebsitePlanId
 }
 
 # Initialize the AAD app
-(& (Join-Path $PSScriptRoot "Initialize-AadApp.ps1") -AadAppName $AadAppName) `
-    | Tee-Object -Variable 'aadApp' | Out-Host
+$aadApp = (. (Join-Path $PSScriptRoot "Initialize-AadApp.ps1") -AadAppName $AadAppName)
 
+# Upload the project ZIPs
+$storageContext = New-AzStorageContext `
+    -StorageAccountName $storageAccountName `
+    -StorageAccountKey $activeStorageKey
+$websiteZipUrl = New-DeploymentZip $websiteZipPath $websiteZipBlobName
+$workerZipUrl = New-DeploymentZip $workerZipPath $workerZipBlobName
+
+# Run the main deployment
 $needsAnotherDeploy = $true
 $deploymentCount = 0
 while ($needsAnotherDeploy -and ($deploymentCount -lt 2)) {
     # To workaround limitations in initial deployment Azure Functions, we check the current state and may need to
     # deploy a second time.
     Write-Status "Counting existing function apps..."
-    Invoke-Call { az functionapp list `
-        --resource-group $resourceGroupName `
-        --query "[] | length(@)" } | Tee-Object -Variable 'existingWorkerCount'
-    $existingWorkerCount = [int]$existingWorkerCount
+    $existingWorkers = Get-AzFunctionApp -ResourceGroupName $resourceGroupName
+    $existingWorkerCount = $existingWorkers.Count
 
     if ($existingWorkerCount -gt $workerCount) {
         # Would need to:
@@ -157,69 +230,48 @@ while ($needsAnotherDeploy -and ($deploymentCount -lt 2)) {
         $deploymentName = "main-fix-secrets"
     }
 
-    # Docs: https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files
-    $parameters = @{
-        "`$schema" = "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#";
-        contentVersion = "1.0.0.0";
-        parameters = @{
-            stackName = @{ value = $StackName };
-            storageAccountName = @{ value = $storageAccountName };
-            storageKeySecretName = @{ value = $storageKeySecretName };
-            sasDefinitionName = @{ value = $sasDefinitionName };
-            keyVaultName = @{ value = $keyVaultName };
-            websitePlanId = @{ value = $websitePlanId };
-            websiteAadClientId = @{ value = $aadApp.appId };
-            websiteConfig = @{ value = $websiteConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs };
-            workerConfig = @{ value = $workerConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs };
-            workerLogLevel = @{ value = $WorkerLogLevel };
-            workerCount = @{ value = $workerCount };
-            existingWorkerCount = @{ value = $existingWorkerCount }
+    $deployment = New-Deployment `
+        -DeploymentName $deploymentName `
+        -BicepPath "../main.bicep" `
+        -Parameters @{
+            stackName = $StackName;
+            storageAccountName = $storageAccountName;
+            keyVaultName = $keyVaultName;
+            storageKeySecretName = $storageKeySecretName;
+            sasDefinitionName = $sasDefinitionName;
+            websitePlanId = $websitePlanId;
+            websiteAadClientId = $aadApp.ApplicationId;
+            websiteConfig = $websiteConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs;
+            websiteZipUrl = $websiteZipUrl;
+            workerConfig = $workerConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs;
+            workerLogLevel = $WorkerLogLevel;
+            workerZipUrl = $workerZipUrl;
+            workerCount = $workerCount;
+            existingWorkerCount = $existingWorkerCount
         }
-    }
-
-    $parametersPath = Join-Path $deployDir "parameters.$deploymentName.json"
-    $parameters | ConvertTo-Json -Depth 100 | Out-File $parametersPath -Encoding UTF8
-
-    Invoke-Call { az deployment group create `
-        --template-file (Join-Path $PSScriptRoot "../main.bicep") `
-        --resource-group $resourceGroupName `
-        --name $deploymentName `
-        --no-prompt `
-        --parameters "@$parametersPath" } | Tee-Object -Variable 'deployment'
-    $deployment = $deployment | ConvertFrom-Json
-    $outputs = $deployment.properties.outputs
-
-    $needsAnotherDeploy = $outputs.needsAnotherDeploy.value
-    $websiteDefaultHostName = $outputs.websiteDefaultHostName.value
-    $websiteHostNames = $outputs.websiteHostNames.value
-    $websiteId = $outputs.websiteId.value
-    $workerIds = $outputs.workerIds.value
+    
+    $needsAnotherDeploy = $deployment.Outputs.needsAnotherDeploy.Value
+    $websiteDefaultHostName = $deployment.Outputs.websiteDefaultHostName.Value
+    $websiteHostNames = $deployment.Outputs.websiteHostNames.Value.ToString() | ConvertFrom-Json
 }
 
 # Make the app service support the website for login
 Write-Status "Enabling the AAD app for website login..."
-$appServiceJson = (@{
+$appServicePatch = @{
     api = @{ requestedAccessTokenVersion = 2 };
+    identifierUris = @();
     signInAudience = "AzureADandPersonalMicrosoftAccount";
     web = @{
         homePageUrl = "https://$($websiteDefaultHostName)";
         redirectUris = @($websiteHostNames | ForEach-Object { "https://$_/signin-oidc" })
         logoutUrl = "https://$($websiteDefaultHostName)/signout-oidc"
     }
-} | ConvertTo-Json -Depth 100 -Compress).Replace('"', '\"')
-Invoke-Call { az rest `
-    --method PATCH `
-    --headers "Content-Type=application/json" `
-    --uri "https://graph.microsoft.com/v1.0/applications/$($aadApp.objectId)" `
-    --body $appServiceJson }
-Write-Host 'Done.'
-
-Write-Status "Deploying the website..."
-Invoke-Call { az webapp deployment source config-zip `
-    --ids $websiteId `
-    --src $websiteZipPath }
-
-Write-Status "Deploying the workers..."
-Invoke-Call { az functionapp deployment source config-zip `
-    --ids @workerIds `
-    --src $workerZipPath }
+}
+$graphToken = Get-AzAccessToken -Resource "https://graph.microsoft.com/"
+$graphHeaders = @{ Authorization = "Bearer $($graphToken.Token)" }
+Invoke-RestMethod `
+    -Method Patch `
+    -Uri "https://graph.microsoft.com/v1.0/applications/$($aadApp.ObjectId)" `
+    -Headers $graphHeaders `
+    -ContentType "application/json" `
+    -Body ($appServicePatch | ConvertTo-Json -Depth 100 -Compress)

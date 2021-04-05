@@ -2,18 +2,6 @@ function Write-Status ($message) {
     Write-Host $message -ForegroundColor Green
 }
 
-function Invoke-Call {
-    param (
-        [scriptblock]$ScriptBlock,
-        [string]$ErrorAction = $ErrorActionPreference
-    )
-    
-    & @ScriptBlock
-    if (($lastexitcode -ne 0) -and $ErrorAction -eq "Stop") {
-        exit $lastexitcode
-    }
-}
-
 # Source: https://4sysops.com/archives/convert-json-to-a-powershell-hash-table/
 function ConvertTo-Hashtable {
     [CmdletBinding()]
@@ -128,5 +116,3 @@ function ConvertTo-NameValuePairs {
 if (Get-TypeData -TypeName System.Array) {
     Remove-TypeData System.Array
 }
-
-$root = Join-Path $PSScriptRoot "../.."
