@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -121,7 +123,7 @@ namespace Knapcode.ExplorePackages.Worker
         public string CursorNamePrefix { get; }
         public string CursorName { get; }
         public CursorStorageService Target => new CursorStorageService(
-            _fixture.ServiceClientFactory,
+            _fixture.GetServiceClientFactory(_output.GetLogger<ServiceClientFactory>()),
             _fixture.Options.Object,
             _output.GetLogger<CursorStorageService>());
         public TableClient Table => _fixture.Table;
@@ -137,7 +139,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public class Fixture : IAsyncLifetime
         {
-            public Fixture(ITestOutputHelper output)
+            public Fixture()
             {
                 Options = new Mock<IOptions<ExplorePackagesWorkerSettings>>();
                 Settings = new ExplorePackagesWorkerSettings
@@ -146,28 +148,31 @@ namespace Knapcode.ExplorePackages.Worker
                     CursorTableName = TestSettings.NewStoragePrefix() + "1c1",
                 };
                 Options.Setup(x => x.Value).Returns(() => Settings);
-                ServiceClientFactory = new ServiceClientFactory(Options.Object, output.GetLogger<ServiceClientFactory>());
             }
 
             public Mock<IOptions<ExplorePackagesWorkerSettings>> Options { get; }
             public ExplorePackagesWorkerSettings Settings { get; }
-            public ServiceClientFactory ServiceClientFactory { get; }
             public TableClient Table { get; private set; }
 
             public async Task InitializeAsync()
             {
-                Table = await GetTableAsync();
+                Table = await GetTableAsync(NullLogger<ServiceClientFactory>.Instance);
                 await Table.CreateIfNotExistsAsync();
+            }
+
+            public ServiceClientFactory GetServiceClientFactory(ILogger<ServiceClientFactory> logger)
+            {
+                return new ServiceClientFactory(Options.Object, logger);
             }
 
             public async Task DisposeAsync()
             {
-                await (await GetTableAsync()).DeleteIfExistsAsync();
+                await (await GetTableAsync(NullLogger<ServiceClientFactory>.Instance)).DeleteIfExistsAsync();
             }
 
-            public async Task<TableClient> GetTableAsync()
+            public async Task<TableClient> GetTableAsync(ILogger<ServiceClientFactory> logger)
             {
-                return (await ServiceClientFactory.GetTableServiceClientAsync())
+                return (await GetServiceClientFactory(logger).GetTableServiceClientAsync())
                     .GetTableClient(Options.Object.Value.CursorTableName);
             }
         }

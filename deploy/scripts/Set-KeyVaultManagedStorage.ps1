@@ -89,7 +89,7 @@ Set-AzKeyVaultManagedStorageSasDefinition `
     -VaultName $KeyVaultName `
     -AccountName $StorageAccountName `
     -Name $SasDefinitionName `
-    -ValidityPeriod (New-TimeSpan -Days 2) `
+    -ValidityPeriod (New-TimeSpan -Hours 6) `
     -SasType 'account' `
     -TemplateUri $sasTemplate
 

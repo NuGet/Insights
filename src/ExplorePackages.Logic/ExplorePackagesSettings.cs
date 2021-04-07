@@ -18,6 +18,8 @@ namespace Knapcode.ExplorePackages
             OwnersV2Url = null;
             StorageAccountName = null;
             StorageSharedAccessSignature = null;
+            KeyVaultName = null;
+            StorageSharedAccessSignatureSecretName = null;
             StorageConnectionString = StorageUtility.EmulatorConnectionString;
             StorageContainerName = "packages";
             LeaseContainerName = "leases";
@@ -41,6 +43,8 @@ namespace Knapcode.ExplorePackages
         public string OwnersV2Url { get; set; }
         public object StorageAccountName { get; set; }
         public string StorageSharedAccessSignature { get; set; }
+        public string KeyVaultName { get; set; }
+        public string StorageSharedAccessSignatureSecretName { get; set; }
         public string StorageConnectionString { get; set; }
         public string StorageContainerName { get; set; }
         public string LeaseContainerName { get; set; }

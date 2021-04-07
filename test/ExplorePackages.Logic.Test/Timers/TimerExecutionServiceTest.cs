@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -259,13 +261,22 @@ namespace Knapcode.ExplorePackages
         public string TimerName { get; }
         public Mock<ITimer> Timer { get; }
         public List<ITimer> Timers { get; }
-        public TimerExecutionService Target => new TimerExecutionService(
-            _fixture.ServiceClientFactory,
-            Timers,
-            _fixture.LeaseService,
-            _fixture.Options.Object,
-            _output.GetTelemetryClient(),
-            _output.GetLogger<TimerExecutionService>());
+
+        public TimerExecutionService Target
+        {
+            get
+            {
+                var serviceClientFactory = _fixture.GetServiceClientFactory(_output.GetLogger<ServiceClientFactory>());
+                return new TimerExecutionService(
+                    serviceClientFactory,
+                    Timers,
+                    _fixture.GetLeaseService(serviceClientFactory),
+                    _fixture.Options.Object,
+                    _output.GetTelemetryClient(),
+                    _output.GetLogger<TimerExecutionService>());
+            }
+        }
+
         public TableClient Table => _fixture.Table;
 
         protected async Task<IReadOnlyList<T>> GetEntitiesAsync<T>() where T : class, ITableEntity, new()
@@ -279,7 +290,7 @@ namespace Knapcode.ExplorePackages
 
         public class Fixture : IAsyncLifetime
         {
-            public Fixture(ITestOutputHelper output)
+            public Fixture()
             {
                 Options = new Mock<IOptions<ExplorePackagesSettings>>();
                 Settings = new ExplorePackagesSettings
@@ -289,27 +300,34 @@ namespace Knapcode.ExplorePackages
                     LeaseContainerName = TestSettings.NewStoragePrefix() + "1l1",
                 };
                 Options.Setup(x => x.Value).Returns(() => Settings);
-                ServiceClientFactory = new ServiceClientFactory(Options.Object, output.GetLogger<ServiceClientFactory>());
-                LeaseService = new AutoRenewingStorageLeaseService(new StorageLeaseService(ServiceClientFactory, Options.Object));
             }
 
             public Mock<IOptions<ExplorePackagesSettings>> Options { get; }
             public ExplorePackagesSettings Settings { get; }
-            public ServiceClientFactory ServiceClientFactory { get; }
-            public AutoRenewingStorageLeaseService LeaseService { get; }
             public TableClient Table { get; private set; }
 
             public async Task InitializeAsync()
             {
-                await LeaseService.InitializeAsync();
-                Table = (await ServiceClientFactory.GetTableServiceClientAsync())
-                    .GetTableClient(Options.Object.Value.TimerTableName);
+                var serviceClientFactory = GetServiceClientFactory(NullLogger<ServiceClientFactory>.Instance);
+                var leaseService = GetLeaseService(serviceClientFactory);
+                await leaseService.InitializeAsync();
+                Table = (await serviceClientFactory.GetTableServiceClientAsync()).GetTableClient(Options.Object.Value.TimerTableName);
                 await Table.CreateIfNotExistsAsync(retry: true);
+            }
+
+            public AutoRenewingStorageLeaseService GetLeaseService(ServiceClientFactory serviceClientFactory)
+            {
+                return new AutoRenewingStorageLeaseService(new StorageLeaseService(serviceClientFactory, Options.Object));
+            }
+
+            public ServiceClientFactory GetServiceClientFactory(ILogger<ServiceClientFactory> logger)
+            {
+                return new ServiceClientFactory(Options.Object, logger);
             }
 
             public async Task DisposeAsync()
             {
-                await (await ServiceClientFactory.GetBlobServiceClientAsync())
+                await (await GetServiceClientFactory(NullLogger<ServiceClientFactory>.Instance).GetBlobServiceClientAsync())
                     .GetBlobContainerClient(Options.Object.Value.LeaseContainerName)
                     .DeleteIfExistsAsync();
 

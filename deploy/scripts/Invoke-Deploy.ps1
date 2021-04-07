@@ -25,7 +25,7 @@ param (
 
 . (Join-Path $PSScriptRoot "common.ps1")
 
-# Shared variables
+# Shared variables and functions
 $root = Join-Path $PSScriptRoot "../.."
 $resourceGroupName = "ExplorePackages-$StackName"
 $storageAccountName = "explore$StackName"
@@ -37,44 +37,6 @@ $sasDefinitionName = "BlobQueueTableFullAccessSas"
 $deploymentContainerName = "deployment"
 
 $deploymentId = (Get-Date).ToUniversalTime().ToString("yyyyMMddHHmmss")
-
-# Helper functions
-function Publish-Project ($ProjectName) {
-    Write-Status "Publishing project '$ProjectName' with deployment ID '$deploymentId'..."
-    dotnet publish (Join-Path $root "src/$ProjectName") --configuration Release | Out-Default
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to publish $ProjectName."
-    }
-    
-    $oldPath = Join-Path $deployDir "$ProjectName.zip"
-    $blobName = "$deploymentId-$ProjectName.zip"
-    $newPath = Join-Path $deployDir $blobName
-    Move-Item $oldPath $newPath -Force
-    $newPath = Resolve-Path $newPath
-    Write-Host "Moved the ZIP to $newPath."
-
-    return @($newPath, $blobName)
-}
-
-function New-DeploymentZip ($ZipPath, $BlobName) {
-    Write-Status "Uploading the ZIP to '$BlobName'..."
-    Set-AzStorageBlobContent `
-        -Context $storageContext `
-        -Container $deploymentContainerName `
-        -File $ZipPath `
-        -Blob $BlobName | Out-Default
-    
-    Write-Status "Generating SAS for deployment..."
-    $sas = New-AzStorageBlobSASToken `
-        -Context $storageContext `
-        -Container $deploymentContainerName `
-        -Blob $BlobName `
-        -FullUri `
-        -Protocol HttpsOnly `
-        -Permission "r" `
-        -ExpiryTime (Get-Date).ToUniversalTime().AddHours(3)
-    return $sas
-}
 
 function New-Deployment($DeploymentName, $BicepPath, $Parameters) {
     $DeploymentName = "$deploymentId-$DeploymentName"
@@ -102,8 +64,26 @@ function New-Deployment($DeploymentName, $BicepPath, $Parameters) {
 
 # Publish the projects
 $deployDir = Join-Path $root "artifacts/deploy"
-if (!(Test-Path $deployDir)) {
-    New-Item $deployDir -Type Directory | Out-Null
+if (Test-Path $deployDir) {
+    Remove-Item $deployDir -Recurse
+}
+New-Item $deployDir -Type Directory | Out-Null
+
+function Publish-Project ($ProjectName) {
+    Write-Status "Publishing project '$ProjectName' with deployment ID '$deploymentId'..."
+    dotnet publish (Join-Path $root "src/$ProjectName") --configuration Release | Out-Default
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to publish $ProjectName."
+    }
+    
+    $oldPath = Join-Path $deployDir "$ProjectName.zip"
+    $blobName = "$deploymentId-$ProjectName.zip"
+    $newPath = Join-Path $deployDir $blobName
+    Move-Item $oldPath $newPath -Force
+    $newPath = Resolve-Path $newPath
+    Write-Host "Moved the ZIP to $newPath."
+
+    return @($newPath, $blobName)
 }
 
 $websiteZipPath, $websiteZipBlobName = Publish-Project "ExplorePackages.Website"
@@ -199,38 +179,38 @@ $aadApp = (. (Join-Path $PSScriptRoot "Initialize-AadApp.ps1") -AadAppName $AadA
 $storageContext = New-AzStorageContext `
     -StorageAccountName $storageAccountName `
     -StorageAccountKey $activeStorageKey
+
+function New-DeploymentZip ($ZipPath, $BlobName) {
+    Write-Status "Uploading the ZIP to '$BlobName'..."
+    Set-AzStorageBlobContent `
+        -Context $storageContext `
+        -Container $deploymentContainerName `
+        -File $ZipPath `
+        -Blob $BlobName | Out-Default
+    
+    Write-Status "Generating SAS for deployment..."
+    $sas = New-AzStorageBlobSASToken `
+        -Context $storageContext `
+        -Container $deploymentContainerName `
+        -Blob $BlobName `
+        -FullUri `
+        -Protocol HttpsOnly `
+        -Permission "r" `
+        -ExpiryTime (Get-Date).ToUniversalTime().AddHours(6)
+    return $sas
+}
+
 $websiteZipUrl = New-DeploymentZip $websiteZipPath $websiteZipBlobName
 $workerZipUrl = New-DeploymentZip $workerZipPath $workerZipBlobName
 
-# Run the main deployment
-$needsAnotherDeploy = $true
-$deploymentCount = 0
-while ($needsAnotherDeploy -and ($deploymentCount -lt 2)) {
-    # To workaround limitations in initial deployment Azure Functions, we check the current state and may need to
-    # deploy a second time.
-    Write-Status "Counting existing function apps..."
-    $existingWorkers = Get-AzFunctionApp -ResourceGroupName $resourceGroupName
-    $existingWorkerCount = $existingWorkers.Count
+# To workaround limitations in initial deployment Azure Functions, we check the current state and may need to
+# deploy a second time.
+Write-Status "Counting existing function apps..."
+$existingWorkers = Get-AzFunctionApp -ResourceGroupName $resourceGroupName
+$existingWorkerCount = $existingWorkers.Count
 
-    if ($existingWorkerCount -gt $workerCount) {
-        # Would need to:
-        # - Delete function apps
-        # - Remove managed identity from KV policy (maybe done automatically by ARM)
-        # - Delete the File Share (WEBSITE_CONTENTSHARE) created by the function app
-        throw 'Reducing the number of workers is not supported.'
-    }
-
-    # Deploy the rest of the resources
-    $deploymentCount++
-    if ($deploymentCount -eq 1) {
-        Write-Status "Deploying the resources..."
-        $deploymentName = "main"
-    } else {
-        Write-Status "Deploying again to fix up the secrets..."
-        $deploymentName = "main-fix-secrets"
-    }
-
-    $deployment = New-Deployment `
+function New-MainDeployment($deploymentName, $useKeyVaultReference) {
+    New-Deployment `
         -DeploymentName $deploymentName `
         -BicepPath "../main.bicep" `
         -Parameters @{
@@ -247,12 +227,39 @@ while ($needsAnotherDeploy -and ($deploymentCount -lt 2)) {
             workerLogLevel = $WorkerLogLevel;
             workerZipUrl = $workerZipUrl;
             workerCount = $workerCount;
-            existingWorkerCount = $existingWorkerCount
+            useKeyVaultReference = $useKeyVaultReference
         }
-    
-    $needsAnotherDeploy = $deployment.Outputs.needsAnotherDeploy.Value
-    $websiteDefaultHostName = $deployment.Outputs.websiteDefaultHostName.Value
-    $websiteHostNames = $deployment.Outputs.websiteHostNames.Value.ToString() | ConvertFrom-Json
+}
+
+if ($existingWorkerCount -gt $workerCount) {
+    # Would need to:
+    # - Delete function apps
+    # - Remove managed identity from KV policy (maybe done automatically by ARM)
+    # - Delete the File Share (WEBSITE_CONTENTSHARE) created by the function app
+    throw 'Reducing the number of workers is not supported.'
+}
+
+if ($existingWorkerCount -lt $workerCount) {
+    Write-Status "Deploying without Key Vault references because there are new workers..."
+    New-MainDeployment "prepare" $false
+
+    Write-Status "Deploying again with with Key Vault references..."
+    New-MainDeployment "main" $false | Tee-Object -Variable 'deployment'
+} else {
+    Write-Status "Deploying the resources..."
+    New-MainDeployment "main" $true | Tee-Object -Variable 'deployment'
+}
+
+$websiteDefaultHostName = $deployment.Outputs.websiteDefaultHostName.Value
+$websiteHostNames = $deployment.Outputs.websiteHostNames.Value.ToString() | ConvertFrom-Json
+$workerDefaultHostNames = $deployment.Outputs.workerDefaultHostNames.Value.ToString() | ConvertFrom-Json
+
+# Warm up the workers, since initial deployment appears to leave them in a hibernation state.
+Write-Status "Warming up the workers and website..."
+foreach ($hostName in $workerDefaultHostNames + $websiteDefaultHostName) {
+    $url = "https://$hostName/"
+    $response = Invoke-WebRequest -Method HEAD -Uri $url -UseBasicParsing
+    Write-Host "$url - $($response.StatusCode) $($response.StatusDescription)"
 }
 
 # Make the app service support the website for login

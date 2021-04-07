@@ -23,7 +23,7 @@ param workerLogLevel string = 'Warning'
 param workerZipUrl string
 @minValue(1)
 param workerCount int
-param existingWorkerCount int
+param useKeyVaultReference bool
 
 // Variables and output
 
@@ -31,11 +31,11 @@ param existingWorkerCount int
 // https://github.com/Azure/azure-functions-host/issues/7094
 var storageSecretValue = 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};AccountKey=${listkeys(storageAccount.id, storageAccount.apiVersion).keys[0].value};EndpointSuffix=core.windows.net'
 var storageSecretReference = '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${storageKeySecretName})'
-var workerSecret = existingWorkerCount >= workerCount ? storageSecretReference : storageSecretValue
+var workerStorageSecret = useKeyVaultReference ? storageSecretReference : storageSecretValue
 
-output needsAnotherDeploy bool = workerSecret != storageSecretReference
 output websiteDefaultHostName string = website.properties.defaultHostName
 output websiteHostNames array = website.properties.hostNames
+output workerDefaultHostNames array = [for i in range(0, workerCount): workers[i].properties.defaultHostName]
 
 var sharedConfig = [
   {
@@ -55,8 +55,17 @@ var sharedConfig = [
     value: storageAccountName
   }
   {
-    name: 'Knapcode.ExplorePackages:StorageSharedAccessSignature'
-    value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${storageAccountName}-${sasDefinitionName})'
+    name: 'Knapcode.ExplorePackages:KeyVaultName'
+    value: keyVaultName
+  }
+  {
+    name: 'Knapcode.ExplorePackages:StorageSharedAccessSignatureSecretName'
+    value: '${storageAccountName}-${sasDefinitionName}'
+  }
+  {
+    // See: https://github.com/projectkudu/kudu/wiki/Configurable-settings#ensure-update-site-and-update-siteconfig-to-take-effect-synchronously 
+    name: 'WEBSITE_ENABLE_SYNC_UPDATE_SITE'
+    value: '1'
   }
   {
     name: 'WEBSITE_RUN_FROM_PACKAGE'
@@ -163,7 +172,7 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
         }
         {
           name: 'AzureWebJobsStorage'
-          value: workerSecret
+          value: workerStorageSecret
         }
         {
           name: 'FUNCTIONS_EXTENSION_VERSION'
@@ -179,7 +188,7 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
         }
         {
           name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-          value: workerSecret
+          value: workerStorageSecret
         }
       ], sharedConfig, workerConfig)
     }

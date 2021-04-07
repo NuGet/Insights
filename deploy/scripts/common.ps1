@@ -84,6 +84,7 @@ function ConvertTo-FlatConfig {
                 $i = 0
                 foreach ($value in $current) {
                     MakeKeys $output "$nextPrefix$i" $value
+                    $i++
                 }
             } else {
                 $output[$prefix] = $current

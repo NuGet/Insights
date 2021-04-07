@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -106,7 +108,7 @@ namespace Knapcode.ExplorePackages.Worker
         public string StorageSuffix => _fixture.StorageSuffix;
         public string PartitionKey { get; }
         public TaskStateStorageService Target => new TaskStateStorageService(
-            _fixture.ServiceClientFactory,
+            _fixture.GetServiceClientFactory(_output.GetLogger<ServiceClientFactory>()),
             _output.GetTelemetryClient(),
             _fixture.Options.Object);
         public TableClient Table => _fixture.Table;
@@ -120,7 +122,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public class Fixture : IAsyncLifetime
         {
-            public Fixture(ITestOutputHelper output)
+            public Fixture()
             {
                 Options = new Mock<IOptions<ExplorePackagesWorkerSettings>>();
                 Settings = new ExplorePackagesWorkerSettings
@@ -129,30 +131,33 @@ namespace Knapcode.ExplorePackages.Worker
                     TaskStateTableName = TestSettings.NewStoragePrefix() + "1ts1",
                 };
                 Options.Setup(x => x.Value).Returns(() => Settings);
-                ServiceClientFactory = new ServiceClientFactory(Options.Object, output.GetLogger<ServiceClientFactory>());
                 StorageSuffix = "suffix";
             }
 
             public Mock<IOptions<ExplorePackagesWorkerSettings>> Options { get; }
             public ExplorePackagesWorkerSettings Settings { get; }
-            public ServiceClientFactory ServiceClientFactory { get; }
             public string StorageSuffix { get; }
             public TableClient Table { get; private set; }
 
             public async Task InitializeAsync()
             {
-                Table = await GetTableAsync();
+                Table = await GetTableAsync(NullLogger<ServiceClientFactory>.Instance);
                 await Table.CreateIfNotExistsAsync();
+            }
+
+            public ServiceClientFactory GetServiceClientFactory(ILogger<ServiceClientFactory> logger)
+            {
+                return new ServiceClientFactory(Options.Object, logger);
             }
 
             public async Task DisposeAsync()
             {
-                await (await GetTableAsync()).DeleteIfExistsAsync();
+                await (await GetTableAsync(NullLogger<ServiceClientFactory>.Instance)).DeleteIfExistsAsync();
             }
 
-            public async Task<TableClient> GetTableAsync()
+            public async Task<TableClient> GetTableAsync(ILogger<ServiceClientFactory> logger)
             {
-                return (await ServiceClientFactory.GetTableServiceClientAsync())
+                return (await GetServiceClientFactory(logger).GetTableServiceClientAsync())
                     .GetTableClient(Options.Object.Value.TaskStateTableName + StorageSuffix);
             }
         }

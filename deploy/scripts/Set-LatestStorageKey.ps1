@@ -34,7 +34,6 @@ Write-Status "Getting keys for storage account '$StorageAccountName'..."
 $keys = Get-AzStorageAccountKey `
     -ResourceGroupName $resourceGroupName `
     -Name $storageAccountName
-Write-Host 'Done.'
 
 $activeKey = $keys | Where-Object { $_.KeyName -eq $managedStorageAccount.ActiveKeyName }
 
