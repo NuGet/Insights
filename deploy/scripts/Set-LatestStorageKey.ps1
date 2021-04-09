@@ -64,7 +64,7 @@ if ($needsSet) {
     Set-AzKeyVaultSecret `
         -VaultName $KeyVaultName `
         -Name $StorageKeySecretName `
-        -SecretValue (ConvertTo-SecureString -String $newSecretValue -AsPlainText) | Out-Default
+        -SecretValue (ConvertTo-SecureString -String $newSecretValue -AsPlainText -Force) | Out-Default
 } else {
     Write-Host "The secret is already up to date."
 }

@@ -254,6 +254,12 @@ $websiteDefaultHostName = $deployment.Outputs.websiteDefaultHostName.Value
 $websiteHostNames = $deployment.Outputs.websiteHostNames.Value.ToString() | ConvertFrom-Json
 $workerDefaultHostNames = $deployment.Outputs.workerDefaultHostNames.Value.ToString() | ConvertFrom-Json
 
+# Make the app service support the website for login
+. (Join-Path $PSScriptRoot "Initialize-AadAppForWebsite.ps1") `
+    -ObjectId $aadApp.ObjectId `
+    -DefaultHostName $websiteDefaultHostName `
+    -HostNames $websiteHostNames
+
 # Warm up the workers, since initial deployment appears to leave them in a hibernation state.
 Write-Status "Warming up the workers and website..."
 foreach ($hostName in $workerDefaultHostNames + $websiteDefaultHostName) {
@@ -261,24 +267,3 @@ foreach ($hostName in $workerDefaultHostNames + $websiteDefaultHostName) {
     $response = Invoke-WebRequest -Method HEAD -Uri $url -UseBasicParsing
     Write-Host "$url - $($response.StatusCode) $($response.StatusDescription)"
 }
-
-# Make the app service support the website for login
-Write-Status "Enabling the AAD app for website login..."
-$appServicePatch = @{
-    api = @{ requestedAccessTokenVersion = 2 };
-    identifierUris = @();
-    signInAudience = "AzureADandPersonalMicrosoftAccount";
-    web = @{
-        homePageUrl = "https://$($websiteDefaultHostName)";
-        redirectUris = @($websiteHostNames | ForEach-Object { "https://$_/signin-oidc" })
-        logoutUrl = "https://$($websiteDefaultHostName)/signout-oidc"
-    }
-}
-$graphToken = Get-AzAccessToken -Resource "https://graph.microsoft.com/"
-$graphHeaders = @{ Authorization = "Bearer $($graphToken.Token)" }
-Invoke-RestMethod `
-    -Method Patch `
-    -Uri "https://graph.microsoft.com/v1.0/applications/$($aadApp.ObjectId)" `
-    -Headers $graphHeaders `
-    -ContentType "application/json" `
-    -Body ($appServicePatch | ConvertTo-Json -Depth 100 -Compress)

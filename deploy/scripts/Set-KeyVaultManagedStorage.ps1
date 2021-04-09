@@ -77,7 +77,7 @@ $storageContext = New-AzStorageContext `
     -Protocol Https `
     -StorageAccountKey $storageEmulatorKey
 $sasTemplate = New-AzStorageAccountSASToken `
-    -ExpiryTime (Get-Date "2010-01-01Z" -AsUTC) `
+    -ExpiryTime (Get-Date "2010-01-01Z").ToUniversalTime() `
     -Permission "acdlpruw" `
     -ResourceType Service,Container,Object `
     -Service Blob,Queue,Table `

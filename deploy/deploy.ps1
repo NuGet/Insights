@@ -10,7 +10,6 @@ param (
     [switch]$AllowDeployUser
 )
 
-$ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "scripts/common.ps1")
 
 $configPath = Join-Path $PSScriptRoot "config/$ConfigName.json"
@@ -28,7 +27,7 @@ $websiteConfig = Merge-Hashtable $websiteConfig.AppSettings.Shared $websiteConfi
 function Get-SaltedHash($value) {
     $salt = "Knapcode.ExplorePackages-8DHU4R9URVLNHTQC2SS21ATB95U1VD1J-"
     $path = New-TemporaryFile
-    "$salt$value" | Out-File -FilePath $path -Encoding UTF8 -NoNewline
+    "$salt$value" | Out-File -FilePath $path -Encoding ASCII -NoNewline
     $hash = Get-FileHash -Path $path -Algorithm SHA256
     Remove-Item $path
     return $hash.Hash.ToLowerInvariant()
@@ -77,4 +76,4 @@ $parameters.WorkerConfig = $workerConfig
 Write-Status ""
 Write-Status "Beginning the deployment process..."
 
-. (Join-Path $PSScriptRoot "scripts/Invoke-Deploy") @parameters
+. (Join-Path $PSScriptRoot "scripts/Invoke-Deploy") @parameters -ErrorAction Stop
