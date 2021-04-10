@@ -1,0 +1,20 @@
+{
+  "Deployment": {
+    "WorkerCount": 1
+  },
+  "AppSettings": {
+    "Shared": {
+      "Knapcode.ExplorePackages": {
+        "DisabledDrivers": [
+          "NuGetPackageExplorerToCsv"
+        ],
+        "RestrictUsers": true
+      }
+    },
+    "Worker": {
+      "Knapcode.ExplorePackages": {
+        "MoveTempToHome": true
+      }
+    }
+  }
+}

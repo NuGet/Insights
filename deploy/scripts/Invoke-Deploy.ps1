@@ -1,6 +1,8 @@
 [CmdletBinding()]
 param (
     [Parameter(Mandatory = $true)]
+    [ValidatePattern("^[a-z0-9]+$")]
+    [ValidateLength(1, 19)] # 19 because storage accounts and Key Vaults have max 24 characters and the prefix is "expkg".
     [string]$StackName,
 
     [Parameter(Mandatory = $false)]
@@ -28,8 +30,8 @@ param (
 # Shared variables and functions
 $root = Join-Path $PSScriptRoot "../.."
 $resourceGroupName = "ExplorePackages-$StackName"
-$storageAccountName = "explore$StackName"
-$keyVaultName = "explore$StackName"
+$storageAccountName = "expkg$($StackName.ToLowerInvariant())"
+$keyVaultName = "expkg$($StackName.ToLowerInvariant())"
 $aadAppName = "ExplorePackages-$StackName-Website"
 $websitePlanName = "ExplorePackages-$StackName-WebsitePlan"
 $storageKeySecretName = "$storageAccountName-FullAccessConnectionString"
@@ -261,8 +263,8 @@ $workerDefaultHostNames = $deployment.Outputs.workerDefaultHostNames.Value.ToStr
     -HostNames $websiteHostNames
 
 # Warm up the workers, since initial deployment appears to leave them in a hibernation state.
-Write-Status "Warming up the workers and website..."
-foreach ($hostName in $workerDefaultHostNames + $websiteDefaultHostName) {
+Write-Status "Warming up the website and workers..."
+foreach ($hostName in @($websiteDefaultHostName) + $workerDefaultHostNames) {
     $url = "https://$hostName/"
     $response = Invoke-WebRequest -Method HEAD -Uri $url -UseBasicParsing
     Write-Host "$url - $($response.StatusCode) $($response.StatusDescription)"
