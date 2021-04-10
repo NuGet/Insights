@@ -16,7 +16,7 @@ Analyze packages NuGet.org in a highly distributed manner. Or, if you want a sal
 
 ### Build the code
 
-1. Ensure you have the .NET 5 SDK installed. [Install it if needed](https://dotnet.microsoft.com/download).
+1. Ensure you have the .NET 3.1 and 5 SDK installed. [Install it if needed](https://dotnet.microsoft.com/download).
    ```
    dotnet --info
    ```

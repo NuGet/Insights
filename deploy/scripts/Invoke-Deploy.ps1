@@ -57,8 +57,16 @@ function New-Deployment($DeploymentName, $BicepPath, $Parameters) {
     $parametersPath = Join-Path $deployDir "$deploymentName.deploymentParameters.json"
     $deploymentParameters | ConvertTo-Json -Depth 100 | Out-File $parametersPath -Encoding UTF8
 
+    $fullPath = Join-Path $PSScriptRoot $BicepPath
+    bicep build $fullPath
+    $fullPath = $fullPath.Replace(".bicep", ".json")
+    
+    $template = Get-Content $fullPath
+    $template = $template.Replace("MSDeploy", "ZipDeploy")
+    $template | Out-File $fullPath -Encoding UTF8
+
     return New-AzResourceGroupDeployment `
-        -TemplateFile (Join-Path $PSScriptRoot $BicepPath) `
+        -TemplateFile $fullPath `
         -ResourceGroupName $resourceGroupName `
         -Name $deploymentName `
         -TemplateParameterFile $parametersPath
@@ -159,7 +167,7 @@ $activeStorageKey = . (Join-Path $PSScriptRoot "Set-LatestStorageKey.ps1") `
 
 # Deploy the server farm, if not provided
 if (!$ExistingWebsitePlanId) {
-    Write-Status "Ensuring the website plan '$websitePlanName'..."
+    Write-Status "Ensuring the website plan '$websitePlanName' exists..."
     $websitePlan = Get-AzAppServicePlan -ResourceGroupName $resourceGroupName -Name $websitePlanName
     if (!$websitePlan) {
         $websitePlan = New-AzAppServicePlan `

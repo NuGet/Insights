@@ -132,7 +132,7 @@ resource website 'Microsoft.Web/sites@2020-09-01' = {
   }
 
   resource deploy 'extensions' = {
-    name: 'ZipDeploy'
+    name: 'MSDeploy'
     properties: {
       packageUri: websiteZipUrl
     }
