@@ -1,8 +1,0 @@
-config:
-  ExplorePackages:WebsitePlanId: /subscriptions/87b3a2cf-ab4e-487b-a7af-59192cd21caf/resourceGroups/Shared-WestUS2/providers/Microsoft.Web/serverfarms/Shared-WestUS2
-  ExplorePackages:WorkerSettings:
-    DisabledDrivers:
-    - NuGetPackageExplorerToCsv
-  ExplorePackages:WebsiteSettings:
-    RestrictUsers: false
-  azure:location: WestUS2
