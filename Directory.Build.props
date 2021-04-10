@@ -12,6 +12,11 @@
     <BaseOutputPath>$(_ProjectArtifactsDirectory)bin\</BaseOutputPath>
     <OutputPath>$(BaseOutputPath)$(Configuration)\</OutputPath>
   </PropertyGroup>
+  <PropertyGroup>
+    <EnableNPE Condition="'$(EnableNPE)' == '' and $([MSBuild]::IsOSPlatform('Windows'))">true</EnableNPE>
+    <EnableNPE Condition="'$(EnableNPE)' == ''">false</EnableNPE>
+    <DefineConstants Condition="'$(EnableNPE)' == 'true'">$(DefineConstants);ENABLE_NPE</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>$(AssemblyName).Test</_Parameter1>

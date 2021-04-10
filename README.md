@@ -33,8 +33,13 @@ Analyze packages NuGet.org in a highly distributed manner. Or, if you want a sal
 
 ### Deploy to Azure
 
+PowerShell is used for the following steps. I have tested both PowerShell 5.1 (Windows) and PowerShell 7.1.3 (Windows).
+
 1. Ensure you have the Az PowerShell modules. [Install them if needed](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps).
-1. Ensure you have Bicep installed. [Install them if needed](https://github.com/Azure/bicep/blob/main/docs/installing.md).
+   ```powershell
+   Connect-AzAccount
+   ```
+1. Ensure you have Bicep installed. [Install it if needed](https://github.com/Azure/bicep/blob/main/docs/installing.md).
    ```
    bicep --version
    ```
