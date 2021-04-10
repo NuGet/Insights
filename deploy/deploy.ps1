@@ -24,15 +24,6 @@ $websiteConfig = Get-Config
 $websiteConfig = Merge-Hashtable $websiteConfig.AppSettings.Shared $websiteConfig.AppSettings.Website
 
 # Optionally, add the current (deploying) user as an allowed user for the website admin panel.
-function Get-SaltedHash($value) {
-    $salt = "Knapcode.ExplorePackages-8DHU4R9URVLNHTQC2SS21ATB95U1VD1J-"
-    $path = New-TemporaryFile
-    "$salt$value" | Out-File -FilePath $path -Encoding ASCII -NoNewline
-    $hash = Get-FileHash -Path $path -Algorithm SHA256
-    Remove-Item $path
-    return $hash.Hash.ToLowerInvariant()
-}
-
 if ($AllowDeployUser) {
     $context = Get-AzContext
     $homeAccountId = $context.Account.ExtendedProperties.HomeAccountId
@@ -47,17 +38,13 @@ if ($AllowDeployUser) {
         if (!$websiteConfig['Knapcode.ExplorePackages'].AllowedUsers) {
             $websiteConfig['Knapcode.ExplorePackages'].AllowedUsers = @()
         }
-
-        $hashedTenantId = Get-SaltedHash $tenantId
-        $hashedObjectId = Get-SaltedHash $objectId
-
         Write-Status "Adding allowed user:"
-        Write-Status "  Tenant ID: $tenantId (hashed $hashedTenantId)"
-        Write-Status "  Object ID: $objectId (hashed $hashedObjectId)"
+        Write-Status "  Tenant ID: $tenantId"
+        Write-Status "  Object ID: $objectId"
 
         $websiteConfig['Knapcode.ExplorePackages'].AllowedUsers += @{
-            HashedTenantId = Get-SaltedHash $tenantId "tid.txt";
-            HashedObjectId = Get-SaltedHash $objectId "oid.txt"
+            TenantId = $tenantId;
+            ObjectId = $objectId
         }
     }
 }

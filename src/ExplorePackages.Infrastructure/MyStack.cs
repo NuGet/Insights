@@ -333,11 +333,11 @@ namespace Knapcode.ExplorePackages
             {
                 var allowedUser = configuredSettings.AllowedUsers[i];
                 appSettings.Add(
-                    $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.AllowedUsers)}:{i}:{nameof(AllowedUser.HashedTenantId)}",
-                    allowedUser.HashedTenantId);
+                    $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.AllowedUsers)}:{i}:{nameof(AllowedUser.TenantId)}",
+                    allowedUser.TenantId);
                 appSettings.Add(
-                    $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.AllowedUsers)}:{i}:{nameof(AllowedUser.HashedObjectId)}",
-                    allowedUser.HashedObjectId);
+                    $"{ExplorePackagesSettings.DefaultSectionName}:{nameof(ExplorePackagesWebsiteSettings.AllowedUsers)}:{i}:{nameof(AllowedUser.ObjectId)}",
+                    allowedUser.ObjectId);
             }
         }
 
