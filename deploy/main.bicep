@@ -132,7 +132,7 @@ resource website 'Microsoft.Web/sites@2020-09-01' = {
   }
 
   resource deploy 'extensions' = {
-    name: 'MSDeploy'
+    name: any('ZipDeploy') // Workaround per: https://github.com/Azure/bicep/issues/784#issuecomment-817260643
     properties: {
       packageUri: websiteZipUrl
     }

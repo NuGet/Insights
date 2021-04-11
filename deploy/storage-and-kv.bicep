@@ -38,7 +38,7 @@ resource deploymentContainerPolicy 'Microsoft.Storage/storageAccounts/management
             actions: {
               baseBlob: {
                 delete: {
-                  daysAfterModificationGreaterThan: 3
+                  daysAfterModificationGreaterThan: 1
                 }
               }
             }
