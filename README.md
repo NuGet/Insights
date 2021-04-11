@@ -33,7 +33,7 @@ Analyze packages NuGet.org in a highly distributed manner. Or, if you want a sal
 
 ### Deploy to Azure
 
-PowerShell is used for the following steps. I have tested both PowerShell 5.1 (Windows) and PowerShell 7.1.3 (Windows).
+PowerShell is used for the following steps. I have tested Windows PowerShell 5.1, Windows PowerShell 7.1.3, and Linux PowerShell 7.1.3.
 
 1. Ensure you have the Az PowerShell modules. [Install them if needed](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps).
    ```powershell
