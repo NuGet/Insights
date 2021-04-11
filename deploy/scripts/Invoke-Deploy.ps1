@@ -58,16 +58,19 @@ function New-Deployment($DeploymentName, $BicepPath, $Parameters) {
     $deploymentParameters | ConvertTo-Json -Depth 100 | Out-File $parametersPath -Encoding UTF8
 
     # Workaround for https://github.com/Azure/bicep/issues/784#issuecomment-817220035
-    $fullPath = Join-Path $PSScriptRoot $BicepPath
-    bicep build $fullPath
-    $fullPath = $fullPath.Replace(".bicep", ".json")
+    $fullBicepPath = Join-Path $PSScriptRoot $BicepPath
+    $fileName = Split-Path $fullBicepPath -Leaf
+    $fileName = $fileName.Replace(".bicep", ".deploymentTemplate.json")
+    $fullJsonPath = Join-Path $deployDir "$deploymentId-$fileName"
+
+    bicep build $fullBicepPath --outfile $fullJsonPath
     
-    $template = Get-Content $fullPath
+    $template = Get-Content $fullJsonPath
     $template = $template.Replace("MSDeploy", "ZipDeploy")
-    $template | Out-File $fullPath -Encoding UTF8
+    $template | Out-File $fullJsonPath -Encoding UTF8
 
     return New-AzResourceGroupDeployment `
-        -TemplateFile $fullPath `
+        -TemplateFile $fullJsonPath `
         -ResourceGroupName $resourceGroupName `
         -Name $deploymentName `
         -TemplateParameterFile $parametersPath
