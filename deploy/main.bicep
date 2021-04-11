@@ -8,6 +8,7 @@ param storageKeySecretName string
 param sasDefinitionName string
 
 param websitePlanId string = 'new'
+param websiteName string
 param websiteAadClientId string
 param websiteConfig array
 @secure()
@@ -109,7 +110,7 @@ resource websitePlan 'Microsoft.Web/serverfarms@2020-09-01' = if (websitePlanId 
 }
 
 resource website 'Microsoft.Web/sites@2020-09-01' = {
-  name: 'ExplorePackages-${stackName}'
+  name: websiteName
   location: resourceGroup().location
   identity: {
     type: 'SystemAssigned'

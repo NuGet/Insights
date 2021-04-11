@@ -1,6 +1,7 @@
 {
   "Deployment": {
     "WorkerCount": 1,
+    "WebsiteName": "ExplorePackages",
     "ExistingWebsitePlanId": "/subscriptions/87b3a2cf-ab4e-487b-a7af-59192cd21caf/resourceGroups/Shared-WestUS2/providers/Microsoft.Web/serverfarms/Shared-WestUS2"
   },
   "AppSettings": {
@@ -15,6 +16,11 @@
     "Worker": {
       "Knapcode.ExplorePackages": {
         "MoveTempToHome": true
+      }
+    },
+    "Website": {
+      "Knapcode.ExplorePackages": {
+        "ShowAdminLink": false
       }
     }
   }

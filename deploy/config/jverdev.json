@@ -1,6 +1,6 @@
 {
   "Deployment": {
-    "WorkerCount": 2
+    "WorkerCount": 1
   },
   "AppSettings": {
     "Shared": {

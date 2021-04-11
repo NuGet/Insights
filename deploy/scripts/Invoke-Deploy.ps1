@@ -17,6 +17,9 @@ param (
     [Parameter(Mandatory = $false)]
     [ValidateSet("Warning", "Information")]
     [string]$WorkerLogLevel = "Warning",
+    
+    [Parameter(Mandatory = $false)]
+    [string]$WebsiteName,
 
     [Parameter(Mandatory = $false)]
     [Hashtable]$WebsiteConfig = @{},
@@ -36,6 +39,10 @@ $aadAppName = "ExplorePackages-$StackName-Website"
 $storageKeySecretName = "$storageAccountName-FullAccessConnectionString"
 $sasDefinitionName = "BlobQueueTableFullAccessSas"
 $deploymentContainerName = "deployment"
+
+if (!$WebsiteName) {
+    $WebsiteName = "ExplorePackages-$StackName"
+}
 
 $deploymentId = (Get-Date).ToUniversalTime().ToString("yyyyMMddHHmmss")
 
@@ -125,7 +132,7 @@ foreach ($identity in $identities) {
 
 # Deploy the storage account, Key Vault, and deployment container.
 Write-Status "Ensuring the storage account, Key Vault, and deployment container exist..."
-$deployment = New-Deployment `
+New-Deployment `
     -DeploymentName "storage-and-kv" `
     -BicepPath "../storage-and-kv.bicep" `
     -Parameters @{
@@ -202,6 +209,7 @@ function New-MainDeployment($deploymentName, $useKeyVaultReference) {
         keyVaultName = $keyVaultName;
         storageKeySecretName = $storageKeySecretName;
         sasDefinitionName = $sasDefinitionName;
+        websiteName = $WebsiteName;
         websiteAadClientId = $aadApp.ApplicationId;
         websiteConfig = $websiteConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs;
         websiteZipUrl = $websiteZipUrl;
