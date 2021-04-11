@@ -7,7 +7,7 @@ param keyVaultName string
 param storageKeySecretName string
 param sasDefinitionName string
 
-param websitePlanId string
+param websitePlanId string = 'new'
 param websiteAadClientId string
 param websiteConfig array
 @secure()
@@ -100,6 +100,14 @@ resource insights 'Microsoft.Insights/components@2015-05-01' = {
 }
 
 // Website
+resource websitePlan 'Microsoft.Web/serverfarms@2020-09-01' = if (websitePlanId == 'new') {
+  name: 'ExplorePackages-${stackName}-WebsitePlan'
+  location: resourceGroup().location
+  sku: {
+    name: 'B1'
+  }
+}
+
 resource website 'Microsoft.Web/sites@2020-09-01' = {
   name: 'ExplorePackages-${stackName}'
   location: resourceGroup().location
@@ -107,7 +115,7 @@ resource website 'Microsoft.Web/sites@2020-09-01' = {
     type: 'SystemAssigned'
   }
   properties: {
-    serverFarmId: websitePlanId
+    serverFarmId: websitePlanId == 'new' ? websitePlan.id : websitePlanId
     clientAffinityEnabled: false
     httpsOnly: true
     siteConfig: {

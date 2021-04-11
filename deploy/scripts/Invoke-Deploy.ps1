@@ -33,7 +33,6 @@ $resourceGroupName = "ExplorePackages-$StackName"
 $storageAccountName = "expkg$($StackName.ToLowerInvariant())"
 $keyVaultName = "expkg$($StackName.ToLowerInvariant())"
 $aadAppName = "ExplorePackages-$StackName-Website"
-$websitePlanName = "ExplorePackages-$StackName-WebsitePlan"
 $storageKeySecretName = "$storageAccountName-FullAccessConnectionString"
 $sasDefinitionName = "BlobQueueTableFullAccessSas"
 $deploymentContainerName = "deployment"
@@ -159,23 +158,6 @@ $activeStorageKey = . (Join-Path $PSScriptRoot "Set-LatestStorageKey.ps1") `
     -StorageKeySecretName $storageKeySecretName `
     -UserPrincipalName $upn
 
-# Deploy the server farm, if not provided
-if (!$ExistingWebsitePlanId) {
-    Write-Status "Ensuring the website plan '$websitePlanName' exists..."
-    $websitePlan = Get-AzAppServicePlan -ResourceGroupName $resourceGroupName -Name $websitePlanName
-    if (!$websitePlan) {
-        $websitePlan = New-AzAppServicePlan `
-            -Name $websitePlanName `
-            -ResourceGroupName $resourceGroupName `
-            -Location $Location `
-            -Tier Basic `
-            -WorkerSize Small
-    }
-    $websitePlanId = $websitePlan.id
-} else {
-    $websitePlanId = $ExistingWebsitePlanId
-}
-
 # Initialize the AAD app
 $aadApp = (. (Join-Path $PSScriptRoot "Initialize-AadApp.ps1") -AadAppName $AadAppName)
 
@@ -214,25 +196,30 @@ $existingWorkers = Get-AzFunctionApp -ResourceGroupName $resourceGroupName
 $existingWorkerCount = $existingWorkers.Count
 
 function New-MainDeployment($deploymentName, $useKeyVaultReference) {
+    $parameters = @{
+        stackName = $StackName;
+        storageAccountName = $storageAccountName;
+        keyVaultName = $keyVaultName;
+        storageKeySecretName = $storageKeySecretName;
+        sasDefinitionName = $sasDefinitionName;
+        websiteAadClientId = $aadApp.ApplicationId;
+        websiteConfig = $websiteConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs;
+        websiteZipUrl = $websiteZipUrl;
+        workerConfig = $workerConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs;
+        workerLogLevel = $WorkerLogLevel;
+        workerZipUrl = $workerZipUrl;
+        workerCount = $workerCount;
+        useKeyVaultReference = $useKeyVaultReference
+    }
+
+    if ($ExistingWebsitePlanId) {
+        $parameters.WebsitePlanId = $ExistingWebsitePlanId
+    }
+
     New-Deployment `
         -DeploymentName $deploymentName `
         -BicepPath "../main.bicep" `
-        -Parameters @{
-            stackName = $StackName;
-            storageAccountName = $storageAccountName;
-            keyVaultName = $keyVaultName;
-            storageKeySecretName = $storageKeySecretName;
-            sasDefinitionName = $sasDefinitionName;
-            websitePlanId = $websitePlanId;
-            websiteAadClientId = $aadApp.ApplicationId;
-            websiteConfig = $websiteConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs;
-            websiteZipUrl = $websiteZipUrl;
-            workerConfig = $workerConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs;
-            workerLogLevel = $WorkerLogLevel;
-            workerZipUrl = $workerZipUrl;
-            workerCount = $workerCount;
-            useKeyVaultReference = $useKeyVaultReference
-        }
+        -Parameters $parameters
 }
 
 if ($existingWorkerCount -gt $workerCount) {
