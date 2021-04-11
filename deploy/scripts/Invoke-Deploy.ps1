@@ -57,6 +57,7 @@ function New-Deployment($DeploymentName, $BicepPath, $Parameters) {
     $parametersPath = Join-Path $deployDir "$deploymentName.deploymentParameters.json"
     $deploymentParameters | ConvertTo-Json -Depth 100 | Out-File $parametersPath -Encoding UTF8
 
+    # Workaround for https://github.com/Azure/bicep/issues/784#issuecomment-817220035
     $fullPath = Join-Path $PSScriptRoot $BicepPath
     bicep build $fullPath
     $fullPath = $fullPath.Replace(".bicep", ".json")
