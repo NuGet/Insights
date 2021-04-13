@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Azure.Management.AppService.Fluent.Models;
 
 namespace Knapcode.ExplorePackages.Worker
 {
@@ -25,6 +26,10 @@ namespace Knapcode.ExplorePackages.Worker
             CatalogScanUpdateFrequency = TimeSpan.FromHours(6);
             DownloadToCsvFrequency = TimeSpan.FromHours(3);
             OwnersToCsvFrequency = TimeSpan.FromHours(3);
+
+            RestartHostServices = false;
+            HostSubscriptionId = null;
+            HostResourceGroupName = null;
 
             WorkerQueueName = "workerqueue";
             CursorTableName = "cursors";
@@ -69,6 +74,11 @@ namespace Knapcode.ExplorePackages.Worker
         public TimeSpan CatalogScanUpdateFrequency { get; set; }
         public TimeSpan DownloadToCsvFrequency { get; set; }
         public TimeSpan OwnersToCsvFrequency { get; set; }
+
+        public bool RestartHostServices { get; set; }
+        public string HostSubscriptionId { get; set; }
+        public string HostResourceGroupName { get; set; }
+        public string HostResourceName { get; set; }
 
         public string WorkerQueueName { get; set; }
         public string CursorTableName { get; set; }

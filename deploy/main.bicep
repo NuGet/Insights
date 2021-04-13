@@ -165,8 +165,10 @@ var workerConfigWithStorage = concat(workerConfig, workerSku == 'Y1' ? [
   }
 ] : [])
 
+var workerNames = [for i in range(0, workerCount): 'ExplorePackages-${stackName}-Worker-${i}']
+
 resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCount): {
-  name: 'ExplorePackages-${stackName}-Worker-${i}'
+  name: workerNames[i]
   location: resourceGroup().location
   kind: 'FunctionApp'
   identity: {
@@ -206,6 +208,15 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
         }
       ], sharedConfig, workerConfigWithStorage)
     }
+  }
+}]
+
+resource perms 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = [for i in range(0, workerCount): {
+  name: guid('FunctionsCanRestartThemselves-${i}')
+  scope: resourceGroup()
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'de139f84-1756-47ae-9be6-808fbbe84772')
+    principalId: workers[i].identity.principalId
   }
 }]
 

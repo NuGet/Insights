@@ -12,10 +12,15 @@
     <None Include="$(CompilerGeneratedFilesOutputPath)\**\*.cs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Azure.Management.AppService.Fluent" Version="1.37.1" />
+    <PackageReference Include="Microsoft.Azure.Management.Fluent" Version="1.37.1" />
     <PackageReference Include="NReco.Csv" Version="1.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ExplorePackages.Logic\ExplorePackages.Logic.csproj" />
     <ProjectReference Include="..\ExplorePackages.SourceGenerator\ExplorePackages.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="NewFolder\" />
   </ItemGroup>
 </Project>
