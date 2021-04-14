@@ -203,6 +203,22 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
           value: 'dotnet'
         }
         {
+          name: 'Knapcode.ExplorePackages:StorageConnectionStringSecretName'
+          value: storageKeySecretName
+        }
+        {
+          name: 'Knapcode.ExplorePackages:HostSubscriptionId'
+          value: subscription().subscriptionId
+        }
+        {
+          name: 'Knapcode.ExplorePackages:HostResourceGroupName'
+          value: resourceGroup().name
+        }
+        {
+          name: 'Knapcode.ExplorePackages:HostFunctionAppName'
+          value: workerNames[i]
+        }
+        {
           name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
           value: 'false'
         }
