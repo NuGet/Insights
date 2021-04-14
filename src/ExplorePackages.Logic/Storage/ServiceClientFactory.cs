@@ -31,6 +31,11 @@ namespace Knapcode.ExplorePackages
 
         public TimeSpan UntilRefresh => GetTimeUntilRefresh(_serviceClients);
 
+        public async Task<SecretClient> GetKeyVaultSecretClientAsync()
+        {
+            return (await GetCachedServiceClientsAsync()).KeyVaultSecretClient;
+        }
+
         public async Task<QueueServiceClient> GetQueueServiceClientAsync()
         {
             return (await GetCachedServiceClientsAsync()).QueueServiceClient;
@@ -119,7 +124,7 @@ namespace Knapcode.ExplorePackages
                 sasFromKeyVault = secret.Value;
             }
 
-            return GetServiceClients(created, sasFromKeyVault);
+            return GetServiceClients(created, secretClient, sasFromKeyVault);
         }
 
         private ServiceClients GetServiceClientsSync()
@@ -133,7 +138,7 @@ namespace Knapcode.ExplorePackages
                 sasFromKeyVault = secret.Value;
             }
 
-            return GetServiceClients(created, sasFromKeyVault);
+            return GetServiceClients(created, secretClient, sasFromKeyVault);
         }
 
         private bool TryGetServiceClients(out ServiceClients serviceClients)
@@ -188,7 +193,7 @@ namespace Knapcode.ExplorePackages
             return null;
         }
 
-        private ServiceClients GetServiceClients(DateTimeOffset created, string sasFromKeyVault)
+        private ServiceClients GetServiceClients(DateTimeOffset created, SecretClient secretClient, string sasFromKeyVault)
         {
             string sas;
             DateTimeOffset? sasExpiry;
@@ -244,6 +249,7 @@ namespace Knapcode.ExplorePackages
                 sas,
                 sasExpiry,
                 storageConnectionString,
+                secretClient,
                 new BlobServiceClient(storageConnectionString),
                 new QueueServiceClient(storageConnectionString),
                 tableServiceClient);
@@ -254,6 +260,7 @@ namespace Knapcode.ExplorePackages
             string StorageSharedAccessSignature,
             DateTimeOffset? StorageSharedAccessSignatureExpiry,
             string StorageConnectionString,
+            SecretClient KeyVaultSecretClient,
             BlobServiceClient BlobServiceClient,
             QueueServiceClient QueueServiceClient,
             TableServiceClient TableServiceClient);

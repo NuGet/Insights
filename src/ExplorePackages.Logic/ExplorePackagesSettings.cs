@@ -46,6 +46,7 @@ namespace Knapcode.ExplorePackages
         public string KeyVaultName { get; set; }
         public string StorageSharedAccessSignatureSecretName { get; set; }
         public string StorageConnectionString { get; set; }
+        public string StorageConnectionStringSecretName { get; set; }
         public string StorageContainerName { get; set; }
         public string LeaseContainerName { get; set; }
         public string PackageArchiveTableName { get; set; }

@@ -75,10 +75,9 @@ namespace Knapcode.ExplorePackages.Worker
         public TimeSpan DownloadToCsvFrequency { get; set; }
         public TimeSpan OwnersToCsvFrequency { get; set; }
 
-        public bool RestartHostServices { get; set; }
         public string HostSubscriptionId { get; set; }
         public string HostResourceGroupName { get; set; }
-        public string HostResourceName { get; set; }
+        public string HostFunctionAppName { get; set; }
 
         public string WorkerQueueName { get; set; }
         public string CursorTableName { get; set; }
