@@ -20,6 +20,7 @@ param workerConfig array
   'Information'
 ])
 param workerLogLevel string = 'Warning'
+param workerSku string = 'Y1'
 @secure()
 param workerZipUrl string
 @minValue(1)
@@ -153,9 +154,16 @@ resource workerPlan 'Microsoft.Web/serverfarms@2020-09-01' = {
   name: 'ExplorePackages-${stackName}-WorkerPlan'
   location: resourceGroup().location
   sku: {
-    name: 'Y1'
+    name: workerSku
   }
 }
+
+var workerConfigWithStorage = concat(workerConfig, workerSku == 'Y1' ? [
+  {
+    name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
+    value: workerStorageSecret
+  }
+] : [])
 
 resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCount): {
   name: 'ExplorePackages-${stackName}-Worker-${i}'
@@ -170,6 +178,7 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
     httpsOnly: true
     siteConfig: {
       minTlsVersion: '1.2'
+      alwaysOn: true
       appSettings: concat([
         {
           name: 'AzureFunctionsJobHost__logging__LogLevel__Default'
@@ -195,11 +204,7 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
           name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
           value: 'false'
         }
-        {
-          name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-          value: workerStorageSecret
-        }
-      ], sharedConfig, workerConfig)
+      ], sharedConfig, workerConfigWithStorage)
     }
   }
 }]

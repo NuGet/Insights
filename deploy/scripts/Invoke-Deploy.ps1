@@ -12,14 +12,18 @@ param (
     [string]$ExistingWebsitePlanId,
     
     [Parameter(Mandatory = $false)]
+    [string]$WebsiteName,
+    
+    [Parameter(Mandatory = $false)]
+    [ValidateSet("Y1", "S1")]
+    [string]$WorkerSku = "Y1", # Y1 is consumption plan
+    
+    [Parameter(Mandatory = $false)]
     [int]$WorkerCount = 1,
     
     [Parameter(Mandatory = $false)]
     [ValidateSet("Warning", "Information")]
     [string]$WorkerLogLevel = "Warning",
-    
-    [Parameter(Mandatory = $false)]
-    [string]$WebsiteName,
 
     [Parameter(Mandatory = $false)]
     [Hashtable]$WebsiteConfig = @{},
@@ -215,6 +219,7 @@ function New-MainDeployment($deploymentName, $useKeyVaultReference) {
         websiteZipUrl = $websiteZipUrl;
         workerConfig = $workerConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs;
         workerLogLevel = $WorkerLogLevel;
+        workerSku = $workerSku;
         workerZipUrl = $workerZipUrl;
         workerCount = $workerCount;
         useKeyVaultReference = $useKeyVaultReference
