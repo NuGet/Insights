@@ -21,6 +21,7 @@ namespace Knapcode.ExplorePackages
             KeyVaultName = null;
             StorageSharedAccessSignatureSecretName = null;
             StorageConnectionString = StorageUtility.EmulatorConnectionString;
+            StorageConnectionStringSecretName = null;
             StorageContainerName = "packages";
             LeaseContainerName = "leases";
             PackageArchiveTableName = "packagearchives";

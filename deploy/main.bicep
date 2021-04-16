@@ -53,12 +53,24 @@ var sharedConfig = [
     value: '~2'
   }
   {
-    name: 'Knapcode.ExplorePackages:StorageAccountName'
-    value: storageAccountName
+    name: 'Knapcode.ExplorePackages:HostSubscriptionId'
+    value: subscription().subscriptionId
+  }
+  {
+    name: 'Knapcode.ExplorePackages:HostResourceGroupName'
+    value: resourceGroup().name
   }
   {
     name: 'Knapcode.ExplorePackages:KeyVaultName'
     value: keyVaultName
+  }
+  {
+    name: 'Knapcode.ExplorePackages:StorageAccountName'
+    value: storageAccountName
+  }
+  {
+    name: 'Knapcode.ExplorePackages:StorageConnectionStringSecretName'
+    value: storageKeySecretName
   }
   {
     name: 'Knapcode.ExplorePackages:StorageSharedAccessSignatureSecretName'
@@ -137,6 +149,11 @@ resource website 'Microsoft.Web/sites@2020-09-01' = {
           name: 'AzureAd:TenantId'
           value: 'common'
         }
+        {
+          // Needed so that the update secrets timer appears enabled in the UI
+          name: 'Knapcode.ExplorePackages:HostAppName'
+          value: websiteName
+        }
       ], sharedConfig, websiteConfig)
     }
   }
@@ -165,10 +182,8 @@ var workerConfigWithStorage = concat(workerConfig, workerSku == 'Y1' ? [
   }
 ] : [])
 
-var workerNames = [for i in range(0, workerCount): 'ExplorePackages-${stackName}-Worker-${i}']
-
 resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCount): {
-  name: workerNames[i]
+  name: 'ExplorePackages-${stackName}-Worker-${i}'
   location: resourceGroup().location
   kind: 'FunctionApp'
   identity: {
@@ -203,20 +218,8 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
           value: 'dotnet'
         }
         {
-          name: 'Knapcode.ExplorePackages:StorageConnectionStringSecretName'
-          value: storageKeySecretName
-        }
-        {
-          name: 'Knapcode.ExplorePackages:HostSubscriptionId'
-          value: subscription().subscriptionId
-        }
-        {
-          name: 'Knapcode.ExplorePackages:HostResourceGroupName'
-          value: resourceGroup().name
-        }
-        {
-          name: 'Knapcode.ExplorePackages:HostFunctionAppName'
-          value: workerNames[i]
+          name: 'Knapcode.ExplorePackages:HostAppName'
+          value: 'ExplorePackages-${stackName}-Worker-${i}'
         }
         {
           name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'

@@ -42,7 +42,7 @@ namespace Knapcode.ExplorePackages.Worker
                     && _options.Value.StorageConnectionStringSecretName != null
                     && _options.Value.HostSubscriptionId != null
                     && _options.Value.HostResourceGroupName != null
-                    && _options.Value.HostFunctionAppName != null;
+                    && _options.Value.HostAppName != null;
             }
         }
 
@@ -95,7 +95,7 @@ namespace Knapcode.ExplorePackages.Worker
             _logger.LogInformation("Found {Count} function apps.", functionApps.Count());
 
             // Restart the running app last, because this thread could terminate :)
-            functionApps = functionApps.OrderBy(x => x.Name == _options.Value.HostFunctionAppName);
+            functionApps = functionApps.OrderBy(x => x.Name == _options.Value.HostAppName);
 
             foreach (var functionApp in functionApps)
             {

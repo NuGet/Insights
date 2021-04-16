@@ -27,9 +27,9 @@ namespace Knapcode.ExplorePackages.Worker
             DownloadToCsvFrequency = TimeSpan.FromHours(3);
             OwnersToCsvFrequency = TimeSpan.FromHours(3);
 
-            RestartHostServices = false;
             HostSubscriptionId = null;
             HostResourceGroupName = null;
+            HostAppName = null;
 
             WorkerQueueName = "workerqueue";
             CursorTableName = "cursors";
@@ -77,7 +77,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public string HostSubscriptionId { get; set; }
         public string HostResourceGroupName { get; set; }
-        public string HostFunctionAppName { get; set; }
+        public string HostAppName { get; set; }
 
         public string WorkerQueueName { get; set; }
         public string CursorTableName { get; set; }

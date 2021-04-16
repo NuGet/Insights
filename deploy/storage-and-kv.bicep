@@ -72,6 +72,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
       permissions: {
         secrets: [
           'get'
+          'set' // Needed to keep the SAS-based connection string up to date
         ]
       }
     }]
