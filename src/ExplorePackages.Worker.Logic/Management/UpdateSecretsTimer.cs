@@ -31,7 +31,7 @@ namespace Knapcode.ExplorePackages.Worker
         }
 
         public string Name => "UpdateSecrets";
-        public TimeSpan Frequency => TimeSpan.FromHours(6);
+        public TimeSpan Frequency => TimeSpan.FromMinutes(15);
         public bool AutoStart => true;
         public bool IsEnabled
         {

@@ -13,7 +13,13 @@ param (
     [string]$UserPrincipalName,
     
     [Parameter(Mandatory = $true)]
-    [string]$SasDefinitionName
+    [string]$SasDefinitionName,
+
+    [Parameter(Mandatory = $true)]
+    [string]$SasConnectionStringSecretName,
+    
+    [Parameter(Mandatory = $false)]
+    [switch]$AutoRegenerateKey
 )
 
 . (Join-Path $PSScriptRoot "common.ps1")
@@ -27,7 +33,8 @@ Write-Status "Adding 'list', 'set', 'setsas' storage Key Vault permissions for '
 Set-AzKeyVaultAccessPolicy `
     -VaultName $KeyVaultName `
     -UserPrincipalName $UserPrincipalName `
-    -PermissionsToStorage list,set,setsas
+    -PermissionsToSecrets list,get,set `
+    -PermissionsToStorage list,set,setsas | Out-Default
 
 Write-Status "Getting the resource ID for storage account '$StorageAccountName'..."
 $storageAccount = Get-AzStorageAccount `
@@ -40,23 +47,35 @@ $matchingStorage = Get-AzKeyVaultManagedStorageAccount `
     | Where-Object { $_.AccountResourceId -eq $storageAccount.Id }
 if (!$matchingStorage) {   
     Write-Status "Giving Key Vault the operator role on storage account '$StorageAccountName'..."
-    New-AzRoleAssignment `
-        -ApplicationId $keyVaultSpAppId `
+    $roleAssignement = Get-AzRoleAssignment `
         -RoleDefinitionName 'Storage Account Key Operator Service Role' `
         -Scope $storageAccount.Id
+    if (!$roleAssignement) {
+        New-AzRoleAssignment `
+            -ApplicationId $keyVaultSpAppId `
+            -RoleDefinitionName 'Storage Account Key Operator Service Role' `
+            -Scope $storageAccount.Id | Out-Default
+    }
 
     Write-Status "Making Key Vault '$KeyVaultName' manage storage account '$StorageAccountName'..."
     $attempt = 0;
     while ($true) {
         try {
             $attempt++
+
+            if ($AutoRegenerateKey) {
+                $parameters = @{ RegenerationPeriod = New-TimeSpan -Days 1 }
+            } else {
+                $parameters = @{ DisableAutoRegenerateKey = $true }
+            }
+
             Add-AzKeyVaultManagedStorageAccount `
                 -VaultName $KeyVaultName `
                 -AccountName $StorageAccountName `
                 -ActiveKeyName key1 `
-                -RegenerationPeriod (New-TimeSpan -Days 90) `
                 -AccountResourceId $storageAccount.Id `
-                -ErrorAction Stop
+                -ErrorAction Stop `
+                @parameters | Out-Default
             break
         }
         catch {
@@ -89,11 +108,29 @@ Set-AzKeyVaultManagedStorageSasDefinition `
     -VaultName $KeyVaultName `
     -AccountName $StorageAccountName `
     -Name $SasDefinitionName `
-    -ValidityPeriod (New-TimeSpan -Hours 6) `
+    -ValidityPeriod (New-TimeSpan -Hours 1) `
     -SasType 'account' `
-    -TemplateUri $sasTemplate
+    -TemplateUri $sasTemplate | Out-Default
+
+Write-Status "Getting a SAS token for the connection string secret..."
+$sasToken = Get-AzKeyVaultSecret `
+    -VaultName $KeyVaultName `
+    -Name "$StorageAccountName-$SasDefinitionName" `
+    -AsPlainText
+$connectionString = "AccountName=$StorageAccountName;" +
+    "SharedAccessSignature=$sasToken;" +
+    "DefaultEndpointsProtocol=https;" +
+    "EndpointSuffix=core.windows.net"
+
+Write-Status "Setting secret '$SasConnectionStringSecretName'..."
+Set-AzKeyVaultSecret `
+    -VaultName $KeyVaultName `
+    -Name $SasConnectionStringSecretName `
+    -SecretValue (ConvertTo-SecureString -String $connectionString -AsPlainText -Force) | Out-Default
 
 Write-Status "Deleting Key Vault policy for '$UserPrincipalName'..."
 Remove-AzKeyVaultAccessPolicy `
     -VaultName $KeyVaultName `
-    -UserPrincipalName $UserPrincipalName
+    -UserPrincipalName $UserPrincipalName | Out-Default
+
+$sasToken

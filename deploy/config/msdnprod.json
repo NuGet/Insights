@@ -9,8 +9,7 @@
       "Knapcode.ExplorePackages": {
         "DisabledDrivers": [
           "NuGetPackageExplorerToCsv"
-        ],
-        "RestrictUsers": true
+        ]
       }
     },
     "Worker": {
@@ -20,6 +19,7 @@
     },
     "Website": {
       "Knapcode.ExplorePackages": {
+        "RestrictUsers": true,
         "ShowAdminLink": false
       }
     }

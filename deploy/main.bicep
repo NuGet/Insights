@@ -4,7 +4,7 @@ param stackName string
 param storageAccountName string
 param keyVaultName string
 
-param storageKeySecretName string
+param sasConnectionStringSecretName string
 param sasDefinitionName string
 
 param websitePlanId string = 'new'
@@ -28,12 +28,8 @@ param workerCount int
 param useKeyVaultReference bool
 
 // Variables and output
-
-// Cannot use a Key Vault reference for initial deployment.
-// https://github.com/Azure/azure-functions-host/issues/7094
-var storageSecretValue = 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};AccountKey=${listkeys(storageAccount.id, storageAccount.apiVersion).keys[0].value};EndpointSuffix=core.windows.net'
-var storageSecretReference = '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${storageKeySecretName})'
-var workerStorageSecret = useKeyVaultReference ? storageSecretReference : storageSecretValue
+var sakConnectionString = 'AccountName=${storageAccountName};AccountKey=${listkeys(storageAccount.id, storageAccount.apiVersion).keys[0].value};DefaultEndpointsProtocol=https;EndpointSuffix=core.windows.net'
+var sasConnectionStringReference = '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${sasConnectionStringSecretName})'
 
 output websiteDefaultHostName string = website.properties.defaultHostName
 output websiteHostNames array = website.properties.hostNames
@@ -70,7 +66,7 @@ var sharedConfig = [
   }
   {
     name: 'Knapcode.ExplorePackages:StorageConnectionStringSecretName'
-    value: storageKeySecretName
+    value: sasConnectionStringSecretName
   }
   {
     name: 'Knapcode.ExplorePackages:StorageSharedAccessSignatureSecretName'
@@ -178,7 +174,8 @@ resource workerPlan 'Microsoft.Web/serverfarms@2020-09-01' = {
 var workerConfigWithStorage = concat(workerConfig, workerSku == 'Y1' ? [
   {
     name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-    value: workerStorageSecret
+    // SAS-based connection strings don't work for this property
+    value: sakConnectionString
   }
 ] : [])
 
@@ -195,7 +192,7 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
     httpsOnly: true
     siteConfig: {
       minTlsVersion: '1.2'
-      alwaysOn: true
+      alwaysOn: workerSku != 'Y1'
       appSettings: concat([
         {
           name: 'AzureFunctionsJobHost__logging__LogLevel__Default'
@@ -207,7 +204,9 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
         }
         {
           name: 'AzureWebJobsStorage'
-          value: workerStorageSecret
+          // Cannot use a Key Vault reference for initial deployment.
+          // https://github.com/Azure/azure-functions-host/issues/7094
+          value: useKeyVaultReference ? sasConnectionStringReference : sakConnectionString
         }
         {
           name: 'FUNCTIONS_EXTENSION_VERSION'
@@ -231,7 +230,7 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
 }]
 
 resource perms 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = [for i in range(0, workerCount): {
-  name: guid('FunctionsCanRestartThemselves-${i}')
+  name: guid('FunctionsCanRestartThemselves-${workers[i].id}')
   scope: resourceGroup()
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'de139f84-1756-47ae-9be6-808fbbe84772')

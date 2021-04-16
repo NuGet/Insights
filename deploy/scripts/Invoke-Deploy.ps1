@@ -40,7 +40,7 @@ $resourceGroupName = "ExplorePackages-$StackName"
 $storageAccountName = "expkg$($StackName.ToLowerInvariant())"
 $keyVaultName = "expkg$($StackName.ToLowerInvariant())"
 $aadAppName = "ExplorePackages-$StackName-Website"
-$storageKeySecretName = "$storageAccountName-FullAccessConnectionString"
+$sasConnectionStringSecretName = "$storageAccountName-SasConnectionString"
 $sasDefinitionName = "BlobQueueTableFullAccessSas"
 $deploymentContainerName = "deployment"
 
@@ -154,20 +154,20 @@ $currentUser = Invoke-RestMethod -Uri "https://graph.microsoft.com/v1.0/me" -Hea
 $upn = $currentUser.userPrincipalName
 
 # Manage the storage account in Key Vault
-. (Join-Path $PSScriptRoot "Set-KeyVaultManagedStorage.ps1") `
+
+# Since Consumption plan requires WEBSITE_CONTENTAZUREFILECONNECTIONSTRING and this does not support SAS-based
+# connection strings, don't auto-regenerate in this case. We would need to regularly update a connection string based
+# on the active storage access key, which isn't worth the effort for this approach that is less secure anyway.
+$autoRegenerateKey = $WorkerSku -ne 'Y1'
+
+$sasToken = . (Join-Path $PSScriptRoot "Set-KeyVaultManagedStorage.ps1") `
     -ResourceGroupName $resourceGroupName `
     -KeyVaultName $keyVaultName `
     -StorageAccountName $storageAccountName `
     -UserPrincipalName $upn `
-    -SasDefinitionName $sasDefinitionName
-
-# Set the currently active key in Key Vault. This is needed for Azure Functions which cannot use SAS in all places.
-$activeStorageKey = . (Join-Path $PSScriptRoot "Set-LatestStorageKey.ps1") `
-    -ResourceGroupName $resourceGroupName `
-    -KeyVaultName $keyVaultName `
-    -StorageAccountName $storageAccountName `
-    -StorageKeySecretName $storageKeySecretName `
-    -UserPrincipalName $upn
+    -SasDefinitionName $sasDefinitionName `
+    -SasConnectionStringSecretName $sasConnectionStringSecretName `
+    -AutoRegenerateKey:$autoRegenerateKey
 
 # Initialize the AAD app
 $aadApp = (. (Join-Path $PSScriptRoot "Initialize-AadApp.ps1") -AadAppName $AadAppName)
@@ -175,26 +175,16 @@ $aadApp = (. (Join-Path $PSScriptRoot "Initialize-AadApp.ps1") -AadAppName $AadA
 # Upload the project ZIPs
 $storageContext = New-AzStorageContext `
     -StorageAccountName $storageAccountName `
-    -StorageAccountKey $activeStorageKey
+    -SasToken $sasToken
 
 function New-DeploymentZip ($ZipPath, $BlobName) {
     Write-Status "Uploading the ZIP to '$BlobName'..."
-    Set-AzStorageBlobContent `
+    $blob = Set-AzStorageBlobContent `
         -Context $storageContext `
         -Container $deploymentContainerName `
         -File $ZipPath `
-        -Blob $BlobName | Out-Default
-    
-    Write-Status "Generating SAS for deployment..."
-    $sas = New-AzStorageBlobSASToken `
-        -Context $storageContext `
-        -Container $deploymentContainerName `
-        -Blob $BlobName `
-        -FullUri `
-        -Protocol HttpsOnly `
-        -Permission "r" `
-        -ExpiryTime (Get-Date).ToUniversalTime().AddHours(6)
-    return $sas
+        -Blob $BlobName
+    return $blob.BlobClient.Uri.AbsoluteUri
 }
 
 $websiteZipUrl = New-DeploymentZip $websiteZipPath $websiteZipBlobName
@@ -211,7 +201,7 @@ function New-MainDeployment($deploymentName, $useKeyVaultReference) {
         stackName = $StackName;
         storageAccountName = $storageAccountName;
         keyVaultName = $keyVaultName;
-        storageKeySecretName = $storageKeySecretName;
+        sasConnectionStringSecretName = $sasConnectionStringSecretName;
         sasDefinitionName = $sasDefinitionName;
         websiteName = $WebsiteName;
         websiteAadClientId = $aadApp.ApplicationId;
@@ -248,7 +238,7 @@ if ($existingWorkerCount -lt $workerCount) {
     New-MainDeployment "prepare" $false
 
     Write-Status "Deploying again with with Key Vault references..."
-    New-MainDeployment "main" $false | Tee-Object -Variable 'deployment'
+    New-MainDeployment "main" $true | Tee-Object -Variable 'deployment'
 } else {
     Write-Status "Deploying the resources..."
     New-MainDeployment "main" $true | Tee-Object -Variable 'deployment'

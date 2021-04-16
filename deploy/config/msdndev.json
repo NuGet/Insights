@@ -8,13 +8,17 @@
       "Knapcode.ExplorePackages": {
         "DisabledDrivers": [
           "NuGetPackageExplorerToCsv"
-        ],
-        "RestrictUsers": true
+        ]
       }
     },
     "Worker": {
       "Knapcode.ExplorePackages": {
         "MoveTempToHome": true
+      }
+    },
+    "Website": {
+      "Knapcode.ExplorePackages": {
+        "RestrictUsers": true
       }
     }
   }
