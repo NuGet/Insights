@@ -6,6 +6,7 @@ param keyVaultName string
 
 param sasConnectionStringSecretName string
 param sasDefinitionName string
+param sasValidityPeriod string
 
 param websitePlanId string = 'new'
 param websiteName string
@@ -49,6 +50,11 @@ var sharedConfig = [
     value: '~2'
   }
   {
+    // For the app settings to be different each time so that Key Vault references are reloaded
+    name: 'ForceKeyVaultReferencesToReload'
+    value: deployment().name
+  }
+  {
     name: 'Knapcode.ExplorePackages:HostSubscriptionId'
     value: subscription().subscriptionId
   }
@@ -71,6 +77,10 @@ var sharedConfig = [
   {
     name: 'Knapcode.ExplorePackages:StorageSharedAccessSignatureSecretName'
     value: '${storageAccountName}-${sasDefinitionName}'
+  }
+  {
+    name: 'Knapcode.ExplorePackages:StorageSharedAccessSignatureDuration'
+    value: sasValidityPeriod
   }
   {
     // See: https://github.com/projectkudu/kudu/wiki/Configurable-settings#ensure-update-site-and-update-siteconfig-to-take-effect-synchronously 

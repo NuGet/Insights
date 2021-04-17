@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Knapcode.ExplorePackages
@@ -20,6 +21,7 @@ namespace Knapcode.ExplorePackages
             StorageSharedAccessSignature = null;
             KeyVaultName = null;
             StorageSharedAccessSignatureSecretName = null;
+            StorageSharedAccessSignatureDuration = null;
             StorageConnectionString = StorageUtility.EmulatorConnectionString;
             StorageConnectionStringSecretName = null;
             StorageContainerName = "packages";
@@ -46,6 +48,7 @@ namespace Knapcode.ExplorePackages
         public string StorageSharedAccessSignature { get; set; }
         public string KeyVaultName { get; set; }
         public string StorageSharedAccessSignatureSecretName { get; set; }
+        public TimeSpan? StorageSharedAccessSignatureDuration { get; set; }
         public string StorageConnectionString { get; set; }
         public string StorageConnectionStringSecretName { get; set; }
         public string StorageContainerName { get; set; }

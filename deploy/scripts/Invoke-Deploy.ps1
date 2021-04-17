@@ -43,6 +43,7 @@ $aadAppName = "ExplorePackages-$StackName-Website"
 $sasConnectionStringSecretName = "$storageAccountName-SasConnectionString"
 $sasDefinitionName = "BlobQueueTableFullAccessSas"
 $deploymentContainerName = "deployment"
+$sasValidityPeriod = New-TimeSpan -Days 6
 
 if (!$WebsiteName) {
     $WebsiteName = "ExplorePackages-$StackName"
@@ -167,7 +168,8 @@ $sasToken = . (Join-Path $PSScriptRoot "Set-KeyVaultManagedStorage.ps1") `
     -UserPrincipalName $upn `
     -SasDefinitionName $sasDefinitionName `
     -SasConnectionStringSecretName $sasConnectionStringSecretName `
-    -AutoRegenerateKey:$autoRegenerateKey
+    -AutoRegenerateKey:$autoRegenerateKey `
+    -SasValidityPeriod $sasValidityPeriod
 
 # Initialize the AAD app
 $aadApp = (. (Join-Path $PSScriptRoot "Initialize-AadApp.ps1") -AadAppName $AadAppName)
@@ -203,6 +205,7 @@ function New-MainDeployment($deploymentName, $useKeyVaultReference) {
         keyVaultName = $keyVaultName;
         sasConnectionStringSecretName = $sasConnectionStringSecretName;
         sasDefinitionName = $sasDefinitionName;
+        sasValidityPeriod = $sasValidityPeriod.ToString();
         websiteName = $WebsiteName;
         websiteAadClientId = $aadApp.ApplicationId;
         websiteConfig = $websiteConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs;
@@ -258,6 +261,11 @@ $workerDefaultHostNames = $deployment.Outputs.workerDefaultHostNames.Value.ToStr
 Write-Status "Warming up the website and workers..."
 foreach ($hostName in @($websiteDefaultHostName) + $workerDefaultHostNames) {
     $url = "https://$hostName/"
-    $response = Invoke-WebRequest -Method HEAD -Uri $url -UseBasicParsing
+    $response = Invoke-WebRequest `
+        -Method HEAD `
+        -Uri $url `
+        -UseBasicParsing `
+        -MaximumRetryCount 10 `
+        -RetryIntervalSec 5
     Write-Host "$url - $($response.StatusCode) $($response.StatusDescription)"
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -8,7 +7,6 @@ using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Azure.Storage.Blobs;
 using Azure.Storage.Queues;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -28,8 +26,6 @@ namespace Knapcode.ExplorePackages
             _options = options;
             _logger = logger;
         }
-
-        public TimeSpan UntilRefresh => GetTimeUntilRefresh(_serviceClients);
 
         public async Task<SecretClient> GetKeyVaultSecretClientAsync()
         {
@@ -51,16 +47,10 @@ namespace Knapcode.ExplorePackages
             return (await GetCachedServiceClientsAsync()).TableServiceClient;
         }
 
-        public (string ConnectionString, TimeSpan UntilRefresh) GetStorageConnectionSync()
+        public string GetStorageConnectionStringSync()
         {
             var clients = GetCachedServiceClientsSync();
-            return (clients.StorageConnectionString, GetTimeUntilRefresh(clients));
-        }
-
-        public async Task<(string ConnectionString, TimeSpan UntilRefresh)> GetStorageConnectionAsync(CancellationToken token)
-        {
-            var clients = await GetCachedServiceClientsAsync(token);
-            return (clients.StorageConnectionString, GetTimeUntilRefresh(clients));
+            return clients.StorageConnectionString;
         }
 
         private async Task<ServiceClients> GetCachedServiceClientsAsync(CancellationToken token = default)
@@ -222,11 +212,11 @@ namespace Knapcode.ExplorePackages
                 var untilExpiry = sasExpiry.Value - DateTimeOffset.UtcNow;
 
                 _logger.LogInformation(
-                    "Using storage account '{StorageAccountName}' and a SAS token from {Source} expiring at {Expiry:O}, which is in {RemainingMinutes:F2} minutes.",
+                    "Using storage account '{StorageAccountName}' and a SAS token from {Source} expiring at {Expiry:O}, which is in {RemainingHours:F2} hours.",
                     _options.Value.StorageAccountName,
                     source,
                     sasExpiry,
-                    untilExpiry.TotalMinutes);
+                    untilExpiry.TotalHours);
 
                 storageConnectionString = $"AccountName={_options.Value.StorageAccountName};SharedAccessSignature={sas}";
                 var endpoint = $"https://{_options.Value.StorageAccountName}.table.core.windows.net/";

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.Azure.Management.AppService.Fluent.Models;
 
 namespace Knapcode.ExplorePackages.Worker
 {
