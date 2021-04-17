@@ -218,16 +218,14 @@ namespace Knapcode.ExplorePackages
                     throw new InvalidOperationException($"No storage SAS token could be found.");
                 }
 
-                var parsedSas = QueryHelpers.ParseQuery(sas);
-                var expiry = parsedSas["se"].Single();
-                sasExpiry = DateTimeOffset.Parse(expiry);
+                sasExpiry = StorageUtility.GetSasExpiry(sas);
                 var untilExpiry = sasExpiry.Value - DateTimeOffset.UtcNow;
 
                 _logger.LogInformation(
-                    "Using storage account '{StorageAccountName}' and a SAS token from {Source} expiring at {Expiry}, which is in {RemainingMinutes:F2} minutes.",
+                    "Using storage account '{StorageAccountName}' and a SAS token from {Source} expiring at {Expiry:O}, which is in {RemainingMinutes:F2} minutes.",
                     _options.Value.StorageAccountName,
                     source,
-                    expiry,
+                    sasExpiry,
                     untilExpiry.TotalMinutes);
 
                 storageConnectionString = $"AccountName={_options.Value.StorageAccountName};SharedAccessSignature={sas}";

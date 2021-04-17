@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Knapcode.ExplorePackages
 {
@@ -37,6 +39,15 @@ namespace Knapcode.ExplorePackages
         public static TimeSpan GetMessageDelay(int attemptCount)
         {
             return TimeSpan.FromSeconds(Math.Min(Math.Max(attemptCount, 0), 60));
+        }
+
+        public static DateTimeOffset GetSasExpiry(string sas)
+        {
+            DateTimeOffset sasExpiry;
+            var parsedSas = QueryHelpers.ParseQuery(sas);
+            var expiry = parsedSas["se"].Single();
+            sasExpiry = DateTimeOffset.Parse(expiry);
+            return sasExpiry;
         }
     }
 }
