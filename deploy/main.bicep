@@ -206,7 +206,7 @@ resource workerPlanAutoScale 'microsoft.insights/autoscalesettings@2015-04-01' =
     targetResourceUri: workerPlan.id
     profiles: [
       {
-        name: 'Scale based on queue size'
+        name: 'Scale based on CPU'
         capacity: {
           default: '1'
           minimum: '1'
@@ -228,44 +228,27 @@ resource workerPlanAutoScale 'microsoft.insights/autoscalesettings@2015-04-01' =
             scaleAction: {
               direction: 'Increase'
               type: 'ChangeCount'
-              value: '2'
-              cooldown: 'PT10M'
+              value: '5'
+              cooldown: 'PT5M'
             }
           }
           {
             metricTrigger: {
-              metricName: 'ApproximateMessageCount'
-              metricResourceUri: '${storageAccount.id}/services/queue/queues/${workerQueueName}'
-              timeGrain: 'PT1M'
-              statistic: 'Average'
-              timeWindow: 'PT5M'
-              timeAggregation: 'Average'
-              operator: 'GreaterThan'
-              threshold: 100
-            }
-            scaleAction: {
-              direction: 'Increase'
-              type: 'ChangeCount'
-              value: '4'
-              cooldown: 'PT1M'
-            }
-          }
-          {
-            metricTrigger: {
-              metricName: 'ApproximateMessageCount'
-              metricResourceUri: '${storageAccount.id}/services/queue/queues/${workerQueueName}'
+              metricName: 'CpuPercentage'
+              metricNamespace: 'microsoft.web/serverfarms'
+              metricResourceUri: workerPlan.id
               timeGrain: 'PT1M'
               statistic: 'Average'
               timeWindow: 'PT5M'
               timeAggregation: 'Average'
               operator: 'LessThan'
-              threshold: 50
+              threshold: 25
             }
             scaleAction: {
-              direction: 'Decrease'
+              direction: 'Increase'
               type: 'ChangeCount'
               value: '2'
-              cooldown: 'PT1M'
+              cooldown: 'PT5M'
             }
           }
         ]
