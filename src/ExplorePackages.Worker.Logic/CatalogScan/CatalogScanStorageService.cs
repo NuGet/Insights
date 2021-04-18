@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
@@ -252,7 +253,25 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task DeleteAsync(IEnumerable<CatalogLeafScan> leafScans)
         {
-            await SubmitLeafBatchesAsync(leafScans, (b, i) => b.DeleteEntity(i.PartitionKey, i.RowKey, i.ETag));
+            var leafScansList = leafScans.ToList();
+            if (leafScansList.Count == 1)
+            {
+                await DeleteAsync(leafScansList[0]);
+                return;
+            }
+
+            try
+            {
+                await SubmitLeafBatchesAsync(leafScansList, (b, i) => b.DeleteEntity(i.PartitionKey, i.RowKey, i.ETag));
+            }
+            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
+            {
+                // Try individually, to ensure each entity is deleted if it exists.
+                foreach (var scan in leafScansList)
+                {
+                    await DeleteAsync(scan);
+                }
+            }
         }
 
         private async Task SubmitLeafBatchesAsync(IEnumerable<CatalogLeafScan> leafScans, Action<MutableTableTransactionalBatch, CatalogLeafScan> doOperation)
@@ -300,7 +319,19 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task DeleteAsync(CatalogLeafScan leafScan)
         {
-            await (await GetLeafScanTableAsync(leafScan.StorageSuffix)).DeleteEntityAsync(leafScan, leafScan.ETag);
+            try
+            {
+                await (await GetLeafScanTableAsync(leafScan.StorageSuffix)).DeleteEntityAsync(leafScan, leafScan.ETag);
+            }
+            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "Catalog leaf scan with storage suffix {StorageSuffix}, partition key {PartitionKey}, and row key {RowKey} was already deleted.",
+                    leafScan.StorageSuffix,
+                    leafScan.PartitionKey,
+                    leafScan.RowKey);
+            }
         }
 
         private async Task<TableClient> GetIndexScanTableAsync()
