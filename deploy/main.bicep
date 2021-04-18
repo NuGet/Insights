@@ -5,6 +5,7 @@ param storageAccountName string
 param keyVaultName string
 param deploymentContainerName string
 param leaseContainerName string
+param workerQueueName string
 
 param sasConnectionStringSecretName string
 param sasDefinitionName string
@@ -33,6 +34,7 @@ param useKeyVaultReference bool
 // Variables and output
 var sakConnectionString = 'AccountName=${storageAccountName};AccountKey=${listkeys(storageAccount.id, storageAccount.apiVersion).keys[0].value};DefaultEndpointsProtocol=https;EndpointSuffix=core.windows.net'
 var sasConnectionStringReference = '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${sasConnectionStringSecretName})'
+var consumptionPlan = workerSku == 'Y1'
 
 output websiteDefaultHostName string = website.properties.defaultHostName
 output websiteHostNames array = website.properties.hostNames
@@ -67,6 +69,10 @@ var sharedConfig = [
   {
     name: 'Knapcode.ExplorePackages:LeaseContainerName'
     value: leaseContainerName
+  }
+  {
+    name: 'Knapcode.ExplorePackages:WorkerQueueName'
+    value: workerQueueName
   }
   {
     name: 'Knapcode.ExplorePackages:KeyVaultName'
@@ -189,7 +195,86 @@ resource workerPlan 'Microsoft.Web/serverfarms@2020-09-01' = {
   }
 }
 
-var workerConfigWithStorage = concat(workerConfig, workerSku == 'Y1' ? [
+resource workerPlanAutoScale 'microsoft.insights/autoscalesettings@2015-04-01' = if (!consumptionPlan) {
+  name: 'ExplorePackages-${stackName}-WorkerPlan'
+  location: resourceGroup().location
+  dependsOn: [
+    workerPlan
+  ]
+  properties: {
+    enabled: true
+    targetResourceUri: workerPlan.id
+    profiles: [
+      {
+        name: 'Scale based on queue size'
+        capacity: {
+          default: '1'
+          minimum: '1'
+          maximum: '10'
+        }
+        rules: [
+          {
+            metricTrigger: {
+              metricName: 'CpuPercentage'
+              metricNamespace: 'microsoft.web/serverfarms'
+              metricResourceUri: workerPlan.id
+              timeGrain: 'PT1M'
+              statistic: 'Average'
+              timeWindow: 'PT5M'
+              timeAggregation: 'Average'
+              operator: 'GreaterThan'
+              threshold: 50
+            }
+            scaleAction: {
+              direction: 'Increase'
+              type: 'ChangeCount'
+              value: '2'
+              cooldown: 'PT10M'
+            }
+          }
+          {
+            metricTrigger: {
+              metricName: 'ApproximateMessageCount'
+              metricResourceUri: '${storageAccount.id}/services/queue/queues/${workerQueueName}'
+              timeGrain: 'PT1M'
+              statistic: 'Average'
+              timeWindow: 'PT5M'
+              timeAggregation: 'Average'
+              operator: 'GreaterThan'
+              threshold: 100
+            }
+            scaleAction: {
+              direction: 'Increase'
+              type: 'ChangeCount'
+              value: '4'
+              cooldown: 'PT1M'
+            }
+          }
+          {
+            metricTrigger: {
+              metricName: 'ApproximateMessageCount'
+              metricResourceUri: '${storageAccount.id}/services/queue/queues/${workerQueueName}'
+              timeGrain: 'PT1M'
+              statistic: 'Average'
+              timeWindow: 'PT5M'
+              timeAggregation: 'Average'
+              operator: 'LessThan'
+              threshold: 50
+            }
+            scaleAction: {
+              direction: 'Decrease'
+              type: 'ChangeCount'
+              value: '2'
+              cooldown: 'PT1M'
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
+
+var workerConfigWithStorage = concat(workerConfig, consumptionPlan ? [
   {
     name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
     // SAS-based connection strings don't work for this property
@@ -210,7 +295,7 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
     httpsOnly: true
     siteConfig: {
       minTlsVersion: '1.2'
-      alwaysOn: workerSku != 'Y1'
+      alwaysOn: !consumptionPlan
       appSettings: concat([
         {
           name: 'AzureFunctionsJobHost__logging__LogLevel__Default'
