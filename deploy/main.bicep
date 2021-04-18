@@ -225,7 +225,7 @@ resource workerPlanAutoScale 'microsoft.insights/autoscalesettings@2015-04-01' =
               timeWindow: 'PT10M'
               timeAggregation: 'Average'
               operator: 'GreaterThan'
-              threshold: 50
+              threshold: 66
             }
             scaleAction: {
               direction: 'Increase'
@@ -244,12 +244,12 @@ resource workerPlanAutoScale 'microsoft.insights/autoscalesettings@2015-04-01' =
               timeWindow: 'PT10M'
               timeAggregation: 'Average'
               operator: 'LessThan'
-              threshold: 25
+              threshold: 33
             }
             scaleAction: {
-              direction: 'Increase'
+              direction: 'Decrease'
               type: 'ChangeCount'
-              value: '3'
+              value: '5'
               cooldown: 'PT1M'
             }
           }
