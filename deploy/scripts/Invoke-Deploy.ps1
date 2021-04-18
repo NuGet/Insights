@@ -214,9 +214,9 @@ function New-MainDeployment($deploymentName, $useKeyVaultReference) {
         sasValidityPeriod = $sasValidityPeriod.ToString();
         websiteName = $WebsiteName;
         websiteAadClientId = $aadApp.ApplicationId;
-        websiteConfig = $websiteConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs;
+        websiteConfig = @($websiteConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
         websiteZipUrl = $websiteZipUrl;
-        workerConfig = $workerConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs;
+        workerConfig = @($workerConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
         workerLogLevel = $WorkerLogLevel;
         workerSku = $workerSku;
         workerZipUrl = $workerZipUrl;
