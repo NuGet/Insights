@@ -44,7 +44,6 @@ $sasConnectionStringSecretName = "$storageAccountName-SasConnectionString"
 $sasDefinitionName = "BlobQueueTableFullAccessSas"
 $deploymentContainerName = "deployment"
 $leaseContainerName = "leases"
-$workerQueueName = "workerqueue"
 $sasValidityPeriod = New-TimeSpan -Days 6
 
 if (!$WebsiteName) {
@@ -208,7 +207,6 @@ function New-MainDeployment($deploymentName, $useKeyVaultReference) {
         keyVaultName = $keyVaultName;
         deploymentContainerName = $deploymentContainerName;
         leaseContainerName = $leaseContainerName;
-        workerQueueName = $workerQueueName;
         sasConnectionStringSecretName = $sasConnectionStringSecretName;
         sasDefinitionName = $sasDefinitionName;
         sasValidityPeriod = $sasValidityPeriod.ToString();

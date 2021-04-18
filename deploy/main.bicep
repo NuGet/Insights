@@ -5,7 +5,6 @@ param storageAccountName string
 param keyVaultName string
 param deploymentContainerName string
 param leaseContainerName string
-param workerQueueName string
 
 param sasConnectionStringSecretName string
 param sasDefinitionName string
@@ -71,10 +70,6 @@ var sharedConfig = [
   {
     name: 'Knapcode.ExplorePackages:LeaseContainerName'
     value: leaseContainerName
-  }
-  {
-    name: 'Knapcode.ExplorePackages:WorkerQueueName'
-    value: workerQueueName
   }
   {
     name: 'Knapcode.ExplorePackages:KeyVaultName'
