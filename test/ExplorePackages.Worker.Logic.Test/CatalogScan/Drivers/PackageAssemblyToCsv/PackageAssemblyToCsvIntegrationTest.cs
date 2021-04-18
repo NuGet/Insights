@@ -189,8 +189,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
             {
             }
 
-            public override bool OnlyLatestLeaves => true;
-
             [Fact]
             public Task Execute()
             {
@@ -205,7 +203,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
             {
             }
 
-            public override bool OnlyLatestLeaves => false;
+            public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => Enumerable.Empty<CatalogScanDriverType>();
 
             [Fact]
             public Task Execute()
@@ -220,10 +218,9 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
         }
 
         protected override string DestinationContainerName => Options.Value.PackageAssemblyContainerName;
-
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageAssemblyToCsv;
-        public override bool OnlyLatestLeaves => true;
-        public override bool OnlyLatestLeavesPerId => false;
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType };
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();
 
         private async Task PackageAssemblyToCsv_WithDuplicates()
         {
@@ -247,7 +244,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
                 .Requests
                 .Where(x => x.RequestUri.AbsolutePath.EndsWith("/gosms.ge-sms-api.1.0.1.nupkg"))
                 .ToList();
-            Assert.Equal(OnlyLatestLeaves ? 3 : 6, duplicatePackageRequests.Count);
+            Assert.Equal(LatestLeavesTypes.Contains(DriverType) ? 3 : 6, duplicatePackageRequests.Count);
         }
 
         protected override IEnumerable<string> GetExpectedCursorNames()

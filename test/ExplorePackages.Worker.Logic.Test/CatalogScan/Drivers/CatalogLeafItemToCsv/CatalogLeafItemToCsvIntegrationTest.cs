@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -71,7 +73,7 @@ namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
 
         protected override string DestinationContainerName => Options.Value.CatalogLeafItemContainerName;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.CatalogLeafItemToCsv;
-        public override bool OnlyLatestLeaves => false;
-        public override bool OnlyLatestLeavesPerId => false;
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => Enumerable.Empty<CatalogScanDriverType>();
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();
     }
 }

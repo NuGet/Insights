@@ -3,6 +3,8 @@ param stackName string
 
 param storageAccountName string
 param keyVaultName string
+param deploymentContainerName string
+param leaseContainerName string
 
 param sasConnectionStringSecretName string
 param sasDefinitionName string
@@ -63,6 +65,10 @@ var sharedConfig = [
     value: resourceGroup().name
   }
   {
+    name: 'Knapcode.ExplorePackages:LeaseContainerName'
+    value: leaseContainerName
+  }
+  {
     name: 'Knapcode.ExplorePackages:KeyVaultName'
     value: keyVaultName
   }
@@ -103,6 +109,8 @@ module storageAndKv './storage-and-kv.bicep' = {
       tenantId: i == 0 ? website.identity.tenantId : workers[i - 1].identity.tenantId
       objectId: i == 0 ? website.identity.principalId : workers[i - 1].identity.principalId
     }]
+    deploymentContainerName: deploymentContainerName
+    leaseContainerName: leaseContainerName
   }
 }
 

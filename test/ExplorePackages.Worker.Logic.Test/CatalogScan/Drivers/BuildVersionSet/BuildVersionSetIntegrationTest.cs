@@ -138,8 +138,8 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
         }
 
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.BuildVersionSet;
-        public override bool OnlyLatestLeaves => false;
-        public override bool OnlyLatestLeavesPerId => false;
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => Enumerable.Empty<CatalogScanDriverType>();
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();
         public VersionSetService VersionSetService => Host.Services.GetRequiredService<VersionSetService>();
 
         protected override IEnumerable<string> GetExpectedBlobContainerNames()

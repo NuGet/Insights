@@ -136,8 +136,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
             {
             }
 
-            public override bool OnlyLatestLeaves => true;
-
             [Fact]
             public Task Execute()
             {
@@ -152,7 +150,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
             {
             }
 
-            public override bool OnlyLatestLeaves => false;
+            public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => Enumerable.Empty<CatalogScanDriverType>();
 
             [Fact]
             public async Task Execute()
@@ -168,7 +166,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
             {
             }
 
-            public override bool OnlyLatestLeaves => false;
+            public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => Enumerable.Empty<CatalogScanDriverType>();
 
             [Fact]
             public Task Execute()
@@ -184,8 +182,8 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
 
         protected override string DestinationContainerName => Options.Value.PackageAssetContainerName;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageAssetToCsv;
-        public override bool OnlyLatestLeaves => true;
-        public override bool OnlyLatestLeavesPerId => false;
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType };
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();
 
         private async Task PackageAssetToCsv_WithDuplicates(bool batchProcessing)
         {
@@ -213,8 +211,9 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
                 .Requests
                 .Where(x => x.RequestUri.AbsolutePath.EndsWith("/gosms.ge-sms-api.1.0.1.nupkg"))
                 .ToList();
-            Assert.Equal(OnlyLatestLeaves ? 1 : 2, duplicatePackageRequests.Where(x => x.Method == HttpMethod.Head).Count());
-            Assert.Equal(OnlyLatestLeaves ? 1 : 2, duplicatePackageRequests.Where(x => x.Method == HttpMethod.Get).Count());
+            var onlyLatestLeaves = LatestLeavesTypes.Contains(DriverType);
+            Assert.Equal(onlyLatestLeaves ? 1 : 2, duplicatePackageRequests.Where(x => x.Method == HttpMethod.Head).Count());
+            Assert.Equal(onlyLatestLeaves ? 1 : 2, duplicatePackageRequests.Where(x => x.Method == HttpMethod.Get).Count());
         }
 
         protected override IEnumerable<string> GetExpectedCursorNames()

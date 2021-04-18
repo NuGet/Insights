@@ -107,8 +107,8 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageManifest
         }
 
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.LoadPackageManifest;
-        public override bool OnlyLatestLeaves => true;
-        public override bool OnlyLatestLeavesPerId => false;
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType };
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();
 
         private async Task AssertOutputAsync(string testName, string stepName)
         {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -101,8 +102,8 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
         }
 
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.LoadPackageVersion;
-        public override bool OnlyLatestLeaves => true;
-        public override bool OnlyLatestLeavesPerId => false;
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType };
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();
 
         protected override IEnumerable<string> GetExpectedTableNames()
         {

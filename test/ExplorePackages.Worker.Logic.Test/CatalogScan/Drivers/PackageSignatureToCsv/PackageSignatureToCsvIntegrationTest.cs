@@ -200,8 +200,8 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
 
         protected override string DestinationContainerName => Options.Value.PackageSignatureContainerName;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageSignatureToCsv;
-        public override bool OnlyLatestLeaves => true;
-        public override bool OnlyLatestLeavesPerId => false;
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType };
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();
 
         protected override IEnumerable<string> GetExpectedCursorNames()
         {

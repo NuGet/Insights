@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 
@@ -12,7 +13,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         protected override Task<CatalogIndexScan> UpdateAsync(DateTimeOffset max)
         {
-            return UpdateAsync(DriverType, OnlyLatestLeaves, max);
+            return UpdateAsync(DriverType, LatestLeavesTypes.Contains(DriverType), max);
         }
     }
 }

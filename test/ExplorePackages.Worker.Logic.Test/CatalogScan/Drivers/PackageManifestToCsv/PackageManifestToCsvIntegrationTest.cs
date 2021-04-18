@@ -104,8 +104,8 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
 
         protected override string DestinationContainerName => Options.Value.PackageManifestContainerName;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageManifestToCsv;
-        public override bool OnlyLatestLeaves => true;
-        public override bool OnlyLatestLeavesPerId => false;
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType };
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();
 
         protected override IEnumerable<string> GetExpectedCursorNames()
         {

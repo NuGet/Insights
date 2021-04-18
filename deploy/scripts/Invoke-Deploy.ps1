@@ -43,6 +43,7 @@ $aadAppName = "ExplorePackages-$StackName-Website"
 $sasConnectionStringSecretName = "$storageAccountName-SasConnectionString"
 $sasDefinitionName = "BlobQueueTableFullAccessSas"
 $deploymentContainerName = "deployment"
+$leaseContainerName = "leases"
 $sasValidityPeriod = New-TimeSpan -Days 6
 
 if (!$WebsiteName) {
@@ -144,7 +145,8 @@ New-Deployment `
         storageAccountName = $storageAccountName;
         keyVaultName = $keyVaultName;
         identities = $servicePrincipals;
-        deploymentContainerName = $deploymentContainerName
+        deploymentContainerName = $deploymentContainerName;
+        leaseContainerName = $leaseContainerName
     }
 
 # Get the current user
@@ -203,6 +205,8 @@ function New-MainDeployment($deploymentName, $useKeyVaultReference) {
         stackName = $StackName;
         storageAccountName = $storageAccountName;
         keyVaultName = $keyVaultName;
+        deploymentContainerName = $deploymentContainerName;
+        leaseContainerName = $leaseContainerName;
         sasConnectionStringSecretName = $sasConnectionStringSecretName;
         sasDefinitionName = $sasDefinitionName;
         sasValidityPeriod = $sasValidityPeriod.ToString();

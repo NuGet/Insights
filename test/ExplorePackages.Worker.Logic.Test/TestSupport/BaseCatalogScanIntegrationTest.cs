@@ -21,8 +21,8 @@ namespace Knapcode.ExplorePackages.Worker
         }
 
         protected abstract CatalogScanDriverType DriverType { get; }
-        public abstract bool OnlyLatestLeaves { get; }
-        public abstract bool OnlyLatestLeavesPerId { get; }
+        public abstract IEnumerable<CatalogScanDriverType> LatestLeavesTypes { get; }
+        public abstract IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes { get; }
 
         protected Task SetCursorAsync(DateTimeOffset min)
         {
@@ -163,9 +163,9 @@ namespace Knapcode.ExplorePackages.Worker
                 .GetBlobContainerClient(Options.Value.LeaseContainerName)
                 .GetBlobsAsync()
                 .ToListAsync();
-            Assert.Equal(
-                new[] { $"Start-CatalogScan-{DriverType}" }.Concat(GetExpectedLeaseNames()).OrderBy(x => x).ToArray(),
-                leaseBlobs.Select(x => x.Name).ToArray());
+            var expectedLeaseNames = GetExpectedLeaseNames().OrderBy(x => x).ToArray();
+            var actualLeaseNames = leaseBlobs.Select(x => x.Name).ToArray();
+            Assert.Equal(expectedLeaseNames, actualLeaseNames);
 
             var queueItems = await queueServiceClient.GetQueuesAsync(prefix: StoragePrefix).ToListAsync();
             Assert.Equal(
@@ -209,14 +209,22 @@ namespace Knapcode.ExplorePackages.Worker
 
         protected virtual IEnumerable<string> GetExpectedLeaseNames()
         {
-            if (OnlyLatestLeaves)
+            yield return $"Start-CatalogScan-{DriverType}";
+
+            foreach (var type in LatestLeavesTypes)
             {
-                yield return $"Start-CatalogScan-{CatalogScanDriverType.Internal_FindLatestCatalogLeafScan}";
+                foreach (var scan in ExpectedCatalogIndexScans.Where(x => x.DriverType == type))
+                {
+                    yield return $"Start-CatalogScan-{CatalogScanDriverType.Internal_FindLatestCatalogLeafScan}-{scan.GetScanId()}-fl";
+                }
             }
 
-            if (OnlyLatestLeavesPerId)
+            foreach (var type in LatestLeavesPerIdTypes)
             {
-                yield return $"Start-CatalogScan-{CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId}";
+                foreach (var scan in ExpectedCatalogIndexScans.Where(x => x.DriverType == type))
+                {
+                    yield return $"Start-CatalogScan-{CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId}-{scan.GetScanId()}-fl";
+                }
             }
         }
 

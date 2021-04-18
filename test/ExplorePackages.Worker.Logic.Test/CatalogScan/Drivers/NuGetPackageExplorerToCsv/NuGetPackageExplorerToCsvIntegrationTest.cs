@@ -104,8 +104,8 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
 
         protected override string DestinationContainerName => Options.Value.NuGetPackageExplorerContainerName;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.NuGetPackageExplorerToCsv;
-        public override bool OnlyLatestLeaves => true;
-        public override bool OnlyLatestLeavesPerId => false;
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType };
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();
 
         protected override IEnumerable<string> GetExpectedCursorNames()
         {

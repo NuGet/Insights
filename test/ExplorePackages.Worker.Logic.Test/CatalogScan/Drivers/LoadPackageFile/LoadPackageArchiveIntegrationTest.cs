@@ -102,8 +102,8 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageArchive
         }
 
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.LoadPackageArchive;
-        public override bool OnlyLatestLeaves => true;
-        public override bool OnlyLatestLeavesPerId => false;
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType };
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();
 
         protected override IEnumerable<string> GetExpectedTableNames()
         {

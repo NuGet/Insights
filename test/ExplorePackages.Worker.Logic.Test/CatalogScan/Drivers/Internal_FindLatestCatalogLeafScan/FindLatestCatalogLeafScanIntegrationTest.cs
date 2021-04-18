@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
 using Xunit;
@@ -68,8 +69,8 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
         }
 
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.Internal_FindLatestCatalogLeafScan;
-        public override bool OnlyLatestLeaves => false;
-        public override bool OnlyLatestLeavesPerId => false;
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => Enumerable.Empty<CatalogScanDriverType>();
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();
 
         protected override IEnumerable<string> GetExpectedTableNames()
         {
@@ -79,6 +80,11 @@ namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
         protected override IEnumerable<string> GetExpectedCursorNames()
         {
             yield break;
+        }
+
+        protected override IEnumerable<string> GetExpectedLeaseNames()
+        {
+            yield return $"Start-CatalogScan-{DriverType}-{ExpectedCatalogIndexScans.First().GetScanId()}";
         }
 
         private async Task UpdateAsync(DateTimeOffset min0, DateTimeOffset max1)

@@ -1,7 +1,8 @@
 param storageAccountName string
 param keyVaultName string
 param identities array
-param deploymentContainerName string = 'null'
+param deploymentContainerName string
+param leaseContainerName string
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2019-06-01' = {
   name: storageAccountName
@@ -16,14 +17,14 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2019-06-01' = {
   }
 }
 
-resource deploymentContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2019-06-01' = if (deploymentContainerName != 'null') {
+resource deploymentContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2019-06-01' = {
   name: '${storageAccountName}/default/${deploymentContainerName}'
   dependsOn: [
     storageAccount
   ]
 }
 
-resource deploymentContainerPolicy 'Microsoft.Storage/storageAccounts/managementPolicies@2019-06-01' = if (deploymentContainerName != 'null') {
+resource deploymentContainerPolicy 'Microsoft.Storage/storageAccounts/managementPolicies@2019-06-01' = {
   name: '${storageAccountName}/default'
   dependsOn: [
     storageAccount
@@ -48,6 +49,7 @@ resource deploymentContainerPolicy 'Microsoft.Storage/storageAccounts/management
               ]
               prefixMatch: [
                 '${deploymentContainerName}/'
+                '${leaseContainerName}/'
               ]
             }
           }

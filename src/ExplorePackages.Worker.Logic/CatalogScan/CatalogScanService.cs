@@ -437,7 +437,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             // Use a rather generic lease, to simplify clean-up.
-            await using (var lease = await _leaseService.TryAcquireAsync($"Start-{_cursorService.GetCursorName(driverType)}"))
+            await using (var lease = await _leaseService.TryAcquireAsync($"Start-{_cursorService.GetCursorName(driverType)}-{scanId}"))
             {
                 if (!lease.Acquired)
                 {

@@ -157,8 +157,8 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
 
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageVersionToCsv;
         protected override string DestinationContainerName => Options.Value.PackageVersionContainerName;
-        public override bool OnlyLatestLeaves => true;
-        public override bool OnlyLatestLeavesPerId => true;
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { CatalogScanDriverType.LoadPackageVersion };
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => new[] { DriverType };
 
         protected override IEnumerable<string> GetExpectedLeaseNames()
         {

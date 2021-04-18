@@ -57,6 +57,13 @@ namespace Knapcode.ExplorePackages
             try
             {
                 BlobLease lease = await leaseClient.AcquireAsync(leaseDuration);
+
+                if (DateTimeOffset.UtcNow - lease.LastModified > TimeSpan.FromHours(18))
+                {
+                    // Update the last modified time so that any blob deletion policy leaves this blob alone.
+                    await blob.UploadAsync(Stream.Null, new BlobUploadOptions { Conditions = new BlobRequestConditions { LeaseId = lease.LeaseId } });
+                }
+
                 return StorageLeaseResult.Leased(name, lease.LeaseId);
             }
             catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.Conflict)
