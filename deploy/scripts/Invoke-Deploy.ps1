@@ -15,7 +15,7 @@ param (
     [string]$WebsiteName,
     
     [Parameter(Mandatory = $false)]
-    [ValidateSet("Y1", "S1")]
+    [ValidateSet("Y1", "S1", "P1v2")]
     [string]$WorkerSku = "Y1", # Y1 is consumption plan
     
     [Parameter(Mandatory = $false)]

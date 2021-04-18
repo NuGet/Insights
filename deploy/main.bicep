@@ -34,7 +34,10 @@ param useKeyVaultReference bool
 // Variables and output
 var sakConnectionString = 'AccountName=${storageAccountName};AccountKey=${listkeys(storageAccount.id, storageAccount.apiVersion).keys[0].value};DefaultEndpointsProtocol=https;EndpointSuffix=core.windows.net'
 var sasConnectionStringReference = '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${sasConnectionStringSecretName})'
-var consumptionPlan = workerSku == 'Y1'
+var isConsumptionPlan = workerSku == 'Y1'
+var isPremiumPlan = startsWith(workerSku, 'P')
+var maxInstances = isPremiumPlan ? 30 : 10
+var scaleFactor = isPremiumPlan ? 3 : 1
 
 output websiteDefaultHostName string = website.properties.defaultHostName
 output websiteHostNames array = website.properties.hostNames
@@ -195,7 +198,7 @@ resource workerPlan 'Microsoft.Web/serverfarms@2020-09-01' = {
   }
 }
 
-resource workerPlanAutoScale 'microsoft.insights/autoscalesettings@2015-04-01' = if (!consumptionPlan) {
+resource workerPlanAutoScale 'microsoft.insights/autoscalesettings@2015-04-01' = if (!isConsumptionPlan) {
   name: 'ExplorePackages-${stackName}-WorkerPlan'
   location: resourceGroup().location
   dependsOn: [
@@ -210,7 +213,7 @@ resource workerPlanAutoScale 'microsoft.insights/autoscalesettings@2015-04-01' =
         capacity: {
           default: '1'
           minimum: '1'
-          maximum: '10'
+          maximum: string(maxInstances)
         }
         rules: [
           {
@@ -220,7 +223,7 @@ resource workerPlanAutoScale 'microsoft.insights/autoscalesettings@2015-04-01' =
               metricResourceUri: workerPlan.id
               timeGrain: 'PT1M'
               statistic: 'Average'
-              timeWindow: 'PT5M'
+              timeWindow: 'PT10M'
               timeAggregation: 'Average'
               operator: 'GreaterThan'
               threshold: 50
@@ -228,8 +231,8 @@ resource workerPlanAutoScale 'microsoft.insights/autoscalesettings@2015-04-01' =
             scaleAction: {
               direction: 'Increase'
               type: 'ChangeCount'
-              value: '5'
-              cooldown: 'PT5M'
+              value: string(scaleFactor * 5)
+              cooldown: 'PT3M'
             }
           }
           {
@@ -239,7 +242,7 @@ resource workerPlanAutoScale 'microsoft.insights/autoscalesettings@2015-04-01' =
               metricResourceUri: workerPlan.id
               timeGrain: 'PT1M'
               statistic: 'Average'
-              timeWindow: 'PT5M'
+              timeWindow: 'PT10M'
               timeAggregation: 'Average'
               operator: 'LessThan'
               threshold: 25
@@ -247,8 +250,8 @@ resource workerPlanAutoScale 'microsoft.insights/autoscalesettings@2015-04-01' =
             scaleAction: {
               direction: 'Increase'
               type: 'ChangeCount'
-              value: '2'
-              cooldown: 'PT5M'
+              value: string(scaleFactor * 2)
+              cooldown: 'PT2M'
             }
           }
         ]
@@ -257,7 +260,7 @@ resource workerPlanAutoScale 'microsoft.insights/autoscalesettings@2015-04-01' =
   }
 }
 
-var workerConfigWithStorage = concat(workerConfig, consumptionPlan ? [
+var workerConfigWithStorage = concat(workerConfig, isConsumptionPlan ? [
   {
     name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
     // SAS-based connection strings don't work for this property
@@ -278,7 +281,7 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
     httpsOnly: true
     siteConfig: {
       minTlsVersion: '1.2'
-      alwaysOn: !consumptionPlan
+      alwaysOn: !isConsumptionPlan
       appSettings: concat([
         {
           name: 'AzureFunctionsJobHost__logging__LogLevel__Default'
