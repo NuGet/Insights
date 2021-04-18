@@ -14,6 +14,7 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Knapcode.ExplorePackages.WideEntities;
 using MessagePack;
+using Microsoft.Extensions.Logging;
 
 namespace Knapcode.ExplorePackages.Worker
 {
@@ -27,15 +28,18 @@ namespace Knapcode.ExplorePackages.Worker
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly WideEntityService _wideEntityService;
         private readonly ICsvReader _csvReader;
+        private readonly ILogger<AppendResultStorageService> _logger;
 
         public AppendResultStorageService(
             ServiceClientFactory serviceClientFactory,
             WideEntityService wideEntityService,
-            ICsvReader csvReader)
+            ICsvReader csvReader,
+            ILogger<AppendResultStorageService> logger)
         {
             _serviceClientFactory = serviceClientFactory;
             _wideEntityService = wideEntityService;
             _csvReader = csvReader;
+            _logger = logger;
         }
 
         public async Task InitializeAsync(string srcContainer, string destContainer)
@@ -91,11 +95,28 @@ namespace Knapcode.ExplorePackages.Worker
             var bytes = Serialize(records);
             try
             {
-                await _wideEntityService.InsertAsync(
-                    tableName,
-                    partitionKey: bucket.ToString(),
-                    rowKey: StorageUtility.GenerateDescendingId().ToString(),
-                    content: bytes);
+                var attempt = 0;
+                while (true)
+                {
+                    attempt++;
+                    var rowKey = StorageUtility.GenerateDescendingId().ToString();
+                    try
+                    {
+                        await _wideEntityService.InsertAsync(tableName, partitionKey: bucket.ToString(), rowKey, content: bytes);
+                        break;
+                    }
+                    catch (RequestFailedException ex) when (attempt < 3 && ex.Status == (int)HttpStatusCode.Conflict)
+                    {
+                        // I've seen some conflicts on this insert before, shockingly! I don't believe in GUID
+                        // collisions! But let's try again with a new ID just in case.
+                        _logger.LogWarning(
+                            ex,
+                            "Conflict when inserting {Count} CSV records into bucket {Bucket} with row key {RowKey}.",
+                            records.Count,
+                            bucket,
+                            rowKey);
+                    }
+                }
             }
             catch (RequestFailedException ex) when (
                 records.Count >= 2
