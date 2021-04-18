@@ -265,11 +265,24 @@ $workerDefaultHostNames = $deployment.Outputs.workerDefaultHostNames.Value.ToStr
 Write-Status "Warming up the website and workers..."
 foreach ($hostName in @($websiteDefaultHostName) + $workerDefaultHostNames) {
     $url = "https://$hostName/"
-    $response = Invoke-WebRequest `
-        -Method HEAD `
-        -Uri $url `
-        -UseBasicParsing `
-        -MaximumRetryCount 10 `
-        -RetryIntervalSec 5
-    Write-Host "$url - $($response.StatusCode) $($response.StatusDescription)"
+    
+    $attempt = 0;
+    while ($true) {
+        $attempt++
+        try {
+            $response = Invoke-WebRequest `
+                -Method HEAD `
+                -Uri $url `
+                -UseBasicParsing
+            Write-Host "$url - $($response.StatusCode) $($response.StatusDescription)"
+            break
+        } catch {
+            if ($attempt -lt 10 -and $_.Exception.Response.StatusCode -ge 500) {
+                Start-Sleep -Seconds 5
+                continue
+            } else {
+                throw
+            }
+        }
+    }
 }

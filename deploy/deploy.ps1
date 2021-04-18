@@ -12,6 +12,9 @@ param (
 
 . (Join-Path $PSScriptRoot "scripts/common.ps1")
 
+$context = Get-AzContext
+Write-Status "Using subscription: $($context.Subscription.Id)"
+
 $configPath = Join-Path $PSScriptRoot "config/$ConfigName.json"
 Write-Status "Using config path: $configPath"
 $StackName = if ($StackName) { $StackName } else { $ConfigName }
