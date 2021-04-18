@@ -37,7 +37,6 @@ var sasConnectionStringReference = '@Microsoft.KeyVault(VaultName=${keyVaultName
 var isConsumptionPlan = workerSku == 'Y1'
 var isPremiumPlan = startsWith(workerSku, 'P')
 var maxInstances = isPremiumPlan ? 30 : 10
-var scaleFactor = isPremiumPlan ? 3 : 1
 
 output websiteDefaultHostName string = website.properties.defaultHostName
 output websiteHostNames array = website.properties.hostNames
@@ -231,7 +230,7 @@ resource workerPlanAutoScale 'microsoft.insights/autoscalesettings@2015-04-01' =
             scaleAction: {
               direction: 'Increase'
               type: 'ChangeCount'
-              value: string(scaleFactor * 5)
+              value: '5'
               cooldown: 'PT3M'
             }
           }
@@ -250,8 +249,8 @@ resource workerPlanAutoScale 'microsoft.insights/autoscalesettings@2015-04-01' =
             scaleAction: {
               direction: 'Increase'
               type: 'ChangeCount'
-              value: string(scaleFactor * 2)
-              cooldown: 'PT2M'
+              value: '3'
+              cooldown: 'PT1M'
             }
           }
         ]
