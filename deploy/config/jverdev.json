@@ -12,9 +12,7 @@
       }
     },
     "Worker": {
-      "Knapcode.ExplorePackages": {
-        "MoveTempToHome": true
-      }
+      "Knapcode.ExplorePackages": {}
     },
     "Website": {
       "Knapcode.ExplorePackages": {
