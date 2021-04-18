@@ -244,7 +244,7 @@ if ($existingWorkerCount -lt $workerCount) {
     Write-Status "Deploying without Key Vault references because there are new workers..."
     New-MainDeployment "prepare" $false
 
-    Write-Status "Deploying again with with Key Vault references..."
+    Write-Status "Deploying again with Key Vault references..."
     New-MainDeployment "main" $true | Tee-Object -Variable 'deployment'
 } else {
     Write-Status "Deploying the resources..."
