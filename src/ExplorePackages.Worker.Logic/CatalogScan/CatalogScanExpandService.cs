@@ -21,7 +21,7 @@ namespace Knapcode.ExplorePackages.Worker
         public async Task EnqueueLeafScansAsync(IReadOnlyList<CatalogLeafScan> leafScans)
         {
             _logger.LogInformation("Enqueuing a scan of {LeafCount} leaves.", leafScans.Count);
-            await _messageEnqueuer.EnqueueAsync(QueueType.Work, leafScans
+            await _messageEnqueuer.EnqueueAsync(leafScans
                 .Select(x => new CatalogLeafScanMessage
                 {
                     StorageSuffix = x.StorageSuffix,

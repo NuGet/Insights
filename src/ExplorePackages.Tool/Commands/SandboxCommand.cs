@@ -138,7 +138,7 @@ namespace Knapcode.ExplorePackages.Tool
                 .Range(0, 1000)
                 .Select(b => new RunRealRestoreCompactMessage { Bucket = b })
                 .ToList();
-            await _messageEnqueuer.EnqueueAsync(QueueType.Work, messages);
+            await _messageEnqueuer.EnqueueAsync(messages);
             Console.WriteLine("Done.");
         }
 
@@ -152,7 +152,7 @@ namespace Knapcode.ExplorePackages.Tool
                 messages.Add(new RunRealRestoreMessage { Id = pieces[0], Version = pieces[1], Framework = pieces[2] });
             }
 
-            await _messageEnqueuer.EnqueueAsync(QueueType.Work, messages);
+            await _messageEnqueuer.EnqueueAsync(messages);
         }
 
         private async Task EnqueueRunRealRestoreAsync()
@@ -214,7 +214,7 @@ namespace Knapcode.ExplorePackages.Tool
                     Framework = m.Framework.GetShortFolderName(),
                 })
                 .ToList();
-            await _messageEnqueuer.EnqueueAsync(QueueType.Work, messages);
+            await _messageEnqueuer.EnqueueAsync(messages);
             Console.WriteLine("Done.");
         }
 

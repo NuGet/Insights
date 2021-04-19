@@ -39,7 +39,6 @@ namespace Knapcode.ExplorePackages.Worker.TableCopy
             var deserializedParameters = DeserializeParameters(parameters);
 
             await _enqueuer.EnqueueAsync(
-                QueueType.Work,
                 entities
                     .GroupBy(x => x.PartitionKey)
                     .Select(x => new TableRowCopyMessage<T>

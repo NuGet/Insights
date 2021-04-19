@@ -229,7 +229,7 @@ namespace Knapcode.ExplorePackages.Worker
                     originalMessage.TaskStateKey.PartitionKey,
                     taskStates);
 
-                await _enqueuer.EnqueueAsync(QueueType.Expand, tableScanMessages);
+                await _enqueuer.EnqueueAsync(tableScanMessages);
             }
         }
 

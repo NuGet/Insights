@@ -21,9 +21,8 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class SchemaSerializer
     {
-        private static readonly SchemasCollection Schemas = new SchemasCollection(new ISchemaDeserializer[]
+        public static IReadOnlyList<ISchemaDeserializer> MessageSchemas = new ISchemaDeserializer[]
         {
-            // Messages
             new SchemaV1<HomogeneousBulkEnqueueMessage>("hbe"),
             new SchemaV1<HomogeneousBatchMessage>("hb"),
 
@@ -52,8 +51,10 @@ namespace Knapcode.ExplorePackages.Worker
 
             new SchemaV1<StreamWriterUpdaterMessage<PackageDownloadSet>>("d2c"),
             new SchemaV1<StreamWriterUpdaterMessage<PackageOwnerSet>>("o2c"),
+        };
 
-            // Parameters
+        public static IReadOnlyList<ISchemaDeserializer> ParameterSchemas = new ISchemaDeserializer[]
+        {
             new SchemaV1<TablePrefixScanStartParameters>("tps.s"),
             new SchemaV1<TablePrefixScanPartitionKeyQueryParameters>("tps.pkq"),
             new SchemaV1<TablePrefixScanPrefixQueryParameters>("tps.pq"),
@@ -62,7 +63,13 @@ namespace Knapcode.ExplorePackages.Worker
 
             new SchemaV1<EnqueueCatalogLeafScansParameters>("ecls"),
             new SchemaV1<TableCopyParameters>("tc"),
-        });
+        };
+
+        private static readonly SchemasCollection Schemas = new SchemasCollection(Enumerable
+            .Empty<ISchemaDeserializer>()
+            .Concat(MessageSchemas)
+            .Concat(ParameterSchemas)
+            .ToList());
 
         private readonly ILogger<SchemaSerializer> _logger;
 

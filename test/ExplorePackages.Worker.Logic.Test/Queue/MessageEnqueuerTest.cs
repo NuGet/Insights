@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -16,9 +17,7 @@ namespace Knapcode.ExplorePackages.Worker
         [InlineData(2)]
         public async Task DoesNotBatchIfMessageCountIsLessThanThreshold(int messageCount)
         {
-            await Target.EnqueueAsync(
-                QueueType.Work,
-                Enumerable.Range(0, messageCount).Select(x => new CatalogPageScanMessage { PageId = x.ToString() }).ToList());
+            await Target.EnqueueAsync(Enumerable.Range(0, messageCount).Select(x => new CatalogPageScanMessage { PageId = x.ToString() }).ToList());
 
             var messages = Assert.Single(EnqueuedMessages);
             for (var i = 0; i < messageCount; i++)
@@ -43,7 +42,6 @@ namespace Knapcode.ExplorePackages.Worker
             var schema = new SchemaV1<string>("i");
 
             await Target.EnqueueAsync(
-                QueueType.Work,
                 Enumerable.Range(0, messageCount).Select(i => GetSerializedMessage(i, byteCount)).ToList(),
                 schema,
                 TimeSpan.Zero);
@@ -55,6 +53,39 @@ namespace Knapcode.ExplorePackages.Worker
                 Assert.StartsWith($"{i}_", message.Messages[i % perBatch].ToString());
             }
         }
+
+        [Theory]
+        [MemberData(nameof(UsesCorrectQueueData))]
+        public async Task UsesCorrectQueue(Type messageType, QueueType queue)
+        {
+            var parameters = Array.CreateInstance(messageType, 1);
+            parameters.SetValue(Activator.CreateInstance(messageType), 0);
+
+            await (Task)Target
+                .GetType()
+                .GetMethods()
+                .Single(x => x.Name == nameof(MessageEnqueuer.EnqueueAsync) && x.GetParameters().Length == 1)
+                .MakeGenericMethod(messageType)
+                .Invoke(Target, new[] { parameters });
+
+            RawMessageEnqueuer.Verify(
+                x => x.AddAsync(queue, It.Is<IReadOnlyList<string>>(y => y.Count == 1), TimeSpan.Zero),
+                Times.Once);
+        }
+
+        public static IEnumerable<object[]> UsesCorrectQueueData => MessageTypes
+            .Select(x => new object[] { x, ExpandMessageTypes.Contains(x) ? QueueType.Expand : QueueType.Work });
+
+        public static IEnumerable<Type> MessageTypes => SchemaSerializer
+            .MessageSchemas
+            .Select(x => x.GetType().GenericTypeArguments.Single());
+
+        public static HashSet<Type> ExpandMessageTypes => new HashSet<Type>
+        {
+            typeof(HomogeneousBulkEnqueueMessage),
+            typeof(TableScanMessage<CatalogLeafScan>),
+            typeof(TableScanMessage<LatestPackageLeaf>),
+        };
 
         private string GetSerializedMessage(int id, int byteCount)
         {

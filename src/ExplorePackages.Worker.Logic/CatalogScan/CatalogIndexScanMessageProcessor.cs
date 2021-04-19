@@ -142,7 +142,7 @@ namespace Knapcode.ExplorePackages.Worker
                 if (!await ArePageScansCompleteAsync(scan) || !await AreLeafScansCompleteAsync(scan))
                 {
                     message.AttemptCount++;
-                    await _messageEnqueuer.EnqueueAsync(QueueType.Work, new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
                     return;
                 }
                 else
@@ -190,7 +190,7 @@ namespace Knapcode.ExplorePackages.Worker
                 {
                     _logger.LogInformation("Still finding latest catalog leaf scans.");
                     message.AttemptCount++;
-                    await _messageEnqueuer.EnqueueAsync(QueueType.Work, new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
                     return;
                 }
                 else
@@ -251,7 +251,7 @@ namespace Knapcode.ExplorePackages.Worker
                 {
                     _logger.LogInformation("The custom expand is still running.");
                     message.AttemptCount++;
-                    await _messageEnqueuer.EnqueueAsync(QueueType.Work, new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
                     return;
                 }
                 else
@@ -362,7 +362,7 @@ namespace Knapcode.ExplorePackages.Worker
                 if (!await AreTableScanStepsCompleteAsync(taskStateKey) || !await AreLeafScansCompleteAsync(scan))
                 {
                     message.AttemptCount++;
-                    await _messageEnqueuer.EnqueueAsync(QueueType.Work, new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
                     return;
                 }
                 else
@@ -394,7 +394,7 @@ namespace Knapcode.ExplorePackages.Worker
                 {
                     _logger.LogInformation("The index scan is still aggregating.");
                     message.AttemptCount++;
-                    await _messageEnqueuer.EnqueueAsync(QueueType.Work, new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
                     return;
                 }
                 else
@@ -527,7 +527,6 @@ namespace Knapcode.ExplorePackages.Worker
         {
             _logger.LogInformation("Enqueuing a scan of {PageCount} pages.", pageScans.Count);
             await _messageEnqueuer.EnqueueAsync(
-                QueueType.Work,
                 pageScans
                     .Select(x => new CatalogPageScanMessage
                     {

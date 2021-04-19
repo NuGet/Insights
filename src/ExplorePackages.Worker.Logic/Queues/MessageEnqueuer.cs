@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,6 +11,8 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class MessageEnqueuer : IMessageEnqueuer
     {
+        private static readonly ConcurrentDictionary<Type, QueueType> TypeToQueue = new ConcurrentDictionary<Type, QueueType>();
+
         private delegate Task AddAsync(QueueType queue, IReadOnlyList<string> messages, TimeSpan notBefore);
 
         private readonly SchemaSerializer _serializer;
@@ -34,38 +37,37 @@ namespace Knapcode.ExplorePackages.Worker
             await _rawMessageEnqueuer.InitializeAsync();
         }
 
-        public Task EnqueueAsync<T>(QueueType queue, IReadOnlyList<T> messages)
+        public Task EnqueueAsync<T>(IReadOnlyList<T> messages)
         {
-            return EnqueueAsync(queue, messages, TimeSpan.Zero);
+            return EnqueueAsync(messages, TimeSpan.Zero);
         }
 
-        public Task EnqueueAsync<T>(QueueType queue, IReadOnlyList<T> messages, Func<T, IReadOnlyList<T>> split)
+        public Task EnqueueAsync<T>(IReadOnlyList<T> messages, Func<T, IReadOnlyList<T>> split)
         {
-            return EnqueueAsync(queue, _rawMessageEnqueuer.AddAsync, messages, split, _serializer.GetSerializer<T>(), TimeSpan.Zero);
+            return EnqueueAsync(_rawMessageEnqueuer.AddAsync, messages, split, _serializer.GetSerializer<T>(), TimeSpan.Zero);
         }
 
-        public Task EnqueueAsync<T>(QueueType queue, IReadOnlyList<T> messages, TimeSpan notBefore)
+        public Task EnqueueAsync<T>(IReadOnlyList<T> messages, TimeSpan notBefore)
         {
-            return EnqueueAsync(queue, _rawMessageEnqueuer.AddAsync, messages, NoSplit, _serializer.GetSerializer<T>(), notBefore);
+            return EnqueueAsync(_rawMessageEnqueuer.AddAsync, messages, NoSplit, _serializer.GetSerializer<T>(), notBefore);
         }
 
-        internal Task EnqueueAsync<T>(QueueType queue, IReadOnlyList<T> messages, ISchemaSerializer<T> serializer, TimeSpan notBefore)
+        internal Task EnqueueAsync<T>(IReadOnlyList<T> messages, ISchemaSerializer<T> serializer, TimeSpan notBefore)
         {
-            return EnqueueAsync(queue, _rawMessageEnqueuer.AddAsync, messages, NoSplit, serializer, notBefore);
+            return EnqueueAsync(_rawMessageEnqueuer.AddAsync, messages, NoSplit, serializer, notBefore);
         }
 
-        public Task EnqueuePoisonAsync<T>(QueueType queue, IReadOnlyList<T> messages)
+        public Task EnqueuePoisonAsync<T>(IReadOnlyList<T> messages)
         {
-            return EnqueuePoisonAsync(queue, messages, TimeSpan.Zero);
+            return EnqueuePoisonAsync(messages, TimeSpan.Zero);
         }
 
-        public Task EnqueuePoisonAsync<T>(QueueType queue, IReadOnlyList<T> messages, TimeSpan notBefore)
+        public Task EnqueuePoisonAsync<T>(IReadOnlyList<T> messages, TimeSpan notBefore)
         {
-            return EnqueueAsync(queue, _rawMessageEnqueuer.AddPoisonAsync, messages, NoSplit, _serializer.GetSerializer<T>(), notBefore);
+            return EnqueueAsync(_rawMessageEnqueuer.AddPoisonAsync, messages, NoSplit, _serializer.GetSerializer<T>(), notBefore);
         }
 
         private async Task EnqueueAsync<T>(
-            QueueType queue,
             AddAsync addAsync,
             IReadOnlyList<T> messages,
             Func<T, IReadOnlyList<T>> split,
@@ -77,10 +79,14 @@ namespace Knapcode.ExplorePackages.Worker
                 return;
             }
 
+            // Determine which queue the messages should go into, by type.
+            var queue = GetQueueTypeCached<T>();
+
+            // Batch the messages
             var batches = await _batcher.BatchOrNullAsync(messages, serializer);
             if (batches != null)
             {
-                await EnqueueAsync(queue, batches, notBefore);
+                await EnqueueAsync(batches, notBefore);
                 return;
             }
 
@@ -157,6 +163,22 @@ namespace Knapcode.ExplorePackages.Worker
                     await EnqueueBulkEnqueueMessageAsync(addAsync, batchMessage, batchMessageLength);
                 }
             }
+        }
+
+        private QueueType GetQueueTypeCached<T>()
+        {
+            return TypeToQueue.GetOrAdd(typeof(T), GetQueueType);
+        }
+
+        private QueueType GetQueueType(Type messageType)
+        {
+            if (messageType == typeof(HomogeneousBulkEnqueueMessage)
+                || (messageType.IsGenericType && messageType.GetGenericTypeDefinition() == typeof(TableScanMessage<>)))
+            {
+                return QueueType.Expand;
+            }
+
+            return QueueType.Work;
         }
 
         private IReadOnlyList<T> NoSplit<T>(T message)

@@ -60,7 +60,7 @@ namespace Knapcode.ExplorePackages.Worker
                 leafScans.AddRange(pageLeafScans);
             }
 
-            await _messageEnqueuer.EnqueueAsync(QueueType.Work, leafScans
+            await _messageEnqueuer.EnqueueAsync(leafScans
                 .Select(x => new CatalogLeafScanMessage
                 {
                     StorageSuffix = x.StorageSuffix,
@@ -70,7 +70,7 @@ namespace Knapcode.ExplorePackages.Worker
                 })
                 .ToList());
 
-            await _messageEnqueuer.EnqueueAsync(QueueType.Work, pageScans
+            await _messageEnqueuer.EnqueueAsync(pageScans
                 .Select(x => new CatalogPageScanMessage
                 {
                     StorageSuffix = x.StorageSuffix,
@@ -79,7 +79,7 @@ namespace Knapcode.ExplorePackages.Worker
                 })
                 .ToList());
 
-            await _messageEnqueuer.EnqueueAsync(QueueType.Work, new[]
+            await _messageEnqueuer.EnqueueAsync(new[]
             {
                 new CatalogIndexScanMessage
                 {
@@ -481,7 +481,7 @@ namespace Knapcode.ExplorePackages.Worker
                 CursorName = cursorName,
                 ScanId = scanId,
             };
-            await _messageEnqueuer.EnqueueAsync(QueueType.Work, new[] { catalogIndexScanMessage });
+            await _messageEnqueuer.EnqueueAsync(new[] { catalogIndexScanMessage });
             var catalogIndexScan = new CatalogIndexScan(cursorName, scanId, storageSuffix)
             {
                 DriverType = driverType,

@@ -20,7 +20,7 @@ namespace Knapcode.ExplorePackages.Worker
             await Target.InitializeAsync();
             var messages = new[] { new CatalogLeafScanMessage { LeafId = "Newtonsoft" } };
 
-            await Target.EnqueueAsync(QueueType.Work, messages);
+            await Target.EnqueueAsync(messages);
 
             PeekedMessage message = await (await ServiceClientFactory.GetQueueServiceClientAsync())
                 .GetQueueClient(Options.Value.WorkQueueName)
@@ -34,7 +34,7 @@ namespace Knapcode.ExplorePackages.Worker
             await Target.InitializeAsync();
             var messages = new[] { new CatalogLeafScanMessage { LeafId = "Nëwtönsöft" } };
 
-            await Target.EnqueueAsync(QueueType.Work, messages);
+            await Target.EnqueueAsync(messages);
 
             PeekedMessage message = await (await ServiceClientFactory.GetQueueServiceClientAsync())
                 .GetQueueClient(Options.Value.WorkQueueName)
