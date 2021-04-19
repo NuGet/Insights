@@ -236,7 +236,7 @@ resource workerPlanAutoScale 'microsoft.insights/autoscalesettings@2015-04-01' =
               metricResourceUri: workerPlan.id
               timeGrain: 'PT1M'
               statistic: 'Average'
-              timeWindow: 'PT10M'
+              timeWindow: 'PT5M'
               timeAggregation: 'Average'
               operator: 'LessThan'
               threshold: 33
