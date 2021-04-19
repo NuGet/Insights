@@ -25,5 +25,10 @@ namespace Knapcode.ExplorePackages.Worker
         {
             return _inner.TrackValue(metricValue, dimension1Value, dimension2Value);
         }
+
+        public bool TrackValue(double metricValue, string dimension1Value, string dimension2Value, string dimension3Value)
+        {
+            return _inner.TrackValue(metricValue, dimension1Value, dimension2Value, dimension3Value);
+        }
     }
 }

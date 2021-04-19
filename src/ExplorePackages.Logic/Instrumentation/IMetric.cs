@@ -5,5 +5,6 @@
         void TrackValue(double metricValue);
         bool TrackValue(double metricValue, string dimension1Value);
         bool TrackValue(double metricValue, string dimension1Value, string dimension2Value);
+        bool TrackValue(double metricValue, string dimension1Value, string dimension2Value, string dimension3Value);
     }
 }

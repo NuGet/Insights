@@ -19,7 +19,7 @@ namespace Knapcode.ExplorePackages.Worker
                 public async Task Success()
                 {
                     // Arrange & Act
-                    await Target.ProcessSingleAsync(SingleMessage, dequeueCount: 1);
+                    await Target.ProcessSingleAsync(QueueType.Work, SingleMessage, dequeueCount: 1);
 
                     // Assert
                     var batch = Assert.Single(ProcessedBatches);
@@ -42,7 +42,7 @@ namespace Knapcode.ExplorePackages.Worker
                         .ThrowsAsync(expected);
 
                     // Act
-                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => Target.ProcessSingleAsync(SingleMessage, dequeueCount: 1));
+                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => Target.ProcessSingleAsync(QueueType.Work, SingleMessage, dequeueCount: 1));
 
                     // Assert
                     Assert.Same(expected, ex);
@@ -59,7 +59,7 @@ namespace Knapcode.ExplorePackages.Worker
                         .Returns<IReadOnlyList<CatalogLeafScanMessage>, long>((m, _) => Task.FromResult(new BatchMessageProcessorResult<CatalogLeafScanMessage>(m)));
 
                     // Act
-                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => Target.ProcessSingleAsync(SingleMessage, dequeueCount: 1));
+                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => Target.ProcessSingleAsync(QueueType.Work, SingleMessage, dequeueCount: 1));
 
                     // Assert
                     Assert.Equal("A batch containing a single message failed.", ex.Message);
@@ -78,7 +78,7 @@ namespace Knapcode.ExplorePackages.Worker
                             failed: new[] { different })));
 
                     // Act
-                    await Target.ProcessSingleAsync(SingleMessage, dequeueCount: 1);
+                    await Target.ProcessSingleAsync(QueueType.Work, SingleMessage, dequeueCount: 1);
 
                     // Assert
                     RawMessageEnqueuer.Verify(x => x.AddAsync(QueueType.Work, It.IsAny<IReadOnlyList<string>>()), Times.Once);
@@ -99,7 +99,7 @@ namespace Knapcode.ExplorePackages.Worker
                             notBefore: TimeSpan.FromMinutes(3))));
 
                     // Act
-                    await Target.ProcessSingleAsync(SingleMessage, dequeueCount: 1);
+                    await Target.ProcessSingleAsync(QueueType.Work, SingleMessage, dequeueCount: 1);
 
                     // Assert
                     RawMessageEnqueuer.Verify(x => x.AddAsync(QueueType.Work, It.IsAny<IReadOnlyList<string>>(), TimeSpan.FromMinutes(3)), Times.Once);
@@ -121,7 +121,7 @@ namespace Knapcode.ExplorePackages.Worker
                             notBefore: TimeSpan.FromMinutes(3))));
 
                     // Act
-                    await Target.ProcessSingleAsync(SingleMessage, dequeueCount: 1);
+                    await Target.ProcessSingleAsync(QueueType.Work, SingleMessage, dequeueCount: 1);
 
                     // Assert
                     RawMessageEnqueuer.Verify(x => x.AddAsync(QueueType.Work, It.IsAny<IReadOnlyList<string>>(), TimeSpan.FromMinutes(3)), Times.Once);
@@ -248,7 +248,7 @@ namespace Knapcode.ExplorePackages.Worker
                             notBefore: TimeSpan.FromMinutes(3))));
 
                     // Act
-                    await Target.ProcessSingleAsync(SingleMessage, dequeueCount: 1);
+                    await Target.ProcessSingleAsync(QueueType.Work, SingleMessage, dequeueCount: 1);
 
                     // Assert
                     RawMessageEnqueuer.Verify(x => x.AddAsync(QueueType.Work, It.IsAny<IReadOnlyList<string>>(), TimeSpan.FromMinutes(3)), Times.Once);
@@ -290,7 +290,7 @@ namespace Knapcode.ExplorePackages.Worker
                 public async Task Success()
                 {
                     // Arrange & Act
-                    await Target.ProcessSingleAsync(SingleMessage, dequeueCount: 1);
+                    await Target.ProcessSingleAsync(QueueType.Work, SingleMessage, dequeueCount: 1);
 
                     // Assert
                     var message = Assert.Single(ProcessedMessages);
@@ -312,7 +312,7 @@ namespace Knapcode.ExplorePackages.Worker
                         .ThrowsAsync(expected);
 
                     // Act
-                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => Target.ProcessSingleAsync(SingleMessage, dequeueCount: 1));
+                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => Target.ProcessSingleAsync(QueueType.Work, SingleMessage, dequeueCount: 1));
 
                     // Assert
                     Assert.Same(expected, ex);

@@ -44,5 +44,12 @@ namespace Knapcode.ExplorePackages
             _logger.LogInformation("Metric emitted: {MetricId} {Dimension1Name} {Dimension2Name} = {MetricValue}", _metricId, dimension1Value, dimension2Value, metricValue);
             return true;
         }
+
+        public bool TrackValue(double metricValue, string dimension1Value, string dimension2Value, string dimension3Value)
+        {
+            AssertDimensionCount(3);
+            _logger.LogInformation("Metric emitted: {MetricId} {Dimension1Name} {Dimension2Name} {Dimension3Name} = {MetricValue}", _metricId, dimension1Value, dimension2Value, dimension3Value, metricValue);
+            return true;
+        }
     }
 }

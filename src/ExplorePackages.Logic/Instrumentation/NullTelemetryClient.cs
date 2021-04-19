@@ -21,6 +21,11 @@ namespace Knapcode.ExplorePackages
             return NullMetric.Instance;
         }
 
+        public IMetric GetMetric(string metricId, string dimension1Name, string dimension2Name, string dimension3Name)
+        {
+            return NullMetric.Instance;
+        }
+
         public void TrackMetric(string name, double value, IDictionary<string, string> properties)
         {
         }

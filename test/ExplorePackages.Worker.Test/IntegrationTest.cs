@@ -31,11 +31,21 @@ namespace Knapcode.ExplorePackages.Worker
                 });
         }
 
-        protected override async Task ProcessMessageAsync(IServiceProvider serviceProvider, QueueMessage message)
+        protected override async Task ProcessMessageAsync(IServiceProvider serviceProvider, QueueType queueType, QueueMessage message)
         {
-            await serviceProvider
-                .GetRequiredService<Functions>()
-                .WorkQueueAsync(new CloudQueueMessage(message.Body.ToString()));
+            var functions = serviceProvider.GetRequiredService<Functions>();
+            var cloudMessage = new CloudQueueMessage(message.Body.ToString());
+            switch (queueType)
+            {
+                case QueueType.Work:
+                    await functions.WorkQueueAsync(cloudMessage);
+                    break;
+                case QueueType.Expand:
+                    await functions.ExpandQueueAsync(cloudMessage);
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
         public class CanRunTimersAsync : IntegrationTest

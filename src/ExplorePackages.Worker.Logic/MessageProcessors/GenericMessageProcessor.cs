@@ -33,7 +33,7 @@ namespace Knapcode.ExplorePackages.Worker
             _logger = logger;
         }
 
-        public async Task ProcessSingleAsync(string message, long dequeueCount)
+        public async Task ProcessSingleAsync(QueueType queue, string message, long dequeueCount)
         {
             NameVersionMessage<object> deserializedMessage;
             try
@@ -47,15 +47,19 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             await ProcessSingleMessageAsync(
+                isBatch: false,
+                queue,
                 deserializedMessage.SchemaName,
                 deserializedMessage.SchemaVersion,
                 deserializedMessage.Data,
                 dequeueCount);
         }
 
-        private async Task ProcessSingleMessageAsync(string schemaName, int schameVersion, object data, long dequeueCount)
+        private async Task ProcessSingleMessageAsync(bool isBatch, QueueType? queue, string schemaName, int schameVersion, object data, long dequeueCount)
         {
             var result = await ProcessAsync(
+                isBatch,
+                queue,
                 schemaName,
                 schameVersion,
                 data.GetType(),
@@ -88,6 +92,8 @@ namespace Knapcode.ExplorePackages.Worker
             if (data.Count == 1)
             {
                 await ProcessSingleMessageAsync(
+                    isBatch: true,
+                    queue: null,
                     schemaName,
                     schemaVersion,
                     deserializer.Deserialize(schemaVersion, data[0]),
@@ -109,6 +115,8 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             var result = await ProcessAsync(
+                isBatch: true,
+                queue: null,
                 schemaName,
                 schemaVersion,
                 deserializer.Type,
@@ -145,6 +153,8 @@ namespace Knapcode.ExplorePackages.Worker
         }
 
         private async Task<BatchMessageProcessorResult<object>> ProcessAsync(
+            bool isBatch,
+            QueueType? queue,
             string schemaName,
             int schemaVersion,
             Type messageType,
@@ -192,8 +202,7 @@ namespace Knapcode.ExplorePackages.Worker
                 }
                 finally
                 {
-                    var metric = _telemetryClient.GetMetric($"BatchMessageProcessor{status}DurationMs", "SchemaName");
-                    metric.TrackValue(stopwatch.Elapsed.TotalMilliseconds, schemaName);
+                    EmitMetric(isBatch, queue, schemaName, stopwatch, status);
                 }
             }
             else
@@ -238,8 +247,7 @@ namespace Knapcode.ExplorePackages.Worker
                     }
                     finally
                     {
-                        var metric = _telemetryClient.GetMetric($"MessageProcessor{(success ? "Success" : "Exception")}DurationMs", "SchemaName");
-                        metric.TrackValue(stopwatch.Elapsed.TotalMilliseconds, schemaName);
+                        EmitMetric(isBatch, queue, schemaName, stopwatch, success ? "Success" : "Exception");
                     }
                 }
 
@@ -251,6 +259,20 @@ namespace Knapcode.ExplorePackages.Worker
                 {
                     return BatchMessageProcessorResult<object>.Empty;
                 }
+            }
+        }
+
+        private void EmitMetric(bool isBatch, QueueType? queue, string schemaName, Stopwatch stopwatch, string status)
+        {
+            if (isBatch)
+            {
+                var metric = _telemetryClient.GetMetric($"BatchMessageProcessorDurationMs", "Status", "SchemaName");
+                metric.TrackValue(stopwatch.Elapsed.TotalMilliseconds, status, schemaName);
+            }
+            else
+            {
+                var metric = _telemetryClient.GetMetric($"MessageProcessorDurationMs", "Status", "SchemaName", "QueueType");
+                metric.TrackValue(stopwatch.Elapsed.TotalMilliseconds, status, schemaName, queue.Value.ToString());
             }
         }
 

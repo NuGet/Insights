@@ -6,7 +6,7 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public interface IGenericMessageProcessor
     {
-        Task ProcessSingleAsync(string message, long dequeueCount);
+        Task ProcessSingleAsync(QueueType queue, string message, long dequeueCount);
         Task ProcessBatchAsync(string schemaName, int schemaVersion, IReadOnlyList<JToken> data, long dequeueCount);
     }
 }

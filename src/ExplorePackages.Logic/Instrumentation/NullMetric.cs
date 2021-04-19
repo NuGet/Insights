@@ -17,5 +17,10 @@
         {
             return true;
         }
+
+        public bool TrackValue(double metricValue, string dimension1Value, string dimension2Value, string dimension3Value)
+        {
+            return true;
+        }
     }
 }

@@ -75,19 +75,36 @@ namespace Knapcode.ExplorePackages.Worker
             ISchemaSerializer<T> serializer,
             TimeSpan notBefore)
         {
+            // Determine which queue the messages should go into, by type.
+            var queue = GetQueueType<T>();
+
+            await EnqueueAsync(queue, addAsync, messages, split, serializer, notBefore);
+        }
+
+        private async Task EnqueueAsync<T>(
+            QueueType queue,
+            AddAsync addAsync,
+            IReadOnlyList<T> messages,
+            Func<T, IReadOnlyList<T>> split,
+            ISchemaSerializer<T> serializer,
+            TimeSpan notBefore)
+        {
             if (messages.Count == 0)
             {
                 return;
             }
 
-            // Determine which queue the messages should go into, by type.
-            var queue = GetQueueType<T>();
-
             // Batch the messages
             var batches = await _batcher.BatchOrNullAsync(messages, serializer);
             if (batches != null)
             {
-                await EnqueueAsync(batches, notBefore);
+                await EnqueueAsync(
+                    queue,
+                    addAsync,
+                    batches,
+                    NoSplit,
+                    _serializer.GetSerializer<HomogeneousBatchMessage>(),
+                    notBefore);
                 return;
             }
 
