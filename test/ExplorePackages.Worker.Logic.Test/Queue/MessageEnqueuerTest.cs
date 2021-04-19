@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -55,8 +56,8 @@ namespace Knapcode.ExplorePackages.Worker
         }
 
         [Theory]
-        [MemberData(nameof(UsesCorrectQueueData))]
-        public async Task UsesCorrectQueue(Type messageType, QueueType queue)
+        [MemberData(nameof(UsesCorrectQueueByMessageTypeData))]
+        public async Task UsesCorrectQueueByMessageType(Type messageType, QueueType queue)
         {
             var parameters = Array.CreateInstance(messageType, 1);
             parameters.SetValue(Activator.CreateInstance(messageType), 0);
@@ -73,12 +74,23 @@ namespace Knapcode.ExplorePackages.Worker
                 Times.Once);
         }
 
-        public static IEnumerable<object[]> UsesCorrectQueueData => MessageTypes
+        public static IEnumerable<object[]> UsesCorrectQueueByMessageTypeData => SchemaSerializer
+            .MessageSchemas
+            .Select(x => x.GetType().GenericTypeArguments.Single())
             .Select(x => new object[] { x, ExpandMessageTypes.Contains(x) ? QueueType.Expand : QueueType.Work });
 
-        public static IEnumerable<Type> MessageTypes => SchemaSerializer
+        [Theory]
+        [MemberData(nameof(UsesCorrectQueueBySchemaNameData))]
+        public void UsesCorrectQueueBySchemaName(string schemaName, QueueType queue)
+        {
+            Assert.Equal(queue, Target.GetQueueType(schemaName));
+        }
+
+        public static IEnumerable<object[]> UsesCorrectQueueBySchemaNameData => SchemaSerializer
             .MessageSchemas
-            .Select(x => x.GetType().GenericTypeArguments.Single());
+            .Cast<ISchemaDeserializer>()
+            .Select(x => x.Name)
+            .Select(x => new object[] { x, ExpandSchemaNames.Contains(x) ? QueueType.Expand : QueueType.Work });
 
         public static HashSet<Type> ExpandMessageTypes => new HashSet<Type>
         {
@@ -86,6 +98,17 @@ namespace Knapcode.ExplorePackages.Worker
             typeof(TableScanMessage<CatalogLeafScan>),
             typeof(TableScanMessage<LatestPackageLeaf>),
         };
+
+        public static HashSet<string> ExpandSchemaNames
+        {
+            get
+            {
+                var schemaSerializer = new SchemaSerializer(NullLogger<SchemaSerializer>.Instance);
+                return ExpandMessageTypes
+                    .Select(x => schemaSerializer.GetGenericSerializer(x).Name)
+                    .ToHashSet();
+            }
+        }
 
         private string GetSerializedMessage(int id, int byteCount)
         {

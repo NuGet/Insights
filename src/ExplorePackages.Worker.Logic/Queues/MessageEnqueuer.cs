@@ -12,6 +12,7 @@ namespace Knapcode.ExplorePackages.Worker
     public class MessageEnqueuer : IMessageEnqueuer
     {
         private static readonly ConcurrentDictionary<Type, QueueType> TypeToQueue = new ConcurrentDictionary<Type, QueueType>();
+        private static readonly ConcurrentDictionary<string, QueueType> SchemaNameToQueue = new ConcurrentDictionary<string, QueueType>();
 
         private delegate Task AddAsync(QueueType queue, IReadOnlyList<string> messages, TimeSpan notBefore);
 
@@ -80,7 +81,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             // Determine which queue the messages should go into, by type.
-            var queue = GetQueueTypeCached<T>();
+            var queue = GetQueueType<T>();
 
             // Batch the messages
             var batches = await _batcher.BatchOrNullAsync(messages, serializer);
@@ -165,12 +166,21 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        private QueueType GetQueueTypeCached<T>()
+        public QueueType GetQueueType<T>()
         {
-            return TypeToQueue.GetOrAdd(typeof(T), GetQueueType);
+            return TypeToQueue.GetOrAdd(typeof(T), GetQueueTypeUncached);
         }
 
-        private QueueType GetQueueType(Type messageType)
+        public QueueType GetQueueType(string schemaName)
+        {
+            return SchemaNameToQueue.GetOrAdd(schemaName, s =>
+            {
+                var deserializer = _serializer.GetDeserializer(s);
+                return TypeToQueue.GetOrAdd(deserializer.Type, GetQueueTypeUncached);
+            });
+        }
+
+        private QueueType GetQueueTypeUncached(Type messageType)
         {
             if (messageType == typeof(HomogeneousBulkEnqueueMessage)
                 || (messageType.IsGenericType && messageType.GetGenericTypeDefinition() == typeof(TableScanMessage<>)))

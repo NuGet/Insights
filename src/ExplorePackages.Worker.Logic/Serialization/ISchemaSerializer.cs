@@ -10,6 +10,7 @@
 
     public interface ISchemaSerializer
     {
+        public string Name { get; }
         ISerializedEntity SerializeMessage(object message);
     }
 }

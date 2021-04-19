@@ -11,6 +11,8 @@ namespace Knapcode.ExplorePackages.Worker
         Task EnqueueAsync<T>(IReadOnlyList<T> messages, TimeSpan notBefore);
         Task EnqueuePoisonAsync<T>(IReadOnlyList<T> messages);
         Task EnqueuePoisonAsync<T>(IReadOnlyList<T> messages, TimeSpan notBefore);
+        QueueType GetQueueType<T>();
+        QueueType GetQueueType(string schemaName);
         Task InitializeAsync();
     }
 }
