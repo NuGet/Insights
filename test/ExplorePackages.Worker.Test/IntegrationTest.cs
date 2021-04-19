@@ -35,7 +35,7 @@ namespace Knapcode.ExplorePackages.Worker
         {
             await serviceProvider
                 .GetRequiredService<Functions>()
-                .WorkerQueueAsync(new CloudQueueMessage(message.Body.ToString()));
+                .WorkQueueAsync(new CloudQueueMessage(message.Body.ToString()));
         }
 
         public class CanRunTimersAsync : IntegrationTest
@@ -246,10 +246,13 @@ namespace Knapcode.ExplorePackages.Worker
 
                 // Assert
                 var rawMessageEnqueuer = Host.Services.GetRequiredService<IRawMessageEnqueuer>();
-                Assert.Equal(0, await rawMessageEnqueuer.GetApproximateMessageCountAsync());
-                Assert.Equal(0, await rawMessageEnqueuer.GetAvailableMessageCountLowerBoundAsync(32));
-                Assert.Equal(0, await rawMessageEnqueuer.GetPoisonApproximateMessageCountAsync());
-                Assert.Equal(0, await rawMessageEnqueuer.GetPoisonAvailableMessageCountLowerBoundAsync(32));
+                foreach (var queue in Enum.GetValues(typeof(QueueType)).Cast<QueueType>())
+                {
+                    Assert.Equal(0, await rawMessageEnqueuer.GetApproximateMessageCountAsync(queue));
+                    Assert.Equal(0, await rawMessageEnqueuer.GetAvailableMessageCountLowerBoundAsync(queue, 32));
+                    Assert.Equal(0, await rawMessageEnqueuer.GetPoisonApproximateMessageCountAsync(queue));
+                    Assert.Equal(0, await rawMessageEnqueuer.GetPoisonAvailableMessageCountLowerBoundAsync(queue, 32));
+                }
 
                 Assert.NotEqual(0, startingNupkgRequestCount);
                 Assert.NotEqual(0, startingNuspecRequestCount);

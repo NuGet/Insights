@@ -418,10 +418,10 @@ namespace Knapcode.ExplorePackages.Worker
         {
             Assert.Equal(2, MockMessageEnqueuer.Invocations.Count);
             MockMessageEnqueuer.Verify(
-                x => x.EnqueuePoisonAsync(It.Is<IReadOnlyList<CatalogLeafScanMessage>>(y => y.SequenceEqual(new[] { messages[0] }))),
+                x => x.EnqueuePoisonAsync(QueueType.Work, It.Is<IReadOnlyList<CatalogLeafScanMessage>>(y => y.SequenceEqual(new[] { messages[0] }))),
                 Times.Once);
             MockMessageEnqueuer.Verify(
-                x => x.EnqueuePoisonAsync(It.Is<IReadOnlyList<CatalogLeafScanMessage>>(y => y.SequenceEqual(new[] { messages[1] }))),
+                x => x.EnqueuePoisonAsync(QueueType.Work, It.Is<IReadOnlyList<CatalogLeafScanMessage>>(y => y.SequenceEqual(new[] { messages[1] }))),
                 Times.Once);
             Assert.Empty(result.Failed);
             Assert.Empty(result.TryAgainLater);

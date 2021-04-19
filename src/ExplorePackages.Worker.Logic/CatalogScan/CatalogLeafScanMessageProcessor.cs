@@ -90,7 +90,7 @@ namespace Knapcode.ExplorePackages.Worker
                 foreach ((var message, var scan) in poison)
                 {
                     _logger.LogError("Moving message with {AttemptCount} attempts and {DequeueCount} dequeues to the poison queue.", scan.AttemptCount, dequeueCount);
-                    await _messageEnqueuer.EnqueuePoisonAsync(new[] { message });
+                    await _messageEnqueuer.EnqueuePoisonAsync(QueueType.Work, new[] { message });
                 }
             }
 

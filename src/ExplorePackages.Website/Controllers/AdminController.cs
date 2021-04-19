@@ -39,11 +39,8 @@ namespace Knapcode.ExplorePackages.Website.Controllers
         {
             await InitializeAsync();
 
-            var approximateMessageCountTask = _rawMessageEnqueuer.GetApproximateMessageCountAsync();
-            var poisonApproximateMessageCountTask = _rawMessageEnqueuer.GetPoisonApproximateMessageCountAsync();
-            const int messageCount = 32;
-            var availableMessageCountLowerBoundTask = _rawMessageEnqueuer.GetAvailableMessageCountLowerBoundAsync(messageCount);
-            var poisonAvailableMessageCountLowerBoundTask = _rawMessageEnqueuer.GetPoisonAvailableMessageCountLowerBoundAsync(messageCount);
+            var workQueueTask = GetQueueAsync(QueueType.Work);
+            var expandQueueTask = GetQueueAsync(QueueType.Expand);
 
             var catalogScanTasks = _catalogScanCursorService
                 .StartableDriverTypes
@@ -54,10 +51,8 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             var catalogCommitTimestampTask = _remoteCursorClient.GetCatalogAsync();
 
             await Task.WhenAll(
-                approximateMessageCountTask,
-                poisonApproximateMessageCountTask,
-                availableMessageCountLowerBoundTask,
-                poisonAvailableMessageCountLowerBoundTask,
+                workQueueTask,
+                expandQueueTask,
                 timerStatesTask,
                 catalogCommitTimestampTask);
 
@@ -78,18 +73,36 @@ namespace Knapcode.ExplorePackages.Website.Controllers
 
             var model = new AdminViewModel
             {
-                ApproximateMessageCount = await approximateMessageCountTask,
-                AvailableMessageCountLowerBound = await availableMessageCountLowerBoundTask,
-                PoisonApproximateMessageCount = await poisonApproximateMessageCountTask,
-                PoisonAvailableMessageCountLowerBound = await poisonAvailableMessageCountLowerBoundTask,
+                WorkQueue = await workQueueTask,
+                ExpandQueue = await expandQueueTask,
                 CatalogScans = catalogScans,
                 TimerStates = await timerStatesTask,
+            };
+
+            return View(model);
+        }
+
+        private async Task<QueueViewModel> GetQueueAsync(QueueType queue)
+        {
+            var approximateMessageCountTask = _rawMessageEnqueuer.GetApproximateMessageCountAsync(queue);
+            var poisonApproximateMessageCountTask = _rawMessageEnqueuer.GetPoisonApproximateMessageCountAsync(queue);
+            const int messageCount = 32;
+            var availableMessageCountLowerBoundTask = _rawMessageEnqueuer.GetAvailableMessageCountLowerBoundAsync(queue, messageCount);
+            var poisonAvailableMessageCountLowerBoundTask = _rawMessageEnqueuer.GetPoisonAvailableMessageCountLowerBoundAsync(queue, messageCount);
+
+            var model = new QueueViewModel
+            {
+                QueueType = queue,
+                ApproximateMessageCount = await approximateMessageCountTask,
+                PoisonApproximateMessageCount = await poisonApproximateMessageCountTask,
+                AvailableMessageCountLowerBound = await availableMessageCountLowerBoundTask,
+                PoisonAvailableMessageCountLowerBound = await poisonAvailableMessageCountLowerBoundTask
             };
 
             model.AvailableMessageCountIsExact = model.AvailableMessageCountLowerBound < messageCount;
             model.PoisonAvailableMessageCountIsExact = model.PoisonAvailableMessageCountLowerBound < messageCount;
 
-            return View(model);
+            return model;
         }
 
         private async Task InitializeAsync()

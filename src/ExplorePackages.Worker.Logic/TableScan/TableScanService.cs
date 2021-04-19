@@ -96,7 +96,7 @@ namespace Knapcode.ExplorePackages.Worker
                     throw new NotImplementedException();
             }
 
-            await _enqueuer.EnqueueAsync(new[]
+            await _enqueuer.EnqueueAsync(QueueType.Expand, new[]
             {
                 new TableScanMessage<T>
                 {

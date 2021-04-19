@@ -37,24 +37,24 @@ namespace Knapcode.ExplorePackages.Worker
             await _workerQueueFactory.InitializeAsync();
         }
 
-        public async Task<int> GetApproximateMessageCountAsync()
+        public async Task<int> GetApproximateMessageCountAsync(QueueType queue)
         {
-            return await GetApproximateMessageCountAsync(await _workerQueueFactory.GetQueueAsync());
+            return await GetApproximateMessageCountAsync(await _workerQueueFactory.GetQueueAsync(queue));
         }
 
-        public async Task<int> GetAvailableMessageCountLowerBoundAsync(int messageCount)
+        public async Task<int> GetAvailableMessageCountLowerBoundAsync(QueueType queue, int messageCount)
         {
-            return await GetAvailableMessageCountLowerBoundAsync(await _workerQueueFactory.GetQueueAsync(), messageCount);
+            return await GetAvailableMessageCountLowerBoundAsync(await _workerQueueFactory.GetQueueAsync(queue), messageCount);
         }
 
-        public async Task<int> GetPoisonApproximateMessageCountAsync()
+        public async Task<int> GetPoisonApproximateMessageCountAsync(QueueType queue)
         {
-            return await GetApproximateMessageCountAsync(await _workerQueueFactory.GetPoisonQueueAsync());
+            return await GetApproximateMessageCountAsync(await _workerQueueFactory.GetPoisonQueueAsync(queue));
         }
 
-        public async Task<int> GetPoisonAvailableMessageCountLowerBoundAsync(int messageCount)
+        public async Task<int> GetPoisonAvailableMessageCountLowerBoundAsync(QueueType queue, int messageCount)
         {
-            return await GetAvailableMessageCountLowerBoundAsync(await _workerQueueFactory.GetPoisonQueueAsync(), messageCount);
+            return await GetAvailableMessageCountLowerBoundAsync(await _workerQueueFactory.GetPoisonQueueAsync(queue), messageCount);
         }
 
         private static async Task<int> GetApproximateMessageCountAsync(QueueClient queue)
@@ -69,34 +69,34 @@ namespace Knapcode.ExplorePackages.Worker
             return messages.Length;
         }
 
-        public async Task AddAsync(IReadOnlyList<string> messages)
+        public async Task AddAsync(QueueType queue, IReadOnlyList<string> messages)
         {
-            await AddAsync(messages, TimeSpan.Zero);
+            await AddAsync(queue, messages, TimeSpan.Zero);
         }
 
-        public async Task AddAsync(IReadOnlyList<string> messages, TimeSpan visibilityDelay)
+        public async Task AddAsync(QueueType queue, IReadOnlyList<string> messages, TimeSpan visibilityDelay)
         {
-            await AddAsync(_workerQueueFactory.GetQueueAsync, messages, visibilityDelay);
+            await AddAsync(queue, _workerQueueFactory.GetQueueAsync, messages, visibilityDelay);
         }
 
-        public async Task AddPoisonAsync(IReadOnlyList<string> messages)
+        public async Task AddPoisonAsync(QueueType queue, IReadOnlyList<string> messages)
         {
-            await AddPoisonAsync(messages, TimeSpan.Zero);
+            await AddPoisonAsync(queue, messages, TimeSpan.Zero);
         }
 
-        public async Task AddPoisonAsync(IReadOnlyList<string> messages, TimeSpan visibilityDelay)
+        public async Task AddPoisonAsync(QueueType queue, IReadOnlyList<string> messages, TimeSpan visibilityDelay)
         {
-            await AddAsync(_workerQueueFactory.GetPoisonQueueAsync, messages, visibilityDelay);
+            await AddAsync(queue, _workerQueueFactory.GetPoisonQueueAsync, messages, visibilityDelay);
         }
 
-        private async Task AddAsync(Func<Task<QueueClient>> getQueueAsync, IReadOnlyList<string> messages, TimeSpan visibilityDelay)
+        private async Task AddAsync(QueueType queueType, Func<QueueType, Task<QueueClient>> getQueueAsync, IReadOnlyList<string> messages, TimeSpan visibilityDelay)
         {
             if (messages.Count == 0)
             {
                 return;
             }
 
-            var queue = await getQueueAsync();
+            var queue = await getQueueAsync(queueType);
             var workers = Math.Min(messages.Count, _options.Value.EnqueueWorkers);
             if (workers < 2)
             {

@@ -169,7 +169,13 @@ namespace Knapcode.ExplorePackages.Worker
 
             var queueItems = await queueServiceClient.GetQueuesAsync(prefix: StoragePrefix).ToListAsync();
             Assert.Equal(
-                new[] { Options.Value.WorkerQueueName, Options.Value.WorkerQueueName + "-poison" },
+                new[]
+                {
+                    Options.Value.ExpandQueueName,
+                    Options.Value.ExpandQueueName + "-poison",
+                    Options.Value.WorkQueueName,
+                    Options.Value.WorkQueueName + "-poison",
+                },
                 queueItems.Select(x => x.Name).ToArray());
 
             foreach (var queueItem in queueItems)

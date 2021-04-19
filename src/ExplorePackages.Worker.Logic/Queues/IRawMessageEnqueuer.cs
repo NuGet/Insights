@@ -8,14 +8,14 @@ namespace Knapcode.ExplorePackages.Worker
     {
         int MaxMessageSize { get; }
         BulkEnqueueStrategy BulkEnqueueStrategy { get; }
-        Task<int> GetApproximateMessageCountAsync();
-        Task<int> GetAvailableMessageCountLowerBoundAsync(int messageCount);
-        Task<int> GetPoisonApproximateMessageCountAsync();
-        Task<int> GetPoisonAvailableMessageCountLowerBoundAsync(int messageCount);
+        Task<int> GetApproximateMessageCountAsync(QueueType queue);
+        Task<int> GetAvailableMessageCountLowerBoundAsync(QueueType queue, int messageCount);
+        Task<int> GetPoisonApproximateMessageCountAsync(QueueType queue);
+        Task<int> GetPoisonAvailableMessageCountLowerBoundAsync(QueueType queue, int messageCount);
         Task InitializeAsync();
-        Task AddAsync(IReadOnlyList<string> messages);
-        Task AddAsync(IReadOnlyList<string> messages, TimeSpan notBefore);
-        Task AddPoisonAsync(IReadOnlyList<string> messages);
-        Task AddPoisonAsync(IReadOnlyList<string> messages, TimeSpan notBefore);
+        Task AddAsync(QueueType queue, IReadOnlyList<string> messages);
+        Task AddAsync(QueueType queue, IReadOnlyList<string> messages, TimeSpan notBefore);
+        Task AddPoisonAsync(QueueType queue, IReadOnlyList<string> messages);
+        Task AddPoisonAsync(QueueType queue, IReadOnlyList<string> messages, TimeSpan notBefore);
     }
 }

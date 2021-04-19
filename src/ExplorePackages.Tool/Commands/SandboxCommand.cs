@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -79,45 +78,6 @@ namespace Knapcode.ExplorePackages.Tool
                 }));
         }
 
-        private async Task RunTestAsync(int i, int j)
-        {
-            var taskStateKey = new TaskStateKey("copy", "copy", "copy");
-            await _taskStateStorageService.InitializeAsync(taskStateKey.StorageSuffix);
-
-            await _taskStateStorageService.AddAsync(taskStateKey);
-
-            var tableName = "latestpackageleavesps";
-            var table = (await _serviceClientFactory.GetTableServiceClientAsync()).GetTableClient(tableName);
-            await table.DeleteIfExistsAsync();
-            await table.CreateIfNotExistsAsync(retry: true);
-
-            var sw = Stopwatch.StartNew();
-            await _tableScanService.StartTableCopyAsync(
-                taskStateKey,
-                "latestpackageleaves",
-                tableName,
-                string.Empty,
-                TableScanStrategy.PrefixScan,
-                StorageUtility.MaxTakeCount,
-                segmentsPerFirstPrefix: i,
-                segmentsPerSubsequentPrefix: j);
-
-            var countLowerBound = -1;
-            do
-            {
-                if (countLowerBound > 0)
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(1));
-                }
-
-                countLowerBound = await _taskStateStorageService.GetCountLowerBoundAsync(taskStateKey.StorageSuffix, taskStateKey.PartitionKey);
-                Console.WriteLine($"[{sw.Elapsed}, {i}, {j}] count lower bound: {countLowerBound}, queue message count: {await _rawMessageEnqueuer.GetApproximateMessageCountAsync()}");
-            }
-            while (countLowerBound > 0);
-
-            Console.WriteLine($"[{sw.Elapsed}, {i}, {j}] complete");
-        }
-
         private async Task WorkOnRealRestoreAsync()
         {
             await Task.Yield();
@@ -178,7 +138,7 @@ namespace Knapcode.ExplorePackages.Tool
                 .Range(0, 1000)
                 .Select(b => new RunRealRestoreCompactMessage { Bucket = b })
                 .ToList();
-            await _messageEnqueuer.EnqueueAsync(messages);
+            await _messageEnqueuer.EnqueueAsync(QueueType.Work, messages);
             Console.WriteLine("Done.");
         }
 
@@ -192,7 +152,7 @@ namespace Knapcode.ExplorePackages.Tool
                 messages.Add(new RunRealRestoreMessage { Id = pieces[0], Version = pieces[1], Framework = pieces[2] });
             }
 
-            await _messageEnqueuer.EnqueueAsync(messages);
+            await _messageEnqueuer.EnqueueAsync(QueueType.Work, messages);
         }
 
         private async Task EnqueueRunRealRestoreAsync()
@@ -254,7 +214,7 @@ namespace Knapcode.ExplorePackages.Tool
                     Framework = m.Framework.GetShortFolderName(),
                 })
                 .ToList();
-            await _messageEnqueuer.EnqueueAsync(messages);
+            await _messageEnqueuer.EnqueueAsync(QueueType.Work, messages);
             Console.WriteLine("Done.");
         }
 

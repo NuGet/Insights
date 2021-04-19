@@ -100,9 +100,11 @@ namespace Knapcode.ExplorePackages.Worker
             // This batch has failed before, so split it up instead of processing it immediately.
             if (dequeueCount > 1 && data.Count > 1)
             {
-                await _messageEnqueuer.AddAsync(data
-                    .Select(x => NameVersionSerializer.SerializeMessage(schemaName, schemaVersion, x).AsString())
-                    .ToList());
+                await _messageEnqueuer.AddAsync(
+                    QueueType.Work,
+                    data
+                        .Select(x => NameVersionSerializer.SerializeMessage(schemaName, schemaVersion, x).AsString())
+                        .ToList());
                 return;
             }
 
@@ -122,7 +124,9 @@ namespace Knapcode.ExplorePackages.Worker
             if (result.Failed.Any())
             {
                 _logger.LogError("{ErrorCount} messages in a batch of {Count} failed. Retrying messages individually.", result.Failed.Count, messageCount);
-                await _messageEnqueuer.AddAsync(result.Failed.Select(x => serializer.SerializeMessage(x).AsString()).ToList());
+                await _messageEnqueuer.AddAsync(
+                    QueueType.Work,
+                    result.Failed.Select(x => serializer.SerializeMessage(x).AsString()).ToList());
             }
 
             if (result.TryAgainLater.Any())
@@ -132,7 +136,9 @@ namespace Knapcode.ExplorePackages.Worker
                     if (tryAgainLater.Any())
                     {
                         _logger.LogInformation("{TryAgainLaterCount} messages in a batch of {Count} need to be tried again in {NotBefore}. Retrying messages individually.", tryAgainLater.Count, notBefore, messageCount);
-                        await _messageEnqueuer.AddAsync(tryAgainLater.Select(x => serializer.SerializeMessage(x).AsString()).ToList(), notBefore);
+                        await _messageEnqueuer.AddAsync(
+                            QueueType.Work,
+                            tryAgainLater.Select(x => serializer.SerializeMessage(x).AsString()).ToList(), notBefore);
                     }
                 }
             }

@@ -25,7 +25,7 @@ namespace Knapcode.ExplorePackages.Worker
                 .Select(x => NameVersionSerializer.SerializeMessage(message.SchemaName, message.SchemaVersion, x).AsString())
                 .ToList();
 
-            await _messageEnqueuer.AddAsync(messages, message.NotBefore.GetValueOrDefault(TimeSpan.Zero));
+            await _messageEnqueuer.AddAsync(QueueType.Work, messages, message.NotBefore.GetValueOrDefault(TimeSpan.Zero));
         }
     }
 }

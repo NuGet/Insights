@@ -1,4 +1,6 @@
-﻿@{ 
+﻿@{
+    var id = Model.QueueType.ToString() + "Queue";
+
     string statusText = null;
     string statusTitle = null;
     if (Model.PoisonApproximateMessageCount > 0)
@@ -13,7 +15,7 @@
     }
 }
 
-<CollapseCard IdPrefix="WorkerQueue" Title="Worker queue" StatusText="@statusText" StatusTitle="@statusTitle" Collapsed="false">
+<CollapseCard IdPrefix="@id" Title="@id.Humanize()" StatusText="@statusText" StatusTitle="@statusTitle" Collapsed="false">
     <ul class="list-group list-group-flush">
         <li class="list-group-item"><b>Total message count:</b> @(Model.ApproximateMessageCount + Model.PoisonApproximateMessageCount)</li>
         <li class="list-group-item"><b>Main - approximate message count:</b> @Model.ApproximateMessageCount</li>
@@ -25,5 +27,5 @@
 
 @code {
     [Parameter]
-    public AdminViewModel Model { get; set; }
+    public QueueViewModel Model { get; set; }
 }

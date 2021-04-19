@@ -30,7 +30,8 @@ namespace Knapcode.ExplorePackages.Worker
             HostResourceGroupName = null;
             HostAppName = null;
 
-            WorkerQueueName = "workerqueue";
+            WorkQueueName = "work";
+            ExpandQueueName = "expand";
             CursorTableName = "cursors";
             CatalogIndexScanTableName = "catalogindexscans";
             CatalogPageScanTableName = "catalogpagescans";
@@ -78,7 +79,8 @@ namespace Knapcode.ExplorePackages.Worker
         public string HostResourceGroupName { get; set; }
         public string HostAppName { get; set; }
 
-        public string WorkerQueueName { get; set; }
+        public string WorkQueueName { get; set; }
+        public string ExpandQueueName { get; set; }
         public string CursorTableName { get; set; }
         public string CatalogIndexScanTableName { get; set; }
         public string CatalogPageScanTableName { get; set; }

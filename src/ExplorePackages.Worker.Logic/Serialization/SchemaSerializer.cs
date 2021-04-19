@@ -24,7 +24,6 @@ namespace Knapcode.ExplorePackages.Worker
         private static readonly SchemasCollection Schemas = new SchemasCollection(new ISchemaDeserializer[]
         {
             // Messages
-            new SchemaV1<MixedBulkEnqueueMessage>("mbe"),
             new SchemaV1<HomogeneousBulkEnqueueMessage>("hbe"),
             new SchemaV1<HomogeneousBatchMessage>("hb"),
 

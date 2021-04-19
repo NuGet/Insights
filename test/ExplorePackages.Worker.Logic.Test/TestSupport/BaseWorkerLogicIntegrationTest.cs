@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 using Knapcode.ExplorePackages.Worker.BuildVersionSet;
 using Microsoft.AspNetCore.Hosting;
@@ -48,7 +49,8 @@ namespace Knapcode.ExplorePackages.Worker
             x.AppendResultStorageBucketCount = 3;
             x.AppendResultUniqueIds = false;
 
-            x.WorkerQueueName = $"{StoragePrefix}1wq1";
+            x.WorkQueueName = $"{StoragePrefix}1wq1";
+            x.ExpandQueueName = $"{StoragePrefix}1eq1";
             x.CursorTableName = $"{StoragePrefix}1c1";
             x.CatalogIndexScanTableName = $"{StoragePrefix}1cis1";
             x.CatalogPageScanTableName = $"{StoragePrefix}1cps1";
@@ -134,26 +136,53 @@ namespace Knapcode.ExplorePackages.Worker
 
         protected async Task ProcessQueueAsync(Action foundMessage, Func<Task<bool>> isCompleteAsync)
         {
-            var queue = await WorkerQueueFactory.GetQueueAsync();
+            var expandQueue = await WorkerQueueFactory.GetQueueAsync(QueueType.Expand);
+            var workerQueue = await WorkerQueueFactory.GetQueueAsync(QueueType.Work);
+
+            async Task<(QueueClient queue, QueueMessage message)> ReceiveMessageAsync()
+            {
+                QueueMessage message = await expandQueue.ReceiveMessageAsync();
+                if (message != null)
+                {
+                    return (expandQueue, message);
+                }
+
+                message = await workerQueue.ReceiveMessageAsync();
+                if (message != null)
+                {
+                    return (workerQueue, message);
+                }
+
+                return (null, null);
+            };
+
             bool isComplete;
             do
             {
-                QueueMessage message;
-                while ((message = await queue.ReceiveMessageAsync()) != null)
+                while (true)
                 {
-                    foundMessage();
-                    using (var scope = Host.Services.CreateScope())
+                    (var queue, var message) = await ReceiveMessageAsync();
+                    if (message != null)
                     {
-                        await ProcessMessageAsync(scope.ServiceProvider, message);
-                    }
+                        foundMessage();
+                        using (var scope = Host.Services.CreateScope())
+                        {
+                            await ProcessMessageAsync(scope.ServiceProvider, message);
+                        }
 
-                    await queue.DeleteMessageAsync(message.MessageId, message.PopReceipt);
+                        await queue.DeleteMessageAsync(message.MessageId, message.PopReceipt);
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
 
                 isComplete = await isCompleteAsync();
             }
             while (!isComplete);
         }
+
 
         protected virtual async Task ProcessMessageAsync(IServiceProvider serviceProvider, QueueMessage message)
         {

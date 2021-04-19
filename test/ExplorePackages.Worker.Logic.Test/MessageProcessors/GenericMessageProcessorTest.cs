@@ -81,7 +81,7 @@ namespace Knapcode.ExplorePackages.Worker
                     await Target.ProcessSingleAsync(SingleMessage, dequeueCount: 1);
 
                     // Assert
-                    RawMessageEnqueuer.Verify(x => x.AddAsync(It.IsAny<IReadOnlyList<string>>()), Times.Once);
+                    RawMessageEnqueuer.Verify(x => x.AddAsync(QueueType.Work, It.IsAny<IReadOnlyList<string>>()), Times.Once);
                     Assert.Equal(SchemaSerializer.Serialize(different).AsString(), Assert.Single(Assert.Single(EnqueuedBatches)));
                     Assert.Single(MessageProcessor.Invocations);
                     Assert.Single(RawMessageEnqueuer.Invocations);
@@ -102,7 +102,7 @@ namespace Knapcode.ExplorePackages.Worker
                     await Target.ProcessSingleAsync(SingleMessage, dequeueCount: 1);
 
                     // Assert
-                    RawMessageEnqueuer.Verify(x => x.AddAsync(It.IsAny<IReadOnlyList<string>>(), TimeSpan.FromMinutes(3)), Times.Once);
+                    RawMessageEnqueuer.Verify(x => x.AddAsync(QueueType.Work, It.IsAny<IReadOnlyList<string>>(), TimeSpan.FromMinutes(3)), Times.Once);
                     Assert.Equal(SingleMessage, Assert.Single(Assert.Single(EnqueuedBatches)));
                     Assert.Single(MessageProcessor.Invocations);
                     Assert.Single(RawMessageEnqueuer.Invocations);
@@ -124,7 +124,7 @@ namespace Knapcode.ExplorePackages.Worker
                     await Target.ProcessSingleAsync(SingleMessage, dequeueCount: 1);
 
                     // Assert
-                    RawMessageEnqueuer.Verify(x => x.AddAsync(It.IsAny<IReadOnlyList<string>>(), TimeSpan.FromMinutes(3)), Times.Once);
+                    RawMessageEnqueuer.Verify(x => x.AddAsync(QueueType.Work, It.IsAny<IReadOnlyList<string>>(), TimeSpan.FromMinutes(3)), Times.Once);
                     Assert.Equal(SchemaSerializer.Serialize(different).AsString(), Assert.Single(Assert.Single(EnqueuedBatches)));
                     Assert.Single(MessageProcessor.Invocations);
                     Assert.Single(RawMessageEnqueuer.Invocations);
@@ -167,7 +167,7 @@ namespace Knapcode.ExplorePackages.Worker
                     await Target.ProcessBatchAsync(SchemaName, SchemaVersion, MessageBatch, dequeueCount: 1);
 
                     // Assert
-                    RawMessageEnqueuer.Verify(x => x.AddAsync(It.IsAny<IReadOnlyList<string>>()), Times.Once);
+                    RawMessageEnqueuer.Verify(x => x.AddAsync(QueueType.Work, It.IsAny<IReadOnlyList<string>>()), Times.Once);
                     Assert.Equal(GetString(MessageBatch), Assert.Single(EnqueuedBatches));
                     Assert.Single(MessageProcessor.Invocations);
                     Assert.Single(RawMessageEnqueuer.Invocations);
@@ -186,7 +186,7 @@ namespace Knapcode.ExplorePackages.Worker
                     await Target.ProcessBatchAsync(SchemaName, SchemaVersion, MessageBatch, dequeueCount: 1);
 
                     // Assert
-                    RawMessageEnqueuer.Verify(x => x.AddAsync(It.IsAny<IReadOnlyList<string>>()), Times.Once);
+                    RawMessageEnqueuer.Verify(x => x.AddAsync(QueueType.Work, It.IsAny<IReadOnlyList<string>>()), Times.Once);
                     Assert.Equal(GetString(MessageBatch.Take(2)), Assert.Single(EnqueuedBatches));
                     Assert.Single(MessageProcessor.Invocations);
                     Assert.Single(RawMessageEnqueuer.Invocations);
@@ -207,7 +207,7 @@ namespace Knapcode.ExplorePackages.Worker
                     await Target.ProcessBatchAsync(SchemaName, SchemaVersion, MessageBatch, dequeueCount: 1);
 
                     // Assert
-                    RawMessageEnqueuer.Verify(x => x.AddAsync(It.IsAny<IReadOnlyList<string>>()), Times.Once);
+                    RawMessageEnqueuer.Verify(x => x.AddAsync(QueueType.Work, It.IsAny<IReadOnlyList<string>>()), Times.Once);
                     Assert.Equal(GetString(new[] { differentA, differentB }), Assert.Single(EnqueuedBatches));
                     Assert.Single(MessageProcessor.Invocations);
                     Assert.Single(RawMessageEnqueuer.Invocations);
@@ -228,7 +228,7 @@ namespace Knapcode.ExplorePackages.Worker
                     await Target.ProcessBatchAsync(SchemaName, SchemaVersion, MessageBatch, dequeueCount: 1);
 
                     // Assert
-                    RawMessageEnqueuer.Verify(x => x.AddAsync(It.IsAny<IReadOnlyList<string>>(), TimeSpan.FromMinutes(3)), Times.Once);
+                    RawMessageEnqueuer.Verify(x => x.AddAsync(QueueType.Work, It.IsAny<IReadOnlyList<string>>(), TimeSpan.FromMinutes(3)), Times.Once);
                     Assert.Equal(GetString(MessageBatch.Take(2)), Assert.Single(EnqueuedBatches));
                     Assert.Single(MessageProcessor.Invocations);
                     Assert.Single(RawMessageEnqueuer.Invocations);
@@ -251,7 +251,7 @@ namespace Knapcode.ExplorePackages.Worker
                     await Target.ProcessSingleAsync(SingleMessage, dequeueCount: 1);
 
                     // Assert
-                    RawMessageEnqueuer.Verify(x => x.AddAsync(It.IsAny<IReadOnlyList<string>>(), TimeSpan.FromMinutes(3)), Times.Once);
+                    RawMessageEnqueuer.Verify(x => x.AddAsync(QueueType.Work, It.IsAny<IReadOnlyList<string>>(), TimeSpan.FromMinutes(3)), Times.Once);
                     Assert.Equal(GetString(new[] { differentA, differentB }), Assert.Single(EnqueuedBatches));
                     Assert.Single(MessageProcessor.Invocations);
                     Assert.Single(RawMessageEnqueuer.Invocations);
@@ -356,7 +356,7 @@ namespace Knapcode.ExplorePackages.Worker
                     await Target.ProcessBatchAsync(SchemaName, SchemaVersion, MessageBatch, dequeueCount: 1);
 
                     // Assert
-                    RawMessageEnqueuer.Verify(x => x.AddAsync(It.IsAny<IReadOnlyList<string>>()), Times.Once);
+                    RawMessageEnqueuer.Verify(x => x.AddAsync(QueueType.Work, It.IsAny<IReadOnlyList<string>>()), Times.Once);
                     Assert.Equal(GetString(MessageBatch), Assert.Single(EnqueuedBatches));
                     Assert.Equal(MessageBatch.Count, MessageProcessor.Invocations.Count);
                     Assert.Single(RawMessageEnqueuer.Invocations);
@@ -405,13 +405,13 @@ namespace Knapcode.ExplorePackages.Worker
             EnqueuedBatches = new List<IReadOnlyList<string>>();
 
             RawMessageEnqueuer
-                .Setup(x => x.AddAsync(It.IsAny<IReadOnlyList<string>>()))
+                .Setup(x => x.AddAsync(QueueType.Work, It.IsAny<IReadOnlyList<string>>()))
                 .Returns(Task.CompletedTask)
-                .Callback<IReadOnlyList<string>>(m => EnqueuedBatches.Add(m));
+                .Callback<QueueType, IReadOnlyList<string>>((_, m) => EnqueuedBatches.Add(m));
             RawMessageEnqueuer
-                .Setup(x => x.AddAsync(It.IsAny<IReadOnlyList<string>>(), It.IsAny<TimeSpan>()))
+                .Setup(x => x.AddAsync(QueueType.Work, It.IsAny<IReadOnlyList<string>>(), It.IsAny<TimeSpan>()))
                 .Returns(Task.CompletedTask)
-                .Callback<IReadOnlyList<string>, TimeSpan>((m, _) => EnqueuedBatches.Add(m));
+                .Callback<QueueType, IReadOnlyList<string>, TimeSpan>((_, m, __) => EnqueuedBatches.Add(m));
 
             Target = new GenericMessageProcessor(
                 SchemaSerializer,

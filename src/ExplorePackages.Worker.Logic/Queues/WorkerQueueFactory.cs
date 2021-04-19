@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Azure.Storage.Queues;
 using Microsoft.Extensions.Options;
 
@@ -19,20 +21,36 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task InitializeAsync()
         {
-            await (await GetQueueAsync()).CreateIfNotExistsAsync(retry: true);
-            await (await GetPoisonQueueAsync()).CreateIfNotExistsAsync(retry: true);
+            foreach (var type in Enum.GetValues(typeof(QueueType)).Cast<QueueType>())
+            {
+                await (await GetQueueAsync(type)).CreateIfNotExistsAsync(retry: true);
+                await (await GetPoisonQueueAsync(type)).CreateIfNotExistsAsync(retry: true);
+            }
         }
 
-        public async Task<QueueClient> GetQueueAsync()
+        public async Task<QueueClient> GetQueueAsync(QueueType type)
         {
             return (await _serviceClientFactory.GetQueueServiceClientAsync())
-                .GetQueueClient(_options.Value.WorkerQueueName);
+                .GetQueueClient(GetQueueName(type));
         }
 
-        public async Task<QueueClient> GetPoisonQueueAsync()
+        public async Task<QueueClient> GetPoisonQueueAsync(QueueType type)
         {
             return (await _serviceClientFactory.GetQueueServiceClientAsync())
-                .GetQueueClient(_options.Value.WorkerQueueName + "-poison");
+                .GetQueueClient(GetQueueName(type) + "-poison");
+        }
+
+        private string GetQueueName(QueueType type)
+        {
+            switch (type)
+            {
+                case QueueType.Work:
+                    return _options.Value.WorkQueueName;
+                case QueueType.Expand:
+                    return _options.Value.ExpandQueueName;
+                default:
+                    throw new NotImplementedException();
+            }
         }
     }
 }

@@ -20,10 +20,10 @@ namespace Knapcode.ExplorePackages.Worker
             await Target.InitializeAsync();
             var messages = new[] { new CatalogLeafScanMessage { LeafId = "Newtonsoft" } };
 
-            await Target.EnqueueAsync(messages);
+            await Target.EnqueueAsync(QueueType.Work, messages);
 
             PeekedMessage message = await (await ServiceClientFactory.GetQueueServiceClientAsync())
-                .GetQueueClient(Options.Value.WorkerQueueName)
+                .GetQueueClient(Options.Value.WorkQueueName)
                 .PeekMessageAsync();
             Assert.Equal(@"{""n"":""cls"",""v"":1,""d"":{""r"":""Newtonsoft""}}", message.Body.ToString());
         }
@@ -34,10 +34,10 @@ namespace Knapcode.ExplorePackages.Worker
             await Target.InitializeAsync();
             var messages = new[] { new CatalogLeafScanMessage { LeafId = "Nëwtönsöft" } };
 
-            await Target.EnqueueAsync(messages);
+            await Target.EnqueueAsync(QueueType.Work, messages);
 
             PeekedMessage message = await (await ServiceClientFactory.GetQueueServiceClientAsync())
-                .GetQueueClient(Options.Value.WorkerQueueName)
+                .GetQueueClient(Options.Value.WorkQueueName)
                 .PeekMessageAsync();
             Assert.Equal(@"{""n"":""cls"",""v"":1,""d"":{""r"":""Nëwtönsöft""}}", message.Body.ToString());
         }

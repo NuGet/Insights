@@ -31,9 +31,21 @@ namespace Knapcode.ExplorePackages.Worker
             await _timerExecutionService.ExecuteAsync();
         }
 
-        [FunctionName("WorkerQueueFunction")]
-        public async Task WorkerQueueAsync(
-            [QueueTrigger(WorkerQueueVariable, Connection = ConnectionName)] CloudQueueMessage message)
+        [FunctionName("WorkQueueFunction")]
+        public async Task WorkQueueAsync(
+            [QueueTrigger(WorkQueueVariable, Connection = ConnectionName)] CloudQueueMessage message)
+        {
+            await ProcessMessageAsync(message);
+        }
+
+        [FunctionName("ExpandQueueFunction")]
+        public async Task ExpandQueueAsync(
+            [QueueTrigger(ExpandQueueVariable, Connection = ConnectionName)] CloudQueueMessage message)
+        {
+            await ProcessMessageAsync(message);
+        }
+
+        private async Task ProcessMessageAsync(CloudQueueMessage message)
         {
             await using var scopeOwnership = _tempStreamLeaseScope.TakeOwnership();
             await _messageProcessor.ProcessSingleAsync(message.AsString, message.DequeueCount);

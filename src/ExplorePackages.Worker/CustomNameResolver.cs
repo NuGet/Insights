@@ -6,8 +6,10 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class CustomNameResolver : DefaultNameResolver
     {
-        private const string WorkerQueueKey = nameof(CustomNameResolver) + ":WorkerQueueName";
-        public const string WorkerQueueVariable = "%" + WorkerQueueKey + "%";
+        private const string WorkQueueKey = nameof(CustomNameResolver) + ":WorkQueueName";
+        private const string ExpandQueueKey = nameof(CustomNameResolver) + ":ExpandQueueName";
+        public const string WorkQueueVariable = "%" + WorkQueueKey + "%";
+        public const string ExpandQueueVariable = "%" + ExpandQueueKey + "%";
 
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
@@ -22,8 +24,10 @@ namespace Knapcode.ExplorePackages.Worker
         {
             switch (name)
             {
-                case WorkerQueueKey:
-                    return _options.Value.WorkerQueueName;
+                case WorkQueueKey:
+                    return _options.Value.WorkQueueName;
+                case ExpandQueueKey:
+                    return _options.Value.ExpandQueueName;
                 default:
                     return base.Resolve(name);
             }

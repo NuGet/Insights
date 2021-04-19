@@ -16,7 +16,9 @@ namespace Knapcode.ExplorePackages.Worker
         [InlineData(2)]
         public async Task DoesNotBatchIfMessageCountIsLessThanThreshold(int messageCount)
         {
-            await Target.EnqueueAsync(Enumerable.Range(0, messageCount).Select(x => new CatalogPageScanMessage { PageId = x.ToString() }).ToList());
+            await Target.EnqueueAsync(
+                QueueType.Work,
+                Enumerable.Range(0, messageCount).Select(x => new CatalogPageScanMessage { PageId = x.ToString() }).ToList());
 
             var messages = Assert.Single(EnqueuedMessages);
             for (var i = 0; i < messageCount; i++)
@@ -41,6 +43,7 @@ namespace Knapcode.ExplorePackages.Worker
             var schema = new SchemaV1<string>("i");
 
             await Target.EnqueueAsync(
+                QueueType.Work,
                 Enumerable.Range(0, messageCount).Select(i => GetSerializedMessage(i, byteCount)).ToList(),
                 schema,
                 TimeSpan.Zero);
@@ -78,13 +81,13 @@ namespace Knapcode.ExplorePackages.Worker
                 .Returns(() => 64 * 1024);
 
             RawMessageEnqueuer
-                .Setup(x => x.AddAsync(It.IsAny<IReadOnlyList<string>>()))
+                .Setup(x => x.AddAsync(It.IsAny<QueueType>(), It.IsAny<IReadOnlyList<string>>()))
                 .Returns(Task.CompletedTask)
-                .Callback<IReadOnlyList<string>>(x => EnqueuedMessages.Add(x.Select(y => SchemaSerializer.Deserialize(y).Data).ToList()));
+                .Callback<QueueType, IReadOnlyList<string>>((_, x) => EnqueuedMessages.Add(x.Select(y => SchemaSerializer.Deserialize(y).Data).ToList()));
             RawMessageEnqueuer
-                .Setup(x => x.AddAsync(It.IsAny<IReadOnlyList<string>>(), It.IsAny<TimeSpan>()))
+                .Setup(x => x.AddAsync(It.IsAny<QueueType>(), It.IsAny<IReadOnlyList<string>>(), It.IsAny<TimeSpan>()))
                 .Returns(Task.CompletedTask)
-                .Callback<IReadOnlyList<string>, TimeSpan>((x, ts) => EnqueuedMessages.Add(x.Select(y => SchemaSerializer.Deserialize(y).Data).ToList()));
+                .Callback<QueueType, IReadOnlyList<string>, TimeSpan>((_, x, __) => EnqueuedMessages.Add(x.Select(y => SchemaSerializer.Deserialize(y).Data).ToList()));
 
             EnqueuedMessages = new List<List<object>>();
 

@@ -35,7 +35,7 @@ namespace Knapcode.ExplorePackages.Worker
                         message.TaskStateKey.StorageSuffix,
                         message.TaskStateKey.PartitionKey,
                         message.TaskStateKey.RowKey);
-                    await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
+                    await _messageEnqueuer.EnqueueAsync(QueueType.Work, new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
                 }
                 else
                 {
@@ -52,7 +52,7 @@ namespace Knapcode.ExplorePackages.Worker
             else
             {
                 message.AttemptCount++;
-                await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
+                await _messageEnqueuer.EnqueueAsync(QueueType.Work, new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
             }
         }
     }

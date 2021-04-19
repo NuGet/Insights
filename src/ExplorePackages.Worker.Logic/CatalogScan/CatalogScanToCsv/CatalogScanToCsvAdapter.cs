@@ -57,7 +57,7 @@ namespace Knapcode.ExplorePackages.Worker
                         b.ToString()),
                 })
                 .ToList();
-            await _messageEnqueuer.EnqueueAsync(messages);
+            await _messageEnqueuer.EnqueueAsync(QueueType.Work, messages);
         }
 
         public async Task<bool> IsCustomExpandCompleteAsync(CatalogIndexScan indexScan)
@@ -96,7 +96,7 @@ namespace Knapcode.ExplorePackages.Worker
                         b.ToString()),
                 })
                 .ToList();
-            await _messageEnqueuer.EnqueueAsync(messages);
+            await _messageEnqueuer.EnqueueAsync(QueueType.Work, messages);
         }
 
         public async Task<bool> IsAggregateCompleteAsync(CatalogIndexScan indexScan)
