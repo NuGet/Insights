@@ -17,7 +17,10 @@ param (
 
     [Parameter(Mandatory = $false)]
     [ValidateSet("JverCatalogLeafItems", "JverPackageArchiveEntries", "JverPackageAssemblies", "JverPackageAssets", "JverPackageDownloads", "JverPackageManifests", "JverPackageOwners", "JverPackageSignatures", "JverPackageVersions", "JverNuGetPackageExplorers")]
-    [string]$ImportTableName,
+    [string]$TableName,
+
+    [Parameter(Mandatory = $false)]
+    [string]$TableNameSuffix,
 
     [Parameter(Mandatory = $false)]
     [string]$WorkingDirectory,
@@ -41,8 +44,8 @@ $tableNameToContainerName = @{
     "JverNuGetPackageExplorers" = "nugetpackageexplorer";
 }
 
-if ($ImportTableName -and !$tableNameToContainerName[$ImportTableName]) {
-    Write-Error "Table $ImportTableName is not recognized"
+if ($TableName -and !$tableNameToContainerName[$TableName]) {
+    Write-Error "Table $TableName is not recognized"
 }
 
 if (!$WorkingDirectory) {
@@ -78,14 +81,14 @@ if (!(Test-Path $kustoCli) -or !(Test-Path $lightIngest)) {
 }
 
 if ($Parallel) {
-    if ($ImportTableName) {
-        throw "The -Parallel switch cannot be used with -ImportTableName."
+    if ($TableName) {
+        throw "The -Parallel switch cannot be used with -TableName."
     }
     $tableNameToContainerName.Keys | ForEach-Object {
         Start-Job `
             -Name $_ `
             -FilePath $PSCommandPath `
-            -ArgumentList $KustoClusterName, $KustoDatabaseName, $StorageAccountName, $StorageSas, $ModelsPath, $_, $WorkingDirectory
+            -ArgumentList $KustoClusterName, $KustoDatabaseName, $StorageAccountName, $StorageSas, $ModelsPath, $_, $TableNameSuffix, $WorkingDirectory
     }
 
     Write-Host ""
@@ -134,18 +137,19 @@ foreach ($model in $models) {
     $kustoDDL = $matches.Groups[1].Value
 
     $matches = [Regex]::Match($kustoDDL, "\.drop table ([^ ;]+)", [Text.RegularExpressions.RegexOptions]::Singleline)
-    $tableName = $matches.Groups[1].Value
-    if (!$tableNameToContainerName[$tableName]) {
-        Write-Warning "Skipping unmapped table $tableName."
+    $foundTableName = $matches.Groups[1].Value
+    if (!$tableNameToContainerName[$foundTableName]) {
+        Write-Warning "Skipping unmapped table $foundTableName."
         continue
     }
 
-    if ($ImportTableName -and $tableName -ne $ImportTableName) {
+    if ($TableName -and $foundTableName -ne $TableName) {
         Write-Warning "Skipping undesired table $tableName."
         continue
     }
 
-    $containerName = $tableNameToContainerName[$tableName]
+    $containerName = $tableNameToContainerName[$foundTableName]
+    $selectedTableName = "$foundTableName$TableNameSuffix"
 
     # Check if the container exists
     if (!($containerName -in $containers)) {
@@ -154,13 +158,13 @@ foreach ($model in $models) {
     }
 
     # Create a temp table for the import.
-    $tempTableName = "$($tableName)_Temp"
-    $commands = [Regex]::Replace($kustoDDL, "([^\w])$tableName([^\w])", "`$1$tempTableName`$2")
+    $tempTableName = "$($selectedTableName)_Temp"
+    $commands = [Regex]::Replace($kustoDDL, "([^\w])$foundTableName([^\w])", "`$1$tempTableName`$2")
     $commands = [Regex]::Split($commands, "; *`r?`n", [Text.RegularExpressions.RegexOptions]::Singleline) `
         | ForEach-Object { [Regex]::Replace($_.Trim(), "`r?`n", " &`r`n") }
     $commands = $commands -join "`r`n"
 
-    $script = Join-Path $toolsDir "script_$tableName.kql"
+    $script = Join-Path $toolsDir "script_$selectedTableName.kql"
     $commands | Out-File $script -Encoding UTF8
     
     $kustoCliConnection = "$kustoConnection;Initial Catalog=$KustoDatabaseName"
@@ -178,16 +182,16 @@ foreach ($model in $models) {
         -source:$sourceUrl `
         -pattern:"*.csv.gz" `
         -format:csv `
-        -mappingRef:"$($tableName)_mapping" `
+        -mappingRef:"$($foundTableName)_mapping" `
         -ignoreFirstRow:true
     if ($LASTEXITCODE) {
         throw "Running LightIngest to import data failed."
     }
 
     # Swap the temp table with the existing table
-    $oldTableName = "$($tableName)_Old"
+    $oldTableName = "$($selectedTableName)_Old"
     & $kustoCli $kustoCliConnection `
-        -execute:".rename tables $oldTableName=$tableName ifexists, $tableName=$tempTableName" `
+        -execute:".rename tables $oldTableName=$selectedTableName ifexists, $selectedTableName=$tempTableName" `
         -execute:".drop table $oldTableName ifexists"
     if ($LASTEXITCODE) {
         throw "Running Kusto.Cli to swap tables failed."
