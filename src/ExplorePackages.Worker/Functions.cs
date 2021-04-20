@@ -8,6 +8,7 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class Functions
     {
+        private static bool _isInitialized = false;
         private readonly TempStreamLeaseScope _tempStreamLeaseScope;
         private readonly TimerExecutionService _timerExecutionService;
         private readonly IGenericMessageProcessor _messageProcessor;
@@ -27,7 +28,11 @@ namespace Knapcode.ExplorePackages.Worker
             [TimerTrigger("0 * * * * *")] TimerInfo timerInfo)
         {
             await using var scopeOwnership = _tempStreamLeaseScope.TakeOwnership();
-            await _timerExecutionService.InitializeAsync();
+            if (!_isInitialized)
+            {
+                await _timerExecutionService.InitializeAsync();
+                _isInitialized = true;
+            }
             await _timerExecutionService.ExecuteAsync();
         }
 
