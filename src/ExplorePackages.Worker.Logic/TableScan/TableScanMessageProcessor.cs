@@ -171,10 +171,6 @@ namespace Knapcode.ExplorePackages.Worker
             int segmentsPerFirstPrefix,
             int segmentsPerSubsequentPrefix)
         {
-            // Two types of messages can be enqueued here:
-            //   1. Table row copy messages (the actual work to be done)
-            //   2. Table copy messages (recursion)
-
             var entities = new List<T>();
             var tableScanMessages = new List<TableScanMessage<T>>();
             var taskStates = new List<TaskState>();

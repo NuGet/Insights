@@ -20,7 +20,4 @@
     <ProjectReference Include="..\ExplorePackages.Logic\ExplorePackages.Logic.csproj" />
     <ProjectReference Include="..\ExplorePackages.SourceGenerator\ExplorePackages.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="NewFolder\" />
-  </ItemGroup>
 </Project>

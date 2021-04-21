@@ -6,7 +6,10 @@
     },
     "applicationInsights": {
       "enableDependencyTracking": false,
-      "enablePerformanceCountersCollection": false
+      "enablePerformanceCountersCollection": false,
+      "samplingSettings": {
+        "isEnabled": false
+      }
     }
   },
   "functionTimeout": "00:10:00",

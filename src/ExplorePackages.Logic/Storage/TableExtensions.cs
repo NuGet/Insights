@@ -75,16 +75,19 @@ namespace Knapcode.ExplorePackages
             using (metrics)
             {
                 await using var enumerator = table
-                    .QueryAsync<T>(
+                    .QueryAsync(
                         filter,
                         maxPerPage: 1000,
                         select: new[] { StorageUtility.RowKey })
                     .AsPages()
                     .GetAsyncEnumerator();
 
-                if (await enumerator.MoveNextAsync(metrics))
+                while (await enumerator.MoveNextAsync(metrics))
                 {
-                    return enumerator.Current.Values.Count;
+                    if (enumerator.Current.Values.Count > 0)
+                    {
+                        return enumerator.Current.Values.Count;
+                    }
                 }
 
                 return 0;
