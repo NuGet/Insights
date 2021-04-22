@@ -34,7 +34,7 @@ namespace Knapcode.ExplorePackages
             return assembly
                 .GetTypes()
                 .Where(t => t.GetInterfaces().Contains(type))
-                .Where(t => t.IsClass && !t.IsAbstract);
+                .Where(t => t.IsClass && !t.IsAbstract && !t.IsGenericType);
         }
 
         public static IEnumerable<Type> GetClassesImplementing<T>(this Assembly assembly)

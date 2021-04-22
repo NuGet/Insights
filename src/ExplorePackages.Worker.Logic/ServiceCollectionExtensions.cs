@@ -36,8 +36,6 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient<CatalogScanCursorService>();
             serviceCollection.AddTransient<ICatalogScanDriverFactory, CatalogScanDriverFactory>();
             serviceCollection.AddTransient<CatalogScanService>();
-            serviceCollection.AddTransient<ITimer, CatalogScanUpdateTimer>();
-            serviceCollection.AddTransient<ITimer, UpdateSecretsTimer>();
             serviceCollection.AddTransient<CatalogScanExpandService>();
             serviceCollection.AddTransient(typeof(CatalogScanToCsvAdapter<>));
             AddTableScan<LatestPackageLeaf>(serviceCollection);
@@ -66,6 +64,11 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddRunRealRestore();
             serviceCollection.AddTableCopy();
             serviceCollection.AddBuildVersionSet();
+
+            foreach (var serviceType in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementing<ITimer>())
+            {
+                serviceCollection.AddTransient(typeof(ITimer), serviceType);
+            }
 
             foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(IMessageProcessor<>)))
             {
