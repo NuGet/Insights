@@ -4,7 +4,7 @@ using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public abstract class BaseCatalogScanToCsvIntegrationTest<T> : BaseCatalogScanIntegrationTest where T : ICsvRecord<T>, new()
+    public abstract class BaseCatalogScanToCsvIntegrationTest<T> : BaseCatalogScanIntegrationTest where T : ICsvRecord
     {
         public BaseCatalogScanToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
             : base(output, factory)

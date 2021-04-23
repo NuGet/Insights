@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Microsoft.Extensions.Logging;
 
@@ -20,7 +21,7 @@ namespace Knapcode.ExplorePackages.Worker
             _logger = logger;
         }
 
-        public CsvReaderResult<T> GetRecords<T>(TextReader reader, int bufferSize) where T : ICsvRecord<T>, new()
+        public CsvReaderResult<T> GetRecords<T>(TextReader reader, int bufferSize) where T : ICsvRecord
         {
             var allRecords = new List<T>();
             var csvReader = new NReco.Csv.CsvReader(reader)
@@ -28,14 +29,14 @@ namespace Knapcode.ExplorePackages.Worker
                 BufferSize = bufferSize,
             };
 
-            var factory = new T();
+            var factory = Activator.CreateInstance<T>();
 
             try
             {
                 while (csvReader.Read())
                 {
                     var i = 0;
-                    var record = factory.Read(() => csvReader[i++]);
+                    var record = (T)factory.ReadNew(() => csvReader[i++]);
                     allRecords.Add(record);
                 }
             }

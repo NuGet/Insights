@@ -2,7 +2,7 @@
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class CsvReaderResult<T> where T : ICsvRecord<T>, new()
+    public class CsvReaderResult<T> where T : ICsvRecord
     {
         public CsvReaderResult(CsvReaderResultType type, List<T> records)
         {

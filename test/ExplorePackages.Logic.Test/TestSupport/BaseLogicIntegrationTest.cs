@@ -149,11 +149,11 @@ namespace Knapcode.ExplorePackages
             Assert.Equal(expected, blobs.Count);
         }
 
-        protected async Task AssertCsvBlobAsync<T>(string containerName, string testName, string stepName, string blobName) where T : ICsvRecord<T>, new()
+        protected async Task AssertCsvBlobAsync<T>(string containerName, string testName, string stepName, string blobName) where T : ICsvRecord
         {
             Assert.EndsWith(".csv.gz", blobName);
             var actual = await AssertBlobAsync(containerName, testName, stepName, blobName, gzip: true);
-            var headerFactory = new T();
+            var headerFactory = Activator.CreateInstance<T>();
             var stringWriter = new StringWriter();
             headerFactory.WriteHeader(stringWriter);
             Assert.StartsWith(stringWriter.ToString(), actual);

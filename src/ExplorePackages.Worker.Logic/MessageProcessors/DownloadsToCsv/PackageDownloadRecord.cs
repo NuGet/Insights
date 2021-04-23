@@ -2,7 +2,7 @@
 
 namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 {
-    public partial record PackageDownloadRecord : ICsvRecord<PackageDownloadRecord>
+    public partial record PackageDownloadRecord : ICsvRecord
     {
         [KustoIgnore]
         public DateTimeOffset AsOfTimestamp { get; set; }

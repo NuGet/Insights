@@ -2,7 +2,7 @@
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class CsvExpandReprocessMessage<T> where T : ICsvRecord<T>, new()
+    public class CsvExpandReprocessMessage<T> where T : ICsvRecord
     {
         [JsonProperty("b")]
         public int Bucket { get; set; }

@@ -248,7 +248,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
             await writer.WriteLineAsync();
         }
 
-        public PackageAsset Read(Func<string> getNextField)
+        public ICsvRecord ReadNew(Func<string> getNextField)
         {
             return new PackageAsset
             {

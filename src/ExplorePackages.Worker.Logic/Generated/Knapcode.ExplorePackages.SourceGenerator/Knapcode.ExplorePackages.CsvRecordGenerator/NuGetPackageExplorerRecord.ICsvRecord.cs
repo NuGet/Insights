@@ -213,7 +213,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             await writer.WriteLineAsync();
         }
 
-        public NuGetPackageExplorerRecord Read(Func<string> getNextField)
+        public ICsvRecord ReadNew(Func<string> getNextField)
         {
             return new NuGetPackageExplorerRecord
             {

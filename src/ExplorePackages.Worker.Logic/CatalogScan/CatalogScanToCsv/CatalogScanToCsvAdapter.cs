@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class CatalogScanToCsvAdapter<T> where T : ICsvRecord<T>, new()
+    public class CatalogScanToCsvAdapter<T> where T : ICsvRecord
     {
         private readonly AppendResultStorageService _storageService;
         private readonly TaskStateStorageService _taskStateStorageService;

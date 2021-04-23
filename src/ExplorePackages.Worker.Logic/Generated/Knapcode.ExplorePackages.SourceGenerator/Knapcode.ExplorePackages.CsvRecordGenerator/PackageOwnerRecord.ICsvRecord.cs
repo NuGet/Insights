@@ -82,7 +82,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
             await writer.WriteLineAsync();
         }
 
-        public PackageOwnerRecord Read(Func<string> getNextField)
+        public ICsvRecord ReadNew(Func<string> getNextField)
         {
             return new PackageOwnerRecord
             {

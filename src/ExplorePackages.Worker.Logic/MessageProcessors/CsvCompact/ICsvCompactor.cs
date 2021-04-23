@@ -2,7 +2,7 @@
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public interface ICsvCompactor<T> where T : ICsvRecord<T>, new()
+    public interface ICsvCompactor<T> where T : ICsvRecord
     {
         /// <summary>
         /// The Azure Blob Storage container name to write CSV results to.

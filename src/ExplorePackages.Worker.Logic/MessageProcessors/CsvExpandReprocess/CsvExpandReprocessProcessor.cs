@@ -6,7 +6,7 @@ using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class CsvExpandReprocessProcessor<T> : IMessageProcessor<CsvExpandReprocessMessage<T>> where T : ICsvRecord<T>, new()
+    public class CsvExpandReprocessProcessor<T> : IMessageProcessor<CsvExpandReprocessMessage<T>> where T : ICsvRecord
     {
         private readonly AppendResultStorageService _appendResultStorageService;
         private readonly TaskStateStorageService _taskStateStorageService;

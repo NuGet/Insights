@@ -318,7 +318,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             await writer.WriteLineAsync();
         }
 
-        public PackageManifestRecord Read(Func<string> getNextField)
+        public ICsvRecord ReadNew(Func<string> getNextField)
         {
             return new PackageManifestRecord
             {

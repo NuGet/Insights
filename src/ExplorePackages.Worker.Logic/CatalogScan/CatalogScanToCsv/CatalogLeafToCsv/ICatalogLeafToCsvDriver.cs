@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public interface ICatalogLeafToCsvDriver<T> : ICsvCompactor<T> where T : ICsvRecord<T>, new()
+    public interface ICatalogLeafToCsvDriver<T> : ICsvCompactor<T> where T : ICsvRecord
     {
         /// <summary>
         /// Whether or not the <see cref="ProcessLeafAsync(CatalogLeafItem, int)"/> should only be called once per

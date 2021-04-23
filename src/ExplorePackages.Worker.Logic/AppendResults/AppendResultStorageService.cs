@@ -53,7 +53,7 @@ namespace Knapcode.ExplorePackages.Worker
             await _wideEntityService.DeleteTableAsync(containerName);
         }
 
-        public async Task AppendAsync<T>(string tableName, int bucketCount, string bucketKey, IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
+        public async Task AppendAsync<T>(string tableName, int bucketCount, string bucketKey, IReadOnlyList<T> records) where T : ICsvRecord
         {
             var bucket = GetBucket(bucketCount, bucketKey);
 
@@ -75,7 +75,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        public async Task<IReadOnlyList<T>> ReadAsync<T>(string containerName, int bucket) where T : ICsvRecord<T>, new()
+        public async Task<IReadOnlyList<T>> ReadAsync<T>(string containerName, int bucket) where T : ICsvRecord
         {
             var compactBlob = await GetCompactBlobAsync(containerName, bucket);
 
@@ -90,7 +90,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        private async Task AppendToTableAsync<T>(int bucket, string tableName, IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
+        private async Task AppendToTableAsync<T>(int bucket, string tableName, IReadOnlyList<T> records) where T : ICsvRecord
         {
             var bytes = Serialize(records);
             try
@@ -135,7 +135,7 @@ namespace Knapcode.ExplorePackages.Worker
             string destContainer,
             int bucket,
             bool force,
-            Func<List<T>, List<T>> prune) where T : ICsvRecord<T>, new()
+            Func<List<T>, List<T>> prune) where T : ICsvRecord
         {
             var appendRecords = new List<T>();
 
@@ -166,7 +166,7 @@ namespace Knapcode.ExplorePackages.Worker
             List<T> records,
             string destContainer,
             int bucket,
-            Func<List<T>, List<T>> prune) where T : ICsvRecord<T>, new()
+            Func<List<T>, List<T>> prune) where T : ICsvRecord
         {
             var compactBlob = await GetCompactBlobAsync(destContainer, bucket);
 
@@ -209,7 +209,7 @@ namespace Knapcode.ExplorePackages.Worker
                 });
         }
 
-        private async Task<(List<T> records, ETag etag)> DeserializeBlobAsync<T>(BlobClient blob) where T : ICsvRecord<T>, new()
+        private async Task<(List<T> records, ETag etag)> DeserializeBlobAsync<T>(BlobClient blob) where T : ICsvRecord
         {
             var bufferSize = 32 * 1024;
             do
@@ -234,7 +234,7 @@ namespace Knapcode.ExplorePackages.Worker
         }
 
         private async Task<(CsvReaderResult<T> result, ETag etag)> DeserializeBlobAsync<T>(BlobClient blob, int bufferSize)
-            where T : ICsvRecord<T>, new()
+            where T : ICsvRecord
         {
             using BlobDownloadInfo info = await blob.DownloadAsync();
             var readStream = info.Content;
@@ -290,17 +290,17 @@ namespace Knapcode.ExplorePackages.Worker
             return (await GetContainerAsync(container)).GetBlobClient($"{CompactPrefix}{bucket}.csv.gz");
         }
 
-        private static byte[] Serialize<T>(IReadOnlyList<T> records) where T : ICsvRecord<T>, new()
+        private static byte[] Serialize<T>(IReadOnlyList<T> records) where T : ICsvRecord
         {
             return MessagePackSerializer.Serialize(records, ExplorePackagesMessagePack.Options);
         }
 
-        private static IReadOnlyList<T> Deserialize<T>(Stream stream) where T : ICsvRecord<T>, new()
+        private static IReadOnlyList<T> Deserialize<T>(Stream stream) where T : ICsvRecord
         {
             return MessagePackSerializer.Deserialize<List<T>>(stream, ExplorePackagesMessagePack.Options);
         }
 
-        private static MemoryStream SerializeRecords<T>(IReadOnlyList<T> records, bool writeHeader, bool gzip, out long uncompressedLength) where T : ICsvRecord<T>, new()
+        private static MemoryStream SerializeRecords<T>(IReadOnlyList<T> records, bool writeHeader, bool gzip, out long uncompressedLength) where T : ICsvRecord
         {
             var memoryStream = new MemoryStream();
             if (gzip)
@@ -321,7 +321,7 @@ namespace Knapcode.ExplorePackages.Worker
             return memoryStream;
         }
 
-        private static void SerializeRecords<T>(IReadOnlyList<T> records, Stream destination, bool writeHeader) where T : ICsvRecord<T>, new()
+        private static void SerializeRecords<T>(IReadOnlyList<T> records, Stream destination, bool writeHeader) where T : ICsvRecord
         {
             using var streamWriter = new StreamWriter(destination, new UTF8Encoding(false), bufferSize: 1024, leaveOpen: true);
 
@@ -333,7 +333,7 @@ namespace Knapcode.ExplorePackages.Worker
             SerializeRecords(records, streamWriter);
         }
 
-        private static void SerializeRecords<T>(IReadOnlyList<T> records, TextWriter streamWriter) where T : ICsvRecord<T>, new()
+        private static void SerializeRecords<T>(IReadOnlyList<T> records, TextWriter streamWriter) where T : ICsvRecord
         {
             foreach (var record in records)
             {
@@ -359,12 +359,12 @@ namespace Knapcode.ExplorePackages.Worker
             return serviceClient.GetBlobContainerClient(name);
         }
 
-        private static string GetHeader<T>() where T : ICsvRecord<T>, new()
+        private static string GetHeader<T>() where T : ICsvRecord
         {
             var type = typeof(T);
             return TypeToHeader.GetOrAdd(type, _ =>
             {
-                var headerWriter = new T();
+                var headerWriter = Activator.CreateInstance<T>();
                 using var stringWriter = new StringWriter();
                 headerWriter.WriteHeader(stringWriter);
                 return stringWriter.ToString().TrimEnd();

@@ -164,7 +164,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
             await writer.WriteLineAsync();
         }
 
-        public PackageArchiveEntry Read(Func<string> getNextField)
+        public ICsvRecord ReadNew(Func<string> getNextField)
         {
             return new PackageArchiveEntry
             {

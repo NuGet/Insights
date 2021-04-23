@@ -3,7 +3,7 @@ using NuGet.Common;
 
 namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
 {
-    public partial record PackageSignature : PackageRecord, ICsvRecord<PackageSignature>
+    public partial record PackageSignature : PackageRecord, ICsvRecord
     {
         public PackageSignature()
         {

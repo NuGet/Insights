@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
 {
-    public partial record PackageAssembly : PackageRecord, ICsvRecord<PackageAssembly>
+    public partial record PackageAssembly : PackageRecord, ICsvRecord
     {
         public PackageAssembly()
         {

@@ -3,7 +3,7 @@ using NuGetPe;
 
 namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
 {
-    public partial record NuGetPackageExplorerRecord : PackageRecord, ICsvRecord<NuGetPackageExplorerRecord>
+    public partial record NuGetPackageExplorerRecord : PackageRecord, ICsvRecord
     {
         public NuGetPackageExplorerRecord()
         {

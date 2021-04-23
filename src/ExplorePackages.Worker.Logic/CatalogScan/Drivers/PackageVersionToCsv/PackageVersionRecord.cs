@@ -3,7 +3,7 @@ using Knapcode.ExplorePackages.Worker.LoadPackageVersion;
 
 namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
 {
-    public partial record PackageVersionRecord : PackageRecord, ICsvRecord<PackageVersionRecord>
+    public partial record PackageVersionRecord : PackageRecord, ICsvRecord
     {
         public PackageVersionRecord()
         {

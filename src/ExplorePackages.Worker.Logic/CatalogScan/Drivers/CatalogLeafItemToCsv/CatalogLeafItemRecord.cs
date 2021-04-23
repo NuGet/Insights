@@ -2,7 +2,7 @@
 
 namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
 {
-    public partial record CatalogLeafItemRecord : ICsvRecord<CatalogLeafItemRecord>
+    public partial record CatalogLeafItemRecord : ICsvRecord
     {
         public string CommitId { get; set; }
         public DateTimeOffset CommitTimestamp { get; set; }

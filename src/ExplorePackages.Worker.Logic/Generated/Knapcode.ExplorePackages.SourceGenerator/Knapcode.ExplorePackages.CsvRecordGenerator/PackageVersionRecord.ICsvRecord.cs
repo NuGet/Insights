@@ -164,7 +164,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
             await writer.WriteLineAsync();
         }
 
-        public PackageVersionRecord Read(Func<string> getNextField)
+        public ICsvRecord ReadNew(Func<string> getNextField)
         {
             return new PackageVersionRecord
             {

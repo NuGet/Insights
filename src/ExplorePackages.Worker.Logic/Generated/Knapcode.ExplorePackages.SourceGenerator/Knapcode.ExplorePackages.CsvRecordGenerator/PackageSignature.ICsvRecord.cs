@@ -332,7 +332,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
             await writer.WriteLineAsync();
         }
 
-        public PackageSignature Read(Func<string> getNextField)
+        public ICsvRecord ReadNew(Func<string> getNextField)
         {
             return new PackageSignature
             {

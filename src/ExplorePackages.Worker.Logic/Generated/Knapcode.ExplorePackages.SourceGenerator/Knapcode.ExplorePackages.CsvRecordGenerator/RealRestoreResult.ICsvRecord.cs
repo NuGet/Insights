@@ -280,7 +280,7 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
             await writer.WriteLineAsync();
         }
 
-        public RealRestoreResult Read(Func<string> getNextField)
+        public ICsvRecord ReadNew(Func<string> getNextField)
         {
             return new RealRestoreResult
             {

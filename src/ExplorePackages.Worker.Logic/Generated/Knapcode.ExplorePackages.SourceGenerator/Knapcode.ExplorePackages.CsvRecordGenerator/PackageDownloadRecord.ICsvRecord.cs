@@ -103,7 +103,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
             await writer.WriteLineAsync();
         }
 
-        public PackageDownloadRecord Read(Func<string> getNextField)
+        public ICsvRecord ReadNew(Func<string> getNextField)
         {
             return new PackageDownloadRecord
             {

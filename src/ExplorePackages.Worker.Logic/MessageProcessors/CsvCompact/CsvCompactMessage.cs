@@ -2,7 +2,7 @@
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class CsvCompactMessage<T> where T : ICsvRecord<T>, new()
+    public class CsvCompactMessage<T> where T : ICsvRecord
     {
         [JsonProperty("s")]
         public string SourceContainer { get; set; }

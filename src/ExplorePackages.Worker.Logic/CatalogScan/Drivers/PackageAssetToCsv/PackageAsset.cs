@@ -2,7 +2,7 @@
 
 namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
 {
-    public partial record PackageAsset : PackageRecord, ICsvRecord<PackageAsset>
+    public partial record PackageAsset : PackageRecord, ICsvRecord
     {
         public PackageAsset()
         {

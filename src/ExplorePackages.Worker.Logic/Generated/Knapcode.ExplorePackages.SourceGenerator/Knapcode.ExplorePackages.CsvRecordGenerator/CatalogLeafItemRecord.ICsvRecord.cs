@@ -119,7 +119,7 @@ namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
             await writer.WriteLineAsync();
         }
 
-        public CatalogLeafItemRecord Read(Func<string> getNextField)
+        public ICsvRecord ReadNew(Func<string> getNextField)
         {
             return new CatalogLeafItemRecord
             {

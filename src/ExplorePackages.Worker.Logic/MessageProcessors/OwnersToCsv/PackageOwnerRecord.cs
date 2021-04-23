@@ -2,7 +2,7 @@
 
 namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
 {
-    public partial record PackageOwnerRecord : ICsvRecord<PackageOwnerRecord>
+    public partial record PackageOwnerRecord : ICsvRecord
     {
         [KustoIgnore]
         public DateTimeOffset AsOfTimestamp { get; set; }

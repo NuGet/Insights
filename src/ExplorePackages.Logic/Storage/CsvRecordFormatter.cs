@@ -4,7 +4,7 @@ using MessagePack.Formatters;
 
 namespace Knapcode.ExplorePackages
 {
-    public class CsvRecordFormatter<T> : IMessagePackFormatter<T> where T : ICsvRecord<T>, new()
+    public class CsvRecordFormatter<T> : IMessagePackFormatter<T> where T : ICsvRecord
     {
         private static readonly T Factory = Activator.CreateInstance<T>();
 
@@ -59,7 +59,7 @@ namespace Knapcode.ExplorePackages
                 reader.Depth--;
 
                 i = 0;
-                return Factory.Read(() => fields[i++]);
+                return (T)Factory.ReadNew(() => fields[i++]);
             }
             finally
             {

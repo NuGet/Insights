@@ -43,19 +43,13 @@ namespace Knapcode.ExplorePackages
 
             private static object GetFormatter(Type outputType)
             {
-                var csvRecordType = typeof(ICsvRecord<>);
+                var csvRecordType = typeof(ICsvRecord);
                 var csvRecordInterface = outputType
                     .GetInterfaces()
-                    .Where(x => x.IsGenericType && x.GetGenericTypeDefinition() == csvRecordType)
+                    .Where(x => x == csvRecordType)
                     .FirstOrDefault();
 
                 if (csvRecordInterface == null)
-                {
-                    return null;
-                }
-
-                var genericArgument = csvRecordInterface.GetGenericArguments().Single();
-                if (outputType != genericArgument)
                 {
                     return null;
                 }

@@ -2,7 +2,7 @@
 
 namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
 {
-    public partial record PackageManifestRecord : PackageRecord, ICsvRecord<PackageManifestRecord>
+    public partial record PackageManifestRecord : PackageRecord, ICsvRecord
     {
         public PackageManifestRecord()
         {

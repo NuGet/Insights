@@ -255,7 +255,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
             await writer.WriteLineAsync();
         }
 
-        public PackageAssembly Read(Func<string> getNextField)
+        public ICsvRecord ReadNew(Func<string> getNextField)
         {
             return new PackageAssembly
             {
