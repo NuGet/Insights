@@ -17,7 +17,7 @@ using NuGetPe;
 
 namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
 {
-    public class NuGetPackageExplorerToCsvDriver : ICatalogLeafToCsvDriver<NuGetPackageExplorerRecord>
+    public class NuGetPackageExplorerToCsvDriver : ICatalogLeafToCsvDriver<NuGetPackageExplorerRecord>, ICsvStorage<NuGetPackageExplorerRecord>
     {
         private readonly CatalogClient _catalogClient;
         private readonly FlatContainerClient _flatContainerClient;

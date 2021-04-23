@@ -9,7 +9,7 @@ using NuGet.Packaging.Signing;
 
 namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
 {
-    public class PackageSignatureToCsvDriver : ICatalogLeafToCsvDriver<PackageSignature>
+    public class PackageSignatureToCsvDriver : ICatalogLeafToCsvDriver<PackageSignature>, ICsvStorage<PackageSignature>
     {
         private readonly CatalogClient _catalogClient;
         private readonly PackageFileService _packageFileService;

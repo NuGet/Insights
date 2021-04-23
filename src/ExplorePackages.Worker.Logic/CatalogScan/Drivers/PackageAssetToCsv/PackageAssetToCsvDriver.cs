@@ -14,7 +14,7 @@ using NuGet.RuntimeModel;
 
 namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
 {
-    public class PackageAssetToCsvDriver : ICatalogLeafToCsvDriver<PackageAsset>
+    public class PackageAssetToCsvDriver : ICatalogLeafToCsvDriver<PackageAsset>, ICsvStorage<PackageAsset>
     {
         private readonly CatalogClient _catalogClient;
         private readonly PackageFileService _packageFileService;

@@ -8,21 +8,24 @@ namespace Knapcode.ExplorePackages.Worker
     {
         private readonly SchemaSerializer _schemaSerializer;
         private readonly CatalogScanToCsvAdapter<T> _adapter;
+        private readonly ICsvStorage<T> _storage;
         private readonly ICatalogLeafToCsvDriver<T> _driver;
 
         public CatalogLeafScanToCsvAdapter(
             SchemaSerializer schemaSerializer,
             CatalogScanToCsvAdapter<T> adapter,
+            ICsvStorage<T> storage,
             ICatalogLeafToCsvDriver<T> driver)
         {
             _schemaSerializer = schemaSerializer;
             _adapter = adapter;
+            _storage = storage;
             _driver = driver;
         }
 
         public async Task InitializeAsync(CatalogIndexScan indexScan)
         {
-            await _adapter.InitializeAsync(indexScan, _driver.ResultsContainerName);
+            await _adapter.InitializeAsync(indexScan, _storage.ResultsContainerName);
             await _driver.InitializeAsync();
         }
 
@@ -51,7 +54,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public Task StartCustomExpandAsync(CatalogIndexScan indexScan)
         {
-            return _adapter.StartCustomExpandAsync(indexScan, _driver.ResultsContainerName);
+            return _adapter.StartCustomExpandAsync(indexScan, _storage.ResultsContainerName);
         }
 
         public Task<bool> IsCustomExpandCompleteAsync(CatalogIndexScan indexScan)

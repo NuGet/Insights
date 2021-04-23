@@ -17,7 +17,7 @@ using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
 {
-    public class PackageAssemblyToCsvDriver : ICatalogLeafToCsvDriver<PackageAssembly>
+    public class PackageAssemblyToCsvDriver : ICatalogLeafToCsvDriver<PackageAssembly>, ICsvStorage<PackageAssembly>
     {
         private readonly CatalogClient _catalogClient;
         private readonly PackageFileService _packageFileService;

@@ -120,12 +120,12 @@ namespace Knapcode.ExplorePackages.Worker
                     typeof(TaskStateMessageProcessor<>).MakeGenericType(messageType));
             }
 
-            foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ICsvCompactor<>)))
+            foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ICsvStorage<>)))
             {
-                // Add the compactor
+                // Add the CSV storage
                 serviceCollection.AddTransient(serviceType, implementationType);
 
-                // Add the compact processor
+                // Add the CSV compactor processor
                 var recordType = serviceType.GenericTypeArguments.Single();
                 serviceCollection.AddTransient(
                     typeof(IMessageProcessor<>).MakeGenericType(typeof(CsvCompactMessage<>).MakeGenericType(recordType)),

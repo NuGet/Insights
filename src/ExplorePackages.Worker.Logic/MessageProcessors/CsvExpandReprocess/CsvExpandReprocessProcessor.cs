@@ -11,20 +11,20 @@ namespace Knapcode.ExplorePackages.Worker
         private readonly AppendResultStorageService _appendResultStorageService;
         private readonly TaskStateStorageService _taskStateStorageService;
         private readonly CatalogScanStorageService _catalogScanStorageService;
-        private readonly ICatalogLeafToCsvDriver<T> _driver;
+        private readonly ICsvStorage<T> _csvStorage;
         private readonly ILogger<CsvExpandReprocessProcessor<T>> _logger;
 
         public CsvExpandReprocessProcessor(
             AppendResultStorageService appendResultStorageService,
             TaskStateStorageService taskStateStorageService,
             CatalogScanStorageService catalogScanStorageService,
-            ICatalogLeafToCsvDriver<T> compactor,
+            ICsvStorage<T> csvStorage,
             ILogger<CsvExpandReprocessProcessor<T>> logger)
         {
             _appendResultStorageService = appendResultStorageService;
             _taskStateStorageService = taskStateStorageService;
             _catalogScanStorageService = catalogScanStorageService;
-            _driver = compactor;
+            _csvStorage = csvStorage;
             _logger = logger;
         }
 
@@ -44,12 +44,12 @@ namespace Knapcode.ExplorePackages.Worker
                 return;
             }
 
-            var records = await _appendResultStorageService.ReadAsync<T>(_driver.ResultsContainerName, message.Bucket);
+            var records = await _appendResultStorageService.ReadAsync<T>(_csvStorage.ResultsContainerName, message.Bucket);
 
             var items = new List<CatalogLeafItem>();
             foreach (var record in records)
             {
-                var item = await _driver.MakeReprocessItemOrNullAsync(record);
+                var item = await _csvStorage.MakeReprocessItemOrNullAsync(record);
                 if (item != null)
                 {
                     items.Add(item);

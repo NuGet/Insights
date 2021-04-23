@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public interface ICatalogLeafToCsvDriver<T> : ICsvCompactor<T> where T : ICsvRecord
+    public interface ICatalogLeafToCsvDriver<T> where T : ICsvRecord
     {
         /// <summary>
         /// Whether or not the <see cref="ProcessLeafAsync(CatalogLeafItem, int)"/> should only be called once per
@@ -31,18 +31,10 @@ namespace Knapcode.ExplorePackages.Worker
         /// invocation. This bucket key will be hashed and used to select a large CSV blob to append results to.
         /// Typically this is a concatenation of the normalized, lowercase package ID and version. This key should be
         /// consistent per package ID or package ID + version to allow for proper data pruning with
-        /// <see cref="ICsvCompactor{T}.Prune(List{T})"/>.
+        /// <see cref="ICsvStorage{T}.Prune(List{T})"/>.
         /// </summary>
         /// <param name="item">T</param>
         /// <returns>The key used for bucketing returned CSV records.</returns>
         string GetBucketKey(CatalogLeafItem item);
-
-        /// <summary>
-        /// Given a previously persisted CSV record, a catalog leaf item is returned if the record should be reprocessed.
-        /// This method is only invoked during a special "reprocess" flow started by <see cref="CatalogScanService.ReprocessAsync(CatalogScanDriverType)"/>.
-        /// </summary>
-        /// <param name="record">The record to test for reprocessing.</param>
-        /// <returns>A catalog leaf item that should be reprocessing, null if the record should not be reprocessed.</returns>
-        Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(T record);
     }
 }

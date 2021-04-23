@@ -8,7 +8,7 @@ using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
 {
-    public class PackageVersionToCsvDriver : ICatalogLeafToCsvDriver<PackageVersionRecord>
+    public class PackageVersionToCsvDriver : ICatalogLeafToCsvDriver<PackageVersionRecord>, ICsvStorage<PackageVersionRecord>
     {
         private readonly PackageVersionStorageService _storageService;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;

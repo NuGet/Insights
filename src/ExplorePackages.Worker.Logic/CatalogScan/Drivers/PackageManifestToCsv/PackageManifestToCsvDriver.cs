@@ -12,7 +12,7 @@ using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
 {
-    public class PackageManifestToCsvDriver : ICatalogLeafToCsvDriver<PackageManifestRecord>
+    public class PackageManifestToCsvDriver : ICatalogLeafToCsvDriver<PackageManifestRecord>, ICsvStorage<PackageManifestRecord>
     {
         private readonly CatalogClient _catalogClient;
         private readonly PackageManifestService _packageManifestService;

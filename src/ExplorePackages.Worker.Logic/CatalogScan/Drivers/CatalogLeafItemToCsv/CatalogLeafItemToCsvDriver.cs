@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
 {
-    public class CatalogLeafItemToCsvDriver : ICatalogLeafScanNonBatchDriver, ICsvCompactor<CatalogLeafItemRecord>
+    public class CatalogLeafItemToCsvDriver : ICatalogLeafScanNonBatchDriver, ICsvStorage<CatalogLeafItemRecord>
     {
         private readonly CatalogScanToCsvAdapter<CatalogLeafItemRecord> _adapter;
         private readonly CatalogClient _catalogClient;
@@ -97,6 +97,11 @@ namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
         }
 
         public Task<bool> IsCustomExpandCompleteAsync(CatalogIndexScan indexScan)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(CatalogLeafItemRecord record)
         {
             throw new NotImplementedException();
         }
