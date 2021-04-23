@@ -57,7 +57,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
             await _packageFileService.InitializeAsync();
         }
 
-        public async Task<DriverResult<List<PackageAssembly>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSet<PackageAssembly>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
         {
             Guid? scanId = null;
             DateTimeOffset? scanTimestamp = null;
@@ -70,7 +70,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
             if (item.Type == CatalogLeafType.PackageDelete)
             {
                 var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
-                return DriverResult.Success(new List<PackageAssembly> { new PackageAssembly(scanId, scanTimestamp, leaf) });
+                return MakeResults(item, new List<PackageAssembly> { new PackageAssembly(scanId, scanTimestamp, leaf) });
             }
             else
             {
@@ -80,7 +80,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
 
                 if (zipDirectory == null)
                 {
-                    return MakeEmptyResults();
+                    return MakeEmptyResults(item);
                 }
 
                 if (!zipDirectory.Entries.Any(x => FileExtensions.Contains(Path.GetExtension(x.GetName()))))
@@ -95,12 +95,12 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
 
                 if (result == null)
                 {
-                    return MakeEmptyResults();
+                    return MakeEmptyResults(item);
                 }
 
                 if (result.Type == TempStreamResultType.SemaphoreNotAvailable)
                 {
-                    return DriverResult.TryAgainLater<List<PackageAssembly>>();
+                    return DriverResult.TryAgainLater<CsvRecordSet<PackageAssembly>>();
                 }
 
                 using var zipArchive = new ZipArchive(result.Stream);
@@ -120,25 +120,30 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
                     var assemblyResult = await AnalyzeAsync(scanId, scanTimestamp, leaf, entry);
                     if (assemblyResult.Type == DriverResultType.TryAgainLater)
                     {
-                        return DriverResult.TryAgainLater<List<PackageAssembly>>();
+                        return DriverResult.TryAgainLater<CsvRecordSet<PackageAssembly>>();
                     }
 
                     assemblies.Add(assemblyResult.Value);
                 }
 
-                return DriverResult.Success(assemblies);
+                return MakeResults(item, assemblies);
             }
         }
 
-        private static DriverResult<List<PackageAssembly>> MakeEmptyResults()
+        private static DriverResult<CsvRecordSet<PackageAssembly>> MakeResults(ICatalogLeafItem item, List<PackageAssembly> records)
         {
-            // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted asset record.
-            return DriverResult.Success(new List<PackageAssembly>());
+            return DriverResult.Success(new CsvRecordSet<PackageAssembly>(records, PackageRecord.GetBucketKey(item)));
         }
 
-        private static DriverResult<List<PackageAssembly>> MakeNoAssemblies(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf)
+        private static DriverResult<CsvRecordSet<PackageAssembly>> MakeEmptyResults(CatalogLeafItem item)
         {
-            return DriverResult.Success(new List<PackageAssembly> { new PackageAssembly(scanId, scanTimestamp, leaf, PackageAssemblyResultType.NoAssemblies) });
+            // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted asset record.
+            return MakeResults(item, new List<PackageAssembly>());
+        }
+
+        private static DriverResult<CsvRecordSet<PackageAssembly>> MakeNoAssemblies(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf)
+        {
+            return MakeResults(leaf, new List<PackageAssembly> { new PackageAssembly(scanId, scanTimestamp, leaf, PackageAssemblyResultType.NoAssemblies) });
         }
 
         private async Task<DriverResult<PackageAssembly>> AnalyzeAsync(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, ZipArchiveEntry entry)
@@ -291,11 +296,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
             {
                 assembly.PublicKeyToken = publicKeyTokenBytes.ToHex();
             }
-        }
-
-        public string GetBucketKey(CatalogLeafItem item)
-        {
-            return PackageRecord.GetBucketKey(item);
         }
 
         public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(PackageAssembly record)

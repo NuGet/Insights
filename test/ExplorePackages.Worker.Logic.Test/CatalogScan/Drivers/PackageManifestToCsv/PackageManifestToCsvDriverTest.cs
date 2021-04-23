@@ -93,7 +93,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageManifestRecordResultType.Error, record.ResultType);
             Assert.Null(record.ContentFiles);
             Assert.True(record.ContentFilesHasFormatException);
@@ -114,7 +114,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageManifestRecordResultType.Error, record.ResultType);
             Assert.Null(record.DependencyGroups);
             Assert.True(record.DependencyGroupsHasMissingId);
@@ -135,7 +135,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
             Assert.Equal(
                 JsonConvert.SerializeObject(new[]
@@ -164,7 +164,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
             Assert.Equal(
                 JsonConvert.SerializeObject(new[]
@@ -209,7 +209,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
             Assert.Equal(
                 JsonConvert.SerializeObject(new
@@ -237,7 +237,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
             Assert.Equal(JsonConvert.SerializeObject(new[]
             {
@@ -293,7 +293,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
             Assert.Equal(JsonConvert.SerializeObject(new[]
             {
@@ -325,7 +325,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
             Assert.Equal(JsonConvert.SerializeObject(new[]
             {
@@ -355,7 +355,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
             Assert.Equal(JsonConvert.SerializeObject(new
             {
@@ -381,7 +381,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
             Assert.Equal(JsonConvert.SerializeObject(new[]
             {

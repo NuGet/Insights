@@ -33,7 +33,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageAssemblyResultType.ValidAssembly, record.ResultType);
             Assert.True(record.PublicKeyTokenHasSecurityException);
             Assert.True(record.HasPublicKey);
@@ -57,7 +57,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageAssemblyResultType.ValidAssembly, record.ResultType);
             Assert.True(record.AssemblyNameHasCultureNotFoundException);
             Assert.Equal("EnyuTryNuget", record.Culture);
@@ -79,8 +79,8 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            Assert.Equal(2, output.Value.Count);
-            var record = output.Value[1];
+            Assert.Equal(2, output.Value.Records.Count);
+            var record = output.Value.Records[1];
             Assert.Equal("lib/net451/getAddress,Azure.4.5.1.dll", record.Path);
             Assert.Equal(PackageAssemblyResultType.ValidAssembly, record.ResultType);
             Assert.True(record.AssemblyNameHasFileLoadException);
@@ -102,7 +102,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            Assert.All(output.Value, x => Assert.Equal(PackageAssemblyResultType.InvalidZipEntry, x.ResultType));
+            Assert.All(output.Value.Records, x => Assert.Equal(PackageAssemblyResultType.InvalidZipEntry, x.ResultType));
         }
 
         [Fact]

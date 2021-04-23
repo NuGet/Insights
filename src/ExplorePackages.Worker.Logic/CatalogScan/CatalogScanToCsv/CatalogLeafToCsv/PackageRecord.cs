@@ -65,7 +65,7 @@ namespace Knapcode.ExplorePackages.Worker
                 .ToList();
         }
 
-        public static string GetBucketKey(CatalogLeafItem item)
+        public static string GetBucketKey(ICatalogLeafItem item)
         {
             return $"{item.PackageId}/{NuGetVersion.Parse(item.PackageVersion).ToNormalizedString()}".ToLowerInvariant();
         }

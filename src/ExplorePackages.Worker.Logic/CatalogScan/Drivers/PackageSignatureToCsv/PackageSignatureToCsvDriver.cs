@@ -38,7 +38,13 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
             await _packageFileService.InitializeAsync();
         }
 
-        public async Task<DriverResult<List<PackageSignature>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSet<PackageSignature>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
+        {
+            var records = await ProcessLeafInternalAsync(item);
+            return DriverResult.Success(new CsvRecordSet<PackageSignature>(records, PackageRecord.GetBucketKey(item)));
+        }
+
+        private async Task<List<PackageSignature>> ProcessLeafInternalAsync(CatalogLeafItem item)
         {
             Guid? scanId = null;
             DateTimeOffset? scanTimestamp = null;
@@ -51,7 +57,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
             if (item.Type == CatalogLeafType.PackageDelete)
             {
                 var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
-                return DriverResult.Success(new List<PackageSignature> { new PackageSignature(scanId, scanTimestamp, leaf) });
+                return new List<PackageSignature> { new PackageSignature(scanId, scanTimestamp, leaf) };
             }
             else
             {
@@ -61,7 +67,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
                 if (primarySignature == null)
                 {
                     // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted record.
-                    return DriverResult.Success(new List<PackageSignature>());
+                    return new List<PackageSignature>();
                 }
 
                 var output = new PackageSignature(scanId, scanTimestamp, leaf)
@@ -84,7 +90,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
                     throw new NotSupportedException();
                 }
 
-                return DriverResult.Success(new List<PackageSignature> { output });
+                return new List<PackageSignature> { output };
             }
         }
 
@@ -165,11 +171,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
                 TimestampIssuer = timestamp?.SignerInfo.Certificate.Issuer,
                 TimestampValue = timestamp?.GeneralizedTime.ToUniversalTime(),
             };
-        }
-
-        public string GetBucketKey(CatalogLeafItem item)
-        {
-            return PackageRecord.GetBucketKey(item);
         }
 
         public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(PackageSignature record)

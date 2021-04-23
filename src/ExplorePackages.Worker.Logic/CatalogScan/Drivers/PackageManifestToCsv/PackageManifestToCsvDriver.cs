@@ -40,8 +40,13 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
         {
             await _packageManifestService.InitializeAsync();
         }
+        public async Task<DriverResult<CsvRecordSet<PackageManifestRecord>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
+        {
+            var records = await ProcessLeafInternalAsync(item);
+            return DriverResult.Success(new CsvRecordSet<PackageManifestRecord>(records, PackageRecord.GetBucketKey(item)));
+        }
 
-        public async Task<DriverResult<List<PackageManifestRecord>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
+        private async Task<List<PackageManifestRecord>> ProcessLeafInternalAsync(CatalogLeafItem item)
         {
             Guid? scanId = null;
             DateTimeOffset? scanTimestamp = null;
@@ -54,7 +59,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             if (item.Type == CatalogLeafType.PackageDelete)
             {
                 var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
-                return DriverResult.Success(new List<PackageManifestRecord> { new PackageManifestRecord(scanId, scanTimestamp, leaf) });
+                return new List<PackageManifestRecord> { new PackageManifestRecord(scanId, scanTimestamp, leaf) };
             }
             else
             {
@@ -64,10 +69,10 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
                 if (nuspecReader == null)
                 {
                     // Ignore packages where the .nuspec is missing. A subsequent scan will produce a deleted asset record.
-                    return DriverResult.Success(new List<PackageManifestRecord>());
+                    return new List<PackageManifestRecord>();
                 }
 
-                return DriverResult.Success(new List<PackageManifestRecord> { GetRecord(scanId, scanTimestamp, leaf, nuspecReader) });
+                return new List<PackageManifestRecord> { GetRecord(scanId, scanTimestamp, leaf, nuspecReader) };
             }
         }
 
@@ -167,11 +172,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
         private static string JsonSerialize(object input)
         {
             return JsonConvert.SerializeObject(input, JsonSerializerSettings);
-        }
-
-        public string GetBucketKey(CatalogLeafItem item)
-        {
-            return PackageRecord.GetBucketKey(item);
         }
 
         public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(PackageManifestRecord record)

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Worker
 {
@@ -24,17 +23,6 @@ namespace Knapcode.ExplorePackages.Worker
         /// <param name="item">The catalog leaf item to process.</param>
         /// <param name="attemptCount">The current attempt count for this catalog leaf item.</param>
         /// <returns>The result, either try again later or a list of records that will be written to CSV.</returns>
-        Task<DriverResult<List<T>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount);
-
-        /// <summary>
-        /// The bucket key storing the results on the corresponding <see cref="ProcessLeafAsync(CatalogLeafItem, int)"/>
-        /// invocation. This bucket key will be hashed and used to select a large CSV blob to append results to.
-        /// Typically this is a concatenation of the normalized, lowercase package ID and version. This key should be
-        /// consistent per package ID or package ID + version to allow for proper data pruning with
-        /// <see cref="ICsvStorage{T}.Prune(List{T})"/>.
-        /// </summary>
-        /// <param name="item">T</param>
-        /// <returns>The key used for bucketing returned CSV records.</returns>
-        string GetBucketKey(CatalogLeafItem item);
+        Task<DriverResult<CsvRecordSet<T>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount);
     }
 }

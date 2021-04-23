@@ -35,7 +35,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
         }
 
@@ -54,7 +54,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
         }
 
@@ -73,7 +73,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
         }
 
@@ -92,7 +92,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
         }
 
@@ -111,7 +111,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
         }
 
@@ -130,7 +130,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
         }
 
@@ -149,7 +149,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
         }
 
@@ -168,7 +168,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
         }
 
@@ -187,7 +187,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
         }
 
@@ -206,7 +206,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
         }
 
@@ -225,7 +225,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
         }
 
@@ -244,7 +244,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
         }
 
@@ -263,7 +263,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
         }
 
@@ -282,7 +282,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
         }
 
@@ -301,7 +301,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
         }
 
@@ -320,7 +320,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
         }
 
@@ -339,7 +339,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value);
+            var record = Assert.Single(output.Value.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
         }
     }

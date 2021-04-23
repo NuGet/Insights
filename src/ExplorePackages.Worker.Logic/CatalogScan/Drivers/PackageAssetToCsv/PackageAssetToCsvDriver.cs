@@ -46,7 +46,13 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
             await _packageFileService.InitializeAsync();
         }
 
-        public async Task<DriverResult<List<PackageAsset>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSet<PackageAsset>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
+        {
+            var records = await ProcessLeafInternalAsync(item);
+            return DriverResult.Success(new CsvRecordSet<PackageAsset>(records, PackageRecord.GetBucketKey(item)));
+        }
+
+        private async Task<List<PackageAsset>> ProcessLeafInternalAsync(CatalogLeafItem item)
         {
             Guid? scanId = null;
             DateTimeOffset? scanTimestamp = null;
@@ -59,7 +65,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
             if (item.Type == CatalogLeafType.PackageDelete)
             {
                 var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
-                return DriverResult.Success(new List<PackageAsset> { new PackageAsset(scanId, scanTimestamp, leaf) });
+                return new List<PackageAsset> { new PackageAsset(scanId, scanTimestamp, leaf) };
             }
             else
             {
@@ -69,7 +75,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
                 if (zipDirectory == null)
                 {
                     // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted asset record.
-                    return DriverResult.Success(new List<PackageAsset>());
+                    return new List<PackageAsset>();
                 }
 
                 var files = zipDirectory
@@ -77,7 +83,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
                     .Select(x => x.GetName())
                     .ToList();
 
-                return DriverResult.Success(GetAssets(scanId, scanTimestamp, leaf, files));
+                return GetAssets(scanId, scanTimestamp, leaf, files);
             }
         }
 
@@ -189,11 +195,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
             return
                 ex.Message.StartsWith("Invalid portable frameworks '")
                 && ex.Message.EndsWith("'. A hyphen may not be in any of the portable framework names.");
-        }
-
-        public string GetBucketKey(CatalogLeafItem item)
-        {
-            return PackageRecord.GetBucketKey(item);
         }
 
         public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(PackageAsset record)

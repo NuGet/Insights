@@ -37,7 +37,13 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
             await _packageFileService.InitializeAsync();
         }
 
-        public async Task<DriverResult<List<PackageArchiveEntry>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSet<PackageArchiveEntry>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
+        {
+            var records = await ProcessLeafInternalAsync(item);
+            return DriverResult.Success(new CsvRecordSet<PackageArchiveEntry>(records, PackageRecord.GetBucketKey(item)));
+        }
+
+        private async Task<List<PackageArchiveEntry>> ProcessLeafInternalAsync(CatalogLeafItem item)
         {
             Guid? scanId = null;
             DateTimeOffset? scanTimestamp = null;
@@ -50,7 +56,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
             if (item.Type == CatalogLeafType.PackageDelete)
             {
                 var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
-                return DriverResult.Success(new List<PackageArchiveEntry> { new PackageArchiveEntry(scanId, scanTimestamp, leaf) });
+                return new List<PackageArchiveEntry> { new PackageArchiveEntry(scanId, scanTimestamp, leaf) };
             }
             else
             {
@@ -60,7 +66,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
                 if (zipDirectory == null)
                 {
                     // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted asset record.
-                    return DriverResult.Success(new List<PackageArchiveEntry>());
+                    return new List<PackageArchiveEntry>();
                 }
 
                 var i = 0;
@@ -91,13 +97,8 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
                         $"ZIP archive has no entries for catalog leaf item {item.Url}");
                 }
 
-                return DriverResult.Success(items);
+                return items;
             }
-        }
-
-        public string GetBucketKey(CatalogLeafItem item)
-        {
-            return PackageRecord.GetBucketKey(item);
         }
 
         public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(PackageArchiveEntry record)

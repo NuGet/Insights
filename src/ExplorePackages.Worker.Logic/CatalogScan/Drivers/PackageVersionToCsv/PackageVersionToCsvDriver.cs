@@ -34,7 +34,13 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
             await _storageService.InitializeAsync();
         }
 
-        public async Task<DriverResult<List<PackageVersionRecord>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSet<PackageVersionRecord>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
+        {
+            var records = await ProcessLeafInternalAsync(item);
+            return DriverResult.Success(new CsvRecordSet<PackageVersionRecord>(records, bucketKey: item.PackageId.ToLowerInvariant()));
+        }
+
+        private async Task<List<PackageVersionRecord>> ProcessLeafInternalAsync(CatalogLeafItem item)
         {
             Guid? scanId = null;
             DateTimeOffset? scanTimestamp = null;
@@ -63,7 +69,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
             var latestStableSemVer2 = versions.Where(x => !x.Version.IsPrerelease).FirstOrDefault();
 
             // Map all entities to CSV records.
-            var records = entities
+            return entities
                 .Select(x => new PackageVersionRecord(scanId, scanTimestamp, x)
                 {
                     IsLatest = ReferenceEquals(x, latest.Entity),
@@ -72,13 +78,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
                     IsLatestStableSemVer2 = ReferenceEquals(x, latestStableSemVer2.Entity),
                 })
                 .ToList();
-
-            return new DriverResult<List<PackageVersionRecord>>(DriverResultType.Success, records);
-        }
-
-        public string GetBucketKey(CatalogLeafItem item)
-        {
-            return item.PackageId.ToLowerInvariant();
         }
 
         public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(PackageVersionRecord record)

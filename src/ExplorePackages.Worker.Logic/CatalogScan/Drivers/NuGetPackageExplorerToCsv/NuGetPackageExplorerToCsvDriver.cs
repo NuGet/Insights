@@ -48,11 +48,6 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
         public bool SingleMessagePerId => false;
         public string ResultsContainerName => _options.Value.NuGetPackageExplorerContainerName;
 
-        public string GetBucketKey(CatalogLeafItem item)
-        {
-            return PackageRecord.GetBucketKey(item);
-        }
-
         public Task InitializeAsync()
         {
             return Task.CompletedTask;
@@ -74,7 +69,13 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             return leaf.ToLeafItem();
         }
 
-        public async Task<DriverResult<List<NuGetPackageExplorerRecord>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSet<NuGetPackageExplorerRecord>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
+        {
+            var records = await ProcessLeafInternalAsync(item, attemptCount);
+            return DriverResult.Success(new CsvRecordSet<NuGetPackageExplorerRecord>(records, PackageRecord.GetBucketKey(item)));
+        }
+
+        private async Task<List<NuGetPackageExplorerRecord>> ProcessLeafInternalAsync(CatalogLeafItem item, int attemptCount)
         {
             Guid? scanId = null;
             DateTimeOffset? scanTimestamp = null;
@@ -87,7 +88,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             if (item.Type == CatalogLeafType.PackageDelete)
             {
                 var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
-                return DriverResult.Success(new List<NuGetPackageExplorerRecord> { new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf) });
+                return new List<NuGetPackageExplorerRecord> { new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf) };
             }
             else
             {
@@ -100,13 +101,13 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                 if (attemptCount > 4)
                 {
                     _logger.LogWarning("Package {Id} {Version} failed due to too many attempts.", leaf.PackageId, leaf.PackageVersion);
-                    return DriverResult.Success(new List<NuGetPackageExplorerRecord>
+                    return new List<NuGetPackageExplorerRecord>
                     {
                         new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf)
                         {
                             ResultType = NuGetPackageExplorerResultType.Failed,
                         }
-                    });
+                    };
                 }
 
                 var tempDir = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "npe"));
@@ -166,7 +167,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                     if (!exists)
                     {
                         // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted record.
-                        return DriverResult.Success(new List<NuGetPackageExplorerRecord>());
+                        return new List<NuGetPackageExplorerRecord>();
                     }
 
                     _logger.LogInformation(
@@ -192,13 +193,13 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                                             || (ex.Message.Contains("Assembly reference ") && ex.Message.Contains(" contains invalid characters.")))
                     {
                         _logger.LogWarning(ex, "Package {Id} {Version} had invalid metadata.", leaf.PackageId, leaf.PackageVersion);
-                        return DriverResult.Success(new List<NuGetPackageExplorerRecord>
+                        return new List<NuGetPackageExplorerRecord>
                         {
                             new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf)
                             {
                                 ResultType = NuGetPackageExplorerResultType.InvalidMetadata,
                             }
-                        });
+                        };
                     }
 
                     using (zipPackage)
@@ -224,13 +225,13 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                                 if (attemptCount > 3)
                                 {
                                     _logger.LogWarning("Package {Id} {Version} had its symbol validation timeout.", leaf.PackageId, leaf.PackageVersion);
-                                    return DriverResult.Success(new List<NuGetPackageExplorerRecord>
+                                    return new List<NuGetPackageExplorerRecord>
                                     {
                                         new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf)
                                         {
                                             ResultType = NuGetPackageExplorerResultType.Timeout,
                                         }
-                                    });
+                                    };
                                 }
                                 else
                                 {
@@ -293,13 +294,13 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                         catch (FileNotFoundException ex)
                         {
                             _logger.LogWarning(ex, "Could not get symbol validator files for {Id} {Version}.", leaf.PackageId, leaf.PackageVersion);
-                            return DriverResult.Success(new List<NuGetPackageExplorerRecord>
+                            return new List<NuGetPackageExplorerRecord>
                             {
                                 new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf)
                                 {
                                     ResultType = NuGetPackageExplorerResultType.InvalidMetadata,
                                 }
-                            });
+                            };
                         }
 
                         if (!output.Any())
@@ -310,7 +311,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                             });
                         }
 
-                        return DriverResult.Success(output);
+                        return output;
                     }
                 }
                 finally

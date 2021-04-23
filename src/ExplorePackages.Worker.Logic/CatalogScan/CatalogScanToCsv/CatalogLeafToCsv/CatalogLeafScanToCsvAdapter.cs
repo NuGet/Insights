@@ -80,13 +80,16 @@ namespace Knapcode.ExplorePackages.Worker
                 return result;
             }
 
-            if (!result.Value.Any())
+            if (!result.Value.Records.Any())
             {
                 return result;
             }
 
-            var bucketKey = _driver.GetBucketKey(leafItem);
-            await _adapter.AppendAsync(leafScan.StorageSuffix, _options.Value.AppendResultStorageBucketCount, bucketKey, result.Value);
+            await _adapter.AppendAsync(
+                leafScan.StorageSuffix,
+                _options.Value.AppendResultStorageBucketCount,
+                result.Value.BucketKey,
+                result.Value.Records);
             return result;
         }
 
