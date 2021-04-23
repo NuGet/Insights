@@ -69,7 +69,7 @@ namespace Knapcode.ExplorePackages.Worker
             return countLowerBound == 0;
         }
 
-        public async Task AppendAsync(string storageSuffix, int bucketCount, string bucketKey, IReadOnlyList<T> records)
+        public async Task AppendAsync(string storageSuffix, int bucketCount, string bucketKey, IReadOnlyList<ICsvRecord> records)
         {
             await _storageService.AppendAsync(GetTableName(storageSuffix), bucketCount, bucketKey, records);
         }

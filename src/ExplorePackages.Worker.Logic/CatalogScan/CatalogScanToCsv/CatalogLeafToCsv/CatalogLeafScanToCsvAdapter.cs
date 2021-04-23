@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class CatalogLeafScanToCsvAdapter<T> : ICatalogLeafScanNonBatchDriver where T : ICsvRecord
+    public class CatalogLeafScanToCsvAdapter<T> : ICatalogLeafScanNonBatchDriver where T : class, ICsvRecord
     {
         private readonly SchemaSerializer _schemaSerializer;
         private readonly CatalogScanToCsvAdapter<T> _adapter;

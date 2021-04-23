@@ -53,7 +53,7 @@ namespace Knapcode.ExplorePackages.Worker
             await _wideEntityService.DeleteTableAsync(containerName);
         }
 
-        public async Task AppendAsync<T>(string tableName, int bucketCount, string bucketKey, IReadOnlyList<T> records) where T : ICsvRecord
+        public async Task AppendAsync(string tableName, int bucketCount, string bucketKey, IReadOnlyList<ICsvRecord> records)
         {
             var bucket = GetBucket(bucketCount, bucketKey);
 
@@ -90,7 +90,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        private async Task AppendToTableAsync<T>(int bucket, string tableName, IReadOnlyList<T> records) where T : ICsvRecord
+        private async Task AppendToTableAsync(int bucket, string tableName, IReadOnlyList<ICsvRecord> records)
         {
             var bytes = Serialize(records);
             try
@@ -290,7 +290,7 @@ namespace Knapcode.ExplorePackages.Worker
             return (await GetContainerAsync(container)).GetBlobClient($"{CompactPrefix}{bucket}.csv.gz");
         }
 
-        private static byte[] Serialize<T>(IReadOnlyList<T> records) where T : ICsvRecord
+        private static byte[] Serialize(IReadOnlyList<ICsvRecord> records)
         {
             return MessagePackSerializer.Serialize(records, ExplorePackagesMessagePack.Options);
         }

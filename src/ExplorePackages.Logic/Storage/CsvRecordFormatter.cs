@@ -6,8 +6,6 @@ namespace Knapcode.ExplorePackages
 {
     public class CsvRecordFormatter<T> : IMessagePackFormatter<T> where T : ICsvRecord
     {
-        private static readonly T Factory = Activator.CreateInstance<T>();
-
         public void Serialize(ref MessagePackWriter writer, T value, MessagePackSerializerOptions options)
         {
             if (value == null)
@@ -19,13 +17,13 @@ namespace Knapcode.ExplorePackages
             var fields = CsvRecordFormatterResolver.ListPool.Get();
             try
             {
-                if (Factory.FieldCount > fields.Capacity)
+                if (value.FieldCount > fields.Capacity)
                 {
-                    fields.Capacity = Factory.FieldCount;
+                    fields.Capacity = value.FieldCount;
                 }
 
                 value.Write(fields);
-                writer.WriteArrayHeader(Factory.FieldCount);
+                writer.WriteArrayHeader(value.FieldCount);
                 foreach (var field in fields)
                 {
                     writer.Write(field);
@@ -36,6 +34,8 @@ namespace Knapcode.ExplorePackages
                 CsvRecordFormatterResolver.ListPool.Return(fields);
             }
         }
+
+        private static readonly T Factory = Activator.CreateInstance<T>();
 
         public T Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {

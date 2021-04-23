@@ -49,7 +49,7 @@ namespace Knapcode.ExplorePackages
                     .Where(x => x == csvRecordType)
                     .FirstOrDefault();
 
-                if (csvRecordInterface == null)
+                if (csvRecordType != outputType && csvRecordInterface == null)
                 {
                     return null;
                 }
