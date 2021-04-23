@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Worker
 {
@@ -10,17 +11,20 @@ namespace Knapcode.ExplorePackages.Worker
         private readonly CatalogScanToCsvAdapter<T> _adapter;
         private readonly ICsvStorage<T> _storage;
         private readonly ICatalogLeafToCsvDriver<T> _driver;
+        private readonly IOptionsSnapshot<ExplorePackagesWorkerSettings> _options;
 
         public CatalogLeafScanToCsvAdapter(
             SchemaSerializer schemaSerializer,
             CatalogScanToCsvAdapter<T> adapter,
             ICsvStorage<T> storage,
-            ICatalogLeafToCsvDriver<T> driver)
+            ICatalogLeafToCsvDriver<T> driver,
+            IOptionsSnapshot<ExplorePackagesWorkerSettings> options)
         {
             _schemaSerializer = schemaSerializer;
             _adapter = adapter;
             _storage = storage;
             _driver = driver;
+            _options = options;
         }
 
         public async Task InitializeAsync(CatalogIndexScan indexScan)
@@ -82,8 +86,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             var bucketKey = _driver.GetBucketKey(leafItem);
-            var parameters = (CatalogLeafToCsvParameters)_schemaSerializer.Deserialize(leafScan.DriverParameters).Data;
-            await _adapter.AppendAsync(leafScan.StorageSuffix, parameters.BucketCount, bucketKey, result.Value);
+            await _adapter.AppendAsync(leafScan.StorageSuffix, _options.Value.AppendResultStorageBucketCount, bucketKey, result.Value);
             return result;
         }
 

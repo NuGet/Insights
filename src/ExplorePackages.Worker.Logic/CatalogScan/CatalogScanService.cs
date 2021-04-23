@@ -278,7 +278,6 @@ namespace Knapcode.ExplorePackages.Worker
         {
             var parameters = new CatalogLeafToCsvParameters
             {
-                BucketCount = _options.Value.AppendResultStorageBucketCount,
                 Mode = CatalogLeafToCsvMode.Reprocess,
             };
 
@@ -306,7 +305,6 @@ namespace Knapcode.ExplorePackages.Worker
         {
             var parameters = new CatalogLeafToCsvParameters
             {
-                BucketCount = _options.Value.AppendResultStorageBucketCount,
                 Mode = onlyLatestLeaves ? CatalogLeafToCsvMode.LatestLeaves : CatalogLeafToCsvMode.AllLeaves,
             };
 
