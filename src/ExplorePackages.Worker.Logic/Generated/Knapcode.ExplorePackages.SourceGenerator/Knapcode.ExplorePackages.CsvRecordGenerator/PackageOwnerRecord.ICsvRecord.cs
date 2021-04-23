@@ -13,7 +13,6 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
     .drop table JverPackageOwners ifexists;
 
     .create table JverPackageOwners (
-        AsOfTimestamp: datetime,
         LowerId: string,
         Id: string,
         Owners: dynamic
@@ -36,7 +35,6 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
 
     .create table JverPackageOwners ingestion csv mapping 'JverPackageOwners_mapping'
     '['
-        '{"Column":"AsOfTimestamp","DataType":"datetime","Properties":{"Ordinal":0}},'
         '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":1}},'
         '{"Column":"Id","DataType":"string","Properties":{"Ordinal":2}},'
         '{"Column":"Owners","DataType":"dynamic","Properties":{"Ordinal":3}}'

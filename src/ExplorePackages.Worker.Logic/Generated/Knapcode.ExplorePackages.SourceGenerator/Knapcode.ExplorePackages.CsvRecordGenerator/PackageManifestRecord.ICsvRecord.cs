@@ -13,8 +13,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
     .drop table JverPackageManifests ifexists;
 
     .create table JverPackageManifests (
-        ScanId: guid,
-        ScanTimestamp: datetime,
         LowerId: string,
         Identity: string,
         Id: string,
@@ -70,8 +68,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
 
     .create table JverPackageManifests ingestion csv mapping 'JverPackageManifests_mapping'
     '['
-        '{"Column":"ScanId","DataType":"guid","Properties":{"Ordinal":0}},'
-        '{"Column":"ScanTimestamp","DataType":"datetime","Properties":{"Ordinal":1}},'
         '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":2}},'
         '{"Column":"Identity","DataType":"string","Properties":{"Ordinal":3}},'
         '{"Column":"Id","DataType":"string","Properties":{"Ordinal":4}},'

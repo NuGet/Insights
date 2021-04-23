@@ -13,7 +13,6 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
     .drop table JverPackageDownloads ifexists;
 
     .create table JverPackageDownloads (
-        AsOfTimestamp: datetime,
         LowerId: string,
         Identity: string,
         Id: string,
@@ -39,7 +38,6 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 
     .create table JverPackageDownloads ingestion csv mapping 'JverPackageDownloads_mapping'
     '['
-        '{"Column":"AsOfTimestamp","DataType":"datetime","Properties":{"Ordinal":0}},'
         '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":1}},'
         '{"Column":"Identity","DataType":"string","Properties":{"Ordinal":2}},'
         '{"Column":"Id","DataType":"string","Properties":{"Ordinal":3}},'

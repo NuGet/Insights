@@ -4,7 +4,9 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 {
     public partial record PackageDownloadRecord : ICsvRecord<PackageDownloadRecord>
     {
+        [KustoIgnore]
         public DateTimeOffset AsOfTimestamp { get; set; }
+
         public string LowerId { get; set; }
 
         [KustoPartitionKey]

@@ -27,6 +27,20 @@ namespace Knapcode.ExplorePackages
                 return;
             }
 
+            if (PropertyHelper.IsIgnoredInKusto(symbol))
+            {
+                context.GeneratorExecutionContext.ReportDiagnostic(Diagnostic.Create(
+                    new DiagnosticDescriptor(
+                        id: "EXP0005",
+                        title: "An attribute was marked as both a Kusto partition key and it was ignored.",
+                        messageFormat: "An attribute was marked as both a Kusto partition key and it was ignored.",
+                        CsvRecordGenerator.Category,
+                        DiagnosticSeverity.Error,
+                        isEnabledByDefault: true),
+                    Location.None));
+                return;
+            }
+
             var policy = new PartitioningPolicy
             {
                 PartitionKeys = new List<PartitionKey>
@@ -83,7 +97,7 @@ namespace Knapcode.ExplorePackages
             {
                 context.GeneratorExecutionContext.ReportDiagnostic(Diagnostic.Create(
                     new DiagnosticDescriptor(
-                        id: "EXP0003",
+                        id: "EXP0004",
                         title: $"No {AttributeName} attributes were defined on a type.",
                         messageFormat: $"No {AttributeName} attributes were defined on a type.",
                         CsvRecordGenerator.Category,

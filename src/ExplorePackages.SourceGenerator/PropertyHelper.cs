@@ -51,6 +51,13 @@ namespace Knapcode.ExplorePackages
             return false;
         }
 
+        private const string KustoIgnoreAttributeName = "KustoIgnoreAttribute";
+
+        public static bool IsIgnoredInKusto(IPropertySymbol symbol)
+        {
+            return symbol.GetAttributes().Any(x => x.AttributeClass.Name == KustoIgnoreAttributeName);
+        }
+
         public static string GetKustoDataType(PropertyVisitorContext context, IPropertySymbol symbol)
         {
             var attributeData = symbol

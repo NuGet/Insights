@@ -33,8 +33,12 @@ namespace Knapcode.ExplorePackages.Worker
             Created = created;
         }
 
+        [KustoIgnore]
         public Guid? ScanId { get; set; }
+
+        [KustoIgnore]
         public DateTimeOffset? ScanTimestamp { get; set; }
+
         public string LowerId { get; set; }
 
         [KustoPartitionKey]

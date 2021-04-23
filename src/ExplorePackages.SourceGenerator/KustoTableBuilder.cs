@@ -16,6 +16,11 @@ namespace Knapcode.ExplorePackages
 
         public void OnProperty(PropertyVisitorContext context, IPropertySymbol symbol, string prettyPropType)
         {
+            if (PropertyHelper.IsIgnoredInKusto(symbol))
+            {
+                return;
+            }
+
             if (_builder.Length > 0)
             {
                 _builder.Append(',');

@@ -30,6 +30,11 @@ namespace Knapcode.ExplorePackages
             };
             _nextOrdinal++;
 
+            if (PropertyHelper.IsIgnoredInKusto(symbol))
+            {
+                return;
+            }
+
             if (_builder.Length > 1)
             {
                 _builder.Append(",'");

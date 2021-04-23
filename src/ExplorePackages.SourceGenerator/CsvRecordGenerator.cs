@@ -116,7 +116,7 @@ namespace {0}
             {
                 context.ReportDiagnostic(Diagnostic.Create(
                     new DiagnosticDescriptor(
-                        id: "EXP0004",
+                        id: "EXP0006",
                         title: $"{FullKustoTypeAttributeName.Split('.').Last()} interface could not be found",
                         messageFormat: $"The {FullKustoTypeAttributeName} interface could not be found.",
                         Category,
