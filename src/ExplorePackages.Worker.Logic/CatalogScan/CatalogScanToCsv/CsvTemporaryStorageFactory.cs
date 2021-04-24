@@ -119,7 +119,7 @@ namespace Knapcode.ExplorePackages.Worker
                 return $"{indexScan.GetScanId()}-{nameof(CatalogScanToCsvStorage<T>)}-custom-expand-{_setIndex}";
             }
 
-            public async Task AppendAsync<TRecord>(string storageSuffix, CsvRecordSet<TRecord> set) where TRecord : class, ICsvRecord
+            public async Task AppendAsync<TRecord>(string storageSuffix, ICsvRecordSet<TRecord> set) where TRecord : class, ICsvRecord
             {
                 if (set.Records.Any())
                 {

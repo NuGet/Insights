@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Worker
 {
@@ -19,18 +20,10 @@ namespace Knapcode.ExplorePackages.Worker
             _driver = driver;
         }
 
-        public async Task<DriverResult> ProcessLeafAsync(CatalogLeafScan leafScan)
+        protected override async Task<(DriverResult, IReadOnlyList<ICsvRecordSet<ICsvRecord>>)> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
         {
-            var leafItem = leafScan.ToLeafItem();
-            var result = await _driver.ProcessLeafAsync(leafItem, leafScan.AttemptCount);
-            if (result.Type == DriverResultType.TryAgainLater)
-            {
-                return result;
-            }
-
-            await _storage[0].AppendAsync(leafScan.StorageSuffix, result.Value);
-
-            return result;
+            var result = await _driver.ProcessLeafAsync(item, attemptCount);
+            return (result, (CsvRecordSets<T>)GetValueOrDefault(result));
         }
     }
 
@@ -54,19 +47,10 @@ namespace Knapcode.ExplorePackages.Worker
             _driver = driver;
         }
 
-        public async Task<DriverResult> ProcessLeafAsync(CatalogLeafScan leafScan)
+        protected override async Task<(DriverResult, IReadOnlyList<ICsvRecordSet<ICsvRecord>>)> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
         {
-            var leafItem = leafScan.ToLeafItem();
-            var result = await _driver.ProcessLeafAsync(leafItem, leafScan.AttemptCount);
-            if (result.Type == DriverResultType.TryAgainLater)
-            {
-                return result;
-            }
-
-            await _storage[0].AppendAsync(leafScan.StorageSuffix, result.Value.Item1);
-            await _storage[1].AppendAsync(leafScan.StorageSuffix, result.Value.Item2);
-
-            return result;
+            var result = await _driver.ProcessLeafAsync(item, attemptCount);
+            return (result, GetValueOrDefault(result));
         }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class CsvRecordSet<T> where T : ICsvRecord
+    public class CsvRecordSet<T> : ICsvRecordSet<T> where T : ICsvRecord
     {
         public CsvRecordSet(string bucketKey, IReadOnlyList<T> records)
         {

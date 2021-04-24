@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class BaseCatalogLeafScanToCsvAdapter
+    public abstract class BaseCatalogLeafScanToCsvAdapter
     {
         private readonly SchemaSerializer _schemaSerializer;
         private readonly CsvTemporaryStorageFactory _storageFactory;
@@ -91,6 +91,35 @@ namespace Knapcode.ExplorePackages.Worker
         private CatalogLeafToCsvParameters DeserializeParameters(string driverParameters)
         {
             return (CatalogLeafToCsvParameters)_schemaSerializer.Deserialize(driverParameters).Data;
+        }
+
+        protected abstract Task<(DriverResult, IReadOnlyList<ICsvRecordSet<ICsvRecord>>)> ProcessLeafAsync(CatalogLeafItem item, int attemptCount);
+
+        protected static T GetValueOrDefault<T>(DriverResult<T> result)
+        {
+            if (result.Type == DriverResultType.Success)
+            {
+                return result.Value;
+            }
+
+            return default;
+        }
+
+        public async Task<DriverResult> ProcessLeafAsync(CatalogLeafScan leafScan)
+        {
+            var leafItem = leafScan.ToLeafItem();
+            (var result, var sets) = await ProcessLeafAsync(leafItem, leafScan.AttemptCount);
+            if (result.Type == DriverResultType.TryAgainLater)
+            {
+                return result;
+            }
+
+            for (var setIndex = 0; setIndex < _storage.Count; setIndex++)
+            {
+                await _storage[setIndex].AppendAsync(leafScan.StorageSuffix, sets[setIndex]);
+            }
+
+            return result;
         }
 
         public async Task StartAggregateAsync(CatalogIndexScan indexScan)
