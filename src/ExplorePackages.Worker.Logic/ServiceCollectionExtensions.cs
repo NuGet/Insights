@@ -37,7 +37,7 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient<ICatalogScanDriverFactory, CatalogScanDriverFactory>();
             serviceCollection.AddTransient<CatalogScanService>();
             serviceCollection.AddTransient<CatalogScanExpandService>();
-            serviceCollection.AddTransient(typeof(CatalogScanToCsvHelper<>));
+            serviceCollection.AddTransient<CsvTemporaryStorageFactory>();
             AddTableScan<LatestPackageLeaf>(serviceCollection);
             AddTableScan<CatalogLeafScan>(serviceCollection);
 
@@ -120,7 +120,7 @@ namespace Knapcode.ExplorePackages.Worker
                     typeof(TaskStateMessageProcessor<>).MakeGenericType(messageType));
             }
 
-            foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ICsvStorage<>)))
+            foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ICsvResultStorage<>)))
             {
                 // Add the CSV storage
                 serviceCollection.AddTransient(serviceType, implementationType);

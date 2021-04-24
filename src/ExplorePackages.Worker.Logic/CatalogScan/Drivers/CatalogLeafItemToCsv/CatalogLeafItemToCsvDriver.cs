@@ -6,23 +6,25 @@ using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
 {
-    public class CatalogLeafItemToCsvDriver : ICatalogLeafScanNonBatchDriver, ICsvStorage<CatalogLeafItemRecord>
+    public class CatalogLeafItemToCsvDriver : ICatalogLeafScanNonBatchDriver, ICsvResultStorage<CatalogLeafItemRecord>
     {
-        private readonly CatalogScanToCsvHelper<CatalogLeafItemRecord> _helper;
+        private readonly CsvTemporaryStorageFactory _tempStorageFactory;
         private readonly CatalogClient _catalogClient;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly ICsvTemporaryStorage _tempStorage;
 
         public CatalogLeafItemToCsvDriver(
-            CatalogScanToCsvHelper<CatalogLeafItemRecord> helper,
+            CsvTemporaryStorageFactory storageFactory,
             CatalogClient catalogClient,
             IOptions<ExplorePackagesWorkerSettings> options)
         {
-            _helper = helper;
+            _tempStorageFactory = storageFactory;
             _catalogClient = catalogClient;
             _options = options;
+            _tempStorage = storageFactory.Create(this).Single();
         }
 
-        public string ResultsContainerName => _options.Value.CatalogLeafItemContainerName;
+        public string ResultContainerName => _options.Value.CatalogLeafItemContainerName;
 
         public List<CatalogLeafItemRecord> Prune(List<CatalogLeafItemRecord> records)
         {
@@ -35,7 +37,8 @@ namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
 
         public async Task InitializeAsync(CatalogIndexScan indexScan)
         {
-            await _helper.InitializeAsync(indexScan, ResultsContainerName);
+            await _tempStorageFactory.InitializeAsync(indexScan);
+            await _tempStorage.InitializeAsync(indexScan);
         }
 
         public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
@@ -62,11 +65,8 @@ namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
                     PageUrl = pageScan.Url,
                 })
                 .ToList();
-            await _helper.AppendAsync(
-                pageScan.StorageSuffix,
-                _options.Value.AppendResultStorageBucketCount,
-                pageScan.Url,
-                records);
+
+            await _tempStorage.AppendAsync(pageScan.StorageSuffix, new CsvRecordSet<CatalogLeafItemRecord>(pageScan.Url, records));
 
             return CatalogPageScanResult.Processed;
         }
@@ -76,29 +76,30 @@ namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
             throw new NotImplementedException();
         }
 
-        public Task StartAggregateAsync(CatalogIndexScan indexScan)
+        public async Task StartAggregateAsync(CatalogIndexScan indexScan)
         {
-            return _helper.StartAggregateAsync(indexScan);
+            await _tempStorage.StartAggregateAsync(indexScan);
         }
 
-        public Task<bool> IsAggregateCompleteAsync(CatalogIndexScan indexScan)
+        public async Task<bool> IsAggregateCompleteAsync(CatalogIndexScan indexScan)
         {
-            return _helper.IsAggregateCompleteAsync(indexScan);
+            return await _tempStorage.IsAggregateCompleteAsync(indexScan);
         }
 
-        public Task FinalizeAsync(CatalogIndexScan indexScan)
+        public async Task FinalizeAsync(CatalogIndexScan indexScan)
         {
-            return _helper.FinalizeAsync(indexScan);
+            await _tempStorage.FinalizeAsync(indexScan);
+            await _tempStorageFactory.FinalizeAsync(indexScan);
         }
 
-        public Task StartCustomExpandAsync(CatalogIndexScan indexScan)
+        public async Task StartCustomExpandAsync(CatalogIndexScan indexScan)
         {
-            throw new NotImplementedException();
+            await _tempStorage.StartCustomExpandAsync(indexScan);
         }
 
-        public Task<bool> IsCustomExpandCompleteAsync(CatalogIndexScan indexScan)
+        public async Task<bool> IsCustomExpandCompleteAsync(CatalogIndexScan indexScan)
         {
-            throw new NotImplementedException();
+            return await _tempStorage.IsCustomExpandCompleteAsync(indexScan);
         }
 
         public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(CatalogLeafItemRecord record)

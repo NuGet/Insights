@@ -7,13 +7,13 @@ namespace Knapcode.ExplorePackages.Worker
     {
         private readonly AppendResultStorageService _storageService;
         private readonly TaskStateStorageService _taskStateStorageService;
-        private readonly ICsvStorage<T> _storage;
+        private readonly ICsvResultStorage<T> _storage;
         private readonly ILogger<CsvCompactorProcessor<T>> _logger;
 
         public CsvCompactorProcessor(
             AppendResultStorageService storageService,
             TaskStateStorageService taskStateStorageService,
-            ICsvStorage<T> storage,
+            ICsvResultStorage<T> storage,
             ILogger<CsvCompactorProcessor<T>> logger)
         {
             _storageService = storageService;
@@ -42,7 +42,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             await _storageService.CompactAsync<T>(
                 message.SourceContainer,
-                _storage.ResultsContainerName,
+                _storage.ResultContainerName,
                 message.Bucket,
                 force: message.Force,
                 _storage.Prune);

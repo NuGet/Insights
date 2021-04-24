@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
 {
-    public class PackageArchiveEntryToCsvDriver : ICatalogLeafToCsvDriver<PackageArchiveEntry>, ICsvStorage<PackageArchiveEntry>
+    public class PackageArchiveEntryToCsvDriver : ICatalogLeafToCsvDriver<PackageArchiveEntry>, ICsvResultStorage<PackageArchiveEntry>
     {
         private readonly CatalogClient _catalogClient;
         private readonly PackageFileService _packageFileService;
@@ -24,7 +24,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
             _options = options;
         }
 
-        public string ResultsContainerName => _options.Value.PackageArchiveEntryContainerName;
+        public string ResultContainerName => _options.Value.PackageArchiveEntryContainerName;
         public bool SingleMessagePerId => false;
 
         public List<PackageArchiveEntry> Prune(List<PackageArchiveEntry> records)
@@ -40,7 +40,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveEntryToCsv
         public async Task<DriverResult<CsvRecordSet<PackageArchiveEntry>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
         {
             var records = await ProcessLeafInternalAsync(item);
-            return DriverResult.Success(new CsvRecordSet<PackageArchiveEntry>(records, PackageRecord.GetBucketKey(item)));
+            return DriverResult.Success(new CsvRecordSet<PackageArchiveEntry>(PackageRecord.GetBucketKey(item), records));
         }
 
         private async Task<List<PackageArchiveEntry>> ProcessLeafInternalAsync(CatalogLeafItem item)

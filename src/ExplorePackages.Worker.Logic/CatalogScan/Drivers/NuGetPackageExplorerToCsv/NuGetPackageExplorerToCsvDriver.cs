@@ -17,7 +17,7 @@ using NuGetPe;
 
 namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
 {
-    public class NuGetPackageExplorerToCsvDriver : ICatalogLeafToCsvDriver<NuGetPackageExplorerRecord>, ICsvStorage<NuGetPackageExplorerRecord>
+    public class NuGetPackageExplorerToCsvDriver : ICatalogLeafToCsvDriver<NuGetPackageExplorerRecord>, ICsvResultStorage<NuGetPackageExplorerRecord>
     {
         private readonly CatalogClient _catalogClient;
         private readonly FlatContainerClient _flatContainerClient;
@@ -46,7 +46,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
         }
 
         public bool SingleMessagePerId => false;
-        public string ResultsContainerName => _options.Value.NuGetPackageExplorerContainerName;
+        public string ResultContainerName => _options.Value.NuGetPackageExplorerContainerName;
 
         public Task InitializeAsync()
         {
@@ -72,7 +72,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
         public async Task<DriverResult<CsvRecordSet<NuGetPackageExplorerRecord>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
         {
             var records = await ProcessLeafInternalAsync(item, attemptCount);
-            return DriverResult.Success(new CsvRecordSet<NuGetPackageExplorerRecord>(records, PackageRecord.GetBucketKey(item)));
+            return DriverResult.Success(new CsvRecordSet<NuGetPackageExplorerRecord>(PackageRecord.GetBucketKey(item), records));
         }
 
         private async Task<List<NuGetPackageExplorerRecord>> ProcessLeafInternalAsync(CatalogLeafItem item, int attemptCount)

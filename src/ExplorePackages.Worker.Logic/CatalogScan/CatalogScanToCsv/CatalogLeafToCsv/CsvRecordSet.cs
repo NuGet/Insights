@@ -4,21 +4,21 @@ namespace Knapcode.ExplorePackages.Worker
 {
     public class CsvRecordSet<T> where T : ICsvRecord
     {
-        public CsvRecordSet(IReadOnlyList<T> records, string bucketKey)
+        public CsvRecordSet(string bucketKey, IReadOnlyList<T> records)
         {
             Records = records;
             BucketKey = bucketKey;
         }
 
-        public IReadOnlyList<T> Records { get; }
-
         /// <summary>
         /// This bucket key will be hashed and used to select a large CSV blob to append results to.
         /// Typically this is a concatenation of the normalized, lowercase package ID and version. This key should be
         /// consistent per package ID or package ID + version to allow for proper data pruning with
-        /// <see cref="ICsvStorage{T}.Prune(List{T})"/>.
+        /// <see cref="ICsvResultStorage{T}.Prune(List{T})"/>.
         /// </summary>
         /// <returns>The key used for bucketing returned CSV records.</returns>
         public string BucketKey { get; }
+
+        public IReadOnlyList<T> Records { get; }
     }
 }

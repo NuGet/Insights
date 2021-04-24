@@ -14,7 +14,7 @@ using NuGet.RuntimeModel;
 
 namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
 {
-    public class PackageAssetToCsvDriver : ICatalogLeafToCsvDriver<PackageAsset>, ICsvStorage<PackageAsset>
+    public class PackageAssetToCsvDriver : ICatalogLeafToCsvDriver<PackageAsset>, ICsvResultStorage<PackageAsset>
     {
         private readonly CatalogClient _catalogClient;
         private readonly PackageFileService _packageFileService;
@@ -33,7 +33,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
             _logger = logger;
         }
 
-        public string ResultsContainerName => _options.Value.PackageAssetContainerName;
+        public string ResultContainerName => _options.Value.PackageAssetContainerName;
         public bool SingleMessagePerId => false;
 
         public List<PackageAsset> Prune(List<PackageAsset> records)
@@ -49,7 +49,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
         public async Task<DriverResult<CsvRecordSet<PackageAsset>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
         {
             var records = await ProcessLeafInternalAsync(item);
-            return DriverResult.Success(new CsvRecordSet<PackageAsset>(records, PackageRecord.GetBucketKey(item)));
+            return DriverResult.Success(new CsvRecordSet<PackageAsset>(PackageRecord.GetBucketKey(item), records));
         }
 
         private async Task<List<PackageAsset>> ProcessLeafInternalAsync(CatalogLeafItem item)

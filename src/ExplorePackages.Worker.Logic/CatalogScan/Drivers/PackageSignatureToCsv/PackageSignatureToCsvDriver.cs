@@ -9,7 +9,7 @@ using NuGet.Packaging.Signing;
 
 namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
 {
-    public class PackageSignatureToCsvDriver : ICatalogLeafToCsvDriver<PackageSignature>, ICsvStorage<PackageSignature>
+    public class PackageSignatureToCsvDriver : ICatalogLeafToCsvDriver<PackageSignature>, ICsvResultStorage<PackageSignature>
     {
         private readonly CatalogClient _catalogClient;
         private readonly PackageFileService _packageFileService;
@@ -25,7 +25,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
             _options = options;
         }
 
-        public string ResultsContainerName => _options.Value.PackageSignatureContainerName;
+        public string ResultContainerName => _options.Value.PackageSignatureContainerName;
         public bool SingleMessagePerId => false;
 
         public List<PackageSignature> Prune(List<PackageSignature> records)
@@ -41,7 +41,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
         public async Task<DriverResult<CsvRecordSet<PackageSignature>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
         {
             var records = await ProcessLeafInternalAsync(item);
-            return DriverResult.Success(new CsvRecordSet<PackageSignature>(records, PackageRecord.GetBucketKey(item)));
+            return DriverResult.Success(new CsvRecordSet<PackageSignature>(PackageRecord.GetBucketKey(item), records));
         }
 
         private async Task<List<PackageSignature>> ProcessLeafInternalAsync(CatalogLeafItem item)

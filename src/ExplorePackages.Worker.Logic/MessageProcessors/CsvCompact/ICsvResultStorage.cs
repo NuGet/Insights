@@ -3,12 +3,12 @@ using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public interface ICsvStorage<T> where T : ICsvRecord
+    public interface ICsvResultStorage<T> where T : ICsvRecord
     {
         /// <summary>
         /// The Azure Blob Storage container name to write CSV results to.
         /// </summary>
-        string ResultsContainerName { get; }
+        string ResultContainerName { get; }
 
         /// <summary>
         /// Prune the provided records to remove duplicate or old data. Packages are unlisted, relisted, reflowed, or

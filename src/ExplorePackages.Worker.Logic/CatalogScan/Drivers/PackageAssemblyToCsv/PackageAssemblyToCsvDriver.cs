@@ -17,7 +17,7 @@ using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
 {
-    public class PackageAssemblyToCsvDriver : ICatalogLeafToCsvDriver<PackageAssembly>, ICsvStorage<PackageAssembly>
+    public class PackageAssemblyToCsvDriver : ICatalogLeafToCsvDriver<PackageAssembly>, ICsvResultStorage<PackageAssembly>
     {
         private readonly CatalogClient _catalogClient;
         private readonly PackageFileService _packageFileService;
@@ -44,7 +44,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
             _logger = logger;
         }
 
-        public string ResultsContainerName => _options.Value.PackageAssemblyContainerName;
+        public string ResultContainerName => _options.Value.PackageAssemblyContainerName;
         public bool SingleMessagePerId => false;
 
         public List<PackageAssembly> Prune(List<PackageAssembly> records)
@@ -132,7 +132,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
 
         private static DriverResult<CsvRecordSet<PackageAssembly>> MakeResults(ICatalogLeafItem item, List<PackageAssembly> records)
         {
-            return DriverResult.Success(new CsvRecordSet<PackageAssembly>(records, PackageRecord.GetBucketKey(item)));
+            return DriverResult.Success(new CsvRecordSet<PackageAssembly>(PackageRecord.GetBucketKey(item), records));
         }
 
         private static DriverResult<CsvRecordSet<PackageAssembly>> MakeEmptyResults(CatalogLeafItem item)

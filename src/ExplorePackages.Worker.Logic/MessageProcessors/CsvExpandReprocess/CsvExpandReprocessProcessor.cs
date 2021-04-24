@@ -11,14 +11,14 @@ namespace Knapcode.ExplorePackages.Worker
         private readonly AppendResultStorageService _appendResultStorageService;
         private readonly TaskStateStorageService _taskStateStorageService;
         private readonly CatalogScanStorageService _catalogScanStorageService;
-        private readonly ICsvStorage<T> _csvStorage;
+        private readonly ICsvResultStorage<T> _csvStorage;
         private readonly ILogger<CsvExpandReprocessProcessor<T>> _logger;
 
         public CsvExpandReprocessProcessor(
             AppendResultStorageService appendResultStorageService,
             TaskStateStorageService taskStateStorageService,
             CatalogScanStorageService catalogScanStorageService,
-            ICsvStorage<T> csvStorage,
+            ICsvResultStorage<T> csvStorage,
             ILogger<CsvExpandReprocessProcessor<T>> logger)
         {
             _appendResultStorageService = appendResultStorageService;
@@ -44,7 +44,7 @@ namespace Knapcode.ExplorePackages.Worker
                 return;
             }
 
-            var records = await _appendResultStorageService.ReadAsync<T>(_csvStorage.ResultsContainerName, message.Bucket);
+            var records = await _appendResultStorageService.ReadAsync<T>(_csvStorage.ResultContainerName, message.Bucket);
 
             var items = new List<CatalogLeafItem>();
             foreach (var record in records)

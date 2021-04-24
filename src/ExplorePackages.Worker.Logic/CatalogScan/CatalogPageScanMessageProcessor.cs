@@ -38,9 +38,9 @@ namespace Knapcode.ExplorePackages.Worker
                 return;
             }
 
-            var drvier = _driverFactory.Create(scan.DriverType);
+            var driver = _driverFactory.Create(scan.DriverType);
 
-            var result = await drvier.ProcessPageAsync(scan);
+            var result = await driver.ProcessPageAsync(scan);
 
             switch (result)
             {

@@ -2,7 +2,7 @@
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public interface ICatalogLeafToCsvDriver<T> where T : ICsvRecord
+    public interface ICatalogLeafToCsvDriver
     {
         /// <summary>
         /// Whether or not the <see cref="ProcessLeafAsync(CatalogLeafItem, int)"/> should only be called once per
@@ -16,7 +16,10 @@ namespace Knapcode.ExplorePackages.Worker
         /// Initialize storage containers and dependencies prior to processing package data.
         /// </summary>
         Task InitializeAsync();
+    }
 
+    public interface ICatalogLeafToCsvDriver<T> : ICatalogLeafToCsvDriver where T : ICsvRecord
+    {
         /// <summary>
         /// Process each catalog leaf item and return CSV rows to accumulate in Azure Blob storage.
         /// </summary>
@@ -24,5 +27,18 @@ namespace Knapcode.ExplorePackages.Worker
         /// <param name="attemptCount">The current attempt count for this catalog leaf item.</param>
         /// <returns>The result, either try again later or a list of records that will be written to CSV.</returns>
         Task<DriverResult<CsvRecordSet<T>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount);
+    }
+
+    public interface ICatalogLeafToCsvDriver<T1, T2> : ICatalogLeafToCsvDriver
+        where T1 : ICsvRecord
+        where T2 : ICsvRecord
+    {
+        /// <summary>
+        /// Process each catalog leaf item and return CSV rows to accumulate in Azure Blob storage.
+        /// </summary>
+        /// <param name="item">The catalog leaf item to process.</param>
+        /// <param name="attemptCount">The current attempt count for this catalog leaf item.</param>
+        /// <returns>The result, either try again later or a list of records that will be written to CSV.</returns>
+        Task<DriverResult<(CsvRecordSet<T1>, CsvRecordSet<T2>)>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount);
     }
 }

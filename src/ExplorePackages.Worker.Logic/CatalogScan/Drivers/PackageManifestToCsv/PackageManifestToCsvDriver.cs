@@ -12,7 +12,7 @@ using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
 {
-    public class PackageManifestToCsvDriver : ICatalogLeafToCsvDriver<PackageManifestRecord>, ICsvStorage<PackageManifestRecord>
+    public class PackageManifestToCsvDriver : ICatalogLeafToCsvDriver<PackageManifestRecord>, ICsvResultStorage<PackageManifestRecord>
     {
         private readonly CatalogClient _catalogClient;
         private readonly PackageManifestService _packageManifestService;
@@ -28,7 +28,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             _options = options;
         }
 
-        public string ResultsContainerName => _options.Value.PackageManifestContainerName;
+        public string ResultContainerName => _options.Value.PackageManifestContainerName;
         public bool SingleMessagePerId => false;
 
         public List<PackageManifestRecord> Prune(List<PackageManifestRecord> records)
@@ -43,7 +43,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
         public async Task<DriverResult<CsvRecordSet<PackageManifestRecord>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
         {
             var records = await ProcessLeafInternalAsync(item);
-            return DriverResult.Success(new CsvRecordSet<PackageManifestRecord>(records, PackageRecord.GetBucketKey(item)));
+            return DriverResult.Success(new CsvRecordSet<PackageManifestRecord>(PackageRecord.GetBucketKey(item), records));
         }
 
         private async Task<List<PackageManifestRecord>> ProcessLeafInternalAsync(CatalogLeafItem item)

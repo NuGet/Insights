@@ -8,7 +8,7 @@ using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
 {
-    public class PackageVersionToCsvDriver : ICatalogLeafToCsvDriver<PackageVersionRecord>, ICsvStorage<PackageVersionRecord>
+    public class PackageVersionToCsvDriver : ICatalogLeafToCsvDriver<PackageVersionRecord>, ICsvResultStorage<PackageVersionRecord>
     {
         private readonly PackageVersionStorageService _storageService;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
@@ -21,7 +21,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
             _options = options;
         }
 
-        public string ResultsContainerName => _options.Value.PackageVersionContainerName;
+        public string ResultContainerName => _options.Value.PackageVersionContainerName;
         public bool SingleMessagePerId => true;
 
         public List<PackageVersionRecord> Prune(List<PackageVersionRecord> records)
@@ -37,7 +37,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
         public async Task<DriverResult<CsvRecordSet<PackageVersionRecord>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
         {
             var records = await ProcessLeafInternalAsync(item);
-            return DriverResult.Success(new CsvRecordSet<PackageVersionRecord>(records, bucketKey: item.PackageId.ToLowerInvariant()));
+            return DriverResult.Success(new CsvRecordSet<PackageVersionRecord>(bucketKey: item.PackageId.ToLowerInvariant(), records: records));
         }
 
         private async Task<List<PackageVersionRecord>> ProcessLeafInternalAsync(CatalogLeafItem item)
