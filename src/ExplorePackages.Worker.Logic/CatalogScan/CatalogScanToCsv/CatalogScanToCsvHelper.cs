@@ -6,20 +6,20 @@ using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class CatalogScanToCsvAdapter<T> where T : ICsvRecord
+    public class CatalogScanToCsvHelper<T> where T : ICsvRecord
     {
         private readonly AppendResultStorageService _storageService;
         private readonly TaskStateStorageService _taskStateStorageService;
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
-        private readonly ILogger<CatalogScanToCsvAdapter<T>> _logger;
+        private readonly ILogger<CatalogScanToCsvHelper<T>> _logger;
 
-        public CatalogScanToCsvAdapter(
+        public CatalogScanToCsvHelper(
             AppendResultStorageService storageService,
             TaskStateStorageService taskStateStorageService,
             IMessageEnqueuer messageEnqueuer,
             IOptions<ExplorePackagesWorkerSettings> options,
-            ILogger<CatalogScanToCsvAdapter<T>> logger)
+            ILogger<CatalogScanToCsvHelper<T>> logger)
         {
             _storageService = storageService;
             _taskStateStorageService = taskStateStorageService;
@@ -110,12 +110,12 @@ namespace Knapcode.ExplorePackages.Worker
 
         private static string GetCustomExpandPartitionKey(CatalogIndexScan indexScan)
         {
-            return $"{indexScan.GetScanId()}-{nameof(CatalogScanToCsvAdapter<T>)}-custom-expand";
+            return $"{indexScan.GetScanId()}-{nameof(CatalogScanToCsvHelper<T>)}-custom-expand";
         }
 
         private static string GetAggregateTasksPartitionKey(CatalogIndexScan indexScan)
         {
-            return $"{indexScan.GetScanId()}-{nameof(CatalogScanToCsvAdapter<T>)}-aggregate";
+            return $"{indexScan.GetScanId()}-{nameof(CatalogScanToCsvHelper<T>)}-aggregate";
         }
 
         public async Task FinalizeAsync(CatalogIndexScan indexScan)

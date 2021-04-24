@@ -8,20 +8,20 @@ namespace Knapcode.ExplorePackages.Worker
     public class CatalogLeafScanToCsvAdapter<T> : ICatalogLeafScanNonBatchDriver where T : class, ICsvRecord
     {
         private readonly SchemaSerializer _schemaSerializer;
-        private readonly CatalogScanToCsvAdapter<T> _adapter;
+        private readonly CatalogScanToCsvHelper<T> _helper;
         private readonly ICsvStorage<T> _storage;
         private readonly ICatalogLeafToCsvDriver<T> _driver;
         private readonly IOptionsSnapshot<ExplorePackagesWorkerSettings> _options;
 
         public CatalogLeafScanToCsvAdapter(
             SchemaSerializer schemaSerializer,
-            CatalogScanToCsvAdapter<T> adapter,
+            CatalogScanToCsvHelper<T> helper,
             ICsvStorage<T> storage,
             ICatalogLeafToCsvDriver<T> driver,
             IOptionsSnapshot<ExplorePackagesWorkerSettings> options)
         {
             _schemaSerializer = schemaSerializer;
-            _adapter = adapter;
+            _helper = helper;
             _storage = storage;
             _driver = driver;
             _options = options;
@@ -29,7 +29,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task InitializeAsync(CatalogIndexScan indexScan)
         {
-            await _adapter.InitializeAsync(indexScan, _storage.ResultsContainerName);
+            await _helper.InitializeAsync(indexScan, _storage.ResultsContainerName);
             await _driver.InitializeAsync();
         }
 
@@ -58,12 +58,12 @@ namespace Knapcode.ExplorePackages.Worker
 
         public Task StartCustomExpandAsync(CatalogIndexScan indexScan)
         {
-            return _adapter.StartCustomExpandAsync(indexScan, _storage.ResultsContainerName);
+            return _helper.StartCustomExpandAsync(indexScan, _storage.ResultsContainerName);
         }
 
         public Task<bool> IsCustomExpandCompleteAsync(CatalogIndexScan indexScan)
         {
-            return _adapter.IsCustomExpandCompleteAsync(indexScan);
+            return _helper.IsCustomExpandCompleteAsync(indexScan);
         }
 
         public Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan)
@@ -85,7 +85,7 @@ namespace Knapcode.ExplorePackages.Worker
                 return result;
             }
 
-            await _adapter.AppendAsync(
+            await _helper.AppendAsync(
                 leafScan.StorageSuffix,
                 _options.Value.AppendResultStorageBucketCount,
                 result.Value.BucketKey,
@@ -95,17 +95,17 @@ namespace Knapcode.ExplorePackages.Worker
 
         public Task StartAggregateAsync(CatalogIndexScan indexScan)
         {
-            return _adapter.StartAggregateAsync(indexScan);
+            return _helper.StartAggregateAsync(indexScan);
         }
 
         public Task<bool> IsAggregateCompleteAsync(CatalogIndexScan indexScan)
         {
-            return _adapter.IsAggregateCompleteAsync(indexScan);
+            return _helper.IsAggregateCompleteAsync(indexScan);
         }
 
         public Task FinalizeAsync(CatalogIndexScan indexScan)
         {
-            return _adapter.FinalizeAsync(indexScan);
+            return _helper.FinalizeAsync(indexScan);
         }
     }
 }

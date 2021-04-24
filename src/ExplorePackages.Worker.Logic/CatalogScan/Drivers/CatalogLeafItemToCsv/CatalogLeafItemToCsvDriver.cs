@@ -8,16 +8,16 @@ namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
 {
     public class CatalogLeafItemToCsvDriver : ICatalogLeafScanNonBatchDriver, ICsvStorage<CatalogLeafItemRecord>
     {
-        private readonly CatalogScanToCsvAdapter<CatalogLeafItemRecord> _adapter;
+        private readonly CatalogScanToCsvHelper<CatalogLeafItemRecord> _helper;
         private readonly CatalogClient _catalogClient;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
         public CatalogLeafItemToCsvDriver(
-            CatalogScanToCsvAdapter<CatalogLeafItemRecord> adapter,
+            CatalogScanToCsvHelper<CatalogLeafItemRecord> helper,
             CatalogClient catalogClient,
             IOptions<ExplorePackagesWorkerSettings> options)
         {
-            _adapter = adapter;
+            _helper = helper;
             _catalogClient = catalogClient;
             _options = options;
         }
@@ -35,7 +35,7 @@ namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
 
         public async Task InitializeAsync(CatalogIndexScan indexScan)
         {
-            await _adapter.InitializeAsync(indexScan, ResultsContainerName);
+            await _helper.InitializeAsync(indexScan, ResultsContainerName);
         }
 
         public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
@@ -62,7 +62,7 @@ namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
                     PageUrl = pageScan.Url,
                 })
                 .ToList();
-            await _adapter.AppendAsync(
+            await _helper.AppendAsync(
                 pageScan.StorageSuffix,
                 _options.Value.AppendResultStorageBucketCount,
                 pageScan.Url,
@@ -78,17 +78,17 @@ namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
 
         public Task StartAggregateAsync(CatalogIndexScan indexScan)
         {
-            return _adapter.StartAggregateAsync(indexScan);
+            return _helper.StartAggregateAsync(indexScan);
         }
 
         public Task<bool> IsAggregateCompleteAsync(CatalogIndexScan indexScan)
         {
-            return _adapter.IsAggregateCompleteAsync(indexScan);
+            return _helper.IsAggregateCompleteAsync(indexScan);
         }
 
         public Task FinalizeAsync(CatalogIndexScan indexScan)
         {
-            return _adapter.FinalizeAsync(indexScan);
+            return _helper.FinalizeAsync(indexScan);
         }
 
         public Task StartCustomExpandAsync(CatalogIndexScan indexScan)
