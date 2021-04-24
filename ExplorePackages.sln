@@ -36,6 +36,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExplorePackages.Worker.Test
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExplorePackages.SourceGenerator", "src\ExplorePackages.SourceGenerator\ExplorePackages.SourceGenerator.csproj", "{795B84C6-A9E2-48AE-8C15-59B54428754E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{C6AE6C04-45A3-4668-BFD2-84B91F5DA172}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{5645020A-E78C-43B7-AE00-A68336AB66FF}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\build.yml = .github\workflows\build.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -92,6 +99,8 @@ Global
 		{56C63587-ECF4-4A2F-9D5D-F5777CB8CD48} = {CE6F8939-81A2-4BD4-9D9F-C1BF37DB1589}
 		{7888E46B-15B3-4B78-92C6-14BC4E2C3705} = {CE6F8939-81A2-4BD4-9D9F-C1BF37DB1589}
 		{795B84C6-A9E2-48AE-8C15-59B54428754E} = {E875EFB7-FE35-4EF2-AC37-C81E696F4DEA}
+		{C6AE6C04-45A3-4668-BFD2-84B91F5DA172} = {93B8287B-A15F-4801-8884-D3DB923DB2A8}
+		{5645020A-E78C-43B7-AE00-A68336AB66FF} = {C6AE6C04-45A3-4668-BFD2-84B91F5DA172}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9D014703-53BC-4276-AAFF-F773AA86D208}
