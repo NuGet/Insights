@@ -50,6 +50,7 @@ namespace Knapcode.ExplorePackages.Worker
             CatalogLeafItemContainerName = "catalogleafitems";
             PackageDownloadsContainerName = "packagedownloads";
             PackageOwnersContainerName = "packageowners";
+            PackageArchiveContainerName = "packagearchives";
             PackageArchiveEntryContainerName = "packagearchiveentries";
             PackageVersionTableName = "packageversions";
             PackageVersionContainerName = "packageversions";
@@ -100,6 +101,7 @@ namespace Knapcode.ExplorePackages.Worker
         public string CatalogLeafItemContainerName { get; set; }
         public string PackageDownloadsContainerName { get; set; }
         public string PackageOwnersContainerName { get; set; }
+        public string PackageArchiveContainerName { get; set; }
         public string PackageArchiveEntryContainerName { get; set; }
         public string PackageVersionTableName { get; set; }
         public string PackageVersionContainerName { get; set; }

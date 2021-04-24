@@ -80,8 +80,8 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
 
         public async Task<DriverResult<CsvRecordSets<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
         {
-            var bucketKey = PackageRecord.GetBucketKey(item);
             (var record, var files) = await ProcessLeafInternalAsync(item, attemptCount);
+            var bucketKey = PackageRecord.GetBucketKey(item);
             return DriverResult.Success(new CsvRecordSets<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>(
                 new CsvRecordSet<NuGetPackageExplorerRecord>(bucketKey, record != null ? new[] { record } : Array.Empty<NuGetPackageExplorerRecord>()),
                 new CsvRecordSet<NuGetPackageExplorerFile>(bucketKey, (IReadOnlyList<NuGetPackageExplorerFile>)files ?? Array.Empty<NuGetPackageExplorerFile>())));

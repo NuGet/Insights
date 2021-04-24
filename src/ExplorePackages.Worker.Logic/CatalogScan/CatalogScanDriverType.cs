@@ -56,10 +56,10 @@
         CatalogLeafItemToCsv,
 
         /// <summary>
-        /// Implemented by <see cref="PackageArchiveEntryToCsv.PackageArchiveEntryToCsvDriver"/>.
+        /// Implemented by <see cref="PackageArchiveToCsv.PackageArchiveToCsvDriver"/>.
         /// Extracts metadata about each entry in a package's ZIP archive.
         /// </summary>
-        PackageArchiveEntryToCsv,
+        PackageArchiveToCsv,
 
         /// <summary>
         /// Implemented by <see cref="PackageAssemblyToCsv.PackageAssemblyToCsvDriver"/>. For packages that contain

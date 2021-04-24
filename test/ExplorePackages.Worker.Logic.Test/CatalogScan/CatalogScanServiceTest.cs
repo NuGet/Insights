@@ -348,7 +348,7 @@ namespace Knapcode.ExplorePackages.Worker
             },
 
             {
-                CatalogScanDriverType.PackageArchiveEntryToCsv,
+                CatalogScanDriverType.PackageArchiveToCsv,
                 new DriverInfo
                 {
                     DefaultMin = CatalogClient.NuGetOrgMinDeleted,

@@ -63,16 +63,22 @@ namespace Knapcode.ExplorePackages
 
         public async Task<ZipDirectory> GetZipDirectoryAsync(CatalogLeafItem leafItem)
         {
+            (var zipDirectory, _) = await GetZipDirectoryAndSizeAsync(leafItem);
+            return zipDirectory;
+        }
+
+        public async Task<(ZipDirectory directory, long size)> GetZipDirectoryAndSizeAsync(CatalogLeafItem leafItem)
+        {
             var info = await GetOrUpdateInfoAsync(leafItem);
             if (!info.Available)
             {
-                return null;
+                return (null, 0);
             }
 
             using var srcStream = info.MZipBytes.AsStream();
             using var destStream = await _mzipFormat.ReadAsync(srcStream);
             var reader = new ZipDirectoryReader(destStream);
-            return await reader.ReadAsync();
+            return (await reader.ReadAsync(), destStream.Length);
         }
 
         public async Task<IReadOnlyDictionary<CatalogLeafItem, PackageFileInfoV1>> UpdateBatchAsync(string id, IReadOnlyCollection<CatalogLeafItem> leafItems)

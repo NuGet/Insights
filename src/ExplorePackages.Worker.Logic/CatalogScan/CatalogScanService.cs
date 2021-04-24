@@ -117,7 +117,7 @@ namespace Knapcode.ExplorePackages.Worker
                 case CatalogScanDriverType.LoadLatestPackageLeaf:
                     return true;
 
-                case CatalogScanDriverType.PackageArchiveEntryToCsv:
+                case CatalogScanDriverType.PackageArchiveToCsv:
                 case CatalogScanDriverType.PackageAssemblyToCsv:
                 case CatalogScanDriverType.PackageAssetToCsv:
                 case CatalogScanDriverType.PackageSignatureToCsv:
@@ -212,7 +212,7 @@ namespace Knapcode.ExplorePackages.Worker
                         max,
                         continueWithDependents);
 
-                case CatalogScanDriverType.PackageArchiveEntryToCsv:
+                case CatalogScanDriverType.PackageArchiveToCsv:
                 case CatalogScanDriverType.PackageAssemblyToCsv:
                 case CatalogScanDriverType.PackageAssetToCsv:
                 case CatalogScanDriverType.PackageSignatureToCsv:
