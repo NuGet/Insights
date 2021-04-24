@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
 {
-    public class NuGetPackageExplorerToCsvIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest<NuGetPackageExplorerRecord>
+    public class NuGetPackageExplorerToCsvIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>
     {
         private const string NuGetPackageExplorerToCsvDir = nameof(NuGetPackageExplorerToCsv);
         private const string NuGetPackageExplorerToCsv_WithDeleteDir = nameof(NuGetPackageExplorerToCsv_WithDelete);
@@ -35,7 +35,8 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                 await UpdateAsync(max1);
 
                 // Assert
-                await AssertBlobCountAsync(DestinationContainerName, 2); // bucket 0 does not exist
+                await AssertBlobCountAsync(DestinationContainerName1, 2); // bucket 0 does not exist
+                await AssertBlobCountAsync(DestinationContainerName2, 2); // bucket 0 does not exist
                 await AssertOutputAsync(NuGetPackageExplorerToCsvDir, Step1, 1);
                 await AssertOutputAsync(NuGetPackageExplorerToCsvDir, Step1, 2);
 
@@ -102,7 +103,8 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
         {
         }
 
-        protected override string DestinationContainerName => Options.Value.NuGetPackageExplorerContainerName;
+        protected override string DestinationContainerName1 => Options.Value.NuGetPackageExplorerContainerName;
+        protected override string DestinationContainerName2 => Options.Value.NuGetPackageExplorerFileContainerName;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.NuGetPackageExplorerToCsv;
         public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType };
         public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();

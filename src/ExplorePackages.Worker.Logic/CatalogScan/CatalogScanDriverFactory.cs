@@ -85,7 +85,7 @@ namespace Knapcode.ExplorePackages.Worker
                 case CatalogScanDriverType.PackageVersionToCsv:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<PackageVersionRecord>>();
                 case CatalogScanDriverType.NuGetPackageExplorerToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<NuGetPackageExplorerRecord>>();
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>>();
                 default:
                     throw new NotSupportedException($"Catalog scan driver type '{driverType}' is not supported.");
             }

@@ -130,6 +130,11 @@ namespace Knapcode.ExplorePackages.Worker
                 serviceCollection.AddTransient(
                     typeof(IMessageProcessor<>).MakeGenericType(typeof(CsvCompactMessage<>).MakeGenericType(recordType)),
                     typeof(CsvCompactorProcessor<>).MakeGenericType(recordType));
+
+                // Add custom expand processor
+                serviceCollection.AddTransient(
+                    typeof(IMessageProcessor<>).MakeGenericType(typeof(CsvExpandReprocessMessage<>).MakeGenericType(recordType)),
+                    typeof(CsvExpandReprocessProcessor<>).MakeGenericType(recordType));
             }
 
             foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ICatalogLeafToCsvDriver<>)))
@@ -138,14 +143,16 @@ namespace Knapcode.ExplorePackages.Worker
                 serviceCollection.AddTransient(serviceType, implementationType);
 
                 // Add the catalog scan adapter
-                var recordType = serviceType.GenericTypeArguments.Single();
-                serviceCollection.AddTransient(
-                    typeof(CatalogLeafScanToCsvAdapter<>).MakeGenericType(recordType));
+                serviceCollection.AddTransient(typeof(CatalogLeafScanToCsvAdapter<>).MakeGenericType(serviceType.GenericTypeArguments));
+            }
 
-                // Add custom expand processor
-                serviceCollection.AddTransient(
-                    typeof(IMessageProcessor<>).MakeGenericType(typeof(CsvExpandReprocessMessage<>).MakeGenericType(recordType)),
-                    typeof(CsvExpandReprocessProcessor<>).MakeGenericType(recordType));
+            foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ICatalogLeafToCsvDriver<,>)))
+            {
+                // Add the driver
+                serviceCollection.AddTransient(serviceType, implementationType);
+
+                // Add the catalog scan adapter
+                serviceCollection.AddTransient(typeof(CatalogLeafScanToCsvAdapter<,>).MakeGenericType(serviceType.GenericTypeArguments));
             }
 
             return serviceCollection;

@@ -54,6 +54,7 @@ namespace Knapcode.ExplorePackages.Worker
             PackageVersionTableName = "packageversions";
             PackageVersionContainerName = "packageversions";
             NuGetPackageExplorerContainerName = "nugetpackageexplorer";
+            NuGetPackageExplorerFileContainerName = "nugetpackageexplorerfiles";
         }
 
         public bool UseBulkEnqueueStrategy { get; set; }
@@ -103,5 +104,6 @@ namespace Knapcode.ExplorePackages.Worker
         public string PackageVersionTableName { get; set; }
         public string PackageVersionContainerName { get; set; }
         public string NuGetPackageExplorerContainerName { get; set; }
+        public string NuGetPackageExplorerFileContainerName { get; set; }
     }
 }

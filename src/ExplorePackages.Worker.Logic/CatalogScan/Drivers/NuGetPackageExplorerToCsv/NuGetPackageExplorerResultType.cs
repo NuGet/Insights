@@ -4,7 +4,6 @@
     {
         Deleted,
         Available,
-        NoFiles,
         Timeout,
         Failed,
         InvalidMetadata,

@@ -28,19 +28,6 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
         public DeterministicResult DeterministicResult { get; set; }
         public HasCompilerFlagsResult CompilerFlagsResult { get; set; }
         public bool IsSignedByAuthor { get; set; }
-
-        public string Name { get; set; }
-        public string Extension { get; set; }
-        public string TargetFramework { get; set; }
-        public string TargetFrameworkIdentifier { get; set; }
-        public string TargetFrameworkVersion { get; set; }
-
-        [KustoType("dynamic")]
-        public string CompilerFlags { get; set; }
-
-        public bool? HasCompilerFlags { get; set; }
-        public bool? HasSourceLink { get; set; }
-        public bool? HasDebugInfo { get; set; }
     }
 }
 

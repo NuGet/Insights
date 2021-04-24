@@ -17,7 +17,10 @@ using NuGetPe;
 
 namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
 {
-    public class NuGetPackageExplorerToCsvDriver : ICatalogLeafToCsvDriver<NuGetPackageExplorerRecord>, ICsvResultStorage<NuGetPackageExplorerRecord>
+    public class NuGetPackageExplorerToCsvDriver :
+        ICatalogLeafToCsvDriver<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>,
+        ICsvResultStorage<NuGetPackageExplorerRecord>,
+        ICsvResultStorage<NuGetPackageExplorerFile>
     {
         private readonly CatalogClient _catalogClient;
         private readonly FlatContainerClient _flatContainerClient;
@@ -46,7 +49,8 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
         }
 
         public bool SingleMessagePerId => false;
-        public string ResultContainerName => _options.Value.NuGetPackageExplorerContainerName;
+        string ICsvResultStorage<NuGetPackageExplorerRecord>.ResultContainerName => _options.Value.NuGetPackageExplorerContainerName;
+        string ICsvResultStorage<NuGetPackageExplorerFile>.ResultContainerName => _options.Value.NuGetPackageExplorerFileContainerName;
 
         public Task InitializeAsync()
         {
@@ -69,13 +73,21 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             return leaf.ToLeafItem();
         }
 
-        public async Task<DriverResult<CsvRecordSet<NuGetPackageExplorerRecord>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
+        public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(NuGetPackageExplorerFile record)
         {
-            var records = await ProcessLeafInternalAsync(item, attemptCount);
-            return DriverResult.Success(new CsvRecordSet<NuGetPackageExplorerRecord>(PackageRecord.GetBucketKey(item), records));
+            return null;
         }
 
-        private async Task<List<NuGetPackageExplorerRecord>> ProcessLeafInternalAsync(CatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSets<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
+        {
+            var bucketKey = PackageRecord.GetBucketKey(item);
+            (var record, var files) = await ProcessLeafInternalAsync(item, attemptCount);
+            return DriverResult.Success(new CsvRecordSets<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>(
+                new CsvRecordSet<NuGetPackageExplorerRecord>(bucketKey, record != null ? new[] { record } : Array.Empty<NuGetPackageExplorerRecord>()),
+                new CsvRecordSet<NuGetPackageExplorerFile>(bucketKey, (IReadOnlyList<NuGetPackageExplorerFile>)files ?? Array.Empty<NuGetPackageExplorerFile>())));
+        }
+
+        private async Task<(NuGetPackageExplorerRecord, List<NuGetPackageExplorerFile>)> ProcessLeafInternalAsync(CatalogLeafItem item, int attemptCount)
         {
             Guid? scanId = null;
             DateTimeOffset? scanTimestamp = null;
@@ -88,7 +100,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             if (item.Type == CatalogLeafType.PackageDelete)
             {
                 var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
-                return new List<NuGetPackageExplorerRecord> { new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf) };
+                return (new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf), null);
             }
             else
             {
@@ -101,13 +113,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                 if (attemptCount > 4)
                 {
                     _logger.LogWarning("Package {Id} {Version} failed due to too many attempts.", leaf.PackageId, leaf.PackageVersion);
-                    return new List<NuGetPackageExplorerRecord>
-                    {
-                        new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf)
-                        {
-                            ResultType = NuGetPackageExplorerResultType.Failed,
-                        }
-                    };
+                    return (new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf) { ResultType = NuGetPackageExplorerResultType.Failed }, null);
                 }
 
                 var tempDir = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "npe"));
@@ -167,7 +173,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                     if (!exists)
                     {
                         // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted record.
-                        return new List<NuGetPackageExplorerRecord>();
+                        return (null, null);
                     }
 
                     _logger.LogInformation(
@@ -193,13 +199,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                                             || (ex.Message.Contains("Assembly reference ") && ex.Message.Contains(" contains invalid characters.")))
                     {
                         _logger.LogWarning(ex, "Package {Id} {Version} had invalid metadata.", leaf.PackageId, leaf.PackageVersion);
-                        return new List<NuGetPackageExplorerRecord>
-                        {
-                            new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf)
-                            {
-                                ResultType = NuGetPackageExplorerResultType.InvalidMetadata,
-                            }
-                        };
+                        return (new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf) { ResultType = NuGetPackageExplorerResultType.InvalidMetadata }, null);
                     }
 
                     using (zipPackage)
@@ -225,13 +225,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                                 if (attemptCount > 3)
                                 {
                                     _logger.LogWarning("Package {Id} {Version} had its symbol validation timeout.", leaf.PackageId, leaf.PackageVersion);
-                                    return new List<NuGetPackageExplorerRecord>
-                                    {
-                                        new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf)
-                                        {
-                                            ResultType = NuGetPackageExplorerResultType.Timeout,
-                                        }
-                                    };
+                                    return (new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf) { ResultType = NuGetPackageExplorerResultType.Timeout }, null);
                                 }
                                 else
                                 {
@@ -254,7 +248,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                         await zipPackage.LoadSignatureDataAsync();
 
                         using var fileStream = zipPackage.GetStream();
-                        var baseRecord = new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf)
+                        var record = new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf)
                         {
                             PackageSize = fileStream.Length,
                             SourceLinkResult = symbolValidatorResult.SourceLinkResult,
@@ -263,7 +257,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                             IsSignedByAuthor = zipPackage.PublisherSignature != null,
                         };
 
-                        var output = new List<NuGetPackageExplorerRecord>();
+                        var files = new List<NuGetPackageExplorerFile>();
 
                         try
                         {
@@ -277,7 +271,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                             {
                                 var compilerFlags = file.DebugData?.CompilerFlags.ToDictionary(k => k.Key, v => v.Value);
 
-                                output.Add(baseRecord with
+                                files.Add(new NuGetPackageExplorerFile(scanId, scanTimestamp, leaf)
                                 {
                                     Name = file.Name,
                                     Extension = file.Extension,
@@ -294,24 +288,10 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                         catch (FileNotFoundException ex)
                         {
                             _logger.LogWarning(ex, "Could not get symbol validator files for {Id} {Version}.", leaf.PackageId, leaf.PackageVersion);
-                            return new List<NuGetPackageExplorerRecord>
-                            {
-                                new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf)
-                                {
-                                    ResultType = NuGetPackageExplorerResultType.InvalidMetadata,
-                                }
-                            };
+                            return (new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf) { ResultType = NuGetPackageExplorerResultType.InvalidMetadata }, null);
                         }
 
-                        if (!output.Any())
-                        {
-                            output.Add(baseRecord with
-                            {
-                                ResultType = NuGetPackageExplorerResultType.NoFiles,
-                            });
-                        }
-
-                        return output;
+                        return (record, files);
                     }
                 }
                 finally
@@ -334,6 +314,11 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
         }
 
         public List<NuGetPackageExplorerRecord> Prune(List<NuGetPackageExplorerRecord> records)
+        {
+            return PackageRecord.Prune(records);
+        }
+
+        public List<NuGetPackageExplorerFile> Prune(List<NuGetPackageExplorerFile> records)
         {
             return PackageRecord.Prune(records);
         }

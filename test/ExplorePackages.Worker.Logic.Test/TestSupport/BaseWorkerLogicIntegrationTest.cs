@@ -72,6 +72,7 @@ namespace Knapcode.ExplorePackages.Worker
             x.PackageOwnersContainerName = $"{StoragePrefix}1po1";
             x.PackageArchiveEntryContainerName = $"{StoragePrefix}1pae2c1";
             x.NuGetPackageExplorerContainerName = $"{StoragePrefix}1npe2c1";
+            x.NuGetPackageExplorerFileContainerName = $"{StoragePrefix}1npef2c1";
 
             ConfigureDefaultsAndSettings(x);
 
