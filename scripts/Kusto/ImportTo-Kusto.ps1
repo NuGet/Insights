@@ -16,7 +16,7 @@ param (
     [string]$ModelsPath,
 
     [Parameter(Mandatory = $false)]
-    [ValidateSet("JverCatalogLeafItems", "JverPackageArchiveEntries", "JverPackageAssemblies", "JverPackageAssets", "JverPackageDownloads", "JverPackageManifests", "JverPackageOwners", "JverPackageSignatures", "JverPackageVersions", "JverNuGetPackageExplorers")]
+    [ValidateSet("JverCatalogLeafItems", "JverPackageArchives", "JverPackageArchiveEntries", "JverPackageAssemblies", "JverPackageAssets", "JverPackageDownloads", "JverPackageManifests", "JverPackageOwners", "JverPackageSignatures", "JverPackageVersions", "JverNuGetPackageExplorers")]
     [string]$TableName,
 
     [Parameter(Mandatory = $false)]
@@ -34,6 +34,7 @@ $ErrorActionPreference = "Stop"
 $tableNameToContainerName = @{
     "JverCatalogLeafItems" = "catalogleafitems";
     "JverPackageAssemblies" = "packageassemblies";
+    "JverPackageArchives" = "packagearchives";
     "JverPackageArchiveEntries" = "packagearchiveentries";
     "JverPackageAssets" = "packageassets";
     "JverPackageDownloads" = "packagedownloads";
@@ -42,6 +43,7 @@ $tableNameToContainerName = @{
     "JverPackageSignatures" = "packagesignatures";
     "JverPackageVersions" = "packageversions";
     "JverNuGetPackageExplorers" = "nugetpackageexplorer";
+    "JverNuGetPackageExplorerFiles" = "nugetpackageexplorerfiles";
 }
 
 if ($TableName -and !$tableNameToContainerName[$TableName]) {

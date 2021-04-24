@@ -1,7 +1,7 @@
 // Catalog-based tables should all have the same count
 JverCatalogLeafItems | distinct Identity | extend Table = "JverCatalogLeafItems"
 | union (JverNuGetPackageExplorers | distinct Identity | extend Table = "JverNuGetPackageExplorers")
-| union (JverPackageArchiveEntries | distinct Identity | extend Table = "JverPackageArchiveEntries")
+| union (JverPackageArchives | distinct Identity | extend Table = "JverPackageArchives")
 | union (JverPackageAssemblies | distinct Identity | extend Table = "JverPackageAssemblies")
 | union (JverPackageAssets | distinct Identity | extend Table = "JverPackageAssets")
 | union (JverPackageManifests | distinct Identity | extend Table = "JverPackageManifests")
@@ -9,6 +9,18 @@ JverCatalogLeafItems | distinct Identity | extend Table = "JverCatalogLeafItems"
 | union (JverPackageVersions | distinct Identity | extend Table = "JverPackageVersions")
 | summarize dcount(Identity) by Table
 
+// All child records should matching parent records
+JverNuGetPackageExplorers
+| distinct Identity
+| join kind=fullouter (JverNuGetPackageExplorerFiles | distinct Identity) on Identity
+| where isempty(Identity)
+
+JverPackageArchives
+| distinct Identity
+| join kind=fullouter (JverPackageArchiveEntries | distinct Identity) on Identity
+| where isempty(Identity)
+
+// Non-catalog tables should not have IDs or versions not present in the catalog
 JverCatalogLeafItems
 | distinct Identity
 | join kind=fullouter (JverPackageDownloads | distinct Identity) on Identity
