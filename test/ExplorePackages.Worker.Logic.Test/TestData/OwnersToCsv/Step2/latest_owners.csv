@@ -1,4 +1,4 @@
 AsOfTimestamp,LowerId,Id,Owners
-2021-01-15T19:00:00.0000000+00:00,microsoft.extensions.logging,Microsoft.Extensions.Logging,"[""dotnetframework"",""Microsoft""]"
-2021-01-15T19:00:00.0000000+00:00,knapcode.torsharp,Knapcode.TorSharp,"[""joelverhagen""]"
-2021-01-15T19:00:00.0000000+00:00,knapcode.kitchensink,Knapcode.KitchenSink,"[""joelverhagen"",""nuget""]"
+2021-01-15T19:00:00Z,microsoft.extensions.logging,Microsoft.Extensions.Logging,"[""dotnetframework"",""Microsoft""]"
+2021-01-15T19:00:00Z,knapcode.torsharp,Knapcode.TorSharp,"[""joelverhagen""]"
+2021-01-15T19:00:00Z,knapcode.kitchensink,Knapcode.KitchenSink,"[""joelverhagen"",""nuget""]"

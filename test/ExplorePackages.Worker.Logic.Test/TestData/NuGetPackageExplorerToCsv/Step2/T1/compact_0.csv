@@ -1,2 +1,2 @@
 ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,PackageSize,SourceLinkResult,DeterministicResult,CompilerFlagsResult,IsSignedByAuthor
-,,osversionhelper,osversionhelper/1.1.24,OSVersionHelper,1.1.24,2020-11-10T23:39:05.5717605+00:00,2020-11-10T23:36:58.3800000+00:00,Available,81130,Valid,Valid,Present,true
+,,osversionhelper,osversionhelper/1.1.24,OSVersionHelper,1.1.24,2020-11-10T23:39:05.5717605Z,2020-11-10T23:36:58.38Z,Available,81130,Valid,Valid,Present,true

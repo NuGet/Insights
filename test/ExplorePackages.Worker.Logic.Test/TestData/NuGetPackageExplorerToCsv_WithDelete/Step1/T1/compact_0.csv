@@ -1,4 +1,4 @@
 ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,PackageSize,SourceLinkResult,DeterministicResult,CompilerFlagsResult,IsSignedByAuthor
-,,amazonks3,amazonks3/1.5.0,AmazonKS3,1.5.0,2020-12-20T02:39:20.5757299+00:00,2020-12-20T02:37:10.2100000+00:00,Available,17489,NoSymbols,NonDeterministic,Missing,false
-,,lunabot.commands.public,lunabot.commands.public/1.2.0,LunaBot.Commands.Public,1.2.0,2020-12-20T03:01:57.2082154+00:00,2020-12-20T03:00:07.1470000+00:00,Available,72134,NoSymbols,NonDeterministic,Missing,false
-,,nut.mediatr.behaviors,nut.mediatr.behaviors/0.0.0-preview.0.44,Nut.MediatR.Behaviors,0.0.0-preview.0.44,2020-12-20T02:37:52.9649363+00:00,2020-12-20T02:35:17.0800000+00:00,Available,27983,ValidExternal,NonDeterministic,Present,false
+,,amazonks3,amazonks3/1.5.0,AmazonKS3,1.5.0,2020-12-20T02:39:20.5757299Z,2020-12-20T02:37:10.21Z,Available,17489,NoSymbols,NonDeterministic,Missing,false
+,,lunabot.commands.public,lunabot.commands.public/1.2.0,LunaBot.Commands.Public,1.2.0,2020-12-20T03:01:57.2082154Z,2020-12-20T03:00:07.147Z,Available,72134,NoSymbols,NonDeterministic,Missing,false
+,,nut.mediatr.behaviors,nut.mediatr.behaviors/0.0.0-preview.0.44,Nut.MediatR.Behaviors,0.0.0-preview.0.44,2020-12-20T02:37:52.9649363Z,2020-12-20T02:35:17.08Z,Available,27983,ValidExternal,NonDeterministic,Present,false

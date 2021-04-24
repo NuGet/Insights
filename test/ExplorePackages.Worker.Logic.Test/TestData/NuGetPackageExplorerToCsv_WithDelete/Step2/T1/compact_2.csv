@@ -1,3 +1,3 @@
 ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,PackageSize,SourceLinkResult,DeterministicResult,CompilerFlagsResult,IsSignedByAuthor
-,,behaviorsample,behaviorsample/1.0.0,BehaviorSample,1.0.0,2020-12-20T03:03:53.7885893+00:00,,Deleted,0,Valid,Valid,Present,false
-,,nut.mediatr.servicelike.dependencyinjection,nut.mediatr.servicelike.dependencyinjection/0.0.0-preview.0.44,Nut.MediatR.ServiceLike.DependencyInjection,0.0.0-preview.0.44,2020-12-20T02:37:52.9649363+00:00,2020-12-20T02:35:16.0430000+00:00,Available,19638,ValidExternal,NonDeterministic,Present,false
+,,behaviorsample,behaviorsample/1.0.0,BehaviorSample,1.0.0,2020-12-20T03:03:53.7885893Z,,Deleted,0,Valid,Valid,Present,false
+,,nut.mediatr.servicelike.dependencyinjection,nut.mediatr.servicelike.dependencyinjection/0.0.0-preview.0.44,Nut.MediatR.ServiceLike.DependencyInjection,0.0.0-preview.0.44,2020-12-20T02:37:52.9649363Z,2020-12-20T02:35:16.043Z,Available,19638,ValidExternal,NonDeterministic,Present,false

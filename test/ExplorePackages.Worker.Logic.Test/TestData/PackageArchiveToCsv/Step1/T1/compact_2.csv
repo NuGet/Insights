@@ -1,4 +1,4 @@
 ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Size,OffsetAfterEndOfCentralDirectory,CentralDirectorySize,OffsetOfCentralDirectory,EntryCount,Comment
-,,danilovsoft.microorm,danilovsoft.microorm/3.3.4,DanilovSoft.MicroORM,3.3.4,2020-11-27T19:34:44.6917011+00:00,2020-11-27T19:33:08.0230000+00:00,Available,56508,56490,544,55942,7,
-,,eto.platform.gtk,eto.platform.gtk/2.5.8,Eto.Platform.Gtk,2.5.8,2020-11-27T19:34:44.6917011+00:00,2020-11-27T19:32:27.1570000+00:00,Available,199102,199084,515,198565,7,
-,,eto.platform.wpf,eto.platform.wpf/2.5.8,Eto.Platform.Wpf,2.5.8,2020-11-27T19:34:44.6917011+00:00,2020-11-27T19:32:26.3670000+00:00,Available,903993,903975,649,903322,9,
+,,danilovsoft.microorm,danilovsoft.microorm/3.3.4,DanilovSoft.MicroORM,3.3.4,2020-11-27T19:34:44.6917011Z,2020-11-27T19:33:08.023Z,Available,56508,56490,544,55942,7,
+,,eto.platform.gtk,eto.platform.gtk/2.5.8,Eto.Platform.Gtk,2.5.8,2020-11-27T19:34:44.6917011Z,2020-11-27T19:32:27.157Z,Available,199102,199084,515,198565,7,
+,,eto.platform.wpf,eto.platform.wpf/2.5.8,Eto.Platform.Wpf,2.5.8,2020-11-27T19:34:44.6917011Z,2020-11-27T19:32:26.367Z,Available,903993,903975,649,903322,9,

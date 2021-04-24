@@ -7,6 +7,9 @@ namespace Knapcode.ExplorePackages
 {
     internal static class CsvUtility
     {
+        private const string DateTimeOffsetUtcFormat = "yyyy-MM-ddTHH:mm:ss.FFFFFFFZ";
+        private const string DateTimeOffsetFormat = "yyyy-MM-ddTHH:mm:ss.FFFFFFFzzz";
+
         public static void WriteWithQuotes(TextWriter writer, string value)
         {
             if (value == null)
@@ -66,27 +69,32 @@ namespace Knapcode.ExplorePackages
 
         public static string FormatBool(bool? input)
         {
-            if (input.HasValue)
-            {
-                return FormatBool(input.Value);
-            }
-
-            return string.Empty;
+            return input.HasValue ? FormatBool(input.Value) : string.Empty;
         }
 
         public static string FormatDateTimeOffset(DateTimeOffset input)
         {
-            return input.ToString("O", CultureInfo.InvariantCulture);
+            if (input.Offset == TimeSpan.Zero)
+            {
+                return input.ToString(DateTimeOffsetUtcFormat, CultureInfo.InvariantCulture);
+            }
+
+            return input.ToString(DateTimeOffsetFormat, CultureInfo.InvariantCulture);
         }
 
         public static string FormatDateTimeOffset(DateTimeOffset? input)
         {
-            return input?.ToString("O", CultureInfo.InvariantCulture) ?? string.Empty;
+            return input.HasValue ? FormatDateTimeOffset(input.Value) : string.Empty;
         }
 
         public static DateTimeOffset ParseDateTimeOffset(string input)
         {
-            return DateTimeOffset.ParseExact(input, "O", CultureInfo.InvariantCulture);
+            if (input.EndsWith("Z"))
+            {
+                return DateTimeOffset.ParseExact(input, DateTimeOffsetUtcFormat, CultureInfo.InvariantCulture);
+            }
+
+            return DateTimeOffset.ParseExact(input, DateTimeOffsetFormat, CultureInfo.InvariantCulture);
         }
     }
 }

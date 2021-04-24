@@ -1,5 +1,5 @@
 ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Size,OffsetAfterEndOfCentralDirectory,CentralDirectorySize,OffsetOfCentralDirectory,EntryCount,Comment
-,,microsoft.extensions.configuration.abstractions,microsoft.extensions.configuration.abstractions/3.1.0,Microsoft.Extensions.Configuration.Abstractions,3.1.0,2019-12-03T16:44:55.0668686+00:00,2019-12-03T16:42:39.5970000+00:00,Available,60288,60270,993,59273,11,
-,,microsoft.extensions.hosting,microsoft.extensions.hosting/3.1.0,Microsoft.Extensions.Hosting,3.1.0,2019-12-03T16:44:55.0668686+00:00,2019-12-03T16:43:14.1900000+00:00,Available,102159,102141,1092,101045,13,
-,,microsoft.extensions.http,microsoft.extensions.http/3.1.0,Microsoft.Extensions.Http,3.1.0,2019-12-03T16:44:55.0668686+00:00,2019-12-03T16:43:19.8570000+00:00,Available,100172,100154,883,99267,11,
-,,test-nf-cl-healthpro,test-nf-cl-healthpro/1.0.0-ci-20191203-114304,TEST-NF-CL-HEALTHPRO,1.0.0-CI-20191203-114304,2019-12-03T16:44:55.0668686+00:00,2019-12-03T16:43:16.0900000+00:00,Available,137029,137011,833,136174,9,
+,,microsoft.extensions.configuration.abstractions,microsoft.extensions.configuration.abstractions/3.1.0,Microsoft.Extensions.Configuration.Abstractions,3.1.0,2019-12-03T16:44:55.0668686Z,2019-12-03T16:42:39.597Z,Available,60288,60270,993,59273,11,
+,,microsoft.extensions.hosting,microsoft.extensions.hosting/3.1.0,Microsoft.Extensions.Hosting,3.1.0,2019-12-03T16:44:55.0668686Z,2019-12-03T16:43:14.19Z,Available,102159,102141,1092,101045,13,
+,,microsoft.extensions.http,microsoft.extensions.http/3.1.0,Microsoft.Extensions.Http,3.1.0,2019-12-03T16:44:55.0668686Z,2019-12-03T16:43:19.857Z,Available,100172,100154,883,99267,11,
+,,test-nf-cl-healthpro,test-nf-cl-healthpro/1.0.0-ci-20191203-114304,TEST-NF-CL-HEALTHPRO,1.0.0-CI-20191203-114304,2019-12-03T16:44:55.0668686Z,2019-12-03T16:43:16.09Z,Available,137029,137011,833,136174,9,

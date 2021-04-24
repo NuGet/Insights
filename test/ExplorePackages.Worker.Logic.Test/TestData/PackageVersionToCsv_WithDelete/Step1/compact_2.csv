@@ -1,7 +1,7 @@
 ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,IsListed,IsSemVer2,SemVerType,IsLatest,IsLatestStable,IsLatestSemVer2,IsLatestStableSemVer2
-,,amazonks3,amazonks3/1.5.0,AmazonKS3,1.5.0,2020-12-20T02:39:20.5757299+00:00,2020-12-20T02:37:10.2100000+00:00,Available,true,false,SemVer1,true,true,true,true
-,,behaviorsample,behaviorsample/1.0.0,BehaviorSample,1.0.0,2020-12-20T02:39:03.3724130+00:00,2020-12-20T02:35:15.5800000+00:00,Available,false,true,DependencyMinHasPrereleaseDots,false,false,false,false
-,,lunabot.commands.public,lunabot.commands.public/1.2.0,LunaBot.Commands.Public,1.2.0,2020-12-20T03:01:57.2082154+00:00,2020-12-20T03:00:07.1470000+00:00,Available,true,false,SemVer1,true,true,true,true
-,,lunabot.core,lunabot.core/1.0.4,LunaBot.Core,1.0.4,2020-12-20T02:39:20.5757299+00:00,2020-12-20T02:33:43.6400000+00:00,Available,true,false,SemVer1,true,true,true,true
-,,nut.mediatr.behaviors,nut.mediatr.behaviors/0.0.0-preview.0.44,Nut.MediatR.Behaviors,0.0.0-preview.0.44,2020-12-20T02:37:52.9649363+00:00,2020-12-20T02:35:17.0800000+00:00,Available,true,true,VersionHasPrereleaseDots,false,false,true,false
-,,servicelikesample,servicelikesample/1.0.0,ServiceLikeSample,1.0.0,2020-12-20T02:39:37.8102297+00:00,2020-12-20T02:35:15.1400000+00:00,Available,false,true,DependencyMinHasPrereleaseDots,false,false,false,false
+,,amazonks3,amazonks3/1.5.0,AmazonKS3,1.5.0,2020-12-20T02:39:20.5757299Z,2020-12-20T02:37:10.21Z,Available,true,false,SemVer1,true,true,true,true
+,,behaviorsample,behaviorsample/1.0.0,BehaviorSample,1.0.0,2020-12-20T02:39:03.372413Z,2020-12-20T02:35:15.58Z,Available,false,true,DependencyMinHasPrereleaseDots,false,false,false,false
+,,lunabot.commands.public,lunabot.commands.public/1.2.0,LunaBot.Commands.Public,1.2.0,2020-12-20T03:01:57.2082154Z,2020-12-20T03:00:07.147Z,Available,true,false,SemVer1,true,true,true,true
+,,lunabot.core,lunabot.core/1.0.4,LunaBot.Core,1.0.4,2020-12-20T02:39:20.5757299Z,2020-12-20T02:33:43.64Z,Available,true,false,SemVer1,true,true,true,true
+,,nut.mediatr.behaviors,nut.mediatr.behaviors/0.0.0-preview.0.44,Nut.MediatR.Behaviors,0.0.0-preview.0.44,2020-12-20T02:37:52.9649363Z,2020-12-20T02:35:17.08Z,Available,true,true,VersionHasPrereleaseDots,false,false,true,false
+,,servicelikesample,servicelikesample/1.0.0,ServiceLikeSample,1.0.0,2020-12-20T02:39:37.8102297Z,2020-12-20T02:35:15.14Z,Available,false,true,DependencyMinHasPrereleaseDots,false,false,false,false
