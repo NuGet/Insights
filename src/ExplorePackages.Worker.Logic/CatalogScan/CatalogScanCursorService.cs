@@ -64,7 +64,7 @@ namespace Knapcode.ExplorePackages.Worker
             },
             {
                 CatalogScanDriverType.PackageAssemblyToCsv,
-                new[] { CatalogScanDriverType.LoadPackageArchive }
+                new[] { FlatContainer }
             },
             {
                 CatalogScanDriverType.PackageSignatureToCsv,

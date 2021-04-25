@@ -33,7 +33,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
                 var max2 = DateTimeOffset.Parse("2020-11-27T19:36:50.4909042Z");
 
                 await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max2);
                 await SetCursorAsync(min0);
 
                 // Act
@@ -75,7 +74,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
                 var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
 
                 await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
                 await SetCursorAsync(min0);
 
                 // Act
@@ -133,7 +131,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
                 var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
 
                 await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max2);
                 await SetCursorAsync(min0);
 
                 // Act
@@ -171,7 +168,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
                 var max1 = DateTimeOffset.Parse("2018-08-29T04:24:40.3247223Z");
 
                 await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
                 await SetCursorAsync(min0);
 
                 // Act
@@ -231,7 +227,6 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
             var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
 
             await CatalogScanService.InitializeAsync();
-            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
             await SetCursorAsync(min0);
 
             // Act
@@ -244,17 +239,12 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
                 .Requests
                 .Where(x => x.RequestUri.AbsolutePath.EndsWith("/gosms.ge-sms-api.1.0.1.nupkg"))
                 .ToList();
-            Assert.Equal(LatestLeavesTypes.Contains(DriverType) ? 3 : 6, duplicatePackageRequests.Count);
-        }
-
-        protected override IEnumerable<string> GetExpectedCursorNames()
-        {
-            return base.GetExpectedCursorNames().Concat(new[] { "CatalogScan-" + CatalogScanDriverType.LoadPackageArchive });
+            Assert.Equal(LatestLeavesTypes.Contains(DriverType) ? 1 : 2, duplicatePackageRequests.Count);
         }
 
         protected override IEnumerable<string> GetExpectedTableNames()
         {
-            return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageArchiveTableName });
+            return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageHashesTableName });
         }
     }
 }

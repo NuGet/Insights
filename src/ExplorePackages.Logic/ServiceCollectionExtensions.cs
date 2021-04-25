@@ -126,6 +126,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<WideEntityService>();
             serviceCollection.AddTransient<PackageWideEntityService>();
             serviceCollection.AddTransient<PackageFileService>();
+            serviceCollection.AddTransient<PackageHashService>();
             serviceCollection.AddTransient<PackageManifestService>();
 
             serviceCollection.AddSingleton<ITelemetryClient>(s => NullTelemetryClient.Instance);

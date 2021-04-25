@@ -222,6 +222,7 @@ namespace Knapcode.ExplorePackages.Worker
                     CatalogScanDriverType.LoadPackageArchive,
                     CatalogScanDriverType.LoadPackageManifest,
                     CatalogScanDriverType.LoadPackageVersion,
+                    CatalogScanDriverType.PackageAssemblyToCsv,
                 },
                 results
                     .Where(x => x.Value.Type == CatalogScanServiceResultType.NewStarted)
@@ -364,9 +365,10 @@ namespace Knapcode.ExplorePackages.Worker
                 new DriverInfo
                 {
                     DefaultMin = CatalogClient.NuGetOrgMinDeleted,
-                    SetDependencyCursorAsync = async (self, x) =>
+                    SetDependencyCursorAsync = (self, x) =>
                     {
-                        await self.SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, x);
+                        self.FlatContainerCursor = x;
+                        return Task.CompletedTask;
                     },
                 }
             },

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -25,6 +26,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.10.11.03.47.42/sharepointpnpcoreonline.2.21.1712.json",
                 Type = CatalogLeafType.PackageDetails,
+                CommitTimestamp = DateTimeOffset.Parse("2018-10-11T03:47:42.1892419Z"),
                 PackageId = "SharePointPnPCoreOnline",
                 PackageVersion = "2.21.1712",
             };
@@ -49,6 +51,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.12.18.08.44.52/enyutrynuget.1.0.0.json",
                 Type = CatalogLeafType.PackageDetails,
+                CommitTimestamp = DateTimeOffset.Parse("2018-12-18T08:44:52.1808182Z"),
                 PackageId = "EnyuTryNuget",
                 PackageVersion = "1.0.0",
             };
@@ -71,6 +74,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.12.11.04.41.19/getaddress.azuretablestorage.1.0.0.json",
                 Type = CatalogLeafType.PackageDetails,
+                CommitTimestamp = DateTimeOffset.Parse("2018-12-11T04:41:19.7918122Z"),
                 PackageId = "getAddress.AzureTableStorage",
                 PackageVersion = "1.0.0",
             };
@@ -94,6 +98,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.12.14.10.06.47/microsoft.dotnet.interop.1.0.0-prerelease-0002.json",
                 Type = CatalogLeafType.PackageDetails,
+                CommitTimestamp = DateTimeOffset.Parse("2018-12-14T10:06:47.962422Z"),
                 PackageId = "Microsoft.DotNet.Interop",
                 PackageVersion = "1.0.0-prerelease-0002",
             };
@@ -132,6 +137,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
                 {
                     Url = "https://api.nuget.org/v3/catalog0/data/2018.12.14.10.06.47/microsoft.dotnet.interop.1.0.0-prerelease-0002.json",
                     Type = CatalogLeafType.PackageDetails,
+                    CommitTimestamp = DateTimeOffset.Parse("2018-12-14T10:06:47.962422Z"),
                     PackageId = "Microsoft.DotNet.Interop",
                     PackageVersion = "1.0.0-prerelease-0002",
                 };

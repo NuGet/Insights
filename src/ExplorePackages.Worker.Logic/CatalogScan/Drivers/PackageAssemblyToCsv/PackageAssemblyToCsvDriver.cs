@@ -11,7 +11,6 @@ using System.Security;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using Knapcode.MiniZip;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -20,7 +19,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
     public class PackageAssemblyToCsvDriver : ICatalogLeafToCsvDriver<PackageAssembly>, ICsvResultStorage<PackageAssembly>
     {
         private readonly CatalogClient _catalogClient;
-        private readonly PackageFileService _packageFileService;
+        private readonly PackageHashService _packageHashService;
         private readonly FlatContainerClient _flatContainerClient;
         private readonly TempStreamService _tempStreamService;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
@@ -30,14 +29,14 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
 
         public PackageAssemblyToCsvDriver(
             CatalogClient catalogClient,
-            PackageFileService packageFileService,
+            PackageHashService packageHashService,
             FlatContainerClient flatContainerClient,
             TempStreamService tempStreamService,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<PackageAssemblyToCsvDriver> logger)
         {
             _catalogClient = catalogClient;
-            _packageFileService = packageFileService;
+            _packageHashService = packageHashService;
             _flatContainerClient = flatContainerClient;
             _tempStreamService = tempStreamService;
             _options = options;
@@ -54,7 +53,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
 
         public async Task InitializeAsync()
         {
-            await _packageFileService.InitializeAsync();
+            await _packageHashService.InitializeAsync();
         }
 
         public async Task<DriverResult<CsvRecordSet<PackageAssembly>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
@@ -70,23 +69,15 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
             if (item.Type == CatalogLeafType.PackageDelete)
             {
                 var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+
+                // We must clear the data related to deleted packages.
+                await _packageHashService.SetHashesAsync(item, hashes: null);
+
                 return MakeResults(item, new List<PackageAssembly> { new PackageAssembly(scanId, scanTimestamp, leaf) });
             }
             else
             {
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
-
-                var zipDirectory = await _packageFileService.GetZipDirectoryAsync(item);
-
-                if (zipDirectory == null)
-                {
-                    return MakeEmptyResults(item);
-                }
-
-                if (!zipDirectory.Entries.Any(x => FileExtensions.Contains(Path.GetExtension(x.GetName()))))
-                {
-                    return MakeNoAssemblies(scanId, scanTimestamp, leaf);
-                }
 
                 using var result = await _flatContainerClient.DownloadPackageContentToFileAsync(
                     item.PackageId,
@@ -102,6 +93,9 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
                 {
                     return DriverResult.TryAgainLater<CsvRecordSet<PackageAssembly>>();
                 }
+
+                // We have downloaded the full .nupkg here so we can capture the calculated hashes.
+                await _packageHashService.SetHashesAsync(item, result.Hash);
 
                 using var zipArchive = new ZipArchive(result.Stream);
                 var entries = zipArchive
