@@ -21,7 +21,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
         }
 
         public PackageArchiveResultType ResultType { get; set; }
-        
+
         public long Size { get; set; }
 
         public long OffsetAfterEndOfCentralDirectory { get; set; }

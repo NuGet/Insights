@@ -20,7 +20,6 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
         CatalogCommitTimestamp: datetime,
         Created: datetime,
         ResultType: string,
-        PackageSize: long,
         SourceLinkResult: string,
         DeterministicResult: string,
         CompilerFlagsResult: string,
@@ -51,21 +50,20 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
         '{"Column":"CatalogCommitTimestamp","DataType":"datetime","Properties":{"Ordinal":6}},'
         '{"Column":"Created","DataType":"datetime","Properties":{"Ordinal":7}},'
         '{"Column":"ResultType","DataType":"string","Properties":{"Ordinal":8}},'
-        '{"Column":"PackageSize","DataType":"long","Properties":{"Ordinal":9}},'
-        '{"Column":"SourceLinkResult","DataType":"string","Properties":{"Ordinal":10}},'
-        '{"Column":"DeterministicResult","DataType":"string","Properties":{"Ordinal":11}},'
-        '{"Column":"CompilerFlagsResult","DataType":"string","Properties":{"Ordinal":12}},'
-        '{"Column":"IsSignedByAuthor","DataType":"bool","Properties":{"Ordinal":13}}'
+        '{"Column":"SourceLinkResult","DataType":"string","Properties":{"Ordinal":9}},'
+        '{"Column":"DeterministicResult","DataType":"string","Properties":{"Ordinal":10}},'
+        '{"Column":"CompilerFlagsResult","DataType":"string","Properties":{"Ordinal":11}},'
+        '{"Column":"IsSignedByAuthor","DataType":"bool","Properties":{"Ordinal":12}}'
     ']'
 
     */
     partial record NuGetPackageExplorerRecord
     {
-        public int FieldCount => 14;
+        public int FieldCount => 13;
 
         public void WriteHeader(TextWriter writer)
         {
-            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,PackageSize,SourceLinkResult,DeterministicResult,CompilerFlagsResult,IsSignedByAuthor");
+            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,SourceLinkResult,DeterministicResult,CompilerFlagsResult,IsSignedByAuthor");
         }
 
         public void Write(List<string> fields)
@@ -79,7 +77,6 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             fields.Add(CsvUtility.FormatDateTimeOffset(CatalogCommitTimestamp));
             fields.Add(CsvUtility.FormatDateTimeOffset(Created));
             fields.Add(ResultType.ToString());
-            fields.Add(PackageSize.ToString());
             fields.Add(SourceLinkResult.ToString());
             fields.Add(DeterministicResult.ToString());
             fields.Add(CompilerFlagsResult.ToString());
@@ -105,8 +102,6 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             writer.Write(CsvUtility.FormatDateTimeOffset(Created));
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, ResultType.ToString());
-            writer.Write(',');
-            writer.Write(PackageSize);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, SourceLinkResult.ToString());
             writer.Write(',');
@@ -138,8 +133,6 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, ResultType.ToString());
             await writer.WriteAsync(',');
-            await writer.WriteAsync(PackageSize.ToString());
-            await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, SourceLinkResult.ToString());
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, DeterministicResult.ToString());
@@ -163,11 +156,10 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                 CatalogCommitTimestamp = CsvUtility.ParseDateTimeOffset(getNextField()),
                 Created = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
                 ResultType = Enum.Parse<NuGetPackageExplorerResultType>(getNextField()),
-                PackageSize = long.Parse(getNextField()),
-                SourceLinkResult = Enum.Parse<NuGetPe.SymbolValidationResult>(getNextField()),
-                DeterministicResult = Enum.Parse<NuGetPe.DeterministicResult>(getNextField()),
-                CompilerFlagsResult = Enum.Parse<NuGetPe.HasCompilerFlagsResult>(getNextField()),
-                IsSignedByAuthor = bool.Parse(getNextField()),
+                SourceLinkResult = CsvUtility.ParseNullable(getNextField(), Enum.Parse<NuGetPe.SymbolValidationResult>),
+                DeterministicResult = CsvUtility.ParseNullable(getNextField(), Enum.Parse<NuGetPe.DeterministicResult>),
+                CompilerFlagsResult = CsvUtility.ParseNullable(getNextField(), Enum.Parse<NuGetPe.HasCompilerFlagsResult>),
+                IsSignedByAuthor = CsvUtility.ParseNullable(getNextField(), bool.Parse),
             };
         }
     }

@@ -1,4 +1,5 @@
 ﻿using System;
+using NuGetPe.AssemblyMetadata;
 
 namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
 {
@@ -15,15 +16,17 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
 
         public string Name { get; set; }
         public string Extension { get; set; }
-        public string TargetFramework { get; set; }
-        public string TargetFrameworkIdentifier { get; set; }
-        public string TargetFrameworkVersion { get; set; }
-
-        [KustoType("dynamic")]
-        public string CompilerFlags { get; set; }
 
         public bool? HasCompilerFlags { get; set; }
         public bool? HasSourceLink { get; set; }
         public bool? HasDebugInfo { get; set; }
+
+        [KustoType("dynamic")]
+        public string CompilerFlags { get; set; }
+
+        [KustoType("dynamic")]
+        public string SourceUrlRepoInfo { get; set; }
+
+        public PdbType? PdbType { get; set; }
     }
 }

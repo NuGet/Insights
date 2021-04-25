@@ -1,4 +1,4 @@
-ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,PackageSize,SourceLinkResult,DeterministicResult,CompilerFlagsResult,IsSignedByAuthor
-,,azure.storage.blobs,azure.storage.blobs/12.7.0,Azure.Storage.Blobs,12.7.0,2020-11-10T23:37:33.9143454Z,2020-11-10T23:35:13.117Z,Available,428736,ValidExternal,Valid,Missing,true
-,,azure.storage.blobs.changefeed,azure.storage.blobs.changefeed/12.0.0-preview.6,Azure.Storage.Blobs.ChangeFeed,12.0.0-preview.6,2020-11-10T23:38:26.8525206Z,2020-11-10T23:36:24.85Z,Available,102565,ValidExternal,Valid,Missing,true
-,,netcos.aspnetcore.http,netcos.aspnetcore.http/3.0.0-preview-20201110.1,Netcos.AspNetCore.Http,3.0.0-preview-20201110.1,2020-11-10T23:39:05.5717605Z,2020-11-10T23:36:41.06Z,Available,13401,NoSymbols,NonDeterministic,Missing,false
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,SourceLinkResult,DeterministicResult,CompilerFlagsResult,IsSignedByAuthor
+,,azure.storage.blobs,azure.storage.blobs/12.7.0,Azure.Storage.Blobs,12.7.0,2020-11-10T23:37:33.9143454Z,2020-11-10T23:35:13.117Z,Available,ValidExternal,Valid,Missing,true
+,,azure.storage.blobs.changefeed,azure.storage.blobs.changefeed/12.0.0-preview.6,Azure.Storage.Blobs.ChangeFeed,12.0.0-preview.6,2020-11-10T23:38:26.8525206Z,2020-11-10T23:36:24.85Z,Available,ValidExternal,Valid,Missing,true
+,,netcos.aspnetcore.http,netcos.aspnetcore.http/3.0.0-preview-20201110.1,Netcos.AspNetCore.Http,3.0.0-preview-20201110.1,2020-11-10T23:39:05.5717605Z,2020-11-10T23:36:41.06Z,Available,NoSymbols,NonDeterministic,Missing,false

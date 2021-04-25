@@ -23,11 +23,10 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
 
         public NuGetPackageExplorerResultType ResultType { get; set; }
 
-        public long PackageSize { get; set; }
-        public SymbolValidationResult SourceLinkResult { get; set; }
-        public DeterministicResult DeterministicResult { get; set; }
-        public HasCompilerFlagsResult CompilerFlagsResult { get; set; }
-        public bool IsSignedByAuthor { get; set; }
+        public SymbolValidationResult? SourceLinkResult { get; set; }
+        public DeterministicResult? DeterministicResult { get; set; }
+        public HasCompilerFlagsResult? CompilerFlagsResult { get; set; }
+        public bool? IsSignedByAuthor { get; set; }
     }
 }
 

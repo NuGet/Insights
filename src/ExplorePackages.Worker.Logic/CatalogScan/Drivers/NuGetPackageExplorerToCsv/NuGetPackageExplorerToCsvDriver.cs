@@ -250,7 +250,6 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                         using var fileStream = zipPackage.GetStream();
                         var record = new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf)
                         {
-                            PackageSize = fileStream.Length,
                             SourceLinkResult = symbolValidatorResult.SourceLinkResult,
                             DeterministicResult = symbolValidatorResult.DeterministicResult,
                             CompilerFlagsResult = symbolValidatorResult.CompilerFlagsResult,
@@ -271,17 +270,19 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                             {
                                 var compilerFlags = file.DebugData?.CompilerFlags.ToDictionary(k => k.Key, v => v.Value);
 
+                                var sourceUrls = file.DebugData?.Sources.Where(x => x.Url != null).Select(x => x.Url);
+                                var sourceUrlRepoInfo = sourceUrls != null ? SourceUrlRepoParser.GetSourceRepoInfo(sourceUrls) : null;
+
                                 files.Add(new NuGetPackageExplorerFile(scanId, scanTimestamp, leaf)
                                 {
                                     Name = file.Name,
                                     Extension = file.Extension,
-                                    TargetFramework = file.TargetFramework?.FullName,
-                                    TargetFrameworkIdentifier = file.TargetFramework?.Identifier,
-                                    TargetFrameworkVersion = file.TargetFramework?.Version.ToString(),
                                     HasCompilerFlags = file.DebugData?.HasCompilerFlags,
                                     HasSourceLink = file.DebugData?.HasSourceLink,
                                     HasDebugInfo = file.DebugData?.HasDebugInfo,
+                                    PdbType = file.DebugData?.PdbType,
                                     CompilerFlags = compilerFlags != null ? JsonConvert.SerializeObject(compilerFlags) : null,
+                                    SourceUrlRepoInfo = sourceUrlRepoInfo != null ? JsonConvert.SerializeObject(sourceUrlRepoInfo) : null,
                                 });
                             }
                         }
