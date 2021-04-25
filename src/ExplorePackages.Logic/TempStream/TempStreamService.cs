@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,7 +14,7 @@ namespace Knapcode.ExplorePackages
             _serviceProvider = serviceProvider;
         }
 
-        public async Task<TempStreamResult> CopyToTempStreamAsync(Func<Stream> getStream, long length, Func<HashAlgorithm> getHashAlgorithm)
+        public async Task<TempStreamResult> CopyToTempStreamAsync(Func<Stream> getStream, long length, Func<IIncrementalHash> getHashAlgorithm)
         {
             var writer = GetWriter();
             TempStreamResult result;

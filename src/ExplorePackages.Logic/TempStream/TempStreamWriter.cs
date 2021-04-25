@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -70,10 +69,10 @@ namespace Knapcode.ExplorePackages
 
         public async Task<TempStreamResult> CopyToTempStreamAsync(Stream src, long length)
         {
-            return await CopyToTempStreamAsync(src, length, hashAlgorithm: null);
+            return await CopyToTempStreamAsync(src, length, IncrementalHash.CreateNone());
         }
 
-        public async Task<TempStreamResult> CopyToTempStreamAsync(Stream src, long length, HashAlgorithm hashAlgorithm)
+        public async Task<TempStreamResult> CopyToTempStreamAsync(Stream src, long length, IIncrementalHash hashAlgorithm)
         {
             if (length < 0)
             {
@@ -271,7 +270,7 @@ namespace Knapcode.ExplorePackages
             }
         }
 
-        private async Task<TempStreamResult> CopyAndSeekAsync(Stream src, long length, HashAlgorithm hashAlgorithm, Stream dest, string location, int bufferSize)
+        private async Task<TempStreamResult> CopyAndSeekAsync(Stream src, long length, IIncrementalHash hashAlgorithm, Stream dest, string location, int bufferSize)
         {
             _logger.LogInformation(
                 "Starting copy of a {TypeName} stream with length {LengthBytes} bytes to {Location}.",
@@ -290,7 +289,7 @@ namespace Knapcode.ExplorePackages
                 location,
                 sw.Elapsed.TotalMilliseconds);
 
-            return TempStreamResult.Success(dest, hashAlgorithm?.Hash);
+            return TempStreamResult.Success(dest, hashAlgorithm.Output);
         }
     }
 }

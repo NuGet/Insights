@@ -86,7 +86,10 @@ namespace Knapcode.ExplorePackages
 
                             response.EnsureSuccessStatusCode();
                             using var networkStream = await response.Content.ReadAsStreamAsync();
-                            return await writer.CopyToTempStreamAsync(networkStream, response.Content.Headers.ContentLength.Value);
+                            return await writer.CopyToTempStreamAsync(
+                                networkStream,
+                                response.Content.Headers.ContentLength.Value,
+                                IncrementalHash.CreateAll());
                         },
                         nuGetLogger,
                         token);

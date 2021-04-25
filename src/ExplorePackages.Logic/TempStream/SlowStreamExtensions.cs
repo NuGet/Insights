@@ -2,7 +2,6 @@
 using System.Buffers;
 using System.Diagnostics;
 using System.IO;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -17,7 +16,7 @@ namespace Knapcode.ExplorePackages
             long length,
             Stream dest,
             int bufferSize,
-            HashAlgorithm hashAlgorithm,
+            IIncrementalHash hashAlgorithm,
             ILogger logger)
         {
             var pool = ArrayPool<byte>.Shared;
@@ -40,11 +39,11 @@ namespace Knapcode.ExplorePackages
 
                     if (bytesRead == 0)
                     {
-                        hashAlgorithm?.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+                        hashAlgorithm.TransformFinalBlock();
                         break;
                     }
 
-                    hashAlgorithm?.TransformBlock(buffer, 0, bytesRead, buffer, 0);
+                    hashAlgorithm.TransformBlock(buffer, 0, bytesRead);
 
                     await dest.WriteAsync(buffer, 0, bytesRead);
                     logger.Log(logLevel, "Wrote {BufferBytes} bytes ({CopiedBytes} of {TotalBytes}, {Percent:P2}).", bytesRead, copiedBytes, length, percent);

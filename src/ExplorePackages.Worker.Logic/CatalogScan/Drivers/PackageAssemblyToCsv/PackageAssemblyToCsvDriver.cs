@@ -181,7 +181,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
             {
                 try
                 {
-                    tempStreamResult = await _tempStreamService.CopyToTempStreamAsync(() => entry.Open(), entry.Length, SHA256.Create);
+                    tempStreamResult = await _tempStreamService.CopyToTempStreamAsync(() => entry.Open(), entry.Length, IncrementalHash.CreateSHA256);
                 }
                 catch (InvalidDataException ex)
                 {
@@ -196,7 +196,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
                 }
 
                 assembly.ActualUncompressedLength = tempStreamResult.Stream.Length;
-                assembly.FileSHA256 = tempStreamResult.Hash.ToBase64();
+                assembly.FileSHA256 = tempStreamResult.Hash.SHA256.ToBase64();
 
                 using var peReader = new PEReader(tempStreamResult.Stream);
                 if (!peReader.HasMetadata)

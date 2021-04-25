@@ -148,6 +148,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                             var length = response.Content.Headers.ContentLength.Value;
 
                             using (var source = await response.Content.ReadAsStreamAsync())
+                            using (var hash = IncrementalHash.CreateAll())
                             using (var destination = new FileStream(
                                 tempPath,
                                 FileMode.Create,
@@ -161,7 +162,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                                     length,
                                     destination,
                                     bufferSize: 4 * 1024 * 1024,
-                                    hashAlgorithm: null,
+                                    hashAlgorithm: hash,
                                     _logger);
                             }
 

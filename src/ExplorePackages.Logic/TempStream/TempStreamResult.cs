@@ -6,9 +6,9 @@ namespace Knapcode.ExplorePackages
     public class TempStreamResult : IDisposable
     {
         private readonly Stream _stream;
-        private readonly byte[] _hash;
+        private readonly HashOutput _hash;
 
-        private TempStreamResult(TempStreamResultType type, Stream stream, byte[] hash)
+        private TempStreamResult(TempStreamResultType type, Stream stream, HashOutput hash)
         {
             Type = type;
             _stream = stream;
@@ -17,9 +17,9 @@ namespace Knapcode.ExplorePackages
 
         public TempStreamResultType Type { get; }
         public Stream Stream => Type == TempStreamResultType.Success ? _stream : throw new InvalidOperationException($"No stream available. Result type is {Type}.");
-        public byte[] Hash => Type == TempStreamResultType.Success ? _hash : throw new InvalidOperationException($"No hash available. Result type is {Type}.");
+        public HashOutput Hash => Type == TempStreamResultType.Success ? _hash : throw new InvalidOperationException($"No hash available. Result type is {Type}.");
 
-        public static TempStreamResult Success(Stream stream, byte[] hash)
+        public static TempStreamResult Success(Stream stream, HashOutput hash)
         {
             return new TempStreamResult(TempStreamResultType.Success, stream, hash);
         }
