@@ -102,8 +102,8 @@ function Publish-Project ($ProjectName) {
     return @($newPath, $blobName)
 }
 
-$websiteZipPath, $websiteZipBlobName = Publish-Project "ExplorePackages.Website"
-$workerZipPath, $workerZipBlobName = Publish-Project "ExplorePackages.Worker"
+$websiteZipPath, $websiteZipBlobName = Publish-Project "Website"
+$workerZipPath, $workerZipBlobName = Publish-Project "Worker"
 
 # Make sure the resource group is created
 Write-Status "Ensuring the resource group '$resourceGroupName' exists..."
@@ -242,10 +242,7 @@ if ($existingWorkerCount -gt $workerCount) {
 
 if ($existingWorkerCount -lt $workerCount) {
     Write-Status "Deploying without Key Vault references because there are new workers..."
-    New-MainDeployment "prepare" $false
-
-    Write-Status "Deploying again with Key Vault references..."
-    New-MainDeployment "main" $true | Tee-Object -Variable 'deployment'
+    New-MainDeployment "prepare" $false | Tee-Object -Variable 'deployment'
 } else {
     Write-Status "Deploying the resources..."
     New-MainDeployment "main" $true | Tee-Object -Variable 'deployment'
@@ -260,6 +257,11 @@ $workerDefaultHostNames = $deployment.Outputs.workerDefaultHostNames.Value.ToStr
     -ObjectId $aadApp.ObjectId `
     -DefaultHostName $websiteDefaultHostName `
     -HostNames $websiteHostNames
+
+if ($existingWorkerCount -lt $workerCount) {
+    Write-Status "Deploying again with Key Vault references..."
+    New-MainDeployment "main" $true
+}
 
 # Warm up the workers, since initial deployment appears to leave them in a hibernation state.
 Write-Status "Warming up the website and workers..."

@@ -7,11 +7,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E875EFB7-FE3
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{CE6F8939-81A2-4BD4-9D9F-C1BF37DB1589}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExplorePackages.Website", "src\ExplorePackages.Website\ExplorePackages.Website.csproj", "{11370F28-6290-412D-BDA9-E7F83DFA58CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Website", "src\Website\Website.csproj", "{11370F28-6290-412D-BDA9-E7F83DFA58CD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExplorePackages.Logic", "src\ExplorePackages.Logic\ExplorePackages.Logic.csproj", "{55583FB5-7AB0-42CD-9C0A-6745E422875E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Logic", "src\Logic\Logic.csproj", "{55583FB5-7AB0-42CD-9C0A-6745E422875E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExplorePackages.Logic.Test", "test\ExplorePackages.Logic.Test\ExplorePackages.Logic.Test.csproj", "{F8BBF131-7A37-4BC5-83D3-2D899808E124}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Logic.Test", "test\Logic.Test\Logic.Test.csproj", "{F8BBF131-7A37-4BC5-83D3-2D899808E124}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{93B8287B-A15F-4801-8884-D3DB923DB2A8}"
 	ProjectSection(SolutionItems) = preProject
@@ -24,17 +24,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExplorePackages.Tool", "src\ExplorePackages.Tool\ExplorePackages.Tool.csproj", "{D9DDCBAE-4ECE-4C49-B2C3-52E011317838}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tool", "src\Tool\Tool.csproj", "{D9DDCBAE-4ECE-4C49-B2C3-52E011317838}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExplorePackages.Worker", "src\ExplorePackages.Worker\ExplorePackages.Worker.csproj", "{A2AB8E23-B984-4436-AFD3-D627282944A4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Worker", "src\Worker\Worker.csproj", "{A2AB8E23-B984-4436-AFD3-D627282944A4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExplorePackages.Worker.Logic", "src\ExplorePackages.Worker.Logic\ExplorePackages.Worker.Logic.csproj", "{FDEE6816-D83E-41CF-A8D3-03BA6620F5E4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Worker.Logic", "src\Worker.Logic\Worker.Logic.csproj", "{FDEE6816-D83E-41CF-A8D3-03BA6620F5E4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExplorePackages.Worker.Logic.Test", "test\ExplorePackages.Worker.Logic.Test\ExplorePackages.Worker.Logic.Test.csproj", "{56C63587-ECF4-4A2F-9D5D-F5777CB8CD48}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Worker.Logic.Test", "test\Worker.Logic.Test\Worker.Logic.Test.csproj", "{56C63587-ECF4-4A2F-9D5D-F5777CB8CD48}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExplorePackages.Worker.Test", "test\ExplorePackages.Worker.Test\ExplorePackages.Worker.Test.csproj", "{7888E46B-15B3-4B78-92C6-14BC4E2C3705}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Worker.Test", "test\Worker.Test\Worker.Test.csproj", "{7888E46B-15B3-4B78-92C6-14BC4E2C3705}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExplorePackages.SourceGenerator", "src\ExplorePackages.SourceGenerator\ExplorePackages.SourceGenerator.csproj", "{795B84C6-A9E2-48AE-8C15-59B54428754E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceGenerator", "src\SourceGenerator\SourceGenerator.csproj", "{795B84C6-A9E2-48AE-8C15-59B54428754E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{C6AE6C04-45A3-4668-BFD2-84B91F5DA172}"
 EndProject

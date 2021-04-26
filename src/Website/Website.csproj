@@ -13,6 +13,6 @@
     <PackageReference Include="Microsoft.Identity.Web.UI" Version="1.6.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ExplorePackages.Worker.Logic\ExplorePackages.Worker.Logic.csproj" />
+    <ProjectReference Include="..\Worker.Logic\Worker.Logic.csproj" />
   </ItemGroup>
 </Project>

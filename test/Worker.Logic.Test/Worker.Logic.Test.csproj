@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <IsPackable>false</IsPackable>
-    <AssemblyName>Knapcode.ExplorePackages.Worker.Test</AssemblyName>
+    <AssemblyName>Knapcode.ExplorePackages.Worker.Logic.Test</AssemblyName>
     <RootNamespace>Knapcode.ExplorePackages.Worker</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
@@ -14,8 +14,12 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ExplorePackages.Worker\ExplorePackages.Worker.csproj" />
-    <ProjectReference Include="..\ExplorePackages.Logic.Test\ExplorePackages.Logic.Test.csproj" />
-    <ProjectReference Include="..\ExplorePackages.Worker.Logic.Test\ExplorePackages.Worker.Logic.Test.csproj" />
+    <ProjectReference Include="..\..\src\Worker.Logic\Worker.Logic.csproj" />
+    <ProjectReference Include="..\Logic.Test\Logic.Test.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="TestData\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

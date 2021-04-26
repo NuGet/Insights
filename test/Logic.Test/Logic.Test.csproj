@@ -16,7 +16,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ExplorePackages.Logic\ExplorePackages.Logic.csproj" />
+    <ProjectReference Include="..\..\src\Logic\Logic.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="TestData\**\*">

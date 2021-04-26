@@ -27,8 +27,8 @@ Analyze packages NuGet.org in a highly distributed manner. Or, if you want a sal
 3. Run `dotnet publish` on the website and worker projects. This produces compiled directories that can be deployed to Azure later.
    ```
    cd ExplorePackages
-   dotnet publish src/ExplorePackages.Worker -c Release
-   dotnet publish src/ExplorePackages.Website -c Release
+   dotnet publish src/Worker -c Release
+   dotnet publish src/Website -c Release
    ```
 
 ### Deploy to Azure
@@ -85,14 +85,14 @@ Note that you cannot use Azurite since the latest version of it does not support
 1. Clone the repository.
 2. Open the solution in Visual Studio (ExplorePackages.sln).
 3. Make sure the Azure Storage Emulator is running.
-4. Press F5 to launch the website (ExplorePackages.Website). It's the default startup project.
+4. Press F5 to launch the website (the Website project). It's the default startup project.
 5. Click on the "Admin" link in the navigation bar.
 6. Start some catalog scans.
    - You can start all of the catalog scans with the same timestamp using the "All catalog scans" section.
    - When starting out, use a custom max timestamp like `2015-02-01T06:22:45.8488496Z`.
    - This timestamp is the first commit to the catalog and will run quickly, only processing 20 packages.
 7. Stop the website.
-8. Start the function app (ExplorePackages.Worker).
+8. Start the function app (the Worker project).
 9. Wait until the catalog scan is done.
    - This can be seen by looking at the `workerqueue` queue or by looking at the admin panel seen above.
 
@@ -173,40 +173,40 @@ persistence (cheap).
 
 Here's a high-level description of main projects in this repository:
 
-- [`ExplorePackages.Worker`](src/ExplorePackages.Worker) - the Azure Function itself, a thin adapter between core logic and Azure Functions
-- [`ExplorePackages.Website`](src/ExplorePackages.Website) - a website for checking [consistency](docs/consistency.md) and an admin panel for starting scans
-- [`ExplorePackages.Worker.Logic`](src/ExplorePackages.Worker.Logic) - all of the catalog scan and driver logic, this is the most interesting project
-- [`ExplorePackages.Logic`](src/ExplorePackages.Logic) - contains more generic logic related to NuGet.org protocol and is not directly related to distributed processing
+- [`Worker`](src/Worker) - the Azure Function itself, a thin adapter between core logic and Azure Functions
+- [`Website`](src/Website) - a website for checking [consistency](docs/consistency.md) and an admin panel for starting scans
+- [`Worker.Logic`](src/Worker.Logic) - all of the catalog scan and driver logic, this is the most interesting project
+- [`Logic`](src/Logic) - contains more generic logic related to NuGet.org protocol and is not directly related to distributed processing
 
 Other projects are:
 
-- [`ExplorePackages.SourceGenerator`](src/ExplorePackages.SourceGenerator) - AOT source generation logic for reading and writing CSVs
-- [`ExplorePackages.Tool`](src/ExplorePackages.Tool) - a command-line app used for pretty much just prototyping code
+- [`SourceGenerator`](src/SourceGenerator) - AOT source generation logic for reading and writing CSVs
+- [`Tool`](src/Tool) - a command-line app used for pretty much just prototyping code
 
 ## Drivers
 
 The current drivers for analyzing NuGet.org packages are:
 
-- [`CatalogLeafItemToCsv`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/CatalogLeafItemToCsv/CatalogLeafItemToCsvDriver.cs) - write all catalog leaf items to big CSVs for analysis
-- [`PackageArchiveToCsv`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/PackageArchiveToCsv/PackageArchiveToCsvDriver.cs) - find info about all ZIP entries in the .nupkg
-- [`PackageAssemblyToCsv`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/PackageAssemblyToCsv/PackageAssemblyToCsvDriver.cs) - find stuff like public key tokens in assemblies using `System.Reflection.Metadata`
-- [`PackageAssetToCsv`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/PackageAssetToCsv/PackageAssetToCsvDriver.cs) - find assets recognized by NuGet restore
-- [`PackageManifestToCsv`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/PackageManifestToCsv/PackageManifestToCsvDriver.cs) - extract known data from the .nuspec
-- [`PackageSignatureToCsv`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/PackageSignatureToCsv/PackageSignatureToCsvDriver.cs) - parse the NuGet package signature
-- [`PackageVersionToCsv`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/PackageVersionToCsv/PackageVersionToCsvDriver.cs) - determine latest version per package ID
+- [`CatalogLeafItemToCsv`](src/Worker.Logic/CatalogScan/Drivers/CatalogLeafItemToCsv/CatalogLeafItemToCsvDriver.cs) - write all catalog leaf items to big CSVs for analysis
+- [`PackageArchiveToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageArchiveToCsv/PackageArchiveToCsvDriver.cs) - find info about all ZIP entries in the .nupkg
+- [`PackageAssemblyToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageAssemblyToCsv/PackageAssemblyToCsvDriver.cs) - find stuff like public key tokens in assemblies using `System.Reflection.Metadata`
+- [`PackageAssetToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageAssetToCsv/PackageAssetToCsvDriver.cs) - find assets recognized by NuGet restore
+- [`PackageManifestToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageManifestToCsv/PackageManifestToCsvDriver.cs) - extract known data from the .nuspec
+- [`PackageSignatureToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageSignatureToCsv/PackageSignatureToCsvDriver.cs) - parse the NuGet package signature
+- [`PackageVersionToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageVersionToCsv/PackageVersionToCsvDriver.cs) - determine latest version per package ID
 
 Several other supporting drivers exist to populate storage with intermediate results:
 
-- [`BuildVersionSet`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/BuildVersionSet/BuildVersionSetDriver.cs) - serializes all IDs and versions into a `Dictionary`, useful for fast checks
-- [`LoadLatestPackageLeaf`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/LoadLatestPackageLeaf) - write the latest catalog leaf to Table Storage
-- [`LoadPackageArchive`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/LoadPackageArchive/LoadPackageArchiveDriver.cs) - fetch information from the .nupkg and put it in Table Storage
-- [`LoadPackageManifest`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/LoadPackageManifest/LoadPackageManifestDriver.cs) - fetch the .nuspec and put it in Table Storage
-- [`LoadPackageVersion`](src/ExplorePackages.Worker.Logic/CatalogScan/Drivers/LoadPackageVersion/LoadPackageVersionDriver.cs) - determine listed and SemVer status and put it in Table Storage
+- [`BuildVersionSet`](src/Worker.Logic/CatalogScan/Drivers/BuildVersionSet/BuildVersionSetDriver.cs) - serializes all IDs and versions into a `Dictionary`, useful for fast checks
+- [`LoadLatestPackageLeaf`](src/Worker.Logic/CatalogScan/Drivers/LoadLatestPackageLeaf) - write the latest catalog leaf to Table Storage
+- [`LoadPackageArchive`](src/Worker.Logic/CatalogScan/Drivers/LoadPackageArchive/LoadPackageArchiveDriver.cs) - fetch information from the .nupkg and put it in Table Storage
+- [`LoadPackageManifest`](src/Worker.Logic/CatalogScan/Drivers/LoadPackageManifest/LoadPackageManifestDriver.cs) - fetch the .nuspec and put it in Table Storage
+- [`LoadPackageVersion`](src/Worker.Logic/CatalogScan/Drivers/LoadPackageVersion/LoadPackageVersionDriver.cs) - determine listed and SemVer status and put it in Table Storage
 
 Several message processors exist to emit other useful data:
 
-- [`DownloadsToCsv`](src/ExplorePackages.Worker.Logic/MessageProcessors/DownloadsToCsv/DownloadsToCsvUpdater.cs) - read `downloads.v1.json` and write it to CSV
-- [`OwnersToCsv`](src/ExplorePackages.Worker.Logic/MessageProcessors/OwnersToCsv/OwnersToCsvUpdater.cs) - read `owners.v2.json` and write it to CSV
+- [`DownloadsToCsv`](src/Worker.Logic/MessageProcessors/DownloadsToCsv/DownloadsToCsvUpdater.cs) - read `downloads.v1.json` and write it to CSV
+- [`OwnersToCsv`](src/Worker.Logic/MessageProcessors/OwnersToCsv/OwnersToCsvUpdater.cs) - read `owners.v2.json` and write it to CSV
 
 ## Other docs
 
