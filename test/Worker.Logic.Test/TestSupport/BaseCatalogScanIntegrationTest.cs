@@ -100,12 +100,12 @@ namespace Knapcode.ExplorePackages.Worker
             serializerSettings.NullValueHandling = NullValueHandling.Include;
             serializerSettings.Formatting = Formatting.Indented;
             var actual = JsonConvert.SerializeObject(entities, serializerSettings);
+            var testDataFile = Path.Combine(TestData, dir, "entities.json");
             if (OverwriteTestData)
             {
-                Directory.CreateDirectory(Path.Combine(TestData, dir));
-                File.WriteAllText(Path.Combine(TestData, dir, "entities.json"), actual);
+                OverwriteTestDataAndCopyToSource(testDataFile, actual);
             }
-            var expected = File.ReadAllText(Path.Combine(TestData, dir, "entities.json"));
+            var expected = File.ReadAllText(testDataFile);
             Assert.Equal(expected, actual);
         }
 
@@ -125,10 +125,10 @@ namespace Knapcode.ExplorePackages.Worker
             serializerSettings.NullValueHandling = NullValueHandling.Include;
             serializerSettings.Formatting = Formatting.Indented;
             var actual = JsonConvert.SerializeObject(entities.Select(x => new { x.PartitionKey, x.RowKey, x.Entity }), serializerSettings);
+            var testDataFile = Path.Combine(TestData, dir, "entities.json");
             if (OverwriteTestData)
             {
-                Directory.CreateDirectory(Path.Combine(TestData, dir));
-                File.WriteAllText(Path.Combine(TestData, dir, "entities.json"), actual);
+                OverwriteTestDataAndCopyToSource(testDataFile, actual);
             }
             var expected = File.ReadAllText(Path.Combine(TestData, dir, "entities.json"));
             Assert.Equal(expected, actual);

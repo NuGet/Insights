@@ -47,26 +47,26 @@ namespace Knapcode.ExplorePackages
             await _wideEntityService.InitializeAsync(_options.Value.PackageManifestTableName);
         }
 
-        public async Task<NuspecReader> GetNuspecReaderAsync(CatalogLeafItem leafItem)
+        public async Task<(NuspecReader, int)> GetNuspecReaderAndSizeAsync(CatalogLeafItem leafItem)
         {
-            var manifest = await GetManifestAsync(leafItem);
+            (var manifest, var size) = await GetManifestAndSizeAsync(leafItem);
             if (manifest == null)
             {
-                return null;
+                return (null, default);
             }
 
-            return new NuspecReader(manifest);
+            return (new NuspecReader(manifest), size);
         }
 
-        public async Task<XDocument> GetManifestAsync(CatalogLeafItem leafItem)
+        private async Task<(XDocument, int)> GetManifestAndSizeAsync(CatalogLeafItem leafItem)
         {
             var info = await GetOrUpdateInfoAsync(leafItem);
             if (!info.Available)
             {
-                return null;
+                return (null, default);
             }
 
-            return XmlUtility.LoadXml(info.ManifestBytes.AsStream());
+            return (XmlUtility.LoadXml(info.ManifestBytes.AsStream()), info.ManifestBytes.Length);
         }
 
         public async Task<IReadOnlyDictionary<CatalogLeafItem, PackageManifestInfoV1>> UpdateBatchAsync(string id, IReadOnlyCollection<CatalogLeafItem> leafItems)

@@ -215,15 +215,37 @@ namespace Knapcode.ExplorePackages
             // settings.
             actual = Regex.Replace(actual, @"\r\n|\n", Environment.NewLine);
 
+            var testDataFile = Path.Combine(TestData, testName, stepName, fileName);
             if (OverwriteTestData)
             {
-                Directory.CreateDirectory(Path.Combine(TestData, testName, stepName));
-                File.WriteAllText(Path.Combine(TestData, testName, stepName, fileName), actual);
+                OverwriteTestDataAndCopyToSource(testDataFile, actual);
             }
-            var expected = File.ReadAllText(Path.Combine(TestData, testName, stepName, fileName));
+            var expected = File.ReadAllText(testDataFile);
             Assert.Equal(expected, actual);
 
             return actual;
+        }
+
+        protected static void OverwriteTestDataAndCopyToSource(string testDataFile, string actual)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(testDataFile));
+            File.WriteAllText(testDataFile, actual);
+
+            var sourcePath = Path.GetFullPath(testDataFile);
+            var projectDir = sourcePath.Contains("Worker.Logic.Test") ? "Worker.Logic.Test" : "Logic.Test";
+
+            const string markerFile = "NuGet.config";
+            var repoDir = Directory.GetCurrentDirectory();
+            while (repoDir != null && !Directory.GetFiles(repoDir).Any(x => Path.GetFileName(x) == markerFile))
+            {
+                repoDir = Path.GetDirectoryName(repoDir);
+            }
+
+            Assert.NotNull(repoDir);
+
+            var destPath = Path.Combine(repoDir, "test", projectDir, testDataFile);
+
+            File.Copy(sourcePath, destPath, overwrite: true);
         }
 
         public Task InitializeAsync()

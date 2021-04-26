@@ -293,11 +293,11 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                     {
                         await destination.SetLengthAndWriteAsync(length);
                         await source.CopyToSlowAsync(
-                            length,
                             destination,
+                            length,
                             bufferSize: 4 * 1024 * 1024,
                             hashAlgorithm: hash,
-                            _logger);
+                            logger: _logger);
                     }
 
                     return true;

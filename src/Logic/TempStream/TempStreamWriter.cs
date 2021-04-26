@@ -279,7 +279,7 @@ namespace Knapcode.ExplorePackages
                 location);
 
             var sw = Stopwatch.StartNew();
-            await src.CopyToSlowAsync(length, dest, bufferSize, hashAlgorithm, _logger);
+            await src.CopyToSlowAsync(dest, length, bufferSize, hashAlgorithm, _logger);
             sw.Stop();
 
             _logger.LogInformation(

@@ -22,6 +22,8 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
 
         public PackageManifestRecordResultType ResultType { get; set; }
 
+        public int Size { get; set; }
+
         public string OriginalId { get; set; }
         public string OriginalVersion { get; set; }
 

@@ -13,8 +13,8 @@ namespace Knapcode.ExplorePackages
 
         public static async Task CopyToSlowAsync(
             this Stream src,
-            long length,
             Stream dest,
+            long length,
             int bufferSize,
             IIncrementalHash hashAlgorithm,
             ILogger logger)

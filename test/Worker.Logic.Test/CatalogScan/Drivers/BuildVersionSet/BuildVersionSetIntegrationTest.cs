@@ -162,10 +162,10 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
             var parsedJson = JToken.Parse(compactJson);
             var actual = parsedJson.ToString();
 
+            var testDataFile = Path.Combine(TestData, testName, stepName, fileName);
             if (OverwriteTestData)
             {
-                Directory.CreateDirectory(Path.Combine(TestData, testName, stepName));
-                File.WriteAllText(Path.Combine(TestData, testName, stepName, fileName), actual);
+                OverwriteTestDataAndCopyToSource(testDataFile, actual);
             }
             var expected = File.ReadAllText(Path.Combine(TestData, testName, stepName, fileName));
             Assert.Equal(expected, actual);

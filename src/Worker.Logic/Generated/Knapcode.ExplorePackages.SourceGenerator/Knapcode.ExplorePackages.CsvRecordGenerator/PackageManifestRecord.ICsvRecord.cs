@@ -20,6 +20,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
         CatalogCommitTimestamp: datetime,
         Created: datetime,
         ResultType: string,
+        Size: int,
         OriginalId: string,
         OriginalVersion: string,
         MinClientVersion: string,
@@ -76,46 +77,47 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
         '{"Column":"CatalogCommitTimestamp","DataType":"datetime","Properties":{"Ordinal":6}},'
         '{"Column":"Created","DataType":"datetime","Properties":{"Ordinal":7}},'
         '{"Column":"ResultType","DataType":"string","Properties":{"Ordinal":8}},'
-        '{"Column":"OriginalId","DataType":"string","Properties":{"Ordinal":9}},'
-        '{"Column":"OriginalVersion","DataType":"string","Properties":{"Ordinal":10}},'
-        '{"Column":"MinClientVersion","DataType":"string","Properties":{"Ordinal":11}},'
-        '{"Column":"DevelopmentDependency","DataType":"bool","Properties":{"Ordinal":12}},'
-        '{"Column":"IsServiceable","DataType":"bool","Properties":{"Ordinal":13}},'
-        '{"Column":"Authors","DataType":"string","Properties":{"Ordinal":14}},'
-        '{"Column":"Copyright","DataType":"string","Properties":{"Ordinal":15}},'
-        '{"Column":"Description","DataType":"string","Properties":{"Ordinal":16}},'
-        '{"Column":"Icon","DataType":"string","Properties":{"Ordinal":17}},'
-        '{"Column":"IconUrl","DataType":"string","Properties":{"Ordinal":18}},'
-        '{"Column":"Language","DataType":"string","Properties":{"Ordinal":19}},'
-        '{"Column":"LicenseUrl","DataType":"string","Properties":{"Ordinal":20}},'
-        '{"Column":"Owners","DataType":"string","Properties":{"Ordinal":21}},'
-        '{"Column":"ProjectUrl","DataType":"string","Properties":{"Ordinal":22}},'
-        '{"Column":"Readme","DataType":"string","Properties":{"Ordinal":23}},'
-        '{"Column":"ReleaseNotes","DataType":"string","Properties":{"Ordinal":24}},'
-        '{"Column":"RequireLicenseAcceptance","DataType":"bool","Properties":{"Ordinal":25}},'
-        '{"Column":"Summary","DataType":"string","Properties":{"Ordinal":26}},'
-        '{"Column":"Tags","DataType":"string","Properties":{"Ordinal":27}},'
-        '{"Column":"Title","DataType":"string","Properties":{"Ordinal":28}},'
-        '{"Column":"PackageTypes","DataType":"dynamic","Properties":{"Ordinal":29}},'
-        '{"Column":"LicenseMetadata","DataType":"dynamic","Properties":{"Ordinal":30}},'
-        '{"Column":"RepositoryMetadata","DataType":"dynamic","Properties":{"Ordinal":31}},'
-        '{"Column":"ReferenceGroups","DataType":"dynamic","Properties":{"Ordinal":32}},'
-        '{"Column":"ContentFiles","DataType":"dynamic","Properties":{"Ordinal":33}},'
-        '{"Column":"DependencyGroups","DataType":"dynamic","Properties":{"Ordinal":34}},'
-        '{"Column":"FrameworkAssemblyGroups","DataType":"dynamic","Properties":{"Ordinal":35}},'
-        '{"Column":"FrameworkRefGroups","DataType":"dynamic","Properties":{"Ordinal":36}},'
-        '{"Column":"ContentFilesHasFormatException","DataType":"bool","Properties":{"Ordinal":37}},'
-        '{"Column":"DependencyGroupsHasMissingId","DataType":"bool","Properties":{"Ordinal":38}}'
+        '{"Column":"Size","DataType":"int","Properties":{"Ordinal":9}},'
+        '{"Column":"OriginalId","DataType":"string","Properties":{"Ordinal":10}},'
+        '{"Column":"OriginalVersion","DataType":"string","Properties":{"Ordinal":11}},'
+        '{"Column":"MinClientVersion","DataType":"string","Properties":{"Ordinal":12}},'
+        '{"Column":"DevelopmentDependency","DataType":"bool","Properties":{"Ordinal":13}},'
+        '{"Column":"IsServiceable","DataType":"bool","Properties":{"Ordinal":14}},'
+        '{"Column":"Authors","DataType":"string","Properties":{"Ordinal":15}},'
+        '{"Column":"Copyright","DataType":"string","Properties":{"Ordinal":16}},'
+        '{"Column":"Description","DataType":"string","Properties":{"Ordinal":17}},'
+        '{"Column":"Icon","DataType":"string","Properties":{"Ordinal":18}},'
+        '{"Column":"IconUrl","DataType":"string","Properties":{"Ordinal":19}},'
+        '{"Column":"Language","DataType":"string","Properties":{"Ordinal":20}},'
+        '{"Column":"LicenseUrl","DataType":"string","Properties":{"Ordinal":21}},'
+        '{"Column":"Owners","DataType":"string","Properties":{"Ordinal":22}},'
+        '{"Column":"ProjectUrl","DataType":"string","Properties":{"Ordinal":23}},'
+        '{"Column":"Readme","DataType":"string","Properties":{"Ordinal":24}},'
+        '{"Column":"ReleaseNotes","DataType":"string","Properties":{"Ordinal":25}},'
+        '{"Column":"RequireLicenseAcceptance","DataType":"bool","Properties":{"Ordinal":26}},'
+        '{"Column":"Summary","DataType":"string","Properties":{"Ordinal":27}},'
+        '{"Column":"Tags","DataType":"string","Properties":{"Ordinal":28}},'
+        '{"Column":"Title","DataType":"string","Properties":{"Ordinal":29}},'
+        '{"Column":"PackageTypes","DataType":"dynamic","Properties":{"Ordinal":30}},'
+        '{"Column":"LicenseMetadata","DataType":"dynamic","Properties":{"Ordinal":31}},'
+        '{"Column":"RepositoryMetadata","DataType":"dynamic","Properties":{"Ordinal":32}},'
+        '{"Column":"ReferenceGroups","DataType":"dynamic","Properties":{"Ordinal":33}},'
+        '{"Column":"ContentFiles","DataType":"dynamic","Properties":{"Ordinal":34}},'
+        '{"Column":"DependencyGroups","DataType":"dynamic","Properties":{"Ordinal":35}},'
+        '{"Column":"FrameworkAssemblyGroups","DataType":"dynamic","Properties":{"Ordinal":36}},'
+        '{"Column":"FrameworkRefGroups","DataType":"dynamic","Properties":{"Ordinal":37}},'
+        '{"Column":"ContentFilesHasFormatException","DataType":"bool","Properties":{"Ordinal":38}},'
+        '{"Column":"DependencyGroupsHasMissingId","DataType":"bool","Properties":{"Ordinal":39}}'
     ']'
 
     */
     partial record PackageManifestRecord
     {
-        public int FieldCount => 39;
+        public int FieldCount => 40;
 
         public void WriteHeader(TextWriter writer)
         {
-            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,OriginalId,OriginalVersion,MinClientVersion,DevelopmentDependency,IsServiceable,Authors,Copyright,Description,Icon,IconUrl,Language,LicenseUrl,Owners,ProjectUrl,Readme,ReleaseNotes,RequireLicenseAcceptance,Summary,Tags,Title,PackageTypes,LicenseMetadata,RepositoryMetadata,ReferenceGroups,ContentFiles,DependencyGroups,FrameworkAssemblyGroups,FrameworkRefGroups,ContentFilesHasFormatException,DependencyGroupsHasMissingId");
+            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Size,OriginalId,OriginalVersion,MinClientVersion,DevelopmentDependency,IsServiceable,Authors,Copyright,Description,Icon,IconUrl,Language,LicenseUrl,Owners,ProjectUrl,Readme,ReleaseNotes,RequireLicenseAcceptance,Summary,Tags,Title,PackageTypes,LicenseMetadata,RepositoryMetadata,ReferenceGroups,ContentFiles,DependencyGroups,FrameworkAssemblyGroups,FrameworkRefGroups,ContentFilesHasFormatException,DependencyGroupsHasMissingId");
         }
 
         public void Write(List<string> fields)
@@ -129,6 +131,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             fields.Add(CsvUtility.FormatDateTimeOffset(CatalogCommitTimestamp));
             fields.Add(CsvUtility.FormatDateTimeOffset(Created));
             fields.Add(ResultType.ToString());
+            fields.Add(Size.ToString());
             fields.Add(OriginalId);
             fields.Add(OriginalVersion);
             fields.Add(MinClientVersion);
@@ -180,6 +183,8 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             writer.Write(CsvUtility.FormatDateTimeOffset(Created));
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, ResultType.ToString());
+            writer.Write(',');
+            writer.Write(Size);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, OriginalId);
             writer.Write(',');
@@ -263,6 +268,8 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, ResultType.ToString());
             await writer.WriteAsync(',');
+            await writer.WriteAsync(Size.ToString());
+            await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, OriginalId);
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, OriginalVersion);
@@ -338,6 +345,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
                 CatalogCommitTimestamp = CsvUtility.ParseDateTimeOffset(getNextField()),
                 Created = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
                 ResultType = Enum.Parse<PackageManifestRecordResultType>(getNextField()),
+                Size = int.Parse(getNextField()),
                 OriginalId = getNextField(),
                 OriginalVersion = getNextField(),
                 MinClientVersion = getNextField(),

@@ -118,13 +118,10 @@ the actual output is compared against this expected test data.
 **To produce this test data for the first time:**
 
 1. Set the [`BaseLogicIntegrationTest`](../test/Logic.Test/TestSupport/BaseLogicIntegrationTest.cs) `OverwriteTestData`
-   static property to `true`
-1. Run your new tests. 
-1. Go to `./artifacts/ExplorePackages/Worker.Logic.Test/bin/Debug/netcoreapp3.1/TestData`
-1. Find and copy the subdirectories for your new tests.
-1. Use a diff tool or text editor to check the output data to make sure it looks reasonable.
-1. Paste these directories into the [TestData](../test/Worker.Logic.Test/TestData) directory.
-1. Set the `OverwriteTestData` to `false.
+   static property to `true`.
+1. Run your new tests.
+1. Take a look the pending changes in Git (perhaps using `git diff`) and check if they make sense.
+1. Set the `OverwriteTestData` to `false`.
 1. Run the tests again to make sure the tests are passing.
 
-You've not locked your test results into static files in the Git repository.
+You've now locked your test results into static files in the Git repository.
