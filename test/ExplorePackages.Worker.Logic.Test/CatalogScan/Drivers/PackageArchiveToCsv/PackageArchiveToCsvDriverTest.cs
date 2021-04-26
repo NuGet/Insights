@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -15,6 +16,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
             FailFastLogLevel = LogLevel.None;
         }
 
+        public ICatalogLeafToCsvDriver<PackageAssembly> PackageAssemblyToCsv => Host.Services.GetRequiredService<ICatalogLeafToCsvDriver<PackageAssembly>>();
         public ICatalogLeafToCsvDriver<PackageArchiveRecord, PackageArchiveEntry> Target => Host.Services.GetRequiredService<ICatalogLeafToCsvDriver<PackageArchiveRecord, PackageArchiveEntry>>();
 
         [Fact]
@@ -24,17 +26,19 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2017.11.08.17.42.28/nuget.platform.1.0.0.json",
                 Type = CatalogLeafType.PackageDelete,
+                CommitTimestamp = DateTimeOffset.Parse("2017-11-08T17:42:28.5677911Z"),
                 PackageId = "NuGet.Platform",
                 PackageVersion = "1.0.0",
             };
-            await Target.InitializeAsync();
+            await InitializeAsync(leaf);
 
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Set1.Records);
             Assert.Equal(PackageArchiveResultType.Deleted, record.ResultType);
-            Assert.Empty(output.Value.Set2.Records);
+            var entry = Assert.Single(output.Value.Set2.Records);
+            Assert.Equal(PackageArchiveResultType.Deleted, entry.ResultType);
         }
 
         [Fact]
@@ -45,10 +49,11 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2015.06.13.03.41.09/nuget.platform.1.0.0.json",
                 Type = CatalogLeafType.PackageDetails,
+                CommitTimestamp = DateTimeOffset.Parse("2015-06-13T03:41:09.5185838Z"),
                 PackageId = "NuGet.Platform",
                 PackageVersion = "1.0.0",
             };
-            await Target.InitializeAsync();
+            await InitializeAsync(leaf);
 
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
@@ -64,10 +69,11 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.08.28.22.26.57/loshar.my.package.1.0.0.json",
                 Type = CatalogLeafType.PackageDetails,
+                CommitTimestamp = DateTimeOffset.Parse("2018-08-28T22:26:57.4218948Z"),
                 PackageId = "Loshar.My.Package",
                 PackageVersion = "1.0.0",
             };
-            await Target.InitializeAsync();
+            await InitializeAsync(leaf);
 
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
@@ -75,6 +81,10 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
             var archive = Assert.Single(output.Value.Set1.Records);
             Assert.Equal(PackageArchiveResultType.Available, archive.ResultType);
             Assert.Equal(22399, archive.Size);
+            Assert.Equal("Iv31+aZ1FrwwrVXrkkw6jw==", archive.MD5);
+            Assert.Equal("5mVQoxKAOBG4EfcMtAlbNA9j/BY=", archive.SHA1);
+            Assert.Equal("Un5Uw7RzNNFRXRGb4+6+ZB6zAU1+rSJi1UdjwEm+Dos=", archive.SHA256);
+            Assert.Equal("0j3nBhz6LgdRGkWED8U9UYpbK06J0adJdmdatPjsDtVrk6TvALANKEBD77uDUs67eIjpa3Bfs9QO/wuVWMrwLw==", archive.SHA512);
             Assert.Equal(22381, archive.OffsetAfterEndOfCentralDirectory);
             Assert.Equal(483, archive.CentralDirectorySize);
             Assert.Equal(21894, archive.OffsetOfCentralDirectory);
@@ -176,10 +186,11 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2019.12.03.16.44.55/microsoft.extensions.configuration.3.1.0.json",
                 Type = CatalogLeafType.PackageDetails,
+                CommitTimestamp = DateTimeOffset.Parse("2019-12-03T16:44:55.0668686Z"),
                 PackageId = "Microsoft.Extensions.Configuration",
                 PackageVersion = "3.1.0",
             };
-            await Target.InitializeAsync();
+            await InitializeAsync(leaf);
 
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
@@ -187,6 +198,10 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
             var archive = Assert.Single(output.Value.Set1.Records);
             Assert.Equal(PackageArchiveResultType.Available, archive.ResultType);
             Assert.Equal(69294, archive.Size);
+            Assert.Equal("YChbobHPT7otNUCa9TWMqA==", archive.MD5);
+            Assert.Equal("Zng0ROCOk8Qtml+wTEUAYtbfhGI=", archive.SHA1);
+            Assert.Equal("KI1WXvnF/Xe9cKTdDjzm0vd5h9bmM+3KinuWlsF/X+c=", archive.SHA256);
+            Assert.Equal("MUBW1eAqbVex8q0bnCxZ0npzJtiKCMW5OHWKCBYtScmyJ+iTVP9Pv6R9JnnF0UY+PspIkDPNXqo4pxQi/HV+yw==", archive.SHA512);
             Assert.Equal(69276, archive.OffsetAfterEndOfCentralDirectory);
             Assert.Equal(928, archive.CentralDirectorySize);
             Assert.Equal(68344, archive.OffsetOfCentralDirectory);
@@ -223,6 +238,13 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
             Assert.Equal(7006, entries[7].UncompressedSize);
             Assert.Equal(43097, entries[7].LocalHeaderOffset);
             Assert.Empty(entries[7].Comment);
+        }
+
+        private async Task InitializeAsync(CatalogLeafItem leaf)
+        {
+            await PackageAssemblyToCsv.InitializeAsync();
+            await PackageAssemblyToCsv.ProcessLeafAsync(leaf, attemptCount: 1);
+            await Target.InitializeAsync();
         }
     }
 }

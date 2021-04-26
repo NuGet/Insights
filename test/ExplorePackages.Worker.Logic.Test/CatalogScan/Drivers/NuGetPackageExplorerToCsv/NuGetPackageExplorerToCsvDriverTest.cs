@@ -37,7 +37,8 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Set1.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            Assert.Empty(output.Value.Set2.Records);
+            var file = Assert.Single(output.Value.Set2.Records);
+            Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
         [Fact]
@@ -57,7 +58,8 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Set1.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            Assert.Empty(output.Value.Set2.Records);
+            var file = Assert.Single(output.Value.Set2.Records);
+            Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
         [Fact]
@@ -77,7 +79,8 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Set1.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            Assert.Empty(output.Value.Set2.Records);
+            var file = Assert.Single(output.Value.Set2.Records);
+            Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
         [Fact]
@@ -97,7 +100,8 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Set1.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            Assert.Empty(output.Value.Set2.Records);
+            var file = Assert.Single(output.Value.Set2.Records);
+            Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
         [Fact]
@@ -117,7 +121,8 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Set1.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            Assert.Empty(output.Value.Set2.Records);
+            var file = Assert.Single(output.Value.Set2.Records);
+            Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
         [Fact]
@@ -137,7 +142,8 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Set1.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            Assert.Empty(output.Value.Set2.Records);
+            var file = Assert.Single(output.Value.Set2.Records);
+            Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
         [Fact]
@@ -157,7 +163,8 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Set1.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            Assert.Empty(output.Value.Set2.Records);
+            var file = Assert.Single(output.Value.Set2.Records);
+            Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
         [Fact]
@@ -177,7 +184,8 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Set1.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            Assert.Empty(output.Value.Set2.Records);
+            var file = Assert.Single(output.Value.Set2.Records);
+            Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
         [Fact]
@@ -197,7 +205,8 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Set1.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            Assert.Empty(output.Value.Set2.Records);
+            var file = Assert.Single(output.Value.Set2.Records);
+            Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
         [Fact]
@@ -217,7 +226,8 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Set1.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            Assert.Empty(output.Value.Set2.Records);
+            var file = Assert.Single(output.Value.Set2.Records);
+            Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
         [Fact]
@@ -237,7 +247,8 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Set1.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            Assert.Empty(output.Value.Set2.Records);
+            var file = Assert.Single(output.Value.Set2.Records);
+            Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
         [Fact]
@@ -257,7 +268,8 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Set1.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            Assert.Empty(output.Value.Set2.Records);
+            var file = Assert.Single(output.Value.Set2.Records);
+            Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
         [Fact]
@@ -277,7 +289,8 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Set1.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            Assert.Empty(output.Value.Set2.Records);
+            var file = Assert.Single(output.Value.Set2.Records);
+            Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
         [Fact]
@@ -297,7 +310,8 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Set1.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            Assert.Empty(output.Value.Set2.Records);
+            var file = Assert.Single(output.Value.Set2.Records);
+            Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
         [Fact]
@@ -317,7 +331,8 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Set1.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            Assert.Empty(output.Value.Set2.Records);
+            var file = Assert.Single(output.Value.Set2.Records);
+            Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
         [Fact]
@@ -337,7 +352,8 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Set1.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            Assert.Empty(output.Value.Set2.Records);
+            var file = Assert.Single(output.Value.Set2.Records);
+            Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
         [Fact]
@@ -357,7 +373,8 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Set1.Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            Assert.Empty(output.Value.Set2.Records);
+            var file = Assert.Single(output.Value.Set2.Records);
+            Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
     }
 }

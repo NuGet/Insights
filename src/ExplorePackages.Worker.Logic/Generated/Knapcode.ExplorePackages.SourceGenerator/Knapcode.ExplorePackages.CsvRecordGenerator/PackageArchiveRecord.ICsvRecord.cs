@@ -21,6 +21,10 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
         Created: datetime,
         ResultType: string,
         Size: long,
+        MD5: string,
+        SHA1: string,
+        SHA256: string,
+        SHA512: string,
         OffsetAfterEndOfCentralDirectory: long,
         CentralDirectorySize: long,
         OffsetOfCentralDirectory: long,
@@ -53,21 +57,25 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
         '{"Column":"Created","DataType":"datetime","Properties":{"Ordinal":7}},'
         '{"Column":"ResultType","DataType":"string","Properties":{"Ordinal":8}},'
         '{"Column":"Size","DataType":"long","Properties":{"Ordinal":9}},'
-        '{"Column":"OffsetAfterEndOfCentralDirectory","DataType":"long","Properties":{"Ordinal":10}},'
-        '{"Column":"CentralDirectorySize","DataType":"long","Properties":{"Ordinal":11}},'
-        '{"Column":"OffsetOfCentralDirectory","DataType":"long","Properties":{"Ordinal":12}},'
-        '{"Column":"EntryCount","DataType":"long","Properties":{"Ordinal":13}},'
-        '{"Column":"Comment","DataType":"string","Properties":{"Ordinal":14}}'
+        '{"Column":"MD5","DataType":"string","Properties":{"Ordinal":10}},'
+        '{"Column":"SHA1","DataType":"string","Properties":{"Ordinal":11}},'
+        '{"Column":"SHA256","DataType":"string","Properties":{"Ordinal":12}},'
+        '{"Column":"SHA512","DataType":"string","Properties":{"Ordinal":13}},'
+        '{"Column":"OffsetAfterEndOfCentralDirectory","DataType":"long","Properties":{"Ordinal":14}},'
+        '{"Column":"CentralDirectorySize","DataType":"long","Properties":{"Ordinal":15}},'
+        '{"Column":"OffsetOfCentralDirectory","DataType":"long","Properties":{"Ordinal":16}},'
+        '{"Column":"EntryCount","DataType":"long","Properties":{"Ordinal":17}},'
+        '{"Column":"Comment","DataType":"string","Properties":{"Ordinal":18}}'
     ']'
 
     */
     partial record PackageArchiveRecord
     {
-        public int FieldCount => 15;
+        public int FieldCount => 19;
 
         public void WriteHeader(TextWriter writer)
         {
-            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Size,OffsetAfterEndOfCentralDirectory,CentralDirectorySize,OffsetOfCentralDirectory,EntryCount,Comment");
+            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Size,MD5,SHA1,SHA256,SHA512,OffsetAfterEndOfCentralDirectory,CentralDirectorySize,OffsetOfCentralDirectory,EntryCount,Comment");
         }
 
         public void Write(List<string> fields)
@@ -82,6 +90,10 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
             fields.Add(CsvUtility.FormatDateTimeOffset(Created));
             fields.Add(ResultType.ToString());
             fields.Add(Size.ToString());
+            fields.Add(MD5);
+            fields.Add(SHA1);
+            fields.Add(SHA256);
+            fields.Add(SHA512);
             fields.Add(OffsetAfterEndOfCentralDirectory.ToString());
             fields.Add(CentralDirectorySize.ToString());
             fields.Add(OffsetOfCentralDirectory.ToString());
@@ -110,6 +122,14 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
             CsvUtility.WriteWithQuotes(writer, ResultType.ToString());
             writer.Write(',');
             writer.Write(Size);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, MD5);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, SHA1);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, SHA256);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, SHA512);
             writer.Write(',');
             writer.Write(OffsetAfterEndOfCentralDirectory);
             writer.Write(',');
@@ -145,6 +165,14 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
             await writer.WriteAsync(',');
             await writer.WriteAsync(Size.ToString());
             await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, MD5);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, SHA1);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, SHA256);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, SHA512);
+            await writer.WriteAsync(',');
             await writer.WriteAsync(OffsetAfterEndOfCentralDirectory.ToString());
             await writer.WriteAsync(',');
             await writer.WriteAsync(CentralDirectorySize.ToString());
@@ -171,6 +199,10 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
                 Created = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
                 ResultType = Enum.Parse<PackageArchiveResultType>(getNextField()),
                 Size = long.Parse(getNextField()),
+                MD5 = getNextField(),
+                SHA1 = getNextField(),
+                SHA256 = getNextField(),
+                SHA512 = getNextField(),
                 OffsetAfterEndOfCentralDirectory = long.Parse(getNextField()),
                 CentralDirectorySize = long.Parse(getNextField()),
                 OffsetOfCentralDirectory = long.Parse(getNextField()),

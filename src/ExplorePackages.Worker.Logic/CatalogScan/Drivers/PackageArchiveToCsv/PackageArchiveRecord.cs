@@ -23,6 +23,10 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
         public PackageArchiveResultType ResultType { get; set; }
 
         public long Size { get; set; }
+        public string MD5 { get; set; }
+        public string SHA1 { get; set; }
+        public string SHA256 { get; set; }
+        public string SHA512 { get; set; }
 
         public long OffsetAfterEndOfCentralDirectory { get; set; }
         public long CentralDirectorySize { get; set; }

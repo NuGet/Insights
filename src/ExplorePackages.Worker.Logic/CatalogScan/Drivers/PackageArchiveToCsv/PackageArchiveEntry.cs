@@ -8,10 +8,19 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
         {
         }
 
+        public PackageArchiveEntry(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDeleteCatalogLeaf leaf)
+            : base(scanId, scanTimestamp, leaf)
+        {
+            ResultType = PackageArchiveResultType.Deleted;
+        }
+
         public PackageArchiveEntry(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf)
             : base(scanId, scanTimestamp, leaf)
         {
+            ResultType = PackageArchiveResultType.Available;
         }
+
+        public PackageArchiveResultType ResultType { get; set; }
 
         public int SequenceNumber { get; set; }
 

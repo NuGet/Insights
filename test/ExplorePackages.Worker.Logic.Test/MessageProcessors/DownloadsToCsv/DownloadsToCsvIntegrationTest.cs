@@ -181,7 +181,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 
         private Task AssertCsvBlobAsync(string testName, string stepName, string blobName)
         {
-            return AssertCsvBlobAsync<PackageDownloadRecord>(Options.Value.PackageDownloadsContainerName, testName, stepName, blobName);
+            return AssertCsvBlobAsync<PackageDownloadRecord>(Options.Value.PackageDownloadsContainerName, testName, stepName, "latest_downloads.csv", blobName);
         }
     }
 }

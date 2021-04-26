@@ -181,7 +181,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
 
         private Task AssertCsvBlobAsync(string testName, string stepName, string blobName)
         {
-            return AssertCsvBlobAsync<PackageOwnerRecord>(Options.Value.PackageOwnersContainerName, testName, stepName, blobName);
+            return AssertCsvBlobAsync<PackageOwnerRecord>(Options.Value.PackageOwnersContainerName, testName, stepName, "latest_owners.csv", blobName);
         }
     }
 }

@@ -56,7 +56,7 @@ namespace Knapcode.ExplorePackages.Worker
             },
             {
                 CatalogScanDriverType.PackageArchiveToCsv,
-                new[] { CatalogScanDriverType.LoadPackageArchive }
+                new[] { CatalogScanDriverType.LoadPackageArchive, CatalogScanDriverType.PackageAssemblyToCsv }
             },
             {
                 CatalogScanDriverType.PackageAssetToCsv,

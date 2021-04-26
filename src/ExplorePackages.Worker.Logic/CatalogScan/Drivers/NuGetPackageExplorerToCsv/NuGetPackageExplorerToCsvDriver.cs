@@ -57,25 +57,14 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             return Task.CompletedTask;
         }
 
-        public async Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(NuGetPackageExplorerRecord record)
+        public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(NuGetPackageExplorerRecord record)
         {
-            if (record.ResultType != NuGetPackageExplorerResultType.Failed)
-            {
-                return null;
-            }
-
-            var leaf = await _latestPackageLeafService.GetOrNullAsync(record.Id, record.Version);
-            if (leaf == null)
-            {
-                return null;
-            }
-
-            return leaf.ToLeafItem();
+            throw new NotImplementedException();
         }
 
         public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(NuGetPackageExplorerFile record)
         {
-            return null;
+            throw new NotImplementedException();
         }
 
         public async Task<DriverResult<CsvRecordSets<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
@@ -84,10 +73,10 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             var bucketKey = PackageRecord.GetBucketKey(item);
             return DriverResult.Success(new CsvRecordSets<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>(
                 new CsvRecordSet<NuGetPackageExplorerRecord>(bucketKey, record != null ? new[] { record } : Array.Empty<NuGetPackageExplorerRecord>()),
-                new CsvRecordSet<NuGetPackageExplorerFile>(bucketKey, (IReadOnlyList<NuGetPackageExplorerFile>)files ?? Array.Empty<NuGetPackageExplorerFile>())));
+                new CsvRecordSet<NuGetPackageExplorerFile>(bucketKey, files ?? Array.Empty<NuGetPackageExplorerFile>())));
         }
 
-        private async Task<(NuGetPackageExplorerRecord, List<NuGetPackageExplorerFile>)> ProcessLeafInternalAsync(CatalogLeafItem item, int attemptCount)
+        private async Task<(NuGetPackageExplorerRecord, IReadOnlyList<NuGetPackageExplorerFile>)> ProcessLeafInternalAsync(CatalogLeafItem item, int attemptCount)
         {
             Guid? scanId = null;
             DateTimeOffset? scanTimestamp = null;
@@ -100,7 +89,10 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             if (item.Type == CatalogLeafType.PackageDelete)
             {
                 var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
-                return (new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf), null);
+                return (
+                    new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf),
+                    new[] { new NuGetPackageExplorerFile(scanId, scanTimestamp, leaf) }
+                );
             }
             else
             {
@@ -110,11 +102,6 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                 // Currently NuGetPackageExplore.Core symbol analysis only works fully on Windows.
                 throw new NotSupportedException("This build has the 'ENABLE_NPE' constant and the 'EnableNPE' MSBuild property disabled. This is currently expected when not running on Windows.");
 #else
-                if (attemptCount > 4)
-                {
-                    _logger.LogWarning("Package {Id} {Version} failed due to too many attempts.", leaf.PackageId, leaf.PackageVersion);
-                    return (new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf) { ResultType = NuGetPackageExplorerResultType.Failed }, null);
-                }
 
                 var tempDir = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "npe"));
                 if (!Directory.Exists(tempDir))
@@ -125,52 +112,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                 var tempPath = Path.Combine(tempDir, StorageUtility.GenerateDescendingId().ToString() + ".nupkg");
                 try
                 {
-                    var contentUrl = await _flatContainerClient.GetPackageContentUrlAsync(leaf.PackageId, leaf.PackageVersion);
-                    var nuGetLogger = _logger.ToNuGetLogger();
-
-                    _logger.LogInformation(
-                        "Downloading .nupkg for {Id} {Version} on attempt {AttemptCount}.",
-                        leaf.PackageId,
-                        leaf.PackageVersion,
-                        attemptCount);
-
-                    var exists = await _httpSource.ProcessResponseAsync(
-                        new HttpSourceRequest(contentUrl, nuGetLogger) { IgnoreNotFounds = true },
-                        async response =>
-                        {
-                            if (response.StatusCode == HttpStatusCode.NotFound)
-                            {
-                                return false;
-                            }
-
-                            response.EnsureSuccessStatusCode();
-
-                            var length = response.Content.Headers.ContentLength.Value;
-
-                            using (var source = await response.Content.ReadAsStreamAsync())
-                            using (var hash = IncrementalHash.CreateAll())
-                            using (var destination = new FileStream(
-                                tempPath,
-                                FileMode.Create,
-                                FileAccess.ReadWrite,
-                                FileShare.Read,
-                                bufferSize: 4096,
-                                FileOptions.Asynchronous))
-                            {
-                                await destination.SetLengthAndWriteAsync(length);
-                                await source.CopyToSlowAsync(
-                                    length,
-                                    destination,
-                                    bufferSize: 4 * 1024 * 1024,
-                                    hashAlgorithm: hash,
-                                    _logger);
-                            }
-
-                            return true;
-                        },
-                        nuGetLogger,
-                        CancellationToken.None);
-
+                    var exists = await DownloadToFileAsync(leaf, attemptCount, tempPath);
                     if (!exists)
                     {
                         // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted record.
@@ -200,7 +142,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                                             || (ex.Message.Contains("Assembly reference ") && ex.Message.Contains(" contains invalid characters.")))
                     {
                         _logger.LogWarning(ex, "Package {Id} {Version} had invalid metadata.", leaf.PackageId, leaf.PackageVersion);
-                        return (new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf) { ResultType = NuGetPackageExplorerResultType.InvalidMetadata }, null);
+                        return MakeSingleItem(scanId, scanTimestamp, leaf, NuGetPackageExplorerResultType.InvalidMetadata);
                     }
 
                     using (zipPackage)
@@ -226,7 +168,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                                 if (attemptCount > 3)
                                 {
                                     _logger.LogWarning("Package {Id} {Version} had its symbol validation timeout.", leaf.PackageId, leaf.PackageVersion);
-                                    return (new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf) { ResultType = NuGetPackageExplorerResultType.Timeout }, null);
+                                    return MakeSingleItem(scanId, scanTimestamp, leaf, NuGetPackageExplorerResultType.Timeout);
                                 }
                                 else
                                 {
@@ -290,7 +232,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                         catch (FileNotFoundException ex)
                         {
                             _logger.LogWarning(ex, "Could not get symbol validator files for {Id} {Version}.", leaf.PackageId, leaf.PackageVersion);
-                            return (new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf) { ResultType = NuGetPackageExplorerResultType.InvalidMetadata }, null);
+                            return MakeSingleItem(scanId, scanTimestamp, leaf, NuGetPackageExplorerResultType.InvalidMetadata);
                         }
 
                         return (record, files);
@@ -313,6 +255,67 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                 }
 #endif
             }
+        }
+
+        private async Task<bool> DownloadToFileAsync(PackageDetailsCatalogLeaf leaf, int attemptCount, string path)
+        {
+            var contentUrl = await _flatContainerClient.GetPackageContentUrlAsync(leaf.PackageId, leaf.PackageVersion);
+            var nuGetLogger = _logger.ToNuGetLogger();
+
+            _logger.LogInformation(
+                "Downloading .nupkg for {Id} {Version} on attempt {AttemptCount}.",
+                leaf.PackageId,
+                leaf.PackageVersion,
+                attemptCount);
+
+            return await _httpSource.ProcessResponseAsync(
+                new HttpSourceRequest(contentUrl, nuGetLogger) { IgnoreNotFounds = true },
+                async response =>
+                {
+                    if (response.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        return false;
+                    }
+
+                    response.EnsureSuccessStatusCode();
+
+                    var length = response.Content.Headers.ContentLength.Value;
+
+                    using (var source = await response.Content.ReadAsStreamAsync())
+                    using (var hash = IncrementalHash.CreateAll())
+                    using (var destination = new FileStream(
+                        path,
+                        FileMode.Create,
+                        FileAccess.ReadWrite,
+                        FileShare.Read,
+                        bufferSize: 4096,
+                        FileOptions.Asynchronous))
+                    {
+                        await destination.SetLengthAndWriteAsync(length);
+                        await source.CopyToSlowAsync(
+                            length,
+                            destination,
+                            bufferSize: 4 * 1024 * 1024,
+                            hashAlgorithm: hash,
+                            _logger);
+                    }
+
+                    return true;
+                },
+                nuGetLogger,
+                CancellationToken.None);
+        }
+
+        private static (NuGetPackageExplorerRecord, NuGetPackageExplorerFile[]) MakeSingleItem(
+            Guid? scanId,
+            DateTimeOffset? scanTimestamp,
+            PackageDetailsCatalogLeaf leaf,
+            NuGetPackageExplorerResultType type)
+        {
+            return (
+                new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf) { ResultType = type },
+                new[] { new NuGetPackageExplorerFile(scanId, scanTimestamp, leaf) { ResultType = type } }
+            );
         }
 
         public List<NuGetPackageExplorerRecord> Prune(List<NuGetPackageExplorerRecord> records)

@@ -30,9 +30,11 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
 
                 await CatalogScanService.InitializeAsync();
                 await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max2);
+                await SetCursorAsync(CatalogScanDriverType.PackageAssemblyToCsv, min0);
                 await SetCursorAsync(min0);
 
                 // Act
+                await UpdateAsync(CatalogScanDriverType.PackageAssemblyToCsv, onlyLatestLeaves: true, max1);
                 await UpdateAsync(max1);
 
                 // Assert
@@ -41,6 +43,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
                 await AssertOutputAsync(PackageArchiveToCsvDir, Step1, 2);
 
                 // Act
+                await UpdateAsync(CatalogScanDriverType.PackageAssemblyToCsv, onlyLatestLeaves: true, max2);
                 await UpdateAsync(max2);
 
                 // Assert
@@ -78,9 +81,11 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
 
                 await CatalogScanService.InitializeAsync();
                 await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max2);
+                await SetCursorAsync(CatalogScanDriverType.PackageAssemblyToCsv, min0);
                 await SetCursorAsync(min0);
 
                 // Act
+                await UpdateAsync(CatalogScanDriverType.PackageAssemblyToCsv, onlyLatestLeaves: true, max1);
                 await UpdateAsync(max1);
 
                 // Assert
@@ -89,6 +94,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
                 await AssertOutputAsync(PackageArchiveToCsv_WithDeleteDir, Step1, 2);
 
                 // Act
+                await UpdateAsync(CatalogScanDriverType.PackageAssemblyToCsv, onlyLatestLeaves: true, max2);
                 await UpdateAsync(max2);
 
                 // Assert
@@ -114,9 +120,11 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
 
                 await CatalogScanService.InitializeAsync();
                 await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
+                await SetCursorAsync(CatalogScanDriverType.PackageAssemblyToCsv, min0);
                 await SetCursorAsync(min0);
 
                 // Act
+                await UpdateAsync(CatalogScanDriverType.PackageAssemblyToCsv, onlyLatestLeaves: true, max1);
                 await UpdateAsync(max1);
 
                 // Assert
@@ -134,17 +142,41 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
         protected override string DestinationContainerName1 => Options.Value.PackageArchiveContainerName;
         protected override string DestinationContainerName2 => Options.Value.PackageArchiveEntryContainerName;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageArchiveToCsv;
-        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType };
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType, CatalogScanDriverType.PackageAssemblyToCsv };
         public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();
 
         protected override IEnumerable<string> GetExpectedCursorNames()
         {
-            return base.GetExpectedCursorNames().Concat(new[] { "CatalogScan-" + CatalogScanDriverType.LoadPackageArchive });
+            return base.GetExpectedCursorNames().Concat(new[]
+            {
+                "CatalogScan-" + CatalogScanDriverType.LoadPackageArchive,
+                "CatalogScan-" + CatalogScanDriverType.PackageAssemblyToCsv,
+            });
+        }
+
+        protected override IEnumerable<string> GetExpectedLeaseNames()
+        {
+            return base.GetExpectedLeaseNames().Concat(new[]
+            {
+                "Start-CatalogScan-" + CatalogScanDriverType.PackageAssemblyToCsv,
+            });
+        }
+
+        protected override IEnumerable<string> GetExpectedBlobContainerNames()
+        {
+            return base.GetExpectedBlobContainerNames().Concat(new[]
+            {
+                Options.Value.PackageAssemblyContainerName,
+            });
         }
 
         protected override IEnumerable<string> GetExpectedTableNames()
         {
-            return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageArchiveTableName });
+            return base.GetExpectedTableNames().Concat(new[]
+            {
+                Options.Value.PackageArchiveTableName,
+                Options.Value.PackageHashesTableName,
+            });
         }
     }
 }

@@ -356,6 +356,7 @@ namespace Knapcode.ExplorePackages.Worker
                     SetDependencyCursorAsync = async (self, x) =>
                     {
                         await self.SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, x);
+                        await self.SetCursorAsync(CatalogScanDriverType.PackageAssemblyToCsv, x);
                     },
                 }
             },

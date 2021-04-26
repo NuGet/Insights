@@ -152,26 +152,34 @@ namespace Knapcode.ExplorePackages
 
         protected async Task AssertCsvBlobAsync<T>(string containerName, string testName, string stepName, string blobName) where T : ICsvRecord
         {
+            await AssertCsvBlobAsync<T>(containerName, testName, stepName, fileName: null, blobName);
+        }
+
+        protected async Task AssertCsvBlobAsync<T>(string containerName, string testName, string stepName, string fileName, string blobName) where T : ICsvRecord
+        {
             Assert.EndsWith(".csv.gz", blobName);
-            var actual = await AssertBlobAsync(containerName, testName, stepName, blobName, gzip: true);
+            var actual = await AssertBlobAsync(containerName, testName, stepName, fileName, blobName, gzip: true);
             var headerFactory = Activator.CreateInstance<T>();
             var stringWriter = new StringWriter();
             headerFactory.WriteHeader(stringWriter);
             Assert.StartsWith(stringWriter.ToString(), actual);
         }
 
-        protected async Task<string> AssertBlobAsync(string containerName, string testName, string stepName, string blobName, bool gzip = false)
+        protected async Task<string> AssertBlobAsync(string containerName, string testName, string stepName, string fileName, string blobName, bool gzip = false)
         {
             var client = await ServiceClientFactory.GetBlobServiceClientAsync();
             var container = client.GetBlobContainerClient(containerName);
             var blob = container.GetBlobClient(blobName);
 
             string actual;
-            var fileName = blobName;
             if (gzip)
             {
+                if (fileName == null)
+                {
+                    fileName = blobName.Substring(0, blobName.Length - ".gz".Length);
+                }
+
                 Assert.EndsWith(".gz", blobName);
-                fileName = blobName.Substring(0, blobName.Length - ".gz".Length);
 
                 using var destStream = new MemoryStream();
                 using BlobDownloadInfo downloadInfo = await blob.DownloadAsync();
@@ -193,6 +201,11 @@ namespace Knapcode.ExplorePackages
             }
             else
             {
+                if (fileName == null)
+                {
+                    fileName = blobName;
+                }
+
                 using BlobDownloadInfo downloadInfo = await blob.DownloadAsync();
                 using var reader = new StreamReader(downloadInfo.Content);
                 actual = await reader.ReadToEndAsync();

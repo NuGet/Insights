@@ -9,10 +9,19 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
         {
         }
 
+        public NuGetPackageExplorerFile(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDeleteCatalogLeaf leaf)
+            : base(scanId, scanTimestamp, leaf)
+        {
+            ResultType = NuGetPackageExplorerResultType.Deleted;
+        }
+
         public NuGetPackageExplorerFile(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf)
             : base(scanId, scanTimestamp, leaf)
         {
+            ResultType = NuGetPackageExplorerResultType.Available;
         }
+
+        public NuGetPackageExplorerResultType ResultType { get; set; }
 
         public string Name { get; set; }
         public string Extension { get; set; }

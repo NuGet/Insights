@@ -5,7 +5,6 @@
         Deleted,
         Available,
         Timeout,
-        Failed,
         InvalidMetadata,
     }
 }

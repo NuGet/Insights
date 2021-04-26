@@ -15,15 +15,18 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
     {
         private readonly CatalogClient _catalogClient;
         private readonly PackageFileService _packageFileService;
+        private readonly PackageHashService _packageHashService;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
         public PackageArchiveToCsvDriver(
             CatalogClient catalogClient,
             PackageFileService packageFileService,
+            PackageHashService packageHashService,
             IOptions<ExplorePackagesWorkerSettings> options)
         {
             _catalogClient = catalogClient;
             _packageFileService = packageFileService;
+            _packageHashService = packageHashService;
             _options = options;
         }
 
@@ -54,6 +57,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
         public async Task InitializeAsync()
         {
             await _packageFileService.InitializeAsync();
+            await _packageHashService.InitializeAsync();
         }
 
         public async Task<DriverResult<CsvRecordSets<PackageArchiveRecord, PackageArchiveEntry>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
@@ -62,10 +66,10 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
             var bucketKey = PackageRecord.GetBucketKey(item);
             return DriverResult.Success(new CsvRecordSets<PackageArchiveRecord, PackageArchiveEntry>(
                 new CsvRecordSet<PackageArchiveRecord>(bucketKey, archive != null ? new[] { archive } : Array.Empty<PackageArchiveRecord>()),
-                new CsvRecordSet<PackageArchiveEntry>(bucketKey, (IReadOnlyList<PackageArchiveEntry>)entries ?? Array.Empty<PackageArchiveEntry>())));
+                new CsvRecordSet<PackageArchiveEntry>(bucketKey, entries ?? Array.Empty<PackageArchiveEntry>())));
         }
 
-        private async Task<(PackageArchiveRecord, List<PackageArchiveEntry>)> ProcessLeafInternalAsync(CatalogLeafItem item)
+        private async Task<(PackageArchiveRecord, IReadOnlyList<PackageArchiveEntry>)> ProcessLeafInternalAsync(CatalogLeafItem item)
         {
             Guid? scanId = null;
             DateTimeOffset? scanTimestamp = null;
@@ -78,7 +82,10 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
             if (item.Type == CatalogLeafType.PackageDelete)
             {
                 var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
-                return (new PackageArchiveRecord(scanId, scanTimestamp, leaf), null);
+                return (
+                    new PackageArchiveRecord(scanId, scanTimestamp, leaf),
+                    new[] { new PackageArchiveEntry(scanId, scanTimestamp, leaf) }
+                );
             }
             else
             {
@@ -91,9 +98,21 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
                     return (null, null);
                 }
 
+                var hashes = await _packageHashService.GetHashesOrNullAsync(item.PackageId, item.PackageVersion);
+                if (hashes == null)
+                {
+                    // Ignore packages where the hashes are missing. A subsequent scan will produce a deleted asset record.
+                    return (null, null);
+                }
+
                 var archive = new PackageArchiveRecord(scanId, scanTimestamp, leaf)
                 {
                     Size = size,
+                    MD5 = hashes.MD5.ToBase64(),
+                    SHA1 = hashes.SHA1.ToBase64(),
+                    SHA256 = hashes.SHA256.ToBase64(),
+                    SHA512 = hashes.SHA512.ToBase64(),
+
                     OffsetAfterEndOfCentralDirectory = zipDirectory.OffsetAfterEndOfCentralDirectory,
                     CentralDirectorySize = zipDirectory.CentralDirectorySize,
                     OffsetOfCentralDirectory = zipDirectory.OffsetOfCentralDirectory,

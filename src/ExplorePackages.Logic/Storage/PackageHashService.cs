@@ -50,6 +50,24 @@ namespace Knapcode.ExplorePackages
             await table.UpsertEntityAsync(entity, mode: TableUpdateMode.Replace);
         }
 
+        public async Task<HashOutput> GetHashesOrNullAsync(string id, string version)
+        {
+            var table = await GetTableAsync();
+            var pk = GetPartitionKey(id);
+            var rk = GetRowKey(version);
+
+            /// This will throw an exception if the entity does not exist. This is expected because the called should
+            /// have a dependency on the cursor of the driver that populates this table (i.e. the caller of the
+            /// <see cref="SetHashesAsync(CatalogLeafItem, HashOutput)"/> method).
+            HashesEntity entity = await table.GetEntityAsync<HashesEntity>(pk, rk);
+            if (!entity.Available)
+            {
+                return null;
+            }
+
+            return entity;
+        }
+
         private async Task<TableClient> GetTableAsync()
         {
             return (await _serviceClientFactory.GetTableServiceClientAsync())
@@ -66,7 +84,7 @@ namespace Knapcode.ExplorePackages
             return NuGetVersion.Parse(version).ToNormalizedString().ToLowerInvariant();
         }
 
-        private class HashesEntity : ITableEntity
+        private class HashesEntity : HashOutput, ITableEntity
         {
             public string PartitionKey { get; set; }
             public string RowKey { get; set; }
@@ -75,11 +93,6 @@ namespace Knapcode.ExplorePackages
 
             public DateTimeOffset CommitTimestamp { get; set; }
             public bool Available { get; set; }
-
-            public byte[] MD5 { get; set; }
-            public byte[] SHA1 { get; set; }
-            public byte[] SHA256 { get; set; }
-            public byte[] SHA512 { get; set; }
         }
     }
 }

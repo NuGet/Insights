@@ -19,6 +19,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
         Version: string,
         CatalogCommitTimestamp: datetime,
         Created: datetime,
+        ResultType: string,
         SequenceNumber: int,
         Path: string,
         FileName: string,
@@ -57,29 +58,30 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
         '{"Column":"Version","DataType":"string","Properties":{"Ordinal":5}},'
         '{"Column":"CatalogCommitTimestamp","DataType":"datetime","Properties":{"Ordinal":6}},'
         '{"Column":"Created","DataType":"datetime","Properties":{"Ordinal":7}},'
-        '{"Column":"SequenceNumber","DataType":"int","Properties":{"Ordinal":8}},'
-        '{"Column":"Path","DataType":"string","Properties":{"Ordinal":9}},'
-        '{"Column":"FileName","DataType":"string","Properties":{"Ordinal":10}},'
-        '{"Column":"FileExtension","DataType":"string","Properties":{"Ordinal":11}},'
-        '{"Column":"TopLevelFolder","DataType":"string","Properties":{"Ordinal":12}},'
-        '{"Column":"Flags","DataType":"int","Properties":{"Ordinal":13}},'
-        '{"Column":"CompressionMethod","DataType":"int","Properties":{"Ordinal":14}},'
-        '{"Column":"LastModified","DataType":"datetime","Properties":{"Ordinal":15}},'
-        '{"Column":"Crc32","DataType":"long","Properties":{"Ordinal":16}},'
-        '{"Column":"CompressedSize","DataType":"long","Properties":{"Ordinal":17}},'
-        '{"Column":"UncompressedSize","DataType":"long","Properties":{"Ordinal":18}},'
-        '{"Column":"LocalHeaderOffset","DataType":"long","Properties":{"Ordinal":19}},'
-        '{"Column":"Comment","DataType":"string","Properties":{"Ordinal":20}}'
+        '{"Column":"ResultType","DataType":"string","Properties":{"Ordinal":8}},'
+        '{"Column":"SequenceNumber","DataType":"int","Properties":{"Ordinal":9}},'
+        '{"Column":"Path","DataType":"string","Properties":{"Ordinal":10}},'
+        '{"Column":"FileName","DataType":"string","Properties":{"Ordinal":11}},'
+        '{"Column":"FileExtension","DataType":"string","Properties":{"Ordinal":12}},'
+        '{"Column":"TopLevelFolder","DataType":"string","Properties":{"Ordinal":13}},'
+        '{"Column":"Flags","DataType":"int","Properties":{"Ordinal":14}},'
+        '{"Column":"CompressionMethod","DataType":"int","Properties":{"Ordinal":15}},'
+        '{"Column":"LastModified","DataType":"datetime","Properties":{"Ordinal":16}},'
+        '{"Column":"Crc32","DataType":"long","Properties":{"Ordinal":17}},'
+        '{"Column":"CompressedSize","DataType":"long","Properties":{"Ordinal":18}},'
+        '{"Column":"UncompressedSize","DataType":"long","Properties":{"Ordinal":19}},'
+        '{"Column":"LocalHeaderOffset","DataType":"long","Properties":{"Ordinal":20}},'
+        '{"Column":"Comment","DataType":"string","Properties":{"Ordinal":21}}'
     ']'
 
     */
     partial record PackageArchiveEntry
     {
-        public int FieldCount => 21;
+        public int FieldCount => 22;
 
         public void WriteHeader(TextWriter writer)
         {
-            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,SequenceNumber,Path,FileName,FileExtension,TopLevelFolder,Flags,CompressionMethod,LastModified,Crc32,CompressedSize,UncompressedSize,LocalHeaderOffset,Comment");
+            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,SequenceNumber,Path,FileName,FileExtension,TopLevelFolder,Flags,CompressionMethod,LastModified,Crc32,CompressedSize,UncompressedSize,LocalHeaderOffset,Comment");
         }
 
         public void Write(List<string> fields)
@@ -92,6 +94,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
             fields.Add(Version);
             fields.Add(CsvUtility.FormatDateTimeOffset(CatalogCommitTimestamp));
             fields.Add(CsvUtility.FormatDateTimeOffset(Created));
+            fields.Add(ResultType.ToString());
             fields.Add(SequenceNumber.ToString());
             fields.Add(Path);
             fields.Add(FileName);
@@ -124,6 +127,8 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
             writer.Write(CsvUtility.FormatDateTimeOffset(CatalogCommitTimestamp));
             writer.Write(',');
             writer.Write(CsvUtility.FormatDateTimeOffset(Created));
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, ResultType.ToString());
             writer.Write(',');
             writer.Write(SequenceNumber);
             writer.Write(',');
@@ -171,6 +176,8 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
             await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(Created));
             await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, ResultType.ToString());
+            await writer.WriteAsync(',');
             await writer.WriteAsync(SequenceNumber.ToString());
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, Path);
@@ -211,6 +218,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
                 Version = getNextField(),
                 CatalogCommitTimestamp = CsvUtility.ParseDateTimeOffset(getNextField()),
                 Created = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
+                ResultType = Enum.Parse<PackageArchiveResultType>(getNextField()),
                 SequenceNumber = int.Parse(getNextField()),
                 Path = getNextField(),
                 FileName = getNextField(),
