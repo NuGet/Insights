@@ -61,17 +61,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             public async Task Execute()
             {
                 // Arrange
-                HttpMessageHandlerFactory.OnSendAsync = async req =>
-                {
-                    if (req.RequestUri.AbsolutePath.EndsWith("/behaviorsample.1.0.0.nupkg"))
-                    {
-                        var newReq = Clone(req);
-                        newReq.RequestUri = new Uri($"http://localhost/{TestData}/behaviorsample.1.0.0.nupkg");
-                        return await TestDataHttpClient.SendAsync(newReq);
-                    }
-
-                    return null;
-                };
+                MakeDeletedPackageAvailable();
                 var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
                 var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
                 var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");

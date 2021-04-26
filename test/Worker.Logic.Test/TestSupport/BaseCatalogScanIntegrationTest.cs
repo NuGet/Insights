@@ -134,6 +134,28 @@ namespace Knapcode.ExplorePackages.Worker
             Assert.Equal(expected, actual);
         }
 
+        protected void MakeDeletedPackageAvailable()
+        {
+            HttpMessageHandlerFactory.OnSendAsync = async req =>
+            {
+                if (req.RequestUri.AbsolutePath.EndsWith("/behaviorsample.1.0.0.nupkg"))
+                {
+                    var newReq = Clone(req);
+                    newReq.RequestUri = new Uri($"http://localhost/{TestData}/behaviorsample.1.0.0.nupkg.testdata");
+                    var response = await TestDataHttpClient.SendAsync(newReq);
+                    response.EnsureSuccessStatusCode();
+                    return response;
+                }
+
+                return null;
+            };
+
+            var file = new FileInfo(Path.Combine(TestData, "behaviorsample.1.0.0.nupkg.testdata"))
+            {
+                LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z")
+            };
+        }
+
         public override async Task DisposeAsync()
         {
             try
