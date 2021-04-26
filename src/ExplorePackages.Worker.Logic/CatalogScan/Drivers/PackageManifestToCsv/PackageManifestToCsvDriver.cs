@@ -100,6 +100,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
                 LicenseUrl = nuspecReader.GetLicenseUrl(),
                 Owners = nuspecReader.GetOwners(),
                 ProjectUrl = nuspecReader.GetProjectUrl(),
+                Readme = nuspecReader.GetReadme(),
                 ReferenceGroups = JsonSerialize(nuspecReader.GetReferenceGroups()),
                 ReleaseNotes = nuspecReader.GetReleaseNotes(),
                 RequireLicenseAcceptance = nuspecReader.GetRequireLicenseAcceptance(),

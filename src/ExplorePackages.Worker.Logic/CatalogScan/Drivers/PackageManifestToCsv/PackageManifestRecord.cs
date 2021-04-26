@@ -38,6 +38,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
         public string LicenseUrl { get; set; }
         public string Owners { get; set; }
         public string ProjectUrl { get; set; }
+        public string Readme { get; set; }
         public string ReleaseNotes { get; set; }
         public bool RequireLicenseAcceptance { get; set; }
         public string Summary { get; set; }

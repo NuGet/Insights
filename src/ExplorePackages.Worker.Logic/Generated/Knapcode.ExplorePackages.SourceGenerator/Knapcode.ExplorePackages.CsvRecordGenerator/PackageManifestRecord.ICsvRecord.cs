@@ -34,6 +34,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
         LicenseUrl: string,
         Owners: string,
         ProjectUrl: string,
+        Readme: string,
         ReleaseNotes: string,
         RequireLicenseAcceptance: bool,
         Summary: string,
@@ -89,31 +90,32 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
         '{"Column":"LicenseUrl","DataType":"string","Properties":{"Ordinal":20}},'
         '{"Column":"Owners","DataType":"string","Properties":{"Ordinal":21}},'
         '{"Column":"ProjectUrl","DataType":"string","Properties":{"Ordinal":22}},'
-        '{"Column":"ReleaseNotes","DataType":"string","Properties":{"Ordinal":23}},'
-        '{"Column":"RequireLicenseAcceptance","DataType":"bool","Properties":{"Ordinal":24}},'
-        '{"Column":"Summary","DataType":"string","Properties":{"Ordinal":25}},'
-        '{"Column":"Tags","DataType":"string","Properties":{"Ordinal":26}},'
-        '{"Column":"Title","DataType":"string","Properties":{"Ordinal":27}},'
-        '{"Column":"PackageTypes","DataType":"dynamic","Properties":{"Ordinal":28}},'
-        '{"Column":"LicenseMetadata","DataType":"dynamic","Properties":{"Ordinal":29}},'
-        '{"Column":"RepositoryMetadata","DataType":"dynamic","Properties":{"Ordinal":30}},'
-        '{"Column":"ReferenceGroups","DataType":"dynamic","Properties":{"Ordinal":31}},'
-        '{"Column":"ContentFiles","DataType":"dynamic","Properties":{"Ordinal":32}},'
-        '{"Column":"DependencyGroups","DataType":"dynamic","Properties":{"Ordinal":33}},'
-        '{"Column":"FrameworkAssemblyGroups","DataType":"dynamic","Properties":{"Ordinal":34}},'
-        '{"Column":"FrameworkRefGroups","DataType":"dynamic","Properties":{"Ordinal":35}},'
-        '{"Column":"ContentFilesHasFormatException","DataType":"bool","Properties":{"Ordinal":36}},'
-        '{"Column":"DependencyGroupsHasMissingId","DataType":"bool","Properties":{"Ordinal":37}}'
+        '{"Column":"Readme","DataType":"string","Properties":{"Ordinal":23}},'
+        '{"Column":"ReleaseNotes","DataType":"string","Properties":{"Ordinal":24}},'
+        '{"Column":"RequireLicenseAcceptance","DataType":"bool","Properties":{"Ordinal":25}},'
+        '{"Column":"Summary","DataType":"string","Properties":{"Ordinal":26}},'
+        '{"Column":"Tags","DataType":"string","Properties":{"Ordinal":27}},'
+        '{"Column":"Title","DataType":"string","Properties":{"Ordinal":28}},'
+        '{"Column":"PackageTypes","DataType":"dynamic","Properties":{"Ordinal":29}},'
+        '{"Column":"LicenseMetadata","DataType":"dynamic","Properties":{"Ordinal":30}},'
+        '{"Column":"RepositoryMetadata","DataType":"dynamic","Properties":{"Ordinal":31}},'
+        '{"Column":"ReferenceGroups","DataType":"dynamic","Properties":{"Ordinal":32}},'
+        '{"Column":"ContentFiles","DataType":"dynamic","Properties":{"Ordinal":33}},'
+        '{"Column":"DependencyGroups","DataType":"dynamic","Properties":{"Ordinal":34}},'
+        '{"Column":"FrameworkAssemblyGroups","DataType":"dynamic","Properties":{"Ordinal":35}},'
+        '{"Column":"FrameworkRefGroups","DataType":"dynamic","Properties":{"Ordinal":36}},'
+        '{"Column":"ContentFilesHasFormatException","DataType":"bool","Properties":{"Ordinal":37}},'
+        '{"Column":"DependencyGroupsHasMissingId","DataType":"bool","Properties":{"Ordinal":38}}'
     ']'
 
     */
     partial record PackageManifestRecord
     {
-        public int FieldCount => 38;
+        public int FieldCount => 39;
 
         public void WriteHeader(TextWriter writer)
         {
-            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,OriginalId,OriginalVersion,MinClientVersion,DevelopmentDependency,IsServiceable,Authors,Copyright,Description,Icon,IconUrl,Language,LicenseUrl,Owners,ProjectUrl,ReleaseNotes,RequireLicenseAcceptance,Summary,Tags,Title,PackageTypes,LicenseMetadata,RepositoryMetadata,ReferenceGroups,ContentFiles,DependencyGroups,FrameworkAssemblyGroups,FrameworkRefGroups,ContentFilesHasFormatException,DependencyGroupsHasMissingId");
+            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,OriginalId,OriginalVersion,MinClientVersion,DevelopmentDependency,IsServiceable,Authors,Copyright,Description,Icon,IconUrl,Language,LicenseUrl,Owners,ProjectUrl,Readme,ReleaseNotes,RequireLicenseAcceptance,Summary,Tags,Title,PackageTypes,LicenseMetadata,RepositoryMetadata,ReferenceGroups,ContentFiles,DependencyGroups,FrameworkAssemblyGroups,FrameworkRefGroups,ContentFilesHasFormatException,DependencyGroupsHasMissingId");
         }
 
         public void Write(List<string> fields)
@@ -141,6 +143,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             fields.Add(LicenseUrl);
             fields.Add(Owners);
             fields.Add(ProjectUrl);
+            fields.Add(Readme);
             fields.Add(ReleaseNotes);
             fields.Add(CsvUtility.FormatBool(RequireLicenseAcceptance));
             fields.Add(Summary);
@@ -205,6 +208,8 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             CsvUtility.WriteWithQuotes(writer, Owners);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, ProjectUrl);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, Readme);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, ReleaseNotes);
             writer.Write(',');
@@ -286,6 +291,8 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, ProjectUrl);
             await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, Readme);
+            await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, ReleaseNotes);
             await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatBool(RequireLicenseAcceptance));
@@ -345,6 +352,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
                 LicenseUrl = getNextField(),
                 Owners = getNextField(),
                 ProjectUrl = getNextField(),
+                Readme = getNextField(),
                 ReleaseNotes = getNextField(),
                 RequireLicenseAcceptance = bool.Parse(getNextField()),
                 Summary = getNextField(),

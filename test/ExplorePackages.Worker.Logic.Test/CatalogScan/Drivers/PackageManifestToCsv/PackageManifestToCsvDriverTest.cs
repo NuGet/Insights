@@ -62,6 +62,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
                 { nameof(NuspecReader.GetOwners), nameof(PackageManifestRecord.Owners) },
                 { nameof(NuspecReader.GetPackageTypes), nameof(PackageManifestRecord.PackageTypes) },
                 { nameof(NuspecReader.GetProjectUrl), nameof(PackageManifestRecord.ProjectUrl) },
+                { nameof(NuspecReader.GetReadme), nameof(PackageManifestRecord.Readme) },
                 { nameof(NuspecReader.GetReferenceGroups), nameof(PackageManifestRecord.ReferenceGroups) },
                 { nameof(NuspecReader.GetReleaseNotes), nameof(PackageManifestRecord.ReleaseNotes) },
                 { nameof(NuspecReader.GetRepositoryMetadata), nameof(PackageManifestRecord.RepositoryMetadata) },
