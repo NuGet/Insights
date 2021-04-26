@@ -48,13 +48,8 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
 
         private async Task<List<PackageManifestRecord>> ProcessLeafInternalAsync(CatalogLeafItem item)
         {
-            Guid? scanId = null;
-            DateTimeOffset? scanTimestamp = null;
-            if (_options.Value.AppendResultUniqueIds)
-            {
-                scanId = Guid.NewGuid();
-                scanTimestamp = DateTimeOffset.UtcNow;
-            }
+            var scanId = Guid.NewGuid();
+            var scanTimestamp = DateTimeOffset.UtcNow;
 
             if (item.Type == CatalogLeafType.PackageDelete)
             {
@@ -76,7 +71,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             }
         }
 
-        private PackageManifestRecord GetRecord(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, NuspecReader nuspecReader, int size)
+        private PackageManifestRecord GetRecord(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf, NuspecReader nuspecReader, int size)
         {
             var record = new PackageManifestRecord(scanId, scanTimestamp, leaf)
             {

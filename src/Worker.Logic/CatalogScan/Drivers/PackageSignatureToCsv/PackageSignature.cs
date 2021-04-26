@@ -9,13 +9,13 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
         {
         }
 
-        public PackageSignature(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDeleteCatalogLeaf leaf)
+        public PackageSignature(Guid scanId, DateTimeOffset scanTimestamp, PackageDeleteCatalogLeaf leaf)
             : base(scanId, scanTimestamp, leaf)
         {
             ResultType = PackageSignatureResultType.Deleted;
         }
 
-        public PackageSignature(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf)
+        public PackageSignature(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf)
             : base(scanId, scanTimestamp, leaf)
         {
             ResultType = PackageSignatureResultType.Available;

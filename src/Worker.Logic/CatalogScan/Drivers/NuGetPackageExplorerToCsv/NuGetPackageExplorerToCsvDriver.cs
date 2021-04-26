@@ -78,13 +78,8 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
 
         private async Task<(NuGetPackageExplorerRecord, IReadOnlyList<NuGetPackageExplorerFile>)> ProcessLeafInternalAsync(CatalogLeafItem item, int attemptCount)
         {
-            Guid? scanId = null;
-            DateTimeOffset? scanTimestamp = null;
-            if (_options.Value.AppendResultUniqueIds)
-            {
-                scanId = Guid.NewGuid();
-                scanTimestamp = DateTimeOffset.UtcNow;
-            }
+            var scanId = Guid.NewGuid();
+            var scanTimestamp = DateTimeOffset.UtcNow;
 
             if (item.Type == CatalogLeafType.PackageDelete)
             {
@@ -218,7 +213,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
 
                                 files.Add(new NuGetPackageExplorerFile(scanId, scanTimestamp, leaf)
                                 {
-                                    Name = file.Name,
+                                    Path = file.Path,
                                     Extension = file.Extension,
                                     HasCompilerFlags = file.DebugData?.HasCompilerFlags,
                                     HasSourceLink = file.DebugData?.HasSourceLink,
@@ -307,8 +302,8 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
         }
 
         private static (NuGetPackageExplorerRecord, NuGetPackageExplorerFile[]) MakeSingleItem(
-            Guid? scanId,
-            DateTimeOffset? scanTimestamp,
+            Guid scanId,
+            DateTimeOffset scanTimestamp,
             PackageDetailsCatalogLeaf leaf,
             NuGetPackageExplorerResultType type)
         {

@@ -9,13 +9,13 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
         {
         }
 
-        public NuGetPackageExplorerRecord(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDeleteCatalogLeaf leaf)
+        public NuGetPackageExplorerRecord(Guid scanId, DateTimeOffset scanTimestamp, PackageDeleteCatalogLeaf leaf)
             : base(scanId, scanTimestamp, leaf)
         {
             ResultType = NuGetPackageExplorerResultType.Deleted;
         }
 
-        public NuGetPackageExplorerRecord(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf)
+        public NuGetPackageExplorerRecord(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf)
             : base(scanId, scanTimestamp, leaf)
         {
             ResultType = NuGetPackageExplorerResultType.Available;

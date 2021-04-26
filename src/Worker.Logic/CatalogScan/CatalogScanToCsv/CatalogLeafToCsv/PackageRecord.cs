@@ -11,17 +11,17 @@ namespace Knapcode.ExplorePackages.Worker
         {
         }
 
-        public PackageRecord(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDeleteCatalogLeaf leaf)
+        public PackageRecord(Guid scanId, DateTimeOffset scanTimestamp, PackageDeleteCatalogLeaf leaf)
             : this(scanId, scanTimestamp, leaf.PackageId, leaf.PackageVersion, leaf.CommitTimestamp, created: null)
         {
         }
 
-        public PackageRecord(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf)
+        public PackageRecord(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf)
             : this(scanId, scanTimestamp, leaf.PackageId, leaf.PackageVersion, leaf.CommitTimestamp, leaf.Created)
         {
         }
 
-        public PackageRecord(Guid? scanId, DateTimeOffset? scanTimestamp, string id, string version, DateTimeOffset catalogCommitTimestamp, DateTimeOffset? created)
+        public PackageRecord(Guid scanId, DateTimeOffset scanTimestamp, string id, string version, DateTimeOffset catalogCommitTimestamp, DateTimeOffset? created)
         {
             ScanId = scanId;
             ScanTimestamp = scanTimestamp;
@@ -62,6 +62,14 @@ namespace Knapcode.ExplorePackages.Worker
                 .OrderBy(x => x.Id, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(x => x.Version, StringComparer.OrdinalIgnoreCase)
                 .Distinct()
+                .Select(x =>
+                {
+                    /// Clear these properties before persisting to Blob Bstorage, since their purpose is handle
+                    /// duplicate records appended to <see cref="AppendResultStorageService"/>.
+                    x.ScanId = null;
+                    x.ScanTimestamp = null;
+                    return x;
+                })
                 .ToList();
         }
 

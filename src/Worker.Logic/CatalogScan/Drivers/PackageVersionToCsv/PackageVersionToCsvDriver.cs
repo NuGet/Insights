@@ -42,13 +42,8 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
 
         private async Task<List<PackageVersionRecord>> ProcessLeafInternalAsync(CatalogLeafItem item)
         {
-            Guid? scanId = null;
-            DateTimeOffset? scanTimestamp = null;
-            if (_options.Value.AppendResultUniqueIds)
-            {
-                scanId = Guid.NewGuid();
-                scanTimestamp = DateTimeOffset.UtcNow;
-            }
+            var scanId = Guid.NewGuid();
+            var scanTimestamp = DateTimeOffset.UtcNow;
 
             // Fetch all of the known versions for this package ID.
             var entities = await _storageService.GetAsync(item.PackageId);

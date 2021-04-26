@@ -9,13 +9,13 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
         {
         }
 
-        public PackageAssembly(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDeleteCatalogLeaf leaf)
+        public PackageAssembly(Guid scanId, DateTimeOffset scanTimestamp, PackageDeleteCatalogLeaf leaf)
             : base(scanId, scanTimestamp, leaf)
         {
             ResultType = PackageAssemblyResultType.Deleted;
         }
 
-        public PackageAssembly(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, PackageAssemblyResultType resultType)
+        public PackageAssembly(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf, PackageAssemblyResultType resultType)
             : base(scanId, scanTimestamp, leaf)
         {
             ResultType = resultType;

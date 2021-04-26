@@ -47,7 +47,6 @@ namespace Knapcode.ExplorePackages.Worker
         protected void ConfigureWorkerDefaultsAndSettings(ExplorePackagesWorkerSettings x)
         {
             x.AppendResultStorageBucketCount = 3;
-            x.AppendResultUniqueIds = false;
 
             x.WorkQueueName = $"{StoragePrefix}1wq1";
             x.ExpandQueueName = $"{StoragePrefix}1eq1";

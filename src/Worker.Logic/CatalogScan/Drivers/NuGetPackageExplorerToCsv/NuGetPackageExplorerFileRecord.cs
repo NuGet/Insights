@@ -9,13 +9,13 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
         {
         }
 
-        public NuGetPackageExplorerFile(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDeleteCatalogLeaf leaf)
+        public NuGetPackageExplorerFile(Guid scanId, DateTimeOffset scanTimestamp, PackageDeleteCatalogLeaf leaf)
             : base(scanId, scanTimestamp, leaf)
         {
             ResultType = NuGetPackageExplorerResultType.Deleted;
         }
 
-        public NuGetPackageExplorerFile(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf)
+        public NuGetPackageExplorerFile(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf)
             : base(scanId, scanTimestamp, leaf)
         {
             ResultType = NuGetPackageExplorerResultType.Available;
@@ -23,7 +23,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
 
         public NuGetPackageExplorerResultType ResultType { get; set; }
 
-        public string Name { get; set; }
+        public string Path { get; set; }
         public string Extension { get; set; }
 
         public bool? HasCompilerFlags { get; set; }

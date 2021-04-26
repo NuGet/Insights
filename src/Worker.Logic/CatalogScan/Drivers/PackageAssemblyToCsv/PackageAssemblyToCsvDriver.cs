@@ -58,13 +58,8 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
 
         public async Task<DriverResult<CsvRecordSet<PackageAssembly>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
         {
-            Guid? scanId = null;
-            DateTimeOffset? scanTimestamp = null;
-            if (_options.Value.AppendResultUniqueIds)
-            {
-                scanId = Guid.NewGuid();
-                scanTimestamp = DateTimeOffset.UtcNow;
-            }
+            var scanId = Guid.NewGuid();
+            var scanTimestamp = DateTimeOffset.UtcNow;
 
             if (item.Type == CatalogLeafType.PackageDelete)
             {
@@ -135,12 +130,12 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
             return MakeResults(item, new List<PackageAssembly>());
         }
 
-        private static DriverResult<CsvRecordSet<PackageAssembly>> MakeNoAssemblies(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf)
+        private static DriverResult<CsvRecordSet<PackageAssembly>> MakeNoAssemblies(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf)
         {
             return MakeResults(leaf, new List<PackageAssembly> { new PackageAssembly(scanId, scanTimestamp, leaf, PackageAssemblyResultType.NoAssemblies) });
         }
 
-        private async Task<DriverResult<PackageAssembly>> AnalyzeAsync(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, ZipArchiveEntry entry)
+        private async Task<DriverResult<PackageAssembly>> AnalyzeAsync(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf, ZipArchiveEntry entry)
         {
             var assembly = new PackageAssembly(scanId, scanTimestamp, leaf, PackageAssemblyResultType.ValidAssembly)
             {

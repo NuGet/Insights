@@ -9,7 +9,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
         {
         }
 
-        public PackageVersionRecord(Guid? scanId, DateTimeOffset? scanTimestamp, PackageVersionEntity entity) : base(
+        public PackageVersionRecord(Guid scanId, DateTimeOffset scanTimestamp, PackageVersionEntity entity) : base(
             scanId,
             scanTimestamp,
             entity.PackageId,

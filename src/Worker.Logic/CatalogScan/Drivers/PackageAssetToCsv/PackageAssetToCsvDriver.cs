@@ -54,13 +54,8 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
 
         private async Task<List<PackageAsset>> ProcessLeafInternalAsync(CatalogLeafItem item)
         {
-            Guid? scanId = null;
-            DateTimeOffset? scanTimestamp = null;
-            if (_options.Value.AppendResultUniqueIds)
-            {
-                scanId = Guid.NewGuid();
-                scanTimestamp = DateTimeOffset.UtcNow;
-            }
+            var scanId = Guid.NewGuid();
+            var scanTimestamp = DateTimeOffset.UtcNow;
 
             if (item.Type == CatalogLeafType.PackageDelete)
             {
@@ -87,7 +82,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
             }
         }
 
-        private List<PackageAsset> GetAssets(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, IReadOnlyList<string> files)
+        private List<PackageAsset> GetAssets(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf, IReadOnlyList<string> files)
         {
             var contentItemCollection = new ContentItemCollection();
             contentItemCollection.Load(files);
@@ -177,7 +172,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssetToCsv
             return assets;
         }
 
-        private List<PackageAsset> GetErrorResult(Guid? scanId, DateTimeOffset? scanTimestamp, PackageDetailsCatalogLeaf leaf, Exception ex, string message)
+        private List<PackageAsset> GetErrorResult(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf, Exception ex, string message)
         {
             _logger.LogWarning(ex, message, leaf.PackageId, leaf.PackageVersion);
             return new List<PackageAsset> { new PackageAsset(scanId, scanTimestamp, leaf, PackageAssetResultType.Error) };

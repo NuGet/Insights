@@ -20,7 +20,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
         CatalogCommitTimestamp: datetime,
         Created: datetime,
         ResultType: string,
-        Name: string,
+        Path: string,
         Extension: string,
         HasCompilerFlags: bool,
         HasSourceLink: bool,
@@ -54,7 +54,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
         '{"Column":"CatalogCommitTimestamp","DataType":"datetime","Properties":{"Ordinal":6}},'
         '{"Column":"Created","DataType":"datetime","Properties":{"Ordinal":7}},'
         '{"Column":"ResultType","DataType":"string","Properties":{"Ordinal":8}},'
-        '{"Column":"Name","DataType":"string","Properties":{"Ordinal":9}},'
+        '{"Column":"Path","DataType":"string","Properties":{"Ordinal":9}},'
         '{"Column":"Extension","DataType":"string","Properties":{"Ordinal":10}},'
         '{"Column":"HasCompilerFlags","DataType":"bool","Properties":{"Ordinal":11}},'
         '{"Column":"HasSourceLink","DataType":"bool","Properties":{"Ordinal":12}},'
@@ -71,7 +71,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
 
         public void WriteHeader(TextWriter writer)
         {
-            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Name,Extension,HasCompilerFlags,HasSourceLink,HasDebugInfo,CompilerFlags,SourceUrlRepoInfo,PdbType");
+            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Path,Extension,HasCompilerFlags,HasSourceLink,HasDebugInfo,CompilerFlags,SourceUrlRepoInfo,PdbType");
         }
 
         public void Write(List<string> fields)
@@ -85,7 +85,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             fields.Add(CsvUtility.FormatDateTimeOffset(CatalogCommitTimestamp));
             fields.Add(CsvUtility.FormatDateTimeOffset(Created));
             fields.Add(ResultType.ToString());
-            fields.Add(Name);
+            fields.Add(Path);
             fields.Add(Extension);
             fields.Add(CsvUtility.FormatBool(HasCompilerFlags));
             fields.Add(CsvUtility.FormatBool(HasSourceLink));
@@ -115,7 +115,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, ResultType.ToString());
             writer.Write(',');
-            CsvUtility.WriteWithQuotes(writer, Name);
+            CsvUtility.WriteWithQuotes(writer, Path);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, Extension);
             writer.Write(',');
@@ -153,7 +153,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, ResultType.ToString());
             await writer.WriteAsync(',');
-            await CsvUtility.WriteWithQuotesAsync(writer, Name);
+            await CsvUtility.WriteWithQuotesAsync(writer, Path);
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, Extension);
             await writer.WriteAsync(',');
@@ -184,7 +184,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                 CatalogCommitTimestamp = CsvUtility.ParseDateTimeOffset(getNextField()),
                 Created = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
                 ResultType = Enum.Parse<NuGetPackageExplorerResultType>(getNextField()),
-                Name = getNextField(),
+                Path = getNextField(),
                 Extension = getNextField(),
                 HasCompilerFlags = CsvUtility.ParseNullable(getNextField(), bool.Parse),
                 HasSourceLink = CsvUtility.ParseNullable(getNextField(), bool.Parse),

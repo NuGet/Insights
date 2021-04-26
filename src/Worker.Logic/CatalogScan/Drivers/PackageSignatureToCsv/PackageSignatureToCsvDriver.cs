@@ -46,13 +46,8 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
 
         private async Task<List<PackageSignature>> ProcessLeafInternalAsync(CatalogLeafItem item)
         {
-            Guid? scanId = null;
-            DateTimeOffset? scanTimestamp = null;
-            if (_options.Value.AppendResultUniqueIds)
-            {
-                scanId = Guid.NewGuid();
-                scanTimestamp = DateTimeOffset.UtcNow;
-            }
+            var scanId = Guid.NewGuid();
+            var scanTimestamp = DateTimeOffset.UtcNow;
 
             if (item.Type == CatalogLeafType.PackageDelete)
             {
