@@ -16,10 +16,12 @@ if ($existingApps.Count -eq 0) {
         -DisplayName $AadAppName `
         -IdentifierUris "placeholder://$AadAppName"
     Write-Status "Created new app with object ID '$($app.ObjectId)'."
-} elseif ($existingApps.Count -eq 1) {
+}
+elseif ($existingApps.Count -eq 1) {
     $app = $existingApps[0]
     Write-Status "Using existing app with object ID '$($app.ObjectId)'."
-} else {
+}
+else {
     throw "There are $($existingApps.Count) apps with the name '$AadAppName'."
 }
 

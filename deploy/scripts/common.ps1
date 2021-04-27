@@ -30,14 +30,17 @@ function ConvertTo-Hashtable {
  
             ## Return the array but don't enumerate it because the object may be pretty complex
             Write-Output -NoEnumerate $collection
-        } elseif ($InputObject -is [psobject]) { ## If the object has properties that need enumeration
+        }
+        elseif ($InputObject -is [psobject]) {
+            ## If the object has properties that need enumeration
             ## Convert it to its own hash table and return it
             $hash = @{}
             foreach ($property in $InputObject.PSObject.Properties) {
                 $hash[$property.Name] = ConvertTo-Hashtable -InputObject $property.Value
             }
             $hash
-        } else {
+        }
+        else {
             ## If the object isn't an array, collection, or other object, it's already a hash table
             ## So just return it.
             $InputObject
@@ -52,7 +55,8 @@ function Merge-Hashtable {
             foreach ($key in $hashtable.Keys) {
                 if (($output.ContainsKey($key)) -and ($output.$key -is [Hashtable]) -and ($hashtable.$key -is [Hashtable])) {
                     $output.$key = Merge-Hashtable $output.$key $hashtable.$key
-                } else {
+                }
+                else {
                     $output.$key = $hashtable.$key
                 }
             }
@@ -72,7 +76,8 @@ function ConvertTo-FlatConfig {
         function MakeKeys($output, $prefix, $current) {
             if ($prefix) {
                 $nextPrefix = $prefix + ":"
-            } else {
+            }
+            else {
                 $nextPrefix = ""
             }
 
@@ -80,13 +85,15 @@ function ConvertTo-FlatConfig {
                 foreach ($key in $current.Keys) {
                     MakeKeys $output "$nextPrefix$key" $current.$key
                 }
-            } elseif ($current -is [System.Collections.IEnumerable] -and $current -isnot [string]) {
+            }
+            elseif ($current -is [System.Collections.IEnumerable] -and $current -isnot [string]) {
                 $i = 0
                 foreach ($value in $current) {
                     MakeKeys $output "$nextPrefix$i" $value
                     $i++
                 }
-            } else {
+            }
+            else {
                 $output[$prefix] = $current
             }
         }

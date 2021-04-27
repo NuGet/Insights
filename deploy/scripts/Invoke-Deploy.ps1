@@ -14,9 +14,9 @@ param (
     [Parameter(Mandatory = $false)]
     [string]$WebsiteName,
     
-    [Parameter(Mandatory = $false)]
+    [Parameter(Mandatory = $true)]
     [ValidateSet("Y1", "S1", "P1v2")]
-    [string]$WorkerSku = "Y1", # Y1 is consumption plan
+    [string]$WorkerSku,
     
     [Parameter(Mandatory = $false)]
     [int]$WorkerCount = 1,
@@ -57,9 +57,9 @@ function New-Deployment($DeploymentName, $BicepPath, $Parameters) {
 
     # Docs: https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files
     $deploymentParameters = @{
-        "`$schema" = "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#";
+        "`$schema"     = "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#";
         contentVersion = "1.0.0.0";
-        parameters = @{}
+        parameters     = @{}
     }
 
     foreach ($key in $Parameters.Keys) {
@@ -114,14 +114,15 @@ New-AzResourceGroup -Name $resourceGroupName -Location $Location -Force
 Write-Status "Finding access policies on the Key Vault '$keyVaultName'..."
 $existingKeyVault = Get-AzKeyVault `
     -ResourceGroupName $resourceGroupName `
-    | Where-Object { $_.VaultName -eq $keyVaultName }
+| Where-Object { $_.VaultName -eq $keyVaultName }
 if ($existingKeyVault) {
     $existingKeyVault = Get-AzKeyVault `
         -ResourceGroupName $resourceGroupName `
         -VaultName $keyVaultName
     $identities = @($existingKeyVault.AccessPolicies `
         | ForEach-Object { @{ tenantId = $_.TenantId; objectId = $_.ObjectId } })
-} else {
+}
+else {
     $identities = @()
 }
 
@@ -131,7 +132,8 @@ foreach ($identity in $identities) {
     $servicePrincipal = Get-AzADServicePrincipal -ObjectId $identity.objectId
     if (!$servicePrincipal) {
         Write-Warning "Removing access policy for object $($identity.objectId) (tenant $($identity.tenantId))."
-    } else {
+    }
+    else {
         $servicePrincipals += $identity
     }
 }
@@ -142,12 +144,12 @@ New-Deployment `
     -DeploymentName "storage-and-kv" `
     -BicepPath "../storage-and-kv.bicep" `
     -Parameters @{
-        storageAccountName = $storageAccountName;
-        keyVaultName = $keyVaultName;
-        identities = $servicePrincipals;
-        deploymentContainerName = $deploymentContainerName;
-        leaseContainerName = $leaseContainerName
-    }
+    storageAccountName      = $storageAccountName;
+    keyVaultName            = $keyVaultName;
+    identities              = $servicePrincipals;
+    deploymentContainerName = $deploymentContainerName;
+    leaseContainerName      = $leaseContainerName
+}
 
 # Get the current user
 Write-Status "Determining the current user principal name for Key Vault operations..."
@@ -202,24 +204,24 @@ $existingWorkerCount = $existingWorkers.Count
 
 function New-MainDeployment($deploymentName, $useKeyVaultReference) {
     $parameters = @{
-        stackName = $StackName;
-        storageAccountName = $storageAccountName;
-        keyVaultName = $keyVaultName;
-        deploymentContainerName = $deploymentContainerName;
-        leaseContainerName = $leaseContainerName;
+        stackName                     = $StackName;
+        storageAccountName            = $storageAccountName;
+        keyVaultName                  = $keyVaultName;
+        deploymentContainerName       = $deploymentContainerName;
+        leaseContainerName            = $leaseContainerName;
         sasConnectionStringSecretName = $sasConnectionStringSecretName;
-        sasDefinitionName = $sasDefinitionName;
-        sasValidityPeriod = $sasValidityPeriod.ToString();
-        websiteName = $WebsiteName;
-        websiteAadClientId = $aadApp.ApplicationId;
-        websiteConfig = @($websiteConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
-        websiteZipUrl = $websiteZipUrl;
-        workerConfig = @($workerConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
-        workerLogLevel = $WorkerLogLevel;
-        workerSku = $workerSku;
-        workerZipUrl = $workerZipUrl;
-        workerCount = $workerCount;
-        useKeyVaultReference = $useKeyVaultReference
+        sasDefinitionName             = $sasDefinitionName;
+        sasValidityPeriod             = $sasValidityPeriod.ToString();
+        websiteName                   = $WebsiteName;
+        websiteAadClientId            = $aadApp.ApplicationId;
+        websiteConfig                 = @($websiteConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
+        websiteZipUrl                 = $websiteZipUrl;
+        workerConfig                  = @($workerConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
+        workerLogLevel                = $WorkerLogLevel;
+        workerSku                     = $workerSku;
+        workerZipUrl                  = $workerZipUrl;
+        workerCount                   = $workerCount;
+        useKeyVaultReference          = $useKeyVaultReference
     }
 
     if ($ExistingWebsitePlanId) {
@@ -243,7 +245,8 @@ if ($existingWorkerCount -gt $workerCount) {
 if ($existingWorkerCount -lt $workerCount) {
     Write-Status "Deploying without Key Vault references because there are new workers..."
     New-MainDeployment "prepare" $false | Tee-Object -Variable 'deployment'
-} else {
+}
+else {
     Write-Status "Deploying the resources..."
     New-MainDeployment "main" $true | Tee-Object -Variable 'deployment'
 }
@@ -278,11 +281,13 @@ foreach ($hostName in @($websiteDefaultHostName) + $workerDefaultHostNames) {
                 -UseBasicParsing
             Write-Host "$url - $($response.StatusCode) $($response.StatusDescription)"
             break
-        } catch {
+        }
+        catch {
             if ($attempt -lt 10 -and $_.Exception.Response.StatusCode -ge 500) {
                 Start-Sleep -Seconds 5
                 continue
-            } else {
+            }
+            else {
                 throw
             }
         }

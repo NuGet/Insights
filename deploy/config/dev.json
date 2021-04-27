@@ -1,6 +1,9 @@
 {
   "Deployment": {
-    "WorkerCount": 1
+    "Location": "Central US",
+    "WorkerCount": 1,
+    "WorkerLogLevel": "Warning",
+    "WorkerSku": "Y1"
   },
   "AppSettings": {
     "Shared": {
@@ -17,7 +20,8 @@
     },
     "Website": {
       "Knapcode.ExplorePackages": {
-        "RestrictUsers": true
+        "RestrictUsers": true,
+        "ShowAdminLink": true
       }
     }
   }

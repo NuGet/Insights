@@ -32,17 +32,17 @@ param (
 $ErrorActionPreference = "Stop"
 
 $tableNameToContainerName = @{
-    "JverCatalogLeafItems" = "catalogleafitems";
-    "JverPackageAssemblies" = "packageassemblies";
-    "JverPackageArchives" = "packagearchives";
-    "JverPackageArchiveEntries" = "packagearchiveentries";
-    "JverPackageAssets" = "packageassets";
-    "JverPackageDownloads" = "packagedownloads";
-    "JverPackageManifests" = "packagemanifests";
-    "JverPackageOwners" = "packageowners";
-    "JverPackageSignatures" = "packagesignatures";
-    "JverPackageVersions" = "packageversions";
-    "JverNuGetPackageExplorers" = "nugetpackageexplorer";
+    "JverCatalogLeafItems"          = "catalogleafitems";
+    "JverPackageAssemblies"         = "packageassemblies";
+    "JverPackageArchives"           = "packagearchives";
+    "JverPackageArchiveEntries"     = "packagearchiveentries";
+    "JverPackageAssets"             = "packageassets";
+    "JverPackageDownloads"          = "packagedownloads";
+    "JverPackageManifests"          = "packagemanifests";
+    "JverPackageOwners"             = "packageowners";
+    "JverPackageSignatures"         = "packagesignatures";
+    "JverPackageVersions"           = "packageversions";
+    "JverNuGetPackageExplorers"     = "nugetpackageexplorer";
     "JverNuGetPackageExplorerFiles" = "nugetpackageexplorerfiles";
 }
 
@@ -101,7 +101,8 @@ if ($Parallel) {
             Start-Sleep 5
         }
         Get-Job | Receive-Job
-    } finally {
+    }
+    finally {
         Remove-Job *
     }
 
@@ -163,7 +164,7 @@ foreach ($model in $models) {
     $tempTableName = "$($selectedTableName)_Temp"
     $commands = [Regex]::Replace($kustoDDL, "([^\w])$foundTableName([^\w])", "`$1$tempTableName`$2")
     $commands = [Regex]::Split($commands, "; *`r?`n", [Text.RegularExpressions.RegexOptions]::Singleline) `
-        | ForEach-Object { [Regex]::Replace($_.Trim(), "`r?`n", " &`r`n") }
+    | ForEach-Object { [Regex]::Replace($_.Trim(), "`r?`n", " &`r`n") }
     $commands = $commands -join "`r`n"
 
     $script = Join-Path $toolsDir "script_$selectedTableName.kql"

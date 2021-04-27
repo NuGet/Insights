@@ -43,8 +43,8 @@ Write-Status "Adding 'list', 'set', 'setsas' storage Key Vault permissions for '
 Set-AzKeyVaultAccessPolicy `
     -VaultName $KeyVaultName `
     -UserPrincipalName $UserPrincipalName `
-    -PermissionsToSecrets list,get,set `
-    -PermissionsToStorage list,set,setsas | Out-Default
+    -PermissionsToSecrets list, get, set `
+    -PermissionsToStorage list, set, setsas | Out-Default
 
 Write-Status "Getting the resource ID for storage account '$StorageAccountName'..."
 $storageAccount = Get-AzStorageAccount `
@@ -54,7 +54,7 @@ $storageAccount = Get-AzStorageAccount `
 Write-Status "Checking if Key Vault '$KeyVaultName' already manages storage account '$StorageAccountName'..."
 $matchingStorage = Get-AzKeyVaultManagedStorageAccount `
     -VaultName $KeyVaultName `
-    | Where-Object { $_.AccountResourceId -eq $storageAccount.Id }
+| Where-Object { $_.AccountResourceId -eq $storageAccount.Id }
 if (!$matchingStorage) {   
     Write-Status "Giving Key Vault the operator role on storage account '$StorageAccountName'..."
     $roleAssignement = Get-AzRoleAssignment `
@@ -75,7 +75,8 @@ if (!$matchingStorage) {
 
             if ($AutoRegenerateKey) {
                 $parameters = @{ RegenerationPeriod = $regenerationPeriod }
-            } else {
+            }
+            else {
                 $parameters = @{ DisableAutoRegenerateKey = $true }
             }
 
@@ -93,7 +94,8 @@ if (!$matchingStorage) {
                 $sleep = 30
                 Write-Warning "HTTP 403 Forbidden returned. Trying again in $sleep seconds."
                 Start-Sleep -Seconds $sleep
-            } else {
+            }
+            else {
                 throw
             }
         }
@@ -108,8 +110,8 @@ $storageContext = New-AzStorageContext `
 $sasTemplate = New-AzStorageAccountSASToken `
     -ExpiryTime (Get-Date "2010-01-01Z").ToUniversalTime() `
     -Permission "acdlpruw" `
-    -ResourceType Service,Container,Object `
-    -Service Blob,Queue,Table `
+    -ResourceType Service, Container, Object `
+    -Service Blob, Queue, Table `
     -Protocol HttpsOnly `
     -Context $storageContext
 
@@ -129,9 +131,9 @@ $sasToken = Get-AzKeyVaultSecret `
     -Name "$StorageAccountName-$SasDefinitionName" `
     -AsPlainText
 $connectionString = "AccountName=$StorageAccountName;" +
-    "SharedAccessSignature=$sasToken;" +
-    "DefaultEndpointsProtocol=https;" +
-    "EndpointSuffix=core.windows.net"
+"SharedAccessSignature=$sasToken;" +
+"DefaultEndpointsProtocol=https;" +
+"EndpointSuffix=core.windows.net"
 
 Write-Status "Setting secret '$SasConnectionStringSecretName'..."
 Set-AzKeyVaultSecret `

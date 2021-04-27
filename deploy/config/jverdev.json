@@ -1,7 +1,6 @@
 {
   "Deployment": {
-    "WorkerCount": 1,
-    "WorkerSku": "S1"
+    "WorkerSku": "P1v2"
   },
   "AppSettings": {
     "Shared": {
@@ -9,14 +8,6 @@
         "DisabledDrivers": [
           "NuGetPackageExplorerToCsv"
         ]
-      }
-    },
-    "Worker": {
-      "Knapcode.ExplorePackages": {}
-    },
-    "Website": {
-      "Knapcode.ExplorePackages": {
-        "RestrictUsers": true
       }
     }
   }
