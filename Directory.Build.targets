@@ -5,10 +5,10 @@
   </PropertyGroup>
   <Target Name="ZipPublishDir" AfterTargets="$(ZipPublishDirAfterTargets)">
     <MakeDir
-      Directories="$(DeployDirectory)"/>
+      Directories="$(DeploymentDir)"/>
     <ZipDirectory
       SourceDirectory="$(PublishDir)"
-      DestinationFile="$(DeployDirectory)\$(MSBuildProjectName).zip"
+      DestinationFile="$(DeploymentDir)\$(MSBuildProjectName).zip"
       Overwrite="true" />
   </Target>
 </Project>

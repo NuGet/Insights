@@ -5,6 +5,15 @@ param (
     [ValidateLength(1, 19)] # 19 because storage accounts and Key Vaults have max 24 characters and the prefix is "expkg".
     [string]$StackName,
 
+    [Parameter(Mandatory = $true)]
+    [string]$DeploymentDir,
+
+    [Parameter(Mandatory = $true)]
+    [string]$WebsiteZipPath,
+
+    [Parameter(Mandatory = $true)]
+    [string]$WorkerZipPath,
+
     [Parameter(Mandatory = $false)]
     [string]$Location = "West US 2",
     
@@ -34,8 +43,13 @@ param (
 
 . (Join-Path $PSScriptRoot "common.ps1")
 
+Write-Status ""
+Write-Status "Beginning the deployment process..."
+
+$deploymentId = (Get-Date).ToUniversalTime().ToString("yyyyMMddHHmmss")
+Write-Status "Using deployment ID: $deploymentId"
+
 # Shared variables and functions
-$root = Join-Path $PSScriptRoot "../.."
 $resourceGroupName = "ExplorePackages-$StackName"
 $storageAccountName = "expkg$($StackName.ToLowerInvariant())"
 $keyVaultName = "expkg$($StackName.ToLowerInvariant())"
@@ -50,11 +64,34 @@ if (!$WebsiteName) {
     $WebsiteName = "ExplorePackages-$StackName"
 }
 
-$deploymentId = (Get-Date).ToUniversalTime().ToString("yyyyMMddHHmmss")
+# Set up some default config based on worker SKU
+if ($WorkerSku -eq "Y1") {
+    if ("NuGetPackageExplorerToCsv" -notin $WorkerConfig["Knapcode.ExplorePackages"].DisabledDrivers) {
+        # Default "MoveTempToHome" to be true when NuGetPackageExplorerToCsv is enabled. We do this because the NuGet
+        # Package Explorer symbol validation APIs are hard-coded to use TEMP and can quickly fill up the small TEMP
+        # capacity on consumption plan (~500 MiB). Therefore, we move TEMP to HOME at the start of the process. HOME
+        # points to a Azure Storage File share which has no capacity issues.
+        if ($null -eq $WorkerConfig["Knapcode.ExplorePackages"].MoveTempToHome) {
+            $WorkerConfig["Knapcode.ExplorePackages"].MoveTempToHome = $true
+        }
+
+        # Default the maximum number of workers per Function App plan to 16 when NuGetPackageExplorerToCsv is enabled.
+        # We do this because it's easy for a lot of Function App workers to overload the HOME directory which is backed
+        # by an Azure Storage File share.
+        if ($null -eq $WorkerConfig.WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT) {
+            $WorkerConfig.WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT = 16
+        }
+
+        # Default the storage queue trigger batch size to 1 when NuGetPackageExplorerToCsv is enabled. We do this to
+        # eliminate the parallelism in the worker process so that we can easily control the number of total parallel
+        # queue messages are being processed and therefore are using the HOME file share.
+        if ($null -eq $WorkerConfig.AzureFunctionsJobHost__extensions__queues__batchSize) {
+            $WorkerConfig.AzureFunctionsJobHost__extensions__queues__batchSize = 1
+        }
+    }
+}
 
 function New-Deployment($DeploymentName, $BicepPath, $Parameters) {
-    $DeploymentName = "$deploymentId-$DeploymentName"
-
     # Docs: https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files
     $deploymentParameters = @{
         "`$schema"     = "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#";
@@ -66,7 +103,7 @@ function New-Deployment($DeploymentName, $BicepPath, $Parameters) {
         $deploymentParameters.parameters.$key = @{ value = $parameters.$key }
     }
 
-    $parametersPath = Join-Path $deployDir "$deploymentName.deploymentParameters.json"
+    $parametersPath = Join-Path $DeploymentDir "$DeploymentName.deploymentParameters.json"
     $deploymentParameters | ConvertTo-Json -Depth 100 | Out-File $parametersPath -Encoding UTF8
 
     $fullBicepPath = Join-Path $PSScriptRoot $BicepPath
@@ -74,36 +111,9 @@ function New-Deployment($DeploymentName, $BicepPath, $Parameters) {
     return New-AzResourceGroupDeployment `
         -TemplateFile $fullBicepPath `
         -ResourceGroupName $resourceGroupName `
-        -Name $deploymentName `
+        -Name "$deploymentId-$DeploymentName" `
         -TemplateParameterFile $parametersPath
 }
-
-# Publish the projects
-$deployDir = Join-Path $root "artifacts/deploy"
-if (Test-Path $deployDir) {
-    Remove-Item $deployDir -Recurse
-}
-New-Item $deployDir -Type Directory | Out-Null
-
-function Publish-Project ($ProjectName) {
-    Write-Status "Publishing project '$ProjectName' with deployment ID '$deploymentId'..."
-    dotnet publish (Join-Path $root "src/$ProjectName") --configuration Release | Out-Default
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to publish $ProjectName."
-    }
-    
-    $oldPath = Join-Path $deployDir "$ProjectName.zip"
-    $blobName = "$deploymentId-$ProjectName.zip"
-    $newPath = Join-Path $deployDir $blobName
-    Move-Item $oldPath $newPath -Force
-    $newPath = Resolve-Path $newPath
-    Write-Host "Moved the ZIP to $newPath."
-
-    return @($newPath, $blobName)
-}
-
-$websiteZipPath, $websiteZipBlobName = Publish-Project "Website"
-$workerZipPath, $workerZipBlobName = Publish-Project "Worker"
 
 # Make sure the resource group is created
 Write-Status "Ensuring the resource group '$resourceGroupName' exists..."
@@ -193,8 +203,8 @@ function New-DeploymentZip ($ZipPath, $BlobName) {
     return $blob.BlobClient.Uri.AbsoluteUri
 }
 
-$websiteZipUrl = New-DeploymentZip $websiteZipPath $websiteZipBlobName
-$workerZipUrl = New-DeploymentZip $workerZipPath $workerZipBlobName
+$websiteZipUrl = New-DeploymentZip $WebsiteZipPath "Website-$deploymentId.zip"
+$workerZipUrl = New-DeploymentZip $WorkerZipPath "Worker-$deploymentId.zip"
 
 # To workaround limitations in initial deployment Azure Functions, we check the current state and may need to
 # deploy a second time.

@@ -7,7 +7,13 @@ param (
     [string]$StackName,
 
     [Parameter(Mandatory = $false)]
-    [switch]$AllowDeployUser
+    [switch]$AllowDeployUser,
+
+    [Parameter(Mandatory = $false)]
+    [string]$WebsiteZipPath,
+
+    [Parameter(Mandatory = $false)]
+    [string]$WorkerZipPath
 )
 
 . (Join-Path $PSScriptRoot "scripts/common.ps1")
@@ -40,7 +46,6 @@ if ($AllowDeployUser) {
         }
 
         $objectId, $tenantId = $homeAccountId.Split('.', 2)
-        Write-Status ""
         Write-Status "Adding allowed user:"
         Write-Status "  Tenant ID: $tenantId"
         Write-Status "  Object ID: $objectId"
@@ -56,47 +61,35 @@ if ($AllowDeployUser) {
 $workerConfig = Get-Config
 $workerConfig = Merge-Hashtable (Get-AppConfig) $workerConfig.AppSettings.Shared $workerConfig.AppSettings.Worker
 
+# Publish (build and package) the app code
+function Publish-Project ($ProjectName) {
+    Write-Status "Publishing project '$ProjectName'..."
+    dotnet publish (Join-Path $PSScriptRoot "../src/$ProjectName") `
+        "/p:DeploymentDir=$DeploymentDir" `
+        --configuration Release | Out-Default
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to publish $ProjectName."
+    }
+    
+    $path = Join-Path $DeploymentDir "$ProjectName.zip"
+
+    return $path.ToString()
+}
+
+if (!$WebsiteZipPath) { $WebsiteZipPath = Publish-Project "Website" }
+if (!$WorkerZipPath) { $WorkerZipPath = Publish-Project "Worker" }
+
 # Prepare the deployment parameters
-$parameters = Get-Config
-$parameters = $parameters.Deployment
+$parameters = Merge-Hashtable (Get-Config).Deployment
+$parameters.DeploymentDir = $deploymentDir
 $parameters.StackName = $StackName
+$parameters.WebsiteZipPath = $WebsiteZipPath
+$parameters.WorkerZipPath = $WorkerZipPath
 $parameters.WebsiteConfig = $websiteConfig
 $parameters.WorkerConfig = $workerConfig
-
-# Set up some default config based on worker SKU
-if (!$parameters.WorkerSku) { $parameters.WorkerSku = "Y1" }
-$npeEnabled = "NuGetPackageExplorerToCsv" -notin $workerConfig["Knapcode.ExplorePackages"].DisabledDrivers
-if ($parameters.WorkerSku -eq "Y1") {
-    if ($npeEnabled) {
-        # Default "MoveTempToHome" to be true when NuGetPackageExplorerToCsv is enabled. We do this because the NuGet
-        # Package Explorer symbol validation APIs are hard-coded to use TEMP and can quickly fill up the small TEMP
-        # capacity on consumption plan (~500 MiB). Therefore, we move TEMP to HOME at the start of the process. HOME
-        # points to a Azure Storage File share which has no capacity issues.
-        if ($null -eq $workerConfig["Knapcode.ExplorePackages"].MoveTempToHome) {
-            $workerConfig["Knapcode.ExplorePackages"].MoveTempToHome = $true
-        }
-
-        # Default the maximum number of workers per Function App plan to 16 when NuGetPackageExplorerToCsv is enabled.
-        # We do this because it's easy for a lot of Function App workers to overload the HOME directory which is backed
-        # by an Azure Storage File share.
-        if ($null -eq $workerConfig.WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT) {
-            $workerConfig.WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT = 16
-        }
-
-        # Default the storage queue trigger batch size to 1 when NuGetPackageExplorerToCsv is enabled. We do this to
-        # eliminate the parallelism in the worker process so that we can easily control the number of total parallel
-        # queue messages are being processed and therefore are using the HOME file share.
-        if ($null -eq $workerConfig.AzureFunctionsJobHost__extensions__queues__batchSize) {
-            $workerConfig.AzureFunctionsJobHost__extensions__queues__batchSize = 1
-        }
-    }
-}
 
 Write-Status ""
 Write-Status "Using the following deployment parameters:"
 ConvertTo-Json $parameters -Depth 100 | Out-Default
 
-Write-Status ""
-Write-Status "Beginning the deployment process..."
-
-. (Join-Path $PSScriptRoot "scripts/Invoke-Deploy") @parameters -ErrorAction Stop
+. (Join-Path $PSScriptRoot "scripts/Invoke-Deploy.ps1") @parameters -ErrorAction Stop

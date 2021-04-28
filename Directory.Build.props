@@ -5,7 +5,7 @@
     <ArtifactsSubdirectory Condition="'$(ArtifactsDirectory)' != ''">ExplorePackages\</ArtifactsSubdirectory>
     <ArtifactsSubdirectory Condition="'$(ArtifactsDirectory)' == ''"></ArtifactsSubdirectory>
     <ArtifactsDirectory Condition="'$(ArtifactsDirectory)' == ''">$(MSBuildThisFileDirectory)artifacts</ArtifactsDirectory>
-    <DeployDirectory>$(ArtifactsDirectory)\deploy</DeployDirectory>
+    <DeploymentDir Condition="'$(DeploymentDir)' == ''">$(ArtifactsDirectory)\deploy</DeploymentDir>
     <_ProjectArtifactsDirectory>$(ArtifactsDirectory)\$(ArtifactsSubdirectory)$(MSBuildProjectName)\</_ProjectArtifactsDirectory>
     <BaseIntermediateOutputPath>$(_ProjectArtifactsDirectory)obj\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\</IntermediateOutputPath>
