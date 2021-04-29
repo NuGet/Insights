@@ -68,18 +68,19 @@ resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
       family: 'A'
       name: 'standard'
     }
-    accessPolicies: [for identity in identities: {
-      tenantId: identity.tenantId
-      objectId: identity.objectId
-      permissions: {
-        secrets: [
-          'get'
-          'set' // Needed to keep the SAS-based connection string up to date
-        ]
-      }
-    }]
+    enableRbacAuthorization: true
+    accessPolicies: []
   }
 }
+
+resource keyVaultPermisions 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = [for identity in identities: {
+  name: !empty(identities) ? guid('AppsCanAccessKeyVault-${identity.tenantId}-${identity.objectId}') : guid('placeholder')
+  scope: keyVault
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7')
+    principalId: identity.objectId
+  }
+}]
 
 resource keyVaultDiagnostics 'microsoft.insights/diagnosticSettings@2017-05-01-preview' = {
   scope: keyVault

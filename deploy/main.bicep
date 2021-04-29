@@ -312,7 +312,7 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
   }
 }]
 
-resource perms 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = [for i in range(0, workerCount): {
+resource resourceGroupPermissions 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = [for i in range(0, workerCount): {
   name: guid('FunctionsCanRestartThemselves-${workers[i].id}')
   scope: resourceGroup()
   properties: {

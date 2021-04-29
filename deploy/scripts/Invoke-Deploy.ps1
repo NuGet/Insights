@@ -119,35 +119,6 @@ function New-Deployment($DeploymentName, $BicepPath, $Parameters) {
 Write-Status "Ensuring the resource group '$resourceGroupName' exists..."
 New-AzResourceGroup -Name $resourceGroupName -Location $Location -Force
 
-# Fetch the existing access policy identities, if any.
-# Workaround for https://github.com/Azure/bicep/issues/784#issuecomment-800591002
-Write-Status "Finding access policies on the Key Vault '$keyVaultName'..."
-$existingKeyVault = Get-AzKeyVault `
-    -ResourceGroupName $resourceGroupName `
-| Where-Object { $_.VaultName -eq $keyVaultName }
-if ($existingKeyVault) {
-    $existingKeyVault = Get-AzKeyVault `
-        -ResourceGroupName $resourceGroupName `
-        -VaultName $keyVaultName
-    $identities = @($existingKeyVault.AccessPolicies `
-        | ForEach-Object { @{ tenantId = $_.TenantId; objectId = $_.ObjectId } })
-}
-else {
-    $identities = @()
-}
-
-# Ensure all of the identities are service principals
-$servicePrincipals = @()
-foreach ($identity in $identities) {
-    $servicePrincipal = Get-AzADServicePrincipal -ObjectId $identity.objectId
-    if (!$servicePrincipal) {
-        Write-Warning "Removing access policy for object $($identity.objectId) (tenant $($identity.tenantId))."
-    }
-    else {
-        $servicePrincipals += $identity
-    }
-}
-
 # Deploy the storage account, Key Vault, and deployment container.
 Write-Status "Ensuring the storage account, Key Vault, and deployment container exist..."
 New-Deployment `
@@ -156,7 +127,7 @@ New-Deployment `
     -Parameters @{
     storageAccountName      = $storageAccountName;
     keyVaultName            = $keyVaultName;
-    identities              = $servicePrincipals;
+    identities              = @();
     deploymentContainerName = $deploymentContainerName;
     leaseContainerName      = $leaseContainerName
 }

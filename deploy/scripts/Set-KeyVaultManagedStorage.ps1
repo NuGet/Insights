@@ -39,12 +39,17 @@ $storageEmulatorKey = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz
 # We round up to the nearest 2 weeks.
 $regenerationPeriod = New-TimeSpan -Days ([Math]::Ceiling($SasValidityPeriod.TotalDays / 7) * 14)
 
-Write-Status "Adding 'list', 'set', 'setsas' storage Key Vault permissions for '$UserPrincipalName'..."
-Set-AzKeyVaultAccessPolicy `
-    -VaultName $KeyVaultName `
-    -UserPrincipalName $UserPrincipalName `
-    -PermissionsToSecrets list, get, set `
-    -PermissionsToStorage list, set, setsas | Out-Default
+Write-Status "Adding Key Vault role assignment for '$UserPrincipalName'..."
+$existingRoleAssignment = Get-AzRoleAssignment `
+    -ResourceGroupName $resourceGroupName `
+    -RoleDefinitionName "Key Vault Administrator" `
+| Where-Object { $_.SignInName -eq $UserPrincipalName }
+if (!$existingRoleAssignment) {
+    New-AzRoleAssignment `
+        -SignInName $UserPrincipalName `
+        -ResourceGroupName $ResourceGroupName `
+        -RoleDefinitionName "Key Vault Administrator" | Out-Default
+}
 
 Write-Status "Getting the resource ID for storage account '$StorageAccountName'..."
 $storageAccount = Get-AzStorageAccount `
@@ -52,9 +57,25 @@ $storageAccount = Get-AzStorageAccount `
     -Name $StorageAccountName
 
 Write-Status "Checking if Key Vault '$KeyVaultName' already manages storage account '$StorageAccountName'..."
-$matchingStorage = Get-AzKeyVaultManagedStorageAccount `
-    -VaultName $KeyVaultName `
-| Where-Object { $_.AccountResourceId -eq $storageAccount.Id }
+$attempt = 0
+while ($true) {
+    try {
+        $attempt++
+        $matchingStorage = Get-AzKeyVaultManagedStorageAccount `
+            -VaultName $KeyVaultName `
+        | Where-Object { $_.AccountResourceId -eq $storageAccount.Id }
+        break
+    }
+    catch {
+        if ($attempt -lt 20 -and $_.Exception.Response.StatusCode -eq 403) {
+            Write-Warning "Attempt $($attempt): HTTP 403 Forbidden. Trying again in 10 seconds."
+            Start-Sleep 10
+            continue
+        }
+        throw
+    }
+}
+
 if (!$matchingStorage) {   
     Write-Status "Giving Key Vault the operator role on storage account '$StorageAccountName'..."
     $roleAssignement = Get-AzRoleAssignment `
@@ -143,9 +164,10 @@ Set-AzKeyVaultSecret `
     -Expires $sasTokenExpires `
     -Tag @{ "set-by" = "deployment" } | Out-Default
 
-Write-Status "Deleting Key Vault policy for '$UserPrincipalName'..."
-Remove-AzKeyVaultAccessPolicy `
-    -VaultName $KeyVaultName `
-    -UserPrincipalName $UserPrincipalName | Out-Default
+Write-Status "Deleting Key Vault role assignment for '$UserPrincipalName'..."
+Remove-AzRoleAssignment `
+    -SignInName $UserPrincipalName `
+    -ResourceGroupName $ResourceGroupName `
+    -RoleDefinitionName "Key Vault Administrator"
 
 $sasToken
