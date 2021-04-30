@@ -62,16 +62,17 @@ $workerConfig = Get-Config
 $workerConfig = Merge-Hashtable (Get-AppConfig) $workerConfig.AppSettings.Shared $workerConfig.AppSettings.Worker
 
 # Publish (build and package) the app code
+$deploymentDir = Join-Path $PSScriptRoot "../artifacts/deploy"
 function Publish-Project ($ProjectName) {
     Write-Status "Publishing project '$ProjectName'..."
     dotnet publish (Join-Path $PSScriptRoot "../src/$ProjectName") `
-        "/p:DeploymentDir=$DeploymentDir" `
+        "/p:DeploymentDir=$deploymentDir" `
         --configuration Release | Out-Default
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to publish $ProjectName."
     }
     
-    $path = Join-Path $DeploymentDir "$ProjectName.zip"
+    $path = Join-Path $deploymentDir "$ProjectName.zip"
 
     return $path.ToString()
 }
