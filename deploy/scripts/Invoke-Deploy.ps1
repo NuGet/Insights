@@ -1,9 +1,10 @@
+using module "./ExplorePackages.psm1"
+using namespace ExplorePackages
+
 [CmdletBinding()]
 param (
     [Parameter(Mandatory = $true)]
-    [ValidatePattern("^[a-z0-9]+$")]
-    [ValidateLength(1, 19)] # 19 because storage accounts and Key Vaults have max 24 characters and the prefix is "expkg".
-    [string]$StackName,
+    [ResourceSettings]$ResourceSettings,
 
     [Parameter(Mandatory = $true)]
     [string]$DeploymentDir,
@@ -12,93 +13,14 @@ param (
     [string]$WebsiteZipPath,
 
     [Parameter(Mandatory = $true)]
-    [string]$WorkerZipPath,
-
-    [Parameter(Mandatory = $false)]
-    [string]$Location = "West US 2",
-    
-    [Parameter(Mandatory = $false)]
-    [string]$ExistingWebsitePlanId,
-    
-    [Parameter(Mandatory = $false)]
-    [string]$WebsiteName,
-    
-    [Parameter(Mandatory = $false)]
-    [ValidateSet("Y1", "S1", "P1v2")]
-    [string]$WorkerSku = "Y1",
-    
-    [Parameter(Mandatory = $false)]
-    [int]$WorkerCount = 1,
-    
-    [Parameter(Mandatory = $false)]
-    [ValidateSet("Warning", "Information")]
-    [string]$WorkerLogLevel = "Warning",
-
-    [Parameter(Mandatory = $false)]
-    [Hashtable]$WebsiteConfig = @{},
-
-    [Parameter(Mandatory = $false)]
-    [Hashtable]$WorkerConfig = @{}
+    [string]$WorkerZipPath
 )
-
-. (Join-Path $PSScriptRoot "common.ps1")
 
 Write-Status ""
 Write-Status "Beginning the deployment process..."
 
 $deploymentId = (Get-Date).ToUniversalTime().ToString("yyyyMMddHHmmss")
 Write-Status "Using deployment ID: $deploymentId"
-
-# Shared variables and functions
-$resourceGroupName = "ExplorePackages-$StackName"
-$storageAccountName = "expkg$($StackName.ToLowerInvariant())"
-$keyVaultName = "expkg$($StackName.ToLowerInvariant())"
-$aadAppName = "ExplorePackages-$StackName-Website"
-$sasConnectionStringSecretName = "$storageAccountName-SasConnectionString"
-$sasDefinitionName = "BlobQueueTableFullAccessSas"
-$deploymentContainerName = "deployment"
-$leaseContainerName = "leases"
-$sasValidityPeriod = New-TimeSpan -Days 6
-$workerNamePrefix = "ExplorePackages-$StackName-Worker-"
-
-if (!$WebsiteName) {
-    $WebsiteName = "ExplorePackages-$StackName"
-}
-
-# Set up some default config based on worker SKU
-if ($WorkerSku -eq "Y1") {
-    if ("NuGetPackageExplorerToCsv" -notin $WorkerConfig["Knapcode.ExplorePackages"].DisabledDrivers) {
-        # Default "MoveTempToHome" to be true when NuGetPackageExplorerToCsv is enabled. We do this because the NuGet
-        # Package Explorer symbol validation APIs are hard-coded to use TEMP and can quickly fill up the small TEMP
-        # capacity on consumption plan (~500 MiB). Therefore, we move TEMP to HOME at the start of the process. HOME
-        # points to a Azure Storage File share which has no capacity issues.
-        if ($null -eq $WorkerConfig["Knapcode.ExplorePackages"].MoveTempToHome) {
-            $WorkerConfig["Knapcode.ExplorePackages"].MoveTempToHome = $true
-        }
-
-        # Default the maximum number of workers per Function App plan to 16 when NuGetPackageExplorerToCsv is enabled.
-        # We do this because it's easy for a lot of Function App workers to overload the HOME directory which is backed
-        # by an Azure Storage File share.
-        if ($null -eq $WorkerConfig.WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT) {
-            $WorkerConfig.WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT = 16
-        }
-
-        # Default the storage queue trigger batch size to 1 when NuGetPackageExplorerToCsv is enabled. We do this to
-        # eliminate the parallelism in the worker process so that we can easily control the number of total parallel
-        # queue messages are being processed and therefore are using the HOME file share.
-        if ($null -eq $WorkerConfig.AzureFunctionsJobHost__extensions__queues__batchSize) {
-            $WorkerConfig.AzureFunctionsJobHost__extensions__queues__batchSize = 1
-        }
-    }
-    
-    # Since Consumption plan requires WEBSITE_CONTENTAZUREFILECONNECTIONSTRING and this does not support SAS-based
-    # connection strings, don't auto-regenerate in this case. We would need to regularly update a connection string based
-    # on the active storage access key, which isn't worth the effort for this approach that is less secure anyway.
-    $autoRegenerateKey = $false
-}
-else {
-    $autoRegenerateKey = $true
-}
 
 function New-Deployment($DeploymentName, $BicepPath, $Parameters) {
     # Docs: https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files
@@ -119,20 +41,20 @@ function New-Deployment($DeploymentName, $BicepPath, $Parameters) {
 
     return New-AzResourceGroupDeployment `
         -TemplateFile $fullBicepPath `
-        -ResourceGroupName $resourceGroupName `
+        -ResourceGroupName $ResourceSettings.ResourceGroupName `
         -Name "$deploymentId-$DeploymentName" `
         -TemplateParameterFile $parametersPath
 }
 
 # Make sure the resource group is created
-Write-Status "Ensuring the resource group '$resourceGroupName' exists..."
-New-AzResourceGroup -Name $resourceGroupName -Location $Location -Force
+Write-Status "Ensuring the resource group '$($ResourceSettings.ResourceGroupName)' exists..."
+New-AzResourceGroup -Name $ResourceSettings.ResourceGroupName -Location $ResourceSettings.Location -Force
 
 # Verify the number of function app is not decreasing. This is not supported by the script.
 Write-Status "Counting existing function apps..."
-$existingWorkers = Get-AzFunctionApp -ResourceGroupName $resourceGroupName
+$existingWorkers = Get-AzFunctionApp -ResourceGroupName $ResourceSettings.ResourceGroupName
 $existingWorkerCount = $existingWorkers.Count
-if ($existingWorkerCount -gt $workerCount) {
+if ($existingWorkerCount -gt $ResourceSettings.WorkerCount) {
     # Would need to:
     # - Delete function apps
     # - Remove managed identity from KV policy (maybe done automatically by ARM)
@@ -146,25 +68,25 @@ New-Deployment `
     -DeploymentName "storage-and-kv" `
     -BicepPath "../storage-and-kv.bicep" `
     -Parameters @{
-    storageAccountName      = $storageAccountName;
-    keyVaultName            = $keyVaultName;
+    storageAccountName      = $ResourceSettings.StorageAccountName;
+    keyVaultName            = $ResourceSettings.KeyVaultName;
     identities              = @();
-    deploymentContainerName = $deploymentContainerName;
-    leaseContainerName      = $leaseContainerName
+    deploymentContainerName = $ResourceSettings.DeploymentContainerName;
+    leaseContainerName      = $ResourceSettings.LeaseContainerName
 }
 
 # Manage the storage account in Key Vault
 $sasToken = . (Join-Path $PSScriptRoot "Set-KeyVaultManagedStorage.ps1") `
-    -ResourceGroupName $resourceGroupName `
-    -KeyVaultName $keyVaultName `
-    -StorageAccountName $storageAccountName `
-    -SasDefinitionName $sasDefinitionName `
-    -SasConnectionStringSecretName $sasConnectionStringSecretName `
-    -AutoRegenerateKey:$autoRegenerateKey `
-    -SasValidityPeriod $sasValidityPeriod
+    -ResourceGroupName $ResourceSettings.ResourceGroupName `
+    -KeyVaultName $ResourceSettings.KeyVaultName `
+    -StorageAccountName $ResourceSettings.StorageAccountName `
+    -SasDefinitionName $ResourceSettings.SasDefinitionName `
+    -SasConnectionStringSecretName $ResourceSettings.SasConnectionStringSecretName `
+    -AutoRegenerateKey:$ResourceSettings.AutoRegenerateKey `
+    -SasValidityPeriod $ResourceSettings.SasValidityPeriod
 
 # Initialize the AAD app
-$aadApp = (. (Join-Path $PSScriptRoot "Initialize-AadApp.ps1") -AadAppName $AadAppName)
+$aadApp = (. (Join-Path $PSScriptRoot "Initialize-AadApp.ps1") -AadAppName $ResourceSettings.AadAppName)
 
 # Make the app service support the website for login
 function Get-AppServiceBaseUrl($name) {
@@ -172,18 +94,18 @@ function Get-AppServiceBaseUrl($name) {
 }
 . (Join-Path $PSScriptRoot "Initialize-AadAppForWebsite.ps1") `
     -ObjectId $aadApp.ObjectId `
-    -BaseUrl (Get-AppServiceBaseUrl $WebsiteName)
+    -BaseUrl (Get-AppServiceBaseUrl $ResourceSettings.WebsiteName)
 
 # Upload the project ZIPs
 $storageContext = New-AzStorageContext `
-    -StorageAccountName $storageAccountName `
+    -StorageAccountName $ResourceSettings.StorageAccountName `
     -SasToken $sasToken
 
 function New-DeploymentZip ($ZipPath, $BlobName) {
     Write-Status "Uploading the ZIP to '$BlobName'..."
     $blob = Set-AzStorageBlobContent `
         -Context $storageContext `
-        -Container $deploymentContainerName `
+        -Container $Resourcesettings.DeploymentContainerName `
         -File $ZipPath `
         -Blob $BlobName
     return $blob.BlobClient.Uri.AbsoluteUri
@@ -195,28 +117,28 @@ $workerZipUrl = New-DeploymentZip $WorkerZipPath "Worker-$deploymentId.zip"
 # Deploy the resources using the main ARM template
 function New-MainDeployment($deploymentName) {
     $parameters = @{
-        stackName                     = $StackName;
-        storageAccountName            = $storageAccountName;
-        keyVaultName                  = $keyVaultName;
-        deploymentContainerName       = $deploymentContainerName;
-        leaseContainerName            = $leaseContainerName;
-        sasConnectionStringSecretName = $sasConnectionStringSecretName;
-        sasDefinitionName             = $sasDefinitionName;
-        sasValidityPeriod             = $sasValidityPeriod.ToString();
-        websiteName                   = $WebsiteName;
+        stackName                     = $ResourceSettings.StackName;
+        storageAccountName            = $ResourceSettings.StorageAccountName;
+        keyVaultName                  = $ResourceSettings.KeyVaultName;
+        deploymentContainerName       = $ResourceSettings.DeploymentContainerName;
+        leaseContainerName            = $ResourceSettings.LeaseContainerName;
+        sasConnectionStringSecretName = $ResourceSettings.SasConnectionStringSecretName;
+        sasDefinitionName             = $ResourceSettings.SasDefinitionName;
+        sasValidityPeriod             = $ResourceSettings.SasValidityPeriod.ToString();
+        websiteName                   = $ResourceSettings.WebsiteName;
         websiteAadClientId            = $aadApp.ApplicationId;
-        websiteConfig                 = @($websiteConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
+        websiteConfig                 = @($ResourceSettings.WebsiteConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
         websiteZipUrl                 = $websiteZipUrl;
-        workerNamePrefix              = $workerNamePrefix;
-        workerConfig                  = @($workerConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
-        workerLogLevel                = $WorkerLogLevel;
-        workerSku                     = $workerSku;
+        workerNamePrefix              = $ResourceSettings.WorkerNamePrefix;
+        workerConfig                  = @($ResourceSettings.WorkerConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
+        workerLogLevel                = $ResourceSettings.WorkerLogLevel;
+        workerSku                     = $ResourceSettings.WorkerSku;
         workerZipUrl                  = $workerZipUrl;
-        workerCount                   = $workerCount
+        workerCount                   = $ResourceSettings.WorkerCount
     }
 
-    if ($ExistingWebsitePlanId) {
-        $parameters.WebsitePlanId = $ExistingWebsitePlanId
+    if ($ResourceSettings.ExistingWebsitePlanId) {
+        $parameters.WebsitePlanId = $ResourceSettings.ExistingWebsitePlanId
     }
 
     New-Deployment `
@@ -230,7 +152,7 @@ New-MainDeployment "main"
 
 # Warm up the workers, since initial deployment appears to leave them in a hibernation state.
 Write-Status "Warming up the website and workers..."
-foreach ($appName in @($WebsiteName) + (0..($WorkerCount - 1) | ForEach-Object { $workerNamePrefix + $_ })) {
+foreach ($appName in @($ResourceSettings.WebsiteName) + (0..($ResourceSettings.WorkerCount - 1) | ForEach-Object { $ResourceSettings.WorkerNamePrefix + $_ })) {
     $url = "$(Get-AppServiceBaseUrl $appName)/"    
     $attempt = 0;
     while ($true) {

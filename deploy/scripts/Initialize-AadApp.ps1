@@ -1,11 +1,12 @@
+using module "./ExplorePackages.psm1"
+using namespace ExplorePackages
+
 [CmdletBinding()]
 [OutputType([Microsoft.Azure.Commands.ActiveDirectory.PSADApplication])]
 param (
     [Parameter(Mandatory = $true)]
     [string]$AadAppName
 )
-
-. (Join-Path $PSScriptRoot "common.ps1")
 
 Write-Status "Looking for AAD app with name '$AadAppName'..."
 $existingApps = Get-AzADApplication -DisplayName $AadAppName

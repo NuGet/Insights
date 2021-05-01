@@ -1,13 +1,14 @@
+using module "./ExplorePackages.psm1"
+using namespace ExplorePackages
+
 [CmdletBinding()]
 param (
     [Parameter(Mandatory = $true)]
     [string]$ObjectId,
 
-    [Parameter(Mandatory = $false)]
+    [Parameter(Mandatory = $true)]
     [string]$BaseUrl
 )
-
-. (Join-Path $PSScriptRoot "common.ps1")
 
 Write-Status "Enabling the AAD app for website login..."
 $resource = "https://graph.microsoft.com/"

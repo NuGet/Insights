@@ -1,3 +1,6 @@
+using module "scripts/ExplorePackages.psm1"
+using namespace ExplorePackages
+
 [CmdletBinding()]
 param (
     [Parameter(Mandatory = $true)]
@@ -15,8 +18,6 @@ param (
     [Parameter(Mandatory = $false)]
     [string]$WorkerZipPath
 )
-
-. (Join-Path $PSScriptRoot "scripts/common.ps1")
 
 $context = Get-AzContext
 Write-Status "Using subscription: $($context.Subscription.Id)"
@@ -81,16 +82,25 @@ if (!$WebsiteZipPath) { $WebsiteZipPath = Publish-Project "Website" }
 if (!$WorkerZipPath) { $WorkerZipPath = Publish-Project "Worker" }
 
 # Prepare the deployment parameters
-$parameters = Merge-Hashtable (Get-Config).Deployment
-$parameters.DeploymentDir = $deploymentDir
-$parameters.StackName = $StackName
-$parameters.WebsiteZipPath = $WebsiteZipPath
-$parameters.WorkerZipPath = $WorkerZipPath
-$parameters.WebsiteConfig = $websiteConfig
-$parameters.WorkerConfig = $workerConfig
+$deployment = (Get-Config).Deployment
+$parameters = @{
+    ResourceSettings = [ResourceSettings]::new(
+        $StackName,
+        $deployment.Location,
+        $deployment.WebsiteName,
+        $deployment.ExistingWebsitePlanId,
+        $WebsiteConfig,
+        $deployment.WorkerSku,
+        $deployment.WorkerCount,
+        $deployment.WorkerLogLevel,
+        $WorkerConfig);
+    DeploymentDir    = $deploymentDir;
+    WebsiteZipPath   = $WebsiteZipPath;
+    WorkerZipPath    = $WorkerZipPath;
+}
 
 Write-Status ""
 Write-Status "Using the following deployment parameters:"
 ConvertTo-Json $parameters -Depth 100 | Out-Default
 
-. (Join-Path $PSScriptRoot "scripts/Invoke-Deploy.ps1") @parameters -ErrorAction Stop
+. (Join-Path $PSScriptRoot "scripts/Invoke-Deploy.ps1") @parameters

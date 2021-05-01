@@ -1,3 +1,6 @@
+using module "./ExplorePackages.psm1"
+using namespace ExplorePackages
+
 [CmdletBinding()]
 param (
     [Parameter(Mandatory = $true)]
@@ -15,14 +18,12 @@ param (
     [Parameter(Mandatory = $true)]
     [string]$SasConnectionStringSecretName,
     
-    [Parameter(Mandatory = $false)]
+    [Parameter(Mandatory = $true)]
     [switch]$AutoRegenerateKey,
 
     [Parameter(Mandatory = $true)]
     [TimeSpan]$SasValidityPeriod
 )
-
-. (Join-Path $PSScriptRoot "common.ps1")
 
 # The application ID for Key Vault managed storage:
 # Source: https://docs.microsoft.com/en-us/azure/key-vault/secrets/overview-storage-keys-powershell
@@ -109,7 +110,6 @@ if (!$matchingStorage) {
                 -AccountName $StorageAccountName `
                 -ActiveKeyName key1 `
                 -AccountResourceId $storageAccount.Id `
-                -ErrorAction Stop `
                 @parameters | Out-Default
             break
         }
