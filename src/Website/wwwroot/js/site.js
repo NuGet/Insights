@@ -14,9 +14,6 @@
     function restoreCollapseState() {
         var state = localStorage.getItem(collapseStateKey);
 
-        // Check the hash (fragment) and expand the section if the hash matches the section.
-        var fragmentKey = getFragmentKey();
-
         if (state) {
             state = JSON.parse(state);
             for (const id in state) {
@@ -28,8 +25,7 @@
                 var labelledBy = el.getAttribute('aria-labelledBy');
                 var labelledByEl = document.getElementById(labelledBy);
 
-                var hide = state[id] && fragmentKey != getKeyFromContentId(id);
-                if (hide) {
+                if (state[id]) {
                     el.classList.remove('show');
                     labelledByEl.classList.add('collapsed');
                 } else {
@@ -71,6 +67,11 @@
                 history.replaceState("", document.title, window.location.pathname + window.location.search);
             }
         });
+
+        var fragmentKey = getFragmentKey();
+        if (fragmentKey) {
+            $('#' + fragmentKey + '-content').collapse('show');
+        }
 
         $('.card [data-toggle="collapse"]').dblclick(function () {
             var hidden = $(this).parents(".card").find('.collapse-remember').data('kc.hidden');
