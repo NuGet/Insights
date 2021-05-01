@@ -45,7 +45,7 @@ $currentUser = Invoke-RestMethod -Uri "https://graph.microsoft.com/v1.0/me" -Hea
 
 Write-Status "Adding Key Vault role assignment for '$($currentUser.userPrincipalName)' (object ID $($currentUser.id))..."
 $existingRoleAssignment = Get-AzRoleAssignment `
-    -ResourceGroupName $resourceGroupName `
+    -ResourceGroupName $ResourceGroupName `
     -RoleDefinitionName "Key Vault Administrator" `
 | Where-Object { $_.ObjectId -eq $currentUser.id }
 if (!$existingRoleAssignment) {
@@ -170,9 +170,25 @@ Set-AzKeyVaultSecret `
     -Tag @{ "set-by" = "deployment" } | Out-Default
 
 Write-Status "Removing Key Vault role assignment for '$($currentUser.userPrincipalName)' (object ID $($currentUser.id))..."
-Remove-AzRoleAssignment `
-    -ObjectId $currentUser.id `
-    -ResourceGroupName $ResourceGroupName `
-    -RoleDefinitionName "Key Vault Administrator"
+$attempt = 0
+while ($true) {
+    try {
+        $attempt++
+        Remove-AzRoleAssignment `
+            -ObjectId $currentUser.id `
+            -ResourceGroupName $ResourceGroupName `
+            -RoleDefinitionName "Key Vault Administrator" `
+            -ErrorAction Stop
+        break
+    }
+    catch {
+        if ($attempt -lt 20 -and $_.Exception.Response.StatusCode -eq 204) {
+            Write-Warning "Attempt $($attempt): HTTP 204 No Content. Trying again in 10 seconds."
+            Start-Sleep 10
+            continue
+        }
+        throw
+    }
+}
 
 $sasToken
