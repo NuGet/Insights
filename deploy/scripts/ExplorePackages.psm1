@@ -313,6 +313,49 @@ function New-ParameterFile($Parameters, $PathReferences, $FilePath) {
     $deploymentParameters | ConvertTo-Json -Depth 100 | Out-File $FilePath -Encoding UTF8
 }
 
+function New-Deployment($ResourceGroupName, $DeploymentDir, $DeploymentId, $DeploymentName, $BicepPath, $Parameters) {
+    
+    $parametersPath = Join-Path $DeploymentDir "$DeploymentName.deploymentParameters.json"
+    New-ParameterFile $Parameters @() $parametersPath
+
+    return New-AzResourceGroupDeployment `
+        -TemplateFile (Join-Path $PSScriptRoot $BicepPath) `
+        -ResourceGroupName $ResourceGroupName `
+        -Name "$DeploymentId-$DeploymentName" `
+        -TemplateParameterFile $parametersPath
+}
+
+function Get-AppServiceBaseUrl($name) {
+    "https://$($name.ToLowerInvariant()).azurewebsites.net"
+}
+
+function New-DeploymentId {
+    (Get-Date).ToUniversalTime().ToString("yyyyMMddHHmmss")
+}
+
+function Approve-SubscriptionId($configuredSubscriptionId) {
+    # Confirm the target subscription.
+    $context = Get-AzContext -ErrorAction Stop
+    $example = if ($configuredSubscriptionId) { $configuredSubscriptionId } else { "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" }
+    $example = "Use 'Set-AzContext -Subscription $example' to continue."
+    if (!$context.Subscription.Id) {
+        throw "No active subscription was found. $example"
+    }
+    elseif (!$configuredSubscriptionId) {
+        $title = "You are about to deploy to subscription $($context.Subscription.Id)."
+        $question = 'Are you sure you want to proceed?'
+        $choices = '&Yes', '&No'
+        $decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
+        if ($decision -ne 0) {
+            exit
+        }
+    }
+    elseif ($configuredSubscriptionId -and $configuredSubscriptionId -ne $context.Subscription.Id) {
+        throw "The current active subscription ($($context.Subscription.Id)) does not match configuration. $example"
+    }
+    Write-Status "Using subscription: $($context.Subscription.Id)"
+}
+
 # Source: https://stackoverflow.com/a/57599481
 if (Get-TypeData -TypeName System.Array) {
     Remove-TypeData System.Array

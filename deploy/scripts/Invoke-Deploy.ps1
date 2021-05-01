@@ -5,6 +5,9 @@ using namespace ExplorePackages
 param (
     [Parameter(Mandatory = $true)]
     [ResourceSettings]$ResourceSettings,
+    
+    [Parameter(Mandatory = $true)]
+    [string]$DeploymentId,
 
     [Parameter(Mandatory = $true)]
     [string]$DeploymentDir,
@@ -15,28 +18,6 @@ param (
     [Parameter(Mandatory = $true)]
     [string]$WorkerZipPath
 )
-
-Write-Status ""
-Write-Status "Beginning the deployment process..."
-
-$deploymentId = (Get-Date).ToUniversalTime().ToString("yyyyMMddHHmmss")
-Write-Status "Using deployment ID: $deploymentId"
-
-function New-Deployment($DeploymentName, $BicepPath, $Parameters) {
-    
-    $parametersPath = Join-Path $DeploymentDir "$DeploymentName.deploymentParameters.json"
-    New-ParameterFile $Parameters @() $parametersPath
-
-    return New-AzResourceGroupDeployment `
-        -TemplateFile (Join-Path $PSScriptRoot $BicepPath) `
-        -ResourceGroupName $ResourceSettings.ResourceGroupName `
-        -Name "$deploymentId-$DeploymentName" `
-        -TemplateParameterFile $parametersPath
-}
-
-# Make sure the resource group is created
-Write-Status "Ensuring the resource group '$($ResourceSettings.ResourceGroupName)' exists..."
-New-AzResourceGroup -Name $ResourceSettings.ResourceGroupName -Location $ResourceSettings.Location -Force
 
 # Verify the number of function app is not decreasing. This is not supported by the script.
 Write-Status "Counting existing function apps..."
@@ -50,44 +31,11 @@ if ($existingWorkerCount -gt $ResourceSettings.WorkerCount) {
     throw 'Reducing the number of workers is not supported.'
 }
 
-# Deploy the storage account, Key Vault, and deployment container.
-Write-Status "Ensuring the storage account, Key Vault, and deployment container exist..."
-New-Deployment `
-    -DeploymentName "storage-and-kv" `
-    -BicepPath "../storage-and-kv.bicep" `
-    -Parameters @{
-    storageAccountName      = $ResourceSettings.StorageAccountName;
-    keyVaultName            = $ResourceSettings.KeyVaultName;
-    identities              = @();
-    deploymentContainerName = $ResourceSettings.DeploymentContainerName;
-    leaseContainerName      = $ResourceSettings.LeaseContainerName
-}
-
-# Manage the storage account in Key Vault
-$sasToken = . (Join-Path $PSScriptRoot "Set-KeyVaultManagedStorage.ps1") `
-    -ResourceGroupName $ResourceSettings.ResourceGroupName `
-    -KeyVaultName $ResourceSettings.KeyVaultName `
-    -StorageAccountName $ResourceSettings.StorageAccountName `
-    -SasDefinitionName $ResourceSettings.SasDefinitionName `
-    -SasConnectionStringSecretName $ResourceSettings.SasConnectionStringSecretName `
-    -AutoRegenerateKey:$ResourceSettings.AutoRegenerateKey `
-    -SasValidityPeriod $ResourceSettings.SasValidityPeriod
-
-function Get-AppServiceBaseUrl($name) {
-    "https://$($name.ToLowerInvariant()).azurewebsites.net"
-}
-
-# Initialize the AAD app, if necessary
-if (!$ResourceSettings.WebsiteAadAppClientId) {
-    $aadApp = (. (Join-Path $PSScriptRoot "Initialize-AadApp.ps1") -AadAppName $ResourceSettings.WebsiteAadAppName)
-
-    # Make the app service support the website for login
-    . (Join-Path $PSScriptRoot "Initialize-AadAppForWebsite.ps1") `
-        -ObjectId $aadApp.ObjectId `
-        -BaseUrl (Get-AppServiceBaseUrl $ResourceSettings.WebsiteName)
-
-    $ResourceSettings.WebsiteAadAppClientId = $aadApp.ApplicationId
-}
+# Prepare the storage and Key Vault
+$sasToken = . (Join-Path $PSScriptRoot "Invoke-Prepare.ps1") `
+    -ResourceSettings $ResourceSettings `
+    -DeploymentId $DeploymentId `
+    -DeploymentDir $DeploymentDir
 
 # Upload the project ZIPs
 $storageContext = New-AzStorageContext `
@@ -104,12 +52,15 @@ function New-DeploymentZip ($ZipPath, $BlobName) {
     return $blob.BlobClient.Uri.AbsoluteUri
 }
 
-$websiteZipUrl = New-DeploymentZip $WebsiteZipPath "Website-$deploymentId.zip"
-$workerZipUrl = New-DeploymentZip $WorkerZipPath "Worker-$deploymentId.zip"
+$websiteZipUrl = New-DeploymentZip $WebsiteZipPath "Website-$DeploymentId.zip"
+$workerZipUrl = New-DeploymentZip $WorkerZipPath "Worker-$DeploymentId.zip"
 
 # Deploy the resources using the main ARM template
 Write-Status "Deploying the resources..."
 New-Deployment `
+    -ResourceGroupName $ResourceSettings.ResourceGroupName `
+    -DeploymentDir $DeploymentDir `
+    -DeploymentId $DeploymentId `
     -DeploymentName "main" `
     -BicepPath "../main.bicep" `
     -Parameters (New-MainParameters $ResourceSettings $websiteZipUrl $workerZipUrl)

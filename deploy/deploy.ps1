@@ -78,6 +78,9 @@ function Publish-Project ($ProjectName) {
 if (!$WebsiteZipPath) { $WebsiteZipPath = Publish-Project "Website" }
 if (!$WorkerZipPath) { $WorkerZipPath = Publish-Project "Worker" }
 
+$deploymentId = New-DeploymentId
+Write-Status "Using deployment ID: $deploymentId"
+
 # Prepare the deployment parameters
 $deployment = (Get-Config).Deployment
 $parameters = @{
@@ -92,34 +95,17 @@ $parameters = @{
         $deployment.WorkerLogLevel,
         $WorkerConfig,
         $null);
+    DeploymentId     = $deploymentId;
     DeploymentDir    = $deploymentDir;
     WebsiteZipPath   = $WebsiteZipPath;
     WorkerZipPath    = $WorkerZipPath;
 }
 
-Write-Status ""
 Write-Status "Using the following deployment parameters:"
 ConvertTo-Json $parameters -Depth 100 | Out-Default
 
-# Confirm the target subscription.
-$context = Get-AzContext -ErrorAction Stop
-$example = if ($deployment.SubscriptionId) { $deployment.SubscriptionId } else { "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" }
-$example = "Use 'Set-AzContext -Subscription $example' to continue."
-if (!$context.Subscription.Id) {
-    throw "No active subscription was found. $example"
-}
-elseif (!$deployment.SubscriptionId) {
-    $title = "You are about to deploy to subscription $($context.Subscription.Id)."
-    $question = 'Are you sure you want to proceed?'
-    $choices = '&Yes', '&No'
-    $decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
-    if ($decision -ne 0) {
-        exit
-    }
-}
-elseif ($deployment.SubscriptionId -and $deployment.SubscriptionId -ne $context.Subscription.Id) {
-    throw "The current active subscription ($($context.Subscription.Id)) does not match configuration. $example"
-}
-Write-Status "Using subscription: $($context.Subscription.Id)"
+Approve-SubscriptionId $deployment.SubscriptionId
+
+Write-Status "Beginning the deployment process..."
 
 . (Join-Path $PSScriptRoot "scripts/Invoke-Deploy.ps1") @parameters
