@@ -6,10 +6,10 @@ param (
     [Parameter(Mandatory = $true)]
     [ResourceSettings]$ResourceSettings,
     
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $false)]
     [string]$DeploymentId,
 
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $false)]
     [string]$DeploymentDir,
 
     [Parameter(Mandatory = $true)]
@@ -18,6 +18,8 @@ param (
     [Parameter(Mandatory = $true)]
     [string]$WorkerZipPath
 )
+
+$DeploymentId, $DeploymentDir = Get-DeploymentLocals $DeploymentId $DeploymentDir
 
 # Verify the number of function app is not decreasing. This is not supported by the script.
 Write-Status "Counting existing function apps..."

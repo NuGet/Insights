@@ -6,12 +6,14 @@ param (
     [Parameter(Mandatory = $true)]
     [ResourceSettings]$ResourceSettings,
     
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $false)]
     [string]$DeploymentId,
 
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $false)]
     [string]$DeploymentDir
 )
+
+$DeploymentId, $DeploymentDir = Get-DeploymentLocals $DeploymentId $DeploymentDir
 
 # Make sure the resource group is created
 Write-Status "Ensuring the resource group '$($ResourceSettings.ResourceGroupName)' exists..."

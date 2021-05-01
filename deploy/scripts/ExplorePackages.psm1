@@ -120,7 +120,44 @@ function ConvertTo-NameValuePairs {
     }
 }
 
+function Get-ResourceSettings($ConfigName, $StampName) {
+    $configPath = Join-Path $PSScriptRoot "../config/$ConfigName.json"
+    Write-Status "Using config path: $configPath"
+    $StampName = if (!$StampName) { $ConfigName } else { $StampName }
+    Write-Status "Using stamp name: $StampName"
+
+    function Get-Config() { Get-Content $configPath | ConvertFrom-Json | ConvertTo-Hashtable }
+    function Get-AppConfig() { @{ "Knapcode.ExplorePackages" = @{} } }
+
+    # Prepare the website config
+    $websiteConfig = Get-Config
+    $websiteConfig = Merge-Hashtable (Get-AppConfig) $websiteConfig.AppSettings.Shared $websiteConfig.AppSettings.Website
+
+    # Prepare the worker config
+    $workerConfig = Get-Config
+    $workerConfig = Merge-Hashtable (Get-AppConfig) $workerConfig.AppSettings.Shared $workerConfig.AppSettings.Worker
+
+    $deploymentConfig = Get-Config
+    $deploymentConfig = $deploymentConfig.Deployment
+
+    [ResourceSettings]::new(
+        $deploymentConfig.SubscriptionId,
+        $StampName,
+        $deploymentConfig.Location,
+        $deploymentConfig.WebsiteName,
+        $deploymentConfig.ExistingWebsitePlanId,
+        $WebsiteConfig,
+        $deploymentConfig.WorkerSku,
+        $deploymentConfig.WorkerCount,
+        $deploymentConfig.WorkerLogLevel,
+        $WorkerConfig,
+        $deploymentConfig.WebsiteAadAppClientId)
+}
+
 class ResourceSettings {
+    [ValidateNotNullOrEmpty()]
+    [string]$SubscriptionId
+
     [ValidatePattern("^[a-z0-9]+$")]
     [ValidateLength(1, 19)] # 19 because storage accounts and Key Vaults have max 24 characters and the prefix is "expkg".
     [ValidateNotNullOrEmpty()]
@@ -183,6 +220,7 @@ class ResourceSettings {
     [string]$WebsiteAadAppClientId
 
     ResourceSettings(
+        [string]$SubscriptionId,
         [string]$StampName,
         [string]$Location,
         [string]$WebsiteName,
@@ -194,17 +232,19 @@ class ResourceSettings {
         [Hashtable]$WorkerConfig,
         [string]$WebsiteAadAppClientId) {
 
+        $this.SubscriptionId = $SubscriptionId
         $this.StampName = $StampName
-
         $this.WebsiteConfig = $WebsiteConfig
         $this.WorkerConfig = $WorkerConfig
-
         $this.ExistingWebsitePlanId = $ExistingWebsitePlanId
+
         if ($this.WebsiteAadAppClientId) {
+            $this.WebsiteAadAppName = $null
             $this.WebsiteAadAppClientId = $WebsiteAadAppClientId
         }
         else {
             $this.WebsiteAadAppName = "ExplorePackages-$StampName-Website"
+            $this.WebsiteAadAppClientId = $null
         }
         
         $this.Location = if (!$Location) { "West US 2" } else { $Location }
@@ -310,6 +350,11 @@ function New-ParameterFile($Parameters, $PathReferences, $FilePath) {
         $deploymentParameters.paths += @{ "parameterReference" = $pathReference }
     }
 
+    $dirPath = Split-Path $FilePath
+    if (!(Test-Path $dirPath)) {
+        New-Item $dirPath -ItemType Directory
+    }
+
     $deploymentParameters | ConvertTo-Json -Depth 100 | Out-File $FilePath -Encoding UTF8
 }
 
@@ -327,10 +372,6 @@ function New-Deployment($ResourceGroupName, $DeploymentDir, $DeploymentId, $Depl
 
 function Get-AppServiceBaseUrl($name) {
     "https://$($name.ToLowerInvariant()).azurewebsites.net"
-}
-
-function New-DeploymentId {
-    (Get-Date).ToUniversalTime().ToString("yyyyMMddHHmmss")
 }
 
 function Approve-SubscriptionId($configuredSubscriptionId) {
@@ -354,6 +395,20 @@ function Approve-SubscriptionId($configuredSubscriptionId) {
         throw "The current active subscription ($($context.Subscription.Id)) does not match configuration. $example"
     }
     Write-Status "Using subscription: $($context.Subscription.Id)"
+}
+
+function Get-DeploymentLocals($DeploymentId, $DeploymentDir) {
+    if (!$DeploymentId) {
+        $DeploymentId = (Get-Date).ToUniversalTime().ToString("yyyyMMddHHmmss")
+        Write-Status "Using deployment ID: $DeploymentId"
+    }
+
+    if (!$DeploymentDir) {
+        $DeploymentDir = Join-Path $PSScriptRoot "../../artifacts/deploy"
+        Write-Status "Using deployment directory: $DeploymentDir"
+    }
+
+    return $DeploymentId, $DeploymentDir
 }
 
 # Source: https://stackoverflow.com/a/57599481
