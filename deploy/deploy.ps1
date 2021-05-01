@@ -36,7 +36,7 @@ if ($AllowDeployUser) {
     $context = Get-AzContext
     $homeAccountId = $context.Account.ExtendedProperties.HomeAccountId
     if (!$homeAccountId) {
-        Write-Warning "Could not find the 'HomeAccountId' from (Get-AzContext).Account.ExtendedProperties.HomeAccountId"
+        throw "Could not find the 'HomeAccountId' from (Get-AzContext).Account.ExtendedProperties.HomeAccountId."
     }
     else {
         if (!$websiteConfig['Knapcode.ExplorePackages'].AllowedUsers) {
