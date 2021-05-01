@@ -1,5 +1,5 @@
 // Parameters
-param stackName string
+param stampName string
 
 param storageAccountName string
 param keyVaultName string
@@ -117,7 +117,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2019-06-01' existing 
 }
 
 resource insights 'Microsoft.Insights/components@2015-05-01' = {
-  name: 'ExplorePackages-${stackName}'
+  name: 'ExplorePackages-${stampName}'
   location: resourceGroup().location
   kind: 'web'
   properties: {
@@ -127,7 +127,7 @@ resource insights 'Microsoft.Insights/components@2015-05-01' = {
 
 // Website
 resource websitePlan 'Microsoft.Web/serverfarms@2020-09-01' = if (websitePlanId == 'new') {
-  name: 'ExplorePackages-${stackName}-WebsitePlan'
+  name: 'ExplorePackages-${stampName}-WebsitePlan'
   location: resourceGroup().location
   sku: {
     name: 'B1'
@@ -180,7 +180,7 @@ resource website 'Microsoft.Web/sites@2020-09-01' = {
 
 // Workers
 resource workerPlan 'Microsoft.Web/serverfarms@2020-09-01' = {
-  name: 'ExplorePackages-${stackName}-WorkerPlan'
+  name: 'ExplorePackages-${stampName}-WorkerPlan'
   location: resourceGroup().location
   sku: {
     name: workerSku
@@ -188,7 +188,7 @@ resource workerPlan 'Microsoft.Web/serverfarms@2020-09-01' = {
 }
 
 resource workerPlanAutoScale 'microsoft.insights/autoscalesettings@2015-04-01' = if (!isConsumptionPlan) {
-  name: 'ExplorePackages-${stackName}-WorkerPlan'
+  name: 'ExplorePackages-${stampName}-WorkerPlan'
   location: resourceGroup().location
   dependsOn: [
     workerPlan

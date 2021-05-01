@@ -47,13 +47,13 @@ PowerShell is used for the following steps. I have tested Windows PowerShell 5.1
    ```powershell
    Set-AzContext -Subscription $mySubscriptionId
    ```
-1. From the root of the repo, deploy with the desired [config](deploy/config) and stack name.
+1. From the root of the repo, deploy with the desired [config](deploy/config) and stamp name.
    ```powershell
-   ./deploy/deploy.ps1 -ConfigName dev -StackName Joel -AllowDeployUser
+   ./deploy/deploy.ps1 -ConfigName dev -StampName Joel -AllowDeployUser
    ```
    If you run into trouble, try adding the `-Debug` option to get more diagnostic information.
 
-This will create a new resource group with name `ExplorePackages-{StackName}` deploy several resources into it including:
+This will create a new resource group with name `ExplorePackages-{StampName}` deploy several resources into it including:
 - an App Service, containing a website for starting scans
 - a Function App with Consumption plan, for running the scans
 - a Storage account, for maintaining intermediate state and results (CSV files)

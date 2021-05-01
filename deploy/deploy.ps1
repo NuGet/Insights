@@ -7,7 +7,7 @@ param (
     [string]$ConfigName,
 
     [Parameter(Mandatory = $false)]
-    [string]$StackName,
+    [string]$StampName,
 
     [Parameter(Mandatory = $false)]
     [switch]$AllowDeployUser,
@@ -24,8 +24,8 @@ Write-Status "Using subscription: $($context.Subscription.Id)"
 
 $configPath = Join-Path $PSScriptRoot "config/$ConfigName.json"
 Write-Status "Using config path: $configPath"
-$StackName = if ($StackName) { $StackName } else { $ConfigName }
-Write-Status "Using stack name: $StackName"
+$StampName = if (!$StampName) { $ConfigName } else { $StampName }
+Write-Status "Using stamp name: $StampName"
 
 function Get-Config() { Get-Content $configPath | ConvertFrom-Json | ConvertTo-Hashtable }
 function Get-AppConfig() { @{ "Knapcode.ExplorePackages" = @{} } }
@@ -85,7 +85,7 @@ if (!$WorkerZipPath) { $WorkerZipPath = Publish-Project "Worker" }
 $deployment = (Get-Config).Deployment
 $parameters = @{
     ResourceSettings = [ResourceSettings]::new(
-        $StackName,
+        $StampName,
         $deployment.Location,
         $deployment.WebsiteName,
         $deployment.ExistingWebsitePlanId,

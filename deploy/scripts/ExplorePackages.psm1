@@ -124,7 +124,7 @@ class ResourceSettings {
     [ValidatePattern("^[a-z0-9]+$")]
     [ValidateLength(1, 19)] # 19 because storage accounts and Key Vaults have max 24 characters and the prefix is "expkg".
     [ValidateNotNullOrEmpty()]
-    [string]$StackName
+    [string]$StampName
 
     [ValidateNotNullOrEmpty()]
     [string]$Location
@@ -183,7 +183,7 @@ class ResourceSettings {
     [string]$WebsiteAadAppClientId
 
     ResourceSettings(
-        [string]$StackName,
+        [string]$StampName,
         [string]$Location,
         [string]$WebsiteName,
         [string]$ExistingWebsitePlanId,
@@ -194,7 +194,7 @@ class ResourceSettings {
         [Hashtable]$WorkerConfig,
         [string]$WebsiteAadAppClientId) {
 
-        $this.StackName = $StackName
+        $this.StampName = $StampName
 
         $this.WebsiteConfig = $WebsiteConfig
         $this.WorkerConfig = $WorkerConfig
@@ -204,24 +204,24 @@ class ResourceSettings {
             $this.WebsiteAadAppClientId = $WebsiteAadAppClientId
         }
         else {
-            $this.WebsiteAadAppName = "ExplorePackages-$StackName-Website"
+            $this.WebsiteAadAppName = "ExplorePackages-$StampName-Website"
         }
         
         $this.Location = if (!$Location) { "West US 2" } else { $Location }
-        $this.WebsiteName = if (!$WebsiteName) { "ExplorePackages-$StackName" } else { $WebsiteName }
+        $this.WebsiteName = if (!$WebsiteName) { "ExplorePackages-$StampName" } else { $WebsiteName }
         $this.WorkerSku = if (!$WorkerSku) { "Y1" } else { $WorkerSku } 
         $this.WorkerCount = if (!$WorkerCount) { 1 } else { $WorkerCount }
         $this.WorkerLogLevel = if (!$WorkerLogLevel) { "Warning" } else { $WorkerLogLevel } 
 
-        $this.ResourceGroupName = "ExplorePackages-$StackName"
-        $this.StorageAccountName = "expkg$($StackName.ToLowerInvariant())"
-        $this.KeyVaultName = "expkg$($StackName.ToLowerInvariant())"
+        $this.ResourceGroupName = "ExplorePackages-$StampName"
+        $this.StorageAccountName = "expkg$($StampName.ToLowerInvariant())"
+        $this.KeyVaultName = "expkg$($StampName.ToLowerInvariant())"
         $this.SasConnectionStringSecretName = "$($this.StorageAccountName)-SasConnectionString"
         $this.SasDefinitionName = "BlobQueueTableFullAccessSas"
         $this.DeploymentContainerName = "deployment"
         $this.LeaseContainerName = "leases"
         $this.SasValidityPeriod = New-TimeSpan -Days 6
-        $this.WorkerNamePrefix = "ExplorePackages-$StackName-Worker-"
+        $this.WorkerNamePrefix = "ExplorePackages-$StampName-Worker-"
 
         # Set up some default config based on worker SKU
         if ($this.WorkerSku -eq "Y1") {
@@ -262,7 +262,7 @@ class ResourceSettings {
 
 function New-MainParameters($ResourceSettings, $WebsiteZipUrl, $WorkerZipUrl) {
     $parameters = @{
-        stackName                     = $ResourceSettings.StackName;
+        stampName                     = $ResourceSettings.StampName;
         storageAccountName            = $ResourceSettings.StorageAccountName;
         keyVaultName                  = $ResourceSettings.KeyVaultName;
         deploymentContainerName       = $ResourceSettings.DeploymentContainerName;
