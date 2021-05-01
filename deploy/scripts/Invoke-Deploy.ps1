@@ -59,6 +59,7 @@ $sasDefinitionName = "BlobQueueTableFullAccessSas"
 $deploymentContainerName = "deployment"
 $leaseContainerName = "leases"
 $sasValidityPeriod = New-TimeSpan -Days 6
+$workerNamePrefix = "ExplorePackages-$StackName-Worker-"
 
 if (!$WebsiteName) {
     $WebsiteName = "ExplorePackages-$StackName"
@@ -89,6 +90,14 @@ if ($WorkerSku -eq "Y1") {
             $WorkerConfig.AzureFunctionsJobHost__extensions__queues__batchSize = 1
         }
     }
+    
+    # Since Consumption plan requires WEBSITE_CONTENTAZUREFILECONNECTIONSTRING and this does not support SAS-based
+    # connection strings, don't auto-regenerate in this case. We would need to regularly update a connection string based
+    # on the active storage access key, which isn't worth the effort for this approach that is less secure anyway.
+    $autoRegenerateKey = $false
+}
+else {
+    $autoRegenerateKey = $true
 }
 
 function New-Deployment($DeploymentName, $BicepPath, $Parameters) {
@@ -119,6 +128,18 @@ function New-Deployment($DeploymentName, $BicepPath, $Parameters) {
 Write-Status "Ensuring the resource group '$resourceGroupName' exists..."
 New-AzResourceGroup -Name $resourceGroupName -Location $Location -Force
 
+# Verify the number of function app is not decreasing. This is not supported by the script.
+Write-Status "Counting existing function apps..."
+$existingWorkers = Get-AzFunctionApp -ResourceGroupName $resourceGroupName
+$existingWorkerCount = $existingWorkers.Count
+if ($existingWorkerCount -gt $workerCount) {
+    # Would need to:
+    # - Delete function apps
+    # - Remove managed identity from KV policy (maybe done automatically by ARM)
+    # - Delete the File Share (WEBSITE_CONTENTSHARE) created by the function app
+    throw 'Reducing the number of workers is not supported.'
+}
+
 # Deploy the storage account, Key Vault, and deployment container.
 Write-Status "Ensuring the storage account, Key Vault, and deployment container exist..."
 New-Deployment `
@@ -132,25 +153,11 @@ New-Deployment `
     leaseContainerName      = $leaseContainerName
 }
 
-# Get the current user
-Write-Status "Determining the current user principal name for Key Vault operations..."
-$graphToken = Get-AzAccessToken -Resource "https://graph.microsoft.com/"
-$graphHeaders = @{ Authorization = "Bearer $($graphToken.Token)" }
-$currentUser = Invoke-RestMethod -Uri "https://graph.microsoft.com/v1.0/me" -Headers $graphHeaders
-$upn = $currentUser.userPrincipalName
-
 # Manage the storage account in Key Vault
-
-# Since Consumption plan requires WEBSITE_CONTENTAZUREFILECONNECTIONSTRING and this does not support SAS-based
-# connection strings, don't auto-regenerate in this case. We would need to regularly update a connection string based
-# on the active storage access key, which isn't worth the effort for this approach that is less secure anyway.
-$autoRegenerateKey = $WorkerSku -ne 'Y1'
-
 $sasToken = . (Join-Path $PSScriptRoot "Set-KeyVaultManagedStorage.ps1") `
     -ResourceGroupName $resourceGroupName `
     -KeyVaultName $keyVaultName `
     -StorageAccountName $storageAccountName `
-    -UserPrincipalName $upn `
     -SasDefinitionName $sasDefinitionName `
     -SasConnectionStringSecretName $sasConnectionStringSecretName `
     -AutoRegenerateKey:$autoRegenerateKey `
@@ -158,6 +165,14 @@ $sasToken = . (Join-Path $PSScriptRoot "Set-KeyVaultManagedStorage.ps1") `
 
 # Initialize the AAD app
 $aadApp = (. (Join-Path $PSScriptRoot "Initialize-AadApp.ps1") -AadAppName $AadAppName)
+
+# Make the app service support the website for login
+function Get-AppServiceBaseUrl($name) {
+    "https://$($name.ToLowerInvariant()).azurewebsites.net"
+}
+. (Join-Path $PSScriptRoot "Initialize-AadAppForWebsite.ps1") `
+    -ObjectId $aadApp.ObjectId `
+    -BaseUrl (Get-AppServiceBaseUrl $WebsiteName)
 
 # Upload the project ZIPs
 $storageContext = New-AzStorageContext `
@@ -177,13 +192,8 @@ function New-DeploymentZip ($ZipPath, $BlobName) {
 $websiteZipUrl = New-DeploymentZip $WebsiteZipPath "Website-$deploymentId.zip"
 $workerZipUrl = New-DeploymentZip $WorkerZipPath "Worker-$deploymentId.zip"
 
-# To workaround limitations in initial deployment Azure Functions, we check the current state and may need to
-# deploy a second time.
-Write-Status "Counting existing function apps..."
-$existingWorkers = Get-AzFunctionApp -ResourceGroupName $resourceGroupName
-$existingWorkerCount = $existingWorkers.Count
-
-function New-MainDeployment($deploymentName, $useKeyVaultReference) {
+# Deploy the resources using the main ARM template
+function New-MainDeployment($deploymentName) {
     $parameters = @{
         stackName                     = $StackName;
         storageAccountName            = $storageAccountName;
@@ -197,12 +207,12 @@ function New-MainDeployment($deploymentName, $useKeyVaultReference) {
         websiteAadClientId            = $aadApp.ApplicationId;
         websiteConfig                 = @($websiteConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
         websiteZipUrl                 = $websiteZipUrl;
+        workerNamePrefix              = $workerNamePrefix;
         workerConfig                  = @($workerConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
         workerLogLevel                = $WorkerLogLevel;
         workerSku                     = $workerSku;
         workerZipUrl                  = $workerZipUrl;
-        workerCount                   = $workerCount;
-        useKeyVaultReference          = $useKeyVaultReference
+        workerCount                   = $workerCount
     }
 
     if ($ExistingWebsitePlanId) {
@@ -215,43 +225,13 @@ function New-MainDeployment($deploymentName, $useKeyVaultReference) {
         -Parameters $parameters
 }
 
-if ($existingWorkerCount -gt $workerCount) {
-    # Would need to:
-    # - Delete function apps
-    # - Remove managed identity from KV policy (maybe done automatically by ARM)
-    # - Delete the File Share (WEBSITE_CONTENTSHARE) created by the function app
-    throw 'Reducing the number of workers is not supported.'
-}
-
-if ($existingWorkerCount -lt $workerCount) {
-    Write-Status "Deploying without Key Vault references because there are new workers..."
-    New-MainDeployment "prepare" $false | Tee-Object -Variable 'deployment'
-}
-else {
-    Write-Status "Deploying the resources..."
-    New-MainDeployment "main" $true | Tee-Object -Variable 'deployment'
-}
-
-$websiteDefaultHostName = $deployment.Outputs.websiteDefaultHostName.Value
-$websiteHostNames = $deployment.Outputs.websiteHostNames.Value.ToString() | ConvertFrom-Json
-$workerDefaultHostNames = $deployment.Outputs.workerDefaultHostNames.Value.ToString() | ConvertFrom-Json
-
-# Make the app service support the website for login
-. (Join-Path $PSScriptRoot "Initialize-AadAppForWebsite.ps1") `
-    -ObjectId $aadApp.ObjectId `
-    -DefaultHostName $websiteDefaultHostName `
-    -HostNames $websiteHostNames
-
-if ($existingWorkerCount -lt $workerCount) {
-    Write-Status "Deploying again with Key Vault references..."
-    New-MainDeployment "main" $true
-}
+Write-Status "Deploying the resources..."
+New-MainDeployment "main"
 
 # Warm up the workers, since initial deployment appears to leave them in a hibernation state.
 Write-Status "Warming up the website and workers..."
-foreach ($hostName in @($websiteDefaultHostName) + $workerDefaultHostNames) {
-    $url = "https://$hostName/"
-    
+foreach ($appName in @($WebsiteName) + (0..($WorkerCount - 1) | ForEach-Object { $workerNamePrefix + $_ })) {
+    $url = "$(Get-AppServiceBaseUrl $appName)/"    
     $attempt = 0;
     while ($true) {
         $attempt++

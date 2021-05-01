@@ -10,9 +10,6 @@ param (
     [string]$StorageAccountName,
     
     [Parameter(Mandatory = $true)]
-    [string]$UserPrincipalName,
-    
-    [Parameter(Mandatory = $true)]
     [string]$SasDefinitionName,
 
     [Parameter(Mandatory = $true)]
@@ -39,14 +36,20 @@ $storageEmulatorKey = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz
 # We round up to the nearest 2 weeks.
 $regenerationPeriod = New-TimeSpan -Days ([Math]::Ceiling($SasValidityPeriod.TotalDays / 7) * 14)
 
-Write-Status "Adding Key Vault role assignment for '$UserPrincipalName'..."
+# Get the current user
+Write-Status "Determining the current user principal name for Key Vault operations..."
+$graphToken = Get-AzAccessToken -Resource "https://graph.microsoft.com/"
+$graphHeaders = @{ Authorization = "Bearer $($graphToken.Token)" }
+$currentUser = Invoke-RestMethod -Uri "https://graph.microsoft.com/v1.0/me" -Headers $graphHeaders
+
+Write-Status "Adding Key Vault role assignment for '$($currentUser.userPrincipalName)' (object ID $($currentUser.id))..."
 $existingRoleAssignment = Get-AzRoleAssignment `
     -ResourceGroupName $resourceGroupName `
     -RoleDefinitionName "Key Vault Administrator" `
-| Where-Object { $_.SignInName -eq $UserPrincipalName }
+| Where-Object { $_.ObjectId -eq $currentUser.id }
 if (!$existingRoleAssignment) {
     New-AzRoleAssignment `
-        -SignInName $UserPrincipalName `
+        -ObjectId $currentUser.id `
         -ResourceGroupName $ResourceGroupName `
         -RoleDefinitionName "Key Vault Administrator" | Out-Default
 }
@@ -164,9 +167,9 @@ Set-AzKeyVaultSecret `
     -Expires $sasTokenExpires `
     -Tag @{ "set-by" = "deployment" } | Out-Default
 
-Write-Status "Deleting Key Vault role assignment for '$UserPrincipalName'..."
+Write-Status "Removing Key Vault role assignment for '$($currentUser.userPrincipalName)' (object ID $($currentUser.id))..."
 Remove-AzRoleAssignment `
-    -SignInName $UserPrincipalName `
+    -ObjectId $currentUser.id `
     -ResourceGroupName $ResourceGroupName `
     -RoleDefinitionName "Key Vault Administrator"
 

@@ -4,10 +4,7 @@ param (
     [string]$ObjectId,
 
     [Parameter(Mandatory = $false)]
-    [string]$DefaultHostName,
-
-    [Parameter(Mandatory = $false)]
-    [string[]]$HostNames
+    [string]$BaseUrl
 )
 
 . (Join-Path $PSScriptRoot "common.ps1")
@@ -26,9 +23,9 @@ $appServicePatch = @{
     identifierUris = @();
     signInAudience = "AzureADandPersonalMicrosoftAccount";
     web            = @{
-        homePageUrl  = "https://$($DefaultHostName)";
-        redirectUris = @($HostNames | ForEach-Object { "https://$_/signin-oidc" })
-        logoutUrl    = "https://$($DefaultHostName)/signout-oidc"
+        homePageUrl  = $BaseUrl;
+        redirectUris = @("$BaseUrl/signin-oidc")
+        logoutUrl    = "$BaseUrl/signout-oidc"
     }
 }
 
@@ -60,14 +57,12 @@ if ($appServicePatch.Count -eq 0) {
 }
 
 function Set-AadApp($token) {
-    $graphHeaders = 
     Invoke-RestMethod `
         -Method PATCH `
         -Uri "https://graph.microsoft.com/v1.0/applications/$ObjectId" `
         -Headers @{ Authorization = "Bearer $token" } `
         -ContentType "application/json" `
-        -Body ($appServicePatch | ConvertTo-Json -Depth 100 -Compress) `
-        -ErrorAction Stop
+        -Body ($appServicePatch | ConvertTo-Json -Depth 100 -Compress) | Out-Default
 }
 
 try {

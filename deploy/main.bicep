@@ -17,6 +17,7 @@ param websiteConfig array
 @secure()
 param websiteZipUrl string
 
+param workerNamePrefix string
 param workerConfig array
 @allowed([
   'Warning'
@@ -28,18 +29,12 @@ param workerSku string = 'Y1'
 param workerZipUrl string
 @minValue(1)
 param workerCount int
-param useKeyVaultReference bool
 
-// Variables and output
 var sakConnectionString = 'AccountName=${storageAccountName};AccountKey=${listkeys(storageAccount.id, storageAccount.apiVersion).keys[0].value};DefaultEndpointsProtocol=https;EndpointSuffix=core.windows.net'
 var sasConnectionStringReference = '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${sasConnectionStringSecretName})'
 var isConsumptionPlan = workerSku == 'Y1'
 var isPremiumPlan = startsWith(workerSku, 'P')
 var maxInstances = isPremiumPlan ? 30 : 10
-
-output websiteDefaultHostName string = website.properties.defaultHostName
-output websiteHostNames array = website.properties.hostNames
-output workerDefaultHostNames array = [for i in range(0, workerCount): workers[i].properties.defaultHostName]
 
 var sharedConfig = [
   {
@@ -263,7 +258,7 @@ var workerConfigWithStorage = concat(workerConfig, isConsumptionPlan ? [
 ] : [])
 
 resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCount): {
-  name: 'ExplorePackages-${stackName}-Worker-${i}'
+  name: '${workerNamePrefix}${i}'
   location: resourceGroup().location
   kind: 'FunctionApp'
   identity: {
@@ -287,9 +282,7 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
         }
         {
           name: 'AzureWebJobsStorage'
-          // Cannot use a Key Vault reference for initial deployment.
-          // https://github.com/Azure/azure-functions-host/issues/7094
-          value: useKeyVaultReference ? sasConnectionStringReference : sakConnectionString
+          value: sasConnectionStringReference
         }
         {
           name: 'FUNCTIONS_EXTENSION_VERSION'
@@ -301,7 +294,7 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
         }
         {
           name: 'Knapcode.ExplorePackages:HostAppName'
-          value: 'ExplorePackages-${stackName}-Worker-${i}'
+          value: '${workerNamePrefix}${i}'
         }
         {
           name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
