@@ -73,7 +73,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
   }
 }
 
-resource keyVaultPermisions 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = [for identity in identities: {
+resource keyVaultPermissions 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = [for identity in identities: {
   name: !empty(identities) ? guid('AppsCanAccessKeyVault-${identity.tenantId}-${identity.objectId}') : guid('placeholder')
   scope: keyVault
   properties: {
