@@ -1,3 +1,146 @@
+class ResourceSettings {
+    [ValidatePattern("^[a-z0-9]+$")]
+    [ValidateLength(1, 19)] # 19 because storage accounts and Key Vaults have max 24 characters and the prefix is "expkg".
+    [ValidateNotNullOrEmpty()]
+    [string]$StampName
+
+    [ValidateNotNullOrEmpty()]
+    [string]$Location
+    
+    [ValidateNotNullOrEmpty()]
+    [string]$WebsiteName
+    
+    [ValidateSet("Y1", "S1", "P1v2")]
+    [string]$WorkerSku
+
+    [ValidateRange(1, 20)]
+    [ValidateNotNullOrEmpty()]
+    [int]$WorkerCount
+    
+    [ValidateSet("Information", "Warning")]
+    [string]$WorkerLogLevel
+
+    [ValidateNotNullOrEmpty()]
+    [Hashtable]$WebsiteConfig
+    
+    [ValidateNotNullOrEmpty()]
+    [Hashtable]$WorkerConfig
+
+    [ValidateNotNullOrEmpty()]
+    [string]$ResourceGroupName
+    
+    [ValidateNotNullOrEmpty()]
+    [string]$StorageAccountName
+    
+    [ValidateNotNullOrEmpty()]
+    [string]$KeyVaultName
+    
+    [ValidateNotNullOrEmpty()]
+    [string]$SasConnectionStringSecretName
+    
+    [ValidateNotNullOrEmpty()]
+    [string]$SasDefinitionName
+    
+    [ValidateNotNullOrEmpty()]
+    [string]$DeploymentContainerName
+    
+    [ValidateNotNullOrEmpty()]
+    [string]$LeaseContainerName
+    
+    [ValidateNotNullOrEmpty()]
+    [TimeSpan]$SasValidityPeriod
+    
+    [ValidateNotNullOrEmpty()]
+    [string]$WorkerNamePrefix
+    
+    [ValidateNotNullOrEmpty()]
+    [bool]$AutoRegenerateStorageKey
+    
+    [string]$SubscriptionId
+    [string]$ExistingWebsitePlanId
+    [string]$WebsiteAadAppName
+    [string]$WebsiteAadAppClientId
+
+    ResourceSettings(
+        [string]$SubscriptionId,
+        [string]$StampName,
+        [string]$Location,
+        [string]$WebsiteName,
+        [string]$ExistingWebsitePlanId,
+        [Hashtable]$WebsiteConfig,
+        [string]$WorkerSku,
+        [int]$WorkerCount,
+        [string]$WorkerLogLevel,
+        [Hashtable]$WorkerConfig,
+        [string]$WebsiteAadAppClientId) {
+
+        $this.SubscriptionId = $SubscriptionId
+        $this.StampName = $StampName
+        $this.WebsiteConfig = $WebsiteConfig
+        $this.WorkerConfig = $WorkerConfig
+        $this.ExistingWebsitePlanId = $ExistingWebsitePlanId
+
+        if ($this.WebsiteAadAppClientId) {
+            $this.WebsiteAadAppName = $null
+            $this.WebsiteAadAppClientId = $WebsiteAadAppClientId
+        }
+        else {
+            $this.WebsiteAadAppName = "ExplorePackages-$StampName-Website"
+            $this.WebsiteAadAppClientId = $null
+        }
+        
+        $this.Location = if (!$Location) { "West US 2" } else { $Location }
+        $this.WebsiteName = if (!$WebsiteName) { "ExplorePackages-$StampName" } else { $WebsiteName }
+        $this.WorkerSku = if (!$WorkerSku) { "Y1" } else { $WorkerSku } 
+        $this.WorkerCount = if (!$WorkerCount) { 1 } else { $WorkerCount }
+        $this.WorkerLogLevel = if (!$WorkerLogLevel) { "Warning" } else { $WorkerLogLevel } 
+
+        $this.ResourceGroupName = "ExplorePackages-$StampName"
+        $this.StorageAccountName = "expkg$($StampName.ToLowerInvariant())"
+        $this.KeyVaultName = "expkg$($StampName.ToLowerInvariant())"
+        $this.SasConnectionStringSecretName = "$($this.StorageAccountName)-SasConnectionString"
+        $this.SasDefinitionName = "BlobQueueTableFullAccessSas"
+        $this.DeploymentContainerName = "deployment"
+        $this.LeaseContainerName = "leases"
+        $this.SasValidityPeriod = New-TimeSpan -Days 6
+        $this.WorkerNamePrefix = "ExplorePackages-$StampName-Worker-"
+
+        # Set up some default config based on worker SKU
+        if ($this.WorkerSku -eq "Y1") {
+            if ("NuGetPackageExplorerToCsv" -notin $this.WorkerConfig["Knapcode.ExplorePackages"].DisabledDrivers) {
+                # Default "MoveTempToHome" to be true when NuGetPackageExplorerToCsv is enabled. We do this because the NuGet
+                # Package Explorer symbol validation APIs are hard-coded to use TEMP and can quickly fill up the small TEMP
+                # capacity on consumption plan (~500 MiB). Therefore, we move TEMP to HOME at the start of the process. HOME
+                # points to a Azure Storage File share which has no capacity issues.
+                if ($null -eq $this.WorkerConfig["Knapcode.ExplorePackages"].MoveTempToHome) {
+                    $this.WorkerConfig["Knapcode.ExplorePackages"].MoveTempToHome = $true
+                }
+
+                # Default the maximum number of workers per Function App plan to 16 when NuGetPackageExplorerToCsv is enabled.
+                # We do this because it's easy for a lot of Function App workers to overload the HOME directory which is backed
+                # by an Azure Storage File share.
+                if ($null -eq $this.WorkerConfig.WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT) {
+                    $this.WorkerConfig.WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT = 16
+                }
+
+                # Default the storage queue trigger batch size to 1 when NuGetPackageExplorerToCsv is enabled. We do this to
+                # eliminate the parallelism in the worker process so that we can easily control the number of total parallel
+                # queue messages are being processed and therefore are using the HOME file share.
+                if ($null -eq $this.WorkerConfig.AzureFunctionsJobHost__extensions__queues__batchSize) {
+                    $this.WorkerConfig.AzureFunctionsJobHost__extensions__queues__batchSize = 1
+                }
+            }
+            
+            # Since Consumption plan requires WEBSITE_CONTENTAZUREFILECONNECTIONSTRING and this does not support SAS-based
+            # connection strings, don't auto-regenerate in this case. We would need to regularly update a connection string based
+            # on the active storage access key, which isn't worth the effort for this approach that is less secure anyway.
+            $this.AutoRegenerateStorageKey = $false
+        }
+        else {
+            $this.AutoRegenerateStorageKey = $true
+        }
+    }
+}
 function Write-Status ($message) {
     Write-Host $message -ForegroundColor Green
 }
@@ -152,152 +295,6 @@ function Get-ResourceSettings($ConfigName, $StampName) {
         $deploymentConfig.WorkerLogLevel,
         $WorkerConfig,
         $deploymentConfig.WebsiteAadAppClientId)
-}
-
-class ResourceSettings {
-    [ValidateNotNullOrEmpty()]
-    [string]$SubscriptionId
-
-    [ValidatePattern("^[a-z0-9]+$")]
-    [ValidateLength(1, 19)] # 19 because storage accounts and Key Vaults have max 24 characters and the prefix is "expkg".
-    [ValidateNotNullOrEmpty()]
-    [string]$StampName
-
-    [ValidateNotNullOrEmpty()]
-    [string]$Location
-    
-    [ValidateNotNullOrEmpty()]
-    [string]$WebsiteName
-    
-    [ValidateSet("Y1", "S1", "P1v2")]
-    [string]$WorkerSku
-
-    [ValidateRange(1, 20)]
-    [ValidateNotNullOrEmpty()]
-    [int]$WorkerCount
-    
-    [ValidateSet("Information", "Warning")]
-    [string]$WorkerLogLevel
-
-    [ValidateNotNullOrEmpty()]
-    [Hashtable]$WebsiteConfig
-    
-    [ValidateNotNullOrEmpty()]
-    [Hashtable]$WorkerConfig
-
-    [ValidateNotNullOrEmpty()]
-    [string]$ResourceGroupName
-    
-    [ValidateNotNullOrEmpty()]
-    [string]$StorageAccountName
-    
-    [ValidateNotNullOrEmpty()]
-    [string]$KeyVaultName
-    
-    [ValidateNotNullOrEmpty()]
-    [string]$SasConnectionStringSecretName
-    
-    [ValidateNotNullOrEmpty()]
-    [string]$SasDefinitionName
-    
-    [ValidateNotNullOrEmpty()]
-    [string]$DeploymentContainerName
-    
-    [ValidateNotNullOrEmpty()]
-    [string]$LeaseContainerName
-    
-    [ValidateNotNullOrEmpty()]
-    [TimeSpan]$SasValidityPeriod
-    
-    [ValidateNotNullOrEmpty()]
-    [string]$WorkerNamePrefix
-    
-    [ValidateNotNullOrEmpty()]
-    [bool]$AutoRegenerateStorageKey
-    
-    [string]$ExistingWebsitePlanId
-    [string]$WebsiteAadAppName
-    [string]$WebsiteAadAppClientId
-
-    ResourceSettings(
-        [string]$SubscriptionId,
-        [string]$StampName,
-        [string]$Location,
-        [string]$WebsiteName,
-        [string]$ExistingWebsitePlanId,
-        [Hashtable]$WebsiteConfig,
-        [string]$WorkerSku,
-        [int]$WorkerCount,
-        [string]$WorkerLogLevel,
-        [Hashtable]$WorkerConfig,
-        [string]$WebsiteAadAppClientId) {
-
-        $this.SubscriptionId = $SubscriptionId
-        $this.StampName = $StampName
-        $this.WebsiteConfig = $WebsiteConfig
-        $this.WorkerConfig = $WorkerConfig
-        $this.ExistingWebsitePlanId = $ExistingWebsitePlanId
-
-        if ($this.WebsiteAadAppClientId) {
-            $this.WebsiteAadAppName = $null
-            $this.WebsiteAadAppClientId = $WebsiteAadAppClientId
-        }
-        else {
-            $this.WebsiteAadAppName = "ExplorePackages-$StampName-Website"
-            $this.WebsiteAadAppClientId = $null
-        }
-        
-        $this.Location = if (!$Location) { "West US 2" } else { $Location }
-        $this.WebsiteName = if (!$WebsiteName) { "ExplorePackages-$StampName" } else { $WebsiteName }
-        $this.WorkerSku = if (!$WorkerSku) { "Y1" } else { $WorkerSku } 
-        $this.WorkerCount = if (!$WorkerCount) { 1 } else { $WorkerCount }
-        $this.WorkerLogLevel = if (!$WorkerLogLevel) { "Warning" } else { $WorkerLogLevel } 
-
-        $this.ResourceGroupName = "ExplorePackages-$StampName"
-        $this.StorageAccountName = "expkg$($StampName.ToLowerInvariant())"
-        $this.KeyVaultName = "expkg$($StampName.ToLowerInvariant())"
-        $this.SasConnectionStringSecretName = "$($this.StorageAccountName)-SasConnectionString"
-        $this.SasDefinitionName = "BlobQueueTableFullAccessSas"
-        $this.DeploymentContainerName = "deployment"
-        $this.LeaseContainerName = "leases"
-        $this.SasValidityPeriod = New-TimeSpan -Days 6
-        $this.WorkerNamePrefix = "ExplorePackages-$StampName-Worker-"
-
-        # Set up some default config based on worker SKU
-        if ($this.WorkerSku -eq "Y1") {
-            if ("NuGetPackageExplorerToCsv" -notin $this.WorkerConfig["Knapcode.ExplorePackages"].DisabledDrivers) {
-                # Default "MoveTempToHome" to be true when NuGetPackageExplorerToCsv is enabled. We do this because the NuGet
-                # Package Explorer symbol validation APIs are hard-coded to use TEMP and can quickly fill up the small TEMP
-                # capacity on consumption plan (~500 MiB). Therefore, we move TEMP to HOME at the start of the process. HOME
-                # points to a Azure Storage File share which has no capacity issues.
-                if ($null -eq $this.WorkerConfig["Knapcode.ExplorePackages"].MoveTempToHome) {
-                    $this.WorkerConfig["Knapcode.ExplorePackages"].MoveTempToHome = $true
-                }
-
-                # Default the maximum number of workers per Function App plan to 16 when NuGetPackageExplorerToCsv is enabled.
-                # We do this because it's easy for a lot of Function App workers to overload the HOME directory which is backed
-                # by an Azure Storage File share.
-                if ($null -eq $this.WorkerConfig.WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT) {
-                    $this.WorkerConfig.WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT = 16
-                }
-
-                # Default the storage queue trigger batch size to 1 when NuGetPackageExplorerToCsv is enabled. We do this to
-                # eliminate the parallelism in the worker process so that we can easily control the number of total parallel
-                # queue messages are being processed and therefore are using the HOME file share.
-                if ($null -eq $this.WorkerConfig.AzureFunctionsJobHost__extensions__queues__batchSize) {
-                    $this.WorkerConfig.AzureFunctionsJobHost__extensions__queues__batchSize = 1
-                }
-            }
-            
-            # Since Consumption plan requires WEBSITE_CONTENTAZUREFILECONNECTIONSTRING and this does not support SAS-based
-            # connection strings, don't auto-regenerate in this case. We would need to regularly update a connection string based
-            # on the active storage access key, which isn't worth the effort for this approach that is less secure anyway.
-            $this.AutoRegenerateStorageKey = $false
-        }
-        else {
-            $this.AutoRegenerateStorageKey = $true
-        }
-    }
 }
 
 function New-MainParameters($ResourceSettings, $WebsiteZipUrl, $WorkerZipUrl) {
