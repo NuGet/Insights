@@ -19,9 +19,6 @@ param (
     [string]$WorkerZipPath
 )
 
-$context = Get-AzContext
-Write-Status "Using subscription: $($context.Subscription.Id)"
-
 $configPath = Join-Path $PSScriptRoot "config/$ConfigName.json"
 Write-Status "Using config path: $configPath"
 $StampName = if (!$StampName) { $ConfigName } else { $StampName }
@@ -103,5 +100,26 @@ $parameters = @{
 Write-Status ""
 Write-Status "Using the following deployment parameters:"
 ConvertTo-Json $parameters -Depth 100 | Out-Default
+
+# Confirm the target subscription.
+$context = Get-AzContext -ErrorAction Stop
+$example = if ($deployment.SubscriptionId) { $deployment.SubscriptionId } else { "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" }
+$example = "Use 'Set-AzContext -Subscription $example' to continue."
+if (!$context.Subscription.Id) {
+    throw "No active subscription was found. $example"
+}
+elseif (!$deployment.SubscriptionId) {
+    $title = "You are about to deploy to subscription $($context.Subscription.Id)."
+    $question = 'Are you sure you want to proceed?'
+    $choices = '&Yes', '&No'
+    $decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
+    if ($decision -ne 0) {
+        exit
+    }
+}
+elseif ($deployment.SubscriptionId -and $deployment.SubscriptionId -ne $context.Subscription.Id) {
+    throw "The current active subscription ($($context.Subscription.Id)) does not match configuration. $example"
+}
+Write-Status "Using subscription: $($context.Subscription.Id)"
 
 . (Join-Path $PSScriptRoot "scripts/Invoke-Deploy.ps1") @parameters
