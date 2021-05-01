@@ -93,7 +93,8 @@ $parameters = @{
         $deployment.WorkerSku,
         $deployment.WorkerCount,
         $deployment.WorkerLogLevel,
-        $WorkerConfig);
+        $WorkerConfig,
+        $null);
     DeploymentDir    = $deploymentDir;
     WebsiteZipPath   = $WebsiteZipPath;
     WorkerZipPath    = $WorkerZipPath;

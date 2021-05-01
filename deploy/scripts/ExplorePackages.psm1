@@ -147,8 +147,6 @@ class ResourceSettings {
     
     [ValidateNotNullOrEmpty()]
     [Hashtable]$WorkerConfig
-    
-    [string]$ExistingWebsitePlanId
 
     [ValidateNotNullOrEmpty()]
     [string]$ResourceGroupName
@@ -158,9 +156,6 @@ class ResourceSettings {
     
     [ValidateNotNullOrEmpty()]
     [string]$KeyVaultName
-    
-    [ValidateNotNullOrEmpty()]
-    [string]$AadAppName
     
     [ValidateNotNullOrEmpty()]
     [string]$SasConnectionStringSecretName
@@ -182,6 +177,10 @@ class ResourceSettings {
     
     [ValidateNotNullOrEmpty()]
     [bool]$AutoRegenerateStorageKey
+    
+    [string]$ExistingWebsitePlanId
+    [string]$WebsiteAadAppName
+    [string]$WebsiteAadAppClientId
 
     ResourceSettings(
         [string]$StackName,
@@ -192,13 +191,21 @@ class ResourceSettings {
         [string]$WorkerSku,
         [int]$WorkerCount,
         [string]$WorkerLogLevel,
-        [Hashtable]$WorkerConfig) {
+        [Hashtable]$WorkerConfig,
+        [string]$WebsiteAadAppClientId) {
 
         $this.StackName = $StackName
 
-        $this.ExistingWebsitePlanId = $ExistingWebsitePlanId
         $this.WebsiteConfig = $WebsiteConfig
         $this.WorkerConfig = $WorkerConfig
+
+        $this.ExistingWebsitePlanId = $ExistingWebsitePlanId
+        if ($this.WebsiteAadAppClientId) {
+            $this.WebsiteAadAppClientId = $WebsiteAadAppClientId
+        }
+        else {
+            $this.WebsiteAadAppName = "ExplorePackages-$StackName-Website"
+        }
         
         $this.Location = if (!$Location) { "West US 2" } else { $Location }
         $this.WebsiteName = if (!$WebsiteName) { "ExplorePackages-$StackName" } else { $WebsiteName }
@@ -209,7 +216,6 @@ class ResourceSettings {
         $this.ResourceGroupName = "ExplorePackages-$StackName"
         $this.StorageAccountName = "expkg$($StackName.ToLowerInvariant())"
         $this.KeyVaultName = "expkg$($StackName.ToLowerInvariant())"
-        $this.AadAppName = "ExplorePackages-$StackName-Website"
         $this.SasConnectionStringSecretName = "$($this.StorageAccountName)-SasConnectionString"
         $this.SasDefinitionName = "BlobQueueTableFullAccessSas"
         $this.DeploymentContainerName = "deployment"
@@ -252,6 +258,59 @@ class ResourceSettings {
             $this.AutoRegenerateStorageKey = $true
         }
     }
+}
+
+function New-MainParameters($ResourceSettings, $WebsiteZipUrl, $WorkerZipUrl) {
+    $parameters = @{
+        stackName                     = $ResourceSettings.StackName;
+        storageAccountName            = $ResourceSettings.StorageAccountName;
+        keyVaultName                  = $ResourceSettings.KeyVaultName;
+        deploymentContainerName       = $ResourceSettings.DeploymentContainerName;
+        leaseContainerName            = $ResourceSettings.LeaseContainerName;
+        sasConnectionStringSecretName = $ResourceSettings.SasConnectionStringSecretName;
+        sasDefinitionName             = $ResourceSettings.SasDefinitionName;
+        sasValidityPeriod             = $ResourceSettings.SasValidityPeriod.ToString();
+        websiteName                   = $ResourceSettings.WebsiteName;
+        websiteAadClientId            = $ResourceSettings.WebsiteAadAppClientId;
+        websiteConfig                 = @($ResourceSettings.WebsiteConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
+        websiteZipUrl                 = $websiteZipUrl;
+        workerNamePrefix              = $ResourceSettings.WorkerNamePrefix;
+        workerConfig                  = @($ResourceSettings.WorkerConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
+        workerLogLevel                = $ResourceSettings.WorkerLogLevel;
+        workerSku                     = $ResourceSettings.WorkerSku;
+        workerZipUrl                  = $workerZipUrl;
+        workerCount                   = $ResourceSettings.WorkerCount
+    }
+
+    if ($ResourceSettings.ExistingWebsitePlanId) {
+        $parameters.WebsitePlanId = $ResourceSettings.ExistingWebsitePlanId
+    }
+
+    $parameters
+}
+
+function New-ParameterFile($Parameters, $PathReferences, $FilePath) {
+    # Docs: https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files
+    $deploymentParameters = @{
+        "`$schema"     = "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#";
+        contentVersion = "1.0.0.0";
+        parameters     = @{}
+    }
+
+    foreach ($key in $Parameters.Keys) {
+        $deploymentParameters.parameters.$key = @{ value = $parameters.$key }
+    }
+
+    # Docs: https://ev2docs.azure.net/getting-started/authoring/parameters/parameters.html
+    foreach ($pathReference in $PathReferences) {
+        if (!$deploymentParameters.paths) {
+            $deploymentParameters.paths = @()
+        }
+
+        $deploymentParameters.paths += @{ "parameterReference" = $pathReference }
+    }
+
+    $deploymentParameters | ConvertTo-Json -Depth 100 | Out-File $FilePath -Encoding UTF8
 }
 
 # Source: https://stackoverflow.com/a/57599481

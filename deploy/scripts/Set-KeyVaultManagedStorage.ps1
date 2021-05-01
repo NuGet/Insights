@@ -67,6 +67,7 @@ while ($true) {
         $attempt++
         $matchingStorage = Get-AzKeyVaultManagedStorageAccount `
             -VaultName $KeyVaultName `
+            -ErrorAction Stop `
         | Where-Object { $_.AccountResourceId -eq $storageAccount.Id }
         break
     }
@@ -110,6 +111,7 @@ if (!$matchingStorage) {
                 -AccountName $StorageAccountName `
                 -ActiveKeyName key1 `
                 -AccountResourceId $storageAccount.Id `
+                -ErrorAction Stop `
                 @parameters | Out-Default
             break
         }

@@ -63,7 +63,8 @@ function Set-AadApp($token) {
         -Uri "https://graph.microsoft.com/v1.0/applications/$ObjectId" `
         -Headers @{ Authorization = "Bearer $token" } `
         -ContentType "application/json" `
-        -Body ($appServicePatch | ConvertTo-Json -Depth 100 -Compress) | Out-Default
+        -Body ($appServicePatch | ConvertTo-Json -Depth 100 -Compress) `
+        -ErrorAction Stop | Out-Default
 }
 
 try {

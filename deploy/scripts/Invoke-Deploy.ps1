@@ -23,24 +23,12 @@ $deploymentId = (Get-Date).ToUniversalTime().ToString("yyyyMMddHHmmss")
 Write-Status "Using deployment ID: $deploymentId"
 
 function New-Deployment($DeploymentName, $BicepPath, $Parameters) {
-    # Docs: https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files
-    $deploymentParameters = @{
-        "`$schema"     = "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#";
-        contentVersion = "1.0.0.0";
-        parameters     = @{}
-    }
-
-    foreach ($key in $Parameters.Keys) {
-        $deploymentParameters.parameters.$key = @{ value = $parameters.$key }
-    }
-
+    
     $parametersPath = Join-Path $DeploymentDir "$DeploymentName.deploymentParameters.json"
-    $deploymentParameters | ConvertTo-Json -Depth 100 | Out-File $parametersPath -Encoding UTF8
-
-    $fullBicepPath = Join-Path $PSScriptRoot $BicepPath
+    New-ParameterFile $Parameters @() $parametersPath
 
     return New-AzResourceGroupDeployment `
-        -TemplateFile $fullBicepPath `
+        -TemplateFile (Join-Path $PSScriptRoot $BicepPath) `
         -ResourceGroupName $ResourceSettings.ResourceGroupName `
         -Name "$deploymentId-$DeploymentName" `
         -TemplateParameterFile $parametersPath
@@ -85,16 +73,21 @@ $sasToken = . (Join-Path $PSScriptRoot "Set-KeyVaultManagedStorage.ps1") `
     -AutoRegenerateKey:$ResourceSettings.AutoRegenerateKey `
     -SasValidityPeriod $ResourceSettings.SasValidityPeriod
 
-# Initialize the AAD app
-$aadApp = (. (Join-Path $PSScriptRoot "Initialize-AadApp.ps1") -AadAppName $ResourceSettings.AadAppName)
-
-# Make the app service support the website for login
 function Get-AppServiceBaseUrl($name) {
     "https://$($name.ToLowerInvariant()).azurewebsites.net"
 }
-. (Join-Path $PSScriptRoot "Initialize-AadAppForWebsite.ps1") `
-    -ObjectId $aadApp.ObjectId `
-    -BaseUrl (Get-AppServiceBaseUrl $ResourceSettings.WebsiteName)
+
+# Initialize the AAD app, if necessary
+if (!$ResourceSettings.WebsiteAadAppClientId) {
+    $aadApp = (. (Join-Path $PSScriptRoot "Initialize-AadApp.ps1") -AadAppName $ResourceSettings.WebsiteAadAppName)
+
+    # Make the app service support the website for login
+    . (Join-Path $PSScriptRoot "Initialize-AadAppForWebsite.ps1") `
+        -ObjectId $aadApp.ObjectId `
+        -BaseUrl (Get-AppServiceBaseUrl $ResourceSettings.WebsiteName)
+
+    $ResourceSettings.WebsiteAadAppClientId = $aadApp.ApplicationId
+}
 
 # Upload the project ZIPs
 $storageContext = New-AzStorageContext `
@@ -115,40 +108,11 @@ $websiteZipUrl = New-DeploymentZip $WebsiteZipPath "Website-$deploymentId.zip"
 $workerZipUrl = New-DeploymentZip $WorkerZipPath "Worker-$deploymentId.zip"
 
 # Deploy the resources using the main ARM template
-function New-MainDeployment($deploymentName) {
-    $parameters = @{
-        stackName                     = $ResourceSettings.StackName;
-        storageAccountName            = $ResourceSettings.StorageAccountName;
-        keyVaultName                  = $ResourceSettings.KeyVaultName;
-        deploymentContainerName       = $ResourceSettings.DeploymentContainerName;
-        leaseContainerName            = $ResourceSettings.LeaseContainerName;
-        sasConnectionStringSecretName = $ResourceSettings.SasConnectionStringSecretName;
-        sasDefinitionName             = $ResourceSettings.SasDefinitionName;
-        sasValidityPeriod             = $ResourceSettings.SasValidityPeriod.ToString();
-        websiteName                   = $ResourceSettings.WebsiteName;
-        websiteAadClientId            = $aadApp.ApplicationId;
-        websiteConfig                 = @($ResourceSettings.WebsiteConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
-        websiteZipUrl                 = $websiteZipUrl;
-        workerNamePrefix              = $ResourceSettings.WorkerNamePrefix;
-        workerConfig                  = @($ResourceSettings.WorkerConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
-        workerLogLevel                = $ResourceSettings.WorkerLogLevel;
-        workerSku                     = $ResourceSettings.WorkerSku;
-        workerZipUrl                  = $workerZipUrl;
-        workerCount                   = $ResourceSettings.WorkerCount
-    }
-
-    if ($ResourceSettings.ExistingWebsitePlanId) {
-        $parameters.WebsitePlanId = $ResourceSettings.ExistingWebsitePlanId
-    }
-
-    New-Deployment `
-        -DeploymentName $deploymentName `
-        -BicepPath "../main.bicep" `
-        -Parameters $parameters
-}
-
 Write-Status "Deploying the resources..."
-New-MainDeployment "main"
+New-Deployment `
+    -DeploymentName "main" `
+    -BicepPath "../main.bicep" `
+    -Parameters (New-MainParameters $ResourceSettings $websiteZipUrl $workerZipUrl)
 
 # Warm up the workers, since initial deployment appears to leave them in a hibernation state.
 Write-Status "Warming up the website and workers..."
@@ -161,7 +125,8 @@ foreach ($appName in @($ResourceSettings.WebsiteName) + (0..($ResourceSettings.W
             $response = Invoke-WebRequest `
                 -Method HEAD `
                 -Uri $url `
-                -UseBasicParsing
+                -UseBasicParsing `
+                -ErrorAction Stop
             Write-Host "$url - $($response.StatusCode) $($response.StatusDescription)"
             break
         }
