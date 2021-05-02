@@ -328,13 +328,13 @@ function New-MainParameters($ResourceSettings, $WebsiteZipUrl, $WorkerZipUrl) {
 
 function New-ParameterFile($Parameters, $PathReferences, $FilePath) {
     # Docs: https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files
-    $deploymentParameters = @{
+    $deploymentParameters = [ordered]@{
         "`$schema"     = "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#";
         contentVersion = "1.0.0.0";
-        parameters     = @{}
+        parameters     = [ordered]@{}
     }
-
-    foreach ($key in $Parameters.Keys) {
+    
+    foreach ($key in $Parameters.Keys | Sort-Object) {
         $deploymentParameters.parameters.$key = @{ value = $parameters.$key }
     }
 
@@ -344,7 +344,7 @@ function New-ParameterFile($Parameters, $PathReferences, $FilePath) {
             $deploymentParameters.paths = @()
         }
 
-        $deploymentParameters.paths += @{ "parameterReference" = $pathReference }
+        $deploymentParameters.paths += @{ parameterReference = $pathReference }
     }
 
     $dirPath = Split-Path $FilePath
