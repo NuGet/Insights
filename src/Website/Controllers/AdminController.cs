@@ -12,14 +12,17 @@ namespace Knapcode.ExplorePackages.Website.Controllers
     public class AdminController : Controller
     {
         private static bool _isInitialized;
+
+        private readonly CatalogCommitTimestampProvider _catalogCommitTimestampProvider;
+        private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
         private readonly CatalogScanStorageService _catalogScanStorageService;
         private readonly CatalogScanCursorService _catalogScanCursorService;
         private readonly CatalogScanService _catalogScanService;
         private readonly IRemoteCursorClient _remoteCursorClient;
         private readonly TimerExecutionService _timerExecutionService;
-        private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
 
         public AdminController(
+            CatalogCommitTimestampProvider catalogCommitTimestampProvider,
             IRawMessageEnqueuer rawMessageEnqueuer,
             CatalogScanStorageService catalogScanStorageService,
             CatalogScanCursorService catalogScanCursorService,
@@ -27,6 +30,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             IRemoteCursorClient remoteCursorClient,
             TimerExecutionService timerExecutionService)
         {
+            _catalogCommitTimestampProvider = catalogCommitTimestampProvider;
             _rawMessageEnqueuer = rawMessageEnqueuer;
             _catalogScanStorageService = catalogScanStorageService;
             _catalogScanCursorService = catalogScanCursorService;
@@ -71,8 +75,13 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 catalogScan.CursorAge = catalogCommitTimestamp - min;
             }
 
+            // Calculate the next default max, which supports processing the catalog one commit at a time.
+            var catalogScanMin = catalogScans.Min(x => x.Cursor.Value);
+            var nextCommitTimestamp = await _catalogCommitTimestampProvider.GetNextAsync(catalogScanMin);
+
             var model = new AdminViewModel
             {
+                DefaultMax = nextCommitTimestamp ?? catalogScanMin,
                 WorkQueue = await workQueueTask,
                 ExpandQueue = await expandQueueTask,
                 CatalogScans = catalogScans,

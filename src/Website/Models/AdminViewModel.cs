@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Knapcode.ExplorePackages.Website.Models
 {
@@ -7,6 +8,7 @@ namespace Knapcode.ExplorePackages.Website.Models
         public QueueViewModel WorkQueue { get; set; }
         public QueueViewModel ExpandQueue { get; set; }
 
+        public DateTimeOffset DefaultMax { get; set; }
         public IReadOnlyList<CatalogScanViewModel> CatalogScans { get; set; }
         public IReadOnlyList<TimerState> TimerStates { get; set; }
     }

@@ -148,6 +148,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient<PackageOwnersClient>();
             serviceCollection.AddTransient<OwnersV2JsonDeserializer>();
             serviceCollection.AddTransient<CatalogClient>();
+            serviceCollection.AddSingleton<CatalogCommitTimestampProvider>();
             serviceCollection.AddTransient<IRemoteCursorClient, RemoteCursorClient>();
 
             serviceCollection.AddTransient<PackageConsistencyContextBuilder>();
