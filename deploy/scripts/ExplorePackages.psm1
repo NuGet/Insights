@@ -1,6 +1,7 @@
 class ResourceSettings {
-    [ValidatePattern("^[a-z0-9]+$")]
-    [ValidateLength(1, 19)] # 19 because storage accounts and Key Vaults have max 24 characters and the prefix is "expkg".
+    [ValidateNotNullOrEmpty()]
+    [string]$ConfigName
+
     [ValidateNotNullOrEmpty()]
     [string]$StampName
 
@@ -8,7 +9,16 @@ class ResourceSettings {
     [string]$Location
     
     [ValidateNotNullOrEmpty()]
+    [string]$AppInsightsName
+    
+    [ValidateNotNullOrEmpty()]
+    [string]$WebsitePlanName
+    
+    [ValidateNotNullOrEmpty()]
     [string]$WebsiteName
+    
+    [ValidateNotNullOrEmpty()]
+    [string]$WorkerPlanName
     
     [ValidateSet("Y1", "S1", "P1v2")]
     [string]$WorkerSku
@@ -30,9 +40,12 @@ class ResourceSettings {
     [string]$ResourceGroupName
     
     [ValidateNotNullOrEmpty()]
+    [ValidatePattern("^[a-z0-9]+$")]
+    [ValidateLength(1, 24)]
     [string]$StorageAccountName
     
     [ValidateNotNullOrEmpty()]
+    [ValidateLength(1, 24)]
     [string]$KeyVaultName
     
     [ValidateNotNullOrEmpty()]
@@ -57,53 +70,73 @@ class ResourceSettings {
     [bool]$AutoRegenerateStorageKey
     
     [string]$SubscriptionId
+    [string]$ServiceTreeId
+    [string]$EnvironmentName
     [string]$ExistingWebsitePlanId
     [string]$WebsiteAadAppName
     [string]$WebsiteAadAppClientId
 
     ResourceSettings(
-        [string]$SubscriptionId,
+        [string]$ConfigName,
         [string]$StampName,
-        [string]$Location,
-        [string]$WebsiteName,
-        [string]$ExistingWebsitePlanId,
+        [Hashtable]$DeploymentConfig,
         [Hashtable]$WebsiteConfig,
-        [string]$WorkerSku,
-        [int]$WorkerCount,
-        [string]$WorkerLogLevel,
-        [Hashtable]$WorkerConfig,
-        [string]$WebsiteAadAppClientId) {
+        [Hashtable]$WorkerConfig) {
 
-        $this.SubscriptionId = $SubscriptionId
+        $d = $DeploymentConfig
+        
+        # Required settings
+        $this.ConfigName = $ConfigName
         $this.StampName = $StampName
         $this.WebsiteConfig = $WebsiteConfig
         $this.WorkerConfig = $WorkerConfig
-        $this.ExistingWebsitePlanId = $ExistingWebsitePlanId
 
-        if ($this.WebsiteAadAppClientId) {
+        $defaults = New-Object System.Collections.ArrayList
+        function Set-OrDefault($key, $default) {
+            if (!$d[$key]) {
+                $defaults.Add($key)
+                $this.$key = $default
+            }
+            else {
+                $this.$key = $d[$key]
+            }
+        }
+
+        # Settings with defaults
+        if ($d.WebsiteAadAppClientId) {
             $this.WebsiteAadAppName = $null
-            $this.WebsiteAadAppClientId = $WebsiteAadAppClientId
+            $this.WebsiteAadAppClientId = $d.WebsiteAadAppClientId
         }
         else {
-            $this.WebsiteAadAppName = "ExplorePackages-$StampName-Website"
+            Set-OrDefault "WebsiteAadAppName" "ExplorePackages-$StampName-Website"
             $this.WebsiteAadAppClientId = $null
         }
         
-        $this.Location = if (!$Location) { "West US 2" } else { $Location }
-        $this.WebsiteName = if (!$WebsiteName) { "ExplorePackages-$StampName" } else { $WebsiteName }
-        $this.WorkerSku = if (!$WorkerSku) { "Y1" } else { $WorkerSku } 
-        $this.WorkerCount = if (!$WorkerCount) { 1 } else { $WorkerCount }
-        $this.WorkerLogLevel = if (!$WorkerLogLevel) { "Warning" } else { $WorkerLogLevel } 
+        Set-OrDefault Location "West US 2"
+        Set-OrDefault AppInsightsName "ExplorePackages-$StampName"
+        Set-OrDefault WebsiteName "ExplorePackages-$StampName"
+        Set-OrDefault WebsitePlanName "$($this.WebsiteName)-WebsitePlan"
+        Set-OrDefault WorkerNamePrefix "ExplorePackages-$StampName-Worker-"
+        Set-OrDefault WorkerPlanName "ExplorePackages-$StampName-WorkerPlan"
+        Set-OrDefault WorkerSku "Y1"
+        Set-OrDefault WorkerCount 1
+        Set-OrDefault WorkerLogLevel "Warning"
+        Set-OrDefault ResourceGroupName "ExplorePackages-$StampName"
+        Set-OrDefault StorageAccountName "expkg$($StampName.ToLowerInvariant())"
+        Set-OrDefault KeyVaultName "expkg$($StampName.ToLowerInvariant())"
 
-        $this.ResourceGroupName = "ExplorePackages-$StampName"
-        $this.StorageAccountName = "expkg$($StampName.ToLowerInvariant())"
-        $this.KeyVaultName = "expkg$($StampName.ToLowerInvariant())"
+        # Optional settings
+        $this.SubscriptionId = $d.SubscriptionId
+        $this.ServiceTreeId = $d.ServiceTreeId
+        $this.EnvironmentName = $d.EnvironmentName
+        $this.ExistingWebsitePlanId = $d.ExistingWebsitePlanId
+
+        # Static settings
         $this.SasConnectionStringSecretName = "$($this.StorageAccountName)-SasConnectionString"
         $this.SasDefinitionName = "BlobQueueTableFullAccessSas"
         $this.DeploymentContainerName = "deployment"
         $this.LeaseContainerName = "leases"
         $this.SasValidityPeriod = New-TimeSpan -Days 6
-        $this.WorkerNamePrefix = "ExplorePackages-$StampName-Worker-"
 
         # Set up some default config based on worker SKU
         if ($this.WorkerSku -eq "Y1") {
@@ -138,6 +171,10 @@ class ResourceSettings {
         }
         else {
             $this.AutoRegenerateStorageKey = $true
+        }
+
+        if ($d.RejectDefaults -and $defaults) {
+            throw "Defaults are not allowed for config '$ConfigName'. Specify the following properties on the object at JSON path $.deployment: $defaults"
         }
     }
 }
@@ -263,8 +300,12 @@ function ConvertTo-NameValuePairs {
     }
 }
 
+function Get-ConfigPath($ConfigName) {
+    Join-Path $PSScriptRoot "../config/$ConfigName.json"
+}
+
 function Get-ResourceSettings($ConfigName, $StampName) {
-    $configPath = Join-Path $PSScriptRoot "../config/$ConfigName.json"
+    $configPath = Get-ConfigPath $ConfigName
     Write-Status "Using config path: $configPath"
     $StampName = if (!$StampName) { $ConfigName } else { $StampName }
     Write-Status "Using stamp name: $StampName"
@@ -284,22 +325,16 @@ function Get-ResourceSettings($ConfigName, $StampName) {
     $deploymentConfig = $deploymentConfig.Deployment
 
     [ResourceSettings]::new(
-        $deploymentConfig.SubscriptionId,
+        $ConfigName,
         $StampName,
-        $deploymentConfig.Location,
-        $deploymentConfig.WebsiteName,
-        $deploymentConfig.ExistingWebsitePlanId,
+        $deploymentConfig,
         $WebsiteConfig,
-        $deploymentConfig.WorkerSku,
-        $deploymentConfig.WorkerCount,
-        $deploymentConfig.WorkerLogLevel,
-        $WorkerConfig,
-        $deploymentConfig.WebsiteAadAppClientId)
+        $WorkerConfig)
 }
 
 function New-MainParameters($ResourceSettings, $WebsiteZipUrl, $WorkerZipUrl) {
     $parameters = @{
-        stampName                     = $ResourceSettings.StampName;
+        appInsightsName               = $ResourceSettings.AppInsightsName;
         storageAccountName            = $ResourceSettings.StorageAccountName;
         keyVaultName                  = $ResourceSettings.KeyVaultName;
         deploymentContainerName       = $ResourceSettings.DeploymentContainerName;
@@ -308,9 +343,11 @@ function New-MainParameters($ResourceSettings, $WebsiteZipUrl, $WorkerZipUrl) {
         sasDefinitionName             = $ResourceSettings.SasDefinitionName;
         sasValidityPeriod             = $ResourceSettings.SasValidityPeriod.ToString();
         websiteName                   = $ResourceSettings.WebsiteName;
+        websitePlanName               = $ResourceSettings.websitePlanName;
         websiteAadClientId            = $ResourceSettings.WebsiteAadAppClientId;
         websiteConfig                 = @($ResourceSettings.WebsiteConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
         websiteZipUrl                 = $websiteZipUrl;
+        workerPlanName                = $ResourceSettings.WorkerPlanName;
         workerNamePrefix              = $ResourceSettings.WorkerNamePrefix;
         workerConfig                  = @($ResourceSettings.WorkerConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
         workerLogLevel                = $ResourceSettings.WorkerLogLevel;
@@ -321,6 +358,9 @@ function New-MainParameters($ResourceSettings, $WebsiteZipUrl, $WorkerZipUrl) {
 
     if ($ResourceSettings.ExistingWebsitePlanId) {
         $parameters.WebsitePlanId = $ResourceSettings.ExistingWebsitePlanId
+    }
+    else {
+        $parameters.WebsitePlanName = $ResourceSettings.WebsitePlanName
     }
 
     $parameters
@@ -349,7 +389,7 @@ function New-ParameterFile($Parameters, $PathReferences, $FilePath) {
 
     $dirPath = Split-Path $FilePath
     if (!(Test-Path $dirPath)) {
-        New-Item $dirPath -ItemType Directory
+        New-Item $dirPath -ItemType Directory | Out-Null
     }
 
     $deploymentParameters | ConvertTo-Json -Depth 100 | Out-File $FilePath -Encoding UTF8

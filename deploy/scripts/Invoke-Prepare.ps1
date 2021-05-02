@@ -55,6 +55,7 @@ if (!$ResourceSettings.WebsiteAadAppClientId) {
         -BaseUrl (Get-AppServiceBaseUrl $ResourceSettings.WebsiteName)
 
     $ResourceSettings.WebsiteAadAppClientId = $aadApp.ApplicationId
+    Write-Host "The AAD app registration client ID is $($aadApp.ApplicationId)."
 }
 
 $sasToken

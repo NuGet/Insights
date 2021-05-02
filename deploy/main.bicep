@@ -1,6 +1,5 @@
 // Parameters
-param stampName string
-
+param appInsightsName string
 param storageAccountName string
 param keyVaultName string
 param deploymentContainerName string
@@ -11,18 +10,16 @@ param sasDefinitionName string
 param sasValidityPeriod string
 
 param websitePlanId string = 'new'
+param websitePlanName string = 'default'
 param websiteName string
 param websiteAadClientId string
 param websiteConfig array
 @secure()
 param websiteZipUrl string
 
+param workerPlanName string
 param workerNamePrefix string
 param workerConfig array
-@allowed([
-  'Warning'
-  'Information'
-])
 param workerLogLevel string = 'Warning'
 param workerSku string = 'Y1'
 @secure()
@@ -117,7 +114,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2019-06-01' existing 
 }
 
 resource insights 'Microsoft.Insights/components@2015-05-01' = {
-  name: 'ExplorePackages-${stampName}'
+  name: appInsightsName
   location: resourceGroup().location
   kind: 'web'
   properties: {
@@ -127,7 +124,7 @@ resource insights 'Microsoft.Insights/components@2015-05-01' = {
 
 // Website
 resource websitePlan 'Microsoft.Web/serverfarms@2020-09-01' = if (websitePlanId == 'new') {
-  name: 'ExplorePackages-${stampName}-WebsitePlan'
+  name: websitePlanName == 'default' ? '${websiteName}-WebsitePlan' : websitePlanName
   location: resourceGroup().location
   sku: {
     name: 'B1'
@@ -180,7 +177,7 @@ resource website 'Microsoft.Web/sites@2020-09-01' = {
 
 // Workers
 resource workerPlan 'Microsoft.Web/serverfarms@2020-09-01' = {
-  name: 'ExplorePackages-${stampName}-WorkerPlan'
+  name: workerPlanName
   location: resourceGroup().location
   sku: {
     name: workerSku
@@ -188,7 +185,7 @@ resource workerPlan 'Microsoft.Web/serverfarms@2020-09-01' = {
 }
 
 resource workerPlanAutoScale 'microsoft.insights/autoscalesettings@2015-04-01' = if (!isConsumptionPlan) {
-  name: 'ExplorePackages-${stampName}-WorkerPlan'
+  name: workerPlanName
   location: resourceGroup().location
   dependsOn: [
     workerPlan

@@ -53,7 +53,6 @@ if ($appServicePatch.web.Count -eq 0) {
 }
 
 if ($appServicePatch.Count -eq 0) {
-    Write-Host "The app is already ready for website login."
     exit
 }
 
