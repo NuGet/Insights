@@ -3,7 +3,7 @@
     "RejectDefaults": true,
     "EnvironmentName": "dev",
     "Location": "North Central US",
-    "WorkerSku": "P1v2",
+    "WorkerSku": "S1",
     "WorkerCount": 1,
     "WorkerLogLevel": "Warning",
     "AppInsightsName": "jver-dev-usnc-insights-ai",

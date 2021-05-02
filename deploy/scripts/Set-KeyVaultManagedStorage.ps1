@@ -73,7 +73,7 @@ while ($true) {
     }
     catch {
         if ($attempt -lt 20 -and $_.Exception.Response.StatusCode -eq 403) {
-            Write-Warning "Attempt $($attempt): HTTP 403 Forbidden. Trying again in 10 seconds."
+            Write-Warning "Attempt $($attempt) - HTTP 403 Forbidden. Trying again in 10 seconds."
             Start-Sleep 10
             continue
         }
@@ -183,10 +183,14 @@ while ($true) {
     }
     catch {
         if ($attempt -lt 20 -and $_.Exception.Response.StatusCode -eq 204) {
-            Write-Warning "Attempt $($attempt): HTTP 204 No Content. Trying again in 10 seconds."
+            Write-Warning "Attempt $($attempt) - HTTP 204 No Content. Trying again in 10 seconds."
             Start-Sleep 10
             continue
-        }
+        } elseif ($attempt -lt 20 -and $_.Exception.Message -eq "The provided information does not map to a role assignment.") {
+            Write-Warning "Attempt $($attempt) - transient duplicate role assignments. Trying again in 10 seconds."
+            Start-Sleep 10
+            continue
+        } 
         throw
     }
 }

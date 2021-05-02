@@ -190,3 +190,5 @@ if (!(Test-Path $bin)) {
 }
 Copy-Item $WebsiteZipPath -Destination (Join-Path $ev2 $websiteBinPath)
 Copy-Item $WorkerZipPath -Destination (Join-Path $ev2 $workerBinPath)
+
+Write-Host "Wrote Ev2 files to: $ev2"
