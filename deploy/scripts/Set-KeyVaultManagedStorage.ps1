@@ -36,6 +36,8 @@ $storageEmulatorKey = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz
 # We round up to the nearest 2 weeks.
 $regenerationPeriod = New-TimeSpan -Days ([Math]::Ceiling($SasValidityPeriod.TotalDays / 7) * 14)
 
+$maxRetries = 30
+
 # Get the current user
 Write-Status "Determining the current user principal name for Key Vault operations..."
 $graphToken = Get-AzAccessToken -Resource "https://graph.microsoft.com/"
@@ -71,7 +73,7 @@ while ($true) {
         break
     }
     catch {
-        if ($attempt -lt 20 -and $_.Exception.Response.StatusCode -eq 403) {
+        if ($attempt -lt $maxRetries -and $_.Exception.Response.StatusCode -eq 403) {
             Write-Warning "Attempt $($attempt) - HTTP 403 Forbidden. Trying again in 10 seconds."
             Start-Sleep 10
             continue
@@ -181,11 +183,11 @@ while ($true) {
         break
     }
     catch {
-        if ($attempt -lt 20 -and $_.Exception.Response.StatusCode -eq 204) {
+        if ($attempt -lt $maxRetries -and $_.Exception.Response.StatusCode -eq 204) {
             Write-Warning "Attempt $($attempt) - HTTP 204 No Content. Trying again in 10 seconds."
             Start-Sleep 10
             continue
-        } elseif ($attempt -lt 20 -and $_.Exception.Message -eq "The provided information does not map to a role assignment.") {
+        } elseif ($attempt -lt $maxRetries -and $_.Exception.Message -eq "The provided information does not map to a role assignment.") {
             Write-Warning "Attempt $($attempt) - transient duplicate role assignments. Trying again in 10 seconds."
             Start-Sleep 10
             continue
