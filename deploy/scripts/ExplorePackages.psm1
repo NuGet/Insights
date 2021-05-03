@@ -18,14 +18,18 @@ class ResourceSettings {
     [string]$WebsiteName
     
     [ValidateNotNullOrEmpty()]
-    [string]$WorkerPlanName
+    [string]$WorkerPlanNamePrefix
     
     [ValidateSet("Y1", "S1", "P1v2")]
     [string]$WorkerSku
 
     [ValidateRange(1, 20)]
     [ValidateNotNullOrEmpty()]
-    [int]$WorkerCount
+    [int]$WorkerPlanCount
+
+    [ValidateRange(1, 20)]
+    [ValidateNotNullOrEmpty()]
+    [int]$WorkerCountPerPlan
     
     [ValidateSet("Information", "Warning")]
     [string]$WorkerLogLevel
@@ -117,9 +121,10 @@ class ResourceSettings {
         Set-OrDefault WebsiteName "ExplorePackages-$StampName"
         Set-OrDefault WebsitePlanName "$($this.WebsiteName)-WebsitePlan"
         Set-OrDefault WorkerNamePrefix "ExplorePackages-$StampName-Worker-"
-        Set-OrDefault WorkerPlanName "ExplorePackages-$StampName-WorkerPlan"
+        Set-OrDefault WorkerPlanNamePrefix "ExplorePackages-$StampName-WorkerPlan-"
         Set-OrDefault WorkerSku "Y1"
-        Set-OrDefault WorkerCount 1
+        Set-OrDefault WorkerPlanCount 1
+        Set-OrDefault WorkerCountPerPlan 1
         Set-OrDefault WorkerLogLevel "Warning"
         Set-OrDefault ResourceGroupName "ExplorePackages-$StampName"
         Set-OrDefault StorageAccountName "expkg$($StampName.ToLowerInvariant())"
@@ -347,13 +352,14 @@ function New-MainParameters($ResourceSettings, $WebsiteZipUrl, $WorkerZipUrl) {
         websiteAadClientId            = $ResourceSettings.WebsiteAadAppClientId;
         websiteConfig                 = @($ResourceSettings.WebsiteConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
         websiteZipUrl                 = $websiteZipUrl;
-        workerPlanName                = $ResourceSettings.WorkerPlanName;
+        workerPlanNamePrefix          = $ResourceSettings.WorkerPlanNamePrefix;
         workerNamePrefix              = $ResourceSettings.WorkerNamePrefix;
         workerConfig                  = @($ResourceSettings.WorkerConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
         workerLogLevel                = $ResourceSettings.WorkerLogLevel;
         workerSku                     = $ResourceSettings.WorkerSku;
         workerZipUrl                  = $workerZipUrl;
-        workerCount                   = $ResourceSettings.WorkerCount
+        workerPlanCount               = $ResourceSettings.WorkerPlanCount;
+        workerCountPerPlan            = $ResourceSettings.WorkerCountPerPlan;
     }
 
     if ($ResourceSettings.ExistingWebsitePlanId) {
@@ -404,7 +410,8 @@ function New-Deployment($ResourceGroupName, $DeploymentDir, $DeploymentId, $Depl
         -TemplateFile (Join-Path $PSScriptRoot $BicepPath) `
         -ResourceGroupName $ResourceGroupName `
         -Name "$DeploymentId-$DeploymentName" `
-        -TemplateParameterFile $parametersPath
+        -TemplateParameterFile $parametersPath `
+        -ErrorAction Stop
 }
 
 function Get-AppServiceBaseUrl($name) {

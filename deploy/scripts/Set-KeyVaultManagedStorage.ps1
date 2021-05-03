@@ -187,7 +187,8 @@ while ($true) {
             Write-Warning "Attempt $($attempt) - HTTP 204 No Content. Trying again in 10 seconds."
             Start-Sleep 10
             continue
-        } elseif ($attempt -lt $maxRetries -and $_.Exception.Message -eq "The provided information does not map to a role assignment.") {
+        }
+        elseif ($attempt -lt $maxRetries -and $_.Exception.Message -eq "The provided information does not map to a role assignment.") {
             Write-Warning "Attempt $($attempt) - transient duplicate role assignments. Trying again in 10 seconds."
             Start-Sleep 10
             continue

@@ -17,21 +17,24 @@ param websiteConfig array
 @secure()
 param websiteZipUrl string
 
-param workerPlanName string
+param workerPlanNamePrefix string
 param workerNamePrefix string
+@minValue(1)
+param workerPlanCount int
+@minValue(1)
+param workerCountPerPlan int
 param workerConfig array
 param workerLogLevel string = 'Warning'
 param workerSku string = 'Y1'
 @secure()
 param workerZipUrl string
-@minValue(1)
-param workerCount int
 
 var sakConnectionString = 'AccountName=${storageAccountName};AccountKey=${listkeys(storageAccount.id, storageAccount.apiVersion).keys[0].value};DefaultEndpointsProtocol=https;EndpointSuffix=core.windows.net'
 var sasConnectionStringReference = '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${sasConnectionStringSecretName})'
 var isConsumptionPlan = workerSku == 'Y1'
 var isPremiumPlan = startsWith(workerSku, 'P')
 var maxInstances = isPremiumPlan ? 30 : 10
+var workerCount = workerPlanCount * workerCountPerPlan
 
 var sharedConfig = [
   {
@@ -176,23 +179,23 @@ resource website 'Microsoft.Web/sites@2020-09-01' = {
 }
 
 // Workers
-resource workerPlan 'Microsoft.Web/serverfarms@2020-09-01' = {
-  name: workerPlanName
+resource workerPlans 'Microsoft.Web/serverfarms@2020-09-01' = [for i in range(0, workerPlanCount): {
+  name: '${workerPlanNamePrefix}${i}'
   location: resourceGroup().location
   sku: {
     name: workerSku
   }
-}
+}]
 
-resource workerPlanAutoScale 'microsoft.insights/autoscalesettings@2015-04-01' = if (!isConsumptionPlan) {
-  name: workerPlanName
+resource workerPlanAutoScale 'microsoft.insights/autoscalesettings@2015-04-01' = [for i in range(0, workerPlanCount): if (!isConsumptionPlan) {
+  name: '${workerPlanNamePrefix}${i}'
   location: resourceGroup().location
   dependsOn: [
-    workerPlan
+    workerPlans[i]
   ]
   properties: {
     enabled: true
-    targetResourceUri: workerPlan.id
+    targetResourceUri: workerPlans[i].id
     profiles: [
       {
         name: 'Scale based on CPU'
@@ -206,7 +209,7 @@ resource workerPlanAutoScale 'microsoft.insights/autoscalesettings@2015-04-01' =
             metricTrigger: {
               metricName: 'CpuPercentage'
               metricNamespace: 'microsoft.web/serverfarms'
-              metricResourceUri: workerPlan.id
+              metricResourceUri: workerPlans[i].id
               timeGrain: 'PT1M'
               statistic: 'Average'
               timeWindow: 'PT10M'
@@ -225,7 +228,7 @@ resource workerPlanAutoScale 'microsoft.insights/autoscalesettings@2015-04-01' =
             metricTrigger: {
               metricName: 'CpuPercentage'
               metricNamespace: 'microsoft.web/serverfarms'
-              metricResourceUri: workerPlan.id
+              metricResourceUri: workerPlans[i].id
               timeGrain: 'PT1M'
               statistic: 'Average'
               timeWindow: 'PT5M'
@@ -244,7 +247,7 @@ resource workerPlanAutoScale 'microsoft.insights/autoscalesettings@2015-04-01' =
       }
     ]
   }
-}
+}]
 
 var workerConfigWithStorage = concat(workerConfig, isConsumptionPlan ? [
   {
@@ -262,7 +265,7 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
     type: 'SystemAssigned'
   }
   properties: {
-    serverFarmId: workerPlan.id
+    serverFarmId: workerPlans[i % workerCountPerPlan].id
     clientAffinityEnabled: false
     httpsOnly: true
     siteConfig: {

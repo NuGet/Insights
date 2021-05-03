@@ -20,23 +20,24 @@ Import-Module (Join-Path $PSScriptRoot "ExplorePackages.psm1")
 
 $DeploymentId, $DeploymentDir = Get-DeploymentLocals $DeploymentId $DeploymentDir
 
+# Prepare the storage and Key Vault
+$sasToken = . (Join-Path $PSScriptRoot "Invoke-Prepare.ps1") `
+    -ResourceSettings $ResourceSettings `
+    -DeploymentId $DeploymentId `
+    -DeploymentDir $DeploymentDir
+
 # Verify the number of function app is not decreasing. This is not supported by the script.
 Write-Status "Counting existing function apps..."
 $existingWorkers = Get-AzFunctionApp -ResourceGroupName $ResourceSettings.ResourceGroupName
 $existingWorkerCount = $existingWorkers.Count
-if ($existingWorkerCount -gt $ResourceSettings.WorkerCount) {
+$deployingWorkerCount = $ResourceSettings.WorkerPlanCount * $ResourceSettings.WorkerCountPerPlan
+if ($existingWorkerCount -gt $deployingWorkerCount) {
     # Would need to:
     # - Delete function apps
     # - Remove managed identity from KV policy (maybe done automatically by ARM)
     # - Delete the File Share (WEBSITE_CONTENTSHARE) created by the function app
     throw 'Reducing the number of workers is not supported.'
 }
-
-# Prepare the storage and Key Vault
-$sasToken = . (Join-Path $PSScriptRoot "Invoke-Prepare.ps1") `
-    -ResourceSettings $ResourceSettings `
-    -DeploymentId $DeploymentId `
-    -DeploymentDir $DeploymentDir
 
 # Upload the project ZIPs
 $storageContext = New-AzStorageContext `
@@ -68,7 +69,7 @@ New-Deployment `
 
 # Warm up the workers, since initial deployment appears to leave them in a hibernation state.
 Write-Status "Warming up the website and workers..."
-foreach ($appName in @($ResourceSettings.WebsiteName) + (0..($ResourceSettings.WorkerCount - 1) | ForEach-Object { $ResourceSettings.WorkerNamePrefix + $_ })) {
+foreach ($appName in @($ResourceSettings.WebsiteName) + (0..($deployingWorkerCount - 1) | ForEach-Object { $ResourceSettings.WorkerNamePrefix + $_ })) {
     $url = "$(Get-AppServiceBaseUrl $appName)/"    
     $attempt = 0;
     while ($true) {
