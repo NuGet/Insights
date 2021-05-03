@@ -1,6 +1,3 @@
-using module "scripts/ExplorePackages.psm1"
-using namespace ExplorePackages
-
 [CmdletBinding()]
 param (
     [Parameter(Mandatory = $true)]
@@ -15,6 +12,8 @@ param (
     [Parameter(Mandatory = $true)]
     [string]$WorkerZipPath
 )
+
+Import-Module (Join-Path $PSScriptRoot "scripts/ExplorePackages.psm1")
 
 function New-ServiceModelFile($resourceSettings) {
     # Docs: https://ev2docs.azure.net/getting-started/authoring/service-model/servicemodel.html

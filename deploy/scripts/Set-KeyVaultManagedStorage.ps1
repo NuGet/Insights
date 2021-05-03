@@ -1,6 +1,3 @@
-using module "./ExplorePackages.psm1"
-using namespace ExplorePackages
-
 [CmdletBinding()]
 param (
     [Parameter(Mandatory = $true)]
@@ -24,6 +21,8 @@ param (
     [Parameter(Mandatory = $true)]
     [TimeSpan]$SasValidityPeriod
 )
+
+Import-Module (Join-Path $PSScriptRoot "ExplorePackages.psm1")
 
 # The application ID for Key Vault managed storage:
 # Source: https://docs.microsoft.com/en-us/azure/key-vault/secrets/overview-storage-keys-powershell

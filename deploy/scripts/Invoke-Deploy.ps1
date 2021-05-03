@@ -1,10 +1,7 @@
-using module "./ExplorePackages.psm1"
-using namespace ExplorePackages
-
 [CmdletBinding()]
 param (
     [Parameter(Mandatory = $true)]
-    [ResourceSettings]$ResourceSettings,
+    $ResourceSettings,
     
     [Parameter(Mandatory = $false)]
     [string]$DeploymentId,
@@ -18,6 +15,8 @@ param (
     [Parameter(Mandatory = $true)]
     [string]$WorkerZipPath
 )
+
+Import-Module (Join-Path $PSScriptRoot "ExplorePackages.psm1")
 
 $DeploymentId, $DeploymentDir = Get-DeploymentLocals $DeploymentId $DeploymentDir
 

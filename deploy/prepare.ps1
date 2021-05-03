@@ -1,6 +1,3 @@
-using module "scripts/ExplorePackages.psm1"
-using namespace ExplorePackages
-
 [CmdletBinding()]
 param (
     [Parameter(Mandatory = $true)]
@@ -9,6 +6,8 @@ param (
     [Parameter(Mandatory = $false)]
     [string]$StampName
 )
+
+Import-Module (Join-Path $PSScriptRoot "scripts/ExplorePackages.psm1")
 
 $resourceSettings = Get-ResourceSettings $ConfigName $StampName
 
