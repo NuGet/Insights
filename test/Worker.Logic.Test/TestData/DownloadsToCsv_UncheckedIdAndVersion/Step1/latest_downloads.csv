@@ -1,8 +1,7 @@
 AsOfTimestamp,LowerId,Identity,Id,Version,Downloads,TotalDownloads
-2021-01-14T18:00:00Z,knapcode.torsharp,knapcode.torsharp/2.0.7,Knapcode.TorSharp,2.0.7,138,138
-2021-01-14T18:00:00Z,knapcode.torsharp,knapcode.torsharp/0.0.1,Knapcode.TorSharp,0.0.1,0,138
 2021-01-14T18:00:00Z,newtonsoft.json,newtonsoft.json/10.5.0,Newtonsoft.Json,10.5.0,137,543
 2021-01-14T18:00:00Z,newtonsoft.json,newtonsoft.json/2.4.3.700,Newtonsoft.Json,2.4.3.700,406,543
 2021-01-14T18:00:00Z,uncheckedb,uncheckedb/3.0.0,UncheckedB,3.0.0,0,0
 2021-01-14T18:00:00Z,uncheckeda,uncheckeda/2.0.0,UncheckedA,2.0.0,0,0
 2021-01-14T18:00:00Z,uncheckeda,uncheckeda/1.0.0,UncheckedA,1.0.0,0,0
+2021-01-14T18:00:00Z,knapcode.torsharp,knapcode.torsharp/0.0.1,Knapcode.TorSharp,0.0.1,0,0

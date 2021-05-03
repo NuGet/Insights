@@ -57,8 +57,6 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
                 return false;
             }
 
-            _uncheckedIds.Remove(id);
-
             if (versionToDeleted.ContainsKey(normalizedVersion))
             {
                 _idToUncheckedVersions[id].Remove(normalizedVersion);

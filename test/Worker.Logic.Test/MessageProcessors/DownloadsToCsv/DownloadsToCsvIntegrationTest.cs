@@ -124,7 +124,8 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
                 var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageDownloadSet>>();
                 await service.InitializeAsync();
                 await service.StartAsync(loop: false, notBefore: TimeSpan.Zero);
-                MockVersionSet.Setup(x => x.GetUncheckedIds()).Returns(new[] { "UncheckedB", "UncheckedA" });
+                MockVersionSet.Setup(x => x.DidVersionEverExist("Knapcode.TorSharp", "2.0.7")).Returns(false);
+                MockVersionSet.Setup(x => x.GetUncheckedIds()).Returns(new[] { "UncheckedB", "UncheckedA", "Knapcode.TorSharp" });
                 MockVersionSet.Setup(x => x.GetUncheckedVersions("UncheckedA")).Returns(new[] { "2.0.0", "1.0.0" });
                 MockVersionSet.Setup(x => x.GetUncheckedVersions("UncheckedB")).Returns(new[] { "3.0.0" });
                 MockVersionSet.Setup(x => x.GetUncheckedVersions("Knapcode.TorSharp")).Returns(new[] { "0.0.1" });

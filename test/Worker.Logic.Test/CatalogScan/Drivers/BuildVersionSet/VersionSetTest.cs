@@ -25,22 +25,12 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
         }
 
         [Fact]
-        public void TheGetUncheckedIdsMethod_IsAffectedByDidVersionEverExist_WhenVersionExists()
+        public void TheGetUncheckedIdsMethod_IsNotAffectedByDidVersionEverExist()
         {
             Target.DidVersionEverExist("knapcode.torsharp", "1.0.0-beta");
 
             Assert.Equal(
-                new[] { "DeletedA", "Newtonsoft.Json", "NoVersions" },
-                Target.GetUncheckedIds().OrderBy(x => x).ToArray());
-        }
-
-        [Fact]
-        public void TheGetUncheckedIdsMethod_IsAffectedByDidVersionEverExist_WhenVersionDoesNotExist()
-        {
-            Target.DidVersionEverExist("knapcode.torsharp", "9.9.9");
-
-            Assert.Equal(
-                new[] { "DeletedA", "Newtonsoft.Json", "NoVersions" },
+                new[] { "DeletedA", "Knapcode.TorSharp", "Newtonsoft.Json", "NoVersions" },
                 Target.GetUncheckedIds().OrderBy(x => x).ToArray());
         }
 
@@ -59,6 +49,16 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
 
             Assert.Equal(
                 new[] { "11.0.1", "9.0.1" },
+                Target.GetUncheckedVersions("newtonsoft.json").OrderBy(x => x).ToArray());
+        }
+
+        [Fact]
+        public void TheGetUncheckedVersionsMethod_IsNotAffectedByDidIdEverExist()
+        {
+            Target.DidIdEverExist("newtonsoft.json");
+
+            Assert.Equal(
+                new[] { "10.0.1-beta", "11.0.1", "9.0.1" },
                 Target.GetUncheckedVersions("newtonsoft.json").OrderBy(x => x).ToArray());
         }
 

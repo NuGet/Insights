@@ -54,6 +54,9 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
                     continue;
                 }
 
+                // Mark the ID as checked, since we have an existing version and will write at least one record for it.
+                versionSet.DidIdEverExist(entry.Id);
+
                 if (!idToVersions.TryGetValue(entry.Id, out var versionToDownloads))
                 {
                     // Only write when we move to the next ID. This ensures all of the versions of a given ID are in the same segment.
