@@ -16,7 +16,19 @@ param (
     [string]$ModelsPath,
 
     [Parameter(Mandatory = $false)]
-    [ValidateSet("JverCatalogLeafItems", "JverPackageArchives", "JverPackageArchiveEntries", "JverPackageAssemblies", "JverPackageAssets", "JverPackageDownloads", "JverPackageManifests", "JverPackageOwners", "JverPackageSignatures", "JverPackageVersions", "JverNuGetPackageExplorers")]
+    [ValidateSet(
+        "JverCatalogLeafItems",
+        "JverNuGetPackageExplorerFiles",
+        "JverNuGetPackageExplorers",
+        "JverPackageArchiveEntries",
+        "JverPackageArchives",
+        "JverPackageAssemblies",
+        "JverPackageAssets",
+        "JverPackageDownloads",
+        "JverPackageManifests",
+        "JverPackageOwners",
+        "JverPackageSignatures",
+        "JverPackageVersions")]
     [string]$TableName,
 
     [Parameter(Mandatory = $false)]
@@ -29,21 +41,19 @@ param (
     [switch]$Parallel
 )
 
-$ErrorActionPreference = "Stop"
-
 $tableNameToContainerName = @{
     "JverCatalogLeafItems"          = "catalogleafitems";
-    "JverPackageAssemblies"         = "packageassemblies";
-    "JverPackageArchives"           = "packagearchives";
+    "JverNuGetPackageExplorerFiles" = "nugetpackageexplorerfiles";
+    "JverNuGetPackageExplorers"     = "nugetpackageexplorer";
     "JverPackageArchiveEntries"     = "packagearchiveentries";
+    "JverPackageArchives"           = "packagearchives";
+    "JverPackageAssemblies"         = "packageassemblies";
     "JverPackageAssets"             = "packageassets";
     "JverPackageDownloads"          = "packagedownloads";
     "JverPackageManifests"          = "packagemanifests";
     "JverPackageOwners"             = "packageowners";
     "JverPackageSignatures"         = "packagesignatures";
     "JverPackageVersions"           = "packageversions";
-    "JverNuGetPackageExplorers"     = "nugetpackageexplorer";
-    "JverNuGetPackageExplorerFiles" = "nugetpackageexplorerfiles";
 }
 
 if ($TableName -and !$tableNameToContainerName[$TableName]) {
@@ -79,7 +89,7 @@ if (!(Test-Path $nuget)) {
 }
 
 if (!(Test-Path $kustoCli) -or !(Test-Path $lightIngest)) {
-    & $nuget install Microsoft.Azure.Kusto.Tools -Version 5.0.8 -OutputDirectory $toolsDir
+    & $nuget install Microsoft.Azure.Kusto.Tools -Version 5.2.0 -OutputDirectory $toolsDir
 }
 
 if ($Parallel) {
@@ -136,11 +146,11 @@ if ($LASTEXITCODE) {
 $models = Get-ChildItem (Join-Path $ModelsPath "*.ICsvRecord.cs") -Recurse
 foreach ($model in $models) {
     $content = Get-Content $model -Raw
-    $matches = [Regex]::Match($content, "/\* Kusto DDL:(.+?)\*/", [Text.RegularExpressions.RegexOptions]::Singleline)
-    $kustoDDL = $matches.Groups[1].Value
+    $kustoDDLMatch = [Regex]::Match($content, "/\* Kusto DDL:(.+?)\*/", [Text.RegularExpressions.RegexOptions]::Singleline)
+    $kustoDDL = $kustoDDLMatch.Groups[1].Value
 
-    $matches = [Regex]::Match($kustoDDL, "\.drop table ([^ ;]+)", [Text.RegularExpressions.RegexOptions]::Singleline)
-    $foundTableName = $matches.Groups[1].Value
+    $tableNameMatch = [Regex]::Match($kustoDDL, "\.drop table ([^ ;]+)", [Text.RegularExpressions.RegexOptions]::Singleline)
+    $foundTableName = $tableNameMatch.Groups[1].Value
     if (!$tableNameToContainerName[$foundTableName]) {
         Write-Warning "Skipping unmapped table $foundTableName."
         continue
