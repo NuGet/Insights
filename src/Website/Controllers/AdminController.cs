@@ -76,7 +76,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             }
 
             // Calculate the next default max, which supports processing the catalog one commit at a time.
-            var catalogScanMin = catalogScans.Min(x => x.Cursor.Value);
+            var catalogScanMin = catalogScans.Where(x => x.IsEnabled).Min(x => x.Cursor.Value);
             var nextCommitTimestamp = await _catalogCommitTimestampProvider.GetNextAsync(catalogScanMin);
 
             var model = new AdminViewModel
