@@ -13,6 +13,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
     {
         private const string DownloadsToCsvDir = nameof(DownloadsToCsv);
         private const string DownloadsToCsv_NonExistentVersionDir = nameof(DownloadsToCsv_NonExistentVersion);
+        private const string DownloadsToCsv_UncheckedIdAndVersionDir = nameof(DownloadsToCsv_UncheckedIdAndVersion);
 
         public DownloadsToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
@@ -105,6 +106,35 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
                 await AssertCsvBlobAsync(DownloadsToCsv_NonExistentVersionDir, Step1, "downloads_08585909596854775807.csv.gz");
                 await AssertCsvBlobAsync(DownloadsToCsv_NonExistentVersionDir, Step2, "downloads_08585908696854775807.csv.gz");
                 await AssertCsvBlobAsync(DownloadsToCsv_NonExistentVersionDir, Step2, "latest_downloads.csv.gz");
+            }
+        }
+
+        public class DownloadsToCsv_UncheckedIdAndVersion : DownloadsToCsvIntegrationTest
+        {
+            public DownloadsToCsv_UncheckedIdAndVersion(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            {
+            }
+
+            [Fact]
+            public async Task ExecuteAsync()
+            {
+                // Arrange
+                ConfigureWorkerSettings = x => x.OnlyKeepLatestInStreamWriterUpdater = false;
+                ConfigureAndSetLastModified();
+                var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageDownloadSet>>();
+                await service.InitializeAsync();
+                await service.StartAsync(loop: false, notBefore: TimeSpan.Zero);
+                MockVersionSet.Setup(x => x.GetUncheckedIds()).Returns(new[] { "UncheckedB", "UncheckedA" });
+                MockVersionSet.Setup(x => x.GetUncheckedVersions("UncheckedA")).Returns(new[] { "2.0.0", "1.0.0" });
+                MockVersionSet.Setup(x => x.GetUncheckedVersions("UncheckedB")).Returns(new[] { "3.0.0" });
+                MockVersionSet.Setup(x => x.GetUncheckedVersions("Knapcode.TorSharp")).Returns(new[] { "0.0.1" });
+
+                // Act
+                await ProcessQueueAsync(service);
+
+                // Assert
+                await AssertCsvBlobAsync(DownloadsToCsv_UncheckedIdAndVersionDir, Step1, "downloads_08585909596854775807.csv.gz");
+                await AssertCsvBlobAsync(DownloadsToCsv_UncheckedIdAndVersionDir, Step1, "latest_downloads.csv.gz");
             }
         }
 

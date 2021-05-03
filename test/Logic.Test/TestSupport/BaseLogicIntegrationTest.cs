@@ -244,6 +244,7 @@ namespace Knapcode.ExplorePackages
             Assert.NotNull(repoDir);
 
             var destPath = Path.Combine(repoDir, "test", projectDir, testDataFile);
+            Directory.CreateDirectory(Path.GetDirectoryName(destPath));
 
             File.Copy(sourcePath, destPath, overwrite: true);
         }

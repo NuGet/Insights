@@ -12,6 +12,8 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
 {
     public class OwnersToCsvUpdater : IStreamWriterUpdater<PackageOwnerSet>
     {
+        private static readonly HashSet<string> Empty = new HashSet<string>();
+
         private readonly PackageOwnersClient _packageOwnersClient;
         private readonly IVersionSetProvider _versionSetProvider;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
@@ -71,6 +73,16 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
             if (idToOwners.Any())
             {
                 WriteAndClear(writer, record, idToOwners);
+            }
+
+            // Add IDs that are not mentioned in the data and therefore have no owners. This makes joins on the
+            // produced data set easier.
+            foreach (var id in versionSet.GetUncheckedIds())
+            {
+                record.LowerId = id.ToLowerInvariant();
+                record.Id = id;
+                record.Owners = "[]";
+                record.Write(writer);
             }
         }
 

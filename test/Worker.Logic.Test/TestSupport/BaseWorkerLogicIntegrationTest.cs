@@ -18,6 +18,8 @@ namespace Knapcode.ExplorePackages.Worker
     {
         protected BaseWorkerLogicIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
+            MockVersionSet.Setup(x => x.GetUncheckedIds()).Returns(Array.Empty<string>());
+            MockVersionSet.Setup(x => x.GetUncheckedVersions(It.IsAny<string>())).Returns(Array.Empty<string>());
             MockVersionSetProvider.Setup(x => x.GetAsync()).ReturnsAsync(() => MockVersionSet.Object);
         }
 

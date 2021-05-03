@@ -13,6 +13,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
     {
         private const string OwnersToCsvDir = nameof(Worker.OwnersToCsv);
         private const string OwnersToCsvDir_NonExistentIdDir = nameof(OwnersToCsvDir_NonExistentId);
+        private const string OwnersToCsvDir_UncheckedIdAndVersionDir = nameof(OwnersToCsvDir_UncheckedIdAndVersion);
 
         public OwnersToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
@@ -105,6 +106,32 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
                 await AssertCsvBlobAsync(OwnersToCsvDir_NonExistentIdDir, Step1, "owners_08585909596854775807.csv.gz");
                 await AssertCsvBlobAsync(OwnersToCsvDir_NonExistentIdDir, Step2, "owners_08585908696854775807.csv.gz");
                 await AssertCsvBlobAsync(OwnersToCsvDir_NonExistentIdDir, Step2, "latest_owners.csv.gz");
+            }
+        }
+
+        public class OwnersToCsvDir_UncheckedIdAndVersion : OwnersToCsvIntegrationTest
+        {
+            public OwnersToCsvDir_UncheckedIdAndVersion(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            {
+            }
+
+            [Fact]
+            public async Task ExecuteAsync()
+            {
+                // Arrange
+                ConfigureWorkerSettings = x => x.OnlyKeepLatestInStreamWriterUpdater = false;
+                ConfigureAndSetLastModified();
+                var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageOwnerSet>>();
+                await service.InitializeAsync();
+                await service.StartAsync(loop: false, notBefore: TimeSpan.Zero);
+                MockVersionSet.Setup(x => x.GetUncheckedIds()).Returns(new[] { "UncheckedB", "UncheckedA" });
+
+                // Act
+                await ProcessQueueAsync(service);
+
+                // Assert
+                await AssertCsvBlobAsync(OwnersToCsvDir_UncheckedIdAndVersionDir, Step1, "owners_08585909596854775807.csv.gz");
+                await AssertCsvBlobAsync(OwnersToCsvDir_UncheckedIdAndVersionDir, Step1, "latest_owners.csv.gz");
             }
         }
 

@@ -59,7 +59,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
                     // Only write when we move to the next ID. This ensures all of the versions of a given ID are in the same segment.
                     if (idToVersions.Any())
                     {
-                        WriteAndClear(writer, record, idToVersions);
+                        WriteAndClear(writer, record, idToVersions, versionSet);
                     }
 
                     versionToDownloads = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
@@ -71,11 +71,28 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 
             if (idToVersions.Any())
             {
-                WriteAndClear(writer, record, idToVersions);
+                WriteAndClear(writer, record, idToVersions, versionSet);
+            }
+
+            // Add IDs that are not mentioned in the data and therefore have no downloads.
+            foreach (var id in versionSet.GetUncheckedIds())
+            {
+                record.Id = id;
+                record.LowerId = id.ToLowerInvariant();
+                record.TotalDownloads = 0;
+
+                foreach (var version in versionSet.GetUncheckedVersions(id))
+                {
+                    record.Version = version;
+                    record.Identity = $"{record.LowerId}/{record.Version.ToLowerInvariant()}";
+                    record.Downloads = 0;
+
+                    record.Write(writer);
+                }
             }
         }
 
-        private static void WriteAndClear(StreamWriter writer, PackageDownloadRecord record, Dictionary<string, Dictionary<string, long>> idToVersions)
+        private static void WriteAndClear(StreamWriter writer, PackageDownloadRecord record, Dictionary<string, Dictionary<string, long>> idToVersions, IVersionSet versionSet)
         {
             foreach (var idPair in idToVersions)
             {
@@ -88,6 +105,16 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
                     record.Version = versionPair.Key;
                     record.Identity = $"{record.LowerId}/{record.Version.ToLowerInvariant()}";
                     record.Downloads = versionPair.Value;
+
+                    record.Write(writer);
+                }
+
+                // Add versions that are not mentioned in the data and therefore have no downloads.
+                foreach (var version in versionSet.GetUncheckedVersions(idPair.Key))
+                {
+                    record.Version = version;
+                    record.Identity = $"{record.LowerId}/{version.ToLowerInvariant()}";
+                    record.Downloads = 0;
 
                     record.Write(writer);
                 }
