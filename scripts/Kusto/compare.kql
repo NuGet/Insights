@@ -1,37 +1,28 @@
-// Catalog-based tables should all have the same count
+// Package-specific tables should all have the same identity count
 JverCatalogLeafItems | distinct Identity | extend Table = "JverCatalogLeafItems"
 | union (JverNuGetPackageExplorers | distinct Identity | extend Table = "JverNuGetPackageExplorers")
+| union (JverNuGetPackageExplorerFiles | distinct Identity | extend Table = "JverNuGetPackageExplorerFiles")
 | union (JverPackageArchives | distinct Identity | extend Table = "JverPackageArchives")
+| union (JverPackageArchiveEntries | distinct Identity | extend Table = "JverPackageArchiveEntries")
 | union (JverPackageAssemblies | distinct Identity | extend Table = "JverPackageAssemblies")
 | union (JverPackageAssets | distinct Identity | extend Table = "JverPackageAssets")
+| union (JverPackageDownloads | distinct Identity | extend Table = "JverPackageDownloads")
 | union (JverPackageManifests | distinct Identity | extend Table = "JverPackageManifests")
 | union (JverPackageSignatures | distinct Identity | extend Table = "JverPackageSignatures")
 | union (JverPackageVersions | distinct Identity | extend Table = "JverPackageVersions")
 | summarize dcount(Identity) by Table
 
-// All child records should matching parent records
-JverNuGetPackageExplorers
-| distinct Identity
-| join kind=fullouter (JverNuGetPackageExplorerFiles | distinct Identity) on Identity
-| where isempty(Identity)
-
-JverPackageArchives
-| distinct Identity
-| join kind=fullouter (JverPackageArchiveEntries | distinct Identity) on Identity
-| where isempty(Identity)
-
-// Non-catalog tables should not have IDs or versions not present in the catalog
-JverCatalogLeafItems
-| distinct Identity
-| join kind=fullouter (JverPackageDownloads | distinct Identity) on Identity
-| where isempty(Identity) or isempty(Identity1)
-
-JverCatalogLeafItems
-| distinct LowerId
-| join kind=fullouter (JverPackageDownloads | distinct LowerId) on LowerId
-| where isempty(LowerId) or isempty(LowerId1)
-
-JverCatalogLeafItems
-| distinct LowerId
-| join kind=fullouter (JverPackageOwners | distinct LowerId) on LowerId
-| where isempty(LowerId) or isempty(LowerId1)
+// All tables should all have the same ID count
+JverCatalogLeafItems | distinct LowerId | extend Table = "JverCatalogLeafItems"
+| union (JverNuGetPackageExplorers | distinct LowerId | extend Table = "JverNuGetPackageExplorers")
+| union (JverNuGetPackageExplorerFiles | distinct LowerId | extend Table = "JverNuGetPackageExplorerFiles")
+| union (JverPackageArchives | distinct LowerId | extend Table = "JverPackageArchives")
+| union (JverPackageArchiveEntries | distinct LowerId | extend Table = "JverPackageArchiveEntries")
+| union (JverPackageAssemblies | distinct LowerId | extend Table = "JverPackageAssemblies")
+| union (JverPackageAssets | distinct LowerId | extend Table = "JverPackageAssets")
+| union (JverPackageDownloads | distinct LowerId | extend Table = "JverPackageDownloads")
+| union (JverPackageManifests | distinct LowerId | extend Table = "JverPackageManifests")
+| union (JverPackageOwners | distinct LowerId | extend Table = "JverPackageOwners")
+| union (JverPackageSignatures | distinct LowerId | extend Table = "JverPackageSignatures")
+| union (JverPackageVersions | distinct LowerId | extend Table = "JverPackageVersions")
+| summarize dcount(LowerId) by Table
