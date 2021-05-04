@@ -10,9 +10,9 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
 {
     /* Kusto DDL:
 
-    .drop table JverRealRestoreResults ifexists;
+    .drop table RealRestoreResults ifexists;
 
-    .create table JverRealRestoreResults (
+    .create table RealRestoreResults (
         Timestamp: datetime,
         DotnetVersion: string,
         Duration: timespan,
@@ -47,9 +47,9 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
         OnlyMSB3644: bool
     );
 
-    .alter-merge table JverRealRestoreResults policy retention softdelete = 30d;
+    .alter-merge table RealRestoreResults policy retention softdelete = 30d;
 
-    .alter table JverRealRestoreResults policy partitioning '{'
+    .alter table RealRestoreResults policy partitioning '{'
       '"PartitionKeys": ['
         '{'
           '"ColumnName": "Identity",'
@@ -62,7 +62,7 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
       ']'
     '}';
 
-    .create table JverRealRestoreResults ingestion csv mapping 'JverRealRestoreResults_mapping'
+    .create table RealRestoreResults ingestion csv mapping 'RealRestoreResults_mapping'
     '['
         '{"Column":"Timestamp","DataType":"datetime","Properties":{"Ordinal":0}},'
         '{"Column":"DotnetVersion","DataType":"string","Properties":{"Ordinal":1}},'

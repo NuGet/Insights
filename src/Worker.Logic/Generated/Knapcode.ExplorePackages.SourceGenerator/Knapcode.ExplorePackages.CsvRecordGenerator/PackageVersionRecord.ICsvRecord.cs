@@ -10,9 +10,9 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
 {
     /* Kusto DDL:
 
-    .drop table JverPackageVersions ifexists;
+    .drop table PackageVersions ifexists;
 
-    .create table JverPackageVersions (
+    .create table PackageVersions (
         LowerId: string,
         Identity: string,
         Id: string,
@@ -29,9 +29,9 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
         IsLatestStableSemVer2: bool
     );
 
-    .alter-merge table JverPackageVersions policy retention softdelete = 30d;
+    .alter-merge table PackageVersions policy retention softdelete = 30d;
 
-    .alter table JverPackageVersions policy partitioning '{'
+    .alter table PackageVersions policy partitioning '{'
       '"PartitionKeys": ['
         '{'
           '"ColumnName": "Identity",'
@@ -44,7 +44,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
       ']'
     '}';
 
-    .create table JverPackageVersions ingestion csv mapping 'JverPackageVersions_mapping'
+    .create table PackageVersions ingestion csv mapping 'PackageVersions_mapping'
     '['
         '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":2}},'
         '{"Column":"Identity","DataType":"string","Properties":{"Ordinal":3}},'

@@ -12,11 +12,13 @@ namespace Knapcode.ExplorePackages
     {
         private const string AttributeName = "KustoPartitionKeyAttribute";
         private readonly int _intent;
+        private readonly bool _escapeQuotes;
         private readonly StringBuilder _builder;
 
-        public KustoPartitioningPolicyBuilder(int indent)
+        public KustoPartitioningPolicyBuilder(int indent, bool escapeQuotes)
         {
             _intent = indent;
+            _escapeQuotes = escapeQuotes;
             _builder = new StringBuilder();
         }
 
@@ -59,6 +61,12 @@ namespace Knapcode.ExplorePackages
             };
 
             var json = JsonConvert.SerializeObject(policy, Formatting.Indented);
+
+            if (_escapeQuotes)
+            {
+                json = json.Replace("\"", "\"\"");
+            }
+
             var jsonLines = json.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
 
             if (_builder.Length > 0)

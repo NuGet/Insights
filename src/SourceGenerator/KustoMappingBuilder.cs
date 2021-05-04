@@ -7,12 +7,14 @@ namespace Knapcode.ExplorePackages
     public class KustoMappingBuilder : IPropertyVisitor
     {
         private readonly int _indent;
+        private readonly bool _escapeQuotes;
         private readonly StringBuilder _builder;
         private int _nextOrdinal;
 
-        public KustoMappingBuilder(int indent)
+        public KustoMappingBuilder(int indent, bool escapeQuotes)
         {
             _indent = indent;
+            _escapeQuotes = escapeQuotes;
             _builder = new StringBuilder();
             _nextOrdinal = 0;
         }
@@ -43,7 +45,15 @@ namespace Knapcode.ExplorePackages
 
             _builder.Append(' ', _indent);
             _builder.Append("'");
-            _builder.Append(JsonConvert.SerializeObject(field).Replace("'", "\\'"));
+
+            var json = JsonConvert.SerializeObject(field).Replace("'", "\\'");
+            
+            if (_escapeQuotes)
+            {
+                json = json.Replace("\"", "\"\"");
+            }
+
+            _builder.Append(json);
         }
 
         public void Finish(PropertyVisitorContext context)

@@ -10,17 +10,17 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
 {
     /* Kusto DDL:
 
-    .drop table JverPackageOwners ifexists;
+    .drop table PackageOwners ifexists;
 
-    .create table JverPackageOwners (
+    .create table PackageOwners (
         LowerId: string,
         Id: string,
         Owners: dynamic
     );
 
-    .alter-merge table JverPackageOwners policy retention softdelete = 30d;
+    .alter-merge table PackageOwners policy retention softdelete = 30d;
 
-    .alter table JverPackageOwners policy partitioning '{'
+    .alter table PackageOwners policy partitioning '{'
       '"PartitionKeys": ['
         '{'
           '"ColumnName": "LowerId",'
@@ -33,7 +33,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
       ']'
     '}';
 
-    .create table JverPackageOwners ingestion csv mapping 'JverPackageOwners_mapping'
+    .create table PackageOwners ingestion csv mapping 'PackageOwners_mapping'
     '['
         '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":1}},'
         '{"Column":"Id","DataType":"string","Properties":{"Ordinal":2}},'

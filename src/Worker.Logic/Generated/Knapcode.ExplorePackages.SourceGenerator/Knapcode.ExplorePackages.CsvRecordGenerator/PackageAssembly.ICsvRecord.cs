@@ -10,9 +10,9 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
 {
     /* Kusto DDL:
 
-    .drop table JverPackageAssemblies ifexists;
+    .drop table PackageAssemblies ifexists;
 
-    .create table JverPackageAssemblies (
+    .create table PackageAssemblies (
         LowerId: string,
         Identity: string,
         Id: string,
@@ -42,9 +42,9 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
         PublicKeySHA1: string
     );
 
-    .alter-merge table JverPackageAssemblies policy retention softdelete = 30d;
+    .alter-merge table PackageAssemblies policy retention softdelete = 30d;
 
-    .alter table JverPackageAssemblies policy partitioning '{'
+    .alter table PackageAssemblies policy partitioning '{'
       '"PartitionKeys": ['
         '{'
           '"ColumnName": "Identity",'
@@ -57,7 +57,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
       ']'
     '}';
 
-    .create table JverPackageAssemblies ingestion csv mapping 'JverPackageAssemblies_mapping'
+    .create table PackageAssemblies ingestion csv mapping 'PackageAssemblies_mapping'
     '['
         '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":2}},'
         '{"Column":"Identity","DataType":"string","Properties":{"Ordinal":3}},'

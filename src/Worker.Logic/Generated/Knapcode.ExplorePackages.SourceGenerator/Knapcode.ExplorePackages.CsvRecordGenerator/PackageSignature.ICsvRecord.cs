@@ -10,9 +10,9 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
 {
     /* Kusto DDL:
 
-    .drop table JverPackageSignatures ifexists;
+    .drop table PackageSignatures ifexists;
 
-    .create table JverPackageSignatures (
+    .create table PackageSignatures (
         LowerId: string,
         Identity: string,
         Id: string,
@@ -53,9 +53,9 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
         PackageOwners: dynamic
     );
 
-    .alter-merge table JverPackageSignatures policy retention softdelete = 30d;
+    .alter-merge table PackageSignatures policy retention softdelete = 30d;
 
-    .alter table JverPackageSignatures policy partitioning '{'
+    .alter table PackageSignatures policy partitioning '{'
       '"PartitionKeys": ['
         '{'
           '"ColumnName": "Identity",'
@@ -68,7 +68,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
       ']'
     '}';
 
-    .create table JverPackageSignatures ingestion csv mapping 'JverPackageSignatures_mapping'
+    .create table PackageSignatures ingestion csv mapping 'PackageSignatures_mapping'
     '['
         '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":2}},'
         '{"Column":"Identity","DataType":"string","Properties":{"Ordinal":3}},'

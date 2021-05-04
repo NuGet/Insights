@@ -10,9 +10,9 @@ namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
 {
     /* Kusto DDL:
 
-    .drop table JverCatalogLeafItems ifexists;
+    .drop table CatalogLeafItems ifexists;
 
-    .create table JverCatalogLeafItems (
+    .create table CatalogLeafItems (
         CommitId: string,
         CommitTimestamp: datetime,
         LowerId: string,
@@ -24,9 +24,9 @@ namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
         PageUrl: string
     );
 
-    .alter-merge table JverCatalogLeafItems policy retention softdelete = 30d;
+    .alter-merge table CatalogLeafItems policy retention softdelete = 30d;
 
-    .alter table JverCatalogLeafItems policy partitioning '{'
+    .alter table CatalogLeafItems policy partitioning '{'
       '"PartitionKeys": ['
         '{'
           '"ColumnName": "Identity",'
@@ -39,7 +39,7 @@ namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
       ']'
     '}';
 
-    .create table JverCatalogLeafItems ingestion csv mapping 'JverCatalogLeafItems_mapping'
+    .create table CatalogLeafItems ingestion csv mapping 'CatalogLeafItems_mapping'
     '['
         '{"Column":"CommitId","DataType":"string","Properties":{"Ordinal":0}},'
         '{"Column":"CommitTimestamp","DataType":"datetime","Properties":{"Ordinal":1}},'

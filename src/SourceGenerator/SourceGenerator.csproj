@@ -5,6 +5,7 @@
     <RootNamespace>Knapcode.ExplorePackages</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <EmbeddedResource Include="KustoDDL.cs" />
     <EmbeddedResource Include="CsvUtility.cs" />
   </ItemGroup>
   <ItemGroup>

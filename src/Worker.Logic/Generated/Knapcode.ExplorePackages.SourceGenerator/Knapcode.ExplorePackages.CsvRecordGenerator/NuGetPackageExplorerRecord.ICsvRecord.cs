@@ -10,9 +10,9 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
 {
     /* Kusto DDL:
 
-    .drop table JverNuGetPackageExplorers ifexists;
+    .drop table NuGetPackageExplorers ifexists;
 
-    .create table JverNuGetPackageExplorers (
+    .create table NuGetPackageExplorers (
         LowerId: string,
         Identity: string,
         Id: string,
@@ -26,9 +26,9 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
         IsSignedByAuthor: bool
     );
 
-    .alter-merge table JverNuGetPackageExplorers policy retention softdelete = 30d;
+    .alter-merge table NuGetPackageExplorers policy retention softdelete = 30d;
 
-    .alter table JverNuGetPackageExplorers policy partitioning '{'
+    .alter table NuGetPackageExplorers policy partitioning '{'
       '"PartitionKeys": ['
         '{'
           '"ColumnName": "Identity",'
@@ -41,7 +41,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
       ']'
     '}';
 
-    .create table JverNuGetPackageExplorers ingestion csv mapping 'JverNuGetPackageExplorers_mapping'
+    .create table NuGetPackageExplorers ingestion csv mapping 'NuGetPackageExplorers_mapping'
     '['
         '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":2}},'
         '{"Column":"Identity","DataType":"string","Properties":{"Ordinal":3}},'
