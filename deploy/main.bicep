@@ -6,7 +6,8 @@ param deploymentContainerName string
 param leaseContainerName string
 
 param sasConnectionStringSecretName string
-param sasDefinitionName string
+param appSasDefinitionName string
+param blobReadSasDefinitionName string
 param sasValidityPeriod string
 
 param websitePlanId string = 'new'
@@ -80,7 +81,11 @@ var sharedConfig = [
   }
   {
     name: 'Knapcode.ExplorePackages:StorageSharedAccessSignatureSecretName'
-    value: '${storageAccountName}-${sasDefinitionName}'
+    value: '${storageAccountName}-${appSasDefinitionName}'
+  }
+  {
+    name: 'Knapcode.ExplorePackages:StorageBlobReadSharedAccessSignatureSecretName'
+    value: '${storageAccountName}-${blobReadSasDefinitionName}'
   }
   {
     name: 'Knapcode.ExplorePackages:StorageSharedAccessSignatureDuration'

@@ -10,7 +10,10 @@ param (
     [string]$StorageAccountName,
     
     [Parameter(Mandatory = $true)]
-    [string]$SasDefinitionName,
+    [string]$AppSasDefinitionName,
+    
+    [Parameter(Mandatory = $true)]
+    [string]$BlobReadSasDefinitionName,
 
     [Parameter(Mandatory = $true)]
     [string]$SasConnectionStringSecretName,
@@ -39,7 +42,7 @@ $regenerationPeriod = New-TimeSpan -Days ([Math]::Ceiling($SasValidityPeriod.Tot
 $maxRetries = 30
 
 # Get the current user
-Write-Status "Determining the current user principal name for Key Vault operations..."
+Write-Status "Determining the current user for Key Vault operations..."
 $graphToken = Get-AzAccessToken -Resource "https://graph.microsoft.com/"
 $graphHeaders = @{ Authorization = "Bearer $($graphToken.Token)" }
 $currentUser = Invoke-RestMethod -Uri "https://graph.microsoft.com/v1.0/me" -Headers $graphHeaders
@@ -129,12 +132,12 @@ if (!$matchingStorage) {
     }
 }
 
-Write-Status "Generating a template SAS..."
+Write-Status "Generating a template SAS for '$AppSasDefinitionName'..."
 $storageContext = New-AzStorageContext `
     -StorageAccountName $StorageAccountName `
     -Protocol Https `
     -StorageAccountKey $storageEmulatorKey
-$sasTemplate = New-AzStorageAccountSASToken `
+$appSasTemplate = New-AzStorageAccountSASToken `
     -ExpiryTime (Get-Date "2010-01-01Z").ToUniversalTime() `
     -Permission "acdlpruw" `
     -ResourceType Service, Container, Object `
@@ -142,20 +145,38 @@ $sasTemplate = New-AzStorageAccountSASToken `
     -Protocol HttpsOnly `
     -Context $storageContext
 
-Write-Status "Creating SAS definition '$SasDefinitionName'..."
+Write-Status "Generating a template SAS for '$BlobReadSasDefinitionName'..."
+$blobReadSasTemplate = New-AzStorageAccountSASToken `
+    -ExpiryTime (Get-Date "2010-01-01Z").ToUniversalTime() `
+    -Permission "r" `
+    -ResourceType Object `
+    -Service Blob `
+    -Protocol HttpsOnly `
+    -Context $storageContext
+    
+Write-Status "Creating SAS definition '$AppSasDefinitionName'..."
 Set-AzKeyVaultManagedStorageSasDefinition `
     -VaultName $KeyVaultName `
     -AccountName $StorageAccountName `
-    -Name $SasDefinitionName `
+    -Name $AppSasDefinitionName `
     -ValidityPeriod $SasValidityPeriod `
     -SasType 'account' `
-    -TemplateUri $sasTemplate | Out-Default
+    -TemplateUri $appSasTemplate | Out-Default
+
+Write-Status "Creating SAS definition '$BlobReadSasDefinitionName'..."
+Set-AzKeyVaultManagedStorageSasDefinition `
+    -VaultName $KeyVaultName `
+    -AccountName $StorageAccountName `
+    -Name $BlobReadSasDefinitionName `
+    -ValidityPeriod $SasValidityPeriod `
+    -SasType 'account' `
+    -TemplateUri $blobReadSasTemplate | Out-Default
 
 Write-Status "Getting a SAS token for the connection string secret..."
 $sasTokenExpires = (Get-Date).ToUniversalTime() + $SasValidityPeriod
 $sasToken = Get-AzKeyVaultSecret `
     -VaultName $KeyVaultName `
-    -Name "$StorageAccountName-$SasDefinitionName" `
+    -Name "$StorageAccountName-$AppSasDefinitionName" `
     -AsPlainText
 $connectionString = "AccountName=$StorageAccountName;" +
 "SharedAccessSignature=$sasToken;" +

@@ -56,7 +56,10 @@ class ResourceSettings {
     [string]$SasConnectionStringSecretName
     
     [ValidateNotNullOrEmpty()]
-    [string]$SasDefinitionName
+    [string]$AppSasDefinitionName
+    
+    [ValidateNotNullOrEmpty()]
+    [string]$BlobReadSasDefinitionName
     
     [ValidateNotNullOrEmpty()]
     [string]$DeploymentContainerName
@@ -138,7 +141,8 @@ class ResourceSettings {
 
         # Static settings
         $this.SasConnectionStringSecretName = "$($this.StorageAccountName)-SasConnectionString"
-        $this.SasDefinitionName = "BlobQueueTableFullAccessSas"
+        $this.AppSasDefinitionName = "BlobQueueTableFullAccessSas"
+        $this.BlobReadSasDefinitionName = "BlobReadSas"
         $this.DeploymentContainerName = "deployment"
         $this.LeaseContainerName = "leases"
         $this.SasValidityPeriod = New-TimeSpan -Days 6
@@ -345,7 +349,8 @@ function New-MainParameters($ResourceSettings, $WebsiteZipUrl, $WorkerZipUrl) {
         deploymentContainerName       = $ResourceSettings.DeploymentContainerName;
         leaseContainerName            = $ResourceSettings.LeaseContainerName;
         sasConnectionStringSecretName = $ResourceSettings.SasConnectionStringSecretName;
-        sasDefinitionName             = $ResourceSettings.SasDefinitionName;
+        appSasDefinitionName          = $ResourceSettings.AppSasDefinitionName;
+        blobReadSasDefinitionName     = $ResourceSettings.BlobReadSasDefinitionName;
         sasValidityPeriod             = $ResourceSettings.SasValidityPeriod.ToString();
         websiteName                   = $ResourceSettings.WebsiteName;
         websitePlanName               = $ResourceSettings.websitePlanName;

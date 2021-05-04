@@ -39,7 +39,8 @@ $sasToken = . (Join-Path $PSScriptRoot "Set-KeyVaultManagedStorage.ps1") `
     -ResourceGroupName $ResourceSettings.ResourceGroupName `
     -KeyVaultName $ResourceSettings.KeyVaultName `
     -StorageAccountName $ResourceSettings.StorageAccountName `
-    -SasDefinitionName $ResourceSettings.SasDefinitionName `
+    -AppSasDefinitionName $ResourceSettings.AppSasDefinitionName `
+    -BlobReadSasDefinitionName $ResourceSettings.BlobReadSasDefinitionName `
     -SasConnectionStringSecretName $ResourceSettings.SasConnectionStringSecretName `
     -AutoRegenerateKey:$ResourceSettings.AutoRegenerateKey `
     -SasValidityPeriod $ResourceSettings.SasValidityPeriod
