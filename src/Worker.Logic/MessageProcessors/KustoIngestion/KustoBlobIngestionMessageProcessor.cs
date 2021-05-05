@@ -13,27 +13,33 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
     public class KustoBlobIngestionMessageProcessor : IMessageProcessor<KustoBlobIngestionMessage>
     {
         private readonly KustoIngestionStorageService _storageService;
+        private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly CsvRecordContainers _csvRecordContainers;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IKustoQueuedIngestClient _kustoQueuedIngestClient;
         private readonly IMessageEnqueuer _messageEnqueuer;
+        private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<KustoBlobIngestionMessageProcessor> _logger;
 
         public KustoBlobIngestionMessageProcessor(
             KustoIngestionStorageService storageService,
+            AutoRenewingStorageLeaseService leaseService,
             CsvRecordContainers csvRecordContainers,
             ServiceClientFactory serviceClientFactory,
             IKustoQueuedIngestClient kustoQueuedIngestClient,
             IMessageEnqueuer messageEnqueuer,
+            ITelemetryClient telemetryClient,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<KustoBlobIngestionMessageProcessor> logger)
         {
             _storageService = storageService;
+            _leaseService = leaseService;
             _csvRecordContainers = csvRecordContainers;
             _serviceClientFactory = serviceClientFactory;
             _kustoQueuedIngestClient = kustoQueuedIngestClient;
             _messageEnqueuer = messageEnqueuer;
+            _telemetryClient = telemetryClient;
             _options = options;
             _logger = logger;
         }
@@ -71,6 +77,17 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
                     SourceId = blob.SourceId,
                     Size = blob.RawSizeBytes,
                 };
+
+                await using var lease = await _leaseService.TryAcquireAsync("KustoBlobIngestion-" + tempTableName + "-" + blob.Bucket);
+                if (!lease.Acquired)
+                {
+                    _logger.LogWarning("Temp table {TableName} and bucket {Bucket} lease is not available.", tempTableName, blob.Bucket);
+                    message.AttemptCount++;
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount, factor: 10));
+                    return;
+                }
+
+                _logger.LogInformation("Starting ingestion of blob {SourceUrl} into Kusto table {KustoTable}.", blob.SourceUrl, tempTableName);
                 var result = await _kustoQueuedIngestClient.IngestFromStorageAsync(
                     blobUrlWithSas,
                     ingestionProperties,
@@ -93,6 +110,13 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             if (blob.State == KustoBlobIngestionState.Working)
             {
                 var statusList = await GetIngestionStatusListAsync(blob);
+                var statusSummary = statusList
+                    .GroupBy(x => x.Status)
+                    .OrderBy(x => x.Key.ToString())
+                    .Select(x => $"{x.Key} ({x.Count()}x)")
+                    .ToList();
+                _logger.LogInformation("Ingestion status: {Statuses}", statusSummary);
+
                 if (statusList.Any(x => x.Status == Status.Pending))
                 {
                     message.AttemptCount++;
@@ -101,19 +125,25 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
                 }
                 else if (statusList.Any(x => x.Status != Status.Succeeded))
                 {
-                    var statusSummary = statusList.GroupBy(x => x.Status).Select(x => $"{x.Key} ({x.Count()}x)");
                     throw new InvalidOperationException($"The ingestion did not succeed. The statuses were: {string.Join(", ", statusSummary)}");
                 }
                 else
                 {
+                    _logger.LogInformation("The ingestion of blob {SourceUrl} is complete.", blob.SourceUrl);
                     await _storageService.DeleteBlobAsync(blob);
                 }
             }
         }
 
-        private static async Task<List<IngestionStatus>> GetIngestionStatusListAsync(KustoBlobIngestion blob)
+        private async Task<List<IngestionStatus>> GetIngestionStatusListAsync(KustoBlobIngestion blob)
         {
+            using var metrics = _telemetryClient.StartQueryLoopMetrics();
+
             var statusTable = new CloudTable(new Uri(blob.StatusUrl));
+            _logger.LogInformation(
+                "Checking ingestion status of blob {SourceUrl} in status table {StatusTable}.",
+                blob.SourceUrl,
+                statusTable.Uri.AbsoluteUri);
             var statusQuery = new TableQuery<IngestionStatus>
             {
                 FilterString = TableQuery.GenerateFilterCondition(
@@ -127,11 +157,17 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             var statusList = new List<IngestionStatus>();
             do
             {
-                var segment = await statusTable.ExecuteQuerySegmentedAsync(statusQuery, token);
+                TableQuerySegment<IngestionStatus> segment;
+                using (metrics.TrackQuery())
+                {
+                    segment = await statusTable.ExecuteQuerySegmentedAsync(statusQuery, token);
+                }
+
                 statusList.AddRange(segment.Results);
                 token = segment.ContinuationToken;
             }
             while (token != null);
+            _logger.LogInformation("Fetched {Count} ingestion status records.", statusList.Count);
 
             return statusList;
         }

@@ -35,6 +35,8 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
 
             if (ingestion.State == KustoIngestionState.Created)
             {
+                _logger.LogInformation("The Kusto ingestion is starting.");
+
                 ingestion.Created = DateTimeOffset.UtcNow;
                 ingestion.State = KustoIngestionState.Expanding;
                 await _storageService.ReplaceIngestionAsync(ingestion);
@@ -83,6 +85,8 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
 
             if (ingestion.State == KustoIngestionState.Finalizing)
             {
+                _logger.LogInformation("The Kusto ingestion is complete.");
+
                 await _storageService.DeleteChildTableAsync(ingestion.StorageSuffix);
 
                 ingestion.Completed = DateTimeOffset.UtcNow;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Worker.KustoIngestion
@@ -12,15 +13,18 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly ILogger<KustoIngestionStorageService> _logger;
 
         public KustoIngestionStorageService(
             ServiceClientFactory serviceClientFactory,
             ITelemetryClient telemetryClient,
-            IOptions<ExplorePackagesWorkerSettings> options)
+            IOptions<ExplorePackagesWorkerSettings> options,
+            ILogger<KustoIngestionStorageService> logger)
         {
             _serviceClientFactory = serviceClientFactory;
             _telemetryClient = telemetryClient;
             _options = options;
+            _logger = logger;
         }
 
         public async Task InitializeAsync()
@@ -73,6 +77,11 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
 
         public async Task ReplaceIngestionAsync(KustoIngestion ingestion)
         {
+            _logger.LogInformation(
+                "Update Kusto ingestion {IngestionId} with state {State}.",
+                ingestion.GetIngestionId(),
+                ingestion.State);
+
             var table = await GetKustoIngestionTableAsync();
             var response = await table.UpdateEntityAsync(ingestion, ingestion.ETag, mode: TableUpdateMode.Replace);
             ingestion.UpdateETagAndTimestamp(response);
@@ -80,6 +89,12 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
 
         public async Task ReplaceContainerAsync(KustoContainerIngestion container)
         {
+            _logger.LogInformation(
+                "Updating Kusto ingestion {IngestionId} for container {ContainerName} with state {State}.",
+                container.IngestionId,
+                container.GetContainerName(),
+                container.State);
+
             var table = await GetKustoIngestionTableAsync(container.StorageSuffix);
             var response = await table.UpdateEntityAsync(container, container.ETag, mode: TableUpdateMode.Replace);
             container.UpdateETagAndTimestamp(response);
@@ -87,6 +102,12 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
 
         public async Task ReplaceBlobAsync(KustoBlobIngestion blob)
         {
+            _logger.LogInformation(
+                "Updating Kusto ingestion {IngestionId} for blob {SourceUrl} with state {State}.",
+                blob.IngestionId,
+                blob.SourceId,
+                blob.State);
+
             var table = await GetKustoIngestionTableAsync(blob.StorageSuffix);
             var response = await table.UpdateEntityAsync(blob, blob.ETag, mode: TableUpdateMode.Replace);
             blob.UpdateETagAndTimestamp(response);
@@ -94,12 +115,24 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
 
         public async Task DeleteContainerAsync(KustoContainerIngestion container)
         {
+            _logger.LogInformation(
+                "Deleting Kusto ingestion {IngestionId} for container {ContainerName}.",
+                container.IngestionId,
+                container.GetContainerName(),
+                container.State);
+
             var table = await GetKustoIngestionTableAsync(container.StorageSuffix);
             await table.DeleteEntityAsync(container, container.ETag);
         }
 
         public async Task DeleteBlobAsync(KustoBlobIngestion blob)
         {
+            _logger.LogInformation(
+                "Deleting Kusto ingestion {IngestionId} for blob {SourceUrl}.",
+                blob.IngestionId,
+                blob.SourceId,
+                blob.State);
+
             var table = await GetKustoIngestionTableAsync(blob.StorageSuffix);
             await table.DeleteEntityAsync(blob, blob.ETag);
         }
@@ -111,7 +144,13 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
 
             var existingBuckets = existingBlobs.Select(x => x.Bucket).ToList();
             var missingBuckets = blobs.Select(x => x.Bucket).Except(existingBuckets).ToHashSet();
-            var newBlobs = blobs.Where(x => missingBuckets.Contains(x.Bucket));
+            var newBlobs = blobs.Where(x => missingBuckets.Contains(x.Bucket)).ToList();
+
+            _logger.LogInformation(
+                "Expanding {Count} blobs in Kusto ingestion {IngestionId} for container {ContainerName}.",
+                newBlobs.Count,
+                container.IngestionId,
+                container.GetContainerName());
 
             var batch = new MutableTableTransactionalBatch(table);
             foreach (var blob in newBlobs)
@@ -144,11 +183,16 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             var containers = await GetContainersAsync(table, ingestion);
 
             var existingContainerNames = containers.Select(x => x.GetContainerName()).ToList();
-            var missingContainerNames = allContainerNames.Except(existingContainerNames);
+            var missingContainerNames = allContainerNames.Except(existingContainerNames).ToList();
             if (existingContainerNames.Except(allContainerNames).Any())
             {
                 throw new InvalidOperationException($"There are extra container names for ingestion '{ingestion.GetIngestionId()}'.");
             }
+
+            _logger.LogInformation(
+                "Expanding {Count} containers in Kusto ingestion {IngestionId}.",
+                missingContainerNames.Count,
+                ingestion.GetIngestionId());
 
             if (missingContainerNames.Any())
             {

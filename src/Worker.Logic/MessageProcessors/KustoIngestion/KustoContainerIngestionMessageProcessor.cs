@@ -11,6 +11,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
     public class KustoContainerIngestionMessageProcessor : IMessageProcessor<KustoContainerIngestionMessage>
     {
         private readonly KustoIngestionStorageService _storageService;
+        private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly CsvRecordContainers _csvRecordContainers;
         private readonly ICslAdminProvider _kustoAdminClient;
         private readonly AppendResultStorageService _appendResultStorageService;
@@ -20,6 +21,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
 
         public KustoContainerIngestionMessageProcessor(
             KustoIngestionStorageService storageService,
+            AutoRenewingStorageLeaseService leaseService,
             CsvRecordContainers csvRecordContainers,
             ICslAdminProvider kustoAdminClient,
             AppendResultStorageService appendResultStorageService,
@@ -28,6 +30,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             ILogger<KustoContainerIngestionMessageProcessor> logger)
         {
             _storageService = storageService;
+            _leaseService = leaseService;
             _csvRecordContainers = csvRecordContainers;
             _kustoAdminClient = kustoAdminClient;
             _appendResultStorageService = appendResultStorageService;
@@ -45,11 +48,13 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
                 return;
             }
 
+            var finalTableName = _csvRecordContainers.GetKustoTableName(container.GetContainerName());
             if (container.State == KustoContainerIngestionState.Created)
             {
                 var buckets = await _appendResultStorageService.GetCompactedBucketsAsync(container.GetContainerName());
                 if (buckets.Count == 0)
                 {
+                    _logger.LogInformation("Container {ContainerName} has no blobs so no import will occur.", container.GetContainerName());
                     await CompleteAsync(container);
                     return;
                 }
@@ -61,10 +66,16 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             var tempTableName = _csvRecordContainers.GetTempKustoTableName(container.GetContainerName());
             if (container.State == KustoContainerIngestionState.CreatingTable)
             {
+                await using var lease = await LeaseOrNullAsync(message, container, finalTableName);
+                if (lease == null)
+                {
+                    return;
+                }
+
                 foreach (var commandTemplate in GetDDL(container.GetContainerName()))
                 {
                     var command = FormatCommand(tempTableName, commandTemplate);
-                    await ExecuteKustoCommandAsync(command);
+                    await ExecuteKustoCommandAsync(container, command);
                 }
 
                 container.State = KustoContainerIngestionState.Expanding;
@@ -129,12 +140,17 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
                 }
             }
 
-            var finalTableName = _csvRecordContainers.GetKustoTableName(container.GetContainerName());
             var oldTableName = finalTableName + "_Old";
             if (container.State == KustoContainerIngestionState.SwappingTable)
             {
-                await ExecuteKustoCommandAsync($".drop table {oldTableName} ifexists");
-                await ExecuteKustoCommandAsync($".rename tables {oldTableName}={finalTableName} ifexists, {finalTableName}={tempTableName}");
+                await using var lease = await LeaseOrNullAsync(message, container, finalTableName);
+                if (lease == null)
+                {
+                    return;
+                }
+
+                await ExecuteKustoCommandAsync(container, $".drop table {oldTableName} ifexists");
+                await ExecuteKustoCommandAsync(container, $".rename tables {oldTableName}={finalTableName} ifexists, {finalTableName}={tempTableName}");
 
                 container.State = KustoContainerIngestionState.DroppingOldTable;
                 await _storageService.ReplaceContainerAsync(container);
@@ -142,10 +158,25 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
 
             if (container.State == KustoContainerIngestionState.DroppingOldTable)
             {
-                await ExecuteKustoCommandAsync($".drop table {oldTableName} ifexists");
+                await ExecuteKustoCommandAsync(container, $".drop table {oldTableName} ifexists");
 
                 await CompleteAsync(container);
             }
+        }
+
+        private async Task<IAsyncDisposable> LeaseOrNullAsync(KustoContainerIngestionMessage message, KustoContainerIngestion container, string finalTableName)
+        {
+            // Lease on the Kusto table name to avoid weird concurrency issues.
+            var lease = await _leaseService.TryAcquireAsync("KustoContainerIngestion-" + finalTableName);
+            if (!lease.Acquired)
+            {
+                _logger.LogWarning("Container {ContainerName} lease is not available.", container.GetContainerName());
+                message.AttemptCount++;
+                await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
+                return null;
+            }
+
+            return lease;
         }
 
         private async Task CompleteAsync(KustoContainerIngestion container)
@@ -153,8 +184,9 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             await _storageService.DeleteContainerAsync(container);
         }
 
-        private async Task ExecuteKustoCommandAsync(string command)
+        private async Task ExecuteKustoCommandAsync(KustoContainerIngestion container, string command)
         {
+            _logger.LogInformation("Executing Kusto command for container {ContainerName}: {Command}", container.GetContainerName(), command);
             using (await _kustoAdminClient.ExecuteControlCommandAsync(_options.Value.KustoDatabaseName, command))
             {
             }
