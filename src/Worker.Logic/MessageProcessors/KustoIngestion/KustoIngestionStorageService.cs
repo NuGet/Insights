@@ -118,8 +118,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             _logger.LogInformation(
                 "Deleting Kusto ingestion {IngestionId} for container {ContainerName}.",
                 container.IngestionId,
-                container.GetContainerName(),
-                container.State);
+                container.GetContainerName());
 
             var table = await GetKustoIngestionTableAsync(container.StorageSuffix);
             await table.DeleteEntityAsync(container, container.ETag);
