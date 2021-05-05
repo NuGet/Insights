@@ -58,10 +58,10 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
                 await _storageService.ReplaceContainerAsync(container);
             }
 
-            var tempTableName = GetKustoTableName(container) + "_Temp";
+            var tempTableName = _csvRecordContainers.GetTempKustoTableName(container.GetContainerName());
             if (container.State == KustoContainerIngestionState.CreatingTable)
             {
-                foreach (var commandTemplate in GetDDL(container))
+                foreach (var commandTemplate in GetDDL(container.GetContainerName()))
                 {
                     var command = FormatCommand(tempTableName, commandTemplate);
                     await ExecuteKustoCommandAsync(command);
@@ -73,15 +73,16 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
 
             if (container.State == KustoContainerIngestionState.Expanding)
             {
-                var buckets = await _appendResultStorageService.GetCompactedBucketsAsync(container.GetContainerName());
+                var bucketInfos = await _appendResultStorageService.GetCompactedBucketsAsync(container.GetContainerName());
                 var bucketToEntity = new Dictionary<int, KustoBlobIngestion>();
-                foreach (var bucket in buckets)
+                foreach (var bucketInfo in bucketInfos)
                 {
-                    var url = await _appendResultStorageService.GetCompactedBlobUrlAsync(container.GetContainerName(), bucket);
-                    bucketToEntity.Add(bucket, new KustoBlobIngestion(container.GetContainerName(), bucket)
+                    var url = await _appendResultStorageService.GetCompactedBlobUrlAsync(container.GetContainerName(), bucketInfo.Bucket);
+                    bucketToEntity.Add(bucketInfo.Bucket, new KustoBlobIngestion(container.GetContainerName(), bucketInfo.Bucket)
                     {
                         IngestionId = container.IngestionId,
                         StorageSuffix = container.StorageSuffix,
+                        RawSizeBytes = bucketInfo.RawSizeBytes,
                         SourceId = Guid.NewGuid(),
                         SourceUrl = url.AbsoluteUri,
                         State = KustoBlobIngestionState.Created,
@@ -128,8 +129,8 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
                 }
             }
 
-            var oldTableName = GetKustoTableName(container) + "_Old";
-            var finalTableName = GetKustoTableName(container);
+            var finalTableName = _csvRecordContainers.GetKustoTableName(container.GetContainerName());
+            var oldTableName = finalTableName + "_Old";
             if (container.State == KustoContainerIngestionState.SwappingTable)
             {
                 await ExecuteKustoCommandAsync($".drop table {oldTableName} ifexists");
@@ -159,27 +160,15 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             }
         }
 
-        private IReadOnlyList<string> GetDDL(KustoContainerIngestion container)
+        private IReadOnlyList<string> GetDDL(string containerName)
         {
-            var recordType = GetRecordType(container);
+            var recordType = _csvRecordContainers.GetRecordType(containerName);
             return KustoDDL.TypeToDDL[recordType];
-        }
-
-        private string GetKustoTableName(KustoContainerIngestion container)
-        {
-            var recordType = GetRecordType(container);
-            var defaultTableName = KustoDDL.TypeToDefaultTableName[recordType];
-            return string.Format(_options.Value.KustoTableNameFormat, defaultTableName);
         }
 
         private string FormatCommand(string tableName, string commandTemplate)
         {
             return commandTemplate.Replace("__TABLENAME__", tableName);
-        }
-
-        private Type GetRecordType(KustoContainerIngestion container)
-        {
-            return _csvRecordContainers.GetRecordType(container.GetContainerName());
         }
     }
 }

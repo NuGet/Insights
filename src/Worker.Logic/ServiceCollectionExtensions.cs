@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Azure.Data.Tables;
 using Knapcode.ExplorePackages.Worker.BuildVersionSet;
 using Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv;
@@ -15,6 +16,7 @@ using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
 using Knapcode.ExplorePackages.Worker.TableCopy;
 using Kusto.Data;
 using Kusto.Data.Net.Client;
+using Kusto.Ingest;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -53,6 +55,20 @@ namespace Knapcode.ExplorePackages.Worker
                 var options = x.GetRequiredService<IOptions<ExplorePackagesWorkerSettings>>();
                 var connectionStringBuilder = new KustoConnectionStringBuilder(options.Value.KustoConnectionString);
                 return KustoClientFactory.CreateCslAdminProvider(connectionStringBuilder);
+            });
+            serviceCollection.AddSingleton(x =>
+            {
+                var options = x.GetRequiredService<IOptions<ExplorePackagesWorkerSettings>>();
+                var connectionStringBuilder = new KustoConnectionStringBuilder(options.Value.KustoConnectionString);
+
+                const string prefix = "https://";
+                if (connectionStringBuilder.DataSource == null || !connectionStringBuilder.DataSource.StartsWith(prefix))
+                {
+                    throw new InvalidOperationException($"The Kusto connection must have a data source that starts with '{prefix}'.");
+                }
+                connectionStringBuilder.DataSource = prefix + "ingest-" + connectionStringBuilder.DataSource.Substring(prefix.Length);
+
+                return KustoIngestFactory.CreateQueuedIngestClient(connectionStringBuilder);
             });
 
             serviceCollection.AddTransient<ILatestPackageLeafStorageFactory<CatalogLeafScan>, LatestCatalogLeafScanStorageFactory>();

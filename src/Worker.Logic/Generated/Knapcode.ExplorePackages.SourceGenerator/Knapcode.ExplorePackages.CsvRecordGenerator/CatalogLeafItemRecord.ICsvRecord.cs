@@ -39,7 +39,7 @@ namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
       ']'
     '}';
 
-    .create table CatalogLeafItems ingestion csv mapping 'CatalogLeafItems_mapping'
+    .create table CatalogLeafItems ingestion csv mapping 'BlobStorageMapping'
     '['
         '{"Column":"CommitId","DataType":"string","Properties":{"Ordinal":0}},'
         '{"Column":"CommitTimestamp","DataType":"datetime","Properties":{"Ordinal":1}},'

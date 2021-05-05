@@ -86,6 +86,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
                 await _storageService.DeleteChildTableAsync(ingestion.StorageSuffix);
 
                 ingestion.Completed = DateTimeOffset.UtcNow;
+                ingestion.State = KustoIngestionState.Complete;
                 await _storageService.ReplaceIngestionAsync(ingestion);
             }
         }

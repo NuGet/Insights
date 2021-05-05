@@ -38,7 +38,12 @@ namespace Knapcode.ExplorePackages
 
         public static TimeSpan GetMessageDelay(int attemptCount)
         {
-            return TimeSpan.FromSeconds(Math.Min(Math.Max(attemptCount, 0), 60));
+            return GetMessageDelay(attemptCount, factor: 1);
+        }
+
+        public static TimeSpan GetMessageDelay(int attemptCount, int factor)
+        {
+            return TimeSpan.FromSeconds(Math.Min(Math.Max(attemptCount * factor, 0), 60));
         }
 
         public static DateTimeOffset GetSasExpiry(string sas)

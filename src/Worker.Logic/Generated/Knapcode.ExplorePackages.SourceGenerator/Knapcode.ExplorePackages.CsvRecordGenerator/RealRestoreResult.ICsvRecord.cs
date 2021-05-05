@@ -62,7 +62,7 @@ namespace Knapcode.ExplorePackages.Worker.RunRealRestore
       ']'
     '}';
 
-    .create table RealRestoreResults ingestion csv mapping 'RealRestoreResults_mapping'
+    .create table RealRestoreResults ingestion csv mapping 'BlobStorageMapping'
     '['
         '{"Column":"Timestamp","DataType":"datetime","Properties":{"Ordinal":0}},'
         '{"Column":"DotnetVersion","DataType":"string","Properties":{"Ordinal":1}},'

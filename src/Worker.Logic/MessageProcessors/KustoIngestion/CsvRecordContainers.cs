@@ -59,5 +59,17 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
         {
             return _containerNameToRecordType[containerName];
         }
+
+        public string GetTempKustoTableName(string containerName)
+        {
+            return GetKustoTableName(containerName) + "_Temp";
+        }
+
+        public string GetKustoTableName(string containerName)
+        {
+            var recordType = GetRecordType(containerName);
+            var defaultTableName = KustoDDL.TypeToDefaultTableName[recordType];
+            return string.Format(_options.Value.KustoTableNameFormat, defaultTableName);
+        }
     }
 }

@@ -68,7 +68,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
       ']'
     '}';
 
-    .create table PackageManifests ingestion csv mapping 'PackageManifests_mapping'
+    .create table PackageManifests ingestion csv mapping 'BlobStorageMapping'
     '['
         '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":2}},'
         '{"Column":"Identity","DataType":"string","Properties":{"Ordinal":3}},'

@@ -12,6 +12,7 @@ namespace Knapcode.ExplorePackages
 
         public static IReadOnlyDictionary<Type, string> TypeToDefaultTableName => _typeToDefaultTableName;
         public static IReadOnlyDictionary<Type, IReadOnlyList<string>> TypeToDDL => _typeToDDL;
+        public const string CsvMappingName = "BlobStorageMapping";
 
         private static bool AddTypeToDefaultTableName(Type type, string tableName)
         {

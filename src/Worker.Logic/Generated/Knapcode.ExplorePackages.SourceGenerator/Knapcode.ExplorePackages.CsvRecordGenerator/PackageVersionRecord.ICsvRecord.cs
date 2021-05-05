@@ -44,7 +44,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
       ']'
     '}';
 
-    .create table PackageVersions ingestion csv mapping 'PackageVersions_mapping'
+    .create table PackageVersions ingestion csv mapping 'BlobStorageMapping'
     '['
         '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":2}},'
         '{"Column":"Identity","DataType":"string","Properties":{"Ordinal":3}},'

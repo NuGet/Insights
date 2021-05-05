@@ -26,8 +26,9 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
         public string StorageSuffix { get; set; }
         public KustoBlobIngestionState State { get; set; }
         public int Bucket { get; set; }
+        public long RawSizeBytes { get; set; }
         public string SourceUrl { get; set; }
-        public string TableUrl { get; set; }
+        public string StatusUrl { get; set; }
         public Guid SourceId { get; set; }
 
         public string GetContainerName()

@@ -22,6 +22,7 @@ namespace Knapcode.ExplorePackages.Worker
     {
         private static readonly ConcurrentDictionary<Type, string> TypeToHeader = new ConcurrentDictionary<Type, string>();
 
+        private const string RawSizeBytesMetadata = "rawSizeBytes";
         private const string ContentType = "text/plain";
         private const string CompactPrefix = "compact_";
 
@@ -202,7 +203,7 @@ namespace Knapcode.ExplorePackages.Worker
                     Metadata = new Dictionary<string, string>
                     {
                         {
-                            "rawSizeBytes",
+                            RawSizeBytesMetadata,
                             uncompressedLength.ToString() // See: https://docs.microsoft.com/en-us/azure/data-explorer/lightingest#recommendations
                         },
                     },
@@ -271,10 +272,10 @@ namespace Knapcode.ExplorePackages.Worker
             return markerEntities.Select(x => int.Parse(x.RowKey)).ToList();
         }
 
-        public async Task<List<int>> GetCompactedBucketsAsync(string containerName)
+        public async Task<List<CompactedBucketInfo>> GetCompactedBucketsAsync(string containerName)
         {
             var container = await GetContainerAsync(containerName);
-            var buckets = new List<int>();
+            var buckets = new List<CompactedBucketInfo>();
 
             if (!await container.ExistsAsync())
             {
@@ -282,10 +283,12 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             var regex = new Regex(Regex.Escape(CompactPrefix) + @"(\d+)");
-            var blobs = container.GetBlobsAsync(prefix: CompactPrefix);
+            var blobs = container.GetBlobsAsync(prefix: CompactPrefix, traits: BlobTraits.Metadata);
             await foreach (var blob in blobs)
             {
-                buckets.Add(int.Parse(regex.Match(blob.Name).Groups[1].Value));
+                var bucket = int.Parse(regex.Match(blob.Name).Groups[1].Value);
+                var rawSizeBytes = long.Parse(blob.Metadata[RawSizeBytesMetadata]);
+                buckets.Add(new CompactedBucketInfo(bucket, rawSizeBytes));
             }
 
             return buckets;

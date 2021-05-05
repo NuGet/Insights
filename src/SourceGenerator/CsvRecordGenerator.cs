@@ -41,7 +41,7 @@ namespace {0}
 
     .alter table {1} policy partitioning {3};
 
-    .create table {1} ingestion csv mapping '{1}_mapping'
+    .create table {1} ingestion csv mapping '{13}'
     '['
 {4}
     ']'
@@ -102,7 +102,7 @@ namespace Knapcode.ExplorePackages
 
             @"".alter table __TABLENAME__ policy partitioning {4}"",
 
-            @"".create table __TABLENAME__ ingestion csv mapping 'BlobStorageMapping'
+            @"".create table __TABLENAME__ ingestion csv mapping '{6}'
 '['
 {5}
 ']'"",
@@ -291,7 +291,8 @@ namespace Knapcode.ExplorePackages
                             writeListBuilder.GetResult(),
                             writeTextWriterBuilder.GetResult(),
                             writeAsyncTextWriterBuilder.GetResult(),
-                            readerBuilder.GetResult()),
+                            readerBuilder.GetResult(),
+                            KustoDDL.CsvMappingName),
                         Encoding.UTF8));
 
                 context.AddSource(
@@ -304,7 +305,8 @@ namespace Knapcode.ExplorePackages
                             kustoTableConstantBuilder.GetResult(),
                             typeName,
                             kustoPartitioningPolicyConstantBuilder.GetResult(),
-                            kustoMappingConstantBuilder.GetResult()),
+                            kustoMappingConstantBuilder.GetResult(),
+                            KustoDDL.CsvMappingName),
                         Encoding.UTF8));
 
                 sourceAdded = true;

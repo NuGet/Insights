@@ -33,7 +33,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
       ']'
     '}';
 
-    .create table PackageOwners ingestion csv mapping 'PackageOwners_mapping'
+    .create table PackageOwners ingestion csv mapping 'BlobStorageMapping'
     '['
         '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":1}},'
         '{"Column":"Id","DataType":"string","Properties":{"Ordinal":2}},'

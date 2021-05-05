@@ -68,7 +68,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
       ']'
     '}';
 
-    .create table PackageSignatures ingestion csv mapping 'PackageSignatures_mapping'
+    .create table PackageSignatures ingestion csv mapping 'BlobStorageMapping'
     '['
         '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":2}},'
         '{"Column":"Identity","DataType":"string","Properties":{"Ordinal":3}},'

@@ -65,6 +65,12 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             return await table.GetEntityOrNullAsync<KustoContainerIngestion>(KustoContainerIngestion.DefaultPartitionKey, containerName);
         }
 
+        public async Task<KustoBlobIngestion> GetBlobAsync(string storageSuffix, string containerName, int bucket)
+        {
+            var table = await GetKustoIngestionTableAsync(storageSuffix);
+            return await table.GetEntityOrNullAsync<KustoBlobIngestion>(containerName, bucket.ToString());
+        }
+
         public async Task ReplaceIngestionAsync(KustoIngestion ingestion)
         {
             var table = await GetKustoIngestionTableAsync();
@@ -79,10 +85,23 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             container.UpdateETagAndTimestamp(response);
         }
 
+        public async Task ReplaceBlobAsync(KustoBlobIngestion blob)
+        {
+            var table = await GetKustoIngestionTableAsync(blob.StorageSuffix);
+            var response = await table.UpdateEntityAsync(blob, blob.ETag, mode: TableUpdateMode.Replace);
+            blob.UpdateETagAndTimestamp(response);
+        }
+
         public async Task DeleteContainerAsync(KustoContainerIngestion container)
         {
             var table = await GetKustoIngestionTableAsync(container.StorageSuffix);
             await table.DeleteEntityAsync(container, container.ETag);
+        }
+
+        public async Task DeleteBlobAsync(KustoBlobIngestion blob)
+        {
+            var table = await GetKustoIngestionTableAsync(blob.StorageSuffix);
+            await table.DeleteEntityAsync(blob, blob.ETag);
         }
 
         public async Task AddBlobsAsync(KustoContainerIngestion container, IReadOnlyList<KustoBlobIngestion> blobs)

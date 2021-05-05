@@ -41,7 +41,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
       ']'
     '}';
 
-    .create table NuGetPackageExplorers ingestion csv mapping 'NuGetPackageExplorers_mapping'
+    .create table NuGetPackageExplorers ingestion csv mapping 'BlobStorageMapping'
     '['
         '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":2}},'
         '{"Column":"Identity","DataType":"string","Properties":{"Ordinal":3}},'

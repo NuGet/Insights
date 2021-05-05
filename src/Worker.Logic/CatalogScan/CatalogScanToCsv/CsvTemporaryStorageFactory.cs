@@ -95,11 +95,11 @@ namespace Knapcode.ExplorePackages.Worker
                     {
                         CursorName = indexScan.GetCursorName(),
                         ScanId = indexScan.GetScanId(),
-                        Bucket = b,
+                        Bucket = b.Bucket,
                         TaskStateKey = new TaskStateKey(
                             indexScan.StorageSuffix,
                             partitionKey,
-                            b.ToString()),
+                            b.Bucket.ToString()),
                     })
                     .ToList();
                 await _parent._messageEnqueuer.EnqueueAsync(messages);

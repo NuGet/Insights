@@ -36,7 +36,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
       ']'
     '}';
 
-    .create table PackageDownloads ingestion csv mapping 'PackageDownloads_mapping'
+    .create table PackageDownloads ingestion csv mapping 'BlobStorageMapping'
     '['
         '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":1}},'
         '{"Column":"Identity","DataType":"string","Properties":{"Ordinal":2}},'

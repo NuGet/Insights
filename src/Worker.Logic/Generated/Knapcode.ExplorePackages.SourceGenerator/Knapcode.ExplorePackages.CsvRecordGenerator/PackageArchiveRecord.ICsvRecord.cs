@@ -47,7 +47,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
       ']'
     '}';
 
-    .create table PackageArchives ingestion csv mapping 'PackageArchives_mapping'
+    .create table PackageArchives ingestion csv mapping 'BlobStorageMapping'
     '['
         '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":2}},'
         '{"Column":"Identity","DataType":"string","Properties":{"Ordinal":3}},'
