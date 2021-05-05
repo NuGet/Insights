@@ -127,8 +127,8 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
                 {
                     _logger.LogInformation(
                         "There are at least {CountLowerBound} blobs in container {ContainerName} still being ingested into Kusto.",
-                        container.GetContainerName(),
-                        countLowerBound);
+                        countLowerBound,
+                        container.GetContainerName());
                     message.AttemptCount++;
                     await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
                     return;

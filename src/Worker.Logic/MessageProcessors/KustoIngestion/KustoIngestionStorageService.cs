@@ -105,7 +105,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             _logger.LogInformation(
                 "Updating Kusto ingestion {IngestionId} for blob {SourceUrl} with state {State}.",
                 blob.IngestionId,
-                blob.SourceId,
+                blob.SourceUrl,
                 blob.State);
 
             var table = await GetKustoIngestionTableAsync(blob.StorageSuffix);
@@ -130,8 +130,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             _logger.LogInformation(
                 "Deleting Kusto ingestion {IngestionId} for blob {SourceUrl}.",
                 blob.IngestionId,
-                blob.SourceId,
-                blob.State);
+                blob.SourceUrl);
 
             var table = await GetKustoIngestionTableAsync(blob.StorageSuffix);
             await table.DeleteEntityAsync(blob, blob.ETag);
