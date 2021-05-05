@@ -39,6 +39,7 @@ namespace Knapcode.ExplorePackages.Worker
             CsvRecordTableName = "csvrecords";
             VersionSetAggregateTableName = "versionset";
             VersionSetContainerName = "versionset";
+            KustoIngestionTableName = "kustoingestions";
 
             LatestPackageLeafTableName = "latestpackageleaves";
             PackageAssetContainerName = "packageassets";
@@ -55,6 +56,10 @@ namespace Knapcode.ExplorePackages.Worker
             PackageVersionContainerName = "packageversions";
             NuGetPackageExplorerContainerName = "nugetpackageexplorer";
             NuGetPackageExplorerFileContainerName = "nugetpackageexplorerfiles";
+
+            KustoConnectionString = null;
+            KustoDatabaseName = null;
+            KustoTableNameFormat = "{0}";
         }
 
         public bool UseBulkEnqueueStrategy { get; set; }
@@ -89,6 +94,7 @@ namespace Knapcode.ExplorePackages.Worker
         public string CsvRecordTableName { get; set; }
         public string VersionSetAggregateTableName { get; set; }
         public string VersionSetContainerName { get; set; }
+        public string KustoIngestionTableName { get; set; }
 
         public string LatestPackageLeafTableName { get; set; }
         public string PackageAssetContainerName { get; set; }
@@ -105,5 +111,9 @@ namespace Knapcode.ExplorePackages.Worker
         public string PackageVersionContainerName { get; set; }
         public string NuGetPackageExplorerContainerName { get; set; }
         public string NuGetPackageExplorerFileContainerName { get; set; }
+
+        public string KustoConnectionString { get; set; }
+        public string KustoDatabaseName { get; set; }
+        public string KustoTableNameFormat { get; set; }
     }
 }

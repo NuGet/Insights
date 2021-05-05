@@ -49,6 +49,7 @@ namespace Knapcode.ExplorePackages
         public string StorageSharedAccessSignature { get; set; }
         public string KeyVaultName { get; set; }
         public string StorageSharedAccessSignatureSecretName { get; set; }
+        public string StorageBlobReadSharedAccessSignatureSecretName { get; set; }
         public TimeSpan? StorageSharedAccessSignatureDuration { get; set; }
         public string StorageConnectionString { get; set; }
         public string StorageConnectionStringSecretName { get; set; }

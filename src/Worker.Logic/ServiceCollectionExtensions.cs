@@ -5,6 +5,7 @@ using Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv;
 using Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan;
 using Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan;
 using Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScanPerId;
+using Knapcode.ExplorePackages.Worker.KustoIngestion;
 using Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf;
 using Knapcode.ExplorePackages.Worker.LoadPackageArchive;
 using Knapcode.ExplorePackages.Worker.LoadPackageManifest;
@@ -12,7 +13,10 @@ using Knapcode.ExplorePackages.Worker.LoadPackageVersion;
 using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
 using Knapcode.ExplorePackages.Worker.TableCopy;
+using Kusto.Data;
+using Kusto.Data.Net.Client;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Worker
 {
@@ -40,6 +44,16 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient<CsvTemporaryStorageFactory>();
             AddTableScan<LatestPackageLeaf>(serviceCollection);
             AddTableScan<CatalogLeafScan>(serviceCollection);
+
+            serviceCollection.AddTransient<KustoIngestionService>();
+            serviceCollection.AddTransient<KustoIngestionStorageService>();
+            serviceCollection.AddTransient<CsvRecordContainers>();
+            serviceCollection.AddSingleton(x =>
+            {
+                var options = x.GetRequiredService<IOptions<ExplorePackagesWorkerSettings>>();
+                var connectionStringBuilder = new KustoConnectionStringBuilder(options.Value.KustoConnectionString);
+                return KustoClientFactory.CreateCslAdminProvider(connectionStringBuilder);
+            });
 
             serviceCollection.AddTransient<ILatestPackageLeafStorageFactory<CatalogLeafScan>, LatestCatalogLeafScanStorageFactory>();
             serviceCollection.AddTransient<FindLatestLeafDriver<CatalogLeafScan>>();

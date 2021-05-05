@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv;
 using Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan;
+using Knapcode.ExplorePackages.Worker.KustoIngestion;
 using Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf;
 using Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv;
 using Knapcode.ExplorePackages.Worker.PackageArchiveToCsv;
@@ -29,6 +30,10 @@ namespace Knapcode.ExplorePackages.Worker
             new SchemaV1<CatalogIndexScanMessage>("cis"),
             new SchemaV1<CatalogPageScanMessage>("cps"),
             new SchemaV1<CatalogLeafScanMessage>("cls"),
+
+            new SchemaV1<KustoIngestionMessage>("ki"),
+            new SchemaV1<KustoContainerIngestionMessage>("kci"),
+            new SchemaV1<KustoBlobIngestionMessage>("kbi"),
 
             new SchemaV1<CsvCompactMessage<CatalogLeafItemRecord>>("cc.fcli"),
             new SchemaV1<CsvCompactMessage<PackageArchiveRecord>>("cc.pa2c"),

@@ -275,6 +275,12 @@ namespace Knapcode.ExplorePackages.Worker
         {
             var container = await GetContainerAsync(containerName);
             var buckets = new List<int>();
+
+            if (!await container.ExistsAsync())
+            {
+                return buckets;
+            }
+
             var regex = new Regex(Regex.Escape(CompactPrefix) + @"(\d+)");
             var blobs = container.GetBlobsAsync(prefix: CompactPrefix);
             await foreach (var blob in blobs)
@@ -283,6 +289,12 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             return buckets;
+        }
+
+        public async Task<Uri> GetCompactedBlobUrlAsync(string containerName, int bucket)
+        {
+            var blob = await GetCompactBlobAsync(containerName, bucket);
+            return blob.Uri;
         }
 
         private async Task<BlobClient> GetCompactBlobAsync(string container, int bucket)

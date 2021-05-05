@@ -7,6 +7,7 @@ using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Azure.Storage.Blobs;
 using Azure.Storage.Queues;
+using Azure.Storage.Sas;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -45,6 +46,25 @@ namespace Knapcode.ExplorePackages
         public async Task<TableServiceClient> GetTableServiceClientAsync()
         {
             return (await GetCachedServiceClientsAsync()).TableServiceClient;
+        }
+
+        public async Task<string> GetBlobReadStorageSharedAccessSignatureAsync()
+        {
+            var clients = await GetCachedServiceClientsAsync();
+            if (clients.BlobServiceClient.CanGenerateAccountSasUri)
+            {
+                var uri = clients.BlobServiceClient.GenerateAccountSasUri(
+                    permissions: AccountSasPermissions.Read,
+                    expiresOn: DateTimeOffset.UtcNow.AddDays(7),
+                    resourceTypes: AccountSasResourceTypes.Object);
+                return uri.Query;
+            }
+            else if (clients.BlobReadStorageSharedAccessSignature != null)
+            {
+                return clients.BlobReadStorageSharedAccessSignature;
+            }
+
+            throw new NotSupportedException("Generating blob read SAS tokens is not supported with the current configuration.");
         }
 
         public string GetStorageConnectionStringSync()
@@ -105,30 +125,40 @@ namespace Knapcode.ExplorePackages
         {
             var created = DateTimeOffset.UtcNow;
             var secretClient = GetSecretClient();
-            string sasFromKeyVault = null;
+            string appSasFromKeyVault = null;
+            string blobReadSasFromKeyVault = null;
             if (secretClient != null)
             {
-                KeyVaultSecret secret = await secretClient.GetSecretAsync(
+                KeyVaultSecret appSas = await secretClient.GetSecretAsync(
                     _options.Value.StorageSharedAccessSignatureSecretName,
                     cancellationToken: token);
-                sasFromKeyVault = secret.Value;
+                appSasFromKeyVault = appSas.Value;
+
+                KeyVaultSecret blobReadSas = await secretClient.GetSecretAsync(
+                    _options.Value.StorageBlobReadSharedAccessSignatureSecretName,
+                    cancellationToken: token);
+                blobReadSasFromKeyVault = blobReadSas.Value;
             }
 
-            return GetServiceClients(created, secretClient, sasFromKeyVault);
+            return GetServiceClients(created, secretClient, appSasFromKeyVault, blobReadSasFromKeyVault);
         }
 
         private ServiceClients GetServiceClientsSync()
         {
             var created = DateTimeOffset.UtcNow;
             var secretClient = GetSecretClient();
-            string sasFromKeyVault = null;
+            string appSasFromKeyVault = null;
+            string blobReadSasFromKeyVault = null;
             if (secretClient != null)
             {
-                KeyVaultSecret secret = secretClient.GetSecret(_options.Value.StorageSharedAccessSignatureSecretName);
-                sasFromKeyVault = secret.Value;
+                KeyVaultSecret appSas = secretClient.GetSecret(_options.Value.StorageSharedAccessSignatureSecretName);
+                appSasFromKeyVault = appSas.Value;
+
+                KeyVaultSecret blobReadSas = secretClient.GetSecret(_options.Value.StorageBlobReadSharedAccessSignatureSecretName);
+                blobReadSasFromKeyVault = blobReadSas.Value;
             }
 
-            return GetServiceClients(created, secretClient, sasFromKeyVault);
+            return GetServiceClients(created, secretClient, appSasFromKeyVault, blobReadSasFromKeyVault);
         }
 
         private bool TryGetServiceClients(out ServiceClients serviceClients)
@@ -152,7 +182,7 @@ namespace Knapcode.ExplorePackages
             }
 
             TimeSpan untilRefresh;
-            if (serviceClients.StorageSharedAccessSignature != null)
+            if (serviceClients.AppStorageSharedAccessSignature != null)
             {
                 // Refresh at half of the SAS duration.
                 var originalDuration = serviceClients.StorageSharedAccessSignatureExpiry.Value - serviceClients.Created;
@@ -183,32 +213,32 @@ namespace Knapcode.ExplorePackages
             return null;
         }
 
-        private ServiceClients GetServiceClients(DateTimeOffset created, SecretClient secretClient, string sasFromKeyVault)
+        private ServiceClients GetServiceClients(DateTimeOffset created, SecretClient secretClient, string appSasFromKeyVault, string blobReadSasFromKeyVault)
         {
-            string sas;
+            string appSas;
             DateTimeOffset? sasExpiry;
             string storageConnectionString;
             TableServiceClient tableServiceClient;
             if (_options.Value.StorageAccountName != null)
             {
                 string source;
-                if (sasFromKeyVault != null)
+                if (appSasFromKeyVault != null)
                 {
-                    sas = sasFromKeyVault;
+                    appSas = appSasFromKeyVault;
                     source = "Key Vault";
                 }
                 else
                 {
-                    sas = _options.Value.StorageSharedAccessSignature;
+                    appSas = _options.Value.StorageSharedAccessSignature;
                     source = "config";
                 }
 
-                if (sas == null)
+                if (appSas == null)
                 {
                     throw new InvalidOperationException($"No storage SAS token could be found.");
                 }
 
-                sasExpiry = StorageUtility.GetSasExpiry(sas);
+                sasExpiry = StorageUtility.GetSasExpiry(appSas);
                 var untilExpiry = sasExpiry.Value - DateTimeOffset.UtcNow;
 
                 _logger.LogInformation(
@@ -218,15 +248,15 @@ namespace Knapcode.ExplorePackages
                     sasExpiry,
                     untilExpiry.TotalHours);
 
-                storageConnectionString = $"AccountName={_options.Value.StorageAccountName};SharedAccessSignature={sas}";
+                storageConnectionString = $"AccountName={_options.Value.StorageAccountName};SharedAccessSignature={appSas}";
                 var endpoint = $"https://{_options.Value.StorageAccountName}.table.core.windows.net/";
-                tableServiceClient = new TableServiceClient(new Uri(endpoint), new AzureSasCredential(sas));
+                tableServiceClient = new TableServiceClient(new Uri(endpoint), new AzureSasCredential(appSas));
             }
             else
             {
                 _logger.LogInformation("Using the configured storage connection string.");
 
-                sas = null;
+                appSas = null;
                 sasExpiry = null;
                 storageConnectionString = _options.Value.StorageConnectionString;
                 tableServiceClient = new TableServiceClient(storageConnectionString);
@@ -234,7 +264,8 @@ namespace Knapcode.ExplorePackages
 
             return new ServiceClients(
                 created,
-                sas,
+                appSas,
+                blobReadSasFromKeyVault,
                 sasExpiry,
                 storageConnectionString,
                 secretClient,
@@ -245,7 +276,8 @@ namespace Knapcode.ExplorePackages
 
         private record ServiceClients(
             DateTimeOffset Created,
-            string StorageSharedAccessSignature,
+            string AppStorageSharedAccessSignature,
+            string BlobReadStorageSharedAccessSignature,
             DateTimeOffset? StorageSharedAccessSignatureExpiry,
             string StorageConnectionString,
             SecretClient KeyVaultSecretClient,

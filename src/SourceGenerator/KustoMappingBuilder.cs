@@ -47,7 +47,7 @@ namespace Knapcode.ExplorePackages
             _builder.Append("'");
 
             var json = JsonConvert.SerializeObject(field).Replace("'", "\\'");
-            
+
             if (_escapeQuotes)
             {
                 json = json.Replace("\"", "\"\"");
