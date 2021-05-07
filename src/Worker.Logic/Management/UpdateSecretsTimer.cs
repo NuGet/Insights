@@ -209,7 +209,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Clearing the connection strings on function app {FunctionAppName} faled.", functionApp.Name);
+                _logger.LogError(ex, "Clearing the connection strings on function app {FunctionAppName} failed.", functionApp.Name);
                 throw;
             }
         }
