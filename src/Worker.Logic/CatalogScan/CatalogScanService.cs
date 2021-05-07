@@ -155,19 +155,32 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task<IReadOnlyDictionary<CatalogScanDriverType, CatalogScanServiceResult>> UpdateAllAsync(DateTimeOffset? max)
         {
-            if (!max.HasValue)
+            await using (var lease = await GetUpdateAllLeaseAsync())
             {
-                max = await _cursorService.GetSourceMaxAsync();
-            }
+                var results = new Dictionary<CatalogScanDriverType, CatalogScanServiceResult>();
+                if (!lease.Acquired)
+                {
+                    return results;
+                }
 
-            var results = new Dictionary<CatalogScanDriverType, CatalogScanServiceResult>();
-            foreach (var driverType in _cursorService.StartableDriverTypes)
-            {
-                var result = await UpdateAsync(driverType, max, onlyLatestLeaves: null, continueWithDependents: true);
-                results.Add(driverType, result);
-            }
+                if (!max.HasValue)
+                {
+                    max = await _cursorService.GetSourceMaxAsync();
+                }
 
-            return results;
+                foreach (var driverType in _cursorService.StartableDriverTypes)
+                {
+                    var result = await UpdateAsync(driverType, max, onlyLatestLeaves: null, continueWithDependents: true);
+                    results.Add(driverType, result);
+                }
+
+                return results;
+            }
+        }
+
+        private async Task<AutoRenewingStorageLeaseResult> GetUpdateAllLeaseAsync()
+        {
+            return await _leaseService.TryAcquireAsync("UpdateAllCatalogScans");
         }
 
         public async Task<CatalogScanServiceResult> UpdateAsync(CatalogScanDriverType driverType)

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Worker.KustoIngestion
@@ -26,17 +27,34 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             await _leaseService.InitializeAsync();
         }
 
-        public async Task StartAsync()
+        public async Task ExecuteIfNoIngestionIsRunningAsync(Func<Task> actionAsync)
         {
-            await using (var lease = await _leaseService.TryAcquireAsync("Start-KustoIngestion"))
+            await using (var lease = await GetStartLeaseAsync())
             {
                 if (!lease.Acquired)
                 {
                     return;
                 }
 
-                var latestIngestions = await _storageService.GetLatestIngestionsAsync();
-                if (latestIngestions.Any(x => x.State != KustoIngestionState.Complete))
+                if (await _storageService.IsIngestionRunningAsync())
+                {
+                    return;
+                }
+
+                await actionAsync();
+            }
+        }
+
+        public async Task StartAsync()
+        {
+            await using (var lease = await GetStartLeaseAsync())
+            {
+                if (!lease.Acquired)
+                {
+                    return;
+                }
+
+                if (await _storageService.IsIngestionRunningAsync())
                 {
                     return;
                 }
@@ -54,6 +72,11 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
 
                 await _storageService.AddIngestionAsync(ingestion);
             }
+        }
+
+        private async Task<AutoRenewingStorageLeaseResult> GetStartLeaseAsync()
+        {
+            return await _leaseService.TryAcquireAsync("Start-KustoIngestion");
         }
     }
 }

@@ -42,13 +42,13 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             await (await GetKustoIngestionTableAsync(storageSuffix)).DeleteIfExistsAsync();
         }
 
-        public async Task<IReadOnlyList<KustoIngestion>> GetLatestIngestionsAsync()
+        public async Task<bool> IsIngestionRunningAsync()
         {
             var table = await GetKustoIngestionTableAsync();
-            return await table
+            var ingestions = await table
                 .QueryAsync<KustoIngestion>(x => x.PartitionKey == KustoIngestion.DefaultPartitionKey)
-                .Take(20)
                 .ToListAsync();
+            return ingestions.Any(x => x.State != KustoIngestionState.Complete);
         }
 
         public async Task DeleteOldIngestionsAsync(string currentIngestionId)
