@@ -85,9 +85,10 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
 
             if (ingestion.State == KustoIngestionState.Finalizing)
             {
-                _logger.LogInformation("The Kusto ingestion is complete.");
-
                 await _storageService.DeleteChildTableAsync(ingestion.StorageSuffix);
+                await _storageService.DeleteOldIngestionsAsync(ingestion.GetIngestionId());
+
+                _logger.LogInformation("The Kusto ingestion is complete.");
 
                 ingestion.Completed = DateTimeOffset.UtcNow;
                 ingestion.State = KustoIngestionState.Complete;

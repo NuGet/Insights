@@ -51,6 +51,37 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
                 .ToListAsync();
         }
 
+        public async Task DeleteOldIngestionsAsync(string currentIngestionId)
+        {
+            var table = await GetKustoIngestionTableAsync();
+            var oldIngestions = await table
+                .QueryAsync<KustoIngestion>(x => x.PartitionKey == KustoIngestion.DefaultPartitionKey
+                                              && x.RowKey.CompareTo(currentIngestionId) > 0)
+                .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
+
+            var oldIngestionsToDelete = oldIngestions
+                .OrderByDescending(x => x.Created)
+                .Skip(_options.Value.OldCatalogIndexScansToKeep)
+                .OrderBy(x => x.Created)
+                .Where(x => x.State == KustoIngestionState.Complete)
+                .ToList();
+            _logger.LogInformation("Deleting {Count} old Kusto ingestions.", oldIngestionsToDelete.Count);
+
+            var batch = new MutableTableTransactionalBatch(table);
+            foreach (var scan in oldIngestionsToDelete)
+            {
+                if (batch.Count >= StorageUtility.MaxBatchSize)
+                {
+                    await batch.SubmitBatchAsync();
+                    batch = new MutableTableTransactionalBatch(table);
+                }
+
+                batch.DeleteEntity(scan.PartitionKey, scan.RowKey, scan.ETag);
+            }
+
+            await batch.SubmitBatchIfNotEmptyAsync();
+        }
+
         public async Task<KustoIngestion> GetIngestionAsync(string rowKey)
         {
             var table = await GetKustoIngestionTableAsync();

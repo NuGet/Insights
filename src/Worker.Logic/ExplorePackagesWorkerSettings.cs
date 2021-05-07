@@ -60,6 +60,7 @@ namespace Knapcode.ExplorePackages.Worker
             KustoConnectionString = null;
             KustoDatabaseName = null;
             KustoTableNameFormat = "{0}";
+            OldKustoIngestionsToKeep = 9;
         }
 
         public bool UseBulkEnqueueStrategy { get; set; }
@@ -115,5 +116,6 @@ namespace Knapcode.ExplorePackages.Worker
         public string KustoConnectionString { get; set; }
         public string KustoDatabaseName { get; set; }
         public string KustoTableNameFormat { get; set; }
+        public int OldKustoIngestionsToKeep { get; set; }
     }
 }
