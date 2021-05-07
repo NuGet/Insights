@@ -43,6 +43,28 @@ namespace Knapcode.ExplorePackages.Worker
             await _leaseService.InitializeAsync();
         }
 
+        public async Task ExecuteIfNoScansAreRunningAsync(Func<Task> actionAsync)
+        {
+            await using (var lease = await GetUpdateAllLeaseAsync())
+            {
+                if (!lease.Acquired)
+                {
+                    return;
+                }
+
+                var scans = await _storageService.GetIndexScansAsync();
+                if (scans.Any(x => x.State != CatalogIndexScanState.Complete))
+                {
+                    // This check will not catch all catalog scans that are started manually, but will catched catalog
+                    // scans that are already started. With the lease above which protects against automatically started
+                    // leases, it's good enough.
+                    return;
+                }
+
+                await actionAsync();
+            }
+        }
+
         public async Task RequeueAsync(CatalogScanDriverType driverType, string scanId)
         {
             var cursorName = _cursorService.GetCursorName(driverType);

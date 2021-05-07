@@ -38,6 +38,19 @@ namespace Knapcode.ExplorePackages.Worker
         }
 
         [Fact]
+        public async Task DoesNotStartCatalogScansWhenScansAreAlreadyRunningAsync()
+        {
+            await Target.InitializeAsync();
+            await CatalogScanService.UpdateAllAsync(max: null);
+
+            var result = await Target.ExecuteAsync();
+
+            var catalogScans = await CatalogScanStorageService.GetIndexScansAsync();
+            Assert.NotEmpty(catalogScans);
+            Assert.False(result);
+        }
+
+        [Fact]
         public async Task DoesNotStartCatalogScansWhenKustoIngestionIsRunningAsync()
         {
             await Target.InitializeAsync();

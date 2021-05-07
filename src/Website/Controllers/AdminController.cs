@@ -279,7 +279,11 @@ namespace Knapcode.ExplorePackages.Website.Controllers
         {
             if (runNow == true)
             {
-                await _timerExecutionService.ExecuteNowAsync(timerName);
+                var executed = await _timerExecutionService.ExecuteNowAsync(timerName);
+                if (!executed)
+                {
+                    TempData[timerName + ".Error"] = "The timer could not be executed.";
+                }
             }
             else if (disable == true)
             {

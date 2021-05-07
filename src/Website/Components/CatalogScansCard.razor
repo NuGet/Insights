@@ -1,4 +1,4 @@
-﻿@{ 
+﻿@{
     var error = TempData["CatalogScans.Error"]?.ToString();
     var success = TempData["CatalogScans.Success"]?.ToString();
     var hasError = !string.IsNullOrEmpty(error);
@@ -7,6 +7,8 @@
     var messageFontClass = hasError || hasSuccess ? "text-white" : string.Empty;
     var messageBgClass = hasError ? "bg-danger" : (hasSuccess ? "bg-success" : string.Empty);
     var borderClass = hasError ? "border-danger" : (hasSuccess ? "border-success" : string.Empty);
+
+    var isDisabled = Model.TimerStates.Any(x => x.Name == Worker.KustoIngestion.KustoIngestionTimer.DefaultName && x.IsRunning);
 
     string statusText = null;
     string statusTitle = null;
@@ -19,15 +21,21 @@
 <CollapseCard IdPrefix="CatalogScans" Title="All catalog scans" StatusText="@statusText" StatusTitle="@statusTitle" BorderClass="@borderClass">
     <div class="card-body">
         <form action="@Url.Action("UpdateAllCatalogScans")" method="post">
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="CatalogScans-useCustomMax" name="useCustomMax" value="true" />
-                <label class="form-check-label" for="CatalogScans-useCustomMax">Use custom max</label>
-            </div>
-            <div class="form-group custom-max" style="display: none">
-                <label for="CatalogScans-max">Custom max</label>
-                <input type="text" class="form-control" name="max" id="CatalogScans-max" value="@Model.DefaultMax.ToZulu()">
-            </div>
-            <button type="submit" class="btn btn-primary">Start all</button>
+            <fieldset disabled="@isDisabled" class="form-group">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="CatalogScans-useCustomMax" name="useCustomMax" value="true" />
+                    <label class="form-check-label" for="CatalogScans-useCustomMax">Use custom max</label>
+                </div>
+                <div class="form-group custom-max" style="display: none">
+                    <label for="CatalogScans-max">Custom max</label>
+                    <input type="text" class="form-control" name="max" id="CatalogScans-max" value="@Model.DefaultMax.ToZulu()">
+                </div>
+                <button type="submit" class="btn btn-primary">Start all</button>
+                @if (isDisabled)
+                {
+                    <b class="ml-1">⚠️ Disabled because the Kusto ingestion is running.</b>
+                }
+            </fieldset>
         </form>
     </div>
 

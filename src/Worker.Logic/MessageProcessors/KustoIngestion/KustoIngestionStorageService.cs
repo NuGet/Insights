@@ -82,10 +82,17 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             await batch.SubmitBatchIfNotEmptyAsync();
         }
 
-        public async Task<KustoIngestion> GetIngestionAsync(string rowKey)
+        public async Task<KustoIngestion> GetIngestionAsync(string ingestionId)
         {
             var table = await GetKustoIngestionTableAsync();
-            return await table.GetEntityOrNullAsync<KustoIngestion>(KustoIngestion.DefaultPartitionKey, rowKey);
+            return await table.GetEntityOrNullAsync<KustoIngestion>(KustoIngestion.DefaultPartitionKey, ingestionId);
+        }
+
+        public async Task<IReadOnlyList<KustoIngestion>> GetIngestionsAsync()
+        {
+            var table = await GetKustoIngestionTableAsync();
+            var query = table.QueryAsync<KustoIngestion>(filter: x => x.PartitionKey == KustoContainerIngestion.DefaultPartitionKey);
+            return await query.ToListAsync();
         }
 
         public async Task AddIngestionAsync(KustoIngestion ingestion)

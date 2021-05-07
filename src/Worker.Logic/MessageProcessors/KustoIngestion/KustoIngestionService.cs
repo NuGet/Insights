@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Worker.KustoIngestion
@@ -45,18 +44,18 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             }
         }
 
-        public async Task StartAsync()
+        public async Task<bool> StartAsync()
         {
             await using (var lease = await GetStartLeaseAsync())
             {
                 if (!lease.Acquired)
                 {
-                    return;
+                    return false;
                 }
 
                 if (await _storageService.IsIngestionRunningAsync())
                 {
-                    return;
+                    return false;
                 }
 
                 var storageId = StorageUtility.GenerateDescendingId();
@@ -71,6 +70,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
                 });
 
                 await _storageService.AddIngestionAsync(ingestion);
+                return true;
             }
         }
 

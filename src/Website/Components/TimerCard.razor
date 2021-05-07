@@ -2,6 +2,13 @@
     var title = Model.Name.Humanize().Replace("csv", "CSV");
     var isEnabled = Model.IsEnabledInConfig && Model.IsEnabledInStorage != false;
 
+    var error = TempData[Model.Name + ".Error"]?.ToString();
+    var hasError = !string.IsNullOrEmpty(error);
+    var message = error;
+    var messageFontClass = hasError ? "text-white" : string.Empty;
+    var messageBgClass = hasError ? "bg-danger" : string.Empty;
+    var borderClass = hasError ? "border-danger" : string.Empty;
+
     string statusText;
     string statusTitle;
     string inlineStatus;
@@ -53,7 +60,7 @@
         lastStarted = "never";
     }
 }
-<CollapseCard IdPrefix="@Model.Name" Title="@title" StatusText="@statusText" StatusTitle="@statusTitle">
+<CollapseCard IdPrefix="@Model.Name" Title="@title" StatusText="@statusText" StatusTitle="@statusTitle" BorderClass="@borderClass">
     <ul class="list-group list-group-flush">
         <li class="list-group-item">
             <b>Status:</b> @inlineStatus
@@ -68,6 +75,13 @@
             <b>Next run:</b> @nextRun
         </li>
     </ul>
+
+    @if (message != null)
+    {
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item @messageFontClass @messageBgClass">@((MarkupString)message)</li>
+        </ul>
+    }
 
     <div class="card-body">
         <form action="@Url.Action("UpdateTimer")" method="post" class="form-inline">
@@ -94,6 +108,9 @@
 @code {
     [Parameter]
     public TimerState Model { get; set; }
+
+    [Parameter]
+    public ITempDataDictionary TempData { get; set; }
 
     [Parameter]
     public IUrlHelper Url { get; set; }

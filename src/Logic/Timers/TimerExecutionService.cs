@@ -58,7 +58,10 @@ namespace Knapcode.ExplorePackages
 
         public async Task<IReadOnlyList<TimerState>> GetStateAsync()
         {
-            var pairs = _nameToTimer.OrderBy(x => x.Key, StringComparer.OrdinalIgnoreCase).ToList();
+            var pairs = _nameToTimer
+                .OrderBy(x => x.Value.Precedence)
+                .ThenBy(x => x.Key, StringComparer.OrdinalIgnoreCase)
+                .ToList();
 
             var isRunningTask = Task.WhenAll(pairs.Select(x => x.Value.IsRunningAsync()));
             var table = await GetTableAsync();
@@ -106,9 +109,9 @@ namespace Knapcode.ExplorePackages
             return timer;
         }
 
-        public async Task ExecuteNowAsync(string timerName)
+        public async Task<bool> ExecuteNowAsync(string timerName)
         {
-            await ExecuteAsync(new HashSet<string> { timerName }, executeNow: true);
+            return await ExecuteAsync(new HashSet<string> { timerName }, executeNow: true);
         }
 
         public async Task ExecuteAsync()
@@ -125,7 +128,7 @@ namespace Knapcode.ExplorePackages
             }
         }
 
-        private async Task ExecuteAsync(ISet<string> timerNames, bool executeNow)
+        private async Task<bool> ExecuteAsync(ISet<string> timerNames, bool executeNow)
         {
             if (timerNames != null)
             {
@@ -208,13 +211,17 @@ namespace Knapcode.ExplorePackages
             }
 
             // Execute timers by precedence.
+            var anyExecuted = false;
             foreach (var group in toExecute.GroupBy(x => x.timer.Precedence).OrderBy(x => x.Key))
             {
-                await Task.WhenAll(group.Select(x => ExecuteAsync(x.timer, x.entity, x.persistAsync, now)));
+                var executed = await Task.WhenAll(group.Select(x => ExecuteAsync(x.timer, x.entity, x.persistAsync, now)));
+                anyExecuted |= executed.Any(x => x);
             }
+
+            return anyExecuted;
         }
 
-        private async Task ExecuteAsync(ITimer timer, TimerEntity entity, Func<Task> persistAsync, DateTimeOffset now)
+        private async Task<bool> ExecuteAsync(ITimer timer, TimerEntity entity, Func<Task> persistAsync, DateTimeOffset now)
         {
             bool executed;
             try
@@ -243,6 +250,8 @@ namespace Knapcode.ExplorePackages
                 // timer again too frequently.
                 await persistAsync();
             }
+
+            return executed;
         }
 
         private async Task<TableClient> GetTableAsync()
