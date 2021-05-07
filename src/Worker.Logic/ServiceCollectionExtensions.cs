@@ -50,16 +50,25 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient<KustoIngestionService>();
             serviceCollection.AddTransient<KustoIngestionStorageService>();
             serviceCollection.AddTransient<CsvRecordContainers>();
-            serviceCollection.AddSingleton(x =>
+            serviceCollection.AddTransient(x =>
             {
                 var options = x.GetRequiredService<IOptions<ExplorePackagesWorkerSettings>>();
-                var connectionStringBuilder = new KustoConnectionStringBuilder(options.Value.KustoConnectionString);
+                var builder = new KustoConnectionStringBuilder(options.Value.KustoConnectionString);
+                if (options.Value.UserManagedIdentityClientId != null && options.Value.KustoUseUserManagedIdentity)
+                {
+                    builder = builder.WithAadUserManagedIdentity(options.Value.UserManagedIdentityClientId);
+                }
+
+                return builder;
+            });
+            serviceCollection.AddSingleton(x =>
+            {
+                var connectionStringBuilder = x.GetRequiredService<KustoConnectionStringBuilder>();
                 return KustoClientFactory.CreateCslAdminProvider(connectionStringBuilder);
             });
             serviceCollection.AddSingleton(x =>
             {
-                var options = x.GetRequiredService<IOptions<ExplorePackagesWorkerSettings>>();
-                var connectionStringBuilder = new KustoConnectionStringBuilder(options.Value.KustoConnectionString);
+                var connectionStringBuilder = x.GetRequiredService<KustoConnectionStringBuilder>();
 
                 const string prefix = "https://";
                 if (connectionStringBuilder.DataSource == null || !connectionStringBuilder.DataSource.StartsWith(prefix))

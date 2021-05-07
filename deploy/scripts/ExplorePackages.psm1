@@ -20,6 +20,12 @@ class ResourceSettings {
     [ValidateNotNullOrEmpty()]
     [string]$WorkerPlanNamePrefix
     
+    [ValidateNotNullOrEmpty()]
+    [string]$WorkerNamePrefix
+    
+    [ValidateNotNullOrEmpty()]
+    [string]$WorkerUserManagedIdentityName
+    
     [ValidateSet("Y1", "S1", "P1v2")]
     [string]$WorkerSku
 
@@ -69,9 +75,6 @@ class ResourceSettings {
     
     [ValidateNotNullOrEmpty()]
     [TimeSpan]$SasValidityPeriod
-    
-    [ValidateNotNullOrEmpty()]
-    [string]$WorkerNamePrefix
     
     [ValidateNotNullOrEmpty()]
     [bool]$AutoRegenerateStorageKey
@@ -124,6 +127,7 @@ class ResourceSettings {
         Set-OrDefault WebsiteName "ExplorePackages-$StampName"
         Set-OrDefault WebsitePlanName "$($this.WebsiteName)-WebsitePlan"
         Set-OrDefault WorkerNamePrefix "ExplorePackages-$StampName-Worker-"
+        Set-OrDefault WorkerUserManagedIdentityName "ExplorePackages-$StampName-Worker"
         Set-OrDefault WorkerPlanNamePrefix "ExplorePackages-$StampName-WorkerPlan-"
         Set-OrDefault WorkerSku "Y1"
         Set-OrDefault WorkerPlanCount 1
@@ -358,6 +362,7 @@ function New-MainParameters($ResourceSettings, $WebsiteZipUrl, $WorkerZipUrl) {
         websiteConfig                 = @($ResourceSettings.WebsiteConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
         websiteZipUrl                 = $websiteZipUrl;
         workerPlanNamePrefix          = $ResourceSettings.WorkerPlanNamePrefix;
+        workerUserManagedIdentityName = $ResourceSettings.WorkerUserManagedIdentityName;
         workerNamePrefix              = $ResourceSettings.WorkerNamePrefix;
         workerConfig                  = @($ResourceSettings.WorkerConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
         workerLogLevel                = $ResourceSettings.WorkerLogLevel;

@@ -19,6 +19,7 @@ param websiteConfig array
 param websiteZipUrl string
 
 param workerPlanNamePrefix string
+param workerUserManagedIdentityName string
 param workerNamePrefix string
 @minValue(1)
 param workerPlanCount int
@@ -262,12 +263,23 @@ var workerConfigWithStorage = concat(workerConfig, isConsumptionPlan ? [
   }
 ] : [])
 
+resource workerUserManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
+  name: workerUserManagedIdentityName
+  location: resourceGroup().location
+}
+
 resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCount): {
   name: '${workerNamePrefix}${i}'
   location: resourceGroup().location
+  dependsOn: [
+    workerUserManagedIdentity
+  ]
   kind: 'FunctionApp'
   identity: {
-    type: 'SystemAssigned'
+    type: 'SystemAssigned, UserAssigned'
+    userAssignedIdentities: {
+      '${workerUserManagedIdentity.id}': {}
+    }
   }
   properties: {
     serverFarmId: workerPlans[i % workerCountPerPlan].id
@@ -300,6 +312,10 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
         {
           name: 'Knapcode.ExplorePackages:HostAppName'
           value: '${workerNamePrefix}${i}'
+        }
+        {
+          name: 'Knapcode.ExplorePackages:UserManagedIdentityClientId'
+          value: workerUserManagedIdentity.properties.clientId
         }
         {
           name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
