@@ -20,10 +20,11 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
         public TimeSpan Frequency => _updater.Frequency;
         public bool IsEnabled => _service.IsEnabled;
         public bool AutoStart => _updater.AutoStart;
+        public int Precedence => default;
 
-        public async Task ExecuteAsync()
+        public async Task<bool> ExecuteAsync()
         {
-            await _service.StartAsync(loop: false, notBefore: TimeSpan.Zero);
+            return await _service.StartAsync(loop: false, notBefore: TimeSpan.Zero);
         }
 
         public async Task InitializeAsync()

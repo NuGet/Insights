@@ -33,13 +33,13 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
 
         public bool IsEnabled => _updater.IsEnabled;
 
-        public async Task StartAsync(bool loop, TimeSpan notBefore)
+        public async Task<bool> StartAsync(bool loop, TimeSpan notBefore)
         {
             await using (var lease = await _leaseService.TryAcquireAsync($"Start-{_updater.OperationName}"))
             {
                 if (!lease.Acquired)
                 {
-                    throw new InvalidOperationException($"Another actor is already starting {_updater.OperationName}.");
+                    return false;
                 }
 
                 var taskStateKey = new TaskStateKey(
@@ -48,6 +48,7 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
                     StorageUtility.GenerateDescendingId().ToString());
                 await _messageEnqueuer.EnqueueAsync(new[] { new StreamWriterUpdaterMessage<T> { TaskStateKey = taskStateKey } }, notBefore);
                 await _taskStateStorageService.AddAsync(taskStateKey);
+                return true;
             }
         }
 

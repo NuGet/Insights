@@ -142,8 +142,8 @@ namespace Knapcode.ExplorePackages
             var nameToEntity = entities.ToDictionary(x => x.RowKey);
 
             // Determine what to do for each timer.
-            var toExecute = new List<(ITimer timer, TimerEntity entity)>();
-            var batch = new MutableTableTransactionalBatch(table);
+            var toExecute = new List<(ITimer timer, TimerEntity entity, Func<Task> persistAsync)>();
+            var now = DateTimeOffset.UtcNow;
             foreach (var timer in _nameToTimer.Values)
             {
                 if (timerNames != null && !timerNames.Contains(timer.Name))
@@ -161,23 +161,25 @@ namespace Knapcode.ExplorePackages
 
                     if (executeNow || entity.IsEnabled)
                     {
-                        toExecute.Add((timer, entity));
-                        entity.LastExecuted = DateTimeOffset.UtcNow;
-                        batch.AddEntity(entity);
+                        toExecute.Add((
+                            timer,
+                            entity,
+                            () => table.AddEntityAsync(entity)));
                         _logger.LogInformation("Timer {Name} will be run for the first time.", timer.Name);
                     }
                     else
                     {
-                        batch.AddEntity(entity);
                         _logger.LogInformation("Timer {Name} will be initialized without running.", timer.Name);
+                        await table.AddEntityAsync(entity);
                     }
                 }
                 else if (executeNow)
                 {
                     _logger.LogInformation("Timer {Name} will be run because it being run on demand.", timer.Name);
-                    toExecute.Add((timer, entity));
-                    entity.LastExecuted = DateTimeOffset.UtcNow;
-                    batch.UpdateEntity(entity, entity.ETag, mode: TableUpdateMode.Replace);
+                    toExecute.Add((
+                        timer,
+                        entity,
+                        () => table.UpdateEntityAsync(entity, entity.ETag, mode: TableUpdateMode.Replace)));
                 }
                 else if (!entity.IsEnabled)
                 {
@@ -186,41 +188,60 @@ namespace Knapcode.ExplorePackages
                 else if (!entity.LastExecuted.HasValue)
                 {
                     _logger.LogInformation("Timer {Name} will be run because it has never been run before.", timer.Name);
-                    toExecute.Add((timer, entity));
-                    entity.LastExecuted = DateTimeOffset.UtcNow;
-                    batch.UpdateEntity(entity, entity.ETag, mode: TableUpdateMode.Replace);
+                    toExecute.Add((
+                        timer,
+                        entity,
+                        () => table.UpdateEntityAsync(entity, entity.ETag, mode: TableUpdateMode.Replace)));
                 }
-                else if ((DateTimeOffset.UtcNow - entity.LastExecuted.Value) < timer.Frequency)
+                else if ((now - entity.LastExecuted.Value) < timer.Frequency)
                 {
                     _logger.LogInformation("Timer {Name} will not be run because it has been executed too recently.", timer.Name);
                 }
                 else
                 {
                     _logger.LogInformation("Timer {Name} will be run because it has hasn't been run recently enough.", timer.Name);
-                    toExecute.Add((timer, entity));
-                    entity.LastExecuted = DateTimeOffset.UtcNow;
-                    batch.UpdateEntity(entity, entity.ETag, mode: TableUpdateMode.Replace);
+                    toExecute.Add((
+                        timer,
+                        entity,
+                        () => table.UpdateEntityAsync(entity, entity.ETag, mode: TableUpdateMode.Replace)));
                 }
             }
 
-            // Execute all timers.
-            await Task.WhenAll(toExecute.Select(x => ExecuteAsync(x.timer)));
-
-            // Update table storage after the execute. In other words, if Table Storage fails, we could run the timers
-            // too frequently.
-            await batch.SubmitBatchIfNotEmptyAsync();
+            // Execute timers by precedence.
+            foreach (var group in toExecute.GroupBy(x => x.timer.Precedence).OrderBy(x => x.Key))
+            {
+                await Task.WhenAll(group.Select(x => ExecuteAsync(x.timer, x.entity, x.persistAsync, now)));
+            }
         }
 
-        private async Task ExecuteAsync(ITimer timer)
+        private async Task ExecuteAsync(ITimer timer, TimerEntity entity, Func<Task> persistAsync, DateTimeOffset now)
         {
+            bool executed;
             try
             {
-                await timer.ExecuteAsync();
-                _logger.LogInformation("Timer {Name} was executed successfully.", timer.Name);
+                executed = await timer.ExecuteAsync();
+                if (executed)
+                {
+                    _logger.LogInformation("Timer {Name} was executed successfully.", timer.Name);
+                }
+                else
+                {
+                    _logger.LogInformation("Timer {Name} was unable to execute.", timer.Name);
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Timer {Name} failed to execute.", timer.Name);
+                _logger.LogError(ex, "Timer {Name} failed with an exception.", timer.Name);
+                executed = true; // If a timer fails, still update the timestamp to avoid repeated errors.
+            }
+
+            if (executed)
+            {
+                entity.LastExecuted = now;
+
+                // Update table storage after the execute. In other words, if Table Storage fails, we could run the
+                // timer again too frequently.
+                await persistAsync();
             }
         }
 

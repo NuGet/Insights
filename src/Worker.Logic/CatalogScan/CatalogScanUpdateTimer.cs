@@ -25,10 +25,12 @@ namespace Knapcode.ExplorePackages.Worker
         public TimeSpan Frequency => _options.Value.CatalogScanUpdateFrequency;
         public bool AutoStart => _options.Value.AutoStartCatalogScanUpdate;
         public bool IsEnabled => true;
+        public int Precedence => default;
 
-        public async Task ExecuteAsync()
+        public async Task<bool> ExecuteAsync()
         {
-            await _catalogScanService.UpdateAllAsync(max: null);
+            var results = await _catalogScanService.UpdateAllAsync(max: null);
+            return results.Values.Any(x => x.Type == CatalogScanServiceResultType.NewStarted);
         }
 
         public async Task InitializeAsync()

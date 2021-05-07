@@ -21,8 +21,9 @@ namespace Knapcode.ExplorePackages.Worker
         public TimeSpan Frequency => TimeSpan.FromSeconds(30);
         public bool AutoStart => true;
         public bool IsEnabled => true;
+        public int Precedence => default;
 
-        public async Task ExecuteAsync()
+        public async Task<bool> ExecuteAsync()
         {
             await Task.WhenAll(Enum
                 .GetValues(typeof(QueueType))
@@ -33,6 +34,7 @@ namespace Knapcode.ExplorePackages.Worker
                     EmitQueueSizeAsync(_messageEnqueuer.GetPoisonApproximateMessageCountAsync(x), x, isPoison: true),
                 })
                 .ToList());
+            return true;
         }
 
         private async Task EmitQueueSizeAsync(Task<int> countAsync, QueueType queue, bool isPoison)

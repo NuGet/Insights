@@ -6,7 +6,7 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
     public interface IStreamWriterUpdaterService<T>
     {
         Task InitializeAsync();
-        Task StartAsync(bool loop, TimeSpan notBefore);
+        Task<bool> StartAsync(bool loop, TimeSpan notBefore);
         Task<bool> IsRunningAsync();
         bool IsEnabled { get; }
     }

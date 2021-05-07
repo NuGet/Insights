@@ -182,6 +182,47 @@ namespace Knapcode.ExplorePackages
             }
 
             [Fact]
+            public async Task UpdatesLastExecutedWhenExecuteThrows()
+            {
+                Timer.Setup(x => x.ExecuteAsync()).ThrowsAsync(new InvalidOperationException());
+
+                var before = DateTimeOffset.UtcNow;
+                await Target.ExecuteAsync();
+                var after = DateTimeOffset.UtcNow;
+
+                var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
+                Timer.Verify(x => x.ExecuteAsync(), Times.Once);
+                Assert.InRange(entity.LastExecuted.Value, before, after);
+            }
+
+            [Fact]
+            public async Task DoesNotAddNewTimerWhenExecuteReturnsFalse()
+            {
+                Timer.Setup(x => x.ExecuteAsync()).ReturnsAsync(false);
+
+                await Target.ExecuteAsync();
+
+                Assert.Empty(await GetEntitiesAsync<TimerEntity>());
+                Timer.Verify(x => x.ExecuteAsync(), Times.Once);
+            }
+
+            [Fact]
+            public async Task DoesNotUpdateLastExecutedWhenExecuteReturnsFalse()
+            {
+                var before = DateTimeOffset.UtcNow;
+                await Target.ExecuteAsync();
+                var after = DateTimeOffset.UtcNow;
+                Timer.Setup(x => x.ExecuteAsync()).ReturnsAsync(false);
+                Timer.Setup(x => x.Frequency).Returns(TimeSpan.Zero);
+
+                await Target.ExecuteAsync();
+
+                var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
+                Timer.Verify(x => x.ExecuteAsync(), Times.Exactly(2));
+                Assert.InRange(entity.LastExecuted.Value, before, after);
+            }
+
+            [Fact]
             public async Task DoesNotRunATimerThatHasRunRecently()
             {
                 var before = DateTimeOffset.UtcNow;
@@ -252,6 +293,7 @@ namespace Knapcode.ExplorePackages
             Timer.Setup(x => x.IsEnabled).Returns(true);
             Timer.Setup(x => x.AutoStart).Returns(true);
             Timer.Setup(x => x.Frequency).Returns(TimeSpan.FromMinutes(5));
+            Timer.Setup(x => x.ExecuteAsync()).ReturnsAsync(true);
         }
 
         private readonly Fixture _fixture;

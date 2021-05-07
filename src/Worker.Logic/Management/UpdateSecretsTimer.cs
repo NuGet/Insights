@@ -37,6 +37,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public string Name => "UpdateSecrets";
         public bool AutoStart => true;
+        public int Precedence => int.MaxValue;
 
         public TimeSpan Frequency
         {
@@ -77,7 +78,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        public async Task ExecuteAsync()
+        public async Task<bool> ExecuteAsync()
         {
             // Update the storage connection with the latest SAS token.
             await UpdateStorageConnectionStringAsync();
@@ -87,6 +88,8 @@ namespace Knapcode.ExplorePackages.Worker
 
             // We will ensure any Key Vault references used in the config are reloaded.
             await EnsureSecretsReloadAsync();
+
+            return true;
         }
 
         private async Task UpdateStorageConnectionStringAsync()
