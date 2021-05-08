@@ -12,7 +12,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
     {
         private readonly KustoIngestionStorageService _storageService;
         private readonly AutoRenewingStorageLeaseService _leaseService;
-        private readonly CsvRecordContainers _csvRecordContainers;
+        private readonly CsvResultStorageContainers _csvRecordContainers;
         private readonly ICslAdminProvider _kustoAdminClient;
         private readonly AppendResultStorageService _appendResultStorageService;
         private readonly IMessageEnqueuer _messageEnqueuer;
@@ -22,7 +22,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
         public KustoContainerIngestionMessageProcessor(
             KustoIngestionStorageService storageService,
             AutoRenewingStorageLeaseService leaseService,
-            CsvRecordContainers csvRecordContainers,
+            CsvResultStorageContainers csvRecordContainers,
             ICslAdminProvider kustoAdminClient,
             AppendResultStorageService appendResultStorageService,
             IMessageEnqueuer messageEnqueuer,

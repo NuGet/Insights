@@ -49,7 +49,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             serviceCollection.AddTransient<KustoIngestionService>();
             serviceCollection.AddTransient<KustoIngestionStorageService>();
-            serviceCollection.AddTransient<CsvRecordContainers>();
+            serviceCollection.AddTransient<CsvResultStorageContainers>();
             serviceCollection.AddTransient(x =>
             {
                 var options = x.GetRequiredService<IOptions<ExplorePackagesWorkerSettings>>();
@@ -164,8 +164,16 @@ namespace Knapcode.ExplorePackages.Worker
                 // Add the CSV storage
                 serviceCollection.AddTransient(serviceType, implementationType);
 
-                // Add the CSV compactor processor
+                // Add the generic CSV storage
                 var recordType = serviceType.GenericTypeArguments.Single();
+                var getContainerName = serviceType.GetProperty(nameof(ICsvResultStorage<ICsvRecord>.ResultContainerName));
+                serviceCollection.AddTransient<ICsvResultStorage>(x =>
+                {
+                    var storage = x.GetRequiredService(serviceType);
+                    return new CsvResultStorage(() => (string)getContainerName.GetValue(storage), recordType);
+                });
+
+                // Add the CSV compactor processor
                 serviceCollection.AddTransient(
                     typeof(IMessageProcessor<>).MakeGenericType(typeof(CsvCompactMessage<>).MakeGenericType(recordType)),
                     typeof(CsvCompactorProcessor<>).MakeGenericType(recordType));

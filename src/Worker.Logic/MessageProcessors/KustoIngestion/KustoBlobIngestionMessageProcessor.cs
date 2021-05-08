@@ -14,7 +14,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
     {
         private readonly KustoIngestionStorageService _storageService;
         private readonly AutoRenewingStorageLeaseService _leaseService;
-        private readonly CsvRecordContainers _csvRecordContainers;
+        private readonly CsvResultStorageContainers _csvRecordContainers;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IKustoQueuedIngestClient _kustoQueuedIngestClient;
         private readonly IMessageEnqueuer _messageEnqueuer;
@@ -25,7 +25,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
         public KustoBlobIngestionMessageProcessor(
             KustoIngestionStorageService storageService,
             AutoRenewingStorageLeaseService leaseService,
-            CsvRecordContainers csvRecordContainers,
+            CsvResultStorageContainers csvRecordContainers,
             ServiceClientFactory serviceClientFactory,
             IKustoQueuedIngestClient kustoQueuedIngestClient,
             IMessageEnqueuer messageEnqueuer,

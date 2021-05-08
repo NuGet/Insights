@@ -8,13 +8,13 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
     public class KustoIngestionMessageProcessor : IMessageProcessor<KustoIngestionMessage>
     {
         private readonly KustoIngestionStorageService _storageService;
-        private readonly CsvRecordContainers _csvRecordContainers;
+        private readonly CsvResultStorageContainers _csvRecordContainers;
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly ILogger<KustoIngestionMessageProcessor> _logger;
 
         public KustoIngestionMessageProcessor(
             KustoIngestionStorageService storageService,
-            CsvRecordContainers csvRecordContainers,
+            CsvResultStorageContainers csvRecordContainers,
             IMessageEnqueuer messageEnqueuer,
             ILogger<KustoIngestionMessageProcessor> logger)
         {
