@@ -12,6 +12,10 @@ class ResourceSettings {
     [string]$AppInsightsName
     
     [ValidateNotNullOrEmpty()]
+    [ValidateRange(0, 1000)]
+    [int]$AppInsightsDailyCapGb
+    
+    [ValidateNotNullOrEmpty()]
     [string]$WebsitePlanName
     
     [ValidateNotNullOrEmpty()]
@@ -124,6 +128,7 @@ class ResourceSettings {
         
         Set-OrDefault Location "West US 2"
         Set-OrDefault AppInsightsName "ExplorePackages-$StampName"
+        Set-OrDefault AppInsightsDailyCapGb 1
         Set-OrDefault WebsiteName "ExplorePackages-$StampName"
         Set-OrDefault WebsitePlanName "$($this.WebsiteName)-WebsitePlan"
         Set-OrDefault WorkerNamePrefix "ExplorePackages-$StampName-Worker-"
@@ -348,6 +353,7 @@ function Get-ResourceSettings($ConfigName, $StampName) {
 function New-MainParameters($ResourceSettings, $WebsiteZipUrl, $WorkerZipUrl) {
     $parameters = @{
         appInsightsName               = $ResourceSettings.AppInsightsName;
+        appInsightsDailyCapGb         = $ResourceSettings.AppInsightsDailyCapGb;
         storageAccountName            = $ResourceSettings.StorageAccountName;
         keyVaultName                  = $ResourceSettings.KeyVaultName;
         deploymentContainerName       = $ResourceSettings.DeploymentContainerName;
@@ -412,12 +418,17 @@ function New-ParameterFile($Parameters, $PathReferences, $FilePath) {
 }
 
 function New-Deployment($ResourceGroupName, $DeploymentDir, $DeploymentId, $DeploymentName, $BicepPath, $Parameters) {
-    
     $parametersPath = Join-Path $DeploymentDir "$DeploymentName.deploymentParameters.json"
     New-ParameterFile $Parameters @() $parametersPath
 
+    $templatePath = (Join-Path $DeploymentDir "$DeploymentName.deploymentTemplate.json")
+    bicep build (Join-Path $PSScriptRoot $BicepPath) --outfile $templatePath
+    if ($LASTEXITCODE -ne 0) {
+        throw "Command 'bicep build' failed with exit code $LASTEXITCODE."
+    }
+
     return New-AzResourceGroupDeployment `
-        -TemplateFile (Join-Path $PSScriptRoot $BicepPath) `
+        -TemplateFile $templatePath `
         -ResourceGroupName $ResourceGroupName `
         -Name "$DeploymentId-$DeploymentName" `
         -TemplateParameterFile $parametersPath `

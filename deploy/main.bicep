@@ -1,5 +1,6 @@
 // Parameters
 param appInsightsName string
+param appInsightsDailyCapGb int
 param storageAccountName string
 param keyVaultName string
 param deploymentContainerName string
@@ -128,6 +129,19 @@ resource insights 'Microsoft.Insights/components@2015-05-01' = {
   kind: 'web'
   properties: {
     Application_Type: 'web'
+  }
+
+  // This produces a warning due to limited type definitions, but works.
+  // See: https://github.com/Azure/bicep/issues/784#issuecomment-830997209
+  resource billing 'CurrentBillingFeatures' = {
+    name: 'Basic'
+    properties: {
+      CurrentBillingFeatures: 'Basic'
+      DataVolumeCap: {
+        Cap: appInsightsDailyCapGb
+        WarningThreshold: 90
+      }
+    }
   }
 }
 
