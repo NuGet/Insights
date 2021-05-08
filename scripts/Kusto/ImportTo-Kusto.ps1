@@ -17,19 +17,22 @@ param (
 
     [Parameter(Mandatory = $false)]
     [ValidateSet(
-        "JverCatalogLeafItems",
-        "JverNuGetPackageExplorerFiles",
-        "JverNuGetPackageExplorers",
-        "JverPackageArchiveEntries",
-        "JverPackageArchives",
-        "JverPackageAssemblies",
-        "JverPackageAssets",
-        "JverPackageDownloads",
-        "JverPackageManifests",
-        "JverPackageOwners",
-        "JverPackageSignatures",
-        "JverPackageVersions")]
+        "CatalogLeafItems",
+        "NuGetPackageExplorerFiles",
+        "NuGetPackageExplorers",
+        "PackageArchiveEntries",
+        "PackageArchives",
+        "PackageAssemblies",
+        "PackageAssets",
+        "PackageDownloads",
+        "PackageManifests",
+        "PackageOwners",
+        "PackageSignatures",
+        "PackageVersions")]
     [string]$TableName,
+
+    [Parameter(Mandatory = $false)]
+    [string]$TableNamePrefix,
 
     [Parameter(Mandatory = $false)]
     [string]$TableNameSuffix,
@@ -42,18 +45,18 @@ param (
 )
 
 $tableNameToContainerName = @{
-    "JverCatalogLeafItems"          = "catalogleafitems";
-    "JverNuGetPackageExplorerFiles" = "nugetpackageexplorerfiles";
-    "JverNuGetPackageExplorers"     = "nugetpackageexplorer";
-    "JverPackageArchiveEntries"     = "packagearchiveentries";
-    "JverPackageArchives"           = "packagearchives";
-    "JverPackageAssemblies"         = "packageassemblies";
-    "JverPackageAssets"             = "packageassets";
-    "JverPackageDownloads"          = "packagedownloads";
-    "JverPackageManifests"          = "packagemanifests";
-    "JverPackageOwners"             = "packageowners";
-    "JverPackageSignatures"         = "packagesignatures";
-    "JverPackageVersions"           = "packageversions";
+    "CatalogLeafItems"          = "catalogleafitems";
+    "NuGetPackageExplorerFiles" = "nugetpackageexplorerfiles";
+    "NuGetPackageExplorers"     = "nugetpackageexplorer";
+    "PackageArchiveEntries"     = "packagearchiveentries";
+    "PackageArchives"           = "packagearchives";
+    "PackageAssemblies"         = "packageassemblies";
+    "PackageAssets"             = "packageassets";
+    "PackageDownloads"          = "packagedownloads";
+    "PackageManifests"          = "packagemanifests";
+    "PackageOwners"             = "packageowners";
+    "PackageSignatures"         = "packagesignatures";
+    "PackageVersions"           = "packageversions";
 }
 
 if ($TableName -and !$tableNameToContainerName[$TableName]) {
@@ -73,8 +76,9 @@ $storageBaseUrl = "https://$StorageAccountName.blob.core.windows.net/"
 
 $toolsDir = Join-Path $WorkingDirectory ".tools"
 $nuget = Join-Path $toolsDir "nuget.exe"
-$kustoCli = Join-Path $toolsDir "Microsoft.Azure.Kusto.Tools.5.0.8\tools\Kusto.Cli.exe"
-$lightIngest = Join-Path $toolsDir "Microsoft.Azure.Kusto.Tools.5.0.8\tools\LightIngest.exe"
+$kustoToolsVersion = "5.2.0"
+$kustoCli = Join-Path $toolsDir "Microsoft.Azure.Kusto.Tools.$kustoToolsVersion\tools\Kusto.Cli.exe"
+$lightIngest = Join-Path $toolsDir "Microsoft.Azure.Kusto.Tools.$kustoToolsVersion\tools\LightIngest.exe"
 
 if (!(Test-Path $toolsDir)) {
     New-Item -Type Directory $toolsDir | Out-Null
@@ -89,7 +93,7 @@ if (!(Test-Path $nuget)) {
 }
 
 if (!(Test-Path $kustoCli) -or !(Test-Path $lightIngest)) {
-    & $nuget install Microsoft.Azure.Kusto.Tools -Version 5.2.0 -OutputDirectory $toolsDir
+    & $nuget install Microsoft.Azure.Kusto.Tools -Version $kustoToolsVersion -OutputDirectory $toolsDir
 }
 
 if ($Parallel) {
@@ -100,7 +104,7 @@ if ($Parallel) {
         Start-Job `
             -Name $_ `
             -FilePath $PSCommandPath `
-            -ArgumentList $KustoClusterName, $KustoDatabaseName, $StorageAccountName, $StorageSas, $ModelsPath, $_, $TableNameSuffix, $WorkingDirectory
+            -ArgumentList $KustoClusterName, $KustoDatabaseName, $StorageAccountName, $StorageSas, $ModelsPath, $_, $TableNamePrefix, $TableNameSuffix, $WorkingDirectory
     }
 
     Write-Host ""
@@ -162,7 +166,7 @@ foreach ($model in $models) {
     }
 
     $containerName = $tableNameToContainerName[$foundTableName]
-    $selectedTableName = "$foundTableName$TableNameSuffix"
+    $selectedTableName = "$TableNamePrefix$foundTableName$TableNameSuffix"
 
     # Check if the container exists
     if (!($containerName -in $containers)) {
@@ -195,7 +199,7 @@ foreach ($model in $models) {
         -source:$sourceUrl `
         -pattern:"*.csv.gz" `
         -format:csv `
-        -mappingRef:"$($foundTableName)_mapping" `
+        -mappingRef:"BlobStorageMapping" `
         -ignoreFirstRow:true
     if ($LASTEXITCODE) {
         throw "Running LightIngest to import data failed."
