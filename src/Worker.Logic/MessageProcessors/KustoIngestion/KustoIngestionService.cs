@@ -44,22 +44,22 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             }
         }
 
-        public async Task<bool> StartAsync()
+        public async Task<KustoIngestionEntity> StartAsync()
         {
             await using (var lease = await GetStartLeaseAsync())
             {
                 if (!lease.Acquired)
                 {
-                    return false;
+                    return null;
                 }
 
                 if (await _storageService.IsIngestionRunningAsync())
                 {
-                    return false;
+                    return null;
                 }
 
                 var storageId = StorageUtility.GenerateDescendingId();
-                var ingestion = new KustoIngestion(storageId.ToString(), storageId.Unique);
+                var ingestion = new KustoIngestionEntity(storageId.ToString(), storageId.Unique);
 
                 await _messageEnqueuer.EnqueueAsync(new[]
                 {
@@ -70,7 +70,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
                 });
 
                 await _storageService.AddIngestionAsync(ingestion);
-                return true;
+                return ingestion;
             }
         }
 

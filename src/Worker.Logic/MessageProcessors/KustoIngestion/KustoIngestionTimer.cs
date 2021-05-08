@@ -43,7 +43,8 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
 
             await _catalogScanService.ExecuteIfNoScansAreRunningAsync(async () =>
             {
-                executed = await _kustoIngestionService.StartAsync();
+                var ingestion = await _kustoIngestionService.StartAsync();
+                executed = ingestion is not null;
             });
 
             return executed;

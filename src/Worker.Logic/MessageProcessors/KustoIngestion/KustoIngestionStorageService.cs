@@ -46,7 +46,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
         {
             var table = await GetKustoIngestionTableAsync();
             var ingestions = await table
-                .QueryAsync<KustoIngestion>(x => x.PartitionKey == KustoIngestion.DefaultPartitionKey)
+                .QueryAsync<KustoIngestionEntity>(x => x.PartitionKey == KustoIngestionEntity.DefaultPartitionKey)
                 .ToListAsync();
             return ingestions.Any(x => x.State != KustoIngestionState.Complete);
         }
@@ -55,7 +55,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
         {
             var table = await GetKustoIngestionTableAsync();
             var oldIngestions = await table
-                .QueryAsync<KustoIngestion>(x => x.PartitionKey == KustoIngestion.DefaultPartitionKey
+                .QueryAsync<KustoIngestionEntity>(x => x.PartitionKey == KustoIngestionEntity.DefaultPartitionKey
                                               && x.RowKey.CompareTo(currentIngestionId) > 0)
                 .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
 
@@ -82,20 +82,20 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             await batch.SubmitBatchIfNotEmptyAsync();
         }
 
-        public async Task<KustoIngestion> GetIngestionAsync(string ingestionId)
+        public async Task<KustoIngestionEntity> GetIngestionAsync(string ingestionId)
         {
             var table = await GetKustoIngestionTableAsync();
-            return await table.GetEntityOrNullAsync<KustoIngestion>(KustoIngestion.DefaultPartitionKey, ingestionId);
+            return await table.GetEntityOrNullAsync<KustoIngestionEntity>(KustoIngestionEntity.DefaultPartitionKey, ingestionId);
         }
 
-        public async Task<IReadOnlyList<KustoIngestion>> GetIngestionsAsync()
+        public async Task<IReadOnlyList<KustoIngestionEntity>> GetIngestionsAsync()
         {
             var table = await GetKustoIngestionTableAsync();
-            var query = table.QueryAsync<KustoIngestion>(filter: x => x.PartitionKey == KustoContainerIngestion.DefaultPartitionKey);
+            var query = table.QueryAsync<KustoIngestionEntity>(filter: x => x.PartitionKey == KustoContainerIngestion.DefaultPartitionKey);
             return await query.ToListAsync();
         }
 
-        public async Task AddIngestionAsync(KustoIngestion ingestion)
+        public async Task AddIngestionAsync(KustoIngestionEntity ingestion)
         {
             var table = await GetKustoIngestionTableAsync();
             await table.AddEntityAsync(ingestion);
@@ -113,7 +113,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             return await table.GetEntityOrNullAsync<KustoBlobIngestion>(containerName, bucket.ToString());
         }
 
-        public async Task ReplaceIngestionAsync(KustoIngestion ingestion)
+        public async Task ReplaceIngestionAsync(KustoIngestionEntity ingestion)
         {
             _logger.LogInformation(
                 "Update Kusto ingestion {IngestionId} with state {State}.",
@@ -213,7 +213,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             return await query.ToListAsync();
         }
 
-        public async Task AddContainersAsync(KustoIngestion ingestion, IReadOnlyList<string> allContainerNames)
+        public async Task AddContainersAsync(KustoIngestionEntity ingestion, IReadOnlyList<string> allContainerNames)
         {
             var table = await GetKustoIngestionTableAsync(ingestion.StorageSuffix);
             var containers = await GetContainersAsync(table, ingestion);
@@ -266,13 +266,13 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
                 _telemetryClient.StartQueryLoopMetrics());
         }
 
-        public async Task<IReadOnlyList<KustoContainerIngestion>> GetContainersAsync(KustoIngestion ingestion)
+        public async Task<IReadOnlyList<KustoContainerIngestion>> GetContainersAsync(KustoIngestionEntity ingestion)
         {
             var table = await GetKustoIngestionTableAsync(ingestion.StorageSuffix);
             return await GetContainersAsync(table, ingestion);
         }
 
-        private static async Task<List<KustoContainerIngestion>> GetContainersAsync(TableClient table, KustoIngestion ingestion)
+        private static async Task<List<KustoContainerIngestion>> GetContainersAsync(TableClient table, KustoIngestionEntity ingestion)
         {
             var query = table.QueryAsync<KustoContainerIngestion>(filter: x => x.PartitionKey == KustoContainerIngestion.DefaultPartitionKey);
             return await query.ToListAsync();

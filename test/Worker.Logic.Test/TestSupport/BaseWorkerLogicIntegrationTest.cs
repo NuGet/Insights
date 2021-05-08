@@ -1,13 +1,19 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 using Knapcode.ExplorePackages.Worker.BuildVersionSet;
+using Knapcode.ExplorePackages.Worker.KustoIngestion;
+using Kusto.Data.Common;
+using Kusto.Ingest;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Table;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;
@@ -18,9 +24,42 @@ namespace Knapcode.ExplorePackages.Worker
     {
         protected BaseWorkerLogicIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
+            // Version set
             MockVersionSet.Setup(x => x.GetUncheckedIds()).Returns(Array.Empty<string>());
             MockVersionSet.Setup(x => x.GetUncheckedVersions(It.IsAny<string>())).Returns(Array.Empty<string>());
             MockVersionSetProvider.Setup(x => x.GetAsync()).ReturnsAsync(() => MockVersionSet.Object);
+
+            // Kusto SDK
+            MockCslAdminProvider = new Mock<ICslAdminProvider>();
+            MockKustoQueueIngestClient = new Mock<IKustoQueuedIngestClient>();
+            MockKustoQueueIngestClient
+                .Setup(x => x.IngestFromStorageAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<KustoIngestionProperties>(),
+                    It.IsAny<StorageSourceOptions>()))
+                .Returns<string, KustoIngestionProperties, StorageSourceOptions>(async (u, p, o) =>
+                {
+                    var account = CloudStorageAccount.Parse(TestSettings.StorageConnectionString);
+                    var client = account.CreateCloudTableClient();
+                    var writeTable = client.GetTableReference(StoragePrefix + "1kir1");
+                    await writeTable.CreateIfNotExistsAsync();
+                    await writeTable.ExecuteAsync(TableOperation.Insert(new IngestionStatus(o.SourceId)
+                    {
+                        Status = Status.Succeeded,
+                        UpdatedOn = DateTime.UtcNow,
+                    }));
+
+                    var sas = account.GetSharedAccessSignature(new SharedAccessAccountPolicy
+                    {
+                        Permissions = SharedAccessAccountPermissions.Read,
+                        ResourceTypes = SharedAccessAccountResourceTypes.Object,
+                        Services = SharedAccessAccountServices.Table,
+                        SharedAccessExpiryTime = DateTimeOffset.UtcNow.AddDays(7),
+                    });
+                    var tableUri = new UriBuilder(writeTable.Uri) { Query = sas };
+                    var readTable = new CloudTable(tableUri.Uri);
+                    return new TableReportIngestionResult(readTable);
+                });
         }
 
         public Action<ExplorePackagesWorkerSettings> ConfigureWorkerSettings { get; set; }
@@ -30,10 +69,15 @@ namespace Knapcode.ExplorePackages.Worker
         public CursorStorageService CursorStorageService => Host.Services.GetRequiredService<CursorStorageService>();
         public CatalogScanStorageService CatalogScanStorageService => Host.Services.GetRequiredService<CatalogScanStorageService>();
         public TaskStateStorageService TaskStateStorageService => Host.Services.GetRequiredService<TaskStateStorageService>();
+        public KustoIngestionService KustoIngestionService => Host.Services.GetRequiredService<KustoIngestionService>();
+        public KustoIngestionStorageService KustoIngestionStorageService => Host.Services.GetRequiredService<KustoIngestionStorageService>();
         public IMessageEnqueuer MessageEnqueuer => Host.Services.GetRequiredService<IMessageEnqueuer>();
         public IWorkerQueueFactory WorkerQueueFactory => Host.Services.GetRequiredService<IWorkerQueueFactory>();
+
         public Mock<IVersionSetProvider> MockVersionSetProvider { get; } = new Mock<IVersionSetProvider>();
         public Mock<IVersionSet> MockVersionSet { get; } = new Mock<IVersionSet>();
+        public Mock<ICslAdminProvider> MockCslAdminProvider { get; }
+        public Mock<IKustoQueuedIngestClient> MockKustoQueueIngestClient { get; }
 
         protected override void ConfigureHostBuilder(IHostBuilder hostBuilder)
         {
@@ -49,6 +93,7 @@ namespace Knapcode.ExplorePackages.Worker
         protected void ConfigureWorkerDefaultsAndSettings(ExplorePackagesWorkerSettings x)
         {
             x.AppendResultStorageBucketCount = 3;
+            x.KustoDatabaseName = "TestKustoDb";
 
             x.WorkQueueName = $"{StoragePrefix}1wq1";
             x.ExpandQueueName = $"{StoragePrefix}1eq1";
@@ -100,6 +145,25 @@ namespace Knapcode.ExplorePackages.Worker
         {
             var result = await CatalogScanService.UpdateAsync(driverType, max, onlyLatestLeaves);
             return await UpdateAsync(result.Scan);
+        }
+
+        protected async Task<KustoIngestionEntity> UpdateAsync(KustoIngestionEntity ingestion)
+        {
+            Assert.NotNull(ingestion);
+            await ProcessQueueAsync(() => { }, async () =>
+            {
+                ingestion = await KustoIngestionStorageService.GetIngestionAsync(ingestion.GetIngestionId());
+
+                if (ingestion.State != KustoIngestionState.Complete)
+                {
+                    await Task.Delay(TimeSpan.FromMilliseconds(100));
+                    return false;
+                }
+
+                return true;
+            });
+
+            return ingestion;
         }
 
         protected async Task<CatalogIndexScan> UpdateAsync(CatalogIndexScan indexScan)
@@ -199,6 +263,26 @@ namespace Knapcode.ExplorePackages.Worker
         protected async Task AssertCompactAsync<T>(string containerName, string testName, string stepName, int bucket) where T : ICsvRecord
         {
             await AssertCsvBlobAsync<T>(containerName, testName, stepName, $"compact_{bucket}.csv.gz");
+        }
+
+        private class TableReportIngestionResult : IKustoIngestionResult
+        {
+            public TableReportIngestionResult(CloudTable ingestionStatusTable)
+            {
+                IngestionStatusTable = ingestionStatusTable;
+            }
+
+            public CloudTable IngestionStatusTable { get; }
+
+            public IngestionStatus GetIngestionStatusBySourceId(Guid sourceId)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IEnumerable<IngestionStatus> GetIngestionStatusCollection()
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

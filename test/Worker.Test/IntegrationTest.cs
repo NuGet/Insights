@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure.Storage.Queues.Models;
+using Knapcode.ExplorePackages.Worker.KustoIngestion;
+using Kusto.Ingest;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.WindowsAzure.Storage.Queue;
+using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -111,10 +114,21 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        public class CanRunAllCatalogScansAsync : IntegrationTest
+        public class CanRunAllCatalogScansAndKustoIngestionAsync : IntegrationTest
         {
-            public CanRunAllCatalogScansAsync(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            public CanRunAllCatalogScansAndKustoIngestionAsync(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
             {
+            }
+
+            protected override void ConfigureHostBuilder(IHostBuilder hostBuilder)
+            {
+                base.ConfigureHostBuilder(hostBuilder);
+
+                hostBuilder.ConfigureServices(serviceCollection =>
+                {
+                    serviceCollection.AddTransient(x => MockCslAdminProvider.Object);
+                    serviceCollection.AddTransient(x => MockKustoQueueIngestClient.Object);
+                });
             }
 
             [Fact]
@@ -165,12 +179,28 @@ namespace Knapcode.ExplorePackages.Worker
                         return false;
                     });
 
+                // Assert
                 // Make sure all scans completed.
                 var indexScans = await CatalogScanStorageService.GetIndexScansAsync();
                 Assert.All(indexScans, x => Assert.Equal(CatalogIndexScanState.Complete, x.State));
                 Assert.Equal(
                     CatalogScanCursorService.StartableDriverTypes.ToArray(),
                     indexScans.Select(x => x.DriverType).OrderBy(x => x).ToArray());
+
+                // Act
+                await KustoIngestionService.InitializeAsync();
+                var ingestion = await KustoIngestionService.StartAsync();
+                ingestion = await UpdateAsync(ingestion);
+
+                // Make sure all of the containers are have ingestions
+                var containerNames = Host.Services.GetRequiredService<CsvResultStorageContainers>().GetContainerNames();
+                foreach (var containerName in containerNames)
+                {
+                    MockKustoQueueIngestClient.Verify(x => x.IngestFromStorageAsync(
+                        It.Is<string>(y => y.Contains(containerName)),
+                        It.IsAny<KustoIngestionProperties>(),
+                        It.IsAny<StorageSourceOptions>()));
+                }
             }
         }
 

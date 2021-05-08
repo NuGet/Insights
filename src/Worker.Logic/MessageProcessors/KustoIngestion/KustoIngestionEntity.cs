@@ -4,15 +4,15 @@ using Azure.Data.Tables;
 
 namespace Knapcode.ExplorePackages.Worker.KustoIngestion
 {
-    public class KustoIngestion : ITableEntity
+    public class KustoIngestionEntity : ITableEntity
     {
         public static readonly string DefaultPartitionKey = string.Empty;
 
-        public KustoIngestion()
+        public KustoIngestionEntity()
         {
         }
 
-        public KustoIngestion(string ingestionId, string storageSuffix)
+        public KustoIngestionEntity(string ingestionId, string storageSuffix)
         {
             PartitionKey = DefaultPartitionKey;
             RowKey = ingestionId;

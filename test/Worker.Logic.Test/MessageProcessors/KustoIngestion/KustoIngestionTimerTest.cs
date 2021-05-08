@@ -23,8 +23,6 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
         }
 
         public KustoIngestionTimer Target => Host.Services.GetRequiredService<KustoIngestionTimer>();
-        public KustoIngestionService KustoIngestionService => Host.Services.GetRequiredService<KustoIngestionService>();
-        public KustoIngestionStorageService KustoIngestionStorageService => Host.Services.GetRequiredService<KustoIngestionStorageService>();
 
         [Fact]
         public async Task StartsKustoIngestionAsync()
