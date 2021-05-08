@@ -157,15 +157,15 @@ foreach ($configName in $ConfigNames) {
     }
     if (!$resourceSettings.SubscriptionId) {
         $configPath = Get-ConfigPath $resourceSettings.ConfigName
-        throw "A subscription ID is required for generating Ev2 artifacts. Specify a value in file $configPath at JSON path $.deployment.SubscriptionId."
+        throw "A subscription ID is required for generating Ev2 artifacts. Specify a value in file $configPath at JSON path $.Deployment.SubscriptionId."
     }
     if (!$resourceSettings.ServiceTreeId) {
         $configPath = Get-ConfigPath $resourceSettings.ConfigName
-        throw "A ServiceTree ID is required for generating Ev2 artifacts. Specify a value in file $configPath at JSON path $.deployment.ServiceTreeId."
+        throw "A ServiceTree ID is required for generating Ev2 artifacts. Specify a value in file $configPath at JSON path $.Deployment.ServiceTreeId."
     }
     if (!$resourceSettings.EnvironmentName) {
         $configPath = Get-ConfigPath $resourceSettings.ConfigName
-        throw "A environment name is required for generating Ev2 artifacts. Specify a value in file $configPath at JSON path $.deployment.EnvironmentName."
+        throw "A environment name is required for generating Ev2 artifacts. Specify a value in file $configPath at JSON path $.Deployment.EnvironmentName."
     }
     if (!$resourceSettings.WebsiteAadAppClientId) {
         $configPath = Get-ConfigPath $resourceSettings.ConfigName

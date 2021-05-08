@@ -1,0 +1,34 @@
+{
+  "Deployment": {
+    "RejectDefaults": true,
+    "SubscriptionId": "00000000-0000-0000-0000-000000000000",
+    "ServiceTreeId": "00000000-0000-0000-0000-000000000000",
+    "WebsiteAadAppClientId": "00000000-0000-0000-0000-000000000000",
+    "EnvironmentName": "dev",
+    "Location": "North Central US",
+    "WorkerSku": "S1",
+    "WorkerCountPerPlan": 1,
+    "WorkerPlanCount": 1,
+    "WorkerLogLevel": "Warning",
+    "AppInsightsName": "ev2-dev-usnc-insights-ai",
+    "AppInsightsDailyCapGb": 1,
+    "KeyVaultName": "ev2-dev-usnc-insights",
+    "ResourceGroupName": "ev2-dev-usnc-insights",
+    "StorageAccountName": "jverdevusncinsights",
+    "WebsiteAadAppName": "ev2-dev-insights",
+    "WebsiteName": "ev2-dev-usnc-insights",
+    "WebsitePlanName": "ev2-dev-usnc-insights",
+    "WorkerNamePrefix": "ev2-dev-usnc-insights-worker-",
+    "WorkerPlanNamePrefix": "ev2-dev-usnc-insights-worker-",
+    "WorkerUserManagedIdentityName": "ev2-dev-usnc-insights-worker"
+  },
+  "AppSettings": {
+    "Shared": {
+      "Knapcode.ExplorePackages": {
+        "DisabledDrivers": [
+          "NuGetPackageExplorerToCsv"
+        ]
+      }
+    }
+  }
+}
