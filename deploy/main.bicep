@@ -346,6 +346,7 @@ resource resourceGroupPermissions 'Microsoft.Authorization/roleAssignments@2020-
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'de139f84-1756-47ae-9be6-808fbbe84772')
     principalId: workers[i].identity.principalId
+    principalType: 'ServicePrincipal'
   }
 }]
 

@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System;
+using System.Text.Json.Serialization;
 using Knapcode.ExplorePackages.Website.Logic;
 using Knapcode.ExplorePackages.Worker;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -31,7 +32,8 @@ namespace Knapcode.ExplorePackages.Website
             services.AddExplorePackages("Knapcode.ExplorePackages.Website");
             services.AddExplorePackagesWorker();
 
-            services.AddSingleton<IAuthorizationHandler, AllowListAuthorizationHandler>();
+            services.AddScoped<IAuthorizationHandler, AllowListAuthorizationHandler>();
+            services.AddScoped<AllowListAuthorizationHandler>();
 
             services.AddApplicationInsightsTelemetry(options =>
             {
@@ -55,11 +57,24 @@ namespace Knapcode.ExplorePackages.Website
                 .AddMicrosoftIdentityWebApp(options =>
                 {
                     Configuration.GetSection(Constants.AzureAd).Bind(options);
+                    options.Events.OnTokenValidated = async context =>
+                    {
+                        await context
+                            .HttpContext
+                            .RequestServices
+                            .GetRequiredService<AllowListAuthorizationHandler>()
+                            .AddAllowedGroupClaimsAsync(context);
+                    };
                 },
                 options =>
                 {
+                    options.ExpireTimeSpan = TimeSpan.FromHours(1);
+                    options.SlidingExpiration = false;
                     options.AccessDeniedPath = "/Home/AccessDenied";
-                });
+                })
+                .EnableTokenAcquisitionToCallDownstreamApi()
+                .AddInMemoryTokenCaches()
+                .AddMicrosoftGraph();
 
             services
                 .AddAuthorization(options =>

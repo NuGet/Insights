@@ -7,6 +7,7 @@ namespace Knapcode.ExplorePackages.Website
     {
         public bool ShowAdminLink { get; set; } = true;
         public bool RestrictUsers { get; set; } = true;
-        public List<AllowedUser> AllowedUsers { get; set; } = new List<AllowedUser>();
+        public List<AllowedObject> AllowedUsers { get; set; } = new List<AllowedObject>();
+        public List<AllowedObject> AllowedGroups { get; set; } = new List<AllowedObject>();
     }
 }
