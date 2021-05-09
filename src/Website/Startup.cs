@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text.Json.Serialization;
 using Knapcode.ExplorePackages.Website.Logic;
 using Knapcode.ExplorePackages.Worker;
@@ -52,7 +53,7 @@ namespace Knapcode.ExplorePackages.Website
                     options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 });
 
-            services
+            var microsoftIdentityBuilder = services
                 .AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
                 .AddMicrosoftIdentityWebApp(options =>
                 {
@@ -71,10 +72,18 @@ namespace Knapcode.ExplorePackages.Website
                     options.ExpireTimeSpan = TimeSpan.FromHours(1);
                     options.SlidingExpiration = false;
                     options.AccessDeniedPath = "/Home/AccessDenied";
-                })
-                .EnableTokenAcquisitionToCallDownstreamApi()
-                .AddInMemoryTokenCaches()
-                .AddMicrosoftGraph();
+                });
+
+            var initialSettings = Configuration
+                .GetSection(ExplorePackagesSettings.DefaultSectionName)
+                .Get<ExplorePackagesWebsiteSettings>();
+            if (initialSettings.AllowedGroups.Any())
+            {
+                microsoftIdentityBuilder
+                    .EnableTokenAcquisitionToCallDownstreamApi()
+                    .AddInMemoryTokenCaches()
+                    .AddMicrosoftGraph();
+            }
 
             services
                 .AddAuthorization(options =>

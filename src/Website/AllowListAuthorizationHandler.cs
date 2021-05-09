@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -6,6 +7,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Graph;
 using Microsoft.Identity.Web;
@@ -18,16 +20,16 @@ namespace Knapcode.ExplorePackages.Website
         private const string AllowedGroupClaimName = "ExplorePackages.AllowedGroup";
         private const string HttpContextKeyForJwt = "JwtSecurityTokenUsedToCallWebAPI";
 
-        private readonly GraphServiceClient _graphServiceClient;
+        private readonly IServiceProvider _serviceProvider;
         private readonly bool _restrictUsers;
         private readonly Dictionary<string, HashSet<string>> _allowedUsers;
         private readonly Dictionary<string, HashSet<string>> _allowedGroups;
 
         public AllowListAuthorizationHandler(
-            GraphServiceClient graphServiceClient,
+            IServiceProvider serviceProvider,
             IOptions<ExplorePackagesWebsiteSettings> options)
         {
-            _graphServiceClient = graphServiceClient;
+            _serviceProvider = serviceProvider;
             _restrictUsers = options.Value.RestrictUsers;
             _allowedUsers = TenantToObjectIds(options.Value.AllowedUsers);
             _allowedGroups = TenantToObjectIds(options.Value.AllowedGroups);
@@ -111,7 +113,8 @@ namespace Knapcode.ExplorePackages.Website
                 // Source: https://github.com/Azure-Samples/active-directory-aspnetcore-webapp-openidconnect-v2/blob/ef20861535add11f5d37e25228379c8dfc5d1796/5-WebApp-AuthZ/5-2-Groups/Services/MicrosoftGraph-Rest/GraphHelper.cs
                 context.HttpContext.Items[HttpContextKeyForJwt] = context.SecurityToken;
 
-                var memberGroups = await _graphServiceClient
+                var memberGroups = await _serviceProvider
+                    .GetRequiredService<GraphServiceClient>()
                     .Me
                     .CheckMemberGroups(objectIds)
                     .Request()
