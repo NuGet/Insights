@@ -2,7 +2,7 @@
 
 namespace Knapcode.ExplorePackages
 {
-    public interface IAsOfData
+    public interface IAsOfData : IAsyncDisposable
     {
         DateTimeOffset AsOfTimestamp { get; }
     }

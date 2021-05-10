@@ -16,7 +16,6 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
         where T : IAsyncDisposable, IAsOfData
     {
         private const string AsOfTimestampMetadata = "asOfTimestamp";
-        private const string RawSizeBytesMetadata = "rawSizeBytes";
 
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IStreamWriterUpdater<T> _updater;
@@ -35,13 +34,18 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
             _logger = logger;
         }
 
+        public static string GetLatestBlobName(string blobName)
+        {
+            return $"latest_{blobName}.csv.gz";
+        }
+
         public async Task<bool> ProcessAsync(StreamWriterUpdaterMessage<T> message, long dequeueCount)
         {
             await InitializeAsync();
 
             await using var data = await _updater.GetDataAsync();
 
-            var latestBlob = await GetBlobAsync($"latest_{_updater.BlobName}.csv.gz");
+            var latestBlob = await GetBlobAsync(GetLatestBlobName(_updater.BlobName));
 
             BlobRequestConditions latestRequestConditions;
             try
@@ -95,8 +99,8 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
                         Metadata = new Dictionary<string, string>
                         {
                             {
-                                RawSizeBytesMetadata,
-                                uncompressedLength.ToString() // See: https://docs.microsoft.com/en-us/azure/data-explorer/lightingest#recommendations
+                                StorageUtility.RawSizeBytesMetadata,
+                                uncompressedLength.ToString()
                             },
                             {
                                 AsOfTimestampMetadata,
@@ -149,7 +153,7 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
                     Metadata = new Dictionary<string, string>
                     {
                         {
-                            RawSizeBytesMetadata,
+                            StorageUtility.RawSizeBytesMetadata,
                             uncompressedLength.ToString() // See: https://docs.microsoft.com/en-us/azure/data-explorer/lightingest#recommendations
                         },
                         {

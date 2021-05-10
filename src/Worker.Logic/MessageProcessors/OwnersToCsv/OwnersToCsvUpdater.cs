@@ -34,6 +34,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
         public TimeSpan Frequency => _options.Value.OwnersToCsvFrequency;
         public bool IsEnabled => _options.Value.OwnersV2Url != null;
         public bool AutoStart => _options.Value.AutoStartOwnersToCsv;
+        public Type RecordType => typeof(PackageOwnerRecord);
 
         public async Task<PackageOwnerSet> GetDataAsync()
         {

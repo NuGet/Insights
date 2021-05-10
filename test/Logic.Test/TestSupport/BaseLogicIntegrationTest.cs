@@ -186,8 +186,8 @@ namespace Knapcode.ExplorePackages
                 await downloadInfo.Content.CopyToAsync(destStream);
                 destStream.Position = 0;
 
-                Assert.Contains("rawSizeBytes", downloadInfo.Details.Metadata);
-                var uncompressedLength = long.Parse(downloadInfo.Details.Metadata["rawSizeBytes"]);
+                Assert.Contains(StorageUtility.RawSizeBytesMetadata, downloadInfo.Details.Metadata);
+                var uncompressedLength = long.Parse(downloadInfo.Details.Metadata[StorageUtility.RawSizeBytesMetadata]);
 
                 using var gzipStream = new GZipStream(destStream, CompressionMode.Decompress);
                 using var decompressedStream = new MemoryStream();

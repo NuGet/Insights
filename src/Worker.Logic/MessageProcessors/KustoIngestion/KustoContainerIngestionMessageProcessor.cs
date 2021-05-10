@@ -14,7 +14,6 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
         private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly CsvResultStorageContainers _csvRecordContainers;
         private readonly ICslAdminProvider _kustoAdminClient;
-        private readonly AppendResultStorageService _appendResultStorageService;
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
         private readonly ILogger<KustoContainerIngestionMessageProcessor> _logger;
@@ -24,7 +23,6 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             AutoRenewingStorageLeaseService leaseService,
             CsvResultStorageContainers csvRecordContainers,
             ICslAdminProvider kustoAdminClient,
-            AppendResultStorageService appendResultStorageService,
             IMessageEnqueuer messageEnqueuer,
             IOptions<ExplorePackagesWorkerSettings> options,
             ILogger<KustoContainerIngestionMessageProcessor> logger)
@@ -33,7 +31,6 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             _leaseService = leaseService;
             _csvRecordContainers = csvRecordContainers;
             _kustoAdminClient = kustoAdminClient;
-            _appendResultStorageService = appendResultStorageService;
             _messageEnqueuer = messageEnqueuer;
             _options = options;
             _logger = logger;
@@ -51,8 +48,8 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             var finalTableName = _csvRecordContainers.GetKustoTableName(container.GetContainerName());
             if (container.State == KustoContainerIngestionState.Created)
             {
-                var buckets = await _appendResultStorageService.GetCompactedBucketsAsync(container.GetContainerName());
-                if (buckets.Count == 0)
+                var blobs = await _csvRecordContainers.GetBlobsAsync(container.GetContainerName());
+                if (blobs.Count == 0)
                 {
                     _logger.LogInformation("Container {ContainerName} has no blobs so no import will occur.", container.GetContainerName());
                     await CompleteAsync(container);
@@ -84,23 +81,23 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
 
             if (container.State == KustoContainerIngestionState.Expanding)
             {
-                var bucketInfos = await _appendResultStorageService.GetCompactedBucketsAsync(container.GetContainerName());
-                var bucketToEntity = new Dictionary<int, KustoBlobIngestion>();
-                foreach (var bucketInfo in bucketInfos)
+                var blobs = await _csvRecordContainers.GetBlobsAsync(container.GetContainerName());
+                var nameToEntity = new Dictionary<string, KustoBlobIngestion>();
+                foreach (var blob in blobs)
                 {
-                    var url = await _appendResultStorageService.GetCompactedBlobUrlAsync(container.GetContainerName(), bucketInfo.Bucket);
-                    bucketToEntity.Add(bucketInfo.Bucket, new KustoBlobIngestion(container.GetContainerName(), bucketInfo.Bucket)
+                    var url = await _csvRecordContainers.GetBlobUrlAsync(container.GetContainerName(), blob.Name);
+                    nameToEntity.Add(blob.Name, new KustoBlobIngestion(container.GetContainerName(), blob.Name)
                     {
                         IngestionId = container.IngestionId,
                         StorageSuffix = container.StorageSuffix,
-                        RawSizeBytes = bucketInfo.RawSizeBytes,
+                        RawSizeBytes = blob.RawSizeBytes,
                         SourceId = Guid.NewGuid(),
                         SourceUrl = url.AbsoluteUri,
                         State = KustoBlobIngestionState.Created,
                     });
                 }
 
-                await _storageService.AddBlobsAsync(container, bucketToEntity.Values.ToList());
+                await _storageService.AddBlobsAsync(container, nameToEntity.Values.ToList());
 
                 container.State = KustoContainerIngestionState.Enqueuing;
                 await _storageService.ReplaceContainerAsync(container);
@@ -113,7 +110,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
                 {
                     StorageSuffix = x.StorageSuffix,
                     ContainerName = x.GetContainerName(),
-                    Bucket = x.Bucket,
+                    BlobName = x.GetBlobName(),
                 }).ToList());
 
                 container.State = KustoContainerIngestionState.Working;

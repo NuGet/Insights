@@ -4,11 +4,12 @@ using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
 {
-    public interface IStreamWriterUpdater<T> where T : IAsyncDisposable, IAsOfData
+    public interface IStreamWriterUpdater<T> where T : IAsOfData
     {
         string OperationName { get; }
         string BlobName { get; }
         string ContainerName { get; }
+        Type RecordType { get; }
         bool IsEnabled { get; }
         bool AutoStart { get; }
         TimeSpan Frequency { get; }

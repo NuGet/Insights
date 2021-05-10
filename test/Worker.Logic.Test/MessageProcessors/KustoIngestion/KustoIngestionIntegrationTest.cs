@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Kusto.Ingest;
 using Microsoft.Extensions.DependencyInjection;
@@ -58,8 +59,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
                 VerifyCommand(".rename tables APackageManifestsZ_Old=APackageManifestsZ ifexists, APackageManifestsZ=APackageManifestsZ_Temp");
                 VerifyCommand(".drop table ACatalogLeafItemsZ_Old ifexists");
                 VerifyCommand(".drop table APackageManifestsZ_Old ifexists");
-                MockCslAdminProvider.Verify(x => x.Dispose(), Times.Exactly(12)); // From message processing scopes
-                Assert.Equal(28, MockCslAdminProvider.Invocations.Count);
+                Assert.Equal(16, MockCslAdminProvider.Invocations.Count(x => x.Method.Name != nameof(IDisposable.Dispose)));
 
                 MockKustoQueueIngestClient.Verify(x => x.IngestFromStorageAsync(
                     It.Is<string>(y => y.Contains($"/{Options.Value.CatalogLeafItemContainerName}/compact_0.csv.gz?")),
@@ -73,8 +73,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
                     It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainerName}/compact_1.csv.gz?")),
                     It.IsAny<KustoIngestionProperties>(),
                     It.IsAny<StorageSourceOptions>()));
-                MockKustoQueueIngestClient.Verify(x => x.Dispose(), Times.Exactly(3)); // From message processing scopes
-                Assert.Equal(6, MockKustoQueueIngestClient.Invocations.Count);
+                Assert.Equal(3, MockKustoQueueIngestClient.Invocations.Count(x => x.Method.Name != nameof(IDisposable.Dispose)));
             }
 
             private void VerifyCommand(string command)

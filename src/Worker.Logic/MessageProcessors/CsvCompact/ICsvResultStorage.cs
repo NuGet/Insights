@@ -4,31 +4,6 @@ using System.Threading.Tasks;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public interface ICsvResultStorage
-    {
-        /// <summary>
-        /// The Azure Blob Storage container name to write CSV results to.
-        /// </summary>
-        string ResultContainerName { get; }
-
-        Type RecordType { get; }
-    }
-
-    public class CsvResultStorage : ICsvResultStorage
-    {
-        private readonly Func<string> _getResultContainerName;
-
-        public CsvResultStorage(Func<string> getResultContainerName, Type recordType)
-        {
-            _getResultContainerName = getResultContainerName;
-            RecordType = recordType;
-        }
-
-        public string ResultContainerName => _getResultContainerName();
-
-        public Type RecordType { get; }
-    }
-
     public interface ICsvResultStorage<T> where T : ICsvRecord
     {
         /// <summary>

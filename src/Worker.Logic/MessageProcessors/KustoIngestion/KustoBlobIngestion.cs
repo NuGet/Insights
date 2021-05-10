@@ -10,11 +10,10 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
         {
         }
 
-        public KustoBlobIngestion(string containerName, int bucket)
+        public KustoBlobIngestion(string containerName, string blobName)
         {
             PartitionKey = containerName;
-            RowKey = bucket.ToString();
-            Bucket = bucket;
+            RowKey = blobName.ToString();
         }
 
         public string PartitionKey { get; set; }
@@ -25,7 +24,6 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
         public string IngestionId { get; set; }
         public string StorageSuffix { get; set; }
         public KustoBlobIngestionState State { get; set; }
-        public int Bucket { get; set; }
         public long RawSizeBytes { get; set; }
         public string SourceUrl { get; set; }
         public string StatusUrl { get; set; }
@@ -34,6 +32,11 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
         public string GetContainerName()
         {
             return PartitionKey;
+        }
+
+        public string GetBlobName()
+        {
+            return RowKey;
         }
     }
 }

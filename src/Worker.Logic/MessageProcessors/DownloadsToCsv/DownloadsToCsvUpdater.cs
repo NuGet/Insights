@@ -32,6 +32,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
         public TimeSpan Frequency => _options.Value.DownloadToCsvFrequency;
         public bool IsEnabled => _options.Value.DownloadsV1Url != null;
         public bool AutoStart => _options.Value.AutoStartDownloadToCsv;
+        public Type RecordType => typeof(PackageDownloadRecord);
 
         public async Task<PackageDownloadSet> GetDataAsync()
         {

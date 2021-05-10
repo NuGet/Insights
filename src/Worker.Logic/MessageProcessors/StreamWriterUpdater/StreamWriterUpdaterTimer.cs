@@ -24,7 +24,7 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
 
         public async Task<bool> ExecuteAsync()
         {
-            return await _service.StartAsync(loop: false, notBefore: TimeSpan.Zero);
+            return await _service.StartAsync();
         }
 
         public async Task InitializeAsync()

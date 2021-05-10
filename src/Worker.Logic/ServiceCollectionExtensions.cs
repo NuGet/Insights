@@ -11,7 +11,6 @@ using Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf;
 using Knapcode.ExplorePackages.Worker.LoadPackageArchive;
 using Knapcode.ExplorePackages.Worker.LoadPackageManifest;
 using Knapcode.ExplorePackages.Worker.LoadPackageVersion;
-using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
 using Knapcode.ExplorePackages.Worker.TableCopy;
 using Kusto.Data;
@@ -100,7 +99,6 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddLoadPackageArchive();
             serviceCollection.AddLoadPackageManifest();
             serviceCollection.AddLoadPackageVersion();
-            serviceCollection.AddRunRealRestore();
             serviceCollection.AddTableCopy();
             serviceCollection.AddBuildVersionSet();
 
@@ -128,8 +126,22 @@ namespace Knapcode.ExplorePackages.Worker
 
                 // Add the service
                 serviceCollection.AddTransient(
-                    typeof(IStreamWriterUpdaterService<>).MakeGenericType(dataType),
+                     typeof(IStreamWriterUpdaterService<>).MakeGenericType(dataType),
                     typeof(StreamWriterUpdaterService<>).MakeGenericType(dataType));
+
+                // Add the generic CSV storage
+                var getContainerName = serviceType.GetProperty(nameof(IStreamWriterUpdater<IAsOfData>.ContainerName));
+                var getRecordType = serviceType.GetProperty(nameof(IStreamWriterUpdater<IAsOfData>.RecordType));
+                var getBlobName = serviceType.GetProperty(nameof(IStreamWriterUpdater<IAsOfData>.BlobName));
+                serviceCollection.AddTransient<ICsvResultStorage>(x =>
+                {
+                    var updater = x.GetRequiredService(serviceType);
+                    var blobName = StreamWriterUpdaterProcessor<IAsOfData>.GetLatestBlobName((string)getBlobName.GetValue(updater));
+                    return new CsvResultStorage(
+                        (string)getContainerName.GetValue(updater),
+                        (Type)getRecordType.GetValue(updater),
+                        blobName);
+                });
 
                 // Add the message processor
                 serviceCollection.AddTransient(
@@ -170,7 +182,10 @@ namespace Knapcode.ExplorePackages.Worker
                 serviceCollection.AddTransient<ICsvResultStorage>(x =>
                 {
                     var storage = x.GetRequiredService(serviceType);
-                    return new CsvResultStorage(() => (string)getContainerName.GetValue(storage), recordType);
+                    return new CsvResultStorage(
+                        (string)getContainerName.GetValue(storage),
+                        recordType,
+                        AppendResultStorageService.CompactPrefix);
                 });
 
                 // Add the CSV compactor processor
@@ -256,11 +271,6 @@ namespace Knapcode.ExplorePackages.Worker
         {
             serviceCollection.AddTransient<LoadPackageVersionDriver>();
             serviceCollection.AddTransient<PackageVersionStorageService>();
-        }
-
-        private static void AddRunRealRestore(this IServiceCollection serviceCollection)
-        {
-            serviceCollection.AddTransient<ProjectHelper>();
         }
     }
 }

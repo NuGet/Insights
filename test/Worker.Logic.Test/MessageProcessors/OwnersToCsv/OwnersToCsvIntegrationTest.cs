@@ -11,7 +11,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
 {
     public class OwnersToCsvIntegrationTest : BaseWorkerLogicIntegrationTest
     {
-        private const string OwnersToCsvDir = nameof(Worker.OwnersToCsv);
+        public const string OwnersToCsvDir = nameof(OwnersToCsv);
         private const string OwnersToCsvDir_NonExistentIdDir = nameof(OwnersToCsvDir_NonExistentId);
         private const string OwnersToCsvDir_UncheckedIdAndVersionDir = nameof(OwnersToCsvDir_UncheckedIdAndVersion);
 
@@ -44,7 +44,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
                 ConfigureAndSetLastModified();
                 var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageOwnerSet>>();
                 await service.InitializeAsync();
-                await service.StartAsync(loop: false, notBefore: TimeSpan.Zero);
+                await service.StartAsync();
 
                 // Act
                 await ProcessQueueAsync(service);
@@ -55,7 +55,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
 
                 // Arrange
                 SetData(Step2);
-                await service.StartAsync(loop: false, notBefore: TimeSpan.Zero);
+                await service.StartAsync();
 
                 // Act
                 await ProcessQueueAsync(service);
@@ -82,7 +82,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
                 ConfigureAndSetLastModified();
                 var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageOwnerSet>>();
                 await service.InitializeAsync();
-                await service.StartAsync(loop: false, notBefore: TimeSpan.Zero);
+                await service.StartAsync();
                 MockVersionSet.Setup(x => x.DidIdEverExist("Knapcode.TorSharp")).Returns(false);
                 MockVersionSet.Setup(x => x.DidIdEverExist("Newtonsoft.Json")).Returns(false);
 
@@ -95,7 +95,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
 
                 // Arrange
                 SetData(Step2);
-                await service.StartAsync(loop: false, notBefore: TimeSpan.Zero);
+                await service.StartAsync();
                 MockVersionSet.Setup(x => x.DidIdEverExist("Knapcode.TorSharp")).Returns(true);
 
                 // Act
@@ -123,7 +123,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
                 ConfigureAndSetLastModified();
                 var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageOwnerSet>>();
                 await service.InitializeAsync();
-                await service.StartAsync(loop: false, notBefore: TimeSpan.Zero);
+                await service.StartAsync();
                 MockVersionSet.Setup(x => x.GetUncheckedIds()).Returns(new[] { "UncheckedB", "UncheckedA" });
 
                 // Act
@@ -148,7 +148,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
                 ConfigureAndSetLastModified();
                 var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageOwnerSet>>();
                 await service.InitializeAsync();
-                await service.StartAsync(loop: false, notBefore: TimeSpan.Zero);
+                await service.StartAsync();
 
                 // Act
                 await ProcessQueueAsync(service);
@@ -158,7 +158,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
 
                 // Arrange
                 SetData(Step2);
-                await service.StartAsync(loop: false, notBefore: TimeSpan.Zero);
+                await service.StartAsync();
 
                 // Act
                 await ProcessQueueAsync(service);

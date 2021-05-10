@@ -46,7 +46,6 @@ namespace Knapcode.ExplorePackages.Worker
             PackageAssemblyContainerName = "packageassemblies";
             PackageManifestContainerName = "packagemanifests";
             PackageSignatureContainerName = "packagesignatures";
-            RealRestoreContainerName = "realrestores";
             CatalogLeafItemContainerName = "catalogleafitems";
             PackageDownloadsContainerName = "packagedownloads";
             PackageOwnersContainerName = "packageowners";
@@ -103,7 +102,6 @@ namespace Knapcode.ExplorePackages.Worker
         public string PackageAssemblyContainerName { get; set; }
         public string PackageManifestContainerName { get; set; }
         public string PackageSignatureContainerName { get; set; }
-        public string RealRestoreContainerName { get; set; }
         public string CatalogLeafItemContainerName { get; set; }
         public string PackageDownloadsContainerName { get; set; }
         public string PackageOwnersContainerName { get; set; }

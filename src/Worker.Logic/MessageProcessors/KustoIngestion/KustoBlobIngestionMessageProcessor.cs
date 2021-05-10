@@ -46,7 +46,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
 
         public async Task ProcessAsync(KustoBlobIngestionMessage message, long dequeueCount)
         {
-            var blob = await _storageService.GetBlobAsync(message.StorageSuffix, message.ContainerName, message.Bucket);
+            var blob = await _storageService.GetBlobAsync(message.StorageSuffix, message.ContainerName, message.BlobName);
             if (blob == null)
             {
                 _logger.LogWarning("No matching Kusto container ingestion was found.");
@@ -78,10 +78,10 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
                     Size = blob.RawSizeBytes,
                 };
 
-                await using var lease = await _leaseService.TryAcquireAsync("KustoBlobIngestion-" + tempTableName + "-" + blob.Bucket);
+                await using var lease = await _leaseService.TryAcquireAsync("KustoBlobIngestion-" + blob.GetContainerName() + "-" + blob.GetBlobName());
                 if (!lease.Acquired)
                 {
-                    _logger.LogWarning("Temp table {TableName} and bucket {Bucket} lease is not available.", tempTableName, blob.Bucket);
+                    _logger.LogWarning("Kusto blob ingestion lease for {ContainerName} and blob {BlobName} is not available.", blob.GetContainerName(), blob.GetBlobName());
                     message.AttemptCount++;
                     await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount, factor: 10));
                     return;

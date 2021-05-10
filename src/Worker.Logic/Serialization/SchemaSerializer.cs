@@ -12,7 +12,6 @@ using Knapcode.ExplorePackages.Worker.PackageAssetToCsv;
 using Knapcode.ExplorePackages.Worker.PackageManifestToCsv;
 using Knapcode.ExplorePackages.Worker.PackageSignatureToCsv;
 using Knapcode.ExplorePackages.Worker.PackageVersionToCsv;
-using Knapcode.ExplorePackages.Worker.RunRealRestore;
 using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
 using Knapcode.ExplorePackages.Worker.TableCopy;
 using Microsoft.Extensions.Logging;
@@ -50,9 +49,6 @@ namespace Knapcode.ExplorePackages.Worker
 
             new SchemaV1<TableScanMessage<CatalogLeafScan>>("ts.cls"),
             new SchemaV1<TableScanMessage<LatestPackageLeaf>>("ts.lpf"),
-
-            new SchemaV1<RunRealRestoreMessage>("rrr"),
-            new SchemaV1<RunRealRestoreCompactMessage>("rrr.c"),
 
             new SchemaV1<TableRowCopyMessage<LatestPackageLeaf>>("trc.lpf"),
 

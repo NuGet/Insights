@@ -113,7 +113,6 @@ namespace Knapcode.ExplorePackages.Worker
             x.PackageAssemblyContainerName = $"{StoragePrefix}1fpi1";
             x.PackageManifestContainerName = $"{StoragePrefix}1pm2c1";
             x.PackageSignatureContainerName = $"{StoragePrefix}1fps1";
-            x.RealRestoreContainerName = $"{StoragePrefix}1rrr1";
             x.CatalogLeafItemContainerName = $"{StoragePrefix}1fcli1";
             x.PackageDownloadsContainerName = $"{StoragePrefix}1pd1";
             x.PackageOwnersContainerName = $"{StoragePrefix}1po1";

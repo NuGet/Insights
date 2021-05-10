@@ -47,5 +47,12 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
         {
             Assert.NotEmpty(Target.GetContainerNames());
         }
+
+        [Fact]
+        public void ContainerNameCountMatchesKustoDDLCounts()
+        {
+            Assert.Equal(KustoDDL.TypeToDDL.Count, Target.GetContainerNames().Count);
+            Assert.Equal(KustoDDL.TypeToDefaultTableName.Count, Target.GetContainerNames().Count);
+        }
     }
 }

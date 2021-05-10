@@ -11,7 +11,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 {
     public class DownloadsToCsvIntegrationTest : BaseWorkerLogicIntegrationTest
     {
-        private const string DownloadsToCsvDir = nameof(DownloadsToCsv);
+        public const string DownloadsToCsvDir = nameof(DownloadsToCsv);
         private const string DownloadsToCsv_NonExistentVersionDir = nameof(DownloadsToCsv_NonExistentVersion);
         private const string DownloadsToCsv_UncheckedIdAndVersionDir = nameof(DownloadsToCsv_UncheckedIdAndVersion);
 
@@ -44,7 +44,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
                 ConfigureAndSetLastModified();
                 var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageDownloadSet>>();
                 await service.InitializeAsync();
-                await service.StartAsync(loop: false, notBefore: TimeSpan.Zero);
+                await service.StartAsync();
 
                 // Act
                 await ProcessQueueAsync(service);
@@ -55,7 +55,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 
                 // Arrange
                 SetData(Step2);
-                await service.StartAsync(loop: false, notBefore: TimeSpan.Zero);
+                await service.StartAsync();
 
                 // Act
                 await ProcessQueueAsync(service);
@@ -82,7 +82,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
                 ConfigureAndSetLastModified();
                 var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageDownloadSet>>();
                 await service.InitializeAsync();
-                await service.StartAsync(loop: false, notBefore: TimeSpan.Zero);
+                await service.StartAsync();
                 MockVersionSet.Setup(x => x.DidVersionEverExist("Knapcode.TorSharp", "2.0.7")).Returns(false);
                 MockVersionSet.Setup(x => x.DidVersionEverExist("Newtonsoft.Json", "10.5.0")).Returns(false);
 
@@ -95,7 +95,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 
                 // Arrange
                 SetData(Step2);
-                await service.StartAsync(loop: false, notBefore: TimeSpan.Zero);
+                await service.StartAsync();
                 MockVersionSet.Setup(x => x.DidVersionEverExist("Knapcode.TorSharp", "2.0.7")).Returns(true);
 
                 // Act
@@ -123,7 +123,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
                 ConfigureAndSetLastModified();
                 var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageDownloadSet>>();
                 await service.InitializeAsync();
-                await service.StartAsync(loop: false, notBefore: TimeSpan.Zero);
+                await service.StartAsync();
                 MockVersionSet.Setup(x => x.DidVersionEverExist("Knapcode.TorSharp", "2.0.7")).Returns(false);
                 MockVersionSet.Setup(x => x.GetUncheckedIds()).Returns(new[] { "UncheckedB", "UncheckedA", "Knapcode.TorSharp" });
                 MockVersionSet.Setup(x => x.GetUncheckedVersions("UncheckedA")).Returns(new[] { "2.0.0", "1.0.0" });
@@ -152,7 +152,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
                 ConfigureAndSetLastModified();
                 var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageDownloadSet>>();
                 await service.InitializeAsync();
-                await service.StartAsync(loop: false, notBefore: TimeSpan.Zero);
+                await service.StartAsync();
 
                 // Act
                 await ProcessQueueAsync(service);
@@ -162,7 +162,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 
                 // Arrange
                 SetData(Step2);
-                await service.StartAsync(loop: false, notBefore: TimeSpan.Zero);
+                await service.StartAsync();
 
                 // Act
                 await ProcessQueueAsync(service);

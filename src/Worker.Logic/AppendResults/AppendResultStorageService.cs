@@ -22,9 +22,8 @@ namespace Knapcode.ExplorePackages.Worker
     {
         private static readonly ConcurrentDictionary<Type, string> TypeToHeader = new ConcurrentDictionary<Type, string>();
 
-        private const string RawSizeBytesMetadata = "rawSizeBytes";
         private const string ContentType = "text/plain";
-        private const string CompactPrefix = "compact_";
+        public const string CompactPrefix = "compact_";
 
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly WideEntityService _wideEntityService;
@@ -203,8 +202,8 @@ namespace Knapcode.ExplorePackages.Worker
                     Metadata = new Dictionary<string, string>
                     {
                         {
-                            RawSizeBytesMetadata,
-                            uncompressedLength.ToString() // See: https://docs.microsoft.com/en-us/azure/data-explorer/lightingest#recommendations
+                            StorageUtility.RawSizeBytesMetadata,
+                            uncompressedLength.ToString()
                         },
                     },
                 });
@@ -272,10 +271,10 @@ namespace Knapcode.ExplorePackages.Worker
             return markerEntities.Select(x => int.Parse(x.RowKey)).ToList();
         }
 
-        public async Task<List<CompactedBucketInfo>> GetCompactedBucketsAsync(string containerName)
+        public async Task<List<int>> GetCompactedBucketsAsync(string containerName)
         {
             var container = await GetContainerAsync(containerName);
-            var buckets = new List<CompactedBucketInfo>();
+            var buckets = new List<int>();
 
             if (!await container.ExistsAsync())
             {
@@ -283,12 +282,11 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             var regex = new Regex(Regex.Escape(CompactPrefix) + @"(\d+)");
-            var blobs = container.GetBlobsAsync(prefix: CompactPrefix, traits: BlobTraits.Metadata);
+            var blobs = container.GetBlobsAsync(prefix: CompactPrefix);
             await foreach (var blob in blobs)
             {
                 var bucket = int.Parse(regex.Match(blob.Name).Groups[1].Value);
-                var rawSizeBytes = long.Parse(blob.Metadata[RawSizeBytesMetadata]);
-                buckets.Add(new CompactedBucketInfo(bucket, rawSizeBytes));
+                buckets.Add(bucket);
             }
 
             return buckets;

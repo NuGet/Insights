@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
+using Azure;
+using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Worker.KustoIngestion
@@ -8,16 +12,52 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
     public class CsvResultStorageContainers
     {
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
-        private readonly IReadOnlyDictionary<string, Type> _containerNameToRecordType;
+        private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly IReadOnlyDictionary<string, ICsvResultStorage> _containerNameToStorage;
         private readonly IReadOnlyList<string> _containerNames;
 
         public CsvResultStorageContainers(
-            IEnumerable<ICsvResultStorage> resultStorages,
+            IEnumerable<ICsvResultStorage> csvResultStorage,
+            ServiceClientFactory serviceClientFactory,
             IOptions<ExplorePackagesWorkerSettings> options)
         {
             _options = options;
-            _containerNameToRecordType = resultStorages.ToDictionary(x => x.ResultContainerName, x => x.RecordType);
-            _containerNames = _containerNameToRecordType.Keys.OrderBy(x => x).ToList();
+            _serviceClientFactory = serviceClientFactory;
+            _containerNameToStorage = csvResultStorage.ToDictionary(x => x.ContainerName);
+            _containerNames = _containerNameToStorage.Keys.OrderBy(x => x).ToList();
+        }
+
+        public async Task<IReadOnlyList<CsvResultBlob>> GetBlobsAsync(string containerName)
+        {
+            var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
+            var container = serviceClient.GetBlobContainerClient(containerName);
+            var storage = _containerNameToStorage[containerName];
+
+            try
+            {
+                var blobs = await container
+                    .GetBlobsAsync(prefix: storage.BlobNamePrefix, traits: BlobTraits.Metadata)
+                    .ToListAsync();
+                return blobs
+                    .Select(x => new CsvResultBlob(
+                        x.Name,
+                        long.Parse(x.Metadata[StorageUtility.RawSizeBytesMetadata])))
+                    .ToList();
+            }
+            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
+            {
+                // Handle the missing container case.
+                return Array.Empty<CsvResultBlob>();
+            }
+        }
+
+        public async Task<Uri> GetBlobUrlAsync(string containerName, string blobName)
+        {
+            var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
+            var container = serviceClient.GetBlobContainerClient(containerName);
+            var blob = container.GetBlobClient(blobName);
+            var sas = await _serviceClientFactory.GetBlobReadStorageSharedAccessSignatureAsync();
+            return new UriBuilder(blob.Uri) { Query = sas }.Uri;
         }
 
         public IReadOnlyList<string> GetContainerNames()
@@ -27,7 +67,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
 
         public Type GetRecordType(string containerName)
         {
-            return _containerNameToRecordType[containerName];
+            return _containerNameToStorage[containerName].RecordType;
         }
 
         public string GetTempKustoTableName(string containerName)

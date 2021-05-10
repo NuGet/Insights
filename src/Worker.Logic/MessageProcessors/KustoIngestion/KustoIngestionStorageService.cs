@@ -107,10 +107,10 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             return await table.GetEntityOrNullAsync<KustoContainerIngestion>(KustoContainerIngestion.DefaultPartitionKey, containerName);
         }
 
-        public async Task<KustoBlobIngestion> GetBlobAsync(string storageSuffix, string containerName, int bucket)
+        public async Task<KustoBlobIngestion> GetBlobAsync(string storageSuffix, string containerName, string blobName)
         {
             var table = await GetKustoIngestionTableAsync(storageSuffix);
-            return await table.GetEntityOrNullAsync<KustoBlobIngestion>(containerName, bucket.ToString());
+            return await table.GetEntityOrNullAsync<KustoBlobIngestion>(containerName, blobName);
         }
 
         public async Task ReplaceIngestionAsync(KustoIngestionEntity ingestion)
@@ -178,18 +178,18 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             var table = await GetKustoIngestionTableAsync(container.StorageSuffix);
             var existingBlobs = await GetBlobsAsync(table, container);
 
-            var existingBuckets = existingBlobs.Select(x => x.Bucket).ToList();
-            var missingBuckets = blobs.Select(x => x.Bucket).Except(existingBuckets).ToHashSet();
-            var newBlobs = blobs.Where(x => missingBuckets.Contains(x.Bucket)).ToList();
+            var existingBlobNames = existingBlobs.Select(x => x.GetBlobName()).ToList();
+            var missingBlobNames = blobs.Select(x => x.GetBlobName()).Except(existingBlobNames).ToHashSet();
+            var newBlobNames = blobs.Where(x => missingBlobNames.Contains(x.GetBlobName())).ToList();
 
             _logger.LogInformation(
                 "Expanding {Count} blobs in Kusto ingestion {IngestionId} for container {ContainerName}.",
-                newBlobs.Count,
+                newBlobNames.Count,
                 container.IngestionId,
                 container.GetContainerName());
 
             var batch = new MutableTableTransactionalBatch(table);
-            foreach (var blob in newBlobs)
+            foreach (var blob in newBlobNames)
             {
                 batch.AddEntity(blob);
                 if (batch.Count >= StorageUtility.MaxBatchSize)

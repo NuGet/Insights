@@ -15,6 +15,11 @@ namespace Knapcode.ExplorePackages
         public const string Timestamp = "Timestamp";
         public const string ETag = "ETag";
 
+        /// <summary>
+        /// See: https://docs.microsoft.com/en-us/azure/data-explorer/lightingest#recommendations
+        /// </summary>
+        public const string RawSizeBytesMetadata = "rawSizeBytes";
+
         public const string EmulatorConnectionString = "UseDevelopmentStorage=true";
 
         public static readonly IList<string> MinSelectColumns = new[] { PartitionKey, RowKey };

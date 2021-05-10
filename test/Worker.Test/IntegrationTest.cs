@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure.Storage.Queues.Models;
+using Knapcode.ExplorePackages.Worker.DownloadsToCsv;
 using Knapcode.ExplorePackages.Worker.KustoIngestion;
+using Knapcode.ExplorePackages.Worker.OwnersToCsv;
+using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
 using Kusto.Ingest;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -138,10 +141,30 @@ namespace Knapcode.ExplorePackages.Worker
                 {
                     x.MaxTempMemoryStreamSize = 0;
                     x.TempDirectories[0].MaxConcurrentWriters = 1;
+                    x.DownloadsV1Url = $"http://localhost/{TestData}/{DownloadsToCsvIntegrationTest.DownloadsToCsvDir}/downloads.v1.json";
+                    x.OwnersV2Url = $"http://localhost/{TestData}/{OwnersToCsvIntegrationTest.OwnersToCsvDir}/owners.v2.json";
                 };
                 ConfigureWorkerSettings = x =>
                 {
                     x.AppendResultStorageBucketCount = 1;
+                };
+                HttpMessageHandlerFactory.OnSendAsync = async req =>
+                {
+                    if (req.RequestUri.AbsolutePath.EndsWith("/downloads.v1.json"))
+                    {
+                        var newReq = Clone(req);
+                        newReq.RequestUri = new Uri($"http://localhost/{TestData}/{DownloadsToCsvIntegrationTest.DownloadsToCsvDir}/{Step1}/downloads.v1.json");
+                        return await TestDataHttpClient.SendAsync(newReq);
+                    }
+
+                    if (req.RequestUri.AbsolutePath.EndsWith("/owners.v2.json"))
+                    {
+                        var newReq = Clone(req);
+                        newReq.RequestUri = new Uri($"http://localhost/{TestData}/{OwnersToCsvIntegrationTest.OwnersToCsvDir}/{Step1}/owners.v2.json");
+                        return await TestDataHttpClient.SendAsync(newReq);
+                    }
+
+                    return null;
                 };
 
                 // Arrange
@@ -155,7 +178,7 @@ namespace Knapcode.ExplorePackages.Worker
                     await SetCursorAsync(type, min0);
                 }
 
-                // Act
+                // Act - catalog scans
                 await CatalogScanService.UpdateAllAsync(max1);
                 var attempts = 0;
                 await ProcessQueueAsync(
@@ -187,7 +210,11 @@ namespace Knapcode.ExplorePackages.Worker
                     CatalogScanCursorService.StartableDriverTypes.ToArray(),
                     indexScans.Select(x => x.DriverType).OrderBy(x => x).ToArray());
 
-                // Act
+                // Act - owners and downloads to CSV
+                await ProcessStreamWriterUpdaterAsync<PackageDownloadSet>();
+                await ProcessStreamWriterUpdaterAsync<PackageOwnerSet>();
+
+                // Act - Kusto ingestion
                 await KustoIngestionService.InitializeAsync();
                 var ingestion = await KustoIngestionService.StartAsync();
                 ingestion = await UpdateAsync(ingestion);
@@ -201,6 +228,14 @@ namespace Knapcode.ExplorePackages.Worker
                         It.IsAny<KustoIngestionProperties>(),
                         It.IsAny<StorageSourceOptions>()));
                 }
+            }
+
+            private async Task ProcessStreamWriterUpdaterAsync<T>()
+            {
+                var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<T>>();
+                await service.InitializeAsync();
+                await service.StartAsync();
+                await ProcessQueueAsync(() => { }, async () => !await service.IsRunningAsync());
             }
         }
 
