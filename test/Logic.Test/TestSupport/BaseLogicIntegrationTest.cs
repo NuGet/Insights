@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -165,11 +166,16 @@ namespace Knapcode.ExplorePackages
             Assert.StartsWith(stringWriter.ToString(), actual);
         }
 
-        protected async Task<string> AssertBlobAsync(string containerName, string testName, string stepName, string fileName, string blobName, bool gzip = false)
+        protected async Task<BlobClient> GetBlobAsync(string containerName, string blobName)
         {
             var client = await ServiceClientFactory.GetBlobServiceClientAsync();
             var container = client.GetBlobContainerClient(containerName);
-            var blob = container.GetBlobClient(blobName);
+            return container.GetBlobClient(blobName);
+        }
+
+        protected async Task<string> AssertBlobAsync(string containerName, string testName, string stepName, string fileName, string blobName, bool gzip = false)
+        {
+            var blob = await GetBlobAsync(containerName, blobName);
 
             string actual;
             if (gzip)

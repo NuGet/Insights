@@ -152,9 +152,7 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
             const string blobName = "version-set.dat";
             const string fileName = "data.json";
 
-            var client = await ServiceClientFactory.GetBlobServiceClientAsync();
-            var container = client.GetBlobContainerClient(Options.Value.VersionSetContainerName);
-            var blob = container.GetBlobClient(blobName);
+            var blob = await GetBlobAsync(Options.Value.VersionSetContainerName, blobName);
 
             using var memoryStream = new MemoryStream();
             await blob.DownloadToAsync(memoryStream);

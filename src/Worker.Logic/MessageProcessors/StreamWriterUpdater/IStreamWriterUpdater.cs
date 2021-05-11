@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Knapcode.ExplorePackages.Worker.BuildVersionSet;
 
 namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
 {
@@ -14,6 +15,6 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
         bool AutoStart { get; }
         TimeSpan Frequency { get; }
         Task<T> GetDataAsync();
-        Task WriteAsync(T data, StreamWriter writer);
+        Task WriteAsync(IVersionSet versionSet, T data, StreamWriter writer);
     }
 }

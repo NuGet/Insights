@@ -68,6 +68,83 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
             }
         }
 
+        public class DownloadsToCsv_NoOp : DownloadsToCsvIntegrationTest
+        {
+            public DownloadsToCsv_NoOp(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            {
+            }
+
+            [Fact]
+            public async Task ExecuteAsync()
+            {
+                // Arrange
+                ConfigureAndSetLastModified();
+                var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageDownloadSet>>();
+                await service.InitializeAsync();
+                await service.StartAsync();
+
+                // Act
+                await ProcessQueueAsync(service);
+
+                // Assert
+                await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "latest_downloads.csv.gz");
+                var blobA = await GetBlobAsync(Options.Value.PackageDownloadsContainerName, "latest_downloads.csv.gz");
+                var propertiesA = await blobA.GetPropertiesAsync();
+
+                // Arrange
+                await service.StartAsync();
+
+                // Act
+                await ProcessQueueAsync(service);
+
+                // Assert
+                await AssertBlobCountAsync(Options.Value.PackageDownloadsContainerName, 1);
+                await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "latest_downloads.csv.gz");
+                var blobB = await GetBlobAsync(Options.Value.PackageDownloadsContainerName, "latest_downloads.csv.gz");
+                var propertiesB = await blobB.GetPropertiesAsync();
+                Assert.Equal(propertiesA.Value.ETag, propertiesB.Value.ETag);
+            }
+        }
+
+        public class DownloadsToCsv_DifferentVersionSet : DownloadsToCsvIntegrationTest
+        {
+            public DownloadsToCsv_DifferentVersionSet(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            {
+            }
+
+            [Fact]
+            public async Task ExecuteAsync()
+            {
+                // Arrange
+                ConfigureAndSetLastModified();
+                var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageDownloadSet>>();
+                await service.InitializeAsync();
+                await service.StartAsync();
+
+                // Act
+                await ProcessQueueAsync(service);
+
+                // Assert
+                await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "latest_downloads.csv.gz");
+                var blobA = await GetBlobAsync(Options.Value.PackageDownloadsContainerName, "latest_downloads.csv.gz");
+                var propertiesA = await blobA.GetPropertiesAsync();
+
+                // Arrange
+                await service.StartAsync();
+                MockVersionSet.Setup(x => x.CommitTimestamp).Returns(new DateTimeOffset(2021, 5, 10, 12, 15, 30, TimeSpan.Zero));
+
+                // Act
+                await ProcessQueueAsync(service);
+
+                // Assert
+                await AssertBlobCountAsync(Options.Value.PackageDownloadsContainerName, 1);
+                await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "latest_downloads.csv.gz");
+                var blobB = await GetBlobAsync(Options.Value.PackageDownloadsContainerName, "latest_downloads.csv.gz");
+                var propertiesB = await blobB.GetPropertiesAsync();
+                Assert.NotEqual(propertiesA.Value.ETag, propertiesB.Value.ETag);
+            }
+        }
+
         public class DownloadsToCsv_NonExistentVersion : DownloadsToCsvIntegrationTest
         {
             public DownloadsToCsv_NonExistentVersion(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)

@@ -12,19 +12,14 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
 {
     public class OwnersToCsvUpdater : IStreamWriterUpdater<PackageOwnerSet>
     {
-        private static readonly HashSet<string> Empty = new HashSet<string>();
-
         private readonly PackageOwnersClient _packageOwnersClient;
-        private readonly IVersionSetProvider _versionSetProvider;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
         public OwnersToCsvUpdater(
             PackageOwnersClient packageOwnersClient,
-            IVersionSetProvider versionSetProvider,
             IOptions<ExplorePackagesWorkerSettings> options)
         {
             _packageOwnersClient = packageOwnersClient;
-            _versionSetProvider = versionSetProvider;
             _options = options;
         }
 
@@ -41,10 +36,8 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
             return await _packageOwnersClient.GetPackageOwnerSetAsync();
         }
 
-        public async Task WriteAsync(PackageOwnerSet data, StreamWriter writer)
+        public async Task WriteAsync(IVersionSet versionSet, PackageOwnerSet data, StreamWriter writer)
         {
-            var versionSet = await _versionSetProvider.GetAsync();
-
             var record = new PackageOwnerRecord { AsOfTimestamp = data.AsOfTimestamp };
             record.WriteHeader(writer);
 

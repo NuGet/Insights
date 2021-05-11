@@ -13,16 +13,13 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
     public class DownloadsToCsvUpdater : IStreamWriterUpdater<PackageDownloadSet>
     {
         private readonly IPackageDownloadsClient _packageDownloadsClient;
-        private readonly IVersionSetProvider _versionSetProvider;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
 
         public DownloadsToCsvUpdater(
             IPackageDownloadsClient packageDownloadsClient,
-            IVersionSetProvider versionSetProvider,
             IOptions<ExplorePackagesWorkerSettings> options)
         {
             _packageDownloadsClient = packageDownloadsClient;
-            _versionSetProvider = versionSetProvider;
             _options = options;
         }
 
@@ -39,10 +36,8 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
             return await _packageDownloadsClient.GetPackageDownloadSetAsync(etag: null);
         }
 
-        public async Task WriteAsync(PackageDownloadSet data, StreamWriter writer)
+        public async Task WriteAsync(IVersionSet versionSet, PackageDownloadSet data, StreamWriter writer)
         {
-            var versionSet = await _versionSetProvider.GetAsync();
-
             var record = new PackageDownloadRecord { AsOfTimestamp = data.AsOfTimestamp };
             record.WriteHeader(writer);
 

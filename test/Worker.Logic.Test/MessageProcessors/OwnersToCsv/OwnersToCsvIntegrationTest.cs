@@ -68,6 +68,83 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
             }
         }
 
+        public class OwnersToCsv_NoOp : OwnersToCsvIntegrationTest
+        {
+            public OwnersToCsv_NoOp(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            {
+            }
+
+            [Fact]
+            public async Task ExecuteAsync()
+            {
+                // Arrange
+                ConfigureAndSetLastModified();
+                var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageOwnerSet>>();
+                await service.InitializeAsync();
+                await service.StartAsync();
+
+                // Act
+                await ProcessQueueAsync(service);
+
+                // Assert
+                await AssertCsvBlobAsync(OwnersToCsvDir, Step1, "latest_owners.csv.gz");
+                var blobA = await GetBlobAsync(Options.Value.PackageOwnersContainerName, "latest_owners.csv.gz");
+                var propertiesA = await blobA.GetPropertiesAsync();
+
+                // Arrange
+                await service.StartAsync();
+
+                // Act
+                await ProcessQueueAsync(service);
+
+                // Assert
+                await AssertBlobCountAsync(Options.Value.PackageOwnersContainerName, 1);
+                await AssertCsvBlobAsync(OwnersToCsvDir, Step1, "latest_owners.csv.gz");
+                var blobB = await GetBlobAsync(Options.Value.PackageOwnersContainerName, "latest_owners.csv.gz");
+                var propertiesB = await blobB.GetPropertiesAsync();
+                Assert.Equal(propertiesA.Value.ETag, propertiesB.Value.ETag);
+            }
+        }
+
+        public class OwnersToCsv_DifferentVersionSet : OwnersToCsvIntegrationTest
+        {
+            public OwnersToCsv_DifferentVersionSet(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            {
+            }
+
+            [Fact]
+            public async Task ExecuteAsync()
+            {
+                // Arrange
+                ConfigureAndSetLastModified();
+                var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageOwnerSet>>();
+                await service.InitializeAsync();
+                await service.StartAsync();
+
+                // Act
+                await ProcessQueueAsync(service);
+
+                // Assert
+                await AssertCsvBlobAsync(OwnersToCsvDir, Step1, "latest_owners.csv.gz");
+                var blobA = await GetBlobAsync(Options.Value.PackageOwnersContainerName, "latest_owners.csv.gz");
+                var propertiesA = await blobA.GetPropertiesAsync();
+
+                // Arrange
+                await service.StartAsync();
+                MockVersionSet.Setup(x => x.CommitTimestamp).Returns(new DateTimeOffset(2021, 5, 10, 12, 15, 30, TimeSpan.Zero));
+
+                // Act
+                await ProcessQueueAsync(service);
+
+                // Assert
+                await AssertBlobCountAsync(Options.Value.PackageOwnersContainerName, 1);
+                await AssertCsvBlobAsync(OwnersToCsvDir, Step1, "latest_owners.csv.gz");
+                var blobB = await GetBlobAsync(Options.Value.PackageOwnersContainerName, "latest_owners.csv.gz");
+                var propertiesB = await blobB.GetPropertiesAsync();
+                Assert.NotEqual(propertiesA.Value.ETag, propertiesB.Value.ETag);
+            }
+        }
+
         public class OwnersToCsvDir_NonExistentId : OwnersToCsvIntegrationTest
         {
             public OwnersToCsvDir_NonExistentId(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
