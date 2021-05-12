@@ -21,8 +21,8 @@ jobs:
     - uses: Azure/get-keyvault-secrets@v1
       # if: github.ref == 'refs/heads/main' || contains(github.event.pull_request.labels.*.name, 'run tests')
       with:
-        keyvault: explorepackages
-        secrets: 'explorepackages-BlobQueueTableFullAccessSas, explorepackages-BlobReadSas'
+        keyvault: ${{ secrets.EXPLOREPACKAGES_KEYVAULTNAME }}
+        secrets: '${{ secrets.EXPLOREPACKAGES_APPSASSECRETNAME }}, ${{ secrets.EXPLOREPACKAGES_BLOBREADSASSECRETNAME }}'
       id: keyVault
 
   markdown-link-check:
