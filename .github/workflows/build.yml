@@ -27,7 +27,8 @@ jobs:
     - uses: Azure/login@v1
       if: github.ref == 'refs/heads/main' || contains(github.event.pull_request.labels.*.name, 'run tests')
       with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }} 
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        allow-no-subscriptions: true
     - uses: Azure/get-keyvault-secrets@v1
       if: github.ref == 'refs/heads/main' || contains(github.event.pull_request.labels.*.name, 'run tests')
       with:
