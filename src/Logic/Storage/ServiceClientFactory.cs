@@ -257,6 +257,14 @@ namespace Knapcode.ExplorePackages
                 storageConnectionString = _options.Value.StorageConnectionString;
             }
 
+            var blob = new BlobServiceClient(storageConnectionString);
+            var queue = new QueueServiceClient(storageConnectionString);
+            var table = new TableServiceClient(storageConnectionString);
+
+            _logger.LogInformation("Blob endpoint: {BlobEndpoint}", blob.Uri);
+            _logger.LogInformation("Queue endpoint: {QueueEndpoint}", queue.Uri);
+            // No Uri property for TableServiceClient, see https://github.com/Azure/azure-sdk-for-net/issues/19881
+
             return new ServiceClients(
                 created,
                 appSas,
@@ -264,9 +272,9 @@ namespace Knapcode.ExplorePackages
                 sasExpiry,
                 storageConnectionString,
                 secretClient,
-                new BlobServiceClient(storageConnectionString),
-                new QueueServiceClient(storageConnectionString),
-                new TableServiceClient(storageConnectionString));
+                blob,
+                queue,
+                table);
         }
 
         private record ServiceClients(
