@@ -580,7 +580,7 @@ namespace Knapcode.ExplorePackages.WideEntities
 
             public async Task<TableClient> GetTableAsync(ILogger<ServiceClientFactory> logger)
             {
-                logger.LogInformation("JVERDEBUG: {Names}", Environment.GetEnvironmentVariables().OfType<DictionaryEntry>().Select(x => x.Key.ToString()));
+                logger.LogInformation("JVERDEBUG: {Names}", Environment.GetEnvironmentVariables().OfType<DictionaryEntry>().Select(x => $"{x.Key}='{x.Value}'"));
 
                 var table = (await GetServiceClientFactory(logger).GetTableServiceClientAsync())
                     .GetTableClient(TableName);
