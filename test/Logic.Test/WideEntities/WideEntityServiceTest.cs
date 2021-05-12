@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -579,6 +580,8 @@ namespace Knapcode.ExplorePackages.WideEntities
 
             public async Task<TableClient> GetTableAsync(ILogger<ServiceClientFactory> logger)
             {
+                logger.LogInformation("JVERDEBUG: {Names}", Environment.GetEnvironmentVariables().OfType<DictionaryEntry>().Select(x => x.Key.ToString()));
+
                 var table = (await GetServiceClientFactory(logger).GetTableServiceClientAsync())
                     .GetTableClient(TableName);
 
