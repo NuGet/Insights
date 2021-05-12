@@ -14,8 +14,8 @@ namespace Knapcode.ExplorePackages
         {
             get
             {
-                var accountName = Environment.GetEnvironmentVariable("EXPLOREPACKAGES_STORAGEACCOUNTNAME");
-                var sas = Environment.GetEnvironmentVariable("EXPLOREPACKAGES_STORAGESAS");
+                var accountName = Environment.GetEnvironmentVariable("EXPLOREPACKAGES_STORAGEACCOUNTNAME")?.Trim();
+                var sas = Environment.GetEnvironmentVariable("EXPLOREPACKAGES_STORAGESAS")?.Trim();
                 if (string.IsNullOrWhiteSpace(accountName) || string.IsNullOrWhiteSpace(sas))
                 {
                     return StorageEmulatorConnectionString;
@@ -29,7 +29,7 @@ namespace Knapcode.ExplorePackages
         {
             get
             {
-                var sas = Environment.GetEnvironmentVariable("EXPLOREPACKAGES_STORAGEBLOBREADSAS");
+                var sas = Environment.GetEnvironmentVariable("EXPLOREPACKAGES_STORAGEBLOBREADSAS")?.Trim();
                 if (string.IsNullOrWhiteSpace(sas))
                 {
                     return null;
