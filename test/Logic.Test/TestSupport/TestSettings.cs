@@ -14,13 +14,28 @@ namespace Knapcode.ExplorePackages
         {
             get
             {
-                var env = Environment.GetEnvironmentVariable("EXPLOREPACKAGES_STORAGECONNECTIONSTRING");
-                if (string.IsNullOrWhiteSpace(env))
+                var accountName = Environment.GetEnvironmentVariable("EXPLOREPACKAGES_STORAGEACCOUNTNAME");
+                var sas = Environment.GetEnvironmentVariable("EXPLOREPACKAGES_STORAGESAS");
+                if (string.IsNullOrWhiteSpace(accountName) || string.IsNullOrWhiteSpace(sas))
                 {
                     return StorageEmulatorConnectionString;
                 }
 
-                return env;
+                return $"AccountName={accountName};SharedAccessSignature={sas}";
+            }
+        }
+
+        public static string StorageBlobReadSharedAccessSignature
+        {
+            get
+            {
+                var sas = Environment.GetEnvironmentVariable("EXPLOREPACKAGES_STORAGEBLOBREADSAS");
+                if (string.IsNullOrWhiteSpace(sas))
+                {
+                    return null;
+                }
+
+                return sas;
             }
         }
 

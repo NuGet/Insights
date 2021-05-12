@@ -265,7 +265,7 @@ namespace Knapcode.ExplorePackages
             return new ServiceClients(
                 created,
                 appSas,
-                blobReadSasFromKeyVault,
+                blobReadSasFromKeyVault ?? _options.Value.StorageBlobReadSharedAccessSignature,
                 sasExpiry,
                 storageConnectionString,
                 secretClient,

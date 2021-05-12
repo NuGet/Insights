@@ -19,6 +19,7 @@ namespace Knapcode.ExplorePackages
             OwnersV2Url = null;
             StorageAccountName = null;
             StorageSharedAccessSignature = null;
+            StorageBlobReadSharedAccessSignature = null;
             KeyVaultName = null;
             StorageSharedAccessSignatureSecretName = null;
             StorageSharedAccessSignatureDuration = null;
@@ -48,6 +49,7 @@ namespace Knapcode.ExplorePackages
         public string OwnersV2Url { get; set; }
         public object StorageAccountName { get; set; }
         public string StorageSharedAccessSignature { get; set; }
+        public string StorageBlobReadSharedAccessSignature { get; set; }
         public string KeyVaultName { get; set; }
         public string StorageSharedAccessSignatureSecretName { get; set; }
         public string StorageBlobReadSharedAccessSignatureSecretName { get; set; }

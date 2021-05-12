@@ -99,6 +99,7 @@ namespace Knapcode.ExplorePackages
         protected void ConfigureDefaultsAndSettings(ExplorePackagesSettings x)
         {
             x.StorageConnectionString = TestSettings.StorageConnectionString;
+            x.StorageBlobReadSharedAccessSignature = TestSettings.StorageBlobReadSharedAccessSignature;
 
             x.StorageContainerName = $"{StoragePrefix}1p1";
             x.LeaseContainerName = $"{StoragePrefix}1l1";

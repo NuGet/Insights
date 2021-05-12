@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Kusto.Ingest;
 using Microsoft.Extensions.DependencyInjection;
@@ -74,6 +76,15 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
                     It.IsAny<KustoIngestionProperties>(),
                     It.IsAny<StorageSourceOptions>()));
                 Assert.Equal(3, MockKustoQueueIngestClient.Invocations.Count(x => x.Method.Name != nameof(IDisposable.Dispose)));
+                var urls = MockKustoQueueIngestClient
+                    .Invocations
+                    .Where(x => x.Method.Name == nameof(IKustoQueuedIngestClient.IngestFromStorageAsync))
+                    .Select(x => (string)x.Arguments[0]);
+                foreach (var url in urls)
+                {
+                    using var response = await Host.Services.GetRequiredService<HttpClient>().GetAsync(url);
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                }
             }
 
             private void VerifyCommand(string command)

@@ -49,13 +49,22 @@ namespace Knapcode.ExplorePackages.Worker
                         UpdatedOn = DateTime.UtcNow,
                     }));
 
-                    var sas = account.GetSharedAccessSignature(new SharedAccessAccountPolicy
+                    string sas;
+                    if (account.Credentials.IsSAS)
                     {
-                        Permissions = SharedAccessAccountPermissions.Read,
-                        ResourceTypes = SharedAccessAccountResourceTypes.Object,
-                        Services = SharedAccessAccountServices.Table,
-                        SharedAccessExpiryTime = DateTimeOffset.UtcNow.AddDays(7),
-                    });
+                        sas = account.Credentials.SASToken;
+                    }
+                    else
+                    {
+                        sas = account.GetSharedAccessSignature(new SharedAccessAccountPolicy
+                        {
+                            Permissions = SharedAccessAccountPermissions.Read,
+                            ResourceTypes = SharedAccessAccountResourceTypes.Object,
+                            Services = SharedAccessAccountServices.Table,
+                            SharedAccessExpiryTime = DateTimeOffset.UtcNow.AddDays(7),
+                        });
+                    }
+
                     var tableUri = new UriBuilder(writeTable.Uri) { Query = sas };
                     var readTable = new CloudTable(tableUri.Uri);
                     return new TableReportIngestionResult(readTable);
