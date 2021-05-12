@@ -39,18 +39,6 @@ namespace Knapcode.ExplorePackages
                 "TableBeingDeleted");
         }
 
-        public static async Task DeleteIfExistsAsync(this TableClient tableClient)
-        {
-            try
-            {
-                await tableClient.DeleteAsync();
-            }
-            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
-            {
-                // Ignore.
-            }
-        }
-
         private static async Task CreateIfNotExistsAsync(Func<Task> createIfNotExistsAsync, bool retry, string errorCode)
         {
             var stopwatch = Stopwatch.StartNew();

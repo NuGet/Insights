@@ -371,7 +371,7 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
 
             public Task DisposeAsync()
             {
-                return Task.WhenAll(_candidates.Select(x => x.table.DeleteIfExistsAsync()));
+                return Task.WhenAll(_candidates.Select(x => x.table.DeleteAsync()));
             }
         }
 

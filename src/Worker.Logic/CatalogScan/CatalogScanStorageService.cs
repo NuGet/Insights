@@ -48,8 +48,8 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task DeleteChildTablesAsync(string storageSuffix)
         {
-            await (await GetLeafScanTableAsync(storageSuffix)).DeleteIfExistsAsync();
-            await (await GetPageScanTableAsync(storageSuffix)).DeleteIfExistsAsync();
+            await (await GetLeafScanTableAsync(storageSuffix)).DeleteAsync();
+            await (await GetPageScanTableAsync(storageSuffix)).DeleteAsync();
         }
 
         public async Task InsertAsync(CatalogIndexScan indexScan)

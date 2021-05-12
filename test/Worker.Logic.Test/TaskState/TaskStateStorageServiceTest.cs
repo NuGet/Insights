@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class TaskStateStorageServiceTest : IClassFixture<TaskStateStorageServiceTest.Fixture>
+    public class TaskStateStorageServiceTest : IClassFixture<TaskStateStorageServiceTest.Fixture>, IAsyncLifetime
     {
         public class TheGetAsyncMethod : TaskStateStorageServiceTest
         {
@@ -109,17 +109,29 @@ namespace Knapcode.ExplorePackages.Worker
             _fixture.GetServiceClientFactory(_output.GetLogger<ServiceClientFactory>()),
             _output.GetTelemetryClient(),
             _fixture.Options.Object);
-        public TableClient Table => _fixture.Table;
 
         protected async Task<IReadOnlyList<T>> GetEntitiesAsync<T>() where T : class, ITableEntity, new()
         {
-            return await Table
+            var table = await _fixture.GetTableAsync(_output.GetLogger<ServiceClientFactory>());
+            return await table
                 .QueryAsync<T>(x => x.PartitionKey == PartitionKey)
                 .ToListAsync();
         }
 
+        public async Task InitializeAsync()
+        {
+            await _fixture.GetTableAsync(_output.GetLogger<ServiceClientFactory>());
+        }
+
+        public Task DisposeAsync()
+        {
+            return Task.CompletedTask;
+        }
+
         public class Fixture : IAsyncLifetime
         {
+            public bool _created;
+
             public Fixture()
             {
                 Options = new Mock<IOptions<ExplorePackagesWorkerSettings>>();
@@ -135,12 +147,10 @@ namespace Knapcode.ExplorePackages.Worker
             public Mock<IOptions<ExplorePackagesWorkerSettings>> Options { get; }
             public ExplorePackagesWorkerSettings Settings { get; }
             public string StorageSuffix { get; }
-            public TableClient Table { get; private set; }
 
-            public async Task InitializeAsync()
+            public Task InitializeAsync()
             {
-                Table = await GetTableAsync(NullLogger<ServiceClientFactory>.Instance);
-                await Table.CreateIfNotExistsAsync();
+                return Task.CompletedTask;
             }
 
             public ServiceClientFactory GetServiceClientFactory(ILogger<ServiceClientFactory> logger)
@@ -150,13 +160,21 @@ namespace Knapcode.ExplorePackages.Worker
 
             public async Task DisposeAsync()
             {
-                await (await GetTableAsync(NullLogger<ServiceClientFactory>.Instance)).DeleteIfExistsAsync();
+                await (await GetTableAsync(NullLogger<ServiceClientFactory>.Instance)).DeleteAsync();
             }
 
             public async Task<TableClient> GetTableAsync(ILogger<ServiceClientFactory> logger)
             {
-                return (await GetServiceClientFactory(logger).GetTableServiceClientAsync())
+                var table = (await GetServiceClientFactory(logger).GetTableServiceClientAsync())
                     .GetTableClient(Options.Object.Value.TaskStateTableName + StorageSuffix);
+
+                if (!_created)
+                {
+                    await table.CreateIfNotExistsAsync();
+                    _created = true;
+                }
+
+                return table;
             }
         }
     }

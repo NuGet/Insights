@@ -39,7 +39,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
 
         public async Task DeleteChildTableAsync(string storageSuffix)
         {
-            await (await GetKustoIngestionTableAsync(storageSuffix)).DeleteIfExistsAsync();
+            await (await GetKustoIngestionTableAsync(storageSuffix)).DeleteAsync();
         }
 
         public async Task<bool> IsIngestionRunningAsync()

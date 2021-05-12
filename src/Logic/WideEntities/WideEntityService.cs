@@ -91,7 +91,7 @@ namespace Knapcode.ExplorePackages.WideEntities
 
         public async Task DeleteTableAsync(string tableName)
         {
-            await (await GetTableAsync(tableName)).DeleteIfExistsAsync();
+            await (await GetTableAsync(tableName)).DeleteAsync();
         }
 
         public async Task<WideEntity> RetrieveAsync(string tableName, string partitionKey, string rowKey)

@@ -404,7 +404,7 @@ namespace Knapcode.ExplorePackages
 
         public async Task<IReadOnlyList<TestEntity>> GetEntitiesAsync()
         {
-            var table = await GetTableAsync();
+            var table = await _fixture.GetTableAsync(_output.GetLogger<ServiceClientFactory>());
             return await table
                 .QueryAsync<TestEntity>(x => x.PartitionKey == PartitionKey)
                 .ToListAsync();
@@ -417,7 +417,7 @@ namespace Knapcode.ExplorePackages
                 FieldA = fieldA,
                 FieldB = fieldB,
             };
-            var table = await GetTableAsync();
+            var table = await _fixture.GetTableAsync(_output.GetLogger<ServiceClientFactory>());
             var response = await table.AddEntityAsync(entity);
             entity.UpdateETag(response);
             return entity;
@@ -425,20 +425,14 @@ namespace Knapcode.ExplorePackages
 
         public async Task<MutableTableTransactionalBatch> GetTargetAsync()
         {
-            return new MutableTableTransactionalBatch(await GetTableAsync());
-        }
-
-        private async Task<TableClient> GetTableAsync()
-        {
-            var tableServiceClient = await _fixture
-                .GetServiceClientFactory(_output.GetLogger<ServiceClientFactory>())
-                .GetTableServiceClientAsync();
-            var tableClient = tableServiceClient.GetTableClient(_fixture.TableName);
-            return tableClient;
+            var table = await _fixture.GetTableAsync(_output.GetLogger<ServiceClientFactory>());
+            return new MutableTableTransactionalBatch(table);
         }
 
         public class Fixture : IAsyncLifetime
         {
+            private bool _created;
+
             public Fixture()
             {
                 Options = new Mock<IOptions<ExplorePackagesSettings>>();
@@ -454,9 +448,9 @@ namespace Knapcode.ExplorePackages
             public ExplorePackagesSettings Settings { get; }
             public string TableName { get; }
 
-            public async Task InitializeAsync()
+            public Task InitializeAsync()
             {
-                await (await GetTableAsync(NullLogger<ServiceClientFactory>.Instance)).CreateIfNotExistsAsync();
+                return Task.CompletedTask;
             }
 
             public ServiceClientFactory GetServiceClientFactory(ILogger<ServiceClientFactory> logger)
@@ -466,13 +460,21 @@ namespace Knapcode.ExplorePackages
 
             public async Task DisposeAsync()
             {
-                await (await GetTableAsync(NullLogger<ServiceClientFactory>.Instance)).DeleteIfExistsAsync();
+                await (await GetTableAsync(NullLogger<ServiceClientFactory>.Instance)).DeleteAsync();
             }
 
-            private async Task<TableClient> GetTableAsync(ILogger<ServiceClientFactory> logger)
+            public async Task<TableClient> GetTableAsync(ILogger<ServiceClientFactory> logger)
             {
-                return (await GetServiceClientFactory(logger).GetTableServiceClientAsync())
+                var table = (await GetServiceClientFactory(logger).GetTableServiceClientAsync())
                     .GetTableClient(TableName);
+
+                if (!_created)
+                {
+                    await table.CreateIfNotExistsAsync();
+                    _created = true;
+                }
+
+                return table;
             }
         }
     }

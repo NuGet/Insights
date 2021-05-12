@@ -14,7 +14,7 @@ using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages.WideEntities
 {
-    public class WideEntityServiceTest : IClassFixture<WideEntityServiceTest.Fixture>
+    public class WideEntityServiceTest : IClassFixture<WideEntityServiceTest.Fixture>, IAsyncLifetime
     {
         public class ExecuteBatchAsync : WideEntityServiceTest
         {
@@ -512,10 +512,12 @@ namespace Knapcode.ExplorePackages.WideEntities
         }
 
         private readonly Fixture _fixture;
+        private readonly ITestOutputHelper _output;
 
         public WideEntityServiceTest(Fixture fixture, ITestOutputHelper output)
         {
             _fixture = fixture;
+            _output = output;
             Target = new WideEntityService(
                 _fixture.GetServiceClientFactory(output.GetLogger<ServiceClientFactory>()),
                 output.GetTelemetryClient(),
@@ -526,8 +528,20 @@ namespace Knapcode.ExplorePackages.WideEntities
         public ReadOnlyMemory<byte> Bytes => _fixture.Bytes.AsMemory();
         public WideEntityService Target { get; }
 
+        public async Task InitializeAsync()
+        {
+            await _fixture.GetTableAsync(_output.GetLogger<ServiceClientFactory>());
+        }
+
+        public Task DisposeAsync()
+        {
+            return Task.CompletedTask;
+        }
+
         public class Fixture : IAsyncLifetime
         {
+            public bool _created;
+
             public Fixture()
             {
                 Options = new Mock<IOptions<ExplorePackagesSettings>>();
@@ -548,9 +562,9 @@ namespace Knapcode.ExplorePackages.WideEntities
             public string TableName { get; }
             public byte[] Bytes { get; }
 
-            public async Task InitializeAsync()
+            public Task InitializeAsync()
             {
-                await (await GetTableAsync(NullLogger<ServiceClientFactory>.Instance)).CreateIfNotExistsAsync();
+                return Task.CompletedTask;
             }
 
             public ServiceClientFactory GetServiceClientFactory(ILogger<ServiceClientFactory> logger)
@@ -560,13 +574,21 @@ namespace Knapcode.ExplorePackages.WideEntities
 
             public async Task DisposeAsync()
             {
-                await (await GetTableAsync(NullLogger<ServiceClientFactory>.Instance)).DeleteIfExistsAsync();
+                await (await GetTableAsync(NullLogger<ServiceClientFactory>.Instance)).DeleteAsync();
             }
 
-            private async Task<TableClient> GetTableAsync(ILogger<ServiceClientFactory> logger)
+            public async Task<TableClient> GetTableAsync(ILogger<ServiceClientFactory> logger)
             {
-                return (await GetServiceClientFactory(logger).GetTableServiceClientAsync())
+                var table = (await GetServiceClientFactory(logger).GetTableServiceClientAsync())
                     .GetTableClient(TableName);
+
+                if (!_created)
+                {
+                    await table.CreateIfNotExistsAsync();
+                    _created = true;
+                }
+
+                return table;
             }
         }
     }
