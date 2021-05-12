@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
@@ -12,13 +11,11 @@ namespace Knapcode.ExplorePackages
 {
     public static class TableExtensions
     {
-        public static AsyncPageable<TableItem> GetTablesAsync(this TableServiceClient client, string prefix)
+        public static AsyncPageable<TableItem> QueryAsync(this TableServiceClient client, string prefix)
         {
-            var prefixQuery = TableClient.CreateQueryFilter<TableItem>(
-                x => x.TableName.CompareTo(prefix) >= 0
-                  && x.TableName.CompareTo(prefix + char.MaxValue) <= 0);
-
-            return client.GetTablesAsync(filter: prefixQuery);
+            return client.QueryAsync(
+                x => x.Name.CompareTo(prefix) >= 0
+                && x.Name.CompareTo(prefix + char.MaxValue) <= 0);
         }
 
         public static async Task<T> GetEntityOrNullAsync<T>(this TableClient table, string partitionKey, string rowKey) where T : class, ITableEntity, new()
@@ -97,37 +94,9 @@ namespace Knapcode.ExplorePackages
         /// <summary>
         /// See: https://github.com/Azure/azure-sdk-for-net/issues/19723
         /// </summary>
-        public static void UpdateETagAndTimestamp(this ITableEntity entity, Response response)
+        public static void UpdateETag(this ITableEntity entity, Response response)
         {
             entity.ETag = response.Headers.ETag.Value;
-            entity.Timestamp = GetTimestampFromETag(entity.ETag);
-        }
-
-        private static DateTimeOffset GetTimestampFromETag(ETag etag)
-        {
-            var etagStr = etag.ToString();
-            const string etagPrefix = "W/\"datetime'";
-            if (!etagStr.StartsWith(etagPrefix, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException($"The etag from Table Storage does not have the expected prefix: {etagPrefix}");
-            }
-
-            const string etagSuffix = "'\"";
-            if (!etagStr.EndsWith(etagSuffix, StringComparison.Ordinal))
-            {
-                throw new ArgumentException($"The etag from Table Storage does not have the expected suffix: {etagSuffix}");
-            }
-
-            var encodedTimestamp = etagStr.Substring(etagPrefix.Length, etagStr.Length - (etagPrefix.Length + etagSuffix.Length));
-            var unencodedTimestamp = Uri.UnescapeDataString(encodedTimestamp);
-            var parsedTimestamp = DateTimeOffset.Parse(unencodedTimestamp, CultureInfo.InvariantCulture);
-
-            if (parsedTimestamp.Offset != TimeSpan.Zero)
-            {
-                throw new ArgumentException("The timestamp in the Table Storage etag is expected to be UTC.");
-            }
-
-            return parsedTimestamp;
         }
     }
 }

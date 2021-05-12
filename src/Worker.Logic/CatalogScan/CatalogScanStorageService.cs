@@ -48,8 +48,8 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task DeleteChildTablesAsync(string storageSuffix)
         {
-            await (await GetLeafScanTableAsync(storageSuffix)).DeleteIfExistsAsync();
-            await (await GetPageScanTableAsync(storageSuffix)).DeleteIfExistsAsync();
+            await (await GetLeafScanTableAsync(storageSuffix)).DeleteAsync();
+            await (await GetPageScanTableAsync(storageSuffix)).DeleteAsync();
         }
 
         public async Task InsertAsync(CatalogIndexScan indexScan)
@@ -230,20 +230,20 @@ namespace Knapcode.ExplorePackages.Worker
         {
             _logger.LogInformation("Replacing catalog index scan {ScanId}, state: {State}.", indexScan.GetScanId(), indexScan.State);
             var response = await (await GetIndexScanTableAsync()).UpdateEntityAsync(indexScan, indexScan.ETag);
-            indexScan.UpdateETagAndTimestamp(response);
+            indexScan.UpdateETag(response);
         }
 
         public async Task ReplaceAsync(CatalogPageScan pageScan)
         {
             _logger.LogInformation("Replacing catalog page scan {ScanId}, page {PageId}, state: {State}.", pageScan.GetScanId(), pageScan.GetPageId(), pageScan.State);
             var response = await (await GetPageScanTableAsync(pageScan.StorageSuffix)).UpdateEntityAsync(pageScan, pageScan.ETag);
-            pageScan.UpdateETagAndTimestamp(response);
+            pageScan.UpdateETag(response);
         }
 
         public async Task ReplaceAsync(CatalogLeafScan leafScan)
         {
             var response = await (await GetLeafScanTableAsync(leafScan.StorageSuffix)).UpdateEntityAsync(leafScan, leafScan.ETag);
-            leafScan.UpdateETagAndTimestamp(response);
+            leafScan.UpdateETag(response);
         }
 
         public async Task ReplaceAsync(IEnumerable<CatalogLeafScan> leafScans)

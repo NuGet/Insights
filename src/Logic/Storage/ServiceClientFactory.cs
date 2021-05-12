@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
 using Azure.Data.Tables;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
@@ -218,7 +217,6 @@ namespace Knapcode.ExplorePackages
             string appSas;
             DateTimeOffset? sasExpiry;
             string storageConnectionString;
-            TableServiceClient tableServiceClient;
             if (_options.Value.StorageAccountName != null)
             {
                 string source;
@@ -249,8 +247,6 @@ namespace Knapcode.ExplorePackages
                     untilExpiry.TotalHours);
 
                 storageConnectionString = $"AccountName={_options.Value.StorageAccountName};SharedAccessSignature={appSas}";
-                var endpoint = $"https://{_options.Value.StorageAccountName}.table.core.windows.net/";
-                tableServiceClient = new TableServiceClient(new Uri(endpoint), new AzureSasCredential(appSas));
             }
             else
             {
@@ -259,8 +255,15 @@ namespace Knapcode.ExplorePackages
                 appSas = null;
                 sasExpiry = null;
                 storageConnectionString = _options.Value.StorageConnectionString;
-                tableServiceClient = new TableServiceClient(storageConnectionString);
             }
+
+            var blob = new BlobServiceClient(storageConnectionString);
+            var queue = new QueueServiceClient(storageConnectionString);
+            var table = new TableServiceClient(storageConnectionString);
+
+            _logger.LogInformation("Blob endpoint: {BlobEndpoint}", blob.Uri);
+            _logger.LogInformation("Queue endpoint: {QueueEndpoint}", queue.Uri);
+            // No Uri property for TableServiceClient, see https://github.com/Azure/azure-sdk-for-net/issues/19881
 
             return new ServiceClients(
                 created,
@@ -269,9 +272,9 @@ namespace Knapcode.ExplorePackages
                 sasExpiry,
                 storageConnectionString,
                 secretClient,
-                new BlobServiceClient(storageConnectionString),
-                new QueueServiceClient(storageConnectionString),
-                tableServiceClient);
+                blob,
+                queue,
+                table);
         }
 
         private record ServiceClients(

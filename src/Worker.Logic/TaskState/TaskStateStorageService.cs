@@ -30,7 +30,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task DeleteTableAsync(string storageSuffix)
         {
-            await (await GetTableAsync(storageSuffix)).DeleteIfExistsAsync();
+            await (await GetTableAsync(storageSuffix)).DeleteAsync();
         }
 
         public async Task AddAsync(TaskStateKey taskStateKey)

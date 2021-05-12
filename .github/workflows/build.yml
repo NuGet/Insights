@@ -24,10 +24,23 @@ jobs:
         dotnet-version: 5.0.x
     - run: dotnet restore
     - run: dotnet build --no-restore
+    - uses: Azure/login@v1
+      if: github.ref == 'refs/heads/main' || contains(github.event.pull_request.labels.*.name, 'run tests')
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        allow-no-subscriptions: true
+    - uses: Azure/get-keyvault-secrets@v1
+      if: github.ref == 'refs/heads/main' || contains(github.event.pull_request.labels.*.name, 'run tests')
+      with:
+        keyvault: ${{ secrets.EXPLOREPACKAGES_KEYVAULTNAME }}
+        secrets: '${{ secrets.EXPLOREPACKAGES_STORAGESASSECRETNAME }}, ${{ secrets.EXPLOREPACKAGES_STORAGEBLOBREADSASSECRETNAME }}'
+      id: keyVault
     - run: dotnet test --no-build --verbosity normal
       if: github.ref == 'refs/heads/main' || contains(github.event.pull_request.labels.*.name, 'run tests')
       env:
-        EXPLOREPACKAGES_STORAGECONNECTIONSTRING: ${{ secrets.EXPLOREPACKAGES_STORAGECONNECTIONSTRING }}
+        EXPLOREPACKAGES_STORAGEACCOUNTNAME: ${{ secrets.EXPLOREPACKAGES_STORAGEACCOUNTNAME }}
+        EXPLOREPACKAGES_STORAGESAS: ${{ steps.keyVault.outputs[secrets.EXPLOREPACKAGES_STORAGESASSECRETNAME] }}
+        EXPLOREPACKAGES_STORAGEBLOBREADSAS: ${{ steps.keyVault.outputs[secrets.EXPLOREPACKAGES_STORAGEBLOBREADSASSECRETNAME] }}   
 
   markdown-link-check:
   

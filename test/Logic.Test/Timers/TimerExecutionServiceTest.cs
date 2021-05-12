@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages
 {
-    public class TimerExecutionServiceTest : IClassFixture<TimerExecutionServiceTest.Fixture>
+    public class TimerExecutionServiceTest : IClassFixture<TimerExecutionServiceTest.Fixture>, IAsyncLifetime
     {
         public class TheConstructor : TimerExecutionServiceTest
         {
@@ -319,19 +319,30 @@ namespace Knapcode.ExplorePackages
             }
         }
 
-        public TableClient Table => _fixture.Table;
-
         protected async Task<IReadOnlyList<T>> GetEntitiesAsync<T>() where T : class, ITableEntity, new()
         {
-            return await Table
+            var table = await _fixture.GetTableAsync(_output.GetLogger<ServiceClientFactory>());
+            return await table
                 .QueryAsync<T>(x => x.PartitionKey == string.Empty
                                  && x.RowKey.CompareTo(TimerNamePrefix) >= 0
                                  && x.RowKey.CompareTo(TimerNamePrefix + char.MaxValue) < 0)
                 .ToListAsync();
         }
 
+        public async Task InitializeAsync()
+        {
+            await _fixture.GetTableAsync(_output.GetLogger<ServiceClientFactory>());
+        }
+
+        public Task DisposeAsync()
+        {
+            return Task.CompletedTask;
+        }
+
         public class Fixture : IAsyncLifetime
         {
+            private bool _created;
+
             public Fixture()
             {
                 Options = new Mock<IOptions<ExplorePackagesSettings>>();
@@ -346,15 +357,26 @@ namespace Knapcode.ExplorePackages
 
             public Mock<IOptions<ExplorePackagesSettings>> Options { get; }
             public ExplorePackagesSettings Settings { get; }
-            public TableClient Table { get; private set; }
 
-            public async Task InitializeAsync()
+            public Task InitializeAsync()
             {
-                var serviceClientFactory = GetServiceClientFactory(NullLogger<ServiceClientFactory>.Instance);
-                var leaseService = GetLeaseService(serviceClientFactory);
-                await leaseService.InitializeAsync();
-                Table = (await serviceClientFactory.GetTableServiceClientAsync()).GetTableClient(Options.Object.Value.TimerTableName);
-                await Table.CreateIfNotExistsAsync(retry: true);
+                return Task.CompletedTask;
+            }
+
+            public async Task<TableClient> GetTableAsync(ILogger<ServiceClientFactory> logger)
+            {
+                var serviceClientFactory = GetServiceClientFactory(logger);
+                var table = (await serviceClientFactory.GetTableServiceClientAsync())
+                    .GetTableClient(Options.Object.Value.TimerTableName);
+
+                if (!_created)
+                {
+                    await GetLeaseService(serviceClientFactory).InitializeAsync();
+                    await table.CreateIfNotExistsAsync(retry: true);
+                    _created = true;
+                }
+
+                return table;
             }
 
             public AutoRenewingStorageLeaseService GetLeaseService(ServiceClientFactory serviceClientFactory)
@@ -369,11 +391,15 @@ namespace Knapcode.ExplorePackages
 
             public async Task DisposeAsync()
             {
-                await (await GetServiceClientFactory(NullLogger<ServiceClientFactory>.Instance).GetBlobServiceClientAsync())
+                var logger = NullLogger<ServiceClientFactory>.Instance;
+
+                var blobServiceClient = await GetServiceClientFactory(logger).GetBlobServiceClientAsync();
+                await blobServiceClient
                     .GetBlobContainerClient(Options.Object.Value.LeaseContainerName)
                     .DeleteIfExistsAsync();
 
-                await Table.DeleteIfExistsAsync();
+                var table = await GetTableAsync(logger);
+                await table.DeleteAsync();
             }
         }
     }

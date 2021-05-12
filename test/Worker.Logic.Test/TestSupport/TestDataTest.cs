@@ -101,11 +101,11 @@ namespace Knapcode.ExplorePackages.Worker
             }
 
             var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
-            var tableItems = await tableServiceClient.GetTablesAsync().ToListAsync();
-            foreach (var tableItem in tableItems.Where(x => IsOldStoragePrefix(x.TableName)))
+            var tableItems = await tableServiceClient.QueryAsync().ToListAsync();
+            foreach (var tableItem in tableItems.Where(x => IsOldStoragePrefix(x.Name)))
             {
-                Logger.LogInformation("Deleting old table: {Name}", tableItem.TableName);
-                await tableServiceClient.DeleteTableAsync(tableItem.TableName);
+                Logger.LogInformation("Deleting old table: {Name}", tableItem.Name);
+                await tableServiceClient.DeleteTableAsync(tableItem.Name);
             }
         }
 

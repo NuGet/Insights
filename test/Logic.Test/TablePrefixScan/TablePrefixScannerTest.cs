@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
-using Azure;
 using Azure.Data.Tables;
 using Xunit;
 using Xunit.Abstractions;
@@ -29,9 +28,6 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
                 // Built-in properties that are required
                 Assert.Equal(pair.First.PartitionKey, pair.Second.PartitionKey);
                 Assert.Equal(pair.First.RowKey, pair.Second.RowKey);
-
-                // Built-in properties that are not required
-                Assert.Null(pair.Second.Timestamp);
 
                 // Custom properties
                 Assert.Null(pair.Second.FieldA);
@@ -375,7 +371,7 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
 
             public Task DisposeAsync()
             {
-                return Task.WhenAll(_candidates.Select(x => x.table.DeleteIfExistsAsync()));
+                return Task.WhenAll(_candidates.Select(x => x.table.DeleteAsync()));
             }
         }
 
@@ -399,66 +395,6 @@ namespace Knapcode.ExplorePackages.TablePrefixScan
             public int GetHashCode([DisallowNull] T obj)
             {
                 return HashCode.Combine(obj.PartitionKey, obj.RowKey);
-            }
-        }
-
-        public class TestEntity : ITableEntity, IEquatable<TestEntity>, IComparable<TestEntity>
-        {
-            public TestEntity()
-            {
-            }
-
-            public TestEntity(string partitionKey, string rowKey)
-            {
-                PartitionKey = partitionKey;
-                RowKey = rowKey;
-                FieldA = partitionKey + "/" + rowKey;
-                FieldB = rowKey + "/" + partitionKey;
-            }
-
-            public string PartitionKey { get; set; }
-            public string RowKey { get; set; }
-            public DateTimeOffset? Timestamp { get; set; }
-            public ETag ETag { get; set; }
-
-            public string FieldA { get; set; }
-            public string FieldB { get; set; }
-
-            public int CompareTo([AllowNull] TestEntity other)
-            {
-                if (other == null)
-                {
-                    return 1;
-                }
-
-                var partitionKeyCompare = PartitionKey.CompareTo(other.PartitionKey);
-                if (partitionKeyCompare != 0)
-                {
-                    return partitionKeyCompare;
-                }
-
-                return RowKey.CompareTo(other.RowKey);
-            }
-
-            public override bool Equals(object obj)
-            {
-                return Equals(obj as TestEntity);
-            }
-
-            public bool Equals(TestEntity other)
-            {
-                return other != null &&
-                       PartitionKey == other.PartitionKey &&
-                       RowKey == other.RowKey &&
-                       Timestamp.Equals(other.Timestamp) &&
-                       ETag == other.ETag &&
-                       FieldA == other.FieldA &&
-                       FieldB == other.FieldB;
-            }
-
-            public override int GetHashCode()
-            {
-                return HashCode.Combine(PartitionKey, RowKey, Timestamp, ETag, FieldA, FieldB);
             }
         }
     }

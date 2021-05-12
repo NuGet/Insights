@@ -13,7 +13,7 @@ using Xunit.Abstractions;
 
 namespace Knapcode.ExplorePackages.Worker
 {
-    public class CursorStorageServiceTest : IClassFixture<CursorStorageServiceTest.Fixture>
+    public class CursorStorageServiceTest : IClassFixture<CursorStorageServiceTest.Fixture>, IAsyncLifetime
     {
         public class TheGetOrCreateAsyncMethod : CursorStorageServiceTest
         {
@@ -25,7 +25,8 @@ namespace Knapcode.ExplorePackages.Worker
             public async Task ReturnsExistingCursor()
             {
                 var value = new DateTimeOffset(2020, 1, 1, 12, 30, 0, TimeSpan.Zero);
-                await Table.AddEntityAsync(new CursorTableEntity(CursorName) { Value = value });
+                var table = await _fixture.GetTableAsync(_output.GetLogger<ServiceClientFactory>());
+                await table.AddEntityAsync(new CursorTableEntity(CursorName) { Value = value });
 
                 var cursor = await Target.GetOrCreateAsync(CursorName);
 
@@ -45,7 +46,6 @@ namespace Knapcode.ExplorePackages.Worker
                 Assert.Equal(cursor.RowKey, entity.RowKey);
                 Assert.Equal(CursorName, entity.GetName());
                 Assert.Equal(cursor.ETag, entity.ETag);
-                Assert.Equal(cursor.Timestamp, entity.Timestamp);
             }
 
             [Fact]
@@ -126,19 +126,31 @@ namespace Knapcode.ExplorePackages.Worker
             _fixture.GetServiceClientFactory(_output.GetLogger<ServiceClientFactory>()),
             _fixture.Options.Object,
             _output.GetLogger<CursorStorageService>());
-        public TableClient Table => _fixture.Table;
 
         protected async Task<IReadOnlyList<T>> GetEntitiesAsync<T>() where T : class, ITableEntity, new()
         {
-            return await Table
+            var table = await _fixture.GetTableAsync(_output.GetLogger<ServiceClientFactory>());
+            return await table
                 .QueryAsync<T>(x => x.PartitionKey == string.Empty
                                  && x.RowKey.CompareTo(CursorNamePrefix) >= 0
                                  && x.RowKey.CompareTo(CursorNamePrefix + char.MaxValue) < 0)
                 .ToListAsync();
         }
 
+        public async Task InitializeAsync()
+        {
+            await _fixture.GetTableAsync(_output.GetLogger<ServiceClientFactory>());
+        }
+
+        public Task DisposeAsync()
+        {
+            return Task.CompletedTask;
+        }
+
         public class Fixture : IAsyncLifetime
         {
+            public bool _created;
+
             public Fixture()
             {
                 Options = new Mock<IOptions<ExplorePackagesWorkerSettings>>();
@@ -152,12 +164,10 @@ namespace Knapcode.ExplorePackages.Worker
 
             public Mock<IOptions<ExplorePackagesWorkerSettings>> Options { get; }
             public ExplorePackagesWorkerSettings Settings { get; }
-            public TableClient Table { get; private set; }
 
-            public async Task InitializeAsync()
+            public Task InitializeAsync()
             {
-                Table = await GetTableAsync(NullLogger<ServiceClientFactory>.Instance);
-                await Table.CreateIfNotExistsAsync();
+                return Task.CompletedTask;
             }
 
             public ServiceClientFactory GetServiceClientFactory(ILogger<ServiceClientFactory> logger)
@@ -167,13 +177,21 @@ namespace Knapcode.ExplorePackages.Worker
 
             public async Task DisposeAsync()
             {
-                await (await GetTableAsync(NullLogger<ServiceClientFactory>.Instance)).DeleteIfExistsAsync();
+                await (await GetTableAsync(NullLogger<ServiceClientFactory>.Instance)).DeleteAsync();
             }
 
             public async Task<TableClient> GetTableAsync(ILogger<ServiceClientFactory> logger)
             {
-                return (await GetServiceClientFactory(logger).GetTableServiceClientAsync())
+                var table = (await GetServiceClientFactory(logger).GetTableServiceClientAsync())
                     .GetTableClient(Options.Object.Value.CursorTableName);
+
+                if (!_created)
+                {
+                    await table.CreateIfNotExistsAsync();
+                    _created = true;
+                }
+
+                return table;
             }
         }
     }

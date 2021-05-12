@@ -39,7 +39,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
 
         public async Task DeleteChildTableAsync(string storageSuffix)
         {
-            await (await GetKustoIngestionTableAsync(storageSuffix)).DeleteIfExistsAsync();
+            await (await GetKustoIngestionTableAsync(storageSuffix)).DeleteAsync();
         }
 
         public async Task<bool> IsIngestionRunningAsync()
@@ -122,7 +122,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
 
             var table = await GetKustoIngestionTableAsync();
             var response = await table.UpdateEntityAsync(ingestion, ingestion.ETag, mode: TableUpdateMode.Replace);
-            ingestion.UpdateETagAndTimestamp(response);
+            ingestion.UpdateETag(response);
         }
 
         public async Task ReplaceContainerAsync(KustoContainerIngestion container)
@@ -135,7 +135,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
 
             var table = await GetKustoIngestionTableAsync(container.StorageSuffix);
             var response = await table.UpdateEntityAsync(container, container.ETag, mode: TableUpdateMode.Replace);
-            container.UpdateETagAndTimestamp(response);
+            container.UpdateETag(response);
         }
 
         public async Task ReplaceBlobAsync(KustoBlobIngestion blob)
@@ -148,7 +148,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
 
             var table = await GetKustoIngestionTableAsync(blob.StorageSuffix);
             var response = await table.UpdateEntityAsync(blob, blob.ETag, mode: TableUpdateMode.Replace);
-            blob.UpdateETagAndTimestamp(response);
+            blob.UpdateETag(response);
         }
 
         public async Task DeleteContainerAsync(KustoContainerIngestion container)
