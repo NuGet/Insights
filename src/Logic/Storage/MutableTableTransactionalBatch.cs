@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
@@ -30,7 +31,7 @@ namespace Knapcode.ExplorePackages
             SetPartitionKey(entity.PartitionKey);
             Add(new TableTransactionalOperation(
                 entity,
-                batch => batch.AddEntity(entity),
+                new TableTransactionAction(TableTransactionActionType.Add, entity),
                 table => table.AddEntityAsync(entity)));
         }
 
@@ -39,25 +40,37 @@ namespace Knapcode.ExplorePackages
             SetPartitionKey(partitionKey);
             Add(new TableTransactionalOperation(
                 entity: null,
-                batch => batch.DeleteEntity(rowKey, ifMatch),
+                new TableTransactionAction(TableTransactionActionType.Delete, new TableEntity(partitionKey, rowKey), ifMatch),
                 table => table.DeleteEntityAsync(partitionKey, rowKey, ifMatch)));
         }
 
         public void UpdateEntity<T>(T entity, ETag ifMatch, TableUpdateMode mode) where T : class, ITableEntity, new()
         {
             SetPartitionKey(entity.PartitionKey);
+            var actionType = mode switch
+            {
+                TableUpdateMode.Merge => TableTransactionActionType.UpdateMerge,
+                TableUpdateMode.Replace => TableTransactionActionType.UpdateReplace,
+                _ => throw new NotImplementedException(),
+            };
             Add(new TableTransactionalOperation(
                 entity,
-                batch => batch.UpdateEntity(entity, ifMatch, mode),
+                new TableTransactionAction(actionType, entity, ifMatch),
                 table => table.UpdateEntityAsync(entity, ifMatch, mode)));
         }
 
         public void UpsertEntity<T>(T entity, TableUpdateMode mode) where T : class, ITableEntity, new()
         {
             SetPartitionKey(entity.PartitionKey);
+            var actionType = mode switch
+            {
+                TableUpdateMode.Merge => TableTransactionActionType.UpsertMerge,
+                TableUpdateMode.Replace => TableTransactionActionType.UpsertReplace,
+                _ => throw new NotImplementedException(),
+            };
             Add(new TableTransactionalOperation(
                 entity,
-                batch => batch.UpsertEntity(entity, mode),
+                new TableTransactionAction(actionType, entity),
                 table => table.UpsertEntityAsync(entity, mode)));
         }
 
@@ -83,24 +96,17 @@ namespace Knapcode.ExplorePackages
                 var response = await operation.SingleAct(TableClient);
                 if (operation.Entity != null)
                 {
-                    operation.Entity.UpdateETagAndTimestamp(response);
+                    operation.Entity.UpdateETag(response);
                 }
             }
             else
             {
-                var batch = TableClient.CreateTransactionalBatch(_partitionKey);
-                foreach (var operation in this)
+                var batchResponse = await TableClient.SubmitTransactionAsync(this.Select(x => x.TransactionAction));
+                for (var i = 0; i < batchResponse.Value.Count; i++)
                 {
-                    operation.BatchAct(batch);
-                }
-
-                var batchResponse = await batch.SubmitBatchAsync();
-                foreach (var operation in this)
-                {
-                    if (operation.Entity != null)
+                    if (this[i].Entity != null)
                     {
-                        var entityResponse = batchResponse.Value.GetResponseForEntity(operation.Entity.RowKey);
-                        operation.Entity.UpdateETagAndTimestamp(entityResponse);
+                        this[i].Entity.UpdateETag(batchResponse.Value[i]);
                     }
                 }
             }

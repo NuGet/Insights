@@ -39,7 +39,7 @@ namespace Knapcode.ExplorePackages.Worker
                 cursor = new CursorTableEntity(name);
                 _logger.LogInformation("Creating cursor {Name} to timestamp {Value:O}.", name, cursor.Value);
                 var response = await table.AddEntityAsync(cursor);
-                cursor.UpdateETagAndTimestamp(response);
+                cursor.UpdateETag(response);
                 return cursor;
             }
         }
@@ -49,7 +49,7 @@ namespace Knapcode.ExplorePackages.Worker
             var table = await GetTableAsync();
             _logger.LogInformation("Updating cursor {Name} to timestamp {NewValue:O}.", cursor.GetName(), cursor.Value);
             var response = await table.UpdateEntityAsync(cursor, cursor.ETag);
-            cursor.UpdateETagAndTimestamp(response);
+            cursor.UpdateETag(response);
         }
 
         private async Task<TableClient> GetTableAsync()

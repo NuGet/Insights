@@ -286,10 +286,10 @@ namespace Knapcode.ExplorePackages
                 }
 
                 var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
-                var tableItems = await tableServiceClient.GetTablesAsync(prefix: StoragePrefix).ToListAsync();
+                var tableItems = await tableServiceClient.QueryAsync(prefix: StoragePrefix).ToListAsync();
                 foreach (var tableItem in tableItems)
                 {
-                    await tableServiceClient.DeleteTableAsync(tableItem.TableName);
+                    await tableServiceClient.DeleteTableAsync(tableItem.Name);
                 }
             }
         }

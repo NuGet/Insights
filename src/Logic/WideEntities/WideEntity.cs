@@ -15,7 +15,6 @@ namespace Knapcode.ExplorePackages.WideEntities
         {
             PartitionKey = firstSegment.PartitionKey;
             RowKey = firstSegment.RowKeyPrefix;
-            Timestamp = firstSegment.Timestamp;
             ETag = firstSegment.ETag;
             SegmentCount = firstSegment.SegmentCount;
 
@@ -34,7 +33,6 @@ namespace Knapcode.ExplorePackages.WideEntities
 
             var orderedSegments = segments.OrderBy(x => x.Index).ToList();
             var firstSegment = orderedSegments.First();
-            Timestamp = firstSegment.Timestamp;
             ETag = firstSegment.ETag;
 
             if (firstSegment.Index != 0)
@@ -54,7 +52,6 @@ namespace Knapcode.ExplorePackages.WideEntities
 
         public string PartitionKey { get; }
         public string RowKey { get; }
-        public DateTimeOffset? Timestamp { get; }
         public ETag ETag { get; }
         public int SegmentCount { get; }
 

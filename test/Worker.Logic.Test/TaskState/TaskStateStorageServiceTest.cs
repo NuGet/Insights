@@ -48,7 +48,6 @@ namespace Knapcode.ExplorePackages.Worker
                     Assert.Equal(StorageSuffix, x.StorageSuffix);
                     Assert.Equal(PartitionKey, x.PartitionKey);
                     Assert.Null(x.Parameters);
-                    Assert.NotNull(x.Timestamp);
                     Assert.NotEqual(default, x.ETag);
                 });
             }
@@ -69,7 +68,6 @@ namespace Knapcode.ExplorePackages.Worker
                     Assert.Equal(StorageSuffix, x.StorageSuffix);
                     Assert.Equal(PartitionKey, x.PartitionKey);
                     Assert.Null(x.Parameters);
-                    Assert.NotNull(x.Timestamp);
                     Assert.NotEqual(default, x.ETag);
                 });
             }

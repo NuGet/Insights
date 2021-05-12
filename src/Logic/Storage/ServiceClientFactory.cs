@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
 using Azure.Data.Tables;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
@@ -218,7 +217,6 @@ namespace Knapcode.ExplorePackages
             string appSas;
             DateTimeOffset? sasExpiry;
             string storageConnectionString;
-            TableServiceClient tableServiceClient;
             if (_options.Value.StorageAccountName != null)
             {
                 string source;
@@ -249,8 +247,6 @@ namespace Knapcode.ExplorePackages
                     untilExpiry.TotalHours);
 
                 storageConnectionString = $"AccountName={_options.Value.StorageAccountName};SharedAccessSignature={appSas}";
-                var endpoint = $"https://{_options.Value.StorageAccountName}.table.core.windows.net/";
-                tableServiceClient = new TableServiceClient(new Uri(endpoint), new AzureSasCredential(appSas));
             }
             else
             {
@@ -259,7 +255,6 @@ namespace Knapcode.ExplorePackages
                 appSas = null;
                 sasExpiry = null;
                 storageConnectionString = _options.Value.StorageConnectionString;
-                tableServiceClient = new TableServiceClient(storageConnectionString);
             }
 
             return new ServiceClients(
@@ -271,7 +266,7 @@ namespace Knapcode.ExplorePackages
                 secretClient,
                 new BlobServiceClient(storageConnectionString),
                 new QueueServiceClient(storageConnectionString),
-                tableServiceClient);
+                new TableServiceClient(storageConnectionString));
         }
 
         private record ServiceClients(

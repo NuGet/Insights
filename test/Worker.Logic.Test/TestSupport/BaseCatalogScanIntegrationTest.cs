@@ -89,10 +89,13 @@ namespace Knapcode.ExplorePackages.Worker
         {
             var entities = await table.QueryAsync<T>().ToListAsync();
 
+            // Workaround: https://github.com/Azure/azure-sdk-for-net/issues/21023
+            var setTimestamp = typeof(T).GetProperty(nameof(ITableEntity.Timestamp));
+
             foreach (var entity in entities)
             {
                 entity.ETag = default;
-                entity.Timestamp = DateTimeOffset.MinValue;
+                setTimestamp.SetValue(entity, DateTimeOffset.MinValue);
                 cleanEntity?.Invoke(entity);
             }
 
@@ -208,10 +211,10 @@ namespace Knapcode.ExplorePackages.Worker
                 Assert.Equal(0, properties.ApproximateMessagesCount);
             }
 
-            var tables = await tableServiceClient.GetTablesAsync(prefix: StoragePrefix).ToListAsync();
+            var tables = await tableServiceClient.QueryAsync(prefix: StoragePrefix).ToListAsync();
             Assert.Equal(
                 GetExpectedTableNames().Concat(new[] { Options.Value.CursorTableName, Options.Value.CatalogIndexScanTableName }).OrderBy(x => x).ToArray(),
-                tables.Select(x => x.TableName).ToArray());
+                tables.Select(x => x.Name).ToArray());
 
             var cursors = await tableServiceClient
                 .GetTableClient(Options.Value.CursorTableName)

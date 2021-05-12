@@ -45,7 +45,6 @@ namespace Knapcode.ExplorePackages.Worker
                 Assert.Equal(cursor.RowKey, entity.RowKey);
                 Assert.Equal(CursorName, entity.GetName());
                 Assert.Equal(cursor.ETag, entity.ETag);
-                Assert.Equal(cursor.Timestamp, entity.Timestamp);
             }
 
             [Fact]

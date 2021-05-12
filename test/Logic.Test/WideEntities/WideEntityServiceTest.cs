@@ -42,7 +42,6 @@ namespace Knapcode.ExplorePackages.WideEntities
                     Assert.Equal(retrieved[i].PartitionKey, inserted[i].PartitionKey);
                     Assert.Equal(retrieved[i].RowKey, inserted[i].RowKey);
                     Assert.Equal(retrieved[i].ETag, inserted[i].ETag);
-                    Assert.Equal(retrieved[i].Timestamp, inserted[i].Timestamp);
                     Assert.Equal(retrieved[i].SegmentCount, inserted[i].SegmentCount);
                     Assert.Equal(retrieved[i].ToByteArray(), inserted[i].ToByteArray());
                 }
@@ -68,7 +67,6 @@ namespace Knapcode.ExplorePackages.WideEntities
 
                 // Assert
                 var retrieved = await Target.RetrieveAsync(TableName, partitionKey, rowKey);
-                Assert.Equal(retrieved.Timestamp, newEntity.Timestamp);
                 Assert.Equal(retrieved.ETag, newEntity.ETag);
                 Assert.Equal(retrieved.ToByteArray(), newEntity.ToByteArray());
             }
@@ -87,8 +85,6 @@ namespace Knapcode.ExplorePackages.WideEntities
                 var newEntity = await Target.InsertOrReplaceAsync(TableName, partitionKey, rowKey, newContent);
 
                 // Assert
-                Assert.NotNull(newEntity.Timestamp);
-
                 Assert.NotEqual(existingEntity.ETag, newEntity.ETag);
                 Assert.NotEqual(existingEntity.ToByteArray(), newEntity.ToByteArray());
 
@@ -156,8 +152,6 @@ namespace Knapcode.ExplorePackages.WideEntities
                 var newEntity = await Target.ReplaceAsync(TableName, existingEntity, newContent);
 
                 // Assert
-                Assert.NotNull(newEntity.Timestamp);
-
                 Assert.NotEqual(existingEntity.ETag, newEntity.ETag);
                 Assert.NotEqual(existingEntity.ToByteArray(), newEntity.ToByteArray());
 
@@ -194,7 +188,7 @@ namespace Knapcode.ExplorePackages.WideEntities
                 var changedEntity = await Target.ReplaceAsync(TableName, existingEntity, existingContent);
 
                 // Act & Assert
-                var ex = await Assert.ThrowsAsync<RequestFailedException>(() => Target.ReplaceAsync(TableName, existingEntity, newContent));
+                var ex = await Assert.ThrowsAsync<TableTransactionFailedException>(() => Target.ReplaceAsync(TableName, existingEntity, newContent));
                 Assert.Equal((int)HttpStatusCode.PreconditionFailed, ex.Status);
                 var retrieved = await Target.RetrieveAsync(TableName, partitionKey, rowKey);
                 Assert.Equal(changedEntity.ETag, retrieved.ETag);
@@ -258,7 +252,6 @@ namespace Knapcode.ExplorePackages.WideEntities
                     Assert.Equal(expected.PartitionKey, actual.PartitionKey);
                     Assert.Equal(expected.RowKey, actual.RowKey);
                     Assert.Equal(expected.ETag, actual.ETag);
-                    Assert.Equal(expected.Timestamp, actual.Timestamp);
                     Assert.Equal(expected.ToByteArray(), actual.ToByteArray());
                 }
             }
@@ -285,8 +278,6 @@ namespace Knapcode.ExplorePackages.WideEntities
                 Assert.Equal(rowKeys[1], actual[1].RowKey);
                 Assert.Equal(rowKeys[2], actual[2].RowKey);
                 var error = TimeSpan.FromMinutes(5);
-                Assert.All(actual, x => Assert.NotNull(x.Timestamp));
-                Assert.All(actual, x => Assert.InRange(x.Timestamp.Value, before.Subtract(error), after.Add(error)));
                 Assert.All(actual, x => Assert.NotEqual(default, x.ETag));
                 Assert.All(actual, x => Assert.Equal(1, x.SegmentCount));
                 Assert.All(actual, x =>
@@ -345,7 +336,6 @@ namespace Knapcode.ExplorePackages.WideEntities
                     Assert.Equal(expected.PartitionKey, actual.PartitionKey);
                     Assert.Equal(expected.RowKey, actual.RowKey);
                     Assert.Equal(expected.ETag, actual.ETag);
-                    Assert.Equal(expected.Timestamp, actual.Timestamp);
                     Assert.Equal(expected.ToByteArray(), actual.ToByteArray());
                 }
             }
@@ -392,7 +382,6 @@ namespace Knapcode.ExplorePackages.WideEntities
                     Assert.Equal(expected.PartitionKey, actual.PartitionKey);
                     Assert.Equal(expected.RowKey, actual.RowKey);
                     Assert.Equal(expected.ETag, actual.ETag);
-                    Assert.Equal(expected.Timestamp, actual.Timestamp);
                     Assert.Equal(expected.ToByteArray(), actual.ToByteArray());
                 }
             }
@@ -434,8 +423,6 @@ namespace Knapcode.ExplorePackages.WideEntities
                 Assert.Equal(partitionKey, wideEntity.PartitionKey);
                 Assert.Equal(rowKey, wideEntity.RowKey);
                 var error = TimeSpan.FromMinutes(5);
-                Assert.NotNull(wideEntity.Timestamp);
-                Assert.InRange(wideEntity.Timestamp.Value, before.Subtract(error), after.Add(error));
                 Assert.NotEqual(default, wideEntity.ETag);
                 Assert.Equal(1, wideEntity.SegmentCount);
                 var ex = Assert.Throws<InvalidOperationException>(() => wideEntity.GetStream());
@@ -484,8 +471,6 @@ namespace Knapcode.ExplorePackages.WideEntities
                 Assert.Equal(partitionKey, wideEntity.PartitionKey);
                 Assert.Equal(rowKey, wideEntity.RowKey);
                 var error = TimeSpan.FromMinutes(5);
-                Assert.NotNull(wideEntity.Timestamp);
-                Assert.InRange(wideEntity.Timestamp.Value, before.Subtract(error), after.Add(error));
                 Assert.NotEqual(default, wideEntity.ETag);
                 Assert.Equal(TestSettings.IsStorageEmulator ? 8 : 3, wideEntity.SegmentCount);
             }
@@ -580,8 +565,11 @@ namespace Knapcode.ExplorePackages.WideEntities
 
             private async Task<TableClient> GetTableAsync(ILogger<ServiceClientFactory> logger)
             {
-                return (await GetServiceClientFactory(logger).GetTableServiceClientAsync())
-                    .GetTableClient(TableName);
+                var client = await GetServiceClientFactory(logger).GetTableServiceClientAsync();
+                Console.WriteLine("JOELDEBUG: '" + client.AccountName);
+                var table = client.GetTableClient(TableName);
+                Console.WriteLine("JOELDEBUG: '" + table.Name);
+                return table;
             }
         }
     }
