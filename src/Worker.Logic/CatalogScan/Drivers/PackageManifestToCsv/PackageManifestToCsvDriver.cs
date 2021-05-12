@@ -8,6 +8,7 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using NuGet.Frameworks;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
@@ -146,9 +147,8 @@ namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
             {
                 record.ContentFiles = JsonSerialize(nuspecReader.GetContentFiles());
             }
-            catch (FormatException ex) when (ex.Message.Contains("Index (zero based) must be greater than or equal to zero and less than the size of the argument list."))
+            catch (PackagingException ex) when (ex.Message.Contains("The nuspec contains an invalid entry"))
             {
-                // See: https://github.com/NuGet/NuGet.Client/pull/3914
                 record.ContentFilesHasFormatException = true;
                 record.ResultType = PackageManifestRecordResultType.Error;
             }

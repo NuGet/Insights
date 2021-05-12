@@ -23,10 +23,10 @@ namespace Knapcode.ExplorePackages
             [InlineData("1.0.0", "(, 1.0.0-beta.1]", SemVerType.DependencyMaxHasPrereleaseDots)]
             [InlineData("1.0.0", "(, 1.0.0+git]", SemVerType.DependencyMaxHasBuildMetadata)]
             [InlineData("1.0.0", "(, 1.0.0-beta.1+git]", SemVerType.DependencyMaxHasPrereleaseDots | SemVerType.DependencyMaxHasBuildMetadata)]
-            [InlineData("1.0.0", "[1.0.0+git, 1.0.0-beta.1]", SemVerType.DependencyMinHasBuildMetadata | SemVerType.DependencyMaxHasPrereleaseDots)]
-            [InlineData("1.0.0", "[1.0.0+git, 1.0.0+git]", SemVerType.DependencyMinHasBuildMetadata | SemVerType.DependencyMaxHasBuildMetadata)]
-            [InlineData("1.0.0", "[1.0.0+git, 1.0.0-beta.1+git]", SemVerType.DependencyMinHasBuildMetadata | SemVerType.DependencyMaxHasPrereleaseDots | SemVerType.DependencyMaxHasBuildMetadata)]
-            [InlineData("1.0.0-beta.1", "[1.0.0+git, 1.0.0-beta.1+git]", SemVerType.VersionHasPrereleaseDots | SemVerType.DependencyMinHasBuildMetadata | SemVerType.DependencyMaxHasPrereleaseDots | SemVerType.DependencyMaxHasBuildMetadata)]
+            [InlineData("1.0.0", "[1.0.0+git, 2.0.0-beta.1]", SemVerType.DependencyMinHasBuildMetadata | SemVerType.DependencyMaxHasPrereleaseDots)]
+            [InlineData("1.0.0", "[1.0.0+git, 2.0.0+git]", SemVerType.DependencyMinHasBuildMetadata | SemVerType.DependencyMaxHasBuildMetadata)]
+            [InlineData("1.0.0", "[1.0.0+git, 2.0.0-beta.1+git]", SemVerType.DependencyMinHasBuildMetadata | SemVerType.DependencyMaxHasPrereleaseDots | SemVerType.DependencyMaxHasBuildMetadata)]
+            [InlineData("1.0.0-beta.1", "[1.0.0+git, 2.0.0-beta.1+git]", SemVerType.VersionHasPrereleaseDots | SemVerType.DependencyMinHasBuildMetadata | SemVerType.DependencyMaxHasPrereleaseDots | SemVerType.DependencyMaxHasBuildMetadata)]
             public void ReturnsExpected(string packageVersion, string dependencyVersionRange, SemVerType expected)
             {
                 var leaf = new PackageDetailsCatalogLeaf
