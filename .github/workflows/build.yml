@@ -35,7 +35,7 @@ jobs:
         keyvault: ${{ secrets.EXPLOREPACKAGES_KEYVAULTNAME }}
         secrets: '${{ secrets.EXPLOREPACKAGES_STORAGESASSECRETNAME }}, ${{ secrets.EXPLOREPACKAGES_STORAGEBLOBREADSASSECRETNAME }}'
       id: keyVault
-    - run: dotnet test --no-build --verbosity normal --filter "FullyQualifiedName=Knapcode.ExplorePackages.WideEntities.WideEntityServiceTest+InsertOrReplaceAsync.InsertsWhenNoEntityExists"
+    - run: dotnet test --no-build --verbosity normal
       if: github.ref == 'refs/heads/main' || contains(github.event.pull_request.labels.*.name, 'run tests')
       env:
         EXPLOREPACKAGES_STORAGEACCOUNTNAME: ${{ secrets.EXPLOREPACKAGES_STORAGEACCOUNTNAME }}
