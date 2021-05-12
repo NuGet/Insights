@@ -565,11 +565,8 @@ namespace Knapcode.ExplorePackages.WideEntities
 
             private async Task<TableClient> GetTableAsync(ILogger<ServiceClientFactory> logger)
             {
-                var client = await GetServiceClientFactory(logger).GetTableServiceClientAsync();
-                Console.WriteLine("JOELDEBUG: '" + client.AccountName);
-                var table = client.GetTableClient(TableName);
-                Console.WriteLine("JOELDEBUG: '" + table.Name);
-                return table;
+                return (await GetServiceClientFactory(logger).GetTableServiceClientAsync())
+                    .GetTableClient(TableName);
             }
         }
     }
