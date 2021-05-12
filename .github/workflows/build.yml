@@ -39,8 +39,8 @@ jobs:
       if: github.ref == 'refs/heads/main' || contains(github.event.pull_request.labels.*.name, 'run tests')
       env:
         EXPLOREPACKAGES_STORAGEACCOUNTNAME: ${{ secrets.EXPLOREPACKAGES_STORAGEACCOUNTNAME }}
-        EXPLOREPACKAGES_STORAGESAS: ${{ steps.keyVault[secrets.EXPLOREPACKAGES_STORAGESASSECRETNAME] }}
-        EXPLOREPACKAGES_STORAGEBLOBREADSAS: ${{ steps.keyVault[secrets.EXPLOREPACKAGES_STORAGEBLOBREADSASSECRETNAME] }}   
+        EXPLOREPACKAGES_STORAGESAS: ${{ steps.keyVault.outputs[secrets.EXPLOREPACKAGES_STORAGESASSECRETNAME] }}
+        EXPLOREPACKAGES_STORAGEBLOBREADSAS: ${{ steps.keyVault.outputs[secrets.EXPLOREPACKAGES_STORAGEBLOBREADSASSECRETNAME] }}   
 
   markdown-link-check:
   
