@@ -37,7 +37,7 @@ jobs:
       id: keyVault
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
-    - run: dotnet test --no-build --verbosity normal
+    - run: dotnet test --no-build --verbosity normal --filter "FullyQualifiedName=Knapcode.ExplorePackages.WideEntities.WideEntityServiceTest+InsertOrReplaceAsync.InsertsWhenNoEntityExists"
       if: github.ref == 'refs/heads/main' || contains(github.event.pull_request.labels.*.name, 'run tests')
       env:
         EXPLOREPACKAGES_STORAGEACCOUNTNAME: ${{ secrets.EXPLOREPACKAGES_STORAGEACCOUNTNAME }}
