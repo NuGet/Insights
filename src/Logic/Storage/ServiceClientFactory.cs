@@ -18,11 +18,17 @@ namespace Knapcode.ExplorePackages
 
         private readonly SemaphoreSlim _lock = new SemaphoreSlim(1);
         private ServiceClients _serviceClients;
+
+        private readonly AzureLoggingStartup _loggingStartup;
         private readonly IOptions<ExplorePackagesSettings> _options;
         private readonly ILogger<ServiceClientFactory> _logger;
 
-        public ServiceClientFactory(IOptions<ExplorePackagesSettings> options, ILogger<ServiceClientFactory> logger)
+        public ServiceClientFactory(
+            AzureLoggingStartup loggingStartup,
+            IOptions<ExplorePackagesSettings> options,
+            ILogger<ServiceClientFactory> logger)
         {
+            _loggingStartup = loggingStartup; // Injected so that logging starts
             _options = options;
             _logger = logger;
         }
@@ -259,7 +265,15 @@ namespace Knapcode.ExplorePackages
 
             var blob = new BlobServiceClient(storageConnectionString);
             var queue = new QueueServiceClient(storageConnectionString);
-            var table = new TableServiceClient(storageConnectionString);
+            var options = new TablesClientOptions
+            {
+                Diagnostics =
+                {
+                    IsLoggingContentEnabled = true,
+                    IsLoggingEnabled = true,
+                }
+            };
+            var table = new TableServiceClient(storageConnectionString, options);
 
             _logger.LogInformation("Blob endpoint: {BlobEndpoint}", blob.Uri);
             _logger.LogInformation("Queue endpoint: {QueueEndpoint}", queue.Uri);

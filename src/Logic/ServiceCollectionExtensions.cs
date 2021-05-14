@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Knapcode.ExplorePackages.TablePrefixScan;
 using Knapcode.ExplorePackages.WideEntities;
 using Knapcode.MiniZip;
+using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -84,6 +85,8 @@ namespace Knapcode.ExplorePackages
             });
 
             serviceCollection.AddSingleton<ServiceClientFactory>();
+            serviceCollection.AddAzureClientsCore();
+            serviceCollection.AddSingleton<AzureLoggingStartup>();
 
             serviceCollection.AddSingleton<IThrottle>(NullThrottle.Instance);
 

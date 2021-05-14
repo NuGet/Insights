@@ -34,6 +34,7 @@ namespace Knapcode.ExplorePackages
             IsStorageContainerPublic = false;
             MaxTempMemoryStreamSize = 1024 * 1024 * 196;
             UserManagedIdentityClientId = null;
+            EnableAzureLogging = false;
             TempDirectories = new List<TempStreamDirectory>
             {
                 Path.Combine(Path.GetTempPath(), "Knapcode.ExplorePackages"),
@@ -65,6 +66,7 @@ namespace Knapcode.ExplorePackages
         public bool IsStorageContainerPublic { get; set; }
         public int MaxTempMemoryStreamSize { get; set; }
         public string UserManagedIdentityClientId { get; set; }
+        public bool EnableAzureLogging { get; set; }
         public List<TempStreamDirectory> TempDirectories { get; set; }
     }
 }
