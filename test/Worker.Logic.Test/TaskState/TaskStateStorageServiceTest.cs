@@ -155,7 +155,7 @@ namespace Knapcode.ExplorePackages.Worker
 
             public ServiceClientFactory GetServiceClientFactory(ILogger<ServiceClientFactory> logger)
             {
-                return new ServiceClientFactory(Options.Object, logger);
+                return new ServiceClientFactory(null, Options.Object, logger);
             }
 
             public async Task DisposeAsync()

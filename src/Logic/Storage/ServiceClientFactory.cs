@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 using Azure.Data.Tables;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
@@ -19,16 +20,14 @@ namespace Knapcode.ExplorePackages
         private readonly SemaphoreSlim _lock = new SemaphoreSlim(1);
         private ServiceClients _serviceClients;
 
-        private readonly AzureLoggingStartup _loggingStartup;
         private readonly IOptions<ExplorePackagesSettings> _options;
         private readonly ILogger<ServiceClientFactory> _logger;
 
         public ServiceClientFactory(
-            AzureLoggingStartup loggingStartup,
+            AzureLoggingStartup loggingStartup, // Injected so that logging starts
             IOptions<ExplorePackagesSettings> options,
             ILogger<ServiceClientFactory> logger)
         {
-            _loggingStartup = loggingStartup; // Injected so that logging starts
             _options = options;
             _logger = logger;
         }
@@ -263,18 +262,19 @@ namespace Knapcode.ExplorePackages
                 storageConnectionString = _options.Value.StorageConnectionString;
             }
 
-            var blob = new BlobServiceClient(storageConnectionString);
-            var queue = new QueueServiceClient(storageConnectionString);
-            var options = new TablesClientOptions
+            var blob = new BlobServiceClient(storageConnectionString, new BlobClientOptions
             {
-                Diagnostics =
-                {
-                    IsLoggingContentEnabled = true,
-                    IsLoggingEnabled = true,
-                }
-            };
-            var table = new TableServiceClient(storageConnectionString, options);
-
+                Diagnostics = { IsLoggingEnabled = _options.Value.EnableAzureLogging }
+            });
+            var queue = new QueueServiceClient(storageConnectionString, new QueueClientOptions
+            {
+                Diagnostics = { IsLoggingEnabled = _options.Value.EnableAzureLogging }
+            });
+            var table = new TableServiceClient(storageConnectionString, new TablesClientOptions
+            {
+                Diagnostics = { IsLoggingEnabled = _options.Value.EnableAzureLogging }
+            });
+            
             _logger.LogInformation("Blob endpoint: {BlobEndpoint}", blob.Uri);
             _logger.LogInformation("Queue endpoint: {QueueEndpoint}", queue.Uri);
             // No Uri property for TableServiceClient, see https://github.com/Azure/azure-sdk-for-net/issues/19881
