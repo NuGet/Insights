@@ -296,7 +296,7 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
     }
   }
   properties: {
-    serverFarmId: workerPlans[i % workerCountPerPlan].id
+    serverFarmId: workerPlans[i / workerCountPerPlan].id
     clientAffinityEnabled: false
     httpsOnly: true
     siteConfig: {

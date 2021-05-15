@@ -156,9 +156,11 @@ class ResourceSettings {
         $this.LeaseContainerName = "leases"
         $this.SasValidityPeriod = New-TimeSpan -Days 6
 
-        # Set up some default config based on worker SKU
-        if ($this.WorkerSku -eq "Y1") {
-            if ("NuGetPackageExplorerToCsv" -notin $this.WorkerConfig["Knapcode.ExplorePackages"].DisabledDrivers) {
+        $isNuGetPackageExplorerToCsvEnabled = "NuGetPackageExplorerToCsv" -notin $this.WorkerConfig["Knapcode.ExplorePackages"].DisabledDrivers
+        $isConsumptionPlan = $this.WorkerSku -eq "Y1"
+        
+        if ($isNuGetPackageExplorerToCsvEnabled) {
+            if ($isConsumptionPlan) {
                 # Default "MoveTempToHome" to be true when NuGetPackageExplorerToCsv is enabled. We do this because the NuGet
                 # Package Explorer symbol validation APIs are hard-coded to use TEMP and can quickly fill up the small TEMP
                 # capacity on consumption plan (~500 MiB). Therefore, we move TEMP to HOME at the start of the process. HOME
@@ -166,22 +168,29 @@ class ResourceSettings {
                 if ($null -eq $this.WorkerConfig["Knapcode.ExplorePackages"].MoveTempToHome) {
                     $this.WorkerConfig["Knapcode.ExplorePackages"].MoveTempToHome = $true
                 }
-
+    
                 # Default the maximum number of workers per Function App plan to 16 when NuGetPackageExplorerToCsv is enabled.
                 # We do this because it's easy for a lot of Function App workers to overload the HOME directory which is backed
                 # by an Azure Storage File share.
                 if ($null -eq $this.WorkerConfig.WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT) {
                     $this.WorkerConfig.WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT = 16
                 }
+            }
 
-                # Default the storage queue trigger batch size to 1 when NuGetPackageExplorerToCsv is enabled. We do this to
-                # eliminate the parallelism in the worker process so that we can easily control the number of total parallel
-                # queue messages are being processed and therefore are using the HOME file share.
-                if ($null -eq $this.WorkerConfig.AzureFunctionsJobHost__extensions__queues__batchSize) {
-                    $this.WorkerConfig.AzureFunctionsJobHost__extensions__queues__batchSize = 1
+            # Default the storage queue trigger batch size to 1 when NuGetPackageExplorerToCsv is enabled. We do this to
+            # eliminate the parallelism in the worker process so that we can easily control the number of total parallel
+            # queue messages are being processed and therefore are using the HOME file share.
+            if ($null -eq $this.WorkerConfig.AzureFunctionsJobHost__extensions__queues__batchSize) {
+                if ($this.WorkerSku -eq "P1v2") {
+                    $this.WorkerConfig.AzureFunctionsJobHost__extensions__queues__batchSize = 4
+                }
+                else {
+                    $this.WorkerConfig.AzureFunctionsJobHost__extensions__queues__batchSize = 2
                 }
             }
-            
+        }
+        
+        if ($isConsumptionPlan) {            
             # Since Consumption plan requires WEBSITE_CONTENTAZUREFILECONNECTIONSTRING and this does not support SAS-based
             # connection strings, don't auto-regenerate in this case. We would need to regularly update a connection string based
             # on the active storage access key, which isn't worth the effort for this approach that is less secure anyway.
