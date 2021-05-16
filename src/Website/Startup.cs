@@ -69,8 +69,8 @@ namespace Knapcode.ExplorePackages.Website
                 },
                 options =>
                 {
-                    options.ExpireTimeSpan = TimeSpan.FromHours(1);
-                    options.SlidingExpiration = false;
+                    options.ExpireTimeSpan = TimeSpan.FromHours(6);
+                    options.SlidingExpiration = true;
                     options.AccessDeniedPath = "/Home/AccessDenied";
                 });
 
