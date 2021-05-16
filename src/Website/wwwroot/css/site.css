@@ -10,30 +10,6 @@
     font-size: 0.9rem;
 }
 
-/* Consistency */
-.consistency .table-report tr th:first-child {
-    text-align: right;
-    width: 11rem;
-}
-
-.consistency #report .table-report thead tr:first-child th {
-    border-bottom-width: 0;
-}
-
-.consistency #urls table tr td:nth-child(2) {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-    max-width: 600px;
-}
-
-.consistency .notransition {
-    -webkit-transition: none !important;
-    -moz-transition: none !important;
-    -o-transition: none !important;
-    transition: none !important;
-}
-
 /* Admin index */
 .admin-index h3 {
     margin-top: 1rem;

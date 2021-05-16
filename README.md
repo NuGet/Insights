@@ -174,7 +174,7 @@ persistence (cheap).
 Here's a high-level description of main projects in this repository:
 
 - [`Worker`](src/Worker) - the Azure Function itself, a thin adapter between core logic and Azure Functions
-- [`Website`](src/Website) - a website for checking [consistency](docs/consistency.md) and an admin panel for starting scans
+- [`Website`](src/Website) - a website for an admin panel to managed scans
 - [`Worker.Logic`](src/Worker.Logic) - all of the catalog scan and driver logic, this is the most interesting project
 - [`Logic`](src/Logic) - contains more generic logic related to NuGet.org protocol and is not directly related to distributed processing
 
@@ -212,6 +212,5 @@ Several message processors exist to emit other useful data:
 
 - **[Adding a new driver](docs/new-driver.md) - a guide to help you enhance ExplorePackages to suit your needs.**
 - [Blog posts](docs/blog-posts.md) - blog posts about lessons learned from this project
-- [Consistency](docs/consistency.md) - a consistency checker for packages published to NuGet.org
 - [Cost](docs/cost.md) - how much it costs to run several of the implemented catalog scans
 - [Notable classes](docs/notable-classes.md) - interesting or useful classes supporting this project

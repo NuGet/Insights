@@ -165,7 +165,6 @@ resource website 'Microsoft.Web/sites@2020-09-01' = {
     clientAffinityEnabled: false
     httpsOnly: true
     siteConfig: {
-      webSocketsEnabled: true
       minTlsVersion: '1.2'
       netFrameworkVersion: 'v5.0'
       appSettings: concat([

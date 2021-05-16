@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Text.Json.Serialization;
-using Knapcode.ExplorePackages.Website.Logic;
 using Knapcode.ExplorePackages.Worker;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -43,15 +41,7 @@ namespace Knapcode.ExplorePackages.Website
             });
 
             services
-                .AddMvc()
-                .AddRazorRuntimeCompilation();
-
-            services
-                .AddSignalR()
-                .AddJsonProtocol(options =>
-                {
-                    options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-                });
+                .AddMvc();
 
             var microsoftIdentityBuilder = services
                 .AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
@@ -113,20 +103,21 @@ namespace Knapcode.ExplorePackages.Website
 
             app.UseRouting();
 
+            app.UseHsts();
+            app.Use(async (context, next) =>
+            {
+                context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+                await next();
+            });
+
             app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(routes =>
             {
-                routes.MapHub<PackageReportHub>(PackageReportHub.Path);
-
                 routes.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
-
-                routes.MapControllerRoute(
-                    name: "explore",
-                    pattern: "{controller=Home}/{action=Explore}/{id}/{version}");
+                    pattern: "{controller=Home}/{action=Index}");
             });
         }
     }

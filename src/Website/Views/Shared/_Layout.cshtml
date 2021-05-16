@@ -21,7 +21,7 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item @Html.IsSelected("Home", "Index")">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Consistency</a>
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         @if (Options.Value.ShowAdminLink || User.Identity.IsAuthenticated)
                         {
