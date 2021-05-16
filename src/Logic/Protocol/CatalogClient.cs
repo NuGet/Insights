@@ -16,7 +16,7 @@ namespace Knapcode.ExplorePackages
     {
         /*
 
-        JverCatalogLeafItemRecords
+        NiCatalogLeafItemRecords
         | extend Identity = strcat(LowerId, "/", LowerNormalizedVersion)
         | summarize min(CommitTimestamp), arg_max(CommitTimestamp, Type), leafCount = count() by Identity
         | summarize
