@@ -13,6 +13,7 @@ using Knapcode.ExplorePackages.Worker.LoadPackageManifest;
 using Knapcode.ExplorePackages.Worker.LoadPackageVersion;
 using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
 using Knapcode.ExplorePackages.Worker.TableCopy;
+using Knapcode.ExplorePackages.Worker.Workflow;
 using Kusto.Data;
 using Kusto.Data.Net.Client;
 using Kusto.Ingest;
@@ -36,6 +37,9 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient(typeof(TableScanService<>));
             serviceCollection.AddTransient(typeof(TableScanDriverFactory<>));
             serviceCollection.AddTransient(typeof(LatestLeafStorageService<>));
+
+            serviceCollection.AddTransient<WorkflowStorageService>();
+            serviceCollection.AddTransient<WorkflowService>();
 
             serviceCollection.AddTransient<CatalogScanStorageService>();
             serviceCollection.AddTransient<CatalogScanCursorService>();

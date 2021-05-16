@@ -27,7 +27,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
         public string BlobName => "owners";
         public string ContainerName => _options.Value.PackageOwnersContainerName;
         public TimeSpan Frequency => _options.Value.OwnersToCsvFrequency;
-        public bool IsEnabled => _options.Value.OwnersV2Url != null;
+        public bool HasRequiredConfiguration => _options.Value.OwnersV2Url != null;
         public bool AutoStart => _options.Value.AutoStartOwnersToCsv;
         public Type RecordType => typeof(PackageOwnerRecord);
 

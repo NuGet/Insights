@@ -18,7 +18,7 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
 
         public string Name => _updater.OperationName;
         public TimeSpan Frequency => _updater.Frequency;
-        public bool IsEnabled => _service.IsEnabled;
+        public bool IsEnabled => _service.HasRequiredConfiguration;
         public bool AutoStart => _updater.AutoStart;
         public int Precedence => default;
 

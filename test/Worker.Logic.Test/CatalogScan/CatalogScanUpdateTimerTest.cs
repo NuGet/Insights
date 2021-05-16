@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker.KustoIngestion;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Xunit;
@@ -47,19 +46,6 @@ namespace Knapcode.ExplorePackages.Worker
 
             var catalogScans = await CatalogScanStorageService.GetIndexScansAsync();
             Assert.NotEmpty(catalogScans);
-            Assert.False(result);
-        }
-
-        [Fact]
-        public async Task DoesNotStartCatalogScansWhenKustoIngestionIsRunningAsync()
-        {
-            await Target.InitializeAsync();
-            await Host.Services.GetRequiredService<KustoIngestionService>().StartAsync();
-
-            var result = await Target.ExecuteAsync();
-
-            var catalogScans = await CatalogScanStorageService.GetIndexScansAsync();
-            Assert.Empty(catalogScans);
             Assert.False(result);
         }
     }

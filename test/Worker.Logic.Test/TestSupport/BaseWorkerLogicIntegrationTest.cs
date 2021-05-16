@@ -6,6 +6,7 @@ using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 using Knapcode.ExplorePackages.Worker.BuildVersionSet;
 using Knapcode.ExplorePackages.Worker.KustoIngestion;
+using Knapcode.ExplorePackages.Worker.Workflow;
 using Kusto.Data.Common;
 using Kusto.Ingest;
 using Microsoft.AspNetCore.Hosting;
@@ -80,6 +81,8 @@ namespace Knapcode.ExplorePackages.Worker
         public TaskStateStorageService TaskStateStorageService => Host.Services.GetRequiredService<TaskStateStorageService>();
         public KustoIngestionService KustoIngestionService => Host.Services.GetRequiredService<KustoIngestionService>();
         public KustoIngestionStorageService KustoIngestionStorageService => Host.Services.GetRequiredService<KustoIngestionStorageService>();
+        public WorkflowService WorkflowService => Host.Services.GetRequiredService<WorkflowService>();
+        public WorkflowStorageService WorkflowStorageService => Host.Services.GetRequiredService<WorkflowStorageService>();
         public IMessageEnqueuer MessageEnqueuer => Host.Services.GetRequiredService<IMessageEnqueuer>();
         public IWorkerQueueFactory WorkerQueueFactory => Host.Services.GetRequiredService<IWorkerQueueFactory>();
 
@@ -117,6 +120,7 @@ namespace Knapcode.ExplorePackages.Worker
             x.KustoIngestionTableName = $"{StoragePrefix}1ki1";
             x.LatestPackageLeafTableName = $"{StoragePrefix}1lpl1";
             x.PackageVersionTableName = $"{StoragePrefix}1pv1";
+            x.WorkflowRunTableName = $"{StoragePrefix}1wr1";
             x.PackageVersionContainerName = $"{StoragePrefix}1pvc1";
             x.PackageAssetContainerName = $"{StoragePrefix}1fpa1";
             x.PackageAssemblyContainerName = $"{StoragePrefix}1fpi1";

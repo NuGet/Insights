@@ -8,7 +8,7 @@
     var messageBgClass = hasError ? "bg-danger" : (hasSuccess ? "bg-success" : string.Empty);
     var borderClass = hasError ? "border-danger" : (hasSuccess ? "border-success" : string.Empty);
 
-    var isDisabled = Model.TimerStates.Any(x => x.Name == Worker.KustoIngestion.KustoIngestionTimer.DefaultName && x.IsRunning);
+    var isDisabled = Model.IsWorkflowRunning;
 
     string statusText = null;
     string statusTitle = null;

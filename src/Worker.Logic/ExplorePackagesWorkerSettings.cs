@@ -40,6 +40,7 @@ namespace Knapcode.ExplorePackages.Worker
             VersionSetAggregateTableName = "versionset";
             VersionSetContainerName = "versionset";
             KustoIngestionTableName = "kustoingestions";
+            WorkflowRunTableName = "workflowruns";
 
             LatestPackageLeafTableName = "latestpackageleaves";
             PackageAssetContainerName = "packageassets";
@@ -96,6 +97,7 @@ namespace Knapcode.ExplorePackages.Worker
         public string VersionSetAggregateTableName { get; set; }
         public string VersionSetContainerName { get; set; }
         public string KustoIngestionTableName { get; set; }
+        public string WorkflowRunTableName { get; set; }
 
         public string LatestPackageLeafTableName { get; set; }
         public string PackageAssetContainerName { get; set; }

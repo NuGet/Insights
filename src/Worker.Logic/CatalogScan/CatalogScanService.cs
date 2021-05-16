@@ -43,28 +43,6 @@ namespace Knapcode.ExplorePackages.Worker
             await _leaseService.InitializeAsync();
         }
 
-        public async Task ExecuteIfNoScansAreRunningAsync(Func<Task> actionAsync)
-        {
-            await using (var lease = await GetUpdateAllLeaseAsync())
-            {
-                if (!lease.Acquired)
-                {
-                    return;
-                }
-
-                var scans = await _storageService.GetIndexScansAsync();
-                if (scans.Any(x => x.State != CatalogIndexScanState.Complete))
-                {
-                    // This check will not catch all catalog scans that are started manually, but will catched catalog
-                    // scans that are already started. With the lease above which protects against automatically started
-                    // leases, it's good enough.
-                    return;
-                }
-
-                await actionAsync();
-            }
-        }
-
         public async Task RequeueAsync(CatalogScanDriverType driverType, string scanId)
         {
             var cursorName = _cursorService.GetCursorName(driverType);
@@ -177,32 +155,32 @@ namespace Knapcode.ExplorePackages.Worker
 
         public async Task<IReadOnlyDictionary<CatalogScanDriverType, CatalogScanServiceResult>> UpdateAllAsync(DateTimeOffset? max)
         {
-            await using (var lease = await GetUpdateAllLeaseAsync())
+            if (!max.HasValue)
             {
-                var results = new Dictionary<CatalogScanDriverType, CatalogScanServiceResult>();
-                if (!lease.Acquired)
-                {
-                    return results;
-                }
-
-                if (!max.HasValue)
-                {
-                    max = await _cursorService.GetSourceMaxAsync();
-                }
-
-                foreach (var driverType in _cursorService.StartableDriverTypes)
-                {
-                    var result = await UpdateAsync(driverType, max, onlyLatestLeaves: null, continueWithDependents: true);
-                    results.Add(driverType, result);
-                }
-
-                return results;
+                max = await _cursorService.GetSourceMaxAsync();
             }
-        }
 
-        private async Task<AutoRenewingStorageLeaseResult> GetUpdateAllLeaseAsync()
-        {
-            return await _leaseService.TryAcquireAsync("UpdateAllCatalogScans");
+            var results = new Dictionary<CatalogScanDriverType, CatalogScanServiceResult>();
+            foreach (var driverType in _cursorService.StartableDriverTypes)
+            {
+                var result = await UpdateAsync(driverType, max, onlyLatestLeaves: null, continueWithDependents: true);
+                results.Add(driverType, result);
+            }
+
+            foreach (var pair in results)
+            {
+                switch (pair.Value.Type)
+                {
+                    case CatalogScanServiceResultType.NewStarted:
+                        _logger.LogInformation("Started {DriverType} catalog scan {ScanId} with max {Max:O}.", pair.Key, pair.Value.Scan.GetScanId(), max.Value);
+                        break;
+                    default:
+                        _logger.LogInformation("{DriverType} catalog scan did not start due to: {ResultType}.", pair.Key, pair.Value.Type);
+                        break;
+                }
+            }
+
+            return results;
         }
 
         public async Task<CatalogScanServiceResult> UpdateAsync(CatalogScanDriverType driverType)

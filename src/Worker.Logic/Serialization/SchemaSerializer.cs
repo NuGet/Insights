@@ -14,6 +14,7 @@ using Knapcode.ExplorePackages.Worker.PackageSignatureToCsv;
 using Knapcode.ExplorePackages.Worker.PackageVersionToCsv;
 using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
 using Knapcode.ExplorePackages.Worker.TableCopy;
+using Knapcode.ExplorePackages.Worker.Workflow;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
@@ -33,6 +34,8 @@ namespace Knapcode.ExplorePackages.Worker
             new SchemaV1<KustoIngestionMessage>("ki"),
             new SchemaV1<KustoContainerIngestionMessage>("kci"),
             new SchemaV1<KustoBlobIngestionMessage>("kbi"),
+
+            new SchemaV1<WorkflowRunMessage>("wr"),
 
             new SchemaV1<CsvCompactMessage<CatalogLeafItemRecord>>("cc.fcli"),
             new SchemaV1<CsvCompactMessage<PackageArchiveRecord>>("cc.pa2c"),

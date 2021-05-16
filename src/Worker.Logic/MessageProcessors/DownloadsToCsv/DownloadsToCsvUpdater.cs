@@ -27,7 +27,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
         public string BlobName => "downloads";
         public string ContainerName => _options.Value.PackageDownloadsContainerName;
         public TimeSpan Frequency => _options.Value.DownloadToCsvFrequency;
-        public bool IsEnabled => _options.Value.DownloadsV1Url != null;
+        public bool HasRequiredConfiguration => _options.Value.DownloadsV1Url != null;
         public bool AutoStart => _options.Value.AutoStartDownloadToCsv;
         public Type RecordType => typeof(PackageDownloadRecord);
 

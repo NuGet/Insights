@@ -6,7 +6,6 @@ using Azure.Storage.Queues.Models;
 using Knapcode.ExplorePackages.Worker.DownloadsToCsv;
 using Knapcode.ExplorePackages.Worker.KustoIngestion;
 using Knapcode.ExplorePackages.Worker.OwnersToCsv;
-using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
 using Kusto.Ingest;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -117,9 +116,9 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        public class CanRunAllCatalogScansAndKustoIngestionAsync : IntegrationTest
+        public class ExecutesEntireWorkflow : IntegrationTest
         {
-            public CanRunAllCatalogScansAndKustoIngestionAsync(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            public ExecutesEntireWorkflow(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
             {
             }
 
@@ -169,6 +168,7 @@ namespace Knapcode.ExplorePackages.Worker
 
                 // Arrange
                 await CatalogScanService.InitializeAsync();
+                await WorkflowService.InitializeAsync();
 
                 var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
                 var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
@@ -178,15 +178,15 @@ namespace Knapcode.ExplorePackages.Worker
                     await SetCursorAsync(type, min0);
                 }
 
-                // Act - catalog scans
-                await CatalogScanService.UpdateAllAsync(max1);
-                var attempts = 0;
+                // Act
+                var run = await WorkflowService.StartAsync(max1);
+                Assert.NotNull(run);
+                int attempts = 0;
                 await ProcessQueueAsync(
                     () => { },
-                    async () =>
+                    async () => 
                     {
-                        var indexScans = await CatalogScanStorageService.GetIndexScansAsync();
-                        if (indexScans.All(x => x.State == CatalogIndexScanState.Complete))
+                        if (!await WorkflowService.IsAnyWorkflowStepRunningAsync())
                         {
                             return true;
                         }
@@ -210,15 +210,6 @@ namespace Knapcode.ExplorePackages.Worker
                     CatalogScanCursorService.StartableDriverTypes.ToArray(),
                     indexScans.Select(x => x.DriverType).OrderBy(x => x).ToArray());
 
-                // Act - owners and downloads to CSV
-                await ProcessStreamWriterUpdaterAsync<PackageDownloadSet>();
-                await ProcessStreamWriterUpdaterAsync<PackageOwnerSet>();
-
-                // Act - Kusto ingestion
-                await KustoIngestionService.InitializeAsync();
-                var ingestion = await KustoIngestionService.StartAsync();
-                ingestion = await UpdateAsync(ingestion);
-
                 // Make sure all of the containers are have ingestions
                 var containerNames = Host.Services.GetRequiredService<CsvResultStorageContainers>().GetContainerNames();
                 foreach (var containerName in containerNames)
@@ -228,14 +219,9 @@ namespace Knapcode.ExplorePackages.Worker
                         It.IsAny<KustoIngestionProperties>(),
                         It.IsAny<StorageSourceOptions>()));
                 }
-            }
 
-            private async Task ProcessStreamWriterUpdaterAsync<T>()
-            {
-                var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<T>>();
-                await service.InitializeAsync();
-                await service.StartAsync();
-                await ProcessQueueAsync(() => { }, async () => !await service.IsRunningAsync());
+                // Make sure no workflow step is running.
+                Assert.False(await WorkflowService.IsAnyWorkflowStepRunningAsync());
             }
         }
 

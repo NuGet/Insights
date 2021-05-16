@@ -96,7 +96,7 @@ namespace Knapcode.ExplorePackages
                 {
                     if (response.StatusCode != HttpStatusCode.PartialContent)
                     {
-                        throw new InvalidOperationException("Expected an HTTP 206 Partial Content response.");
+                        throw new InvalidOperationException($"Expected an HTTP 206 Partial Content response. Got HTTP {(int)response.StatusCode} {response.ReasonPhrase}.");
                     }
 
                     using var stream = await response.Content.ReadAsStreamAsync();

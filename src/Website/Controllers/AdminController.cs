@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Website.Models;
 using Knapcode.ExplorePackages.Worker;
+using Knapcode.ExplorePackages.Worker.Workflow;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,6 +21,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
         private readonly CatalogScanService _catalogScanService;
         private readonly IRemoteCursorClient _remoteCursorClient;
         private readonly TimerExecutionService _timerExecutionService;
+        private readonly WorkflowService _workflowService;
 
         public AdminController(
             CatalogCommitTimestampProvider catalogCommitTimestampProvider,
@@ -28,7 +30,8 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             CatalogScanCursorService catalogScanCursorService,
             CatalogScanService catalogScanService,
             IRemoteCursorClient remoteCursorClient,
-            TimerExecutionService timerExecutionService)
+            TimerExecutionService timerExecutionService,
+            WorkflowService workflowService)
         {
             _catalogCommitTimestampProvider = catalogCommitTimestampProvider;
             _rawMessageEnqueuer = rawMessageEnqueuer;
@@ -37,6 +40,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             _catalogScanService = catalogScanService;
             _remoteCursorClient = remoteCursorClient;
             _timerExecutionService = timerExecutionService;
+            _workflowService = workflowService;
         }
 
         public async Task<ViewResult> Index()
@@ -51,12 +55,14 @@ namespace Knapcode.ExplorePackages.Website.Controllers
                 .Select(GetCatalogScanAsync)
                 .ToList();
 
+            var isWorkflowRunningTask = _workflowService.IsWorkflowRunningAsync();
             var timerStatesTask = _timerExecutionService.GetStateAsync();
             var catalogCommitTimestampTask = _remoteCursorClient.GetCatalogAsync();
 
             await Task.WhenAll(
                 workQueueTask,
                 expandQueueTask,
+                isWorkflowRunningTask,
                 timerStatesTask,
                 catalogCommitTimestampTask);
 
@@ -82,6 +88,7 @@ namespace Knapcode.ExplorePackages.Website.Controllers
             var model = new AdminViewModel
             {
                 DefaultMax = nextCommitTimestamp ?? catalogScanMin,
+                IsWorkflowRunning = await isWorkflowRunningTask,
                 WorkQueue = await workQueueTask,
                 ExpandQueue = await expandQueueTask,
                 CatalogScans = catalogScans,
@@ -123,7 +130,8 @@ namespace Knapcode.ExplorePackages.Website.Controllers
 
             await Task.WhenAll(
                 _catalogScanService.InitializeAsync(),
-                _timerExecutionService.InitializeAsync());
+                _timerExecutionService.InitializeAsync(),
+                _workflowService.InitializeAsync());
 
             _isInitialized = true;
         }

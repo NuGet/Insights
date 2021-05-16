@@ -7,6 +7,6 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
         Task InitializeAsync();
         Task<bool> StartAsync();
         Task<bool> IsRunningAsync();
-        bool IsEnabled { get; }
+        bool HasRequiredConfiguration { get; }
     }
 }

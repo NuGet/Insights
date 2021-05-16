@@ -8,6 +8,7 @@ namespace Knapcode.ExplorePackages
 {
     public class QueryLoopMetrics : IDisposable
     {
+        public const string MetricIdSubstring = ".QueryLoop.";
         private const string DefaultClassName = "UnknownClassName";
         private const string DefaultMethodName = "UnknownMethodName";
 
@@ -20,9 +21,9 @@ namespace Knapcode.ExplorePackages
 
         private QueryLoopMetrics(ITelemetryClient telemetryClient, string className, string memberName)
         {
-            _queryDurationMetric = telemetryClient.GetMetric($"{className}.{memberName}.QueryDurationMs");
-            _queryCountMetric = telemetryClient.GetMetric($"{className}.{memberName}.QueryCount");
-            _totalDurationMetric = telemetryClient.GetMetric($"{className}.{memberName}.TotalDurationMs");
+            _queryDurationMetric = telemetryClient.GetMetric($"{className}.{memberName}{MetricIdSubstring}QueryDurationMs");
+            _queryCountMetric = telemetryClient.GetMetric($"{className}.{memberName}{MetricIdSubstring}QueryCount");
+            _totalDurationMetric = telemetryClient.GetMetric($"{className}.{memberName}{MetricIdSubstring}TotalDurationMs");
             _queryCount = 0;
             _totalSw = Stopwatch.StartNew();
         }

@@ -116,7 +116,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
         public async Task ReplaceIngestionAsync(KustoIngestionEntity ingestion)
         {
             _logger.LogInformation(
-                "Update Kusto ingestion {IngestionId} with state {State}.",
+                "Updating Kusto ingestion {IngestionId} with state {State}.",
                 ingestion.GetIngestionId(),
                 ingestion.State);
 

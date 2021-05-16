@@ -1,5 +1,6 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Knapcode.ExplorePackages.Worker.KustoIngestion
 {
@@ -8,15 +9,21 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
         private readonly KustoIngestionStorageService _storageService;
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly AutoRenewingStorageLeaseService _leaseService;
+        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly ILogger<KustoIngestionService> _logger;
 
         public KustoIngestionService(
             KustoIngestionStorageService storageService,
             IMessageEnqueuer messageEnqueuer,
-            AutoRenewingStorageLeaseService leaseService)
+            AutoRenewingStorageLeaseService leaseService,
+            IOptions<ExplorePackagesWorkerSettings> options,
+            ILogger<KustoIngestionService> logger)
         {
             _storageService = storageService;
             _messageEnqueuer = messageEnqueuer;
             _leaseService = leaseService;
+            _options = options;
+            _logger = logger;
         }
 
         public async Task InitializeAsync()
@@ -26,27 +33,11 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             await _leaseService.InitializeAsync();
         }
 
-        public async Task ExecuteIfNoIngestionIsRunningAsync(Func<Task> actionAsync)
-        {
-            await using (var lease = await GetStartLeaseAsync())
-            {
-                if (!lease.Acquired)
-                {
-                    return;
-                }
-
-                if (await _storageService.IsIngestionRunningAsync())
-                {
-                    return;
-                }
-
-                await actionAsync();
-            }
-        }
+        public bool HasRequiredConfiguration => _options.Value.KustoConnectionString != null && _options.Value.KustoDatabaseName != null;
 
         public async Task<KustoIngestionEntity> StartAsync()
         {
-            await using (var lease = await GetStartLeaseAsync())
+            await using (var lease = await _leaseService.TryAcquireAsync("Start-KustoIngestion"))
             {
                 if (!lease.Acquired)
                 {
@@ -70,13 +61,9 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
                 });
 
                 await _storageService.AddIngestionAsync(ingestion);
+                _logger.LogInformation("Started Kusto ingestion {IngestionId}.", ingestion.GetIngestionId());
                 return ingestion;
             }
-        }
-
-        private async Task<AutoRenewingStorageLeaseResult> GetStartLeaseAsync()
-        {
-            return await _leaseService.TryAcquireAsync("Start-KustoIngestion");
         }
     }
 }

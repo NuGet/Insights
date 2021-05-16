@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Knapcode.ExplorePackages
 {
@@ -14,7 +15,17 @@ namespace Knapcode.ExplorePackages
         {
             _metricId = metricId;
             _dimensionNames = dimensionNames;
-            _logger = logger;
+            _logger = ShouldLogMetric(metricId) ? logger : NullLogger.Instance;
+        }
+
+        private static bool ShouldLogMetric(string metricId)
+        {
+            if (metricId.Contains(QueryLoopMetrics.MetricIdSubstring))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         public void TrackValue(double metricValue)

@@ -8,6 +8,8 @@ namespace Knapcode.ExplorePackages.Website.Models
         public QueueViewModel WorkQueue { get; set; }
         public QueueViewModel ExpandQueue { get; set; }
 
+        public bool IsWorkflowRunning { get; set; }
+
         public DateTimeOffset DefaultMax { get; set; }
         public IReadOnlyList<CatalogScanViewModel> CatalogScans { get; set; }
         public IReadOnlyList<TimerState> TimerStates { get; set; }

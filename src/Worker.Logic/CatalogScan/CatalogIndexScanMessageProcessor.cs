@@ -432,19 +432,7 @@ namespace Knapcode.ExplorePackages.Worker
                 // Continue the update, if directed.
                 if (scan.ContinueUpdate)
                 {
-                    var dependents = await _catalogScanService.UpdateAllAsync(scan.Max.Value);
-                    foreach (var pair in dependents)
-                    {
-                        switch (pair.Value.Type)
-                        {
-                            case CatalogScanServiceResultType.NewStarted:
-                                _logger.LogInformation("Started {DriverType} dependent catalog scan {ScanId} with max {Max:O}.", pair.Key, pair.Value.Scan.GetScanId(), scan.Max.Value);
-                                break;
-                            default:
-                                _logger.LogInformation("{DriverType} dependent catalog scan did not start due to: {ResultType}.", pair.Key, pair.Value.Type);
-                                break;
-                        }
-                    }
+                    await _catalogScanService.UpdateAllAsync(scan.Max.Value);
                 }
 
                 // Delete old scans

@@ -48,18 +48,5 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             Assert.Single(ingestions);
             Assert.False(result);
         }
-
-        [Fact]
-        public async Task DoesNotStartKustoIngestionWhenCatalogScanIsRunningAsync()
-        {
-            await Target.InitializeAsync();
-            await CatalogScanService.UpdateAllAsync(max: null);
-
-            var result = await Target.ExecuteAsync();
-
-            var ingestions = await KustoIngestionStorageService.GetIngestionsAsync();
-            Assert.Empty(ingestions);
-            Assert.False(result);
-        }
     }
 }

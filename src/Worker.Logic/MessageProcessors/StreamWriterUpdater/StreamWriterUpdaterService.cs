@@ -31,7 +31,7 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
             await _taskStateStorageService.InitializeAsync(StorageSuffix);
         }
 
-        public bool IsEnabled => _updater.IsEnabled;
+        public bool HasRequiredConfiguration => _updater.HasRequiredConfiguration;
 
         public async Task<bool> StartAsync()
         {

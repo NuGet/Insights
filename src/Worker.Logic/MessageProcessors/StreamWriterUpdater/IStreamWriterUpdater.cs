@@ -11,7 +11,7 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
         string BlobName { get; }
         string ContainerName { get; }
         Type RecordType { get; }
-        bool IsEnabled { get; }
+        bool HasRequiredConfiguration { get; }
         bool AutoStart { get; }
         TimeSpan Frequency { get; }
         Task<T> GetDataAsync();
