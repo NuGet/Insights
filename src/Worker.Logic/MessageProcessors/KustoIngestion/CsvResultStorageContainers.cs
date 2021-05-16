@@ -56,8 +56,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
             var container = serviceClient.GetBlobContainerClient(containerName);
             var blob = container.GetBlobClient(blobName);
-            var sas = await _serviceClientFactory.GetBlobReadStorageSharedAccessSignatureAsync();
-            return new UriBuilder(blob.Uri) { Query = sas }.Uri;
+            return blob.Uri;
         }
 
         public IReadOnlyList<string> GetContainerNames()
