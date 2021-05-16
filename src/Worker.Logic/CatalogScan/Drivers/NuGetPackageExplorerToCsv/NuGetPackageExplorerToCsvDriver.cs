@@ -59,7 +59,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
 
         public async Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(NuGetPackageExplorerRecord record)
         {
-            if (record.ResultType != NuGetPackageExplorerResultType.NothingToValidate)
+            if (record.SourceLinkResult != SymbolValidationResult.NothingToValidate)
             {
                 return null;
             }
@@ -70,7 +70,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
 
         public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(NuGetPackageExplorerFile record)
         {
-            return null;
+            return Task.FromResult<CatalogLeafItem>(null);
         }
 
         public async Task<DriverResult<CsvRecordSets<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
