@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Worker.KustoIngestion;
-using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
+using Knapcode.ExplorePackages.Worker.AuxiliaryFileUpdater;
 
 namespace Knapcode.ExplorePackages.Worker.Workflow
 {
@@ -11,8 +11,8 @@ namespace Knapcode.ExplorePackages.Worker.Workflow
         private readonly WorkflowStorageService _workflowStorageService;
         private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly CatalogScanStorageService _catalogScanStorageService;
-        private readonly IStreamWriterUpdaterService<PackageOwnerSet> _ownersService;
-        private readonly IStreamWriterUpdaterService<PackageDownloadSet> _downloadsService;
+        private readonly IAuxiliaryFileUpdaterService<PackageOwnerSet> _ownersService;
+        private readonly IAuxiliaryFileUpdaterService<PackageDownloadSet> _downloadsService;
         private readonly KustoIngestionService _kustoIngestionService;
         private readonly KustoIngestionStorageService _kustoIngestionStorageService;
         private readonly IMessageEnqueuer _messageEnqueuer;
@@ -21,8 +21,8 @@ namespace Knapcode.ExplorePackages.Worker.Workflow
             WorkflowStorageService workflowStorageService,
             AutoRenewingStorageLeaseService leaseService,
             CatalogScanStorageService catalogScanStorageService,
-            IStreamWriterUpdaterService<PackageOwnerSet> ownersService,
-            IStreamWriterUpdaterService<PackageDownloadSet> downloadsService,
+            IAuxiliaryFileUpdaterService<PackageOwnerSet> ownersService,
+            IAuxiliaryFileUpdaterService<PackageDownloadSet> downloadsService,
             KustoIngestionService kustoIngestionService,
             KustoIngestionStorageService kustoIngestionStorageService,
             IMessageEnqueuer messageEnqueuer)

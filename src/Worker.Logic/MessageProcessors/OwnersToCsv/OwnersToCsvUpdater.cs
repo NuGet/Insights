@@ -4,13 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Worker.BuildVersionSet;
-using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
+using Knapcode.ExplorePackages.Worker.AuxiliaryFileUpdater;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
 {
-    public class OwnersToCsvUpdater : IStreamWriterUpdater<PackageOwnerSet>
+    public class OwnersToCsvUpdater : IAuxiliaryFileUpdater<PackageOwnerSet>
     {
         private readonly PackageOwnersClient _packageOwnersClient;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;

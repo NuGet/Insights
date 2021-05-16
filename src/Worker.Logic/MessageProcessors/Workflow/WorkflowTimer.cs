@@ -16,7 +16,7 @@ namespace Knapcode.ExplorePackages.Worker.Workflow
         public TimeSpan Frequency => TimeSpan.FromDays(1);
         public bool AutoStart => false;
         public bool IsEnabled => _service.HasRequiredConfiguration;
-        public int Precedence => int.MinValue;
+        public int Order => default;
 
         public async Task<bool> ExecuteAsync()
         {

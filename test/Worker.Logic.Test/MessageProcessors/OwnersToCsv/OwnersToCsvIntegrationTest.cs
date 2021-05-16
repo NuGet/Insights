@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
+using Knapcode.ExplorePackages.Worker.AuxiliaryFileUpdater;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Xunit;
@@ -40,9 +40,9 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
             public async Task ExecuteAsync()
             {
                 // Arrange
-                ConfigureWorkerSettings = x => x.OnlyKeepLatestInStreamWriterUpdater = false;
+                ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
                 ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageOwnerSet>>();
+                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageOwnerSet>>();
                 await service.InitializeAsync();
                 await service.StartAsync();
 
@@ -79,7 +79,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
             {
                 // Arrange
                 ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageOwnerSet>>();
+                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageOwnerSet>>();
                 await service.InitializeAsync();
                 await service.StartAsync();
 
@@ -117,7 +117,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
             {
                 // Arrange
                 ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageOwnerSet>>();
+                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageOwnerSet>>();
                 await service.InitializeAsync();
                 await service.StartAsync();
 
@@ -155,9 +155,9 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
             public async Task ExecuteAsync()
             {
                 // Arrange
-                ConfigureWorkerSettings = x => x.OnlyKeepLatestInStreamWriterUpdater = false;
+                ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
                 ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageOwnerSet>>();
+                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageOwnerSet>>();
                 await service.InitializeAsync();
                 await service.StartAsync();
                 MockVersionSet.Setup(x => x.DidIdEverExist("Knapcode.TorSharp")).Returns(false);
@@ -196,9 +196,9 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
             public async Task ExecuteAsync()
             {
                 // Arrange
-                ConfigureWorkerSettings = x => x.OnlyKeepLatestInStreamWriterUpdater = false;
+                ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
                 ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageOwnerSet>>();
+                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageOwnerSet>>();
                 await service.InitializeAsync();
                 await service.StartAsync();
                 MockVersionSet.Setup(x => x.GetUncheckedIds()).Returns(new[] { "UncheckedB", "UncheckedA" });
@@ -223,7 +223,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
             {
                 // Arrange
                 ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageOwnerSet>>();
+                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageOwnerSet>>();
                 await service.InitializeAsync();
                 await service.StartAsync();
 
@@ -246,7 +246,7 @@ namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
             }
         }
 
-        private async Task ProcessQueueAsync(IStreamWriterUpdaterService<PackageOwnerSet> service)
+        private async Task ProcessQueueAsync(IAuxiliaryFileUpdaterService<PackageOwnerSet> service)
         {
             await ProcessQueueAsync(() => { }, async () => !await service.IsRunningAsync());
         }

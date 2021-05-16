@@ -3,9 +3,9 @@ using System.IO;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Worker.BuildVersionSet;
 
-namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
+namespace Knapcode.ExplorePackages.Worker.AuxiliaryFileUpdater
 {
-    public interface IStreamWriterUpdater<T> where T : IAsOfData
+    public interface IAuxiliaryFileUpdater<T> where T : IAsOfData
     {
         string OperationName { get; }
         string BlobName { get; }

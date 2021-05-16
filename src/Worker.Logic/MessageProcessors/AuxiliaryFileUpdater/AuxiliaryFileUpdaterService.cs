@@ -1,19 +1,18 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
-namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
+namespace Knapcode.ExplorePackages.Worker.AuxiliaryFileUpdater
 {
-    public class StreamWriterUpdaterService<T> : IStreamWriterUpdaterService<T> where T : IAsyncDisposable, IAsOfData
+    public class AuxiliaryFileUpdaterService<T> : IAuxiliaryFileUpdaterService<T> where T : IAsOfData
     {
         private static readonly string StorageSuffix = string.Empty;
 
-        private readonly IStreamWriterUpdater<T> _updater;
+        private readonly IAuxiliaryFileUpdater<T> _updater;
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly TaskStateStorageService _taskStateStorageService;
         private readonly AutoRenewingStorageLeaseService _leaseService;
 
-        public StreamWriterUpdaterService(
-            IStreamWriterUpdater<T> updater,
+        public AuxiliaryFileUpdaterService(
+            IAuxiliaryFileUpdater<T> updater,
             IMessageEnqueuer messageEnqueuer,
             TaskStateStorageService taskStateStorageService,
             AutoRenewingStorageLeaseService leaseService)
@@ -35,7 +34,7 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
 
         public async Task<bool> StartAsync()
         {
-            await using (var lease = await _leaseService.TryAcquireAsync($"Start-{_updater.OperationName}"))
+            await using (var lease = await _leaseService.TryAcquireAsync($"Start-AuxiliaryFileUpdater-{_updater.OperationName}"))
             {
                 if (!lease.Acquired)
                 {
@@ -46,7 +45,7 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
                     StorageSuffix,
                     _updater.OperationName,
                     StorageUtility.GenerateDescendingId().ToString());
-                await _messageEnqueuer.EnqueueAsync(new[] { new StreamWriterUpdaterMessage<T> { TaskStateKey = taskStateKey } });
+                await _messageEnqueuer.EnqueueAsync(new[] { new AuxiliaryFileUpdaterMessage<T> { TaskStateKey = taskStateKey } });
                 await _taskStateStorageService.AddAsync(taskStateKey);
                 return true;
             }

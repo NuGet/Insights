@@ -11,7 +11,7 @@ using Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf;
 using Knapcode.ExplorePackages.Worker.LoadPackageArchive;
 using Knapcode.ExplorePackages.Worker.LoadPackageManifest;
 using Knapcode.ExplorePackages.Worker.LoadPackageVersion;
-using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
+using Knapcode.ExplorePackages.Worker.AuxiliaryFileUpdater;
 using Knapcode.ExplorePackages.Worker.TableCopy;
 using Knapcode.ExplorePackages.Worker.Workflow;
 using Kusto.Data;
@@ -121,26 +121,26 @@ namespace Knapcode.ExplorePackages.Worker
                 serviceCollection.AddTransient(serviceType, implementationType);
             }
 
-            foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(IStreamWriterUpdater<>)))
+            foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(IAuxiliaryFileUpdater<>)))
             {
                 serviceCollection.AddTransient(serviceType, implementationType);
 
                 var dataType = serviceType.GenericTypeArguments.Single();
-                var messageType = typeof(StreamWriterUpdaterMessage<>).MakeGenericType(dataType);
+                var messageType = typeof(AuxiliaryFileUpdaterMessage<>).MakeGenericType(dataType);
 
                 // Add the service
                 serviceCollection.AddTransient(
-                     typeof(IStreamWriterUpdaterService<>).MakeGenericType(dataType),
-                    typeof(StreamWriterUpdaterService<>).MakeGenericType(dataType));
+                     typeof(IAuxiliaryFileUpdaterService<>).MakeGenericType(dataType),
+                    typeof(AuxiliaryFileUpdaterService<>).MakeGenericType(dataType));
 
                 // Add the generic CSV storage
-                var getContainerName = serviceType.GetProperty(nameof(IStreamWriterUpdater<IAsOfData>.ContainerName));
-                var getRecordType = serviceType.GetProperty(nameof(IStreamWriterUpdater<IAsOfData>.RecordType));
-                var getBlobName = serviceType.GetProperty(nameof(IStreamWriterUpdater<IAsOfData>.BlobName));
+                var getContainerName = serviceType.GetProperty(nameof(IAuxiliaryFileUpdater<IAsOfData>.ContainerName));
+                var getRecordType = serviceType.GetProperty(nameof(IAuxiliaryFileUpdater<IAsOfData>.RecordType));
+                var getBlobName = serviceType.GetProperty(nameof(IAuxiliaryFileUpdater<IAsOfData>.BlobName));
                 serviceCollection.AddTransient<ICsvResultStorage>(x =>
                 {
                     var updater = x.GetRequiredService(serviceType);
-                    var blobName = StreamWriterUpdaterProcessor<IAsOfData>.GetLatestBlobName((string)getBlobName.GetValue(updater));
+                    var blobName = AuxiliaryFileUpdaterProcessor<IAsOfData>.GetLatestBlobName((string)getBlobName.GetValue(updater));
                     return new CsvResultStorage(
                         (string)getContainerName.GetValue(updater),
                         (Type)getRecordType.GetValue(updater),
@@ -155,12 +155,12 @@ namespace Knapcode.ExplorePackages.Worker
                 // Add the task state message processor
                 serviceCollection.AddTransient(
                     typeof(ITaskStateMessageProcessor<>).MakeGenericType(messageType),
-                    typeof(StreamWriterUpdaterProcessor<>).MakeGenericType(dataType));
+                    typeof(AuxiliaryFileUpdaterProcessor<>).MakeGenericType(dataType));
 
                 // Add the timer
                 serviceCollection.AddTransient(
                     typeof(ITimer),
-                    typeof(StreamWriterUpdaterTimer<>).MakeGenericType(dataType));
+                    typeof(AuxiliaryFileUpdaterTimer<>).MakeGenericType(dataType));
             }
 
             foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ITaskStateMessageProcessor<>)))

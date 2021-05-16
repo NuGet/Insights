@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
+namespace Knapcode.ExplorePackages.Worker.AuxiliaryFileUpdater
 {
-    public class StreamWriterUpdaterTimer<T> : ITimer where T : IAsyncDisposable, IAsOfData
+    public class AuxiliaryFileUpdaterTimer<T> : ITimer where T : IAsOfData
     {
-        private readonly IStreamWriterUpdaterService<T> _service;
-        private readonly IStreamWriterUpdater<T> _updater;
+        private readonly IAuxiliaryFileUpdaterService<T> _service;
+        private readonly IAuxiliaryFileUpdater<T> _updater;
 
-        public StreamWriterUpdaterTimer(
-            IStreamWriterUpdaterService<T> service,
-            IStreamWriterUpdater<T> updater)
+        public AuxiliaryFileUpdaterTimer(
+            IAuxiliaryFileUpdaterService<T> service,
+            IAuxiliaryFileUpdater<T> updater)
         {
             _service = service;
             _updater = updater;
@@ -20,7 +20,7 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
         public TimeSpan Frequency => _updater.Frequency;
         public bool IsEnabled => _service.HasRequiredConfiguration;
         public bool AutoStart => _updater.AutoStart;
-        public int Precedence => default;
+        public int Order => 20;
 
         public async Task<bool> ExecuteAsync()
         {

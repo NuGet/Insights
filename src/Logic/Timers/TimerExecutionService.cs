@@ -59,7 +59,7 @@ namespace Knapcode.ExplorePackages
         public async Task<IReadOnlyList<TimerState>> GetStateAsync()
         {
             var pairs = _nameToTimer
-                .OrderBy(x => x.Value.Precedence)
+                .OrderBy(x => x.Value.Order)
                 .ThenBy(x => x.Key, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
@@ -116,7 +116,7 @@ namespace Knapcode.ExplorePackages
 
         public async Task ExecuteAsync()
         {
-            await using (var lease = await _leaseService.TryAcquireAsync(nameof(TimerExecutionService)))
+            await using (var lease = await _leaseService.TryAcquireAsync("TimerExecutionService"))
             {
                 if (!lease.Acquired)
                 {
@@ -210,9 +210,9 @@ namespace Knapcode.ExplorePackages
                 }
             }
 
-            // Execute timers by precedence.
+            // Execute timers in ordered groups.
             var anyExecuted = false;
-            foreach (var group in toExecute.GroupBy(x => x.timer.Precedence).OrderBy(x => x.Key))
+            foreach (var group in toExecute.GroupBy(x => x.timer.Order).OrderBy(x => x.Key))
             {
                 var executed = await Task.WhenAll(group.Select(x => ExecuteAsync(x.timer, x.entity, x.persistAsync, now)));
                 anyExecuted |= executed.Any(x => x);

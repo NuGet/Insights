@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
+using Knapcode.ExplorePackages.Worker.AuxiliaryFileUpdater;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Xunit.Abstractions;
@@ -59,7 +59,7 @@ namespace Knapcode.ExplorePackages.Worker.Workflow
         public async Task DoesNotStartWhenOwnersToCsvIsRunning()
         {
             await WorkflowService.InitializeAsync();
-            var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageOwnerSet>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageOwnerSet>>();
             await service.InitializeAsync();
             await service.StartAsync();
 
@@ -73,7 +73,7 @@ namespace Knapcode.ExplorePackages.Worker.Workflow
         public async Task DoesNotStartWhenDownloadsToCsvIsRunning()
         {
             await WorkflowService.InitializeAsync();
-            var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageDownloadSet>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageDownloadSet>>();
             await service.InitializeAsync();
             await service.StartAsync();
 

@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
 
-namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
+namespace Knapcode.ExplorePackages.Worker.AuxiliaryFileUpdater
 {
-    public interface IStreamWriterUpdaterService<T>
+    public interface IAuxiliaryFileUpdaterService<T>
     {
         Task InitializeAsync();
         Task<bool> StartAsync();

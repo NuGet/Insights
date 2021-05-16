@@ -37,7 +37,7 @@ namespace Knapcode.ExplorePackages.Worker
 
         public string Name => "UpdateSecrets";
         public bool AutoStart => true;
-        public int Precedence => int.MaxValue;
+        public int Order => int.MaxValue;
 
         public TimeSpan Frequency
         {

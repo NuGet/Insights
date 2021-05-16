@@ -21,7 +21,7 @@ namespace Knapcode.ExplorePackages.Worker
         public TimeSpan Frequency => TimeSpan.FromSeconds(30);
         public bool AutoStart => true;
         public bool IsEnabled => true;
-        public int Precedence => default;
+        public int Order => default;
 
         public async Task<bool> ExecuteAsync()
         {

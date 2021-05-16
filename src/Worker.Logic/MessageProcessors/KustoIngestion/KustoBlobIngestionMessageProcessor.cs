@@ -78,7 +78,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
                     Size = blob.RawSizeBytes,
                 };
 
-                await using var lease = await _leaseService.TryAcquireAsync("KustoBlobIngestion-" + blob.GetContainerName() + "-" + blob.GetBlobName());
+                await using var lease = await _leaseService.TryAcquireAsync($"KustoBlobIngestion-{blob.GetContainerName()}-{blob.GetBlobName()}");
                 if (!lease.Acquired)
                 {
                     _logger.LogWarning("Kusto blob ingestion lease for {ContainerName} and blob {BlobName} is not available.", blob.GetContainerName(), blob.GetBlobName());

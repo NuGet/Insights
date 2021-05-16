@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 
-namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
+namespace Knapcode.ExplorePackages.Worker.AuxiliaryFileUpdater
 {
-    public class StreamWriterUpdaterMessage<T> : ITaskStateMessage
+    public class AuxiliaryFileUpdaterMessage<T> : ITaskStateMessage
     {
         [JsonProperty("ts")]
         public TaskStateKey TaskStateKey { get; set; }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
+using Knapcode.ExplorePackages.Worker.AuxiliaryFileUpdater;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Xunit;
@@ -40,9 +40,9 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
             public async Task ExecuteAsync()
             {
                 // Arrange
-                ConfigureWorkerSettings = x => x.OnlyKeepLatestInStreamWriterUpdater = false;
+                ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
                 ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageDownloadSet>>();
+                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageDownloadSet>>();
                 await service.InitializeAsync();
                 await service.StartAsync();
 
@@ -79,7 +79,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
             {
                 // Arrange
                 ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageDownloadSet>>();
+                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageDownloadSet>>();
                 await service.InitializeAsync();
                 await service.StartAsync();
 
@@ -117,7 +117,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
             {
                 // Arrange
                 ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageDownloadSet>>();
+                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageDownloadSet>>();
                 await service.InitializeAsync();
                 await service.StartAsync();
 
@@ -155,9 +155,9 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
             public async Task ExecuteAsync()
             {
                 // Arrange
-                ConfigureWorkerSettings = x => x.OnlyKeepLatestInStreamWriterUpdater = false;
+                ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
                 ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageDownloadSet>>();
+                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageDownloadSet>>();
                 await service.InitializeAsync();
                 await service.StartAsync();
                 MockVersionSet.Setup(x => x.DidVersionEverExist("Knapcode.TorSharp", "2.0.7")).Returns(false);
@@ -196,9 +196,9 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
             public async Task ExecuteAsync()
             {
                 // Arrange
-                ConfigureWorkerSettings = x => x.OnlyKeepLatestInStreamWriterUpdater = false;
+                ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
                 ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageDownloadSet>>();
+                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageDownloadSet>>();
                 await service.InitializeAsync();
                 await service.StartAsync();
                 MockVersionSet.Setup(x => x.DidVersionEverExist("Knapcode.TorSharp", "2.0.7")).Returns(false);
@@ -227,7 +227,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
             {
                 // Arrange
                 ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IStreamWriterUpdaterService<PackageDownloadSet>>();
+                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageDownloadSet>>();
                 await service.InitializeAsync();
                 await service.StartAsync();
 
@@ -250,7 +250,7 @@ namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
             }
         }
 
-        private async Task ProcessQueueAsync(IStreamWriterUpdaterService<PackageDownloadSet> service)
+        private async Task ProcessQueueAsync(IAuxiliaryFileUpdaterService<PackageDownloadSet> service)
         {
             await ProcessQueueAsync(() => { }, async () => !await service.IsRunningAsync());
         }

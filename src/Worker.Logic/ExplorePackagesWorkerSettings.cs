@@ -13,7 +13,7 @@ namespace Knapcode.ExplorePackages.Worker
             AppendResultStorageBucketCount = 1000; // Azure Data Explorer can only import up to 1000 blobs.
             AllowBatching = true;
             RunAllCatalogScanDriversAsBatch = false;
-            OnlyKeepLatestInStreamWriterUpdater = true;
+            OnlyKeepLatestInAuxiliaryFileUpdater = true;
             MoveTempToHome = false;
             DisabledDrivers = new List<CatalogScanDriverType>();
             OldCatalogIndexScansToKeep = 9;
@@ -71,7 +71,7 @@ namespace Knapcode.ExplorePackages.Worker
         public int AppendResultStorageBucketCount { get; set; }
         public bool AllowBatching { get; set; }
         public bool RunAllCatalogScanDriversAsBatch { get; set; }
-        public bool OnlyKeepLatestInStreamWriterUpdater { get; set; }
+        public bool OnlyKeepLatestInAuxiliaryFileUpdater { get; set; }
         public bool MoveTempToHome { get; set; }
         public List<CatalogScanDriverType> DisabledDrivers { get; set; }
         public int OldCatalogIndexScansToKeep { get; set; }

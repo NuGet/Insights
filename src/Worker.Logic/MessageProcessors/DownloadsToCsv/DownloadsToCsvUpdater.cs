@@ -4,13 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Knapcode.ExplorePackages.Worker.BuildVersionSet;
-using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
+using Knapcode.ExplorePackages.Worker.AuxiliaryFileUpdater;
 using Microsoft.Extensions.Options;
 using NuGet.Versioning;
 
 namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
 {
-    public class DownloadsToCsvUpdater : IStreamWriterUpdater<PackageDownloadSet>
+    public class DownloadsToCsvUpdater : IAuxiliaryFileUpdater<PackageDownloadSet>
     {
         private readonly IPackageDownloadsClient _packageDownloadsClient;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;

@@ -11,26 +11,25 @@ using Knapcode.ExplorePackages.Worker.BuildVersionSet;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
+namespace Knapcode.ExplorePackages.Worker.AuxiliaryFileUpdater
 {
-    public class StreamWriterUpdaterProcessor<T> : ITaskStateMessageProcessor<StreamWriterUpdaterMessage<T>>
-        where T : IAsyncDisposable, IAsOfData
+    public class AuxiliaryFileUpdaterProcessor<T> : ITaskStateMessageProcessor<AuxiliaryFileUpdaterMessage<T>> where T : IAsOfData
     {
         private const string AsOfTimestampMetadata = "asOfTimestamp";
         private const string VersionSetCommitTimestampMetadata = "versionSetCommitTimestamp";
 
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IVersionSetProvider _versionSetProvider;
-        private readonly IStreamWriterUpdater<T> _updater;
+        private readonly IAuxiliaryFileUpdater<T> _updater;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
-        private readonly ILogger<StreamWriterUpdaterProcessor<T>> _logger;
+        private readonly ILogger<AuxiliaryFileUpdaterProcessor<T>> _logger;
 
-        public StreamWriterUpdaterProcessor(
+        public AuxiliaryFileUpdaterProcessor(
             ServiceClientFactory serviceClientFactory,
             IVersionSetProvider versionSetProvider,
-            IStreamWriterUpdater<T> updater,
+            IAuxiliaryFileUpdater<T> updater,
             IOptions<ExplorePackagesWorkerSettings> options,
-            ILogger<StreamWriterUpdaterProcessor<T>> logger)
+            ILogger<AuxiliaryFileUpdaterProcessor<T>> logger)
         {
             _serviceClientFactory = serviceClientFactory;
             _versionSetProvider = versionSetProvider;
@@ -44,7 +43,7 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
             return $"latest_{blobName}.csv.gz";
         }
 
-        public async Task<bool> ProcessAsync(StreamWriterUpdaterMessage<T> message, long dequeueCount)
+        public async Task<bool> ProcessAsync(AuxiliaryFileUpdaterMessage<T> message, long dequeueCount)
         {
             await InitializeAsync();
 
@@ -84,7 +83,7 @@ namespace Knapcode.ExplorePackages.Worker.StreamWriterUpdater
                 }
             }
 
-            if (_options.Value.OnlyKeepLatestInStreamWriterUpdater)
+            if (_options.Value.OnlyKeepLatestInAuxiliaryFileUpdater)
             {
                 await WriteDataAsync(versionSet, data, latestBlob);
             }

@@ -6,6 +6,8 @@ using Azure.Storage.Queues.Models;
 using Knapcode.ExplorePackages.Worker.DownloadsToCsv;
 using Knapcode.ExplorePackages.Worker.KustoIngestion;
 using Knapcode.ExplorePackages.Worker.OwnersToCsv;
+using Knapcode.ExplorePackages.Worker.AuxiliaryFileUpdater;
+using Knapcode.ExplorePackages.Worker.Workflow;
 using Kusto.Ingest;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -50,6 +52,56 @@ namespace Knapcode.ExplorePackages.Worker
                     break;
                 default:
                     throw new NotImplementedException();
+            }
+        }
+
+        public class TimersAreInProperOrder : IntegrationTest
+        {
+            public TimersAreInProperOrder(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            {
+            }
+
+            [Fact]
+            public void Execute()
+            {
+                var expected = new List<List<Type>>
+                {
+                    new List<Type>
+                    {
+                        typeof(QueueSizeMetricsTimer),
+                        typeof(WorkflowTimer),
+                    },
+                    new List<Type>
+                    {
+                        typeof(CatalogScanUpdateTimer),
+                    },
+                    new List<Type>
+                    {
+                        typeof(AuxiliaryFileUpdaterTimer<PackageDownloadSet>),
+                        typeof(AuxiliaryFileUpdaterTimer<PackageOwnerSet>),
+                    },
+                    new List<Type>
+                    {
+                        typeof(KustoIngestionTimer),
+                    },
+                    new List<Type>
+                    {
+                        typeof(UpdateSecretsTimer),
+                    },
+                };
+                var actual = Host
+                    .Services
+                    .GetRequiredService<IEnumerable<ITimer>>()
+                    .GroupBy(x => x.Order)
+                    .OrderBy(x => x.Key)
+                    .Select(x => x.OrderBy(x => x.Name).Select(x => x.GetType()).ToList())
+                    .ToList();
+
+                Assert.Equal(expected.Count, actual.Count);
+                for (var i = 0; i < expected.Count; i++)
+                {
+                    Assert.Equal(expected[i], actual[i]);
+                }
             }
         }
 

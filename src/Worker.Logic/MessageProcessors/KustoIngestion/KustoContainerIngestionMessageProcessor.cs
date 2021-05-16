@@ -164,7 +164,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
         private async Task<IAsyncDisposable> LeaseOrNullAsync(KustoContainerIngestionMessage message, KustoContainerIngestion container, string finalTableName)
         {
             // Lease on the Kusto table name to avoid weird concurrency issues.
-            var lease = await _leaseService.TryAcquireAsync("KustoContainerIngestion-" + finalTableName);
+            var lease = await _leaseService.TryAcquireAsync($"KustoContainerIngestion-{finalTableName}");
             if (!lease.Acquired)
             {
                 _logger.LogWarning("Container {ContainerName} lease is not available.", container.GetContainerName());

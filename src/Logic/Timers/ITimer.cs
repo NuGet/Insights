@@ -13,7 +13,7 @@ namespace Knapcode.ExplorePackages
         /// <summary>
         /// Use to group timers that can be run in parallel. Return 0 (<c>default</c>) for simple, parallel execution.
         /// </summary>
-        int Precedence { get; }
+        int Order { get; }
 
         Task<bool> IsRunningAsync();
         Task InitializeAsync();

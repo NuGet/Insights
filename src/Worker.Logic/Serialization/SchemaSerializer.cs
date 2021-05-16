@@ -12,7 +12,7 @@ using Knapcode.ExplorePackages.Worker.PackageAssetToCsv;
 using Knapcode.ExplorePackages.Worker.PackageManifestToCsv;
 using Knapcode.ExplorePackages.Worker.PackageSignatureToCsv;
 using Knapcode.ExplorePackages.Worker.PackageVersionToCsv;
-using Knapcode.ExplorePackages.Worker.StreamWriterUpdater;
+using Knapcode.ExplorePackages.Worker.AuxiliaryFileUpdater;
 using Knapcode.ExplorePackages.Worker.TableCopy;
 using Knapcode.ExplorePackages.Worker.Workflow;
 using Microsoft.Extensions.Logging;
@@ -56,8 +56,8 @@ namespace Knapcode.ExplorePackages.Worker
 
             new SchemaV1<TableRowCopyMessage<LatestPackageLeaf>>("trc.lpf"),
 
-            new SchemaV1<StreamWriterUpdaterMessage<PackageDownloadSet>>("d2c"),
-            new SchemaV1<StreamWriterUpdaterMessage<PackageOwnerSet>>("o2c"),
+            new SchemaV1<AuxiliaryFileUpdaterMessage<PackageDownloadSet>>("d2c"),
+            new SchemaV1<AuxiliaryFileUpdaterMessage<PackageOwnerSet>>("o2c"),
         };
 
         public static IReadOnlyList<ISchemaDeserializer> ParameterSchemas = new ISchemaDeserializer[]

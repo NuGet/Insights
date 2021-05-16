@@ -20,7 +20,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
         public TimeSpan Frequency => TimeSpan.FromDays(1);
         public bool AutoStart => false;
         public bool IsEnabled => _kustoIngestionService.HasRequiredConfiguration;
-        public int Precedence => default;
+        public int Order => 30;
 
         public async Task InitializeAsync()
         {
