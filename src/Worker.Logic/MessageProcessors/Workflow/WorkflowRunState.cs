@@ -6,6 +6,7 @@
         CatalogScanWorking,
         AuxiliaryFilesWorking,
         KustoIngestionWorking,
+        Finalizing,
         Complete,
     }
 }

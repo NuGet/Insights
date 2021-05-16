@@ -17,6 +17,7 @@ namespace Knapcode.ExplorePackages.Worker
             MoveTempToHome = false;
             DisabledDrivers = new List<CatalogScanDriverType>();
             OldCatalogIndexScansToKeep = 9;
+            OldWorkflowRunsToKeep = 9;
 
             AutoStartCatalogScanUpdate = false;
             AutoStartDownloadToCsv = false;
@@ -74,6 +75,7 @@ namespace Knapcode.ExplorePackages.Worker
         public bool MoveTempToHome { get; set; }
         public List<CatalogScanDriverType> DisabledDrivers { get; set; }
         public int OldCatalogIndexScansToKeep { get; set; }
+        public int OldWorkflowRunsToKeep { get; set; }
 
         public bool AutoStartCatalogScanUpdate { get; set; }
         public bool AutoStartDownloadToCsv { get; set; }

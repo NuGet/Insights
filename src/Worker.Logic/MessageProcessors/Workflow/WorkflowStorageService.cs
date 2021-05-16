@@ -11,15 +11,18 @@ namespace Knapcode.ExplorePackages.Worker.Workflow
     {
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<WorkflowStorageService> _logger;
 
         public WorkflowStorageService(
             ServiceClientFactory serviceClientFactory,
             IOptions<ExplorePackagesWorkerSettings> options,
+            ITelemetryClient telemetryClient,
             ILogger<WorkflowStorageService> logger)
         {
             _serviceClientFactory = serviceClientFactory;
             _options = options;
+            _telemetryClient = telemetryClient;
             _logger = logger;
         }
 
@@ -28,10 +31,10 @@ namespace Knapcode.ExplorePackages.Worker.Workflow
             await (await GetTableAsync()).CreateIfNotExistsAsync(retry: true);
         }
 
-        public async Task<WorkflowRun> GetRunAsync(string workflowRunId)
+        public async Task<WorkflowRun> GetRunAsync(string runId)
         {
             var table = await GetTableAsync();
-            return await table.GetEntityOrNullAsync<WorkflowRun>(WorkflowRun.DefaultPartitionKey, workflowRunId);
+            return await table.GetEntityOrNullAsync<WorkflowRun>(WorkflowRun.DefaultPartitionKey, runId);
         }
 
         public async Task AddRunAsync(WorkflowRun run)
@@ -59,6 +62,37 @@ namespace Knapcode.ExplorePackages.Worker.Workflow
             return await table
                 .QueryAsync<WorkflowRun>(x => x.PartitionKey == WorkflowRun.DefaultPartitionKey)
                 .ToListAsync();
+        }
+
+        public async Task DeleteOldRunsAsync(string currentRunId)
+        {
+            var table = await GetTableAsync();
+            var oldRuns = await table
+                .QueryAsync<WorkflowRun>(x => x.PartitionKey == WorkflowRun.DefaultPartitionKey
+                                              && x.RowKey.CompareTo(currentRunId) > 0)
+                .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
+
+            var oldRunsToDelete = oldRuns
+                .OrderByDescending(x => x.Created)
+                .Skip(_options.Value.OldWorkflowRunsToKeep)
+                .OrderBy(x => x.Created)
+                .Where(x => x.State == WorkflowRunState.Complete)
+                .ToList();
+            _logger.LogInformation("Deleting {Count} old workflow runs.", oldRunsToDelete.Count);
+
+            var batch = new MutableTableTransactionalBatch(table);
+            foreach (var scan in oldRunsToDelete)
+            {
+                if (batch.Count >= StorageUtility.MaxBatchSize)
+                {
+                    await batch.SubmitBatchAsync();
+                    batch = new MutableTableTransactionalBatch(table);
+                }
+
+                batch.DeleteEntity(scan.PartitionKey, scan.RowKey, scan.ETag);
+            }
+
+            await batch.SubmitBatchIfNotEmptyAsync();
         }
 
         private async Task<TableClient> GetTableAsync()

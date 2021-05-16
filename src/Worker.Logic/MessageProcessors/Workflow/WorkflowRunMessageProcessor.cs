@@ -46,9 +46,19 @@ namespace Knapcode.ExplorePackages.Worker.Workflow
                 IsIncompleteAsync: self => self._workflowService.IsKustoIngestionRunningAsync(),
                 TransitionAsync: (self, run) =>
                 {
+                    return Task.CompletedTask;
+                },
+                NextState: WorkflowRunState.Finalizing),
+
+            new WorkflowStateTransition(
+                CurrentState: WorkflowRunState.Finalizing,
+                IsIncompleteAsync: self => Task.FromResult(false),
+                TransitionAsync: async (self, run) =>
+                {
+                    await self._storageService.DeleteOldRunsAsync(run.GetRunId());
+
                     self._logger.LogInformation("The workflow is complete.");
                     run.Completed = DateTimeOffset.UtcNow;
-                    return Task.CompletedTask;
                 },
                 NextState: WorkflowRunState.Complete),
         };
