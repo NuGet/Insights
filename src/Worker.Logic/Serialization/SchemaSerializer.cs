@@ -46,6 +46,7 @@ namespace Knapcode.ExplorePackages.Worker
             new SchemaV1<CsvCompactMessage<NuGetPackageExplorerFile>>("cc.npef2c"),
 
             new SchemaV1<CsvExpandReprocessMessage<NuGetPackageExplorerRecord>>("cer.npe2c"),
+            new SchemaV1<CsvExpandReprocessMessage<NuGetPackageExplorerFile>>("cer.npef2c"),
 
             new SchemaV1<TableScanMessage<CatalogLeafScan>>("ts.cls"),
             new SchemaV1<TableScanMessage<LatestPackageLeaf>>("ts.lpf"),
