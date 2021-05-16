@@ -2,7 +2,7 @@
 using Azure;
 using Azure.Data.Tables;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class TimerEntity : ITableEntity
     {

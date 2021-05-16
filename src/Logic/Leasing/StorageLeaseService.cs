@@ -8,15 +8,15 @@ using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class StorageLeaseService
     {
         private readonly ServiceClientFactory _serviceClientFactory;
-        private readonly IOptions<ExplorePackagesSettings> _options;
+        private readonly IOptions<NuGetInsightsSettings> _options;
 
         public StorageLeaseService(
-            ServiceClientFactory serviceClientFactory, IOptions<ExplorePackagesSettings> options)
+            ServiceClientFactory serviceClientFactory, IOptions<NuGetInsightsSettings> options)
         {
             _serviceClientFactory = serviceClientFactory;
             _options = options;

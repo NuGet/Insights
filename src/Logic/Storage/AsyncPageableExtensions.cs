@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Azure;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public static class AsyncPageableExtensions
     {

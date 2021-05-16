@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class DriverResult
     {

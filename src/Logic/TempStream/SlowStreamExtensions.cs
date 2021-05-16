@@ -5,7 +5,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public static class SlowStreamExtensions
     {

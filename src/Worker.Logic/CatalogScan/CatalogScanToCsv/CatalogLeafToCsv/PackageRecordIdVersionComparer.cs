@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class PackageRecordIdVersionComparer : IEqualityComparer<PackageRecord>
     {

@@ -5,16 +5,16 @@ using Azure.Data.Tables;
 using Microsoft.Extensions.Options;
 using NuGet.Versioning;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class PackageHashService
     {
         private readonly ServiceClientFactory _serviceClientFactory;
-        private readonly IOptions<ExplorePackagesSettings> _options;
+        private readonly IOptions<NuGetInsightsSettings> _options;
 
         public PackageHashService(
             ServiceClientFactory serviceClientFactory,
-            IOptions<ExplorePackagesSettings> options)
+            IOptions<NuGetInsightsSettings> options)
         {
             _serviceClientFactory = serviceClientFactory;
             _options = options;

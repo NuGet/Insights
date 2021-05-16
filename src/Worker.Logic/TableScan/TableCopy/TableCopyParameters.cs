@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Knapcode.ExplorePackages.Worker.TableCopy
+namespace NuGet.Insights.Worker.TableCopy
 {
     public class TableCopyParameters
     {

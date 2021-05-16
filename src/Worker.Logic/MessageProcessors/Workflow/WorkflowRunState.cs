@@ -1,4 +1,4 @@
-﻿namespace Knapcode.ExplorePackages.Worker.Workflow
+﻿namespace NuGet.Insights.Worker.Workflow
 {
     public enum WorkflowRunState
     {

@@ -7,17 +7,17 @@ using Microsoft.Extensions.Options;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class ServiceIndexCache
     {
-        private readonly IOptions<ExplorePackagesSettings> _options;
+        private readonly IOptions<NuGetInsightsSettings> _options;
         private readonly Lazy<Task<ServiceIndexResourceV3>> _lazyServiceIndexResource;
         private readonly ConcurrentDictionary<string, IReadOnlyList<string>> _urls
             = new ConcurrentDictionary<string, IReadOnlyList<string>>();
 
         public ServiceIndexCache(
-            IOptions<ExplorePackagesSettings> options)
+            IOptions<NuGetInsightsSettings> options)
         {
             _options = options;
             _lazyServiceIndexResource = new Lazy<Task<ServiceIndexResourceV3>>(async () =>

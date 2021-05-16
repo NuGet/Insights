@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public static partial class KustoDDL
     {

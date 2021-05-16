@@ -1,16 +1,16 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class GalleryConsistencyService : IConsistencyService<GalleryConsistencyReport>
     {
         private readonly GalleryClient _client;
-        private readonly IOptions<ExplorePackagesSettings> _options;
+        private readonly IOptions<NuGetInsightsSettings> _options;
 
         public GalleryConsistencyService(
             GalleryClient client,
-            IOptions<ExplorePackagesSettings> settings)
+            IOptions<NuGetInsightsSettings> settings)
         {
             _client = client;
             _options = settings;

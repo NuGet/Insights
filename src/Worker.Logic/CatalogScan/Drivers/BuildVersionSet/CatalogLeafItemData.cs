@@ -1,6 +1,6 @@
 ﻿using MessagePack;
 
-namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
+namespace NuGet.Insights.Worker.BuildVersionSet
 {
     [MessagePackObject]
     public record CatalogLeafItemData

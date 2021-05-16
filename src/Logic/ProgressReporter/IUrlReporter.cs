@@ -2,7 +2,7 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public interface IUrlReporter
     {

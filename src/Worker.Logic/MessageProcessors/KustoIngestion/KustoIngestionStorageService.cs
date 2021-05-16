@@ -6,19 +6,19 @@ using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages.Worker.KustoIngestion
+namespace NuGet.Insights.Worker.KustoIngestion
 {
     public class KustoIngestionStorageService
     {
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly ITelemetryClient _telemetryClient;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<KustoIngestionStorageService> _logger;
 
         public KustoIngestionStorageService(
             ServiceClientFactory serviceClientFactory,
             ITelemetryClient telemetryClient,
-            IOptions<ExplorePackagesWorkerSettings> options,
+            IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<KustoIngestionStorageService> logger)
         {
             _serviceClientFactory = serviceClientFactory;

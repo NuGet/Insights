@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <AssemblyName>Knapcode.ExplorePackages.Worker.Logic</AssemblyName>
-    <RootNamespace>Knapcode.ExplorePackages.Worker</RootNamespace>
+    <AssemblyName>NuGet.Insights.Worker.Logic</AssemblyName>
+    <RootNamespace>NuGet.Insights.Worker</RootNamespace>
     <LangVersion>9.0</LangVersion>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>

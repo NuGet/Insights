@@ -1,13 +1,13 @@
 ﻿using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class AzureLoggingStartup
     {
         public AzureLoggingStartup(
             AzureEventSourceLogForwarder forwarder,
-            IOptions<ExplorePackagesSettings> options)
+            IOptions<NuGetInsightsSettings> options)
         {
             if (options.Value.EnableAzureLogging)
             {

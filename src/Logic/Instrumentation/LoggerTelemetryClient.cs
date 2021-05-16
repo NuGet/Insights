@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class LoggerTelemetryClient : ITelemetryClient
     {

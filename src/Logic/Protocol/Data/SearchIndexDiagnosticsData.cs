@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class SearchIndexDiagnosticsData
     {

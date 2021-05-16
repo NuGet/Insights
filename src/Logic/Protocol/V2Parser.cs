@@ -5,7 +5,7 @@ using System.Linq;
 using System.Xml.Linq;
 using NuGet.Versioning;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     /// <summary>
     /// Based off of:

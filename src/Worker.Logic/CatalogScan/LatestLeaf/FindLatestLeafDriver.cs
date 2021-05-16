@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class FindLatestLeafDriver<T> : ICatalogLeafScanNonBatchDriver where T : class, ILatestPackageLeaf, new()
     {

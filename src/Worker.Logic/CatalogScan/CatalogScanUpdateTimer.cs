@@ -3,18 +3,18 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class CatalogScanUpdateTimer : ITimer
     {
         private readonly CatalogScanService _catalogScanService;
         private readonly CatalogScanStorageService _catalogScanStorageService;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
 
         public CatalogScanUpdateTimer(
             CatalogScanService catalogScanService,
             CatalogScanStorageService catalogScanStorageService,
-            IOptions<ExplorePackagesWorkerSettings> options)
+            IOptions<NuGetInsightsWorkerSettings> options)
         {
             _catalogScanService = catalogScanService;
             _catalogScanStorageService = catalogScanStorageService;

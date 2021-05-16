@@ -3,7 +3,7 @@ using System.IO;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public static class XmlUtility
     {

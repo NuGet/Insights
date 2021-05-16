@@ -13,7 +13,7 @@ param (
     [string]$WorkerZipPath
 )
 
-Import-Module (Join-Path $PSScriptRoot "scripts/ExplorePackages.psm1")
+Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1")
 
 function New-ServiceModelFile($resourceSettings) {
     # Docs: https://ev2docs.azure.net/getting-started/authoring/service-model/servicemodel.html
@@ -23,7 +23,7 @@ function New-ServiceModelFile($resourceSettings) {
         "`$schema"                      = "http://schema.express.azure.com/schemas/2015-01-01-alpha/ServiceModel.json";
         contentVersion                  = "0.0.0.1";
         serviceMetadata                 = [ordered]@{
-            serviceGroup      = "ExplorePackages";
+            serviceGroup      = "NuGet.Insights";
             environment       = $resourceSettings.EnvironmentName;
             serviceIdentifier = $resourceSettings.ServiceTreeId;
         };
@@ -77,7 +77,7 @@ function New-RolloutSpecFile($resourceSettings) {
         contentVersion    = "1.0.0.0";
         rolloutMetadata   = [ordered]@{
             serviceModelPath = Get-ServiceModelPath $resourceSettings.ConfigName
-            name             = "ExplorePackages-$($resourceSettings.EnvironmentName)"
+            name             = "NuGet.Insights-$($resourceSettings.EnvironmentName)"
             rolloutType      = "Major";
             buildSource      = [ordered]@{
                 parameters = [ordered]@{

@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public static class TelemetryClientExtensions
     {

@@ -1,4 +1,4 @@
-namespace Knapcode.ExplorePackages.Website.Models
+namespace NuGet.Insights.Website.Models
 {
     public class ErrorViewModel
     {

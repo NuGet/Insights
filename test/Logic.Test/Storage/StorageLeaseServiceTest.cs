@@ -6,7 +6,7 @@ using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class StorageLeaseServiceTest
     {
@@ -214,12 +214,12 @@ namespace Knapcode.ExplorePackages
                 ContainerName = TestSettings.NewStoragePrefix() + "1l1";
                 LeaseName = "some-lease";
                 Duration = TimeSpan.FromSeconds(60);
-                Settings = new ExplorePackagesSettings
+                Settings = new NuGetInsightsSettings
                 {
                     StorageConnectionString = TestSettings.StorageConnectionString,
                     LeaseContainerName = ContainerName,
                 };
-                Options = new Mock<IOptions<ExplorePackagesSettings>>();
+                Options = new Mock<IOptions<NuGetInsightsSettings>>();
                 Options.Setup(x => x.Value).Returns(() => Settings);
                 ServiceClientFactory = new ServiceClientFactory(null, Options.Object, output.GetLogger<ServiceClientFactory>());
                 Target = new StorageLeaseService(ServiceClientFactory, Options.Object);
@@ -229,8 +229,8 @@ namespace Knapcode.ExplorePackages
             public string ContainerName { get; }
             public string LeaseName { get; }
             public TimeSpan Duration { get; }
-            public ExplorePackagesSettings Settings { get; }
-            public Mock<IOptions<ExplorePackagesSettings>> Options { get; }
+            public NuGetInsightsSettings Settings { get; }
+            public Mock<IOptions<NuGetInsightsSettings>> Options { get; }
             public ServiceClientFactory ServiceClientFactory { get; }
             public StorageLeaseService Target { get; }
 

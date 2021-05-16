@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Azure.Data.Tables;
 
-namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
+namespace NuGet.Insights.Worker.LoadPackageVersion
 {
     public class PackageVersionStorage : ILatestPackageLeafStorage<PackageVersionEntity>
     {

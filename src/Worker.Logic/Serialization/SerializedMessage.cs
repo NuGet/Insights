@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class SerializedMessage : ISerializedEntity
     {

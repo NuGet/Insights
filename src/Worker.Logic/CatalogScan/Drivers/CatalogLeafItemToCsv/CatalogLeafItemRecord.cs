@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
+namespace NuGet.Insights.Worker.CatalogLeafItemToCsv
 {
     public partial record CatalogLeafItemRecord : ICsvRecord
     {

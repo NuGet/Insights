@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage.Table;
 
-namespace Knapcode.ExplorePackages.Worker.KustoIngestion
+namespace NuGet.Insights.Worker.KustoIngestion
 {
     public class KustoBlobIngestionMessageProcessor : IMessageProcessor<KustoBlobIngestionMessage>
     {
@@ -19,7 +19,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
         private readonly IKustoQueuedIngestClient _kustoQueuedIngestClient;
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly ITelemetryClient _telemetryClient;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<KustoBlobIngestionMessageProcessor> _logger;
 
         public KustoBlobIngestionMessageProcessor(
@@ -30,7 +30,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             IKustoQueuedIngestClient kustoQueuedIngestClient,
             IMessageEnqueuer messageEnqueuer,
             ITelemetryClient telemetryClient,
-            IOptions<ExplorePackagesWorkerSettings> options,
+            IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<KustoBlobIngestionMessageProcessor> logger)
         {
             _storageService = storageService;

@@ -1,7 +1,7 @@
 ﻿using System;
-using Knapcode.ExplorePackages.Worker.LoadPackageVersion;
+using NuGet.Insights.Worker.LoadPackageVersion;
 
-namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
+namespace NuGet.Insights.Worker.PackageVersionToCsv
 {
     public partial record PackageVersionRecord : PackageRecord, ICsvRecord
     {

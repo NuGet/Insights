@@ -3,20 +3,20 @@ using System.Threading.Tasks;
 using Azure.Data.Tables;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
+namespace NuGet.Insights.Worker.LoadPackageVersion
 {
     public class PackageVersionStorageService
     {
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly CatalogClient _catalogClient;
         private readonly ITelemetryClient _telemetryClient;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
 
         public PackageVersionStorageService(
             ServiceClientFactory serviceClientFactory,
             CatalogClient catalogClient,
             ITelemetryClient telemetryClient,
-            IOptions<ExplorePackagesWorkerSettings> options)
+            IOptions<NuGetInsightsWorkerSettings> options)
         {
             _serviceClientFactory = serviceClientFactory;
             _catalogClient = catalogClient;

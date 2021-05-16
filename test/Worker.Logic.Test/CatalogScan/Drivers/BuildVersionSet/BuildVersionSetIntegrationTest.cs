@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
+namespace NuGet.Insights.Worker.BuildVersionSet
 {
     public class BuildVersionSetIntegrationTest : BaseCatalogScanIntegrationTest
     {
@@ -156,7 +156,7 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
 
             using var memoryStream = new MemoryStream();
             await blob.DownloadToAsync(memoryStream);
-            var compactJson = MessagePackSerializer.ConvertToJson(memoryStream.ToArray(), ExplorePackagesMessagePack.Options);
+            var compactJson = MessagePackSerializer.ConvertToJson(memoryStream.ToArray(), NuGetInsightsMessagePack.Options);
             var parsedJson = JToken.Parse(compactJson);
             var actual = parsedJson.ToString();
 

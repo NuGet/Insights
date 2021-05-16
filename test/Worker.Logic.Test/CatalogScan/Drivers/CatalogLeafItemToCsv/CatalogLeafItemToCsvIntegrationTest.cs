@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
+namespace NuGet.Insights.Worker.CatalogLeafItemToCsv
 {
     public class CatalogLeafItemToCsvIntegrationTest : BaseCatalogScanToCsvIntegrationTest<CatalogLeafItemRecord>
     {

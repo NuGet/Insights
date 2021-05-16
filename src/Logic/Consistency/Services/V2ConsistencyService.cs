@@ -1,16 +1,16 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class V2ConsistencyService : IConsistencyService<V2ConsistencyReport>
     {
         private readonly V2Client _client;
-        private readonly IOptions<ExplorePackagesSettings> _options;
+        private readonly IOptions<NuGetInsightsSettings> _options;
 
         public V2ConsistencyService(
             V2Client client,
-            IOptions<ExplorePackagesSettings> options)
+            IOptions<NuGetInsightsSettings> options)
         {
             _client = client;
             _options = options;

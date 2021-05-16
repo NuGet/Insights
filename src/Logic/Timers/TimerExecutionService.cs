@@ -6,7 +6,7 @@ using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class TimerExecutionService
     {
@@ -15,7 +15,7 @@ namespace Knapcode.ExplorePackages
         private readonly IReadOnlyDictionary<string, ITimer> _nameToTimer;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly AutoRenewingStorageLeaseService _leaseService;
-        private readonly IOptions<ExplorePackagesSettings> _options;
+        private readonly IOptions<NuGetInsightsSettings> _options;
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<TimerExecutionService> _logger;
 
@@ -23,7 +23,7 @@ namespace Knapcode.ExplorePackages
             ServiceClientFactory serviceClientFactory,
             IEnumerable<ITimer> timers,
             AutoRenewingStorageLeaseService leaseService,
-            IOptions<ExplorePackagesSettings> options,
+            IOptions<NuGetInsightsSettings> options,
             ITelemetryClient telemetryClient,
             ILogger<TimerExecutionService> logger)
         {

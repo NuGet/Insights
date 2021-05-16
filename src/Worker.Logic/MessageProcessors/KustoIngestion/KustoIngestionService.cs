@@ -2,21 +2,21 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages.Worker.KustoIngestion
+namespace NuGet.Insights.Worker.KustoIngestion
 {
     public class KustoIngestionService
     {
         private readonly KustoIngestionStorageService _storageService;
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly AutoRenewingStorageLeaseService _leaseService;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<KustoIngestionService> _logger;
 
         public KustoIngestionService(
             KustoIngestionStorageService storageService,
             IMessageEnqueuer messageEnqueuer,
             AutoRenewingStorageLeaseService leaseService,
-            IOptions<ExplorePackagesWorkerSettings> options,
+            IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<KustoIngestionService> logger)
         {
             _storageService = storageService;

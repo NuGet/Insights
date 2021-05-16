@@ -9,7 +9,7 @@ using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class CatalogScanServiceTest : BaseWorkerLogicIntegrationTest
     {

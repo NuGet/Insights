@@ -1,4 +1,6 @@
-# ExplorePackages [![Build](https://github.com/joelverhagen/ExplorePackages/actions/workflows/build.yml/badge.svg)](https://github.com/joelverhagen/ExplorePackages/actions/workflows/build.yml)
+# NuGet.Insights [![Build](https://github.com/joelverhagen/ExplorePackages/actions/workflows/build.yml/badge.svg)](https://github.com/joelverhagen/ExplorePackages/actions/workflows/build.yml)
+
+***formerly known as ExplorePackages***
 
 Analyze packages NuGet.org in a highly distributed manner. Or, if you want a sales pitch:
 
@@ -53,7 +55,7 @@ PowerShell is used for the following steps. I have tested Windows PowerShell 5.1
    ```
    If you run into trouble, try adding the `-Debug` option to get more diagnostic information.
 
-This will create a new resource group with name `ExplorePackages-{StampName}` deploy several resources into it including:
+This will create a new resource group with name `NuGet.Insights-{StampName}` deploy several resources into it including:
 - an App Service, containing a website for starting scans
 - a Function App with Consumption plan, for running the scans
 - a Storage account, for maintaining intermediate state and results (CSV files)
@@ -68,8 +70,8 @@ can use this to access the admin panel. The end of the output
 <pre>
 ...
 Warming up the website and workers...
-<b>https://explorepackages-joel.azurewebsites.net/</b> - 200 OK
-https://explorepackages-joel-worker-0.azurewebsites.net/ - 200 OK
+<b>https://nugetinsights-joel.azurewebsites.net/</b> - 200 OK
+https://nugetinsights-joel-worker-0.azurewebsites.net/ - 200 OK
 </pre>
 
 You can go the first URL which is the website URL. in your web browser click on the **Admin** link in the nav bar. Then, you can start 
@@ -83,7 +85,7 @@ To run locally, all you need is [Azure Storage Emulator](https://docs.microsoft.
 Note that you cannot use Azurite since the latest version of it does not support Azure Table Storage.
 
 1. Clone the repository.
-2. Open the solution in Visual Studio (ExplorePackages.sln).
+2. Open the solution in Visual Studio (NuGet.Insights.sln).
 3. Make sure the Azure Storage Emulator is running.
 4. Press F5 to launch the website (the Website project). It's the default startup project.
 5. Click on the "Admin" link in the navigation bar.
@@ -210,7 +212,7 @@ Several message processors exist to emit other useful data:
 
 ## Other docs
 
-- **[Adding a new driver](docs/new-driver.md) - a guide to help you enhance ExplorePackages to suit your needs.**
+- **[Adding a new driver](docs/new-driver.md) - a guide to help you enhance NuGet.Insights to suit your needs.**
 - [Blog posts](docs/blog-posts.md) - blog posts about lessons learned from this project
 - [Cost](docs/cost.md) - how much it costs to run several of the implemented catalog scans
 - [Notable classes](docs/notable-classes.md) - interesting or useful classes supporting this project

@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
+namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 {
     public class PackageAssemblyToCsvDriver : ICatalogLeafToCsvDriver<PackageAssembly>, ICsvResultStorage<PackageAssembly>
     {
@@ -22,7 +22,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
         private readonly PackageHashService _packageHashService;
         private readonly FlatContainerClient _flatContainerClient;
         private readonly TempStreamService _tempStreamService;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<PackageAssemblyToCsvDriver> _logger;
 
         private static readonly HashSet<string> FileExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".dll", ".exe" };
@@ -32,7 +32,7 @@ namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
             PackageHashService packageHashService,
             FlatContainerClient flatContainerClient,
             TempStreamService tempStreamService,
-            IOptions<ExplorePackagesWorkerSettings> options,
+            IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<PackageAssemblyToCsvDriver> logger)
         {
             _catalogClient = catalogClient;

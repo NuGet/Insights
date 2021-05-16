@@ -9,7 +9,7 @@ using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class TaskStateStorageServiceTest : IClassFixture<TaskStateStorageServiceTest.Fixture>, IAsyncLifetime
     {
@@ -134,8 +134,8 @@ namespace Knapcode.ExplorePackages.Worker
 
             public Fixture()
             {
-                Options = new Mock<IOptions<ExplorePackagesWorkerSettings>>();
-                Settings = new ExplorePackagesWorkerSettings
+                Options = new Mock<IOptions<NuGetInsightsWorkerSettings>>();
+                Settings = new NuGetInsightsWorkerSettings
                 {
                     StorageConnectionString = TestSettings.StorageConnectionString,
                     TaskStateTableName = TestSettings.NewStoragePrefix() + "1ts1",
@@ -144,8 +144,8 @@ namespace Knapcode.ExplorePackages.Worker
                 StorageSuffix = "suffix";
             }
 
-            public Mock<IOptions<ExplorePackagesWorkerSettings>> Options { get; }
-            public ExplorePackagesWorkerSettings Settings { get; }
+            public Mock<IOptions<NuGetInsightsWorkerSettings>> Options { get; }
+            public NuGetInsightsWorkerSettings Settings { get; }
             public string StorageSuffix { get; }
 
             public Task InitializeAsync()

@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
-using static Knapcode.ExplorePackages.StorageUtility;
+using static NuGet.Insights.StorageUtility;
 
-namespace Knapcode.ExplorePackages.TablePrefixScan
+namespace NuGet.Insights.TablePrefixScan
 {
     public class TablePrefixScanner
     {

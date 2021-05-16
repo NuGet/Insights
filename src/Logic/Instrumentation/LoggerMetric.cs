@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class LoggerMetric : IMetric
     {

@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class PackageFileServiceIntegrationTest : BaseLogicIntegrationTest
     {

@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Newtonsoft.Json;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class KustoPartitioningPolicyBuilder : IPropertyVisitor
     {

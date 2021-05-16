@@ -3,7 +3,7 @@ using Azure.Data.Tables;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class TableScanMessage<T> where T : class, ITableEntity, new()
     {

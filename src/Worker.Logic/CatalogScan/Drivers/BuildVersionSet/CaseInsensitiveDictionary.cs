@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
+namespace NuGet.Insights.Worker.BuildVersionSet
 {
     public class CaseInsensitiveDictionary<TValue> : Dictionary<string, TValue>
     {

@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
 using NuGet.Versioning;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class RegistrationClient
     {

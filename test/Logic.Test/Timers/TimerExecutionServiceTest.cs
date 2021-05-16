@@ -10,7 +10,7 @@ using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class TimerExecutionServiceTest : IClassFixture<TimerExecutionServiceTest.Fixture>, IAsyncLifetime
     {
@@ -345,8 +345,8 @@ namespace Knapcode.ExplorePackages
 
             public Fixture()
             {
-                Options = new Mock<IOptions<ExplorePackagesSettings>>();
-                Settings = new ExplorePackagesSettings
+                Options = new Mock<IOptions<NuGetInsightsSettings>>();
+                Settings = new NuGetInsightsSettings
                 {
                     StorageConnectionString = TestSettings.StorageConnectionString,
                     TimerTableName = TestSettings.NewStoragePrefix() + "1t1",
@@ -355,8 +355,8 @@ namespace Knapcode.ExplorePackages
                 Options.Setup(x => x.Value).Returns(() => Settings);
             }
 
-            public Mock<IOptions<ExplorePackagesSettings>> Options { get; }
-            public ExplorePackagesSettings Settings { get; }
+            public Mock<IOptions<NuGetInsightsSettings>> Options { get; }
+            public NuGetInsightsSettings Settings { get; }
 
             public Task InitializeAsync()
             {

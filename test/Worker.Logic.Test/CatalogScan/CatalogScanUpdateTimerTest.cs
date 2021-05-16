@@ -4,7 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class CatalogScanUpdateTimerTest : BaseWorkerLogicIntegrationTest
     {

@@ -12,11 +12,11 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using Knapcode.ExplorePackages.WideEntities;
 using MessagePack;
 using Microsoft.Extensions.Logging;
+using NuGet.Insights.WideEntities;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class AppendResultStorageService
     {
@@ -305,12 +305,12 @@ namespace Knapcode.ExplorePackages.Worker
 
         private static byte[] Serialize(IReadOnlyList<ICsvRecord> records)
         {
-            return MessagePackSerializer.Serialize(records, ExplorePackagesMessagePack.Options);
+            return MessagePackSerializer.Serialize(records, NuGetInsightsMessagePack.Options);
         }
 
         private static IReadOnlyList<T> Deserialize<T>(Stream stream) where T : ICsvRecord
         {
-            return MessagePackSerializer.Deserialize<List<T>>(stream, ExplorePackagesMessagePack.Options);
+            return MessagePackSerializer.Deserialize<List<T>>(stream, NuGetInsightsMessagePack.Options);
         }
 
         private static MemoryStream SerializeRecords<T>(IReadOnlyList<T> records, bool writeHeader, bool gzip, out long uncompressedLength) where T : ICsvRecord

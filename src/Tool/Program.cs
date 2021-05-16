@@ -4,13 +4,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NuGet.Insights.Worker;
 
-namespace Knapcode.ExplorePackages.Tool
+namespace NuGet.Insights.Tool
 {
     public class Program
     {
@@ -176,9 +176,9 @@ namespace Knapcode.ExplorePackages.Tool
         {
             var serviceCollection = new ServiceCollection();
 
-            serviceCollection.AddExplorePackages("Knapcode.ExplorePackages.Tool");
-            serviceCollection.AddExplorePackagesWorker();
-            AddExplorePackagesSettings<Program>(serviceCollection);
+            serviceCollection.AddNuGetInsights("NuGet.Insights.Tool");
+            serviceCollection.AddNuGetInsightsWorker();
+            AddNuGetInsightsSettings<Program>(serviceCollection);
 
             serviceCollection.AddLogging(o =>
             {
@@ -194,22 +194,22 @@ namespace Knapcode.ExplorePackages.Tool
             return serviceCollection;
         }
 
-        private static IServiceCollection AddExplorePackagesSettings<T>(IServiceCollection serviceCollection)
+        private static IServiceCollection AddNuGetInsightsSettings<T>(IServiceCollection serviceCollection)
         {
             var localDirectory = Path.GetDirectoryName(typeof(T).Assembly.Location);
-            return AddExplorePackagesSettings(serviceCollection, localDirectory);
+            return AddNuGetInsightsSettings(serviceCollection, localDirectory);
         }
 
-        private static IServiceCollection AddExplorePackagesSettings(
+        private static IServiceCollection AddNuGetInsightsSettings(
             IServiceCollection serviceCollection,
             string localDirectory = null)
         {
             var userProfile = Environment.GetEnvironmentVariable("USERPROFILE") ?? Directory.GetCurrentDirectory();
-            var userProfilePath = Path.Combine(userProfile, "Knapcode.ExplorePackages.Settings.json");
+            var userProfilePath = Path.Combine(userProfile, "NuGet.Insights.Settings.json");
 
             var localPath = Path.Combine(
                 localDirectory ?? typeof(ServiceCollectionExtensions).Assembly.Location,
-                "Knapcode.ExplorePackages.Settings.json");
+                "NuGet.Insights.Settings.json");
 
             var configurationBuilder = new ConfigurationBuilder()
                 .AddJsonFile(userProfilePath, optional: true, reloadOnChange: false)
@@ -217,8 +217,8 @@ namespace Knapcode.ExplorePackages.Tool
 
             var configuration = configurationBuilder.Build();
 
-            serviceCollection.Configure<ExplorePackagesSettings>(configuration.GetSection(ExplorePackagesSettings.DefaultSectionName));
-            serviceCollection.Configure<ExplorePackagesWorkerSettings>(configuration.GetSection(ExplorePackagesSettings.DefaultSectionName));
+            serviceCollection.Configure<NuGetInsightsSettings>(configuration.GetSection(NuGetInsightsSettings.DefaultSectionName));
+            serviceCollection.Configure<NuGetInsightsWorkerSettings>(configuration.GetSection(NuGetInsightsSettings.DefaultSectionName));
 
             return serviceCollection;
         }

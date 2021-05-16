@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 
-namespace Knapcode.ExplorePackages.Website
+namespace NuGet.Insights.Website
 {
     public class AllowListRequirement : IAuthorizationRequirement
     {

@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
-using static Knapcode.ExplorePackages.StorageUtility;
+using static NuGet.Insights.StorageUtility;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class LatestLeafStorageService<T> where T : class, ILatestPackageLeaf, new()
     {

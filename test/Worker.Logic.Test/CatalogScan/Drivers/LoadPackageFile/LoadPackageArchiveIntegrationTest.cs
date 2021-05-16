@@ -8,7 +8,7 @@ using MessagePack;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker.LoadPackageArchive
+namespace NuGet.Insights.Worker.LoadPackageArchive
 {
     public class LoadPackageArchiveIntegrationTest : BaseCatalogScanIntegrationTest
     {
@@ -100,7 +100,7 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageArchive
                 Path.Combine(testName, stepName),
                 stream =>
                 {
-                    var entity = MessagePackSerializer.Deserialize<PackageFileService.PackageFileInfoVersions>(stream, ExplorePackagesMessagePack.Options);
+                    var entity = MessagePackSerializer.Deserialize<PackageFileService.PackageFileInfoVersions>(stream, NuGetInsightsMessagePack.Options);
 
                     string mzipHash = null;
                     string signatureHash = null;

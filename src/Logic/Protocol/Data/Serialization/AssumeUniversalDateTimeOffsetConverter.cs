@@ -2,7 +2,7 @@
 using System.Globalization;
 using Newtonsoft.Json;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class AssumeUniversalDateTimeOffsetConverter : JsonConverter
     {

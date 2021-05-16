@@ -2,7 +2,7 @@
 using Azure;
 using Azure.Data.Tables;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class CursorTableEntity : ITableEntity
     {

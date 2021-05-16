@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.Versioning;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public record PackageRecord
     {

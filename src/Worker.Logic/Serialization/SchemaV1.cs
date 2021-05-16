@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json.Linq;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class SchemaV1<T> : ISchemaDeserializer, ISchemaSerializer<T>, ISchemaSerializer
     {

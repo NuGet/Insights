@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Azure.Storage.Queues;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public interface IWorkerQueueFactory
     {

@@ -1,4 +1,4 @@
-﻿namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
+﻿namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
 {
     public abstract record SourceUrlRepo
     {

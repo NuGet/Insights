@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.WideEntities;
 using MessagePack;
+using NuGet.Insights.WideEntities;
 using NuGet.Versioning;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class PackageWideEntityService
     {
@@ -161,12 +161,12 @@ namespace Knapcode.ExplorePackages
 
         private static byte[] Serialize<T>(T newInfo) where T : IPackageWideEntity
         {
-            return MessagePackSerializer.Serialize(newInfo, ExplorePackagesMessagePack.Options);
+            return MessagePackSerializer.Serialize(newInfo, NuGetInsightsMessagePack.Options);
         }
 
         private static T Deserialize<T>(WideEntity entity)
         {
-            return MessagePackSerializer.Deserialize<T>(entity.GetStream(), ExplorePackagesMessagePack.Options);
+            return MessagePackSerializer.Deserialize<T>(entity.GetStream(), NuGetInsightsMessagePack.Options);
         }
 
         public interface IPackageWideEntity

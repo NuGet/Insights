@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class PackageConsistencyService : IConsistencyService<PackageConsistencyReport>
     {

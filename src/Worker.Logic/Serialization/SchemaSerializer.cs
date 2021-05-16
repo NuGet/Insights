@@ -1,24 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv;
-using Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan;
-using Knapcode.ExplorePackages.Worker.KustoIngestion;
-using Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf;
-using Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv;
-using Knapcode.ExplorePackages.Worker.PackageArchiveToCsv;
-using Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv;
-using Knapcode.ExplorePackages.Worker.PackageAssetToCsv;
-using Knapcode.ExplorePackages.Worker.PackageManifestToCsv;
-using Knapcode.ExplorePackages.Worker.PackageSignatureToCsv;
-using Knapcode.ExplorePackages.Worker.PackageVersionToCsv;
-using Knapcode.ExplorePackages.Worker.AuxiliaryFileUpdater;
-using Knapcode.ExplorePackages.Worker.TableCopy;
-using Knapcode.ExplorePackages.Worker.Workflow;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
+using NuGet.Insights.Worker.AuxiliaryFileUpdater;
+using NuGet.Insights.Worker.CatalogLeafItemToCsv;
+using NuGet.Insights.Worker.EnqueueCatalogLeafScan;
+using NuGet.Insights.Worker.KustoIngestion;
+using NuGet.Insights.Worker.LoadLatestPackageLeaf;
+using NuGet.Insights.Worker.NuGetPackageExplorerToCsv;
+using NuGet.Insights.Worker.PackageArchiveToCsv;
+using NuGet.Insights.Worker.PackageAssemblyToCsv;
+using NuGet.Insights.Worker.PackageAssetToCsv;
+using NuGet.Insights.Worker.PackageManifestToCsv;
+using NuGet.Insights.Worker.PackageSignatureToCsv;
+using NuGet.Insights.Worker.PackageVersionToCsv;
+using NuGet.Insights.Worker.TableCopy;
+using NuGet.Insights.Worker.Workflow;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class SchemaSerializer
     {

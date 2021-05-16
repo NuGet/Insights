@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Azure.Data.Tables;
 
-namespace Knapcode.ExplorePackages.TablePrefixScan
+namespace NuGet.Insights.TablePrefixScan
 {
     public class TableQueryParameters
     {

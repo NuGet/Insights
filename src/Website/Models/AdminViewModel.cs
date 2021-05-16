@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Knapcode.ExplorePackages.Website.Models
+namespace NuGet.Insights.Website.Models
 {
     public class AdminViewModel
     {

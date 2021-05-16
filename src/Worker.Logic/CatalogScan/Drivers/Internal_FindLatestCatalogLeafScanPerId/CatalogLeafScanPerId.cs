@@ -1,4 +1,4 @@
-﻿namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScanPerId
+﻿namespace NuGet.Insights.Worker.FindLatestCatalogLeafScanPerId
 {
     public class CatalogLeafScanPerId : CatalogLeafScan
     {

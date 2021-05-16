@@ -1,4 +1,4 @@
-﻿namespace Knapcode.ExplorePackages
+﻿namespace NuGet.Insights
 {
     public class RegistrationSemVer2ConsistencyService : RegistrationConsistencyService
     {

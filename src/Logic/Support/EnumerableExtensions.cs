@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public static class EnumerableExtensions
     {

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker.LoadPackageVersion
+namespace NuGet.Insights.Worker.LoadPackageVersion
 {
     public class LoadPackageVersionIntegrationTest : BaseCatalogScanIntegrationTest
     {

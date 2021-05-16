@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
+using NuGet.Insights.Worker.LoadLatestPackageLeaf;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class MessageEnqueuerTest
     {
@@ -120,8 +120,8 @@ namespace Knapcode.ExplorePackages.Worker
         public MessageEnqueuerTest(ITestOutputHelper output)
         {
             SchemaSerializer = new SchemaSerializer(output.GetLogger<SchemaSerializer>());
-            Options = new Mock<IOptions<ExplorePackagesWorkerSettings>>();
-            Settings = new ExplorePackagesWorkerSettings();
+            Options = new Mock<IOptions<NuGetInsightsWorkerSettings>>();
+            Settings = new NuGetInsightsWorkerSettings();
             MessageBatcher = new Mock<IMessageBatcher>();
             RawMessageEnqueuer = new Mock<IRawMessageEnqueuer>();
 
@@ -153,8 +153,8 @@ namespace Knapcode.ExplorePackages.Worker
         }
 
         public SchemaSerializer SchemaSerializer { get; }
-        public Mock<IOptions<ExplorePackagesWorkerSettings>> Options { get; }
-        public ExplorePackagesWorkerSettings Settings { get; }
+        public Mock<IOptions<NuGetInsightsWorkerSettings>> Options { get; }
+        public NuGetInsightsWorkerSettings Settings { get; }
         public Mock<IMessageBatcher> MessageBatcher { get; }
         public Mock<IRawMessageEnqueuer> RawMessageEnqueuer { get; }
         public List<List<object>> EnqueuedMessages { get; }

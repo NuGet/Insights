@@ -12,12 +12,12 @@ using Microsoft.Extensions.Options;
 using Microsoft.Graph;
 using Microsoft.Identity.Web;
 
-namespace Knapcode.ExplorePackages.Website
+namespace NuGet.Insights.Website
 {
     public class AllowListAuthorizationHandler : AuthorizationHandler<AllowListRequirement>
     {
         public const string PolicyName = "AllowList";
-        private const string AllowedGroupClaimName = "ExplorePackages.AllowedGroup";
+        private const string AllowedGroupClaimName = "NuGet.Insights.AllowedGroup";
         private const string HttpContextKeyForJwt = "JwtSecurityTokenUsedToCallWebAPI";
 
         private readonly IServiceProvider _serviceProvider;
@@ -27,7 +27,7 @@ namespace Knapcode.ExplorePackages.Website
 
         public AllowListAuthorizationHandler(
             IServiceProvider serviceProvider,
-            IOptions<ExplorePackagesWebsiteSettings> options)
+            IOptions<NuGetInsightsWebsiteSettings> options)
         {
             _serviceProvider = serviceProvider;
             _restrictUsers = options.Value.RestrictUsers;

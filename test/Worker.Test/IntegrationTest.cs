@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure.Storage.Queues.Models;
-using Knapcode.ExplorePackages.Worker.DownloadsToCsv;
-using Knapcode.ExplorePackages.Worker.KustoIngestion;
-using Knapcode.ExplorePackages.Worker.OwnersToCsv;
-using Knapcode.ExplorePackages.Worker.AuxiliaryFileUpdater;
-using Knapcode.ExplorePackages.Worker.Workflow;
 using Kusto.Ingest;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.WindowsAzure.Storage.Queue;
 using Moq;
+using NuGet.Insights.Worker.AuxiliaryFileUpdater;
+using NuGet.Insights.Worker.DownloadsToCsv;
+using NuGet.Insights.Worker.KustoIngestion;
+using NuGet.Insights.Worker.OwnersToCsv;
+using NuGet.Insights.Worker.Workflow;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class IntegrationTest : BaseWorkerLogicIntegrationTest
     {
@@ -33,8 +33,8 @@ namespace Knapcode.ExplorePackages.Worker
                     serviceCollection.AddTransient(s => Output.GetTelemetryClient());
                     serviceCollection.AddTransient<Functions>();
 
-                    serviceCollection.Configure((Action<ExplorePackagesSettings>)ConfigureDefaultsAndSettings);
-                    serviceCollection.Configure((Action<ExplorePackagesWorkerSettings>)ConfigureWorkerDefaultsAndSettings);
+                    serviceCollection.Configure((Action<NuGetInsightsSettings>)ConfigureDefaultsAndSettings);
+                    serviceCollection.Configure((Action<NuGetInsightsWorkerSettings>)ConfigureWorkerDefaultsAndSettings);
                 });
         }
 
@@ -233,10 +233,10 @@ namespace Knapcode.ExplorePackages.Worker
                 // Act
                 var run = await WorkflowService.StartAsync(max1);
                 Assert.NotNull(run);
-                int attempts = 0;
+                var attempts = 0;
                 await ProcessQueueAsync(
                     () => { },
-                    async () => 
+                    async () =>
                     {
                         if (!await WorkflowService.IsAnyWorkflowStepRunningAsync())
                         {

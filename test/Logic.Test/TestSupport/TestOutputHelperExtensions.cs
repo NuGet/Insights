@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public static class TestOutputHelperExtensions
     {

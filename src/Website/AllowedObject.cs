@@ -1,4 +1,4 @@
-﻿namespace Knapcode.ExplorePackages.Website
+﻿namespace NuGet.Insights.Website
 {
     public class AllowedObject
     {

@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class LoggingHandler : DelegatingHandler
     {

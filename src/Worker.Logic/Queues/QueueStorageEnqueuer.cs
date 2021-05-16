@@ -8,17 +8,17 @@ using Azure.Storage.Queues.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class QueueStorageEnqueuer : IRawMessageEnqueuer
     {
         private readonly IWorkerQueueFactory _workerQueueFactory;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<QueueStorageEnqueuer> _logger;
 
         public QueueStorageEnqueuer(
             IWorkerQueueFactory workerQueueFactory,
-            IOptions<ExplorePackagesWorkerSettings> options,
+            IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<QueueStorageEnqueuer> logger)
         {
             _workerQueueFactory = workerQueueFactory;

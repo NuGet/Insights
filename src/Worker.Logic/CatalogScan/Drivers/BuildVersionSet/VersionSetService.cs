@@ -10,17 +10,17 @@ using MessagePack;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
+namespace NuGet.Insights.Worker.BuildVersionSet
 {
     public class VersionSetService : IVersionSetProvider
     {
         private readonly ServiceClientFactory _serviceClientFactory;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<VersionSetService> _logger;
 
         public VersionSetService(
             ServiceClientFactory serviceClientFactory,
-            IOptions<ExplorePackagesWorkerSettings> options,
+            IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<VersionSetService> logger)
         {
             _serviceClientFactory = serviceClientFactory;
@@ -62,7 +62,7 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
                 _logger.LogInformation("Reading the version set from storage...");
                 var blob = await GetBlobAsync();
                 using BlobDownloadInfo info = await blob.DownloadAsync();
-                var data = await MessagePackSerializer.DeserializeAsync<Versions<T>>(info.Content, ExplorePackagesMessagePack.Options);
+                var data = await MessagePackSerializer.DeserializeAsync<Versions<T>>(info.Content, NuGetInsightsMessagePack.Options);
                 _logger.LogInformation(
                     "The version set exists with commit timestamp {CommitTimestamp:O} and etag {ETag} and is {Size} bytes.",
                     data.V1.CommitTimestamp,
@@ -156,7 +156,7 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
             {
                 OpenConditions = requestConditions,
             });
-            await MessagePackSerializer.SerializeAsync(stream, data, ExplorePackagesMessagePack.Options);
+            await MessagePackSerializer.SerializeAsync(stream, data, NuGetInsightsMessagePack.Options);
             _logger.LogInformation("Done writing the version set to storage.");
         }
 

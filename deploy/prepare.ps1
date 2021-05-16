@@ -7,7 +7,7 @@ param (
     [string]$StampName
 )
 
-Import-Module (Join-Path $PSScriptRoot "scripts/ExplorePackages.psm1")
+Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1")
 
 $resourceSettings = Get-ResourceSettings $ConfigName $StampName
 

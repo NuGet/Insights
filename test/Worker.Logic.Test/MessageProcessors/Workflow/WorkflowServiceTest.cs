@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker.AuxiliaryFileUpdater;
 using Microsoft.Extensions.DependencyInjection;
+using NuGet.Insights.Worker.AuxiliaryFileUpdater;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker.Workflow
+namespace NuGet.Insights.Worker.Workflow
 {
     public class WorkflowServiceTest : BaseWorkerLogicIntegrationTest
     {

@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public interface ICatalogScanDriver
     {

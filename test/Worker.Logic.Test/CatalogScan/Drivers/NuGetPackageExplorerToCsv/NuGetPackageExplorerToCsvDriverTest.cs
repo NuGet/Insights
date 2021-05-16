@@ -5,7 +5,7 @@ using NuGetPe;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
+namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
 {
     /// <summary>
     /// Full set of problematic packages are here:

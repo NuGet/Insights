@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf
+namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
 {
     public class LatestPackageLeafStorageFactory : ILatestPackageLeafStorageFactory<LatestPackageLeaf>
     {

@@ -2,7 +2,7 @@
 using System.Linq;
 using Xunit;
 
-namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
+namespace NuGet.Insights.Worker.BuildVersionSet
 {
     public class VersionSetTest
     {

@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class CsvRecordSets : IReadOnlyList<ICsvRecordSet<ICsvRecord>>
     {

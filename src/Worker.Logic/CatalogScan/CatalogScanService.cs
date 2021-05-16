@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class CatalogScanService
     {
@@ -14,7 +14,7 @@ namespace Knapcode.ExplorePackages.Worker
         private readonly SchemaSerializer _serializer;
         private readonly CatalogScanStorageService _storageService;
         private readonly AutoRenewingStorageLeaseService _leaseService;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<CatalogScanService> _logger;
 
         public CatalogScanService(
@@ -23,7 +23,7 @@ namespace Knapcode.ExplorePackages.Worker
             SchemaSerializer serializer,
             CatalogScanStorageService catalogScanStorageService,
             AutoRenewingStorageLeaseService leaseService,
-            IOptions<ExplorePackagesWorkerSettings> options,
+            IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<CatalogScanService> logger)
         {
             _cursorService = cursorService;

@@ -10,7 +10,7 @@ param (
     [string]$DeploymentDir
 )
 
-Import-Module (Join-Path $PSScriptRoot "ExplorePackages.psm1")
+Import-Module (Join-Path $PSScriptRoot "NuGet.Insights.psm1")
 
 $DeploymentId, $DeploymentDir = Get-DeploymentLocals $DeploymentId $DeploymentDir
 

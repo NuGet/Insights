@@ -32,15 +32,15 @@ jobs:
     - uses: Azure/get-keyvault-secrets@v1
       if: github.ref == 'refs/heads/main' || contains(github.event.pull_request.labels.*.name, 'run tests')
       with:
-        keyvault: ${{ secrets.EXPLOREPACKAGES_KEYVAULTNAME }}
-        secrets: '${{ secrets.EXPLOREPACKAGES_STORAGESASSECRETNAME }}, ${{ secrets.EXPLOREPACKAGES_STORAGEBLOBREADSASSECRETNAME }}'
+        keyvault: ${{ secrets.NUGETINSIGHTS_KEYVAULTNAME }}
+        secrets: '${{ secrets.NUGETINSIGHTS_STORAGESASSECRETNAME }}, ${{ secrets.NUGETINSIGHTS_STORAGEBLOBREADSASSECRETNAME }}'
       id: keyVault
     - run: dotnet test --no-build --verbosity normal
       if: github.ref == 'refs/heads/main' || contains(github.event.pull_request.labels.*.name, 'run tests')
       env:
-        EXPLOREPACKAGES_STORAGEACCOUNTNAME: ${{ secrets.EXPLOREPACKAGES_STORAGEACCOUNTNAME }}
-        EXPLOREPACKAGES_STORAGESAS: ${{ steps.keyVault.outputs[secrets.EXPLOREPACKAGES_STORAGESASSECRETNAME] }}
-        EXPLOREPACKAGES_STORAGEBLOBREADSAS: ${{ steps.keyVault.outputs[secrets.EXPLOREPACKAGES_STORAGEBLOBREADSASSECRETNAME] }}   
+        NUGETINSIGHTS_STORAGEACCOUNTNAME: ${{ secrets.NUGETINSIGHTS_STORAGEACCOUNTNAME }}
+        NUGETINSIGHTS_STORAGESAS: ${{ steps.keyVault.outputs[secrets.NUGETINSIGHTS_STORAGESASSECRETNAME] }}
+        NUGETINSIGHTS_STORAGEBLOBREADSAS: ${{ steps.keyVault.outputs[secrets.NUGETINSIGHTS_STORAGEBLOBREADSASSECRETNAME] }}   
 
   markdown-link-check:
   

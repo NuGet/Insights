@@ -2,7 +2,7 @@
 using Azure;
 using Azure.Data.Tables;
 
-namespace Knapcode.ExplorePackages.Worker.KustoIngestion
+namespace NuGet.Insights.Worker.KustoIngestion
 {
     public class KustoBlobIngestion : ITableEntity
     {

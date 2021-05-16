@@ -7,19 +7,19 @@
   },
   "AppSettings": {
     "Shared": {
-      "Knapcode.ExplorePackages": {
+      "NuGet.Insights": {
         "DisabledDrivers": [
           "NuGetPackageExplorerToCsv"
         ]
       }
     },
     "Worker": {
-      "Knapcode.ExplorePackages": {
-        "MoveTempToHome": true
+      "NuGet.Insights": {
+        "MoveTempToHome": false
       }
     },
     "Website": {
-      "Knapcode.ExplorePackages": {
+      "NuGet.Insights": {
         "RestrictUsers": true,
         "ShowAdminLink": true
       }

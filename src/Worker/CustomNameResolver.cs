@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class CustomNameResolver : DefaultNameResolver
     {
@@ -11,11 +11,11 @@ namespace Knapcode.ExplorePackages.Worker
         public const string WorkQueueVariable = "%" + WorkQueueKey + "%";
         public const string ExpandQueueVariable = "%" + ExpandQueueKey + "%";
 
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
 
         public CustomNameResolver(
             IConfiguration configuration,
-            IOptions<ExplorePackagesWorkerSettings> options) : base(configuration)
+            IOptions<NuGetInsightsWorkerSettings> options) : base(configuration)
         {
             _options = options;
         }

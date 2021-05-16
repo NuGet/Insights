@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Knapcode.ExplorePackages.Worker.LoadPackageArchive
+namespace NuGet.Insights.Worker.LoadPackageArchive
 {
     public class LoadPackageArchiveDriver : ICatalogLeafScanBatchDriver
     {

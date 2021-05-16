@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf
+namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
 {
     public class LoadLatestPackageLeafIntegrationTest : BaseCatalogScanIntegrationTest
     {

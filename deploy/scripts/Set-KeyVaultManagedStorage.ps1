@@ -25,7 +25,7 @@ param (
     [TimeSpan]$SasValidityPeriod
 )
 
-Import-Module (Join-Path $PSScriptRoot "ExplorePackages.psm1")
+Import-Module (Join-Path $PSScriptRoot "NuGet.Insights.psm1")
 
 # The application ID for Key Vault managed storage:
 # Source: https://docs.microsoft.com/en-us/azure/key-vault/secrets/overview-storage-keys-powershell

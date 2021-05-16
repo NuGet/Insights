@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Azure.Data.Tables;
 
-namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScanPerId
+namespace NuGet.Insights.Worker.FindLatestCatalogLeafScanPerId
 {
     public class LatestCatalogLeafScanPerIdStorage : ILatestPackageLeafStorage<CatalogLeafScanPerId>
     {

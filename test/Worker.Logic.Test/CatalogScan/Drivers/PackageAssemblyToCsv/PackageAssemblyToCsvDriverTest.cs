@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
+namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 {
     public class PackageAssemblyToCsvDriverTest : BaseWorkerLogicIntegrationTest
     {

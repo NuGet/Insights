@@ -1,11 +1,11 @@
 ﻿using System.Diagnostics;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Website.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using NuGet.Insights.Website.Models;
 
-namespace Knapcode.ExplorePackages.Website.Controllers
+namespace NuGet.Insights.Website.Controllers
 {
     public class HomeController : Controller
     {

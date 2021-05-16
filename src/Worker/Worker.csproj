@@ -2,8 +2,8 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AzureFunctionsVersion>v3</AzureFunctionsVersion>
-    <AssemblyName>Knapcode.ExplorePackages.Worker</AssemblyName>
-    <RootNamespace>Knapcode.ExplorePackages.Worker</RootNamespace>
+    <AssemblyName>NuGet.Insights.Worker</AssemblyName>
+    <RootNamespace>NuGet.Insights.Worker</RootNamespace>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Workaround: https://github.com/Azure/azure-functions-host/issues/5894#issuecomment-727024381 -->

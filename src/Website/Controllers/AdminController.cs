@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Website.Models;
-using Knapcode.ExplorePackages.Worker;
-using Knapcode.ExplorePackages.Worker.Workflow;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NuGet.Insights.Website.Models;
+using NuGet.Insights.Worker;
+using NuGet.Insights.Worker.Workflow;
 
-namespace Knapcode.ExplorePackages.Website.Controllers
+namespace NuGet.Insights.Website.Controllers
 {
     [Authorize(Policy = AllowListAuthorizationHandler.PolicyName)]
     public class AdminController : Controller

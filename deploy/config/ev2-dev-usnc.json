@@ -24,7 +24,7 @@
   },
   "AppSettings": {
     "Shared": {
-      "Knapcode.ExplorePackages": {
+      "NuGet.Insights": {
         "DisabledDrivers": [
           "NuGetPackageExplorerToCsv"
         ]

@@ -1,4 +1,4 @@
-﻿namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
+﻿namespace NuGet.Insights.Worker.PackageVersionToCsv
 {
     public enum PackageVersionResultType
     {

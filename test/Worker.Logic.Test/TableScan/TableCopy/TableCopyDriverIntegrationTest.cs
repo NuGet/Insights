@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using NuGet.Insights.Worker.LoadLatestPackageLeaf;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker.TableCopy
+namespace NuGet.Insights.Worker.TableCopy
 {
     public class TableCopyDriverIntegrationTest : BaseWorkerLogicIntegrationTest
     {

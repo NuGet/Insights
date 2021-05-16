@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Security.Cryptography;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public static class IncrementalHash
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using Azure.Data.Tables;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public interface ILatestPackageLeaf : ITableEntity
     {

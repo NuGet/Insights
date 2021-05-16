@@ -2,16 +2,16 @@
 using Azure.Data.Tables;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf
+namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
 {
     public class LatestPackageLeafService
     {
         private readonly ServiceClientFactory _serviceClientFactory;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
 
         public LatestPackageLeafService(
             ServiceClientFactory serviceClientFactory,
-            IOptions<ExplorePackagesWorkerSettings> options)
+            IOptions<NuGetInsightsWorkerSettings> options)
         {
             _serviceClientFactory = serviceClientFactory;
             _options = options;

@@ -1,4 +1,4 @@
-﻿namespace Knapcode.ExplorePackages.Worker
+﻿namespace NuGet.Insights.Worker
 {
     public interface ITaskStateMessage
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Knapcode.ExplorePackages.TablePrefixScan
+namespace NuGet.Insights.TablePrefixScan
 {
     public abstract class TablePrefixScanStep
     {

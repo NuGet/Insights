@@ -1,30 +1,30 @@
 ﻿using System;
-using Knapcode.ExplorePackages.Worker.BuildVersionSet;
-using Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv;
-using Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScanPerId;
-using Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf;
-using Knapcode.ExplorePackages.Worker.LoadPackageArchive;
-using Knapcode.ExplorePackages.Worker.LoadPackageManifest;
-using Knapcode.ExplorePackages.Worker.LoadPackageVersion;
-using Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv;
-using Knapcode.ExplorePackages.Worker.PackageArchiveToCsv;
-using Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv;
-using Knapcode.ExplorePackages.Worker.PackageAssetToCsv;
-using Knapcode.ExplorePackages.Worker.PackageManifestToCsv;
-using Knapcode.ExplorePackages.Worker.PackageSignatureToCsv;
-using Knapcode.ExplorePackages.Worker.PackageVersionToCsv;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NuGet.Insights.Worker.BuildVersionSet;
+using NuGet.Insights.Worker.CatalogLeafItemToCsv;
+using NuGet.Insights.Worker.FindLatestCatalogLeafScanPerId;
+using NuGet.Insights.Worker.LoadLatestPackageLeaf;
+using NuGet.Insights.Worker.LoadPackageArchive;
+using NuGet.Insights.Worker.LoadPackageManifest;
+using NuGet.Insights.Worker.LoadPackageVersion;
+using NuGet.Insights.Worker.NuGetPackageExplorerToCsv;
+using NuGet.Insights.Worker.PackageArchiveToCsv;
+using NuGet.Insights.Worker.PackageAssemblyToCsv;
+using NuGet.Insights.Worker.PackageAssetToCsv;
+using NuGet.Insights.Worker.PackageManifestToCsv;
+using NuGet.Insights.Worker.PackageSignatureToCsv;
+using NuGet.Insights.Worker.PackageVersionToCsv;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class CatalogScanDriverFactory : ICatalogScanDriverFactory
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
 
-        public CatalogScanDriverFactory(IServiceProvider serviceProvider, IOptions<ExplorePackagesWorkerSettings> options)
+        public CatalogScanDriverFactory(IServiceProvider serviceProvider, IOptions<NuGetInsightsWorkerSettings> options)
         {
             _serviceProvider = serviceProvider;
             _options = options;

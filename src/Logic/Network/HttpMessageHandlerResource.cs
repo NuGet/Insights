@@ -2,7 +2,7 @@
 using System.Net.Http;
 using NuGet.Protocol.Core.Types;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     /// <summary>
     /// An implementation of <see cref="HttpMessageHandler"/> that does not require provide an

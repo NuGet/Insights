@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Knapcode.ExplorePackages.Worker.KustoIngestion
+namespace NuGet.Insights.Worker.KustoIngestion
 {
     public class KustoIngestionTimer : ITimer
     {

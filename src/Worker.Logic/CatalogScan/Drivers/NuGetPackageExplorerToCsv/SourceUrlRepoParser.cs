@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
+namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
 {
     public static class SourceUrlRepoParser
     {

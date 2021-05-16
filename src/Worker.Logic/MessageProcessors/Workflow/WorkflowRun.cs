@@ -2,7 +2,7 @@
 using Azure;
 using Azure.Data.Tables;
 
-namespace Knapcode.ExplorePackages.Worker.Workflow
+namespace NuGet.Insights.Worker.Workflow
 {
 
     public class WorkflowRun : ITableEntity

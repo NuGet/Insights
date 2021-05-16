@@ -3,21 +3,21 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker.BuildVersionSet;
-using Knapcode.ExplorePackages.Worker.AuxiliaryFileUpdater;
 using Microsoft.Extensions.Options;
+using NuGet.Insights.Worker.AuxiliaryFileUpdater;
+using NuGet.Insights.Worker.BuildVersionSet;
 using NuGet.Versioning;
 
-namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
+namespace NuGet.Insights.Worker.DownloadsToCsv
 {
     public class DownloadsToCsvUpdater : IAuxiliaryFileUpdater<PackageDownloadSet>
     {
         private readonly IPackageDownloadsClient _packageDownloadsClient;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
 
         public DownloadsToCsvUpdater(
             IPackageDownloadsClient packageDownloadsClient,
-            IOptions<ExplorePackagesWorkerSettings> options)
+            IOptions<NuGetInsightsWorkerSettings> options)
         {
             _packageDownloadsClient = packageDownloadsClient;
             _options = options;

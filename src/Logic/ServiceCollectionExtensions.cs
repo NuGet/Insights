@@ -4,25 +4,25 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.TablePrefixScan;
-using Knapcode.ExplorePackages.WideEntities;
 using Knapcode.MiniZip;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NuGet.Configuration;
+using NuGet.Insights.TablePrefixScan;
+using NuGet.Insights.WideEntities;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public static class ServiceCollectionExtensions
     {
-        public const string HttpClientName = "Knapcode.ExplorePackages";
-        public const string LoggingHttpClientName = "Knapcode.ExplorePackages.Logging";
+        public const string HttpClientName = "NuGet.Insights";
+        public const string LoggingHttpClientName = "NuGet.Insights.Logging";
 
-        private static IHttpClientBuilder AddExplorePackages(this IHttpClientBuilder builder)
+        private static IHttpClientBuilder AddNuGetInsights(this IHttpClientBuilder builder)
         {
             return builder.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
             {
@@ -31,7 +31,7 @@ namespace Knapcode.ExplorePackages
                 .AddHttpMessageHandler(serviceProvider =>
                 {
                     // Enable a hook for injecting additional HTTP messages in.
-                    var factory = serviceProvider.GetService<IExplorePackagesHttpMessageHandlerFactory>();
+                    var factory = serviceProvider.GetService<INuGetInsightsHttpMessageHandlerFactory>();
                     if (factory != null)
                     {
                         return factory.Create();
@@ -50,7 +50,7 @@ namespace Knapcode.ExplorePackages
                 });
         }
 
-        public static IServiceCollection AddExplorePackages(
+        public static IServiceCollection AddNuGetInsights(
             this IServiceCollection serviceCollection,
             string programName = null,
             string programVersion = null,
@@ -68,11 +68,11 @@ namespace Knapcode.ExplorePackages
 
             serviceCollection
                 .AddHttpClient(HttpClientName)
-                .AddExplorePackages();
+                .AddNuGetInsights();
 
             serviceCollection
                 .AddHttpClient(LoggingHttpClientName)
-                .AddExplorePackages()
+                .AddNuGetInsights()
                 .AddHttpMessageHandler<LoggingHandler>();
 
             serviceCollection.AddTransient(x => x
@@ -96,7 +96,7 @@ namespace Knapcode.ExplorePackages
             serviceCollection.AddTransient(
                 x =>
                 {
-                    var options = x.GetRequiredService<IOptions<ExplorePackagesSettings>>();
+                    var options = x.GetRequiredService<IOptions<NuGetInsightsSettings>>();
                     return new HttpSource(
                         new PackageSource(options.Value.V3ServiceIndex),
                         () =>
@@ -189,7 +189,7 @@ namespace Knapcode.ExplorePackages
             builder.Append(" ");
             if (string.IsNullOrWhiteSpace(programName))
             {
-                builder.Append("Knapcode.ExplorePackages");
+                builder.Append("NuGet.Insights");
             }
             else
             {

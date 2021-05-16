@@ -58,39 +58,39 @@ var sharedConfig = [
     value: deployment().name
   }
   {
-    name: 'Knapcode.ExplorePackages:HostSubscriptionId'
+    name: 'NuGet.Insights:HostSubscriptionId'
     value: subscription().subscriptionId
   }
   {
-    name: 'Knapcode.ExplorePackages:HostResourceGroupName'
+    name: 'NuGet.Insights:HostResourceGroupName'
     value: resourceGroup().name
   }
   {
-    name: 'Knapcode.ExplorePackages:LeaseContainerName'
+    name: 'NuGet.Insights:LeaseContainerName'
     value: leaseContainerName
   }
   {
-    name: 'Knapcode.ExplorePackages:KeyVaultName'
+    name: 'NuGet.Insights:KeyVaultName'
     value: keyVaultName
   }
   {
-    name: 'Knapcode.ExplorePackages:StorageAccountName'
+    name: 'NuGet.Insights:StorageAccountName'
     value: storageAccountName
   }
   {
-    name: 'Knapcode.ExplorePackages:StorageConnectionStringSecretName'
+    name: 'NuGet.Insights:StorageConnectionStringSecretName'
     value: sasConnectionStringSecretName
   }
   {
-    name: 'Knapcode.ExplorePackages:StorageSharedAccessSignatureSecretName'
+    name: 'NuGet.Insights:StorageSharedAccessSignatureSecretName'
     value: '${storageAccountName}-${appSasDefinitionName}'
   }
   {
-    name: 'Knapcode.ExplorePackages:StorageBlobReadSharedAccessSignatureSecretName'
+    name: 'NuGet.Insights:StorageBlobReadSharedAccessSignatureSecretName'
     value: '${storageAccountName}-${blobReadSasDefinitionName}'
   }
   {
-    name: 'Knapcode.ExplorePackages:StorageSharedAccessSignatureDuration'
+    name: 'NuGet.Insights:StorageSharedAccessSignatureDuration'
     value: sasValidityPeriod
   }
   {
@@ -182,7 +182,7 @@ resource website 'Microsoft.Web/sites@2020-09-01' = {
         }
         {
           // Needed so that the update secrets timer appears enabled in the UI
-          name: 'Knapcode.ExplorePackages:HostAppName'
+          name: 'NuGet.Insights:HostAppName'
           value: websiteName
         }
       ], sharedConfig, websiteConfig)
@@ -323,11 +323,11 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
           value: 'dotnet'
         }
         {
-          name: 'Knapcode.ExplorePackages:HostAppName'
+          name: 'NuGet.Insights:HostAppName'
           value: '${workerNamePrefix}${i}'
         }
         {
-          name: 'Knapcode.ExplorePackages:UserManagedIdentityClientId'
+          name: 'NuGet.Insights:UserManagedIdentityClientId'
           value: workerUserManagedIdentity.properties.clientId
         }
         {

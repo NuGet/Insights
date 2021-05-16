@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Azure.Data.Tables;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public interface ILatestPackageLeafStorage<T> where T : ILatestPackageLeaf
     {

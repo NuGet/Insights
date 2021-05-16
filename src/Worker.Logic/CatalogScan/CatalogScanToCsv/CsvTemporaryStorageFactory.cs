@@ -4,21 +4,21 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class CsvTemporaryStorageFactory
     {
         private readonly AppendResultStorageService _storageService;
         private readonly TaskStateStorageService _taskStateStorageService;
         private readonly IMessageEnqueuer _messageEnqueuer;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<CsvTemporaryStorageFactory> _logger;
 
         public CsvTemporaryStorageFactory(
             AppendResultStorageService storageService,
             TaskStateStorageService taskStateStorageService,
             IMessageEnqueuer messageEnqueuer,
-            IOptions<ExplorePackagesWorkerSettings> options,
+            IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<CsvTemporaryStorageFactory> logger)
         {
             _storageService = storageService;

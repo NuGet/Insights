@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public interface IPropertyVisitor
     {

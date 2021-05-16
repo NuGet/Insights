@@ -1,4 +1,4 @@
-﻿namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
+﻿namespace NuGet.Insights.Worker.PackageManifestToCsv
 {
     public enum PackageManifestRecordResultType
     {

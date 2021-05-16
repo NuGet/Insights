@@ -3,7 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     internal static class CsvUtility
     {

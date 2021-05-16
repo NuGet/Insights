@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class CatalogLeafScanToCsvAdapter<T> : BaseCatalogLeafScanToCsvAdapter, ICatalogLeafScanNonBatchDriver where T : class, ICsvRecord
     {

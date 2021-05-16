@@ -2,7 +2,7 @@
 using Azure;
 using NuGet.Versioning;
 
-namespace Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf
+namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
 {
     public class LatestPackageLeaf : ILatestPackageLeaf
     {

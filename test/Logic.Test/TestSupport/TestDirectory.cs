@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     /// <summary>
     /// Sources:
@@ -44,7 +44,7 @@ namespace Knapcode.ExplorePackages
             {
                 path = Path.Combine(
                     Path.GetTempPath(),
-                    "Knapcode.ExplorePackages",
+                    "NuGet.Insights",
                     Guid.NewGuid().ToString());
             }
 

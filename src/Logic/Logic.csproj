@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <AssemblyName>Knapcode.ExplorePackages.Logic</AssemblyName>
-    <RootNamespace>Knapcode.ExplorePackages</RootNamespace>
+    <AssemblyName>NuGet.Insights.Logic</AssemblyName>
+    <RootNamespace>NuGet.Insights</RootNamespace>
     <LangVersion>9.0</LangVersion>
   </PropertyGroup>
   <ItemGroup>

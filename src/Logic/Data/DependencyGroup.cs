@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using NuGet.Frameworks;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class DependencyGroup
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Azure;
 using Azure.Data.Tables;
 
-namespace Knapcode.ExplorePackages.WideEntities
+namespace NuGet.Insights.WideEntities
 {
     internal class WideEntitySegment : Dictionary<string, object>, ITableEntity
     {

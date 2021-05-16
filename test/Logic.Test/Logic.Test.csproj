@@ -2,8 +2,8 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <IsPackable>false</IsPackable>
-    <AssemblyName>Knapcode.ExplorePackages.Logic.Test</AssemblyName>
-    <RootNamespace>Knapcode.ExplorePackages</RootNamespace>
+    <AssemblyName>NuGet.Insights.Logic.Test</AssemblyName>
+    <RootNamespace>NuGet.Insights</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.12" />

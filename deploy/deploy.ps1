@@ -16,7 +16,7 @@ param (
     [string]$WorkerZipPath
 )
 
-Import-Module (Join-Path $PSScriptRoot "scripts/ExplorePackages.psm1")
+Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1")
 
 $resourceSettings = Get-ResourceSettings $ConfigName $StampName
 
@@ -28,8 +28,8 @@ if ($AllowDeployUser) {
         throw "Could not find the 'HomeAccountId' from (Get-AzContext).Account.ExtendedProperties.HomeAccountId."
     }
     else {
-        if (!$resourceSettings.WebsiteConfig['Knapcode.ExplorePackages'].AllowedUsers) {
-            $resourceSettings.WebsiteConfig['Knapcode.ExplorePackages'].AllowedUsers = @()
+        if (!$resourceSettings.WebsiteConfig['NuGet.Insights'].AllowedUsers) {
+            $resourceSettings.WebsiteConfig['NuGet.Insights'].AllowedUsers = @()
         }
 
         $objectId, $tenantId = $homeAccountId.Split('.', 2)
@@ -37,7 +37,7 @@ if ($AllowDeployUser) {
         Write-Status "  Tenant ID: $tenantId"
         Write-Status "  Object ID: $objectId"
 
-        $resourceSettings.WebsiteConfig['Knapcode.ExplorePackages'].AllowedUsers += @{
+        $resourceSettings.WebsiteConfig['NuGet.Insights'].AllowedUsers += @{
             TenantId = $tenantId;
             ObjectId = $objectId
         }

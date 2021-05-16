@@ -15,7 +15,7 @@ using Microsoft.Toolkit.HighPerformance.Extensions;
 using NuGet.Packaging;
 using NuGet.Protocol;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class PackageManifestService
     {
@@ -23,7 +23,7 @@ namespace Knapcode.ExplorePackages
         private readonly FlatContainerClient _flatContainerClient;
         private readonly HttpSource _httpSource;
         private readonly ITelemetryClient _telemetryClient;
-        private readonly IOptions<ExplorePackagesSettings> _options;
+        private readonly IOptions<NuGetInsightsSettings> _options;
         private readonly ILogger<PackageManifestService> _logger;
 
         public PackageManifestService(
@@ -31,7 +31,7 @@ namespace Knapcode.ExplorePackages
             FlatContainerClient flatContainerClient,
             HttpSource httpSource,
             ITelemetryClient telemetryClient,
-            IOptions<ExplorePackagesSettings> options,
+            IOptions<NuGetInsightsSettings> options,
             ILogger<PackageManifestService> logger)
         {
             _wideEntityService = wideEntityService;

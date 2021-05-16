@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public interface ITelemetryClient
     {

@@ -1,10 +1,10 @@
 ﻿using System;
 using Azure.Data.Tables;
-using Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan;
-using Knapcode.ExplorePackages.Worker.TableCopy;
 using Microsoft.Extensions.DependencyInjection;
+using NuGet.Insights.Worker.EnqueueCatalogLeafScan;
+using NuGet.Insights.Worker.TableCopy;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class TableScanDriverFactory<T> where T : class, ITableEntity, new()
     {

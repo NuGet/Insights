@@ -5,7 +5,7 @@ using MessagePack;
 using MessagePack.Formatters;
 using Microsoft.Extensions.ObjectPool;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class CsvRecordFormatterResolver : IFormatterResolver
     {

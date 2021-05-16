@@ -1,17 +1,17 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using Knapcode.ExplorePackages.Worker;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host.Queues;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using NuGet.Insights.Worker;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class Startup : FunctionsStartup
     {
@@ -20,14 +20,14 @@ namespace Knapcode.ExplorePackages.Worker
             FixCustomMetrics(builder);
             HandleMoveTempToHome(builder);
 
-            AddOptions<ExplorePackagesSettings>(builder, ExplorePackagesSettings.DefaultSectionName);
-            AddOptions<ExplorePackagesWorkerSettings>(builder, ExplorePackagesSettings.DefaultSectionName);
+            AddOptions<NuGetInsightsSettings>(builder, NuGetInsightsSettings.DefaultSectionName);
+            AddOptions<NuGetInsightsWorkerSettings>(builder, NuGetInsightsSettings.DefaultSectionName);
 
-            builder.Services.Configure<ExplorePackagesSettings>(Configure);
-            builder.Services.Configure<ExplorePackagesWorkerSettings>(Configure);
+            builder.Services.Configure<NuGetInsightsSettings>(Configure);
+            builder.Services.Configure<NuGetInsightsWorkerSettings>(Configure);
 
-            builder.Services.AddExplorePackages("Knapcode.ExplorePackages.Worker");
-            builder.Services.AddExplorePackagesWorker();
+            builder.Services.AddNuGetInsights("NuGet.Insights.Worker");
+            builder.Services.AddNuGetInsightsWorker();
 
             builder.Services.AddSingleton<IQueueProcessorFactory, UnencodedQueueProcessorFactory>();
             builder.Services.AddSingleton<INameResolver, CustomNameResolver>();
@@ -60,8 +60,8 @@ namespace Knapcode.ExplorePackages.Worker
             var settings = builder
                 .GetContext()
                 .Configuration?
-                .GetSection(ExplorePackagesSettings.DefaultSectionName)
-                .Get<ExplorePackagesWorkerSettings>();
+                .GetSection(NuGetInsightsSettings.DefaultSectionName)
+                .Get<NuGetInsightsWorkerSettings>();
 
             if (settings?.MoveTempToHome == true)
             {
@@ -70,7 +70,7 @@ namespace Knapcode.ExplorePackages.Worker
                     throw new InvalidOperationException("The HOME environment variable does not point to an existing directory.");
                 }
 
-                var newTemp = Environment.ExpandEnvironmentVariables(Path.Combine("%HOME%", "Knapcode.ExplorePackages", "temp"));
+                var newTemp = Environment.ExpandEnvironmentVariables(Path.Combine("%HOME%", "NuGet.Insights", "temp"));
                 if (!Directory.Exists(newTemp))
                 {
                     Directory.CreateDirectory(newTemp);
@@ -81,11 +81,11 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        private static void Configure(ExplorePackagesSettings settings)
+        private static void Configure(NuGetInsightsSettings settings)
         {
             if (DoesHomeExist())
             {
-                var networkDir = Environment.ExpandEnvironmentVariables(Path.Combine("%HOME%", "Knapcode.ExplorePackages", "home"));
+                var networkDir = Environment.ExpandEnvironmentVariables(Path.Combine("%HOME%", "NuGet.Insights", "home"));
                 settings.TempDirectories.Add(new TempStreamDirectory
                 {
                     Path = networkDir,

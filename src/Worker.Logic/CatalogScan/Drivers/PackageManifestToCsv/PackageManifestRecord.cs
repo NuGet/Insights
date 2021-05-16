@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
+namespace NuGet.Insights.Worker.PackageManifestToCsv
 {
     public partial record PackageManifestRecord : PackageRecord, ICsvRecord
     {

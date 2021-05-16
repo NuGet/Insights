@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Azure;
 using Microsoft.Extensions.Logging;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class CatalogLeafScanMessageProcessor : IBatchMessageProcessor<CatalogLeafScanMessage>
     {

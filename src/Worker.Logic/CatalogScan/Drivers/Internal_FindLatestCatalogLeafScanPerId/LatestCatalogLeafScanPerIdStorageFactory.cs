@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScanPerId
+namespace NuGet.Insights.Worker.FindLatestCatalogLeafScanPerId
 {
     public class LatestCatalogLeafScanPerIdStorageFactory : ILatestPackageLeafStorageFactory<CatalogLeafScanPerId>
     {

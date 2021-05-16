@@ -8,7 +8,7 @@ using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class CatalogScanStorageService
     {
@@ -16,13 +16,13 @@ namespace Knapcode.ExplorePackages.Worker
 
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly ITelemetryClient _telemetryClient;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<CatalogScanStorageService> _logger;
 
         public CatalogScanStorageService(
             ServiceClientFactory serviceClientFactory,
             ITelemetryClient telemetryClient,
-            IOptions<ExplorePackagesWorkerSettings> options,
+            IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<CatalogScanStorageService> logger)
         {
             _serviceClientFactory = serviceClientFactory;

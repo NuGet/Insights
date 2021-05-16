@@ -9,7 +9,7 @@ using Azure.Storage.Blobs.Models;
 using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public static class StorageExtensions
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
+namespace NuGet.Insights.Worker.DownloadsToCsv
 {
     public partial record PackageDownloadRecord : ICsvRecord
     {

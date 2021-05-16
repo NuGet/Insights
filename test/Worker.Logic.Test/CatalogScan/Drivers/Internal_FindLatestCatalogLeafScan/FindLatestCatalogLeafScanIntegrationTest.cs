@@ -6,7 +6,7 @@ using Azure.Data.Tables;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
+namespace NuGet.Insights.Worker.FindLatestCatalogLeafScan
 {
     public class FindLatestCatalogLeafScanIntegrationTest : BaseCatalogScanIntegrationTest
     {

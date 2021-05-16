@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Knapcode.ExplorePackages.WideEntities
+namespace NuGet.Insights.WideEntities
 {
     public class ChunkStreamTest
     {

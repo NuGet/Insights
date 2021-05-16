@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Azure.Data.Tables;
 using Newtonsoft.Json.Linq;
 
-namespace Knapcode.ExplorePackages.Worker.TableCopy
+namespace NuGet.Insights.Worker.TableCopy
 {
     public class TableCopyDriver<T> : ITableScanDriver<T> where T : class, ITableEntity, new()
     {

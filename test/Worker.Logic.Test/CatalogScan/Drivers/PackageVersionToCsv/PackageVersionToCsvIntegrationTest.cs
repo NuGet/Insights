@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
+namespace NuGet.Insights.Worker.PackageVersionToCsv
 {
     public class PackageVersionToCsvIntegrationTest : BaseCatalogScanToCsvIntegrationTest<PackageVersionRecord>
     {

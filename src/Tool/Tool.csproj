@@ -2,8 +2,8 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
-    <AssemblyName>Knapcode.ExplorePackages.Tool</AssemblyName>
-    <RootNamespace>Knapcode.ExplorePackages.Tool</RootNamespace>
+    <AssemblyName>NuGet.Insights.Tool</AssemblyName>
+    <RootNamespace>NuGet.Insights.Tool</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Knapcode.TableDelta" Version="0.8.0" />

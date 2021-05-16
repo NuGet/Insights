@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
-    public class NullThrottle : IThrottle, MiniZip.IThrottle, NuGet.Protocol.IThrottle
+    public class NullThrottle : IThrottle, Protocol.IThrottle, Knapcode.MiniZip.IThrottle
     {
         public static NullThrottle Instance { get; } = new NullThrottle();
 

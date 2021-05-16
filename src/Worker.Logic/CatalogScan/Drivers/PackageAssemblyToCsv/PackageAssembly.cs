@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
+namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 {
     public partial record PackageAssembly : PackageRecord, ICsvRecord
     {

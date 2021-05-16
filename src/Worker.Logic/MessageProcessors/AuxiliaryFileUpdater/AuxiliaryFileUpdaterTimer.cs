@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Knapcode.ExplorePackages.Worker.AuxiliaryFileUpdater
+namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 {
     public class AuxiliaryFileUpdaterTimer<T> : ITimer where T : IAsOfData
     {

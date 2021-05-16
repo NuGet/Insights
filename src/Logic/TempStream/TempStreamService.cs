@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class TempStreamService
     {

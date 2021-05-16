@@ -7,7 +7,7 @@ using Azure;
 using Azure.Data.Tables;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages.WideEntities
+namespace NuGet.Insights.WideEntities
 {
     public class WideEntityService
     {
@@ -66,7 +66,7 @@ namespace Knapcode.ExplorePackages.WideEntities
         public WideEntityService(
             ServiceClientFactory serviceClientFactory,
             ITelemetryClient telemetryClient,
-            IOptions<ExplorePackagesSettings> options)
+            IOptions<NuGetInsightsSettings> options)
         {
             _serviceClientFactory = serviceClientFactory ?? throw new ArgumentNullException(nameof(serviceClientFactory));
             _telemetryClient = telemetryClient ?? throw new ArgumentNullException(nameof(telemetryClient));

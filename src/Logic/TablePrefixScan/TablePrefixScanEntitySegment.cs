@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using Azure.Data.Tables;
 
-namespace Knapcode.ExplorePackages.TablePrefixScan
+namespace NuGet.Insights.TablePrefixScan
 {
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
     public class TablePrefixScanEntitySegment<T> : TablePrefixScanStep where T : ITableEntity, new()

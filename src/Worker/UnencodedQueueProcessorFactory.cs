@@ -1,6 +1,6 @@
 ﻿using Microsoft.Azure.WebJobs.Host.Queues;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class UnencodedQueueProcessorFactory : IQueueProcessorFactory
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class CountingWriterStream : Stream
     {

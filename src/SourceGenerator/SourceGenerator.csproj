@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>Knapcode.ExplorePackages.SourceGenerator</AssemblyName>
-    <RootNamespace>Knapcode.ExplorePackages</RootNamespace>
+    <AssemblyName>NuGet.Insights.SourceGenerator</AssemblyName>
+    <RootNamespace>NuGet.Insights</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="KustoDDL.cs" />

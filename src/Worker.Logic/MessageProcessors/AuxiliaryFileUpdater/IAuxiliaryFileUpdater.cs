@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker.BuildVersionSet;
+using NuGet.Insights.Worker.BuildVersionSet;
 
-namespace Knapcode.ExplorePackages.Worker.AuxiliaryFileUpdater
+namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 {
     public interface IAuxiliaryFileUpdater<T> where T : IAsOfData
     {

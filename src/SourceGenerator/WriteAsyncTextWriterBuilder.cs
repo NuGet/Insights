@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using Microsoft.CodeAnalysis;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class WriteAsyncTextWriterBuilder : IPropertyVisitor
     {

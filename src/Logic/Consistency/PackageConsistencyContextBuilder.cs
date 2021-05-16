@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using NuGet.Versioning;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class PackageConsistencyContextBuilder
     {

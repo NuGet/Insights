@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
-using Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan;
-using Knapcode.ExplorePackages.Worker.TableCopy;
 using Newtonsoft.Json.Linq;
+using NuGet.Insights.Worker.EnqueueCatalogLeafScan;
+using NuGet.Insights.Worker.TableCopy;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class TableScanService<T> where T : class, ITableEntity, new()
     {

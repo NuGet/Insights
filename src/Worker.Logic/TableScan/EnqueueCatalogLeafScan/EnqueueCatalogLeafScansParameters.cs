@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan
+namespace NuGet.Insights.Worker.EnqueueCatalogLeafScan
 {
     public class EnqueueCatalogLeafScansParameters
     {

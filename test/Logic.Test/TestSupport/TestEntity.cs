@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using Azure;
 using Azure.Data.Tables;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class TestEntity : ITableEntity, IEquatable<TestEntity>, IComparable<TestEntity>
     {

@@ -6,7 +6,7 @@ using System.Xml.Linq;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public static class NuspecUtility
     {

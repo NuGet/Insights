@@ -3,21 +3,21 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker.BuildVersionSet;
-using Knapcode.ExplorePackages.Worker.AuxiliaryFileUpdater;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using NuGet.Insights.Worker.AuxiliaryFileUpdater;
+using NuGet.Insights.Worker.BuildVersionSet;
 
-namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
+namespace NuGet.Insights.Worker.OwnersToCsv
 {
     public class OwnersToCsvUpdater : IAuxiliaryFileUpdater<PackageOwnerSet>
     {
         private readonly PackageOwnersClient _packageOwnersClient;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
 
         public OwnersToCsvUpdater(
             PackageOwnersClient packageOwnersClient,
-            IOptions<ExplorePackagesWorkerSettings> options)
+            IOptions<NuGetInsightsWorkerSettings> options)
         {
             _packageOwnersClient = packageOwnersClient;
             _options = options;

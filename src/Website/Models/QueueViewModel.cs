@@ -1,6 +1,6 @@
-﻿using Knapcode.ExplorePackages.Worker;
+﻿using NuGet.Insights.Worker;
 
-namespace Knapcode.ExplorePackages.Website.Models
+namespace NuGet.Insights.Website.Models
 {
     public class QueueViewModel
     {

@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public static class PathUtility
     {

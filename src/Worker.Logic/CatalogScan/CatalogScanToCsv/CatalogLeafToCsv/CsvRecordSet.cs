@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class CsvRecordSet<T> : ICsvRecordSet<T> where T : ICsvRecord
     {

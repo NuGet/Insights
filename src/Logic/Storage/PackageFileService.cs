@@ -14,7 +14,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Toolkit.HighPerformance.Extensions;
 using NuGet.Packaging.Signing;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class PackageFileService
     {
@@ -23,7 +23,7 @@ namespace Knapcode.ExplorePackages
         private readonly HttpZipProvider _httpZipProvider;
         private readonly MZipFormat _mzipFormat;
         private readonly ITelemetryClient _telemetryClient;
-        private readonly IOptions<ExplorePackagesSettings> _options;
+        private readonly IOptions<NuGetInsightsSettings> _options;
         private readonly ILogger<PackageFileService> _logger;
 
         public PackageFileService(
@@ -32,7 +32,7 @@ namespace Knapcode.ExplorePackages
             HttpZipProvider httpZipProvider,
             MZipFormat mzipFormat,
             ITelemetryClient telemetryClient,
-            IOptions<ExplorePackagesSettings> options,
+            IOptions<NuGetInsightsSettings> options,
             ILogger<PackageFileService> logger)
         {
             _wideEntityService = wideEntityService;

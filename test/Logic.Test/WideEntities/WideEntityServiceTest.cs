@@ -12,7 +12,7 @@ using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.WideEntities
+namespace NuGet.Insights.WideEntities
 {
     public class WideEntityServiceTest : IClassFixture<WideEntityServiceTest.Fixture>, IAsyncLifetime
     {
@@ -544,8 +544,8 @@ namespace Knapcode.ExplorePackages.WideEntities
 
             public Fixture()
             {
-                Options = new Mock<IOptions<ExplorePackagesSettings>>();
-                Settings = new ExplorePackagesSettings
+                Options = new Mock<IOptions<NuGetInsightsSettings>>();
+                Settings = new NuGetInsightsSettings
                 {
                     StorageConnectionString = TestSettings.StorageConnectionString,
                 };
@@ -557,8 +557,8 @@ namespace Knapcode.ExplorePackages.WideEntities
                 random.NextBytes(Bytes);
             }
 
-            public Mock<IOptions<ExplorePackagesSettings>> Options { get; }
-            public ExplorePackagesSettings Settings { get; }
+            public Mock<IOptions<NuGetInsightsSettings>> Options { get; }
+            public NuGetInsightsSettings Settings { get; }
             public string TableName { get; }
             public byte[] Bytes { get; }
 

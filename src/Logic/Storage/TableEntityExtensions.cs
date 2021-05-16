@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Azure.Data.Tables;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public static class TableEntityExtensions
     {

@@ -10,7 +10,7 @@ using Azure.Storage.Sas;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class ServiceClientFactory
     {
@@ -19,12 +19,12 @@ namespace Knapcode.ExplorePackages
         private readonly SemaphoreSlim _lock = new SemaphoreSlim(1);
         private ServiceClients _serviceClients;
 
-        private readonly IOptions<ExplorePackagesSettings> _options;
+        private readonly IOptions<NuGetInsightsSettings> _options;
         private readonly ILogger<ServiceClientFactory> _logger;
 
         public ServiceClientFactory(
             AzureLoggingStartup loggingStartup, // Injected so that logging starts
-            IOptions<ExplorePackagesSettings> options,
+            IOptions<NuGetInsightsSettings> options,
             ILogger<ServiceClientFactory> logger)
         {
             _options = options;
@@ -273,7 +273,7 @@ namespace Knapcode.ExplorePackages
             {
                 Diagnostics = { IsLoggingEnabled = _options.Value.EnableAzureLogging }
             });
-            
+
             _logger.LogInformation("Blob endpoint: {BlobEndpoint}", blob.Uri);
             _logger.LogInformation("Queue endpoint: {QueueEndpoint}", queue.Uri);
             // No Uri property for TableServiceClient, see https://github.com/Azure/azure-sdk-for-net/issues/19881

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace Knapcode.ExplorePackages.Website
+namespace NuGet.Insights.Website
 {
     /// <summary>
     /// Source: https://stackoverflow.com/a/20411015

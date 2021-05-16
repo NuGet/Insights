@@ -2,7 +2,7 @@
 using Azure.Data.Tables;
 using NuGet.Versioning;
 
-namespace Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan
+namespace NuGet.Insights.Worker.FindLatestCatalogLeafScan
 {
     public class LatestCatalogLeafScanStorage : ILatestPackageLeafStorage<CatalogLeafScan>
     {

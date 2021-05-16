@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NuGet.Insights.Worker.PackageAssemblyToCsv;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
+namespace NuGet.Insights.Worker.PackageArchiveToCsv
 {
     public class PackageArchiveToCsvDriverTest : BaseWorkerLogicIntegrationTest
     {

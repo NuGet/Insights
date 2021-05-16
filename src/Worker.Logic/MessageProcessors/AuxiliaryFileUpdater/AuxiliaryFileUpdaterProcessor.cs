@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using Knapcode.ExplorePackages.Worker.BuildVersionSet;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NuGet.Insights.Worker.BuildVersionSet;
 
-namespace Knapcode.ExplorePackages.Worker.AuxiliaryFileUpdater
+namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 {
     public class AuxiliaryFileUpdaterProcessor<T> : ITaskStateMessageProcessor<AuxiliaryFileUpdaterMessage<T>> where T : IAsOfData
     {
@@ -21,14 +21,14 @@ namespace Knapcode.ExplorePackages.Worker.AuxiliaryFileUpdater
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IVersionSetProvider _versionSetProvider;
         private readonly IAuxiliaryFileUpdater<T> _updater;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<AuxiliaryFileUpdaterProcessor<T>> _logger;
 
         public AuxiliaryFileUpdaterProcessor(
             ServiceClientFactory serviceClientFactory,
             IVersionSetProvider versionSetProvider,
             IAuxiliaryFileUpdater<T> updater,
-            IOptions<ExplorePackagesWorkerSettings> options,
+            IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<AuxiliaryFileUpdaterProcessor<T>> logger)
         {
             _serviceClientFactory = serviceClientFactory;

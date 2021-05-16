@@ -3,17 +3,17 @@ using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class CursorStorageService
     {
         private readonly ServiceClientFactory _serviceClientFactory;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<CursorStorageService> _logger;
 
         public CursorStorageService(
             ServiceClientFactory serviceClientFactory,
-            IOptions<ExplorePackagesWorkerSettings> options,
+            IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<CursorStorageService> logger)
         {
             _serviceClientFactory = serviceClientFactory;

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
 
-namespace Knapcode.ExplorePackages.Worker.TableCopy
+namespace NuGet.Insights.Worker.TableCopy
 {
     public class TableRowCopyMessageProcessor<T> : IMessageProcessor<TableRowCopyMessage<T>> where T : class, ITableEntity, new()
     {

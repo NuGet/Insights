@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
-    public interface IThrottle : NuGet.Protocol.IThrottle, MiniZip.IThrottle
+    public interface IThrottle : Protocol.IThrottle, Knapcode.MiniZip.IThrottle
     {
         new Task WaitAsync();
         new void Release();

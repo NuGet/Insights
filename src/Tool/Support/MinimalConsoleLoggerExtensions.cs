@@ -1,4 +1,4 @@
-﻿using Knapcode.ExplorePackages.Tool;
+﻿using NuGet.Insights.Tool;
 
 namespace Microsoft.Extensions.Logging
 {

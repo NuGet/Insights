@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NuGet.Protocol;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class CatalogClient
     {

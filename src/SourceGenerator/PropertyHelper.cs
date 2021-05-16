@@ -2,7 +2,7 @@
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public static class PropertyHelper
     {

@@ -4,7 +4,7 @@ using System.Reflection;
 using NuGet.Frameworks;
 using Xunit;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class NuspecUtilityTest
     {

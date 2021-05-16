@@ -2,7 +2,7 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))"
           Condition="exists($([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../')))" />
   <PropertyGroup>
-    <ArtifactsSubdirectory Condition="'$(ArtifactsDirectory)' != ''">ExplorePackages\</ArtifactsSubdirectory>
+    <ArtifactsSubdirectory Condition="'$(ArtifactsDirectory)' != ''">NuGet.Insights\</ArtifactsSubdirectory>
     <ArtifactsSubdirectory Condition="'$(ArtifactsDirectory)' == ''"></ArtifactsSubdirectory>
     <ArtifactsDirectory Condition="'$(ArtifactsDirectory)' == ''">$(MSBuildThisFileDirectory)artifacts</ArtifactsDirectory>
     <DeploymentDir Condition="'$(DeploymentDir)' == ''">$(ArtifactsDirectory)\deploy</DeploymentDir>

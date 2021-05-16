@@ -2,20 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker.LoadPackageVersion;
 using Microsoft.Extensions.Options;
+using NuGet.Insights.Worker.LoadPackageVersion;
 using NuGet.Versioning;
 
-namespace Knapcode.ExplorePackages.Worker.PackageVersionToCsv
+namespace NuGet.Insights.Worker.PackageVersionToCsv
 {
     public class PackageVersionToCsvDriver : ICatalogLeafToCsvDriver<PackageVersionRecord>, ICsvResultStorage<PackageVersionRecord>
     {
         private readonly PackageVersionStorageService _storageService;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
 
         public PackageVersionToCsvDriver(
             PackageVersionStorageService storageService,
-            IOptions<ExplorePackagesWorkerSettings> options)
+            IOptions<NuGetInsightsWorkerSettings> options)
         {
             _storageService = storageService;
             _options = options;

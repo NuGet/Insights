@@ -5,18 +5,18 @@ using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages.Worker.Workflow
+namespace NuGet.Insights.Worker.Workflow
 {
     public class WorkflowStorageService
     {
         private readonly ServiceClientFactory _serviceClientFactory;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<WorkflowStorageService> _logger;
 
         public WorkflowStorageService(
             ServiceClientFactory serviceClientFactory,
-            IOptions<ExplorePackagesWorkerSettings> options,
+            IOptions<NuGetInsightsWorkerSettings> options,
             ITelemetryClient telemetryClient,
             ILogger<WorkflowStorageService> logger)
         {

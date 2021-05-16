@@ -1,4 +1,4 @@
-﻿namespace Knapcode.ExplorePackages
+﻿namespace NuGet.Insights
 {
     public class RegistrationGzippedConsistencyService : RegistrationConsistencyService
     {

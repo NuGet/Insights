@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
 
-namespace Knapcode.ExplorePackages.Tool
+namespace NuGet.Insights.Tool
 {
     public class SandboxCommand : ICommand
     {

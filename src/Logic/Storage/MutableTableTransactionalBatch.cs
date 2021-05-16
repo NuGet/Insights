@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class MutableTableTransactionalBatch : List<TableTransactionalOperation>
     {

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
+namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 {
     public class PackageAssemblyToCsvIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest<PackageAssembly>
     {

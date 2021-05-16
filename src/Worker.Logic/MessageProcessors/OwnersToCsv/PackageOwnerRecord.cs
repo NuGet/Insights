@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Knapcode.ExplorePackages.Worker.OwnersToCsv
+namespace NuGet.Insights.Worker.OwnersToCsv
 {
     public partial record PackageOwnerRecord : ICsvRecord
     {

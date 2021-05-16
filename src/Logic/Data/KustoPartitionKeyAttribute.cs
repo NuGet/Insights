@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class KustoPartitionKeyAttribute : Attribute
     {

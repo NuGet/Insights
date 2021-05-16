@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Knapcode.ExplorePackages.Tool
+namespace NuGet.Insights.Tool
 {
     public class CommandExecutor
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     /// <summary>
     /// Source: https://codeblog.jonskeet.uk/2009/11/04/revisiting-randomness/

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Knapcode.ExplorePackages.Worker.AuxiliaryFileUpdater
+namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 {
     public class AuxiliaryFileUpdaterMessage<T> : ITaskStateMessage
     {

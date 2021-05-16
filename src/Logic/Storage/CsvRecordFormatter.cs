@@ -2,7 +2,7 @@
 using MessagePack;
 using MessagePack.Formatters;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class CsvRecordFormatter<T> : IMessagePackFormatter<T> where T : ICsvRecord
     {

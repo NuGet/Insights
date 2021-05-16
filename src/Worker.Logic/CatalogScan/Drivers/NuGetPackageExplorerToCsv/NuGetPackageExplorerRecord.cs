@@ -1,7 +1,7 @@
 ﻿using System;
 using NuGetPe;
 
-namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
+namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
 {
     public partial record NuGetPackageExplorerRecord : PackageRecord, ICsvRecord
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Knapcode.ExplorePackages.Worker.Workflow
+namespace NuGet.Insights.Worker.Workflow
 {
     public class WorkflowTimer : ITimer
     {

@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public interface ICsvReader
     {

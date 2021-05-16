@@ -7,7 +7,7 @@ param (
     [string]$BaseUrl
 )
 
-Import-Module (Join-Path $PSScriptRoot "ExplorePackages.psm1")
+Import-Module (Join-Path $PSScriptRoot "NuGet.Insights.psm1")
 
 Write-Status "Enabling the AAD app for website login..."
 $resource = "https://graph.microsoft.com/"

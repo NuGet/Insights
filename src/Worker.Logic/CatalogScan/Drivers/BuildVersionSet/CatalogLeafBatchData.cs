@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using MessagePack;
 
-namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
+namespace NuGet.Insights.Worker.BuildVersionSet
 {
     [MessagePackObject]
     public record CatalogLeafBatchData

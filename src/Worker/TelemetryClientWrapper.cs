@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.ApplicationInsights;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class TelemetryClientWrapper : ITelemetryClient
     {

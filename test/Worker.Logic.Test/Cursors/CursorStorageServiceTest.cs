@@ -11,7 +11,7 @@ using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class CursorStorageServiceTest : IClassFixture<CursorStorageServiceTest.Fixture>, IAsyncLifetime
     {
@@ -153,8 +153,8 @@ namespace Knapcode.ExplorePackages.Worker
 
             public Fixture()
             {
-                Options = new Mock<IOptions<ExplorePackagesWorkerSettings>>();
-                Settings = new ExplorePackagesWorkerSettings
+                Options = new Mock<IOptions<NuGetInsightsWorkerSettings>>();
+                Settings = new NuGetInsightsWorkerSettings
                 {
                     StorageConnectionString = TestSettings.StorageConnectionString,
                     CursorTableName = TestSettings.NewStoragePrefix() + "1c1",
@@ -162,8 +162,8 @@ namespace Knapcode.ExplorePackages.Worker
                 Options.Setup(x => x.Value).Returns(() => Settings);
             }
 
-            public Mock<IOptions<ExplorePackagesWorkerSettings>> Options { get; }
-            public ExplorePackagesWorkerSettings Settings { get; }
+            public Mock<IOptions<NuGetInsightsWorkerSettings>> Options { get; }
+            public NuGetInsightsWorkerSettings Settings { get; }
 
             public Task InitializeAsync()
             {

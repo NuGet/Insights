@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker.PackageSignatureToCsv
+namespace NuGet.Insights.Worker.PackageSignatureToCsv
 {
     public class PackageSignatureToCsvIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest<PackageSignature>
     {

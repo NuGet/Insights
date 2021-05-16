@@ -1,6 +1,6 @@
 ﻿using System.Net.Http;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class NullDelegatingHandler : DelegatingHandler
     {

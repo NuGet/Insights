@@ -4,7 +4,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class QueryLoopMetrics : IDisposable
     {

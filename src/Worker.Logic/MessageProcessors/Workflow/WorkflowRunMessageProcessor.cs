@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker.KustoIngestion;
 using Microsoft.Extensions.Logging;
+using NuGet.Insights.Worker.KustoIngestion;
 
-namespace Knapcode.ExplorePackages.Worker.Workflow
+namespace NuGet.Insights.Worker.Workflow
 {
     public class WorkflowRunMessageProcessor : IMessageProcessor<WorkflowRunMessage>
     {

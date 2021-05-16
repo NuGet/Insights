@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.WindowsAzure.Storage.Queue;
-using static Knapcode.ExplorePackages.Worker.CustomNameResolver;
-using static Knapcode.ExplorePackages.Worker.CustomStorageAccountProvider;
+using static NuGet.Insights.Worker.CustomNameResolver;
+using static NuGet.Insights.Worker.CustomStorageAccountProvider;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class Functions
     {

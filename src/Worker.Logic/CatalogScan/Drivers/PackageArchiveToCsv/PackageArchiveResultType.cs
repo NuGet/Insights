@@ -1,4 +1,4 @@
-﻿namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
+﻿namespace NuGet.Insights.Worker.PackageArchiveToCsv
 {
     public enum PackageArchiveResultType
     {

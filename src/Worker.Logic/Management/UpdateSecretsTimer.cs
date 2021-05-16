@@ -12,7 +12,7 @@ using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class UpdateSecretsTimer : ITimer
     {
@@ -20,13 +20,13 @@ namespace Knapcode.ExplorePackages.Worker
 
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly HttpClient _httpClient;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<UpdateSecretsTimer> _logger;
 
         public UpdateSecretsTimer(
             ServiceClientFactory serviceClientFactory,
             HttpClient httpClient,
-            IOptions<ExplorePackagesWorkerSettings> options,
+            IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<UpdateSecretsTimer> logger)
         {
             _serviceClientFactory = serviceClientFactory;

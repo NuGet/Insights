@@ -5,13 +5,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
 using Azure.Storage.Queues.Models;
-using Knapcode.ExplorePackages.WideEntities;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using NuGet.Insights.WideEntities;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public abstract class BaseCatalogScanIntegrationTest : BaseWorkerLogicIntegrationTest
     {

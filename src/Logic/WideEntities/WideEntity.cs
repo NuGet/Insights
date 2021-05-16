@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using Azure;
 
-namespace Knapcode.ExplorePackages.WideEntities
+namespace NuGet.Insights.WideEntities
 {
     public class WideEntity
     {

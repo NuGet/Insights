@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using Knapcode.ExplorePackages.Worker;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -10,8 +9,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
+using NuGet.Insights.Worker;
 
-namespace Knapcode.ExplorePackages.Website
+namespace NuGet.Insights.Website
 {
     public class Startup
     {
@@ -24,12 +24,12 @@ namespace Knapcode.ExplorePackages.Website
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<ExplorePackagesSettings>(Configuration.GetSection(ExplorePackagesSettings.DefaultSectionName));
-            services.Configure<ExplorePackagesWorkerSettings>(Configuration.GetSection(ExplorePackagesSettings.DefaultSectionName));
-            services.Configure<ExplorePackagesWebsiteSettings>(Configuration.GetSection(ExplorePackagesSettings.DefaultSectionName));
+            services.Configure<NuGetInsightsSettings>(Configuration.GetSection(NuGetInsightsSettings.DefaultSectionName));
+            services.Configure<NuGetInsightsWorkerSettings>(Configuration.GetSection(NuGetInsightsSettings.DefaultSectionName));
+            services.Configure<NuGetInsightsWebsiteSettings>(Configuration.GetSection(NuGetInsightsSettings.DefaultSectionName));
 
-            services.AddExplorePackages("Knapcode.ExplorePackages.Website");
-            services.AddExplorePackagesWorker();
+            services.AddNuGetInsights("NuGet.Insights.Website");
+            services.AddNuGetInsightsWorker();
 
             services.AddScoped<IAuthorizationHandler, AllowListAuthorizationHandler>();
             services.AddScoped<AllowListAuthorizationHandler>();
@@ -65,8 +65,8 @@ namespace Knapcode.ExplorePackages.Website
                 });
 
             var initialSettings = Configuration
-                .GetSection(ExplorePackagesSettings.DefaultSectionName)
-                .Get<ExplorePackagesWebsiteSettings>();
+                .GetSection(NuGetInsightsSettings.DefaultSectionName)
+                .Get<NuGetInsightsWebsiteSettings>();
             if (initialSettings.AllowedGroups.Any())
             {
                 microsoftIdentityBuilder

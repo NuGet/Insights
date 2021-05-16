@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
+namespace NuGet.Insights.Worker.BuildVersionSet
 {
     public interface IVersionSetProvider
     {

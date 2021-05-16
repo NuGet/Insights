@@ -1,13 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.Worker.AuxiliaryFileUpdater;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NuGet.Insights.Worker.AuxiliaryFileUpdater;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker.DownloadsToCsv
+namespace NuGet.Insights.Worker.DownloadsToCsv
 {
     public class DownloadsToCsvIntegrationTest : BaseWorkerLogicIntegrationTest
     {

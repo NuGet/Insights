@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     /// <summary>
     /// Source: https://github.com/dotnet/aspnetcore/blob/01cc669960821e23ef3275cd5ad81f7192972010/src/Identity/Extensions.Core/src/Base32.cs

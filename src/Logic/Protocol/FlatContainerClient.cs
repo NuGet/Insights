@@ -6,21 +6,21 @@ using Microsoft.Extensions.Options;
 using NuGet.Protocol;
 using NuGet.Versioning;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class FlatContainerClient
     {
         private readonly ServiceIndexCache _serviceIndexCache;
         private readonly HttpSource _httpSource;
         private readonly TempStreamService _tempStreamService;
-        private readonly IOptions<ExplorePackagesSettings> _options;
+        private readonly IOptions<NuGetInsightsSettings> _options;
         private readonly ILogger<FlatContainerClient> _logger;
 
         public FlatContainerClient(
             ServiceIndexCache serviceIndexCache,
             HttpSource httpSource,
             TempStreamService tempStreamService,
-            IOptions<ExplorePackagesSettings> options,
+            IOptions<NuGetInsightsSettings> options,
             ILogger<FlatContainerClient> logger)
         {
             _serviceIndexCache = serviceIndexCache;

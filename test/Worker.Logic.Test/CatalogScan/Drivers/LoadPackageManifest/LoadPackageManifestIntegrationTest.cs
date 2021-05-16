@@ -8,7 +8,7 @@ using MessagePack;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker.LoadPackageManifest
+namespace NuGet.Insights.Worker.LoadPackageManifest
 {
     public class LoadPackageManifestIntegrationTest : BaseCatalogScanIntegrationTest
     {
@@ -120,7 +120,7 @@ namespace Knapcode.ExplorePackages.Worker.LoadPackageManifest
                 Path.Combine(testName, stepName),
                 stream =>
                 {
-                    var entity = MessagePackSerializer.Deserialize<PackageManifestService.PackageManifestInfoVersions>(stream, ExplorePackagesMessagePack.Options);
+                    var entity = MessagePackSerializer.Deserialize<PackageManifestService.PackageManifestInfoVersions>(stream, NuGetInsightsMessagePack.Options);
 
                     string manifestHash = null;
                     SortedDictionary<string, List<string>> httpHeaders = null;

@@ -18,20 +18,20 @@ using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public abstract class BaseLogicIntegrationTest : IClassFixture<DefaultWebApplicationFactory<StaticFilesStartup>>, IAsyncLifetime
     {
         static BaseLogicIntegrationTest()
         {
             var oldTemp = Environment.GetEnvironmentVariable("TEMP");
-            var newTemp = Path.GetFullPath(Path.Join(oldTemp, "Knapcode.ExplorePackages.Temp"));
+            var newTemp = Path.GetFullPath(Path.Join(oldTemp, "NuGet.Insights.Temp"));
             Directory.CreateDirectory(newTemp);
             Environment.SetEnvironmentVariable("TEMP", newTemp);
             Environment.SetEnvironmentVariable("TMP", newTemp);
         }
 
-        public const string ProgramName = "Knapcode.ExplorePackages.Logic.Test";
+        public const string ProgramName = "NuGet.Insights.Logic.Test";
         public const string TestData = "TestData";
         public const string Step1 = "Step1";
         public const string Step2 = "Step2";
@@ -69,9 +69,9 @@ namespace Knapcode.ExplorePackages
             hostBuilder
                 .ConfigureServices(serviceCollection =>
                 {
-                    serviceCollection.AddExplorePackages(ProgramName);
+                    serviceCollection.AddNuGetInsights(ProgramName);
 
-                    serviceCollection.AddSingleton((IExplorePackagesHttpMessageHandlerFactory)HttpMessageHandlerFactory);
+                    serviceCollection.AddSingleton((INuGetInsightsHttpMessageHandlerFactory)HttpMessageHandlerFactory);
 
                     serviceCollection.AddTransient(s => output.GetTelemetryClient());
 
@@ -81,7 +81,7 @@ namespace Knapcode.ExplorePackages
                         o.AddProvider(new XunitLoggerProvider(output, LogLevel.Trace, LogLevelToCount, FailFastLogLevel));
                     });
 
-                    serviceCollection.Configure((Action<ExplorePackagesSettings>)ConfigureDefaultsAndSettings);
+                    serviceCollection.Configure((Action<NuGetInsightsSettings>)ConfigureDefaultsAndSettings);
                 });
 
             ConfigureHostBuilder(hostBuilder);
@@ -96,7 +96,7 @@ namespace Knapcode.ExplorePackages
         {
         }
 
-        protected void ConfigureDefaultsAndSettings(ExplorePackagesSettings x)
+        protected void ConfigureDefaultsAndSettings(NuGetInsightsSettings x)
         {
             x.StorageConnectionString = TestSettings.StorageConnectionString;
             x.StorageBlobReadSharedAccessSignature = TestSettings.StorageBlobReadSharedAccessSignature;
@@ -138,7 +138,7 @@ namespace Knapcode.ExplorePackages
         public TestHttpMessageHandlerFactory HttpMessageHandlerFactory { get; }
         public HttpClient TestDataHttpClient { get; }
         public ConcurrentDictionary<LogLevel, int> LogLevelToCount { get; }
-        public Action<ExplorePackagesSettings> ConfigureSettings { get; set; }
+        public Action<NuGetInsightsSettings> ConfigureSettings { get; set; }
         public IHost Host => _lazyHost.Value;
         public ServiceClientFactory ServiceClientFactory => Host.Services.GetRequiredService<ServiceClientFactory>();
         public ITelemetryClient TelemetryClient => Host.Services.GetRequiredService<ITelemetryClient>();
@@ -329,7 +329,7 @@ namespace Knapcode.ExplorePackages
             return clone;
         }
 
-        public class TestHttpMessageHandlerFactory : IExplorePackagesHttpMessageHandlerFactory
+        public class TestHttpMessageHandlerFactory : INuGetInsightsHttpMessageHandlerFactory
         {
             public Func<HttpRequestMessage, Task<HttpResponseMessage>> OnSendAsync { get; set; }
 

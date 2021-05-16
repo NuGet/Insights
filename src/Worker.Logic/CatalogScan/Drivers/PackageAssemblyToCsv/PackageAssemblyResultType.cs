@@ -1,4 +1,4 @@
-﻿namespace Knapcode.ExplorePackages.Worker.PackageAssemblyToCsv
+﻿namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 {
     public enum PackageAssemblyResultType
     {

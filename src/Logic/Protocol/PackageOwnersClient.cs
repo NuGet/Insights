@@ -6,20 +6,20 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class PackageOwnersClient
     {
         private readonly HttpClient _httpClient;
         private readonly IThrottle _throttle;
         private readonly OwnersV2JsonDeserializer _deserializer;
-        private readonly IOptions<ExplorePackagesSettings> _options;
+        private readonly IOptions<NuGetInsightsSettings> _options;
 
         public PackageOwnersClient(
             HttpClient httpClient,
             IThrottle throttle,
             OwnersV2JsonDeserializer deserializer,
-            IOptions<ExplorePackagesSettings> options)
+            IOptions<NuGetInsightsSettings> options)
         {
             _httpClient = httpClient;
             _throttle = throttle;

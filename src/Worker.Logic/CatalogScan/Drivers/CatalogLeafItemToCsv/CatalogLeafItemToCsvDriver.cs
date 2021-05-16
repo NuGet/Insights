@@ -4,19 +4,19 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv
+namespace NuGet.Insights.Worker.CatalogLeafItemToCsv
 {
     public class CatalogLeafItemToCsvDriver : ICatalogLeafScanNonBatchDriver, ICsvResultStorage<CatalogLeafItemRecord>
     {
         private readonly CsvTemporaryStorageFactory _tempStorageFactory;
         private readonly CatalogClient _catalogClient;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ICsvTemporaryStorage _tempStorage;
 
         public CatalogLeafItemToCsvDriver(
             CsvTemporaryStorageFactory storageFactory,
             CatalogClient catalogClient,
-            IOptions<ExplorePackagesWorkerSettings> options)
+            IOptions<NuGetInsightsWorkerSettings> options)
         {
             _tempStorageFactory = storageFactory;
             _catalogClient = catalogClient;

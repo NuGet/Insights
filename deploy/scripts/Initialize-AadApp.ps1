@@ -5,7 +5,7 @@ param (
     [string]$AadAppName
 )
 
-Import-Module (Join-Path $PSScriptRoot "ExplorePackages.psm1")
+Import-Module (Join-Path $PSScriptRoot "NuGet.Insights.psm1")
 
 Write-Status "Looking for AAD app with name '$AadAppName'..."
 $existingApps = Get-AzADApplication -DisplayName $AadAppName

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Knapcode.MiniZip;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
+namespace NuGet.Insights.Worker.PackageArchiveToCsv
 {
     public class PackageArchiveToCsvDriver :
         ICatalogLeafToCsvDriver<PackageArchiveRecord, PackageArchiveEntry>,
@@ -16,13 +16,13 @@ namespace Knapcode.ExplorePackages.Worker.PackageArchiveToCsv
         private readonly CatalogClient _catalogClient;
         private readonly PackageFileService _packageFileService;
         private readonly PackageHashService _packageHashService;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
 
         public PackageArchiveToCsvDriver(
             CatalogClient catalogClient,
             PackageFileService packageFileService,
             PackageHashService packageHashService,
-            IOptions<ExplorePackagesWorkerSettings> options)
+            IOptions<NuGetInsightsWorkerSettings> options)
         {
             _catalogClient = catalogClient;
             _packageFileService = packageFileService;

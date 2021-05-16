@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Azure.Data.Tables;
 
-namespace Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf
+namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
 {
     public class LatestPackageLeafStorage : ILatestPackageLeafStorage<LatestPackageLeaf>
     {

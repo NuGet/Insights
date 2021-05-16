@@ -7,20 +7,20 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class PackageDownloadsClient : IPackageDownloadsClient
     {
         private readonly HttpClient _httpClient;
         private readonly IThrottle _throttle;
         private readonly DownloadsV1JsonDeserializer _deserializer;
-        private readonly IOptions<ExplorePackagesSettings> _options;
+        private readonly IOptions<NuGetInsightsSettings> _options;
 
         public PackageDownloadsClient(
             HttpClient httpClient,
             IThrottle throttle,
             DownloadsV1JsonDeserializer deserializer,
-            IOptions<ExplorePackagesSettings> options)
+            IOptions<NuGetInsightsSettings> options)
         {
             _httpClient = httpClient;
             _throttle = throttle;

@@ -5,17 +5,17 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class MessageBatcher : IMessageBatcher
     {
         private readonly CatalogScanStorageService _catalogScanStorageService;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<MessageBatcher> _logger;
 
         public MessageBatcher(
             CatalogScanStorageService catalogScanStorageService,
-            IOptions<ExplorePackagesWorkerSettings> options,
+            IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<MessageBatcher> logger)
         {
             _catalogScanStorageService = catalogScanStorageService;

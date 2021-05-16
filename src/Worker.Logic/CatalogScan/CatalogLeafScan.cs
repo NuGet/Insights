@@ -1,7 +1,7 @@
 ﻿using System;
 using Azure;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class CatalogLeafScan : ILatestPackageLeaf
     {

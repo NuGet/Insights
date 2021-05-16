@@ -2,7 +2,7 @@
 using System.Text.RegularExpressions;
 using Xunit;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public static class TestSettings
     {
@@ -14,8 +14,8 @@ namespace Knapcode.ExplorePackages
         {
             get
             {
-                var accountName = Environment.GetEnvironmentVariable("EXPLOREPACKAGES_STORAGEACCOUNTNAME");
-                var sas = Environment.GetEnvironmentVariable("EXPLOREPACKAGES_STORAGESAS");
+                var accountName = Environment.GetEnvironmentVariable("NUGETINSIGHTS_STORAGEACCOUNTNAME");
+                var sas = Environment.GetEnvironmentVariable("NUGETINSIGHTS_STORAGESAS");
                 if (string.IsNullOrWhiteSpace(accountName) || string.IsNullOrWhiteSpace(sas))
                 {
                     return StorageEmulatorConnectionString;
@@ -29,7 +29,7 @@ namespace Knapcode.ExplorePackages
         {
             get
             {
-                var sas = Environment.GetEnvironmentVariable("EXPLOREPACKAGES_STORAGEBLOBREADSAS");
+                var sas = Environment.GetEnvironmentVariable("NUGETINSIGHTS_STORAGEBLOBREADSAS");
                 if (string.IsNullOrWhiteSpace(sas))
                 {
                     return null;

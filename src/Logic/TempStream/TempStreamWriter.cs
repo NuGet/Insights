@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class TempStreamWriter
     {
@@ -41,7 +41,7 @@ namespace Knapcode.ExplorePackages
         private bool _skipMemory;
         private int _tempDirIndex;
 
-        public TempStreamWriter(TempStreamLeaseScope leaseScope, IOptions<ExplorePackagesSettings> options, ILogger<TempStreamWriter> logger)
+        public TempStreamWriter(TempStreamLeaseScope leaseScope, IOptions<NuGetInsightsSettings> options, ILogger<TempStreamWriter> logger)
         {
             _leaseScope = leaseScope;
             _maxInMemorySize = Math.Min(options.Value.MaxTempMemoryStreamSize, GB);

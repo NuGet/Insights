@@ -1,30 +1,30 @@
 ﻿using System;
 using System.Linq;
 using Azure.Data.Tables;
-using Knapcode.ExplorePackages.Worker.BuildVersionSet;
-using Knapcode.ExplorePackages.Worker.CatalogLeafItemToCsv;
-using Knapcode.ExplorePackages.Worker.EnqueueCatalogLeafScan;
-using Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScan;
-using Knapcode.ExplorePackages.Worker.FindLatestCatalogLeafScanPerId;
-using Knapcode.ExplorePackages.Worker.KustoIngestion;
-using Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf;
-using Knapcode.ExplorePackages.Worker.LoadPackageArchive;
-using Knapcode.ExplorePackages.Worker.LoadPackageManifest;
-using Knapcode.ExplorePackages.Worker.LoadPackageVersion;
-using Knapcode.ExplorePackages.Worker.AuxiliaryFileUpdater;
-using Knapcode.ExplorePackages.Worker.TableCopy;
-using Knapcode.ExplorePackages.Worker.Workflow;
 using Kusto.Data;
 using Kusto.Data.Net.Client;
 using Kusto.Ingest;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using NuGet.Insights.Worker.AuxiliaryFileUpdater;
+using NuGet.Insights.Worker.BuildVersionSet;
+using NuGet.Insights.Worker.CatalogLeafItemToCsv;
+using NuGet.Insights.Worker.EnqueueCatalogLeafScan;
+using NuGet.Insights.Worker.FindLatestCatalogLeafScan;
+using NuGet.Insights.Worker.FindLatestCatalogLeafScanPerId;
+using NuGet.Insights.Worker.KustoIngestion;
+using NuGet.Insights.Worker.LoadLatestPackageLeaf;
+using NuGet.Insights.Worker.LoadPackageArchive;
+using NuGet.Insights.Worker.LoadPackageManifest;
+using NuGet.Insights.Worker.LoadPackageVersion;
+using NuGet.Insights.Worker.TableCopy;
+using NuGet.Insights.Worker.Workflow;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddExplorePackagesWorker(this IServiceCollection serviceCollection)
+        public static IServiceCollection AddNuGetInsightsWorker(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddTransient<IRawMessageEnqueuer, QueueStorageEnqueuer>();
             serviceCollection.AddTransient<IWorkerQueueFactory, WorkerQueueFactory>();
@@ -55,7 +55,7 @@ namespace Knapcode.ExplorePackages.Worker
             serviceCollection.AddTransient<CsvResultStorageContainers>();
             serviceCollection.AddTransient(x =>
             {
-                var options = x.GetRequiredService<IOptions<ExplorePackagesWorkerSettings>>();
+                var options = x.GetRequiredService<IOptions<NuGetInsightsWorkerSettings>>();
                 var builder = new KustoConnectionStringBuilder(options.Value.KustoConnectionString);
                 if (options.Value.UserManagedIdentityClientId != null && options.Value.KustoUseUserManagedIdentity)
                 {

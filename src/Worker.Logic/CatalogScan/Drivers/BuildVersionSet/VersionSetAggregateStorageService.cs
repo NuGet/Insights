@@ -1,19 +1,19 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Knapcode.ExplorePackages.WideEntities;
 using MessagePack;
 using Microsoft.Extensions.Options;
+using NuGet.Insights.WideEntities;
 
-namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
+namespace NuGet.Insights.Worker.BuildVersionSet
 {
     public class VersionSetAggregateStorageService
     {
         private readonly WideEntityService _wideEntityService;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
 
         public VersionSetAggregateStorageService(
             WideEntityService wideEntityService,
-            IOptions<ExplorePackagesWorkerSettings> options)
+            IOptions<NuGetInsightsWorkerSettings> options)
         {
             _wideEntityService = wideEntityService;
             _options = options;
@@ -42,7 +42,7 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
                 using var stream = entity.GetStream();
                 yield return MessagePackSerializer.Deserialize<CatalogLeafBatchData>(
                     stream,
-                    ExplorePackagesMessagePack.Options);
+                    NuGetInsightsMessagePack.Options);
             }
         }
 
@@ -50,7 +50,7 @@ namespace Knapcode.ExplorePackages.Worker.BuildVersionSet
         {
             var bytes = MessagePackSerializer.Serialize(
                 batch,
-                ExplorePackagesMessagePack.Options);
+                NuGetInsightsMessagePack.Options);
 
             // Insert batches in reverse chronological order.
             await _wideEntityService.InsertAsync(

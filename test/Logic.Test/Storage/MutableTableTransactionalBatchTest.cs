@@ -11,7 +11,7 @@ using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public class MutableTableTransactionalBatchTest : IClassFixture<MutableTableTransactionalBatchTest.Fixture>
     {
@@ -435,8 +435,8 @@ namespace Knapcode.ExplorePackages
 
             public Fixture()
             {
-                Options = new Mock<IOptions<ExplorePackagesSettings>>();
-                Settings = new ExplorePackagesSettings
+                Options = new Mock<IOptions<NuGetInsightsSettings>>();
+                Settings = new NuGetInsightsSettings
                 {
                     StorageConnectionString = TestSettings.StorageConnectionString,
                 };
@@ -444,8 +444,8 @@ namespace Knapcode.ExplorePackages
                 TableName = TestSettings.NewStoragePrefix() + "1mttb1";
             }
 
-            public Mock<IOptions<ExplorePackagesSettings>> Options { get; }
-            public ExplorePackagesSettings Settings { get; }
+            public Mock<IOptions<NuGetInsightsSettings>> Options { get; }
+            public NuGetInsightsSettings Settings { get; }
             public string TableName { get; }
 
             public Task InitializeAsync()

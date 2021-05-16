@@ -4,9 +4,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
-using Knapcode.ExplorePackages.Worker.BuildVersionSet;
-using Knapcode.ExplorePackages.Worker.KustoIngestion;
-using Knapcode.ExplorePackages.Worker.Workflow;
 using Kusto.Data.Common;
 using Kusto.Ingest;
 using Microsoft.AspNetCore.Hosting;
@@ -16,10 +13,13 @@ using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using Moq;
+using NuGet.Insights.Worker.BuildVersionSet;
+using NuGet.Insights.Worker.KustoIngestion;
+using NuGet.Insights.Worker.Workflow;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public abstract class BaseWorkerLogicIntegrationTest : BaseLogicIntegrationTest
     {
@@ -72,8 +72,8 @@ namespace Knapcode.ExplorePackages.Worker
                 });
         }
 
-        public Action<ExplorePackagesWorkerSettings> ConfigureWorkerSettings { get; set; }
-        public IOptions<ExplorePackagesWorkerSettings> Options => Host.Services.GetRequiredService<IOptions<ExplorePackagesWorkerSettings>>();
+        public Action<NuGetInsightsWorkerSettings> ConfigureWorkerSettings { get; set; }
+        public IOptions<NuGetInsightsWorkerSettings> Options => Host.Services.GetRequiredService<IOptions<NuGetInsightsWorkerSettings>>();
         public CatalogScanService CatalogScanService => Host.Services.GetRequiredService<CatalogScanService>();
         public CatalogScanCursorService CatalogScanCursorService => Host.Services.GetRequiredService<CatalogScanCursorService>();
         public CursorStorageService CursorStorageService => Host.Services.GetRequiredService<CursorStorageService>();
@@ -97,12 +97,12 @@ namespace Knapcode.ExplorePackages.Worker
 
             hostBuilder.ConfigureServices(serviceCollection =>
             {
-                serviceCollection.AddExplorePackagesWorker();
-                serviceCollection.Configure((Action<ExplorePackagesWorkerSettings>)ConfigureWorkerDefaultsAndSettings);
+                serviceCollection.AddNuGetInsightsWorker();
+                serviceCollection.Configure((Action<NuGetInsightsWorkerSettings>)ConfigureWorkerDefaultsAndSettings);
             });
         }
 
-        protected void ConfigureWorkerDefaultsAndSettings(ExplorePackagesWorkerSettings x)
+        protected void ConfigureWorkerDefaultsAndSettings(NuGetInsightsWorkerSettings x)
         {
             x.AppendResultStorageBucketCount = 3;
             x.KustoDatabaseName = "TestKustoDb";

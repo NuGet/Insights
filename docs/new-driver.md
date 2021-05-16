@@ -93,7 +93,7 @@ Ensure the driver can be activated by the catalog scan and admin interface. Upda
    - Update `UpdateAsync`. This enqueues a catalog scan with the proper parameters for your driver.
    - Update the `Dependencies` static. This defines what cursors or other drivers your driver should block on before proceeding.
 1. If your driver implements `ICatalogLeafToCsvDriver<T>`:
-   1. Add an Azure Blob Storage container name to [`ExplorePackagesWorkerSettings.cs`](../src/Worker.Logic/ExplorePackagesWorkerSettings.cs).
+   1. Add an Azure Blob Storage container name to [`NuGetInsightsWorkerSettings.cs`](../src/Worker.Logic/NuGetInsightsWorkerSettings.cs).
    1. Add a CSV compact message schema name to [`SchemaSerializer`](../src/Worker.Logic/Serialization/SchemaSerializer.cs) like `cc.<abbreviation for your driver>`.
 1. Add your driver to the `TypeToInfo` static in [`CatalogScanServiceTest.cs`](../test/Worker.Logic.Test/CatalogScan/CatalogScanServiceTest.cs).
    This determines the default catalog timestamp min value for your driver and implements a test function that forces
@@ -107,7 +107,7 @@ cover at least two cases:
 1. **"Happy path"** - process two short time ranges in the catalog and assert the output in storage.
 1. **"Delete path"** - process two short time ranges, the first of which adds a package and the second of which deletes
    the package. This is an important test case because when a package is deleted from NuGet.org, the data related to this
-   package in ExplorePackages should be set to some "deleted" or "cleared" state. This enables reproducibility (deleted
+   package in NuGet.Insights should be set to some "deleted" or "cleared" state. This enables reproducibility (deleted
    data is no longer available on NuGet.org and therefore data produced prior to the delete cannot be reproduced) and
    respects the privacy of the package owner.
 

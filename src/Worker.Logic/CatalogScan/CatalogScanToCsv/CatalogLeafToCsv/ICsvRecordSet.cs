@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public interface ICsvRecordSet<out T> where T : ICsvRecord
     {

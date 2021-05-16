@@ -7,15 +7,15 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using Knapcode.ExplorePackages.Worker.LoadLatestPackageLeaf;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using NuGet.Insights.Worker.LoadLatestPackageLeaf;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGetPe;
 
-namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
+namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
 {
     public class NuGetPackageExplorerToCsvDriver :
         ICatalogLeafToCsvDriver<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>,
@@ -27,7 +27,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
         private readonly HttpSource _httpSource;
         private readonly HttpClient _httpClient;
         private readonly LatestPackageLeafService _latestPackageLeafService;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<NuGetPackageExplorerToCsvDriver> _logger;
 
         public NuGetPackageExplorerToCsvDriver(
@@ -36,7 +36,7 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             HttpSource httpSource,
             HttpClient httpClient,
             LatestPackageLeafService latestPackageLeafService,
-            IOptions<ExplorePackagesWorkerSettings> options,
+            IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<NuGetPackageExplorerToCsvDriver> logger)
         {
             _catalogClient = catalogClient;

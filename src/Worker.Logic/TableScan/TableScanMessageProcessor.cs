@@ -5,9 +5,9 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
-using Knapcode.ExplorePackages.TablePrefixScan;
+using NuGet.Insights.TablePrefixScan;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class TableScanMessageProcessor<T> : IMessageProcessor<TableScanMessage<T>> where T : class, ITableEntity, new()
     {

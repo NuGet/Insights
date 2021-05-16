@@ -1,4 +1,4 @@
-﻿namespace Knapcode.ExplorePackages.TablePrefixScan
+﻿namespace NuGet.Insights.TablePrefixScan
 {
     public enum TablePrefixScanJsonType
     {

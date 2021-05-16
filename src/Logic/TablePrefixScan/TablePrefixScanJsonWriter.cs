@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Azure.Data.Tables;
 using Newtonsoft.Json;
 
-namespace Knapcode.ExplorePackages.TablePrefixScan
+namespace NuGet.Insights.TablePrefixScan
 {
     public class TablePrefixScanJsonWriter
     {

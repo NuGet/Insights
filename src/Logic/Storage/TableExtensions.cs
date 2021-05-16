@@ -7,7 +7,7 @@ using Azure;
 using Azure.Data.Tables;
 using Azure.Data.Tables.Models;
 
-namespace Knapcode.ExplorePackages
+namespace NuGet.Insights
 {
     public static class TableExtensions
     {

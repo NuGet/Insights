@@ -6,7 +6,7 @@ using Kusto.Data.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages.Worker.KustoIngestion
+namespace NuGet.Insights.Worker.KustoIngestion
 {
     public class KustoContainerIngestionMessageProcessor : IMessageProcessor<KustoContainerIngestionMessage>
     {
@@ -15,7 +15,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
         private readonly CsvResultStorageContainers _csvRecordContainers;
         private readonly ICslAdminProvider _kustoAdminClient;
         private readonly IMessageEnqueuer _messageEnqueuer;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<KustoContainerIngestionMessageProcessor> _logger;
 
         public KustoContainerIngestionMessageProcessor(
@@ -24,7 +24,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
             CsvResultStorageContainers csvRecordContainers,
             ICslAdminProvider kustoAdminClient,
             IMessageEnqueuer messageEnqueuer,
-            IOptions<ExplorePackagesWorkerSettings> options,
+            IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<KustoContainerIngestionMessageProcessor> logger)
         {
             _storageService = storageService;

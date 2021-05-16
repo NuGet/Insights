@@ -11,18 +11,18 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
-namespace Knapcode.ExplorePackages.Worker.PackageManifestToCsv
+namespace NuGet.Insights.Worker.PackageManifestToCsv
 {
     public class PackageManifestToCsvDriver : ICatalogLeafToCsvDriver<PackageManifestRecord>, ICsvResultStorage<PackageManifestRecord>
     {
         private readonly CatalogClient _catalogClient;
         private readonly PackageManifestService _packageManifestService;
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
 
         public PackageManifestToCsvDriver(
             CatalogClient catalogClient,
             PackageManifestService packageManifestService,
-            IOptions<ExplorePackagesWorkerSettings> options)
+            IOptions<NuGetInsightsWorkerSettings> options)
         {
             _catalogClient = catalogClient;
             _packageManifestService = packageManifestService;

@@ -7,7 +7,7 @@ using Azure.Data.Tables;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Knapcode.ExplorePackages.TablePrefixScan
+namespace NuGet.Insights.TablePrefixScan
 {
     public class TablePrefixScannerTest : IClassFixture<TablePrefixScannerTest.Fixture>
     {

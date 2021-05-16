@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Knapcode.ExplorePackages.Worker
+namespace NuGet.Insights.Worker
 {
     public class CsvExpandReprocessMessage<T> where T : ICsvRecord
     {

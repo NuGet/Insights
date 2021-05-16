@@ -7,11 +7,11 @@ using Azure;
 using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Options;
 
-namespace Knapcode.ExplorePackages.Worker.KustoIngestion
+namespace NuGet.Insights.Worker.KustoIngestion
 {
     public class CsvResultStorageContainers
     {
-        private readonly IOptions<ExplorePackagesWorkerSettings> _options;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IReadOnlyDictionary<string, ICsvResultStorage> _containerNameToStorage;
         private readonly IReadOnlyList<string> _containerNames;
@@ -19,7 +19,7 @@ namespace Knapcode.ExplorePackages.Worker.KustoIngestion
         public CsvResultStorageContainers(
             IEnumerable<ICsvResultStorage> csvResultStorage,
             ServiceClientFactory serviceClientFactory,
-            IOptions<ExplorePackagesWorkerSettings> options)
+            IOptions<NuGetInsightsWorkerSettings> options)
         {
             _options = options;
             _serviceClientFactory = serviceClientFactory;
