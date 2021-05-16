@@ -1,6 +1,4 @@
-# NuGet.Insights [![Build](https://github.com/joelverhagen/ExplorePackages/actions/workflows/build.yml/badge.svg)](https://github.com/joelverhagen/ExplorePackages/actions/workflows/build.yml)
-
-***formerly known as ExplorePackages***
+# NuGet.Insights *(formerly ExplorePackages)* [![Build](https://github.com/joelverhagen/ExplorePackages/actions/workflows/build.yml/badge.svg)](https://github.com/joelverhagen/ExplorePackages/actions/workflows/build.yml)
 
 Analyze packages NuGet.org in a highly distributed manner. Or, if you want a sales pitch:
 
