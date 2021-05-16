@@ -6,5 +6,6 @@
         Available,
         Timeout,
         InvalidMetadata,
+        NothingToValidate,
     }
 }

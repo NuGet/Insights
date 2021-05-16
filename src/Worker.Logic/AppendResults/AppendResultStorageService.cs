@@ -354,7 +354,7 @@ namespace Knapcode.ExplorePackages.Worker
             }
         }
 
-        private static int GetBucket(int bucketCount, string bucketKey)
+        public static int GetBucket(int bucketCount, string bucketKey)
         {
             int bucket;
             using (var algorithm = SHA256.Create())

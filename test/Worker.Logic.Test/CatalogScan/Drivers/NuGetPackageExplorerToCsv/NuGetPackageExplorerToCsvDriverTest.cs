@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NuGetPe;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -19,6 +20,29 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
         }
 
         public ICatalogLeafToCsvDriver<NuGetPackageExplorerRecord, NuGetPackageExplorerFile> Target => Host.Services.GetRequiredService<ICatalogLeafToCsvDriver<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>>();
+
+        [Fact]
+        public async Task EmptyFileListIsNothingToValidate()
+        {
+            await Target.InitializeAsync();
+            var leaf = new CatalogLeafItem
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2018.12.18.00.13.47/microsoft.netcore.platforms.1.1.0.json",
+                Type = CatalogLeafType.PackageDetails,
+                PackageId = "Microsoft.NETCore.Platforms",
+                PackageVersion = "1.1.0",
+            };
+
+            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+
+            Assert.Equal(DriverResultType.Success, output.Type);
+            var record = Assert.Single(output.Value.Set1.Records);
+            Assert.Equal(NuGetPackageExplorerResultType.NothingToValidate, record.ResultType);
+            Assert.Equal(SymbolValidationResult.NothingToValidate, record.SourceLinkResult);
+            var file = Assert.Single(output.Value.Set2.Records);
+            Assert.Equal(NuGetPackageExplorerResultType.NothingToValidate, file.ResultType);
+            Assert.Null(file.Path);
+        }
 
         [Fact]
         public async Task UnsupportedFrameworksAreInvalidMetadata()

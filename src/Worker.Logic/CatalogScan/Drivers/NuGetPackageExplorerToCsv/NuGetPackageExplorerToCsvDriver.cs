@@ -57,14 +57,20 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
             return Task.CompletedTask;
         }
 
-        public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(NuGetPackageExplorerRecord record)
+        public async Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(NuGetPackageExplorerRecord record)
         {
-            throw new NotImplementedException();
+            if (record.ResultType != NuGetPackageExplorerResultType.NothingToValidate)
+            {
+                return null;
+            }
+
+            var latestLeaf = await _latestPackageLeafService.GetOrNullAsync(record.Id, record.Version);
+            return latestLeaf.ToLeafItem();
         }
 
         public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(NuGetPackageExplorerFile record)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
         public async Task<DriverResult<CsvRecordSets<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
@@ -228,6 +234,18 @@ namespace Knapcode.ExplorePackages.Worker.NuGetPackageExplorerToCsv
                         {
                             _logger.LogWarning(ex, "Could not get symbol validator files for {Id} {Version}.", leaf.PackageId, leaf.PackageVersion);
                             return MakeSingleItem(scanId, scanTimestamp, leaf, NuGetPackageExplorerResultType.InvalidMetadata);
+                        }
+
+                        if (files.Count == 0)
+                        {
+                            record.ResultType = NuGetPackageExplorerResultType.NothingToValidate;
+
+                            // Add a marker "nothing to validate" record to the files table so that all tables have the
+                            // same set of identities.
+                            files.Add(new NuGetPackageExplorerFile(scanId, scanTimestamp, leaf)
+                            {
+                                ResultType = NuGetPackageExplorerResultType.NothingToValidate,
+                            });
                         }
 
                         return (record, files);
