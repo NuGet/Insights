@@ -14,6 +14,7 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
             CatalogLeafItem item,
             DateTimeOffset? created,
             bool? listed,
+            string originalVersion,
             SemVerType? semVerType)
         {
             PartitionKey = GetPartitionKey(item.PackageId);
@@ -26,7 +27,8 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
             PackageVersion = item.PackageVersion;
             Created = created;
             IsListed = listed;
-            SemVerType = semVerType?.ToString();
+            OriginalVersion = originalVersion;
+            SemVerType = semVerType;
         }
 
         public string Prefix { get; set; }
@@ -38,7 +40,8 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
         public string PackageVersion { get; set; }
         public DateTimeOffset? Created { get; set; }
         public bool? IsListed { get; set; }
-        public string SemVerType { get; set; }
+        public string OriginalVersion { get; set; }
+        public SemVerType? SemVerType { get; set; }
 
         public string PartitionKey { get; set; }
         public string RowKey { get; set; }
@@ -53,16 +56,6 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
         public string GetLowerVersion()
         {
             return RowKey;
-        }
-
-        public SemVerType? GetSemVerType()
-        {
-            if (SemVerType == null)
-            {
-                return null;
-            }
-
-            return Enum.Parse<SemVerType>(SemVerType);
         }
 
         public static string GetPartitionKey(string id)

@@ -20,9 +20,20 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
         CatalogCommitTimestamp: datetime,
         Created: datetime,
         ResultType: string,
+        OriginalVersion: string,
+        FullVersion: string,
+        Major: int,
+        Minor: int,
+        Patch: int,
+        Revision: int,
+        Release: string,
+        ReleaseLabels: dynamic,
+        Metadata: string,
+        IsPrerelease: bool,
         IsListed: bool,
         IsSemVer2: bool,
         SemVerType: string,
+        SemVerOrder: int,
         IsLatest: bool,
         IsLatestStable: bool,
         IsLatestSemVer2: bool,
@@ -53,23 +64,34 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
         '{"Column":"CatalogCommitTimestamp","DataType":"datetime","Properties":{"Ordinal":6}},'
         '{"Column":"Created","DataType":"datetime","Properties":{"Ordinal":7}},'
         '{"Column":"ResultType","DataType":"string","Properties":{"Ordinal":8}},'
-        '{"Column":"IsListed","DataType":"bool","Properties":{"Ordinal":9}},'
-        '{"Column":"IsSemVer2","DataType":"bool","Properties":{"Ordinal":10}},'
-        '{"Column":"SemVerType","DataType":"string","Properties":{"Ordinal":11}},'
-        '{"Column":"IsLatest","DataType":"bool","Properties":{"Ordinal":12}},'
-        '{"Column":"IsLatestStable","DataType":"bool","Properties":{"Ordinal":13}},'
-        '{"Column":"IsLatestSemVer2","DataType":"bool","Properties":{"Ordinal":14}},'
-        '{"Column":"IsLatestStableSemVer2","DataType":"bool","Properties":{"Ordinal":15}}'
+        '{"Column":"OriginalVersion","DataType":"string","Properties":{"Ordinal":9}},'
+        '{"Column":"FullVersion","DataType":"string","Properties":{"Ordinal":10}},'
+        '{"Column":"Major","DataType":"int","Properties":{"Ordinal":11}},'
+        '{"Column":"Minor","DataType":"int","Properties":{"Ordinal":12}},'
+        '{"Column":"Patch","DataType":"int","Properties":{"Ordinal":13}},'
+        '{"Column":"Revision","DataType":"int","Properties":{"Ordinal":14}},'
+        '{"Column":"Release","DataType":"string","Properties":{"Ordinal":15}},'
+        '{"Column":"ReleaseLabels","DataType":"dynamic","Properties":{"Ordinal":16}},'
+        '{"Column":"Metadata","DataType":"string","Properties":{"Ordinal":17}},'
+        '{"Column":"IsPrerelease","DataType":"bool","Properties":{"Ordinal":18}},'
+        '{"Column":"IsListed","DataType":"bool","Properties":{"Ordinal":19}},'
+        '{"Column":"IsSemVer2","DataType":"bool","Properties":{"Ordinal":20}},'
+        '{"Column":"SemVerType","DataType":"string","Properties":{"Ordinal":21}},'
+        '{"Column":"SemVerOrder","DataType":"int","Properties":{"Ordinal":22}},'
+        '{"Column":"IsLatest","DataType":"bool","Properties":{"Ordinal":23}},'
+        '{"Column":"IsLatestStable","DataType":"bool","Properties":{"Ordinal":24}},'
+        '{"Column":"IsLatestSemVer2","DataType":"bool","Properties":{"Ordinal":25}},'
+        '{"Column":"IsLatestStableSemVer2","DataType":"bool","Properties":{"Ordinal":26}}'
     ']'
 
     */
     partial record PackageVersionRecord
     {
-        public int FieldCount => 16;
+        public int FieldCount => 27;
 
         public void WriteHeader(TextWriter writer)
         {
-            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,IsListed,IsSemVer2,SemVerType,IsLatest,IsLatestStable,IsLatestSemVer2,IsLatestStableSemVer2");
+            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,OriginalVersion,FullVersion,Major,Minor,Patch,Revision,Release,ReleaseLabels,Metadata,IsPrerelease,IsListed,IsSemVer2,SemVerType,SemVerOrder,IsLatest,IsLatestStable,IsLatestSemVer2,IsLatestStableSemVer2");
         }
 
         public void Write(List<string> fields)
@@ -83,9 +105,20 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
             fields.Add(CsvUtility.FormatDateTimeOffset(CatalogCommitTimestamp));
             fields.Add(CsvUtility.FormatDateTimeOffset(Created));
             fields.Add(ResultType.ToString());
+            fields.Add(OriginalVersion);
+            fields.Add(FullVersion);
+            fields.Add(Major.ToString());
+            fields.Add(Minor.ToString());
+            fields.Add(Patch.ToString());
+            fields.Add(Revision.ToString());
+            fields.Add(Release);
+            fields.Add(ReleaseLabels);
+            fields.Add(Metadata);
+            fields.Add(CsvUtility.FormatBool(IsPrerelease));
             fields.Add(CsvUtility.FormatBool(IsListed));
             fields.Add(CsvUtility.FormatBool(IsSemVer2));
             fields.Add(SemVerType.ToString());
+            fields.Add(SemVerOrder.ToString());
             fields.Add(CsvUtility.FormatBool(IsLatest));
             fields.Add(CsvUtility.FormatBool(IsLatestStable));
             fields.Add(CsvUtility.FormatBool(IsLatestSemVer2));
@@ -112,11 +145,33 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, ResultType.ToString());
             writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, OriginalVersion);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, FullVersion);
+            writer.Write(',');
+            writer.Write(Major);
+            writer.Write(',');
+            writer.Write(Minor);
+            writer.Write(',');
+            writer.Write(Patch);
+            writer.Write(',');
+            writer.Write(Revision);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, Release);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, ReleaseLabels);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, Metadata);
+            writer.Write(',');
+            writer.Write(CsvUtility.FormatBool(IsPrerelease));
+            writer.Write(',');
             writer.Write(CsvUtility.FormatBool(IsListed));
             writer.Write(',');
             writer.Write(CsvUtility.FormatBool(IsSemVer2));
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, SemVerType.ToString());
+            writer.Write(',');
+            writer.Write(SemVerOrder);
             writer.Write(',');
             writer.Write(CsvUtility.FormatBool(IsLatest));
             writer.Write(',');
@@ -148,11 +203,33 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, ResultType.ToString());
             await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, OriginalVersion);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, FullVersion);
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(Major.ToString());
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(Minor.ToString());
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(Patch.ToString());
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(Revision.ToString());
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, Release);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, ReleaseLabels);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, Metadata);
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatBool(IsPrerelease));
+            await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatBool(IsListed));
             await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatBool(IsSemVer2));
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, SemVerType.ToString());
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(SemVerOrder.ToString());
             await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatBool(IsLatest));
             await writer.WriteAsync(',');
@@ -177,9 +254,20 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
                 CatalogCommitTimestamp = CsvUtility.ParseDateTimeOffset(getNextField()),
                 Created = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
                 ResultType = Enum.Parse<PackageVersionResultType>(getNextField()),
+                OriginalVersion = getNextField(),
+                FullVersion = getNextField(),
+                Major = int.Parse(getNextField()),
+                Minor = int.Parse(getNextField()),
+                Patch = int.Parse(getNextField()),
+                Revision = int.Parse(getNextField()),
+                Release = getNextField(),
+                ReleaseLabels = getNextField(),
+                Metadata = getNextField(),
+                IsPrerelease = bool.Parse(getNextField()),
                 IsListed = CsvUtility.ParseNullable(getNextField(), bool.Parse),
                 IsSemVer2 = CsvUtility.ParseNullable(getNextField(), bool.Parse),
                 SemVerType = CsvUtility.ParseNullable(getNextField(), Enum.Parse<NuGet.Insights.SemVerType>),
+                SemVerOrder = int.Parse(getNextField()),
                 IsLatest = bool.Parse(getNextField()),
                 IsLatestStable = bool.Parse(getNextField()),
                 IsLatestSemVer2 = bool.Parse(getNextField()),

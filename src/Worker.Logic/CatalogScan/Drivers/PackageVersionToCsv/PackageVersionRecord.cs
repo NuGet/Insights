@@ -1,5 +1,7 @@
 ﻿using System;
+using Newtonsoft.Json;
 using NuGet.Insights.Worker.LoadPackageVersion;
+using NuGet.Versioning;
 
 namespace NuGet.Insights.Worker.PackageVersionToCsv
 {
@@ -19,16 +21,53 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
         {
             ResultType = entity.LeafType == CatalogLeafType.PackageDelete ? PackageVersionResultType.Deleted : PackageVersionResultType.Available;
             IsListed = entity.IsListed;
-            IsSemVer2 = entity.SemVerType != null ? entity.GetSemVerType().Value.IsSemVer2() : null;
-            SemVerType = entity.GetSemVerType();
+            IsSemVer2 = entity.SemVerType?.IsSemVer2();
+            SemVerType = entity.SemVerType;
+
+            NuGetVersion parsedVersion;
+            if (entity.OriginalVersion != null)
+            {
+                OriginalVersion = entity.OriginalVersion;
+                parsedVersion = NuGetVersion.Parse(entity.OriginalVersion);
+                FullVersion = parsedVersion.ToFullString();
+            }
+            else
+            {
+                parsedVersion = NuGetVersion.Parse(entity.PackageVersion);
+            }
+
+            Major = parsedVersion.Major;
+            Minor = parsedVersion.Minor;
+            Patch = parsedVersion.Patch;
+            Revision = parsedVersion.Revision;
+            Release = parsedVersion.Release;
+            ReleaseLabels = JsonConvert.SerializeObject(parsedVersion.ReleaseLabels);
+            Metadata = parsedVersion.Metadata;
+            IsPrerelease = parsedVersion.IsPrerelease;
         }
 
         public PackageVersionResultType ResultType { get; set; }
+
+        public string OriginalVersion { get; set; }
+        public string FullVersion { get; set; }
+
+        public int Major { get; set; }
+        public int Minor { get; set; }
+        public int Patch { get; set; }
+        public int Revision { get; set; }
+        public string Release { get; set; }
+
+        [KustoType("dynamic")]
+        public string ReleaseLabels { get; set; }
+
+        public string Metadata { get; set; }
+        public bool IsPrerelease { get; set; }
 
         public bool? IsListed { get; set; }
         public bool? IsSemVer2 { get; set; }
         public SemVerType? SemVerType { get; set; }
 
+        public int SemVerOrder { get; set; }
         public bool IsLatest { get; set; }
         public bool IsLatestStable { get; set; }
         public bool IsLatestSemVer2 { get; set; }

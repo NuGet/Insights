@@ -13,6 +13,7 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
         private const string LoadPackageVersionDir = nameof(LoadPackageVersion);
         private const string LoadPackageVersion_WithDeleteDir = nameof(LoadPackageVersion_WithDelete);
         private const string LoadPackageVersion_WithDuplicatesDir = nameof(LoadPackageVersion_WithDuplicates);
+        private const string LoadPackageVersion_SemVer2Dir = nameof(LoadPackageVersion_SemVer2);
 
         public class LoadPackageVersion : LoadPackageVersionIntegrationTest
         {
@@ -93,6 +94,31 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
 
                 // Assert
                 await AssertOutputAsync(LoadPackageVersion_WithDuplicatesDir, Step1);
+            }
+        }
+
+        public class LoadPackageVersion_SemVer2 : LoadPackageVersionIntegrationTest
+        {
+            public LoadPackageVersion_SemVer2(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+                : base(output, factory)
+            {
+            }
+
+            [Fact]
+            public async Task Execute()
+            {
+                // Arrange
+                var min0 = DateTimeOffset.Parse("2021-02-28T01:06:32.8546849Z").AddTicks(-1);
+                var max1 = DateTimeOffset.Parse("2021-02-28T01:06:32.8546849Z");
+
+                await CatalogScanService.InitializeAsync();
+                await SetCursorAsync(min0);
+
+                // Act
+                await UpdateAsync(max1);
+
+                // Assert
+                await AssertOutputAsync(LoadPackageVersion_SemVer2Dir, Step1);
             }
         }
 

@@ -36,6 +36,7 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
                     item,
                     created: null,
                     listed: null,
+                    originalVersion: null,
                     semVerType: null);
             }
 
@@ -45,6 +46,7 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
                 item,
                 leaf.Created,
                 leaf.IsListed(),
+                leaf.VerbatimVersion,
                 leaf.GetSemVerType());
         }
     }

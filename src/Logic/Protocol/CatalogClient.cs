@@ -94,7 +94,8 @@ namespace NuGet.Insights
                 }),
                 async response =>
                 {
-                    if (response.StatusCode != HttpStatusCode.PartialContent)
+                    if (response.StatusCode != HttpStatusCode.PartialContent
+                        && response.StatusCode != HttpStatusCode.OK) // I've seen some transient 200s returned...
                     {
                         throw new InvalidOperationException($"Expected an HTTP 206 Partial Content response. Got HTTP {(int)response.StatusCode} {response.ReasonPhrase}.");
                     }

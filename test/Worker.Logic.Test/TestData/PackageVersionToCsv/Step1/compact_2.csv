@@ -1,5 +1,5 @@
-ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,IsListed,IsSemVer2,SemVerType,IsLatest,IsLatestStable,IsLatestSemVer2,IsLatestStableSemVer2
-,,danilovsoft.microorm,danilovsoft.microorm/3.3.4,DanilovSoft.MicroORM,3.3.4,2020-11-27T19:34:44.6917011Z,2020-11-27T19:33:08.023Z,Available,true,false,SemVer1,true,true,true,true
-,,eto.platform.mac64,eto.platform.mac64/2.5.8,Eto.Platform.Mac64,2.5.8,2020-11-27T19:34:44.6917011Z,2020-11-27T19:32:28.137Z,Available,true,false,SemVer1,true,true,true,true
-,,eto.platform.wpf,eto.platform.wpf/2.5.8,Eto.Platform.Wpf,2.5.8,2020-11-27T19:34:44.6917011Z,2020-11-27T19:32:26.367Z,Available,true,false,SemVer1,true,true,true,true
-,,eto.serialization.xaml,eto.serialization.xaml/2.5.8,Eto.Serialization.Xaml,2.5.8,2020-11-27T19:34:44.6917011Z,2020-11-27T19:32:26.743Z,Available,true,false,SemVer1,true,true,true,true
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,OriginalVersion,FullVersion,Major,Minor,Patch,Revision,Release,ReleaseLabels,Metadata,IsPrerelease,IsListed,IsSemVer2,SemVerType,SemVerOrder,IsLatest,IsLatestStable,IsLatestSemVer2,IsLatestStableSemVer2
+,,danilovsoft.microorm,danilovsoft.microorm/3.3.4,DanilovSoft.MicroORM,3.3.4,2020-11-27T19:34:44.6917011Z,2020-11-27T19:33:08.023Z,Available,3.3.4,3.3.4,3,3,4,0,,[],,false,true,false,SemVer1,0,true,true,true,true
+,,eto.platform.mac64,eto.platform.mac64/2.5.8,Eto.Platform.Mac64,2.5.8,2020-11-27T19:34:44.6917011Z,2020-11-27T19:32:28.137Z,Available,2.5.8,2.5.8,2,5,8,0,,[],,false,true,false,SemVer1,0,true,true,true,true
+,,eto.platform.wpf,eto.platform.wpf/2.5.8,Eto.Platform.Wpf,2.5.8,2020-11-27T19:34:44.6917011Z,2020-11-27T19:32:26.367Z,Available,2.5.8,2.5.8,2,5,8,0,,[],,false,true,false,SemVer1,0,true,true,true,true
+,,eto.serialization.xaml,eto.serialization.xaml/2.5.8,Eto.Serialization.Xaml,2.5.8,2020-11-27T19:34:44.6917011Z,2020-11-27T19:32:26.743Z,Available,2.5.8,2.5.8,2,5,8,0,,[],,false,true,false,SemVer1,0,true,true,true,true

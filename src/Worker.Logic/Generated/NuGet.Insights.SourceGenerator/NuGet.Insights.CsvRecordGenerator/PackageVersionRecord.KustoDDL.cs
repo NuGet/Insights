@@ -20,9 +20,20 @@ namespace NuGet.Insights
     CatalogCommitTimestamp: datetime,
     Created: datetime,
     ResultType: string,
+    OriginalVersion: string,
+    FullVersion: string,
+    Major: int,
+    Minor: int,
+    Patch: int,
+    Revision: int,
+    Release: string,
+    ReleaseLabels: dynamic,
+    Metadata: string,
+    IsPrerelease: bool,
     IsListed: bool,
     IsSemVer2: bool,
     SemVerType: string,
+    SemVerOrder: int,
     IsLatest: bool,
     IsLatestStable: bool,
     IsLatestSemVer2: bool,
@@ -53,13 +64,24 @@ namespace NuGet.Insights
     '{""Column"":""CatalogCommitTimestamp"",""DataType"":""datetime"",""Properties"":{""Ordinal"":6}},'
     '{""Column"":""Created"",""DataType"":""datetime"",""Properties"":{""Ordinal"":7}},'
     '{""Column"":""ResultType"",""DataType"":""string"",""Properties"":{""Ordinal"":8}},'
-    '{""Column"":""IsListed"",""DataType"":""bool"",""Properties"":{""Ordinal"":9}},'
-    '{""Column"":""IsSemVer2"",""DataType"":""bool"",""Properties"":{""Ordinal"":10}},'
-    '{""Column"":""SemVerType"",""DataType"":""string"",""Properties"":{""Ordinal"":11}},'
-    '{""Column"":""IsLatest"",""DataType"":""bool"",""Properties"":{""Ordinal"":12}},'
-    '{""Column"":""IsLatestStable"",""DataType"":""bool"",""Properties"":{""Ordinal"":13}},'
-    '{""Column"":""IsLatestSemVer2"",""DataType"":""bool"",""Properties"":{""Ordinal"":14}},'
-    '{""Column"":""IsLatestStableSemVer2"",""DataType"":""bool"",""Properties"":{""Ordinal"":15}}'
+    '{""Column"":""OriginalVersion"",""DataType"":""string"",""Properties"":{""Ordinal"":9}},'
+    '{""Column"":""FullVersion"",""DataType"":""string"",""Properties"":{""Ordinal"":10}},'
+    '{""Column"":""Major"",""DataType"":""int"",""Properties"":{""Ordinal"":11}},'
+    '{""Column"":""Minor"",""DataType"":""int"",""Properties"":{""Ordinal"":12}},'
+    '{""Column"":""Patch"",""DataType"":""int"",""Properties"":{""Ordinal"":13}},'
+    '{""Column"":""Revision"",""DataType"":""int"",""Properties"":{""Ordinal"":14}},'
+    '{""Column"":""Release"",""DataType"":""string"",""Properties"":{""Ordinal"":15}},'
+    '{""Column"":""ReleaseLabels"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":16}},'
+    '{""Column"":""Metadata"",""DataType"":""string"",""Properties"":{""Ordinal"":17}},'
+    '{""Column"":""IsPrerelease"",""DataType"":""bool"",""Properties"":{""Ordinal"":18}},'
+    '{""Column"":""IsListed"",""DataType"":""bool"",""Properties"":{""Ordinal"":19}},'
+    '{""Column"":""IsSemVer2"",""DataType"":""bool"",""Properties"":{""Ordinal"":20}},'
+    '{""Column"":""SemVerType"",""DataType"":""string"",""Properties"":{""Ordinal"":21}},'
+    '{""Column"":""SemVerOrder"",""DataType"":""int"",""Properties"":{""Ordinal"":22}},'
+    '{""Column"":""IsLatest"",""DataType"":""bool"",""Properties"":{""Ordinal"":23}},'
+    '{""Column"":""IsLatestStable"",""DataType"":""bool"",""Properties"":{""Ordinal"":24}},'
+    '{""Column"":""IsLatestSemVer2"",""DataType"":""bool"",""Properties"":{""Ordinal"":25}},'
+    '{""Column"":""IsLatestStableSemVer2"",""DataType"":""bool"",""Properties"":{""Ordinal"":26}}'
 ']'",
         };
 
