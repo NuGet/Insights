@@ -1,10 +1,18 @@
 # NuGet.Insights *(formerly ExplorePackages)* [![Build](https://github.com/NuGet/Insights/actions/workflows/build.yml/badge.svg)](https://github.com/NuGet/Insights/actions/workflows/build.yml)
 
-Analyze packages NuGet.org in a highly distributed manner. Or, if you want a sales pitch:
+**Analyze NuGet.org packages 📦 using Azure Functions ⚡.**
 
-> Process all of NuGet.org in less than an hour for less than $10.*
+This project enables you to write a bit of code that will be executed for each package on NuGet.org in parallel. The
+results of the code will be collected into CSV files stored Azure Blob Storage. These CSV files can be imported into
+any query system you want, for easy analysis. This project is about building those CSV blobs in a fast, scalable, and
+reproducible way as well as keeping those files up to date.
 
-(*depending on what you want to know 😅)
+The data sets are great for:
+
+- 🔎 Ad-hoc investigations of the .NET ecosystem
+- 🐞 Estimate the blast radius of a bug affecting NuGet packages
+- 📈 Check the trends over time on NuGet.org
+- 📊 Look at adoption of various NuGet or .NET features
 
 ## Quickstart
 
@@ -16,7 +24,7 @@ Analyze packages NuGet.org in a highly distributed manner. Or, if you want a sal
 
 ### Build the code
 
-1. Ensure you have the .NET 3.1 and 5 SDK installed. [Install it if needed](https://dotnet.microsoft.com/download).
+1. Ensure you have the .NET 3.1 and 5 SDK installed. [Install them if needed](https://dotnet.microsoft.com/download).
    ```
    dotnet --info
    ```
@@ -96,6 +104,39 @@ Note that you cannot use Azurite since the latest version of it does not support
 9. Wait until the catalog scan is done.
    - This can be seen by looking at the `workerqueue` queue or by looking at the admin panel seen above.
 
+## Architecture
+
+The purpose of this repository is to explore the characteristics, oddities, and inconsistencies of NuGet.org's available
+packages.
+
+Fundamentally, the project uses the [NuGet.org catalog](https://docs.microsoft.com/en-us/nuget/api/catalog-resource) to
+enumerate all package IDs and versions. For each ID and version, some unit of work is performed. This unit of work can
+be some custom analysis that you want to do on a package. There are some helper classes to write the results out to big
+CSVs for importing into Kusto or the like but in general, you can do whatever you want per package.
+
+The custom logic to run on a per-package (or per catalog leaf/page) is referred to as a **"driver"**.
+
+The enumeration of the catalog is called a "catalog scan". The catalog scan is within a specified time range in the
+catalog, with respect to the catalog commit timestamp. A catalog scan finds all catalog leaves in the provided min and
+max commit timestamp and then executes a "driver" for each package ID and version found.
+
+All work is executed in the context of an Azure Function that reads a single worker queue (Azure Storage Queue).
+
+The general flow of a catalog scan is:
+
+1. Download the catalog index.
+1. Find all catalog pages in the time range.
+1. For each page, enumerate all leaf items per page in the time range.
+1. For each leaf item, write the ID and version to Azure Table Storage to find the latest leaf.
+1. After all leaf items have been written to Table Storage, enqueue one message per row.
+1. For each queue message, execute the driver.
+
+Note there is an option to disable step 4 and run the driver for every single catalog leaf item. Depending on the logic
+of the driver, this may yield duplicated effort and is often not desired.
+
+The implementation is geared towards Azure Functions Consumption Plan for compute (cheap) and Azure Storage for
+persistence (cheap).
+
 ## Screenshots
 
 ### Resources in Azure
@@ -135,39 +176,6 @@ into Azure Table Storage. It took about 35 minutes to do this and costed about $
 #### Azure Functions Execution Count
 
 ![Azure Functions Execution Units](docs/find-package-files-execution-units.png)
-
-## Architecture
-
-The purpose of this repository is to explore the characteristics, oddities, and inconsistencies of NuGet.org's available
-packages.
-
-Fundamentally, the project uses the [NuGet.org catalog](https://docs.microsoft.com/en-us/nuget/api/catalog-resource) to
-enumerate all package IDs and versions. For each ID and version, some unit of work is performed. This unit of work can
-be some custom analysis that you want to do on a package. There are some helper classes to write the results out to big
-CSVs for importing into Kusto or the like but in general, you can do whatever you want per package.
-
-The custom logic to run on a per-package (or per catalog leaf/page) is referred to as a **"driver"**.
-
-The enumeration of the catalog is called a "catalog scan". The catalog scan is within a specified time range in the
-catalog, with respect to the catalog commit timestamp. A catalog scan finds all catalog leaves in the provided min and
-max commit timestamp and then executes a "driver" for each package ID and version found.
-
-All work is executed in the context of an Azure Function that reads a single worker queue (Azure Storage Queue).
-
-The general flow of a catalog scan is:
-
-1. Download the catalog index.
-1. Find all catalog pages in the time range.
-1. For each page, enumerate all leaf items per page in the time range.
-1. For each leaf item, write the ID and version to Azure Table Storage to find the latest leaf.
-1. After all leaf items have been written to Table Storage, enqueue one message per row.
-1. For each queue message, execute the driver.
-
-Note there is an option to disable step 4 and run the driver for every single catalog leaf item. Depending on the logic
-of the driver, this may yield duplicated effort and is often not desired.
-
-The implementation is geared towards Azure Functions Consumption Plan for compute (cheap) and Azure Storage for
-persistence (cheap).
 
 ## Projects
 
