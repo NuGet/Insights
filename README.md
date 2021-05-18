@@ -1,4 +1,4 @@
-# NuGet.Insights *(formerly ExplorePackages)* [![Build](https://github.com/joelverhagen/ExplorePackages/actions/workflows/build.yml/badge.svg)](https://github.com/joelverhagen/ExplorePackages/actions/workflows/build.yml)
+# NuGet.Insights *(formerly ExplorePackages)* [![Build](https://github.com/NuGet/Insights/actions/workflows/build.yml/badge.svg)](https://github.com/NuGet/Insights/actions/workflows/build.yml)
 
 Analyze packages NuGet.org in a highly distributed manner. Or, if you want a sales pitch:
 
@@ -22,11 +22,11 @@ Analyze packages NuGet.org in a highly distributed manner. Or, if you want a sal
    ```
 2. Clone the repository.
    ```
-   git clone https://github.com/joelverhagen/ExplorePackages.git
+   git clone https://github.com/NuGet/Insights.git
    ```
 3. Run `dotnet publish` on the website and worker projects. This produces compiled directories that can be deployed to Azure later.
    ```
-   cd ExplorePackages
+   cd Insights
    dotnet publish src/Worker -c Release
    dotnet publish src/Website -c Release
    ```

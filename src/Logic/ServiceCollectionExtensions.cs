@@ -224,7 +224,7 @@ namespace NuGet.Insights
             builder.Append("; +");
             if (string.IsNullOrWhiteSpace(programUrl))
             {
-                builder.Append("https://github.com/joelverhagen/ExplorePackages");
+                builder.Append("https://github.com/NuGet/Insights");
             }
             else
             {
