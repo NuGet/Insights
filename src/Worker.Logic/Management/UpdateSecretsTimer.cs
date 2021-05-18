@@ -67,19 +67,13 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        public bool IsEnabled
-        {
-            get
-            {
-                return _options.Value.KeyVaultName != null
+        public bool IsEnabled => _options.Value.KeyVaultName != null
                     && _options.Value.StorageSharedAccessSignatureSecretName != null
                     && _options.Value.StorageSharedAccessSignatureDuration != null
                     && _options.Value.StorageConnectionStringSecretName != null
                     && _options.Value.HostSubscriptionId != null
                     && _options.Value.HostResourceGroupName != null
                     && _options.Value.HostAppName != null;
-            }
-        }
 
         public async Task<bool> ExecuteAsync()
         {
