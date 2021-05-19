@@ -51,6 +51,9 @@ and how it fetches and persists data about packages.
    default columns in your CSV. Also, your CSV row class must implement `ICsvRecord<T>`. This is a good thing since this
    allows your class to be automatically serializable to CSV using a built-in source generator.
 
+   You'll need to add a Azure Blob Storage container name to
+   [`NuGetInsightsWorkerSettings.cs`](../src/Worker.Logic/NuGetInsightsWorkerSettings.cs) to store the CSV files.
+
    - Example implementation: [`PackageAssetToCsvDriver`](../src/Worker.Logic/CatalogScan/Drivers/PackageAssetToCsv/PackageAssetToCsvDriver.cs) -
      For each catalog leaf item, this driver fetches the list of file in the .nupkg and execute's NuGet client tooling's
      restore pattern sets (i.e. the rules used by `dotnet restore` to understand the significance of each package file)
@@ -91,9 +94,9 @@ Ensure the driver can be activated by the catalog scan and admin interface. Upda
 1. Add your driver to the [`CatalogScanService`](../src/Worker.Logic/CatalogScan/CatalogScanService.cs) class.
    - Update `GetOnlyLatestLeavesSupport`. It's most likely that this method should return `true` or `null` for your driver.
    - Update `UpdateAsync`. This enqueues a catalog scan with the proper parameters for your driver.
+1. Add your driver to the [`CatalogScanCursorService`](../src/Worker.Logic/CatalogScan/CatalogScanCursorService.cs) class.
    - Update the `Dependencies` static. This defines what cursors or other drivers your driver should block on before proceeding.
 1. If your driver implements `ICatalogLeafToCsvDriver<T>`:
-   1. Add an Azure Blob Storage container name to [`NuGetInsightsWorkerSettings.cs`](../src/Worker.Logic/NuGetInsightsWorkerSettings.cs).
    1. Add a CSV compact message schema name to [`SchemaSerializer`](../src/Worker.Logic/Serialization/SchemaSerializer.cs) like `cc.<abbreviation for your driver>`.
 1. Add your driver to the `TypeToInfo` static in [`CatalogScanServiceTest.cs`](../test/Worker.Logic.Test/CatalogScan/CatalogScanServiceTest.cs).
    This determines the default catalog timestamp min value for your driver and implements a test function that forces
