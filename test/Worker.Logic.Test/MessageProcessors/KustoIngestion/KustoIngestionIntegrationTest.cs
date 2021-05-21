@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,12 +19,15 @@ namespace NuGet.Insights.Worker.KustoIngestion
     {
         public class KustoIngestion_IngestsAllBlobs : KustoIngestionIntegrationTest
         {
-            [Fact]
-            public async Task ExecuteAsync()
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
+            public async Task ExecuteAsync(bool applyPartitioningPolicy)
             {
                 ConfigureWorkerSettings = x =>
                 {
                     x.KustoTableNameFormat = "A{0}Z";
+                    x.KustoApplyPartitioningPolicy = applyPartitioningPolicy;
                     x.AppendResultStorageBucketCount = 2;
                 };
 
@@ -54,8 +57,6 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 VerifyCommandStartsWith(".create table APackageManifestsZ_Temp (");
                 VerifyCommand(".alter-merge table ACatalogLeafItemsZ_Temp policy retention softdelete = 30d");
                 VerifyCommand(".alter-merge table APackageManifestsZ_Temp policy retention softdelete = 30d");
-                VerifyCommandStartsWith(".alter table ACatalogLeafItemsZ_Temp policy partitioning '{'");
-                VerifyCommandStartsWith(".alter table APackageManifestsZ_Temp policy partitioning '{'");
                 VerifyCommandStartsWith(".create table ACatalogLeafItemsZ_Temp ingestion csv mapping 'BlobStorageMapping'");
                 VerifyCommandStartsWith(".create table APackageManifestsZ_Temp ingestion csv mapping 'BlobStorageMapping'");
                 VerifyCommand(".drop table ACatalogLeafItemsZ_Old ifexists");
@@ -64,7 +65,14 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 VerifyCommand(".rename tables APackageManifestsZ_Old=APackageManifestsZ ifexists, APackageManifestsZ=APackageManifestsZ_Temp");
                 VerifyCommand(".drop table ACatalogLeafItemsZ_Old ifexists");
                 VerifyCommand(".drop table APackageManifestsZ_Old ifexists");
-                Assert.Equal(16, MockCslAdminProvider.Invocations.Count(x => x.Method.Name != nameof(IDisposable.Dispose)));
+                if (applyPartitioningPolicy)
+                {
+                    VerifyCommandStartsWith(".alter table ACatalogLeafItemsZ_Temp policy partitioning '{'");
+                    VerifyCommandStartsWith(".alter table APackageManifestsZ_Temp policy partitioning '{'");
+                }
+                Assert.Equal(
+                    applyPartitioningPolicy ? 16 : 14,
+                    MockCslAdminProvider.Invocations.Count(x => x.Method.Name != nameof(IDisposable.Dispose)));
 
                 MockKustoQueueIngestClient.Verify(x => x.IngestFromStorageAsync(
                     It.Is<string>(y => y.Contains($"/{Options.Value.CatalogLeafItemContainerName}/compact_0.csv.gz?")),

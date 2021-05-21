@@ -23,7 +23,15 @@ namespace NuGet.Insights
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
 
-            @".alter table __TABLENAME__ policy partitioning '{'
+            @".create table __TABLENAME__ ingestion csv mapping 'BlobStorageMapping'
+'['
+    '{""Column"":""LowerId"",""DataType"":""string"",""Properties"":{""Ordinal"":1}},'
+    '{""Column"":""Id"",""DataType"":""string"",""Properties"":{""Ordinal"":2}},'
+    '{""Column"":""Owners"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":3}}'
+']'",
+        };
+
+        public const string PackageOwnerRecordPartitioningPolicy = @".alter table __TABLENAME__ policy partitioning '{'
   '""PartitionKeys"": ['
     '{'
       '""ColumnName"": ""LowerId"",'
@@ -34,18 +42,12 @@ namespace NuGet.Insights
       '}'
     '}'
   ']'
-'}'",
-
-            @".create table __TABLENAME__ ingestion csv mapping 'BlobStorageMapping'
-'['
-    '{""Column"":""LowerId"",""DataType"":""string"",""Properties"":{""Ordinal"":1}},'
-    '{""Column"":""Id"",""DataType"":""string"",""Properties"":{""Ordinal"":2}},'
-    '{""Column"":""Owners"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":3}}'
-']'",
-        };
+'}'";
 
         private static readonly bool PackageOwnerRecordAddTypeToDefaultTableName = AddTypeToDefaultTableName(typeof(NuGet.Insights.Worker.OwnersToCsv.PackageOwnerRecord), PackageOwnerRecordDefaultTableName);
 
         private static readonly bool PackageOwnerRecordAddTypeToDDL = AddTypeToDDL(typeof(NuGet.Insights.Worker.OwnersToCsv.PackageOwnerRecord), PackageOwnerRecordDDL);
+
+        private static readonly bool PackageOwnerRecordAddTypeToPartitioningPolicy = AddTypeToPartitioningPolicy(typeof(NuGet.Insights.Worker.OwnersToCsv.PackageOwnerRecord), PackageOwnerRecordPartitioningPolicy);
     }
 }

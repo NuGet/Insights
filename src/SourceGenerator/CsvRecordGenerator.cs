@@ -109,17 +109,19 @@ namespace NuGet.Insights
 
             "".alter-merge table __TABLENAME__ policy retention softdelete = 30d"",
 
-            @"".alter table __TABLENAME__ policy partitioning {4}"",
-
             @"".create table __TABLENAME__ ingestion csv mapping '{6}'
 '['
 {5}
 ']'"",
         }};
 
+        public const string {3}PartitioningPolicy = @"".alter table __TABLENAME__ policy partitioning {4}"";
+
         private static readonly bool {3}AddTypeToDefaultTableName = AddTypeToDefaultTableName(typeof({0}.{3}), {3}DefaultTableName);
 
         private static readonly bool {3}AddTypeToDDL = AddTypeToDDL(typeof({0}.{3}), {3}DDL);
+
+        private static readonly bool {3}AddTypeToPartitioningPolicy = AddTypeToPartitioningPolicy(typeof({0}.{3}), {3}PartitioningPolicy);
     }}
 }}
 ";

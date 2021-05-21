@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -74,6 +74,13 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
                 foreach (var commandTemplate in GetDDL(container.GetContainerName()))
                 {
+                    var command = FormatCommand(tempTableName, commandTemplate);
+                    await ExecuteKustoCommandAsync(container, command);
+                }
+
+                if (_options.Value.KustoApplyPartitioningPolicy)
+                {
+                    var commandTemplate = GetPartitioningStrategy(container.GetContainerName());
                     var command = FormatCommand(tempTableName, commandTemplate);
                     await ExecuteKustoCommandAsync(container, command);
                 }
@@ -196,6 +203,12 @@ namespace NuGet.Insights.Worker.KustoIngestion
         {
             var recordType = _csvRecordContainers.GetRecordType(containerName);
             return KustoDDL.TypeToDDL[recordType];
+        }
+
+        private string GetPartitioningStrategy(string containerName)
+        {
+            var recordType = _csvRecordContainers.GetRecordType(containerName);
+            return KustoDDL.TypeToPartitioningPolicy[recordType];
         }
 
         private string FormatCommand(string tableName, string commandTemplate)

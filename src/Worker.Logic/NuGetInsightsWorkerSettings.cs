@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -64,6 +64,7 @@ namespace NuGet.Insights.Worker
             KustoConnectionString = null;
             KustoDatabaseName = null;
             KustoUseUserManagedIdentity = true;
+            KustoApplyPartitioningPolicy = true;
             KustoTableNameFormat = "{0}";
             OldKustoIngestionsToKeep = 9;
         }
@@ -122,6 +123,7 @@ namespace NuGet.Insights.Worker
         public string KustoConnectionString { get; set; }
         public string KustoDatabaseName { get; set; }
         public bool KustoUseUserManagedIdentity { get; set; }
+        public bool KustoApplyPartitioningPolicy { get; set; }
         public string KustoTableNameFormat { get; set; }
         public int OldKustoIngestionsToKeep { get; set; }
     }

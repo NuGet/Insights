@@ -26,19 +26,6 @@ namespace NuGet.Insights
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
 
-            @".alter table __TABLENAME__ policy partitioning '{'
-  '""PartitionKeys"": ['
-    '{'
-      '""ColumnName"": ""Identity"",'
-      '""Kind"": ""Hash"",'
-      '""Properties"": {'
-        '""Function"": ""XxHash64"",'
-        '""MaxPartitionCount"": 256'
-      '}'
-    '}'
-  ']'
-'}'",
-
             @".create table __TABLENAME__ ingestion csv mapping 'BlobStorageMapping'
 '['
     '{""Column"":""LowerId"",""DataType"":""string"",""Properties"":{""Ordinal"":1}},'
@@ -50,8 +37,23 @@ namespace NuGet.Insights
 ']'",
         };
 
+        public const string PackageDownloadRecordPartitioningPolicy = @".alter table __TABLENAME__ policy partitioning '{'
+  '""PartitionKeys"": ['
+    '{'
+      '""ColumnName"": ""Identity"",'
+      '""Kind"": ""Hash"",'
+      '""Properties"": {'
+        '""Function"": ""XxHash64"",'
+        '""MaxPartitionCount"": 256'
+      '}'
+    '}'
+  ']'
+'}'";
+
         private static readonly bool PackageDownloadRecordAddTypeToDefaultTableName = AddTypeToDefaultTableName(typeof(NuGet.Insights.Worker.DownloadsToCsv.PackageDownloadRecord), PackageDownloadRecordDefaultTableName);
 
         private static readonly bool PackageDownloadRecordAddTypeToDDL = AddTypeToDDL(typeof(NuGet.Insights.Worker.DownloadsToCsv.PackageDownloadRecord), PackageDownloadRecordDDL);
+
+        private static readonly bool PackageDownloadRecordAddTypeToPartitioningPolicy = AddTypeToPartitioningPolicy(typeof(NuGet.Insights.Worker.DownloadsToCsv.PackageDownloadRecord), PackageDownloadRecordPartitioningPolicy);
     }
 }
