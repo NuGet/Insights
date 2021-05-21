@@ -96,13 +96,14 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 foreach (var blob in blobs)
                 {
                     var url = await _csvRecordContainers.GetBlobUrlAsync(container.GetContainerName(), blob.Name);
+                    var cleanUrl = new UriBuilder(url) { Query = null };
                     nameToEntity.Add(blob.Name, new KustoBlobIngestion(container.GetContainerName(), blob.Name)
                     {
                         IngestionId = container.IngestionId,
                         StorageSuffix = container.StorageSuffix,
                         RawSizeBytes = blob.RawSizeBytes,
                         SourceId = Guid.NewGuid(),
-                        SourceUrl = url.AbsoluteUri,
+                        SourceUrl = cleanUrl.Uri.AbsoluteUri,
                         State = KustoBlobIngestionState.Created,
                     });
                 }
