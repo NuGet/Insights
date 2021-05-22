@@ -60,20 +60,14 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             return Task.CompletedTask;
         }
 
-        public async Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(NuGetPackageExplorerRecord record)
+        public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(NuGetPackageExplorerRecord record)
         {
-            if (record.SourceLinkResult != SymbolValidationResult.NothingToValidate)
-            {
-                return null;
-            }
-
-            var latestLeaf = await _latestPackageLeafService.GetOrNullAsync(record.Id, record.Version);
-            return latestLeaf.ToLeafItem();
+            throw new NotImplementedException();
         }
 
         public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(NuGetPackageExplorerFile record)
         {
-            return Task.FromResult<CatalogLeafItem>(null);
+            throw new NotImplementedException();
         }
 
         public async Task<DriverResult<CsvRecordSets<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)

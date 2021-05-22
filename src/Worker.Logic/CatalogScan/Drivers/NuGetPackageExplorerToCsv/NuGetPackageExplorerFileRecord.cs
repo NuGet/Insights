@@ -42,3 +42,12 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
         public PdbType? PdbType { get; set; }
     }
 }
+
+#if !ENABLE_NPE
+namespace NuGetPe.AssemblyMetadata
+{
+    public enum PdbType
+    {
+    }
+}
+#endif
