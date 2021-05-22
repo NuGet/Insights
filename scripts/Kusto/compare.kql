@@ -1,28 +1,26 @@
 // Package-specific tables should all have the same identity count
-NiCatalogLeafItems | distinct Identity | extend Table = "NiCatalogLeafItems"
-| union (NiNuGetPackageExplorers | distinct Identity | extend Table = "NiNuGetPackageExplorers")
-| union (NiNuGetPackageExplorerFiles | distinct Identity | extend Table = "NiNuGetPackageExplorerFiles")
-| union (NiPackageArchives | distinct Identity | extend Table = "NiPackageArchives")
-| union (NiPackageArchiveEntries | distinct Identity | extend Table = "NiPackageArchiveEntries")
-| union (NiPackageAssemblies | distinct Identity | extend Table = "NiPackageAssemblies")
-| union (NiPackageAssets | distinct Identity | extend Table = "NiPackageAssets")
-| union (NiPackageDownloads | distinct Identity | extend Table = "NiPackageDownloads")
-| union (NiPackageManifests | distinct Identity | extend Table = "NiPackageManifests")
-| union (NiPackageSignatures | distinct Identity | extend Table = "NiPackageSignatures")
-| union (NiPackageVersions | distinct Identity | extend Table = "NiPackageVersions")
-| summarize dcount(Identity) by Table
+NiCatalogLeafItems | distinct Identity | count | extend Table = "NiCatalogLeafItems"
+| union (NiNuGetPackageExplorers | distinct Identity | count | extend Table = "NiNuGetPackageExplorers")
+| union (NiNuGetPackageExplorerFiles | distinct Identity | count | extend Table = "NiNuGetPackageExplorerFiles")
+| union (NiPackageArchives | distinct Identity | count | extend Table = "NiPackageArchives")
+| union (NiPackageArchiveEntries | distinct Identity | count | extend Table = "NiPackageArchiveEntries")
+| union (NiPackageAssemblies | distinct Identity | count | extend Table = "NiPackageAssemblies")
+| union (NiPackageAssets | distinct Identity | count | extend Table = "NiPackageAssets")
+| union (NiPackageDownloads | distinct Identity | count | extend Table = "NiPackageDownloads")
+| union (NiPackageManifests | distinct Identity | count | extend Table = "NiPackageManifests")
+| union (NiPackageSignatures | distinct Identity | count | extend Table = "NiPackageSignatures")
+| union (NiPackageVersions | distinct Identity | count | extend Table = "NiPackageVersions")
 
 // All tables should all have the same ID count
-NiCatalogLeafItems | distinct LowerId | extend Table = "NiCatalogLeafItems"
-| union (NiNuGetPackageExplorers | distinct LowerId | extend Table = "NiNuGetPackageExplorers")
-| union (NiNuGetPackageExplorerFiles | distinct LowerId | extend Table = "NiNuGetPackageExplorerFiles")
-| union (NiPackageArchives | distinct LowerId | extend Table = "NiPackageArchives")
-| union (NiPackageArchiveEntries | distinct LowerId | extend Table = "NiPackageArchiveEntries")
-| union (NiPackageAssemblies | distinct LowerId | extend Table = "NiPackageAssemblies")
-| union (NiPackageAssets | distinct LowerId | extend Table = "NiPackageAssets")
-| union (NiPackageDownloads | distinct LowerId | extend Table = "NiPackageDownloads")
-| union (NiPackageManifests | distinct LowerId | extend Table = "NiPackageManifests")
-| union (NiPackageOwners | distinct LowerId | extend Table = "NiPackageOwners")
-| union (NiPackageSignatures | distinct LowerId | extend Table = "NiPackageSignatures")
-| union (NiPackageVersions | distinct LowerId | extend Table = "NiPackageVersions")
-| summarize dcount(LowerId) by Table
+NiCatalogLeafItems | distinct LowerId | count | extend Table = "NiCatalogLeafItems"
+| union (NiNuGetPackageExplorers | distinct LowerId | count | extend Table = "NiNuGetPackageExplorers")
+| union (NiNuGetPackageExplorerFiles | distinct LowerId | count  | extend Table = "NiNuGetPackageExplorerFiles")
+| union (NiPackageArchives | distinct LowerId | count | extend Table = "NiPackageArchives")
+| union (NiPackageArchiveEntries | distinct LowerId | count  | extend Table = "NiPackageArchiveEntries")
+| union (NiPackageAssemblies | distinct LowerId | count  | extend Table = "NiPackageAssemblies")
+| union (NiPackageAssets | distinct LowerId | count  | extend Table = "NiPackageAssets")
+| union (NiPackageDownloads | distinct LowerId | count  | extend Table = "NiPackageDownloads")
+| union (NiPackageManifests | distinct LowerId | count  | extend Table = "NiPackageManifests")
+| union (NiPackageOwners | distinct LowerId | count  | extend Table = "NiPackageOwners")
+| union (NiPackageSignatures | distinct LowerId | count  | extend Table = "NiPackageSignatures")
+| union (NiPackageVersions | distinct LowerId | count  | extend Table = "NiPackageVersions")
