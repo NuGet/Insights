@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -137,7 +137,7 @@ namespace NuGet.Insights
 
                 var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
                 Assert.Equal(TimerName, entity.RowKey);
-                Assert.Empty(entity.PartitionKey);
+                Assert.Equal(TimerExecutionService.PartitionKey, entity.PartitionKey);
                 Assert.True(entity.IsEnabled);
                 Timer.Verify(x => x.ExecuteAsync(), Times.Once);
                 Assert.InRange(entity.LastExecuted.Value, before, after);
@@ -326,7 +326,7 @@ namespace NuGet.Insights
         {
             var table = await _fixture.GetTableAsync(_output.GetLogger<ServiceClientFactory>());
             return await table
-                .QueryAsync<T>(x => x.PartitionKey == string.Empty
+                .QueryAsync<T>(x => x.PartitionKey == TimerExecutionService.PartitionKey
                                  && x.RowKey.CompareTo(TimerNamePrefix) >= 0
                                  && x.RowKey.CompareTo(TimerNamePrefix + char.MaxValue) < 0)
                 .ToListAsync();
