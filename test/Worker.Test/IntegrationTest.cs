@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -328,9 +328,13 @@ namespace NuGet.Insights.Worker
                 var loadPackageArchive = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageArchive, max1);
                 await UpdateAsync(loadPackageArchive.Scan);
                 var packageAssemblyToCsv = await CatalogScanService.UpdateAsync(CatalogScanDriverType.PackageAssemblyToCsv, max1);
+#if ENABLE_NPE
                 var nuGetPackageExplorerToCsv = await CatalogScanService.UpdateAsync(CatalogScanDriverType.NuGetPackageExplorerToCsv, max1);
+#endif
                 await UpdateAsync(packageAssemblyToCsv.Scan);
+#if ENABLE_NPE
                 await UpdateAsync(nuGetPackageExplorerToCsv.Scan);
+#endif
 
                 var startingNupkgRequestCount = GetNupkgRequestCount();
 

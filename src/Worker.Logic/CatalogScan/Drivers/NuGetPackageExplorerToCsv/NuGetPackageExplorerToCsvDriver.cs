@@ -60,20 +60,14 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             return Task.CompletedTask;
         }
 
-        public async Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(NuGetPackageExplorerRecord record)
+        public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(NuGetPackageExplorerRecord record)
         {
-            if (record.SourceLinkResult != SymbolValidationResult.NothingToValidate)
-            {
-                return null;
-            }
-
-            var latestLeaf = await _latestPackageLeafService.GetOrNullAsync(record.Id, record.Version);
-            return latestLeaf.ToLeafItem();
+            throw new NotImplementedException();
         }
 
         public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(NuGetPackageExplorerFile record)
         {
-            return Task.FromResult<CatalogLeafItem>(null);
+            throw new NotImplementedException();
         }
 
         public async Task<DriverResult<CsvRecordSets<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
@@ -101,11 +95,6 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             else
             {
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
-
-#if !ENABLE_NPE
-                // Currently NuGetPackageExplore.Core symbol analysis only works fully on Windows.
-                throw new NotSupportedException("This build has the 'ENABLE_NPE' constant and the 'EnableNPE' MSBuild property disabled. This is currently expected when not running on Windows.");
-#else
 
                 var tempDir = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "npe"));
                 if (!Directory.Exists(tempDir))
@@ -269,7 +258,6 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                         }
                     }
                 }
-#endif
             }
         }
 

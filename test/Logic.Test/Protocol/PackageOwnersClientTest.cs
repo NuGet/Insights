@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -52,7 +52,7 @@ namespace NuGet.Insights
             // Assert
             Assert.Equal(asOfTimestamp, set.AsOfTimestamp);
             Assert.Equal(ownersV2Url, set.Url);
-            Assert.Equal("\"1d6ea9f136390e4\"", set.ETag);
+            Assert.Equal("\"1d6ea9f136390d7\"", set.ETag);
             var owners = new List<PackageOwner>();
             await foreach (var owner in set.Owners)
             {

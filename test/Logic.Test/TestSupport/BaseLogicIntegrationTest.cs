@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,7 +9,6 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
@@ -18,6 +17,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -165,7 +166,7 @@ namespace NuGet.Insights
             Assert.EndsWith(".csv.gz", blobName);
             var actual = await AssertBlobAsync(containerName, testName, stepName, fileName, blobName, gzip: true);
             var headerFactory = Activator.CreateInstance<T>();
-            var stringWriter = new StringWriter();
+            var stringWriter = new StringWriter { NewLine = "\n" };
             headerFactory.WriteHeader(stringWriter);
             Assert.StartsWith(stringWriter.ToString(), actual);
         }
@@ -220,10 +221,6 @@ namespace NuGet.Insights
                 using var reader = new StreamReader(downloadInfo.Content);
                 actual = await reader.ReadToEndAsync();
             }
-
-            // Normalize line ending, since there are all kinds of nasty mixtures between Environment.NewLine and Git
-            // settings.
-            actual = Regex.Replace(actual, @"\r\n|\n", Environment.NewLine);
 
             var testDataFile = Path.Combine(TestData, testName, stepName, fileName);
             if (OverwriteTestData)
@@ -309,6 +306,25 @@ namespace NuGet.Insights
                 Logger.LogInformation("There were {Count} {LogLevel} log messages.", count, logLevel);
             }
             Assert.Empty(warningOrGreater);
+        }
+
+        public static string SerializeTestJson(object obj)
+        {
+            var serializer = new JsonSerializer
+            {
+                NullValueHandling = NullValueHandling.Include,
+                Formatting = Formatting.Indented,
+                Converters =
+                {
+                    new StringEnumConverter(),
+                }
+            };
+            var stringWriter = new StringWriter { NewLine = "\n" };
+            using (var jsonWriter = new JsonTextWriter(stringWriter))
+            {
+                serializer.Serialize(jsonWriter, obj);
+            }
+            return stringWriter.ToString();
         }
 
         public static HttpRequestMessage Clone(HttpRequestMessage req)

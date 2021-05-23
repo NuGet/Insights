@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -81,10 +81,12 @@ namespace NuGet.Insights.Worker
                 CatalogScanDriverType.PackageVersionToCsv,
                 new[] { CatalogScanDriverType.LoadPackageVersion }
             },
+#if ENABLE_NPE
             {
                 CatalogScanDriverType.NuGetPackageExplorerToCsv,
                 new[] { FlatContainer, CatalogScanDriverType.LoadLatestPackageLeaf }
             },
+#endif
         }.ToDictionary(x => x.Key, x => (IReadOnlyList<CatalogScanDriverType>)x.Value.ToList());
 
         private static readonly IReadOnlyDictionary<CatalogScanDriverType, IReadOnlyList<CatalogScanDriverType>> Dependents = Dependencies

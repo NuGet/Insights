@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -159,9 +159,10 @@ namespace NuGet.Insights.Worker.BuildVersionSet
 
             using var memoryStream = new MemoryStream();
             await blob.DownloadToAsync(memoryStream);
-            var compactJson = MessagePackSerializer.ConvertToJson(memoryStream.ToArray(), NuGetInsightsMessagePack.Options);
-            var parsedJson = JToken.Parse(compactJson);
-            var actual = parsedJson.ToString();
+            var versions = MessagePackSerializer.Deserialize<VersionSetService.Versions<OrdinalSortedDictionary<OrdinalSortedDictionary<bool>>>>(
+                memoryStream.ToArray(),
+                NuGetInsightsMessagePack.Options);
+            var actual = SerializeTestJson(versions);
 
             var testDataFile = Path.Combine(TestData, testName, stepName, fileName);
             if (OverwriteTestData)
@@ -170,6 +171,13 @@ namespace NuGet.Insights.Worker.BuildVersionSet
             }
             var expected = File.ReadAllText(Path.Combine(TestData, testName, stepName, fileName));
             Assert.Equal(expected, actual);
+        }
+
+        public class OrdinalSortedDictionary<TValue> : SortedDictionary<string, TValue>
+        {
+            public OrdinalSortedDictionary() : base(StringComparer.Ordinal)
+            {
+            }
         }
     }
 }

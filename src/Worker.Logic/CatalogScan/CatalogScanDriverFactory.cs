@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,7 +12,9 @@ using NuGet.Insights.Worker.LoadLatestPackageLeaf;
 using NuGet.Insights.Worker.LoadPackageArchive;
 using NuGet.Insights.Worker.LoadPackageManifest;
 using NuGet.Insights.Worker.LoadPackageVersion;
+#if ENABLE_NPE
 using NuGet.Insights.Worker.NuGetPackageExplorerToCsv;
+#endif
 using NuGet.Insights.Worker.PackageArchiveToCsv;
 using NuGet.Insights.Worker.PackageAssemblyToCsv;
 using NuGet.Insights.Worker.PackageAssetToCsv;
@@ -87,8 +89,10 @@ namespace NuGet.Insights.Worker
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<PackageManifestRecord>>();
                 case CatalogScanDriverType.PackageVersionToCsv:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<PackageVersionRecord>>();
+#if ENABLE_NPE
                 case CatalogScanDriverType.NuGetPackageExplorerToCsv:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>>();
+#endif
                 default:
                     throw new NotSupportedException($"Catalog scan driver type '{driverType}' is not supported.");
             }

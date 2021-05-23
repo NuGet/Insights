@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -287,8 +287,11 @@ namespace NuGet.Insights.Worker
         public static IEnumerable<object[]> StartableTypes => Enum
             .GetValues(typeof(CatalogScanDriverType))
             .Cast<CatalogScanDriverType>()
-            .Where(x => x != CatalogScanDriverType.Internal_FindLatestCatalogLeafScan
-                     && x != CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId)
+            .Except(new[]
+            {
+                CatalogScanDriverType.Internal_FindLatestCatalogLeafScan,
+                CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId,
+            })
             .Select(x => new object[] { x });
 
         private async Task SetDependencyCursorsAsync(CatalogScanDriverType type, DateTimeOffset min)
@@ -451,6 +454,7 @@ namespace NuGet.Insights.Worker
                 }
             },
 
+#if ENABLE_NPE
             {
                 CatalogScanDriverType.NuGetPackageExplorerToCsv,
                 new DriverInfo
@@ -463,6 +467,7 @@ namespace NuGet.Insights.Worker
                     },
                 }
             },
+#endif
         };
 
         public Mock<IRemoteCursorClient> RemoteCursorClient { get; }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -138,7 +138,10 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
             using (var gzipStream = new GZipStream(memoryStream, CompressionLevel.Optimal, leaveOpen: true))
             {
                 using var countingStream = new CountingWriterStream(gzipStream);
-                using var writer = new StreamWriter(countingStream);
+                using var writer = new StreamWriter(countingStream)
+                {
+                    NewLine = "\n",
+                };
 
                 await _updater.WriteAsync(versionSet, data, writer);
 

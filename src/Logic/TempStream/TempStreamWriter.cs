@@ -142,37 +142,40 @@ namespace NuGet.Insights
                         Directory.CreateDirectory(tempDir);
                     }
 
-                    // Try to check if there is enough space on the drive.
-                    if (!GetDiskFreeSpaceEx(tempDir, out var freeBytesAvailable, out var totalNumberOfBytes, out var totalNumberOfFreeBytes))
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     {
-                        try
+                        // Try to check if there is enough space on the drive.
+                        if (!GetDiskFreeSpaceEx(tempDir, out var freeBytesAvailable, out var totalNumberOfBytes, out var totalNumberOfFreeBytes))
                         {
-                            throw new Win32Exception(Marshal.GetLastWin32Error());
+                            try
+                            {
+                                throw new Win32Exception(Marshal.GetLastWin32Error());
+                            }
+                            catch (Win32Exception ex)
+                            {
+                                _logger.LogWarning(ex, "Could not determine available free space in temp dir {TempDir}.", tempDir);
+                            }
                         }
-                        catch (Win32Exception ex)
+                        else
                         {
-                            _logger.LogWarning(ex, "Could not determine available free space in temp dir {TempDir}.", tempDir);
-                        }
-                    }
-                    else
-                    {
-                        _logger.LogInformation(
-                            "For temp dir {TempDir}, there are {FreeBytesAvailable} bytes available (total: {TotalNumberOfBytes}, total free: {TotalNumberOfFreeBytes}).",
-                            tempDir,
-                            freeBytesAvailable,
-                            totalNumberOfBytes,
-                            totalNumberOfFreeBytes);
-
-                        if ((ulong)length > freeBytesAvailable)
-                        {
-                            _tempDirIndex++;
-                            _logger.LogWarning(
-                                "Not enough space in temp dir {TempDir} to buffer a {TypeName} stream with length {LengthBytes} bytes (only {FreeBytesAvailable} bytes available).",
+                            _logger.LogInformation(
+                                "For temp dir {TempDir}, there are {FreeBytesAvailable} bytes available (total: {TotalNumberOfBytes}, total free: {TotalNumberOfFreeBytes}).",
                                 tempDir,
-                                src.GetType().FullName,
-                                length,
-                                freeBytesAvailable);
-                            continue;
+                                freeBytesAvailable,
+                                totalNumberOfBytes,
+                                totalNumberOfFreeBytes);
+
+                            if ((ulong)length > freeBytesAvailable)
+                            {
+                                _tempDirIndex++;
+                                _logger.LogWarning(
+                                    "Not enough space in temp dir {TempDir} to buffer a {TypeName} stream with length {LengthBytes} bytes (only {FreeBytesAvailable} bytes available).",
+                                    tempDir,
+                                    src.GetType().FullName,
+                                    length,
+                                    freeBytesAvailable);
+                                continue;
+                            }
                         }
                     }
 

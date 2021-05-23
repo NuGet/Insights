@@ -5,6 +5,9 @@
     <AssemblyName>NuGet.Insights.Worker.Logic.Test</AssemblyName>
     <RootNamespace>NuGet.Insights.Worker</RootNamespace>
   </PropertyGroup>
+  <ItemGroup Condition="'$(EnableNPE)' != 'true'">
+    <Compile Remove="CatalogScan\Drivers\NuGetPackageExplorerToCsv\*" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.12" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />

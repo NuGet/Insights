@@ -1,4 +1,4 @@
-﻿@{
+@{
     var error = TempData[Model.DriverType + ".Error"]?.ToString();
     var success = TempData[Model.DriverType + ".Success"]?.ToString();
     var hasError = !string.IsNullOrEmpty(error);
@@ -16,11 +16,9 @@
         statusTitle = "A catalog scan is running.";
     }
 
-    var title = Model.DriverType.ToString().Humanize().Replace(" csv", " CSV");
-    if (Model.DriverType == CatalogScanDriverType.NuGetPackageExplorerToCsv)
-    {
-        title = title.Replace("Nu get package explorer", "NuGet Package Explorer");
-    }
+    var title = Model.DriverType.ToString().Humanize()
+        .Replace(" csv", " CSV")
+        .Replace("Nu get package explorer", "NuGet Package Explorer");
 }
 <CollapseCard IdPrefix="@Model.DriverType.ToString()" Title="@title" StatusText="@statusText" StatusTitle="@statusTitle" BorderClass="@borderClass">
     <ul class="list-group list-group-flush">

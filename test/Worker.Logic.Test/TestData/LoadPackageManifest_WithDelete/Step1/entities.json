@@ -39,16 +39,16 @@
       "CommitTimestamp": "2020-12-20T02:39:03.372413+00:00",
       "HttpHeaders": {
         "Content-Length": [
-          "456"
+          "444"
         ],
         "ETag": [
-          "\"1d6ea9f136391c8\""
+          "\"1d6ea9f136391bc\""
         ],
         "Last-Modified": [
           "Thu, 14 Jan 2021 18:00:00 GMT"
         ]
       },
-      "ManifestHash": "0e52f18fa3c03d0131b97f563a9e3e5885910816b95e76440de5659335ccf1d8"
+      "ManifestHash": "5ed74e3b96d1c6c987df8278bb256e39aa4a91455d2b5821b6fe799f37eab81c"
     }
   },
   {
