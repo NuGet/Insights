@@ -328,9 +328,13 @@ namespace NuGet.Insights.Worker
                 var loadPackageArchive = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageArchive, max1);
                 await UpdateAsync(loadPackageArchive.Scan);
                 var packageAssemblyToCsv = await CatalogScanService.UpdateAsync(CatalogScanDriverType.PackageAssemblyToCsv, max1);
+#if ENABLE_NPE
                 var nuGetPackageExplorerToCsv = await CatalogScanService.UpdateAsync(CatalogScanDriverType.NuGetPackageExplorerToCsv, max1);
+#endif
                 await UpdateAsync(packageAssemblyToCsv.Scan);
+#if ENABLE_NPE
                 await UpdateAsync(nuGetPackageExplorerToCsv.Scan);
+#endif
 
                 var startingNupkgRequestCount = GetNupkgRequestCount();
 
