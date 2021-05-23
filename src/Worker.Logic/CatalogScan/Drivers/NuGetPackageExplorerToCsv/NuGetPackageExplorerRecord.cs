@@ -32,18 +32,3 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
         public bool? IsSignedByAuthor { get; set; }
     }
 }
-
-#if !ENABLE_NPE
-namespace NuGetPe
-{
-    public enum SymbolValidationResult
-    {
-    }
-    public enum DeterministicResult
-    {
-    }
-    public enum HasCompilerFlagsResult
-    {
-    }
-}
-#endif

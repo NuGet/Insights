@@ -291,9 +291,6 @@ namespace NuGet.Insights.Worker
             {
                 CatalogScanDriverType.Internal_FindLatestCatalogLeafScan,
                 CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId,
-#if ENABLE_NPE
-                CatalogScanDriverType.NuGetPackageExplorerToCsv,
-#endif
             })
             .Select(x => new object[] { x });
 

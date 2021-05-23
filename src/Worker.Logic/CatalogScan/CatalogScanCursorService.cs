@@ -25,9 +25,6 @@ namespace NuGet.Insights.Worker
             {
                 CatalogScanDriverType.Internal_FindLatestCatalogLeafScan,
                 CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId,
-#if !ENABLE_NPE
-                CatalogScanDriverType.NuGetPackageExplorerToCsv,
-#endif
             })
             .ToHashSet();
         private static readonly IReadOnlyList<CatalogScanDriverType> SortedDriverTypes = ValidDriverTypes
@@ -84,10 +81,12 @@ namespace NuGet.Insights.Worker
                 CatalogScanDriverType.PackageVersionToCsv,
                 new[] { CatalogScanDriverType.LoadPackageVersion }
             },
+#if ENABLE_NPE
             {
                 CatalogScanDriverType.NuGetPackageExplorerToCsv,
                 new[] { FlatContainer, CatalogScanDriverType.LoadLatestPackageLeaf }
             },
+#endif
         }.ToDictionary(x => x.Key, x => (IReadOnlyList<CatalogScanDriverType>)x.Value.ToList());
 
         private static readonly IReadOnlyDictionary<CatalogScanDriverType, IReadOnlyList<CatalogScanDriverType>> Dependents = Dependencies

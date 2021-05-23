@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,7 +11,9 @@ using NuGet.Insights.Worker.CatalogLeafItemToCsv;
 using NuGet.Insights.Worker.EnqueueCatalogLeafScan;
 using NuGet.Insights.Worker.KustoIngestion;
 using NuGet.Insights.Worker.LoadLatestPackageLeaf;
+#if ENABLE_NPE
 using NuGet.Insights.Worker.NuGetPackageExplorerToCsv;
+#endif
 using NuGet.Insights.Worker.PackageArchiveToCsv;
 using NuGet.Insights.Worker.PackageAssemblyToCsv;
 using NuGet.Insights.Worker.PackageAssetToCsv;
@@ -48,11 +50,14 @@ namespace NuGet.Insights.Worker
             new SchemaV1<CsvCompactMessage<PackageManifestRecord>>("cc.pm2c"),
             new SchemaV1<CsvCompactMessage<PackageSignature>>("cc.fps"),
             new SchemaV1<CsvCompactMessage<PackageVersionRecord>>("cc.pv2c"),
+
+#if ENABLE_NPE
             new SchemaV1<CsvCompactMessage<NuGetPackageExplorerRecord>>("cc.npe2c"),
             new SchemaV1<CsvCompactMessage<NuGetPackageExplorerFile>>("cc.npef2c"),
 
             new SchemaV1<CsvExpandReprocessMessage<NuGetPackageExplorerRecord>>("cer.npe2c"),
             new SchemaV1<CsvExpandReprocessMessage<NuGetPackageExplorerFile>>("cer.npef2c"),
+#endif
 
             new SchemaV1<TableScanMessage<CatalogLeafScan>>("ts.cls"),
             new SchemaV1<TableScanMessage<LatestPackageLeaf>>("ts.lpf"),

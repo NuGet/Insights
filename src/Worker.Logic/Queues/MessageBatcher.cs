@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -45,18 +45,21 @@ namespace NuGet.Insights.Worker
                         clsm.ScanId,
                         clsm.PageId,
                         clsm.LeafId);
+
+#if ENABLE_NPE
                     if (catalogLeafScan.DriverType == CatalogScanDriverType.NuGetPackageExplorerToCsv)
                     {
                         batchSize = 1;
+                        break;
                     }
-                    else if (catalogLeafScan.DriverType == CatalogScanDriverType.PackageAssemblyToCsv)
+#endif
+                    if (catalogLeafScan.DriverType == CatalogScanDriverType.PackageAssemblyToCsv)
                     {
                         batchSize = 10;
+                        break;
                     }
-                    else
-                    {
-                        batchSize = 30;
-                    }
+
+                    batchSize = 30;
                     break;
             }
 

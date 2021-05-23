@@ -96,11 +96,6 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             {
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
 
-#if !ENABLE_NPE
-                // Currently NuGetPackageExplore.Core symbol analysis only works fully on Windows.
-                throw new NotSupportedException("This build has the 'ENABLE_NPE' constant and the 'EnableNPE' MSBuild property disabled. This is currently expected when not running on Windows.");
-#else
-
                 var tempDir = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "npe"));
                 if (!Directory.Exists(tempDir))
                 {
@@ -263,7 +258,6 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                         }
                     }
                 }
-#endif
             }
         }
 

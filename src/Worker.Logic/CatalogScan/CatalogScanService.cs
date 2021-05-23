@@ -94,13 +94,6 @@ namespace NuGet.Insights.Worker
 
         public bool IsEnabled(CatalogScanDriverType type)
         {
-#if !ENABLE_NPE
-            if (type == CatalogScanDriverType.NuGetPackageExplorerToCsv)
-            {
-                return false;
-            }
-#endif
-
             return _options.Value.DisabledDrivers == null || !_options.Value.DisabledDrivers.Contains(type);
         }
 
@@ -130,7 +123,9 @@ namespace NuGet.Insights.Worker
                 case CatalogScanDriverType.PackageSignatureToCsv:
                 case CatalogScanDriverType.PackageManifestToCsv:
                 case CatalogScanDriverType.PackageVersionToCsv:
+#if ENABLE_NPE
                 case CatalogScanDriverType.NuGetPackageExplorerToCsv:
+#endif
                     return null;
 
                 case CatalogScanDriverType.LoadPackageArchive:
@@ -143,7 +138,7 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        public async Task<CatalogScanServiceResult> ReprocessAsync(CatalogScanDriverType driverType)
+        public Task<CatalogScanServiceResult> ReprocessAsync(CatalogScanDriverType driverType)
         {
             if (!SupportsReprocess(driverType))
             {
@@ -152,9 +147,6 @@ namespace NuGet.Insights.Worker
 
             switch (driverType)
             {
-                case CatalogScanDriverType.NuGetPackageExplorerToCsv:
-                    return await ReprocessCatalogLeafToCsvAsync(driverType);
-
                 default:
                     throw new NotImplementedException();
             }
@@ -238,7 +230,9 @@ namespace NuGet.Insights.Worker
                 case CatalogScanDriverType.PackageSignatureToCsv:
                 case CatalogScanDriverType.PackageManifestToCsv:
                 case CatalogScanDriverType.PackageVersionToCsv:
+#if ENABLE_NPE
                 case CatalogScanDriverType.NuGetPackageExplorerToCsv:
+#endif
                     return await UpdateCatalogLeafToCsvAsync(
                         driverType,
                         onlyLatestLeaves.GetValueOrDefault(true),
