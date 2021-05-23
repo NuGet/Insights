@@ -159,7 +159,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
 
             using var memoryStream = new MemoryStream();
             await blob.DownloadToAsync(memoryStream);
-            var versions = MessagePackSerializer.Deserialize<VersionSetService.Versions<SortedDictionary<string, SortedDictionary<string, bool>>>>(
+            var versions = MessagePackSerializer.Deserialize<VersionSetService.Versions<OrdinalSortedDictionary<OrdinalSortedDictionary<bool>>>>(
                 memoryStream.ToArray(),
                 NuGetInsightsMessagePack.Options);
             var actual = SerializeTestJson(versions);
@@ -171,6 +171,13 @@ namespace NuGet.Insights.Worker.BuildVersionSet
             }
             var expected = File.ReadAllText(Path.Combine(TestData, testName, stepName, fileName));
             Assert.Equal(expected, actual);
+        }
+
+        public class OrdinalSortedDictionary<TValue> : SortedDictionary<string, TValue>
+        {
+            public OrdinalSortedDictionary() : base(StringComparer.Ordinal)
+            {
+            }
         }
     }
 }
