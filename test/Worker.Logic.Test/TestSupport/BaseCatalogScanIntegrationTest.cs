@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Azure.Data.Tables;
 using Azure.Storage.Queues.Models;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 using NuGet.Insights.WideEntities;
 using Xunit;
 using Xunit.Abstractions;
@@ -102,10 +101,7 @@ namespace NuGet.Insights.Worker
                 cleanEntity?.Invoke(entity);
             }
 
-            var serializerSettings = NameVersionSerializer.JsonSerializerSettings;
-            serializerSettings.NullValueHandling = NullValueHandling.Include;
-            serializerSettings.Formatting = Formatting.Indented;
-            var actual = JsonConvert.SerializeObject(entities, serializerSettings);
+            var actual = SerializeTestJson(entities);
             var testDataFile = Path.Combine(TestData, dir, "entities.json");
             if (OverwriteTestData)
             {
@@ -127,10 +123,7 @@ namespace NuGet.Insights.Worker
                 entities.Add((wideEntity.PartitionKey, wideEntity.RowKey, entity));
             }
 
-            var serializerSettings = NameVersionSerializer.JsonSerializerSettings;
-            serializerSettings.NullValueHandling = NullValueHandling.Include;
-            serializerSettings.Formatting = Formatting.Indented;
-            var actual = JsonConvert.SerializeObject(entities.Select(x => new { x.PartitionKey, x.RowKey, x.Entity }), serializerSettings);
+            var actual = SerializeTestJson(entities.Select(x => new { x.PartitionKey, x.RowKey, x.Entity }));
             var testDataFile = Path.Combine(TestData, dir, "entities.json");
             if (OverwriteTestData)
             {

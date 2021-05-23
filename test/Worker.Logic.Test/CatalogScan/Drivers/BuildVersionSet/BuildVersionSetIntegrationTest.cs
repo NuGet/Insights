@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -161,7 +161,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
             await blob.DownloadToAsync(memoryStream);
             var compactJson = MessagePackSerializer.ConvertToJson(memoryStream.ToArray(), NuGetInsightsMessagePack.Options);
             var parsedJson = JToken.Parse(compactJson);
-            var actual = parsedJson.ToString();
+            var actual = SerializeTestJson(parsedJson);
 
             var testDataFile = Path.Combine(TestData, testName, stepName, fileName);
             if (OverwriteTestData)
