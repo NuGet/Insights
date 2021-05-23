@@ -159,9 +159,10 @@ namespace NuGet.Insights.Worker.BuildVersionSet
 
             using var memoryStream = new MemoryStream();
             await blob.DownloadToAsync(memoryStream);
-            var compactJson = MessagePackSerializer.ConvertToJson(memoryStream.ToArray(), NuGetInsightsMessagePack.Options);
-            var parsedJson = JToken.Parse(compactJson);
-            var actual = SerializeTestJson(parsedJson);
+            var versions = MessagePackSerializer.Deserialize<VersionSetService.Versions<SortedDictionary<string, SortedDictionary<string, bool>>>>(
+                memoryStream.ToArray(),
+                NuGetInsightsMessagePack.Options);
+            var actual = SerializeTestJson(versions);
 
             var testDataFile = Path.Combine(TestData, testName, stepName, fileName);
             if (OverwriteTestData)

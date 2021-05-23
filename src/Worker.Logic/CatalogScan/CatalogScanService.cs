@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -94,6 +94,13 @@ namespace NuGet.Insights.Worker
 
         public bool IsEnabled(CatalogScanDriverType type)
         {
+#if !ENABLE_NPE
+            if (type == CatalogScanDriverType.NuGetPackageExplorerToCsv)
+            {
+                return false;
+            }
+#endif
+
             return _options.Value.DisabledDrivers == null || !_options.Value.DisabledDrivers.Contains(type);
         }
 
@@ -101,9 +108,6 @@ namespace NuGet.Insights.Worker
         {
             switch (driverType)
             {
-                case CatalogScanDriverType.NuGetPackageExplorerToCsv:
-                    return true;
-
                 default:
                     return false;
             }

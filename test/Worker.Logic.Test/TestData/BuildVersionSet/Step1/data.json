@@ -1,10 +1,7 @@
-[
-  [
-    [
-      "2020-12-27T05:07:21.9968244Z",
-      0
-    ],
-    {
+{
+  "V1": {
+    "CommitTimestamp": "2020-12-27T05:07:21.9968244+00:00",
+    "IdToVersionToDeleted": {
       "aiwins.blogging.admin.application.contracts": {
         "4.9.9": false
       },
@@ -96,5 +93,5 @@
         "2.1.8": false
       }
     }
-  ]
-]
+  }
+}
