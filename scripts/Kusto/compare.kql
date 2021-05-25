@@ -24,3 +24,4 @@ NiCatalogLeafItems | distinct LowerId | count | extend Table = "NiCatalogLeafIte
 | union (NiPackageOwners | distinct LowerId | count  | extend Table = "NiPackageOwners")
 | union (NiPackageSignatures | distinct LowerId | count  | extend Table = "NiPackageSignatures")
 | union (NiPackageVersions | distinct LowerId | count  | extend Table = "NiPackageVersions")
+

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -29,9 +29,10 @@ namespace NuGet.Insights.Worker
             ScanId = scanId;
             ScanTimestamp = scanTimestamp;
             Id = id;
-            Version = NuGetVersion.Parse(version).ToNormalizedString();
+            var parsedVersion = NuGetVersion.Parse(version);
+            Version = parsedVersion.ToNormalizedString();
             LowerId = id.ToLowerInvariant();
-            Identity = $"{LowerId}/{Version.ToLowerInvariant()}";
+            Identity = GetIdentity(LowerId, parsedVersion);
             CatalogCommitTimestamp = catalogCommitTimestamp;
             Created = created;
         }
@@ -78,7 +79,17 @@ namespace NuGet.Insights.Worker
 
         public static string GetBucketKey(ICatalogLeafItem item)
         {
-            return $"{item.PackageId}/{NuGetVersion.Parse(item.PackageVersion).ToNormalizedString()}".ToLowerInvariant();
+            return GetIdentity(item);
+        }
+
+        public static string GetIdentity(ICatalogLeafItem item)
+        {
+            return GetIdentity(item.PackageId, item.ParsePackageVersion());
+        }
+
+        public static string GetIdentity(string id, NuGetVersion version)
+        {
+            return $"{id.ToLowerInvariant()}/{version.ToNormalizedString().ToLowerInvariant()}";
         }
     }
 }
