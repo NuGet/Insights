@@ -105,8 +105,10 @@ var sharedConfig = [
 ]
 
 // Shared resources
+var storageAndKvLongName = '${deployment().name}-storage-and-kv'
+var storageAndKvName = length(storageAndKvLongName) > 64 ? '${guid(deployment().name)}-storage-and-kv' : storageAndKvLongName
 module storageAndKv './storage-and-kv.bicep' = {
-  name: '${deployment().name}-storage-and-kv'
+  name: storageAndKvName
   params: {
     storageAccountName: storageAccountName
     keyVaultName: keyVaultName

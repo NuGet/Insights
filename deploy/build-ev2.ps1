@@ -36,7 +36,6 @@ function New-ServiceModelFile($resourceSettings) {
                         composedOf = [ordered]@{
                             arm = [ordered]@{
                                 templatePath = Get-TemplatePath "main";
-                                parameters   = Get-ParametersPath $resourceSettings.ConfigName;
                             }
                         }
                     }
@@ -52,8 +51,9 @@ function New-ServiceModelFile($resourceSettings) {
                 azureSubscriptionId    = $resourceSettings.SubscriptionId;
                 serviceResources       = @(
                     [ordered]@{
-                        name       = $serviceResourceName;
-                        instanceOf = $resourceName;
+                        name              = $serviceResourceName;
+                        instanceOf        = $resourceName;
+                        armParametersPath = Get-ParametersPath $resourceSettings.ConfigName;
                     }
                 );
             }
@@ -144,6 +144,20 @@ $serviceResourceName = "Deploy.ResourceInstance"
 $websiteBinPath = "bin/Website.zip"
 $workerBinPath = "bin/Worker.zip"
 
+# Install Bicep, if needed.
+if (!(Get-Command bicep -ErrorAction Ignore)) {
+    Write-Host "Installing Bicep..."
+    # Source: https://github.com/Azure/bicep/blob/main/docs/installing.md#manual-with-powershell
+    $installPath = "$env:USERPROFILE\.bicep"
+    $installDir = New-Item -ItemType Directory -Path $installPath -Force
+    $installDir.Attributes += 'Hidden'
+    (New-Object Net.WebClient).DownloadFile("https://github.com/Azure/bicep/releases/latest/download/bicep-win-x64.exe", "$installPath\bicep.exe")
+    $currentPath = (Get-Item -path "HKCU:\Environment" ).GetValue('Path', '', 'DoNotExpandEnvironmentNames')
+    if (-not $currentPath.Contains("%USERPROFILE%\.bicep")) { setx PATH ($currentPath + ";%USERPROFILE%\.bicep") }
+    if (-not $env:path.Contains($installPath)) { $env:path += ";$installPath" }
+}
+bicep --version
+
 # Compile the Bicep templates to raw ARM JSON.
 New-Bicep "main"
 New-Bicep "storage-and-kv"
@@ -181,13 +195,12 @@ foreach ($configName in $ConfigNames) {
 
 $BuildVersion | Out-File (Join-Path $ev2 "BuildVer.txt") -NoNewline -Encoding UTF8
 
-
 # Copy the binaries
 $bin = Join-Path $ev2 "bin"
 if (!(Test-Path $bin)) {
     New-Item $bin -ItemType Directory | Out-Null
 }
-Copy-Item $WebsiteZipPath -Destination (Join-Path $ev2 $websiteBinPath)
-Copy-Item $WorkerZipPath -Destination (Join-Path $ev2 $workerBinPath)
+Copy-Item $WebsiteZipPath -Destination (Join-Path $ev2 $websiteBinPath) -Verbose
+Copy-Item $WorkerZipPath -Destination (Join-Path $ev2 $workerBinPath) -Verbose
 
 Write-Host "Wrote Ev2 files to: $ev2"

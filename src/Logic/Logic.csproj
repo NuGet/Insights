@@ -27,5 +27,6 @@
     <PackageReference Include="NuGet.Commands" Version="6.0.0-xprivate.60025" />
     <PackageReference Include="NuGetPackageExplorer.Core" Version="5.10.18" Condition="'$(EnableNPE)' == 'true'" />
     <PackageReference Include="System.Linq.Async" Version="5.0.0" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="5.0.1" />
   </ItemGroup>
 </Project>
