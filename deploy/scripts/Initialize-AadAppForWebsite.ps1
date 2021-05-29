@@ -13,10 +13,28 @@ Write-Status "Enabling the AAD app for website login..."
 $resource = "https://graph.microsoft.com/"
 
 $graphToken = Get-AzAccessToken -Resource $resource
-$app = Invoke-RestMethod `
-    -Method GET `
-    -Uri "https://graph.microsoft.com/v1.0/applications/$ObjectId" `
-    -Headers @{ Authorization = "Bearer $($graphToken.Token)" }
+$attempt = 0;
+$maxRetries = 10
+while ($true) {
+    try {
+        $attempt++
+        $app = Invoke-RestMethod `
+            -Method GET `
+            -Uri "https://graph.microsoft.com/v1.0/applications/$ObjectId" `
+            -Headers @{ Authorization = "Bearer $($graphToken.Token)" } `
+            -ErrorAction Stop
+        break
+    }
+    catch {
+        if ($attempt -lt $maxRetries -and $_.Exception.Response.StatusCode -eq 404) {
+            Write-Warning "Attempt $($attempt) - HTTP 404 Not Found. Trying again in 10 seconds."
+            Start-Sleep 10
+            continue
+        } 
+        throw
+    }
+}
+
 
 $appServicePatch = @{
     api            = @{ requestedAccessTokenVersion = 2 };
