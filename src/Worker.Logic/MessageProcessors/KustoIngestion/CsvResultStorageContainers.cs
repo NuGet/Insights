@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -75,6 +75,11 @@ namespace NuGet.Insights.Worker.KustoIngestion
         public string GetTempKustoTableName(string containerName)
         {
             return GetKustoTableName(containerName) + "_Temp";
+        }
+
+        public string GetOldKustoTableName(string containerName)
+        {
+            return GetKustoTableName(containerName) + "_Old";
         }
 
         public string GetKustoTableName(string containerName)

@@ -55,7 +55,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 if (blobs.Count == 0)
                 {
                     _logger.LogInformation("Container {ContainerName} has no blobs so no import will occur.", container.GetContainerName());
-                    await CompleteAsync(container);
+                    await _storageService.DeleteContainerAsync(container);
                     return;
                 }
 
@@ -143,32 +143,9 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 }
                 else
                 {
-                    container.State = KustoContainerIngestionState.SwappingTable;
+                    container.State = KustoContainerIngestionState.Complete;
                     await _storageService.ReplaceContainerAsync(container);
                 }
-            }
-
-            var oldTableName = finalTableName + "_Old";
-            if (container.State == KustoContainerIngestionState.SwappingTable)
-            {
-                await using var lease = await LeaseOrNullAsync(message, container, finalTableName);
-                if (lease == null)
-                {
-                    return;
-                }
-
-                await ExecuteKustoCommandAsync(container, $".drop table {oldTableName} ifexists");
-                await ExecuteKustoCommandAsync(container, $".rename tables {oldTableName}={finalTableName} ifexists, {finalTableName}={tempTableName}");
-
-                container.State = KustoContainerIngestionState.DroppingOldTable;
-                await _storageService.ReplaceContainerAsync(container);
-            }
-
-            if (container.State == KustoContainerIngestionState.DroppingOldTable)
-            {
-                await ExecuteKustoCommandAsync(container, $".drop table {oldTableName} ifexists");
-
-                await CompleteAsync(container);
             }
         }
 
@@ -185,11 +162,6 @@ namespace NuGet.Insights.Worker.KustoIngestion
             }
 
             return lease;
-        }
-
-        private async Task CompleteAsync(KustoContainerIngestion container)
-        {
-            await _storageService.DeleteContainerAsync(container);
         }
 
         private async Task ExecuteKustoCommandAsync(KustoContainerIngestion container, string command)

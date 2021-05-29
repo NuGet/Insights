@@ -59,19 +59,16 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 VerifyCommand(".alter-merge table APackageManifestsZ_Temp policy retention softdelete = 30d");
                 VerifyCommandStartsWith(".create table ACatalogLeafItemsZ_Temp ingestion csv mapping 'BlobStorageMapping'");
                 VerifyCommandStartsWith(".create table APackageManifestsZ_Temp ingestion csv mapping 'BlobStorageMapping'");
-                VerifyCommand(".drop table ACatalogLeafItemsZ_Old ifexists");
-                VerifyCommand(".drop table APackageManifestsZ_Old ifexists");
-                VerifyCommand(".rename tables ACatalogLeafItemsZ_Old=ACatalogLeafItemsZ ifexists, ACatalogLeafItemsZ=ACatalogLeafItemsZ_Temp");
-                VerifyCommand(".rename tables APackageManifestsZ_Old=APackageManifestsZ ifexists, APackageManifestsZ=APackageManifestsZ_Temp");
-                VerifyCommand(".drop table ACatalogLeafItemsZ_Old ifexists");
-                VerifyCommand(".drop table APackageManifestsZ_Old ifexists");
+                VerifyCommand(".drop tables (ACatalogLeafItemsZ_Old, APackageManifestsZ_Old) ifexists");
+                VerifyCommand(".rename tables ACatalogLeafItemsZ_Old = ACatalogLeafItemsZ ifexists, ACatalogLeafItemsZ = ACatalogLeafItemsZ_Temp, APackageManifestsZ_Old = APackageManifestsZ ifexists, APackageManifestsZ = APackageManifestsZ_Temp");
+                VerifyCommand(".drop tables (ACatalogLeafItemsZ_Old, APackageManifestsZ_Old) ifexists");
                 if (applyPartitioningPolicy)
                 {
                     VerifyCommandStartsWith(".alter table ACatalogLeafItemsZ_Temp policy partitioning '{'");
                     VerifyCommandStartsWith(".alter table APackageManifestsZ_Temp policy partitioning '{'");
                 }
                 Assert.Equal(
-                    applyPartitioningPolicy ? 16 : 14,
+                    applyPartitioningPolicy ? 13 : 11,
                     MockCslAdminProvider.Invocations.Count(x => x.Method.Name != nameof(IDisposable.Dispose)));
 
                 MockKustoQueueIngestClient.Verify(x => x.IngestFromStorageAsync(

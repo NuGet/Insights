@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using MessagePack;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
