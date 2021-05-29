@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -36,7 +36,7 @@ namespace NuGet.Insights.Worker
             _logger = logger;
         }
 
-        public async Task ProcessSingleAsync(QueueType queue, string message, long dequeueCount)
+        public async Task ProcessSingleAsync(QueueType queue, ReadOnlyMemory<byte> message, long dequeueCount)
         {
             NameVersionMessage<object> deserializedMessage;
             try
@@ -45,8 +45,9 @@ namespace NuGet.Insights.Worker
             }
             catch (JsonException)
             {
-                message = Encoding.UTF8.GetString(Convert.FromBase64String(message));
-                deserializedMessage = _serializer.Deserialize(message);
+                var base64 = Encoding.ASCII.GetString(message.Span);
+                var json = Encoding.UTF8.GetString(Convert.FromBase64String(base64));
+                deserializedMessage = _serializer.Deserialize(json);
             }
 
             await ProcessSingleMessageAsync(

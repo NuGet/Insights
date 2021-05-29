@@ -1,6 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.IO;
+using Microsoft.Toolkit.HighPerformance.Extensions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
@@ -41,6 +44,16 @@ namespace NuGet.Insights.Worker
             return JsonConvert.DeserializeObject<NameVersionMessage<JToken>>(
                 message,
                 JsonSerializerSettings);
+        }
+
+        public static NameVersionMessage<JToken> DeserializeMessage(ReadOnlyMemory<byte> message)
+        {
+            using (var stream = message.AsStream())
+            using (var streamReader = new StreamReader(stream))
+            using (var textReader = new JsonTextReader(streamReader))
+            {
+                return JsonSerializer.Deserialize<NameVersionMessage<JToken>>(textReader);
+            }
         }
 
         public static NameVersionMessage<JToken> DeserializeMessage(JToken message)

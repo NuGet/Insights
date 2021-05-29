@@ -15,7 +15,8 @@
   "functionTimeout": "00:10:00",
   "extensions": {
     "queues": {
-      "maxDequeueCount": 10
+      "maxDequeueCount": 10,
+      "messageEncoding": "none"
     }
   }
 }

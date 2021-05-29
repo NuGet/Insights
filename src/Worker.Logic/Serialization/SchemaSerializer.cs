@@ -118,6 +118,11 @@ namespace NuGet.Insights.Worker
             return Schemas.Deserialize(message, _logger);
         }
 
+        public NameVersionMessage<object> Deserialize(ReadOnlyMemory<byte> message)
+        {
+            return Schemas.Deserialize(message, _logger);
+        }
+
         public NameVersionMessage<object> Deserialize(JToken message)
         {
             return Schemas.Deserialize(message, _logger);
@@ -182,6 +187,11 @@ namespace NuGet.Insights.Worker
             }
 
             public NameVersionMessage<object> Deserialize(string message, ILogger logger)
+            {
+                return Deserialize(NameVersionSerializer.DeserializeMessage(message), logger);
+            }
+
+            public NameVersionMessage<object> Deserialize(ReadOnlyMemory<byte> message, ILogger logger)
             {
                 return Deserialize(NameVersionSerializer.DeserializeMessage(message), logger);
             }

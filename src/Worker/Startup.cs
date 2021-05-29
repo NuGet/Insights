@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,7 +7,6 @@ using System.Linq;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Host.Queues;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NuGet.Insights.Worker;
@@ -32,9 +31,7 @@ namespace NuGet.Insights.Worker
             builder.Services.AddNuGetInsights("NuGet.Insights.Worker");
             builder.Services.AddNuGetInsightsWorker();
 
-            builder.Services.AddSingleton<IQueueProcessorFactory, UnencodedQueueProcessorFactory>();
             builder.Services.AddSingleton<INameResolver, CustomNameResolver>();
-            builder.Services.AddSingleton<StorageAccountProvider, CustomStorageAccountProvider>();
             builder.Services.AddSingleton<ITelemetryClient, TelemetryClientWrapper>();
         }
 

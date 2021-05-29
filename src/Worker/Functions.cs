@@ -1,16 +1,16 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Azure.Storage.Queues.Models;
 using Microsoft.Azure.WebJobs;
-using Microsoft.WindowsAzure.Storage.Queue;
 using static NuGet.Insights.Worker.CustomNameResolver;
-using static NuGet.Insights.Worker.CustomStorageAccountProvider;
 
 namespace NuGet.Insights.Worker
 {
     public class Functions
     {
+        private const string ConnectionName = "StorageConnection";
         private static bool _isInitialized = false;
         private readonly TempStreamLeaseScope _tempStreamLeaseScope;
         private readonly TimerExecutionService _timerExecutionService;
@@ -41,22 +41,22 @@ namespace NuGet.Insights.Worker
 
         [FunctionName("WorkQueueFunction")]
         public async Task WorkQueueAsync(
-            [QueueTrigger(WorkQueueVariable, Connection = ConnectionName)] CloudQueueMessage message)
+            [QueueTrigger(WorkQueueVariable, Connection = ConnectionName)] QueueMessage message)
         {
             await ProcessMessageAsync(QueueType.Work, message);
         }
 
         [FunctionName("ExpandQueueFunction")]
         public async Task ExpandQueueAsync(
-            [QueueTrigger(ExpandQueueVariable, Connection = ConnectionName)] CloudQueueMessage message)
+            [QueueTrigger(ExpandQueueVariable, Connection = ConnectionName)] QueueMessage message)
         {
             await ProcessMessageAsync(QueueType.Expand, message);
         }
 
-        private async Task ProcessMessageAsync(QueueType queue, CloudQueueMessage message)
+        private async Task ProcessMessageAsync(QueueType queue, QueueMessage message)
         {
             await using var scopeOwnership = _tempStreamLeaseScope.TakeOwnership();
-            await _messageProcessor.ProcessSingleAsync(queue, message.AsString, message.DequeueCount);
+            await _messageProcessor.ProcessSingleAsync(queue, message.Body.ToMemory(), message.DequeueCount);
         }
     }
 }

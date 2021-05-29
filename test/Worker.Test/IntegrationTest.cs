@@ -9,7 +9,6 @@ using Azure.Storage.Queues.Models;
 using Kusto.Ingest;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.WindowsAzure.Storage.Queue;
 using Moq;
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
 using NuGet.Insights.Worker.DownloadsToCsv;
@@ -44,14 +43,13 @@ namespace NuGet.Insights.Worker
         protected override async Task ProcessMessageAsync(IServiceProvider serviceProvider, QueueType queueType, QueueMessage message)
         {
             var functions = serviceProvider.GetRequiredService<Functions>();
-            var cloudMessage = new CloudQueueMessage(message.Body.ToString());
             switch (queueType)
             {
                 case QueueType.Work:
-                    await functions.WorkQueueAsync(cloudMessage);
+                    await functions.WorkQueueAsync(message);
                     break;
                 case QueueType.Expand:
-                    await functions.ExpandQueueAsync(cloudMessage);
+                    await functions.ExpandQueueAsync(message);
                     break;
                 default:
                     throw new NotImplementedException();

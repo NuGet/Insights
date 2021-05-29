@@ -314,8 +314,8 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
           value: 'EnableEnhancedScopes'
         }
         {
-          name: 'AzureWebJobsStorage'
-          value: sasConnectionStringReference
+          name: 'AzureWebJobsStorage__accountName'
+          value: storageAccountName
         }
         {
           name: 'FUNCTIONS_EXTENSION_VERSION'
@@ -337,6 +337,10 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
           name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
           value: 'false'
         }
+        {
+          name: 'StorageConnection:queueServiceUri'
+          value: storageAccount.properties.primaryEndpoints.queue
+        }
       ], sharedConfig, workerConfigWithStorage)
     }
   }
@@ -347,6 +351,26 @@ resource resourceGroupPermissions 'Microsoft.Authorization/roleAssignments@2020-
   scope: resourceGroup()
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'de139f84-1756-47ae-9be6-808fbbe84772')
+    principalId: workers[i].identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}]
+
+resource blobPermissions 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = [for i in range(0, workerCount): {
+  name: guid('FunctionsCanAccessBlob-${workers[i].id}')
+  scope: storageAccount
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')
+    principalId: workers[i].identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}]
+
+resource queuePermissions 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = [for i in range(0, workerCount): {
+  name: guid('FunctionsCanAccessQueue-${workers[i].id}')
+  scope: storageAccount
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')
     principalId: workers[i].identity.principalId
     principalType: 'ServicePrincipal'
   }

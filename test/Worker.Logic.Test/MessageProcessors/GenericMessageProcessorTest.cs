@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Moq;
 using Newtonsoft.Json.Linq;
@@ -27,7 +28,7 @@ namespace NuGet.Insights.Worker
                     // Assert
                     var batch = Assert.Single(ProcessedBatches);
                     var message = Assert.Single(batch);
-                    Assert.Equal(SingleMessage, SchemaSerializer.Serialize(message).AsString());
+                    Assert.Equal(Encoding.UTF8.GetString(SingleMessage.Span), SchemaSerializer.Serialize(message).AsString());
 
                     MessageProcessor.Verify(x => x.ProcessAsync(batch, 1), Times.Once);
 
@@ -106,7 +107,7 @@ namespace NuGet.Insights.Worker
 
                     // Assert
                     RawMessageEnqueuer.Verify(x => x.AddAsync(QueueType.Work, It.IsAny<IReadOnlyList<string>>(), TimeSpan.FromMinutes(3)), Times.Once);
-                    Assert.Equal(SingleMessage, Assert.Single(Assert.Single(EnqueuedBatches)));
+                    Assert.Equal(Encoding.UTF8.GetString(SingleMessage.Span), Assert.Single(Assert.Single(EnqueuedBatches)));
                     Assert.Single(MessageProcessor.Invocations);
                     Assert.Single(RawMessageEnqueuer.Invocations);
                 }
@@ -297,7 +298,7 @@ namespace NuGet.Insights.Worker
 
                     // Assert
                     var message = Assert.Single(ProcessedMessages);
-                    Assert.Equal(SingleMessage, SchemaSerializer.Serialize(message).AsString());
+                    Assert.Equal(Encoding.UTF8.GetString(SingleMessage.Span), SchemaSerializer.Serialize(message).AsString());
 
                     MessageProcessor.Verify(x => x.ProcessAsync(message, 1), Times.Once);
 
@@ -397,7 +398,7 @@ namespace NuGet.Insights.Worker
 
             var serializer = SchemaSerializer.GetSerializer<CatalogLeafScanMessage>();
             var message = serializer.SerializeMessage(MakeMessage());
-            SingleMessage = message.AsString();
+            SingleMessage = Encoding.UTF8.GetBytes(message.AsString());
             SchemaName = serializer.Name;
             SchemaVersion = serializer.LatestVersion;
             MessageBatch = Enumerable
@@ -468,7 +469,7 @@ namespace NuGet.Insights.Worker
         public SchemaSerializer SchemaSerializer { get; }
         public Mock<IServiceProvider> ServiceProvider { get; }
         public Mock<IRawMessageEnqueuer> RawMessageEnqueuer { get; }
-        public string SingleMessage { get; }
+        public ReadOnlyMemory<byte> SingleMessage { get; }
         public string SchemaName { get; }
         public int SchemaVersion { get; }
         public List<JToken> MessageBatch { get; }

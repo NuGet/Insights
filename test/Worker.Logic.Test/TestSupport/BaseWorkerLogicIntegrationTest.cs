@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -272,7 +272,7 @@ namespace NuGet.Insights.Worker
             var leaseScope = serviceProvider.GetRequiredService<TempStreamLeaseScope>();
             await using var scopeOwnership = leaseScope.TakeOwnership();
             var messageProcessor = serviceProvider.GetRequiredService<IGenericMessageProcessor>();
-            await messageProcessor.ProcessSingleAsync(QueueType.Work, message.Body.ToString(), message.DequeueCount);
+            await messageProcessor.ProcessSingleAsync(QueueType.Work, message.Body.ToMemory(), message.DequeueCount);
         }
 
         protected async Task AssertCompactAsync<T>(string containerName, string testName, string stepName, int bucket) where T : ICsvRecord
