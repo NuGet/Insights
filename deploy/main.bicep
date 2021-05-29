@@ -28,6 +28,7 @@ param workerPlanCount int
 param workerCountPerPlan int
 param workerConfig array
 param workerLogLevel string = 'Warning'
+param workerMinInstances int
 param workerSku string = 'Y1'
 @secure()
 param workerZipUrl string
@@ -36,7 +37,7 @@ var sakConnectionString = 'AccountName=${storageAccountName};AccountKey=${listke
 var sasConnectionStringReference = '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${sasConnectionStringSecretName})'
 var isConsumptionPlan = workerSku == 'Y1'
 var isPremiumPlan = startsWith(workerSku, 'P')
-var maxInstances = isPremiumPlan ? 30 : 10
+var workerMaxInstances = isPremiumPlan ? 30 : 10
 var workerCount = workerPlanCount * workerCountPerPlan
 
 var sharedConfig = [
@@ -221,9 +222,9 @@ resource workerPlanAutoScale 'microsoft.insights/autoscalesettings@2015-04-01' =
       {
         name: 'Scale based on CPU'
         capacity: {
-          default: '1'
-          minimum: '1'
-          maximum: string(maxInstances)
+          default: string(workerMinInstances)
+          minimum: string(workerMinInstances)
+          maximum: string(workerMaxInstances)
         }
         rules: [
           {

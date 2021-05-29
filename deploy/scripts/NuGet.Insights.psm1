@@ -32,6 +32,10 @@ class ResourceSettings {
     
     [ValidateSet("Y1", "S1", "P1v2")]
     [string]$WorkerSku
+    
+    [ValidateRange(1, 10)]
+    [ValidateNotNullOrEmpty()]
+    [int]$WorkerMinInstances
 
     [ValidateRange(1, 20)]
     [ValidateNotNullOrEmpty()]
@@ -135,6 +139,7 @@ class ResourceSettings {
         Set-OrDefault WorkerUserManagedIdentityName "NuGetInsights-$StampName-Worker"
         Set-OrDefault WorkerPlanNamePrefix "NuGetInsights-$StampName-WorkerPlan-"
         Set-OrDefault WorkerSku "Y1"
+        Set-OrDefault WorkerMinInstances 1
         Set-OrDefault WorkerPlanCount 1
         Set-OrDefault WorkerCountPerPlan 1
         Set-OrDefault WorkerLogLevel "Warning"
@@ -382,6 +387,7 @@ function New-MainParameters($ResourceSettings, $WebsiteZipUrl, $WorkerZipUrl) {
         workerConfig                  = @($ResourceSettings.WorkerConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
         workerLogLevel                = $ResourceSettings.WorkerLogLevel;
         workerSku                     = $ResourceSettings.WorkerSku;
+        workerMinInstances            = $ResourceSettings.WorkerMinInstances;
         workerZipUrl                  = $workerZipUrl;
         workerPlanCount               = $ResourceSettings.WorkerPlanCount;
         workerCountPerPlan            = $ResourceSettings.WorkerCountPerPlan;
