@@ -67,13 +67,7 @@ class ResourceSettings {
     [string]$KeyVaultName
     
     [ValidateNotNullOrEmpty()]
-    [string]$SasConnectionStringSecretName
-    
-    [ValidateNotNullOrEmpty()]
-    [string]$AppSasDefinitionName
-    
-    [ValidateNotNullOrEmpty()]
-    [string]$BlobReadSasDefinitionName
+    [string]$TableSasDefinitionName
     
     [ValidateNotNullOrEmpty()]
     [string]$DeploymentContainerName
@@ -154,9 +148,7 @@ class ResourceSettings {
         $this.ExistingWebsitePlanId = $d.ExistingWebsitePlanId
 
         # Static settings
-        $this.SasConnectionStringSecretName = "$($this.StorageAccountName)-SasConnectionString"
-        $this.AppSasDefinitionName = "BlobQueueTableFullAccessSas"
-        $this.BlobReadSasDefinitionName = "BlobReadSas"
+        $this.TableSasDefinitionName = "TableFullAccessSas"
         $this.DeploymentContainerName = "deployment"
         $this.LeaseContainerName = "leases"
         $this.SasValidityPeriod = New-TimeSpan -Days 6
@@ -372,25 +364,21 @@ function New-MainParameters($ResourceSettings, $WebsiteZipUrl, $WorkerZipUrl) {
         keyVaultName                  = $ResourceSettings.KeyVaultName;
         deploymentContainerName       = $ResourceSettings.DeploymentContainerName;
         leaseContainerName            = $ResourceSettings.LeaseContainerName;
-        sasConnectionStringSecretName = $ResourceSettings.SasConnectionStringSecretName;
-        appSasDefinitionName          = $ResourceSettings.AppSasDefinitionName;
-        blobReadSasDefinitionName     = $ResourceSettings.BlobReadSasDefinitionName;
-        sasValidityPeriod             = $ResourceSettings.SasValidityPeriod.ToString();
+        tableSasDefinitionName        = $ResourceSettings.TableSasDefinitionName;
         websiteName                   = $ResourceSettings.WebsiteName;
-        websitePlanName               = $ResourceSettings.websitePlanName;
         websiteAadClientId            = $ResourceSettings.WebsiteAadAppClientId;
         websiteConfig                 = @($ResourceSettings.WebsiteConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
         websiteZipUrl                 = $websiteZipUrl;
         workerPlanNamePrefix          = $ResourceSettings.WorkerPlanNamePrefix;
         workerUserManagedIdentityName = $ResourceSettings.WorkerUserManagedIdentityName;
         workerNamePrefix              = $ResourceSettings.WorkerNamePrefix;
-        workerConfig                  = @($ResourceSettings.WorkerConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
-        workerLogLevel                = $ResourceSettings.WorkerLogLevel;
-        workerSku                     = $ResourceSettings.WorkerSku;
-        workerMinInstances            = $ResourceSettings.WorkerMinInstances;
-        workerZipUrl                  = $workerZipUrl;
         workerPlanCount               = $ResourceSettings.WorkerPlanCount;
         workerCountPerPlan            = $ResourceSettings.WorkerCountPerPlan;
+        workerConfig                  = @($ResourceSettings.WorkerConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
+        workerLogLevel                = $ResourceSettings.WorkerLogLevel;
+        workerMinInstances            = $ResourceSettings.WorkerMinInstances;
+        workerSku                     = $ResourceSettings.WorkerSku;
+        workerZipUrl                  = $workerZipUrl;
     }
 
     if ($ResourceSettings.ExistingWebsitePlanId) {

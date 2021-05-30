@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -58,9 +58,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
             if (blob.State == KustoBlobIngestionState.Created)
             {
-                var sas = await _serviceClientFactory.GetBlobReadStorageSharedAccessSignatureAsync();
-                var uriBuilder = new UriBuilder(blob.SourceUrl) { Query = sas };
-                var blobUrlWithSas = uriBuilder.Uri.AbsoluteUri;
+                var blobUrlWithSas = await _serviceClientFactory.GetBlobReadUrlAsync(blob.GetContainerName(), blob.GetBlobName());
 
                 var tempTableName = _csvRecordContainers.GetTempKustoTableName(blob.GetContainerName());
                 var ingestionProperties = new KustoQueuedIngestionProperties(_options.Value.KustoDatabaseName, tempTableName)
@@ -84,15 +82,22 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 await using var lease = await _leaseService.TryAcquireAsync($"KustoBlobIngestion-{blob.GetContainerName()}-{blob.GetBlobName()}");
                 if (!lease.Acquired)
                 {
-                    _logger.LogWarning("Kusto blob ingestion lease for {ContainerName} and blob {BlobName} is not available.", blob.GetContainerName(), blob.GetBlobName());
+                    _logger.LogWarning(
+                        "Kusto blob ingestion lease for blob {ContainerName}/{BlobName} is not available.",
+                        blob.GetContainerName(),
+                        blob.GetBlobName());
                     message.AttemptCount++;
                     await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount, factor: 10));
                     return;
                 }
 
-                _logger.LogInformation("Starting ingestion of blob {SourceUrl} into Kusto table {KustoTable}.", blob.SourceUrl, tempTableName);
+                _logger.LogInformation(
+                    "Starting ingestion of blob {ContainerName}/{BlobName} into Kusto table {KustoTable}.",
+                    blob.GetContainerName(),
+                    blob.GetBlobName(),
+                    tempTableName);
                 var result = await _kustoQueuedIngestClient.IngestFromStorageAsync(
-                    blobUrlWithSas,
+                    blobUrlWithSas.AbsoluteUri,
                     ingestionProperties,
                     sourceOptions);
 
@@ -132,7 +137,10 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 }
                 else
                 {
-                    _logger.LogInformation("The ingestion of blob {SourceUrl} is complete.", blob.SourceUrl);
+                    _logger.LogInformation(
+                        "The ingestion of blob {ContainerName}{BlobName} is complete.",
+                        blob.GetContainerName(),
+                        blob.GetBlobName());
                     await _storageService.DeleteBlobAsync(blob);
                 }
             }
@@ -144,8 +152,9 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
             var statusTable = new CloudTable(new Uri(blob.StatusUrl));
             _logger.LogInformation(
-                "Checking ingestion status of blob {SourceUrl} in status table {StatusTable}.",
-                blob.SourceUrl,
+                "Checking ingestion status of blob {ContainerName}/{BlobName} in status table {StatusTable}.",
+                blob.GetContainerName(),
+                blob.GetBlobName(),
                 statusTable.Uri.AbsoluteUri);
             var statusQuery = new TableQuery<IngestionStatus>
             {

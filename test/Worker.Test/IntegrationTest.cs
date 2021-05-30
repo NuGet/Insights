@@ -85,10 +85,6 @@ namespace NuGet.Insights.Worker
                     {
                         typeof(KustoIngestionTimer),
                     },
-                    new List<Type>
-                    {
-                        typeof(UpdateSecretsTimer),
-                    },
                 };
                 var actual = Host
                     .Services

@@ -54,14 +54,6 @@ namespace NuGet.Insights.Worker.KustoIngestion
             }
         }
 
-        public async Task<Uri> GetBlobUrlAsync(string containerName, string blobName)
-        {
-            var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
-            var container = serviceClient.GetBlobContainerClient(containerName);
-            var blob = container.GetBlobClient(blobName);
-            return blob.Uri;
-        }
-
         public IReadOnlyList<string> GetContainerNames()
         {
             return _containerNames;

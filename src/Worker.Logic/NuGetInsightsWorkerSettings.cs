@@ -29,10 +29,6 @@ namespace NuGet.Insights.Worker
             DownloadToCsvFrequency = TimeSpan.FromHours(3);
             OwnersToCsvFrequency = TimeSpan.FromHours(3);
 
-            HostSubscriptionId = null;
-            HostResourceGroupName = null;
-            HostAppName = null;
-
             WorkQueueName = "work";
             ExpandQueueName = "expand";
             CursorTableName = "cursors";
@@ -87,10 +83,6 @@ namespace NuGet.Insights.Worker
         public TimeSpan CatalogScanUpdateFrequency { get; set; }
         public TimeSpan DownloadToCsvFrequency { get; set; }
         public TimeSpan OwnersToCsvFrequency { get; set; }
-
-        public string HostSubscriptionId { get; set; }
-        public string HostResourceGroupName { get; set; }
-        public string HostAppName { get; set; }
 
         public string WorkQueueName { get; set; }
         public string ExpandQueueName { get; set; }

@@ -77,18 +77,7 @@ resource keyVaultReadPermissions 'Microsoft.Authorization/roleAssignments@2020-0
   name: !empty(identities) ? guid('AppsCanReadKeyVault-${identity.tenantId}-${identity.objectId}') : guid('placeholderA')
   scope: keyVault
   properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '21090545-7ca7-4776-b22c-e363652d74d2')
-    principalId: identity.objectId
-    principalType: 'ServicePrincipal'
-  }
-}]
-
-// Needed to refresh the SAS-based connection string that Azure Functions requires
-resource keyVaultUpdateSecretsPermissions 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = [for identity in identities: {
-  name: !empty(identities) ? guid('AppsCanUpdateKeyVault-${identity.tenantId}-${identity.objectId}') : guid('placeholderB')
-  scope: keyVault
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7')
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6')
     principalId: identity.objectId
     principalType: 'ServicePrincipal'
   }

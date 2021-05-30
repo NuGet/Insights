@@ -8,6 +8,7 @@ using Azure.Data.Tables;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Azure.Storage.Queues;
 using Azure.Storage.Sas;
 using Microsoft.Extensions.Logging;
@@ -48,34 +49,43 @@ namespace NuGet.Insights
             return (await GetCachedServiceClientsAsync()).BlobServiceClient;
         }
 
+        public async Task<Uri> GetBlobReadUrlAsync(string containerName, string blobName)
+        {
+            var serviceClients = await GetCachedServiceClientsAsync();
+            var blobClient = serviceClients
+                .BlobServiceClient
+                .GetBlobContainerClient(containerName)
+                .GetBlobClient(blobName);
+
+            if (_options.Value.StorageBlobReadSharedAccessSignature != null)
+            {
+                return new UriBuilder(blobClient.Uri) {Query = _options.Value.StorageBlobReadSharedAccessSignature }.Uri;
+            }
+
+            if (serviceClients.UserDelegationKey != null)
+            {
+                var blobReadSasBuilder = new BlobSasBuilder(BlobContainerSasPermissions.Read, serviceClients.SharedAccessSignatureExpiry)
+                {
+                    BlobContainerName = containerName,
+                    BlobName = blobName,
+                };
+                var sas = blobReadSasBuilder
+                    .ToSasQueryParameters(serviceClients.UserDelegationKey, serviceClients.BlobServiceClient.AccountName)
+                    .ToString();
+
+                return new UriBuilder(blobClient.Uri) { Query = sas }.Uri;
+            }
+
+            return serviceClients
+                .BlobServiceClient
+                .GetBlobContainerClient(containerName)
+                .GetBlobClient(blobName)
+                .GenerateSasUri(BlobSasPermissions.Read, serviceClients.SharedAccessSignatureExpiry);
+        }
+
         public async Task<TableServiceClient> GetTableServiceClientAsync()
         {
             return (await GetCachedServiceClientsAsync()).TableServiceClient;
-        }
-
-        public async Task<string> GetBlobReadStorageSharedAccessSignatureAsync()
-        {
-            var clients = await GetCachedServiceClientsAsync();
-            if (clients.BlobServiceClient.CanGenerateAccountSasUri)
-            {
-                var uri = clients.BlobServiceClient.GenerateAccountSasUri(
-                    permissions: AccountSasPermissions.Read,
-                    expiresOn: DateTimeOffset.UtcNow.AddDays(7),
-                    resourceTypes: AccountSasResourceTypes.Object);
-                return uri.Query;
-            }
-            else if (clients.BlobReadStorageSharedAccessSignature != null)
-            {
-                return clients.BlobReadStorageSharedAccessSignature;
-            }
-
-            throw new NotSupportedException("Generating blob read SAS tokens is not supported with the current configuration.");
-        }
-
-        public string GetStorageConnectionStringSync()
-        {
-            var clients = GetCachedServiceClientsSync();
-            return clients.StorageConnectionString;
         }
 
         private async Task<ServiceClients> GetCachedServiceClientsAsync(CancellationToken token = default)
@@ -102,68 +112,20 @@ namespace NuGet.Insights
             }
         }
 
-        private ServiceClients GetCachedServiceClientsSync()
-        {
-            if (TryGetServiceClients(out var serviceClients))
-            {
-                return serviceClients;
-            }
-
-            _lock.Wait();
-            try
-            {
-                if (TryGetServiceClients(out serviceClients))
-                {
-                    return serviceClients;
-                }
-
-                _serviceClients = GetServiceClientsSync();
-                return _serviceClients;
-            }
-            finally
-            {
-                _lock.Release();
-            }
-        }
-
         private async Task<ServiceClients> GetServiceClientsAsync(CancellationToken token)
         {
             var created = DateTimeOffset.UtcNow;
             var secretClient = GetSecretClient();
             string appSasFromKeyVault = null;
-            string blobReadSasFromKeyVault = null;
             if (secretClient != null)
             {
                 KeyVaultSecret appSas = await secretClient.GetSecretAsync(
-                    _options.Value.StorageSharedAccessSignatureSecretName,
+                    _options.Value.TableSharedAccessSignatureSecretName,
                     cancellationToken: token);
                 appSasFromKeyVault = appSas.Value;
-
-                KeyVaultSecret blobReadSas = await secretClient.GetSecretAsync(
-                    _options.Value.StorageBlobReadSharedAccessSignatureSecretName,
-                    cancellationToken: token);
-                blobReadSasFromKeyVault = blobReadSas.Value;
             }
 
-            return GetServiceClients(created, secretClient, appSasFromKeyVault, blobReadSasFromKeyVault);
-        }
-
-        private ServiceClients GetServiceClientsSync()
-        {
-            var created = DateTimeOffset.UtcNow;
-            var secretClient = GetSecretClient();
-            string appSasFromKeyVault = null;
-            string blobReadSasFromKeyVault = null;
-            if (secretClient != null)
-            {
-                KeyVaultSecret appSas = secretClient.GetSecret(_options.Value.StorageSharedAccessSignatureSecretName);
-                appSasFromKeyVault = appSas.Value;
-
-                KeyVaultSecret blobReadSas = secretClient.GetSecret(_options.Value.StorageBlobReadSharedAccessSignatureSecretName);
-                blobReadSasFromKeyVault = blobReadSas.Value;
-            }
-
-            return GetServiceClients(created, secretClient, appSasFromKeyVault, blobReadSasFromKeyVault);
+            return await GetServiceClientsAsync(created, secretClient, appSasFromKeyVault);
         }
 
         private bool TryGetServiceClients(out ServiceClients serviceClients)
@@ -186,20 +148,10 @@ namespace NuGet.Insights
                 return TimeSpan.Zero;
             }
 
-            TimeSpan untilRefresh;
-            if (serviceClients.AppStorageSharedAccessSignature != null)
-            {
-                // Refresh at half of the SAS duration.
-                var originalDuration = serviceClients.StorageSharedAccessSignatureExpiry.Value - serviceClients.Created;
-                var halfUntilExpiry = serviceClients.Created + (originalDuration / 2);
-                untilRefresh = halfUntilExpiry - DateTimeOffset.UtcNow;
-            }
-            else
-            {
-                // Otherwise, refresh at a default rate.
-                var defaultRefresh = serviceClients.Created + DefaultRefreshPeriod;
-                untilRefresh = defaultRefresh - DateTimeOffset.UtcNow;
-            }
+            // Refresh at half of the SAS duration.
+            var originalDuration = serviceClients.SharedAccessSignatureExpiry - serviceClients.Created;
+            var halfUntilExpiry = serviceClients.Created + (originalDuration / 2);
+            var untilRefresh = halfUntilExpiry - DateTimeOffset.UtcNow;
 
             return untilRefresh > TimeSpan.Zero ? untilRefresh : TimeSpan.Zero;
         }
@@ -208,7 +160,7 @@ namespace NuGet.Insights
         {
             if (_options.Value.StorageAccountName != null
                 && _options.Value.KeyVaultName != null
-                && _options.Value.StorageSharedAccessSignatureSecretName != null)
+                && _options.Value.TableSharedAccessSignatureSecretName != null)
             {
                 var vaultUri = new Uri($"https://{_options.Value.KeyVaultName}.vault.azure.net/");
                 var secretClient = new SecretClient(vaultUri, new DefaultAzureCredential());
@@ -218,54 +170,39 @@ namespace NuGet.Insights
             return null;
         }
 
-        private ServiceClients GetServiceClients(DateTimeOffset created, SecretClient secretClient, string appSasFromKeyVault, string blobReadSasFromKeyVault)
+        private async Task<ServiceClients> GetServiceClientsAsync(DateTimeOffset created, SecretClient secretClient, string tableSasFromKeyVault)
         {
-            string appSas;
-            DateTimeOffset? sasExpiry;
-            string storageConnectionString;
+            BlobServiceClient blob;
+            QueueServiceClient queue;
+            TableServiceClient table;
+            UserDelegationKey userDelegationKey;
+            DateTimeOffset sasExpiry;
             if (_options.Value.StorageAccountName != null)
             {
-                string source;
-                if (appSasFromKeyVault != null)
-                {
-                    appSas = appSasFromKeyVault;
-                    source = "Key Vault";
-                }
-                else
-                {
-                    appSas = _options.Value.StorageSharedAccessSignature;
-                    source = "config";
-                }
+                blob = new BlobServiceClient(new Uri($"https://{_options.Value.StorageAccountName}.blob.core.windows.net"), new DefaultAzureCredential());
+                queue = new QueueServiceClient(new Uri($"https://{_options.Value.StorageAccountName}.queue.core.windows.net"), new DefaultAzureCredential());
+                table = new TableServiceClient($"AccountName={_options.Value.StorageAccountName};SharedAccessSignature={tableSasFromKeyVault}");
 
-                if (appSas == null)
-                {
-                    throw new InvalidOperationException($"No storage SAS token could be found.");
-                }
-
-                sasExpiry = StorageUtility.GetSasExpiry(appSas);
-                var untilExpiry = sasExpiry.Value - DateTimeOffset.UtcNow;
+                sasExpiry = StorageUtility.GetSasExpiry(tableSasFromKeyVault);
+                userDelegationKey = await blob.GetUserDelegationKeyAsync(startsOn: null, expiresOn: sasExpiry);
 
                 _logger.LogInformation(
-                    "Using storage account '{StorageAccountName}' and a SAS token from {Source} expiring at {Expiry:O}, which is in {RemainingHours:F2} hours.",
+                    "Using storage account '{StorageAccountName}' and a SAS token from Key Vault expiring at {Expiry:O}, which is in {RemainingHours:F2} hours.",
                     _options.Value.StorageAccountName,
-                    source,
                     sasExpiry,
-                    untilExpiry.TotalHours);
-
-                storageConnectionString = $"AccountName={_options.Value.StorageAccountName};SharedAccessSignature={appSas}";
+                    (sasExpiry - DateTimeOffset.UtcNow).TotalHours);
             }
             else
             {
                 _logger.LogInformation("Using the configured storage connection string.");
 
-                appSas = null;
-                sasExpiry = null;
-                storageConnectionString = _options.Value.StorageConnectionString;
-            }
+                blob = new BlobServiceClient(_options.Value.StorageConnectionString);
+                queue = new QueueServiceClient(_options.Value.StorageConnectionString);
+                table = new TableServiceClient(_options.Value.StorageConnectionString);
 
-            var blob = new BlobServiceClient(storageConnectionString);
-            var queue = new QueueServiceClient(storageConnectionString);
-            var table = new TableServiceClient(storageConnectionString);
+                userDelegationKey = null;
+                sasExpiry = DateTimeOffset.UtcNow.Add(2 * DefaultRefreshPeriod);
+            }
 
             _logger.LogInformation("Blob endpoint: {BlobEndpoint}", blob.Uri);
             _logger.LogInformation("Queue endpoint: {QueueEndpoint}", queue.Uri);
@@ -273,10 +210,8 @@ namespace NuGet.Insights
 
             return new ServiceClients(
                 created,
-                appSas,
-                blobReadSasFromKeyVault ?? _options.Value.StorageBlobReadSharedAccessSignature,
+                userDelegationKey,
                 sasExpiry,
-                storageConnectionString,
                 secretClient,
                 blob,
                 queue,
@@ -285,10 +220,8 @@ namespace NuGet.Insights
 
         private record ServiceClients(
             DateTimeOffset Created,
-            string AppStorageSharedAccessSignature,
-            string BlobReadStorageSharedAccessSignature,
-            DateTimeOffset? StorageSharedAccessSignatureExpiry,
-            string StorageConnectionString,
+            UserDelegationKey UserDelegationKey,
+            DateTimeOffset SharedAccessSignatureExpiry,
             SecretClient KeyVaultSecretClient,
             BlobServiceClient BlobServiceClient,
             QueueServiceClient QueueServiceClient,

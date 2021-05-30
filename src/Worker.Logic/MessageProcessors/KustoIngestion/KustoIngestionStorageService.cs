@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -144,9 +144,10 @@ namespace NuGet.Insights.Worker.KustoIngestion
         public async Task ReplaceBlobAsync(KustoBlobIngestion blob)
         {
             _logger.LogInformation(
-                "Updating Kusto ingestion {IngestionId} for blob {SourceUrl} with state {State}.",
+                "Updating Kusto ingestion {IngestionId} for blob {ContainerName}/{BlobName} with state {State}.",
                 blob.IngestionId,
-                blob.SourceUrl,
+                blob.GetContainerName(),
+                blob.GetBlobName(),
                 blob.State);
 
             var table = await GetKustoIngestionTableAsync(blob.StorageSuffix);
@@ -168,9 +169,10 @@ namespace NuGet.Insights.Worker.KustoIngestion
         public async Task DeleteBlobAsync(KustoBlobIngestion blob)
         {
             _logger.LogInformation(
-                "Deleting Kusto ingestion {IngestionId} for blob {SourceUrl}.",
+                "Deleting Kusto ingestion {IngestionId} for blob {ContainerName}/{BlobName}.",
                 blob.IngestionId,
-                blob.SourceUrl);
+                blob.GetContainerName(),
+                blob.GetBlobName());
 
             var table = await GetKustoIngestionTableAsync(blob.StorageSuffix);
             await table.DeleteEntityAsync(blob, blob.ETag);

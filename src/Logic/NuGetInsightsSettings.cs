@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -21,13 +20,10 @@ namespace NuGet.Insights
             DownloadsV1Url = null;
             OwnersV2Url = null;
             StorageAccountName = null;
-            StorageSharedAccessSignature = null;
             StorageBlobReadSharedAccessSignature = null;
             KeyVaultName = null;
-            StorageSharedAccessSignatureSecretName = null;
-            StorageSharedAccessSignatureDuration = null;
+            TableSharedAccessSignatureSecretName = null;
             StorageConnectionString = StorageUtility.EmulatorConnectionString;
-            StorageConnectionStringSecretName = null;
             LeaseContainerName = "leases";
             PackageArchiveTableName = "packagearchives";
             PackageManifestTableName = "packagemanifests";
@@ -50,15 +46,11 @@ namespace NuGet.Insights
         public string DownloadsV1Url { get; set; }
         public string OwnersV2Url { get; set; }
 
-        public object StorageAccountName { get; set; }
-        public string StorageSharedAccessSignature { get; set; }
+        public string StorageAccountName { get; set; }
         public string StorageBlobReadSharedAccessSignature { get; set; }
         public string KeyVaultName { get; set; }
-        public string StorageSharedAccessSignatureSecretName { get; set; }
-        public string StorageBlobReadSharedAccessSignatureSecretName { get; set; }
-        public TimeSpan? StorageSharedAccessSignatureDuration { get; set; }
+        public string TableSharedAccessSignatureSecretName { get; set; }
         public string StorageConnectionString { get; set; }
-        public string StorageConnectionStringSecretName { get; set; }
 
         public string LeaseContainerName { get; set; }
         public string PackageArchiveTableName { get; set; }

@@ -21,7 +21,7 @@ Import-Module (Join-Path $PSScriptRoot "NuGet.Insights.psm1")
 $DeploymentId, $DeploymentDir = Get-DeploymentLocals $DeploymentId $DeploymentDir
 
 # Prepare the storage and Key Vault
-$sasToken = . (Join-Path $PSScriptRoot "Invoke-Prepare.ps1") `
+. (Join-Path $PSScriptRoot "Invoke-Prepare.ps1") `
     -ResourceSettings $ResourceSettings `
     -DeploymentId $DeploymentId `
     -DeploymentDir $DeploymentDir
@@ -40,18 +40,28 @@ if ($existingWorkerCount -gt $deployingWorkerCount) {
 }
 
 # Upload the project ZIPs
+$storageAccountKey = (Get-AzStorageAccountKey `
+    -ResourceGroupName $ResourceSettings.ResourceGroupName `
+    -Name $ResourceSettings.StorageAccountName)[0].Value
 $storageContext = New-AzStorageContext `
     -StorageAccountName $ResourceSettings.StorageAccountName `
-    -SasToken $sasToken
+    -StorageAccountKey $storageAccountKey
 
 function New-DeploymentZip ($ZipPath, $BlobName) {
     Write-Status "Uploading the ZIP to '$BlobName'..."
-    $blob = Set-AzStorageBlobContent `
+    Set-AzStorageBlobContent `
         -Context $storageContext `
         -Container $Resourcesettings.DeploymentContainerName `
         -File $ZipPath `
-        -Blob $BlobName
-    return $blob.BlobClient.Uri.AbsoluteUri
+        -Blob $BlobName | Out-Default
+    return New-AzStorageBlobSASToken `
+        -Container $ResourceSettings.DeploymentContainerName `
+        -Blob $BlobName `
+        -Permission r `
+        -Protocol HttpsOnly `
+        -Context $storageContext `
+        -ExpiryTime (Get-Date).AddHours(6) `
+        -FullUri
 }
 
 $websiteZipUrl = New-DeploymentZip $WebsiteZipPath "Website-$DeploymentId.zip"

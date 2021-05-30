@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,7 +16,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         public KustoBlobIngestion(string containerName, string blobName)
         {
             PartitionKey = containerName;
-            RowKey = blobName.ToString();
+            RowKey = blobName;
         }
 
         public string PartitionKey { get; set; }
@@ -28,7 +28,6 @@ namespace NuGet.Insights.Worker.KustoIngestion
         public string StorageSuffix { get; set; }
         public KustoBlobIngestionState State { get; set; }
         public long RawSizeBytes { get; set; }
-        public string SourceUrl { get; set; }
         public string StatusUrl { get; set; }
         public Guid SourceId { get; set; }
 

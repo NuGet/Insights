@@ -35,13 +35,11 @@ New-Deployment `
 } | Out-Default
 
 # Manage the storage account in Key Vault
-$sasToken = . (Join-Path $PSScriptRoot "Set-KeyVaultManagedStorage.ps1") `
+. (Join-Path $PSScriptRoot "Set-KeyVaultManagedStorage.ps1") `
     -ResourceGroupName $ResourceSettings.ResourceGroupName `
     -KeyVaultName $ResourceSettings.KeyVaultName `
     -StorageAccountName $ResourceSettings.StorageAccountName `
-    -AppSasDefinitionName $ResourceSettings.AppSasDefinitionName `
-    -BlobReadSasDefinitionName $ResourceSettings.BlobReadSasDefinitionName `
-    -SasConnectionStringSecretName $ResourceSettings.SasConnectionStringSecretName `
+    -TableSasDefinitionName $ResourceSettings.TableSasDefinitionName `
     -AutoRegenerateKey:$ResourceSettings.AutoRegenerateKey `
     -SasValidityPeriod $ResourceSettings.SasValidityPeriod
 
@@ -57,5 +55,3 @@ if (!$ResourceSettings.WebsiteAadAppClientId) {
     $ResourceSettings.WebsiteAadAppClientId = $aadApp.ApplicationId
     Write-Host "The AAD app registration client ID is $($aadApp.ApplicationId)."
 }
-
-$sasToken

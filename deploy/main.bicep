@@ -6,14 +6,11 @@ param keyVaultName string
 param deploymentContainerName string
 param leaseContainerName string
 
-param sasConnectionStringSecretName string
-param appSasDefinitionName string
-param blobReadSasDefinitionName string
-param sasValidityPeriod string
+param tableSasDefinitionName string
 
+param websiteName string
 param websitePlanId string = 'new'
 param websitePlanName string = 'default'
-param websiteName string
 param websiteAadClientId string
 param websiteConfig array
 @secure()
@@ -34,7 +31,6 @@ param workerSku string = 'Y1'
 param workerZipUrl string
 
 var sakConnectionString = 'AccountName=${storageAccountName};AccountKey=${listkeys(storageAccount.id, storageAccount.apiVersion).keys[0].value};DefaultEndpointsProtocol=https;EndpointSuffix=core.windows.net'
-var sasConnectionStringReference = '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${sasConnectionStringSecretName})'
 var isConsumptionPlan = workerSku == 'Y1'
 var isPremiumPlan = startsWith(workerSku, 'P')
 var workerMaxInstances = isPremiumPlan ? 30 : 10
@@ -54,19 +50,6 @@ var sharedConfig = [
     value: '~2'
   }
   {
-    // For the app settings to be different each time so that Key Vault references are reloaded
-    name: 'ForceKeyVaultReferencesToReload'
-    value: deployment().name
-  }
-  {
-    name: 'NuGet.Insights:HostSubscriptionId'
-    value: subscription().subscriptionId
-  }
-  {
-    name: 'NuGet.Insights:HostResourceGroupName'
-    value: resourceGroup().name
-  }
-  {
     name: 'NuGet.Insights:LeaseContainerName'
     value: leaseContainerName
   }
@@ -79,20 +62,8 @@ var sharedConfig = [
     value: storageAccountName
   }
   {
-    name: 'NuGet.Insights:StorageConnectionStringSecretName'
-    value: sasConnectionStringSecretName
-  }
-  {
-    name: 'NuGet.Insights:StorageSharedAccessSignatureSecretName'
-    value: '${storageAccountName}-${appSasDefinitionName}'
-  }
-  {
-    name: 'NuGet.Insights:StorageBlobReadSharedAccessSignatureSecretName'
-    value: '${storageAccountName}-${blobReadSasDefinitionName}'
-  }
-  {
-    name: 'NuGet.Insights:StorageSharedAccessSignatureDuration'
-    value: sasValidityPeriod
+    name: 'NuGet.Insights:TableSharedAccessSignatureSecretName'
+    value: '${storageAccountName}-${tableSasDefinitionName}'
   }
   {
     // See: https://github.com/projectkudu/kudu/wiki/Configurable-settings#ensure-update-site-and-update-siteconfig-to-take-effect-synchronously 
@@ -182,11 +153,6 @@ resource website 'Microsoft.Web/sites@2020-09-01' = {
         {
           name: 'AzureAd:TenantId'
           value: 'common'
-        }
-        {
-          // Needed so that the update secrets timer appears enabled in the UI
-          name: 'NuGet.Insights:HostAppName'
-          value: websiteName
         }
       ], sharedConfig, websiteConfig)
     }
@@ -326,10 +292,6 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
           value: 'dotnet'
         }
         {
-          name: 'NuGet.Insights:HostAppName'
-          value: '${workerNamePrefix}${i}'
-        }
-        {
           name: 'NuGet.Insights:UserManagedIdentityClientId'
           value: workerUserManagedIdentity.properties.clientId
         }
@@ -338,7 +300,7 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
           value: 'false'
         }
         {
-          name: 'StorageConnection:queueServiceUri'
+          name: 'StorageConnection__queueServiceUri'
           value: storageAccount.properties.primaryEndpoints.queue
         }
       ], sharedConfig, workerConfigWithStorage)
@@ -346,32 +308,22 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
   }
 }]
 
-resource resourceGroupPermissions 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = [for i in range(0, workerCount): {
-  name: guid('FunctionsCanRestartThemselves-${workers[i].id}')
-  scope: resourceGroup()
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'de139f84-1756-47ae-9be6-808fbbe84772')
-    principalId: workers[i].identity.principalId
-    principalType: 'ServicePrincipal'
-  }
-}]
-
-resource blobPermissions 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = [for i in range(0, workerCount): {
-  name: guid('FunctionsCanAccessBlob-${workers[i].id}')
+resource blobPermissions 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = [for i in range(0, workerCount + 1): {
+  name: guid('FunctionsCanAccessBlob-${i == 0 ? website.id : workers[max(0, i - 1)].id}')
   scope: storageAccount
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')
-    principalId: workers[i].identity.principalId
+    principalId: i == 0 ? website.identity.principalId : workers[max(0, i - 1)].identity.principalId
     principalType: 'ServicePrincipal'
   }
 }]
 
-resource queuePermissions 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = [for i in range(0, workerCount): {
-  name: guid('FunctionsCanAccessQueue-${workers[i].id}')
+resource queuePermissions 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = [for i in range(0, workerCount + 1): {
+  name: guid('FunctionsCanAccessQueue-${i == 0 ? website.id : workers[max(0, i - 1)].id}')
   scope: storageAccount
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')
-    principalId: workers[i].identity.principalId
+    principalId: i == 0 ? website.identity.principalId : workers[max(0, i - 1)].identity.principalId
     principalType: 'ServicePrincipal'
   }
 }]
