@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -28,7 +28,6 @@ namespace NuGet.Insights
             StorageSharedAccessSignatureDuration = null;
             StorageConnectionString = StorageUtility.EmulatorConnectionString;
             StorageConnectionStringSecretName = null;
-            StorageContainerName = "packages";
             LeaseContainerName = "leases";
             PackageArchiveTableName = "packagearchives";
             PackageManifestTableName = "packagemanifests";
@@ -37,7 +36,6 @@ namespace NuGet.Insights
             IsStorageContainerPublic = false;
             MaxTempMemoryStreamSize = 1024 * 1024 * 196;
             UserManagedIdentityClientId = null;
-            EnableAzureLogging = false;
             TempDirectories = new List<TempStreamDirectory>
             {
                 Path.Combine(Path.GetTempPath(), "NuGet.Insights"),
@@ -51,6 +49,7 @@ namespace NuGet.Insights
         public string FlatContainerBaseUrlOverride { get; set; }
         public string DownloadsV1Url { get; set; }
         public string OwnersV2Url { get; set; }
+
         public object StorageAccountName { get; set; }
         public string StorageSharedAccessSignature { get; set; }
         public string StorageBlobReadSharedAccessSignature { get; set; }
@@ -60,7 +59,7 @@ namespace NuGet.Insights
         public TimeSpan? StorageSharedAccessSignatureDuration { get; set; }
         public string StorageConnectionString { get; set; }
         public string StorageConnectionStringSecretName { get; set; }
-        public string StorageContainerName { get; set; }
+
         public string LeaseContainerName { get; set; }
         public string PackageArchiveTableName { get; set; }
         public string PackageManifestTableName { get; set; }
@@ -69,7 +68,6 @@ namespace NuGet.Insights
         public bool IsStorageContainerPublic { get; set; }
         public int MaxTempMemoryStreamSize { get; set; }
         public string UserManagedIdentityClientId { get; set; }
-        public bool EnableAzureLogging { get; set; }
         public List<TempStreamDirectory> TempDirectories { get; set; }
     }
 }

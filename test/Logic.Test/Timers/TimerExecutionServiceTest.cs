@@ -389,7 +389,7 @@ namespace NuGet.Insights
 
             public ServiceClientFactory GetServiceClientFactory(ILogger<ServiceClientFactory> logger)
             {
-                return new ServiceClientFactory(null, Options.Object, logger);
+                return new ServiceClientFactory(Options.Object, logger);
             }
 
             public async Task DisposeAsync()

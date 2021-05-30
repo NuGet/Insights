@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -224,7 +224,7 @@ namespace NuGet.Insights
                 };
                 Options = new Mock<IOptions<NuGetInsightsSettings>>();
                 Options.Setup(x => x.Value).Returns(() => Settings);
-                ServiceClientFactory = new ServiceClientFactory(null, Options.Object, output.GetLogger<ServiceClientFactory>());
+                ServiceClientFactory = new ServiceClientFactory(Options.Object, output.GetLogger<ServiceClientFactory>());
                 Target = new StorageLeaseService(ServiceClientFactory, Options.Object);
             }
 

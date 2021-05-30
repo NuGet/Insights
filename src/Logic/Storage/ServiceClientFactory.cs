@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -26,7 +26,6 @@ namespace NuGet.Insights
         private readonly ILogger<ServiceClientFactory> _logger;
 
         public ServiceClientFactory(
-            AzureLoggingStartup loggingStartup, // Injected so that logging starts
             IOptions<NuGetInsightsSettings> options,
             ILogger<ServiceClientFactory> logger)
         {
@@ -264,18 +263,9 @@ namespace NuGet.Insights
                 storageConnectionString = _options.Value.StorageConnectionString;
             }
 
-            var blob = new BlobServiceClient(storageConnectionString, new BlobClientOptions
-            {
-                Diagnostics = { IsLoggingEnabled = _options.Value.EnableAzureLogging }
-            });
-            var queue = new QueueServiceClient(storageConnectionString, new QueueClientOptions
-            {
-                Diagnostics = { IsLoggingEnabled = _options.Value.EnableAzureLogging }
-            });
-            var table = new TableServiceClient(storageConnectionString, new TablesClientOptions
-            {
-                Diagnostics = { IsLoggingEnabled = _options.Value.EnableAzureLogging }
-            });
+            var blob = new BlobServiceClient(storageConnectionString);
+            var queue = new QueueServiceClient(storageConnectionString);
+            var table = new TableServiceClient(storageConnectionString);
 
             _logger.LogInformation("Blob endpoint: {BlobEndpoint}", blob.Uri);
             _logger.LogInformation("Queue endpoint: {QueueEndpoint}", queue.Uri);

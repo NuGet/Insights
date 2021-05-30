@@ -105,7 +105,6 @@ namespace NuGet.Insights
             x.StorageConnectionString = TestSettings.StorageConnectionString;
             x.StorageBlobReadSharedAccessSignature = TestSettings.StorageBlobReadSharedAccessSignature;
 
-            x.StorageContainerName = $"{StoragePrefix}1p1";
             x.LeaseContainerName = $"{StoragePrefix}1l1";
             x.PackageArchiveTableName = $"{StoragePrefix}1pa1";
             x.PackageManifestTableName = $"{StoragePrefix}1pm1";
