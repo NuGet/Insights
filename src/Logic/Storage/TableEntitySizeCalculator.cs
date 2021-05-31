@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -96,6 +96,9 @@ namespace NuGet.Insights
                     break;
                 case bool:
                     size = 1;
+                    break;
+                case BinaryData binaryValue:
+                    size = GetBinaryDataSize(binaryValue.ToMemory().Length);
                     break;
                 case byte[] binaryValue:
                     size = GetBinaryDataSize(binaryValue.Length);

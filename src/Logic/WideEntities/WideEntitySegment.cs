@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -200,18 +200,24 @@ namespace NuGet.Insights.WideEntities
                     throw new InvalidOperationException($"Property '{ChunkPropertyNames[i]}' could not be found.");
                 }
 
-                if (property is not byte[] binaryValue)
+                if (property is byte[] byteArray)
+                {
+                    yield return byteArray.AsMemory();
+                }
+                else if (property is BinaryData binaryValue)
+                {
+                    yield return binaryValue.ToMemory();
+                }
+                else
                 {
                     throw new InvalidOperationException($"Property '{ChunkPropertyNames[i]}' must be binary.");
                 }
-
-                yield return binaryValue.AsMemory();
             }
         }
 
         public void AddChunk(ReadOnlyMemory<byte> chunk)
         {
-            this[ChunkPropertyNames[Count - NonDataPropertyCount]] = chunk.ToArray();
+            this[ChunkPropertyNames[Count - NonDataPropertyCount]] = new BinaryData(chunk);
         }
     }
 }
