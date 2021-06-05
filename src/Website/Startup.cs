@@ -77,7 +77,7 @@ namespace Knapcode.ExplorePackages.Website
             var initialSettings = Configuration
                 .GetSection(ExplorePackagesSettings.DefaultSectionName)
                 .Get<ExplorePackagesWebsiteSettings>();
-            if (initialSettings.AllowedGroups.Any())
+            if (initialSettings?.AllowedGroups is not null && initialSettings.AllowedGroups.Any())
             {
                 microsoftIdentityBuilder
                     .EnableTokenAcquisitionToCallDownstreamApi()
