@@ -19,8 +19,48 @@ namespace NuGet.Insights.Worker
 {
     public class DocsTest
     {
+        [Fact]
+        public void AllTablesAreListedInREADME()
+        {
+            var info = new DocInfo(Path.Combine("tables", "README.md"));
+            info.ReadMarkdown();
+
+            var table = info.GetTableAfterHeading("Tables");
+
+            // Verify the table header
+            var headerRow = Assert.IsType<TableRow>(table[0]);
+            Assert.True(headerRow.IsHeader);
+            Assert.Equal(2, headerRow.Count);
+            Assert.Equal("Table name", info.ToPlainText(headerRow[0]));
+            Assert.Equal("Description", info.ToPlainText(headerRow[1]));
+
+            // Verify we have the right number of rows
+            var rows = table.Skip(1).ToList();
+            Assert.Equal(rows.Count, TableNames.Count);
+
+            // Verify table rows
+            var index = 0;
+            foreach (var rowObj in rows)
+            {
+                _output.WriteLine("Testing row: " + info.GetMarkdown(rowObj));
+                var row = Assert.IsType<TableRow>(rowObj);
+                Assert.False(row.IsHeader);
+
+                // Verify the column name exists and is in the proper order in the table
+                var tableName = info.ToPlainText(row[0]);
+                Assert.Contains(tableName, TableNames);
+                Assert.Equal(tableName, TableNames[index]);
+
+                // Verify the data type
+                var description = info.ToPlainText(row[1]);
+                Assert.NotEmpty(description);
+
+                index++;
+            }
+        }
+
         [Theory]
-        [MemberData(nameof(TableNames))]
+        [MemberData(nameof(TableNameTestData))]
         public void TableIsDocumented(string tableName)
         {
             var info = new TableInfo(tableName);
@@ -28,7 +68,7 @@ namespace NuGet.Insights.Worker
         }
 
         [Theory]
-        [MemberData(nameof(TableNames))]
+        [MemberData(nameof(TableNameTestData))]
         public void HasDefaultTableNameHeading(string tableName)
         {
             var info = new TableInfo(tableName);
@@ -41,7 +81,7 @@ namespace NuGet.Insights.Worker
         }
 
         [Theory]
-        [MemberData(nameof(TableNames))]
+        [MemberData(nameof(TableNameTestData))]
         public void FirstTableIsGeneralTableProperties(string tableName)
         {
             var info = new TableInfo(tableName);
@@ -93,7 +133,7 @@ namespace NuGet.Insights.Worker
         }
 
         [Theory]
-        [MemberData(nameof(TableNames))]
+        [MemberData(nameof(TableNameTestData))]
         public void TableSchemaMatchesRecordType(string tableName)
         {
             var info = new TableInfo(tableName);
@@ -140,7 +180,7 @@ namespace NuGet.Insights.Worker
         }
 
         [Theory]
-        [MemberData(nameof(TableNames))]
+        [MemberData(nameof(TableNameTestData))]
         public void AllDynamicColumnsAreDocumented(string tableName)
         {
             var info = new TableInfo(tableName);
@@ -162,7 +202,7 @@ namespace NuGet.Insights.Worker
         }
 
         [Theory]
-        [MemberData(nameof(TableNames))]
+        [MemberData(nameof(TableNameTestData))]
         public void AllEnumsAreDocumented(string tableName)
         {
             var info = new TableInfo(tableName);
@@ -250,15 +290,11 @@ namespace NuGet.Insights.Worker
             {
                 Assert.Equal("timestamp", dataType);
             }
-            else if (propertyType.IsEnum && propertyType.GetAttribute<FlagsAttribute>() != null)
-            {
-                Assert.Equal("comma separated enum", dataType);
-            }
             else if (TryGetEnumType(propertyType, out var enumType))
             {
                 if (enumType.GetAttribute<FlagsAttribute>() != null)
                 {
-                    Assert.Equal("comma separated enum", dataType);
+                    Assert.Equal("flags enum", dataType);
                 }
                 else
                 {
@@ -291,11 +327,13 @@ namespace NuGet.Insights.Worker
             return false;
         }
 
-        public static IEnumerable<object[]> TableNames => KustoDDL
+        public static IReadOnlyList<string> TableNames => KustoDDL
             .TypeToDefaultTableName
             .Values
             .OrderBy(x => x)
-            .Select(x => new object[] { x });
+            .ToList();
+
+        public static IEnumerable<object[]> TableNameTestData => TableNames.Select(x => new object[] { x });
 
         private readonly ITestOutputHelper _output;
 
@@ -304,36 +342,14 @@ namespace NuGet.Insights.Worker
             _output = output;
         }
 
-        private class TableInfo
+        private class DocInfo
         {
-            public TableInfo(string tableName)
+            public DocInfo(string docPath)
             {
-                DocPath = Path.Combine(TestSettings.GetRepositoryRoot(), "docs", "tables", $"{tableName}.md");
-
-                RecordType = KustoDDL.TypeToDefaultTableName.Single(x => x.Value == tableName).Key;
-
-                var recordInstance = (ICsvRecord)Activator.CreateInstance(RecordType);
-                using var csvHeaderWriter = new StringWriter();
-                recordInstance.WriteHeader(csvHeaderWriter);
-                NameToIndex = csvHeaderWriter
-                    .ToString()
-                    .Split(',')
-                    .Select((x, i) => (x, i))
-                    .ToDictionary(x => x.x.Trim(), x => x.i);
-
-                var nameToProperty = RecordType
-                    .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                    .ToDictionary(x => x.Name);
-                nameToProperty.Remove(nameof(ICsvRecord.FieldCount));
-                NameToProperty = nameToProperty;
+                DocPath = Path.Combine(TestSettings.GetRepositoryRoot(), "docs", docPath);
             }
 
-            public string TableName { get; }
             public string DocPath { get; }
-            public Type RecordType { get; }
-            public IReadOnlyDictionary<string, int> NameToIndex { get; }
-            public IReadOnlyDictionary<string, PropertyInfo> NameToProperty { get; }
-
             public string UnparsedMarkdown { get; private set; }
             public MarkdownPipeline Pipeline { get; private set; }
             public MarkdownDocument MarkdownDocument { get; private set; }
@@ -386,6 +402,34 @@ namespace NuGet.Insights.Worker
                 var output = writer.ToString();
                 return trim ? output.Trim() : output;
             }
+        }
+
+        private class TableInfo : DocInfo
+        {
+            public TableInfo(string tableName) : base(Path.Combine("tables", $"{tableName}.md"))
+            {
+                RecordType = KustoDDL.TypeToDefaultTableName.Single(x => x.Value == tableName).Key;
+
+                var recordInstance = (ICsvRecord)Activator.CreateInstance(RecordType);
+                using var csvHeaderWriter = new StringWriter();
+                recordInstance.WriteHeader(csvHeaderWriter);
+                NameToIndex = csvHeaderWriter
+                    .ToString()
+                    .Split(',')
+                    .Select((x, i) => (x, i))
+                    .ToDictionary(x => x.x.Trim(), x => x.i);
+
+                var nameToProperty = RecordType
+                    .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                    .ToDictionary(x => x.Name);
+                nameToProperty.Remove(nameof(ICsvRecord.FieldCount));
+                NameToProperty = nameToProperty;
+            }
+
+            public string TableName { get; }
+            public Type RecordType { get; }
+            public IReadOnlyDictionary<string, int> NameToIndex { get; }
+            public IReadOnlyDictionary<string, PropertyInfo> NameToProperty { get; }
         }
     }
 }

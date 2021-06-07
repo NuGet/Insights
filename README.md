@@ -14,6 +14,8 @@ The data sets are great for:
 - 📈 Check the trends over time on NuGet.org
 - 📊 Look at adoption of various NuGet or .NET features
 
+The data sets currently produced by NuGet.Insights are listed in [`docs/tables/README.md`](docs/tables/README.md#tables).
+
 ## Quickstart
 
 **We follow a 3 step process to go from nothing to a completely deployed Azure solution.**
