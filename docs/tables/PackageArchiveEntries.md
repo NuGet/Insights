@@ -42,6 +42,9 @@ knowledge of NuGet-specific interpretation of the ZIP file entries.
 
 ## ResultType schema
 
-Same as [ResultType in PackageArchives](PackageArchives.md#ResultType-schema).
+The ResultType enum indicates the possible variants of records.
 
-
+| Enum value | Description                                         |
+| ---------- | --------------------------------------------------- |
+| Available  | The package is available and processed successfully |
+| Deleted    | The package is deleted and no metadata is available |

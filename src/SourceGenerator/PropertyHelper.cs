@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -77,8 +77,12 @@ namespace NuGet.Insights
                 case "bool":
                 case "bool?":
                     return "bool";
+                case "ushort":
+                case "ushort?":
                 case "short":
                 case "short?":
+                case "uint":
+                case "uint?":
                 case "int":
                 case "int?":
                     return "int";

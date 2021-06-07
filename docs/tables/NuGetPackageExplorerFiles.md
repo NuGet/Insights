@@ -12,7 +12,7 @@ and contains file-level information. The purpose of this table is to assess the 
 | Column used for partitioning | Identity                                                                                                                                     |
 | Data file container name     | nugetpackageexplorerfiles                                                                                                                    |
 | Driver implementation        | [`NuGetPackageExplorerToCsvDriver`](../../src/Worker.Logic/CatalogScan/Drivers/NuGetPackageExplorerToCsv/NuGetPackageExplorerToCsvDriver.cs) |
-| Record type                  | [`NuGetPackageExplorerFileRecord`](../../src/Worker.Logic/CatalogScan/Drivers/NuGetPackageExplorerToCsv/NuGetPackageExplorerFileRecord.cs)   |
+| Record type                  | [`NuGetPackageExplorerFile`](../../src/Worker.Logic/CatalogScan/Drivers/NuGetPackageExplorerToCsv/NuGetPackageExplorerFile.cs)               |
 
 ## Table schema
 
@@ -38,7 +38,19 @@ and contains file-level information. The purpose of this table is to assess the 
 
 ## ResultType schema
 
-Same as [ResultType in NuGetPackageExplorers](NuGetPackageExplorers.md#ResultType-schema).
+The ResultType enum indicates the possible variants of records.
+
+| Enum value        | Description                                                                       |
+| ----------------- | --------------------------------------------------------------------------------- |
+| Available         | The package is available and processed successfully                               |
+| Deleted           | The package is deleted and no metadata is available                               |
+| InvalidMetadata   | The package has unexpected metadata, so no results are available                  |
+| NothingToValidate | The package has no assemblies in validated locations, so no results are available |
+| Timeout           | The package validation timed out, so no results are available                     |
+
+## CompilerFlags schema
+
+The CompilerFlags object is an loose property bag of custom compiler flag metadata baked into the PDB.
 
 ## SourceUrlRepoInfo schema
 

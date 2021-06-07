@@ -3,7 +3,6 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssemblyName>NuGet.Insights.Logic</AssemblyName>
     <RootNamespace>NuGet.Insights</RootNamespace>
-    <LangVersion>9.0</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AngleSharp" Version="0.14.0" />

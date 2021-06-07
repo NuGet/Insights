@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -23,6 +23,11 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
         private readonly PackageFileService _packageFileService;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<PackageAssetToCsvDriver> _logger;
+
+        private static readonly IReadOnlyDictionary<string, PatternSetType> NameToPatternSetType = Enum
+            .GetValues(typeof(PatternSetType))
+            .Cast<PatternSetType>()
+            .ToDictionary(x => x.ToString(), x => x);
 
         public PackageAssetToCsvDriver(
             CatalogClient catalogClient,
@@ -141,7 +146,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
                     {
                         assets.Add(new PackageAsset(scanId, scanTimestamp, leaf, PackageAssetResultType.AvailableAssets)
                         {
-                            PatternSet = pair.Key,
+                            PatternSet = NameToPatternSetType[pair.Key],
 
                             PropertyAnyValue = (string)anyValue,
                             PropertyCodeLanguage = (string)codeLanguage,

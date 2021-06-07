@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -25,7 +25,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
         public PackageAssetResultType ResultType { get; set; }
 
-        public string PatternSet { get; set; }
+        public PatternSetType? PatternSet { get; set; }
         public string PropertyAnyValue { get; set; }
         public string PropertyCodeLanguage { get; set; }
         public string PropertyTargetFrameworkMoniker { get; set; }

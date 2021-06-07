@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -89,8 +89,8 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Equal("Un5Uw7RzNNFRXRGb4+6+ZB6zAU1+rSJi1UdjwEm+Dos=", archive.SHA256);
             Assert.Equal("0j3nBhz6LgdRGkWED8U9UYpbK06J0adJdmdatPjsDtVrk6TvALANKEBD77uDUs67eIjpa3Bfs9QO/wuVWMrwLw==", archive.SHA512);
             Assert.Equal(22381, archive.OffsetAfterEndOfCentralDirectory);
-            Assert.Equal(483, archive.CentralDirectorySize);
-            Assert.Equal(21894, archive.OffsetOfCentralDirectory);
+            Assert.Equal(483u, archive.CentralDirectorySize);
+            Assert.Equal(21894u, archive.OffsetOfCentralDirectory);
             Assert.Equal(6, archive.EntryCount);
             Assert.Empty(archive.Comment);
 
@@ -106,9 +106,9 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Equal(8, entries[0].CompressionMethod);
             Assert.Equal(DateTimeOffset.Parse("2018-08-06T13:48:24.0000000+00:00"), entries[0].LastModified);
             Assert.Equal(3811040653, entries[0].Crc32);
-            Assert.Equal(274, entries[0].CompressedSize);
-            Assert.Equal(511, entries[0].UncompressedSize);
-            Assert.Equal(0, entries[0].LocalHeaderOffset);
+            Assert.Equal(274u, entries[0].CompressedSize);
+            Assert.Equal(511u, entries[0].UncompressedSize);
+            Assert.Equal(0u, entries[0].LocalHeaderOffset);
             Assert.Empty(entries[0].Comment);
 
             Assert.Equal(1, entries[1].SequenceNumber);
@@ -120,9 +120,9 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Equal(8, entries[1].CompressionMethod);
             Assert.Equal(DateTimeOffset.Parse("2018-08-06T13:48:24.0000000+00:00"), entries[1].LastModified);
             Assert.Equal(3125932907, entries[1].Crc32);
-            Assert.Equal(376, entries[1].CompressedSize);
-            Assert.Equal(734, entries[1].UncompressedSize);
-            Assert.Equal(315, entries[1].LocalHeaderOffset);
+            Assert.Equal(376u, entries[1].CompressedSize);
+            Assert.Equal(734u, entries[1].UncompressedSize);
+            Assert.Equal(315u, entries[1].LocalHeaderOffset);
             Assert.Empty(entries[1].Comment);
 
             Assert.Equal(2, entries[2].SequenceNumber);
@@ -134,9 +134,9 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Equal(8, entries[2].CompressionMethod);
             Assert.Equal(DateTimeOffset.Parse("2018-08-06T20:48:20.0000000+00:00"), entries[2].LastModified);
             Assert.Equal(2664195616, entries[2].Crc32);
-            Assert.Equal(1559, entries[2].CompressedSize);
-            Assert.Equal(4608, entries[2].UncompressedSize);
-            Assert.Equal(745, entries[2].LocalHeaderOffset);
+            Assert.Equal(1559u, entries[2].CompressedSize);
+            Assert.Equal(4608u, entries[2].UncompressedSize);
+            Assert.Equal(745u, entries[2].LocalHeaderOffset);
             Assert.Empty(entries[2].Comment);
 
             Assert.Equal(3, entries[3].SequenceNumber);
@@ -148,9 +148,9 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Equal(8, entries[3].CompressionMethod);
             Assert.Equal(DateTimeOffset.Parse("2018-08-06T13:48:24.0000000+00:00"), entries[3].LastModified);
             Assert.Equal(3159194846, entries[3].Crc32);
-            Assert.Equal(207, entries[3].CompressedSize);
-            Assert.Equal(465, entries[3].UncompressedSize);
-            Assert.Equal(2392, entries[3].LocalHeaderOffset);
+            Assert.Equal(207u, entries[3].CompressedSize);
+            Assert.Equal(465u, entries[3].UncompressedSize);
+            Assert.Equal(2392u, entries[3].LocalHeaderOffset);
             Assert.Empty(entries[3].Comment);
 
             Assert.Equal(4, entries[4].SequenceNumber);
@@ -162,9 +162,9 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Equal(8, entries[4].CompressionMethod);
             Assert.Equal(DateTimeOffset.Parse("2018-08-06T13:48:24.0000000+00:00"), entries[4].LastModified);
             Assert.Equal(3933553402, entries[4].Crc32);
-            Assert.Equal(408, entries[4].CompressedSize);
-            Assert.Equal(695, entries[4].UncompressedSize);
-            Assert.Equal(2648, entries[4].LocalHeaderOffset);
+            Assert.Equal(408u, entries[4].CompressedSize);
+            Assert.Equal(695u, entries[4].UncompressedSize);
+            Assert.Equal(2648u, entries[4].LocalHeaderOffset);
             Assert.Empty(entries[4].Comment);
 
             Assert.Equal(5, entries[5].SequenceNumber);
@@ -176,9 +176,9 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Equal(0, entries[5].CompressionMethod);
             Assert.Equal(DateTimeOffset.Parse("2018-08-20T20:19:24.0000000+00:00"), entries[5].LastModified);
             Assert.Equal(2180012886, entries[5].Crc32);
-            Assert.Equal(18683, entries[5].CompressedSize);
-            Assert.Equal(18683, entries[5].UncompressedSize);
-            Assert.Equal(3167, entries[5].LocalHeaderOffset);
+            Assert.Equal(18683u, entries[5].CompressedSize);
+            Assert.Equal(18683u, entries[5].UncompressedSize);
+            Assert.Equal(3167u, entries[5].LocalHeaderOffset);
             Assert.Empty(entries[5].Comment);
         }
 
@@ -206,8 +206,8 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Equal("KI1WXvnF/Xe9cKTdDjzm0vd5h9bmM+3KinuWlsF/X+c=", archive.SHA256);
             Assert.Equal("MUBW1eAqbVex8q0bnCxZ0npzJtiKCMW5OHWKCBYtScmyJ+iTVP9Pv6R9JnnF0UY+PspIkDPNXqo4pxQi/HV+yw==", archive.SHA512);
             Assert.Equal(69276, archive.OffsetAfterEndOfCentralDirectory);
-            Assert.Equal(928, archive.CentralDirectorySize);
-            Assert.Equal(68344, archive.OffsetOfCentralDirectory);
+            Assert.Equal(928u, archive.CentralDirectorySize);
+            Assert.Equal(68344u, archive.OffsetOfCentralDirectory);
             Assert.Equal(11, archive.EntryCount);
             Assert.Empty(archive.Comment);
 
@@ -223,9 +223,9 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Equal(8, entries[6].CompressionMethod);
             Assert.Equal(DateTimeOffset.Parse("1980-01-01T00:00:00.0000000+00:00"), entries[6].LastModified);
             Assert.Equal(3714772846, entries[6].Crc32);
-            Assert.Equal(5653, entries[6].CompressedSize);
-            Assert.Equal(7006, entries[6].UncompressedSize);
-            Assert.Equal(37399, entries[6].LocalHeaderOffset);
+            Assert.Equal(5653u, entries[6].CompressedSize);
+            Assert.Equal(7006u, entries[6].UncompressedSize);
+            Assert.Equal(37399u, entries[6].LocalHeaderOffset);
             Assert.Empty(entries[6].Comment);
 
             Assert.Equal(7, entries[7].SequenceNumber);
@@ -237,9 +237,9 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Equal(8, entries[7].CompressionMethod);
             Assert.Equal(DateTimeOffset.Parse("1980-01-01T00:00:00.0000000+00:00"), entries[7].LastModified);
             Assert.Equal(3714772846, entries[7].Crc32);
-            Assert.Equal(5653, entries[7].CompressedSize);
-            Assert.Equal(7006, entries[7].UncompressedSize);
-            Assert.Equal(43097, entries[7].LocalHeaderOffset);
+            Assert.Equal(5653u, entries[7].CompressedSize);
+            Assert.Equal(7006u, entries[7].UncompressedSize);
+            Assert.Equal(43097u, entries[7].LocalHeaderOffset);
             Assert.Empty(entries[7].Comment);
         }
 

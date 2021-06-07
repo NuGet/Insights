@@ -33,14 +33,14 @@ For simplicity, only files with the `.dll` or `.exe` file extension are analyzed
 | CompressedLength                        | long      | Yes, for ZIP entries       | The compressed size of the assembly                                    |
 | EntryUncompressedLength                 | long      | Yes, for ZIP entries       | The uncompressed size of the assembly                                  |
 | ActualUncompressedLength                | long      | Yes, for valid ZIP entries | The uncompressed size of the assembly                                  |
-| FileSHA256                              | long      | Yes, for valid ZIP entries | The Base64 encoded SHA256 hash of the assembly file                    |
+| FileSHA256                              | string    | Yes, for valid ZIP entries | The Base64 encoded SHA256 hash of the assembly file                    |
 | HasException                            | bool      | Yes, for ValidAssembly     | Whether an exception was thrown while reading .NET assembly metadata   |
 | AssemblyName                            | string    | Yes, for ValidAssembly     | The .NET assembly Name                                                 |
 | AssemblyVersion                         | string    | Yes, for ValidAssembly     | The .NET assembly version                                              |
 | Culture                                 | string    | No                         | The culture of the .NET assembly                                       |
 | AssemblyNameHasCultureNotFoundException | bool      | No                         | The culture in the .NET assembly is unrecognized                       |
 | AssemblyNameHasFileLoadException        | bool      | No                         | Reading the assembly name failed with a file load exception            |
-| PublicKeyToken                          | bool      | No                         | The public key token for .NET assembly strong naming                   |
+| PublicKeyToken                          | string    | No                         | The public key token for .NET assembly strong naming                   |
 | PublicKeyTokenHasSecurityException      | bool      | No                         | Reading the public key token threw a security exception                |
 | HashAlgorithm                           | enum      | Yes, for ValidAssembly     | The hash algorithm enum for the assembly                               |
 | HasPublicKey                            | bool      | Yes, for ValidAssembly     | Whether or not the .NET assembly has a public key                      |
@@ -65,6 +65,15 @@ The ResultType enum indicates the possible variants of records.
 | NotManagedAssembly     | The record is about an unmanaged assembly                           |
 | ValidAssembly          | The record is about a valid .NET assembly                           |
 
-## HashAlgorithm enum
+## HashAlgorithm schema
 
 The HashAlgorithm enum is the .NET [System.Reflection.HashAlgorithm](https://docs.microsoft.com/en-us/dotnet/api/system.reflection.assemblyname.hashalgorithm) type.
+
+| Enum value |
+| ---------- |
+| MD5        |
+| None       |
+| Sha1       |
+| Sha256     |
+| Sha384     |
+| Sha512     |

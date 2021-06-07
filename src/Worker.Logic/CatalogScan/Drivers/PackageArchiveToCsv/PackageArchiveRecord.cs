@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -32,9 +32,9 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
         public string SHA512 { get; set; }
 
         public long OffsetAfterEndOfCentralDirectory { get; set; }
-        public long CentralDirectorySize { get; set; }
-        public long OffsetOfCentralDirectory { get; set; }
-        public long EntryCount { get; set; }
+        public uint CentralDirectorySize { get; set; }
+        public uint OffsetOfCentralDirectory { get; set; }
+        public int EntryCount { get; set; }
         public string Comment { get; set; }
     }
 }

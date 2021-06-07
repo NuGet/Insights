@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Text;
@@ -30,7 +30,9 @@ namespace NuGet.Insights
             switch (propertyType)
             {
                 case "bool":
+                case "ushort":
                 case "short":
+                case "uint":
                 case "int":
                 case "long":
                 case "System.Guid":
@@ -38,7 +40,9 @@ namespace NuGet.Insights
                     _builder.AppendFormat("{0} = {1}.Parse(getNextField()),", symbol.Name, prettyPropType);
                     break;
                 case "bool?":
+                case "ushort?":
                 case "short?":
+                case "uint?":
                 case "int?":
                 case "long?":
                 case "System.Guid?":

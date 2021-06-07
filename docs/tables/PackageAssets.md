@@ -70,6 +70,7 @@ The PatternSet enum has the following values. Comments are copied from NuGet.Cli
 | CompileLibAssemblies       | Pattern used to locate lib assemblies for compile.                                                    |
 | CompileRefAssemblies       | Pattern used to locate ref assemblies for compile.                                                    |
 | ContentFiles               | Pattern used to identify content files                                                                |
+| EmbedAssemblies            | Pattern used to locate embed interop types assemblies                                                 |
 | MSBuildFiles               | Pattern used to identify MSBuild targets and props files                                              |
 | MSBuildMultiTargetingFiles | Pattern used to identify MSBuild global targets and props files                                       |
 | MSBuildTransitiveFiles     | Pattern used to identify MSBuild transitive targets and props files                                   |

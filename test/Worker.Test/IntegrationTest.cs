@@ -160,8 +160,8 @@ namespace NuGet.Insights.Worker
                 await ProcessQueueAsync(() => { }, () => Task.FromResult(true));
 
                 // Assert
-                await AssertBlobCountAsync(Options.Value.PackageDownloadsContainerName, 1);
-                await AssertBlobCountAsync(Options.Value.PackageOwnersContainerName, 1);
+                await AssertBlobCountAsync(Options.Value.PackageDownloadContainerName, 1);
+                await AssertBlobCountAsync(Options.Value.PackageOwnerContainerName, 1);
             }
         }
 

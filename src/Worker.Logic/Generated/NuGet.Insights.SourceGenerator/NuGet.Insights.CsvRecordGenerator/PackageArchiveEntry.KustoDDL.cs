@@ -31,10 +31,10 @@ namespace NuGet.Insights
     Flags: int,
     CompressionMethod: int,
     LastModified: datetime,
-    Crc32: long,
-    CompressedSize: long,
-    UncompressedSize: long,
-    LocalHeaderOffset: long,
+    Crc32: int,
+    CompressedSize: int,
+    UncompressedSize: int,
+    LocalHeaderOffset: int,
     Comment: string
 )",
 
@@ -57,10 +57,10 @@ namespace NuGet.Insights
     '{""Column"":""Flags"",""DataType"":""int"",""Properties"":{""Ordinal"":14}},'
     '{""Column"":""CompressionMethod"",""DataType"":""int"",""Properties"":{""Ordinal"":15}},'
     '{""Column"":""LastModified"",""DataType"":""datetime"",""Properties"":{""Ordinal"":16}},'
-    '{""Column"":""Crc32"",""DataType"":""long"",""Properties"":{""Ordinal"":17}},'
-    '{""Column"":""CompressedSize"",""DataType"":""long"",""Properties"":{""Ordinal"":18}},'
-    '{""Column"":""UncompressedSize"",""DataType"":""long"",""Properties"":{""Ordinal"":19}},'
-    '{""Column"":""LocalHeaderOffset"",""DataType"":""long"",""Properties"":{""Ordinal"":20}},'
+    '{""Column"":""Crc32"",""DataType"":""int"",""Properties"":{""Ordinal"":17}},'
+    '{""Column"":""CompressedSize"",""DataType"":""int"",""Properties"":{""Ordinal"":18}},'
+    '{""Column"":""UncompressedSize"",""DataType"":""int"",""Properties"":{""Ordinal"":19}},'
+    '{""Column"":""LocalHeaderOffset"",""DataType"":""int"",""Properties"":{""Ordinal"":20}},'
     '{""Column"":""Comment"",""DataType"":""string"",""Properties"":{""Ordinal"":21}}'
 ']'",
         };

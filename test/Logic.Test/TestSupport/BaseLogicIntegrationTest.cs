@@ -239,16 +239,7 @@ namespace NuGet.Insights
 
             var sourcePath = Path.GetFullPath(testDataFile);
             var projectDir = sourcePath.Contains("Worker.Logic.Test") ? "Worker.Logic.Test" : "Logic.Test";
-
-            const string markerFile = "NuGet.config";
-            var repoDir = Directory.GetCurrentDirectory();
-            while (repoDir != null && !Directory.GetFiles(repoDir).Any(x => Path.GetFileName(x) == markerFile))
-            {
-                repoDir = Path.GetDirectoryName(repoDir);
-            }
-
-            Assert.NotNull(repoDir);
-
+            var repoDir = TestSettings.GetRepositoryRoot();
             var destPath = Path.Combine(repoDir, "test", projectDir, testDataFile);
             Directory.CreateDirectory(Path.GetDirectoryName(destPath));
 

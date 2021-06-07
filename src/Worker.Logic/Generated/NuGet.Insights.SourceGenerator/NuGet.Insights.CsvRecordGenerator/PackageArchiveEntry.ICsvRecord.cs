@@ -31,10 +31,10 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
         Flags: int,
         CompressionMethod: int,
         LastModified: datetime,
-        Crc32: long,
-        CompressedSize: long,
-        UncompressedSize: long,
-        LocalHeaderOffset: long,
+        Crc32: int,
+        CompressedSize: int,
+        UncompressedSize: int,
+        LocalHeaderOffset: int,
         Comment: string
     );
 
@@ -70,10 +70,10 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
         '{"Column":"Flags","DataType":"int","Properties":{"Ordinal":14}},'
         '{"Column":"CompressionMethod","DataType":"int","Properties":{"Ordinal":15}},'
         '{"Column":"LastModified","DataType":"datetime","Properties":{"Ordinal":16}},'
-        '{"Column":"Crc32","DataType":"long","Properties":{"Ordinal":17}},'
-        '{"Column":"CompressedSize","DataType":"long","Properties":{"Ordinal":18}},'
-        '{"Column":"UncompressedSize","DataType":"long","Properties":{"Ordinal":19}},'
-        '{"Column":"LocalHeaderOffset","DataType":"long","Properties":{"Ordinal":20}},'
+        '{"Column":"Crc32","DataType":"int","Properties":{"Ordinal":17}},'
+        '{"Column":"CompressedSize","DataType":"int","Properties":{"Ordinal":18}},'
+        '{"Column":"UncompressedSize","DataType":"int","Properties":{"Ordinal":19}},'
+        '{"Column":"LocalHeaderOffset","DataType":"int","Properties":{"Ordinal":20}},'
         '{"Column":"Comment","DataType":"string","Properties":{"Ordinal":21}}'
     ']'
 
@@ -227,13 +227,13 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
                 FileName = getNextField(),
                 FileExtension = getNextField(),
                 TopLevelFolder = getNextField(),
-                Flags = int.Parse(getNextField()),
-                CompressionMethod = int.Parse(getNextField()),
+                Flags = ushort.Parse(getNextField()),
+                CompressionMethod = ushort.Parse(getNextField()),
                 LastModified = CsvUtility.ParseDateTimeOffset(getNextField()),
-                Crc32 = long.Parse(getNextField()),
-                CompressedSize = long.Parse(getNextField()),
-                UncompressedSize = long.Parse(getNextField()),
-                LocalHeaderOffset = long.Parse(getNextField()),
+                Crc32 = uint.Parse(getNextField()),
+                CompressedSize = uint.Parse(getNextField()),
+                UncompressedSize = uint.Parse(getNextField()),
+                LocalHeaderOffset = uint.Parse(getNextField()),
                 Comment = getNextField(),
             };
         }

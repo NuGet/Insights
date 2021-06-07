@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -32,13 +32,13 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
         public string FileExtension { get; set; }
         public string TopLevelFolder { get; set; }
 
-        public int Flags { get; set; }
-        public int CompressionMethod { get; set; }
+        public ushort Flags { get; set; }
+        public ushort CompressionMethod { get; set; }
         public DateTimeOffset LastModified { get; set; }
-        public long Crc32 { get; set; }
-        public long CompressedSize { get; set; }
-        public long UncompressedSize { get; set; }
-        public long LocalHeaderOffset { get; set; }
+        public uint Crc32 { get; set; }
+        public uint CompressedSize { get; set; }
+        public uint UncompressedSize { get; set; }
+        public uint LocalHeaderOffset { get; set; }
         public string Comment { get; set; }
     }
 }

@@ -3,7 +3,6 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssemblyName>NuGet.Insights.Worker.Logic</AssemblyName>
     <RootNamespace>NuGet.Insights.Worker</RootNamespace>
-    <LangVersion>9.0</LangVersion>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
@@ -13,6 +12,9 @@
   </ItemGroup>
   <ItemGroup Condition="'$(EnableNPE)' != 'true'">
     <Compile Remove="CatalogScan\Drivers\NuGetPackageExplorerToCsv\*" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Logic\IsExternalInit.cs" Link="IsExternalInit.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Kusto.Ingest" Version="9.2.0" />

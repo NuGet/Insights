@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,11 +15,5 @@ namespace NuGet.Insights
         DependencyMinHasBuildMetadata = 1 << 3,
         DependencyMaxHasPrereleaseDots = 1 << 4,
         DependencyMaxHasBuildMetadata = 1 << 5,
-        SemVer2 = VersionHasPrereleaseDots
-            | VersionHasBuildMetadata
-            | DependencyMinHasPrereleaseDots
-            | DependencyMinHasBuildMetadata
-            | DependencyMaxHasPrereleaseDots
-            | DependencyMaxHasBuildMetadata,
     }
 }

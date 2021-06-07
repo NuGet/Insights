@@ -110,7 +110,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             fields.Add(CsvUtility.FormatDateTimeOffset(CatalogCommitTimestamp));
             fields.Add(CsvUtility.FormatDateTimeOffset(Created));
             fields.Add(ResultType.ToString());
-            fields.Add(PatternSet);
+            fields.Add(PatternSet.ToString());
             fields.Add(PropertyAnyValue);
             fields.Add(PropertyCodeLanguage);
             fields.Add(PropertyTargetFrameworkMoniker);
@@ -151,7 +151,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, ResultType.ToString());
             writer.Write(',');
-            CsvUtility.WriteWithQuotes(writer, PatternSet);
+            CsvUtility.WriteWithQuotes(writer, PatternSet.ToString());
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, PropertyAnyValue);
             writer.Write(',');
@@ -211,7 +211,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, ResultType.ToString());
             await writer.WriteAsync(',');
-            await CsvUtility.WriteWithQuotesAsync(writer, PatternSet);
+            await CsvUtility.WriteWithQuotesAsync(writer, PatternSet.ToString());
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, PropertyAnyValue);
             await writer.WriteAsync(',');
@@ -264,7 +264,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
                 CatalogCommitTimestamp = CsvUtility.ParseDateTimeOffset(getNextField()),
                 Created = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
                 ResultType = Enum.Parse<PackageAssetResultType>(getNextField()),
-                PatternSet = getNextField(),
+                PatternSet = CsvUtility.ParseNullable(getNextField(), Enum.Parse<PatternSetType>),
                 PropertyAnyValue = getNextField(),
                 PropertyCodeLanguage = getNextField(),
                 PropertyTargetFrameworkMoniker = getNextField(),

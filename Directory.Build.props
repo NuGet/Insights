@@ -13,6 +13,9 @@
     <OutputPath>$(BaseOutputPath)$(Configuration)\</OutputPath>
   </PropertyGroup>
   <PropertyGroup>
+    <LangVersion>9.0</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup>
     <EnableNPE Condition="'$(EnableNPE)' == '' and $([MSBuild]::IsOSPlatform('Windows'))">true</EnableNPE>
     <EnableNPE Condition="'$(EnableNPE)' == ''">false</EnableNPE>
     <DefineConstants Condition="'$(EnableNPE)' == 'true'">$(DefineConstants);ENABLE_NPE</DefineConstants>

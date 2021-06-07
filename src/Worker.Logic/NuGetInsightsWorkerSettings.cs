@@ -48,8 +48,8 @@ namespace NuGet.Insights.Worker
             PackageManifestContainerName = "packagemanifests";
             PackageSignatureContainerName = "packagesignatures";
             CatalogLeafItemContainerName = "catalogleafitems";
-            PackageDownloadsContainerName = "packagedownloads";
-            PackageOwnersContainerName = "packageowners";
+            PackageDownloadContainerName = "packagedownloads";
+            PackageOwnerContainerName = "packageowners";
             PackageArchiveContainerName = "packagearchives";
             PackageArchiveEntryContainerName = "packagearchiveentries";
             PackageVersionTableName = "packageversions";
@@ -103,8 +103,8 @@ namespace NuGet.Insights.Worker
         public string PackageManifestContainerName { get; set; }
         public string PackageSignatureContainerName { get; set; }
         public string CatalogLeafItemContainerName { get; set; }
-        public string PackageDownloadsContainerName { get; set; }
-        public string PackageOwnersContainerName { get; set; }
+        public string PackageDownloadContainerName { get; set; }
+        public string PackageOwnerContainerName { get; set; }
         public string PackageArchiveContainerName { get; set; }
         public string PackageArchiveEntryContainerName { get; set; }
         public string PackageVersionTableName { get; set; }

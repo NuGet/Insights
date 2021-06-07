@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Text;
@@ -30,6 +30,10 @@ namespace NuGet.Insights
 
             switch (symbol.Type.ToString())
             {
+                case "ushort":
+                case "ushort?":
+                case "uint":
+                case "uint?":
                 case "int":
                 case "int?":
                 case "long":

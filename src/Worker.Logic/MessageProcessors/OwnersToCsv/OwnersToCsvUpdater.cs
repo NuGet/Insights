@@ -28,7 +28,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
 
         public string OperationName => "OwnersToCsv";
         public string BlobName => "owners";
-        public string ContainerName => _options.Value.PackageOwnersContainerName;
+        public string ContainerName => _options.Value.PackageOwnerContainerName;
         public TimeSpan Frequency => _options.Value.OwnersToCsvFrequency;
         public bool HasRequiredConfiguration => _options.Value.OwnersV2Url != null;
         public bool AutoStart => _options.Value.AutoStartOwnersToCsv;

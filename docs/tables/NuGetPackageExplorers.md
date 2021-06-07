@@ -29,7 +29,7 @@ and contains package-level summary information. The purpose of this table is to 
 | ResultType             | enum      | Yes                | Type of record (e.g. Available, Deleted)                                                                                         |
 | SourceLinkResult       | enum      | Yes, for Available | Result of validating the symbols and [SourceLink](https://github.com/dotnet/sourcelink) information for the whole package        |
 | DeterministicResult    | enum      | Yes, for Available | Result of validating whether the assemblies are built with deterministic settings                                                |
-| HasCompilerFlagsResult | enum      | Yes, for Available | Result of validating compiler flags related to reproducibility                                                                   |
+| CompilerFlagsResult    | enum      | Yes, for Available | Result of validating compiler flags related to reproducibility                                                                   |
 | IsSignedByAuthor       | bool      | Yes, for Available | Whether or not the package has an [author signature](https://docs.microsoft.com/en-us/nuget/reference/signed-packages-reference) |
 
 ## ResultType schema
@@ -69,9 +69,9 @@ The DeterministicResult enum has the following values.
 | NothingToValidate   | The package has no assemblies to validate                              |
 | Valid               | The package has deterministic assemblies and sources                   |
 
-## HasCompilerFlagsResult schema
+## CompilerFlagsResult schema
 
-The HasCompilerFlagsResult enum has the following values.
+The CompilerFlagsResult enum has the following values.
 
 | Enum value        | Description                                                                |
 | ----------------- | -------------------------------------------------------------------------- |

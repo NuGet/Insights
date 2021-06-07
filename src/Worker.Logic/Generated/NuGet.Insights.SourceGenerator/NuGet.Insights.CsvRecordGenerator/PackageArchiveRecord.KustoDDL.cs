@@ -29,9 +29,9 @@ namespace NuGet.Insights
     SHA256: string,
     SHA512: string,
     OffsetAfterEndOfCentralDirectory: long,
-    CentralDirectorySize: long,
-    OffsetOfCentralDirectory: long,
-    EntryCount: long,
+    CentralDirectorySize: int,
+    OffsetOfCentralDirectory: int,
+    EntryCount: int,
     Comment: string
 )",
 
@@ -52,9 +52,9 @@ namespace NuGet.Insights
     '{""Column"":""SHA256"",""DataType"":""string"",""Properties"":{""Ordinal"":12}},'
     '{""Column"":""SHA512"",""DataType"":""string"",""Properties"":{""Ordinal"":13}},'
     '{""Column"":""OffsetAfterEndOfCentralDirectory"",""DataType"":""long"",""Properties"":{""Ordinal"":14}},'
-    '{""Column"":""CentralDirectorySize"",""DataType"":""long"",""Properties"":{""Ordinal"":15}},'
-    '{""Column"":""OffsetOfCentralDirectory"",""DataType"":""long"",""Properties"":{""Ordinal"":16}},'
-    '{""Column"":""EntryCount"",""DataType"":""long"",""Properties"":{""Ordinal"":17}},'
+    '{""Column"":""CentralDirectorySize"",""DataType"":""int"",""Properties"":{""Ordinal"":15}},'
+    '{""Column"":""OffsetOfCentralDirectory"",""DataType"":""int"",""Properties"":{""Ordinal"":16}},'
+    '{""Column"":""EntryCount"",""DataType"":""int"",""Properties"":{""Ordinal"":17}},'
     '{""Column"":""Comment"",""DataType"":""string"",""Properties"":{""Ordinal"":18}}'
 ']'",
         };

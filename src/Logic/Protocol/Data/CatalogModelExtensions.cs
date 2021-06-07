@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -192,9 +192,16 @@ namespace NuGet.Insights
             return leaf.Published.Year != 1900;
         }
 
+        private const SemVerType SemVer2 = SemVerType.VersionHasPrereleaseDots
+            | SemVerType.VersionHasBuildMetadata
+            | SemVerType.DependencyMinHasPrereleaseDots
+            | SemVerType.DependencyMinHasBuildMetadata
+            | SemVerType.DependencyMaxHasPrereleaseDots
+            | SemVerType.DependencyMaxHasBuildMetadata;
+
         public static bool IsSemVer2(this SemVerType type)
         {
-            return (type & SemVerType.SemVer2) != 0;
+            return (type & SemVer2) != 0;
         }
 
         /// <summary>

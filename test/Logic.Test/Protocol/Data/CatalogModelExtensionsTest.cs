@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -57,10 +57,7 @@ namespace NuGet.Insights
                 var actual = leaf.GetSemVerType();
 
                 Assert.Equal(expected, actual);
-                if (expected != SemVerType.SemVer1)
-                {
-                    Assert.NotEqual((SemVerType)0, actual & SemVerType.SemVer2);
-                }
+                Assert.Equal(expected != SemVerType.SemVer1, actual.IsSemVer2());
             }
 
             [Theory]
@@ -85,7 +82,6 @@ namespace NuGet.Insights
                 { SemVerType.DependencyMinHasBuildMetadata, 8 },
                 { SemVerType.DependencyMaxHasPrereleaseDots, 16 },
                 { SemVerType.DependencyMaxHasBuildMetadata, 32 },
-                { SemVerType.SemVer2, 63 },
             };
         }
     }

@@ -28,7 +28,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
 
         public string OperationName => "DownloadsToCsv";
         public string BlobName => "downloads";
-        public string ContainerName => _options.Value.PackageDownloadsContainerName;
+        public string ContainerName => _options.Value.PackageDownloadContainerName;
         public TimeSpan Frequency => _options.Value.DownloadToCsvFrequency;
         public bool HasRequiredConfiguration => _options.Value.DownloadsV1Url != null;
         public bool AutoStart => _options.Value.AutoStartDownloadToCsv;

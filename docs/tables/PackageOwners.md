@@ -22,3 +22,7 @@ The owners are represented by their username. A package owner can either be an i
 | LowerId       | string           | Yes      | Lowercase package ID. Good for joins                      |
 | Id            | string           | Yes      | Original case package ID for an arbitrary package version |
 | Owners        | array of strings | Yes      | Zero or more package owners                               |
+
+## Owners schema
+
+The Owners column is an array of strings where each string is either the username of a user or an organization on NuGet.org. This array can be empty, meaning the package has no owners.

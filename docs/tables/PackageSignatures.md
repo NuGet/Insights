@@ -32,13 +32,13 @@ This table contains metadata about NuGet package signature information. It inclu
 | AuthorSubject                   | string           | No                 | The Subject distinguished name of the author signing certificate                                             |
 | AuthorNotBefore                 | timestamp        | No                 | The start of the validity period for the author signing certificate                                          |
 | AuthorNotAfter                  | timestamp        | No                 | The end of the validity period for the author signing certificate                                            |
-| AuthorIssuer                    | timestamp        | No                 | The Subject distinguished name of the direct issuer of the author signing certificate                        |
+| AuthorIssuer                    | string           | No                 | The Subject distinguished name of the direct issuer of the author signing certificate                        |
 | AuthorTimestampSHA1             | string           | No                 | The SHA1 fingerprint of timestamp certificate in the author signature                                        |
 | AuthorTimestampSHA256           | string           | No                 | The SHA256 fingerprint of timestamp certificate in the author signature                                      |
 | AuthorTimestampSubject          | string           | No                 | The Subject distinguished name of the timestamp certificate in the author signature                          |
 | AuthorTimestampNotBefore        | timestamp        | No                 | The start of the validity period for the timestamp certificate in the author signature                       |
 | AuthorTimestampNotAfter         | timestamp        | No                 | The end of the validity period for the timestamp certificate in the author signature                         |
-| AuthorTimestampIssuer           | timestamp        | No                 | The Subject distinguished name of the direct issuer of the timestamp certificate in the author signature     |
+| AuthorTimestampIssuer           | string           | No                 | The Subject distinguished name of the direct issuer of the timestamp certificate in the author signature     |
 | AuthorTimestampValue            | timestamp        | No                 | The value of the timestamp in the author signature                                                           |
 | AuthorTimestampHasASN1Error     | bool             | Yes                | Whether the author signature timestamp has an ASN.1 error, defaults to false                                 |
 | RepositorySHA1                  | string           | Yes, for Available | The SHA1 fingerprint of the repository signing certificate                                                   |
@@ -46,13 +46,13 @@ This table contains metadata about NuGet package signature information. It inclu
 | RepositorySubject               | string           | Yes, for Available | The Subject distinguished name of the repository signing certificate                                         |
 | RepositoryNotBefore             | timestamp        | Yes, for Available | The start of the validity period for the repository signing certificate                                      |
 | RepositoryNotAfter              | timestamp        | Yes, for Available | The end of the validity period for the repository signing certificate                                        |
-| RepositoryIssuer                | timestamp        | Yes, for Available | The Subject distinguished name of the direct issuer of the repository signing certificate                    |
+| RepositoryIssuer                | string           | Yes, for Available | The Subject distinguished name of the direct issuer of the repository signing certificate                    |
 | RepositoryTimestampSHA1         | string           | Yes, for Available | The SHA1 fingerprint of timestamp certificate in the repository signature                                    |
 | RepositoryTimestampSHA256       | string           | Yes, for Available | The SHA256 fingerprint of timestamp certificate in the repository signature                                  |
 | RepositoryTimestampSubject      | string           | Yes, for Available | The Subject distinguished name of the timestamp certificate in the repository signature                      |
 | RepositoryTimestampNotBefore    | timestamp        | Yes, for Available | The start of the validity period for the timestamp certificate in the repository signature                   |
 | RepositoryTimestampNotAfter     | timestamp        | Yes, for Available | The end of the validity period for the timestamp certificate in the repository signature                     |
-| RepositoryTimestampIssuer       | timestamp        | Yes, for Available | The Subject distinguished name of the direct issuer of the timestamp certificate in the repository signature |
+| RepositoryTimestampIssuer       | string           | Yes, for Available | The Subject distinguished name of the direct issuer of the timestamp certificate in the repository signature |
 | RepositoryTimestampValue        | timestamp        | Yes, for Available | The value of the timestamp in the repository signature                                                       |
 | RepositoryTimestampHasASN1Error | bool             | Yes                | Whether the repository signature timestamp has an ASN.1 error, defaults to false                             |
 | PackageOwners                   | array of strings | No                 | The owner usernames of the package at the time of publishing                                                 |
@@ -72,10 +72,10 @@ The HashAlgorithm enum has the following values:
 
 | Enum value | Description                                   |
 | ---------- | --------------------------------------------- |
-| Unknown    | The signature hash algorithm is unknown.      |
 | SHA256     | The signature uses the SAH256 hash algorithm. |
 | SHA384     | The signature uses the SHA384 hash algorithm. |
 | SHA512     | The signature uses the SHA512 hash algorithm. |
+| Unknown    | The signature hash algorithm is unknown.      |
 
 ## PackageOwners schema
 

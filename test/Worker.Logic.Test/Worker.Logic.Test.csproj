@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <IsPackable>false</IsPackable>
@@ -9,6 +9,11 @@
     <Compile Remove="CatalogScan\Drivers\NuGetPackageExplorerToCsv\*" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\src\Logic\IsExternalInit.cs" Link="IsExternalInit.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Humanizer.Core" Version="2.8.26" />
+    <PackageReference Include="Markdig.Signed" Version="0.24.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.12" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">

@@ -130,8 +130,8 @@ namespace NuGet.Insights.Worker
             x.PackageManifestContainerName = $"{StoragePrefix}1pm2c1";
             x.PackageSignatureContainerName = $"{StoragePrefix}1fps1";
             x.CatalogLeafItemContainerName = $"{StoragePrefix}1fcli1";
-            x.PackageDownloadsContainerName = $"{StoragePrefix}1pd1";
-            x.PackageOwnersContainerName = $"{StoragePrefix}1po1";
+            x.PackageDownloadContainerName = $"{StoragePrefix}1pd1";
+            x.PackageOwnerContainerName = $"{StoragePrefix}1po1";
             x.PackageArchiveContainerName = $"{StoragePrefix}1pa2c1";
             x.PackageArchiveEntryContainerName = $"{StoragePrefix}1pae2c1";
             x.NuGetPackageExplorerContainerName = $"{StoragePrefix}1npe2c1";
