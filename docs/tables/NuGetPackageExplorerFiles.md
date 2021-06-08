@@ -12,7 +12,7 @@ and contains file-level information. The purpose of this table is to assess the 
 | Column used for partitioning | Identity                                                                                                                                     |
 | Data file container name     | nugetpackageexplorerfiles                                                                                                                    |
 | Driver implementation        | [`NuGetPackageExplorerToCsvDriver`](../../src/Worker.Logic/CatalogScan/Drivers/NuGetPackageExplorerToCsv/NuGetPackageExplorerToCsvDriver.cs) |
-| Record type                  | [`NuGetPackageExplorerFileRecord`](../../src/Worker.Logic/CatalogScan/Drivers/NuGetPackageExplorerToCsv/NuGetPackageExplorerFileRecord.cs)   |
+| Record type                  | [`NuGetPackageExplorerFile`](../../src/Worker.Logic/CatalogScan/Drivers/NuGetPackageExplorerToCsv/NuGetPackageExplorerFile.cs)               |
 
 ## Table schema
 

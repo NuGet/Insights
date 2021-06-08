@@ -16,7 +16,7 @@ namespace NuGet.Insights.Worker
 {
     public class DocsTest
     {
-        [Fact]
+        [DocsFact]
         public void AllTablesAreListedInREADME()
         {
             var info = new DocInfo(Path.Combine("tables", "README.md"));
@@ -56,7 +56,7 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        [Theory]
+        [DocsTheory]
         [MemberData(nameof(TableNameTestData))]
         public void TableIsDocumented(string tableName)
         {
@@ -64,7 +64,7 @@ namespace NuGet.Insights.Worker
             Assert.True(File.Exists(info.DocPath), $"The {tableName} table should be documented at {info.DocPath}");
         }
 
-        [Theory]
+        [DocsTheory]
         [MemberData(nameof(TableNameTestData))]
         public void HasDefaultTableNameHeading(string tableName)
         {
@@ -77,7 +77,7 @@ namespace NuGet.Insights.Worker
             Assert.Equal(tableName, info.ToPlainText(heading));
         }
 
-        [Theory]
+        [DocsTheory]
         [MemberData(nameof(TableNameTestData))]
         public void FirstTableIsGeneralTableProperties(string tableName)
         {
@@ -124,7 +124,7 @@ namespace NuGet.Insights.Worker
             Assert.Equal(i, rows.Count);
         }
 
-        [Theory]
+        [DocsTheory]
         [MemberData(nameof(TableNameTestData))]
         public void TableSchemaMatchesRecordType(string tableName)
         {
@@ -171,7 +171,7 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        [Theory]
+        [DocsTheory]
         [MemberData(nameof(TableNameTestData))]
         public void AllDynamicColumnsAreDocumented(string tableName)
         {
@@ -193,7 +193,7 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        [Theory]
+        [DocsTheory]
         [MemberData(nameof(TableNameTestData))]
         public void AllEnumsAreDocumented(string tableName)
         {
