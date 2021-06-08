@@ -7,10 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Castle.Core.Internal;
-using Humanizer;
-using Markdig;
 using Markdig.Extensions.Tables;
-using Markdig.Renderers;
 using Markdig.Syntax;
 using Xunit;
 using Xunit.Abstractions;
@@ -63,7 +60,7 @@ namespace NuGet.Insights.Worker
         [MemberData(nameof(TableNameTestData))]
         public void TableIsDocumented(string tableName)
         {
-            var info = new TableInfo(tableName);
+            var info = new TableDocInfo(tableName);
             Assert.True(File.Exists(info.DocPath), $"The {tableName} table should be documented at {info.DocPath}");
         }
 
@@ -71,7 +68,7 @@ namespace NuGet.Insights.Worker
         [MemberData(nameof(TableNameTestData))]
         public void HasDefaultTableNameHeading(string tableName)
         {
-            var info = new TableInfo(tableName);
+            var info = new TableDocInfo(tableName);
             info.ReadMarkdown();
 
             var obj = info.MarkdownDocument.First();
@@ -84,7 +81,7 @@ namespace NuGet.Insights.Worker
         [MemberData(nameof(TableNameTestData))]
         public void FirstTableIsGeneralTableProperties(string tableName)
         {
-            var info = new TableInfo(tableName);
+            var info = new TableDocInfo(tableName);
             info.ReadMarkdown();
 
             var table = info.MarkdownDocument.OfType<Table>().FirstOrDefault();
@@ -114,12 +111,7 @@ namespace NuGet.Insights.Worker
             i++;
             Assert.Equal("Data file container name", info.ToPlainText(rows[i][0]));
             var containerName = info.ToPlainText(rows[i][1]);
-            var settings = new NuGetInsightsWorkerSettings();
-            var settingsProperties = settings.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
-            var containerNamePropertyName = $"{tableName.Singularize()}ContainerName";
-            Assert.Contains(containerNamePropertyName, settingsProperties.Select(x => x.Name).Where(x => x.EndsWith("ContainerName")));
-            var defaultContainerName = Assert.IsType<string>(settingsProperties.Single(x => x.Name == containerNamePropertyName).GetValue(settings));
-            Assert.Equal(defaultContainerName, containerName);
+            Assert.Equal(info.DefaultContainerName, containerName);
 
             i++;
             Assert.Equal("Driver implementation", info.ToPlainText(rows[i][0]));
@@ -136,7 +128,7 @@ namespace NuGet.Insights.Worker
         [MemberData(nameof(TableNameTestData))]
         public void TableSchemaMatchesRecordType(string tableName)
         {
-            var info = new TableInfo(tableName);
+            var info = new TableDocInfo(tableName);
             info.ReadMarkdown();
             var table = info.GetTableAfterHeading("Table schema");
 
@@ -183,7 +175,7 @@ namespace NuGet.Insights.Worker
         [MemberData(nameof(TableNameTestData))]
         public void AllDynamicColumnsAreDocumented(string tableName)
         {
-            var info = new TableInfo(tableName);
+            var info = new TableDocInfo(tableName);
             info.ReadMarkdown();
 
             var dynamicColumns = info
@@ -205,13 +197,13 @@ namespace NuGet.Insights.Worker
         [MemberData(nameof(TableNameTestData))]
         public void AllEnumsAreDocumented(string tableName)
         {
-            var info = new TableInfo(tableName);
+            var info = new TableDocInfo(tableName);
             info.ReadMarkdown();
 
             var enumTypes = info
                 .NameToProperty
                 .Values
-                .Select(x => TryGetEnumType(x.PropertyType, out var enumType) ? (x.Name, enumType) : default)
+                .Select(x => TableDocInfo.TryGetEnumType(x.PropertyType, out var enumType) ? (x.Name, enumType) : default)
                 .Where(x => x != default);
             var headings = info.GetHeadings();
 
@@ -257,74 +249,21 @@ namespace NuGet.Insights.Worker
         private static void AssertDataTypeMatchesProperty(string dataType, PropertyInfo property)
         {
             var propertyType = property.PropertyType;
-            if (property.GetAttribute<KustoTypeAttribute>()?.KustoType == "dynamic")
+            if (TableDocInfo.IsDynamic(property))
             {
                 Assert.Equal(typeof(string), propertyType);
                 Assert.Contains(dataType, new[] { "object", "array of objects", "array of strings" });
             }
-            else if (propertyType == typeof(string) || propertyType == typeof(Guid?) || propertyType == typeof(Version))
-            {
-                Assert.Equal("string", dataType);
-            }
-            else if (propertyType == typeof(bool) || propertyType == typeof(bool?))
-            {
-                Assert.Equal("bool", dataType);
-            }
-            else if (propertyType == typeof(ushort) || propertyType == typeof(ushort?))
-            {
-                Assert.Equal("ushort", dataType);
-            }
-            else if (propertyType == typeof(uint) || propertyType == typeof(uint?))
-            {
-                Assert.Equal("uint", dataType);
-            }
-            else if (propertyType == typeof(int) || propertyType == typeof(int?))
-            {
-                Assert.Equal("int", dataType);
-            }
-            else if (propertyType == typeof(long) || propertyType == typeof(long?))
-            {
-                Assert.Equal("long", dataType);
-            }
-            else if (propertyType == typeof(DateTimeOffset) || propertyType == typeof(DateTimeOffset?))
-            {
-                Assert.Equal("timestamp", dataType);
-            }
-            else if (TryGetEnumType(propertyType, out var enumType))
-            {
-                if (enumType.GetAttribute<FlagsAttribute>() != null)
-                {
-                    Assert.Equal("flags enum", dataType);
-                }
-                else
-                {
-                    Assert.Equal("enum", dataType);
-                }
-            }
             else
             {
-                throw new InvalidDataException($"Unknown data type '{dataType}' found for a property with type {propertyType.FullName}.");
+                var expectedDataType = TableDocInfo.GetExpectedDataType(property);
+                if (expectedDataType is null)
+                {
+                    throw new InvalidDataException($"Unknown data type '{dataType}' found for a property with type {propertyType.FullName}.");
+                }
+
+                Assert.Equal(expectedDataType, dataType);
             }
-        }
-
-        public static bool TryGetEnumType(Type type, out Type enumType)
-        {
-            enumType = type;
-
-            if (type.IsEnum)
-            {
-                return true;
-            }
-
-            if (type.IsGenericType
-                && type.GetGenericTypeDefinition() == typeof(Nullable<>)
-                && type.GenericTypeArguments[0].IsEnum)
-            {
-                enumType = type.GenericTypeArguments[0];
-                return true;
-            }
-
-            return false;
         }
 
         public static IReadOnlyList<string> TableNames => KustoDDL
@@ -340,96 +279,6 @@ namespace NuGet.Insights.Worker
         public DocsTest(ITestOutputHelper output)
         {
             _output = output;
-        }
-
-        private class DocInfo
-        {
-            public DocInfo(string docPath)
-            {
-                DocPath = Path.Combine(TestSettings.GetRepositoryRoot(), "docs", docPath);
-            }
-
-            public string DocPath { get; }
-            public string UnparsedMarkdown { get; private set; }
-            public MarkdownPipeline Pipeline { get; private set; }
-            public MarkdownDocument MarkdownDocument { get; private set; }
-
-            public void ReadMarkdown()
-            {
-                UnparsedMarkdown = File.ReadAllText(DocPath);
-                Pipeline = new MarkdownPipelineBuilder().UsePipeTables().Build();
-                MarkdownDocument = Markdown.Parse(UnparsedMarkdown, Pipeline);
-            }
-
-            public string GetMarkdown(MarkdownObject obj)
-            {
-                return UnparsedMarkdown.Substring(obj.Span.Start, obj.Span.Length);
-            }
-
-            public IReadOnlyList<string> GetHeadings()
-            {
-                return MarkdownDocument
-                    .OfType<HeadingBlock>()
-                    .Select(x => ToPlainText(x))
-                    .ToList();
-            }
-
-            public Table GetTableAfterHeading(string heading)
-            {
-                var nextObj = MarkdownDocument
-                    .SkipWhile(x => !(x is HeadingBlock) || ToPlainText(x) != heading)
-                    .Skip(1)
-                    .Where(x => x is not ParagraphBlock)
-                    .FirstOrDefault();
-                Assert.NotNull(nextObj);
-                return Assert.IsType<Table>(nextObj);
-            }
-
-            public string ToPlainText(MarkdownObject obj, bool trim = true)
-            {
-                using var writer = new StringWriter();
-                var render = new HtmlRenderer(writer)
-                {
-                    EnableHtmlForBlock = false,
-                    EnableHtmlForInline = false,
-                    EnableHtmlEscape = false,
-                };
-                Pipeline.Setup(render);
-
-                render.Render(obj);
-                writer.Flush();
-
-                var output = writer.ToString();
-                return trim ? output.Trim() : output;
-            }
-        }
-
-        private class TableInfo : DocInfo
-        {
-            public TableInfo(string tableName) : base(Path.Combine("tables", $"{tableName}.md"))
-            {
-                RecordType = KustoDDL.TypeToDefaultTableName.Single(x => x.Value == tableName).Key;
-
-                var recordInstance = (ICsvRecord)Activator.CreateInstance(RecordType);
-                using var csvHeaderWriter = new StringWriter();
-                recordInstance.WriteHeader(csvHeaderWriter);
-                NameToIndex = csvHeaderWriter
-                    .ToString()
-                    .Split(',')
-                    .Select((x, i) => (x, i))
-                    .ToDictionary(x => x.x.Trim(), x => x.i);
-
-                var nameToProperty = RecordType
-                    .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                    .ToDictionary(x => x.Name);
-                nameToProperty.Remove(nameof(ICsvRecord.FieldCount));
-                NameToProperty = nameToProperty;
-            }
-
-            public string TableName { get; }
-            public Type RecordType { get; }
-            public IReadOnlyDictionary<string, int> NameToIndex { get; }
-            public IReadOnlyDictionary<string, PropertyInfo> NameToProperty { get; }
         }
     }
 }
