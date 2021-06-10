@@ -58,7 +58,7 @@ namespace NuGet.Insights.Worker
 
                 var entities = await GetEntitiesAsync<TableEntity>();
                 var entity = Assert.Single(entities);
-                Assert.Equal(new[] { "ETag", "PartitionKey", "RowKey", "Timestamp", "Value" }, entity.Keys.OrderBy(x => x).ToArray());
+                Assert.Equal(new[] { "odata.etag", "PartitionKey", "RowKey", "Timestamp", "Value" }, entity.Keys.OrderBy(x => x).ToArray());
             }
         }
 
