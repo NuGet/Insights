@@ -325,11 +325,6 @@ namespace NuGet.Insights
                 Version = req.Version
             };
 
-            foreach (var prop in req.Properties)
-            {
-                clone.Properties.Add(prop);
-            }
-
             foreach (var header in req.Headers)
             {
                 clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
