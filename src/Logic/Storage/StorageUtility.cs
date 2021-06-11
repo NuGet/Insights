@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,7 +16,7 @@ namespace NuGet.Insights
         public const string PartitionKey = "PartitionKey";
         public const string RowKey = "RowKey";
         public const string Timestamp = "Timestamp";
-        public const string ETag = "ETag";
+        public const string ETag = "odata.etag";
 
         /// <summary>
         /// See: https://docs.microsoft.com/en-us/azure/data-explorer/lightingest#recommendations

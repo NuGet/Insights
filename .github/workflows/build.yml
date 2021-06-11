@@ -4,10 +4,7 @@ on:
   schedule:
     - cron: '0 12 * * *'
   push:
-    branches: [ main ]
   pull_request:
-    branches: [ main ]
-    types: [ opened, synchronize, reopened, labeled ]
 
 jobs:
   build:
@@ -31,18 +28,15 @@ jobs:
     - run: dotnet restore
     - run: dotnet build --no-restore
     - uses: Azure/login@v1
-      if: github.ref == 'refs/heads/main' || contains(github.event.pull_request.labels.*.name, 'run tests')
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
         allow-no-subscriptions: true
     - uses: Azure/get-keyvault-secrets@v1
-      if: github.ref == 'refs/heads/main' || contains(github.event.pull_request.labels.*.name, 'run tests')
       with:
         keyvault: ${{ secrets.NUGETINSIGHTS_KEYVAULTNAME }}
         secrets: '${{ secrets.NUGETINSIGHTS_STORAGESASSECRETNAME }}, ${{ secrets.NUGETINSIGHTS_STORAGEBLOBREADSASSECRETNAME }}'
       id: keyVault
     - run: dotnet test --no-build --verbosity normal
-      if: github.ref == 'refs/heads/main' || contains(github.event.pull_request.labels.*.name, 'run tests')
       env:
         NUGETINSIGHTS_STORAGEACCOUNTNAME: ${{ secrets.NUGETINSIGHTS_STORAGEACCOUNTNAME }}
         NUGETINSIGHTS_STORAGESAS: ${{ steps.keyVault.outputs[secrets.NUGETINSIGHTS_STORAGESASSECRETNAME] }}

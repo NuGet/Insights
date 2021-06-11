@@ -51,7 +51,7 @@ namespace NuGet.Insights
 
                 var entities = await GetEntitiesAsync<TableEntity>();
                 var entity = Assert.Single(entities);
-                Assert.Equal(new[] { "ETag", "IsEnabled", "PartitionKey", "RowKey", "Timestamp" }, entity.Keys.OrderBy(x => x).ToArray());
+                Assert.Equal(new[] { "IsEnabled", "odata.etag", "PartitionKey", "RowKey", "Timestamp" }, entity.Keys.OrderBy(x => x).ToArray());
                 Assert.Equal(isEnabled, entity.GetBoolean("IsEnabled"));
             }
 
@@ -68,7 +68,7 @@ namespace NuGet.Insights
 
                 var entities = await GetEntitiesAsync<TableEntity>();
                 var entity = Assert.Single(entities);
-                Assert.Equal(new[] { "ETag", "IsEnabled", "LastExecuted", "PartitionKey", "RowKey", "Timestamp" }, entity.Keys.OrderBy(x => x).ToArray());
+                Assert.Equal(new[] { "IsEnabled", "LastExecuted", "odata.etag", "PartitionKey", "RowKey", "Timestamp" }, entity.Keys.OrderBy(x => x).ToArray());
                 Assert.Equal(isEnabled, entity.GetBoolean("IsEnabled"));
                 Assert.InRange(entity.GetDateTimeOffset("LastExecuted").Value, before, after);
             }
