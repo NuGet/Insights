@@ -63,7 +63,7 @@ namespace NuGet.Insights.WideEntities
                 // Arrange
                 var content = Bytes.Slice(16 * 1024, 32 * 1024);
                 var partitionKey = StorageUtility.GenerateDescendingId().ToString();
-                var rowKey = "rk";
+                var rowKey = StorageUtility.GenerateDescendingId().ToString();
 
                 // Act
                 var newEntity = await Target.InsertOrReplaceAsync(TableName, partitionKey, rowKey, content);
@@ -81,7 +81,7 @@ namespace NuGet.Insights.WideEntities
                 var existingContent = Bytes.Slice(0, 1024 * 1024);
                 var newContent = Bytes.Slice(16 * 1024, 32 * 1024);
                 var partitionKey = StorageUtility.GenerateDescendingId().ToString();
-                var rowKey = "rk";
+                var rowKey = StorageUtility.GenerateDescendingId().ToString();
                 var existingEntity = await Target.InsertAsync(TableName, partitionKey, rowKey, existingContent);
 
                 // Act
@@ -109,7 +109,7 @@ namespace NuGet.Insights.WideEntities
                 // Arrange
                 var content = Bytes.Slice(0, WideEntityService.MaxTotalDataSize + 1);
                 var partitionKey = StorageUtility.GenerateDescendingId().ToString();
-                var rowKey = "rk";
+                var rowKey = StorageUtility.GenerateDescendingId().ToString();
 
                 // Act & Assert
                 var ex = await Assert.ThrowsAsync<ArgumentException>(() => Target.InsertAsync(TableName, partitionKey, rowKey, content));
@@ -123,7 +123,7 @@ namespace NuGet.Insights.WideEntities
                 var existingContent = Bytes.Slice(0, 1024 * 1024);
                 var newContent = Bytes.Slice(16 * 1024, 32 * 1024);
                 var partitionKey = StorageUtility.GenerateDescendingId().ToString();
-                var rowKey = "rk";
+                var rowKey = StorageUtility.GenerateDescendingId().ToString();
                 var existingEntity = await Target.InsertAsync(TableName, partitionKey, rowKey, existingContent);
 
                 // Act & Assert
@@ -148,7 +148,7 @@ namespace NuGet.Insights.WideEntities
                 var existingContent = Bytes.Slice(0, 1024 * 1024);
                 var newContent = Bytes.Slice(16 * 1024, 32 * 1024);
                 var partitionKey = StorageUtility.GenerateDescendingId().ToString();
-                var rowKey = "rk";
+                var rowKey = StorageUtility.GenerateDescendingId().ToString();
                 var existingEntity = await Target.InsertAsync(TableName, partitionKey, rowKey, existingContent);
 
                 // Act
@@ -169,7 +169,7 @@ namespace NuGet.Insights.WideEntities
                 // Arrange
                 var content = Bytes.Slice(0, 16);
                 var partitionKey = StorageUtility.GenerateDescendingId().ToString();
-                var rowKey = "rk";
+                var rowKey = StorageUtility.GenerateDescendingId().ToString();
                 var existingEntity = await Target.InsertAsync(TableName, partitionKey, rowKey, content);
                 await Target.DeleteAsync(TableName, existingEntity);
 
@@ -186,7 +186,7 @@ namespace NuGet.Insights.WideEntities
                 var existingContent = Bytes.Slice(0, 1024 * 1024);
                 var newContent = Bytes.Slice(16 * 1024, 32 * 1024);
                 var partitionKey = StorageUtility.GenerateDescendingId().ToString();
-                var rowKey = "rk";
+                var rowKey = StorageUtility.GenerateDescendingId().ToString();
                 var existingEntity = await Target.InsertAsync(TableName, partitionKey, rowKey, existingContent);
                 var changedEntity = await Target.ReplaceAsync(TableName, existingEntity, existingContent);
 
@@ -399,7 +399,7 @@ namespace NuGet.Insights.WideEntities
             {
                 // Arrange
                 var partitionKey = StorageUtility.GenerateDescendingId().ToString();
-                var rowKey = "rk";
+                var rowKey = StorageUtility.GenerateDescendingId().ToString();
 
                 // Act
                 var wideEntity = await Target.RetrieveAsync(TableName, partitionKey, rowKey, includeData);
@@ -414,7 +414,7 @@ namespace NuGet.Insights.WideEntities
                 // Arrange
                 var src = Bytes.Slice(0, 1024);
                 var partitionKey = StorageUtility.GenerateDescendingId().ToString();
-                var rowKey = "rk";
+                var rowKey = StorageUtility.GenerateDescendingId().ToString();
                 var before = DateTimeOffset.UtcNow;
                 await Target.InsertAsync(TableName, partitionKey, rowKey, src);
                 var after = DateTimeOffset.UtcNow;
@@ -446,7 +446,7 @@ namespace NuGet.Insights.WideEntities
                 // Arrange
                 var src = Bytes.Slice(0, length);
                 var partitionKey = StorageUtility.GenerateDescendingId().ToString();
-                var rowKey = "rk";
+                var rowKey = StorageUtility.GenerateDescendingId().ToString();
 
                 // Act
                 await Target.InsertAsync(TableName, partitionKey, rowKey, src);
@@ -462,7 +462,7 @@ namespace NuGet.Insights.WideEntities
                 // Arrange
                 var src = Bytes.Slice(0, WideEntityService.MaxTotalDataSize);
                 var partitionKey = StorageUtility.GenerateDescendingId().ToString();
-                var rowKey = "rk";
+                var rowKey = StorageUtility.GenerateDescendingId().ToString();
 
                 // Act
                 var before = DateTimeOffset.UtcNow;
