@@ -76,8 +76,8 @@ namespace NuGet.Insights.Worker
         private async Task EmitQueueSizeAsync(Task<int> countAsync, QueueType queue, bool isPoison)
         {
             var count = await countAsync;
-            var metric = _telemetryClient.GetMetric("StorageQueueSize", "QueueType", "IsPoison");
-            metric.TrackValue(count, queue.ToString(), isPoison ? "true" : "false");
+            var metric = _telemetryClient.GetMetric($"StorageQueueSize.{queue}.{(isPoison ? "Poison" : "Main")}");
+            metric.TrackValue(count);
         }
 
         public async Task InitializeAsync()
