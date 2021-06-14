@@ -133,7 +133,7 @@ $storageContext = New-AzStorageContext `
     -StorageAccountKey $storageEmulatorKey
 $tableSasTemplate = New-AzStorageAccountSASToken `
     -ExpiryTime (Get-Date "2010-01-01Z").ToUniversalTime() `
-    -Permission "acdlpruw" `
+    -Permission "rwdlacu" `
     -ResourceType Service, Container, Object `
     -Service Table `
     -Protocol HttpsOnly `

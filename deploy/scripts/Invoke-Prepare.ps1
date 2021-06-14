@@ -16,7 +16,11 @@ $DeploymentId, $DeploymentDir = Get-DeploymentLocals $DeploymentId $DeploymentDi
 
 # Make sure the resource group is created
 Write-Status "Ensuring the resource group '$($ResourceSettings.ResourceGroupName)' exists..."
-New-AzResourceGroup -Name $ResourceSettings.ResourceGroupName -Location $ResourceSettings.Location -Force | Out-Default
+New-AzResourceGroup `
+    -Name $ResourceSettings.ResourceGroupName `
+    -Location $ResourceSettings.Location `
+    -Force `
+    -ErrorAction Stop | Out-Default
 
 # Deploy the storage account, Key Vault, and deployment container.
 Write-Status "Ensuring the storage account, Key Vault, and deployment container exist..."

@@ -1,6 +1,10 @@
 // Parameters
 param appInsightsName string
 param appInsightsDailyCapGb int
+param actionGroupName string
+param actionGroupShortName string
+param alertEmail string
+param alertPrefix string
 param storageAccountName string
 param keyVaultName string
 param deploymentContainerName string
@@ -30,7 +34,7 @@ param workerSku string = 'Y1'
 @secure()
 param workerZipUrl string
 
-var sakConnectionString = 'AccountName=${storageAccountName};AccountKey=${listkeys(storageAccount.id, storageAccount.apiVersion).keys[0].value};DefaultEndpointsProtocol=https;EndpointSuffix=core.windows.net'
+var sakConnectionString = 'AccountName=${storageAccountName};AccountKey=${listkeys(storageAccount.id, storageAccount.apiVersion).keys[0].value};DefaultEndpointsProtocol=https;EndpointSuffix=${environment().suffixes.storage}'
 var isConsumptionPlan = workerSku == 'Y1'
 var isPremiumPlan = startsWith(workerSku, 'P')
 var workerMaxInstances = isPremiumPlan ? 30 : 10
@@ -39,11 +43,11 @@ var workerCount = workerPlanCount * workerCountPerPlan
 var sharedConfig = [
   {
     name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-    value: insights.properties.InstrumentationKey
+    value: appInsights.properties.InstrumentationKey
   }
   {
     name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-    value: insights.properties.ConnectionString
+    value: appInsights.properties.ConnectionString
   }
   {
     name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
@@ -97,7 +101,8 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2019-06-01' existing 
   name: storageAccountName
 }
 
-resource insights 'Microsoft.Insights/components@2015-05-01' = {
+// Application Insights and alerts
+resource appInsights 'Microsoft.Insights/components@2015-05-01' = {
   name: appInsightsName
   location: resourceGroup().location
   kind: 'web'
@@ -116,6 +121,136 @@ resource insights 'Microsoft.Insights/components@2015-05-01' = {
         WarningThreshold: 90
       }
     }
+  }
+}
+
+resource actionGroup 'microsoft.insights/actionGroups@2019-06-01' = {
+  name: actionGroupName
+  location: 'Global'
+  properties: empty(alertEmail) ? {
+    groupShortName: actionGroupShortName
+    enabled: true
+  } : {
+    groupShortName: actionGroupShortName
+    enabled: true
+    emailReceivers: [
+      {
+        name: 'recipient_-EmailAction-'
+        emailAddress: alertEmail
+        useCommonAlertSchema: true
+      }
+    ]
+  }
+}
+
+resource expandDLQAlert 'microsoft.insights/metricAlerts@2018-03-01' = {
+  name: '${alertPrefix}NuGet.Insights dead-letter queue "expand-poison" is not empty'
+  location: 'global'
+  properties: {
+    description: 'The Azure Queue Storage queue "expand-poison" for NuGet.Insights deployed to resource group "${resourceGroup().name}" has at least one message in it. This may be blocking the NuGet.Insights workflow or other regular operations from continuing. Check the "expand-poison" queue in the "${storageAccount.name}" storage account to see the message or look at logs in the "${appInsights.name}" Application Insights to investigate.'
+    severity: 3
+    enabled: true
+    scopes: [
+      appInsights.id
+    ]
+    evaluationFrequency: 'PT1M'
+    windowSize: 'PT5M'
+    criteria: {
+      allOf: [
+        {
+          threshold: 0
+          name: 'ExpandDLQMax'
+          metricNamespace: 'Azure.ApplicationInsights'
+          metricName: 'StorageQueueSize.Expand.Poison'
+          operator: 'GreaterThan'
+          timeAggregation: 'Maximum'
+          criterionType: 'StaticThresholdCriterion'
+          skipMetricValidation: true
+        }
+      ]
+      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
+    }
+    autoMitigate: true
+    targetResourceType: 'microsoft.insights/components'
+    actions: [
+      {
+        actionGroupId: actionGroup.id
+      }
+    ]
+  }
+}
+
+resource workDLQAlert 'microsoft.insights/metricAlerts@2018-03-01' = {
+  name: '${alertPrefix}NuGet.Insights dead-letter queue "work-poison" is not empty'
+  location: 'global'
+  properties: {
+    description: 'The Azure Queue Storage queue "work-poison" for NuGet.Insights deployed to resource group "${resourceGroup().name}" has at least one message in it. This may be blocking the NuGet.Insights workflow or other regular operations from continuing. Check the "work-poison" queue in the "${storageAccount.name}" storage account to see the message or look at logs in the "${appInsights.name}" Application Insights to investigate.'
+    severity: 3
+    enabled: true
+    scopes: [
+      appInsights.id
+    ]
+    evaluationFrequency: 'PT1M'
+    windowSize: 'PT5M'
+    criteria: {
+      allOf: [
+        {
+          threshold: 0
+          name: 'WorkDLQMax'
+          metricNamespace: 'Azure.ApplicationInsights'
+          metricName: 'StorageQueueSize.Work.Poison'
+          operator: 'GreaterThan'
+          timeAggregation: 'Maximum'
+          criterionType: 'StaticThresholdCriterion'
+          skipMetricValidation: true
+        }
+      ]
+      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
+    }
+    autoMitigate: true
+    targetResourceType: 'microsoft.insights/components'
+    actions: [
+      {
+        actionGroupId: actionGroup.id
+      }
+    ]
+  }
+}
+
+resource recentWorkflowAlert 'Microsoft.Insights/metricAlerts@2018-03-01' = {
+  name: '${alertPrefix}NuGet.Insights workflow has not completed in the past 48 hours'
+  location: 'global'
+  properties: {
+    description: 'The NuGet.Insights workflow (catalog scan, Kusto import, etc) for NuGet.Insights deployed to resource group "${resourceGroup().name}" has not completed for at least the past 48 hours. It should complete every 24 hours. Check https://${website.properties.defaultHostName}/admin and logs in the "${appInsights.name}" Application Insights to investigate.'
+    severity: 3
+    enabled: true
+    scopes: [
+      appInsights.id
+    ]
+    evaluationFrequency: 'PT1M'
+    windowSize: 'PT5M'
+    criteria: {
+      allOf: [
+        {
+          threshold: 48
+          name: 'HoursSinceWorkflowCompletedMax'
+          metricNamespace: 'Azure.ApplicationInsights'
+          metricName: 'SinceLastWorkflowCompletedHours'
+          operator: 'GreaterThan'
+          timeAggregation: 'Maximum'
+          criterionType: 'StaticThresholdCriterion'
+          skipMetricValidation: true
+        }
+      ]
+      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
+    }
+    autoMitigate: true
+    targetResourceType: 'microsoft.insights/components'
+    actions: [
+      {
+        actionGroupId: actionGroup.id
+      }
+    ]
   }
 }
 
@@ -144,7 +279,7 @@ resource website 'Microsoft.Web/sites@2020-09-01' = {
       appSettings: concat([
         {
           name: 'AzureAd:Instance'
-          value: 'https://login.microsoftonline.com/'
+          value: environment().authentication.loginEndpoint
         }
         {
           name: 'AzureAd:ClientId'

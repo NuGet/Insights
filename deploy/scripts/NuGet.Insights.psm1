@@ -16,6 +16,13 @@ class ResourceSettings {
     [int]$AppInsightsDailyCapGb
     
     [ValidateNotNullOrEmpty()]
+    [string]$ActionGroupName
+    
+    [ValidateNotNullOrEmpty()]
+    [ValidateLength(1, 12)]
+    [string]$ActionGroupShortName
+    
+    [ValidateNotNullOrEmpty()]
     [string]$WebsitePlanName
     
     [ValidateNotNullOrEmpty()]
@@ -84,6 +91,8 @@ class ResourceSettings {
     [string]$SubscriptionId
     [string]$ServiceTreeId
     [string]$EnvironmentName
+    [string]$AlertEmail
+    [string]$AlertPrefix
     [string]$ExistingWebsitePlanId
     [string]$WebsiteAadAppName
     [string]$WebsiteAadAppClientId
@@ -127,6 +136,10 @@ class ResourceSettings {
         Set-OrDefault Location "West US 2"
         Set-OrDefault AppInsightsName "NuGetInsights-$StampName"
         Set-OrDefault AppInsightsDailyCapGb 1
+        Set-OrDefault ActionGroupName "NuGetInsights-$StampName"
+        Set-OrDefault ActionGroupShortName "NI$(if ($StampName.Length -gt 10) { $StampName.Substring(0, 10) } else { $StampName } )"
+        Set-OrDefault AlertEmail ""
+        Set-OrDefault AlertPrefix ""
         Set-OrDefault WebsiteName "NuGetInsights-$StampName"
         Set-OrDefault WebsitePlanName "$($this.WebsiteName)-WebsitePlan"
         Set-OrDefault WorkerNamePrefix "NuGetInsights-$StampName-Worker-"
@@ -360,6 +373,10 @@ function New-MainParameters($ResourceSettings, $WebsiteZipUrl, $WorkerZipUrl) {
     $parameters = @{
         appInsightsName               = $ResourceSettings.AppInsightsName;
         appInsightsDailyCapGb         = $ResourceSettings.AppInsightsDailyCapGb;
+        actionGroupName               = $ResourceSettings.ActionGroupName;
+        actionGroupShortName          = $ResourceSettings.ActionGroupShortName;
+        alertEmail                    = $ResourceSettings.AlertEmail;
+        alertPrefix                   = $ResourceSettings.AlertPrefix;
         storageAccountName            = $ResourceSettings.StorageAccountName;
         keyVaultName                  = $ResourceSettings.KeyVaultName;
         deploymentContainerName       = $ResourceSettings.DeploymentContainerName;
