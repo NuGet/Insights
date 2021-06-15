@@ -1,0 +1,100 @@
+strategy:
+  matrix:
+    Linux:
+      ImageName: "ubuntu-latest"
+      DropName: "drop-linux"
+    macOS:
+      ImageName: "macos-latest"
+      DropName: "drop-macos"
+    Windows:
+      ImageName: "windows-latest"
+      DropName: "drop-windows"
+
+pool:
+  vmImage: $(ImageName)
+
+variables:
+  - group: NuGet.Insights
+  - name: BuildConfiguration
+    value: Release
+  - name: BuildSolution
+    value: "$(Build.SourcesDirectory)/NuGet.Insights.sln"
+  - name: OutputDirectory
+    value: "$(Build.SourcesDirectory)/artifacts"
+
+steps:
+  - task: UseDotNet@2
+    displayName: "Install .NET SDK 3.1.x"
+    inputs:
+      packageType: sdk
+      version: 3.1.x
+
+  - task: UseDotNet@2
+    displayName: "Install .NET SDK from global.json"
+    inputs:
+      packageType: sdk
+      useGlobalJson: true
+      performMultiLevelLookup: true
+
+  - task: DotNetCoreCLI@2
+    displayName: "Restore"
+    inputs:
+      command: "restore"
+      feedsToUse: "select"
+      feedRestore: "DevDiv/NuGet-Insights"
+      projects: $(BuildSolution)
+
+  - task: DotNetCoreCLI@2
+    displayName: "Build"
+    inputs:
+      command: "custom"
+      projects: $(BuildSolution)
+      custom: "build"
+      arguments: "--no-restore --configuration $(BuildConfiguration)"
+
+  - task: DotNetCoreCLI@2
+    displayName: "Run tests"
+    inputs:
+      command: "test"
+      arguments: '--no-build --no-restore --configuration $(BuildConfiguration) --logger trx --blame --collect "Code coverage" --results-directory $(OutputDirectory)/TestResults/'
+      publishTestResults: false
+    env:
+      NUGETINSIGHTS_STORAGEACCOUNTNAME: nugetinsightstests
+      NUGETINSIGHTS_STORAGESAS: $(nugetinsightstests-BlobQueueTableFullAccessSas)
+      NUGETINSIGHTS_STORAGEBLOBREADSAS: $(nugetinsightstests-BlobReadSas)
+
+  - task: PublishTestResults@2
+    displayName: "Publish test results"
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: "$(OutputDirectory)/TestResults/**/*.trx"
+      failTaskOnFailedTests: true
+
+  - task: DotNetCoreCLI@2
+    displayName: "Publish projects to ZIP"
+    inputs:
+      command: publish
+      publishWebProjects: false
+      projects: |
+        $(Build.SourcesDirectory)/src/Website/Website.csproj
+        $(Build.SourcesDirectory)/src/Worker/Worker.csproj
+      arguments: "--no-build --no-restore --configuration $(BuildConfiguration)"
+      zipAfterPublish: false
+
+  - task: PowerShell@2
+    displayName: "Generate Ev2 files"
+    inputs:
+      targetType: "filePath"
+      filePath: $(Build.SourcesDirectory)/deploy/build-ev2.ps1
+      arguments: >
+        -ConfigNames ev2-dev-usnc
+        -BuildVersion $(Build.BuildNumber)
+        -WebsiteZipPath $(OutputDirectory)/deploy/Website.zip
+        -WorkerZipPath $(OutputDirectory)/deploy/Worker.zip
+
+  - task: PublishBuildArtifacts@1
+    displayName: "Publish build artifacts"
+    inputs:
+      pathToPublish: $(OutputDirectory)/ExpressV2
+      artifactName: $(DropName)
+      Parallel: true

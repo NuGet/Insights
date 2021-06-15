@@ -148,13 +148,24 @@ $workerBinPath = "bin/Worker.zip"
 if (!(Get-Command bicep -ErrorAction Ignore)) {
     Write-Host "Installing Bicep..."
     # Source: https://github.com/Azure/bicep/blob/main/docs/installing.md#manual-with-powershell
-    $installPath = "$env:USERPROFILE\.bicep"
-    $installDir = New-Item -ItemType Directory -Path $installPath -Force
-    $installDir.Attributes += 'Hidden'
-    (New-Object Net.WebClient).DownloadFile("https://github.com/Azure/bicep/releases/latest/download/bicep-win-x64.exe", "$installPath\bicep.exe")
-    $currentPath = (Get-Item -path "HKCU:\Environment" ).GetValue('Path', '', 'DoNotExpandEnvironmentNames')
-    if (-not $currentPath.Contains("%USERPROFILE%\.bicep")) { setx PATH ($currentPath + ";%USERPROFILE%\.bicep") }
-    if (-not $env:path.Contains($installPath)) { $env:path += ";$installPath" }
+    if ($IsLinux) {
+        curl -Lo bicep.bin https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
+        chmod +x ./bicep.bin
+        sudo mv ./bicep.bin /usr/local/bin/bicep
+    } elseif ($IsMacOS) {
+        curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-osx-x64
+        chmod +x ./bicep
+        sudo spctl --add ./bicep
+        sudo mv ./bicep /usr/local/bin/bicep
+    } else {
+        $installPath = "$env:USERPROFILE\.bicep"
+        $installDir = New-Item -ItemType Directory -Path $installPath -Force
+        $installDir.Attributes += 'Hidden'
+        (New-Object Net.WebClient).DownloadFile("https://github.com/Azure/bicep/releases/latest/download/bicep-win-x64.exe", "$installPath\bicep.exe")
+        $currentPath = (Get-Item -path "HKCU:\Environment" ).GetValue('Path', '', 'DoNotExpandEnvironmentNames')
+        if (-not $currentPath.Contains("%USERPROFILE%\.bicep")) { setx PATH ($currentPath + ";%USERPROFILE%\.bicep") }
+        if (-not $env:path.Contains($installPath)) { $env:path += ";$installPath" }
+    }
 }
 bicep --version
 
