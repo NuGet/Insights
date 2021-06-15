@@ -5,18 +5,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace NuGet.Insights.Worker
 {
     public class CatalogScanCursorService
     {
-        public const string CatalogCursorName = "NuGet.org catalog";
         public const string FlatContainerCursorName = "NuGet.org flat container";
 
         private delegate Task<DateTimeOffset> GetCursorValue(CatalogScanCursorService service);
 
-        private static readonly CatalogScanDriverType Catalog = (CatalogScanDriverType)int.MinValue;
-        private static readonly CatalogScanDriverType FlatContainer = Catalog + 1;
+        private static readonly CatalogScanDriverType FlatContainer = (CatalogScanDriverType)int.MinValue + 1;
 
         private static readonly HashSet<CatalogScanDriverType> ValidDriverTypes = Enum
             .GetValues(typeof(CatalogScanDriverType))
@@ -35,15 +34,15 @@ namespace NuGet.Insights.Worker
         {
             {
                 CatalogScanDriverType.BuildVersionSet,
-                new[] { Catalog }
+                new[] { FlatContainer }
             },
             {
                 CatalogScanDriverType.CatalogLeafItemToCsv,
-                new[] { Catalog }
+                new[] { FlatContainer }
             },
             {
                 CatalogScanDriverType.LoadLatestPackageLeaf,
-                new[] { Catalog }
+                new[] { FlatContainer }
             },
             {
                 CatalogScanDriverType.LoadPackageArchive,
@@ -55,7 +54,7 @@ namespace NuGet.Insights.Worker
             },
             {
                 CatalogScanDriverType.LoadPackageVersion,
-                new[] { Catalog }
+                new[] { FlatContainer }
             },
             {
                 CatalogScanDriverType.PackageArchiveToCsv,
@@ -97,13 +96,16 @@ namespace NuGet.Insights.Worker
 
         private readonly CursorStorageService _cursorStorageService;
         private readonly IRemoteCursorClient _remoteCursorClient;
+        private readonly ILogger<CatalogScanCursorService> _logger;
 
         public CatalogScanCursorService(
             CursorStorageService cursorStorageService,
-            IRemoteCursorClient remoteCursorClient)
+            IRemoteCursorClient remoteCursorClient,
+            ILogger<CatalogScanCursorService> logger)
         {
             _cursorStorageService = cursorStorageService;
             _remoteCursorClient = remoteCursorClient;
+            _logger = logger;
         }
 
         public async Task InitializeAsync()
@@ -192,11 +194,7 @@ namespace NuGet.Insights.Worker
 
         private async Task<(string Name, DateTimeOffset Value)> GetDependencyValueAsync(CatalogScanDriverType driverType)
         {
-            if (driverType == Catalog)
-            {
-                return (CatalogCursorName, await _remoteCursorClient.GetCatalogAsync());
-            }
-            else if (driverType == FlatContainer)
+            if (driverType == FlatContainer)
             {
                 return (FlatContainerCursorName, await _remoteCursorClient.GetFlatContainerAsync());
             }

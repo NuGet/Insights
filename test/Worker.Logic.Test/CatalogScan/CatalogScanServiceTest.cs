@@ -309,7 +309,7 @@ namespace NuGet.Insights.Worker
                     DefaultMin = CatalogClient.NuGetOrgMinDeleted,
                     SetDependencyCursorAsync = (self, x) =>
                     {
-                        self.CatalogCursor = x;
+                        self.FlatContainerCursor = x;
                         return Task.CompletedTask;
                     },
                 }
@@ -348,7 +348,7 @@ namespace NuGet.Insights.Worker
                     DefaultMin = CatalogClient.NuGetOrgMinDeleted,
                     SetDependencyCursorAsync = (self, x) =>
                     {
-                        self.CatalogCursor = x;
+                        self.FlatContainerCursor = x;
                         return Task.CompletedTask;
                     },
                 }
@@ -411,7 +411,7 @@ namespace NuGet.Insights.Worker
                     DefaultMin = CatalogClient.NuGetOrgMin,
                     SetDependencyCursorAsync = (self, x) =>
                     {
-                        self.CatalogCursor = x;
+                        self.FlatContainerCursor = x;
                         return Task.CompletedTask;
                     },
                 }
@@ -424,7 +424,7 @@ namespace NuGet.Insights.Worker
                     DefaultMin = CatalogClient.NuGetOrgMinDeleted,
                     SetDependencyCursorAsync = (self, x) =>
                     {
-                        self.CatalogCursor = x;
+                        self.FlatContainerCursor = x;
                         return Task.CompletedTask;
                     },
                 }
@@ -471,7 +471,6 @@ namespace NuGet.Insights.Worker
         };
 
         public Mock<IRemoteCursorClient> RemoteCursorClient { get; }
-        public DateTimeOffset CatalogCursor { get; set; }
         public DateTimeOffset FlatContainerCursor { get; set; }
         public DateTimeOffset CursorValue { get; }
         public CatalogScanDriverType DriverType { get; }
@@ -480,12 +479,10 @@ namespace NuGet.Insights.Worker
         {
             RemoteCursorClient = new Mock<IRemoteCursorClient>();
 
-            CatalogCursor = DateTimeOffset.Parse("2021-02-03T16:00:00Z");
             FlatContainerCursor = DateTimeOffset.Parse("2021-02-02T16:00:00Z");
             CursorValue = DateTimeOffset.Parse("2021-02-01T16:00:00Z");
             DriverType = CatalogScanDriverType.PackageAssetToCsv;
 
-            RemoteCursorClient.Setup(x => x.GetCatalogAsync(It.IsAny<CancellationToken>())).ReturnsAsync(() => CatalogCursor);
             RemoteCursorClient.Setup(x => x.GetFlatContainerAsync(It.IsAny<CancellationToken>())).ReturnsAsync(() => FlatContainerCursor);
         }
 
