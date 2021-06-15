@@ -40,8 +40,8 @@ steps:
     displayName: "Restore"
     inputs:
       command: "restore"
-      feedsToUse: "select"
-      feedRestore: "DevDiv/NuGet-Insights"
+      feedsToUse: "config"
+      nugetConfigPath: "$(Build.SourcesDirectory)/NuGet.config"
       projects: $(BuildSolution)
 
   - task: DotNetCoreCLI@2
