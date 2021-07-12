@@ -192,7 +192,7 @@ class ResourceSettings {
             # queue messages are being processed and therefore are using the HOME file share.
             if ($null -eq $this.WorkerConfig.AzureFunctionsJobHost__extensions__queues__batchSize) {
                 if ($this.WorkerSku -eq "P1v2") {
-                    $this.WorkerConfig.AzureFunctionsJobHost__extensions__queues__batchSize = 4
+                    $this.WorkerConfig.AzureFunctionsJobHost__extensions__queues__batchSize = 8
                 }
                 else {
                     $this.WorkerConfig.AzureFunctionsJobHost__extensions__queues__batchSize = 2
