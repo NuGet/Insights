@@ -126,6 +126,7 @@ namespace NuGet.Insights.Worker
 #if ENABLE_NPE
                 case CatalogScanDriverType.NuGetPackageExplorerToCsv:
 #endif
+                case CatalogScanDriverType.CatalogDataToCsv:
                     return null;
 
                 case CatalogScanDriverType.LoadPackageArchive:
@@ -233,6 +234,7 @@ namespace NuGet.Insights.Worker
 #if ENABLE_NPE
                 case CatalogScanDriverType.NuGetPackageExplorerToCsv:
 #endif
+                case CatalogScanDriverType.CatalogDataToCsv:
                     return await UpdateCatalogLeafToCsvAsync(
                         driverType,
                         onlyLatestLeaves.GetValueOrDefault(true),

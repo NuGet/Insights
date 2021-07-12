@@ -1,0 +1,3 @@
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,GitHubDatabaseKey,AdvisoryUrl,Severity
+,,behaviorsample,behaviorsample/1.0.0,BehaviorSample,1.0.0,2020-12-20T03:03:53.7885893Z,,Deleted,,,
+,,nut.mediatr.servicelike.dependencyinjection,nut.mediatr.servicelike.dependencyinjection/0.0.0-preview.0.44,Nut.MediatR.ServiceLike.DependencyInjection,0.0.0-preview.0.44,2020-12-20T02:37:52.9649363Z,2020-12-20T02:35:16.043Z,NotVulnerable,,,

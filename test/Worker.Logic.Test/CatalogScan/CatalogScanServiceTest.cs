@@ -468,6 +468,19 @@ namespace NuGet.Insights.Worker
                 }
             },
 #endif
+
+            {
+                CatalogScanDriverType.CatalogDataToCsv,
+                new DriverInfo
+                {
+                    DefaultMin = CatalogClient.NuGetOrgMinDeleted,
+                    SetDependencyCursorAsync = (self, x) =>
+                    {
+                        self.FlatContainerCursor = x;
+                        return Task.CompletedTask;
+                    },
+                }
+            },
         };
 
         public Mock<IRemoteCursorClient> RemoteCursorClient { get; }

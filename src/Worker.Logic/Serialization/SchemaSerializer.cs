@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
+using NuGet.Insights.Worker.CatalogDataToCsv;
 using NuGet.Insights.Worker.CatalogLeafItemToCsv;
 using NuGet.Insights.Worker.EnqueueCatalogLeafScan;
 using NuGet.Insights.Worker.KustoIngestion;
@@ -50,6 +51,8 @@ namespace NuGet.Insights.Worker
             new SchemaV1<CsvCompactMessage<PackageManifestRecord>>("cc.pm2c"),
             new SchemaV1<CsvCompactMessage<PackageSignature>>("cc.fps"),
             new SchemaV1<CsvCompactMessage<PackageVersionRecord>>("cc.pv2c"),
+            new SchemaV1<CsvCompactMessage<PackageDeprecationRecord>>("cc.pd2c"),
+            new SchemaV1<CsvCompactMessage<PackageVulnerabilityRecord>>("cc.pu2c"),
 
 #if ENABLE_NPE
             new SchemaV1<CsvCompactMessage<NuGetPackageExplorerRecord>>("cc.npe2c"),

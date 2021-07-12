@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NuGet.Insights.Worker.BuildVersionSet;
+using NuGet.Insights.Worker.CatalogDataToCsv;
 using NuGet.Insights.Worker.CatalogLeafItemToCsv;
 using NuGet.Insights.Worker.FindLatestCatalogLeafScanPerId;
 using NuGet.Insights.Worker.LoadLatestPackageLeaf;
@@ -93,6 +94,8 @@ namespace NuGet.Insights.Worker
                 case CatalogScanDriverType.NuGetPackageExplorerToCsv:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>>();
 #endif
+                case CatalogScanDriverType.CatalogDataToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<PackageDeprecationRecord, PackageVulnerabilityRecord>>();
                 default:
                     throw new NotSupportedException($"Catalog scan driver type '{driverType}' is not supported.");
             }

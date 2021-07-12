@@ -103,5 +103,11 @@ namespace NuGet.Insights.Worker
         /// </summary>
         NuGetPackageExplorerToCsv,
 #endif
+
+        /// <summary>
+        /// Implemented by <see cref="CatalogDataToCsv.CatalogDataToCsvDriver"/>. This driver reads catalog leaves for
+        /// metadata found there, e.g. deprecation and vulnerability metadata.
+        /// </summary>
+        CatalogDataToCsv,
     }
 }

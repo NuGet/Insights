@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -72,5 +72,11 @@ namespace NuGet.Insights
 
         [JsonProperty("verbatimVersion")]
         public string VerbatimVersion { get; set; }
+
+        [JsonProperty("deprecation")]
+        public PackageDeprecation Deprecation { get; set; }
+
+        [JsonProperty("vulnerabilities")]
+        public List<PackageVulnerability> Vulnerabilities { get; set; }
     }
 }

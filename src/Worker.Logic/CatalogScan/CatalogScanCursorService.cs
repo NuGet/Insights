@@ -86,6 +86,10 @@ namespace NuGet.Insights.Worker
                 new[] { FlatContainer, CatalogScanDriverType.LoadLatestPackageLeaf }
             },
 #endif
+            {
+                CatalogScanDriverType.CatalogDataToCsv,
+                new[] { FlatContainer }
+            },
         }.ToDictionary(x => x.Key, x => (IReadOnlyList<CatalogScanDriverType>)x.Value.ToList());
 
         private static readonly IReadOnlyDictionary<CatalogScanDriverType, IReadOnlyList<CatalogScanDriverType>> Dependents = Dependencies
