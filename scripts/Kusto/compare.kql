@@ -6,10 +6,12 @@ NiCatalogLeafItems | distinct Identity | count | extend Table = "NiCatalogLeafIt
 | union (NiPackageArchiveEntries | distinct Identity | count | extend Table = "NiPackageArchiveEntries")
 | union (NiPackageAssemblies | distinct Identity | count | extend Table = "NiPackageAssemblies")
 | union (NiPackageAssets | distinct Identity | count | extend Table = "NiPackageAssets")
+| union (NiPackageDeprecations | distinct Identity | count | extend Table = "NiPackageDeprecations")
 | union (NiPackageDownloads | distinct Identity | count | extend Table = "NiPackageDownloads")
 | union (NiPackageManifests | distinct Identity | count | extend Table = "NiPackageManifests")
 | union (NiPackageSignatures | distinct Identity | count | extend Table = "NiPackageSignatures")
 | union (NiPackageVersions | distinct Identity | count | extend Table = "NiPackageVersions")
+| union (NiPackageVulnerabilities | distinct Identity | count | extend Table = "NiPackageVulnerabilities")
 
 // All tables should all have the same ID count
 NiCatalogLeafItems | distinct LowerId | count | extend Table = "NiCatalogLeafItems"
@@ -20,8 +22,9 @@ NiCatalogLeafItems | distinct LowerId | count | extend Table = "NiCatalogLeafIte
 | union (NiPackageAssemblies | distinct LowerId | count  | extend Table = "NiPackageAssemblies")
 | union (NiPackageAssets | distinct LowerId | count  | extend Table = "NiPackageAssets")
 | union (NiPackageDownloads | distinct LowerId | count  | extend Table = "NiPackageDownloads")
+| union (NiPackageDeprecations | distinct LowerId | count | extend Table = "NiPackageDeprecations")
 | union (NiPackageManifests | distinct LowerId | count  | extend Table = "NiPackageManifests")
 | union (NiPackageOwners | distinct LowerId | count  | extend Table = "NiPackageOwners")
 | union (NiPackageSignatures | distinct LowerId | count  | extend Table = "NiPackageSignatures")
 | union (NiPackageVersions | distinct LowerId | count  | extend Table = "NiPackageVersions")
-
+| union (NiPackageVulnerabilities | distinct LowerId | count | extend Table = "NiPackageVulnerabilities")
