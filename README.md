@@ -1,4 +1,4 @@
-# NuGet.Insights *(formerly ExplorePackages)* [![Build](https://github.com/NuGet/Insights/actions/workflows/build.yml/badge.svg)](https://github.com/NuGet/Insights/actions/workflows/build.yml)
+# NuGet.Insights *(formerly ExplorePackages)*
 
 **Analyze NuGet.org packages 📦 using Azure Functions ⚡.**
 
