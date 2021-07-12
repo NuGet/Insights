@@ -220,6 +220,7 @@ namespace NuGet.Insights.Worker
                 new[]
                 {
                     CatalogScanDriverType.BuildVersionSet,
+                    CatalogScanDriverType.CatalogDataToCsv,
                     CatalogScanDriverType.CatalogLeafItemToCsv,
                     CatalogScanDriverType.LoadLatestPackageLeaf,
                     CatalogScanDriverType.LoadPackageArchive,
