@@ -1,3 +1,3 @@
-ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,HasError,DoesNotRoundTrip,NuspecReader,NuGetGallery
-,,behaviorsample,behaviorsample/1.0.0,BehaviorSample,1.0.0,2020-12-20T03:03:53.7885893Z,,Deleted,false,false,,
-,,nut.mediatr.servicelike.dependencyinjection,nut.mediatr.servicelike.dependencyinjection/0.0.0-preview.0.44,Nut.MediatR.ServiceLike.DependencyInjection,0.0.0-preview.0.44,2020-12-20T02:37:52.9649363Z,2020-12-20T02:35:16.043Z,Available,false,false,"[""netstandard2.1""]","[""netstandard2.1""]"
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,HasError,DoesNotRoundTrip,BrokenFrameworks,NuspecReader,NU1202,NuGetGallery,NuGetGalleryEscaped
+,,behaviorsample,behaviorsample/1.0.0,BehaviorSample,1.0.0,2020-12-20T03:03:53.7885893Z,,Deleted,false,false,,,,,
+,,nut.mediatr.servicelike.dependencyinjection,nut.mediatr.servicelike.dependencyinjection/0.0.0-preview.0.44,Nut.MediatR.ServiceLike.DependencyInjection,0.0.0-preview.0.44,2020-12-20T02:37:52.9649363Z,2020-12-20T02:35:16.043Z,Available,false,false,[],"[""netstandard2.1""]","[""netstandard2.1""]","[""netstandard2.1""]","[""netstandard2.1""]"

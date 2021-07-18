@@ -18,13 +18,13 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 {
     public class InMemoryPackageReader : PackageReaderBase
     {
-        private readonly IReadOnlyList<string> _files;
         private readonly Memory<byte> _manifestBytes;
+        private readonly IReadOnlyList<string> _files;
 
-        public InMemoryPackageReader(IReadOnlyList<string> files, Memory<byte> manifestBytes) : base(DefaultFrameworkNameProvider.Instance)
+        public InMemoryPackageReader(Memory<byte> manifestBytes, IReadOnlyList<string> files) : base(DefaultFrameworkNameProvider.Instance)
         {
-            _files = files;
             _manifestBytes = manifestBytes;
+            _files = files;
         }
 
         public override bool CanVerifySignedPackages(SignedPackageVerifierSettings verifierSettings)

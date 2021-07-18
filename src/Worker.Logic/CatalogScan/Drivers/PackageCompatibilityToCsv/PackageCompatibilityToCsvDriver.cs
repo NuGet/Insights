@@ -17,6 +17,8 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 
     public class PackageCompatibilityToCsvDriver : ICatalogLeafToCsvDriver<PackageCompatibility>, ICsvResultStorage<PackageCompatibility>
     {
+        private static readonly NuGetFrameworkSorter Sorter = new NuGetFrameworkSorter();
+
         private readonly CatalogClient _catalogClient;
         private readonly PackageFileService _packageFileService;
         private readonly PackageManifestService _packageManifestService;
@@ -80,51 +82,92 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                     return new List<PackageCompatibility>();
                 }
 
-                var files = zipDirectory
+                var escapedFiles = zipDirectory
                     .Entries
                     .Select(x => x.GetName())
+                    .ToList();
+                var files = escapedFiles
+                    .Select(x => x.IndexOf('%', StringComparison.Ordinal) >= 0 ? Uri.UnescapeDataString(x) : x)
                     .ToList();
 
                 var output = new PackageCompatibility(scanId, scanTimestamp, leaf);
                 var hasError = false;
                 var doesNotRoundTrip = false;
+                var brokenFrameworks = new HashSet<string>();
+                string GetAndSerializeNested(string methodName, Func<IEnumerable<NuGetFramework>> getFrameworks)
+                {
+                    return GetAndSerialize(item, ref hasError, ref doesNotRoundTrip, brokenFrameworks, methodName, getFrameworks);
+                }
 
-                output.NuspecReader = GetAndSerialize(
-                    item,
-                    ref hasError,
-                    ref doesNotRoundTrip,
+                output.NuspecReader = GetAndSerializeNested(
                     nameof(output.NuspecReader),
                     () =>
                     {
-                        var packageReader = new InMemoryPackageReader(files, manifestBytes);
+                        var packageReader = new InMemoryPackageReader(manifestBytes, escapedFiles);
                         return packageReader.GetSupportedFrameworks().ToList();
                     });
 
-                output.NuGetGallery = GetAndSerialize(
-                    item,
-                    ref hasError,
-                    ref doesNotRoundTrip,
+                output.NuGetGallery = GetAndSerializeNested(
                     nameof(output.NuGetGallery),
                     () => NuGetGallery.GetSupportedFrameworks(nuspecReader, files));
 
+                output.NuGetGalleryEscaped = GetAndSerializeNested(
+                    nameof(output.NuGetGallery),
+                    () => NuGetGallery.GetSupportedFrameworks(nuspecReader, escapedFiles));
+
+                var nuGetLogger = _logger.ToNuGetLogger();
+                output.NU1202 = GetAndSerializeNested(
+                    nameof(output.NU1202),
+                    () => CompatibilityChecker.GetPackageFrameworks(files, nuGetLogger));
+
                 output.HasError = hasError;
                 output.DoesNotRoundTrip = doesNotRoundTrip;
+                output.BrokenFrameworks = JsonConvert.SerializeObject(brokenFrameworks.OrderBy(x => x).ToList());
 
                 return new List<PackageCompatibility> { output };
             }
         }
 
-        private string GetAndSerialize(CatalogLeafItem item, ref bool hasError, ref bool doesNotRoundTrip, string methodName, Func<IEnumerable<NuGetFramework>> getFrameworks)
+        private string GetAndSerialize(
+            CatalogLeafItem item,
+            ref bool hasError,
+            ref bool doesNotRoundTrip,
+            HashSet<string> brokenFrameworks,
+            string methodName,
+            Func<IEnumerable<NuGetFramework>> getFrameworks)
         {
-            List<string> roundTripFrameworks;
+            List<string> roundTripShortFolderNames;
             try
             {
-                var frameworks = getFrameworks().ToList();
-                var originalFrameworks = frameworks.Select(x => x.GetShortFolderName()).OrderBy(x => x).ToList();
-                roundTripFrameworks = originalFrameworks.Select(x => NuGetFramework.Parse(x).GetShortFolderName()).OrderBy(x => x).ToList();
-                if (!originalFrameworks.SequenceEqual(roundTripFrameworks))
+                var originalFrameworks = getFrameworks()
+                    .OrderBy(x => x, Sorter)
+                    .ToList();
+                var originalShortFolderNames = originalFrameworks
+                    .Select(x => x.GetShortFolderName())
+                    .ToList();
+                var roundTripFrameworks = originalShortFolderNames
+                    .Select(x => NuGetFramework.Parse(x))
+                    .OrderBy(x => x, Sorter)
+                    .ToList();
+                roundTripShortFolderNames = roundTripFrameworks
+                    .Select(x => x.GetShortFolderName())
+                    .ToList();
+
+                if (!originalFrameworks.SequenceEqual(roundTripFrameworks)
+                    || !originalShortFolderNames.SequenceEqual(roundTripShortFolderNames))
                 {
                     doesNotRoundTrip = true;
+
+                    foreach (var framework in originalFrameworks.Except(roundTripFrameworks))
+                    {
+                        // Use the full string to capture any weird values. The short folder name loses information on some bad data.
+                        brokenFrameworks.Add(framework.ToString());
+                    }
+
+                    foreach (var framework in originalShortFolderNames.Except(roundTripShortFolderNames))
+                    {
+                        brokenFrameworks.Add(framework);
+                    }
                 }
             }
             catch (Exception ex)
@@ -134,7 +177,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                 return null;
             }
 
-            return JsonConvert.SerializeObject(roundTripFrameworks);
+            return JsonConvert.SerializeObject(roundTripShortFolderNames);
         }
 
         public List<PackageCompatibility> Prune(List<PackageCompatibility> records)

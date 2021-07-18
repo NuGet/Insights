@@ -26,9 +26,18 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
         public bool DoesNotRoundTrip { get; set; }
 
         [KustoType("dynamic")]
+        public string BrokenFrameworks { get; set; }
+
+        [KustoType("dynamic")]
         public string NuspecReader { get; set; }
 
         [KustoType("dynamic")]
+        public string NU1202 { get; set; }
+
+        [KustoType("dynamic")]
         public string NuGetGallery { get; set; }
+
+        [KustoType("dynamic")]
+        public string NuGetGalleryEscaped { get; set; }
     }
 }

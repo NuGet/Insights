@@ -25,8 +25,11 @@ namespace NuGet.Insights
     ResultType: string,
     HasError: bool,
     DoesNotRoundTrip: bool,
+    BrokenFrameworks: dynamic,
     NuspecReader: dynamic,
-    NuGetGallery: dynamic
+    NU1202: dynamic,
+    NuGetGallery: dynamic,
+    NuGetGalleryEscaped: dynamic
 )",
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
@@ -42,8 +45,11 @@ namespace NuGet.Insights
     '{""Column"":""ResultType"",""DataType"":""string"",""Properties"":{""Ordinal"":8}},'
     '{""Column"":""HasError"",""DataType"":""bool"",""Properties"":{""Ordinal"":9}},'
     '{""Column"":""DoesNotRoundTrip"",""DataType"":""bool"",""Properties"":{""Ordinal"":10}},'
-    '{""Column"":""NuspecReader"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":11}},'
-    '{""Column"":""NuGetGallery"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":12}}'
+    '{""Column"":""BrokenFrameworks"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":11}},'
+    '{""Column"":""NuspecReader"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":12}},'
+    '{""Column"":""NU1202"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":13}},'
+    '{""Column"":""NuGetGallery"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":14}},'
+    '{""Column"":""NuGetGalleryEscaped"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":15}}'
 ']'",
         };
 
