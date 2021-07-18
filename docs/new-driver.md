@@ -13,8 +13,8 @@ Follow these steps to write a new catalog scan **driver**.
 1. Verify the results in Azure Storage
 1. Add integration tests
 1. Update the [drivers list](../README.md#drivers) to mention your driver
-1. If applicable, update [ImportTo-Kusto.ps1](../scripts/Kusto/ImportTo-Kusto.ps1) to include your new data
-1. Submit a PR. 🆒
+2. If outputting CSVs, update [ImportTo-Kusto.ps1](../scripts/Kusto/ImportTo-Kusto.ps1) and [compare.kql](../scripts/Kusto/compare.kql) with your new tables
+3. Submit a 🆒 PR
 
 ## "Figure it out yourself" flow
 
@@ -97,10 +97,14 @@ Ensure the driver can be activated by the catalog scan and admin interface. Upda
 1. Add your driver to the [`CatalogScanCursorService`](../src/Worker.Logic/CatalogScan/CatalogScanCursorService.cs) class.
    - Update the `Dependencies` static. This defines what cursors or other drivers your driver should block on before proceeding.
 1. If your driver implements `ICatalogLeafToCsvDriver<T>`:
-   1. Add a CSV compact message schema name to [`SchemaSerializer`](../src/Worker.Logic/Serialization/SchemaSerializer.cs) like `cc.<abbreviation for your driver>`.
+   - Add a CSV compact message schema name to [`SchemaSerializer`](../src/Worker.Logic/Serialization/SchemaSerializer.cs) like `cc.<abbreviation for your driver>`.
 1. Add your driver to the `TypeToInfo` static in [`CatalogScanServiceTest.cs`](../test/Worker.Logic.Test/CatalogScan/CatalogScanServiceTest.cs).
    This determines the default catalog timestamp min value for your driver and implements a test function that forces
    your driver's dependency cursors to a specific timestamp.
+1. If you had to add a table or blob container for your driver (e.g. a blob container for your CSV output), initialize
+   the container name in [`BaseWorkerLogicIntegrationTest`](../test/Worker.Logic.Test/TestSupport/BaseWorkerLogicIntegrationTest.cs)
+   in `ConfigureWorkerDefaultsAndSettings` to have a unique value starting with `StoragePrefix` like the other existing container names.
+1. If your table produces CSV output, add your Kusto table name to [ImportTo-Kusto.ps1](../scripts/Kusto/ImportTo-Kusto.ps1).
 
 ### Add tests for your driver
 
@@ -127,4 +131,14 @@ the actual output is compared against this expected test data.
 1. Set the `OverwriteTestData` to `false`.
 1. Run the tests again to make sure the tests are passing.
 
-You've now locked your test results into static files in the Git repository.
+You've now locked your test results into static files in the Git repository so future regressions can be caught.
+
+### Document your driver
+
+Update the [drivers list](../README.md#drivers) to mention your driver.
+
+If your driver produces a CSV, the CSV schema must be documented similar to the existing CSV tables, in
+[`docs/tables`](../docs/tables). The easiest way to get started is to run the `AllTablesAreListedInREADME` test in
+[`DocsTest`](../test/Worker.Test/Docs/DocsTest.cs) to write out an initial version of the document matching the patterns
+of the existing documents. Just fill in the TODOs and make sure all of the tests in 
+[`DocsTest`](../test/Worker.Test/Docs/DocsTest.cs) after you are done with your document.

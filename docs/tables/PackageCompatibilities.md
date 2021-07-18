@@ -10,7 +10,7 @@ can help illustrate the differences between several approaches.
 | Child tables                 |                                                                                                                                              |
 | Parent tables                |                                                                                                                                              |
 | Column used for partitioning | Identity                                                                                                                                     |
-| Data file container name     | packagecompatibility                                                                                                                         |
+| Data file container name     | packagecompatibilities                                                                                                                       |
 | Driver implementation        | [`PackageCompatibilityToCsvDriver`](../../src/Worker.Logic/CatalogScan/Drivers/PackageCompatibilityToCsv/PackageCompatibilityToCsvDriver.cs) |
 | Record type                  | [`PackageCompatibility`](../../src/Worker.Logic/CatalogScan/Drivers/PackageCompatibilityToCsv/PackageCompatibility.cs)                       |
 
