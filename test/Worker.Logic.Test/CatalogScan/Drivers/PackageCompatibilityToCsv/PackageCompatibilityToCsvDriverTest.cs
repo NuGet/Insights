@@ -35,8 +35,34 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
-            Assert.True(record.HasError);
             Assert.Equal(PackageCompatibilityResultType.Available, record.ResultType);
+            Assert.True(record.HasError);
+            Assert.False(record.DoesNotRoundTrip);
+            Assert.Null(record.NuspecReader);
+            Assert.Null(record.NuGetGallery);
+        }
+
+        [Fact]
+        public async Task InvalidFramework()
+        {
+            await Target.InitializeAsync();
+            var leaf = new CatalogLeafItem
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2021.07.17.13.16.14/lagovista.useradmin.rest.3.0.1522.906.json",
+                Type = CatalogLeafType.PackageDetails,
+                PackageId = "LagoVista.UserAdmin.Rest",
+                PackageVersion = "3.0.1522.906",
+            };
+
+            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+
+            Assert.Equal(DriverResultType.Success, output.Type);
+            var record = Assert.Single(output.Value.Records);
+            Assert.Equal(PackageCompatibilityResultType.Available, record.ResultType);
+            Assert.False(record.HasError);
+            Assert.True(record.DoesNotRoundTrip);
+            Assert.Equal("[\"net5.0\"]", record.NuspecReader);
+            Assert.Equal("[\"net5.0\",\"unsupported\"]", record.NuGetGallery);
         }
     }
 }

@@ -1,4 +1,4 @@
-ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,HasError,NuspecReader,NuGetGallery
-,,amazonks3,amazonks3/1.5.0,AmazonKS3,1.5.0,2020-12-20T02:39:20.5757299Z,2020-12-20T02:37:10.21Z,Available,false,"[""netstandard2.1""]","[""netstandard2.1""]"
-,,lunabot.commands.public,lunabot.commands.public/1.2.0,LunaBot.Commands.Public,1.2.0,2020-12-20T03:01:57.2082154Z,2020-12-20T03:00:07.147Z,Available,false,"[""netstandard2.0""]","[""netstandard2.0""]"
-,,nut.mediatr.behaviors,nut.mediatr.behaviors/0.0.0-preview.0.44,Nut.MediatR.Behaviors,0.0.0-preview.0.44,2020-12-20T02:37:52.9649363Z,2020-12-20T02:35:17.08Z,Available,false,"[""netstandard2.1""]","[""netstandard2.1""]"
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,HasError,DoesNotRoundTrip,NuspecReader,NuGetGallery
+,,amazonks3,amazonks3/1.5.0,AmazonKS3,1.5.0,2020-12-20T02:39:20.5757299Z,2020-12-20T02:37:10.21Z,Available,false,false,"[""netstandard2.1""]","[""netstandard2.1""]"
+,,lunabot.commands.public,lunabot.commands.public/1.2.0,LunaBot.Commands.Public,1.2.0,2020-12-20T03:01:57.2082154Z,2020-12-20T03:00:07.147Z,Available,false,false,"[""netstandard2.0""]","[""netstandard2.0""]"
+,,nut.mediatr.behaviors,nut.mediatr.behaviors/0.0.0-preview.0.44,Nut.MediatR.Behaviors,0.0.0-preview.0.44,2020-12-20T02:37:52.9649363Z,2020-12-20T02:35:17.08Z,Available,false,false,"[""netstandard2.1""]","[""netstandard2.1""]"

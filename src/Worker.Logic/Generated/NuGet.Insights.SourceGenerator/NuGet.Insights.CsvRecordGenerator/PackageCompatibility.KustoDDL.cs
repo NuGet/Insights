@@ -24,6 +24,7 @@ namespace NuGet.Insights
     Created: datetime,
     ResultType: string,
     HasError: bool,
+    DoesNotRoundTrip: bool,
     NuspecReader: dynamic,
     NuGetGallery: dynamic
 )",
@@ -40,8 +41,9 @@ namespace NuGet.Insights
     '{""Column"":""Created"",""DataType"":""datetime"",""Properties"":{""Ordinal"":7}},'
     '{""Column"":""ResultType"",""DataType"":""string"",""Properties"":{""Ordinal"":8}},'
     '{""Column"":""HasError"",""DataType"":""bool"",""Properties"":{""Ordinal"":9}},'
-    '{""Column"":""NuspecReader"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":10}},'
-    '{""Column"":""NuGetGallery"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":11}}'
+    '{""Column"":""DoesNotRoundTrip"",""DataType"":""bool"",""Properties"":{""Ordinal"":10}},'
+    '{""Column"":""NuspecReader"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":11}},'
+    '{""Column"":""NuGetGallery"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":12}}'
 ']'",
         };
 

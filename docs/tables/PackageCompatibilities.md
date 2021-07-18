@@ -28,6 +28,7 @@ can help illustrate the differences between several approaches.
 | Created                | timestamp        | Yes, for non-Deleted               | When the package version was created                                   |
 | ResultType             | enum             | Yes                                | Type of record (e.g. Available, Deleted)                               |
 | HasError               | bool             | Yes                                | Whether or not there was an error determining compatibility            |
+| DoesNotRoundTrip       | bool             | Yes                                | Whether or not the frameworks found fail round trip when parsed        |
 | NuspecReader           | array of strings | Yes, for Available unless HasError | Frameworks via `NuspecReader.GetSupportedFrameworks()`                 |
 | NuGetGallery           | array of strings | Yes, for Available unless HasError | Frameworks via same logic a NuGetGallery                               |
 

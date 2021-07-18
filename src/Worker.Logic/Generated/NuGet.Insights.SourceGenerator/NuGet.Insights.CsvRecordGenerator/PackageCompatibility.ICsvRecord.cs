@@ -24,6 +24,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
         Created: datetime,
         ResultType: string,
         HasError: bool,
+        DoesNotRoundTrip: bool,
         NuspecReader: dynamic,
         NuGetGallery: dynamic
     );
@@ -53,18 +54,19 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
         '{"Column":"Created","DataType":"datetime","Properties":{"Ordinal":7}},'
         '{"Column":"ResultType","DataType":"string","Properties":{"Ordinal":8}},'
         '{"Column":"HasError","DataType":"bool","Properties":{"Ordinal":9}},'
-        '{"Column":"NuspecReader","DataType":"dynamic","Properties":{"Ordinal":10}},'
-        '{"Column":"NuGetGallery","DataType":"dynamic","Properties":{"Ordinal":11}}'
+        '{"Column":"DoesNotRoundTrip","DataType":"bool","Properties":{"Ordinal":10}},'
+        '{"Column":"NuspecReader","DataType":"dynamic","Properties":{"Ordinal":11}},'
+        '{"Column":"NuGetGallery","DataType":"dynamic","Properties":{"Ordinal":12}}'
     ']'
 
     */
     partial record PackageCompatibility
     {
-        public int FieldCount => 12;
+        public int FieldCount => 13;
 
         public void WriteHeader(TextWriter writer)
         {
-            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,HasError,NuspecReader,NuGetGallery");
+            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,HasError,DoesNotRoundTrip,NuspecReader,NuGetGallery");
         }
 
         public void Write(List<string> fields)
@@ -79,6 +81,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             fields.Add(CsvUtility.FormatDateTimeOffset(Created));
             fields.Add(ResultType.ToString());
             fields.Add(CsvUtility.FormatBool(HasError));
+            fields.Add(CsvUtility.FormatBool(DoesNotRoundTrip));
             fields.Add(NuspecReader);
             fields.Add(NuGetGallery);
         }
@@ -104,6 +107,8 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             CsvUtility.WriteWithQuotes(writer, ResultType.ToString());
             writer.Write(',');
             writer.Write(CsvUtility.FormatBool(HasError));
+            writer.Write(',');
+            writer.Write(CsvUtility.FormatBool(DoesNotRoundTrip));
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, NuspecReader);
             writer.Write(',');
@@ -133,6 +138,8 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatBool(HasError));
             await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatBool(DoesNotRoundTrip));
+            await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, NuspecReader);
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, NuGetGallery);
@@ -153,6 +160,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                 Created = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
                 ResultType = Enum.Parse<PackageCompatibilityResultType>(getNextField()),
                 HasError = bool.Parse(getNextField()),
+                DoesNotRoundTrip = bool.Parse(getNextField()),
                 NuspecReader = getNextField(),
                 NuGetGallery = getNextField(),
             };

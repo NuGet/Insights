@@ -87,10 +87,12 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 
                 var output = new PackageCompatibility(scanId, scanTimestamp, leaf);
                 var hasError = false;
+                var doesNotRoundTrip = false;
 
                 output.NuspecReader = GetAndSerialize(
                     item,
                     ref hasError,
+                    ref doesNotRoundTrip,
                     nameof(output.NuspecReader),
                     () =>
                     {
@@ -101,22 +103,29 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                 output.NuGetGallery = GetAndSerialize(
                     item,
                     ref hasError,
+                    ref doesNotRoundTrip,
                     nameof(output.NuGetGallery),
                     () => NuGetGallery.GetSupportedFrameworks(nuspecReader, files));
 
                 output.HasError = hasError;
+                output.DoesNotRoundTrip = doesNotRoundTrip;
 
                 return new List<PackageCompatibility> { output };
             }
         }
 
-        private string GetAndSerialize(CatalogLeafItem item, ref bool hasError, string methodName, Func<IEnumerable<NuGetFramework>> getFrameworks)
+        private string GetAndSerialize(CatalogLeafItem item, ref bool hasError, ref bool doesNotRoundTrip, string methodName, Func<IEnumerable<NuGetFramework>> getFrameworks)
         {
-            List<string> shortFrameworks;
+            List<string> roundTripFrameworks;
             try
             {
                 var frameworks = getFrameworks().ToList();
-                shortFrameworks = frameworks.Select(x => x.GetShortFolderName()).OrderBy(x => x).ToList();
+                var originalFrameworks = frameworks.Select(x => x.GetShortFolderName()).OrderBy(x => x).ToList();
+                roundTripFrameworks = originalFrameworks.Select(x => NuGetFramework.Parse(x).GetShortFolderName()).OrderBy(x => x).ToList();
+                if (!originalFrameworks.SequenceEqual(roundTripFrameworks))
+                {
+                    doesNotRoundTrip = true;
+                }
             }
             catch (Exception ex)
             {
@@ -125,7 +134,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                 return null;
             }
 
-            return JsonConvert.SerializeObject(shortFrameworks);
+            return JsonConvert.SerializeObject(roundTripFrameworks);
         }
 
         public List<PackageCompatibility> Prune(List<PackageCompatibility> records)

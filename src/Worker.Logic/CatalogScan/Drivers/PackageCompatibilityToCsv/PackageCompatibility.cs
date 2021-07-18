@@ -23,6 +23,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 
         public PackageCompatibilityResultType ResultType { get; set; }
         public bool HasError { get; set; }
+        public bool DoesNotRoundTrip { get; set; }
 
         [KustoType("dynamic")]
         public string NuspecReader { get; set; }

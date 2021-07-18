@@ -1,3 +1,3 @@
-ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,HasError,NuspecReader,NuGetGallery
-,,archimedes.library,archimedes.library/1.0.245,Archimedes.Library,1.0.245,2020-11-27T19:35:06.0046046Z,2020-11-27T19:33:25.687Z,Available,false,"[""netstandard2.0""]","[""netstandard2.0""]"
-,,eto.serialization.xaml,eto.serialization.xaml/2.5.8,Eto.Serialization.Xaml,2.5.8,2020-11-27T19:34:44.6917011Z,2020-11-27T19:32:26.743Z,Available,false,"[""any"",""netstandard1.0"",""netstandard2.0""]","[""any"",""netstandard1.0"",""netstandard2.0""]"
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,HasError,DoesNotRoundTrip,NuspecReader,NuGetGallery
+,,archimedes.library,archimedes.library/1.0.245,Archimedes.Library,1.0.245,2020-11-27T19:35:06.0046046Z,2020-11-27T19:33:25.687Z,Available,false,false,"[""netstandard2.0""]","[""netstandard2.0""]"
+,,eto.serialization.xaml,eto.serialization.xaml/2.5.8,Eto.Serialization.Xaml,2.5.8,2020-11-27T19:34:44.6917011Z,2020-11-27T19:32:26.743Z,Available,false,false,"[""any"",""netstandard1.0"",""netstandard2.0""]","[""any"",""netstandard1.0"",""netstandard2.0""]"
