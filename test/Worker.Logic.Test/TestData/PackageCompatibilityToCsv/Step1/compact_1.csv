@@ -1,0 +1,7 @@
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,HasError,NuspecReader,NuGetGallery
+,,eto.forms.templates,eto.forms.templates/2.5.8,Eto.Forms.Templates,2.5.8,2020-11-27T19:34:44.6917011Z,2020-11-27T19:32:25.937Z,Available,false,"[""any""]",[]
+,,eto.platform.direct2d,eto.platform.direct2d/2.5.8,Eto.Platform.Direct2D,2.5.8,2020-11-27T19:34:44.6917011Z,2020-11-27T19:32:28.433Z,Available,false,"[""net472"",""netcoreapp3.1""]","[""net472"",""netcoreapp3.1""]"
+,,eto.platform.gtk2,eto.platform.gtk2/2.5.8,Eto.Platform.Gtk2,2.5.8,2020-11-27T19:34:44.6917011Z,2020-11-27T19:32:29.14Z,Available,false,"[""net45""]","[""net45""]"
+,,eto.platform.gtk3,eto.platform.gtk3/2.5.8,Eto.Platform.Gtk3,2.5.8,2020-11-27T19:34:44.6917011Z,2020-11-27T19:32:30.26Z,Available,false,"[""net45""]","[""net45""]"
+,,eto.platform.mac64,eto.platform.mac64/2.5.8,Eto.Platform.Mac64,2.5.8,2020-11-27T19:34:44.6917011Z,2020-11-27T19:32:28.137Z,Available,false,"[""any"",""net45"",""netstandard2.0""]","[""any"",""net45"",""netstandard2.0""]"
+,,eto.platform.windows,eto.platform.windows/2.5.8,Eto.Platform.Windows,2.5.8,2020-11-27T19:34:44.6917011Z,2020-11-27T19:32:29.887Z,Available,false,"[""net45"",""net462"",""netcoreapp3.1""]","[""net45"",""net462"",""netcoreapp3.1""]"

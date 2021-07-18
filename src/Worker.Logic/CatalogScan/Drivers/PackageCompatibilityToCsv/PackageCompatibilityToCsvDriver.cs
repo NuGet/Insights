@@ -116,7 +116,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             try
             {
                 var frameworks = getFrameworks().ToList();
-                shortFrameworks = frameworks.Select(x => x.GetShortFolderName()).ToList();
+                shortFrameworks = frameworks.Select(x => x.GetShortFolderName()).OrderBy(x => x).ToList();
             }
             catch (Exception ex)
             {
