@@ -18,6 +18,7 @@ using NuGet.Insights.Worker.NuGetPackageExplorerToCsv;
 using NuGet.Insights.Worker.PackageArchiveToCsv;
 using NuGet.Insights.Worker.PackageAssemblyToCsv;
 using NuGet.Insights.Worker.PackageAssetToCsv;
+using NuGet.Insights.Worker.PackageCompatibilityToCsv;
 using NuGet.Insights.Worker.PackageManifestToCsv;
 using NuGet.Insights.Worker.PackageSignatureToCsv;
 using NuGet.Insights.Worker.PackageVersionToCsv;
@@ -53,6 +54,7 @@ namespace NuGet.Insights.Worker
             new SchemaV1<CsvCompactMessage<PackageVersionRecord>>("cc.pv2c"),
             new SchemaV1<CsvCompactMessage<PackageDeprecationRecord>>("cc.pd2c"),
             new SchemaV1<CsvCompactMessage<PackageVulnerabilityRecord>>("cc.pu2c"),
+            new SchemaV1<CsvCompactMessage<PackageCompatibility>>("cc.pc2c"),
 
 #if ENABLE_NPE
             new SchemaV1<CsvCompactMessage<NuGetPackageExplorerRecord>>("cc.npe2c"),

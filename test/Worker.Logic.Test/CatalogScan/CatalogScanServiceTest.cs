@@ -471,6 +471,19 @@ namespace NuGet.Insights.Worker
 #endif
 
             {
+                CatalogScanDriverType.PackageCompatibilityToCsv,
+                new DriverInfo
+                {
+                    DefaultMin = CatalogClient.NuGetOrgMinDeleted,
+                    SetDependencyCursorAsync = async (self, x) =>
+                    {
+                        await self.SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, x);
+                        await self.SetCursorAsync(CatalogScanDriverType.LoadPackageManifest, x);
+                    },
+                }
+            },
+
+            {
                 CatalogScanDriverType.CatalogDataToCsv,
                 new DriverInfo
                 {

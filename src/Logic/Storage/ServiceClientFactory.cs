@@ -59,7 +59,7 @@ namespace NuGet.Insights
 
             if (_options.Value.StorageBlobReadSharedAccessSignature != null)
             {
-                return new UriBuilder(blobClient.Uri) {Query = _options.Value.StorageBlobReadSharedAccessSignature }.Uri;
+                return new UriBuilder(blobClient.Uri) { Query = _options.Value.StorageBlobReadSharedAccessSignature }.Uri;
             }
 
             if (serviceClients.UserDelegationKey != null)

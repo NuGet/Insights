@@ -19,6 +19,7 @@ using NuGet.Insights.Worker.NuGetPackageExplorerToCsv;
 using NuGet.Insights.Worker.PackageArchiveToCsv;
 using NuGet.Insights.Worker.PackageAssemblyToCsv;
 using NuGet.Insights.Worker.PackageAssetToCsv;
+using NuGet.Insights.Worker.PackageCompatibilityToCsv;
 using NuGet.Insights.Worker.PackageManifestToCsv;
 using NuGet.Insights.Worker.PackageSignatureToCsv;
 using NuGet.Insights.Worker.PackageVersionToCsv;
@@ -94,6 +95,8 @@ namespace NuGet.Insights.Worker
                 case CatalogScanDriverType.NuGetPackageExplorerToCsv:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>>();
 #endif
+                case CatalogScanDriverType.PackageCompatibilityToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<PackageCompatibility>>();
                 case CatalogScanDriverType.CatalogDataToCsv:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvAdapter<PackageDeprecationRecord, PackageVulnerabilityRecord>>();
                 default:

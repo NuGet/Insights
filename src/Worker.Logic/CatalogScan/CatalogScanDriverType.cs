@@ -105,6 +105,12 @@ namespace NuGet.Insights.Worker
 #endif
 
         /// <summary>
+        /// Implemented by <see cref="PackageCompatibilityToCsv.PackageCompatibilityToCsvDriver"/>. This driver uses
+        /// various algorithms to determine what frameworks/platforms this package is compatible with.
+        /// </summary>
+        PackageCompatibilityToCsv,
+
+        /// <summary>
         /// Implemented by <see cref="CatalogDataToCsv.CatalogDataToCsvDriver"/>. This driver reads catalog leaves for
         /// metadata found there, e.g. deprecation and vulnerability metadata.
         /// </summary>

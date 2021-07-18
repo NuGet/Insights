@@ -87,6 +87,10 @@ namespace NuGet.Insights.Worker
             },
 #endif
             {
+                CatalogScanDriverType.PackageCompatibilityToCsv,
+                new[] { CatalogScanDriverType.LoadPackageArchive, CatalogScanDriverType.LoadPackageManifest }
+            },
+            {
                 CatalogScanDriverType.CatalogDataToCsv,
                 new[] { FlatContainer }
             },

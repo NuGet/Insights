@@ -10,7 +10,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using MessagePack;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -52,24 +51,24 @@ namespace NuGet.Insights
 
         public async Task<(NuspecReader, int)> GetNuspecReaderAndSizeAsync(CatalogLeafItem leafItem)
         {
-            (var manifest, var size) = await GetManifestAndSizeAsync(leafItem);
-            if (manifest == null)
+            (var manifestBytes, var nuspecReader) = await GetBytesAndNuspecReaderAsync(leafItem);
+            if (nuspecReader == null)
             {
-                return (null, default);
+                return (default, default);
             }
 
-            return (new NuspecReader(manifest), size);
+            return (nuspecReader, manifestBytes.Length);
         }
 
-        private async Task<(XDocument, int)> GetManifestAndSizeAsync(CatalogLeafItem leafItem)
+        public async Task<(Memory<byte>, NuspecReader)> GetBytesAndNuspecReaderAsync(CatalogLeafItem leafItem)
         {
             var info = await GetOrUpdateInfoAsync(leafItem);
             if (!info.Available)
             {
-                return (null, default);
+                return (default, default);
             }
 
-            return (XmlUtility.LoadXml(info.ManifestBytes.AsStream()), info.ManifestBytes.Length);
+            return (info.ManifestBytes, new NuspecReader(XmlUtility.LoadXml(info.ManifestBytes.AsStream())));
         }
 
         public async Task<IReadOnlyDictionary<CatalogLeafItem, PackageManifestInfoV1>> UpdateBatchAsync(string id, IReadOnlyCollection<CatalogLeafItem> leafItems)
