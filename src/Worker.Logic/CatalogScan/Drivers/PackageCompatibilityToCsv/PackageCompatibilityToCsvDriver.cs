@@ -120,7 +120,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "For {Id}/{Version, failed to determine compatible frameworks using '{MethodName}'.", item.PackageId, item.PackageVersion, methodName);
+                _logger.LogWarning(ex, "For {Id}/{Version}, failed to determine compatible frameworks using '{MethodName}'.", item.PackageId, item.PackageVersion, methodName);
                 hasError = true;
                 return null;
             }
