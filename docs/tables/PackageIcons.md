@@ -36,7 +36,7 @@ icons and icon URL icons downloaded to NuGet.org. The processing of images is do
 | Width                  | int              | Yes, for Available   | Width of the image in pixels                                                                                                          |
 | Height                 | int              | Yes, for Available   | Height of the image in pixels                                                                                                         |
 | FrameCountByTime       | int              | No                   | Number of frames in an animated image                                                                                                 |
-| FrameCountByResolution | int              | No                   | Number of frames in an image with multiple embedded resolutions                                                                       |
+| FrameCountByResolution | int              | No                   | Number of frames in an image with multiple resolutions (questionable correctness)                                                     |
 | FrameCountByPage       | int              | No                   | Number of frames, per [`FrameDimension.Page`](https://docs.microsoft.com/en-us/dotnet/api/system.drawing.imaging.framedimension.page) |
 | HorizontalResolution   | float            | Yes, for Available   | Horizontal resolution in pixels per inch                                                                                              |
 | VerticalResolution     | float            | Yes, for Available   | Vertical resolution in pixels per inch                                                                                                |

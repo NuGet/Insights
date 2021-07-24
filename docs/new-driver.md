@@ -139,6 +139,6 @@ Update the [drivers list](../README.md#drivers) to mention your driver.
 
 If your driver produces a CSV, the CSV schema must be documented similar to the existing CSV tables, in
 [`docs/tables`](../docs/tables). The easiest way to get started is to run the `AllTablesAreListedInREADME` test in
-[`DocsTest`](../test/Worker.Test/Docs/DocsTest.cs) to write out an initial version of the document matching the patterns
+[`DocsTest`](../test/Worker.Logic.Test/Docs/DocsTest.cs) to write out an initial version of the document matching the patterns
 of the existing documents. Just fill in the TODOs and make sure all of the tests in 
-[`DocsTest`](../test/Worker.Test/Docs/DocsTest.cs) after you are done with your document.
+[`DocsTest`](../test/Worker.Logic.Test/Docs/DocsTest.cs) after you are done with your document.
