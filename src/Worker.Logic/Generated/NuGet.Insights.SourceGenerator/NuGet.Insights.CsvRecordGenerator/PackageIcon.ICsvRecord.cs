@@ -29,13 +29,16 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         SHA256: string,
         SHA512: string,
         ContentType: string,
-        Format: string,
+        HeaderFormat: string,
+        AutoDetectedFormat: bool,
+        Signature: string,
         Width: int,
         Height: int,
         FrameCount: int,
         IsOpaque: bool,
-        Signature: string,
-        AttributeNames: dynamic
+        FrameFormats: dynamic,
+        FrameDimensions: dynamic,
+        FrameAttributeNames: dynamic
     );
 
     .alter-merge table PackageIcons policy retention softdelete = 30d;
@@ -68,23 +71,26 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         '{"Column":"SHA256","DataType":"string","Properties":{"Ordinal":12}},'
         '{"Column":"SHA512","DataType":"string","Properties":{"Ordinal":13}},'
         '{"Column":"ContentType","DataType":"string","Properties":{"Ordinal":14}},'
-        '{"Column":"Format","DataType":"string","Properties":{"Ordinal":15}},'
-        '{"Column":"Width","DataType":"int","Properties":{"Ordinal":16}},'
-        '{"Column":"Height","DataType":"int","Properties":{"Ordinal":17}},'
-        '{"Column":"FrameCount","DataType":"int","Properties":{"Ordinal":18}},'
-        '{"Column":"IsOpaque","DataType":"bool","Properties":{"Ordinal":19}},'
-        '{"Column":"Signature","DataType":"string","Properties":{"Ordinal":20}},'
-        '{"Column":"AttributeNames","DataType":"dynamic","Properties":{"Ordinal":21}}'
+        '{"Column":"HeaderFormat","DataType":"string","Properties":{"Ordinal":15}},'
+        '{"Column":"AutoDetectedFormat","DataType":"bool","Properties":{"Ordinal":16}},'
+        '{"Column":"Signature","DataType":"string","Properties":{"Ordinal":17}},'
+        '{"Column":"Width","DataType":"int","Properties":{"Ordinal":18}},'
+        '{"Column":"Height","DataType":"int","Properties":{"Ordinal":19}},'
+        '{"Column":"FrameCount","DataType":"int","Properties":{"Ordinal":20}},'
+        '{"Column":"IsOpaque","DataType":"bool","Properties":{"Ordinal":21}},'
+        '{"Column":"FrameFormats","DataType":"dynamic","Properties":{"Ordinal":22}},'
+        '{"Column":"FrameDimensions","DataType":"dynamic","Properties":{"Ordinal":23}},'
+        '{"Column":"FrameAttributeNames","DataType":"dynamic","Properties":{"Ordinal":24}}'
     ']'
 
     */
     partial record PackageIcon
     {
-        public int FieldCount => 22;
+        public int FieldCount => 25;
 
         public void WriteHeader(TextWriter writer)
         {
-            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,FileSize,MD5,SHA1,SHA256,SHA512,ContentType,Format,Width,Height,FrameCount,IsOpaque,Signature,AttributeNames");
+            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,FileSize,MD5,SHA1,SHA256,SHA512,ContentType,HeaderFormat,AutoDetectedFormat,Signature,Width,Height,FrameCount,IsOpaque,FrameFormats,FrameDimensions,FrameAttributeNames");
         }
 
         public void Write(List<string> fields)
@@ -104,13 +110,16 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             fields.Add(SHA256);
             fields.Add(SHA512);
             fields.Add(ContentType);
-            fields.Add(Format);
+            fields.Add(HeaderFormat);
+            fields.Add(CsvUtility.FormatBool(AutoDetectedFormat));
+            fields.Add(Signature);
             fields.Add(Width.ToString());
             fields.Add(Height.ToString());
             fields.Add(FrameCount.ToString());
             fields.Add(CsvUtility.FormatBool(IsOpaque));
-            fields.Add(Signature);
-            fields.Add(AttributeNames);
+            fields.Add(FrameFormats);
+            fields.Add(FrameDimensions);
+            fields.Add(FrameAttributeNames);
         }
 
         public void Write(TextWriter writer)
@@ -145,7 +154,11 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, ContentType);
             writer.Write(',');
-            CsvUtility.WriteWithQuotes(writer, Format);
+            CsvUtility.WriteWithQuotes(writer, HeaderFormat);
+            writer.Write(',');
+            writer.Write(CsvUtility.FormatBool(AutoDetectedFormat));
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, Signature);
             writer.Write(',');
             writer.Write(Width);
             writer.Write(',');
@@ -155,9 +168,11 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             writer.Write(',');
             writer.Write(CsvUtility.FormatBool(IsOpaque));
             writer.Write(',');
-            CsvUtility.WriteWithQuotes(writer, Signature);
+            CsvUtility.WriteWithQuotes(writer, FrameFormats);
             writer.Write(',');
-            CsvUtility.WriteWithQuotes(writer, AttributeNames);
+            CsvUtility.WriteWithQuotes(writer, FrameDimensions);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, FrameAttributeNames);
             writer.WriteLine();
         }
 
@@ -193,7 +208,11 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, ContentType);
             await writer.WriteAsync(',');
-            await CsvUtility.WriteWithQuotesAsync(writer, Format);
+            await CsvUtility.WriteWithQuotesAsync(writer, HeaderFormat);
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatBool(AutoDetectedFormat));
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, Signature);
             await writer.WriteAsync(',');
             await writer.WriteAsync(Width.ToString());
             await writer.WriteAsync(',');
@@ -203,9 +222,11 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatBool(IsOpaque));
             await writer.WriteAsync(',');
-            await CsvUtility.WriteWithQuotesAsync(writer, Signature);
+            await CsvUtility.WriteWithQuotesAsync(writer, FrameFormats);
             await writer.WriteAsync(',');
-            await CsvUtility.WriteWithQuotesAsync(writer, AttributeNames);
+            await CsvUtility.WriteWithQuotesAsync(writer, FrameDimensions);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, FrameAttributeNames);
             await writer.WriteLineAsync();
         }
 
@@ -228,13 +249,16 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
                 SHA256 = getNextField(),
                 SHA512 = getNextField(),
                 ContentType = getNextField(),
-                Format = getNextField(),
+                HeaderFormat = getNextField(),
+                AutoDetectedFormat = CsvUtility.ParseNullable(getNextField(), bool.Parse),
+                Signature = getNextField(),
                 Width = CsvUtility.ParseNullable(getNextField(), int.Parse),
                 Height = CsvUtility.ParseNullable(getNextField(), int.Parse),
                 FrameCount = CsvUtility.ParseNullable(getNextField(), int.Parse),
                 IsOpaque = CsvUtility.ParseNullable(getNextField(), bool.Parse),
-                Signature = getNextField(),
-                AttributeNames = getNextField(),
+                FrameFormats = getNextField(),
+                FrameDimensions = getNextField(),
+                FrameAttributeNames = getNextField(),
             };
         }
     }

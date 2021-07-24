@@ -29,13 +29,16 @@ namespace NuGet.Insights
     SHA256: string,
     SHA512: string,
     ContentType: string,
-    Format: string,
+    HeaderFormat: string,
+    AutoDetectedFormat: bool,
+    Signature: string,
     Width: int,
     Height: int,
     FrameCount: int,
     IsOpaque: bool,
-    Signature: string,
-    AttributeNames: dynamic
+    FrameFormats: dynamic,
+    FrameDimensions: dynamic,
+    FrameAttributeNames: dynamic
 )",
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
@@ -55,13 +58,16 @@ namespace NuGet.Insights
     '{""Column"":""SHA256"",""DataType"":""string"",""Properties"":{""Ordinal"":12}},'
     '{""Column"":""SHA512"",""DataType"":""string"",""Properties"":{""Ordinal"":13}},'
     '{""Column"":""ContentType"",""DataType"":""string"",""Properties"":{""Ordinal"":14}},'
-    '{""Column"":""Format"",""DataType"":""string"",""Properties"":{""Ordinal"":15}},'
-    '{""Column"":""Width"",""DataType"":""int"",""Properties"":{""Ordinal"":16}},'
-    '{""Column"":""Height"",""DataType"":""int"",""Properties"":{""Ordinal"":17}},'
-    '{""Column"":""FrameCount"",""DataType"":""int"",""Properties"":{""Ordinal"":18}},'
-    '{""Column"":""IsOpaque"",""DataType"":""bool"",""Properties"":{""Ordinal"":19}},'
-    '{""Column"":""Signature"",""DataType"":""string"",""Properties"":{""Ordinal"":20}},'
-    '{""Column"":""AttributeNames"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":21}}'
+    '{""Column"":""HeaderFormat"",""DataType"":""string"",""Properties"":{""Ordinal"":15}},'
+    '{""Column"":""AutoDetectedFormat"",""DataType"":""bool"",""Properties"":{""Ordinal"":16}},'
+    '{""Column"":""Signature"",""DataType"":""string"",""Properties"":{""Ordinal"":17}},'
+    '{""Column"":""Width"",""DataType"":""int"",""Properties"":{""Ordinal"":18}},'
+    '{""Column"":""Height"",""DataType"":""int"",""Properties"":{""Ordinal"":19}},'
+    '{""Column"":""FrameCount"",""DataType"":""int"",""Properties"":{""Ordinal"":20}},'
+    '{""Column"":""IsOpaque"",""DataType"":""bool"",""Properties"":{""Ordinal"":21}},'
+    '{""Column"":""FrameFormats"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":22}},'
+    '{""Column"":""FrameDimensions"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":23}},'
+    '{""Column"":""FrameAttributeNames"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":24}}'
 ']'",
         };
 

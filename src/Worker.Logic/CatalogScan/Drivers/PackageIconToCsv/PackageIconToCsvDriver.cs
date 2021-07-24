@@ -104,26 +104,58 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
                         ContentType = contentType,
                     };
 
+                    // Try to detect the format. ImageMagick appears to not detect .ico files when only given a stream.
+                    result.Stream.Position = 0;
+                    var format = FormatDetector.Detect(result.Stream);
+                    output.HeaderFormat = format.ToString();
+
                     try
                     {
-                        using var collection = GetMagickImageCollection(leaf, result);
-                        using var image = collection.First();
-                        var attributeNames = image
-                            .AttributeNames
-                            .Except(IgnoredAttributes)
-                            .OrderBy(x => x)
-                            .ToList();
-                        output.Format = image.Format.ToString();
-                        output.Width = image.Width;
-                        output.Height = image.Height;
-                        output.FrameCount = collection.Count;
-                        output.IsOpaque = image.IsOpaque;
-                        output.Signature = image.Signature;
-                        output.AttributeNames = JsonConvert.SerializeObject(attributeNames);
+                        (var autoDetectedFormat, var frames) = GetMagickImageCollection(leaf, result, format);
+                        using (frames)
+                        {
+                            using var image = frames.First();
+
+                            // Maintain original (frame) order of formats and dimensions
+                            var frameFormats = new List<string>();
+                            var frameDimensions = new List<object>();
+                            var uniqueFrameFormats = new HashSet<string>();
+                            var uniqueFrameDimensions = new HashSet<(int, int)>();
+
+                            var frameAttributeNames = new HashSet<string>();
+                            foreach (var frame in frames)
+                            {
+                                var frameFormat = frame.Format.ToString();
+                                if (uniqueFrameFormats.Add(frameFormat))
+                                {
+                                    frameFormats.Add(frameFormat);
+                                }
+
+                                if (uniqueFrameDimensions.Add((frame.Width, frame.Height)))
+                                {
+                                    frameDimensions.Add(new { frame.Width, frame.Height });
+                                }
+
+                                foreach (var attributeName in frame.AttributeNames)
+                                {
+                                    frameAttributeNames.Add(attributeName);
+                                }
+                            }
+
+                            output.Signature = ByteArrayExtensions.StringToByteArray(image.Signature).ToBase64();
+                            output.AutoDetectedFormat = autoDetectedFormat;
+                            output.Width = image.Width;
+                            output.Height = image.Height;
+                            output.IsOpaque = image.IsOpaque;
+                            output.FrameCount = frames.Count;
+                            output.FrameFormats = JsonConvert.SerializeObject(frameFormats);
+                            output.FrameDimensions = JsonConvert.SerializeObject(frameDimensions);
+                            output.FrameAttributeNames = JsonConvert.SerializeObject(frameAttributeNames.Except(IgnoredAttributes).OrderBy(x => x).ToList());
+                        }
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogWarning(ex, "Could to process image for {Id}/{Version}.", leaf.PackageId, leaf.PackageVersion);
+                        _logger.LogWarning(ex, "Failed to process icon for {Id}/{Version}.", leaf.PackageId, leaf.PackageVersion);
                         output.ResultType = PackageIconResultType.Error;
                     }
 
@@ -132,32 +164,24 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             }
         }
 
-        private MagickImageCollection GetMagickImageCollection(CatalogLeaf leaf, TempStreamResult result)
+        private (bool, MagickImageCollection) GetMagickImageCollection(CatalogLeaf leaf, TempStreamResult result, MagickFormat format)
         {
-            // Try to detect the format. ImageMagick appears to not detect .ico files when only given a stream.
-            result.Stream.Position = 0;
-            var format = FormatDetector.Detect(result.Stream);
-
-            if (format != MagickFormat.Unknown)
+            try
             {
-                try
-                {
-                    result.Stream.Position = 0;
-                    return new MagickImageCollection(result.Stream, format);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(
-                        ex,
-                        "ImageMagick failed to open the icon for {Id}/{Version} with format {Format}.",
-                        leaf.PackageId,
-                        leaf.PackageVersion,
-                        format);
-                }
+                result.Stream.Position = 0;
+                return (true, new MagickImageCollection(result.Stream));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation(
+                    ex,
+                    "ImageMagick failed to auto-detect format of icon for {Id}/{Version}.",
+                    leaf.PackageId,
+                    leaf.PackageVersion);
             }
 
             result.Stream.Position = 0;
-            return new MagickImageCollection(result.Stream);
+            return (false, new MagickImageCollection(result.Stream, format));
         }
 
         public List<PackageIcon> Prune(List<PackageIcon> records)

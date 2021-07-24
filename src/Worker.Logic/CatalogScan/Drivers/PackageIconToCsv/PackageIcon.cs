@@ -28,15 +28,22 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         public string SHA256 { get; set; }
         public string SHA512 { get; set; }
         public string ContentType { get; set; }
+        public string HeaderFormat { get; set; }
 
-        public string Format { get; set; }
+        public bool? AutoDetectedFormat { get; set; }
+        public string Signature { get; set; }
         public int? Width { get; set; }
         public int? Height { get; set; }
         public int? FrameCount { get; set; }
         public bool? IsOpaque { get; set; }
-        public string Signature { get; set; }
 
         [KustoType("dynamic")]
-        public string AttributeNames { get; set; }
+        public string FrameFormats { get; set; }
+
+        [KustoType("dynamic")]
+        public string FrameDimensions { get; set; }
+
+        [KustoType("dynamic")]
+        public string FrameAttributeNames { get; set; }
     }
 }
