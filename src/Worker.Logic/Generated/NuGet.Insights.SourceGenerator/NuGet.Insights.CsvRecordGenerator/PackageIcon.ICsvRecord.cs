@@ -32,14 +32,10 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         Format: string,
         Width: int,
         Height: int,
-        FrameCountByTime: int,
-        FrameCountByResolution: int,
-        FrameCountByPage: int,
-        HorizontalResolution: real,
-        VerticalResolution: real,
-        Flags: int,
-        PixelFormat: string,
-        PropertyItems: dynamic
+        FrameCount: int,
+        IsOpaque: bool,
+        Signature: string,
+        AttributeNames: dynamic
     );
 
     .alter-merge table PackageIcons policy retention softdelete = 30d;
@@ -75,24 +71,20 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         '{"Column":"Format","DataType":"string","Properties":{"Ordinal":15}},'
         '{"Column":"Width","DataType":"int","Properties":{"Ordinal":16}},'
         '{"Column":"Height","DataType":"int","Properties":{"Ordinal":17}},'
-        '{"Column":"FrameCountByTime","DataType":"int","Properties":{"Ordinal":18}},'
-        '{"Column":"FrameCountByResolution","DataType":"int","Properties":{"Ordinal":19}},'
-        '{"Column":"FrameCountByPage","DataType":"int","Properties":{"Ordinal":20}},'
-        '{"Column":"HorizontalResolution","DataType":"real","Properties":{"Ordinal":21}},'
-        '{"Column":"VerticalResolution","DataType":"real","Properties":{"Ordinal":22}},'
-        '{"Column":"Flags","DataType":"int","Properties":{"Ordinal":23}},'
-        '{"Column":"PixelFormat","DataType":"string","Properties":{"Ordinal":24}},'
-        '{"Column":"PropertyItems","DataType":"dynamic","Properties":{"Ordinal":25}}'
+        '{"Column":"FrameCount","DataType":"int","Properties":{"Ordinal":18}},'
+        '{"Column":"IsOpaque","DataType":"bool","Properties":{"Ordinal":19}},'
+        '{"Column":"Signature","DataType":"string","Properties":{"Ordinal":20}},'
+        '{"Column":"AttributeNames","DataType":"dynamic","Properties":{"Ordinal":21}}'
     ']'
 
     */
     partial record PackageIcon
     {
-        public int FieldCount => 26;
+        public int FieldCount => 22;
 
         public void WriteHeader(TextWriter writer)
         {
-            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,FileSize,MD5,SHA1,SHA256,SHA512,ContentType,Format,Width,Height,FrameCountByTime,FrameCountByResolution,FrameCountByPage,HorizontalResolution,VerticalResolution,Flags,PixelFormat,PropertyItems");
+            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,FileSize,MD5,SHA1,SHA256,SHA512,ContentType,Format,Width,Height,FrameCount,IsOpaque,Signature,AttributeNames");
         }
 
         public void Write(List<string> fields)
@@ -115,14 +107,10 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             fields.Add(Format);
             fields.Add(Width.ToString());
             fields.Add(Height.ToString());
-            fields.Add(FrameCountByTime.ToString());
-            fields.Add(FrameCountByResolution.ToString());
-            fields.Add(FrameCountByPage.ToString());
-            fields.Add(HorizontalResolution.ToString());
-            fields.Add(VerticalResolution.ToString());
-            fields.Add(Flags.ToString());
-            fields.Add(PixelFormat);
-            fields.Add(PropertyItems);
+            fields.Add(FrameCount.ToString());
+            fields.Add(CsvUtility.FormatBool(IsOpaque));
+            fields.Add(Signature);
+            fields.Add(AttributeNames);
         }
 
         public void Write(TextWriter writer)
@@ -163,21 +151,13 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             writer.Write(',');
             writer.Write(Height);
             writer.Write(',');
-            writer.Write(FrameCountByTime);
+            writer.Write(FrameCount);
             writer.Write(',');
-            writer.Write(FrameCountByResolution);
+            writer.Write(CsvUtility.FormatBool(IsOpaque));
             writer.Write(',');
-            writer.Write(FrameCountByPage);
+            CsvUtility.WriteWithQuotes(writer, Signature);
             writer.Write(',');
-            writer.Write(HorizontalResolution);
-            writer.Write(',');
-            writer.Write(VerticalResolution);
-            writer.Write(',');
-            writer.Write(Flags);
-            writer.Write(',');
-            CsvUtility.WriteWithQuotes(writer, PixelFormat);
-            writer.Write(',');
-            CsvUtility.WriteWithQuotes(writer, PropertyItems);
+            CsvUtility.WriteWithQuotes(writer, AttributeNames);
             writer.WriteLine();
         }
 
@@ -219,21 +199,13 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             await writer.WriteAsync(',');
             await writer.WriteAsync(Height.ToString());
             await writer.WriteAsync(',');
-            await writer.WriteAsync(FrameCountByTime.ToString());
+            await writer.WriteAsync(FrameCount.ToString());
             await writer.WriteAsync(',');
-            await writer.WriteAsync(FrameCountByResolution.ToString());
+            await writer.WriteAsync(CsvUtility.FormatBool(IsOpaque));
             await writer.WriteAsync(',');
-            await writer.WriteAsync(FrameCountByPage.ToString());
+            await CsvUtility.WriteWithQuotesAsync(writer, Signature);
             await writer.WriteAsync(',');
-            await writer.WriteAsync(HorizontalResolution.ToString());
-            await writer.WriteAsync(',');
-            await writer.WriteAsync(VerticalResolution.ToString());
-            await writer.WriteAsync(',');
-            await writer.WriteAsync(Flags.ToString());
-            await writer.WriteAsync(',');
-            await CsvUtility.WriteWithQuotesAsync(writer, PixelFormat);
-            await writer.WriteAsync(',');
-            await CsvUtility.WriteWithQuotesAsync(writer, PropertyItems);
+            await CsvUtility.WriteWithQuotesAsync(writer, AttributeNames);
             await writer.WriteLineAsync();
         }
 
@@ -259,14 +231,10 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
                 Format = getNextField(),
                 Width = CsvUtility.ParseNullable(getNextField(), int.Parse),
                 Height = CsvUtility.ParseNullable(getNextField(), int.Parse),
-                FrameCountByTime = CsvUtility.ParseNullable(getNextField(), int.Parse),
-                FrameCountByResolution = CsvUtility.ParseNullable(getNextField(), int.Parse),
-                FrameCountByPage = CsvUtility.ParseNullable(getNextField(), int.Parse),
-                HorizontalResolution = CsvUtility.ParseNullable(getNextField(), float.Parse),
-                VerticalResolution = CsvUtility.ParseNullable(getNextField(), float.Parse),
-                Flags = CsvUtility.ParseNullable(getNextField(), int.Parse),
-                PixelFormat = getNextField(),
-                PropertyItems = getNextField(),
+                FrameCount = CsvUtility.ParseNullable(getNextField(), int.Parse),
+                IsOpaque = CsvUtility.ParseNullable(getNextField(), bool.Parse),
+                Signature = getNextField(),
+                AttributeNames = getNextField(),
             };
         }
     }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -30,15 +30,11 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         public string Format { get; set; }
         public int? Width { get; set; }
         public int? Height { get; set; }
-        public int? FrameCountByTime { get; set; }
-        public int? FrameCountByResolution { get; set; }
-        public int? FrameCountByPage { get; set; }
-        public float? HorizontalResolution { get; set; }
-        public float? VerticalResolution { get; set; }
-        public int? Flags { get; set; }
-        public string PixelFormat { get; set; }
+        public int? FrameCount { get; set; }
+        public bool? IsOpaque { get; set; }
+        public string Signature { get; set; }
 
         [KustoType("dynamic")]
-        public string PropertyItems { get; set; }
+        public string AttributeNames { get; set; }
     }
 }

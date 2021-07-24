@@ -3,12 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using ImageMagick;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -17,6 +16,8 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
 {
     public class PackageIconToCsvDriver : ICatalogLeafToCsvDriver<PackageIcon>, ICsvResultStorage<PackageIcon>
     {
+        private static IReadOnlyList<string> IgnoredAttributes = new[] { "date:create", "date:modify", "signature" };
+
         private readonly CatalogClient _catalogClient;
         private readonly FlatContainerClient _flatContainerClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
@@ -105,19 +106,20 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
 
                     try
                     {
-                        using var image = new Bitmap(result.Stream);
-                        var propertyItems = JsonConvert.SerializeObject(image.PropertyItems.Select(x => new { x.Id, x.Type }));
-                        output.Format = image.RawFormat.ToString();
+                        using var collection = GetMagickImageCollection(leaf, result);
+                        using var image = collection.First();
+                        var attributeNames = image
+                            .AttributeNames
+                            .Except(IgnoredAttributes)
+                            .OrderBy(x => x)
+                            .ToList();
+                        output.Format = image.Format.ToString();
                         output.Width = image.Width;
                         output.Height = image.Height;
-                        output.FrameCountByTime = TryGet(() => image.GetFrameCount(FrameDimension.Time));
-                        output.FrameCountByResolution = TryGet(() => image.GetFrameCount(FrameDimension.Resolution));
-                        output.FrameCountByPage = TryGet(() => image.GetFrameCount(FrameDimension.Page));
-                        output.HorizontalResolution = image.HorizontalResolution;
-                        output.VerticalResolution = image.VerticalResolution;
-                        output.Flags = image.Flags;
-                        output.PixelFormat = image.PixelFormat.ToString();
-                        output.PropertyItems = propertyItems;
+                        output.FrameCount = collection.Count;
+                        output.IsOpaque = image.IsOpaque;
+                        output.Signature = image.Signature;
+                        output.AttributeNames = JsonConvert.SerializeObject(attributeNames);
                     }
                     catch (Exception ex)
                     {
@@ -130,16 +132,32 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             }
         }
 
-        private T? TryGet<T>(Func<T> get) where T : struct
+        private MagickImageCollection GetMagickImageCollection(CatalogLeaf leaf, TempStreamResult result)
         {
-            try
+            // Try to detect the format. ImageMagick appears to not detect .ico files when only given a stream.
+            result.Stream.Position = 0;
+            var format = FormatDetector.Detect(result.Stream);
+
+            if (format != MagickFormat.Unknown)
             {
-                return get();
+                try
+                {
+                    result.Stream.Position = 0;
+                    return new MagickImageCollection(result.Stream, format);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(
+                        ex,
+                        "ImageMagick failed to open the icon for {Id}/{Version} with format {Format}.",
+                        leaf.PackageId,
+                        leaf.PackageVersion,
+                        format);
+                }
             }
-            catch (ExternalException)
-            {
-                return default;
-            }
+
+            result.Stream.Position = 0;
+            return new MagickImageCollection(result.Stream);
         }
 
         public List<PackageIcon> Prune(List<PackageIcon> records)

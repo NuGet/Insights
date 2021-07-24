@@ -20,7 +20,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         public ICatalogLeafToCsvDriver<PackageIcon> Target => Host.Services.GetRequiredService<ICatalogLeafToCsvDriver<PackageIcon>>();
 
         [Fact]
-        public async Task AnimatedGif()
+        public async Task AnimatedGif_Opaque()
         {
             await Target.InitializeAsync();
             var leaf = new CatalogLeafItem
@@ -37,9 +37,9 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageIconResultType.Available, record.ResultType);
             Assert.Equal("Gif", record.Format);
-            Assert.Null(record.FrameCountByPage);
-            Assert.Null(record.FrameCountByResolution);
-            Assert.Equal(35, record.FrameCountByTime);
+            Assert.Equal(35, record.FrameCount);
+            Assert.True(record.IsOpaque);
+            Assert.Equal("9b29ae9edd938a2bf2d3031fcc2e2dd82e6d6e7d2fe551891a9ed5f179d4adf6", record.Signature);
             Assert.Equal("kWloGw9VYuRnd1iwV0y+D++cu5uGrCz7srX89eWpHtU=", record.SHA256);
             Assert.Equal(140259, record.FileSize);
             Assert.Equal(761, record.Width);
@@ -47,7 +47,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         }
 
         [Fact]
-        public async Task NonAnimatedGif()
+        public async Task NonAnimatedGif_Transparent()
         {
             await Target.InitializeAsync();
             var leaf = new CatalogLeafItem
@@ -64,9 +64,9 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageIconResultType.Available, record.ResultType);
             Assert.Equal("Gif", record.Format);
-            Assert.Null(record.FrameCountByPage);
-            Assert.Null(record.FrameCountByResolution);
-            Assert.Equal(1, record.FrameCountByTime);
+            Assert.Equal(1, record.FrameCount);
+            Assert.False(record.IsOpaque);
+            Assert.Equal("cd6cb7cfac142e1643d6f084c35482b755904a88816c6081b525a67c27b26779", record.Signature);
             Assert.Equal("BMhjIEQ2iswW89LHeMdX15mNCtpkFbKM/JODKQJeMC4=", record.SHA256);
             Assert.Equal(1654, record.FileSize);
             Assert.Equal(48, record.Width);
@@ -74,7 +74,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         }
 
         [Fact]
-        public async Task Png()
+        public async Task Png_Transparent()
         {
             await Target.InitializeAsync();
             var leaf = new CatalogLeafItem
@@ -91,9 +91,9 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageIconResultType.Available, record.ResultType);
             Assert.Equal("Png", record.Format);
-            Assert.Equal(1, record.FrameCountByPage);
-            Assert.Null(record.FrameCountByResolution);
-            Assert.Null(record.FrameCountByTime);
+            Assert.Equal(1, record.FrameCount);
+            Assert.False(record.IsOpaque);
+            Assert.Equal("d1dca128fe19ffedc8b259f58c39f731a98ad52304376ef6d4ab233e5f928b98", record.Signature);
             Assert.Equal("oNhVoCSr6BKWb3RmqLn7NXPEjfhijVGLjNVmIpRBkCI=", record.SHA256);
             Assert.Equal(9327, record.FileSize);
             Assert.Equal(100, record.Width);
@@ -116,16 +116,16 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
-            Assert.Equal(PackageIconResultType.Error, record.ResultType);
+            Assert.Equal(PackageIconResultType.Available, record.ResultType);
             Assert.Equal("image/svg+xml", record.ContentType);
-            Assert.Null(record.Format);
-            Assert.Null(record.FrameCountByPage);
-            Assert.Null(record.FrameCountByResolution);
-            Assert.Null(record.FrameCountByTime);
+            Assert.Equal("Svg", record.Format);
+            Assert.Equal(1, record.FrameCount);
+            Assert.True(record.IsOpaque);
+            Assert.Equal("c519e64ccc405295fa61a583ff4959eea6842b72a05cf2cc2ca9e9e1c0019c8b", record.Signature);
             Assert.Equal("craAEC3eL5Oa3Qp1t+SU4dNwPG4YF8POjnrljAqg8cE=", record.SHA256);
             Assert.Equal(4729, record.FileSize);
-            Assert.Null(record.Width);
-            Assert.Null(record.Height);
+            Assert.Equal(200, record.Width);
+            Assert.Equal(200, record.Height);
         }
 
         [Fact]
@@ -146,9 +146,9 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageIconResultType.Available, record.ResultType);
             Assert.Equal("Jpeg", record.Format);
-            Assert.Equal(1, record.FrameCountByPage);
-            Assert.Null(record.FrameCountByResolution);
-            Assert.Null(record.FrameCountByTime);
+            Assert.Equal(1, record.FrameCount);
+            Assert.True(record.IsOpaque);
+            Assert.Equal("ecc6f86ea416d83ad54d038178fe670a24d394c57d5bc4032180b6991b974002", record.Signature);
             Assert.Equal("sbJhsY1+2RtK27sbEKC9N3upB6U3TeoJp1fimRQ4HV8=", record.SHA256);
             Assert.Equal(5380, record.FileSize);
             Assert.Equal(145, record.Width);
@@ -156,7 +156,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         }
 
         [Fact]
-        public async Task IconWithSingleResolution()
+        public async Task IconWithSingleResolution_Transparent()
         {
             await Target.InitializeAsync();
             var leaf = new CatalogLeafItem
@@ -172,10 +172,10 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageIconResultType.Available, record.ResultType);
-            Assert.Equal("Icon", record.Format);
-            Assert.Equal(1, record.FrameCountByPage);
-            Assert.Equal(1, record.FrameCountByResolution);
-            Assert.Equal(1, record.FrameCountByTime);
+            Assert.Equal("Ico", record.Format);
+            Assert.Equal(1, record.FrameCount);
+            Assert.False(record.IsOpaque);
+            Assert.Equal("7bf8efaa9c1a0de027656df9b2516200a896403a7ae91b07b2061f8cd84b5206", record.Signature);
             Assert.Equal("d/CXoPpvQF2j4FgcQgxjHbgWz55vZ6lfy3bh+GT3qYg=", record.SHA256);
             Assert.Equal(9662, record.FileSize);
             Assert.Equal(48, record.Width);
@@ -183,7 +183,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         }
 
         [Fact]
-        public async Task IconWithMultipleResolutions()
+        public async Task IconWithMultipleResolutions_Transparent()
         {
             await Target.InitializeAsync();
             var leaf = new CatalogLeafItem
@@ -199,14 +199,14 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageIconResultType.Available, record.ResultType);
-            Assert.Equal("Icon", record.Format);
-            Assert.Equal(1, record.FrameCountByPage);
-            Assert.Equal(1, record.FrameCountByResolution); // Multiple resolutions don't seem to be supported
-            Assert.Equal(1, record.FrameCountByTime);
+            Assert.Equal("Ico", record.Format);
+            Assert.Equal(4, record.FrameCount);
+            Assert.False(record.IsOpaque);
+            Assert.Equal("9ffe66c5ffa25df6caf1deeca7d9e4a1c7ce6f539b7fb69e38589f8fe4a12140", record.Signature);
             Assert.Equal("clvBdjr3NPKy7fKcPQYpNQLtOcl9MeTML0x0mXkcJl4=", record.SHA256);
             Assert.Equal(90022, record.FileSize);
-            Assert.Equal(16, record.Width);
-            Assert.Equal(16, record.Height);
+            Assert.Equal(128, record.Width);
+            Assert.Equal(128, record.Height);
         }
     }
 }

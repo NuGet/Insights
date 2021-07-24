@@ -17,9 +17,9 @@
     <Compile Include="..\Logic\IsExternalInit.cs" Link="IsExternalInit.cs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="8.1.0" />
     <PackageReference Include="Microsoft.Azure.Kusto.Ingest" Version="9.2.0" />
     <PackageReference Include="NReco.Csv" Version="1.0.0" />
-    <PackageReference Include="System.Drawing.Common" Version="5.0.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Logic\Logic.csproj" />

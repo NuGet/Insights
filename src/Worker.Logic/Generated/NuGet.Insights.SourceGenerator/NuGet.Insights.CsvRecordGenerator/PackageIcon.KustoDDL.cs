@@ -32,14 +32,10 @@ namespace NuGet.Insights
     Format: string,
     Width: int,
     Height: int,
-    FrameCountByTime: int,
-    FrameCountByResolution: int,
-    FrameCountByPage: int,
-    HorizontalResolution: real,
-    VerticalResolution: real,
-    Flags: int,
-    PixelFormat: string,
-    PropertyItems: dynamic
+    FrameCount: int,
+    IsOpaque: bool,
+    Signature: string,
+    AttributeNames: dynamic
 )",
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
@@ -62,14 +58,10 @@ namespace NuGet.Insights
     '{""Column"":""Format"",""DataType"":""string"",""Properties"":{""Ordinal"":15}},'
     '{""Column"":""Width"",""DataType"":""int"",""Properties"":{""Ordinal"":16}},'
     '{""Column"":""Height"",""DataType"":""int"",""Properties"":{""Ordinal"":17}},'
-    '{""Column"":""FrameCountByTime"",""DataType"":""int"",""Properties"":{""Ordinal"":18}},'
-    '{""Column"":""FrameCountByResolution"",""DataType"":""int"",""Properties"":{""Ordinal"":19}},'
-    '{""Column"":""FrameCountByPage"",""DataType"":""int"",""Properties"":{""Ordinal"":20}},'
-    '{""Column"":""HorizontalResolution"",""DataType"":""real"",""Properties"":{""Ordinal"":21}},'
-    '{""Column"":""VerticalResolution"",""DataType"":""real"",""Properties"":{""Ordinal"":22}},'
-    '{""Column"":""Flags"",""DataType"":""int"",""Properties"":{""Ordinal"":23}},'
-    '{""Column"":""PixelFormat"",""DataType"":""string"",""Properties"":{""Ordinal"":24}},'
-    '{""Column"":""PropertyItems"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":25}}'
+    '{""Column"":""FrameCount"",""DataType"":""int"",""Properties"":{""Ordinal"":18}},'
+    '{""Column"":""IsOpaque"",""DataType"":""bool"",""Properties"":{""Ordinal"":19}},'
+    '{""Column"":""Signature"",""DataType"":""string"",""Properties"":{""Ordinal"":20}},'
+    '{""Column"":""AttributeNames"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":21}}'
 ']'",
         };
 
