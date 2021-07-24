@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ImageMagick;
@@ -16,7 +15,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
 {
     public class PackageIconToCsvDriver : ICatalogLeafToCsvDriver<PackageIcon>, ICsvResultStorage<PackageIcon>
     {
-        private static IReadOnlyList<string> IgnoredAttributes = new[] { "date:create", "date:modify", "signature" };
+        private static readonly IReadOnlyList<string> IgnoredAttributes = new[] { "date:create", "date:modify", "signature" };
 
         private readonly CatalogClient _catalogClient;
         private readonly FlatContainerClient _flatContainerClient;
