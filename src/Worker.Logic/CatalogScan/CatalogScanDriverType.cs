@@ -111,6 +111,13 @@ namespace NuGet.Insights.Worker
         PackageCompatibilityToCsv,
 
         /// <summary>
+        /// Implemented by <see cref="PackageIconToCsv.PackageIconToCsvDriver"/>. This driver analyzes the package icon
+        /// that is available on flat container. This is either the embedded icon or the downloaded icon from the icon
+        /// URL (legacy).
+        /// </summary>
+        PackageIconToCsv,
+
+        /// <summary>
         /// Implemented by <see cref="CatalogDataToCsv.CatalogDataToCsvDriver"/>. This driver reads catalog leaves for
         /// metadata found there, e.g. deprecation and vulnerability metadata.
         /// </summary>

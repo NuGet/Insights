@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Net;
@@ -70,9 +70,22 @@ namespace NuGet.Insights
         public async Task<TempStreamResult> DownloadPackageContentToFileAsync(string id, string version, CancellationToken token)
         {
             var url = await GetPackageContentUrlAsync(id, version);
+            (_, var result) = await DownloadUrlToFileAsync(url, token);
+            return result;
+        }
+
+        public async Task<(string ContentType, TempStreamResult Result)> DownloadPackageIconToFileAsync(string id, string version, CancellationToken token)
+        {
+            var url = await GetPackageIconUrlAsync(id, version);
+            return await DownloadUrlToFileAsync(url, token);
+        }
+
+        private async Task<(string, TempStreamResult)> DownloadUrlToFileAsync(string url, CancellationToken token)
+        {
             var nuGetLogger = _logger.ToNuGetLogger();
             var writer = _tempStreamService.GetWriter();
 
+            string contentType = null;
             TempStreamResult result = null;
             try
             {
@@ -88,6 +101,7 @@ namespace NuGet.Insights
                             }
 
                             response.EnsureSuccessStatusCode();
+                            contentType = response.Content.Headers.ContentType?.ToString();
                             using var networkStream = await response.Content.ReadAsStreamAsync();
                             return await writer.CopyToTempStreamAsync(
                                 networkStream,
@@ -99,12 +113,12 @@ namespace NuGet.Insights
 
                     if (result == null)
                     {
-                        return null;
+                        return (contentType, null);
                     }
                 }
                 while (result.Type == TempStreamResultType.NeedNewStream);
 
-                return result;
+                return (contentType, result);
             }
             catch
             {
@@ -132,6 +146,12 @@ namespace NuGet.Insights
                 networkStream => Task.FromResult(NuspecContext.FromStream(id, version, networkStream, _logger)),
                 nuGetLogger,
                 token);
+        }
+
+        public async Task<string> GetPackageIconUrlAsync(string id, string version)
+        {
+            var baseUrl = await GetBaseUrlAsync();
+            return GetPackageIconUrl(baseUrl, id, version);
         }
 
         public string GetPackageIconUrl(string baseUrl, string id, string version)

@@ -104,7 +104,7 @@ Ensure the driver can be activated by the catalog scan and admin interface. Upda
 1. If you had to add a table or blob container for your driver (e.g. a blob container for your CSV output), initialize
    the container name in [`BaseWorkerLogicIntegrationTest`](../test/Worker.Logic.Test/TestSupport/BaseWorkerLogicIntegrationTest.cs)
    in `ConfigureWorkerDefaultsAndSettings` to have a unique value starting with `StoragePrefix` like the other existing container names.
-1. If your table produces CSV output, add your Kusto table name to [ImportTo-Kusto.ps1](../scripts/Kusto/ImportTo-Kusto.ps1).
+1. If your table produces CSV output, add your Kusto table name to [ImportTo-Kusto.ps1](../scripts/Kusto/ImportTo-Kusto.ps1) and [compare.kql](../scripts/Kusto/compare.kql).
 
 ### Add tests for your driver
 

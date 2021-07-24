@@ -34,6 +34,8 @@ namespace NuGet.Insights
                 case "short":
                 case "uint":
                 case "int":
+                case "float":
+                case "double":
                 case "long":
                 case "System.Guid":
                 case "System.TimeSpan":
@@ -44,6 +46,8 @@ namespace NuGet.Insights
                 case "short?":
                 case "uint?":
                 case "int?":
+                case "float?":
+                case "double?":
                 case "long?":
                 case "System.Guid?":
                 case "System.TimeSpan?":

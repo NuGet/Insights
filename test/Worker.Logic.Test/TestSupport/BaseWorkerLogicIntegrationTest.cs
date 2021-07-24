@@ -138,6 +138,7 @@ namespace NuGet.Insights.Worker
             x.NuGetPackageExplorerFileContainerName = $"{StoragePrefix}1npef2c1";
             x.PackageDeprecationContainerName = $"{StoragePrefix}1pe1";
             x.PackageVulnerabilityContainerName = $"{StoragePrefix}1pu1";
+            x.PackageIconContainerName = $"{StoragePrefix}1pi1";
             x.PackageCompatibilityContainerName = $"{StoragePrefix}1pc1";
 
             ConfigureDefaultsAndSettings(x);

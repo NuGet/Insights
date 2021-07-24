@@ -174,7 +174,7 @@ See the [.nuspec documentation](https://docs.microsoft.com/en-us/nuget/reference
 
 The FrameworkRefGroups field is an array of objects. Each object has the following schema.
 
-See the [.nuspec documentation](https://docs.microsoft.com/en-us/nuget/reference/nuspec#framework-reference-groupsF) for more information.
+See the [.nuspec documentation](https://docs.microsoft.com/en-us/nuget/reference/nuspec#framework-reference-groups) for more information.
 
 | Property name       | Data type       | Required | Description                                                       |
 | ------------------- | --------------- | -------- | ----------------------------------------------------------------- |

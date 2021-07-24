@@ -58,6 +58,7 @@ namespace NuGet.Insights.Worker
             NuGetPackageExplorerFileContainerName = "nugetpackageexplorerfiles";
             PackageDeprecationContainerName = "packagedeprecations";
             PackageVulnerabilityContainerName = "packagevulnerabilities";
+            PackageIconContainerName = "packageicons";
             PackageCompatibilityContainerName = "packagecompatibilities";
 
             KustoConnectionString = null;
@@ -116,6 +117,7 @@ namespace NuGet.Insights.Worker
         public string NuGetPackageExplorerFileContainerName { get; set; }
         public string PackageDeprecationContainerName { get; set; }
         public string PackageVulnerabilityContainerName { get; set; }
+        public string PackageIconContainerName { get; set; }
         public string PackageCompatibilityContainerName { get; set; }
 
         public string KustoConnectionString { get; set; }

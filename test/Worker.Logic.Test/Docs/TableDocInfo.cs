@@ -110,6 +110,18 @@ namespace NuGet.Insights.Worker
             {
                 return "int";
             }
+            else if (propertyType == typeof(float) || propertyType == typeof(float?))
+            {
+                return "float";
+            }
+            else if (propertyType == typeof(double) || propertyType == typeof(double?))
+            {
+                return "double";
+            }
+            else if (propertyType == typeof(long) || propertyType == typeof(long?))
+            {
+                return "long";
+            }
             else if (propertyType == typeof(long) || propertyType == typeof(long?))
             {
                 return "long";

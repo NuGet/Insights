@@ -36,6 +36,10 @@ namespace NuGet.Insights
                 case "uint?":
                 case "int":
                 case "int?":
+                case "float":
+                case "float?":
+                case "double":
+                case "double?":
                 case "long":
                 case "long?":
                 case "System.Guid":

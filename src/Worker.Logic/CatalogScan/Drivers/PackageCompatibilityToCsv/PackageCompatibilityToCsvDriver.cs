@@ -14,7 +14,6 @@ using NuGet.Frameworks;
 
 namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 {
-
     public class PackageCompatibilityToCsvDriver : ICatalogLeafToCsvDriver<PackageCompatibility>, ICsvResultStorage<PackageCompatibility>
     {
         private static readonly NuGetFrameworkSorter Sorter = new NuGetFrameworkSorter();

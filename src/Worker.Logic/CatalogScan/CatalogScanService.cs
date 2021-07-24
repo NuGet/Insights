@@ -127,6 +127,7 @@ namespace NuGet.Insights.Worker
                 case CatalogScanDriverType.NuGetPackageExplorerToCsv:
 #endif
                 case CatalogScanDriverType.PackageCompatibilityToCsv:
+                case CatalogScanDriverType.PackageIconToCsv:
                 case CatalogScanDriverType.CatalogDataToCsv:
                     return null;
 
@@ -236,6 +237,7 @@ namespace NuGet.Insights.Worker
                 case CatalogScanDriverType.NuGetPackageExplorerToCsv:
 #endif
                 case CatalogScanDriverType.PackageCompatibilityToCsv:
+                case CatalogScanDriverType.PackageIconToCsv:
                 case CatalogScanDriverType.CatalogDataToCsv:
                     return await UpdateCatalogLeafToCsvAsync(
                         driverType,

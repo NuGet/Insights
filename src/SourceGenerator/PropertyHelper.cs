@@ -86,6 +86,11 @@ namespace NuGet.Insights
                 case "int":
                 case "int?":
                     return "int";
+                case "float":
+                case "float?":
+                case "double":
+                case "double?":
+                    return "real";
                 case "long":
                 case "long?":
                     return "long";
