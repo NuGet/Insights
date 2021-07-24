@@ -13,10 +13,12 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
 
         public PackageIcon(Guid scanId, DateTimeOffset scanTimestamp, PackageDeleteCatalogLeaf leaf) : base(scanId, scanTimestamp, leaf)
         {
+            ResultType = PackageIconResultType.Deleted;
         }
 
         public PackageIcon(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf) : base(scanId, scanTimestamp, leaf)
         {
+            ResultType = PackageIconResultType.Available;
         }
 
         public PackageIconResultType ResultType { get; set; }
