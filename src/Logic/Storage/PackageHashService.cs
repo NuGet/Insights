@@ -39,7 +39,7 @@ namespace NuGet.Insights
                 PartitionKey = pk,
                 RowKey = rk,
                 CommitTimestamp = item.CommitTimestamp,
-                Available = !item.IsPackageDelete(),
+                Available = hashes != null,
             };
 
             if (entity.Available)

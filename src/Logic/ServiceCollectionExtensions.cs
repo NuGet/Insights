@@ -112,6 +112,7 @@ namespace NuGet.Insights
             serviceCollection.AddTransient(
                 x => new HttpZipProvider(x.GetRequiredService<HttpClient>(), x.GetRequiredService<IThrottle>())
                 {
+                    RequireAcceptRanges = false,
                     BufferSizeProvider = new ZipBufferSizeProvider(
                         firstBufferSize: 1024 * 16,
                         secondBufferSize: 1024 * 16,
