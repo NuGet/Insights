@@ -50,6 +50,8 @@ namespace NuGet.Insights.Worker
                 "Expires",
                 "Server",
                 "Strict-Transport-Security",
+                "X-Azure-Ref",
+                "X-Azure-Ref-OriginShield",
                 "X-Cache",
                 "X-CDN-Rewrite",
                 "X-Content-Type-Options",
