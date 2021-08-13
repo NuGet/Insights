@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,6 +14,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
     {
         private const string PackageManifestToCsvDir = nameof(PackageManifestToCsv);
         private const string PackageManifestToCsv_WithDeleteDir = nameof(PackageManifestToCsv_WithDelete);
+        private const string PackageManifestToCsv_WithVeryLargeBufferDir = nameof(PackageManifestToCsv_WithVeryLargeBuffer);
 
         public class PackageManifestToCsv : PackageManifestToCsvIntegrationTest
         {
@@ -87,6 +88,41 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
                 await AssertOutputAsync(PackageManifestToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
                 await AssertOutputAsync(PackageManifestToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
                 await AssertOutputAsync(PackageManifestToCsv_WithDeleteDir, Step2, 2);
+            }
+        }
+
+        public class PackageManifestToCsv_WithVeryLargeBuffer : PackageManifestToCsvIntegrationTest
+        {
+            public PackageManifestToCsv_WithVeryLargeBuffer(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+                : base(output, factory)
+            {
+            }
+
+            [Fact]
+            public async Task Execute()
+            {
+                ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
+
+                // Arrange
+                var min0 = DateTimeOffset.Parse("2020-01-09T14:58:13.0458090Z");
+                var max1 = DateTimeOffset.Parse("2020-01-09T15:02:21.9360277Z"); // GR.PageRender.Razor 1.7.0
+                var max2 = DateTimeOffset.Parse("2020-01-09T15:04:22.3831333Z");
+
+                await CatalogScanService.InitializeAsync();
+                await SetCursorAsync(CatalogScanDriverType.LoadPackageManifest, max2);
+                await SetCursorAsync(min0);
+
+                // Act
+                await UpdateAsync(max1);
+
+                // Assert
+                await AssertOutputAsync(PackageManifestToCsv_WithVeryLargeBufferDir, Step1, 0);
+
+                // Act
+                await UpdateAsync(max2);
+
+                // Assert
+                await AssertOutputAsync(PackageManifestToCsv_WithVeryLargeBufferDir, Step2, 0);
             }
         }
 

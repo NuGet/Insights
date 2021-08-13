@@ -224,14 +224,14 @@ namespace NuGet.Insights.Worker
                         return (result.Records, etag);
 
                     case CsvReaderResultType.BufferTooSmall:
-                        bufferSize = NRecoCsvReader.MaxBufferSize;
+                        bufferSize = CsvReaderAdapter.MaxBufferSize;
                         break;
 
                     default:
                         throw new NotImplementedException();
                 }
             }
-            while (bufferSize <= NRecoCsvReader.MaxBufferSize);
+            while (bufferSize <= CsvReaderAdapter.MaxBufferSize);
 
             throw new InvalidOperationException($"Could not deserialize blob after trying buffers up to {bufferSize} bytes in size.");
         }

@@ -99,7 +99,7 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddTransient<TimerExecutionService>();
             serviceCollection.AddTransient<AppendResultStorageService>();
             serviceCollection.AddTransient<TaskStateStorageService>();
-            serviceCollection.AddTransient<ICsvReader, NRecoCsvReader>();
+            serviceCollection.AddTransient<ICsvReader, CsvReaderAdapter>();
 
             serviceCollection.AddCatalogLeafItemToCsv();
             serviceCollection.AddLoadLatestPackageLeaf();
