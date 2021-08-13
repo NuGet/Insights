@@ -24,6 +24,9 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
         public PackageCompatibilityResultType ResultType { get; set; }
         public bool HasError { get; set; }
         public bool DoesNotRoundTrip { get; set; }
+        public bool HasAny { get; set; }
+        public bool HasUnsupported { get; set; }
+        public bool HasAgnostic { get; set; }
 
         [KustoType("dynamic")]
         public string BrokenFrameworks { get; set; }

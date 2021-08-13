@@ -25,6 +25,9 @@ namespace NuGet.Insights
     ResultType: string,
     HasError: bool,
     DoesNotRoundTrip: bool,
+    HasAny: bool,
+    HasUnsupported: bool,
+    HasAgnostic: bool,
     BrokenFrameworks: dynamic,
     NuspecReader: dynamic,
     NU1202: dynamic,
@@ -45,11 +48,14 @@ namespace NuGet.Insights
     '{""Column"":""ResultType"",""DataType"":""string"",""Properties"":{""Ordinal"":8}},'
     '{""Column"":""HasError"",""DataType"":""bool"",""Properties"":{""Ordinal"":9}},'
     '{""Column"":""DoesNotRoundTrip"",""DataType"":""bool"",""Properties"":{""Ordinal"":10}},'
-    '{""Column"":""BrokenFrameworks"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":11}},'
-    '{""Column"":""NuspecReader"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":12}},'
-    '{""Column"":""NU1202"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":13}},'
-    '{""Column"":""NuGetGallery"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":14}},'
-    '{""Column"":""NuGetGalleryEscaped"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":15}}'
+    '{""Column"":""HasAny"",""DataType"":""bool"",""Properties"":{""Ordinal"":11}},'
+    '{""Column"":""HasUnsupported"",""DataType"":""bool"",""Properties"":{""Ordinal"":12}},'
+    '{""Column"":""HasAgnostic"",""DataType"":""bool"",""Properties"":{""Ordinal"":13}},'
+    '{""Column"":""BrokenFrameworks"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":14}},'
+    '{""Column"":""NuspecReader"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":15}},'
+    '{""Column"":""NU1202"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":16}},'
+    '{""Column"":""NuGetGallery"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":17}},'
+    '{""Column"":""NuGetGalleryEscaped"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":18}}'
 ']'",
         };
 

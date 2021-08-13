@@ -92,10 +92,22 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                 var output = new PackageCompatibility(scanId, scanTimestamp, leaf);
                 var hasError = false;
                 var doesNotRoundTrip = false;
+                var hasAny = false;
+                var hasUnsupported = false;
+                var hasAgnostic = false;
                 var brokenFrameworks = new HashSet<string>();
                 string GetAndSerializeNested(string methodName, Func<IEnumerable<NuGetFramework>> getFrameworks)
                 {
-                    return GetAndSerialize(item, ref hasError, ref doesNotRoundTrip, brokenFrameworks, methodName, getFrameworks);
+                    return GetAndSerialize(
+                        item,
+                        ref hasError,
+                        ref doesNotRoundTrip,
+                        ref hasAny,
+                        ref hasUnsupported,
+                        ref hasAgnostic,
+                        brokenFrameworks,
+                        methodName,
+                        getFrameworks);
                 }
 
                 output.NuspecReader = GetAndSerializeNested(
@@ -121,6 +133,9 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 
                 output.HasError = hasError;
                 output.DoesNotRoundTrip = doesNotRoundTrip;
+                output.HasAny = hasAny;
+                output.HasUnsupported = hasUnsupported;
+                output.HasAgnostic = hasAgnostic;
                 output.BrokenFrameworks = JsonConvert.SerializeObject(brokenFrameworks.OrderBy(x => x).ToList());
 
                 return new List<PackageCompatibility> { output };
@@ -131,6 +146,9 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             CatalogLeafItem item,
             ref bool hasError,
             ref bool doesNotRoundTrip,
+            ref bool hasAny,
+            ref bool hasUnsupported,
+            ref bool hasAgnostic,
             HashSet<string> brokenFrameworks,
             string methodName,
             Func<IEnumerable<NuGetFramework>> getFrameworks)
@@ -151,6 +169,10 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                 roundTripShortFolderNames = roundTripFrameworks
                     .Select(x => x.GetShortFolderName())
                     .ToList();
+
+                hasAny |= roundTripFrameworks.Any(x => x.IsAny);
+                hasUnsupported |= roundTripFrameworks.Any(x => x.IsUnsupported);
+                hasAgnostic |= roundTripFrameworks.Any(x => x.IsAgnostic);
 
                 if (!originalFrameworks.SequenceEqual(roundTripFrameworks)
                     || !originalShortFolderNames.SequenceEqual(roundTripShortFolderNames))

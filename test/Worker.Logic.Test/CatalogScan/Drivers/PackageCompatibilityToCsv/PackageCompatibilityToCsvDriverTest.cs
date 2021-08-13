@@ -38,6 +38,9 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             Assert.Equal(PackageCompatibilityResultType.Available, record.ResultType);
             Assert.False(record.HasError);
             Assert.False(record.DoesNotRoundTrip);
+            Assert.False(record.HasAny);
+            Assert.False(record.HasUnsupported);
+            Assert.False(record.HasAgnostic);
             Assert.Equal("[]", record.BrokenFrameworks);
             Assert.Equal("[\"netstandard1.0\"]", record.NuspecReader);
             Assert.Equal("[\"netstandard1.0\"]", record.NU1202);
@@ -64,6 +67,9 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             Assert.Equal(PackageCompatibilityResultType.Available, record.ResultType);
             Assert.False(record.HasError);
             Assert.False(record.DoesNotRoundTrip);
+            Assert.False(record.HasAny);
+            Assert.False(record.HasUnsupported);
+            Assert.False(record.HasAgnostic);
             Assert.Equal("[]", record.BrokenFrameworks);
             Assert.Equal("[\"net20\",\"net35\",\"net40\",\"net45\",\"portable-net45+win8+wp8+wpa81\",\"portable-net40+sl5+win8+wp8+wpa81\",\"netstandard1.0\",\"netstandard1.3\",\"netstandard2.0\"]", record.NuspecReader);
             Assert.Equal("[\"net20\",\"net35\",\"net40\",\"net45\",\"portable-net45+win8+wp8+wpa81\",\"portable-net40+sl5+win8+wp8+wpa81\",\"netstandard1.0\",\"netstandard1.3\",\"netstandard2.0\"]", record.NU1202);
@@ -89,6 +95,9 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageCompatibilityResultType.Available, record.ResultType);
             Assert.True(record.HasError);
+            Assert.False(record.HasAny);
+            Assert.False(record.HasUnsupported);
+            Assert.False(record.HasAgnostic);
             Assert.False(record.DoesNotRoundTrip);
             Assert.Equal("[]", record.BrokenFrameworks);
             Assert.Null(record.NuspecReader);
@@ -115,6 +124,9 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageCompatibilityResultType.Available, record.ResultType);
             Assert.False(record.HasError);
+            Assert.False(record.HasAny);
+            Assert.True(record.HasUnsupported);
+            Assert.False(record.HasAgnostic);
             Assert.True(record.DoesNotRoundTrip);
             Assert.Equal("[\"xmldocs\",\"xmldocs,Version=v0.0\"]", record.BrokenFrameworks);
             Assert.Equal("[\"net5.0\"]", record.NuspecReader);
@@ -142,6 +154,9 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             Assert.Equal(PackageCompatibilityResultType.Available, record.ResultType);
             Assert.False(record.HasError);
             Assert.True(record.DoesNotRoundTrip);
+            Assert.True(record.HasAny);
+            Assert.False(record.HasUnsupported);
+            Assert.False(record.HasAgnostic);
             Assert.Equal("[\".Net 4.0,Version=v0.0\",\".Net%204.0,Version=v0.0\",\"net2040\"]", record.BrokenFrameworks);
             Assert.Equal("[\"any\"]", record.NuspecReader);
             Assert.Equal("[\"net40\"]", record.NU1202);
@@ -168,6 +183,9 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             Assert.Equal(PackageCompatibilityResultType.Available, record.ResultType);
             Assert.False(record.HasError);
             Assert.True(record.DoesNotRoundTrip);
+            Assert.True(record.HasAny);
+            Assert.False(record.HasUnsupported);
+            Assert.False(record.HasAgnostic);
             Assert.Equal("[\".NET Framework 4.6.1,Version=v0.0\",\"netframework461\"]", record.BrokenFrameworks);
             Assert.Equal("[\"any\"]", record.NuspecReader);
             Assert.Equal("[\"net461\"]", record.NU1202);
@@ -194,6 +212,9 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             Assert.Equal(PackageCompatibilityResultType.Available, record.ResultType);
             Assert.False(record.HasError);
             Assert.True(record.DoesNotRoundTrip);
+            Assert.True(record.HasAny);
+            Assert.False(record.HasUnsupported);
+            Assert.False(record.HasAgnostic);
             Assert.Equal("[\"NETSTANDARD_20,Version=v0.0\",\"netstandard20\"]", record.BrokenFrameworks);
             Assert.Equal("[\"any\",\"net40\",\"net45\",\"net46\"]", record.NuspecReader);
             Assert.Equal("[\"net\",\"net40\",\"net45\",\"net46\",\"netstandard2.0\"]", record.NU1202);

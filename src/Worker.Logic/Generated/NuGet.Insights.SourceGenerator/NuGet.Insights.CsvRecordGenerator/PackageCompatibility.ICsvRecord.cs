@@ -25,6 +25,9 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
         ResultType: string,
         HasError: bool,
         DoesNotRoundTrip: bool,
+        HasAny: bool,
+        HasUnsupported: bool,
+        HasAgnostic: bool,
         BrokenFrameworks: dynamic,
         NuspecReader: dynamic,
         NU1202: dynamic,
@@ -58,21 +61,24 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
         '{"Column":"ResultType","DataType":"string","Properties":{"Ordinal":8}},'
         '{"Column":"HasError","DataType":"bool","Properties":{"Ordinal":9}},'
         '{"Column":"DoesNotRoundTrip","DataType":"bool","Properties":{"Ordinal":10}},'
-        '{"Column":"BrokenFrameworks","DataType":"dynamic","Properties":{"Ordinal":11}},'
-        '{"Column":"NuspecReader","DataType":"dynamic","Properties":{"Ordinal":12}},'
-        '{"Column":"NU1202","DataType":"dynamic","Properties":{"Ordinal":13}},'
-        '{"Column":"NuGetGallery","DataType":"dynamic","Properties":{"Ordinal":14}},'
-        '{"Column":"NuGetGalleryEscaped","DataType":"dynamic","Properties":{"Ordinal":15}}'
+        '{"Column":"HasAny","DataType":"bool","Properties":{"Ordinal":11}},'
+        '{"Column":"HasUnsupported","DataType":"bool","Properties":{"Ordinal":12}},'
+        '{"Column":"HasAgnostic","DataType":"bool","Properties":{"Ordinal":13}},'
+        '{"Column":"BrokenFrameworks","DataType":"dynamic","Properties":{"Ordinal":14}},'
+        '{"Column":"NuspecReader","DataType":"dynamic","Properties":{"Ordinal":15}},'
+        '{"Column":"NU1202","DataType":"dynamic","Properties":{"Ordinal":16}},'
+        '{"Column":"NuGetGallery","DataType":"dynamic","Properties":{"Ordinal":17}},'
+        '{"Column":"NuGetGalleryEscaped","DataType":"dynamic","Properties":{"Ordinal":18}}'
     ']'
 
     */
     partial record PackageCompatibility
     {
-        public int FieldCount => 16;
+        public int FieldCount => 19;
 
         public void WriteHeader(TextWriter writer)
         {
-            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,HasError,DoesNotRoundTrip,BrokenFrameworks,NuspecReader,NU1202,NuGetGallery,NuGetGalleryEscaped");
+            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,HasError,DoesNotRoundTrip,HasAny,HasUnsupported,HasAgnostic,BrokenFrameworks,NuspecReader,NU1202,NuGetGallery,NuGetGalleryEscaped");
         }
 
         public void Write(List<string> fields)
@@ -88,6 +94,9 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             fields.Add(ResultType.ToString());
             fields.Add(CsvUtility.FormatBool(HasError));
             fields.Add(CsvUtility.FormatBool(DoesNotRoundTrip));
+            fields.Add(CsvUtility.FormatBool(HasAny));
+            fields.Add(CsvUtility.FormatBool(HasUnsupported));
+            fields.Add(CsvUtility.FormatBool(HasAgnostic));
             fields.Add(BrokenFrameworks);
             fields.Add(NuspecReader);
             fields.Add(NU1202);
@@ -118,6 +127,12 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             writer.Write(CsvUtility.FormatBool(HasError));
             writer.Write(',');
             writer.Write(CsvUtility.FormatBool(DoesNotRoundTrip));
+            writer.Write(',');
+            writer.Write(CsvUtility.FormatBool(HasAny));
+            writer.Write(',');
+            writer.Write(CsvUtility.FormatBool(HasUnsupported));
+            writer.Write(',');
+            writer.Write(CsvUtility.FormatBool(HasAgnostic));
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, BrokenFrameworks);
             writer.Write(',');
@@ -155,6 +170,12 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatBool(DoesNotRoundTrip));
             await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatBool(HasAny));
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatBool(HasUnsupported));
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatBool(HasAgnostic));
+            await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, BrokenFrameworks);
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, NuspecReader);
@@ -182,6 +203,9 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                 ResultType = Enum.Parse<PackageCompatibilityResultType>(getNextField()),
                 HasError = bool.Parse(getNextField()),
                 DoesNotRoundTrip = bool.Parse(getNextField()),
+                HasAny = bool.Parse(getNextField()),
+                HasUnsupported = bool.Parse(getNextField()),
+                HasAgnostic = bool.Parse(getNextField()),
                 BrokenFrameworks = getNextField(),
                 NuspecReader = getNextField(),
                 NU1202 = getNextField(),
