@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,7 +14,7 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
         }
 
         public PackageVersionEntity(
-            CatalogLeafItem item,
+            ICatalogLeafItem item,
             DateTimeOffset? created,
             bool? listed,
             string originalVersion,

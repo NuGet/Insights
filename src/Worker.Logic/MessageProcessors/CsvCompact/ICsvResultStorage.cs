@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -27,6 +27,6 @@ namespace NuGet.Insights.Worker
         /// </summary>
         /// <param name="record">The record to test for reprocessing.</param>
         /// <returns>A catalog leaf item that should be reprocessing, null if the record should not be reprocessed.</returns>
-        Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(T record);
+        Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(T record);
     }
 }

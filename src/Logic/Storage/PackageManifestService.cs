@@ -49,7 +49,7 @@ namespace NuGet.Insights
             await _wideEntityService.InitializeAsync(_options.Value.PackageManifestTableName);
         }
 
-        public async Task<(NuspecReader, int)> GetNuspecReaderAndSizeAsync(CatalogLeafItem leafItem)
+        public async Task<(NuspecReader, int)> GetNuspecReaderAndSizeAsync(ICatalogLeafItem leafItem)
         {
             (var manifestBytes, var nuspecReader) = await GetBytesAndNuspecReaderAsync(leafItem);
             if (nuspecReader == null)
@@ -60,7 +60,7 @@ namespace NuGet.Insights
             return (nuspecReader, manifestBytes.Length);
         }
 
-        public async Task<(Memory<byte>, NuspecReader)> GetBytesAndNuspecReaderAsync(CatalogLeafItem leafItem)
+        public async Task<(Memory<byte>, NuspecReader)> GetBytesAndNuspecReaderAsync(ICatalogLeafItem leafItem)
         {
             var info = await GetOrUpdateInfoAsync(leafItem);
             if (!info.Available)
@@ -71,7 +71,7 @@ namespace NuGet.Insights
             return (info.ManifestBytes, new NuspecReader(XmlUtility.LoadXml(info.ManifestBytes.AsStream())));
         }
 
-        public async Task<IReadOnlyDictionary<CatalogLeafItem, PackageManifestInfoV1>> UpdateBatchAsync(string id, IReadOnlyCollection<CatalogLeafItem> leafItems)
+        public async Task<IReadOnlyDictionary<ICatalogLeafItem, PackageManifestInfoV1>> UpdateBatchAsync(string id, IReadOnlyCollection<ICatalogLeafItem> leafItems)
         {
             return await _wideEntityService.UpdateBatchAsync(
                 _options.Value.PackageManifestTableName,
@@ -82,7 +82,7 @@ namespace NuGet.Insights
                 DataToOutput);
         }
 
-        public async Task<PackageManifestInfoV1> GetOrUpdateInfoAsync(CatalogLeafItem leafItem)
+        public async Task<PackageManifestInfoV1> GetOrUpdateInfoAsync(ICatalogLeafItem leafItem)
         {
             return await _wideEntityService.GetOrUpdateInfoAsync(
                 _options.Value.PackageManifestTableName,
@@ -92,7 +92,7 @@ namespace NuGet.Insights
                 DataToOutput);
         }
 
-        private async Task<PackageManifestInfoV1> GetInfoAsync(CatalogLeafItem leafItem)
+        private async Task<PackageManifestInfoV1> GetInfoAsync(ICatalogLeafItem leafItem)
         {
             if (leafItem.Type == CatalogLeafType.PackageDelete)
             {
@@ -147,7 +147,7 @@ namespace NuGet.Insights
             }
         }
 
-        private static PackageManifestInfoV1 MakeDeletedInfo(CatalogLeafItem leafItem)
+        private static PackageManifestInfoV1 MakeDeletedInfo(ICatalogLeafItem leafItem)
         {
             return new PackageManifestInfoV1
             {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -29,7 +29,7 @@ namespace NuGet.Insights.Worker
 
         public async Task AddAsync(
             string packageId,
-            IReadOnlyList<CatalogLeafItem> items,
+            IReadOnlyList<ICatalogLeafItem> items,
             ILatestPackageLeafStorage<T> storage,
             bool allowRetries)
         {
@@ -57,7 +57,7 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        private async Task AddAsync(string packageId, IReadOnlyList<CatalogLeafItem> items, ILatestPackageLeafStorage<T> storage)
+        private async Task AddAsync(string packageId, IReadOnlyList<ICatalogLeafItem> items, ILatestPackageLeafStorage<T> storage)
         {
             var partitionKey = storage.GetPartitionKey(packageId);
             (var rowKeyToItem, var rowKeyToETag) = await GetExistingsRowsAsync(partitionKey, items, storage);
@@ -99,9 +99,9 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        private async Task<(Dictionary<string, CatalogLeafItem> RowKeyToItem, Dictionary<string, ETag> RowKeyToETag)> GetExistingsRowsAsync(
+        private async Task<(Dictionary<string, ICatalogLeafItem> RowKeyToItem, Dictionary<string, ETag> RowKeyToETag)> GetExistingsRowsAsync(
             string partitionKey,
-            IEnumerable<CatalogLeafItem> items,
+            IEnumerable<ICatalogLeafItem> items,
             ILatestPackageLeafStorage<T> storage)
         {
             using var metrics = _telemetryClient.StartQueryLoopMetrics();

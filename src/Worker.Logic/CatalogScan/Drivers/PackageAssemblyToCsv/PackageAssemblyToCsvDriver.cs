@@ -59,7 +59,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             await _packageHashService.InitializeAsync();
         }
 
-        public async Task<DriverResult<CsvRecordSet<PackageAssembly>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSet<PackageAssembly>>> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
@@ -130,7 +130,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             return DriverResult.Success(new CsvRecordSet<PackageAssembly>(PackageRecord.GetBucketKey(item), records));
         }
 
-        private static DriverResult<CsvRecordSet<PackageAssembly>> MakeEmptyResults(CatalogLeafItem item)
+        private static DriverResult<CsvRecordSet<PackageAssembly>> MakeEmptyResults(ICatalogLeafItem item)
         {
             // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted asset record.
             return MakeResults(item, new List<PackageAssembly>());
@@ -293,7 +293,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             }
         }
 
-        public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(PackageAssembly record)
+        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageAssembly record)
         {
             throw new NotImplementedException();
         }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
@@ -30,7 +30,7 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScan
             return GetLeafId(packageVersion);
         }
 
-        public Task<CatalogLeafScan> MapAsync(CatalogLeafItem item)
+        public Task<CatalogLeafScan> MapAsync(ICatalogLeafItem item)
         {
             return Task.FromResult(new CatalogLeafScan(_indexScan.StorageSuffix, _indexScan.GetScanId(), GetPageId(item.PackageId), GetLeafId(item.PackageVersion))
             {

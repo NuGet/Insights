@@ -42,13 +42,13 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
             await _packageFileService.InitializeAsync();
         }
 
-        public async Task<DriverResult<CsvRecordSet<PackageSignature>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSet<PackageSignature>>> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount)
         {
             var records = await ProcessLeafInternalAsync(item);
             return DriverResult.Success(new CsvRecordSet<PackageSignature>(PackageRecord.GetBucketKey(item), records));
         }
 
-        private async Task<List<PackageSignature>> ProcessLeafInternalAsync(CatalogLeafItem item)
+        private async Task<List<PackageSignature>> ProcessLeafInternalAsync(ICatalogLeafItem item)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
@@ -202,7 +202,7 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
             return name;
         }
 
-        public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(PackageSignature record)
+        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageSignature record)
         {
             throw new NotImplementedException();
         }

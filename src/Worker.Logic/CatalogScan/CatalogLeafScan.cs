@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,7 +6,7 @@ using Azure;
 
 namespace NuGet.Insights.Worker
 {
-    public class CatalogLeafScan : ILatestPackageLeaf
+    public class CatalogLeafScan : ILatestPackageLeaf, ICatalogLeafItem
     {
         public CatalogLeafScan()
         {
@@ -47,22 +47,11 @@ namespace NuGet.Insights.Worker
         public DateTimeOffset? Timestamp { get; set; }
         public ETag ETag { get; set; }
 
+        CatalogLeafType ICatalogLeafItem.Type => LeafType;
+
         public static string GetPartitionKey(string scanId, string pageId)
         {
             return $"{scanId}-{pageId}";
-        }
-
-        public CatalogLeafItem ToLeafItem()
-        {
-            return new CatalogLeafItem
-            {
-                Url = Url,
-                Type = LeafType,
-                CommitId = CommitId,
-                CommitTimestamp = CommitTimestamp,
-                PackageId = PackageId,
-                PackageVersion = PackageVersion,
-            };
         }
     }
 }

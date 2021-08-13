@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -37,13 +37,13 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
             await _storageService.InitializeAsync();
         }
 
-        public async Task<DriverResult<CsvRecordSet<PackageVersionRecord>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSet<PackageVersionRecord>>> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount)
         {
             var records = await ProcessLeafInternalAsync(item);
             return DriverResult.Success(new CsvRecordSet<PackageVersionRecord>(bucketKey: item.PackageId.ToLowerInvariant(), records: records));
         }
 
-        private async Task<List<PackageVersionRecord>> ProcessLeafInternalAsync(CatalogLeafItem item)
+        private async Task<List<PackageVersionRecord>> ProcessLeafInternalAsync(ICatalogLeafItem item)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
@@ -98,7 +98,7 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
             return records;
         }
 
-        public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(PackageVersionRecord record)
+        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageVersionRecord record)
         {
             throw new NotImplementedException();
         }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -47,12 +47,12 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             return PackageRecord.Prune(records);
         }
 
-        public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(PackageArchiveRecord record)
+        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageArchiveRecord record)
         {
             throw new NotImplementedException();
         }
 
-        public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(PackageArchiveEntry record)
+        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageArchiveEntry record)
         {
             throw new NotImplementedException();
         }
@@ -63,7 +63,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             await _packageHashService.InitializeAsync();
         }
 
-        public async Task<DriverResult<CsvRecordSets<PackageArchiveRecord, PackageArchiveEntry>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSets<PackageArchiveRecord, PackageArchiveEntry>>> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount)
         {
             (var archive, var entries) = await ProcessLeafInternalAsync(item);
             var bucketKey = PackageRecord.GetBucketKey(item);
@@ -72,7 +72,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
                 new CsvRecordSet<PackageArchiveEntry>(bucketKey, entries ?? Array.Empty<PackageArchiveEntry>())));
         }
 
-        private async Task<(PackageArchiveRecord, IReadOnlyList<PackageArchiveEntry>)> ProcessLeafInternalAsync(CatalogLeafItem item)
+        private async Task<(PackageArchiveRecord, IReadOnlyList<PackageArchiveEntry>)> ProcessLeafInternalAsync(ICatalogLeafItem item)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;

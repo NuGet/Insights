@@ -47,13 +47,13 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             await _packageManifestService.InitializeAsync();
         }
 
-        public async Task<DriverResult<CsvRecordSet<PackageCompatibility>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSet<PackageCompatibility>>> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount)
         {
             var records = await ProcessLeafInternalAsync(item);
             return DriverResult.Success(new CsvRecordSet<PackageCompatibility>(PackageRecord.GetBucketKey(item), records));
         }
 
-        private async Task<List<PackageCompatibility>> ProcessLeafInternalAsync(CatalogLeafItem item)
+        private async Task<List<PackageCompatibility>> ProcessLeafInternalAsync(ICatalogLeafItem item)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
@@ -143,7 +143,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
         }
 
         private string GetAndSerialize(
-            CatalogLeafItem item,
+            ICatalogLeafItem item,
             ref bool hasError,
             ref bool doesNotRoundTrip,
             ref bool hasAny,
@@ -191,7 +191,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OutOfMemoryException)
             {
                 _logger.LogWarning(ex, "For {Id}/{Version}, failed to determine compatible frameworks using '{MethodName}'.", item.PackageId, item.PackageVersion, methodName);
                 hasError = true;
@@ -206,7 +206,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             return PackageRecord.Prune(records);
         }
 
-        public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(PackageCompatibility record)
+        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageCompatibility record)
         {
             throw new NotImplementedException();
         }

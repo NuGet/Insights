@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScanPerId
             return Task.CompletedTask;
         }
 
-        public async Task<ILatestPackageLeafStorage<CatalogLeafScanPerId>> CreateAsync(CatalogPageScan pageScan, IReadOnlyDictionary<CatalogLeafItem, int> leafItemToRank)
+        public async Task<ILatestPackageLeafStorage<CatalogLeafScanPerId>> CreateAsync(CatalogPageScan pageScan, IReadOnlyDictionary<ICatalogLeafItem, int> leafItemToRank)
         {
             var parameters = (CatalogIndexScanMessage)_serializer.Deserialize(pageScan.DriverParameters).Data;
             var indexScan = await _storageService.GetIndexScanAsync(parameters.CursorName, parameters.ScanId);

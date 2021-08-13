@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -96,7 +96,7 @@ namespace NuGet.Insights.Worker
             return (CatalogLeafToCsvParameters)_schemaSerializer.Deserialize(driverParameters).Data;
         }
 
-        protected abstract Task<(DriverResult, IReadOnlyList<ICsvRecordSet<ICsvRecord>>)> ProcessLeafAsync(CatalogLeafItem item, int attemptCount);
+        protected abstract Task<(DriverResult, IReadOnlyList<ICsvRecordSet<ICsvRecord>>)> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount);
 
         protected static T GetValueOrDefault<T>(DriverResult<T> result)
         {
@@ -110,8 +110,7 @@ namespace NuGet.Insights.Worker
 
         public async Task<DriverResult> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
-            var leafItem = leafScan.ToLeafItem();
-            (var result, var sets) = await ProcessLeafAsync(leafItem, leafScan.AttemptCount);
+            (var result, var sets) = await ProcessLeafAsync(leafScan, leafScan.AttemptCount);
             if (result.Type == DriverResultType.TryAgainLater)
             {
                 return result;

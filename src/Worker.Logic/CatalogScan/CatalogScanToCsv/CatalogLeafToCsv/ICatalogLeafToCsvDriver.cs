@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
@@ -29,7 +29,7 @@ namespace NuGet.Insights.Worker
         /// <param name="item">The catalog leaf item to process.</param>
         /// <param name="attemptCount">The current attempt count for this catalog leaf item.</param>
         /// <returns>The result, either try again later or a list of records that will be written to CSV.</returns>
-        Task<DriverResult<CsvRecordSet<T>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount);
+        Task<DriverResult<CsvRecordSet<T>>> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount);
     }
 
     public interface ICatalogLeafToCsvDriver<T1, T2> : ICatalogLeafToCsvDriver
@@ -42,6 +42,6 @@ namespace NuGet.Insights.Worker
         /// <param name="item">The catalog leaf item to process.</param>
         /// <param name="attemptCount">The current attempt count for this catalog leaf item.</param>
         /// <returns>The result, either try again later or a list of records that will be written to CSV.</returns>
-        Task<DriverResult<CsvRecordSets<T1, T2>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount);
+        Task<DriverResult<CsvRecordSets<T1, T2>>> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount);
     }
 }

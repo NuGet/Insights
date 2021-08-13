@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -25,16 +25,16 @@ namespace NuGet.Insights
             await _wideEntityService.CreateTableAsync(tableName);
         }
 
-        public async Task<IReadOnlyDictionary<CatalogLeafItem, TOutput>> UpdateBatchAsync<TData, TOutput>(
+        public async Task<IReadOnlyDictionary<ICatalogLeafItem, TOutput>> UpdateBatchAsync<TData, TOutput>(
             string tableName,
             string id,
-            IReadOnlyCollection<CatalogLeafItem> leafItems,
-            Func<CatalogLeafItem, Task<TOutput>> fetchOutputAsync,
+            IReadOnlyCollection<ICatalogLeafItem> leafItems,
+            Func<ICatalogLeafItem, Task<TOutput>> fetchOutputAsync,
             Func<TOutput, TData> outputToData,
             Func<TData, TOutput> dataToOutput)
             where TData : IPackageWideEntity
         {
-            var rowKeyToLeafItem = new Dictionary<string, CatalogLeafItem>();
+            var rowKeyToLeafItem = new Dictionary<string, ICatalogLeafItem>();
             foreach (var leafItem in leafItems)
             {
                 if (!StringComparer.OrdinalIgnoreCase.Equals(id, leafItem.PackageId))
@@ -59,7 +59,7 @@ namespace NuGet.Insights
             //   2. The row exists but the data is stale. This means we must fetch the info and replace it in the table.
             //   3. The row exists and is not stale. We can just return the data in the table.
             var batch = new List<WideEntityOperation>();
-            var output = new Dictionary<CatalogLeafItem, TOutput>();
+            var output = new Dictionary<ICatalogLeafItem, TOutput>();
             foreach (var (rowKey, leafItem) in rowKeyToLeafItem)
             {
                 (var existingEntity, var matchingData) = await GetExistingAsync<TData>(tableName, partitionKey, rowKey, leafItem);
@@ -91,8 +91,8 @@ namespace NuGet.Insights
 
         public async Task<TOutput> GetOrUpdateInfoAsync<TData, TOutput>(
             string tableName,
-            CatalogLeafItem leafItem,
-            Func<CatalogLeafItem, Task<TOutput>> fetchOutputAsync,
+            ICatalogLeafItem leafItem,
+            Func<ICatalogLeafItem, Task<TOutput>> fetchOutputAsync,
             Func<TOutput, TData> outputToData,
             Func<TData, TOutput> dataToOutput)
             where TData : IPackageWideEntity
@@ -132,7 +132,7 @@ namespace NuGet.Insights
             string tableName,
             string partitionKey,
             string rowKey,
-            CatalogLeafItem leafItem)
+            ICatalogLeafItem leafItem)
             where T : IPackageWideEntity
         {
             var existingEntity = await _wideEntityService.RetrieveAsync(tableName, partitionKey, rowKey);

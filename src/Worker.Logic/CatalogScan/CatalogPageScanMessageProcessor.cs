@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -131,7 +131,7 @@ namespace NuGet.Insights.Worker
             return CreateLeafScans(scan, items, leafItemToRank);
         }
 
-        private List<CatalogLeafScan> CreateLeafScans(CatalogPageScan scan, List<CatalogLeafItem> items, Dictionary<CatalogLeafItem, int> leafItemToRank)
+        private List<CatalogLeafScan> CreateLeafScans(CatalogPageScan scan, IReadOnlyList<ICatalogLeafItem> items, Dictionary<ICatalogLeafItem, int> leafItemToRank)
         {
             return items
                 .OrderBy(x => leafItemToRank[x])

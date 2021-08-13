@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,13 +7,13 @@ using NuGet.Versioning;
 
 namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
 {
-    public class LatestPackageLeaf : ILatestPackageLeaf
+    public class LatestPackageLeaf : ILatestPackageLeaf, ICatalogLeafItem
     {
         public LatestPackageLeaf()
         {
         }
 
-        public LatestPackageLeaf(CatalogLeafItem item, int leafRank, int pageRank, string pageUrl)
+        public LatestPackageLeaf(ICatalogLeafItem item, int leafRank, int pageRank, string pageUrl)
         {
             PartitionKey = GetPartitionKey(item.PackageId);
             RowKey = GetRowKey(item.PackageVersion);
@@ -43,18 +43,7 @@ namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
         public DateTimeOffset? Timestamp { get; set; }
         public ETag ETag { get; set; }
 
-        public CatalogLeafItem ToLeafItem()
-        {
-            return new CatalogLeafItem
-            {
-                Url = Url,
-                Type = LeafType,
-                CommitId = CommitId,
-                CommitTimestamp = CommitTimestamp,
-                PackageId = PackageId,
-                PackageVersion = PackageVersion,
-            };
-        }
+        CatalogLeafType ICatalogLeafItem.Type => LeafType;
 
         public string GetLowerId()
         {

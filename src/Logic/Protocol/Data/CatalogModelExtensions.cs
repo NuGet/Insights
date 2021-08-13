@@ -57,14 +57,14 @@ namespace NuGet.Insights
                 .ToDictionary(x => x.Item, x => x.Rank);
         }
 
-        public static Dictionary<CatalogLeafItem, int> GetLeafItemToRank(this CatalogPage catalogPage)
+        public static Dictionary<ICatalogLeafItem, int> GetLeafItemToRank(this CatalogPage catalogPage)
         {
             return catalogPage
                 .Items
                 .OrderBy(x => x.CommitTimestamp)
                 .ThenBy(x => x.Url)
                 .Select((x, i) => new { Item = x, Rank = i })
-                .ToDictionary(x => x.Item, x => x.Rank);
+                .ToDictionary(x => (ICatalogLeafItem)x.Item, x => x.Rank);
         }
 
         /// <summary>

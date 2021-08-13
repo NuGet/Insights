@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -44,13 +44,13 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
         {
             await _packageManifestService.InitializeAsync();
         }
-        public async Task<DriverResult<CsvRecordSet<PackageManifestRecord>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSet<PackageManifestRecord>>> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount)
         {
             var records = await ProcessLeafInternalAsync(item);
             return DriverResult.Success(new CsvRecordSet<PackageManifestRecord>(PackageRecord.GetBucketKey(item), records));
         }
 
-        private async Task<List<PackageManifestRecord>> ProcessLeafInternalAsync(CatalogLeafItem item)
+        private async Task<List<PackageManifestRecord>> ProcessLeafInternalAsync(ICatalogLeafItem item)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
@@ -175,7 +175,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             return JsonConvert.SerializeObject(input, JsonSerializerSettings);
         }
 
-        public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(PackageManifestRecord record)
+        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageManifestRecord record)
         {
             throw new NotImplementedException();
         }

@@ -52,7 +52,7 @@ namespace NuGet.Insights
             await _wideEntityService.InitializeAsync(_options.Value.PackageArchiveTableName);
         }
 
-        public async Task<PrimarySignature> GetPrimarySignatureAsync(CatalogLeafItem leafItem)
+        public async Task<PrimarySignature> GetPrimarySignatureAsync(ICatalogLeafItem leafItem)
         {
             var info = await GetOrUpdateInfoAsync(leafItem);
             if (!info.Available)
@@ -64,13 +64,13 @@ namespace NuGet.Insights
             return PrimarySignature.Load(srcStream);
         }
 
-        public async Task<ZipDirectory> GetZipDirectoryAsync(CatalogLeafItem leafItem)
+        public async Task<ZipDirectory> GetZipDirectoryAsync(ICatalogLeafItem leafItem)
         {
             (var zipDirectory, _) = await GetZipDirectoryAndSizeAsync(leafItem);
             return zipDirectory;
         }
 
-        public async Task<(ZipDirectory directory, long size)> GetZipDirectoryAndSizeAsync(CatalogLeafItem leafItem)
+        public async Task<(ZipDirectory directory, long size)> GetZipDirectoryAndSizeAsync(ICatalogLeafItem leafItem)
         {
             var info = await GetOrUpdateInfoAsync(leafItem);
             if (!info.Available)
@@ -84,7 +84,7 @@ namespace NuGet.Insights
             return (await reader.ReadAsync(), destStream.Length);
         }
 
-        public async Task<IReadOnlyDictionary<CatalogLeafItem, PackageFileInfoV1>> UpdateBatchAsync(string id, IReadOnlyCollection<CatalogLeafItem> leafItems)
+        public async Task<IReadOnlyDictionary<ICatalogLeafItem, PackageFileInfoV1>> UpdateBatchAsync(string id, IReadOnlyCollection<ICatalogLeafItem> leafItems)
         {
             return await _wideEntityService.UpdateBatchAsync(
                 _options.Value.PackageArchiveTableName,
@@ -95,7 +95,7 @@ namespace NuGet.Insights
                 DataToOutput);
         }
 
-        public async Task<PackageFileInfoV1> GetOrUpdateInfoAsync(CatalogLeafItem leafItem)
+        public async Task<PackageFileInfoV1> GetOrUpdateInfoAsync(ICatalogLeafItem leafItem)
         {
             return await _wideEntityService.GetOrUpdateInfoAsync(
                 _options.Value.PackageArchiveTableName,
@@ -105,12 +105,12 @@ namespace NuGet.Insights
                 DataToOutput);
         }
 
-        private async Task<PackageFileInfoV1> GetInfoAsync(CatalogLeafItem leafItem)
+        private async Task<PackageFileInfoV1> GetInfoAsync(ICatalogLeafItem leafItem)
         {
             return await GetInfoAsync(leafItem, isRetry: false);
         }
 
-        private async Task<PackageFileInfoV1> GetInfoAsync(CatalogLeafItem leafItem, bool isRetry)
+        private async Task<PackageFileInfoV1> GetInfoAsync(ICatalogLeafItem leafItem, bool isRetry)
         {
             if (leafItem.Type == CatalogLeafType.PackageDelete)
             {
@@ -168,7 +168,7 @@ namespace NuGet.Insights
             }
         }
 
-        private static PackageFileInfoV1 MakeDeletedInfo(CatalogLeafItem leafItem)
+        private static PackageFileInfoV1 MakeDeletedInfo(ICatalogLeafItem leafItem)
         {
             return new PackageFileInfoV1
             {

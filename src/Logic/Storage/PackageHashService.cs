@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -28,7 +28,7 @@ namespace NuGet.Insights
             await (await GetTableAsync()).CreateIfNotExistsAsync(retry: true);
         }
 
-        public async Task SetHashesAsync(CatalogLeafItem item, HashOutput hashes)
+        public async Task SetHashesAsync(ICatalogLeafItem item, HashOutput hashes)
         {
             var table = await GetTableAsync();
             var pk = GetPartitionKey(item.PackageId);

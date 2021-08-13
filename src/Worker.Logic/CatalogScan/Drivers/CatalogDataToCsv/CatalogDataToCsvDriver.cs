@@ -37,7 +37,7 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
         }
 
         public async Task<DriverResult<CsvRecordSets<PackageDeprecationRecord, PackageVulnerabilityRecord>>> ProcessLeafAsync(
-            CatalogLeafItem item,
+            ICatalogLeafItem item,
             int attemptCount)
         {
             (var deprecation, var vulnerabilities) = await ProcessLeafInternalAsync(item);
@@ -47,7 +47,7 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
                 new CsvRecordSet<PackageVulnerabilityRecord>(bucketKey, vulnerabilities)));
         }
 
-        private async Task<(PackageDeprecationRecord, IReadOnlyList<PackageVulnerabilityRecord>)> ProcessLeafInternalAsync(CatalogLeafItem item)
+        private async Task<(PackageDeprecationRecord, IReadOnlyList<PackageVulnerabilityRecord>)> ProcessLeafInternalAsync(ICatalogLeafItem item)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
@@ -133,12 +133,12 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             return PackageRecord.Prune(records);
         }
 
-        public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(PackageDeprecationRecord record)
+        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageDeprecationRecord record)
         {
             throw new NotImplementedException();
         }
 
-        public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(PackageVulnerabilityRecord record)
+        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageVulnerabilityRecord record)
         {
             throw new NotImplementedException();
         }

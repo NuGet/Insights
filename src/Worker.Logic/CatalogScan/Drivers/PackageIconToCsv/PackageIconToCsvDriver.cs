@@ -42,7 +42,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             return Task.CompletedTask;
         }
 
-        public async Task<DriverResult<CsvRecordSet<PackageIcon>>> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSet<PackageIcon>>> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount)
         {
             (var resultType, var records) = await ProcessLeafInternalAsync(item);
             if (resultType == TempStreamResultType.SemaphoreNotAvailable)
@@ -53,7 +53,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             return DriverResult.Success(new CsvRecordSet<PackageIcon>(PackageRecord.GetBucketKey(item), records));
         }
 
-        public async Task<(TempStreamResultType, List<PackageIcon>)> ProcessLeafInternalAsync(CatalogLeafItem item)
+        public async Task<(TempStreamResultType, List<PackageIcon>)> ProcessLeafInternalAsync(ICatalogLeafItem item)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
@@ -152,7 +152,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
                             output.FrameAttributeNames = JsonConvert.SerializeObject(frameAttributeNames.Except(IgnoredAttributes).OrderBy(x => x).ToList());
                         }
                     }
-                    catch (Exception ex)
+                    catch (Exception ex) when (ex is not OutOfMemoryException)
                     {
                         _logger.LogWarning(ex, "Failed to process icon for {Id}/{Version}.", leaf.PackageId, leaf.PackageVersion);
                         output.ResultType = PackageIconResultType.Error;
@@ -170,7 +170,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
                 result.Stream.Position = 0;
                 return (true, new MagickImageCollection(result.Stream));
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OutOfMemoryException)
             {
                 _logger.LogInformation(
                     ex,
@@ -188,7 +188,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             return PackageRecord.Prune(records);
         }
 
-        public Task<CatalogLeafItem> MakeReprocessItemOrNullAsync(PackageIcon record)
+        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageIcon record)
         {
             throw new NotImplementedException();
         }

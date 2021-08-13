@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace NuGet.Insights.Worker
             _driver = driver;
         }
 
-        protected override async Task<(DriverResult, IReadOnlyList<ICsvRecordSet<ICsvRecord>>)> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
+        protected override async Task<(DriverResult, IReadOnlyList<ICsvRecordSet<ICsvRecord>>)> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount)
         {
             var result = await _driver.ProcessLeafAsync(item, attemptCount);
             return (result, (CsvRecordSets<T>)GetValueOrDefault(result));
@@ -50,7 +50,7 @@ namespace NuGet.Insights.Worker
             _driver = driver;
         }
 
-        protected override async Task<(DriverResult, IReadOnlyList<ICsvRecordSet<ICsvRecord>>)> ProcessLeafAsync(CatalogLeafItem item, int attemptCount)
+        protected override async Task<(DriverResult, IReadOnlyList<ICsvRecordSet<ICsvRecord>>)> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount)
         {
             var result = await _driver.ProcessLeafAsync(item, attemptCount);
             return (result, GetValueOrDefault(result));
