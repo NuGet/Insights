@@ -1,9 +1,14 @@
 {
   "Deployment": {
-    "Location": "Central US",
-    "WorkerCount": 1,
+    "Location": "West US",
+    "WorkerPlanCount": 2,
+    "WorkerPlanLocations": [
+      "West US",
+      "West US 2"
+    ],
+    "WorkerCountPerPlan": 1,
     "WorkerLogLevel": "Warning",
-    "WorkerSku": "Y1"
+    "WorkerSku": "S1"
   },
   "AppSettings": {
     "Shared": {

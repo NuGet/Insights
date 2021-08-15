@@ -25,6 +25,7 @@ param workerUserManagedIdentityName string
 param workerNamePrefix string
 @minValue(1)
 param workerPlanCount int
+param workerPlanLocations array
 @minValue(1)
 param workerCountPerPlan int
 param workerConfig array
@@ -304,7 +305,7 @@ resource website 'Microsoft.Web/sites@2020-09-01' = {
 // Workers
 resource workerPlans 'Microsoft.Web/serverfarms@2020-09-01' = [for i in range(0, workerPlanCount): {
   name: '${workerPlanNamePrefix}${i}'
-  location: resourceGroup().location
+  location: workerPlanLocations[i % length(workerPlanLocations)]
   sku: {
     name: workerSku
   }
@@ -312,7 +313,7 @@ resource workerPlans 'Microsoft.Web/serverfarms@2020-09-01' = [for i in range(0,
 
 resource workerPlanAutoScale 'microsoft.insights/autoscalesettings@2015-04-01' = [for i in range(0, workerPlanCount): if (!isConsumptionPlan) {
   name: '${workerPlanNamePrefix}${i}'
-  location: resourceGroup().location
+  location: workerPlanLocations[i % length(workerPlanLocations)]
   dependsOn: [
     workerPlans[i]
   ]
@@ -387,7 +388,7 @@ resource workerUserManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdenti
 
 resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCount): {
   name: '${workerNamePrefix}${i}'
-  location: resourceGroup().location
+  location:  workerPlanLocations[(i / workerCountPerPlan) % length(workerPlanLocations)]
   dependsOn: [
     workerUserManagedIdentity
   ]
