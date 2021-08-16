@@ -16,6 +16,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 {
@@ -162,7 +163,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
             assembly.HasException = assembly.AssemblyNameHasCultureNotFoundException.GetValueOrDefault(false)
                 || assembly.AssemblyNameHasFileLoadException.GetValueOrDefault(false)
-                || assembly.PublicKeyTokenHasSecurityException.GetValueOrDefault(false);
+                || assembly.PublicKeyTokenHasSecurityException.GetValueOrDefault(false)
+                || assembly.CustomAttributesHasException.GetValueOrDefault(false);
 
             return DriverResult.Success(assembly);
         }
@@ -213,7 +215,10 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 assembly.AssemblyVersion = assemblyDefinition.Version;
                 assembly.Culture = metadataReader.GetString(assemblyDefinition.Culture);
                 assembly.HashAlgorithm = assemblyDefinition.HashAlgorithm;
+                
                 SetPublicKeyInfo(assembly, metadataReader, assemblyDefinition);
+                SetAssemblyAttributeInfo(assembly, metadataReader);
+
                 var assemblyName = GetAssemblyName(assembly, assemblyDefinition);
                 if (assemblyName != null)
                 {
@@ -284,12 +289,34 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             catch (SecurityException ex)
             {
                 assembly.PublicKeyTokenHasSecurityException = true;
-                _logger.LogWarning(ex, "Package {Id} {Version} has an invalid public key: {Path}", assembly.Id, assembly.Version, assembly.Path);
+                _logger.LogWarning(ex, "Package {Id} {Version} has an invalid public key. Path: {Path}", assembly.Id, assembly.Version, assembly.Path);
             }
 
             if (publicKeyTokenBytes != null)
             {
                 assembly.PublicKeyToken = publicKeyTokenBytes.ToHex();
+            }
+        }
+
+        private void SetAssemblyAttributeInfo(PackageAssembly assembly, MetadataReader metadataReader)
+        {
+            try
+            {
+                var info = AssemblyAttributeReader.Read(metadataReader, assembly, _logger);
+                assembly.CustomAttributesAreTruncated = info.AreTruncated;
+                assembly.CustomAttributesHaveMethodDefinitions = info.HaveMethodDefinitions;
+                assembly.CustomAttributesHaveTypeDefinitionConstructors = info.HaveTypeDefinitionConstructors;
+                assembly.CustomAttributesHaveDuplicateArgumentNames = info.HaveDuplicateArgumentNames;
+                assembly.CustomAttributesTotalCount = info.TotalCount;
+                assembly.CustomAttributesTotalDataLength = info.TotalDataLength;
+                assembly.CustomAttributesFailedDecode = JsonConvert.SerializeObject(info.FailedDecode);
+                assembly.CustomAttributes = JsonConvert.SerializeObject(info.NameToParameters);
+                assembly.CustomAttributesHasException = false;
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                assembly.CustomAttributesHasException = true;
+                _logger.LogWarning(ex, "Package {Id} {Version} could not process custom attributes. Path: {Path}", assembly.Id, assembly.Version, assembly.Path);
             }
         }
 

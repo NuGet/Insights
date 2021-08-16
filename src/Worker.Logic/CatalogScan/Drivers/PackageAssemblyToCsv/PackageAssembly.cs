@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -54,5 +54,19 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         public bool? HasPublicKey { get; set; }
         public int? PublicKeyLength { get; set; }
         public string PublicKeySHA1 { get; set; }
+
+        [KustoType("dynamic")]
+        public string CustomAttributes { get; set; }
+
+        [KustoType("dynamic")]
+        public string CustomAttributesFailedDecode { get; set; }
+
+        public bool? CustomAttributesAreTruncated { get; set; }
+        public bool? CustomAttributesHaveMethodDefinitions { get; set; }
+        public bool? CustomAttributesHaveTypeDefinitionConstructors { get; set; }
+        public bool? CustomAttributesHaveDuplicateArgumentNames { get; set; }
+        public int? CustomAttributesTotalCount { get; set; }
+        public int? CustomAttributesTotalDataLength { get; set; }
+        public bool? CustomAttributesHasException { get; set; }
     }
 }

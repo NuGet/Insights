@@ -42,7 +42,16 @@ namespace NuGet.Insights
     HashAlgorithm: string,
     HasPublicKey: bool,
     PublicKeyLength: int,
-    PublicKeySHA1: string
+    PublicKeySHA1: string,
+    CustomAttributes: dynamic,
+    CustomAttributesFailedDecode: dynamic,
+    CustomAttributesAreTruncated: bool,
+    CustomAttributesHaveMethodDefinitions: bool,
+    CustomAttributesHaveTypeDefinitionConstructors: bool,
+    CustomAttributesHaveDuplicateArgumentNames: bool,
+    CustomAttributesTotalCount: int,
+    CustomAttributesTotalDataLength: int,
+    CustomAttributesHasException: bool
 )",
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
@@ -75,7 +84,16 @@ namespace NuGet.Insights
     '{""Column"":""HashAlgorithm"",""DataType"":""string"",""Properties"":{""Ordinal"":25}},'
     '{""Column"":""HasPublicKey"",""DataType"":""bool"",""Properties"":{""Ordinal"":26}},'
     '{""Column"":""PublicKeyLength"",""DataType"":""int"",""Properties"":{""Ordinal"":27}},'
-    '{""Column"":""PublicKeySHA1"",""DataType"":""string"",""Properties"":{""Ordinal"":28}}'
+    '{""Column"":""PublicKeySHA1"",""DataType"":""string"",""Properties"":{""Ordinal"":28}},'
+    '{""Column"":""CustomAttributes"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":29}},'
+    '{""Column"":""CustomAttributesFailedDecode"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":30}},'
+    '{""Column"":""CustomAttributesAreTruncated"",""DataType"":""bool"",""Properties"":{""Ordinal"":31}},'
+    '{""Column"":""CustomAttributesHaveMethodDefinitions"",""DataType"":""bool"",""Properties"":{""Ordinal"":32}},'
+    '{""Column"":""CustomAttributesHaveTypeDefinitionConstructors"",""DataType"":""bool"",""Properties"":{""Ordinal"":33}},'
+    '{""Column"":""CustomAttributesHaveDuplicateArgumentNames"",""DataType"":""bool"",""Properties"":{""Ordinal"":34}},'
+    '{""Column"":""CustomAttributesTotalCount"",""DataType"":""int"",""Properties"":{""Ordinal"":35}},'
+    '{""Column"":""CustomAttributesTotalDataLength"",""DataType"":""int"",""Properties"":{""Ordinal"":36}},'
+    '{""Column"":""CustomAttributesHasException"",""DataType"":""bool"",""Properties"":{""Ordinal"":37}}'
 ']'",
         };
 
