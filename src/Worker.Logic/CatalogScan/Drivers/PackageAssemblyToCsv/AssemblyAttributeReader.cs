@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection.Metadata;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace NuGet.Insights.Worker.PackageAssemblyToCsv
@@ -133,11 +134,14 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 }
 
                 CustomAttributeValue<object> value;
+                var decoder = new TypelessDecoder();
                 try
                 {
-                    value = attribute.DecodeValue(TypelessDecoder.Instance);
+                    value = attribute.DecodeValue(decoder);
                 }
-                catch (BadImageFormatException ex)
+                catch (Exception ex) when (
+                    ex is BadImageFormatException // BadImageFormatException is thrown by the library when the metadata is off
+                    || (ex is OutOfMemoryException && decoder.ArrayCount > 0)) // It's possible a mega array gets allocated, mitigate this, e.g. Kentico.Xperience.AspNet.Mvc5.Libraries 13.0.18
                 {
                     RecordFailedDecode();
                     logger.LogInformation(
@@ -191,11 +195,16 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
         private class TypelessDecoder : ICustomAttributeTypeProvider<object>
         {
-            public static TypelessDecoder Instance { get; } = new TypelessDecoder();
+            private int _arrayCount;
+            public int ArrayCount => _arrayCount;
 
             public object GetPrimitiveType(PrimitiveTypeCode typeCode) => null;
             public object GetSystemType() => null;
-            public object GetSZArrayType(object elementType) => null;
+            public object GetSZArrayType(object elementType)
+            {
+                Interlocked.Increment(ref _arrayCount);
+                return null;
+            }
             public object GetTypeFromDefinition(MetadataReader reader, TypeDefinitionHandle handle, byte rawTypeKind) => null;
             public object GetTypeFromReference(MetadataReader reader, TypeReferenceHandle handle, byte rawTypeKind) => null;
             public object GetTypeFromSerializedName(string name) => null;
