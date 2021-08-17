@@ -59,7 +59,7 @@ The ReleaseLabels column is an array strings where each item in the array is a p
 
 ## SemVerType schema
 
-The SemVerType enum has one or more of the the following values, separated by a comma and a space.
+The SemVerType enum has one or more of the the following values. It is formatted by separating the values by a comma and a space.
 
 | Enum value                     | Description                                                                                             |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------- |

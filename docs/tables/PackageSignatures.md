@@ -68,7 +68,7 @@ The ResultType enum indicates the possible variants of records.
 
 ## HashAlgorithm schema
 
-The HashAlgorithm enum has the following values:
+The HashAlgorithm enum has one of following values:
 
 | Enum value | Description                                   |
 | ---------- | --------------------------------------------- |
