@@ -37,17 +37,12 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         public long? ActualUncompressedLength { get; set; }
         public string FileSHA256 { get; set; }
 
-        public bool HasException { get; set; }
-
+        public PackageAssemblyEdgeCases? EdgeCases { get; set; }
         public string AssemblyName { get; set; }
         public Version AssemblyVersion { get; set; }
         public string Culture { get; set; }
 
-        public bool? AssemblyNameHasCultureNotFoundException { get; set; }
-        public bool? AssemblyNameHasFileLoadException { get; set; }
-
         public string PublicKeyToken { get; set; }
-        public bool? PublicKeyTokenHasSecurityException { get; set; }
 
         public AssemblyHashAlgorithm? HashAlgorithm { get; set; }
 
@@ -61,12 +56,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         [KustoType("dynamic")]
         public string CustomAttributesFailedDecode { get; set; }
 
-        public bool? CustomAttributesAreTruncated { get; set; }
-        public bool? CustomAttributesHaveMethodDefinitions { get; set; }
-        public bool? CustomAttributesHaveTypeDefinitionConstructors { get; set; }
-        public bool? CustomAttributesHaveDuplicateArgumentNames { get; set; }
         public int? CustomAttributesTotalCount { get; set; }
         public int? CustomAttributesTotalDataLength { get; set; }
-        public bool? CustomAttributesHasException { get; set; }
     }
 }

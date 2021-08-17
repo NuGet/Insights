@@ -43,7 +43,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageAssemblyResultType.ValidAssembly, record.ResultType);
-            Assert.True(record.PublicKeyTokenHasSecurityException);
+            Assert.True(record.EdgeCases.Value.HasFlag(PackageAssemblyEdgeCases.PublicKeyToken_Security));
             Assert.True(record.HasPublicKey);
             Assert.Null(record.PublicKeyToken);
             Assert.Equal("Gt7fjUhg9y4YDKVONm/Pm3ykcVw=", record.PublicKeySHA1);
@@ -117,6 +117,50 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         }
 
         [Fact]
+        public async Task HandlesCustomAttributeArgumentArrayWithCorruptedLength()
+        {
+            var leaf = new CatalogLeafItem
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2021.03.26.13.21.32/kentico.xperience.aspnet.mvc5.libraries.13.0.18.json",
+                Type = CatalogLeafType.PackageDetails,
+                CommitTimestamp = DateTimeOffset.Parse("2021-03-26T13:21:32.0964414Z"),
+                PackageId = "Kentico.Xperience.AspNet.Mvc5.Libraries",
+                PackageVersion = "13.0.18",
+            };
+            await Target.InitializeAsync();
+
+            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+
+            Assert.Equal(DriverResultType.Success, output.Type);
+            Assert.Equal(5, output.Value.Records.Count);
+            var record = output.Value.Records[0];
+            Assert.Equal("lib/NET48/Kentico.Content.Web.Mvc.dll", record.Path);
+            Assert.Contains("RegisterPageBuilderLocalizationResource", record.CustomAttributesFailedDecode);
+        }
+
+        [Fact]
+        public async Task HandlesCustomAttributeWithBrokenMethodName()
+        {
+            var leaf = new CatalogLeafItem
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2020.02.23.11.43.38/citizenfx.framework.client.0.1.0.json",
+                Type = CatalogLeafType.PackageDetails,
+                CommitTimestamp = DateTimeOffset.Parse("2020-02-23T11:43:38.8666289Z"),
+                PackageId = "CitizenFX.Framework.Client",
+                PackageVersion = "0.1.0",
+            };
+            await Target.InitializeAsync();
+
+            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+
+            Assert.Equal(DriverResultType.Success, output.Type);
+            Assert.Equal(20, output.Value.Records.Count);
+            var record = output.Value.Records[4];
+            Assert.Equal("ref/net452/mscorlib.dll", record.Path);
+            Assert.True(record.EdgeCases.Value.HasFlag(PackageAssemblyEdgeCases.CustomAttributes_BrokenPointer));
+        }
+
+        [Fact]
         public async Task HandlesOptimizedAssembly()
         {
             var leaf = new CatalogLeafItem
@@ -180,7 +224,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             Assert.Equal(7, output.Value.Records.Count);
             var record = output.Value.Records[1];
             Assert.Equal("lib/netstandard1.4/Realm.Sync.dll", record.Path);
-            Assert.True(record.CustomAttributesHaveDuplicateArgumentNames);
+            Assert.True(record.EdgeCases.Value.HasFlag(PackageAssemblyEdgeCases.CustomAttributes_DuplicateArgumentName));
         }
 
         [Fact]
@@ -204,7 +248,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             Assert.Equal("lib/net35/GemBox.Document.dll", record.Path);
             var customAttributes = JObject.Parse(record.CustomAttributes);
             Assert.Equal("StandardFonts/", customAttributes["\u0002   "][0]["0"]);
-            Assert.True(record.CustomAttributesHaveMethodDefinitions);
+            Assert.True(record.EdgeCases.Value.HasFlag(PackageAssemblyEdgeCases.CustomAttributes_MethodDefinition));
         }
 
         [Fact]
@@ -230,7 +274,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             Assert.Equal(
                 new[] { "AllowPartiallyTrustedCallers", "AssemblyCompany", "AssemblyCopyright", "AssemblyDefaultAlias", "AssemblyDelaySign", "AssemblyDescription", "AssemblyFileVersion", "AssemblyInformationalVersion", "AssemblyKeyFile", "AssemblyProduct", "AssemblyTitle", "CLSCompliant", "CompilationRelaxations", "ReferenceAssembly", "RuntimeCompatibility" },
                 customAttributes.Properties().Select(x => x.Name).ToArray());
-            Assert.True(record.CustomAttributesHaveMethodDefinitions);
+            Assert.True(record.EdgeCases.Value.HasFlag(PackageAssemblyEdgeCases.CustomAttributes_MethodDefinition));
         }
 
         [Fact]
@@ -256,7 +300,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             Assert.Equal(
                 new[] { "AssemblyCompany", "AssemblyConfiguration", "AssemblyCopyright", "AssemblyDelaySign", "AssemblyDescription", "AssemblyKeyName", "AssemblyProduct", "AssemblyTitle", "AssemblyTrademark", "ContractDeclarativeAssembly", "ContractReferenceAssembly", "Debuggable", "Extension", "RuntimeCompatibility", "TargetFramework" },
                 customAttributes.Properties().Select(x => x.Name).ToArray());
-            Assert.True(record.CustomAttributesHaveTypeDefinitionConstructors);
+            Assert.True(record.EdgeCases.Value.HasFlag(PackageAssemblyEdgeCases.CustomAttributes_TypeDefinitionConstructor));
         }
 
         [Fact]
@@ -323,9 +367,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageAssemblyResultType.ValidAssembly, record.ResultType);
-            Assert.True(record.AssemblyNameHasCultureNotFoundException);
+            Assert.True(record.EdgeCases.Value.HasFlag(PackageAssemblyEdgeCases.Name_CultureNotFoundException));
             Assert.Equal("EnyuTryNuget", record.Culture);
-            Assert.Null(record.AssemblyNameHasFileLoadException);
+            Assert.False(record.EdgeCases.Value.HasFlag(PackageAssemblyEdgeCases.Name_FileLoadException));
         }
 
         [Fact]
@@ -348,8 +392,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var record = output.Value.Records[1];
             Assert.Equal("lib/net451/getAddress,Azure.4.5.1.dll", record.Path);
             Assert.Equal(PackageAssemblyResultType.ValidAssembly, record.ResultType);
-            Assert.True(record.AssemblyNameHasFileLoadException);
-            Assert.Null(record.AssemblyNameHasCultureNotFoundException);
+            Assert.True(record.EdgeCases.Value.HasFlag(PackageAssemblyEdgeCases.Name_FileLoadException));
+            Assert.False(record.EdgeCases.Value.HasFlag(PackageAssemblyEdgeCases.Name_CultureNotFoundException));
         }
 
         [Fact]

@@ -161,11 +161,6 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 return DriverResult.TryAgainLater<PackageAssembly>();
             }
 
-            assembly.HasException = assembly.AssemblyNameHasCultureNotFoundException.GetValueOrDefault(false)
-                || assembly.AssemblyNameHasFileLoadException.GetValueOrDefault(false)
-                || assembly.PublicKeyTokenHasSecurityException.GetValueOrDefault(false)
-                || assembly.CustomAttributesHasException.GetValueOrDefault(false);
-
             return DriverResult.Success(assembly);
         }
 
@@ -215,6 +210,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 assembly.AssemblyVersion = assemblyDefinition.Version;
                 assembly.Culture = metadataReader.GetString(assemblyDefinition.Culture);
                 assembly.HashAlgorithm = assemblyDefinition.HashAlgorithm;
+                assembly.EdgeCases = PackageAssemblyEdgeCases.None;
                 
                 SetPublicKeyInfo(assembly, metadataReader, assemblyDefinition);
                 SetAssemblyAttributeInfo(assembly, metadataReader);
@@ -245,17 +241,15 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             try
             {
                 assemblyName = assemblyDefinition.GetAssemblyName();
-                assembly.AssemblyNameHasCultureNotFoundException = false;
-                assembly.AssemblyNameHasFileLoadException = false;
             }
             catch (CultureNotFoundException ex)
             {
-                assembly.AssemblyNameHasCultureNotFoundException = true;
+                assembly.EdgeCases |= PackageAssemblyEdgeCases.Name_CultureNotFoundException;
                 _logger.LogWarning(ex, "Package {Id} {Version} has an invalid culture: {Path}", assembly.Id, assembly.Version, assembly.Path);
             }
             catch (FileLoadException ex)
             {
-                assembly.AssemblyNameHasFileLoadException = true;
+                assembly.EdgeCases |= PackageAssemblyEdgeCases.Name_FileLoadException;
                 _logger.LogWarning(ex, "Package {Id} {Version} has an AssemblyName that can't be loaded: {Path}", assembly.Id, assembly.Version, assembly.Path);
             }
 
@@ -284,11 +278,10 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             try
             {
                 publicKeyTokenBytes = assemblyName.GetPublicKeyToken();
-                assembly.PublicKeyTokenHasSecurityException = false;
             }
             catch (SecurityException ex)
             {
-                assembly.PublicKeyTokenHasSecurityException = true;
+                assembly.EdgeCases |= PackageAssemblyEdgeCases.PublicKeyToken_Security;
                 _logger.LogWarning(ex, "Package {Id} {Version} has an invalid public key. Path: {Path}", assembly.Id, assembly.Version, assembly.Path);
             }
 
@@ -300,24 +293,12 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
         private void SetAssemblyAttributeInfo(PackageAssembly assembly, MetadataReader metadataReader)
         {
-            try
-            {
-                var info = AssemblyAttributeReader.Read(metadataReader, assembly, _logger);
-                assembly.CustomAttributesAreTruncated = info.AreTruncated;
-                assembly.CustomAttributesHaveMethodDefinitions = info.HaveMethodDefinitions;
-                assembly.CustomAttributesHaveTypeDefinitionConstructors = info.HaveTypeDefinitionConstructors;
-                assembly.CustomAttributesHaveDuplicateArgumentNames = info.HaveDuplicateArgumentNames;
-                assembly.CustomAttributesTotalCount = info.TotalCount;
-                assembly.CustomAttributesTotalDataLength = info.TotalDataLength;
-                assembly.CustomAttributesFailedDecode = JsonConvert.SerializeObject(info.FailedDecode);
-                assembly.CustomAttributes = JsonConvert.SerializeObject(info.NameToParameters);
-                assembly.CustomAttributesHasException = false;
-            }
-            catch (Exception ex) when (ex is not OutOfMemoryException)
-            {
-                assembly.CustomAttributesHasException = true;
-                _logger.LogWarning(ex, "Package {Id} {Version} could not process custom attributes. Path: {Path}", assembly.Id, assembly.Version, assembly.Path);
-            }
+            var info = AssemblyAttributeReader.Read(metadataReader, assembly, _logger);
+            assembly.EdgeCases |= info.EdgeCases;
+            assembly.CustomAttributesTotalCount = info.TotalCount;
+            assembly.CustomAttributesTotalDataLength = info.TotalDataLength;
+            assembly.CustomAttributesFailedDecode = JsonConvert.SerializeObject(info.FailedDecode);
+            assembly.CustomAttributes = JsonConvert.SerializeObject(info.NameToParameters);
         }
 
         public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageAssembly record)

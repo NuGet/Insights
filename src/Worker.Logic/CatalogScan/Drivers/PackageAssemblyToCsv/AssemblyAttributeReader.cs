@@ -10,10 +10,7 @@ using Microsoft.Extensions.Logging;
 namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 {
     public record AssemblyAttributes(
-        bool AreTruncated,
-        bool HaveMethodDefinitions,
-        bool HaveTypeDefinitionConstructors,
-        bool HaveDuplicateArgumentNames,
+        PackageAssemblyEdgeCases EdgeCases,
         int TotalCount,
         int TotalDataLength,
         IDictionary<string, List<IDictionary<string, object>>> NameToParameters,
@@ -30,17 +27,14 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         {
             var nameToArguments = new SortedDictionary<string, List<IDictionary<string, object>>>(StringComparer.Ordinal);
             var failedDecode = new SortedSet<string>(StringComparer.Ordinal);
-            var areTruncated = false;
-            var haveMethodDefinitions = false;
-            var haveTypeDefinitionConstructors = false;
-            var haveDuplicateArgumentNames = false;
+            var edgeCases = PackageAssemblyEdgeCases.None;
             var totalCount = 0;
             var addedAttributeLength = 0;
             var totalValueLength = 0;
 
-            const int maxAttributeCount = 32;
+            const int maxAttributeCount = 64;
             const int maxAttributeNameLength = 128;
-            const int maxAttributeValueLength = 2048;
+            const int maxAttributeValueLength = 4096;
 
             foreach (var customAttributeHandle in metadata.GetAssemblyDefinition().GetCustomAttributes())
             {
@@ -58,7 +52,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                     }
                     else if (memberReference.Parent.Kind == HandleKind.TypeDefinition)
                     {
-                        haveTypeDefinitionConstructors = true;
+                        edgeCases |= PackageAssemblyEdgeCases.CustomAttributes_TypeDefinitionConstructor;
                         var typeDefinition = metadata.GetTypeDefinition((TypeDefinitionHandle)memberReference.Parent);
                         attributeName = metadata.GetString(typeDefinition.Name);
                     }
@@ -69,9 +63,24 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 }
                 else if (attribute.Constructor.Kind == HandleKind.MethodDefinition)
                 {
-                    haveMethodDefinitions = true;
+                    edgeCases |= PackageAssemblyEdgeCases.CustomAttributes_MethodDefinition;
                     var methodDefinition = metadata.GetMethodDefinition((MethodDefinitionHandle)attribute.Constructor);
-                    var methodName = metadata.GetString(methodDefinition.Name);
+                    string methodName;
+                    try
+                    {
+                        methodName = metadata.GetString(methodDefinition.Name);
+                    }
+                    catch (BadImageFormatException ex)
+                    {
+                        edgeCases |= PackageAssemblyEdgeCases.CustomAttributes_BrokenPointer;
+                        logger.LogInformation(
+                            ex,
+                            "Package {Id} {Version} could not get a method definition for a custom attribute. Path: {Path}",
+                            assembly.Id,
+                            assembly.Version,
+                            assembly.Path);
+                        continue;
+                    }
                     var typeDefinitionHandle = methodDefinition.GetDeclaringType();
                     var typeDefinition = metadata.GetTypeDefinition(typeDefinitionHandle);
                     attributeName = metadata.GetString(typeDefinition.Name);
@@ -93,13 +102,14 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
                 void RecordFailedDecode()
                 {
-                    if (failedDecode.Count < maxAttributeCount && attributeName.Length <= maxAttributeNameLength)
+                    if (failedDecode.Count < maxAttributeCount
+                        && attributeName.Length <= maxAttributeNameLength)
                     {
                         failedDecode.Add(attributeName);
                     }
                     else
                     {
-                        areTruncated = true;
+                        edgeCases |= PackageAssemblyEdgeCases.CustomAttributes_TruncatedFailedDecode;
                     }
                 }
 
@@ -124,12 +134,12 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 var attributeValueLength = blobReader.Length;
                 totalValueLength += attributeValueLength;
 
-                if (nameToArguments.Count > maxAttributeCount // Don't record too many attributes
+                if (nameToArguments.Count + 1 > maxAttributeCount // Don't record too many attributes
                     || attributeName.Length > maxAttributeNameLength // Don't record an attribute that's name is too long
                     || addedAttributeLength + attributeValueLength > maxAttributeValueLength // Don't record an attribute if the data exceeds the exceeds to total max
                     || failedDecode.Contains(attributeName)) // Don't check an attribute if the attribute failed to decode already for this assembly
                 {
-                    areTruncated = true;
+                    edgeCases |= PackageAssemblyEdgeCases.CustomAttributes_TruncatedAttributes;
                     continue;
                 }
 
@@ -167,7 +177,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                     }
                     else
                     {
-                        haveDuplicateArgumentNames = true;
+                        edgeCases |= PackageAssemblyEdgeCases.CustomAttributes_DuplicateArgumentName;
                     }
                 }
 
@@ -183,10 +193,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             }
 
             return new AssemblyAttributes(
-                areTruncated,
-                haveMethodDefinitions,
-                haveTypeDefinitionConstructors,
-                haveDuplicateArgumentNames,
+                edgeCases,
                 totalCount,
                 totalValueLength,
                 nameToArguments,

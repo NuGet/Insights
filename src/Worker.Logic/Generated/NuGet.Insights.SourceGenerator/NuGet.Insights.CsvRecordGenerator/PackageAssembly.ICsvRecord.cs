@@ -31,27 +31,19 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         EntryUncompressedLength: long,
         ActualUncompressedLength: long,
         FileSHA256: string,
-        HasException: bool,
+        EdgeCases: string,
         AssemblyName: string,
         AssemblyVersion: string,
         Culture: string,
-        AssemblyNameHasCultureNotFoundException: bool,
-        AssemblyNameHasFileLoadException: bool,
         PublicKeyToken: string,
-        PublicKeyTokenHasSecurityException: bool,
         HashAlgorithm: string,
         HasPublicKey: bool,
         PublicKeyLength: int,
         PublicKeySHA1: string,
         CustomAttributes: dynamic,
         CustomAttributesFailedDecode: dynamic,
-        CustomAttributesAreTruncated: bool,
-        CustomAttributesHaveMethodDefinitions: bool,
-        CustomAttributesHaveTypeDefinitionConstructors: bool,
-        CustomAttributesHaveDuplicateArgumentNames: bool,
         CustomAttributesTotalCount: int,
-        CustomAttributesTotalDataLength: int,
-        CustomAttributesHasException: bool
+        CustomAttributesTotalDataLength: int
     );
 
     .alter-merge table PackageAssemblies policy retention softdelete = 30d;
@@ -86,37 +78,29 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         '{"Column":"EntryUncompressedLength","DataType":"long","Properties":{"Ordinal":14}},'
         '{"Column":"ActualUncompressedLength","DataType":"long","Properties":{"Ordinal":15}},'
         '{"Column":"FileSHA256","DataType":"string","Properties":{"Ordinal":16}},'
-        '{"Column":"HasException","DataType":"bool","Properties":{"Ordinal":17}},'
+        '{"Column":"EdgeCases","DataType":"string","Properties":{"Ordinal":17}},'
         '{"Column":"AssemblyName","DataType":"string","Properties":{"Ordinal":18}},'
         '{"Column":"AssemblyVersion","DataType":"string","Properties":{"Ordinal":19}},'
         '{"Column":"Culture","DataType":"string","Properties":{"Ordinal":20}},'
-        '{"Column":"AssemblyNameHasCultureNotFoundException","DataType":"bool","Properties":{"Ordinal":21}},'
-        '{"Column":"AssemblyNameHasFileLoadException","DataType":"bool","Properties":{"Ordinal":22}},'
-        '{"Column":"PublicKeyToken","DataType":"string","Properties":{"Ordinal":23}},'
-        '{"Column":"PublicKeyTokenHasSecurityException","DataType":"bool","Properties":{"Ordinal":24}},'
-        '{"Column":"HashAlgorithm","DataType":"string","Properties":{"Ordinal":25}},'
-        '{"Column":"HasPublicKey","DataType":"bool","Properties":{"Ordinal":26}},'
-        '{"Column":"PublicKeyLength","DataType":"int","Properties":{"Ordinal":27}},'
-        '{"Column":"PublicKeySHA1","DataType":"string","Properties":{"Ordinal":28}},'
-        '{"Column":"CustomAttributes","DataType":"dynamic","Properties":{"Ordinal":29}},'
-        '{"Column":"CustomAttributesFailedDecode","DataType":"dynamic","Properties":{"Ordinal":30}},'
-        '{"Column":"CustomAttributesAreTruncated","DataType":"bool","Properties":{"Ordinal":31}},'
-        '{"Column":"CustomAttributesHaveMethodDefinitions","DataType":"bool","Properties":{"Ordinal":32}},'
-        '{"Column":"CustomAttributesHaveTypeDefinitionConstructors","DataType":"bool","Properties":{"Ordinal":33}},'
-        '{"Column":"CustomAttributesHaveDuplicateArgumentNames","DataType":"bool","Properties":{"Ordinal":34}},'
-        '{"Column":"CustomAttributesTotalCount","DataType":"int","Properties":{"Ordinal":35}},'
-        '{"Column":"CustomAttributesTotalDataLength","DataType":"int","Properties":{"Ordinal":36}},'
-        '{"Column":"CustomAttributesHasException","DataType":"bool","Properties":{"Ordinal":37}}'
+        '{"Column":"PublicKeyToken","DataType":"string","Properties":{"Ordinal":21}},'
+        '{"Column":"HashAlgorithm","DataType":"string","Properties":{"Ordinal":22}},'
+        '{"Column":"HasPublicKey","DataType":"bool","Properties":{"Ordinal":23}},'
+        '{"Column":"PublicKeyLength","DataType":"int","Properties":{"Ordinal":24}},'
+        '{"Column":"PublicKeySHA1","DataType":"string","Properties":{"Ordinal":25}},'
+        '{"Column":"CustomAttributes","DataType":"dynamic","Properties":{"Ordinal":26}},'
+        '{"Column":"CustomAttributesFailedDecode","DataType":"dynamic","Properties":{"Ordinal":27}},'
+        '{"Column":"CustomAttributesTotalCount","DataType":"int","Properties":{"Ordinal":28}},'
+        '{"Column":"CustomAttributesTotalDataLength","DataType":"int","Properties":{"Ordinal":29}}'
     ']'
 
     */
     partial record PackageAssembly
     {
-        public int FieldCount => 38;
+        public int FieldCount => 30;
 
         public void WriteHeader(TextWriter writer)
         {
-            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Path,FileName,FileExtension,TopLevelFolder,CompressedLength,EntryUncompressedLength,ActualUncompressedLength,FileSHA256,HasException,AssemblyName,AssemblyVersion,Culture,AssemblyNameHasCultureNotFoundException,AssemblyNameHasFileLoadException,PublicKeyToken,PublicKeyTokenHasSecurityException,HashAlgorithm,HasPublicKey,PublicKeyLength,PublicKeySHA1,CustomAttributes,CustomAttributesFailedDecode,CustomAttributesAreTruncated,CustomAttributesHaveMethodDefinitions,CustomAttributesHaveTypeDefinitionConstructors,CustomAttributesHaveDuplicateArgumentNames,CustomAttributesTotalCount,CustomAttributesTotalDataLength,CustomAttributesHasException");
+            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Path,FileName,FileExtension,TopLevelFolder,CompressedLength,EntryUncompressedLength,ActualUncompressedLength,FileSHA256,EdgeCases,AssemblyName,AssemblyVersion,Culture,PublicKeyToken,HashAlgorithm,HasPublicKey,PublicKeyLength,PublicKeySHA1,CustomAttributes,CustomAttributesFailedDecode,CustomAttributesTotalCount,CustomAttributesTotalDataLength");
         }
 
         public void Write(List<string> fields)
@@ -138,27 +122,19 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             fields.Add(EntryUncompressedLength.ToString());
             fields.Add(ActualUncompressedLength.ToString());
             fields.Add(FileSHA256);
-            fields.Add(CsvUtility.FormatBool(HasException));
+            fields.Add(EdgeCases.ToString());
             fields.Add(AssemblyName);
             fields.Add(AssemblyVersion?.ToString());
             fields.Add(Culture);
-            fields.Add(CsvUtility.FormatBool(AssemblyNameHasCultureNotFoundException));
-            fields.Add(CsvUtility.FormatBool(AssemblyNameHasFileLoadException));
             fields.Add(PublicKeyToken);
-            fields.Add(CsvUtility.FormatBool(PublicKeyTokenHasSecurityException));
             fields.Add(HashAlgorithm.ToString());
             fields.Add(CsvUtility.FormatBool(HasPublicKey));
             fields.Add(PublicKeyLength.ToString());
             fields.Add(PublicKeySHA1);
             fields.Add(CustomAttributes);
             fields.Add(CustomAttributesFailedDecode);
-            fields.Add(CsvUtility.FormatBool(CustomAttributesAreTruncated));
-            fields.Add(CsvUtility.FormatBool(CustomAttributesHaveMethodDefinitions));
-            fields.Add(CsvUtility.FormatBool(CustomAttributesHaveTypeDefinitionConstructors));
-            fields.Add(CsvUtility.FormatBool(CustomAttributesHaveDuplicateArgumentNames));
             fields.Add(CustomAttributesTotalCount.ToString());
             fields.Add(CustomAttributesTotalDataLength.ToString());
-            fields.Add(CsvUtility.FormatBool(CustomAttributesHasException));
         }
 
         public void Write(TextWriter writer)
@@ -197,7 +173,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, FileSHA256);
             writer.Write(',');
-            writer.Write(CsvUtility.FormatBool(HasException));
+            CsvUtility.WriteWithQuotes(writer, EdgeCases.ToString());
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, AssemblyName);
             writer.Write(',');
@@ -205,13 +181,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, Culture);
             writer.Write(',');
-            writer.Write(CsvUtility.FormatBool(AssemblyNameHasCultureNotFoundException));
-            writer.Write(',');
-            writer.Write(CsvUtility.FormatBool(AssemblyNameHasFileLoadException));
-            writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, PublicKeyToken);
-            writer.Write(',');
-            writer.Write(CsvUtility.FormatBool(PublicKeyTokenHasSecurityException));
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, HashAlgorithm.ToString());
             writer.Write(',');
@@ -225,19 +195,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, CustomAttributesFailedDecode);
             writer.Write(',');
-            writer.Write(CsvUtility.FormatBool(CustomAttributesAreTruncated));
-            writer.Write(',');
-            writer.Write(CsvUtility.FormatBool(CustomAttributesHaveMethodDefinitions));
-            writer.Write(',');
-            writer.Write(CsvUtility.FormatBool(CustomAttributesHaveTypeDefinitionConstructors));
-            writer.Write(',');
-            writer.Write(CsvUtility.FormatBool(CustomAttributesHaveDuplicateArgumentNames));
-            writer.Write(',');
             writer.Write(CustomAttributesTotalCount);
             writer.Write(',');
             writer.Write(CustomAttributesTotalDataLength);
-            writer.Write(',');
-            writer.Write(CsvUtility.FormatBool(CustomAttributesHasException));
             writer.WriteLine();
         }
 
@@ -277,7 +237,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, FileSHA256);
             await writer.WriteAsync(',');
-            await writer.WriteAsync(CsvUtility.FormatBool(HasException));
+            await CsvUtility.WriteWithQuotesAsync(writer, EdgeCases.ToString());
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, AssemblyName);
             await writer.WriteAsync(',');
@@ -285,13 +245,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, Culture);
             await writer.WriteAsync(',');
-            await writer.WriteAsync(CsvUtility.FormatBool(AssemblyNameHasCultureNotFoundException));
-            await writer.WriteAsync(',');
-            await writer.WriteAsync(CsvUtility.FormatBool(AssemblyNameHasFileLoadException));
-            await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, PublicKeyToken);
-            await writer.WriteAsync(',');
-            await writer.WriteAsync(CsvUtility.FormatBool(PublicKeyTokenHasSecurityException));
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, HashAlgorithm.ToString());
             await writer.WriteAsync(',');
@@ -305,19 +259,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, CustomAttributesFailedDecode);
             await writer.WriteAsync(',');
-            await writer.WriteAsync(CsvUtility.FormatBool(CustomAttributesAreTruncated));
-            await writer.WriteAsync(',');
-            await writer.WriteAsync(CsvUtility.FormatBool(CustomAttributesHaveMethodDefinitions));
-            await writer.WriteAsync(',');
-            await writer.WriteAsync(CsvUtility.FormatBool(CustomAttributesHaveTypeDefinitionConstructors));
-            await writer.WriteAsync(',');
-            await writer.WriteAsync(CsvUtility.FormatBool(CustomAttributesHaveDuplicateArgumentNames));
-            await writer.WriteAsync(',');
             await writer.WriteAsync(CustomAttributesTotalCount.ToString());
             await writer.WriteAsync(',');
             await writer.WriteAsync(CustomAttributesTotalDataLength.ToString());
-            await writer.WriteAsync(',');
-            await writer.WriteAsync(CsvUtility.FormatBool(CustomAttributesHasException));
             await writer.WriteLineAsync();
         }
 
@@ -342,27 +286,19 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 EntryUncompressedLength = CsvUtility.ParseNullable(getNextField(), long.Parse),
                 ActualUncompressedLength = CsvUtility.ParseNullable(getNextField(), long.Parse),
                 FileSHA256 = getNextField(),
-                HasException = bool.Parse(getNextField()),
+                EdgeCases = CsvUtility.ParseNullable(getNextField(), Enum.Parse<PackageAssemblyEdgeCases>),
                 AssemblyName = getNextField(),
                 AssemblyVersion = CsvUtility.ParseReference(getNextField(), System.Version.Parse),
                 Culture = getNextField(),
-                AssemblyNameHasCultureNotFoundException = CsvUtility.ParseNullable(getNextField(), bool.Parse),
-                AssemblyNameHasFileLoadException = CsvUtility.ParseNullable(getNextField(), bool.Parse),
                 PublicKeyToken = getNextField(),
-                PublicKeyTokenHasSecurityException = CsvUtility.ParseNullable(getNextField(), bool.Parse),
                 HashAlgorithm = CsvUtility.ParseNullable(getNextField(), Enum.Parse<System.Reflection.AssemblyHashAlgorithm>),
                 HasPublicKey = CsvUtility.ParseNullable(getNextField(), bool.Parse),
                 PublicKeyLength = CsvUtility.ParseNullable(getNextField(), int.Parse),
                 PublicKeySHA1 = getNextField(),
                 CustomAttributes = getNextField(),
                 CustomAttributesFailedDecode = getNextField(),
-                CustomAttributesAreTruncated = CsvUtility.ParseNullable(getNextField(), bool.Parse),
-                CustomAttributesHaveMethodDefinitions = CsvUtility.ParseNullable(getNextField(), bool.Parse),
-                CustomAttributesHaveTypeDefinitionConstructors = CsvUtility.ParseNullable(getNextField(), bool.Parse),
-                CustomAttributesHaveDuplicateArgumentNames = CsvUtility.ParseNullable(getNextField(), bool.Parse),
                 CustomAttributesTotalCount = CsvUtility.ParseNullable(getNextField(), int.Parse),
                 CustomAttributesTotalDataLength = CsvUtility.ParseNullable(getNextField(), int.Parse),
-                CustomAttributesHasException = CsvUtility.ParseNullable(getNextField(), bool.Parse),
             };
         }
     }

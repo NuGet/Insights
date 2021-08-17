@@ -15,46 +15,38 @@ For simplicity, only files with the `.dll` or `.exe` file extension are analyzed
 
 ## Table schema
 
-| Column name                                    | Data type        | Required                   | Description                                                                                  |
-| ---------------------------------------------- | ---------------- | -------------------------- | -------------------------------------------------------------------------------------------- |
-| ScanId                                         | string           | No                         | Unused, always empty                                                                         |
-| ScanTimestamp                                  | timestamp        | No                         | Unused, always empty                                                                         |
-| LowerId                                        | string           | Yes                        | Lowercase package ID. Good for joins                                                         |
-| Identity                                       | string           | Yes                        | Lowercase package ID and lowercase, normalized version. Good for joins                       |
-| Id                                             | string           | Yes                        | Original case package ID                                                                     |
-| Version                                        | string           | Yes                        | Original case, normalized package version                                                    |
-| CatalogCommitTimestamp                         | timestamp        | Yes                        | Latest catalog commit timestamp for the package                                              |
-| Created                                        | timestamp        | Yes, for non-Deleted       | When the package version was created                                                         |
-| ResultType                                     | enum             | Yes                        | Type of record (e.g. Available, Deleted)                                                     |
-| Path                                           | string           | Yes, for ZIP entries       | The relative file path within the .nupkg                                                     |
-| FileName                                       | string           | Yes, for ZIP entries       | The file name from the Path                                                                  |
-| FileExtension                                  | string           | Yes, for ZIP entries       | The file extension from the Path                                                             |
-| TopLevelFolder                                 | string           | Yes, for ZIP entries       | The first folder (i.e. directory) name from the Path                                         |
-| CompressedLength                               | long             | Yes, for ZIP entries       | The compressed size of the assembly                                                          |
-| EntryUncompressedLength                        | long             | Yes, for ZIP entries       | The uncompressed size of the assembly                                                        |
-| ActualUncompressedLength                       | long             | Yes, for valid ZIP entries | The uncompressed size of the assembly                                                        |
-| FileSHA256                                     | string           | Yes, for valid ZIP entries | The Base64 encoded SHA256 hash of the assembly file                                          |
-| HasException                                   | bool             | Yes, for ValidAssembly     | Whether an exception was thrown while reading some part of the .NET assembly metadata        |
-| AssemblyName                                   | string           | Yes, for ValidAssembly     | The .NET assembly Name                                                                       |
-| AssemblyVersion                                | string           | Yes, for ValidAssembly     | The .NET assembly version                                                                    |
-| Culture                                        | string           | No                         | The culture of the .NET assembly                                                             |
-| AssemblyNameHasCultureNotFoundException        | bool             | No                         | The culture in the .NET assembly is unrecognized                                             |
-| AssemblyNameHasFileLoadException               | bool             | No                         | Reading the assembly name failed with a file load exception                                  |
-| PublicKeyToken                                 | string           | No                         | The public key token for .NET assembly strong naming                                         |
-| PublicKeyTokenHasSecurityException             | bool             | No                         | Reading the public key token threw a security exception                                      |
-| HashAlgorithm                                  | enum             | Yes, for ValidAssembly     | The hash algorithm enum for the assembly                                                     |
-| HasPublicKey                                   | bool             | Yes, for ValidAssembly     | Whether or not the .NET assembly has a public key                                            |
-| PublicKeyLength                                | int              | No                         | The length in bytes of the public key                                                        |
-| PublicKeySHA1                                  | string           | No                         | The Base64 encoding SHA1 hash of the public key                                              |
-| CustomAttributes                               | object           | No                         | Assembly custom attribute names and parameters                                               |
-| CustomAttributesFailedDecode                   | array of strings | No                         | Custom attribute names that failed to decode                                                 |
-| CustomAttributesAreTruncated                   | bool             | No                         | Whether data was too large so CustomAttributes or CustomAttributesFailedDecode was truncated |
-| CustomAttributesHaveMethodDefinitions          | bool             | No                         | Whether an attribute type referred to a method instead of type declaration                   |
-| CustomAttributesHaveTypeDefinitionConstructors | bool             | No                         | Whether an attribute constructor referred to a type definition instead of type declaration   |
-| CustomAttributesHaveDuplicateArgumentNames     | bool             | No                         | Whether an attribute had duplicate argument names                                            |
-| CustomAttributesTotalCount                     | int              | No                         | Total number of assembly custom attributes                                                   |
-| CustomAttributesTotalDataLength                | int              | No                         | Total size of custom attribute value blobs in bytes                                          |
-| CustomAttributesHasException                   | bool             | No                         | Processing custom attributes threw an exception so data is incomplete                        |
+| Column name                     | Data type        | Required                   | Description                                                            |
+| ------------------------------- | ---------------- | -------------------------- | ---------------------------------------------------------------------- |
+| ScanId                          | string           | No                         | Unused, always empty                                                   |
+| ScanTimestamp                   | timestamp        | No                         | Unused, always empty                                                   |
+| LowerId                         | string           | Yes                        | Lowercase package ID. Good for joins                                   |
+| Identity                        | string           | Yes                        | Lowercase package ID and lowercase, normalized version. Good for joins |
+| Id                              | string           | Yes                        | Original case package ID                                               |
+| Version                         | string           | Yes                        | Original case, normalized package version                              |
+| CatalogCommitTimestamp          | timestamp        | Yes                        | Latest catalog commit timestamp for the package                        |
+| Created                         | timestamp        | Yes, for non-Deleted       | When the package version was created                                   |
+| ResultType                      | enum             | Yes                        | Type of record (e.g. Available, Deleted)                               |
+| Path                            | string           | Yes, for ZIP entries       | The relative file path within the .nupkg                               |
+| FileName                        | string           | Yes, for ZIP entries       | The file name from the Path                                            |
+| FileExtension                   | string           | Yes, for ZIP entries       | The file extension from the Path                                       |
+| TopLevelFolder                  | string           | Yes, for ZIP entries       | The first folder (i.e. directory) name from the Path                   |
+| CompressedLength                | long             | Yes, for ZIP entries       | The compressed size of the assembly                                    |
+| EntryUncompressedLength         | long             | Yes, for ZIP entries       | The uncompressed size of the assembly                                  |
+| ActualUncompressedLength        | long             | Yes, for valid ZIP entries | The uncompressed size of the assembly                                  |
+| FileSHA256                      | string           | Yes, for valid ZIP entries | The Base64 encoded SHA256 hash of the assembly file                    |
+| EdgeCases                       | flags enum       | Yes, for ValidAssembly     | Edges cases or errors encountered while processing the assembly        |
+| AssemblyName                    | string           | Yes, for ValidAssembly     | The .NET assembly Name                                                 |
+| AssemblyVersion                 | string           | Yes, for ValidAssembly     | The .NET assembly version                                              |
+| Culture                         | string           | No                         | The culture of the .NET assembly                                       |
+| PublicKeyToken                  | string           | No                         | The public key token for .NET assembly strong naming                   |
+| HashAlgorithm                   | enum             | Yes, for ValidAssembly     | The hash algorithm enum for the assembly                               |
+| HasPublicKey                    | bool             | Yes, for ValidAssembly     | Whether or not the .NET assembly has a public key                      |
+| PublicKeyLength                 | int              | No                         | The length in bytes of the public key                                  |
+| PublicKeySHA1                   | string           | No                         | The Base64 encoding SHA1 hash of the public key                        |
+| CustomAttributes                | object           | No                         | Assembly custom attribute names and parameters                         |
+| CustomAttributesFailedDecode    | array of strings | No                         | Custom attribute names that failed to decode                           |
+| CustomAttributesTotalCount      | int              | No                         | Total number of assembly custom attributes                             |
+| CustomAttributesTotalDataLength | int              | No                         | Total size of custom attribute value blobs in bytes                    |
 
 Records are referred to as "ZIP entries" in the table above if it does not have ResultType `NoAssemblies` or `Deleted`.
 
@@ -73,6 +65,23 @@ The ResultType enum indicates the possible variants of records.
 | NoManagedMetadata      | The assembly could not be analyzed due to missing managed metadata  |
 | NotManagedAssembly     | The record is about an unmanaged assembly                           |
 | ValidAssembly          | The record is about a valid .NET assembly                           |
+
+## EdgeCases schema
+
+The EdgeCases column is a enum with one or more of any of the following values It is formatted by separating the values by a comma and a space.
+
+| Enum value                                 | Description                                                                            |
+| ------------------------------------------ | -------------------------------------------------------------------------------------- |
+| CustomAttributes_BrokenPointer             | A reference in the custom attribute metadata is broken                                 |
+| CustomAttributes_DuplicateArgumentName     | Multiple instances of the same argument name exist in a custom attribute               |
+| CustomAttributes_MethodDefinition          | A custom attribute type refers to a method instead of type declaration                 |
+| CustomAttributes_TruncatedAttributes       | CustomAttributes column is truncated since it exceeded a limit                         |
+| CustomAttributes_TruncatedFailedDecode     | CustomAttributesFailedDecode column is truncated since it exceeded a limit             |
+| CustomAttributes_TypeDefinitionConstructor | A custom attribute constructor refers to a type definition instead of type declaration |
+| Name_CultureNotFoundException              | The culture in the .NET assembly is unrecognized                                       |
+| Name_FileLoadException                     | Reading the assembly name failed with a file load exception                            |
+| None                                       | None edge cases were encountered                                                       |
+| PublicKeyToken_Security                    | TODO                                                                                   |
 
 ## HashAlgorithm schema
 
@@ -127,4 +136,4 @@ For example, here is one example CustomAttributes value, with JSON formatting ap
 
 ## CustomAttributesFailedDecode schema
 
-The CustomAttributesFailedDecode column is a array of all attribute names that failed to decode. Similar to the keys in the CustomAttributes column, the names contained in this array are without namespace and with any `Attribute` suffix removed, for brevity.
+The CustomAttributesFailedDecode column is a array of all custom attribute names that failed to decode. Similar to the keys in the CustomAttributes column, the names contained in this array are without namespace and with any `Attribute` suffix removed, for brevity.
