@@ -32,9 +32,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var addedAttributeLength = 0;
             var totalValueLength = 0;
 
-            const int maxAttributeCount = 64;
-            const int maxAttributeNameLength = 128;
-            const int maxAttributeValueLength = 16384;
+            const int maxAttributeCount = 64; // Estimated to cover over 99% of assemblies
+            const int maxAttributeNameLength = 128; // Estimated to cover all or nearly all assemblies
+            const int maxAttributeValueLength = 16384; // Estimated to cover over 99% of assemblies
 
             foreach (var customAttributeHandle in metadata.GetAssemblyDefinition().GetCustomAttributes())
             {
