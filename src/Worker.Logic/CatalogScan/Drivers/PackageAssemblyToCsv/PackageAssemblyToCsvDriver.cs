@@ -178,7 +178,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 catch (InvalidDataException ex)
                 {
                     assembly.ResultType = PackageAssemblyResultType.InvalidZipEntry;
-                    _logger.LogWarning(ex, "Package {Id} {Version} has an invalid ZIP entry: {Path}", assembly.Id, assembly.Version, assembly.Path);
+                    _logger.LogInformation(ex, "Package {Id} {Version} has an invalid ZIP entry: {Path}", assembly.Id, assembly.Version, assembly.Path);
                     return DriverResult.Success();
                 }
 
@@ -226,7 +226,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             catch (BadImageFormatException ex)
             {
                 assembly.ResultType = PackageAssemblyResultType.NotManagedAssembly;
-                _logger.LogWarning(ex, "Package {Id} {Version} has an unmanaged assembly: {Path}", assembly.Id, assembly.Version, assembly.Path);
+                _logger.LogInformation(ex, "Package {Id} {Version} has an unmanaged assembly: {Path}", assembly.Id, assembly.Version, assembly.Path);
                 return DriverResult.Success();
             }
             finally
@@ -245,12 +245,12 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             catch (CultureNotFoundException ex)
             {
                 assembly.EdgeCases |= PackageAssemblyEdgeCases.Name_CultureNotFoundException;
-                _logger.LogWarning(ex, "Package {Id} {Version} has an invalid culture: {Path}", assembly.Id, assembly.Version, assembly.Path);
+                _logger.LogInformation(ex, "Package {Id} {Version} has an invalid culture: {Path}", assembly.Id, assembly.Version, assembly.Path);
             }
             catch (FileLoadException ex)
             {
                 assembly.EdgeCases |= PackageAssemblyEdgeCases.Name_FileLoadException;
-                _logger.LogWarning(ex, "Package {Id} {Version} has an AssemblyName that can't be loaded: {Path}", assembly.Id, assembly.Version, assembly.Path);
+                _logger.LogInformation(ex, "Package {Id} {Version} has an AssemblyName that can't be loaded: {Path}", assembly.Id, assembly.Version, assembly.Path);
             }
 
             return assemblyName;
@@ -282,7 +282,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             catch (SecurityException ex)
             {
                 assembly.EdgeCases |= PackageAssemblyEdgeCases.PublicKeyToken_Security;
-                _logger.LogWarning(ex, "Package {Id} {Version} has an invalid public key. Path: {Path}", assembly.Id, assembly.Version, assembly.Path);
+                _logger.LogInformation(ex, "Package {Id} {Version} has an invalid public key. Path: {Path}", assembly.Id, assembly.Version, assembly.Path);
             }
 
             if (publicKeyTokenBytes != null)

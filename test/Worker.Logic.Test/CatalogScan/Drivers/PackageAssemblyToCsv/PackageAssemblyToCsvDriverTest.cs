@@ -157,7 +157,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             Assert.Equal(20, output.Value.Records.Count);
             var record = output.Value.Records[4];
             Assert.Equal("ref/net452/mscorlib.dll", record.Path);
-            Assert.True(record.EdgeCases.Value.HasFlag(PackageAssemblyEdgeCases.CustomAttributes_BrokenPointer));
+            Assert.True(record.EdgeCases.Value.HasFlag(PackageAssemblyEdgeCases.CustomAttributes_BrokenMethodDefinitionName));
         }
 
         [Fact]

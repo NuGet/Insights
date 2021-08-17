@@ -34,7 +34,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
             const int maxAttributeCount = 64;
             const int maxAttributeNameLength = 128;
-            const int maxAttributeValueLength = 4096;
+            const int maxAttributeValueLength = 16384;
 
             foreach (var customAttributeHandle in metadata.GetAssemblyDefinition().GetCustomAttributes())
             {
@@ -72,7 +72,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                     }
                     catch (BadImageFormatException ex)
                     {
-                        edgeCases |= PackageAssemblyEdgeCases.CustomAttributes_BrokenPointer;
+                        edgeCases |= PackageAssemblyEdgeCases.CustomAttributes_BrokenMethodDefinitionName;
                         logger.LogInformation(
                             ex,
                             "Package {Id} {Version} could not get a method definition for a custom attribute. Path: {Path}",
@@ -120,6 +120,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 }
                 catch (BadImageFormatException ex)
                 {
+                    edgeCases |= PackageAssemblyEdgeCases.CustomAttributes_BrokenValueBlob;
                     RecordFailedDecode();
                     logger.LogInformation(
                         ex,
@@ -136,8 +137,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
                 if (nameToArguments.Count + 1 > maxAttributeCount // Don't record too many attributes
                     || attributeName.Length > maxAttributeNameLength // Don't record an attribute that's name is too long
-                    || addedAttributeLength + attributeValueLength > maxAttributeValueLength // Don't record an attribute if the data exceeds the exceeds to total max
-                    || failedDecode.Contains(attributeName)) // Don't check an attribute if the attribute failed to decode already for this assembly
+                    || addedAttributeLength + attributeValueLength > maxAttributeValueLength) // Don't record an attribute if the data exceeds the exceeds to total max
                 {
                     edgeCases |= PackageAssemblyEdgeCases.CustomAttributes_TruncatedAttributes;
                     continue;
@@ -149,14 +149,27 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 {
                     value = attribute.DecodeValue(decoder);
                 }
-                catch (Exception ex) when (
-                    ex is BadImageFormatException // BadImageFormatException is thrown by the library when the metadata is off
-                    || (ex is OutOfMemoryException && decoder.ArrayCount > 0)) // It's possible a mega array gets allocated, mitigate this, e.g. Kentico.Xperience.AspNet.Mvc5.Libraries 13.0.18
+                catch (BadImageFormatException ex)
                 {
+                    // BadImageFormatException is thrown by the library when the metadata is off
                     RecordFailedDecode();
                     logger.LogInformation(
                         ex,
-                        "Package {Id} {Version} could not decode custom attribute {Name}. Path: {Path}",
+                        "Package {Id} {Version} could not decode custom attribute {Name} due to bad format. Path: {Path}",
+                        assembly.Id,
+                        assembly.Version,
+                        attributeName,
+                        assembly.Path);
+                    continue;
+                }
+                catch (OutOfMemoryException ex) when (decoder.ArrayCount > 0) 
+                {
+                    // It's possible a mega array gets allocated, mitigate this, e.g. Kentico.Xperience.AspNet.Mvc5.Libraries 13.0.18)
+                    edgeCases |= PackageAssemblyEdgeCases.CustomAttributes_ArrayOutOfMemory;
+                    RecordFailedDecode();
+                    logger.LogInformation(
+                        ex,
+                        "Package {Id} {Version} could not decode custom attribute {Name} due to OOM. Path: {Path}",
                         assembly.Id,
                         assembly.Version,
                         attributeName,

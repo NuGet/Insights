@@ -68,20 +68,22 @@ The ResultType enum indicates the possible variants of records.
 
 ## EdgeCases schema
 
-The EdgeCases column is a enum with one or more of any of the following values It is formatted by separating the values by a comma and a space.
+The EdgeCases column is a enum with one or more of any of the following values. It is formatted by separating the values by a comma and a space.
 
-| Enum value                                 | Description                                                                            |
-| ------------------------------------------ | -------------------------------------------------------------------------------------- |
-| CustomAttributes_BrokenPointer             | A reference in the custom attribute metadata is broken                                 |
-| CustomAttributes_DuplicateArgumentName     | Multiple instances of the same argument name exist in a custom attribute               |
-| CustomAttributes_MethodDefinition          | A custom attribute type refers to a method instead of type declaration                 |
-| CustomAttributes_TruncatedAttributes       | CustomAttributes column is truncated since it exceeded a limit                         |
-| CustomAttributes_TruncatedFailedDecode     | CustomAttributesFailedDecode column is truncated since it exceeded a limit             |
-| CustomAttributes_TypeDefinitionConstructor | A custom attribute constructor refers to a type definition instead of type declaration |
-| Name_CultureNotFoundException              | The culture in the .NET assembly is unrecognized                                       |
-| Name_FileLoadException                     | Reading the assembly name failed with a file load exception                            |
-| None                                       | None edge cases were encountered                                                       |
-| PublicKeyToken_Security                    | Reading the public key token threw a security exception                                |
+| Enum value                                  | Description                                                                            |
+| ------------------------------------------- | -------------------------------------------------------------------------------------- |
+| CustomAttributes_ArrayOutOfMemory           | An argument array was too large to be allocated                                        |
+| CustomAttributes_BrokenMethodDefinitionName | A reference to method definition name is broken                                        |
+| CustomAttributes_BrokenValueBlob            | A reference to a custom attribute value blob is broken                                 |
+| CustomAttributes_DuplicateArgumentName      | Multiple instances of the same argument name exist in a custom attribute               |
+| CustomAttributes_MethodDefinition           | A custom attribute type refers to a method instead of type declaration                 |
+| CustomAttributes_TruncatedAttributes        | CustomAttributes column is truncated since it exceeded a limit                         |
+| CustomAttributes_TruncatedFailedDecode      | CustomAttributesFailedDecode column is truncated since it exceeded a limit             |
+| CustomAttributes_TypeDefinitionConstructor  | A custom attribute constructor refers to a type definition instead of type declaration |
+| Name_CultureNotFoundException               | The culture in the .NET assembly is unrecognized                                       |
+| Name_FileLoadException                      | Reading the assembly name failed with a file load exception                            |
+| None                                        | None edge cases were encountered                                                       |
+| PublicKeyToken_Security                     | Reading the public key token threw a security exception                                |
 
 ## HashAlgorithm schema
 
