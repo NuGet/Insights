@@ -81,7 +81,7 @@ The EdgeCases column is a enum with one or more of any of the following values I
 | Name_CultureNotFoundException              | The culture in the .NET assembly is unrecognized                                       |
 | Name_FileLoadException                     | Reading the assembly name failed with a file load exception                            |
 | None                                       | None edge cases were encountered                                                       |
-| PublicKeyToken_Security                    | TODO                                                                                   |
+| PublicKeyToken_Security                    | Reading the public key token threw a security exception                                |
 
 ## HashAlgorithm schema
 
