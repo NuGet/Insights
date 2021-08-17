@@ -33,8 +33,7 @@ namespace NuGet.Insights.Worker
             var buffer = pool.Rent(bufferSize);
             try
             {
-                var content = reader.ReadToEnd();
-                using var csvReader = CsvDataReader.Create(new StringReader(content), new CsvDataReaderOptions
+                using var csvReader = CsvDataReader.Create(reader, new CsvDataReaderOptions
                 {
                     HasHeaders = false,
                     Buffer = buffer,
@@ -42,27 +41,24 @@ namespace NuGet.Insights.Worker
 
                 var factory = Activator.CreateInstance<T>();
 
-                try
+                while (csvReader.Read())
                 {
-                    while (csvReader.Read())
-                    {
-                        var i = 0;
-                        var record = (T)factory.ReadNew(() => csvReader.GetString(i++));
-                        allRecords.Add(record);
-                    }
-                }
-                catch (CsvRecordTooLargeException ex) when (bufferSize < MaxBufferSize)
-                {
-                    _logger.LogInformation(
-                        ex,
-                        "Could not read CSV with buffer size {BufferSize} on row {RowNumBer} and field ordinal {FieldOrdinal}.",
-                        bufferSize,
-                        ex.RowNumber,
-                        ex.FieldOrdinal);
-                    return new CsvReaderResult<T>(CsvReaderResultType.BufferTooSmall, records: null);
+                    var i = 0;
+                    var record = (T)factory.ReadNew(() => csvReader.GetString(i++));
+                    allRecords.Add(record);
                 }
 
                 return new CsvReaderResult<T>(CsvReaderResultType.Success, allRecords);
+            }
+            catch (CsvRecordTooLargeException ex) when (bufferSize < MaxBufferSize)
+            {
+                _logger.LogInformation(
+                    ex,
+                    "Could not read CSV with buffer size {BufferSize} on row {RowNumBer} and field ordinal {FieldOrdinal}.",
+                    bufferSize,
+                    ex.RowNumber,
+                    ex.FieldOrdinal);
+                return new CsvReaderResult<T>(CsvReaderResultType.BufferTooSmall, records: null);
             }
             finally
             {
