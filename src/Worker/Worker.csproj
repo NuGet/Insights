@@ -14,6 +14,8 @@
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="5.0.0-beta.4" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Logging.ApplicationInsights" Version="3.0.27" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.12" />
+    <!-- Specific transitive dependency added for component governance -->
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.1.22" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Worker.Logic\Worker.Logic.csproj" />

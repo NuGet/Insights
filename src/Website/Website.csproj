@@ -11,7 +11,7 @@
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.18.0" />
     <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="1.9.2" />
     <PackageReference Include="Microsoft.Identity.Web.UI" Version="1.9.2" />
-    <!-- Microsoft.AspNetCore.Authentication.JwtBearer dependency was added for component governance compliance -->
+    <!-- Specific transitive dependency added for component governance -->
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.9" />
   </ItemGroup>
   <ItemGroup>
