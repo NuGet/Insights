@@ -60,11 +60,10 @@ namespace NuGet.Insights.Worker
                     }
                     else
                     {
-                        sas = account.GetSharedAccessSignature(new SharedAccessAccountPolicy
+                        // Workaround for https://github.com/Azure/Azurite/issues/959
+                        sas = writeTable.GetSharedAccessSignature(new SharedAccessTablePolicy
                         {
-                            Permissions = SharedAccessAccountPermissions.Read,
-                            ResourceTypes = SharedAccessAccountResourceTypes.Object,
-                            Services = SharedAccessAccountServices.Table,
+                            Permissions = SharedAccessTablePermissions.Query,
                             SharedAccessExpiryTime = DateTimeOffset.UtcNow.AddDays(7),
                         });
                     }
