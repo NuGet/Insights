@@ -53,9 +53,9 @@ if (!$ResourceSettings.WebsiteAadAppClientId) {
 
     # Make the app service support the website for login
     . (Join-Path $PSScriptRoot "Initialize-AadAppForWebsite.ps1") `
-        -ObjectId $aadApp.ObjectId `
+        -ObjectId $aadApp.id `
         -BaseUrl (Get-AppServiceBaseUrl $ResourceSettings.WebsiteName)
 
-    $ResourceSettings.WebsiteAadAppClientId = $aadApp.ApplicationId
-    Write-Host "The AAD app registration client ID is $($aadApp.ApplicationId)."
+    $ResourceSettings.WebsiteAadAppClientId = $aadApp.appId
+    Write-Host "The AAD app registration client ID is $($aadApp.appId)."
 }

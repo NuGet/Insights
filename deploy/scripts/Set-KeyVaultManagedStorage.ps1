@@ -70,7 +70,7 @@ while ($true) {
         break
     }
     catch {
-        if ($attempt -lt $maxRetries -and $_.Exception.Response.StatusCode -eq 403) {
+        if ($attempt -lt $maxRetries -and ($_.Exception.Response.StatusCode -eq 403 -or $_.Exception.InnerException.Response.StatusCode -eq 403)) {
             Write-Warning "Attempt $($attempt) - HTTP 403 Forbidden. Trying again in 10 seconds."
             Start-Sleep 10
             continue
