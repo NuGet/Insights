@@ -14,7 +14,7 @@ namespace NuGet.Insights.Website.Models
         public CursorTableEntity Cursor { get; set; }
         public IReadOnlyList<CatalogIndexScan> LatestScans { get; set; }
 
-        public DateTimeOffset DefaultMax => DateTimeOffset.Parse("2015-02-01T06:22:45.8488496Z");
+        public DateTimeOffset DefaultMax { get; set; }
 
         public bool SupportsReprocess { get; set; }
         public bool? OnlyLatestLeavesSupport { get; set; }

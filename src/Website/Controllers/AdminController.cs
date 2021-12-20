@@ -143,6 +143,7 @@ namespace NuGet.Insights.Website.Controllers
         {
             var cursor = await _catalogScanCursorService.GetCursorAsync(driverType);
             var latestScans = await _catalogScanStorageService.GetLatestIndexScansAsync(cursor.GetName(), maxEntities: 5);
+            var nextCommitTimestamp = await _catalogCommitTimestampProvider.GetNextAsync(cursor.Value);
 
             return new CatalogScanViewModel
             {
@@ -152,6 +153,7 @@ namespace NuGet.Insights.Website.Controllers
                 SupportsReprocess = _catalogScanService.SupportsReprocess(driverType),
                 OnlyLatestLeavesSupport = _catalogScanService.GetOnlyLatestLeavesSupport(driverType),
                 IsEnabled = _catalogScanService.IsEnabled(driverType),
+                DefaultMax = nextCommitTimestamp ?? DateTimeOffset.Parse("2015-02-01T06:22:45.8488496Z"),
             };
         }
 
