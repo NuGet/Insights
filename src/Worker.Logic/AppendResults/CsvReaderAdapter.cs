@@ -33,10 +33,9 @@ namespace NuGet.Insights.Worker
             var buffer = pool.Rent(bufferSize);
             try
             {
-                using var csvReader = CsvDataReader.Create(reader, new CsvDataReaderOptions
+                using var csvReader = CsvDataReader.Create(reader, buffer, new CsvDataReaderOptions
                 {
                     HasHeaders = false,
-                    Buffer = buffer,
                 });
 
                 var factory = Activator.CreateInstance<T>();

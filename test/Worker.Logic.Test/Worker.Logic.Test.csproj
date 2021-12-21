@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <AssemblyName>NuGet.Insights.Worker.Logic.Test</AssemblyName>
     <RootNamespace>NuGet.Insights.Worker</RootNamespace>
@@ -12,10 +12,10 @@
     <Compile Include="..\..\src\Logic\IsExternalInit.cs" Link="IsExternalInit.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Humanizer.Core" Version="2.11.10" />
-    <PackageReference Include="Markdig.Signed" Version="0.25.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.16" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
+    <PackageReference Include="Humanizer.Core" Version="2.13.14" />
+    <PackageReference Include="Markdig.Signed" Version="0.26.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>

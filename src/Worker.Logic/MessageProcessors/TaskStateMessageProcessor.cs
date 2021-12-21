@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
@@ -35,6 +35,7 @@ namespace NuGet.Insights.Worker
                 {
                     _logger.LogWarning(
                         "Attempt {AttemptCount}: no task state for {StorageSuffix}, {PartitionKey}, {RowKey} was found. Trying again.",
+                        message.AttemptCount,
                         message.TaskStateKey.StorageSuffix,
                         message.TaskStateKey.PartitionKey,
                         message.TaskStateKey.RowKey);
