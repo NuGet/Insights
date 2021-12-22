@@ -54,7 +54,7 @@ namespace NuGet.Insights
             Assert.Equal(ownersV2Url, set.Url);
             Assert.Equal("\"1d6ea9f136390d7\"", set.ETag);
             var owners = new List<PackageOwner>();
-            await foreach (var owner in set.Owners)
+            await foreach (var owner in set.Entries)
             {
                 owners.Add(owner);
             }

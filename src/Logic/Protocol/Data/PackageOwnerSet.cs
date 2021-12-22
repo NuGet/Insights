@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,17 +14,17 @@ namespace NuGet.Insights
             AsOfTimestamp = asOfTimestamp;
             Url = url;
             ETag = etag;
-            Owners = owners;
+            Entries = owners;
         }
 
         public DateTimeOffset AsOfTimestamp { get; }
         public string Url { get; }
         public string ETag { get; }
-        public IAsyncEnumerable<PackageOwner> Owners { get; }
+        public IAsyncEnumerable<PackageOwner> Entries { get; }
 
         public ValueTask DisposeAsync()
         {
-            return Owners?.GetAsyncEnumerator().DisposeAsync() ?? default;
+            return Entries?.GetAsyncEnumerator().DisposeAsync() ?? default;
         }
     }
 }
