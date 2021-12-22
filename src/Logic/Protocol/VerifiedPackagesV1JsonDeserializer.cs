@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 
 namespace NuGet.Insights
 {
-    public class VerifiedPackagesJsonDeserializer
+    public class VerifiedPackagesV1JsonDeserializer
     {
         public async IAsyncEnumerable<VerifiedPackage> DeserializeAsync(TextReader reader, Stack<IDisposable> disposables, IThrottle throttle)
         {

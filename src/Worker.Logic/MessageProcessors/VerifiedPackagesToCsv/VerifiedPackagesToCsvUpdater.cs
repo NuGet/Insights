@@ -25,16 +25,16 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
         }
 
         public string OperationName => "VerifiedPackagesToCsv";
-        public string BlobName => "verified-packages";
-        public string ContainerName => _options.Value.PackageOwnerContainerName;
-        public TimeSpan Frequency => _options.Value.OwnersToCsvFrequency;
-        public bool HasRequiredConfiguration => _options.Value.OwnersV2Url != null;
-        public bool AutoStart => _options.Value.AutoStartOwnersToCsv;
+        public string BlobName => "verified_packages";
+        public string ContainerName => _options.Value.VerifiedPackageContainerName;
+        public TimeSpan Frequency => _options.Value.VerifiedPackagesToCsvFrequency;
+        public bool HasRequiredConfiguration => _options.Value.VerifiedPackagesV1Url != null;
+        public bool AutoStart => _options.Value.AutoStartVerifiedPackagesToCsv;
         public Type RecordType => typeof(VerifiedPackageRecord);
 
         public async Task<AsOfData<VerifiedPackage>> GetDataAsync()
         {
-            return await _client.GetVerifiedPackageSetAsync();
+            return await _client.GetAsync();
         }
 
         public async Task WriteAsync(IVersionSet versionSet, AsOfData<VerifiedPackage> data, StreamWriter writer)

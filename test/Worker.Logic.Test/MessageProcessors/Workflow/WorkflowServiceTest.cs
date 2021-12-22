@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -62,7 +62,7 @@ namespace NuGet.Insights.Worker.Workflow
         public async Task DoesNotStartWhenOwnersToCsvIsRunning()
         {
             await WorkflowService.InitializeAsync();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageOwnerSet>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageOwner>>>();
             await service.InitializeAsync();
             await service.StartAsync();
 
@@ -76,7 +76,7 @@ namespace NuGet.Insights.Worker.Workflow
         public async Task DoesNotStartWhenDownloadsToCsvIsRunning()
         {
             await WorkflowService.InitializeAsync();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageDownloadSet>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
             await service.InitializeAsync();
             await service.StartAsync();
 

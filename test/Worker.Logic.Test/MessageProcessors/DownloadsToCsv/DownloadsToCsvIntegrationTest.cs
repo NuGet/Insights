@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -45,7 +45,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                 // Arrange
                 ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
                 ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageDownloadSet>>();
+                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
                 await service.InitializeAsync();
                 await service.StartAsync();
 
@@ -82,7 +82,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             {
                 // Arrange
                 ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageDownloadSet>>();
+                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
                 await service.InitializeAsync();
                 await service.StartAsync();
 
@@ -120,7 +120,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             {
                 // Arrange
                 ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageDownloadSet>>();
+                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
                 await service.InitializeAsync();
                 await service.StartAsync();
 
@@ -160,7 +160,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                 // Arrange
                 ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
                 ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageDownloadSet>>();
+                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
                 await service.InitializeAsync();
                 await service.StartAsync();
                 MockVersionSet.Setup(x => x.DidVersionEverExist("Knapcode.TorSharp", "2.0.7")).Returns(false);
@@ -201,7 +201,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                 // Arrange
                 ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
                 ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageDownloadSet>>();
+                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
                 await service.InitializeAsync();
                 await service.StartAsync();
                 MockVersionSet.Setup(x => x.DidVersionEverExist("Knapcode.TorSharp", "2.0.7")).Returns(false);
@@ -230,7 +230,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             {
                 // Arrange
                 ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageDownloadSet>>();
+                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
                 await service.InitializeAsync();
                 await service.StartAsync();
 
@@ -253,7 +253,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             }
         }
 
-        private async Task ProcessQueueAsync(IAuxiliaryFileUpdaterService<PackageDownloadSet> service)
+        private async Task ProcessQueueAsync(IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>> service)
         {
             await ProcessQueueAsync(() => { }, async () => !await service.IsRunningAsync());
         }

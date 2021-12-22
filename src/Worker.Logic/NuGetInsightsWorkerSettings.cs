@@ -25,9 +25,11 @@ namespace NuGet.Insights.Worker
             AutoStartCatalogScanUpdate = false;
             AutoStartDownloadToCsv = false;
             AutoStartOwnersToCsv = false;
+            AutoStartVerifiedPackagesToCsv = false;
             CatalogScanUpdateFrequency = TimeSpan.FromHours(6);
             DownloadToCsvFrequency = TimeSpan.FromHours(3);
             OwnersToCsvFrequency = TimeSpan.FromHours(3);
+            VerifiedPackagesToCsvFrequency = TimeSpan.FromHours(3);
 
             WorkQueueName = "work";
             ExpandQueueName = "expand";
@@ -50,6 +52,7 @@ namespace NuGet.Insights.Worker
             CatalogLeafItemContainerName = "catalogleafitems";
             PackageDownloadContainerName = "packagedownloads";
             PackageOwnerContainerName = "packageowners";
+            VerifiedPackageContainerName = "verifiedpackages";
             PackageArchiveContainerName = "packagearchives";
             PackageArchiveEntryContainerName = "packagearchiveentries";
             PackageVersionTableName = "packageversions";
@@ -84,9 +87,11 @@ namespace NuGet.Insights.Worker
         public bool AutoStartCatalogScanUpdate { get; set; }
         public bool AutoStartDownloadToCsv { get; set; }
         public bool AutoStartOwnersToCsv { get; set; }
+        public bool AutoStartVerifiedPackagesToCsv { get; set; }
         public TimeSpan CatalogScanUpdateFrequency { get; set; }
         public TimeSpan DownloadToCsvFrequency { get; set; }
         public TimeSpan OwnersToCsvFrequency { get; set; }
+        public TimeSpan VerifiedPackagesToCsvFrequency { get; set; }
 
         public string WorkQueueName { get; set; }
         public string ExpandQueueName { get; set; }
@@ -109,6 +114,7 @@ namespace NuGet.Insights.Worker
         public string CatalogLeafItemContainerName { get; set; }
         public string PackageDownloadContainerName { get; set; }
         public string PackageOwnerContainerName { get; set; }
+        public string VerifiedPackageContainerName { get; set; }
         public string PackageArchiveContainerName { get; set; }
         public string PackageArchiveEntryContainerName { get; set; }
         public string PackageVersionTableName { get; set; }

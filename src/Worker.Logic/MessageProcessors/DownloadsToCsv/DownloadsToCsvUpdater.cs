@@ -13,7 +13,7 @@ using NuGet.Versioning;
 
 namespace NuGet.Insights.Worker.DownloadsToCsv
 {
-    public class DownloadsToCsvUpdater : IAuxiliaryFileUpdater<PackageDownloadSet>
+    public class DownloadsToCsvUpdater : IAuxiliaryFileUpdater<AsOfData<PackageDownloads>>
     {
         private readonly PackageDownloadsClient _packageDownloadsClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
@@ -34,12 +34,12 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
         public bool AutoStart => _options.Value.AutoStartDownloadToCsv;
         public Type RecordType => typeof(PackageDownloadRecord);
 
-        public async Task<PackageDownloadSet> GetDataAsync()
+        public async Task<AsOfData<PackageDownloads>> GetDataAsync()
         {
-            return await _packageDownloadsClient.GetPackageDownloadSetAsync();
+            return await _packageDownloadsClient.GetAsync();
         }
 
-        public async Task WriteAsync(IVersionSet versionSet, PackageDownloadSet data, StreamWriter writer)
+        public async Task WriteAsync(IVersionSet versionSet, AsOfData<PackageDownloads> data, StreamWriter writer)
         {
             var record = new PackageDownloadRecord { AsOfTimestamp = data.AsOfTimestamp };
             record.WriteHeader(writer);

@@ -71,8 +71,9 @@ namespace NuGet.Insights.Worker
 
             new SchemaV1<TableRowCopyMessage<LatestPackageLeaf>>("trc.lpf"),
 
-            new SchemaV1<AuxiliaryFileUpdaterMessage<PackageDownloadSet>>("d2c"),
-            new SchemaV1<AuxiliaryFileUpdaterMessage<PackageOwnerSet>>("o2c"),
+            new SchemaV1<AuxiliaryFileUpdaterMessage<AsOfData<PackageDownloads>>>("d2c"),
+            new SchemaV1<AuxiliaryFileUpdaterMessage<AsOfData<PackageOwner>>>("o2c"),
+            new SchemaV1<AuxiliaryFileUpdaterMessage<AsOfData<VerifiedPackage>>>("vp2c"),
         };
 
         public static IReadOnlyList<ISchemaDeserializer> ParameterSchemas = new ISchemaDeserializer[]

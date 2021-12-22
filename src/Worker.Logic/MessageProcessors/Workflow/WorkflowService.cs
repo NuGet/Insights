@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
@@ -14,8 +15,7 @@ namespace NuGet.Insights.Worker.Workflow
         private readonly WorkflowStorageService _workflowStorageService;
         private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly CatalogScanStorageService _catalogScanStorageService;
-        private readonly IAuxiliaryFileUpdaterService<PackageOwnerSet> _ownersService;
-        private readonly IAuxiliaryFileUpdaterService<PackageDownloadSet> _downloadsService;
+        private readonly IReadOnlyList<IAuxiliaryFileUpdaterService> _auxiliaryFileUpdaterServices;
         private readonly KustoIngestionService _kustoIngestionService;
         private readonly KustoIngestionStorageService _kustoIngestionStorageService;
         private readonly IMessageEnqueuer _messageEnqueuer;
@@ -24,8 +24,7 @@ namespace NuGet.Insights.Worker.Workflow
             WorkflowStorageService workflowStorageService,
             AutoRenewingStorageLeaseService leaseService,
             CatalogScanStorageService catalogScanStorageService,
-            IAuxiliaryFileUpdaterService<PackageOwnerSet> ownersService,
-            IAuxiliaryFileUpdaterService<PackageDownloadSet> downloadsService,
+            IEnumerable<IAuxiliaryFileUpdaterService> auxiliaryFileUpdaterServices,
             KustoIngestionService kustoIngestionService,
             KustoIngestionStorageService kustoIngestionStorageService,
             IMessageEnqueuer messageEnqueuer)
@@ -33,8 +32,7 @@ namespace NuGet.Insights.Worker.Workflow
             _workflowStorageService = workflowStorageService;
             _leaseService = leaseService;
             _catalogScanStorageService = catalogScanStorageService;
-            _ownersService = ownersService;
-            _downloadsService = downloadsService;
+            _auxiliaryFileUpdaterServices = auxiliaryFileUpdaterServices.ToList();
             _kustoIngestionService = kustoIngestionService;
             _kustoIngestionStorageService = kustoIngestionStorageService;
             _messageEnqueuer = messageEnqueuer;
@@ -45,14 +43,15 @@ namespace NuGet.Insights.Worker.Workflow
             await _workflowStorageService.InitializeAsync();
             await _leaseService.InitializeAsync();
             await _catalogScanStorageService.InitializeAsync();
-            await _ownersService.InitializeAsync();
-            await _downloadsService.InitializeAsync();
+            foreach (var service in _auxiliaryFileUpdaterServices)
+            {
+                await service.InitializeAsync();
+            }
             await _kustoIngestionService.InitializeAsync();
             await _messageEnqueuer.InitializeAsync();
         }
 
-        public bool HasRequiredConfiguration => _ownersService.HasRequiredConfiguration
-            && _downloadsService.HasRequiredConfiguration
+        public bool HasRequiredConfiguration => _auxiliaryFileUpdaterServices.All(x => x.HasRequiredConfiguration)
             && _kustoIngestionService.HasRequiredConfiguration;
 
         public async Task<WorkflowRun> StartAsync(DateTimeOffset? maxCommitTimestamp)
@@ -100,8 +99,10 @@ namespace NuGet.Insights.Worker.Workflow
 
         internal async Task StartAuxiliaryFilesAsync()
         {
-            await _ownersService.StartAsync();
-            await _downloadsService.StartAsync();
+            foreach (var service in _auxiliaryFileUpdaterServices)
+            {
+                await service.StartAsync();
+            }
         }
 
         internal async Task<bool> AreCatalogScansRunningAsync()
@@ -112,8 +113,15 @@ namespace NuGet.Insights.Worker.Workflow
 
         internal async Task<bool> AreAuxiliaryFilesRunningAsync()
         {
-            return await _ownersService.IsRunningAsync()
-                || await _downloadsService.IsRunningAsync();
+            foreach (var service in _auxiliaryFileUpdaterServices)
+            {
+                if (await service.IsRunningAsync())
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         internal async Task<bool> IsKustoIngestionRunningAsync()

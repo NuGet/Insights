@@ -10,5 +10,9 @@
   "Knapcode.KitchenSink": [
     "joelverhagen",
     "nuget"
+  ],
+  "Newtonsoft.Json": [
+    "newtonsoft",
+    "jamesnk"
   ]
 }

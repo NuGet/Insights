@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -30,7 +30,7 @@ namespace NuGet.Insights
             _options = options;
         }
 
-        public async Task<PackageOwnerSet> GetPackageOwnerSetAsync()
+        public async Task<AsOfData<PackageOwner>> GetAsync()
         {
             if (_options.Value.OwnersV2Url == null)
             {
@@ -60,7 +60,7 @@ namespace NuGet.Insights
                 var textReader = new StreamReader(stream);
                 disposables.Push(textReader);
 
-                return new PackageOwnerSet(
+                return new AsOfData<PackageOwner>(
                     asOfTimestamp,
                     _options.Value.OwnersV2Url,
                     etag,

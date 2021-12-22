@@ -30,7 +30,7 @@ namespace NuGet.Insights
             _options = options;
         }
 
-        public async Task<PackageDownloadSet> GetPackageDownloadSetAsync()
+        public async Task<AsOfData<PackageDownloads>> GetAsync()
         {
             if (_options.Value.DownloadsV1Url == null)
             {
@@ -61,7 +61,7 @@ namespace NuGet.Insights
                 var textReader = new StreamReader(stream);
                 disposables.Push(textReader);
 
-                return new PackageDownloadSet(
+                return new AsOfData<PackageDownloads>(
                     asOfTimestamp,
                     _options.Value.DownloadsV1Url,
                     etag,

@@ -1,0 +1,5 @@
+AsOfTimestamp,LowerId,Id,IsVerified
+2021-01-14T18:00:00Z,microsoft.extensions.logging,Microsoft.Extensions.Logging,true
+2021-01-14T18:00:00Z,knapcode.torsharp,Knapcode.TorSharp,true
+2021-01-14T18:00:00Z,castle.core,Castle.Core,true
+2021-01-14T18:00:00Z,newtonsoft.json,Newtonsoft.Json,true
