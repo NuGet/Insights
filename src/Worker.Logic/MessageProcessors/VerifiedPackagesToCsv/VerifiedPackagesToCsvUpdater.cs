@@ -11,7 +11,7 @@ using NuGet.Insights.Worker.BuildVersionSet;
 
 namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
 {
-    public class VerifiedPackagesToCsvUpdater : IAuxiliaryFileUpdater<AsOfData<string>>
+    public class VerifiedPackagesToCsvUpdater : IAuxiliaryFileUpdater<AsOfData<VerifiedPackage>>
     {
         private readonly VerifiedPackagesClient _client;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
@@ -32,25 +32,25 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
         public bool AutoStart => _options.Value.AutoStartOwnersToCsv;
         public Type RecordType => typeof(VerifiedPackageRecord);
 
-        public async Task<AsOfData<string>> GetDataAsync()
+        public async Task<AsOfData<VerifiedPackage>> GetDataAsync()
         {
             return await _client.GetVerifiedPackageSetAsync();
         }
 
-        public async Task WriteAsync(IVersionSet versionSet, AsOfData<string> data, StreamWriter writer)
+        public async Task WriteAsync(IVersionSet versionSet, AsOfData<VerifiedPackage> data, StreamWriter writer)
         {
             var record = new VerifiedPackageRecord { AsOfTimestamp = data.AsOfTimestamp };
             record.WriteHeader(writer);
 
             var verifiedPackageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            await foreach (var packageId in data.Entries)
+            await foreach (var entry in data.Entries)
             {
-                if (!versionSet.DidIdEverExist(packageId))
+                if (!versionSet.DidIdEverExist(entry.Id))
                 {
                     continue;
                 }
 
-                verifiedPackageIds.Add(packageId);
+                verifiedPackageIds.Add(entry.Id);
             }
 
             foreach (var packageId in verifiedPackageIds)

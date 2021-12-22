@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,7 +11,7 @@ namespace NuGet.Insights
 {
     public class VerifiedPackagesJsonDeserializer
     {
-        public async IAsyncEnumerable<string> DeserializeAsync(TextReader reader, Stack<IDisposable> disposables, IThrottle throttle)
+        public async IAsyncEnumerable<VerifiedPackage> DeserializeAsync(TextReader reader, Stack<IDisposable> disposables, IThrottle throttle)
         {
             try
             {
@@ -27,7 +27,8 @@ namespace NuGet.Insights
                     switch (jsonReader.TokenType)
                     {
                         case JsonToken.String:
-                            yield return (string)jsonReader.Value;
+                            var id = (string)jsonReader.Value;
+                            yield return new VerifiedPackage(id);
                             break;
                     }
                 }
