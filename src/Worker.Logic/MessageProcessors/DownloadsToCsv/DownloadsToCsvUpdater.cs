@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,11 +15,11 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
 {
     public class DownloadsToCsvUpdater : IAuxiliaryFileUpdater<PackageDownloadSet>
     {
-        private readonly IPackageDownloadsClient _packageDownloadsClient;
+        private readonly PackageDownloadsClient _packageDownloadsClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
 
         public DownloadsToCsvUpdater(
-            IPackageDownloadsClient packageDownloadsClient,
+            PackageDownloadsClient packageDownloadsClient,
             IOptions<NuGetInsightsWorkerSettings> options)
         {
             _packageDownloadsClient = packageDownloadsClient;
@@ -36,7 +36,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
 
         public async Task<PackageDownloadSet> GetDataAsync()
         {
-            return await _packageDownloadsClient.GetPackageDownloadSetAsync(etag: null);
+            return await _packageDownloadsClient.GetPackageDownloadSetAsync();
         }
 
         public async Task WriteAsync(IVersionSet versionSet, PackageDownloadSet data, StreamWriter writer)

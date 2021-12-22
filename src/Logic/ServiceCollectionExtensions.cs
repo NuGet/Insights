@@ -147,7 +147,7 @@ namespace NuGet.Insights
             serviceCollection.AddTransient<FlatContainerClient>();
             serviceCollection.AddTransient<RegistrationClient>();
             serviceCollection.AddTransient<SearchClient>();
-            serviceCollection.AddTransient<IPackageDownloadsClient, PackageDownloadsClient>();
+            serviceCollection.AddTransient<PackageDownloadsClient>();
             serviceCollection.AddTransient<DownloadsV1JsonDeserializer>();
             serviceCollection.AddTransient<PackageOwnersClient>();
             serviceCollection.AddTransient<OwnersV2JsonDeserializer>();
