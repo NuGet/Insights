@@ -16,7 +16,7 @@ namespace NuGet.Insights
 
         public override bool Equals(object obj)
         {
-            return Equals(obj as PackageOwner);
+            return Equals(obj as VerifiedPackage);
         }
 
         public bool Equals(VerifiedPackage other)
