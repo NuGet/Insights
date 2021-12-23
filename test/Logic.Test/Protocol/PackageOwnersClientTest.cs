@@ -23,14 +23,14 @@ namespace NuGet.Insights
         public async Task ExecuteAsync()
         {
             // Arrange
-            var ownersV2Url = $"http://localhost/{TestData}/{OwnersToCsvDir}/{Step1}/owners.v2.json";
-            ConfigureSettings = x => x.OwnersV2Url = ownersV2Url;
+            var url = $"http://localhost/{TestData}/{OwnersToCsvDir}/{Step1}/owners.v2.json";
+            ConfigureSettings = x => x.OwnersV2Url = url;
             HttpMessageHandlerFactory.OnSendAsync = async req =>
             {
                 if (req.RequestUri.AbsolutePath.EndsWith("/owners.v2.json"))
                 {
                     var newReq = Clone(req);
-                    newReq.RequestUri = new Uri(ownersV2Url);
+                    newReq.RequestUri = new Uri(url);
                     return await TestDataHttpClient.SendAsync(newReq);
                 }
 
@@ -47,14 +47,14 @@ namespace NuGet.Insights
             var client = Host.Services.GetRequiredService<PackageOwnersClient>();
 
             // Act
-            await using var set = await client.GetPackageOwnerSetAsync();
+            await using var set = await client.GetAsync();
 
             // Assert
             Assert.Equal(asOfTimestamp, set.AsOfTimestamp);
-            Assert.Equal(ownersV2Url, set.Url);
-            Assert.Equal("\"1d6ea9f136390d7\"", set.ETag);
+            Assert.Equal(url, set.Url);
+            Assert.Equal("\"1d6ea9f13639114\"", set.ETag);
             var owners = new List<PackageOwner>();
-            await foreach (var owner in set.Owners)
+            await foreach (var owner in set.Entries)
             {
                 owners.Add(owner);
             }
@@ -67,6 +67,8 @@ namespace NuGet.Insights
                     new PackageOwner("Microsoft.Extensions.Logging", "dotnetframework"),
                     new PackageOwner("Knapcode.TorSharp", "joelverhagen"),
                     new PackageOwner("Castle.Core", "castleproject"),
+                    new PackageOwner("Newtonsoft.Json", "newtonsoft"),
+                    new PackageOwner("Newtonsoft.Json", "jamesnk"),
                 },
                 owners.ToArray());
         }

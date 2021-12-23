@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,7 +13,7 @@ using NuGet.Insights.Worker.BuildVersionSet;
 
 namespace NuGet.Insights.Worker.OwnersToCsv
 {
-    public class OwnersToCsvUpdater : IAuxiliaryFileUpdater<PackageOwnerSet>
+    public class OwnersToCsvUpdater : IAuxiliaryFileUpdater<AsOfData<PackageOwner>>
     {
         private readonly PackageOwnersClient _packageOwnersClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
@@ -34,18 +34,18 @@ namespace NuGet.Insights.Worker.OwnersToCsv
         public bool AutoStart => _options.Value.AutoStartOwnersToCsv;
         public Type RecordType => typeof(PackageOwnerRecord);
 
-        public async Task<PackageOwnerSet> GetDataAsync()
+        public async Task<AsOfData<PackageOwner>> GetDataAsync()
         {
-            return await _packageOwnersClient.GetPackageOwnerSetAsync();
+            return await _packageOwnersClient.GetAsync();
         }
 
-        public async Task WriteAsync(IVersionSet versionSet, PackageOwnerSet data, StreamWriter writer)
+        public async Task WriteAsync(IVersionSet versionSet, AsOfData<PackageOwner> data, StreamWriter writer)
         {
             var record = new PackageOwnerRecord { AsOfTimestamp = data.AsOfTimestamp };
             record.WriteHeader(writer);
 
             var idToOwners = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-            await foreach (var entry in data.Owners)
+            await foreach (var entry in data.Entries)
             {
                 if (!versionSet.DidIdEverExist(entry.Id))
                 {

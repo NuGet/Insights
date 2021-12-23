@@ -45,6 +45,7 @@ namespace NuGet.Insights
         public string FlatContainerBaseUrlOverride { get; set; }
         public string DownloadsV1Url { get; set; }
         public string OwnersV2Url { get; set; }
+        public string VerifiedPackagesV1Url { get; set; }
 
         public string StorageAccountName { get; set; }
         public string StorageBlobReadSharedAccessSignature { get; set; }

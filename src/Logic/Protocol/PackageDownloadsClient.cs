@@ -1,18 +1,17 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 
 namespace NuGet.Insights
 {
-    public class PackageDownloadsClient : IPackageDownloadsClient
+    public class PackageDownloadsClient
     {
         private readonly HttpClient _httpClient;
         private readonly IThrottle _throttle;
@@ -31,7 +30,7 @@ namespace NuGet.Insights
             _options = options;
         }
 
-        public async Task<PackageDownloadSet> GetPackageDownloadSetAsync(string etag)
+        public async Task<AsOfData<PackageDownloads>> GetAsync()
         {
             if (_options.Value.DownloadsV1Url == null)
             {
@@ -47,46 +46,25 @@ namespace NuGet.Insights
                 // Prior to this version, Azure Blob Storage did not put quotes around etag headers...
                 request.Headers.TryAddWithoutValidation("x-ms-version", "2017-04-17");
 
-                if (etag != null)
-                {
-                    request.Headers.TryAddWithoutValidation("If-None-Match", etag);
-                }
-
                 await _throttle.WaitAsync();
                 var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
                 disposables.Push(response);
 
-                string newEtag;
-                TextReader textReader;
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    newEtag = response.Headers.ETag.ToString();
-
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    disposables.Push(stream);
-
-                    textReader = new StreamReader(stream);
-                    disposables.Push(textReader);
-                }
-                else if (etag != null && response.StatusCode == HttpStatusCode.NotModified)
-                {
-                    newEtag = etag;
-
-                    textReader = new StringReader("[]");
-                    disposables.Push(textReader);
-                }
-                else
-                {
-                    response.Dispose();
-                    throw new HttpRequestException($"Response status code is not 200 OK: {((int)response.StatusCode)} ({response.ReasonPhrase})");
-                }
+                response.EnsureSuccessStatusCode();
 
                 var asOfTimestamp = response.Content.Headers.LastModified.Value.ToUniversalTime();
+                var etag = response.Headers.ETag.ToString();
 
-                return new PackageDownloadSet(
+                var stream = await response.Content.ReadAsStreamAsync();
+                disposables.Push(stream);
+
+                var textReader = new StreamReader(stream);
+                disposables.Push(textReader);
+
+                return new AsOfData<PackageDownloads>(
                     asOfTimestamp,
                     _options.Value.DownloadsV1Url,
-                    newEtag,
+                    etag,
                     _deserializer.DeserializeAsync(textReader, disposables, _throttle));
             }
             catch

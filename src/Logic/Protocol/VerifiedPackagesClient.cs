@@ -11,17 +11,17 @@ using Microsoft.Extensions.Options;
 
 namespace NuGet.Insights
 {
-    public class PackageOwnersClient
+    public class VerifiedPackagesClient
     {
         private readonly HttpClient _httpClient;
         private readonly IThrottle _throttle;
-        private readonly OwnersV2JsonDeserializer _deserializer;
+        private readonly VerifiedPackagesV1JsonDeserializer _deserializer;
         private readonly IOptions<NuGetInsightsSettings> _options;
 
-        public PackageOwnersClient(
+        public VerifiedPackagesClient(
             HttpClient httpClient,
             IThrottle throttle,
-            OwnersV2JsonDeserializer deserializer,
+            VerifiedPackagesV1JsonDeserializer deserializer,
             IOptions<NuGetInsightsSettings> options)
         {
             _httpClient = httpClient;
@@ -30,17 +30,17 @@ namespace NuGet.Insights
             _options = options;
         }
 
-        public async Task<AsOfData<PackageOwner>> GetAsync()
+        public async Task<AsOfData<VerifiedPackage>> GetAsync()
         {
-            if (_options.Value.OwnersV2Url == null)
+            if (_options.Value.VerifiedPackagesV1Url == null)
             {
-                throw new InvalidOperationException("The owners.v2.json URL is required.");
+                throw new InvalidOperationException("The verifiedPackages.json URL is required.");
             }
 
             var disposables = new Stack<IDisposable>();
             try
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, _options.Value.OwnersV2Url);
+                var request = new HttpRequestMessage(HttpMethod.Get, _options.Value.VerifiedPackagesV1Url);
                 disposables.Push(request);
 
                 request.Headers.TryAddWithoutValidation("x-ms-version", "2017-04-17");
@@ -60,9 +60,9 @@ namespace NuGet.Insights
                 var textReader = new StreamReader(stream);
                 disposables.Push(textReader);
 
-                return new AsOfData<PackageOwner>(
+                return new AsOfData<VerifiedPackage>(
                     asOfTimestamp,
-                    _options.Value.OwnersV2Url,
+                    _options.Value.VerifiedPackagesV1Url,
                     etag,
                     _deserializer.DeserializeAsync(textReader, disposables, _throttle));
             }

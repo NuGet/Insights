@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,24 +7,24 @@ using System.Threading.Tasks;
 
 namespace NuGet.Insights
 {
-    public class PackageOwnerSet : IAsyncDisposable, IAsOfData
+    public class AsOfData<T> : IAsyncDisposable, IAsOfData
     {
-        public PackageOwnerSet(DateTimeOffset asOfTimestamp, string url, string etag, IAsyncEnumerable<PackageOwner> owners)
+        public AsOfData(DateTimeOffset asOfTimestamp, string url, string etag, IAsyncEnumerable<T> data)
         {
             AsOfTimestamp = asOfTimestamp;
             Url = url;
             ETag = etag;
-            Owners = owners;
+            Entries = data;
         }
 
         public DateTimeOffset AsOfTimestamp { get; }
         public string Url { get; }
         public string ETag { get; }
-        public IAsyncEnumerable<PackageOwner> Owners { get; }
+        public IAsyncEnumerable<T> Entries { get; }
 
         public ValueTask DisposeAsync()
         {
-            return Owners?.GetAsyncEnumerator().DisposeAsync() ?? default;
+            return Entries?.GetAsyncEnumerator().DisposeAsync() ?? default;
         }
     }
 }

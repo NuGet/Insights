@@ -2,3 +2,4 @@ AsOfTimestamp,LowerId,Id,Owners
 2021-01-14T18:00:00Z,microsoft.extensions.logging,Microsoft.Extensions.Logging,"[""aspnet"",""dotnetframework"",""Microsoft""]"
 2021-01-14T18:00:00Z,knapcode.torsharp,Knapcode.TorSharp,"[""joelverhagen""]"
 2021-01-14T18:00:00Z,castle.core,Castle.Core,"[""castleproject""]"
+2021-01-14T18:00:00Z,newtonsoft.json,Newtonsoft.Json,"[""jamesnk"",""newtonsoft""]"

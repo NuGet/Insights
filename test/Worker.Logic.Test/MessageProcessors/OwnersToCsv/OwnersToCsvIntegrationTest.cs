@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,8 +15,8 @@ namespace NuGet.Insights.Worker.OwnersToCsv
     public class OwnersToCsvIntegrationTest : BaseWorkerLogicIntegrationTest
     {
         public const string OwnersToCsvDir = nameof(OwnersToCsv);
-        private const string OwnersToCsvDir_NonExistentIdDir = nameof(OwnersToCsvDir_NonExistentId);
-        private const string OwnersToCsvDir_UncheckedIdAndVersionDir = nameof(OwnersToCsvDir_UncheckedIdAndVersion);
+        private const string OwnersToCsv_NonExistentIdDir = nameof(OwnersToCsvDir_NonExistentId);
+        private const string OwnersToCsv_UncheckedIdDir = nameof(OwnersToCsvDir_UncheckedId);
 
         public OwnersToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
@@ -45,7 +45,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
                 // Arrange
                 ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
                 ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageOwnerSet>>();
+                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageOwner>>>();
                 await service.InitializeAsync();
                 await service.StartAsync();
 
@@ -82,7 +82,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             {
                 // Arrange
                 ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageOwnerSet>>();
+                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageOwner>>>();
                 await service.InitializeAsync();
                 await service.StartAsync();
 
@@ -120,7 +120,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             {
                 // Arrange
                 ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageOwnerSet>>();
+                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageOwner>>>();
                 await service.InitializeAsync();
                 await service.StartAsync();
 
@@ -160,7 +160,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
                 // Arrange
                 ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
                 ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageOwnerSet>>();
+                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageOwner>>>();
                 await service.InitializeAsync();
                 await service.StartAsync();
                 MockVersionSet.Setup(x => x.DidIdEverExist("Knapcode.TorSharp")).Returns(false);
@@ -170,8 +170,8 @@ namespace NuGet.Insights.Worker.OwnersToCsv
                 await ProcessQueueAsync(service);
 
                 // Assert
-                await AssertCsvBlobAsync(OwnersToCsvDir_NonExistentIdDir, Step1, "owners_08585909596854775807.csv.gz");
-                await AssertCsvBlobAsync(OwnersToCsvDir_NonExistentIdDir, Step1, "latest_owners.csv.gz");
+                await AssertCsvBlobAsync(OwnersToCsv_NonExistentIdDir, Step1, "owners_08585909596854775807.csv.gz");
+                await AssertCsvBlobAsync(OwnersToCsv_NonExistentIdDir, Step1, "latest_owners.csv.gz");
 
                 // Arrange
                 SetData(Step2);
@@ -183,15 +183,15 @@ namespace NuGet.Insights.Worker.OwnersToCsv
 
                 // Assert
                 await AssertBlobCountAsync(Options.Value.PackageOwnerContainerName, 3);
-                await AssertCsvBlobAsync(OwnersToCsvDir_NonExistentIdDir, Step1, "owners_08585909596854775807.csv.gz");
-                await AssertCsvBlobAsync(OwnersToCsvDir_NonExistentIdDir, Step2, "owners_08585908696854775807.csv.gz");
-                await AssertCsvBlobAsync(OwnersToCsvDir_NonExistentIdDir, Step2, "latest_owners.csv.gz");
+                await AssertCsvBlobAsync(OwnersToCsv_NonExistentIdDir, Step1, "owners_08585909596854775807.csv.gz");
+                await AssertCsvBlobAsync(OwnersToCsv_NonExistentIdDir, Step2, "owners_08585908696854775807.csv.gz");
+                await AssertCsvBlobAsync(OwnersToCsv_NonExistentIdDir, Step2, "latest_owners.csv.gz");
             }
         }
 
-        public class OwnersToCsvDir_UncheckedIdAndVersion : OwnersToCsvIntegrationTest
+        public class OwnersToCsvDir_UncheckedId : OwnersToCsvIntegrationTest
         {
-            public OwnersToCsvDir_UncheckedIdAndVersion(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            public OwnersToCsvDir_UncheckedId(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
             {
             }
 
@@ -201,7 +201,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
                 // Arrange
                 ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
                 ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageOwnerSet>>();
+                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageOwner>>>();
                 await service.InitializeAsync();
                 await service.StartAsync();
                 MockVersionSet.Setup(x => x.GetUncheckedIds()).Returns(new[] { "UncheckedB", "UncheckedA" });
@@ -210,8 +210,8 @@ namespace NuGet.Insights.Worker.OwnersToCsv
                 await ProcessQueueAsync(service);
 
                 // Assert
-                await AssertCsvBlobAsync(OwnersToCsvDir_UncheckedIdAndVersionDir, Step1, "owners_08585909596854775807.csv.gz");
-                await AssertCsvBlobAsync(OwnersToCsvDir_UncheckedIdAndVersionDir, Step1, "latest_owners.csv.gz");
+                await AssertCsvBlobAsync(OwnersToCsv_UncheckedIdDir, Step1, "owners_08585909596854775807.csv.gz");
+                await AssertCsvBlobAsync(OwnersToCsv_UncheckedIdDir, Step1, "latest_owners.csv.gz");
             }
         }
 
@@ -226,7 +226,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             {
                 // Arrange
                 ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageOwnerSet>>();
+                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageOwner>>>();
                 await service.InitializeAsync();
                 await service.StartAsync();
 
@@ -249,7 +249,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             }
         }
 
-        private async Task ProcessQueueAsync(IAuxiliaryFileUpdaterService<PackageOwnerSet> service)
+        private async Task ProcessQueueAsync(IAuxiliaryFileUpdaterService<AsOfData<PackageOwner>> service)
         {
             await ProcessQueueAsync(() => { }, async () => !await service.IsRunningAsync());
         }

@@ -14,6 +14,7 @@ using NuGet.Insights.Worker.AuxiliaryFileUpdater;
 using NuGet.Insights.Worker.DownloadsToCsv;
 using NuGet.Insights.Worker.KustoIngestion;
 using NuGet.Insights.Worker.OwnersToCsv;
+using NuGet.Insights.Worker.VerifiedPackagesToCsv;
 using NuGet.Insights.Worker.Workflow;
 using Xunit;
 using Xunit.Abstractions;
@@ -78,8 +79,9 @@ namespace NuGet.Insights.Worker
                     },
                     new List<Type>
                     {
-                        typeof(AuxiliaryFileUpdaterTimer<PackageDownloadSet>),
-                        typeof(AuxiliaryFileUpdaterTimer<PackageOwnerSet>),
+                        typeof(AuxiliaryFileUpdaterTimer<AsOfData<PackageDownloads>>),
+                        typeof(AuxiliaryFileUpdaterTimer<AsOfData<PackageOwner>>),
+                        typeof(AuxiliaryFileUpdaterTimer<AsOfData<VerifiedPackage>>),
                     },
                     new List<Type>
                     {
@@ -126,18 +128,21 @@ namespace NuGet.Insights.Worker
                 {
                     x.DownloadsV1Url = $"http://localhost/{TestData}/DownloadsToCsv/{Step1}/downloads.v1.json";
                     x.OwnersV2Url = $"http://localhost/{TestData}/OwnersToCsv/{Step1}/owners.v2.json";
+                    x.VerifiedPackagesV1Url = $"http://localhost/{TestData}/VerifiedPackagesToCsv/{Step1}/verifiedPackages.json";
                 };
                 ConfigureWorkerSettings = x =>
                 {
                     x.AutoStartDownloadToCsv = true;
                     x.AutoStartOwnersToCsv = true;
+                    x.AutoStartVerifiedPackagesToCsv = true;
                 };
 
                 // Arrange
                 HttpMessageHandlerFactory.OnSendAsync = async req =>
                 {
                     if (req.RequestUri.AbsoluteUri == Options.Value.DownloadsV1Url
-                     || req.RequestUri.AbsoluteUri == Options.Value.OwnersV2Url)
+                     || req.RequestUri.AbsoluteUri == Options.Value.OwnersV2Url
+                     || req.RequestUri.AbsoluteUri == Options.Value.VerifiedPackagesV1Url)
                     {
                         return await TestDataHttpClient.SendAsync(Clone(req));
                     }
@@ -162,6 +167,7 @@ namespace NuGet.Insights.Worker
                 // Assert
                 await AssertBlobCountAsync(Options.Value.PackageDownloadContainerName, 1);
                 await AssertBlobCountAsync(Options.Value.PackageOwnerContainerName, 1);
+                await AssertBlobCountAsync(Options.Value.VerifiedPackageContainerName, 1);
             }
         }
 
@@ -189,8 +195,9 @@ namespace NuGet.Insights.Worker
                 {
                     x.MaxTempMemoryStreamSize = 0;
                     x.TempDirectories[0].MaxConcurrentWriters = 1;
-                    x.DownloadsV1Url = $"http://localhost/{TestData}/{DownloadsToCsvIntegrationTest.DownloadsToCsvDir}/downloads.v1.json";
-                    x.OwnersV2Url = $"http://localhost/{TestData}/{OwnersToCsvIntegrationTest.OwnersToCsvDir}/owners.v2.json";
+                    x.DownloadsV1Url = $"http://localhost/{TestData}/DownloadsToCsv/downloads.v1.json";
+                    x.OwnersV2Url = $"http://localhost/{TestData}/OwnersToCsv/owners.v2.json";
+                    x.VerifiedPackagesV1Url = $"http://localhost/{TestData}/VerifiedPackagesToCsv/verifiedPackages.json";
                 };
                 ConfigureWorkerSettings = x =>
                 {
@@ -201,14 +208,21 @@ namespace NuGet.Insights.Worker
                     if (req.RequestUri.AbsolutePath.EndsWith("/downloads.v1.json"))
                     {
                         var newReq = Clone(req);
-                        newReq.RequestUri = new Uri($"http://localhost/{TestData}/{DownloadsToCsvIntegrationTest.DownloadsToCsvDir}/{Step1}/downloads.v1.json");
+                        newReq.RequestUri = new Uri($"http://localhost/{TestData}/DownloadsToCsv/{Step1}/downloads.v1.json");
                         return await TestDataHttpClient.SendAsync(newReq);
                     }
 
                     if (req.RequestUri.AbsolutePath.EndsWith("/owners.v2.json"))
                     {
                         var newReq = Clone(req);
-                        newReq.RequestUri = new Uri($"http://localhost/{TestData}/{OwnersToCsvIntegrationTest.OwnersToCsvDir}/{Step1}/owners.v2.json");
+                        newReq.RequestUri = new Uri($"http://localhost/{TestData}/OwnersToCsv/{Step1}/owners.v2.json");
+                        return await TestDataHttpClient.SendAsync(newReq);
+                    }
+
+                    if (req.RequestUri.AbsolutePath.EndsWith("/verifiedPackages.json"))
+                    {
+                        var newReq = Clone(req);
+                        newReq.RequestUri = new Uri($"http://localhost/{TestData}/VerifiedPackagesToCsv/{Step1}/verifiedPackages.json");
                         return await TestDataHttpClient.SendAsync(newReq);
                     }
 

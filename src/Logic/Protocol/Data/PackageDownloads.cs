@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -34,12 +34,7 @@ namespace NuGet.Insights
 
         public override int GetHashCode()
         {
-            var hashCode = -710329939;
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Id);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Version);
-            hashCode = hashCode * -1521134295 + Downloads.GetHashCode();
-            return hashCode;
+            return HashCode.Combine(Id, Version, Downloads);
         }
-
     }
 }
