@@ -22,8 +22,8 @@ namespace NuGet.Insights
         public bool Equals(PackageDownloads other)
         {
             return other != null &&
-                   Id == other.Id &&
-                   Version == other.Version &&
+                   StringComparer.OrdinalIgnoreCase.Equals(Id, other.Id) &&
+                   StringComparer.OrdinalIgnoreCase.Equals(Version, other.Version) &&
                    Downloads == other.Downloads;
         }
 
@@ -34,7 +34,11 @@ namespace NuGet.Insights
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Id, Version, Downloads);
+            var hashCode = new HashCode();
+            hashCode.Add(Id, StringComparer.OrdinalIgnoreCase);
+            hashCode.Add(Version, StringComparer.OrdinalIgnoreCase);
+            hashCode.Add(Downloads);
+            return hashCode.ToHashCode();
         }
     }
 }
