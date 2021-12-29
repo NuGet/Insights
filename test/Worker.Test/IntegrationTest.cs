@@ -11,10 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Moq;
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
-using NuGet.Insights.Worker.DownloadsToCsv;
 using NuGet.Insights.Worker.KustoIngestion;
-using NuGet.Insights.Worker.OwnersToCsv;
-using NuGet.Insights.Worker.VerifiedPackagesToCsv;
 using NuGet.Insights.Worker.Workflow;
 using Xunit;
 using Xunit.Abstractions;
@@ -138,7 +135,7 @@ namespace NuGet.Insights.Worker
                 };
 
                 // Arrange
-                HttpMessageHandlerFactory.OnSendAsync = async req =>
+                HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
                 {
                     if (req.RequestUri.AbsoluteUri == Options.Value.DownloadsV1Url
                      || req.RequestUri.AbsoluteUri == Options.Value.OwnersV2Url
@@ -203,7 +200,7 @@ namespace NuGet.Insights.Worker
                 {
                     x.AppendResultStorageBucketCount = 1;
                 };
-                HttpMessageHandlerFactory.OnSendAsync = async req =>
+                HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
                 {
                     if (req.RequestUri.AbsolutePath.EndsWith("/downloads.v1.json"))
                     {

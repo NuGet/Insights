@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Core.Pipeline;
 using Azure.Data.Tables;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
@@ -172,6 +173,8 @@ namespace NuGet.Insights
 
         private async Task<ServiceClients> GetServiceClientsAsync(DateTimeOffset created, SecretClient secretClient, string tableSasFromKeyVault)
         {
+            var httpPipelineTransport = GetHttpPipelineTransport();
+
             BlobServiceClient blob;
             QueueServiceClient queue;
             TableServiceClient table;
@@ -179,9 +182,19 @@ namespace NuGet.Insights
             DateTimeOffset sasExpiry;
             if (_options.Value.StorageAccountName != null)
             {
-                blob = new BlobServiceClient(new Uri($"https://{_options.Value.StorageAccountName}.blob.core.windows.net"), new DefaultAzureCredential());
-                queue = new QueueServiceClient(new Uri($"https://{_options.Value.StorageAccountName}.queue.core.windows.net"), new DefaultAzureCredential());
-                table = new TableServiceClient($"AccountName={_options.Value.StorageAccountName};SharedAccessSignature={tableSasFromKeyVault}");
+                blob = new BlobServiceClient(
+                    new Uri($"https://{_options.Value.StorageAccountName}.blob.core.windows.net"),
+                    new DefaultAzureCredential(),
+                    options: httpPipelineTransport != null ? new BlobClientOptions { Transport = httpPipelineTransport } : null);
+
+                queue = new QueueServiceClient(
+                    new Uri($"https://{_options.Value.StorageAccountName}.queue.core.windows.net"),
+                    new DefaultAzureCredential(),
+                    options: httpPipelineTransport != null ? new QueueClientOptions { Transport = httpPipelineTransport } : null);
+
+                table = new TableServiceClient(
+                    $"AccountName={_options.Value.StorageAccountName};SharedAccessSignature={tableSasFromKeyVault}",
+                    options: httpPipelineTransport != null ? new TableClientOptions { Transport = httpPipelineTransport } : null);
 
                 sasExpiry = StorageUtility.GetSasExpiry(tableSasFromKeyVault);
                 userDelegationKey = await blob.GetUserDelegationKeyAsync(startsOn: null, expiresOn: sasExpiry);
@@ -196,9 +209,17 @@ namespace NuGet.Insights
             {
                 _logger.LogInformation("Using the configured storage connection string.");
 
-                blob = new BlobServiceClient(_options.Value.StorageConnectionString);
-                queue = new QueueServiceClient(_options.Value.StorageConnectionString);
-                table = new TableServiceClient(_options.Value.StorageConnectionString);
+                blob = new BlobServiceClient(
+                    _options.Value.StorageConnectionString,
+                    options: httpPipelineTransport != null ? new BlobClientOptions { Transport = httpPipelineTransport } : null);
+
+                queue = new QueueServiceClient(
+                    _options.Value.StorageConnectionString,
+                    options: httpPipelineTransport != null ? new QueueClientOptions { Transport = httpPipelineTransport } : null);
+
+                table = new TableServiceClient(
+                    _options.Value.StorageConnectionString,
+                    options: httpPipelineTransport != null ? new TableClientOptions { Transport = httpPipelineTransport } : null);
 
                 userDelegationKey = null;
                 sasExpiry = DateTimeOffset.UtcNow.Add(2 * DefaultRefreshPeriod);
@@ -216,6 +237,11 @@ namespace NuGet.Insights
                 blob,
                 queue,
                 table);
+        }
+
+        protected virtual HttpPipelineTransport GetHttpPipelineTransport()
+        {
+            return null;
         }
 
         private record ServiceClients(

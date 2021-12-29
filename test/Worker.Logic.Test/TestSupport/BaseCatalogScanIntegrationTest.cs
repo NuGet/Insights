@@ -137,7 +137,7 @@ namespace NuGet.Insights.Worker
 
         protected void MakeDeletedPackageAvailable()
         {
-            HttpMessageHandlerFactory.OnSendAsync = async req =>
+            HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
             {
                 if (req.RequestUri.AbsolutePath.EndsWith("/behaviorsample.1.0.0.nupkg"))
                 {

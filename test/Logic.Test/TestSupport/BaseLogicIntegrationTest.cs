@@ -11,12 +11,14 @@ using System.Net.Http;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Core.Pipeline;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Xunit;
@@ -333,21 +335,25 @@ namespace NuGet.Insights
             return clone;
         }
 
+        public delegate Task<HttpResponseMessage> GetResponseAsync(CancellationToken token);
+        public delegate Task<HttpResponseMessage> SendMessageAsync(HttpRequestMessage request, CancellationToken token);
+        public delegate Task<HttpResponseMessage> SendMessageWithBaseAsync(HttpRequestMessage request, SendMessageAsync baseSendAsync, CancellationToken token);
+
         public class TestHttpMessageHandlerFactory : INuGetInsightsHttpMessageHandlerFactory
         {
-            public Func<HttpRequestMessage, Task<HttpResponseMessage>> OnSendAsync { get; set; }
+            public SendMessageWithBaseAsync OnSendAsync { get; set; }
 
             public ConcurrentQueue<HttpRequestMessage> Requests { get; } = new ConcurrentQueue<HttpRequestMessage>();
 
             public DelegatingHandler Create()
             {
-                return new TestHttpMessageHandler(async req =>
+                return new TestHttpMessageHandler(async (req, baseSendAsync, token) =>
                 {
                     Requests.Enqueue(req);
 
                     if (OnSendAsync != null)
                     {
-                        return await OnSendAsync(req);
+                        return await OnSendAsync(req, baseSendAsync, token);
                     }
 
                     return null;
@@ -357,22 +363,43 @@ namespace NuGet.Insights
 
         public class TestHttpMessageHandler : DelegatingHandler
         {
-            private readonly Func<HttpRequestMessage, Task<HttpResponseMessage>> _onSendAsync;
+            private readonly SendMessageWithBaseAsync _onSendAsync;
 
-            public TestHttpMessageHandler(Func<HttpRequestMessage, Task<HttpResponseMessage>> onSendAsync)
+            public TestHttpMessageHandler(SendMessageWithBaseAsync onSendAsync)
             {
                 _onSendAsync = onSendAsync;
             }
 
-            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken token)
             {
-                var response = await _onSendAsync(request);
+                var response = await _onSendAsync(request, base.SendAsync, token);
                 if (response != null)
                 {
                     return response;
                 }
 
-                return await base.SendAsync(request, cancellationToken);
+                return await base.SendAsync(request, token);
+            }
+        }
+
+        public class TestServiceClientFactory : ServiceClientFactory
+        {
+            public TestServiceClientFactory(
+                HttpClientHandler httpClientHandler,
+                IOptions<NuGetInsightsSettings> options,
+                ILogger<ServiceClientFactory> logger) : base(options, logger)
+            {
+                HttpClientHandler = httpClientHandler;
+            }
+
+            public HttpClientHandler HttpClientHandler { get; }
+            public TestHttpMessageHandlerFactory HandlerFactory { get; } = new TestHttpMessageHandlerFactory();
+
+            protected override HttpPipelineTransport GetHttpPipelineTransport()
+            {
+                var testHandler = HandlerFactory.Create();
+                testHandler.InnerHandler = HttpClientHandler;
+                return new HttpClientTransport(testHandler);
             }
         }
     }

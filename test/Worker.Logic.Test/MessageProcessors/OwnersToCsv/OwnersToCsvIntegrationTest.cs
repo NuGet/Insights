@@ -273,7 +273,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
 
         private void SetData(string stepName)
         {
-            HttpMessageHandlerFactory.OnSendAsync = async req =>
+            HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
             {
                 if (req.RequestUri.AbsolutePath.EndsWith("/owners.v2.json"))
                 {

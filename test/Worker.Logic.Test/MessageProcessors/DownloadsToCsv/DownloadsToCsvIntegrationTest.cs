@@ -277,7 +277,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
 
         private void SetData(string stepName)
         {
-            HttpMessageHandlerFactory.OnSendAsync = async req =>
+            HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
             {
                 if (req.RequestUri.AbsolutePath.EndsWith("/downloads.v1.json"))
                 {
