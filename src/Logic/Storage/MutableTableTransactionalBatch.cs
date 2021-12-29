@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
@@ -97,6 +98,15 @@ namespace NuGet.Insights
             {
                 var operation = this[0];
                 var response = await operation.SingleAct(TableClient);
+
+                // The SDK swallows HTTP 404 encountered when trying to delete an entity that does not exist.
+                // This does not match the batch operation so we manually throw and exception here.
+                if (response.Status == (int)HttpStatusCode.NotFound
+                    && operation.TransactionAction.ActionType == TableTransactionActionType.Delete)
+                {
+                    throw new RequestFailedException(response.Status, "The delete failed with a 404.", response.ReasonPhrase, innerException: null);
+                }
+
                 if (operation.Entity != null)
                 {
                     operation.Entity.UpdateETag(response);

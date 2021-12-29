@@ -124,6 +124,29 @@ namespace NuGet.Insights
                 Assert.Equal(2, entities.Count);
             }
 
+            [Fact]
+            public async Task FailsDeletingSingleNonExistentEntity()
+            {
+                var target = await GetTargetAsync();
+
+                target.DeleteEntity(PartitionKey, "a", ETag.All);
+                var ex = await Assert.ThrowsAsync<RequestFailedException>(() => target.SubmitBatchAsync());
+
+                Assert.Equal((int)HttpStatusCode.NotFound, ex.Status);
+            }
+
+            [Fact]
+            public async Task FailsDeletingMultipleNonExistentEntities()
+            {
+                var target = await GetTargetAsync();
+
+                target.DeleteEntity(PartitionKey, "a", ETag.All);
+                target.DeleteEntity(PartitionKey, "b", ETag.All);
+                var ex = await Assert.ThrowsAsync<TableTransactionFailedException>(() => target.SubmitBatchAsync());
+
+                Assert.Equal((int)HttpStatusCode.NotFound, ex.Status);
+            }
+
             public TheDeleteEntityMethod(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
             {
             }
