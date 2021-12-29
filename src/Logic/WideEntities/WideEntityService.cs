@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -226,18 +226,22 @@ namespace NuGet.Insights.WideEntities
                 }
             }
 
+            var entities = QueryEntitiesAsync(table, metrics, selectColumns, filter);
+
+            return await DeserializeEntitiesAsync(entities, includeData);
+        }
+
+        private static async IAsyncEnumerable<WideEntitySegment> QueryEntitiesAsync(
+            TableClient table,
+            QueryLoopMetrics metrics,
+            IList<string> selectColumns,
+            Expression<Func<WideEntitySegment, bool>> filter)
+        {
             var query = table.QueryAsync(
                 filter,
                 maxPerPage: StorageUtility.MaxTakeCount,
                 select: selectColumns);
-
-            var output = new List<WideEntity>();
-
-            string currentPartitionKey = null;
-            string currentRowKeyPrefix = null;
-            var segments = new List<WideEntitySegment>();
-
-            await using var enumerator = query.AsPages().GetAsyncEnumerator();
+            var enumerator = query.AsPages().GetAsyncEnumerator();
             while (await enumerator.MoveNextAsync(metrics))
             {
                 var entitySegment = enumerator.Current.Values;
@@ -246,32 +250,46 @@ namespace NuGet.Insights.WideEntities
                     continue;
                 }
 
-                if (currentPartitionKey == null)
-                {
-                    currentPartitionKey = entitySegment.First().PartitionKey;
-                    currentRowKeyPrefix = entitySegment.First().RowKeyPrefix;
-                }
-
                 foreach (var entity in entitySegment)
                 {
-                    if (entity.PartitionKey == currentPartitionKey && entity.RowKeyPrefix == currentRowKeyPrefix)
-                    {
-                        segments.Add(entity);
-                    }
-                    else
-                    {
-                        MakeWideEntity(includeData, output, segments);
-                        currentPartitionKey = entity.PartitionKey;
-                        currentRowKeyPrefix = entity.RowKeyPrefix;
-                        segments.Clear();
-                        segments.Add(entity);
-                    }
+                    yield return entity;
+                }
+            }
+        }
+
+        public static async Task<List<WideEntity>> DeserializeEntitiesAsync(IAsyncEnumerable<WideEntitySegment> segments, bool includeData)
+        {
+            var output = new List<WideEntity>();
+
+            string currentPartitionKey = null;
+            string currentRowKeyPrefix = null;
+            var currentSegments = new List<WideEntitySegment>();
+
+            await foreach (var entity in segments)
+            {
+                if (currentPartitionKey == null)
+                {
+                    currentPartitionKey = entity.PartitionKey;
+                    currentRowKeyPrefix = entity.RowKeyPrefix;
+                }
+
+                if (entity.PartitionKey == currentPartitionKey && entity.RowKeyPrefix == currentRowKeyPrefix)
+                {
+                    currentSegments.Add(entity);
+                }
+                else
+                {
+                    MakeWideEntity(includeData, output, currentSegments);
+                    currentPartitionKey = entity.PartitionKey;
+                    currentRowKeyPrefix = entity.RowKeyPrefix;
+                    currentSegments.Clear();
+                    currentSegments.Add(entity);
                 }
             }
 
-            if (segments.Any())
+            if (currentSegments.Any())
             {
-                MakeWideEntity(includeData, output, segments);
+                MakeWideEntity(includeData, output, currentSegments);
             }
 
             return output;
@@ -309,7 +327,7 @@ namespace NuGet.Insights.WideEntities
                 if (allowBatchSplits
                     && tableBatch.Count > previousOperationCount
                     && previousOperationCount > 0
-                    && segmentsList.Sum(x => x.Sum(y => y.GetEntitySize())) > MaxTotalEntitySize)
+                    && segmentsList.Sum(x => x != null ? x.Sum(y => y.GetEntitySize()) : 0) > MaxTotalEntitySize)
                 {
                     // Remove the table operations added by this wide entity operation since it made the batch too large.
                     var addedOperations = new Stack<TableTransactionalOperation>();

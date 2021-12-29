@@ -8,7 +8,7 @@ using Azure.Data.Tables;
 
 namespace NuGet.Insights.WideEntities
 {
-    internal class WideEntitySegment : Dictionary<string, object>, ITableEntity
+    public class WideEntitySegment : Dictionary<string, object>, ITableEntity
     {
         internal const string SegmentCountPropertyName = "C";
 

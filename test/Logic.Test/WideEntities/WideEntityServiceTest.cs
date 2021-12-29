@@ -50,6 +50,47 @@ namespace NuGet.Insights.WideEntities
                 }
             }
 
+            [Fact]
+            public async Task DeletesEntities()
+            {
+                // Arrange
+                var partitionKey = StorageUtility.GenerateDescendingId().ToString();
+                var inserted = await Target.ExecuteBatchAsync(TableName, new[]
+                {
+                    WideEntityOperation.Insert(partitionKey, "rk-1", Bytes.Slice(100, WideEntityService.MaxTotalDataSize)),
+                    WideEntityOperation.Insert(partitionKey, "rk-2", Bytes.Slice(200, WideEntityService.MaxTotalDataSize)),
+                    WideEntityOperation.Insert(partitionKey, "rk-3", Bytes.Slice(300, WideEntityService.MaxTotalDataSize)),
+                    WideEntityOperation.Insert(partitionKey, "rk-4", Bytes.Slice(400, WideEntityService.MaxTotalDataSize)),
+                }, allowBatchSplits: true);
+                var batch = inserted.Select(x => WideEntityOperation.Delete(x)).ToList();
+
+                // Act
+                await Target.ExecuteBatchAsync(TableName, batch, allowBatchSplits: true);
+
+                // Assert
+                var retrieved = await Target.RetrieveAsync(TableName, partitionKey);
+                Assert.Empty(retrieved);
+            }
+
+            [Fact]
+            public async Task FailsWhenCannotSplitBatch()
+            {
+                // Arrange
+                var partitionKey = StorageUtility.GenerateDescendingId().ToString();
+                var batch = new[]
+                {
+                    WideEntityOperation.Insert(partitionKey, "rk-1", Bytes.Slice(100, WideEntityService.MaxTotalDataSize)),
+                    WideEntityOperation.Insert(partitionKey, "rk-2", Bytes.Slice(200, WideEntityService.MaxTotalDataSize)),
+                    WideEntityOperation.Insert(partitionKey, "rk-3", Bytes.Slice(300, WideEntityService.MaxTotalDataSize)),
+                    WideEntityOperation.Insert(partitionKey, "rk-4", Bytes.Slice(400, WideEntityService.MaxTotalDataSize)),
+                };
+
+                // Act
+                var ex = await Assert.ThrowsAsync<RequestFailedException>(() => Target.ExecuteBatchAsync(TableName, batch, allowBatchSplits: false));
+                Assert.Equal(HttpStatusCode.RequestEntityTooLarge, (HttpStatusCode)ex.Status);
+                Assert.Empty(await Target.RetrieveAsync(TableName, partitionKey));
+            }
+
             public ExecuteBatchAsync(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
             {
             }
