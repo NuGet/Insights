@@ -89,7 +89,11 @@ namespace NuGet.Insights.Worker
                 .ToDictionary(x => x.Key, x => x.ToList()));
         }
 
-        protected async Task AssertEntityOutputAsync<T>(TableClient table, string dir, Action<T> cleanEntity = null) where T : class, ITableEntity, new()
+        protected async Task AssertEntityOutputAsync<T>(
+            TableClient table,
+            string dir,
+            Action<T> cleanEntity = null,
+            string fileName = "entities.json") where T : class, ITableEntity, new()
         {
             var entities = await table.QueryAsync<T>().ToListAsync();
 
@@ -104,7 +108,7 @@ namespace NuGet.Insights.Worker
             }
 
             var actual = SerializeTestJson(entities);
-            var testDataFile = Path.Combine(TestData, dir, "entities.json");
+            var testDataFile = Path.Combine(TestData, dir, fileName);
             if (OverwriteTestData)
             {
                 OverwriteTestDataAndCopyToSource(testDataFile, actual);
@@ -113,7 +117,11 @@ namespace NuGet.Insights.Worker
             Assert.Equal(expected, actual);
         }
 
-        protected async Task AssertWideEntityOutputAsync<T>(string tableName, string dir, Func<Stream, T> deserializeEntity)
+        protected async Task AssertWideEntityOutputAsync<T>(
+            string tableName,
+            string dir,
+            Func<Stream, T> deserializeEntity,
+            string fileName = "entities.json")
         {
             var service = Host.Services.GetRequiredService<WideEntityService>();
 
@@ -126,12 +134,12 @@ namespace NuGet.Insights.Worker
             }
 
             var actual = SerializeTestJson(entities.Select(x => new { x.PartitionKey, x.RowKey, x.Entity }));
-            var testDataFile = Path.Combine(TestData, dir, "entities.json");
+            var testDataFile = Path.Combine(TestData, dir, fileName);
             if (OverwriteTestData)
             {
                 OverwriteTestDataAndCopyToSource(testDataFile, actual);
             }
-            var expected = File.ReadAllText(Path.Combine(TestData, dir, "entities.json"));
+            var expected = File.ReadAllText(testDataFile);
             Assert.Equal(expected, actual);
         }
 
