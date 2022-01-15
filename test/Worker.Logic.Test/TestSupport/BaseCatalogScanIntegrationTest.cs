@@ -8,6 +8,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
 using Azure.Storage.Queues.Models;
+using DiffPlex;
+using DiffPlex.DiffBuilder;
+using DiffPlex.DiffBuilder.Model;
 using Microsoft.Extensions.DependencyInjection;
 using NuGet.Insights.WideEntities;
 using Xunit;
@@ -110,12 +113,7 @@ namespace NuGet.Insights.Worker
 
             var actual = SerializeTestJson(entities);
             var testDataFile = Path.Combine(TestData, dir, fileName);
-            if (OverwriteTestData)
-            {
-                OverwriteTestDataAndCopyToSource(testDataFile, actual);
-            }
-            var expected = File.ReadAllText(testDataFile);
-            Assert.Equal(expected, actual);
+            AssertEqualWithDiff(testDataFile, actual);
         }
 
         protected async Task AssertWideEntityOutputAsync<T>(
@@ -136,11 +134,48 @@ namespace NuGet.Insights.Worker
 
             var actual = SerializeTestJson(entities.Select(x => new { x.PartitionKey, x.RowKey, x.Entity }));
             var testDataFile = Path.Combine(TestData, dir, fileName);
+            AssertEqualWithDiff(testDataFile, actual);
+        }
+
+        private void AssertEqualWithDiff(string expectedPath, string actual)
+        {
             if (OverwriteTestData)
             {
-                OverwriteTestDataAndCopyToSource(testDataFile, actual);
+                OverwriteTestDataAndCopyToSource(expectedPath, actual);
             }
-            var expected = File.ReadAllText(testDataFile);
+
+            var expected = File.ReadAllText(expectedPath);
+
+            if (expected != actual && expected.Length > 0 && actual.Length > 0)
+            {
+                // Source: https://github.com/mmanela/diffplex/blob/2dda9db84569cf3c8413acdfc0ed440973632817/DiffPlex.ConsoleRunner/Program.cs
+                var inlineBuilder = new InlineDiffBuilder(new Differ());
+                var result = inlineBuilder.BuildDiffModel(expected, actual);
+
+                Output.WriteLine("");
+                Output.WriteLine("DIFF: ");
+                Output.WriteLine(new string('-', 80));
+
+                foreach (var line in result.Lines)
+                {
+                    switch (line.Type)
+                    {
+                        case ChangeType.Inserted:
+                            Output.WriteLine("+ " + line.Text);
+                            break;
+                        case ChangeType.Deleted:
+                            Output.WriteLine("+ " + line.Text);
+                            break;
+                        default:
+                            Output.WriteLine("  " + line.Text);
+                            break;
+                    }
+                }
+
+                Output.WriteLine(new string('-', 80));
+                Output.WriteLine("");
+            }
+
             Assert.Equal(expected, actual);
         }
 

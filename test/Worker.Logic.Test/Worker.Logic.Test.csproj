@@ -12,6 +12,7 @@
     <Compile Include="..\..\src\Logic\IsExternalInit.cs" Link="IsExternalInit.cs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="DiffPlex" Version="1.7.0" />
     <PackageReference Include="Humanizer.Core" Version="2.13.14" />
     <PackageReference Include="Markdig.Signed" Version="0.26.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.1" />
