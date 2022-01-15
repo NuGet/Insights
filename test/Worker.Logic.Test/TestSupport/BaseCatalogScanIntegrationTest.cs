@@ -13,6 +13,7 @@ using DiffPlex.DiffBuilder;
 using DiffPlex.DiffBuilder.Model;
 using Microsoft.Extensions.DependencyInjection;
 using NuGet.Insights.WideEntities;
+using NuGet.Versioning;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -179,14 +180,17 @@ namespace NuGet.Insights.Worker
             Assert.Equal(expected, actual);
         }
 
-        protected void MakeDeletedPackageAvailable()
+        protected void MakeDeletedPackageAvailable(string id = "BehaviorSample", string version = "1.0.0")
         {
+            var lowerId = id.ToLowerInvariant();
+            var lowerVersion = NuGetVersion.Parse(version).ToNormalizedString().ToLowerInvariant();
+
             HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
             {
-                if (req.RequestUri.AbsolutePath.EndsWith("/behaviorsample.1.0.0.nupkg"))
+                if (req.RequestUri.AbsolutePath.EndsWith($"/{lowerId}.{lowerVersion}.nupkg"))
                 {
                     var newReq = Clone(req);
-                    newReq.RequestUri = new Uri($"http://localhost/{TestData}/behaviorsample.1.0.0.nupkg.testdata");
+                    newReq.RequestUri = new Uri($"http://localhost/{TestData}/{lowerId}.{lowerVersion}.nupkg.testdata");
                     var response = await TestDataHttpClient.SendAsync(newReq);
                     response.EnsureSuccessStatusCode();
                     return response;
@@ -195,7 +199,7 @@ namespace NuGet.Insights.Worker
                 return null;
             };
 
-            var file = new FileInfo(Path.Combine(TestData, "behaviorsample.1.0.0.nupkg.testdata"))
+            var file = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.nupkg.testdata"))
             {
                 LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z")
             };
