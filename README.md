@@ -49,7 +49,7 @@ PowerShell is used for the following steps. I have tested Windows PowerShell 5.1
    ```powershell
    Connect-AzAccount
    ```
-1. Ensure you have Bicep installed. [Install it if needed](https://github.com/Azure/bicep/blob/main/docs/installing.md).
+1. Ensure you have Bicep installed. [Install it if needed](https://docs.microsoft.com/azure/azure-resource-manager/bicep/install).
    ```
    bicep --version
    ```
