@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -49,14 +50,21 @@ namespace NuGet.Insights.Worker
                 return;
             }
 
-            if (await _processor.ProcessAsync(message, dequeueCount))
+            var result = await _processor.ProcessAsync(message, taskState, dequeueCount);
+            switch (result)
             {
-                await _taskStateStorageService.DeleteAsync(taskState);
-            }
-            else
-            {
-                message.AttemptCount++;
-                await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
+                case TaskStateProcessResult.Complete:
+                    await _taskStateStorageService.DeleteAsync(taskState);
+                    break;
+                case TaskStateProcessResult.Delay:
+                    message.AttemptCount++;
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
+                    break;
+                case TaskStateProcessResult.Continue:
+                    await _messageEnqueuer.EnqueueAsync(new[] { message });
+                    break;
+                default:
+                    throw new NotImplementedException();
             }
         }
     }
