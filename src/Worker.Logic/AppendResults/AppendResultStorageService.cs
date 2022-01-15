@@ -45,29 +45,39 @@ namespace NuGet.Insights.Worker
             _logger = logger;
         }
 
-        public async Task InitializeAsync(string srcContainer, string destContainer)
+        public async Task InitializeAsync(string srcTable, string destContainer)
         {
-            await _wideEntityService.CreateTableAsync(srcContainer);
+            await _wideEntityService.CreateTableAsync(srcTable);
             await (await GetContainerAsync(destContainer)).CreateIfNotExistsAsync(retry: true);
         }
 
-        public async Task DeleteAsync(string containerName)
+        public async Task DeleteAsync(string srcTable)
         {
-            await _wideEntityService.DeleteTableAsync(containerName);
+            await _wideEntityService.DeleteTableAsync(srcTable);
         }
 
-        public async Task AppendAsync(string tableName, int bucketCount, string bucketKey, IReadOnlyList<ICsvRecord> records)
+        public async Task AppendAsync(string srcTable, int bucketCount, IEnumerable<ICsvRecordSet<ICsvRecord>> sets)
         {
-            var bucket = GetBucket(bucketCount, bucketKey);
+            var bucketGroups = sets
+                .SelectMany(x => x.Records.Select(y => (x.BucketKey, Record: y)))
+                .GroupBy(x => GetBucket(bucketCount, x.BucketKey), x => x.Record);
 
+            foreach (var group in bucketGroups)
+            {
+                await AppendAsync(srcTable, group.Key, group.ToList());
+            }
+        }
+
+        private async Task AppendAsync(string srcTable, int bucket, IReadOnlyList<ICsvRecord> records)
+        {
             // Append the data.
-            await AppendToTableAsync(bucket, tableName, records);
+            await AppendToTableAsync(bucket, srcTable, records);
 
             // Append a marker to show that this bucket has data.
             try
             {
                 await _wideEntityService.InsertAsync(
-                   tableName,
+                   srcTable,
                    partitionKey: string.Empty,
                    rowKey: bucket.ToString(),
                    content: Array.Empty<byte>());
@@ -78,9 +88,9 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        public async Task<IReadOnlyList<T>> ReadAsync<T>(string containerName, int bucket) where T : ICsvRecord
+        public async Task<IReadOnlyList<T>> ReadAsync<T>(string destContainer, int bucket) where T : ICsvRecord
         {
-            var compactBlob = await GetCompactBlobAsync(containerName, bucket);
+            var compactBlob = await GetCompactBlobAsync(destContainer, bucket);
 
             try
             {
@@ -93,7 +103,7 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        private async Task AppendToTableAsync(int bucket, string tableName, IReadOnlyList<ICsvRecord> records)
+        private async Task AppendToTableAsync(int bucket, string srcTable, IReadOnlyList<ICsvRecord> records)
         {
             var bytes = Serialize(records);
             try
@@ -105,7 +115,7 @@ namespace NuGet.Insights.Worker
                     var rowKey = StorageUtility.GenerateDescendingId().ToString();
                     try
                     {
-                        await _wideEntityService.InsertAsync(tableName, partitionKey: bucket.ToString(), rowKey, content: bytes);
+                        await _wideEntityService.InsertAsync(srcTable, partitionKey: bucket.ToString(), rowKey, content: bytes);
                         break;
                     }
                     catch (RequestFailedException ex) when (attempt < 3 && ex.Status == (int)HttpStatusCode.Conflict)
@@ -128,8 +138,8 @@ namespace NuGet.Insights.Worker
             {
                 var firstHalf = records.Take(records.Count / 2).ToList();
                 var secondHalf = records.Skip(firstHalf.Count).ToList();
-                await AppendToTableAsync(bucket, tableName, firstHalf);
-                await AppendToTableAsync(bucket, tableName, secondHalf);
+                await AppendToTableAsync(bucket, srcTable, firstHalf);
+                await AppendToTableAsync(bucket, srcTable, secondHalf);
             }
         }
 
@@ -268,15 +278,15 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        public async Task<List<int>> GetAppendedBucketsAsync(string tableName)
+        public async Task<List<int>> GetAppendedBucketsAsync(string srcTable)
         {
-            var markerEntities = await _wideEntityService.RetrieveAsync(tableName, partitionKey: string.Empty);
+            var markerEntities = await _wideEntityService.RetrieveAsync(srcTable, partitionKey: string.Empty);
             return markerEntities.Select(x => int.Parse(x.RowKey)).ToList();
         }
 
-        public async Task<List<int>> GetCompactedBucketsAsync(string containerName)
+        public async Task<List<int>> GetCompactedBucketsAsync(string destContainer)
         {
-            var container = await GetContainerAsync(containerName);
+            var container = await GetContainerAsync(destContainer);
             var buckets = new List<int>();
 
             if (!await container.ExistsAsync())
@@ -295,15 +305,15 @@ namespace NuGet.Insights.Worker
             return buckets;
         }
 
-        public async Task<Uri> GetCompactedBlobUrlAsync(string containerName, int bucket)
+        public async Task<Uri> GetCompactedBlobUrlAsync(string destContainer, int bucket)
         {
-            var blob = await GetCompactBlobAsync(containerName, bucket);
+            var blob = await GetCompactBlobAsync(destContainer, bucket);
             return blob.Uri;
         }
 
-        private async Task<BlobClient> GetCompactBlobAsync(string container, int bucket)
+        private async Task<BlobClient> GetCompactBlobAsync(string destContainer, int bucket)
         {
-            return (await GetContainerAsync(container)).GetBlobClient($"{CompactPrefix}{bucket}.csv.gz");
+            return (await GetContainerAsync(destContainer)).GetBlobClient($"{CompactPrefix}{bucket}.csv.gz");
         }
 
         private static byte[] Serialize(IReadOnlyList<ICsvRecord> records)
