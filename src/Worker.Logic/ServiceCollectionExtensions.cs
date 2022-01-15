@@ -22,6 +22,7 @@ using NuGet.Insights.Worker.LoadPackageManifest;
 using NuGet.Insights.Worker.LoadPackageVersion;
 using NuGet.Insights.Worker.TableCopy;
 using NuGet.Insights.Worker.Workflow;
+using NuGet.Insights.Worker.ReferenceTracking;
 
 namespace NuGet.Insights.Worker
 {
@@ -102,6 +103,11 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddTransient<TaskStateStorageService>();
             serviceCollection.AddTransient<ICsvReader, CsvReaderAdapter>();
 
+            foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ICleanupOrphanRecordsAdapter<>)))
+            {
+                serviceCollection.AddCleanupOrphanRecordsService(serviceType, implementationType);
+            }
+
             serviceCollection.AddCatalogLeafItemToCsv();
             serviceCollection.AddLoadLatestPackageLeaf();
             serviceCollection.AddLoadPackageArchive();
@@ -134,11 +140,11 @@ namespace NuGet.Insights.Worker
 
                 // Add the service
                 serviceCollection.AddTransient(
-                     typeof(IAuxiliaryFileUpdaterService<>).MakeGenericType(dataType),
+                    typeof(IAuxiliaryFileUpdaterService<>).MakeGenericType(dataType),
                     typeof(AuxiliaryFileUpdaterService<>).MakeGenericType(dataType));
 
                 serviceCollection.AddTransient(
-                     typeof(IAuxiliaryFileUpdaterService),
+                    typeof(IAuxiliaryFileUpdaterService),
                     typeof(AuxiliaryFileUpdaterService<>).MakeGenericType(dataType));
 
                 // Add the generic CSV storage
@@ -248,6 +254,43 @@ namespace NuGet.Insights.Worker
             }
 
             return serviceCollection;
+        }
+
+        public static void AddCleanupOrphanRecordsService<TService, TRecord>(this IServiceCollection serviceCollection)
+            where TService : class, ICleanupOrphanRecordsAdapter<TRecord>
+            where TRecord : ICsvRecord
+        {
+            var implementationType = typeof(TService);
+            var dataType = typeof(TRecord);
+            var serviceType = typeof(ICleanupOrphanRecordsAdapter<>).MakeGenericType(dataType);
+            serviceCollection.AddCleanupOrphanRecordsService(serviceType, implementationType);
+        }
+
+        private static void AddCleanupOrphanRecordsService(this IServiceCollection serviceCollection, Type serviceType, Type implementationType)
+        {
+            var dataType = serviceType.GenericTypeArguments.Single();
+            var messageType = typeof(CleanupOrphanRecordsMessage<>).MakeGenericType(dataType);
+
+            // Add the adapter
+            serviceCollection.AddTransient(serviceType, implementationType);
+
+            // Add the service
+            serviceCollection.AddTransient(
+                typeof(ICleanupOrphanRecordsService<>).MakeGenericType(dataType),
+                typeof(CleanupOrphanRecordsService<>).MakeGenericType(dataType));
+            serviceCollection.AddTransient(
+                typeof(ICleanupOrphanRecordsService),
+                typeof(CleanupOrphanRecordsService<>).MakeGenericType(dataType));
+
+            // Add the message processor
+            serviceCollection.AddTransient(
+                typeof(IMessageProcessor<>).MakeGenericType(messageType),
+                typeof(TaskStateMessageProcessor<>).MakeGenericType(messageType));
+
+            // Add the task state message processor
+            serviceCollection.AddTransient(
+                typeof(ITaskStateMessageProcessor<>).MakeGenericType(messageType),
+                typeof(CleanupOrphanRecordsProcessor<>).MakeGenericType(dataType));
         }
 
         private static void AddTableCopy(this IServiceCollection serviceCollection)

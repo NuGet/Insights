@@ -15,6 +15,7 @@ using DiffPlex.DiffBuilder;
 using DiffPlex.DiffBuilder.Model;
 using Kusto.Data.Common;
 using Kusto.Ingest;
+using MessagePack;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -22,6 +23,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using Moq;
+using NuGet.Insights.ReferenceTracking;
 using NuGet.Insights.WideEntities;
 using NuGet.Insights.Worker.BuildVersionSet;
 using NuGet.Insights.Worker.KustoIngestion;
@@ -454,6 +456,51 @@ namespace NuGet.Insights.Worker
             var actual = SerializeTestJson(entities.Select(x => new { x.PartitionKey, x.RowKey, x.Entity }));
             var testDataFile = Path.Combine(TestData, dir, fileName);
             AssertEqualWithDiff(testDataFile, actual);
+        }
+
+        protected async Task AssertOwnerToSubjectAsync<T>(
+            string testName,
+            string stepName,
+            Func<byte[], T> deserializeEntity,
+            string fileName = null)
+        {
+            var dir = Path.Combine(testName, stepName);
+
+            await AssertWideEntityOutputAsync(
+                Options.Value.OwnerToSubjectReferenceTableName,
+                dir,
+                stream =>
+                {
+                    var edges = MessagePackSerializer.Deserialize<OwnerToSubjectEdges>(stream, NuGetInsightsMessagePack.Options);
+
+                    return new
+                    {
+                        Committed = edges.Committed.Select(x =>
+                        {
+                            return new
+                            {
+                                x.PartitionKey,
+                                x.RowKey,
+                                Data = deserializeEntity(x.Data),
+                            };
+                        }),
+                        edges.ToAdd,
+                        edges.ToDelete,
+                    };
+                },
+                fileName: fileName ?? "owner-to-subject.json");
+        }
+
+        protected async Task AssertSubjectToOwnerAsync(string testName, string stepName, string fileName = null)
+        {
+            var dir = Path.Combine(testName, stepName);
+
+            var table = (await ServiceClientFactory.GetTableServiceClientAsync())
+                .GetTableClient(Options.Value.SubjectToOwnerReferenceTableName);
+            await AssertEntityOutputAsync<Azure.Data.Tables.TableEntity>(
+                table,
+                dir,
+                fileName: fileName ?? "subject-to-owner.json");
         }
 
         private class TableReportIngestionResult : IKustoIngestionResult

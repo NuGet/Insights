@@ -1,0 +1,62 @@
+[
+  {
+    "odata.etag": "",
+    "PartitionKey": "S$0$Subject0$O$Owner0",
+    "RowKey": "",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "S$1$Subject1$O$Owner0",
+    "RowKey": "",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "S$2$Subject2$O$Owner0",
+    "RowKey": "",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "S$3$Subject3$O$Owner1",
+    "RowKey": "",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "S$4$Subject4$O$Owner1",
+    "RowKey": "",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "S$5$Subject5$O$Owner1",
+    "RowKey": "",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "S$6$Subject6$O$Owner2",
+    "RowKey": "",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "S$7$Subject7$O$Owner2",
+    "RowKey": "",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "S$8$Subject8$O$Owner2",
+    "RowKey": "",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "S$9$Subject9$O$Owner2",
+    "RowKey": "",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  }
+]

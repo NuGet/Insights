@@ -19,6 +19,7 @@ using NuGet.Insights.Worker.PackageIconToCsv;
 using NuGet.Insights.Worker.PackageManifestToCsv;
 using NuGet.Insights.Worker.PackageSignatureToCsv;
 using NuGet.Insights.Worker.PackageVersionToCsv;
+using NuGet.Insights.Worker.ReferenceTracking;
 using NuGet.Insights.Worker.TableCopy;
 using NuGet.Insights.Worker.Workflow;
 
@@ -82,6 +83,8 @@ namespace NuGet.Insights.Worker
 
             new SchemaV1<EnqueueCatalogLeafScansParameters>("ecls"),
             new SchemaV1<TableCopyParameters>("tc"),
+
+            new SchemaV1<CleanupOrphanRecordsParameters>("cor"),
         };
 
         public static SchemaCollectionBuilder Default => new SchemaCollectionBuilder()
