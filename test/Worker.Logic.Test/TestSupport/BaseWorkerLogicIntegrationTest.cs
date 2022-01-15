@@ -4,9 +4,15 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using Azure.Data.Tables;
 using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
+using DiffPlex;
+using DiffPlex.DiffBuilder;
+using DiffPlex.DiffBuilder.Model;
 using Kusto.Data.Common;
 using Kusto.Ingest;
 using Microsoft.AspNetCore.Hosting;
@@ -16,9 +22,11 @@ using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using Moq;
+using NuGet.Insights.WideEntities;
 using NuGet.Insights.Worker.BuildVersionSet;
 using NuGet.Insights.Worker.KustoIngestion;
 using NuGet.Insights.Worker.Workflow;
+using NuGet.Versioning;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -270,7 +278,6 @@ namespace NuGet.Insights.Worker
             while (!isComplete);
         }
 
-
         protected virtual async Task ProcessMessageAsync(IServiceProvider serviceProvider, QueueType queue, QueueMessage message)
         {
             var leaseScope = serviceProvider.GetRequiredService<TempStreamLeaseScope>();
@@ -282,6 +289,171 @@ namespace NuGet.Insights.Worker
         protected async Task AssertCompactAsync<T>(string containerName, string testName, string stepName, int bucket) where T : ICsvRecord
         {
             await AssertCsvBlobAsync<T>(containerName, testName, stepName, $"compact_{bucket}.csv.gz");
+        }
+
+        protected static SortedDictionary<string, List<string>> NormalizeHeaders(ILookup<string, string> headers)
+        {
+            // These headers are unstable
+            var ignoredHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Accept-Ranges",
+                "Access-Control-Allow-Origin",
+                "Access-Control-Expose-Headers",
+                "Age",
+                "Cache-Control",
+                "Connection",
+                "Date",
+                "Expires",
+                "Server",
+                "Strict-Transport-Security",
+                "X-Azure-Ref",
+                "X-Azure-Ref-OriginShield",
+                "X-Cache",
+                "X-CDN-Rewrite",
+                "X-Content-Type-Options",
+                "x-ms-lease-state",
+                "x-ms-request-id",
+                "x-ms-version",
+            };
+
+            return new SortedDictionary<string, List<string>>(headers
+                .Where(x => !ignoredHeaders.Contains(x.Key))
+                .Select(grouping =>
+                {
+                    if (grouping.Key == "ETag")
+                    {
+                        var values = new List<string>();
+                        foreach (var value in grouping)
+                        {
+                            if (!value.StartsWith("\""))
+                            {
+                                values.Add("\"" + value + "\"");
+                            }
+                            else
+                            {
+                                values.Add(value);
+                            }
+                        }
+
+                        return values.GroupBy(x => grouping.Key).Single();
+                    }
+                    else
+                    {
+                        return grouping;
+                    }
+                })
+                .ToDictionary(x => x.Key, x => x.ToList()));
+        }
+
+        protected async Task AssertEntityOutputAsync<T>(
+            TableClient table,
+            string dir,
+            Action<T> cleanEntity = null,
+            string fileName = "entities.json") where T : class, Azure.Data.Tables.ITableEntity, new()
+        {
+            var entities = await table.QueryAsync<T>().ToListAsync();
+
+            // Workaround: https://github.com/Azure/azure-sdk-for-net/issues/21023
+            var setTimestamp = typeof(T).GetProperty(nameof(Azure.Data.Tables.ITableEntity.Timestamp));
+
+            foreach (var entity in entities)
+            {
+                entity.ETag = default;
+                setTimestamp.SetValue(entity, DateTimeOffset.MinValue);
+                cleanEntity?.Invoke(entity);
+            }
+
+            var actual = SerializeTestJson(entities);
+            var testDataFile = Path.Combine(TestData, dir, fileName);
+            AssertEqualWithDiff(testDataFile, actual);
+        }
+
+        private void AssertEqualWithDiff(string expectedPath, string actual)
+        {
+            if (OverwriteTestData)
+            {
+                OverwriteTestDataAndCopyToSource(expectedPath, actual);
+            }
+
+            var expected = File.ReadAllText(expectedPath);
+
+            if (expected != actual && expected.Length > 0 && actual.Length > 0)
+            {
+                // Source: https://github.com/mmanela/diffplex/blob/2dda9db84569cf3c8413acdfc0ed440973632817/DiffPlex.ConsoleRunner/Program.cs
+                var inlineBuilder = new InlineDiffBuilder(new Differ());
+                var result = inlineBuilder.BuildDiffModel(expected, actual);
+
+                Output.WriteLine("");
+                Output.WriteLine("DIFF: ");
+                Output.WriteLine(new string('-', 80));
+
+                foreach (var line in result.Lines)
+                {
+                    switch (line.Type)
+                    {
+                        case ChangeType.Inserted:
+                            Output.WriteLine("+ " + line.Text);
+                            break;
+                        case ChangeType.Deleted:
+                            Output.WriteLine("+ " + line.Text);
+                            break;
+                        default:
+                            Output.WriteLine("  " + line.Text);
+                            break;
+                    }
+                }
+
+                Output.WriteLine(new string('-', 80));
+                Output.WriteLine("");
+            }
+
+            Assert.Equal(expected, actual);
+        }
+
+        protected void MakeDeletedPackageAvailable(string id = "BehaviorSample", string version = "1.0.0")
+        {
+            var lowerId = id.ToLowerInvariant();
+            var lowerVersion = NuGetVersion.Parse(version).ToNormalizedString().ToLowerInvariant();
+
+            HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
+            {
+                if (req.RequestUri.AbsolutePath.EndsWith($"/{lowerId}.{lowerVersion}.nupkg"))
+                {
+                    var newReq = Clone(req);
+                    newReq.RequestUri = new Uri($"http://localhost/{TestData}/{lowerId}.{lowerVersion}.nupkg.testdata");
+                    var response = await TestDataHttpClient.SendAsync(newReq);
+                    response.EnsureSuccessStatusCode();
+                    return response;
+                }
+
+                return null;
+            };
+
+            var file = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.nupkg.testdata"))
+            {
+                LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z")
+            };
+        }
+
+        protected async Task AssertWideEntityOutputAsync<T>(
+            string tableName,
+            string dir,
+            Func<Stream, T> deserializeEntity,
+            string fileName = "entities.json")
+        {
+            var service = Host.Services.GetRequiredService<WideEntityService>();
+
+            var wideEntities = await service.RetrieveAsync(tableName);
+            var entities = new List<(string PartitionKey, string RowKey, T Entity)>();
+            foreach (var wideEntity in wideEntities)
+            {
+                var entity = deserializeEntity(wideEntity.GetStream());
+                entities.Add((wideEntity.PartitionKey, wideEntity.RowKey, entity));
+            }
+
+            var actual = SerializeTestJson(entities.Select(x => new { x.PartitionKey, x.RowKey, x.Entity }));
+            var testDataFile = Path.Combine(TestData, dir, fileName);
+            AssertEqualWithDiff(testDataFile, actual);
         }
 
         private class TableReportIngestionResult : IKustoIngestionResult

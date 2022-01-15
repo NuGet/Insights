@@ -5,8 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
-using Microsoft.IdentityModel.Tokens;
-using NuGet.Packaging.Signing;
 
 namespace NuGet.Insights.Worker
 {
