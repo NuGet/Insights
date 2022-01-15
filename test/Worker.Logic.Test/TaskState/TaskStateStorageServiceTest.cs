@@ -3,7 +3,9 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
+using Azure;
 using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -93,6 +95,114 @@ namespace NuGet.Insights.Worker
                 var entities = await GetEntitiesAsync<TableEntity>();
                 var entity = Assert.Single(entities);
                 Assert.Equal(new[] { "odata.etag", "Parameters", "PartitionKey", "RowKey", "StorageSuffix", "Timestamp" }, entity.Keys.OrderBy(x => x).ToArray());
+            }
+
+            [Fact]
+            public async Task CanAddTaskStateInstance()
+            {
+                var input = new TaskState(StorageSuffix, PartitionKey, "foo");
+
+                await Target.AddAsync(input);
+
+                var output = await Target.GetAsync(input.GetKey());
+                Assert.Equal(output.ETag, input.ETag);
+            }
+        }
+
+        public class TheUpdateAsyncMethod : TaskStateStorageServiceTest
+        {
+            public TheUpdateAsyncMethod(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
+            {
+            }
+
+            [Fact]
+            public async Task UpdatesContent()
+            {
+                var input = new TaskState(StorageSuffix, PartitionKey, "foo") { Parameters = "a" };
+                await Target.AddAsync(input);
+                input.Parameters = "b";
+
+                await Target.UpdateAsync(input);
+
+                var output = await Target.GetAsync(input.GetKey());
+                Assert.Equal(output.ETag, input.ETag);
+                Assert.Equal("b", output.Parameters);
+            }
+
+            [Fact]
+            public async Task CanClearParameters()
+            {
+                var input = new TaskState(StorageSuffix, PartitionKey, "foo") { Parameters = "a" };
+                await Target.AddAsync(input);
+                input.Parameters = null;
+
+                await Target.UpdateAsync(input);
+
+                var output = await Target.GetAsync(input.GetKey());
+                Assert.Null(output.Parameters);
+            }
+
+            [Fact]
+            public async Task FailsIfETagChanged()
+            {
+                var input = new TaskState(StorageSuffix, PartitionKey, "foo") { Parameters = "a" };
+                await Target.AddAsync(input);
+                await Target.UpdateAsync(new TaskState(StorageSuffix, PartitionKey, "foo") { Parameters = "a", ETag = input.ETag });
+                input.Parameters = "b";
+
+                var ex = await Assert.ThrowsAsync<RequestFailedException>(() => Target.UpdateAsync(input));
+                Assert.Equal(HttpStatusCode.PreconditionFailed, (HttpStatusCode)ex.Status);
+            }
+
+            [Fact]
+            public async Task FailsIfDeleted()
+            {
+                var input = new TaskState(StorageSuffix, PartitionKey, "foo") { Parameters = "a" };
+                await Target.AddAsync(input);
+                await Target.DeleteAsync(input);
+
+                var ex = await Assert.ThrowsAsync<RequestFailedException>(() => Target.UpdateAsync(input));
+                Assert.Equal(HttpStatusCode.NotFound, (HttpStatusCode)ex.Status);
+            }
+        }
+
+        public class TheGetByRowKeyPrefixAsyncMethod : TaskStateStorageServiceTest
+        {
+            public TheGetByRowKeyPrefixAsyncMethod(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
+            {
+            }
+
+            [Fact]
+            public async Task ReturnsNothingWhenNoMatch()
+            {
+                await Target.AddAsync(new TaskState(StorageSuffix, PartitionKey, "foo"));
+
+                var actual = await Target.GetByRowKeyPrefixAsync(StorageSuffix, PartitionKey, "bar");
+
+                Assert.Empty(actual);
+            }
+
+            [Fact]
+            public async Task AllowsEmptyPrefix()
+            {
+                await Target.AddAsync(new TaskState(StorageSuffix, PartitionKey, "foo"));
+
+                var actual = await Target.GetByRowKeyPrefixAsync(StorageSuffix, PartitionKey, "");
+
+                Assert.Equal("foo", Assert.Single(actual).RowKey);
+            }
+
+            [Fact]
+            public async Task ReturnsAllMatches()
+            {
+                var rowKeys = Enumerable.Range(0, 10).Select(x => $"foo{x}").ToList();
+                await Target.AddAsync(StorageSuffix, PartitionKey, rowKeys);
+
+                var actual = await Target.GetByRowKeyPrefixAsync(StorageSuffix, PartitionKey, "foo");
+
+                Assert.Equal(rowKeys, actual.Select(x => x.RowKey).ToList());
+                Assert.All(actual, x => Assert.Equal(x.PartitionKey, PartitionKey));
+                Assert.All(actual, x => Assert.Equal(x.StorageSuffix, StorageSuffix));
             }
         }
 
