@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -77,8 +77,8 @@ namespace NuGet.Insights.Worker
                 Times.Once);
         }
 
-        public static IEnumerable<object[]> UsesCorrectQueueByMessageTypeData => SchemaSerializer
-            .MessageSchemas
+        public static IEnumerable<object[]> UsesCorrectQueueByMessageTypeData => SchemaCollectionBuilder
+            .DefaultMessageSchemas
             .Select(x => x.GetType().GenericTypeArguments.Single())
             .Select(x => new object[] { x, ExpandMessageTypes.Contains(x) ? QueueType.Expand : QueueType.Work });
 
@@ -89,8 +89,8 @@ namespace NuGet.Insights.Worker
             Assert.Equal(queue, Target.GetQueueType(schemaName));
         }
 
-        public static IEnumerable<object[]> UsesCorrectQueueBySchemaNameData => SchemaSerializer
-            .MessageSchemas
+        public static IEnumerable<object[]> UsesCorrectQueueBySchemaNameData => SchemaCollectionBuilder
+            .DefaultMessageSchemas
             .Cast<ISchemaDeserializer>()
             .Select(x => x.Name)
             .Select(x => new object[] { x, ExpandSchemaNames.Contains(x) ? QueueType.Expand : QueueType.Work });
@@ -106,7 +106,9 @@ namespace NuGet.Insights.Worker
         {
             get
             {
-                var schemaSerializer = new SchemaSerializer(NullLogger<SchemaSerializer>.Instance);
+                var schemaSerializer = new SchemaSerializer(
+                    SchemaCollectionBuilder.Default.Build(),
+                    NullLogger<SchemaSerializer>.Instance);
                 return ExpandMessageTypes
                     .Select(x => schemaSerializer.GetGenericSerializer(x).Name)
                     .ToHashSet();
@@ -122,7 +124,9 @@ namespace NuGet.Insights.Worker
 
         public MessageEnqueuerTest(ITestOutputHelper output)
         {
-            SchemaSerializer = new SchemaSerializer(output.GetLogger<SchemaSerializer>());
+            SchemaSerializer = new SchemaSerializer(
+                SchemaCollectionBuilder.Default.Build(),
+                output.GetLogger<SchemaSerializer>());
             Options = new Mock<IOptions<NuGetInsightsWorkerSettings>>();
             Settings = new NuGetInsightsWorkerSettings();
             MessageBatcher = new Mock<IMessageBatcher>();

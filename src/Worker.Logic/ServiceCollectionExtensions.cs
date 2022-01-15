@@ -33,6 +33,7 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddTransient<IWorkerQueueFactory, WorkerQueueFactory>();
 
             serviceCollection.AddTransient<IGenericMessageProcessor, GenericMessageProcessor>();
+            serviceCollection.AddSingleton(x => SchemaCollectionBuilder.Default.Build());
             serviceCollection.AddTransient<SchemaSerializer>();
             serviceCollection.AddTransient<IMessageBatcher, MessageBatcher>();
             serviceCollection.AddTransient<IMessageEnqueuer, MessageEnqueuer>();

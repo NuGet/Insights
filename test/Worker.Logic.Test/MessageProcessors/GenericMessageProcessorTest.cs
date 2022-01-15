@@ -392,7 +392,9 @@ namespace NuGet.Insights.Worker
 
         public GenericMessageProcessorTest(ITestOutputHelper output)
         {
-            SchemaSerializer = new SchemaSerializer(output.GetLogger<SchemaSerializer>());
+            SchemaSerializer = new SchemaSerializer(
+                SchemaCollectionBuilder.Default.Build(),
+                output.GetLogger<SchemaSerializer>());
             ServiceProvider = new Mock<IServiceProvider>();
             RawMessageEnqueuer = new Mock<IRawMessageEnqueuer>();
 
