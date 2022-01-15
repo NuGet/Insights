@@ -60,7 +60,7 @@ namespace NuGet.Insights.Worker
                 .Select(g => g
                     .GroupBy(x => new { x.ScanId, x.CatalogCommitTimestamp }) // Group package version records by scan and catalog commit timestamp
                     .OrderByDescending(x => x.Key.CatalogCommitTimestamp)
-                    .ThenByDescending(x => x.First().ScanTimestamp)
+                    .ThenByDescending(x => x.First().ScanTimestamp ?? DateTimeOffset.MinValue)
                     .First())
                 .SelectMany(g => g)
                 .OrderBy(x => x.Id, StringComparer.OrdinalIgnoreCase)
