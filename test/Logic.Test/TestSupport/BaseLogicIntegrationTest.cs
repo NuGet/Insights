@@ -111,6 +111,8 @@ namespace NuGet.Insights
             x.PackageArchiveTableName = $"{StoragePrefix}1pa1";
             x.PackageManifestTableName = $"{StoragePrefix}1pm1";
             x.PackageHashesTableName = $"{StoragePrefix}1ph1";
+            x.OwnerToSubjectReferenceTableName = $"{StoragePrefix}1ro2s1";
+            x.SubjectToOwnerReferenceTableName = $"{StoragePrefix}1rs2o1";
             x.TimerTableName = $"{StoragePrefix}1t1";
 
             if (ConfigureSettings != null)

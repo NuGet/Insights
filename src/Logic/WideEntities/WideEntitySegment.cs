@@ -15,7 +15,7 @@ namespace NuGet.Insights.WideEntities
         /// <summary>
         /// The separator between the user-provided wide entity row key and the wide entity index suffix.
         /// </summary>
-        internal const char RowKeySeparator = '~';
+        public const char RowKeySeparator = '~';
 
         /// <summary>
         /// The row key suffix for index 0.

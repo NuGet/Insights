@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NuGet.Configuration;
+using NuGet.Insights.ReferenceTracking;
 using NuGet.Insights.TablePrefixScan;
 using NuGet.Insights.WideEntities;
 using NuGet.Protocol;
@@ -127,6 +128,7 @@ namespace NuGet.Insights
             serviceCollection.AddTransient<AutoRenewingStorageLeaseService>();
             serviceCollection.AddTransient<StorageSemaphoreLeaseService>();
             serviceCollection.AddTransient<TablePrefixScanner>();
+            serviceCollection.AddTransient<ReferenceTracker>();
             serviceCollection.AddTransient<WideEntityService>();
             serviceCollection.AddTransient<PackageWideEntityService>();
             serviceCollection.AddTransient<PackageFileService>();
