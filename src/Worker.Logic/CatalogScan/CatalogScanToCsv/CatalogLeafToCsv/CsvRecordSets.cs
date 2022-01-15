@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections;
@@ -6,19 +6,19 @@ using System.Collections.Generic;
 
 namespace NuGet.Insights.Worker
 {
-    public class CsvRecordSets : IReadOnlyList<ICsvRecordSet<ICsvRecord>>
+    public class CsvRecordSets : IReadOnlyList<IReadOnlyList<ICsvRecordSet<ICsvRecord>>>
     {
-        private readonly IReadOnlyList<ICsvRecordSet<ICsvRecord>> _sets;
+        private readonly IReadOnlyList<IReadOnlyList<ICsvRecordSet<ICsvRecord>>> _sets;
 
-        public CsvRecordSets(params ICsvRecordSet<ICsvRecord>[] sets)
+        public CsvRecordSets(params IReadOnlyList<ICsvRecordSet<ICsvRecord>>[] sets)
         {
             _sets = sets;
         }
 
-        public ICsvRecordSet<ICsvRecord> this[int index] => _sets[index];
+        public IReadOnlyList<ICsvRecordSet<ICsvRecord>> this[int index] => _sets[index];
         public int Count => _sets.Count;
 
-        public IEnumerator<ICsvRecordSet<ICsvRecord>> GetEnumerator()
+        public IEnumerator<IReadOnlyList<ICsvRecordSet<ICsvRecord>>> GetEnumerator()
         {
             return _sets.GetEnumerator();
         }
@@ -31,27 +31,36 @@ namespace NuGet.Insights.Worker
 
     public class CsvRecordSets<T> : CsvRecordSets where T : class, ICsvRecord
     {
-        public CsvRecordSets(CsvRecordSet<T> set1) : base(set1)
+        public CsvRecordSets(CsvRecordSet<T> set1) : base(new[] { set1 })
         {
-            Set1 = set1;
+            Sets1 = new[] { set1 };
         }
 
-        public ICsvRecordSet<T> Set1 { get; }
+        public CsvRecordSets(IReadOnlyList<CsvRecordSet<T>> sets1) : base(sets1)
+        {
+            Sets1 = sets1;
+        }
 
-        public static explicit operator CsvRecordSets<T>(CsvRecordSet<T> set1) => new CsvRecordSets<T>(set1);
+        public IReadOnlyList<CsvRecordSet<T>> Sets1 { get; }
     }
 
     public class CsvRecordSets<T1, T2> : CsvRecordSets
          where T1 : class, ICsvRecord
          where T2 : class, ICsvRecord
     {
-        public CsvRecordSets(CsvRecordSet<T1> set1, CsvRecordSet<T2> set2) : base(set1, set2)
+        public CsvRecordSets(CsvRecordSet<T1> set1, CsvRecordSet<T2> set2) : base(new[] { set1 }, new[] { set2 })
         {
-            Set1 = set1;
-            Set2 = set2;
+            Sets1 = new[] { set1 };
+            Sets2 = new[] { set2 };
         }
 
-        public ICsvRecordSet<T1> Set1 { get; }
-        public ICsvRecordSet<T2> Set2 { get; }
+        public CsvRecordSets(IReadOnlyList<CsvRecordSet<T1>> sets1, IReadOnlyList<CsvRecordSet<T2>> sets2) : base(sets1, sets2)
+        {
+            Sets1 = sets1;
+            Sets2 = sets2;
+        }
+
+        public IReadOnlyList<CsvRecordSet<T1>> Sets1 { get; }
+        public IReadOnlyList<CsvRecordSet<T2>> Sets2 { get; }
     }
 }

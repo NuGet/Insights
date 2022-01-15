@@ -8,10 +8,11 @@ namespace NuGet.Insights.Worker
     public interface ICatalogLeafToCsvDriver
     {
         /// <summary>
-        /// Whether or not the <see cref="ProcessLeafAsync(CatalogLeafItem, int)"/> should only be called once per
-        /// package ID in the catalog scan. Returning <c>true</c> means you expect to process latest data once per 
-        /// package ID. Returning <c>false</c> means you expect to process the latest data once per package ID and
-        /// version.
+        /// Whether or not the <see cref="ICatalogLeafToCsvDriver{T}.ProcessLeafAsync(ICatalogLeafItem, int)"/> or
+        /// <see cref="ICatalogLeafToCsvBatchDriver{T}.ProcessLeavesAsync(System.Collections.Generic.IReadOnlyList{CatalogLeafScan})"/>
+        /// should only be called once per package ID in the catalog scan. Returning <c>true</c> means you expect to
+        /// process latest data once per package ID. Returning <c>false</c> means you expect to process the latest data
+        /// once per package ID and version.
         /// </summary>
         bool SingleMessagePerId { get; }
 

@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace NuGet.Insights.Worker
 {
-    public class CatalogLeafScanToCsvAdapter<T> : BaseCatalogLeafScanToCsvAdapter, ICatalogLeafScanNonBatchDriver where T : class, ICsvRecord
+    public class CatalogLeafScanToCsvNonBatchAdapter<T> : BaseCatalogLeafScanToCsvNonBatchAdapter, ICatalogLeafScanNonBatchDriver where T : class, ICsvRecord
     {
         private readonly ICatalogLeafToCsvDriver<T> _driver;
 
-        public CatalogLeafScanToCsvAdapter(
+        public CatalogLeafScanToCsvNonBatchAdapter(
             SchemaSerializer schemaSerializer,
             CsvTemporaryStorageFactory intermediateStorageFactory,
             ICsvResultStorage<T> resultStorage,
@@ -26,17 +26,24 @@ namespace NuGet.Insights.Worker
         protected override async Task<(DriverResult, IReadOnlyList<ICsvRecordSet<ICsvRecord>>)> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount)
         {
             var result = await _driver.ProcessLeafAsync(item, attemptCount);
-            return (result, (CsvRecordSets<T>)GetValueOrDefault(result));
+            if (result.Type == DriverResultType.Success)
+            {
+                return (result, new[] { result.Value });
+            }
+            else
+            {
+                return (result, default);
+            }
         }
     }
 
-    public class CatalogLeafScanToCsvAdapter<T1, T2> : BaseCatalogLeafScanToCsvAdapter, ICatalogLeafScanNonBatchDriver
+    public class CatalogLeafScanToCsvNonBatchAdapter<T1, T2> : BaseCatalogLeafScanToCsvNonBatchAdapter, ICatalogLeafScanNonBatchDriver
         where T1 : class, ICsvRecord
         where T2 : class, ICsvRecord
     {
         private readonly ICatalogLeafToCsvDriver<T1, T2> _driver;
 
-        public CatalogLeafScanToCsvAdapter(
+        public CatalogLeafScanToCsvNonBatchAdapter(
             SchemaSerializer schemaSerializer,
             CsvTemporaryStorageFactory intermediateStorageFactory,
             ICsvResultStorage<T1> resultStorage1,
@@ -53,7 +60,14 @@ namespace NuGet.Insights.Worker
         protected override async Task<(DriverResult, IReadOnlyList<ICsvRecordSet<ICsvRecord>>)> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount)
         {
             var result = await _driver.ProcessLeafAsync(item, attemptCount);
-            return (result, GetValueOrDefault(result));
+            if (result.Type == DriverResultType.Success)
+            {
+                return (result, new ICsvRecordSet<ICsvRecord>[] { result.Value.Sets1[0], result.Value.Sets2[0] });
+            }
+            else
+            {
+                return (result, default);
+            }
         }
     }
 }

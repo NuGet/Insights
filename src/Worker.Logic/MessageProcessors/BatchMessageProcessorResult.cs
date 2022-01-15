@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -44,5 +44,34 @@ namespace NuGet.Insights.Worker
 
         public IReadOnlyList<T> Failed { get; }
         public IReadOnlyDictionary<TimeSpan, IReadOnlyList<T>> TryAgainLater { get; }
+    }
+
+    public class BatchMessageProcessorResult<TResult, TInput> : BatchMessageProcessorResult<TInput>
+    {
+        public BatchMessageProcessorResult(TResult result, IEnumerable<TInput> failed)
+            : base(failed)
+        {
+            Result = result;
+        }
+
+        public BatchMessageProcessorResult(TResult result, IEnumerable<TInput> failed, IEnumerable<TInput> tryAgainLater, TimeSpan notBefore)
+            : base(failed, tryAgainLater, notBefore)
+        {
+            Result = result;
+        }
+
+        public BatchMessageProcessorResult(TResult result, IEnumerable<TInput> failed, IEnumerable<(TInput Message, TimeSpan NotBefore)> tryAgainLater)
+            : base(failed, tryAgainLater)
+        {
+            Result = result;
+        }
+
+        public BatchMessageProcessorResult(TResult result, IEnumerable<TInput> failed, IReadOnlyDictionary<TimeSpan, IReadOnlyList<TInput>> tryAgainLater)
+            : base(failed, tryAgainLater)
+        {
+            Result = result;
+        }
+
+        public TResult Result { get; }
     }
 }

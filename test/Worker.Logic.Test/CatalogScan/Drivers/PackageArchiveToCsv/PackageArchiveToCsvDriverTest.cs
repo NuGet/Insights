@@ -38,9 +38,9 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Set1.Records);
+            var record = Assert.Single(Assert.Single(output.Value.Sets1).Records);
             Assert.Equal(PackageArchiveResultType.Deleted, record.ResultType);
-            var entry = Assert.Single(output.Value.Set2.Records);
+            var entry = Assert.Single(Assert.Single(output.Value.Sets2).Records);
             Assert.Equal(PackageArchiveResultType.Deleted, entry.ResultType);
         }
 
@@ -61,8 +61,8 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            Assert.Empty(output.Value.Set1.Records);
-            Assert.Empty(output.Value.Set2.Records);
+            Assert.Empty(Assert.Single(output.Value.Sets1).Records);
+            Assert.Empty(Assert.Single(output.Value.Sets2).Records);
         }
 
         [Fact]
@@ -81,7 +81,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var archive = Assert.Single(output.Value.Set1.Records);
+            var archive = Assert.Single(Assert.Single(output.Value.Sets1).Records);
             Assert.Equal(PackageArchiveResultType.Available, archive.ResultType);
             Assert.Equal(22399, archive.Size);
             Assert.Equal("Iv31+aZ1FrwwrVXrkkw6jw==", archive.MD5);
@@ -94,8 +94,8 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Equal(6, archive.EntryCount);
             Assert.Empty(archive.Comment);
 
-            Assert.Equal(6, output.Value.Set2.Records.Count);
-            var entries = output.Value.Set2.Records;
+            Assert.Equal(6, Assert.Single(output.Value.Sets2).Records.Count);
+            var entries = Assert.Single(output.Value.Sets2).Records;
 
             Assert.Equal(0, entries[0].SequenceNumber);
             Assert.Equal("_rels/.rels", entries[0].Path);
@@ -198,7 +198,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var archive = Assert.Single(output.Value.Set1.Records);
+            var archive = Assert.Single(Assert.Single(output.Value.Sets1).Records);
             Assert.Equal(PackageArchiveResultType.Available, archive.ResultType);
             Assert.Equal(69294, archive.Size);
             Assert.Equal("YChbobHPT7otNUCa9TWMqA==", archive.MD5);
@@ -211,8 +211,8 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Equal(11, archive.EntryCount);
             Assert.Empty(archive.Comment);
 
-            Assert.Equal(11, output.Value.Set2.Records.Count);
-            var entries = output.Value.Set2.Records;
+            Assert.Equal(11, Assert.Single(output.Value.Sets2).Records.Count);
+            var entries = Assert.Single(output.Value.Sets2).Records;
 
             Assert.Equal(6, entries[6].SequenceNumber);
             Assert.Equal("packageIcon.png", entries[6].Path);

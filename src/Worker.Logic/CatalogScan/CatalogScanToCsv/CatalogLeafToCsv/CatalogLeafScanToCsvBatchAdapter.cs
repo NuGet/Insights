@@ -1,0 +1,65 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace NuGet.Insights.Worker
+{
+    public class CatalogLeafScanToCsvBatchAdapter<T> : BaseCatalogLeafScanToCsvBatchAdapter, ICatalogLeafScanBatchDriver where T : class, ICsvRecord
+    {
+        private readonly ICatalogLeafToCsvBatchDriver<T> _driver;
+
+        public CatalogLeafScanToCsvBatchAdapter(
+            SchemaSerializer schemaSerializer,
+            CsvTemporaryStorageFactory intermediateStorageFactory,
+            ICsvResultStorage<T> resultStorage,
+            ICatalogLeafToCsvBatchDriver<T> driver) : base(
+                schemaSerializer,
+                intermediateStorageFactory,
+                intermediateStorageFactory.Create(resultStorage),
+                driver)
+        {
+            _driver = driver;
+        }
+
+        protected override async Task<BatchMessageProcessorResult<IReadOnlyList<IReadOnlyList<ICsvRecordSet<ICsvRecord>>>, CatalogLeafScan>> ProcessLeafAsync(IReadOnlyList<CatalogLeafScan> leafScans)
+        {
+            var result = await _driver.ProcessLeavesAsync(leafScans);
+            return new BatchMessageProcessorResult<IReadOnlyList<IReadOnlyList<ICsvRecordSet<ICsvRecord>>>, CatalogLeafScan>(
+                result.Result,
+                result.Failed,
+                result.TryAgainLater);
+        }
+    }
+
+    public class CatalogLeafScanToCsvBatchAdapter<T1, T2> : BaseCatalogLeafScanToCsvBatchAdapter, ICatalogLeafScanBatchDriver
+        where T1 : class, ICsvRecord
+        where T2 : class, ICsvRecord
+    {
+        private readonly ICatalogLeafToCsvBatchDriver<T1, T2> _driver;
+
+        public CatalogLeafScanToCsvBatchAdapter(
+            SchemaSerializer schemaSerializer,
+            CsvTemporaryStorageFactory intermediateStorageFactory,
+            ICsvResultStorage<T1> resultStorage1,
+            ICsvResultStorage<T2> resultStorage2,
+            ICatalogLeafToCsvBatchDriver<T1, T2> driver) : base(
+                schemaSerializer,
+                intermediateStorageFactory,
+                intermediateStorageFactory.Create(resultStorage1, resultStorage2),
+                driver)
+        {
+            _driver = driver;
+        }
+
+        protected override async Task<BatchMessageProcessorResult<IReadOnlyList<IReadOnlyList<ICsvRecordSet<ICsvRecord>>>, CatalogLeafScan>> ProcessLeafAsync(IReadOnlyList<CatalogLeafScan> leafScans)
+        {
+            var result = await _driver.ProcessLeavesAsync(leafScans);
+            return new BatchMessageProcessorResult<IReadOnlyList<IReadOnlyList<ICsvRecordSet<ICsvRecord>>>, CatalogLeafScan>(
+                result.Result,
+                result.Failed,
+                result.TryAgainLater);
+        }
+    }
+}
