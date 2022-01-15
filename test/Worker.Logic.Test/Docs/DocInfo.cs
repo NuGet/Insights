@@ -46,13 +46,18 @@ namespace NuGet.Insights.Worker
 
         public Table GetTableAfterHeading(string heading)
         {
+            return Assert.IsType<Table>(GetNextObject(heading));
+        }
+
+        public Block GetNextObject(string heading)
+        {
             var nextObj = MarkdownDocument
                 .SkipWhile(x => !(x is HeadingBlock) || ToPlainText(x) != heading)
                 .Skip(1)
                 .Where(x => x is not ParagraphBlock)
                 .FirstOrDefault();
             Assert.NotNull(nextObj);
-            return Assert.IsType<Table>(nextObj);
+            return nextObj;
         }
 
         public string ToPlainText(MarkdownObject obj, bool trim = true)
