@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -50,14 +50,14 @@ namespace NuGet.Insights.Worker
             };
         }
 
-        public async Task InitializeAsync(CatalogIndexScan indexScan)
+        public async Task InitializeAsync(string storageSuffix)
         {
-            await _taskStateStorageService.InitializeAsync(indexScan.StorageSuffix);
+            await _taskStateStorageService.InitializeAsync(storageSuffix);
         }
 
-        public async Task FinalizeAsync(CatalogIndexScan indexScan)
+        public async Task FinalizeAsync(string storageSuffix)
         {
-            await _taskStateStorageService.DeleteTableAsync(indexScan.StorageSuffix);
+            await _taskStateStorageService.DeleteTableAsync(storageSuffix);
         }
 
         private class CatalogScanToCsvStorage<T> : ICsvTemporaryStorage where T : class, ICsvRecord
@@ -77,9 +77,51 @@ namespace NuGet.Insights.Worker
 
             }
 
-            public async Task InitializeAsync(CatalogIndexScan indexScan)
+            public async Task InitializeAsync(string storageSuffix)
             {
-                await _parent._storageService.InitializeAsync(GetTableName(indexScan.StorageSuffix), _resultsContainerName);
+                await _parent._storageService.InitializeAsync(GetTableName(storageSuffix), _resultsContainerName);
+            }
+
+            public async Task AppendAsync<TRecord>(string storageSuffix, IReadOnlyList<ICsvRecordSet<TRecord>> sets) where TRecord : class, ICsvRecord
+            {
+                await _parent._storageService.AppendAsync(
+                    GetTableName(storageSuffix),
+                    _parent._options.Value.AppendResultStorageBucketCount,
+                    sets);
+            }
+
+            public async Task StartAggregateAsync(string aggregatePartitionKeyPrefix, string storageSuffix)
+            {
+                var buckets = await _parent._storageService.GetAppendedBucketsAsync(GetTableName(storageSuffix));
+
+                var partitionKey = GetAggregateTasksPartitionKey(aggregatePartitionKeyPrefix);
+
+                await _parent._taskStateStorageService.AddAsync(
+                    storageSuffix,
+                    partitionKey,
+                    buckets.Select(x => x.ToString()).ToList());
+
+                var messages = buckets
+                    .Select(b => new CsvCompactMessage<T>
+                    {
+                        SourceContainer = GetTableName(storageSuffix),
+                        Bucket = b,
+                        TaskStateKey = new TaskStateKey(
+                            storageSuffix,
+                            partitionKey,
+                            b.ToString()),
+                    })
+                    .ToList();
+                await _parent._messageEnqueuer.EnqueueAsync(messages);
+            }
+
+            public async Task<bool> IsAggregateCompleteAsync(string aggregatePartitionKeyPrefix, string storageSuffix)
+            {
+                var countLowerBound = await _parent._taskStateStorageService.GetCountLowerBoundAsync(
+                    storageSuffix,
+                    GetAggregateTasksPartitionKey(aggregatePartitionKeyPrefix));
+                _parent._logger.LogInformation("There are at least {Count} aggregate tasks pending.", countLowerBound);
+                return countLowerBound == 0;
             }
 
             public async Task StartCustomExpandAsync(CatalogIndexScan indexScan)
@@ -122,59 +164,14 @@ namespace NuGet.Insights.Worker
                 return $"{indexScan.GetScanId()}-{nameof(CatalogScanToCsvStorage<T>)}-custom-expand-{_setIndex}";
             }
 
-            public async Task AppendAsync<TRecord>(string storageSuffix, ICsvRecordSet<TRecord> set) where TRecord : class, ICsvRecord
+            private string GetAggregateTasksPartitionKey(string aggregatePartitionKeyPrefix)
             {
-                if (set.Records.Any())
-                {
-                    await _parent._storageService.AppendAsync(
-                        GetTableName(storageSuffix),
-                        _parent._options.Value.AppendResultStorageBucketCount,
-                        new[] { set });
-                }
+                return $"{aggregatePartitionKeyPrefix}-{nameof(CatalogScanToCsvStorage<T>)}-aggregate-{_setIndex}";
             }
 
-            public async Task StartAggregateAsync(CatalogIndexScan indexScan)
+            public async Task FinalizeAsync(string storageSuffix)
             {
-                var buckets = await _parent._storageService.GetAppendedBucketsAsync(GetTableName(indexScan.StorageSuffix));
-
-                var partitionKey = GetAggregateTasksPartitionKey(indexScan);
-
-                await _parent._taskStateStorageService.AddAsync(
-                    indexScan.StorageSuffix,
-                    partitionKey,
-                    buckets.Select(x => x.ToString()).ToList());
-
-                var messages = buckets
-                    .Select(b => new CsvCompactMessage<T>
-                    {
-                        SourceContainer = GetTableName(indexScan.StorageSuffix),
-                        Bucket = b,
-                        TaskStateKey = new TaskStateKey(
-                            indexScan.StorageSuffix,
-                            partitionKey,
-                            b.ToString()),
-                    })
-                    .ToList();
-                await _parent._messageEnqueuer.EnqueueAsync(messages);
-            }
-
-            public async Task<bool> IsAggregateCompleteAsync(CatalogIndexScan indexScan)
-            {
-                var countLowerBound = await _parent._taskStateStorageService.GetCountLowerBoundAsync(
-                    indexScan.StorageSuffix,
-                    GetAggregateTasksPartitionKey(indexScan));
-                _parent._logger.LogInformation("There are at least {Count} aggregate tasks pending.", countLowerBound);
-                return countLowerBound == 0;
-            }
-
-            private string GetAggregateTasksPartitionKey(CatalogIndexScan indexScan)
-            {
-                return $"{indexScan.GetScanId()}-{nameof(CatalogScanToCsvStorage<T>)}-aggregate-{_setIndex}";
-            }
-
-            public async Task FinalizeAsync(CatalogIndexScan indexScan)
-            {
-                await _parent._storageService.DeleteAsync(GetTableName(indexScan.StorageSuffix));
+                await _parent._storageService.DeleteAsync(GetTableName(storageSuffix));
             }
 
             private string GetTableName(string suffix)

@@ -30,9 +30,9 @@ namespace NuGet.Insights.Worker
         {
             foreach (var storage in _storage)
             {
-                await storage.InitializeAsync(indexScan);
+                await storage.InitializeAsync(indexScan.StorageSuffix);
             }
-            await _storageFactory.InitializeAsync(indexScan);
+            await _storageFactory.InitializeAsync(indexScan.StorageSuffix);
             await _driver.InitializeAsync();
         }
 
@@ -118,7 +118,7 @@ namespace NuGet.Insights.Worker
 
             for (var setIndex = 0; setIndex < _storage.Count; setIndex++)
             {
-                await _storage[setIndex].AppendAsync(leafScan.StorageSuffix, sets[setIndex]);
+                await _storage[setIndex].AppendAsync(leafScan.StorageSuffix, new[] { sets[setIndex] });
             }
 
             return result;
@@ -128,7 +128,7 @@ namespace NuGet.Insights.Worker
         {
             foreach (var storage in _storage)
             {
-                await storage.StartAggregateAsync(indexScan);
+                await storage.StartAggregateAsync(indexScan.GetScanId(), indexScan.StorageSuffix);
             }
         }
 
@@ -136,7 +136,7 @@ namespace NuGet.Insights.Worker
         {
             foreach (var storage in _storage)
             {
-                if (!await storage.IsAggregateCompleteAsync(indexScan))
+                if (!await storage.IsAggregateCompleteAsync(indexScan.GetScanId(), indexScan.StorageSuffix))
                 {
                     return false;
                 }
@@ -147,10 +147,10 @@ namespace NuGet.Insights.Worker
 
         public async Task FinalizeAsync(CatalogIndexScan indexScan)
         {
-            await _storageFactory.FinalizeAsync(indexScan);
+            await _storageFactory.FinalizeAsync(indexScan.StorageSuffix);
             foreach (var storage in _storage)
             {
-                await storage.FinalizeAsync(indexScan);
+                await storage.FinalizeAsync(indexScan.StorageSuffix);
             }
         }
     }

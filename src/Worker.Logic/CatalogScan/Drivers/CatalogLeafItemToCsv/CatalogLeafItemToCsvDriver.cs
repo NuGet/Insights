@@ -40,8 +40,8 @@ namespace NuGet.Insights.Worker.CatalogLeafItemToCsv
 
         public async Task InitializeAsync(CatalogIndexScan indexScan)
         {
-            await _tempStorageFactory.InitializeAsync(indexScan);
-            await _tempStorage.InitializeAsync(indexScan);
+            await _tempStorageFactory.InitializeAsync(indexScan.StorageSuffix);
+            await _tempStorage.InitializeAsync(indexScan.StorageSuffix);
         }
 
         public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
@@ -69,7 +69,9 @@ namespace NuGet.Insights.Worker.CatalogLeafItemToCsv
                 })
                 .ToList();
 
-            await _tempStorage.AppendAsync(pageScan.StorageSuffix, new CsvRecordSet<CatalogLeafItemRecord>(pageScan.Url, records));
+            await _tempStorage.AppendAsync(
+                pageScan.StorageSuffix,
+                new[] { new CsvRecordSet<CatalogLeafItemRecord>(pageScan.Url, records) });
 
             return CatalogPageScanResult.Processed;
         }
@@ -81,18 +83,18 @@ namespace NuGet.Insights.Worker.CatalogLeafItemToCsv
 
         public async Task StartAggregateAsync(CatalogIndexScan indexScan)
         {
-            await _tempStorage.StartAggregateAsync(indexScan);
+            await _tempStorage.StartAggregateAsync(indexScan.GetScanId(), indexScan.StorageSuffix);
         }
 
         public async Task<bool> IsAggregateCompleteAsync(CatalogIndexScan indexScan)
         {
-            return await _tempStorage.IsAggregateCompleteAsync(indexScan);
+            return await _tempStorage.IsAggregateCompleteAsync(indexScan.GetScanId(), indexScan.StorageSuffix);
         }
 
         public async Task FinalizeAsync(CatalogIndexScan indexScan)
         {
-            await _tempStorage.FinalizeAsync(indexScan);
-            await _tempStorageFactory.FinalizeAsync(indexScan);
+            await _tempStorage.FinalizeAsync(indexScan.StorageSuffix);
+            await _tempStorageFactory.FinalizeAsync(indexScan.StorageSuffix);
         }
 
         public async Task StartCustomExpandAsync(CatalogIndexScan indexScan)
