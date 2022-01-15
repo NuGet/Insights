@@ -46,6 +46,7 @@ namespace NuGet.Insights.Worker
                 "Access-Control-Expose-Headers",
                 "Age",
                 "Cache-Control",
+                "Connection",
                 "Date",
                 "Expires",
                 "Server",

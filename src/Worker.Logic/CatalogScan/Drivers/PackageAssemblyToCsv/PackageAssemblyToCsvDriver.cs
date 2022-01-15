@@ -78,51 +78,54 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             {
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
 
-                using var result = await _flatContainerClient.DownloadPackageContentToFileAsync(
+                (_, var result) = await _flatContainerClient.DownloadPackageContentToFileAsync(
                     item.PackageId,
                     item.PackageVersion,
                     CancellationToken.None);
 
-                if (result == null)
+                using (result)
                 {
-                    // We must clear the data related to deleted packages.
-                    await _packageHashService.SetHashesAsync(item, hashes: null);
+                    if (result == null)
+                    {
+                        // We must clear the data related to deleted packages.
+                        await _packageHashService.SetHashesAsync(item, hashes: null);
 
-                    return MakeEmptyResults(item);
-                }
+                        return MakeEmptyResults(item);
+                    }
 
-                if (result.Type == TempStreamResultType.SemaphoreNotAvailable)
-                {
-                    return DriverResult.TryAgainLater<CsvRecordSet<PackageAssembly>>();
-                }
-
-                // We have downloaded the full .nupkg here so we can capture the calculated hashes.
-                await _packageHashService.SetHashesAsync(item, result.Hash);
-
-                using var zipArchive = new ZipArchive(result.Stream);
-                var entries = zipArchive
-                    .Entries
-                    .Where(x => FileExtensions.Contains(Path.GetExtension(x.FullName)))
-                    .ToList();
-
-                if (!entries.Any())
-                {
-                    return MakeNoAssemblies(scanId, scanTimestamp, leaf);
-                }
-
-                var assemblies = new List<PackageAssembly>();
-                foreach (var entry in entries)
-                {
-                    var assemblyResult = await AnalyzeAsync(scanId, scanTimestamp, leaf, entry);
-                    if (assemblyResult.Type == DriverResultType.TryAgainLater)
+                    if (result.Type == TempStreamResultType.SemaphoreNotAvailable)
                     {
                         return DriverResult.TryAgainLater<CsvRecordSet<PackageAssembly>>();
                     }
 
-                    assemblies.Add(assemblyResult.Value);
-                }
+                    // We have downloaded the full .nupkg here so we can capture the calculated hashes.
+                    await _packageHashService.SetHashesAsync(item, result.Hash);
 
-                return MakeResults(item, assemblies);
+                    using var zipArchive = new ZipArchive(result.Stream);
+                    var entries = zipArchive
+                        .Entries
+                        .Where(x => FileExtensions.Contains(Path.GetExtension(x.FullName)))
+                        .ToList();
+
+                    if (!entries.Any())
+                    {
+                        return MakeNoAssemblies(scanId, scanTimestamp, leaf);
+                    }
+
+                    var assemblies = new List<PackageAssembly>();
+                    foreach (var entry in entries)
+                    {
+                        var assemblyResult = await AnalyzeAsync(scanId, scanTimestamp, leaf, entry);
+                        if (assemblyResult.Type == DriverResultType.TryAgainLater)
+                        {
+                            return DriverResult.TryAgainLater<CsvRecordSet<PackageAssembly>>();
+                        }
+
+                        assemblies.Add(assemblyResult.Value);
+                    }
+
+                    return MakeResults(item, assemblies);
+                }
             }
         }
 

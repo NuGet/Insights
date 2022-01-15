@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography.Pkcs;
+using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.MiniZip;
 using MessagePack;
@@ -107,65 +108,114 @@ namespace NuGet.Insights
 
         private async Task<PackageFileInfoV1> GetInfoAsync(ICatalogLeafItem leafItem)
         {
-            return await GetInfoAsync(leafItem, isRetry: false);
+            return await GetInfoAsync(leafItem, GetInfoMode.DefaultMiniZip);
         }
 
-        private async Task<PackageFileInfoV1> GetInfoAsync(ICatalogLeafItem leafItem, bool isRetry)
+        private enum GetInfoMode
+        {
+            DefaultMiniZip,
+            CacheBustMiniZip,
+            FullDownload,
+        }
+
+        private async Task<PackageFileInfoV1> GetInfoAsync(ICatalogLeafItem leafItem, GetInfoMode mode)
         {
             if (leafItem.Type == CatalogLeafType.PackageDelete)
             {
                 return MakeDeletedInfo(leafItem);
             }
 
-            var url = await _flatContainerClient.GetPackageContentUrlAsync(leafItem.PackageId, leafItem.PackageVersion);
-
-            // I've noticed cases where NuGet.org CDN caches a request with a specific If-* condition header in the
-            // request. When subsequent requests come with a different If-* condition header, Blob Storage errors out
-            // with an HTTP 400 and a "MultipleConditionHeadersNotSupported" error code. This seems like a bug in the
-            // NuGet CDN, where a "Vary: If-Match" or similar is missing.
-            if (isRetry)
-            {
-                url = QueryHelpers.AddQueryString(url, "cache-bust", Guid.NewGuid().ToString());
-            }
-
             var metric = _telemetryClient.GetMetric($"{nameof(PackageFileService)}.{nameof(GetInfoAsync)}.DurationMs");
             var sw = Stopwatch.StartNew();
 
-            using var destStream = new MemoryStream();
             try
             {
-                using var reader = await _httpZipProvider.GetReaderAsync(new Uri(url));
 
-                var zipDirectory = await reader.ReadAsync();
-                var signatureEntry = zipDirectory.Entries.Single(x => x.GetName() == ".signature.p7s");
-                var signatureBytes = await reader.ReadUncompressedFileDataAsync(zipDirectory, signatureEntry);
-
-                var signedCms = new SignedCms();
-                signedCms.Decode(signatureBytes);
-
-                await _mzipFormat.WriteAsync(reader.Stream, destStream);
-                return new PackageFileInfoV1
+                if (mode == GetInfoMode.DefaultMiniZip || mode == GetInfoMode.CacheBustMiniZip)
                 {
-                    CommitTimestamp = leafItem.CommitTimestamp,
-                    Available = true,
-                    HttpHeaders = reader.Properties,
-                    MZipBytes = new Memory<byte>(destStream.GetBuffer(), 0, (int)destStream.Length),
-                    SignatureBytes = signatureBytes.AsMemory(),
-                };
-            }
-            catch (MiniZipHttpException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
-            {
-                return MakeDeletedInfo(leafItem);
-            }
-            catch (MiniZipHttpException ex) when (!isRetry)
-            {
-                _logger.LogWarning(ex, "Fetching package {Id} {Version} failed using MiniZip. Trying again with cache busting.", leafItem.PackageId, leafItem.PackageVersion);
-                return await GetInfoAsync(leafItem, isRetry: true);
+
+                    var url = await _flatContainerClient.GetPackageContentUrlAsync(leafItem.PackageId, leafItem.PackageVersion);
+
+                    // I've noticed cases where NuGet.org CDN caches a request with a specific If-* condition header in the
+                    // request. When subsequent requests come with a different If-* condition header, Blob Storage errors out
+                    // with an HTTP 400 and a "MultipleConditionHeadersNotSupported" error code. This seems like a bug in the
+                    // NuGet CDN, where a "Vary: If-Match" or similar is missing.
+                    if (mode == GetInfoMode.CacheBustMiniZip)
+                    {
+                        url = QueryHelpers.AddQueryString(url, "cache-bust", Guid.NewGuid().ToString());
+                    }
+
+
+                    try
+                    {
+                        using var reader = await _httpZipProvider.GetReaderAsync(new Uri(url));
+                        return await GetInfoAsync(leafItem, reader.Properties, reader);
+                    }
+                    catch (MiniZipHttpException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        return MakeDeletedInfo(leafItem);
+                    }
+                    catch (MiniZipHttpException ex) when (mode == GetInfoMode.DefaultMiniZip)
+                    {
+                        _logger.LogInformation(ex, "Fetching package {Id} {Version} failed using MiniZip. Trying again with cache busting.", leafItem.PackageId, leafItem.PackageVersion);
+                        return await GetInfoAsync(leafItem, GetInfoMode.CacheBustMiniZip);
+                    }
+                    catch (MiniZipHttpException ex) when (mode == GetInfoMode.CacheBustMiniZip)
+                    {
+                        _logger.LogInformation(ex, "Fetching package {Id} {Version} failed using MiniZip. Trying again with a full download.", leafItem.PackageId, leafItem.PackageVersion);
+                        return await GetInfoAsync(leafItem, GetInfoMode.FullDownload);
+                    }
+                }
+                else if (mode == GetInfoMode.FullDownload)
+                {
+                    (var headers, var packageContent) = await _flatContainerClient.DownloadPackageContentToFileAsync(
+                        leafItem.PackageId,
+                        leafItem.PackageVersion,
+                        CancellationToken.None);
+                    using (packageContent)
+                    {
+                        if (packageContent == null)
+                        {
+                            return MakeDeletedInfo(leafItem);
+                        }
+
+                        using var reader = new ZipDirectoryReader(packageContent.Stream);
+                        return await GetInfoAsync(leafItem, headers, reader);
+                    }
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
             }
             finally
             {
                 metric.TrackValue(sw.ElapsedMilliseconds);
             }
+        }
+
+        private async Task<PackageFileInfoV1> GetInfoAsync(
+            ICatalogLeafItem leafItem,
+            ILookup<string, string> headers,
+            ZipDirectoryReader reader)
+        {
+            var zipDirectory = await reader.ReadAsync();
+            var signatureEntry = zipDirectory.Entries.Single(x => x.GetName() == ".signature.p7s");
+            var signatureBytes = await reader.ReadUncompressedFileDataAsync(zipDirectory, signatureEntry);
+
+            var signedCms = new SignedCms();
+            signedCms.Decode(signatureBytes);
+
+            using var destStream = new MemoryStream();
+            await _mzipFormat.WriteAsync(reader.Stream, destStream);
+            return new PackageFileInfoV1
+            {
+                CommitTimestamp = leafItem.CommitTimestamp,
+                Available = true,
+                HttpHeaders = headers,
+                MZipBytes = new Memory<byte>(destStream.GetBuffer(), 0, (int)destStream.Length),
+                SignatureBytes = signatureBytes.AsMemory(),
+            };
         }
 
         private static PackageFileInfoV1 MakeDeletedInfo(ICatalogLeafItem leafItem)

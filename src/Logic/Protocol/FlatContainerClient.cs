@@ -1,6 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -67,25 +70,25 @@ namespace NuGet.Insights
             return url;
         }
 
-        public async Task<TempStreamResult> DownloadPackageContentToFileAsync(string id, string version, CancellationToken token)
+        public async Task<(ILookup<string, string> Headers, TempStreamResult Result)> DownloadPackageContentToFileAsync(string id, string version, CancellationToken token)
         {
             var url = await GetPackageContentUrlAsync(id, version);
-            (_, var result) = await DownloadUrlToFileAsync(url, token);
-            return result;
+            return await DownloadUrlToFileAsync(url, token);
         }
 
         public async Task<(string ContentType, TempStreamResult Result)> DownloadPackageIconToFileAsync(string id, string version, CancellationToken token)
         {
             var url = await GetPackageIconUrlAsync(id, version);
-            return await DownloadUrlToFileAsync(url, token);
+            (var headers, var result) = await DownloadUrlToFileAsync(url, token);
+            return (headers?["Content-Type"].FirstOrDefault(), result);
         }
 
-        private async Task<(string, TempStreamResult)> DownloadUrlToFileAsync(string url, CancellationToken token)
+        private async Task<(ILookup<string, string>, TempStreamResult)> DownloadUrlToFileAsync(string url, CancellationToken token)
         {
             var nuGetLogger = _logger.ToNuGetLogger();
             var writer = _tempStreamService.GetWriter();
 
-            string contentType = null;
+            ILookup<string, string> headers = null;
             TempStreamResult result = null;
             try
             {
@@ -101,7 +104,13 @@ namespace NuGet.Insights
                             }
 
                             response.EnsureSuccessStatusCode();
-                            contentType = response.Content.Headers.ContentType?.ToString();
+
+                            headers = Enumerable.Empty<KeyValuePair<string, IEnumerable<string>>>()
+                                .Concat(response.Headers)
+                                .Concat(response.Content.Headers)
+                                .SelectMany(x => x.Value.Select(y => new { x.Key, Value = y }))
+                                .ToLookup(x => x.Key, x => x.Value, StringComparer.OrdinalIgnoreCase);
+
                             using var networkStream = await response.Content.ReadAsStreamAsync();
                             return await writer.CopyToTempStreamAsync(
                                 networkStream,
@@ -113,12 +122,12 @@ namespace NuGet.Insights
 
                     if (result == null)
                     {
-                        return (contentType, null);
+                        return (headers, null);
                     }
                 }
                 while (result.Type == TempStreamResultType.NeedNewStream);
 
-                return (contentType, result);
+                return (headers, result);
             }
             catch
             {
