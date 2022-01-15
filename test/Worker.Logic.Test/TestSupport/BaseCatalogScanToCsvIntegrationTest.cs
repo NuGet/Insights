@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -48,7 +48,17 @@ namespace NuGet.Insights.Worker
 
         protected async Task AssertOutputAsync(string testName, string stepName, int bucket)
         {
+            await AssertOutputT1Async(testName, stepName, bucket);
+            await AssertOutputT2Async(testName, stepName, bucket);
+        }
+
+        protected async Task AssertOutputT1Async(string testName, string stepName, int bucket)
+        {
             await AssertCompactAsync<T1>(DestinationContainerName1, testName, Path.Combine(stepName, "T1"), bucket);
+        }
+
+        protected async Task AssertOutputT2Async(string testName, string stepName, int bucket)
+        {
             await AssertCompactAsync<T2>(DestinationContainerName2, testName, Path.Combine(stepName, "T2"), bucket);
         }
     }
