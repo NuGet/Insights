@@ -5,11 +5,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
+using NuGet.Packaging.Signing;
 
 namespace NuGet.Insights.Worker
 {
     public static class X509Certificate2Extensions
     {
+        public static string GetSHA256HexFingerprint(this X509Certificate2 certificate)
+        {
+            return CertificateUtility.GetHash(certificate, Common.HashAlgorithmName.SHA256).ToUpperHex();
+        }
+
+        public static string GetSHA1HexFingerprint(this X509Certificate2 certificate)
+        {
+            return certificate.Thumbprint;
+        }
+
         public static string GetSubjectXplat(this X509Certificate2 certificate)
         {
             return FixDistinguishedName(certificate.Subject);

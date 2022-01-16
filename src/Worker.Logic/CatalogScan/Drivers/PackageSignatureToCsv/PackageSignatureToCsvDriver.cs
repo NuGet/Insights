@@ -154,15 +154,15 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
             {
                 TimestampHasASN1Error = timestampHasASN1Error,
 
-                SHA1 = signature.SignerInfo.Certificate.Thumbprint,
-                SHA256 = CertificateUtility.GetHashString(signature.SignerInfo.Certificate, Common.HashAlgorithmName.SHA256),
+                SHA1 = signature.SignerInfo.Certificate.GetSHA1HexFingerprint(),
+                SHA256 = signature.SignerInfo.Certificate.GetSHA256HexFingerprint(),
                 Subject = signature.SignerInfo.Certificate.GetSubjectXplat(),
                 NotBefore = signature.SignerInfo.Certificate.NotBefore.ToUniversalTime(),
                 NotAfter = signature.SignerInfo.Certificate.NotAfter.ToUniversalTime(),
                 Issuer = signature.SignerInfo.Certificate.GetIssuerXplat(),
 
-                TimestampSHA1 = timestamp?.SignerInfo.Certificate.Thumbprint,
-                TimestampSHA256 = timestamp != null ? CertificateUtility.GetHashString(timestamp.SignerInfo.Certificate, Common.HashAlgorithmName.SHA256) : null,
+                TimestampSHA1 = timestamp?.SignerInfo.Certificate.GetSHA1HexFingerprint(),
+                TimestampSHA256 = timestamp != null ? timestamp.SignerInfo.Certificate.GetSHA256HexFingerprint() : null,
                 TimestampSubject = timestamp?.SignerInfo.Certificate.GetSubjectXplat(),
                 TimestampNotBefore = timestamp?.SignerInfo.Certificate.NotBefore.ToUniversalTime(),
                 TimestampNotAfter = timestamp?.SignerInfo.Certificate.NotAfter.ToUniversalTime(),
