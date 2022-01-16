@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -27,6 +27,16 @@ namespace NuGet.Insights.Worker.Workflow
             new WorkflowStateTransition(
                 CurrentState: WorkflowRunState.CatalogScanWorking,
                 IsIncompleteAsync: self => self._workflowService.AreCatalogScansRunningAsync(),
+                TransitionAsync: async (self, run) =>
+                {
+                    self._logger.LogInformation("Starting cleanup of orphan records.");
+                    await self._workflowService.StartCleanupOrphanRecordsAsync();
+                },
+                NextState: WorkflowRunState.CleanupOrphanRecordsWorking),
+
+            new WorkflowStateTransition(
+                CurrentState: WorkflowRunState.CleanupOrphanRecordsWorking,
+                IsIncompleteAsync: self => self._workflowService.AreCleanupOrphanRecordsRunningAsync(),
                 TransitionAsync: async (self, run) =>
                 {
                     self._logger.LogInformation("Starting auxiliary file processors.");

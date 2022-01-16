@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
 using NuGet.Insights.Worker.KustoIngestion;
+using NuGet.Insights.Worker.ReferenceTracking;
 
 namespace NuGet.Insights.Worker.Workflow
 {
@@ -15,6 +16,7 @@ namespace NuGet.Insights.Worker.Workflow
         private readonly WorkflowStorageService _workflowStorageService;
         private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly CatalogScanStorageService _catalogScanStorageService;
+        private readonly IReadOnlyList<ICleanupOrphanRecordsService> _cleanupOrphanRecordsServices;
         private readonly IReadOnlyList<IAuxiliaryFileUpdaterService> _auxiliaryFileUpdaterServices;
         private readonly KustoIngestionService _kustoIngestionService;
         private readonly KustoIngestionStorageService _kustoIngestionStorageService;
@@ -24,6 +26,7 @@ namespace NuGet.Insights.Worker.Workflow
             WorkflowStorageService workflowStorageService,
             AutoRenewingStorageLeaseService leaseService,
             CatalogScanStorageService catalogScanStorageService,
+            IEnumerable<ICleanupOrphanRecordsService> cleanupOrphanRecordsServices,
             IEnumerable<IAuxiliaryFileUpdaterService> auxiliaryFileUpdaterServices,
             KustoIngestionService kustoIngestionService,
             KustoIngestionStorageService kustoIngestionStorageService,
@@ -32,6 +35,7 @@ namespace NuGet.Insights.Worker.Workflow
             _workflowStorageService = workflowStorageService;
             _leaseService = leaseService;
             _catalogScanStorageService = catalogScanStorageService;
+            _cleanupOrphanRecordsServices = cleanupOrphanRecordsServices.ToList();
             _auxiliaryFileUpdaterServices = auxiliaryFileUpdaterServices.ToList();
             _kustoIngestionService = kustoIngestionService;
             _kustoIngestionStorageService = kustoIngestionStorageService;
@@ -43,6 +47,10 @@ namespace NuGet.Insights.Worker.Workflow
             await _workflowStorageService.InitializeAsync();
             await _leaseService.InitializeAsync();
             await _catalogScanStorageService.InitializeAsync();
+            foreach (var service in _cleanupOrphanRecordsServices)
+            {
+                await service.InitializeAsync();
+            }
             foreach (var service in _auxiliaryFileUpdaterServices)
             {
                 await service.InitializeAsync();
@@ -93,8 +101,17 @@ namespace NuGet.Insights.Worker.Workflow
         {
             return await IsWorkflowRunningAsync()
                 || await AreCatalogScansRunningAsync()
+                || await AreCleanupOrphanRecordsRunningAsync()
                 || await AreAuxiliaryFilesRunningAsync()
                 || await IsKustoIngestionRunningAsync();
+        }
+
+        internal async Task StartCleanupOrphanRecordsAsync()
+        {
+            foreach (var service in _cleanupOrphanRecordsServices)
+            {
+                await service.StartAsync();
+            }
         }
 
         internal async Task StartAuxiliaryFilesAsync()
@@ -109,6 +126,19 @@ namespace NuGet.Insights.Worker.Workflow
         {
             var catalogScans = await _catalogScanStorageService.GetIndexScansAsync();
             return catalogScans.Any(x => x.State != CatalogIndexScanState.Complete);
+        }
+
+        internal async Task<bool> AreCleanupOrphanRecordsRunningAsync()
+        {
+            foreach (var service in _cleanupOrphanRecordsServices)
+            {
+                if (await service.IsRunningAsync())
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         internal async Task<bool> AreAuxiliaryFilesRunningAsync()

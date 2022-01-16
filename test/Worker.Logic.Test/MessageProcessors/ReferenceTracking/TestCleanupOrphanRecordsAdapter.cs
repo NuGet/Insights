@@ -9,6 +9,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
 {
     public class TestCleanupOrphanRecordsAdapter : ICleanupOrphanRecordsAdapter<TestSubjectRecord>
     {
+        public string OperationName => "CleanupTestSubjectRecords";
         public string OwnerType => "O";
         public string SubjectType => "S";
 

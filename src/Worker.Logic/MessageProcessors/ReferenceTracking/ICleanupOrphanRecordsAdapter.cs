@@ -8,6 +8,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
 {
     public interface ICleanupOrphanRecordsAdapter<T> where T : ICsvRecord
     {
+        string OperationName { get; }
         string OwnerType { get; }
         string SubjectType { get; }
         IReadOnlyList<ICsvRecordSet<T>> MapToOrphanRecords(IReadOnlyList<SubjectReference> subjects);

@@ -291,6 +291,11 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddTransient(
                 typeof(ITaskStateMessageProcessor<>).MakeGenericType(messageType),
                 typeof(CleanupOrphanRecordsProcessor<>).MakeGenericType(dataType));
+
+            // Add the timer
+            serviceCollection.AddTransient(
+                typeof(ITimer),
+                typeof(CleanupOrphanRecordsTimer<>).MakeGenericType(dataType));
         }
 
         private static void AddTableCopy(this IServiceCollection serviceCollection)
