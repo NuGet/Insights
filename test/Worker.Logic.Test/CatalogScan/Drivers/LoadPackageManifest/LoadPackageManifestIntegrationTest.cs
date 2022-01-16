@@ -131,7 +131,7 @@ namespace NuGet.Insights.Worker.LoadPackageManifest
                     if (entity.V1.Available)
                     {
                         using var algorithm = SHA256.Create();
-                        manifestHash = algorithm.ComputeHash(entity.V1.ManifestBytes.ToArray()).ToHex();
+                        manifestHash = algorithm.ComputeHash(entity.V1.ManifestBytes.ToArray()).ToLowerHex();
                         httpHeaders = NormalizeHeaders(entity.V1.HttpHeaders);
                     }
 

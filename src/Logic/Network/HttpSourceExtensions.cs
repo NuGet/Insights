@@ -159,7 +159,7 @@ namespace NuGet.Insights
                     var headerMD5Bytes = response.Content.Headers.ContentMD5;
                     if (headerMD5Bytes != null)
                     {
-                        var contentMD5 = headerMD5Bytes.ToHex();
+                        var contentMD5 = headerMD5Bytes.ToLowerHex();
                         return Task.FromResult(new BlobMetadata(
                             exists: true,
                             hasContentMD5Header: true,
@@ -194,7 +194,7 @@ namespace NuGet.Insights
                         while (read > 0);
 
                         md5.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
-                        var contentMD5 = md5.Hash.ToHex();
+                        var contentMD5 = md5.Hash.ToLowerHex();
 
                         return new BlobMetadata(
                             exists: true,

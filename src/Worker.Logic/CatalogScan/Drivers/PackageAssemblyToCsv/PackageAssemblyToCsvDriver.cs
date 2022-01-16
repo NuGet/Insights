@@ -290,7 +290,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
             if (publicKeyTokenBytes != null)
             {
-                assembly.PublicKeyToken = publicKeyTokenBytes.ToHex();
+                assembly.PublicKeyToken = publicKeyTokenBytes.ToLowerHex();
             }
         }
 
