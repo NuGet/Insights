@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
@@ -14,26 +15,16 @@ namespace NuGet.Insights
     /// </summary>
     public class XunitLogger : ILogger
     {
-        private static readonly char[] NewLineChars = new[] { '\r', '\n' };
-        private readonly string _category;
+        private static readonly Stopwatch SinceStart = Stopwatch.StartNew();
+
         private readonly LogLevel _minLogLevel;
         private readonly ITestOutputHelper _output;
         private readonly ConcurrentDictionary<LogLevel, int> _logLevelToCount;
         private readonly LogLevel _throwOn;
 
-        public XunitLogger(ITestOutputHelper output, string category, LogLevel minLogLevel)
+        public XunitLogger(ITestOutputHelper output, LogLevel minLogLevel, ConcurrentDictionary<LogLevel, int> logLevelToCount, LogLevel throwOn)
         {
             _minLogLevel = minLogLevel;
-            _category = category;
-            _output = output;
-            _logLevelToCount = null;
-            _throwOn = LogLevel.None;
-        }
-
-        public XunitLogger(ITestOutputHelper output, string category, LogLevel minLogLevel, ConcurrentDictionary<LogLevel, int> logLevelToCount, LogLevel throwOn)
-        {
-            _minLogLevel = minLogLevel;
-            _category = category;
             _output = output;
             _logLevelToCount = logLevelToCount;
             _throwOn = throwOn;
@@ -56,7 +47,7 @@ namespace NuGet.Insights
 
             try
             {
-                _output.WriteLine($"[{logLevel.ToString().Substring(0, 3).ToUpperInvariant()}] {message}");
+                _output.WriteLine($"[{SinceStart.Elapsed.TotalSeconds:F3}] [{logLevel.ToString().Substring(0, 3).ToUpperInvariant()}] {message}");
                 if (exception != null)
                 {
                     _output.WriteLine(exception.ToString());

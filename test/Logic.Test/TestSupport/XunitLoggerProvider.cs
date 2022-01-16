@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Concurrent;
@@ -40,7 +40,7 @@ namespace NuGet.Insights
 
         public ILogger CreateLogger(string categoryName)
         {
-            return new XunitLogger(_output, categoryName, _minLevel, _logLevelToCount, _throwOn);
+            return new XunitLogger(_output, _minLevel, _logLevelToCount, _throwOn);
         }
 
         public void Dispose()
