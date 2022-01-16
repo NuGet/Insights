@@ -110,7 +110,7 @@ namespace NuGet.Insights.Worker.Workflow
                 {
                     _logger.LogInformation("The {State} is not yet complete.", run.State);
                     message.AttemptCount++;
-                    await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, TimeSpan.FromSeconds(5));
                     return;
                 }
                 else

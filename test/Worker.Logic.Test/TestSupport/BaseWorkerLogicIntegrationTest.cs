@@ -231,7 +231,7 @@ namespace NuGet.Insights.Worker
             });
         }
 
-        protected async Task ProcessQueueAsync(Action foundMessage, Func<Task<bool>> isCompleteAsync)
+        protected async Task ProcessQueueAsync(Action foundMessage, Func<Task<bool>> isCompleteAsync, int workerCount = 1)
         {
             var expandQueue = await WorkerQueueFactory.GetQueueAsync(QueueType.Expand);
             var workerQueue = await WorkerQueueFactory.GetQueueAsync(QueueType.Work);
@@ -256,24 +256,29 @@ namespace NuGet.Insights.Worker
             bool isComplete;
             do
             {
-                while (true)
-                {
-                    (var queueType, var queue, var message) = await ReceiveMessageAsync();
-                    if (message != null)
+                await Task.WhenAll(Enumerable
+                    .Range(0, workerCount)
+                    .Select(async x =>
                     {
-                        foundMessage();
-                        using (var scope = Host.Services.CreateScope())
+                        while (true)
                         {
-                            await ProcessMessageAsync(scope.ServiceProvider, queueType, message);
-                        }
+                            (var queueType, var queue, var message) = await ReceiveMessageAsync();
+                            if (message != null)
+                            {
+                                foundMessage();
+                                using (var scope = Host.Services.CreateScope())
+                                {
+                                    await ProcessMessageAsync(scope.ServiceProvider, queueType, message);
+                                }
 
-                        await queue.DeleteMessageAsync(message.MessageId, message.PopReceipt);
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
+                                await queue.DeleteMessageAsync(message.MessageId, message.PopReceipt);
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                    }));
 
                 isComplete = await isCompleteAsync();
             }

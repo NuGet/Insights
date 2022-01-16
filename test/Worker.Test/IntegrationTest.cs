@@ -252,7 +252,7 @@ namespace NuGet.Insights.Worker
                         }
 
                         attempts++;
-                        if (attempts > 30)
+                        if (attempts > 60)
                         {
                             return true;
                         }
@@ -260,7 +260,8 @@ namespace NuGet.Insights.Worker
                         await Task.Delay(1000);
 
                         return false;
-                    });
+                    },
+                    workerCount: 8);
 
                 // Assert
                 // Make sure all scans completed.
