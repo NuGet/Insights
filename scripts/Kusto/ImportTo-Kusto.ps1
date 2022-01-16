@@ -25,13 +25,15 @@ param (
         "PackageAssemblies",
         "PackageAssets",
         "PackageCompatibilities",
-        "PackageDownloads",
         "PackageDeprecations",
+        "PackageDownloads",
+        "PackageIcons",
         "PackageManifests",
         "PackageOwners",
         "PackageSignatures",
         "PackageVersions",
-        "PackageVulnerabilities")]
+        "PackageVulnerabilities",
+        "VerifiedPackages")]
     [string]$TableName,
 
     [Parameter(Mandatory = $false)]
@@ -58,11 +60,13 @@ $tableNameToContainerName = @{
     "PackageCompatibilities"    = "packagecompatibilities";
     "PackageDeprecations"       = "packagedeprecations";
     "PackageDownloads"          = "packagedownloads";
+    "PackageIcons"              = "packageicons";
     "PackageManifests"          = "packagemanifests";
     "PackageOwners"             = "packageowners";
     "PackageSignatures"         = "packagesignatures";
     "PackageVersions"           = "packageversions";
     "PackageVulnerabilities"    = "packagevulnerabilities";
+    "VerifiedPackages"          = "verifiedpackages";
 }
 
 if ($TableName -and !$tableNameToContainerName[$TableName]) {
