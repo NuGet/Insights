@@ -159,11 +159,6 @@ namespace NuGet.Insights
             Assert.Equal(expected, blobs.Count);
         }
 
-        protected async Task AssertCsvBlobAsync<T>(string containerName, string testName, string stepName, string blobName) where T : ICsvRecord
-        {
-            await AssertCsvBlobAsync<T>(containerName, testName, stepName, fileName: null, blobName);
-        }
-
         protected async Task AssertCsvBlobAsync<T>(string containerName, string testName, string stepName, string fileName, string blobName) where T : ICsvRecord
         {
             Assert.EndsWith(".csv.gz", blobName);

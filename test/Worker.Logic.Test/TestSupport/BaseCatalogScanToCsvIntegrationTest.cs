@@ -52,14 +52,14 @@ namespace NuGet.Insights.Worker
             await AssertOutputT2Async(testName, stepName, bucket);
         }
 
-        protected async Task AssertOutputT1Async(string testName, string stepName, int bucket)
+        protected async Task AssertOutputT1Async(string testName, string stepName, int bucket, string fileName = null)
         {
-            await AssertCompactAsync<T1>(DestinationContainerName1, testName, Path.Combine(stepName, "T1"), bucket);
+            await AssertCompactAsync<T1>(DestinationContainerName1, testName, Path.Combine(stepName, "T1"), bucket, fileName);
         }
 
-        protected async Task AssertOutputT2Async(string testName, string stepName, int bucket)
+        protected async Task AssertOutputT2Async(string testName, string stepName, int bucket, string fileName = null)
         {
-            await AssertCompactAsync<T2>(DestinationContainerName2, testName, Path.Combine(stepName, "T2"), bucket);
+            await AssertCompactAsync<T2>(DestinationContainerName2, testName, Path.Combine(stepName, "T2"), bucket, fileName);
         }
     }
 }

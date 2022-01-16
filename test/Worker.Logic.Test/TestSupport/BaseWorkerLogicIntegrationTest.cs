@@ -288,9 +288,9 @@ namespace NuGet.Insights.Worker
             await messageProcessor.ProcessSingleAsync(QueueType.Work, message.Body.ToMemory(), message.DequeueCount);
         }
 
-        protected async Task AssertCompactAsync<T>(string containerName, string testName, string stepName, int bucket) where T : ICsvRecord
+        protected async Task AssertCompactAsync<T>(string containerName, string testName, string stepName, int bucket, string fileName = null) where T : ICsvRecord
         {
-            await AssertCsvBlobAsync<T>(containerName, testName, stepName, $"compact_{bucket}.csv.gz");
+            await AssertCsvBlobAsync<T>(containerName, testName, stepName, fileName, $"compact_{bucket}.csv.gz");
         }
 
         protected static SortedDictionary<string, List<string>> NormalizeHeaders(ILookup<string, string> headers)
