@@ -91,6 +91,12 @@ stages:
           testResultsFiles: "$(OutputDirectory)/TestResults/**/*.trx"
           failTaskOnFailedTests: true
 
+      - task: PowerShell@2
+        displayName: "Checking for Forks changes"
+        inputs:
+          targetType: "filePath"
+          filePath: $(Build.SourcesDirectory)/src/Forks/download.ps1
+
       - task: DotNetCoreCLI@2
         displayName: "Publish projects to ZIP"
         inputs:

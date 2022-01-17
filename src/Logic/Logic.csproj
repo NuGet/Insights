@@ -22,9 +22,11 @@
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Toolkit.HighPerformance" Version="7.1.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="NuGet.Commands" Version="6.0.0" />
     <PackageReference Include="NuGetPackageExplorer.Core" Version="6.0.32" Condition="'$(EnableNPE)' == 'true'" />
     <PackageReference Include="System.Linq.Async" Version="5.1.0" />
     <PackageReference Include="System.Text.Encodings.Web" Version="6.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Forks\Forks.csproj" />
   </ItemGroup>
 </Project>

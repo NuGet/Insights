@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,14 +12,23 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.RuntimeModel;
 
-namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
+namespace NuGetGallery
 {
-    public static class NuGetGallery
+    public class PackageService
     {
         /// <summary>
-        /// Source: https://github.com/NuGet/NuGetGallery/blob/7557469186f07c1a15fff57e5efd3816e622a776/src/NuGetGallery.Services/PackageManagement/PackageService.cs#L720-L818
+        /// This method combines the logic used in restore operations to make a determination about the TFM supported by the package.
+        /// We have curated a set of compatibility requirements for our needs in NuGet.org. The client logic can be found here:
+        /// https://github.com/NuGet/NuGet.Client/blob/63255047fe7052cc33b763356ff995d9166f719e/src/NuGet.Core/NuGet.Commands/RestoreCommand/CompatibilityChecker.cs#L252-L294
+        /// https://github.com/NuGet/NuGet.Client/blob/63255047fe7052cc33b763356ff995d9166f719e/src/NuGet.Core/NuGet.Commands/RestoreCommand/CompatibilityChecker.cs#L439-L442
+        /// ...and our combination of these elements is below.
+        /// The logic is essentially this:
+        /// - Determine whether we're looking at a tools package. In this case we will use tools "pattern sets" (collections of file patterns
+        ///   defined in <see cref="ManagedCodeConventions" />) to assess which frameworks are targeted by the package.
+        /// - If this isn't a tools package, we look for build-time, runtime, content and resource file patterns
+        /// For added details on the various cases, see unit tests targeting this method.
         /// </summary>
-        public static IEnumerable<NuGetFramework> GetSupportedFrameworks(NuspecReader nuspecReader, IReadOnlyList<string> packageFiles)
+        public virtual IEnumerable<NuGetFramework> GetSupportedFrameworks(NuspecReader nuspecReader, IList<string> packageFiles)
         {
             var supportedTFMs = Enumerable.Empty<NuGetFramework>();
             if (packageFiles != null && packageFiles.Any() && nuspecReader != null)

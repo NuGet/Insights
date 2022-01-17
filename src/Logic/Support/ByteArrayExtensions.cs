@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Identity;
 
 namespace NuGet.Insights
 {

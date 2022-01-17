@@ -11,6 +11,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using NuGet.Common;
 using NuGet.Frameworks;
+using NuGetGallery;
 
 namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 {
@@ -120,11 +121,19 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 
                 output.NuGetGallery = GetAndSerializeNested(
                     nameof(output.NuGetGallery),
-                    () => NuGetGallery.GetSupportedFrameworks(nuspecReader, files));
+                    () =>
+                    {
+                        var packageService = new PackageService();
+                        return packageService.GetSupportedFrameworks(nuspecReader, files);
+                    });
 
                 output.NuGetGalleryEscaped = GetAndSerializeNested(
                     nameof(output.NuGetGallery),
-                    () => NuGetGallery.GetSupportedFrameworks(nuspecReader, escapedFiles));
+                    () =>
+                    {
+                        var packageService = new PackageService();
+                        return packageService.GetSupportedFrameworks(nuspecReader, escapedFiles);
+                    });
 
                 var nuGetLogger = _logger.ToNuGetLogger();
                 output.NU1202 = GetAndSerializeNested(

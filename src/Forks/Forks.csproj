@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>NuGet.Insights.Forks</AssemblyName>
+    <RootNamespace>NuGet.Insights</RootNamespace>
+    <LangVersion>10.0</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="NuGet.Commands" Version="6.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>NuGet.Insights.Logic</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+</Project>
