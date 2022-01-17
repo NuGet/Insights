@@ -7,6 +7,23 @@ $files = [ordered]@{
         Revision = "4931b1929188349b438575803bcec889a9a7d190";
         Patches  = @()
     };
+    "NuGet/NuGet.Jobs"   = @{
+        License  = "LICENSE.txt"
+        Files    = @(
+            "src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationException.cs",
+            "src/Validation.PackageSigning.ValidateCertificate/Primitives.cs",
+            "src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationResult.cs",
+            "src/Validation.PackageSigning.ValidateCertificate/ICertificateVerifier.cs",
+            "src/Validation.PackageSigning.ValidateCertificate/OnlineCertificateVerifier.cs"
+        );
+        Revision = "be3a837ea4add2d6376f16da562d67f83699cce0"
+        Patches  = @(
+            @{
+                Description = "Add ``ChainInfo`` property to ``CertificateVerificationResult`` to allow reading the chain before disposal"
+                Path        = "0002-Add-chain-info-property-to-CertificateVerificationResult.patch"
+            }
+        )
+    };
     "NuGet/NuGetGallery" = @{
         License  = "LICENSE.txt"
         Files    = @(
@@ -19,6 +36,15 @@ $files = [ordered]@{
                 Path        = "0001-Remove-unused-methods-from-PackageService.patch"
             }
         )
+    };
+    "NuGet/ServerCommon" = @{
+        License  = "License.md";
+        Files    = @(
+            "src/NuGet.Services.Validation/Entities/EndCertificateStatus.cs",
+            "src/NuGet.Services.Validation/Entities/EndCertificateUse.cs"
+        );
+        Revision = "dd614b153e2476b1bf1a9e8a7553a8625ed3cc87";
+        Patches  = @()
     }
 }
 

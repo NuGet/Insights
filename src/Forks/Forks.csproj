@@ -3,6 +3,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>NuGet.Insights.Forks</AssemblyName>
     <RootNamespace>NuGet.Insights</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>10.0</LangVersion>
   </PropertyGroup>
   <ItemGroup>

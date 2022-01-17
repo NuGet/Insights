@@ -12,6 +12,21 @@ Files:
 Patches:
   - (none)
 
+# [NuGet/NuGet.Jobs](https://github.com/NuGet/NuGet.Jobs)
+
+Copied license: [`LICENSE.txt`](NuGet/NuGet.Jobs/LICENSE.txt)
+
+Copied revision: [`be3a837ea4add2d6376f16da562d67f83699cce0`](https://github.com/NuGet/NuGet.Jobs/tree/be3a837ea4add2d6376f16da562d67f83699cce0)
+
+Files:
+  - [`src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationException.cs`](NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationException.cs)
+  - [`src/Validation.PackageSigning.ValidateCertificate/Primitives.cs`](NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/Primitives.cs)
+  - [`src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationResult.cs`](NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationResult.cs)
+  - [`src/Validation.PackageSigning.ValidateCertificate/ICertificateVerifier.cs`](NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/ICertificateVerifier.cs)
+  - [`src/Validation.PackageSigning.ValidateCertificate/OnlineCertificateVerifier.cs`](NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/OnlineCertificateVerifier.cs)
+
+Patches:
+  - [Add `ChainInfo` property to `CertificateVerificationResult` to allow reading the chain before disposal](0002-Add-chain-info-property-to-CertificateVerificationResult.patch)
 # [NuGet/NuGetGallery](https://github.com/NuGet/NuGetGallery)
 
 Copied license: [`LICENSE.txt`](NuGet/NuGetGallery/LICENSE.txt)
@@ -23,3 +38,16 @@ Files:
 
 Patches:
   - [Remove unused methods from `PackageService`](0001-Remove-unused-methods-from-PackageService.patch)
+# [NuGet/ServerCommon](https://github.com/NuGet/ServerCommon)
+
+Copied license: [`License.md`](NuGet/ServerCommon/License.md)
+
+Copied revision: [`dd614b153e2476b1bf1a9e8a7553a8625ed3cc87`](https://github.com/NuGet/ServerCommon/tree/dd614b153e2476b1bf1a9e8a7553a8625ed3cc87)
+
+Files:
+  - [`src/NuGet.Services.Validation/Entities/EndCertificateStatus.cs`](NuGet/ServerCommon/src/NuGet.Services.Validation/Entities/EndCertificateStatus.cs)
+  - [`src/NuGet.Services.Validation/Entities/EndCertificateUse.cs`](NuGet/ServerCommon/src/NuGet.Services.Validation/Entities/EndCertificateUse.cs)
+
+Patches:
+  - (none)
+
