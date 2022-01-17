@@ -15,6 +15,7 @@ namespace NuGet.Insights.Worker
             EnqueueWorkers = 1;
             AppendResultStorageBucketCount = 1000; // Azure Data Explorer can only import up to 1000 blobs.
             AllowBatching = true;
+            DisableMessageDelay = false;
             RunAllCatalogScanDriversAsBatch = false;
             OnlyKeepLatestInAuxiliaryFileUpdater = true;
             MoveTempToHome = false;
@@ -77,6 +78,7 @@ namespace NuGet.Insights.Worker
         public int EnqueueWorkers { get; set; }
         public int AppendResultStorageBucketCount { get; set; }
         public bool AllowBatching { get; set; }
+        public bool DisableMessageDelay { get; set; }
         public bool RunAllCatalogScanDriversAsBatch { get; set; }
         public bool OnlyKeepLatestInAuxiliaryFileUpdater { get; set; }
         public bool MoveTempToHome { get; set; }

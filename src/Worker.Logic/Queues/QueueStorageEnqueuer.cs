@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -149,7 +149,7 @@ namespace NuGet.Insights.Worker
 
         private async Task SendMessageAsync(QueueClient queue, string message, TimeSpan visibilityTimeout)
         {
-            await queue.SendMessageAsync(message, visibilityTimeout > TimeSpan.Zero ? visibilityTimeout : null);
+            await queue.SendMessageAsync(message, visibilityTimeout > TimeSpan.Zero && !_options.Value.DisableMessageDelay ? visibilityTimeout : null);
         }
     }
 }

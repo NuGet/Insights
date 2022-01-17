@@ -116,6 +116,7 @@ namespace NuGet.Insights.Worker
 
         protected void ConfigureWorkerDefaultsAndSettings(NuGetInsightsWorkerSettings x)
         {
+            x.DisableMessageDelay = true;
             x.AppendResultStorageBucketCount = 3;
             x.KustoDatabaseName = "TestKustoDb";
 
