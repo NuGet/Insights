@@ -11,6 +11,9 @@ using NuGet.Insights.Worker.CatalogLeafItemToCsv;
 using NuGet.Insights.Worker.FindLatestCatalogLeafScanPerId;
 using NuGet.Insights.Worker.LoadLatestPackageLeaf;
 using NuGet.Insights.Worker.LoadPackageArchive;
+#if ENABLE_CRYPTOAPI
+using NuGet.Insights.Worker.PackageCertificateToCsv;
+#endif
 using NuGet.Insights.Worker.LoadPackageManifest;
 using NuGet.Insights.Worker.LoadPackageVersion;
 #if ENABLE_NPE
@@ -53,6 +56,10 @@ namespace NuGet.Insights.Worker
                     return _serviceProvider.GetRequiredService<LoadPackageManifestDriver>();
                 case CatalogScanDriverType.LoadPackageVersion:
                     return _serviceProvider.GetRequiredService<LoadPackageVersionDriver>();
+#if ENABLE_CRYPTOAPI
+                case CatalogScanDriverType.PackageCertificateToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvBatchAdapter<PackageCertificateRecord, CertificateRecord>>();
+#endif
                 default:
                     if (_options.Value.RunAllCatalogScanDriversAsBatch)
                     {

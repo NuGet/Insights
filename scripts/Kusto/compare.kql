@@ -6,6 +6,7 @@ NiCatalogLeafItems | distinct Identity | count | extend Table = "NiCatalogLeafIt
 | union (NiPackageArchiveEntries | distinct Identity | count | extend Table = "NiPackageArchiveEntries")
 | union (NiPackageAssemblies | distinct Identity | count | extend Table = "NiPackageAssemblies")
 | union (NiPackageAssets | distinct Identity | count | extend Table = "NiPackageAssets")
+| union (NiPackageCertificates | distinct Identity | count | extend Table = "NiPackageCertificates")
 | union (NiPackageCompatibilities | distinct Identity | count | extend Table = "NiPackageCompatibilities")
 | union (NiPackageDeprecations | distinct Identity | count | extend Table = "NiPackageDeprecations")
 | union (NiPackageDownloads | distinct Identity | count | extend Table = "NiPackageDownloads")
@@ -23,6 +24,7 @@ NiCatalogLeafItems | distinct LowerId | count | extend Table = "NiCatalogLeafIte
 | union (NiPackageArchiveEntries | distinct LowerId | count  | extend Table = "NiPackageArchiveEntries")
 | union (NiPackageAssemblies | distinct LowerId | count  | extend Table = "NiPackageAssemblies")
 | union (NiPackageAssets | distinct LowerId | count  | extend Table = "NiPackageAssets")
+| union (NiPackageCertificates | distinct LowerId | count | extend Table = "NiPackageCertificates")
 | union (NiPackageCompatibilities | distinct LowerId | count | extend Table = "NiPackageCompatibilities")
 | union (NiPackageDeprecations | distinct LowerId | count | extend Table = "NiPackageDeprecations")
 | union (NiPackageDownloads | distinct LowerId | count  | extend Table = "NiPackageDownloads")
@@ -33,3 +35,7 @@ NiCatalogLeafItems | distinct LowerId | count | extend Table = "NiCatalogLeafIte
 | union (NiPackageVersions | distinct LowerId | count  | extend Table = "NiPackageVersions")
 | union (NiPackageVulnerabilities | distinct LowerId | count | extend Table = "NiPackageVulnerabilities")
 | union (NiVerifiedPackages | distinct LowerId | count | extend Table = "NiVerifiedPackages")
+
+// All tables with certificates should have the same fingerprint found
+NiCertificates | distinct Fingerprint | count | extend Table = "NiCertificates"
+| union (NiPackageCertificates | where ResultType != "Deleted" | distinct Fingerprint | count | extend Table = "NiPackageCertificates")

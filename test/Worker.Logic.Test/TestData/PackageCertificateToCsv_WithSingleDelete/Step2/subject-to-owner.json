@@ -1,0 +1,38 @@
+[
+  {
+    "odata.etag": "",
+    "PartitionKey": "$DELETE$P$C",
+    "RowKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo$",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "$DELETE$P$C",
+    "RowKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw$",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "$DELETE$P$C",
+    "RowKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw$",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "$DELETE$P$C",
+    "RowKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI$",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "$DELETE$P$C",
+    "RowKey": "ulpjCZSyuPVisweioyRZmCMu8KlO6Avs5c6gtc7KYfk$",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "$DELETE$P$C",
+    "RowKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg$",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  }
+]

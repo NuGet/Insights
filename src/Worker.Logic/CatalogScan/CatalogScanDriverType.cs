@@ -77,6 +77,15 @@ namespace NuGet.Insights.Worker
         /// </summary>
         PackageAssetToCsv,
 
+#if ENABLE_CRYPTOAPI
+        /// <summary>
+        /// Implemented by <see cref="LoadPackageCertificate.LoadPackageCertificateDriver"/>. Loads all certificate
+        /// chain information from the package signature into storage and tracks the many-to-many relationship between
+        /// packages and certificates.
+        /// </summary>
+        PackageCertificateToCsv,
+#endif
+
         /// <summary>
         /// Implemented by <see cref="PackageSignatureToCsv.PackageSignatureToCsvDriver"/>. Extracts information from each
         /// NuGet package signature, determining things like certificate issuers and whether the package is author signed.

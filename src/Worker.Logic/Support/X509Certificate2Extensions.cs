@@ -5,12 +5,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
+using Microsoft.IdentityModel.Tokens;
 using NuGet.Packaging.Signing;
 
 namespace NuGet.Insights.Worker
 {
     public static class X509Certificate2Extensions
     {
+        /// <summary>
+        /// Produces a URL-safe base64 encoded SHA-256 fingerprint (thumbprint) for the provided certificate. This
+        /// representation is ideal for Azure Table Storage keys.
+        /// </summary>
+        /// <param name="certificate">The certificate to get the thumbprint for.</param>
+        /// <returns>The fingerprint.</returns>
+        public static string GetSHA256Base64UrlFingerprint(this X509Certificate2 certificate)
+        {
+            return Base64UrlEncoder.Encode(CertificateUtility.GetHash(certificate, Common.HashAlgorithmName.SHA256));
+        }
+
         public static string GetSHA256HexFingerprint(this X509Certificate2 certificate)
         {
             return CertificateUtility.GetHash(certificate, Common.HashAlgorithmName.SHA256).ToUpperHex();

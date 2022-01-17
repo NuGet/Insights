@@ -18,6 +18,7 @@ namespace NuGet.Insights.Worker
             DisableMessageDelay = false;
             RunAllCatalogScanDriversAsBatch = false;
             OnlyKeepLatestInAuxiliaryFileUpdater = true;
+            RecordCertificateStatusUpdateTimes = true;
             MoveTempToHome = false;
             DisabledDrivers = new List<CatalogScanDriverType>();
             OldCatalogIndexScansToKeep = 9;
@@ -64,6 +65,8 @@ namespace NuGet.Insights.Worker
             PackageVulnerabilityContainerName = "packagevulnerabilities";
             PackageIconContainerName = "packageicons";
             PackageCompatibilityContainerName = "packagecompatibilities";
+            PackageCertificateContainerName = "packagecertificates";
+            CertificateContainerName = "certificates";
 
             KustoConnectionString = null;
             KustoDatabaseName = null;
@@ -81,6 +84,7 @@ namespace NuGet.Insights.Worker
         public bool DisableMessageDelay { get; set; }
         public bool RunAllCatalogScanDriversAsBatch { get; set; }
         public bool OnlyKeepLatestInAuxiliaryFileUpdater { get; set; }
+        public bool RecordCertificateStatusUpdateTimes { get; set; }
         public bool MoveTempToHome { get; set; }
         public List<CatalogScanDriverType> DisabledDrivers { get; set; }
         public int OldCatalogIndexScansToKeep { get; set; }
@@ -127,6 +131,8 @@ namespace NuGet.Insights.Worker
         public string PackageVulnerabilityContainerName { get; set; }
         public string PackageIconContainerName { get; set; }
         public string PackageCompatibilityContainerName { get; set; }
+        public string PackageCertificateContainerName { get; set; }
+        public string CertificateContainerName { get; set; }
 
         public string KustoConnectionString { get; set; }
         public string KustoDatabaseName { get; set; }

@@ -41,6 +41,7 @@ namespace NuGet.Insights
         public const string TestData = "TestData";
         public const string Step1 = "Step1";
         public const string Step2 = "Step2";
+        public const string Step3 = "Step3";
 
         /// <summary>
         /// This should only be on when generating new test data locally. It should never be checked in as true.

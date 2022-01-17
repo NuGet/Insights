@@ -1,0 +1,7 @@
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Fingerprint,RelationshipTypes
+,,deltax,deltax/1.0.0,DeltaX,1.0.0,2019-02-05T18:42:32.4259826Z,2019-02-05T18:37:54.3Z,Available,ulpjCZSyuPVisweioyRZmCMu8KlO6Avs5c6gtc7KYfk,"PrimarySignedCmsContains, IsRepositoryCodeSignedBy, RepositoryCodeSigningChainContains"
+,,deltax,deltax/1.0.0,DeltaX,1.0.0,2019-02-05T18:42:32.4259826Z,2019-02-05T18:37:54.3Z,Available,PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw,"PrimarySignedCmsContains, RepositoryCodeSigningChainContains"
+,,deltax,deltax/1.0.0,DeltaX,1.0.0,2019-02-05T18:42:32.4259826Z,2019-02-05T18:37:54.3Z,Available,UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI,"PrimarySignedCmsContains, RepositoryCodeSigningChainContains"
+,,deltax,deltax/1.0.0,DeltaX,1.0.0,2019-02-05T18:42:32.4259826Z,2019-02-05T18:37:54.3Z,Available,xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg,"RepositoryTimestampSignedCmsContains, IsRepositoryTimestampedBy, RepositoryTimestampingChainContains"
+,,deltax,deltax/1.0.0,DeltaX,1.0.0,2019-02-05T18:42:32.4259826Z,2019-02-05T18:37:54.3Z,Available,I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw,"RepositoryTimestampSignedCmsContains, RepositoryTimestampingChainContains"
+,,deltax,deltax/1.0.0,DeltaX,1.0.0,2019-02-05T18:42:32.4259826Z,2019-02-05T18:37:54.3Z,Available,81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo,"RepositoryTimestampSignedCmsContains, RepositoryTimestampingChainContains"

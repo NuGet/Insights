@@ -13,6 +13,10 @@
   <ItemGroup Condition="'$(EnableNPE)' != 'true'">
     <Compile Remove="CatalogScan\Drivers\NuGetPackageExplorerToCsv\*" />
   </ItemGroup>
+  <ItemGroup Condition="'$(EnableCryptoAPI)' != 'true'">
+    <Compile Remove="CatalogScan\Drivers\PackageCertificateToCsv\*" />
+    <Compile Remove="MessageProcessors\ReferenceTracking\CleanupOrphanCertificateRecordsAdapter.cs" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="8.5.0" />
     <PackageReference Include="Microsoft.Azure.Kusto.Ingest" Version="9.4.1" />

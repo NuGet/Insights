@@ -151,6 +151,8 @@ namespace NuGet.Insights.Worker
             x.PackageVulnerabilityContainerName = $"{StoragePrefix}1pu1";
             x.PackageIconContainerName = $"{StoragePrefix}1pi1";
             x.PackageCompatibilityContainerName = $"{StoragePrefix}1pc1";
+            x.PackageCertificateContainerName = $"{StoragePrefix}1pr1";
+            x.CertificateContainerName = $"{StoragePrefix}1r1";
 
             ConfigureDefaultsAndSettings(x);
 

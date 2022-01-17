@@ -68,6 +68,12 @@ namespace NuGet.Insights.Worker
                 CatalogScanDriverType.PackageAssemblyToCsv,
                 new[] { FlatContainer }
             },
+#if ENABLE_CRYPTOAPI
+            {
+                CatalogScanDriverType.PackageCertificateToCsv,
+                new[] { CatalogScanDriverType.LoadPackageArchive }
+            },
+#endif
             {
                 CatalogScanDriverType.PackageSignatureToCsv,
                 new[] { CatalogScanDriverType.LoadPackageArchive }

@@ -18,12 +18,14 @@ param (
     [Parameter(Mandatory = $false)]
     [ValidateSet(
         "CatalogLeafItems",
+        "Certificates",
         "NuGetPackageExplorerFiles",
         "NuGetPackageExplorers",
         "PackageArchiveEntries",
         "PackageArchives",
         "PackageAssemblies",
         "PackageAssets",
+        "PackageCertificates",
         "PackageCompatibilities",
         "PackageDeprecations",
         "PackageDownloads",
@@ -51,12 +53,14 @@ param (
 
 $tableNameToContainerName = @{
     "CatalogLeafItems"          = "catalogleafitems";
+    "Certificates"              = "certificates";
     "NuGetPackageExplorerFiles" = "nugetpackageexplorerfiles";
     "NuGetPackageExplorers"     = "nugetpackageexplorer";
     "PackageArchiveEntries"     = "packagearchiveentries";
     "PackageArchives"           = "packagearchives";
     "PackageAssemblies"         = "packageassemblies";
     "PackageAssets"             = "packageassets";
+    "PackageCertificates"       = "packagecertificates";
     "PackageCompatibilities"    = "packagecompatibilities";
     "PackageDeprecations"       = "packagedeprecations";
     "PackageDownloads"          = "packagedownloads";

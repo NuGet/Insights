@@ -18,6 +18,9 @@ using NuGet.Insights.Worker.FindLatestCatalogLeafScanPerId;
 using NuGet.Insights.Worker.KustoIngestion;
 using NuGet.Insights.Worker.LoadLatestPackageLeaf;
 using NuGet.Insights.Worker.LoadPackageArchive;
+#if ENABLE_CRYPTOAPI
+using NuGet.Insights.Worker.PackageCertificateToCsv;
+#endif
 using NuGet.Insights.Worker.LoadPackageManifest;
 using NuGet.Insights.Worker.LoadPackageVersion;
 using NuGet.Insights.Worker.TableCopy;
@@ -111,6 +114,9 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddCatalogLeafItemToCsv();
             serviceCollection.AddLoadLatestPackageLeaf();
             serviceCollection.AddLoadPackageArchive();
+#if ENABLE_CRYPTOAPI
+            serviceCollection.AddLoadPackageCertificate();
+#endif
             serviceCollection.AddLoadPackageManifest();
             serviceCollection.AddLoadPackageVersion();
             serviceCollection.AddTableCopy();
@@ -339,6 +345,13 @@ namespace NuGet.Insights.Worker
         {
             serviceCollection.AddTransient<LoadPackageArchiveDriver>();
         }
+
+#if ENABLE_CRYPTOAPI
+        private static void AddLoadPackageCertificate(this IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddTransient<PackageCertificateToCsvDriver>();
+        }
+#endif
 
         private static void AddLoadPackageManifest(this IServiceCollection serviceCollection)
         {
