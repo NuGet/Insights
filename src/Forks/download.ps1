@@ -22,8 +22,10 @@ $files = [ordered]@{
     }
 }
 
+$encoding = New-Object System.Text.UTF8Encoding $true
+
 $readme = "The following GitHub repositories were copied in part to this project."
-$readme += "`r`n"
+$readme += [Environment]::NewLine
 
 foreach ($pair in $files.GetEnumerator()) {
     $repository = $pair.Key
@@ -41,9 +43,9 @@ foreach ($pair in $files.GetEnumerator()) {
         }
         
         Write-Host "  Saving $file"
-        $response = Invoke-WebRequest $url
-        $content = $response.Content.Replace("`r`n", "`n").Replace("`n", "`r`n").TrimEnd()
-        $content | Out-File $destPath -Encoding UTF8
+        $response = Invoke-WebRequest $url -UseBasicParsing
+        $content = $response.Content.Replace("`r`n", "`n").Replace("`n", [Environment]::NewLine).TrimEnd()
+        [IO.File]::WriteAllLines($destPath, $content, $encoding)
     }
 
     # Apply patches
@@ -53,25 +55,28 @@ foreach ($pair in $files.GetEnumerator()) {
     }
 
     # Append to the README
-    $readme += "`r`n"
+    $readme += [Environment]::NewLine
     $readme += "# [$repository](https://github.com/$repository)"
-    $readme += "`r`n`r`n"
+    $readme += [Environment]::NewLine
+    $readme += [Environment]::NewLine
     $readme += "Copied license: [``$($pair.Value.License)``]($repository/$($pair.Value.License))"
-    $readme += "`r`n`r`n"
+    $readme += [Environment]::NewLine
+    $readme += [Environment]::NewLine
     $readme += "Copied revision: [``$($pair.Value.Revision)``](https://github.com/$repository/tree/$($pair.Value.Revision))"
-    $readme += "`r`n`r`n"
+    $readme += [Environment]::NewLine
+    $readme += [Environment]::NewLine
     $readme += "Files:"
-    $readme += "`r`n"
+    $readme += [Environment]::NewLine
     foreach ($file in $pair.Value.Files) {
         $readme += "  - [``$file``]($repository/$file)"
-        $readme += "`r`n"
+        $readme += [Environment]::NewLine
     }
-    $readme += "`r`n"
+    $readme += [Environment]::NewLine
     $readme += "Patches:"
-    $readme += "`r`n"
+    $readme += [Environment]::NewLine
     if ($pair.Value.Patches.Length -eq 0) {
         $readme += "  - (none)"
-        $readme += "`r`n"
+        $readme += [Environment]::NewLine
     }
     else {
         foreach ($patch in $pair.Value.Patches) {
@@ -81,17 +86,18 @@ foreach ($pair in $files.GetEnumerator()) {
 }
 
 Write-Host "Writing latest README.md"
-$readme | Out-File (Join-Path $PSScriptRoot "README.md") -Encoding UTF8
+$readmePath = Join-Path $PSScriptRoot "README.md"
+[IO.File]::WriteAllLines($readmePath, $readme, $encoding)
 
 Write-Host "Checking for uncommitted changes"
 $changes = git status $PSScriptRoot --porcelain=v1 | Out-String
 if ($changes) {
     if ($changes.Trim() -eq "M src/Forks/README.md") {
-        $hint = "`r`nThe only file that changed is README.md. Try running src/Forks/downloads.ps1 and committing the changes."
+        $hint = [Environment]::NewLine + "The only file that changed is README.md. Try running src/Forks/downloads.ps1 and committing the changes."
     } else {
         $hint = ""
     }
-    throw "There unexpected changes in the Fork project.$hint`r`n$changes"
+    throw "There unexpected changes in the Fork project.$hint" + [Environment]::NewLine + $changes
 } else {
     Write-Host "No uncommitted changes found"
 }
