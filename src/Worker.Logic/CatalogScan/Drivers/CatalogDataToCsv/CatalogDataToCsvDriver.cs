@@ -123,12 +123,12 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             return output;
         }
 
-        public List<PackageDeprecationRecord> Prune(List<PackageDeprecationRecord> records)
+        public List<PackageDeprecationRecord> Prune(List<PackageDeprecationRecord> records, bool removeDeleted)
         {
             return PackageRecord.Prune(records);
         }
 
-        public List<PackageVulnerabilityRecord> Prune(List<PackageVulnerabilityRecord> records)
+        public List<PackageVulnerabilityRecord> Prune(List<PackageVulnerabilityRecord> records, bool removeDeleted)
         {
             return PackageRecord.Prune(records);
         }

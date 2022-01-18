@@ -210,7 +210,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             return JsonConvert.SerializeObject(roundTripShortFolderNames);
         }
 
-        public List<PackageCompatibility> Prune(List<PackageCompatibility> records)
+        public List<PackageCompatibility> Prune(List<PackageCompatibility> records, bool removeDeleted)
         {
             return PackageRecord.Prune(records);
         }

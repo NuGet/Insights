@@ -29,7 +29,7 @@ namespace NuGet.Insights.Worker.CatalogLeafItemToCsv
 
         public string ResultContainerName => _options.Value.CatalogLeafItemContainerName;
 
-        public List<CatalogLeafItemRecord> Prune(List<CatalogLeafItemRecord> records)
+        public List<CatalogLeafItemRecord> Prune(List<CatalogLeafItemRecord> records, bool removeDeleted)
         {
             return records
                 .Distinct()

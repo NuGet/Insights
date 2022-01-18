@@ -37,12 +37,12 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
         string ICsvResultStorage<PackageArchiveEntry>.ResultContainerName => _options.Value.PackageArchiveEntryContainerName;
         public bool SingleMessagePerId => false;
 
-        public List<PackageArchiveRecord> Prune(List<PackageArchiveRecord> records)
+        public List<PackageArchiveRecord> Prune(List<PackageArchiveRecord> records, bool removeDeleted)
         {
             return PackageRecord.Prune(records);
         }
 
-        public List<PackageArchiveEntry> Prune(List<PackageArchiveEntry> records)
+        public List<PackageArchiveEntry> Prune(List<PackageArchiveEntry> records, bool removeDeleted)
         {
             return PackageRecord.Prune(records);
         }

@@ -322,12 +322,12 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             );
         }
 
-        public List<NuGetPackageExplorerRecord> Prune(List<NuGetPackageExplorerRecord> records)
+        public List<NuGetPackageExplorerRecord> Prune(List<NuGetPackageExplorerRecord> records, bool removeDeleted)
         {
             return PackageRecord.Prune(records);
         }
 
-        public List<NuGetPackageExplorerFile> Prune(List<NuGetPackageExplorerFile> records)
+        public List<NuGetPackageExplorerFile> Prune(List<NuGetPackageExplorerFile> records, bool removeDeleted)
         {
             return PackageRecord.Prune(records);
         }

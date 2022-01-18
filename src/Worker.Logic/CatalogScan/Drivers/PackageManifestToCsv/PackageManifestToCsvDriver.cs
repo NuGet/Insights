@@ -35,7 +35,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
         public string ResultContainerName => _options.Value.PackageManifestContainerName;
         public bool SingleMessagePerId => false;
 
-        public List<PackageManifestRecord> Prune(List<PackageManifestRecord> records)
+        public List<PackageManifestRecord> Prune(List<PackageManifestRecord> records, bool removeDeleted)
         {
             return PackageRecord.Prune(records);
         }

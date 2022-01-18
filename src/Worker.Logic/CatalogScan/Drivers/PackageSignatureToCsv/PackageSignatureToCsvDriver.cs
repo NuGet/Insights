@@ -31,7 +31,7 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
         public string ResultContainerName => _options.Value.PackageSignatureContainerName;
         public bool SingleMessagePerId => false;
 
-        public List<PackageSignature> Prune(List<PackageSignature> records)
+        public List<PackageSignature> Prune(List<PackageSignature> records, bool removeDeleted)
         {
             return PackageRecord.Prune(records);
         }

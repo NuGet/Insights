@@ -148,7 +148,7 @@ namespace NuGet.Insights.Worker
             string destContainer,
             int bucket,
             bool force,
-            Func<List<T>, List<T>> prune) where T : ICsvRecord
+            Prune<T> prune) where T : ICsvRecord
         {
             var appendRecords = new List<T>();
 
@@ -163,6 +163,12 @@ namespace NuGet.Insights.Worker
                         using var stream = entity.GetStream();
                         var records = Deserialize<T>(stream);
                         appendRecords.AddRange(records);
+
+                        // Proactively prune to avoid out of memory exceptions.
+                        if (appendRecords.Any())
+                        {
+                            appendRecords = prune(appendRecords, removeDeleted: false);
+                        }
                     }
                 }
                 else if (!force)
@@ -179,7 +185,7 @@ namespace NuGet.Insights.Worker
             List<T> records,
             string destContainer,
             int bucket,
-            Func<List<T>, List<T>> prune) where T : ICsvRecord
+            Prune<T> prune) where T : ICsvRecord
         {
             var compactBlob = await GetCompactBlobAsync(destContainer, bucket);
 
@@ -197,7 +203,7 @@ namespace NuGet.Insights.Worker
 
             if (records.Any())
             {
-                records = prune(records);
+                records = prune(records, removeDeleted: true);
             }
 
             using var stream = SerializeRecords(records, writeHeader: true, gzip: true, out var uncompressedLength);

@@ -27,7 +27,7 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
         public string ResultContainerName => _options.Value.PackageVersionContainerName;
         public bool SingleMessagePerId => true;
 
-        public List<PackageVersionRecord> Prune(List<PackageVersionRecord> records)
+        public List<PackageVersionRecord> Prune(List<PackageVersionRecord> records, bool removeDeleted)
         {
             return PackageRecord.Prune(records);
         }
