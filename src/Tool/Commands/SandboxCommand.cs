@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading;
@@ -20,21 +20,6 @@ namespace NuGet.Insights.Tool
         public async Task ExecuteAsync(CancellationToken token)
         {
             await Task.Yield();
-        }
-
-        public bool IsInitializationRequired()
-        {
-            return false;
-        }
-
-        public bool IsDatabaseRequired()
-        {
-            return false;
-        }
-
-        public bool IsSingleton()
-        {
-            return false;
         }
     }
 }
