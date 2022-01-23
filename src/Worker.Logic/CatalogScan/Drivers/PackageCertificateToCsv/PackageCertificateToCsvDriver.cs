@@ -271,9 +271,9 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
                 item.ParsePackageVersion().ToNormalizedString().ToLowerInvariant());
         }
 
-        List<PackageCertificateRecord> ICsvResultStorage<PackageCertificateRecord>.Prune(List<PackageCertificateRecord> records, bool removeDeleted)
+        List<PackageCertificateRecord> ICsvResultStorage<PackageCertificateRecord>.Prune(List<PackageCertificateRecord> records, bool isFinalPrune)
         {
-            return PackageRecord.Prune(records);
+            return PackageRecord.Prune(records, isFinalPrune);
         }
 
         private void GuardChange(string fingerprint, string a, string b, string propertyName, bool log)
