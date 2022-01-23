@@ -2,7 +2,6 @@
 
 This table has the deprecation information provided by a package owner, if any. Package deprecation is a way of marking a package as not longer intended for use but is short of deleting or (necessarily) unlisting the package.
 
-
 |                              |                                                                                                                       |
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | Cardinality                  | Exactly one per package on NuGet.                                                                                     |
