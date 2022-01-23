@@ -155,7 +155,7 @@ namespace NuGet.Insights.Worker
             Prune<T> prune) where T : ICsvRecord
         {
             var appendRecords = new List<T>();
-            const int PruneEveryNEntity = 100;
+            const int PruneEveryNEntity = 500;
 
             var recordType = typeof(T).FullName;
             var stopwatch = Stopwatch.StartNew();
@@ -165,6 +165,7 @@ namespace NuGet.Insights.Worker
             if (!force || srcTable != null)
             {
                 var pruneRecordCountMetric = GetPruneRecordCountMetric();
+                var pruneRecordDeltaMetric = GetPruneRecordDeltaMetric();
                 var entities = _wideEntityService.RetrieveAsync(
                     srcTable,
                     partitionKey: bucket.ToString(),
@@ -182,8 +183,10 @@ namespace NuGet.Insights.Worker
                     // Proactively prune to avoid out of memory exceptions.
                     if (entityCount % PruneEveryNEntity == PruneEveryNEntity - 1 && appendRecords.Any())
                     {
-                        pruneRecordCountMetric.TrackValue(appendRecords.Count, destContainer, recordType);
+                        var initialCount = appendRecords.Count;
+                        pruneRecordCountMetric.TrackValue(appendRecords.Count, destContainer, recordType, "false");
                         appendRecords = prune(appendRecords, isFinalPrune: false);
+                        pruneRecordDeltaMetric.TrackValue(appendRecords.Count - initialCount, destContainer, recordType, "false");
                     }
                 }
 
@@ -215,7 +218,17 @@ namespace NuGet.Insights.Worker
             return _telemetryClient.GetMetric(
                 $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.PruneRecordCount",
                 "DestContainer",
-                "RecordType");
+                "RecordType",
+                "IsFinalPrune");
+        }
+
+        private IMetric GetPruneRecordDeltaMetric()
+        {
+            return _telemetryClient.GetMetric(
+                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.PruneRecordDelta",
+                "DestContainer",
+                "RecordType",
+                "IsFinalPrune");
         }
 
         private IMetric GetRecordCountMetric()
@@ -257,8 +270,10 @@ namespace NuGet.Insights.Worker
 
             if (records.Any())
             {
-                GetPruneRecordCountMetric().TrackValue(records.Count, destContainer, recordType);
+                var initialCount = records.Count;
+                GetPruneRecordCountMetric().TrackValue(records.Count, destContainer, recordType, "true");
                 records = prune(records, isFinalPrune: true);
+                GetPruneRecordDeltaMetric().TrackValue(records.Count - initialCount, destContainer, recordType, "true");
             }
 
             GetRecordCountMetric().TrackValue(records.Count, destContainer, recordType);
