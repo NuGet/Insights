@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,6 +19,7 @@ namespace NuGet.Insights.Tool
     {
         private static readonly IReadOnlyDictionary<string, Type> Commands = new Dictionary<string, Type>
         {
+            { "process-messages", typeof(ProcessMessagesCommand) },
             { "sandbox", typeof(SandboxCommand) },
         };
 
