@@ -210,9 +210,9 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             return JsonConvert.SerializeObject(roundTripShortFolderNames);
         }
 
-        public List<PackageCompatibility> Prune(List<PackageCompatibility> records)
+        public List<PackageCompatibility> Prune(List<PackageCompatibility> records, bool isFinalPrune)
         {
-            return PackageRecord.Prune(records);
+            return PackageRecord.Prune(records, isFinalPrune);
         }
 
         public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageCompatibility record)

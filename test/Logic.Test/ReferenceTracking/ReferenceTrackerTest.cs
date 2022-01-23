@@ -1094,10 +1094,10 @@ namespace NuGet.Insights.ReferenceTracking
                 .QueryAsync<WideEntitySegment>(x =>
                     x.PartitionKey.CompareTo(PartitionKeyPrefix) >= 0
                     && x.PartitionKey.CompareTo(PartitionKeyPrefix + char.MaxValue) < 0);
-            var actualOwnerToSubject = (await WideEntityService
+            var actualOwnerToSubject = await WideEntityService
                 .DeserializeEntitiesAsync(
                     actualOwnerToSubjectEntities,
-                    includeData: true))
+                    includeData: true)
                 .Select(x => (
                     x.PartitionKey,
                     x.RowKey,
@@ -1105,7 +1105,7 @@ namespace NuGet.Insights.ReferenceTracking
                         x.GetStream(),
                         NuGetInsightsMessagePack.Options)
                 ))
-                .ToList();
+                .ToListAsync();
 
             Assert.Equal(expectedOwnerToSubject, actualOwnerToSubject);
 

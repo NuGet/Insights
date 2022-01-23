@@ -145,13 +145,22 @@ namespace NuGet.Insights.WideEntities
 
         public async Task<IReadOnlyList<WideEntity>> RetrieveAsync(string tableName, string partitionKey, string minRowKey, string maxRowKey, bool includeData)
         {
-            var table = await GetTableAsync(tableName);
-            return await RetrieveAsync(tableName, table, partitionKey, minRowKey, maxRowKey, includeData);
+            return await RetrieveAsync(tableName, partitionKey, minRowKey, maxRowKey, includeData, maxPerPage: StorageUtility.MaxTakeCount)
+                .ToListAsync();
         }
 
-        public async Task<IReadOnlyList<WideEntity>> RetrieveAsync(string tableName, TableClient table, string partitionKey, string minRowKey, string maxRowKey, bool includeData)
+        public async IAsyncEnumerable<WideEntity> RetrieveAsync(string tableName, string partitionKey, string minRowKey, string maxRowKey, bool includeData, int maxPerPage)
         {
-            using var metrics = _telemetryClient.StartQueryLoopMetrics(memberName: tableName + nameof(RetrieveAsync));
+            var table = await GetTableAsync(tableName);
+            await foreach (var entity in RetrieveAsync(tableName, table, partitionKey, minRowKey, maxRowKey, includeData, maxPerPage))
+            {
+                yield return entity;
+            }
+        }
+
+        private async IAsyncEnumerable<WideEntity> RetrieveAsync(string tableName, TableClient table, string partitionKey, string minRowKey, string maxRowKey, bool includeData, int maxPerPage)
+        {
+            using var metrics = _telemetryClient.StartQueryLoopMetrics(memberName: tableName + "." + nameof(RetrieveAsync));
 
             var noRowKeys = false;
             if (minRowKey == null)
@@ -231,20 +240,23 @@ namespace NuGet.Insights.WideEntities
                 }
             }
 
-            var entities = QueryEntitiesAsync(table, metrics, selectColumns, filter);
-
-            return await DeserializeEntitiesAsync(entities, includeData);
+            var entities = QueryEntitiesAsync(table, metrics, selectColumns, filter, maxPerPage);
+            await foreach (var entity in DeserializeEntitiesAsync(entities, includeData))
+            {
+                yield return entity;
+            }
         }
 
         private static async IAsyncEnumerable<WideEntitySegment> QueryEntitiesAsync(
             TableClient table,
             QueryLoopMetrics metrics,
             IList<string> selectColumns,
-            Expression<Func<WideEntitySegment, bool>> filter)
+            Expression<Func<WideEntitySegment, bool>> filter,
+            int maxPerPage)
         {
             var query = table.QueryAsync(
                 filter,
-                maxPerPage: StorageUtility.MaxTakeCount,
+                maxPerPage: maxPerPage,
                 select: selectColumns);
             var enumerator = query.AsPages().GetAsyncEnumerator();
             while (await enumerator.MoveNextAsync(metrics))
@@ -262,10 +274,8 @@ namespace NuGet.Insights.WideEntities
             }
         }
 
-        public static async Task<List<WideEntity>> DeserializeEntitiesAsync(IAsyncEnumerable<WideEntitySegment> segments, bool includeData)
+        public static async IAsyncEnumerable<WideEntity> DeserializeEntitiesAsync(IAsyncEnumerable<WideEntitySegment> segments, bool includeData)
         {
-            var output = new List<WideEntity>();
-
             string currentPartitionKey = null;
             string currentRowKeyPrefix = null;
             var currentSegments = new List<WideEntitySegment>();
@@ -284,7 +294,7 @@ namespace NuGet.Insights.WideEntities
                 }
                 else
                 {
-                    MakeWideEntity(includeData, output, currentSegments);
+                    yield return MakeWideEntity(includeData, currentSegments);
                     currentPartitionKey = entity.PartitionKey;
                     currentRowKeyPrefix = entity.RowKeyPrefix;
                     currentSegments.Clear();
@@ -294,10 +304,8 @@ namespace NuGet.Insights.WideEntities
 
             if (currentSegments.Any())
             {
-                MakeWideEntity(includeData, output, currentSegments);
+                yield return MakeWideEntity(includeData, currentSegments);
             }
-
-            return output;
         }
 
         public async Task<IReadOnlyList<WideEntity>> ExecuteBatchAsync(string tableName, IEnumerable<WideEntityOperation> batch, bool allowBatchSplits)
@@ -460,7 +468,8 @@ namespace NuGet.Insights.WideEntities
                     partitionKey,
                     rowKey,
                     rowKey,
-                    includeData: false)).SingleOrDefault(),
+                    includeData: false,
+                    maxPerPage: StorageUtility.MaxTakeCount).ToListAsync()).SingleOrDefault(),
                 partitionKey,
                 rowKey,
                 content);
@@ -509,15 +518,15 @@ namespace NuGet.Insights.WideEntities
             return segments;
         }
 
-        private static void MakeWideEntity(bool includeData, List<WideEntity> output, List<WideEntitySegment> segments)
+        private static WideEntity MakeWideEntity(bool includeData, List<WideEntitySegment> segments)
         {
             if (includeData)
             {
-                output.Add(new WideEntity(segments));
+                return new WideEntity(segments);
             }
             else
             {
-                output.Add(new WideEntity(segments[0]));
+                return new WideEntity(segments[0]);
             }
         }
 

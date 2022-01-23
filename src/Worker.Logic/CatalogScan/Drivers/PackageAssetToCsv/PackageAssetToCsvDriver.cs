@@ -44,9 +44,9 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
         public string ResultContainerName => _options.Value.PackageAssetContainerName;
         public bool SingleMessagePerId => false;
 
-        public List<PackageAsset> Prune(List<PackageAsset> records)
+        public List<PackageAsset> Prune(List<PackageAsset> records, bool isFinalPrune)
         {
-            return PackageRecord.Prune(records);
+            return PackageRecord.Prune(records, isFinalPrune);
         }
 
         public async Task InitializeAsync()

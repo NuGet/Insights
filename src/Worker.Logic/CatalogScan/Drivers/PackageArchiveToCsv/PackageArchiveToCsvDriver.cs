@@ -37,14 +37,14 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
         string ICsvResultStorage<PackageArchiveEntry>.ResultContainerName => _options.Value.PackageArchiveEntryContainerName;
         public bool SingleMessagePerId => false;
 
-        public List<PackageArchiveRecord> Prune(List<PackageArchiveRecord> records)
+        public List<PackageArchiveRecord> Prune(List<PackageArchiveRecord> records, bool isFinalPrune)
         {
-            return PackageRecord.Prune(records);
+            return PackageRecord.Prune(records, isFinalPrune);
         }
 
-        public List<PackageArchiveEntry> Prune(List<PackageArchiveEntry> records)
+        public List<PackageArchiveEntry> Prune(List<PackageArchiveEntry> records, bool isFinalPrune)
         {
-            return PackageRecord.Prune(records);
+            return PackageRecord.Prune(records, isFinalPrune);
         }
 
         public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageArchiveRecord record)

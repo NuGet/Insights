@@ -50,9 +50,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         public string ResultContainerName => _options.Value.PackageAssemblyContainerName;
         public bool SingleMessagePerId => false;
 
-        public List<PackageAssembly> Prune(List<PackageAssembly> records)
+        public List<PackageAssembly> Prune(List<PackageAssembly> records, bool isFinalPrune)
         {
-            return PackageRecord.Prune(records);
+            return PackageRecord.Prune(records, isFinalPrune);
         }
 
         public async Task InitializeAsync()

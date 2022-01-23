@@ -183,9 +183,9 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             return (false, new MagickImageCollection(result.Stream, format));
         }
 
-        public List<PackageIcon> Prune(List<PackageIcon> records)
+        public List<PackageIcon> Prune(List<PackageIcon> records, bool isFinalPrune)
         {
-            return PackageRecord.Prune(records);
+            return PackageRecord.Prune(records, isFinalPrune);
         }
 
         public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageIcon record)

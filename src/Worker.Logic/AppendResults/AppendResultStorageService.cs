@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -31,17 +32,20 @@ namespace NuGet.Insights.Worker
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly WideEntityService _wideEntityService;
         private readonly ICsvReader _csvReader;
+        private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<AppendResultStorageService> _logger;
 
         public AppendResultStorageService(
             ServiceClientFactory serviceClientFactory,
             WideEntityService wideEntityService,
             ICsvReader csvReader,
+            ITelemetryClient telemetryClient,
             ILogger<AppendResultStorageService> logger)
         {
             _serviceClientFactory = serviceClientFactory;
             _wideEntityService = wideEntityService;
             _csvReader = csvReader;
+            _telemetryClient = telemetryClient;
             _logger = logger;
         }
 
@@ -148,38 +152,94 @@ namespace NuGet.Insights.Worker
             string destContainer,
             int bucket,
             bool force,
-            Func<List<T>, List<T>> prune) where T : ICsvRecord
+            Prune<T> prune) where T : ICsvRecord
         {
             var appendRecords = new List<T>();
+            const int PruneEveryNEntity = 100;
+
+            var recordType = typeof(T).FullName;
+            var stopwatch = Stopwatch.StartNew();
+
+            var entityCount = 0;
 
             if (!force || srcTable != null)
             {
-                var entities = await _wideEntityService.RetrieveAsync(srcTable, partitionKey: bucket.ToString());
-
-                if (entities.Any())
+                var pruneRecordCountMetric = GetPruneRecordCountMetric();
+                var entities = _wideEntityService.RetrieveAsync(
+                    srcTable,
+                    partitionKey: bucket.ToString(),
+                    minRowKey: null,
+                    maxRowKey: null,
+                    includeData: true,
+                    maxPerPage: StorageUtility.MaxTakeCount);
+                await foreach (var entity in entities)
                 {
-                    foreach (var entity in entities)
+                    entityCount++;
+                    using var stream = entity.GetStream();
+                    var records = Deserialize<T>(stream);
+                    appendRecords.AddRange(records);
+
+                    // Proactively prune to avoid out of memory exceptions.
+                    if (entityCount % PruneEveryNEntity == PruneEveryNEntity - 1 && appendRecords.Any())
                     {
-                        using var stream = entity.GetStream();
-                        var records = Deserialize<T>(stream);
-                        appendRecords.AddRange(records);
+                        pruneRecordCountMetric.TrackValue(appendRecords.Count, destContainer, recordType);
+                        appendRecords = prune(appendRecords, isFinalPrune: false);
                     }
                 }
-                else if (!force)
+
+                if (!appendRecords.Any() && !force)
                 {
                     // If there are no entities, then there's no new data. We can stop here.
+                    GetPruneEntityCountMetric().TrackValue(entityCount, destContainer, recordType);
                     return;
                 }
             }
 
-            await CompactAsync(appendRecords, destContainer, bucket, prune);
+            GetPruneEntityCountMetric().TrackValue(entityCount, destContainer, recordType);
+
+            await CompactAsync(appendRecords, destContainer, recordType, bucket, prune);
+
+            GetCompactDurationMsMetric().TrackValue(stopwatch.Elapsed.TotalMilliseconds, destContainer, recordType);
+        }
+
+        private IMetric GetCompactDurationMsMetric()
+        {
+            return _telemetryClient.GetMetric(
+                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.DurationMs",
+                "DestContainer",
+                "RecordType");
+        }
+
+        private IMetric GetPruneRecordCountMetric()
+        {
+            return _telemetryClient.GetMetric(
+                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.PruneRecordCount",
+                "DestContainer",
+                "RecordType");
+        }
+
+        private IMetric GetRecordCountMetric()
+        {
+            return _telemetryClient.GetMetric(
+                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.RecordCount",
+                "DestContainer",
+                "RecordType");
+        }
+
+        private IMetric GetPruneEntityCountMetric()
+        {
+            return _telemetryClient.GetMetric(
+                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.EntityCount",
+                "DestContainer",
+                "RecordType");
         }
 
         private async Task CompactAsync<T>(
             List<T> records,
             string destContainer,
+            string recordType,
             int bucket,
-            Func<List<T>, List<T>> prune) where T : ICsvRecord
+            Prune<T> prune) where T : ICsvRecord
         {
             var compactBlob = await GetCompactBlobAsync(destContainer, bucket);
 
@@ -197,8 +257,11 @@ namespace NuGet.Insights.Worker
 
             if (records.Any())
             {
-                records = prune(records);
+                GetPruneRecordCountMetric().TrackValue(records.Count, destContainer, recordType);
+                records = prune(records, isFinalPrune: true);
             }
+
+            GetRecordCountMetric().TrackValue(records.Count, destContainer, recordType);
 
             using var stream = SerializeRecords(records, writeHeader: true, gzip: true, out var uncompressedLength);
 
