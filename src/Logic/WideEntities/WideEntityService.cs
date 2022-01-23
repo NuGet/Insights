@@ -31,6 +31,11 @@ namespace NuGet.Insights.WideEntities
         private const int MaxBinaryPropertySize = 64 * 1024;
 
         /// <summary>
+        /// For storage emulator this is 8 segments and 3 for Azure. So we use 8.
+        /// </summary>
+        private const int MaxSegmentsPerWideEntity = 8;
+
+        /// <summary>
         /// This must be smaller than <see cref="MaxTotalEntitySize"/> to allow for entity overhead and property
         /// overhead per entity. This represents that maximum content length allowed in a wide entity. We use around
         /// </summary>
@@ -39,7 +44,7 @@ namespace NuGet.Insights.WideEntities
         static WideEntityService()
         {
             // We calculate the max total data size by subtracting the largest possible entity overhead size times the
-            // maximum number of segments. For storage emulator this is 8 segments and 3 for Azure. So we use 8.
+            // maximum number of segments.
 
             var calculator = new TableEntitySizeCalculator();
             calculator.AddEntityOverhead();
@@ -51,13 +56,13 @@ namespace NuGet.Insights.WideEntities
             calculator.AddInt32Data();
 
             // We can have up to 16 chunks per entity.
-            for (var i = 0; i < 16; i++)
+            for (var i = 0; i < WideEntitySegment.ChunkPropertyNames.Count; i++)
             {
                 // Add the overhead for a binary property.
                 calculator.AddBinaryData(0);
             }
 
-            MaxTotalDataSize = MaxTotalEntitySize - 8 * calculator.Size;
+            MaxTotalDataSize = MaxTotalEntitySize - MaxSegmentsPerWideEntity * calculator.Size;
         }
 
         private const string ContentTooLargeMessage = "The content is too large.";
