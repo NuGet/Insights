@@ -1,16 +1,16 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace NuGet.Insights
 {
     public class CatalogLeafItemTypeConverter : BaseCatalogLeafConverter
     {
-        private static readonly Dictionary<CatalogLeafType, string> FromType = new Dictionary<CatalogLeafType, string>
+        private static readonly IReadOnlyDictionary<CatalogLeafType, string> FromType = new Dictionary<CatalogLeafType, string>
         {
             { CatalogLeafType.PackageDelete, "nuget:PackageDelete" },
             { CatalogLeafType.PackageDetails, "nuget:PackageDetails" },
@@ -23,18 +23,19 @@ namespace NuGet.Insights
         {
         }
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override CatalogLeafType Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var stringValue = reader.Value as string;
-            if (stringValue != null)
+            if (reader.TokenType != JsonTokenType.String)
             {
-                if (FromString.TryGetValue(stringValue, out var output))
-                {
-                    return output;
-                }
+                throw new JsonException($"Unexpected token {reader.TokenType} when parsing {nameof(CatalogLeafType)}.");
             }
 
-            throw new JsonSerializationException($"Unexpected value for a {nameof(CatalogLeafType)}.");
+            if (FromString.TryGetValue(reader.GetString(), out var output))
+            {
+                return output;
+            }
+
+            throw new JsonException($"Unexpected value for a {nameof(CatalogLeafType)}.");
         }
     }
 }

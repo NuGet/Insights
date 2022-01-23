@@ -3,79 +3,79 @@
 
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace NuGet.Insights
 {
     public class PackageDetailsCatalogLeaf : CatalogLeaf
     {
-        [JsonProperty("authors")]
+        [JsonPropertyName("authors")]
         public string Authors { get; set; }
 
-        [JsonProperty("created")]
+        [JsonPropertyName("created")]
         public DateTimeOffset Created { get; set; }
 
-        [JsonProperty("lastEdited")]
+        [JsonPropertyName("lastEdited")]
         public DateTimeOffset LastEdited { get; set; }
 
-        [JsonProperty("dependencyGroups")]
+        [JsonPropertyName("dependencyGroups")]
         public List<CatalogPackageDependencyGroup> DependencyGroups { get; set; }
 
-        [JsonProperty("description")]
+        [JsonPropertyName("description")]
         public string Description { get; set; }
 
-        [JsonProperty("iconUrl")]
+        [JsonPropertyName("iconUrl")]
         public string IconUrl { get; set; }
 
-        [JsonProperty("isPrerelease")]
+        [JsonPropertyName("isPrerelease")]
         public bool IsPrerelease { get; set; }
 
-        [JsonProperty("language")]
+        [JsonPropertyName("language")]
         public string Language { get; set; }
 
-        [JsonProperty("licenseUrl")]
+        [JsonPropertyName("licenseUrl")]
         public string LicenseUrl { get; set; }
 
-        [JsonProperty("listed")]
+        [JsonPropertyName("listed")]
         public bool? Listed { get; set; }
 
-        [JsonProperty("minClientVersion")]
+        [JsonPropertyName("minClientVersion")]
         public string MinClientVersion { get; set; }
 
-        [JsonProperty("packageHash")]
+        [JsonPropertyName("packageHash")]
         public string PackageHash { get; set; }
 
-        [JsonProperty("packageHashAlgorithm")]
+        [JsonPropertyName("packageHashAlgorithm")]
         public string PackageHashAlgorithm { get; set; }
 
-        [JsonProperty("packageSize")]
+        [JsonPropertyName("packageSize")]
         public long PackageSize { get; set; }
 
-        [JsonProperty("projectUrl")]
+        [JsonPropertyName("projectUrl")]
         public string ProjectUrl { get; set; }
 
-        [JsonProperty("releaseNotes")]
+        [JsonPropertyName("releaseNotes")]
         public string ReleaseNotes { get; set; }
 
-        [JsonProperty("requireLicenseAgreement")]
+        [JsonPropertyName("requireLicenseAgreement")]
         public bool? RequireLicenseAgreement { get; set; }
 
-        [JsonProperty("summary")]
+        [JsonPropertyName("summary")]
         public string Summary { get; set; }
 
-        [JsonProperty("tags")]
+        [JsonPropertyName("tags")]
         public List<string> Tags { get; set; }
 
-        [JsonProperty("title")]
+        [JsonPropertyName("title")]
         public string Title { get; set; }
 
-        [JsonProperty("verbatimVersion")]
+        [JsonPropertyName("verbatimVersion")]
         public string VerbatimVersion { get; set; }
 
-        [JsonProperty("deprecation")]
+        [JsonPropertyName("deprecation")]
         public PackageDeprecation Deprecation { get; set; }
 
-        [JsonProperty("vulnerabilities")]
+        [JsonPropertyName("vulnerabilities")]
         public List<PackageVulnerability> Vulnerabilities { get; set; }
     }
 }

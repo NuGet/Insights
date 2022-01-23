@@ -3,25 +3,21 @@
 
 using System;
 using System.Globalization;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace NuGet.Insights
 {
-    public class AssumeUniversalDateTimeConverter : JsonConverter
+    public class AssumeUniversalDateTimeConverter : JsonConverter<DateTime>
     {
-        public override bool CanConvert(Type objectType)
+        public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            return objectType == typeof(DateTime);
-        }
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            if (reader.TokenType != JsonToken.String)
+            if (reader.TokenType != JsonTokenType.String)
             {
-                throw new JsonSerializationException($"Unexpected token {reader.TokenType} when parsing {nameof(DateTime)}.");
+                throw new JsonException($"Unexpected token {reader.TokenType} when parsing {nameof(DateTime)}.");
             }
 
-            var result = DateTime.Parse((string)reader.Value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+            var result = DateTime.Parse(reader.GetString(), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
             if (result.Kind == DateTimeKind.Local)
             {
                 return result.ToUniversalTime();
@@ -30,7 +26,7 @@ namespace NuGet.Insights
             return result;
         }
 
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
         {
             throw new NotImplementedException();
         }

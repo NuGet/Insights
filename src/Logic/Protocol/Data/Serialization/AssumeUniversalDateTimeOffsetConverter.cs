@@ -3,28 +3,24 @@
 
 using System;
 using System.Globalization;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace NuGet.Insights
 {
-    public class AssumeUniversalDateTimeOffsetConverter : JsonConverter
+    public class AssumeUniversalDateTimeOffsetConverter : JsonConverter<DateTimeOffset>
     {
-        public override bool CanConvert(Type objectType)
+        public override DateTimeOffset Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            return objectType == typeof(DateTimeOffset);
-        }
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            if (reader.TokenType != JsonToken.String)
+            if (reader.TokenType != JsonTokenType.String)
             {
-                throw new JsonSerializationException($"Unexpected token {reader.TokenType} when parsing {nameof(DateTimeOffset)}.");
+                throw new JsonException($"Unexpected token {reader.TokenType} when parsing {nameof(DateTimeOffset)}.");
             }
 
-            return DateTimeOffset.Parse((string)reader.Value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+            return DateTimeOffset.Parse(reader.GetString(), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
         }
 
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public override void Write(Utf8JsonWriter writer, DateTimeOffset value, JsonSerializerOptions options)
         {
             throw new NotImplementedException();
         }

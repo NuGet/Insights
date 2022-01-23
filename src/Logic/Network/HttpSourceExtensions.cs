@@ -2,14 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using NuGet.Protocol;
 
 namespace NuGet.Insights
@@ -18,9 +17,8 @@ namespace NuGet.Insights
     {
         private const int DefaultMaxTries = 3;
 
-        private static readonly JsonSerializer Serializer = new JsonSerializer
+        private static readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
         {
-            DateParseHandling = DateParseHandling.None,
             Converters =
             {
                 new AssumeUniversalDateTimeConverter(),
@@ -69,10 +67,10 @@ namespace NuGet.Insights
                 url,
                 ignoreNotFounds,
                 maxTries: DefaultMaxTries,
-                serializer: Serializer,
                 logger: logger,
                 token: token);
         }
+
 
         public static Task<T> DeserializeUrlAsync<T>(
             this HttpSource httpSource,
@@ -85,18 +83,19 @@ namespace NuGet.Insights
             return httpSource.DeserializeUrlAsync<T>(
                 url,
                 ignoreNotFounds,
-                maxTries,
-                serializer: Serializer,
+                maxTries: maxTries,
+                options: JsonSerializerOptions,
                 logger: logger,
                 token: token);
         }
+
 
         public static async Task<T> DeserializeUrlAsync<T>(
             this HttpSource httpSource,
             string url,
             bool ignoreNotFounds,
             int maxTries,
-            JsonSerializer serializer,
+            JsonSerializerOptions options,
             ILogger logger,
             CancellationToken token = default)
         {
@@ -108,26 +107,21 @@ namespace NuGet.Insights
                     MaxTries = maxTries,
                     RequestTimeout = TimeSpan.FromSeconds(30),
                 },
-                stream =>
+                async stream =>
                 {
                     if (stream == null)
                     {
-                        return Task.FromResult(default(T));
+                        return default;
                     }
 
-                    using (var textReader = new StreamReader(stream))
-                    using (var jsonReader = new JsonTextReader(textReader))
+                    try
                     {
-                        try
-                        {
-                            var result = serializer.Deserialize<T>(jsonReader);
-                            return Task.FromResult(result);
-                        }
-                        catch (JsonException)
-                        {
-                            logger.LogWarning("Unable to deserialize {Url} as type {TypeName}.", url, typeof(T).Name);
-                            throw;
-                        }
+                        return await JsonSerializer.DeserializeAsync<T>(stream, options, token);
+                    }
+                    catch (JsonException ex)
+                    {
+                        logger.LogWarning(ex, "Unable to deserialize {Url} as type {TypeName}.", url, typeof(T).FullName);
+                        throw;
                     }
                 },
                 nuGetLogger,
