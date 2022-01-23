@@ -2,32 +2,32 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace NuGet.Insights
 {
     public class CatalogLeaf : ICatalogLeafItem
     {
-        [JsonProperty("@id")]
+        [JsonPropertyName("@id")]
         public string Url { get; set; }
 
-        [JsonProperty("@type")]
+        [JsonPropertyName("@type")]
         [JsonConverter(typeof(CatalogLeafTypeConverter))]
         public CatalogLeafType Type { get; set; }
 
-        [JsonProperty("catalog:commitId")]
+        [JsonPropertyName("catalog:commitId")]
         public string CommitId { get; set; }
 
-        [JsonProperty("catalog:commitTimeStamp")]
+        [JsonPropertyName("catalog:commitTimeStamp")]
         public DateTimeOffset CommitTimestamp { get; set; }
 
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public string PackageId { get; set; }
 
-        [JsonProperty("published")]
+        [JsonPropertyName("published")]
         public DateTimeOffset Published { get; set; }
 
-        [JsonProperty("version")]
+        [JsonPropertyName("version")]
         public string PackageVersion { get; set; }
     }
 }

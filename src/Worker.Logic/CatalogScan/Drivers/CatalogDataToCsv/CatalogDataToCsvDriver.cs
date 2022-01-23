@@ -115,7 +115,7 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
                         ResultType = PackageVulnerabilityResultType.Vulnerable,
                         GitHubDatabaseKey = int.Parse(match.Groups["GitHubDatabaseKey"].Value),
                         AdvisoryUrl = vulnerability.AdvisoryUrl,
-                        Severity = vulnerability.Severity,
+                        Severity = int.Parse(vulnerability.Severity),
                     });
                 }
             }
