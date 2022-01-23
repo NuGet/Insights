@@ -26,7 +26,7 @@ namespace NuGet.Insights.WideEntities
         /// 16 properties names.
         /// MAX_ENTITY_SIZE / MAX_BINARY_PROPERTY_SIZE = 1 MiB / 64 KiB = 16
         /// </summary>
-        private static readonly IReadOnlyList<string> ChunkPropertyNames = new[] { "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S" };
+        internal static readonly IReadOnlyList<string> ChunkPropertyNames = new[] { "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S" };
 
         private string _rowKeyPrefix;
         private int _index = -1;

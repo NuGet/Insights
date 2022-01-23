@@ -244,6 +244,51 @@ namespace NuGet.Insights.WideEntities
             }
         }
 
+        public class RetrieveAsync_AsyncEnumerable : WideEntityServiceTest
+        {
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
+            public async Task AllowsPageSizeOf1(bool includeData)
+            {
+                // Arrange
+                var partitionKey = StorageUtility.GenerateDescendingId().ToString();
+                var a = await Target.InsertAsync(TableName, partitionKey, "rk-1", Bytes.Slice(100, WideEntityService.MaxTotalDataSize));
+                var b = await Target.InsertAsync(TableName, partitionKey, "rk-2", Bytes.Slice(200, WideEntityService.MaxTotalDataSize));
+                var c = await Target.InsertAsync(TableName, partitionKey, "rk-3", Bytes.Slice(300, WideEntityService.MaxTotalDataSize));
+                var d = await Target.InsertAsync(TableName, partitionKey, "rk-5", Bytes.Slice(400, WideEntityService.MaxTotalDataSize));
+                var all = new[] { a, b, c, d };
+
+                // Act
+                var entities = await Target.RetrieveAsync(
+                    TableName,
+                    partitionKey,
+                    minRowKey: null,
+                    maxRowKey: null,
+                    includeData,
+                    maxPerPage: 1).ToListAsync();
+
+                // Assert
+                Assert.Equal(all.Length, entities.Count);
+                for (var i = 0; i < all.Length; i++)
+                {
+                    var expected = all[i];
+                    var actual = entities[i];
+                    Assert.Equal(expected.PartitionKey, actual.PartitionKey);
+                    Assert.Equal(expected.RowKey, actual.RowKey);
+                    Assert.Equal(expected.ETag, actual.ETag);
+                    if (includeData)
+                    {
+                        Assert.Equal(expected.ToByteArray(), actual.ToByteArray());
+                    }
+                }
+            }
+
+            public RetrieveAsync_AsyncEnumerable(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
+            {
+            }
+        }
+
         public class RetrieveAsync_Range : WideEntityServiceTest
         {
             [Theory]

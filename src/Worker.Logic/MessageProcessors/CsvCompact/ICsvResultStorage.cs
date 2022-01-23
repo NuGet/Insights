@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NuGet.Insights.Worker
 {
-    public delegate List<T> Prune<T>(List<T> records, bool removeDeleted) where T : ICsvRecord;
+    public delegate List<T> Prune<T>(List<T> records, bool isFinalPrune) where T : ICsvRecord;
 
     public interface ICsvResultStorage<T> where T : ICsvRecord
     {
@@ -19,15 +19,14 @@ namespace NuGet.Insights.Worker
         /// Prune the provided records to remove duplicate or old data. Packages are unlisted, relisted, reflowed, or
         /// appear in the catalog again for some reason, this method is called to prune out duplicate CSV records.
         ///
-        /// For record sets that always leave a marker record for deleted data (e.g. package-based records), the
-        /// <paramref name="removeDeleted"/> parameter can be ignored. For record sets that do not keep any reference
-        /// to deleted data, this method should only remove records for deleted data when <paramref name="removeDeleted"/>
-        /// is true.
+        /// Use the <paramref name="isFinalPrune"/> parameter to choose between intermediate pruning logic and the final
+        /// pruning logic. Intermediate pruning logic may leave marker deleted records for deduplicate purposes in the
+        /// final pruning phases.
         /// </summary>
         /// <param name="records">The records to prune.</param>
-        /// <param name="removeDeleted">Whether or not deleted records should be removed. If false, the prune logic should just remove duplicates.</param>
+        /// <param name="isFinalPrune">Whether or not this prune invocation is the last one prior to saving the CSV file.</param>
         /// <returns>The records, after pruning out undesired records.</returns>
-        List<T> Prune(List<T> records, bool removeDeleted);
+        List<T> Prune(List<T> records, bool isFinalPrune);
 
         /// <summary>
         /// Given a previously persisted CSV record, a catalog leaf item is returned if the record should be reprocessed.
