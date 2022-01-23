@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -21,6 +21,7 @@ namespace NuGet.Insights
         public static async Task CreateIfNotExistsAsync(this QueueClient queueClient, bool retry)
         {
             await CreateIfNotExistsAsync(
+                async () => await queueClient.ExistsAsync(),
                 () => queueClient.CreateIfNotExistsAsync(),
                 retry,
                 QueueErrorCode.QueueBeingDeleted.ToString());
@@ -29,6 +30,7 @@ namespace NuGet.Insights
         public static async Task CreateIfNotExistsAsync(this BlobContainerClient containerClient, bool retry)
         {
             await CreateIfNotExistsAsync(
+                async () => await containerClient.ExistsAsync(),
                 () => containerClient.CreateIfNotExistsAsync(),
                 retry,
                 BlobErrorCode.ContainerBeingDeleted.ToString());
@@ -37,13 +39,23 @@ namespace NuGet.Insights
         public static async Task CreateIfNotExistsAsync(this TableClient tableClient, bool retry)
         {
             await CreateIfNotExistsAsync(
+                () => tableClient.ExistsAsync(),
                 () => tableClient.CreateIfNotExistsAsync(),
                 retry,
                 "TableBeingDeleted");
         }
 
-        private static async Task CreateIfNotExistsAsync(Func<Task> createIfNotExistsAsync, bool retry, string errorCode)
+        private static async Task CreateIfNotExistsAsync(
+            Func<Task<bool>> existsAsync, 
+            Func<Task> createIfNotExistsAsync,
+            bool retry,
+            string errorCode)
         {
+            if (await existsAsync())
+            {
+                return;
+            }
+
             var stopwatch = Stopwatch.StartNew();
             var firstTime = true;
             do
