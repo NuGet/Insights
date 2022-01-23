@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,26 +15,84 @@ namespace NuGet.Insights
         private const string DefaultClassName = "UnknownClassName";
         private const string DefaultMethodName = "UnknownMethodName";
 
-        private readonly IMetric _queryDurationMetric;
-        private readonly IMetric _queryCountMetric;
-        private readonly IMetric _totalDurationMetric;
+        private readonly Action<double> _queryDurationMetric;
+        private readonly Action<double> _queryCountMetric;
+        private readonly Action<double> _totalDurationMetric;
+        private readonly string[] _dimensionValues;
         private int _queryCount;
         private readonly Stopwatch _totalSw;
         private int _disposed;
 
-        private QueryLoopMetrics(ITelemetryClient telemetryClient, string className, string memberName)
+        private QueryLoopMetrics(
+            ITelemetryClient telemetryClient,
+            string className,
+            string memberName,
+            string[] dimensionNames,
+            string[] dimensionValues)
         {
-            _queryDurationMetric = telemetryClient.GetMetric($"{className}.{memberName}{MetricIdSubstring}QueryDurationMs");
-            _queryCountMetric = telemetryClient.GetMetric($"{className}.{memberName}{MetricIdSubstring}QueryCount");
-            _totalDurationMetric = telemetryClient.GetMetric($"{className}.{memberName}{MetricIdSubstring}TotalDurationMs");
+            Action<double> GetMetric(string metricId)
+            {
+                switch (dimensionNames.Length)
+                {
+                    case 0:
+                        var metric0 = telemetryClient.GetMetric(metricId);
+                        return x => metric0.TrackValue(x);
+                    case 1:
+                        var metric1 = telemetryClient.GetMetric(metricId, dimensionNames[0]);
+                        return x => metric1.TrackValue(x, dimensionValues[0]);
+                    case 2:
+                        var metric2 = telemetryClient.GetMetric(metricId, dimensionNames[0], dimensionNames[1]);
+                        return x => metric2.TrackValue(x, dimensionValues[0], dimensionValues[1]);
+                    case 3:
+                        var metric3 = telemetryClient.GetMetric(metricId, dimensionNames[0], dimensionNames[1], dimensionNames[2]);
+                        return x => metric3.TrackValue(x, dimensionValues[0], dimensionValues[1], dimensionValues[2]);
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+
+            _queryDurationMetric = GetMetric($"{className}.{memberName}{MetricIdSubstring}QueryDurationMs");
+            _queryCountMetric = GetMetric($"{className}.{memberName}{MetricIdSubstring}QueryCount");
+            _totalDurationMetric = GetMetric($"{className}.{memberName}{MetricIdSubstring}TotalDurationMs");
+            _dimensionValues = dimensionValues;
             _queryCount = 0;
             _totalSw = Stopwatch.StartNew();
         }
 
         public static QueryLoopMetrics New(
             ITelemetryClient telemetryClient,
+            string dimension1Name,
+            string dimension1Value,
             [CallerFilePath] string sourceFilePath = DefaultClassName,
             [CallerMemberName] string memberName = DefaultMethodName)
+        {
+            return New(
+                telemetryClient,
+                sourceFilePath,
+                memberName,
+                dimensionNames: new[] { dimension1Name },
+                dimensionValues: new[] { dimension1Value } );
+        }
+
+        public static QueryLoopMetrics New(
+            ITelemetryClient telemetryClient,
+            [CallerFilePath] string sourceFilePath = DefaultClassName,
+            [CallerMemberName] string memberName = DefaultMethodName)
+        {
+            return New(
+                telemetryClient,
+                sourceFilePath,
+                memberName,
+                dimensionNames: Array.Empty<string>(),
+                dimensionValues: Array.Empty<string>());
+        }
+
+        private static QueryLoopMetrics New(
+            ITelemetryClient telemetryClient,
+            string sourceFilePath,
+            string memberName,
+            string[] dimensionNames,
+            string[] dimensionValues)
         {
             string className = null;
             if (!string.IsNullOrWhiteSpace(sourceFilePath))
@@ -52,7 +110,7 @@ namespace NuGet.Insights
                 memberName = DefaultMethodName;
             }
 
-            return new QueryLoopMetrics(telemetryClient, className, memberName);
+            return new QueryLoopMetrics(telemetryClient, className, memberName, dimensionNames, dimensionValues);
         }
 
         public IDisposable TrackQuery()
@@ -65,8 +123,8 @@ namespace NuGet.Insights
         {
             if (Interlocked.CompareExchange(ref _disposed, 1, 0) == 0)
             {
-                _queryCountMetric.TrackValue(_queryCount);
-                _totalDurationMetric.TrackValue(_totalSw.Elapsed.TotalMilliseconds);
+                _queryCountMetric(_queryCount);
+                _totalDurationMetric(_totalSw.Elapsed.TotalMilliseconds);
             }
         }
 
@@ -86,7 +144,7 @@ namespace NuGet.Insights
             {
                 if (Interlocked.CompareExchange(ref _disposed, 1, 0) == 0)
                 {
-                    _parent._queryDurationMetric.TrackValue(_querySw.Elapsed.TotalMilliseconds);
+                    _parent._queryDurationMetric(_querySw.Elapsed.TotalMilliseconds);
                 }
             }
         }
