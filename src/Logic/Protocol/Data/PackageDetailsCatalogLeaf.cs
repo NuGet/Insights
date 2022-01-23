@@ -55,7 +55,6 @@ namespace NuGet.Insights
         public string ProjectUrl { get; set; }
 
         [JsonProperty("releaseNotes")]
-        [JsonConverter(typeof(FirstStringConverter))] // https://api.nuget.org/v3/catalog0/data/2018.03.11.05.06.09/fluentconsoleapplication.0.1.0.json
         public string ReleaseNotes { get; set; }
 
         [JsonProperty("requireLicenseAgreement")]
