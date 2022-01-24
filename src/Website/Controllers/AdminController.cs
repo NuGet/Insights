@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -213,6 +213,12 @@ namespace NuGet.Insights.Website.Controllers
             bool reprocess,
             string max)
         {
+            if (!_catalogScanService.GetOnlyLatestLeavesSupport(driverType).HasValue
+                && !onlyLatestLeaves.HasValue)
+            {
+                onlyLatestLeaves = false;
+            }
+
             (var success, var message) = await UpdateCatalogScanAsync(driverType, useCustomMax, onlyLatestLeaves, reprocess, max);
             if (success)
             {

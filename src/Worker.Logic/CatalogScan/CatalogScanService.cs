@@ -106,6 +106,12 @@ namespace NuGet.Insights.Worker
             }
         }
 
+        /// <summary>
+        /// The tri-state return type has the following meanings:
+        /// - null: the driver type supports run with or without the latest leaves scan
+        /// - false: the driver type cannot run with "only latest leaves = false"
+        /// - true: the driver type can only run with "only latest leaves = true"
+        /// </summary>
         public bool? GetOnlyLatestLeavesSupport(CatalogScanDriverType driverType)
         {
             switch (driverType)
