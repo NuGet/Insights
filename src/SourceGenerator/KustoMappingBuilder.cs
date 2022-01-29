@@ -1,9 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Text;
+using System.Text.Json;
 using Microsoft.CodeAnalysis;
-using Newtonsoft.Json;
 
 namespace NuGet.Insights
 {
@@ -49,7 +49,7 @@ namespace NuGet.Insights
             _builder.Append(' ', _indent);
             _builder.Append("'");
 
-            var json = JsonConvert.SerializeObject(field).Replace("'", "\\'");
+            var json = JsonSerializer.Serialize(field).Replace("'", "\\'");
 
             if (_escapeQuotes)
             {

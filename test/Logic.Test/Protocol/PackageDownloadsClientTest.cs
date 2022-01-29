@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -17,6 +18,78 @@ namespace NuGet.Insights
 {
     public class PackageDownloadsClientTest
     {
+        [Fact]
+        public async Task HandlesIdWithNoVersion()
+        {
+            var lastModified = DateTimeOffset.Parse("2022-01-23T16:15:00Z");
+            HttpMessageHandlerFactory.OnSendAsync = async (r, b, t) =>
+            {
+                await Task.Yield();
+
+                if (r.RequestUri.AbsoluteUri == Settings.DownloadsV1Url)
+                {
+                    var json = JsonSerializer.Serialize(new object[][]
+                    {
+                        new object[] { "Newtonsoft.Json", new object[] { "10.0.1", 100 } },
+                        new object[] { "NuGet.Versioning" },
+                        new object[] { "NuGet.Frameworks", new object[] { "1.0", 200 } },
+                    });
+
+                    return new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Headers = { ETag = new EntityTagHeaderValue("\"my-etag\"", isWeak: true) },
+                        Content = new StringContent(json)
+                        {
+                            Headers = { LastModified = lastModified },
+                        },
+                    };
+                }
+
+                return new HttpResponseMessage(HttpStatusCode.NotFound) { Content = new StringContent(string.Empty) };
+            };
+
+            await using var data = await Target.GetAsync();
+
+            var entries = await data.Entries.ToArrayAsync();
+            Assert.Equal(
+                new[]
+                {
+                    new PackageDownloads("Newtonsoft.Json", "10.0.1", 100),
+                    new PackageDownloads("NuGet.Frameworks", "1.0", 200),
+                },
+                entries);
+        }
+
+        [Fact]
+        public async Task HandlesEmptyArray()
+        {
+            var lastModified = DateTimeOffset.Parse("2022-01-23T16:15:00Z");
+            HttpMessageHandlerFactory.OnSendAsync = async (r, b, t) =>
+            {
+                await Task.Yield();
+
+                if (r.RequestUri.AbsoluteUri == Settings.DownloadsV1Url)
+                {
+                    var json = JsonSerializer.Serialize(Array.Empty<object>());
+
+                    return new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Headers = { ETag = new EntityTagHeaderValue("\"my-etag\"", isWeak: true) },
+                        Content = new StringContent(json)
+                        {
+                            Headers = { LastModified = lastModified },
+                        },
+                    };
+                }
+
+                return new HttpResponseMessage(HttpStatusCode.NotFound) { Content = new StringContent(string.Empty) };
+            };
+
+            await using var data = await Target.GetAsync();
+
+            Assert.Empty(await data.Entries.ToArrayAsync());
+        }
+
         [Fact]
         public async Task ParsesDownloads()
         {
@@ -85,6 +158,7 @@ namespace NuGet.Insights
                     new PackageDownloads("Newtonsoft.Json", "8.0.1", 700),
                 },
                 entries);
+            Assert.Equal(1, Throttle.CurrentCount);
         }
 
         public PackageDownloadsClientTest()
@@ -97,17 +171,15 @@ namespace NuGet.Insights
             Options.Setup(x => x.Value).Returns(() => Settings);
             HttpMessageHandlerFactory = new TestHttpMessageHandlerFactory();
             HttpClient = new HttpClient(HttpMessageHandlerFactory.Create());
-            Target = new PackageDownloadsClient(
-                HttpClient,
-                NullThrottle.Instance,
-                new DownloadsV1JsonDeserializer(),
-                Options.Object);
+            Throttle = new SemaphoreSlimThrottle(new SemaphoreSlim(1));
+            Target = new PackageDownloadsClient(HttpClient, Throttle, Options.Object);
         }
 
         public NuGetInsightsSettings Settings { get; }
         public Mock<IOptions<NuGetInsightsSettings>> Options { get; }
         public TestHttpMessageHandlerFactory HttpMessageHandlerFactory { get; }
         public HttpClient HttpClient { get; }
+        public SemaphoreSlimThrottle Throttle { get; }
         public PackageDownloadsClient Target { get; }
     }
 }
