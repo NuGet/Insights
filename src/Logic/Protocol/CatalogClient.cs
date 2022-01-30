@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
 
+#nullable enable
+
 namespace NuGet.Insights
 {
     public class CatalogClient
@@ -74,10 +76,7 @@ namespace NuGet.Insights
 
         public async Task<CatalogIndex> GetCatalogIndexAsync(string url)
         {
-            return await _httpSource.DeserializeUrlAsync<CatalogIndex>(
-                url,
-                ignoreNotFounds: false,
-                logger: _logger);
+            return await _httpSource.DeserializeUrlAsync<CatalogIndex>(url, logger: _logger);
         }
 
         public async Task<DateTimeOffset> GetCommitTimestampAsync()
@@ -115,7 +114,7 @@ namespace NuGet.Insights
             return DateTimeOffset.Parse(commitTimestamp);
         }
 
-        private string ReadCommitTimestamp(byte[] bytes)
+        private string? ReadCommitTimestamp(byte[] bytes)
         {
             var jsonReader = new Utf8JsonReader(bytes);
             var found = false;
@@ -150,10 +149,7 @@ namespace NuGet.Insights
 
         public async Task<CatalogPage> GetCatalogPageAsync(string url)
         {
-            return await _httpSource.DeserializeUrlAsync<CatalogPage>(
-                url,
-                ignoreNotFounds: false,
-                logger: _logger);
+            return await _httpSource.DeserializeUrlAsync<CatalogPage>(url, _logger);
         }
 
         public async Task<IReadOnlyList<CatalogPageItem>> GetCatalogPageItemsAsync(
@@ -174,15 +170,9 @@ namespace NuGet.Insights
             switch (type)
             {
                 case CatalogLeafType.PackageDelete:
-                    return await _httpSource.DeserializeUrlAsync<PackageDeleteCatalogLeaf>(
-                        url,
-                        ignoreNotFounds: false,
-                        logger: _logger);
+                    return await _httpSource.DeserializeUrlAsync<PackageDeleteCatalogLeaf>(url, _logger);
                 case CatalogLeafType.PackageDetails:
-                    return await _httpSource.DeserializeUrlAsync<PackageDetailsCatalogLeaf>(
-                        url,
-                        ignoreNotFounds: false,
-                        logger: _logger);
+                    return await _httpSource.DeserializeUrlAsync<PackageDetailsCatalogLeaf>(url, _logger);
                 default:
                     throw new NotImplementedException($"Catalog leaf type {type} is not supported.");
             }

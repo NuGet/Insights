@@ -18,6 +18,8 @@ using Microsoft.Extensions.Options;
 using Microsoft.Toolkit.HighPerformance;
 using NuGet.Packaging.Signing;
 
+#nullable enable
+
 namespace NuGet.Insights
 {
     public class PackageFileService
@@ -53,7 +55,7 @@ namespace NuGet.Insights
             await _wideEntityService.InitializeAsync(_options.Value.PackageArchiveTableName);
         }
 
-        public async Task<PrimarySignature> GetPrimarySignatureAsync(ICatalogLeafItem leafItem)
+        public async Task<PrimarySignature?> GetPrimarySignatureAsync(ICatalogLeafItem leafItem)
         {
             var info = await GetOrUpdateInfoAsync(leafItem);
             if (!info.Available)
@@ -65,13 +67,13 @@ namespace NuGet.Insights
             return PrimarySignature.Load(srcStream);
         }
 
-        public async Task<ZipDirectory> GetZipDirectoryAsync(ICatalogLeafItem leafItem)
+        public async Task<ZipDirectory?> GetZipDirectoryAsync(ICatalogLeafItem leafItem)
         {
             (var zipDirectory, _) = await GetZipDirectoryAndSizeAsync(leafItem);
             return zipDirectory;
         }
 
-        public async Task<(ZipDirectory directory, long size)> GetZipDirectoryAndSizeAsync(ICatalogLeafItem leafItem)
+        public async Task<(ZipDirectory? directory, long size)> GetZipDirectoryAndSizeAsync(ICatalogLeafItem leafItem)
         {
             var info = await GetOrUpdateInfoAsync(leafItem);
             if (!info.Available)
@@ -168,19 +170,20 @@ namespace NuGet.Insights
                 }
                 else if (mode == GetInfoMode.FullDownload)
                 {
-                    (var headers, var packageContent) = await _flatContainerClient.DownloadPackageContentToFileAsync(
+                    var result = await _flatContainerClient.DownloadPackageContentToFileAsync(
                         leafItem.PackageId,
                         leafItem.PackageVersion,
                         CancellationToken.None);
-                    using (packageContent)
-                    {
-                        if (packageContent == null)
-                        {
-                            return MakeDeletedInfo(leafItem);
-                        }
 
-                        using var reader = new ZipDirectoryReader(packageContent.Stream);
-                        return await GetInfoAsync(leafItem, headers, reader);
+                    if (result is null)
+                    {
+                        return MakeDeletedInfo(leafItem);
+                    }
+
+                    using (result.Value.Body)
+                    {
+                        using var reader = new ZipDirectoryReader(result.Value.Body.Stream);
+                        return await GetInfoAsync(leafItem, result.Value.Headers, reader);
                     }
                 }
                 else
@@ -234,12 +237,18 @@ namespace NuGet.Insights
 
         private static PackageFileInfoVersions OutputToData(PackageFileInfoV1 output)
         {
-            return new PackageFileInfoVersions { V1 = output };
+            return new PackageFileInfoVersions(output);
         }
 
         [MessagePackObject]
         public class PackageFileInfoVersions : PackageWideEntityService.IPackageWideEntity
         {
+            [SerializationConstructor]
+            public PackageFileInfoVersions(PackageFileInfoV1 v1)
+            {
+                V1 = v1;
+            }
+
             [Key(0)]
             public PackageFileInfoV1 V1 { get; set; }
 
@@ -256,7 +265,7 @@ namespace NuGet.Insights
             public bool Available { get; set; }
 
             [Key(3)]
-            public ILookup<string, string> HttpHeaders { get; set; }
+            public ILookup<string, string>? HttpHeaders { get; set; }
 
             [Key(4)]
             public Memory<byte> MZipBytes { get; set; }

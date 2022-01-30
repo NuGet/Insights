@@ -4,29 +4,24 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+
+#nullable enable
 
 namespace NuGet.Insights
 {
     public class PackageOwnersClient
     {
-        private readonly HttpClient _httpClient;
-        private readonly IThrottle _throttle;
-        private readonly OwnersV2JsonDeserializer _deserializer;
+        private readonly BlobStorageJsonClient _storageClient;
         private readonly IOptions<NuGetInsightsSettings> _options;
 
         public PackageOwnersClient(
-            HttpClient httpClient,
-            IThrottle throttle,
-            OwnersV2JsonDeserializer deserializer,
+            BlobStorageJsonClient storageClient,
             IOptions<NuGetInsightsSettings> options)
         {
-            _httpClient = httpClient;
-            _throttle = throttle;
-            _deserializer = deserializer;
+            _storageClient = storageClient;
             _options = options;
         }
 
@@ -37,45 +32,37 @@ namespace NuGet.Insights
                 throw new InvalidOperationException("The owners.v2.json URL is required.");
             }
 
-            var disposables = new Stack<IDisposable>();
-            try
+            return await _storageClient.DownloadAsync(_options.Value.OwnersV2Url, DeserializeAsync);
+        }
+
+        private async IAsyncEnumerable<PackageOwner> DeserializeAsync(Stream stream)
+        {
+            using var textReader = new StreamReader(stream);
+            using var jsonReader = new JsonTextReader(textReader);
+
+            if (!await jsonReader.ReadAsync() || jsonReader.TokenType != JsonToken.StartObject)
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, _options.Value.OwnersV2Url);
-                disposables.Push(request);
-
-                request.Headers.TryAddWithoutValidation("x-ms-version", "2017-04-17");
-
-                await _throttle.WaitAsync();
-                var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-                disposables.Push(response);
-
-                response.EnsureSuccessStatusCode();
-
-                var asOfTimestamp = response.Content.Headers.LastModified.Value.ToUniversalTime();
-                var etag = response.Headers.ETag.ToString();
-
-                var stream = await response.Content.ReadAsStreamAsync();
-                disposables.Push(stream);
-
-                var textReader = new StreamReader(stream);
-                disposables.Push(textReader);
-
-                return new AsOfData<PackageOwner>(
-                    asOfTimestamp,
-                    _options.Value.OwnersV2Url,
-                    etag,
-                    _deserializer.DeserializeAsync(textReader, disposables, _throttle));
+                throw new InvalidDataException("Expected a JSON document starting with an object.");
             }
-            catch
+
+            string? id = null;
+            while (await jsonReader.ReadAsync() && jsonReader.TokenType != JsonToken.EndObject)
             {
-                _throttle.Release();
-
-                while (disposables.Any())
+                switch (jsonReader.TokenType)
                 {
-                    disposables.Pop()?.Dispose();
+                    case JsonToken.PropertyName:
+                        id = (string)jsonReader.Value!;
+                        break;
+                    case JsonToken.String:
+                        var username = (string)jsonReader.Value!;
+                        yield return new PackageOwner(id, username);
+                        break;
                 }
+            }
 
-                throw;
+            if (await jsonReader.ReadAsync())
+            {
+                throw new InvalidDataException("Expected the JSON document to end with the end of an object.");
             }
         }
     }

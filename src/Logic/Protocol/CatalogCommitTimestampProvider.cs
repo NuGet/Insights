@@ -7,14 +7,16 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+#nullable enable
+
 namespace NuGet.Insights
 {
     public class CatalogCommitTimestampProvider
     {
         private readonly CatalogClient _catalogClient;
         private readonly SemaphoreSlim _commitTimestampsLock = new SemaphoreSlim(1);
-        private CatalogIndex _index;
-        private IReadOnlyList<DateTimeOffset> _pageCommits;
+        private CatalogIndex? _index;
+        private IReadOnlyList<DateTimeOffset>? _pageCommits;
 
         public CatalogCommitTimestampProvider(CatalogClient catalogClient)
         {
@@ -73,7 +75,7 @@ namespace NuGet.Insights
                 .Distinct()
                 .OrderBy(x => x)
                 .ToList();
-            return ReadPageCommits(min).Value;
+            return ReadPageCommits(min)!.Value;
         }
 
         private DateTimeOffset? ReadPageCommits(DateTimeOffset min)

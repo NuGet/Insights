@@ -12,6 +12,8 @@ using Microsoft.Extensions.Options;
 using NuGet.Protocol;
 using NuGet.Versioning;
 
+#nullable enable
+
 namespace NuGet.Insights
 {
     public class FlatContainerClient
@@ -70,26 +72,31 @@ namespace NuGet.Insights
             return url;
         }
 
-        public async Task<(ILookup<string, string> Headers, TempStreamResult Result)> DownloadPackageContentToFileAsync(string id, string version, CancellationToken token)
+        public async Task<(ILookup<string, string> Headers, TempStreamResult Body)?> DownloadPackageContentToFileAsync(string id, string version, CancellationToken token)
         {
             var url = await GetPackageContentUrlAsync(id, version);
             return await DownloadUrlToFileAsync(url, token);
         }
 
-        public async Task<(string ContentType, TempStreamResult Result)> DownloadPackageIconToFileAsync(string id, string version, CancellationToken token)
+        public async Task<(string? ContentType, TempStreamResult Body)?> DownloadPackageIconToFileAsync(string id, string version, CancellationToken token)
         {
             var url = await GetPackageIconUrlAsync(id, version);
-            (var headers, var result) = await DownloadUrlToFileAsync(url, token);
-            return (headers?["Content-Type"].FirstOrDefault(), result);
+            var result = await DownloadUrlToFileAsync(url, token);
+            if (result is null)
+            {
+                return null;
+            }
+
+            return (result.Value.Headers["Content-Type"].FirstOrDefault(), result.Value.Body);
         }
 
-        private async Task<(ILookup<string, string>, TempStreamResult)> DownloadUrlToFileAsync(string url, CancellationToken token)
+        private async Task<(ILookup<string, string> Headers, TempStreamResult Body)?> DownloadUrlToFileAsync(string url, CancellationToken token)
         {
             var nuGetLogger = _logger.ToNuGetLogger();
             var writer = _tempStreamService.GetWriter();
 
-            ILookup<string, string> headers = null;
-            TempStreamResult result = null;
+            ILookup<string, string>? headers = null;
+            TempStreamResult? result = null;
             try
             {
                 do
@@ -111,6 +118,11 @@ namespace NuGet.Insights
                                 .SelectMany(x => x.Value.Select(y => new { x.Key, Value = y }))
                                 .ToLookup(x => x.Key, x => x.Value, StringComparer.OrdinalIgnoreCase);
 
+                            if (response.Content.Headers.ContentLength is null)
+                            {
+                                throw new InvalidOperationException($"No Content-Length header was returned for package URL: {url}");
+                            }
+
                             using var networkStream = await response.Content.ReadAsStreamAsync();
                             return await writer.CopyToTempStreamAsync(
                                 networkStream,
@@ -122,12 +134,12 @@ namespace NuGet.Insights
 
                     if (result == null)
                     {
-                        return (headers, null);
+                        return null;
                     }
                 }
                 while (result.Type == TempStreamResultType.NeedNewStream);
 
-                return (headers, result);
+                return (headers!, result);
             }
             catch
             {
@@ -195,7 +207,7 @@ namespace NuGet.Insights
             return index.Versions.Contains(lowerVersion);
         }
 
-        public async Task<FlatContainerIndex> GetIndexAsync(string baseUrl, string id)
+        public async Task<FlatContainerIndex?> GetIndexAsync(string baseUrl, string id)
         {
             var lowerId = id.ToLowerInvariant();
             var packageUrl = $"{baseUrl.TrimEnd('/')}/{lowerId}/index.json";

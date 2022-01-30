@@ -172,7 +172,8 @@ namespace NuGet.Insights
             HttpMessageHandlerFactory = new TestHttpMessageHandlerFactory();
             HttpClient = new HttpClient(HttpMessageHandlerFactory.Create());
             Throttle = new SemaphoreSlimThrottle(new SemaphoreSlim(1));
-            Target = new PackageDownloadsClient(HttpClient, Throttle, Options.Object);
+            StorageClient = new BlobStorageJsonClient(HttpClient, Throttle);
+            Target = new PackageDownloadsClient(StorageClient, Options.Object);
         }
 
         public NuGetInsightsSettings Settings { get; }
@@ -180,6 +181,7 @@ namespace NuGet.Insights
         public TestHttpMessageHandlerFactory HttpMessageHandlerFactory { get; }
         public HttpClient HttpClient { get; }
         public SemaphoreSlimThrottle Throttle { get; }
+        public BlobStorageJsonClient StorageClient { get; }
         public PackageDownloadsClient Target { get; }
     }
 }

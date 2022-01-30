@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,6 +7,8 @@ using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
 using NuGet.Versioning;
+
+#nullable enable
 
 namespace NuGet.Insights
 {
@@ -31,6 +33,11 @@ namespace NuGet.Insights
 
         public IReadOnlyList<V2Package> ParsePage(XDocument doc)
         {
+            if (doc.Root is null)
+            {
+                throw new ArgumentException("The provided XML document must have a root element.");
+            }
+
             if (doc.Root.Name == _xnameEntry)
             {
                 return new[] { ParsePackage(doc.Root) };
@@ -47,14 +54,14 @@ namespace NuGet.Insights
 
         private V2Package ParsePackage(XElement element)
         {
-            var properties = element.Element(_xnameProperties);
+            var properties = element.Element(_xnameProperties)!;
 
-            var id = properties.Element(_xnameId).Value.Trim();
-            var version = properties.Element(_xnameVersion).Value.Trim();
-            var created = properties.Element(_xnameCreated).Value.Trim();
-            var lastEdited = properties.Element(_xnameLastEdited).Value?.Trim();
-            var lastUpdated = properties.Element(_xnameLastUpdated).Value.Trim();
-            var published = properties.Element(_xnamePublished).Value.Trim();
+            var id = properties.Element(_xnameId)!.Value.Trim();
+            var version = properties.Element(_xnameVersion)!.Value.Trim();
+            var created = properties.Element(_xnameCreated)!.Value.Trim();
+            var lastEdited = properties.Element(_xnameLastEdited)!.Value.Trim();
+            var lastUpdated = properties.Element(_xnameLastUpdated)!.Value.Trim();
+            var published = properties.Element(_xnamePublished)!.Value.Trim();
 
             var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
 
