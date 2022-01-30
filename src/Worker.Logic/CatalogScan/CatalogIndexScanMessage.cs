@@ -1,19 +1,19 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace NuGet.Insights.Worker
 {
     public class CatalogIndexScanMessage
     {
-        [JsonProperty("c")]
+        [JsonPropertyName("c")]
         public string CursorName { get; set; }
 
-        [JsonProperty("i")]
+        [JsonPropertyName("i")]
         public string ScanId { get; set; }
 
-        [JsonProperty("ac")]
+        [JsonPropertyName("ac")]
         public int AttemptCount { get; set; }
     }
 }

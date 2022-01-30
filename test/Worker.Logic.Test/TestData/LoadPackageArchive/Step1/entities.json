@@ -16,7 +16,7 @@
           "application/octet-stream"
         ],
         "ETag": [
-          "\"0x8D8930B9A676EB0\""
+          "\u00220x8D8930B9A676EB0\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:31 GMT"
@@ -31,7 +31,7 @@
           "ad3f30a4-c571-41ce-9a5c-987ccca26722"
         ],
         "x-ms-meta-SHA512": [
-          "q/kbBSqu/KJpoucUnm3VWVUv+JWDIvKnuajEZn5LKUBrtyf2qRcJnjFZTQN55BsWKANEzpMISWxHtuezMW5mTw=="
+          "q/kbBSqu/KJpoucUnm3VWVUv\u002BJWDIvKnuajEZn5LKUBrtyf2qRcJnjFZTQN55BsWKANEzpMISWxHtuezMW5mTw=="
         ]
       },
       "MZipHash": "93b5d42822bef8c70907eaae6801409dc26ccbc24b3f231ae34ce383ff5555a1",
@@ -55,7 +55,7 @@
           "application/octet-stream"
         ],
         "ETag": [
-          "\"0x8D8930B9A377AC4\""
+          "\u00220x8D8930B9A377AC4\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:31 GMT"
@@ -70,7 +70,7 @@
           "4f8f4828-a881-4002-bd62-96c077abf27d"
         ],
         "x-ms-meta-SHA512": [
-          "o+/nMymBAcd5IYWZtLjjLqYhogucOmJMuavF8gmHP0TFQ80aTx/FWIvAy9TG7ZfSIybC2Q8HaD1qU/R4/erAsw=="
+          "o\u002B/nMymBAcd5IYWZtLjjLqYhogucOmJMuavF8gmHP0TFQ80aTx/FWIvAy9TG7ZfSIybC2Q8HaD1qU/R4/erAsw=="
         ]
       },
       "MZipHash": "5a5f73de38746f65e1eda816e1cf5df1a4dcdafb944b69d2f1e9675b5c62a370",
@@ -94,7 +94,7 @@
           "application/octet-stream"
         ],
         "ETag": [
-          "\"0x8D8930B99873EE0\""
+          "\u00220x8D8930B99873EE0\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:30 GMT"
@@ -133,7 +133,7 @@
           "application/octet-stream"
         ],
         "ETag": [
-          "\"0x8D8930B9BE5FC5C\""
+          "\u00220x8D8930B9BE5FC5C\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:34 GMT"
@@ -148,7 +148,7 @@
           "a5d06a5f-30ad-4af0-8c7a-8feeb52b729d"
         ],
         "x-ms-meta-SHA512": [
-          "KU7lJ+VjCafd7Vw4ANJjfRwswHbjPRhb5mBXTrgOclAIUwLx+Ck5SH4sOfFTvcfteLGGfIEarNspFNOizZc+Jw=="
+          "KU7lJ\u002BVjCafd7Vw4ANJjfRwswHbjPRhb5mBXTrgOclAIUwLx\u002BCk5SH4sOfFTvcfteLGGfIEarNspFNOizZc\u002BJw=="
         ]
       },
       "MZipHash": "64a19300a3dd480733c5f6603e1b44ed19a9e9ba749075271a25f7f2eedf02aa",
@@ -172,7 +172,7 @@
           "application/octet-stream"
         ],
         "ETag": [
-          "\"0x8D8930B9A76DB4A\""
+          "\u00220x8D8930B9A76DB4A\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:31 GMT"
@@ -187,7 +187,7 @@
           "d54fff0e-af03-44bf-9154-bde6b2f21890"
         ],
         "x-ms-meta-SHA512": [
-          "1Z5vrl7A2Y+5G5wEEd96zF73asMOM5AVvFWSnXpvgZSR2JZ3DJVQostj9yay8upLBNuDZAO5ClsJL+EKNZGs9A=="
+          "1Z5vrl7A2Y\u002B5G5wEEd96zF73asMOM5AVvFWSnXpvgZSR2JZ3DJVQostj9yay8upLBNuDZAO5ClsJL\u002BEKNZGs9A=="
         ]
       },
       "MZipHash": "c436411f81a7109903b6b17e5e258f824691b2da711d26271091f154b4d09ebe",
@@ -211,7 +211,7 @@
           "application/octet-stream"
         ],
         "ETag": [
-          "\"0x8D8930B9BE62378\""
+          "\u00220x8D8930B9BE62378\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:34 GMT"
@@ -226,7 +226,7 @@
           "9639b645-3147-4307-82be-9dd4b38b7cd8"
         ],
         "x-ms-meta-SHA512": [
-          "D1SwPXzv8RvDFGTyu142JLnQ0StuZbIKOHqxZRoyB4wzwFHkvkHZSvewOlHKPdEe/X5Hq/vM+P1fe1+EUQiFYw=="
+          "D1SwPXzv8RvDFGTyu142JLnQ0StuZbIKOHqxZRoyB4wzwFHkvkHZSvewOlHKPdEe/X5Hq/vM\u002BP1fe1\u002BEUQiFYw=="
         ]
       },
       "MZipHash": "20a8271df146c0d8b11db19e8cf303508d9ccde3fe610f3d271b940531ee6cf9",
@@ -250,7 +250,7 @@
           "application/octet-stream"
         ],
         "ETag": [
-          "\"0x8D8930B9A66AB3E\""
+          "\u00220x8D8930B9A66AB3E\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:31 GMT"
@@ -265,7 +265,7 @@
           "ce26ff6d-d369-4431-b4ca-59394a4665ab"
         ],
         "x-ms-meta-SHA512": [
-          "HDet6DkhFo1aCwNNsiP2sBYKS6X1ZrIhA9FWhqlTUv0ld9JIYCSoDsPzTGX30IH/qsgFApa9KxEQKgrg+Kpu6A=="
+          "HDet6DkhFo1aCwNNsiP2sBYKS6X1ZrIhA9FWhqlTUv0ld9JIYCSoDsPzTGX30IH/qsgFApa9KxEQKgrg\u002BKpu6A=="
         ]
       },
       "MZipHash": "96a57094bd046c43cb01725ecf3b42a8a4f6fd72058a841cc89bbfc8b4b63ffb",
@@ -289,7 +289,7 @@
           "application/octet-stream"
         ],
         "ETag": [
-          "\"0x8D8930B9AB5C687\""
+          "\u00220x8D8930B9AB5C687\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:32 GMT"
@@ -304,7 +304,7 @@
           "ea38adaa-d833-4a4b-aac9-3495a857d90b"
         ],
         "x-ms-meta-SHA512": [
-          "VUdSBHGV0A6oqV7Ug6tyBB37bubNMbG2oC6N283iC9GKwhHTZE5GzCBoBeTB4VbFqlLVL+Zg0Vm42vfhxEif1A=="
+          "VUdSBHGV0A6oqV7Ug6tyBB37bubNMbG2oC6N283iC9GKwhHTZE5GzCBoBeTB4VbFqlLVL\u002BZg0Vm42vfhxEif1A=="
         ]
       },
       "MZipHash": "aa03ed1815ac3509a07043b5141cb5c1395e4f89fb5b00167c5bd39ef66936dd",
@@ -328,7 +328,7 @@
           "application/octet-stream"
         ],
         "ETag": [
-          "\"0x8D8930B9AAE4ADC\""
+          "\u00220x8D8930B9AAE4ADC\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:32 GMT"
@@ -343,7 +343,7 @@
           "ccedfc7d-7fc8-4a75-abfd-19240adc7d7b"
         ],
         "x-ms-meta-SHA512": [
-          "YJyrpaTUMjH/vx2NeQc48+kkQHUC5FO/MN1XV4D+INQdCbZlrnBDumrbEu7bJok+ZWw28jBDntUysVcyPSZn8g=="
+          "YJyrpaTUMjH/vx2NeQc48\u002BkkQHUC5FO/MN1XV4D\u002BINQdCbZlrnBDumrbEu7bJok\u002BZWw28jBDntUysVcyPSZn8g=="
         ]
       },
       "MZipHash": "a1a9ff268341c77b736b0fda8008cc896da76cb10a9919a857c527cdc80eb043",
@@ -367,7 +367,7 @@
           "application/octet-stream"
         ],
         "ETag": [
-          "\"0x8D8930B9B6FEFA3\""
+          "\u00220x8D8930B9B6FEFA3\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:33 GMT"
@@ -382,7 +382,7 @@
           "d80d2fa7-3d20-4e72-9097-81a10444b60b"
         ],
         "x-ms-meta-SHA512": [
-          "mzxtm6JJEa/mC9vm+OAaz/z6777wYA7WRHMvnKUFQks7IUxj5pNt8cIPPmQae9t6Znif2qGgrtmnwI/IkMJbsA=="
+          "mzxtm6JJEa/mC9vm\u002BOAaz/z6777wYA7WRHMvnKUFQks7IUxj5pNt8cIPPmQae9t6Znif2qGgrtmnwI/IkMJbsA=="
         ]
       },
       "MZipHash": "a5daaba8fad862074268a2dc48a5bbba6950186b1a3b54366c81d97d17e41477",
@@ -400,13 +400,13 @@
           "40745"
         ],
         "Content-MD5": [
-          "Fn+ur6gF+F0NMUoGWrv1MA=="
+          "Fn\u002Bur6gF\u002BF0NMUoGWrv1MA=="
         ],
         "Content-Type": [
           "application/octet-stream"
         ],
         "ETag": [
-          "\"0x8D8930B9AA56F52\""
+          "\u00220x8D8930B9AA56F52\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:32 GMT"
@@ -421,7 +421,7 @@
           "14f7f0c2-aade-47df-a1c7-558a15f69189"
         ],
         "x-ms-meta-SHA512": [
-          "LhkKKDSS60ybnpyMTftLnE6e7y6pO5nZTfZZMqYdSbqM/4k2ibAeycRi+bzq4lbBHeFaely5CQcmDTiQEID2Cw=="
+          "LhkKKDSS60ybnpyMTftLnE6e7y6pO5nZTfZZMqYdSbqM/4k2ibAeycRi\u002Bbzq4lbBHeFaely5CQcmDTiQEID2Cw=="
         ]
       },
       "MZipHash": "317916f3dee49a26e92d3507c4ea2a7818b35e0707587530e43050a68a5bed35",

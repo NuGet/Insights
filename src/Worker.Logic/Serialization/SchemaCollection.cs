@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
 
 namespace NuGet.Insights.Worker
 {
@@ -72,12 +72,12 @@ namespace NuGet.Insights.Worker
             return Deserialize(NameVersionSerializer.DeserializeMessage(message), logger);
         }
 
-        public NameVersionMessage<object> Deserialize(JToken message, ILogger logger)
+        public NameVersionMessage<object> Deserialize(JsonElement message, ILogger logger)
         {
             return Deserialize(NameVersionSerializer.DeserializeMessage(message), logger);
         }
 
-        public NameVersionMessage<object> Deserialize(NameVersionMessage<JToken> message, ILogger logger)
+        public NameVersionMessage<object> Deserialize(NameVersionMessage<JsonElement> message, ILogger logger)
         {
             var schema = GetDeserializer(message.SchemaName);
             var deserializedEntity = schema.Deserialize(message.SchemaVersion, message.Data);

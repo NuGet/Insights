@@ -9,6 +9,8 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Core.Pipeline;
@@ -19,8 +21,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -299,21 +299,16 @@ namespace NuGet.Insights
 
         public static string SerializeTestJson(object obj)
         {
-            var serializer = new JsonSerializer
+            var json = JsonSerializer.Serialize(obj, new JsonSerializerOptions
             {
-                NullValueHandling = NullValueHandling.Include,
-                Formatting = Formatting.Indented,
+                WriteIndented = true,
                 Converters =
                 {
-                    new StringEnumConverter(),
-                }
-            };
-            var stringWriter = new StringWriter { NewLine = "\n" };
-            using (var jsonWriter = new JsonTextWriter(stringWriter))
-            {
-                serializer.Serialize(jsonWriter, obj);
-            }
-            return stringWriter.ToString();
+                    new JsonStringEnumConverter(),
+                },
+            });
+
+            return json.Replace("\r\n", "\n");
         }
 
         public static HttpRequestMessage Clone(HttpRequestMessage req)

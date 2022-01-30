@@ -300,29 +300,6 @@ namespace NuGet.Insights.Worker
                 max);
         }
 
-        private async Task<CatalogScanServiceResult> ReprocessCatalogLeafToCsvAsync(CatalogScanDriverType driverType)
-        {
-            var parameters = new CatalogLeafToCsvParameters
-            {
-                Mode = CatalogLeafToCsvMode.Reprocess,
-            };
-
-            var cursorValue = await _cursorService.GetCursorValueAsync(driverType);
-            var scanId = StorageUtility.GenerateDescendingId();
-            var scan = await GetOrStartCursorlessAsync(
-                scanId.ToString(),
-                scanId.Unique,
-                driverType,
-                parameters: _serializer.Serialize(parameters).AsString(),
-                CatalogClient.NuGetOrgMinAvailable,
-                cursorValue);
-
-            return new CatalogScanServiceResult(
-                CatalogScanServiceResultType.NewStarted,
-                dependencyName: null,
-                scan);
-        }
-
         private async Task<CatalogScanServiceResult> UpdateCatalogLeafToCsvAsync(
             CatalogScanDriverType driverType,
             bool onlyLatestLeaves,

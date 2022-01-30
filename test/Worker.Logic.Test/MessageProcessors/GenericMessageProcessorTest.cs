@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Moq;
-using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -150,7 +150,7 @@ namespace NuGet.Insights.Worker
                     // Assert
                     var batch = Assert.Single(ProcessedBatches);
                     Assert.Equal(MessageBatch.Count, batch.Count);
-                    Assert.Equal(MessageBatch, GetData(batch));
+                    Assert.Equal(MessageBatch, GetData(batch), JsonElementComparer.Instance);
 
                     MessageProcessor.Verify(x => x.ProcessAsync(batch, 1), Times.Once);
 
@@ -339,7 +339,7 @@ namespace NuGet.Insights.Worker
 
                     // Assert
                     Assert.Equal(MessageBatch.Count, ProcessedMessages.Count);
-                    Assert.Equal(MessageBatch, GetData(ProcessedMessages));
+                    Assert.Equal(MessageBatch, GetData(ProcessedMessages), JsonElementComparer.Instance);
 
                     MessageProcessor.Verify(x => x.ProcessAsync(It.IsAny<CatalogLeafScanMessage>(), 1), Times.Exactly(MessageBatch.Count));
 
@@ -407,7 +407,7 @@ namespace NuGet.Insights.Worker
                 .Range(0, 3)
                 .Select(MakeMessage)
                 .Select(serializer.SerializeData)
-                .Select(x => x.AsJToken()).ToList();
+                .Select(x => x.AsJsonElement()).ToList();
             EnqueuedBatches = new List<IReadOnlyList<string>>();
 
             RawMessageEnqueuer
@@ -427,9 +427,9 @@ namespace NuGet.Insights.Worker
                 output.GetLogger<GenericMessageProcessor>());
         }
 
-        public JToken GetData(CatalogLeafScanMessage message)
+        public JsonElement GetData(CatalogLeafScanMessage message)
         {
-            return SchemaSerializer.GetSerializer<CatalogLeafScanMessage>().SerializeData(message).AsJToken();
+            return SchemaSerializer.GetSerializer<CatalogLeafScanMessage>().SerializeData(message).AsJsonElement();
         }
 
         public string GetString(CatalogLeafScanMessage message)
@@ -437,12 +437,12 @@ namespace NuGet.Insights.Worker
             return SchemaSerializer.GetSerializer<CatalogLeafScanMessage>().SerializeMessage(message).AsString();
         }
 
-        public string GetString(JToken data)
+        public string GetString(JsonElement data)
         {
             return NameVersionSerializer.SerializeMessage(SchemaName, SchemaVersion, data).AsString();
         }
 
-        public IReadOnlyList<JToken> GetData(IEnumerable<CatalogLeafScanMessage> input)
+        public IReadOnlyList<JsonElement> GetData(IEnumerable<CatalogLeafScanMessage> input)
         {
             return input.Select(GetData).ToList();
         }
@@ -452,7 +452,7 @@ namespace NuGet.Insights.Worker
             return input.Select(GetString).ToList();
         }
 
-        public IReadOnlyList<string> GetString(IEnumerable<JToken> input)
+        public IReadOnlyList<string> GetString(IEnumerable<JsonElement> input)
         {
             return input.Select(GetString).ToList();
         }
@@ -474,7 +474,7 @@ namespace NuGet.Insights.Worker
         public ReadOnlyMemory<byte> SingleMessage { get; }
         public string SchemaName { get; }
         public int SchemaVersion { get; }
-        public List<JToken> MessageBatch { get; }
+        public List<JsonElement> MessageBatch { get; }
         public List<IReadOnlyList<string>> EnqueuedBatches { get; }
 
         public GenericMessageProcessor Target { get; }

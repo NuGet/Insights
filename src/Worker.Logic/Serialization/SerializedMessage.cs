@@ -1,23 +1,22 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace NuGet.Insights.Worker
 {
     public class SerializedMessage : ISerializedEntity
     {
-        private readonly Lazy<JToken> _json;
+        private readonly Lazy<JsonElement> _json;
         private readonly Lazy<string> _string;
 
-        public SerializedMessage(Func<JToken> getJson)
+        public SerializedMessage(Func<JsonElement> getJson)
         {
-            _json = new Lazy<JToken>(getJson);
+            _json = new Lazy<JsonElement>(getJson);
             _string = new Lazy<string>(() =>
             {
-                return _json.Value.ToString(Formatting.None);
+                return JsonSerializer.Serialize(_json.Value);
             });
         }
 
@@ -26,7 +25,7 @@ namespace NuGet.Insights.Worker
             return _string.Value;
         }
 
-        public JToken AsJToken()
+        public JsonElement AsJsonElement()
         {
             return _json.Value;
         }

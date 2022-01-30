@@ -1,11 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 using NuGet.Insights.Worker.LoadLatestPackageLeaf;
 using Xunit;
 using Xunit.Abstractions;
@@ -90,7 +90,7 @@ namespace NuGet.Insights.Worker.TableCopy
                 pair.First.ETag = default;
                 pair.Second.Timestamp = default;
                 pair.Second.ETag = default;
-                Assert.Equal(JsonConvert.SerializeObject(pair.First), JsonConvert.SerializeObject(pair.Second));
+                Assert.Equal(JsonSerializer.Serialize(pair.First), JsonSerializer.Serialize(pair.Second));
             });
 
             var countLowerBound = await TaskStateStorageService.GetCountLowerBoundAsync(

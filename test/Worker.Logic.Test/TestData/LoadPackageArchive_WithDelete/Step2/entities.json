@@ -10,13 +10,13 @@
           "17489"
         ],
         "Content-MD5": [
-          "Pc+sJXvflwaamzKSkLxRiw=="
+          "Pc\u002BsJXvflwaamzKSkLxRiw=="
         ],
         "Content-Type": [
           "application/octet-stream"
         ],
         "ETag": [
-          "\"0x8D8A4907FEF6282\""
+          "\u00220x8D8A4907FEF6282\u0022"
         ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:39:40 GMT"
@@ -31,7 +31,7 @@
           "fbdd746a-3648-4e3f-a610-1c4a0281988d"
         ],
         "x-ms-meta-SHA512": [
-          "2Vs5DBI4wXwFVRgQGypQ5oR178t+ittPd06rrzNWICKVKDZSsp24C2SNEDn3cQWS1aQjJU78pdyCohYeeQ1Fqg=="
+          "2Vs5DBI4wXwFVRgQGypQ5oR178t\u002BittPd06rrzNWICKVKDZSsp24C2SNEDn3cQWS1aQjJU78pdyCohYeeQ1Fqg=="
         ]
       },
       "MZipHash": "58e13d79c72725f01a25bac00f8ecb78465e0228d7df33fc4d653e4a4f796a56",
@@ -66,7 +66,7 @@
           "application/octet-stream"
         ],
         "ETag": [
-          "\"0x8D8A493B1536592\""
+          "\u00220x8D8A493B1536592\u0022"
         ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 03:02:31 GMT"
@@ -81,7 +81,7 @@
           "ec8fb740-80ee-4f2d-abb4-3b3729fc5836"
         ],
         "x-ms-meta-SHA512": [
-          "5j3wKvgq6y7+g+xrHvBkxyxd1icevUzBhxCHHUf0bEPQw/iRuGGJkIp2GmNyXLJJvHFWotzMGD80KbC7cAXU/Q=="
+          "5j3wKvgq6y7\u002Bg\u002BxrHvBkxyxd1icevUzBhxCHHUf0bEPQw/iRuGGJkIp2GmNyXLJJvHFWotzMGD80KbC7cAXU/Q=="
         ]
       },
       "MZipHash": "4ee628684582744b4e2676a5c3a661ee2e7c8d5e50323bbd0d40709fb51b0ccc",
@@ -105,7 +105,7 @@
           "application/octet-stream"
         ],
         "ETag": [
-          "\"0x8D8A4907FF57E4D\""
+          "\u00220x8D8A4907FF57E4D\u0022"
         ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:39:40 GMT"
@@ -120,7 +120,7 @@
           "839f9bf3-1865-46de-82e5-65314f1e164d"
         ],
         "x-ms-meta-SHA512": [
-          "JRVSc6/HVji2Tg2Ixp8sJt1+CAURtkadNCoOKqAu31aLluyW1qmL46TD55UkQcHcw/aX51aQjWPVkxsDXDtSAQ=="
+          "JRVSc6/HVji2Tg2Ixp8sJt1\u002BCAURtkadNCoOKqAu31aLluyW1qmL46TD55UkQcHcw/aX51aQjWPVkxsDXDtSAQ=="
         ]
       },
       "MZipHash": "6aabc7df2e71a836784a0f17caa8fecf9c3b6a0140953766cd66a857cb5214bd",
@@ -144,7 +144,7 @@
           "application/octet-stream"
         ],
         "ETag": [
-          "\"0x8D8A4905AF1CCFE\""
+          "\u00220x8D8A4905AF1CCFE\u0022"
         ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:38:38 GMT"
@@ -159,7 +159,7 @@
           "828b8276-cdea-4520-b710-41c1fd635661"
         ],
         "x-ms-meta-SHA512": [
-          "z1sDXNtxP5q1Z3x8+UnKO14VJzgwLHUm6ixTFmSeNuggIqmc3HJGR+i53dklbdUB56t2erliRRSSXdcrda3qRw=="
+          "z1sDXNtxP5q1Z3x8\u002BUnKO14VJzgwLHUm6ixTFmSeNuggIqmc3HJGR\u002Bi53dklbdUB56t2erliRRSSXdcrda3qRw=="
         ]
       },
       "MZipHash": "2b3aa9bc485d3d93b4cf8d02d5a68ecebd36af8a38b50e9cf4bffa2426f4048d",
@@ -177,13 +177,13 @@
           "20723"
         ],
         "Content-MD5": [
-          "kZfVXnVzAh+VV/JY5acmjA=="
+          "kZfVXnVzAh\u002BVV/JY5acmjA=="
         ],
         "Content-Type": [
           "application/octet-stream"
         ],
         "ETag": [
-          "\"0x8D8A4905B1C1A5A\""
+          "\u00220x8D8A4905B1C1A5A\u0022"
         ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:38:38 GMT"
@@ -198,7 +198,7 @@
           "1668a6ab-5f3d-41d8-8a1f-a3732ba86526"
         ],
         "x-ms-meta-SHA512": [
-          "3X7biWepmnXFI3gAsvuHe5+ve0qaQ1fLkWCiTDufZgm0jugcDfFAyer11+hua/JZgkhZOohVyeoxrzcyQzuDsg=="
+          "3X7biWepmnXFI3gAsvuHe5\u002Bve0qaQ1fLkWCiTDufZgm0jugcDfFAyer11\u002Bhua/JZgkhZOohVyeoxrzcyQzuDsg=="
         ]
       },
       "MZipHash": "e375c5d1b36416063c56dc7797458f7a3cf3d4b39254531ce742fb3b36391714",
@@ -216,13 +216,13 @@
           "19638"
         ],
         "Content-MD5": [
-          "sWAO+4uMnMnEmQK6puFV0A=="
+          "sWAO\u002B4uMnMnEmQK6puFV0A=="
         ],
         "Content-Type": [
           "application/octet-stream"
         ],
         "ETag": [
-          "\"0x8D8A4905AFFB2A3\""
+          "\u00220x8D8A4905AFFB2A3\u0022"
         ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:38:38 GMT"
@@ -237,7 +237,7 @@
           "32f0ccec-079c-454b-9720-607474fccf85"
         ],
         "x-ms-meta-SHA512": [
-          "Kw+yIpvGdMxY191w4MXP1YXBzfpMD0p0zGKGEXtkdM787nfHGUgJy3otp1gTtEFzL4kuk1YTiALURBV2aUx3/A=="
+          "Kw\u002ByIpvGdMxY191w4MXP1YXBzfpMD0p0zGKGEXtkdM787nfHGUgJy3otp1gTtEFzL4kuk1YTiALURBV2aUx3/A=="
         ]
       },
       "MZipHash": "fd497ab5d5a471ae84a797d8fd04a4cdf0e1dd1a4d0dbc0e1262fae2ce568722",

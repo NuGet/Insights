@@ -14,8 +14,6 @@ namespace NuGet.Insights
 {
     public class V2Client
     {
-        private const string Projection = "Id,Version,Created,LastEdited,LastUpdated,Published";
-
         private readonly HttpSource _httpSource;
         private readonly V2Parser _parser;
         private readonly ILogger<V2Client> _logger;

@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using NuGet.Packaging.Signing;
 
 namespace NuGet.Insights.Worker.PackageSignatureToCsv
@@ -132,7 +132,7 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
             output.RepositoryTimestampIssuer = info.TimestampIssuer;
             output.RepositoryTimestampValue = info.TimestampValue;
             output.RepositoryTimestampHasASN1Error = info.TimestampHasASN1Error;
-            output.PackageOwners = JsonConvert.SerializeObject(signature.PackageOwners);
+            output.PackageOwners = JsonSerializer.Serialize(signature.PackageOwners);
         }
 
         private SignatureInfo GetInfo(Signature signature)

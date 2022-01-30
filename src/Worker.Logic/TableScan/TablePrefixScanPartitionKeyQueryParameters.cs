@@ -1,25 +1,25 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace NuGet.Insights.Worker
 {
     public class TablePrefixScanPartitionKeyQueryParameters
     {
-        [JsonProperty("sf")]
+        [JsonPropertyName("sf")]
         public int SegmentsPerFirstPrefix { get; set; }
 
-        [JsonProperty("ss")]
+        [JsonPropertyName("ss")]
         public int SegmentsPerSubsequentPrefix { get; set; }
 
-        [JsonProperty("d")]
+        [JsonPropertyName("d")]
         public int Depth { get; set; }
 
-        [JsonProperty("p")]
+        [JsonPropertyName("p")]
         public string PartitionKey { get; set; }
 
-        [JsonProperty("r")]
+        [JsonPropertyName("r")]
         public string RowKeySkip { get; set; }
     }
 }

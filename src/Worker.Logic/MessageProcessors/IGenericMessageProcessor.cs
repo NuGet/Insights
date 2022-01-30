@@ -3,14 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 
 namespace NuGet.Insights.Worker
 {
     public interface IGenericMessageProcessor
     {
         Task ProcessSingleAsync(QueueType queue, ReadOnlyMemory<byte> message, long dequeueCount);
-        Task ProcessBatchAsync(string schemaName, int schemaVersion, IReadOnlyList<JToken> data, long dequeueCount);
+        Task ProcessBatchAsync(string schemaName, int schemaVersion, IReadOnlyList<JsonElement> data, long dequeueCount);
     }
 }

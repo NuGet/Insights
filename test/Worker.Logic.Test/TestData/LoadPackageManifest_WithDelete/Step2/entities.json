@@ -10,13 +10,13 @@
           "745"
         ],
         "Content-MD5": [
-          "5hPkqgtznBX0aPa+DbGkCg=="
+          "5hPkqgtznBX0aPa\u002BDbGkCg=="
         ],
         "Content-Type": [
           "text/xml"
         ],
         "ETag": [
-          "\"0x8D8A4907FE65FDF\""
+          "\u00220x8D8A4907FE65FDF\u0022"
         ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:39:40 GMT"
@@ -52,13 +52,13 @@
           "1243"
         ],
         "Content-MD5": [
-          "Ay4+y8J+kZ2qWNsa/Whrbg=="
+          "Ay4\u002By8J\u002BkZ2qWNsa/Whrbg=="
         ],
         "Content-Type": [
           "text/xml"
         ],
         "ETag": [
-          "\"0x8D8A493B1169DA5\""
+          "\u00220x8D8A493B1169DA5\u0022"
         ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 03:02:31 GMT"
@@ -90,7 +90,7 @@
           "text/xml"
         ],
         "ETag": [
-          "\"0x8D8A4907FE10786\""
+          "\u00220x8D8A4907FE10786\u0022"
         ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:39:40 GMT"
@@ -122,7 +122,7 @@
           "text/xml"
         ],
         "ETag": [
-          "\"0x8D8A4905A4EDAA9\""
+          "\u00220x8D8A4905A4EDAA9\u0022"
         ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:38:37 GMT"
@@ -154,7 +154,7 @@
           "text/xml"
         ],
         "ETag": [
-          "\"0x8D8A4905A5740E6\""
+          "\u00220x8D8A4905A5740E6\u0022"
         ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:38:37 GMT"
@@ -186,7 +186,7 @@
           "text/xml"
         ],
         "ETag": [
-          "\"0x8D8A4905A427BFC\""
+          "\u00220x8D8A4905A427BFC\u0022"
         ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:38:36 GMT"

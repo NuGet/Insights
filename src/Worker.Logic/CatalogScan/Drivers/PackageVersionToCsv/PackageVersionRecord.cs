@@ -1,8 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Newtonsoft.Json;
+using System.Text.Json;
 using NuGet.Insights.Worker.LoadPackageVersion;
 using NuGet.Versioning;
 
@@ -44,7 +44,7 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
             Patch = parsedVersion.Patch;
             Revision = parsedVersion.Revision;
             Release = parsedVersion.Release;
-            ReleaseLabels = JsonConvert.SerializeObject(parsedVersion.ReleaseLabels);
+            ReleaseLabels = JsonSerializer.Serialize(parsedVersion.ReleaseLabels);
             Metadata = parsedVersion.Metadata;
             IsPrerelease = parsedVersion.IsPrerelease;
         }
