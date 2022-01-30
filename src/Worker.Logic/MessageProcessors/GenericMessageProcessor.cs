@@ -7,10 +7,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace NuGet.Insights.Worker
 {
@@ -83,7 +82,7 @@ namespace NuGet.Insights.Worker
             await ProcessResultAsync(messageCount: 1, serializer, result);
         }
 
-        public async Task ProcessBatchAsync(string schemaName, int schemaVersion, IReadOnlyList<JToken> data, long dequeueCount)
+        public async Task ProcessBatchAsync(string schemaName, int schemaVersion, IReadOnlyList<JsonElement> data, long dequeueCount)
         {
             if (data.Count == 0)
             {

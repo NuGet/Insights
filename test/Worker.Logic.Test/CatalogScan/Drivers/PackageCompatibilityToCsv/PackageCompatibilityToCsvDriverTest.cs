@@ -71,10 +71,10 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             Assert.False(record.HasUnsupported);
             Assert.False(record.HasAgnostic);
             Assert.Equal("[]", record.BrokenFrameworks);
-            Assert.Equal("[\"net20\",\"net35\",\"net40\",\"net45\",\"portable-net45+win8+wp8+wpa81\",\"portable-net40+sl5+win8+wp8+wpa81\",\"netstandard1.0\",\"netstandard1.3\",\"netstandard2.0\"]", record.NuspecReader);
-            Assert.Equal("[\"net20\",\"net35\",\"net40\",\"net45\",\"portable-net45+win8+wp8+wpa81\",\"portable-net40+sl5+win8+wp8+wpa81\",\"netstandard1.0\",\"netstandard1.3\",\"netstandard2.0\"]", record.NU1202);
-            Assert.Equal("[\"net20\",\"net35\",\"net40\",\"net45\",\"portable-net45+win8+wp8+wpa81\",\"portable-net40+sl5+win8+wp8+wpa81\",\"netstandard1.0\",\"netstandard1.3\",\"netstandard2.0\"]", record.NuGetGallery);
-            Assert.Equal("[\"net20\",\"net35\",\"net40\",\"net45\",\"portable-net45+win8+wp8+wpa81\",\"portable-net40+sl5+win8+wp8+wpa81\",\"netstandard1.0\",\"netstandard1.3\",\"netstandard2.0\"]", record.NuGetGalleryEscaped);
+            Assert.Equal("[\"net20\",\"net35\",\"net40\",\"net45\",\"portable-net45\\u002Bwin8\\u002Bwp8\\u002Bwpa81\",\"portable-net40\\u002Bsl5\\u002Bwin8\\u002Bwp8\\u002Bwpa81\",\"netstandard1.0\",\"netstandard1.3\",\"netstandard2.0\"]", record.NuspecReader);
+            Assert.Equal("[\"net20\",\"net35\",\"net40\",\"net45\",\"portable-net45\\u002Bwin8\\u002Bwp8\\u002Bwpa81\",\"portable-net40\\u002Bsl5\\u002Bwin8\\u002Bwp8\\u002Bwpa81\",\"netstandard1.0\",\"netstandard1.3\",\"netstandard2.0\"]", record.NU1202);
+            Assert.Equal("[\"net20\",\"net35\",\"net40\",\"net45\",\"portable-net45\\u002Bwin8\\u002Bwp8\\u002Bwpa81\",\"portable-net40\\u002Bsl5\\u002Bwin8\\u002Bwp8\\u002Bwpa81\",\"netstandard1.0\",\"netstandard1.3\",\"netstandard2.0\"]", record.NuGetGallery);
+            Assert.Equal("[\"net20\",\"net35\",\"net40\",\"net45\",\"portable-net45\\u002Bwin8\\u002Bwp8\\u002Bwpa81\",\"portable-net40\\u002Bsl5\\u002Bwin8\\u002Bwp8\\u002Bwpa81\",\"netstandard1.0\",\"netstandard1.3\",\"netstandard2.0\"]", record.NuGetGalleryEscaped);
         }
 
         [Fact]

@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
 using NuGet.Insights.Worker.BuildVersionSet;
 
@@ -89,7 +89,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             {
                 record.LowerId = pair.Key.ToLowerInvariant();
                 record.Id = pair.Key;
-                record.Owners = JsonConvert.SerializeObject(pair.Value.OrderBy(x => x, StringComparer.OrdinalIgnoreCase));
+                record.Owners = JsonSerializer.Serialize(pair.Value.OrderBy(x => x, StringComparer.OrdinalIgnoreCase));
                 record.Write(writer);
             }
 

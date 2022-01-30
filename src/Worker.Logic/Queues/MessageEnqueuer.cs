@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,9 +6,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
 
 namespace NuGet.Insights.Worker
 {
@@ -132,7 +132,7 @@ namespace NuGet.Insights.Worker
             }
             else
             {
-                var batch = new List<JToken>();
+                var batch = new List<JsonElement>();
                 var batchMessage = new HomogeneousBulkEnqueueMessage
                 {
                     SchemaName = serializer.Name,
@@ -158,7 +158,7 @@ namespace NuGet.Insights.Worker
 
                     if (!batch.Any())
                     {
-                        batch.Add(innerData.AsJToken());
+                        batch.Add(innerData.AsJsonElement());
                         batchMessageLength += innerDataLength;
                     }
                     else
@@ -168,12 +168,12 @@ namespace NuGet.Insights.Worker
                         {
                             await EnqueueBulkEnqueueMessageAsync(addAsync, batchMessage, batchMessageLength);
                             batch.Clear();
-                            batch.Add(innerData.AsJToken());
+                            batch.Add(innerData.AsJsonElement());
                             batchMessageLength = emptyBatchMessageLength + innerDataLength;
                         }
                         else
                         {
-                            batch.Add(innerData.AsJToken());
+                            batch.Add(innerData.AsJsonElement());
                             batchMessageLength = newBatchMessageLength;
                         }
                     }

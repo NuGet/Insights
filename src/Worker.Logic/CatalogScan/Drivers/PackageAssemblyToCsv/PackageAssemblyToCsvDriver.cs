@@ -12,11 +12,11 @@ using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Security;
 using System.Security.Cryptography;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 
 namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 {
@@ -300,8 +300,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             assembly.EdgeCases |= info.EdgeCases;
             assembly.CustomAttributesTotalCount = info.TotalCount;
             assembly.CustomAttributesTotalDataLength = info.TotalDataLength;
-            assembly.CustomAttributesFailedDecode = JsonConvert.SerializeObject(info.FailedDecode);
-            assembly.CustomAttributes = JsonConvert.SerializeObject(info.NameToParameters);
+            assembly.CustomAttributesFailedDecode = JsonSerializer.Serialize(info.FailedDecode);
+            assembly.CustomAttributes = JsonSerializer.Serialize(info.NameToParameters);
         }
 
         public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageAssembly record)

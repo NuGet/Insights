@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Knapcode.MiniZip;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGetGallery;
@@ -145,7 +145,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                 output.HasAny = hasAny;
                 output.HasUnsupported = hasUnsupported;
                 output.HasAgnostic = hasAgnostic;
-                output.BrokenFrameworks = JsonConvert.SerializeObject(brokenFrameworks.OrderBy(x => x).ToList());
+                output.BrokenFrameworks = JsonSerializer.Serialize(brokenFrameworks.OrderBy(x => x).ToList());
 
                 return new List<PackageCompatibility> { output };
             }
@@ -207,7 +207,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                 return null;
             }
 
-            return JsonConvert.SerializeObject(roundTripShortFolderNames);
+            return JsonSerializer.Serialize(roundTripShortFolderNames);
         }
 
         public List<PackageCompatibility> Prune(List<PackageCompatibility> records, bool isFinalPrune)

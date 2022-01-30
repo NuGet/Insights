@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -102,7 +102,7 @@ namespace NuGet.Insights.Worker
             int segmentsPerFirstPrefix;
             int segmentsPerSubsequentPrefix;
             TablePrefixScanStep currentStep;
-            switch (_serializer.Deserialize(message.ScanParameters).Data)
+            switch (_serializer.Deserialize(message.ScanParameters.Value).Data)
             {
                 case TablePrefixScanStartParameters startParameters:
                     segmentsPerFirstPrefix = startParameters.SegmentsPerFirstPrefix;
@@ -262,7 +262,7 @@ namespace NuGet.Insights.Worker
                 TakeCount = originalMessage.TakeCount,
                 ExpandPartitionKeys = originalMessage.ExpandPartitionKeys,
                 PartitionKeyPrefix = originalMessage.PartitionKeyPrefix,
-                ScanParameters = serializedParameters.AsJToken(),
+                ScanParameters = serializedParameters.AsJsonElement(),
                 DriverParameters = originalMessage.DriverParameters,
             };
         }

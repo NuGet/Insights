@@ -3,12 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Serialization;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -172,7 +170,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
 
         private static string JsonSerialize(object input)
         {
-            return JsonConvert.SerializeObject(input, JsonSerializerSettings);
+            return JsonSerializer.Serialize(input, JsonSerializerOptions);
         }
 
         public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageManifestRecord record)
@@ -180,135 +178,79 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             throw new NotImplementedException();
         }
 
-        private static readonly JsonSerializerSettings JsonSerializerSettings = new JsonSerializerSettings
+        private static readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
         {
             Converters =
             {
-                new StringEnumConverter(),
+                new JsonStringEnumConverter(),
                 new NuGetFrameworkJsonConverter(),
                 new VersionRangeJsonConverter(),
+                new LicenseMetadataJsonConverter(),
+                new FrameworkSpecificGroupJsonConverter(),
             },
-            NullValueHandling = NullValueHandling.Ignore,
-            ContractResolver = new PropertyRenameAndIgnoreSerializerContractResolver()
-                .IgnoreProperty(typeof(LicenseMetadata), nameof(LicenseMetadata.LicenseExpression))
-                .IgnoreProperty(typeof(FrameworkSpecificGroup), nameof(FrameworkSpecificGroup.HasEmptyFolder))
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         };
 
-        private class NuGetFrameworkJsonConverter : JsonConverter
+        private class NuGetFrameworkJsonConverter : JsonConverter<NuGetFramework>
         {
-            public override bool CanConvert(Type objectType)
-            {
-                return objectType == typeof(NuGetFramework);
-            }
-
-            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+            public override NuGetFramework Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
                 throw new NotImplementedException();
             }
 
-            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+            public override void Write(Utf8JsonWriter writer, NuGetFramework value, JsonSerializerOptions options)
             {
-                writer.WriteValue(((NuGetFramework)value).GetShortFolderName());
+                writer.WriteStringValue(value.GetShortFolderName());
             }
         }
 
-        private class VersionRangeJsonConverter : JsonConverter
+        private class VersionRangeJsonConverter : JsonConverter<VersionRange>
         {
-            public override bool CanConvert(Type objectType)
-            {
-                return objectType == typeof(VersionRange);
-            }
-
-            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+            public override VersionRange Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
                 throw new NotImplementedException();
             }
 
-            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+            public override void Write(Utf8JsonWriter writer, VersionRange value, JsonSerializerOptions options)
             {
-                writer.WriteValue(((VersionRange)value).ToNormalizedString());
+                writer.WriteStringValue(value.ToNormalizedString());
             }
         }
 
-        /// <summary>
-        /// Source: https://blog.rsuter.com/advanced-newtonsoft-json-dynamically-rename-or-ignore-properties-without-changing-the-serialized-class/
-        /// </summary>
-        public class PropertyRenameAndIgnoreSerializerContractResolver : DefaultContractResolver
+        private class LicenseMetadataJsonConverter : JsonConverter<LicenseMetadata>
         {
-            private readonly Dictionary<Type, HashSet<string>> _ignores;
-            private readonly Dictionary<Type, Dictionary<string, string>> _renames;
-
-            public PropertyRenameAndIgnoreSerializerContractResolver()
+            public override LicenseMetadata Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
-                _ignores = new Dictionary<Type, HashSet<string>>();
-                _renames = new Dictionary<Type, Dictionary<string, string>>();
+                throw new NotImplementedException();
             }
 
-            public PropertyRenameAndIgnoreSerializerContractResolver IgnoreProperty(Type type, params string[] jsonPropertyNames)
+            public override void Write(Utf8JsonWriter writer, LicenseMetadata value, JsonSerializerOptions options)
             {
-                if (!_ignores.ContainsKey(type))
+                JsonSerializer.Serialize(writer, new
                 {
-                    _ignores[type] = new HashSet<string>();
-                }
+                    value.Type,
+                    value.License,
+                    value.WarningsAndErrors,
+                    value.Version,
+                    value.LicenseUrl,
+                }, options);
+            }
+        }
 
-                foreach (var prop in jsonPropertyNames)
-                {
-                    _ignores[type].Add(prop);
-                }
-
-                return this;
+        private class FrameworkSpecificGroupJsonConverter : JsonConverter<FrameworkSpecificGroup>
+        {
+            public override FrameworkSpecificGroup Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            {
+                throw new NotImplementedException();
             }
 
-            public PropertyRenameAndIgnoreSerializerContractResolver RenameProperty(Type type, string propertyName, string newJsonPropertyName)
+            public override void Write(Utf8JsonWriter writer, FrameworkSpecificGroup value, JsonSerializerOptions options)
             {
-                if (!_renames.ContainsKey(type))
+                JsonSerializer.Serialize(writer, new
                 {
-                    _renames[type] = new Dictionary<string, string>();
-                }
-
-                _renames[type][propertyName] = newJsonPropertyName;
-
-                return this;
-            }
-
-            protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
-            {
-                var property = base.CreateProperty(member, memberSerialization);
-
-                if (IsIgnored(property.DeclaringType, property.PropertyName))
-                {
-                    property.ShouldSerialize = i => false;
-                    property.Ignored = true;
-                }
-
-                if (IsRenamed(property.DeclaringType, property.PropertyName, out var newJsonPropertyName))
-                {
-                    property.PropertyName = newJsonPropertyName;
-                }
-
-                return property;
-            }
-
-            private bool IsIgnored(Type type, string jsonPropertyName)
-            {
-                if (!_ignores.ContainsKey(type))
-                {
-                    return false;
-                }
-
-                return _ignores[type].Contains(jsonPropertyName);
-            }
-
-            private bool IsRenamed(Type type, string jsonPropertyName, out string newJsonPropertyName)
-            {
-
-                if (!_renames.TryGetValue(type, out var renames) || !renames.TryGetValue(jsonPropertyName, out newJsonPropertyName))
-                {
-                    newJsonPropertyName = null;
-                    return false;
-                }
-
-                return true;
+                    value.TargetFramework,
+                    value.Items,
+                }, options);
             }
         }
     }

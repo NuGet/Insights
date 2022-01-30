@@ -1,9 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Text.Json;
 using System.Xml.Linq;
-using Newtonsoft.Json;
 
 namespace NuGet.Insights
 {
@@ -57,11 +57,8 @@ namespace NuGet.Insights
 
         public static T LoadJson<T>(string resourceName)
         {
-            using (var reader = new StreamReader(GetFileStream(resourceName)))
-            using (var jsonReader = new JsonTextReader(reader))
-            {
-                return new JsonSerializer().Deserialize<T>(jsonReader);
-            }
+            using var stream = GetFileStream(resourceName);
+            return JsonSerializer.Deserialize<T>(stream);
         }
 
         public static XDocument LoadXml(string resourceName)

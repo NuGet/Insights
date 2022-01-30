@@ -14,7 +14,7 @@
     "PartitionKey": "basetestpackage.searchfilters",
     "RowKey": "1.1.0",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Prefix": null,
@@ -31,7 +31,7 @@
     "PartitionKey": "basetestpackage.searchfilters",
     "RowKey": "1.2.0-beta",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Prefix": null,
@@ -40,15 +40,15 @@
     "CommitId": "09bebf9d-d564-4c40-a3a9-fa7ac2af798a",
     "CommitTimestamp": "2021-02-28T01:06:32.8546849+00:00",
     "PackageId": "BaseTestPackage.SearchFilters",
-    "PackageVersion": "1.3.0+metadata",
+    "PackageVersion": "1.3.0\u002Bmetadata",
     "Created": "2019-07-21T23:48:11.493+00:00",
     "IsListed": true,
-    "OriginalVersion": "1.3.0+metadata",
+    "OriginalVersion": "1.3.0\u002Bmetadata",
     "SemVerType": "VersionHasBuildMetadata",
     "PartitionKey": "basetestpackage.searchfilters",
     "RowKey": "1.3.0",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Prefix": null,
@@ -65,7 +65,7 @@
     "PartitionKey": "basetestpackage.searchfilters",
     "RowKey": "1.4.0-delta.4",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Prefix": null,
@@ -82,6 +82,6 @@
     "PartitionKey": "booolean.platform.services",
     "RowKey": "1.1.3",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   }
 ]

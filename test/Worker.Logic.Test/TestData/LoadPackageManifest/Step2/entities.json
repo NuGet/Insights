@@ -16,7 +16,7 @@
           "text/xml"
         ],
         "ETag": [
-          "\"0x8D8930B98D10E3E\""
+          "\u00220x8D8930B98D10E3E\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
@@ -48,7 +48,7 @@
           "text/xml"
         ],
         "ETag": [
-          "\"0x8D8930B99043725\""
+          "\u00220x8D8930B99043725\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
@@ -80,7 +80,7 @@
           "text/xml"
         ],
         "ETag": [
-          "\"0x8D8930BD55418A4\""
+          "\u00220x8D8930BD55418A4\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:37:10 GMT"
@@ -112,7 +112,7 @@
           "text/xml"
         ],
         "ETag": [
-          "\"0x8D8930BD53D305F\""
+          "\u00220x8D8930BD53D305F\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:37:10 GMT"
@@ -138,13 +138,13 @@
           "1375"
         ],
         "Content-MD5": [
-          "/y3H9K+22IJhf0NipqaKfA=="
+          "/y3H9K\u002B22IJhf0NipqaKfA=="
         ],
         "Content-Type": [
           "text/xml"
         ],
         "ETag": [
-          "\"0x8D8930BD5568A2A\""
+          "\u00220x8D8930BD5568A2A\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:37:10 GMT"
@@ -176,7 +176,7 @@
           "text/xml"
         ],
         "ETag": [
-          "\"0x8D8930B990E999F\""
+          "\u00220x8D8930B990E999F\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
@@ -208,7 +208,7 @@
           "text/xml"
         ],
         "ETag": [
-          "\"0x8D8930B994EBD9F\""
+          "\u00220x8D8930B994EBD9F\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
@@ -240,7 +240,7 @@
           "text/xml"
         ],
         "ETag": [
-          "\"0x8D8930B99200276\""
+          "\u00220x8D8930B99200276\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
@@ -266,13 +266,13 @@
           "1736"
         ],
         "Content-MD5": [
-          "ePr+Srbl4CZ2qfshWZ5IcA=="
+          "ePr\u002BSrbl4CZ2qfshWZ5IcA=="
         ],
         "Content-Type": [
           "text/xml"
         ],
         "ETag": [
-          "\"0x8D8930B995B1C56\""
+          "\u00220x8D8930B995B1C56\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
@@ -304,7 +304,7 @@
           "text/xml"
         ],
         "ETag": [
-          "\"0x8D8930B98C46156\""
+          "\u00220x8D8930B98C46156\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:28 GMT"
@@ -336,7 +336,7 @@
           "text/xml"
         ],
         "ETag": [
-          "\"0x8D8930B99235EA0\""
+          "\u00220x8D8930B99235EA0\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
@@ -362,13 +362,13 @@
           "2174"
         ],
         "Content-MD5": [
-          "Nqx01KRN2gXtteR2+N/BVw=="
+          "Nqx01KRN2gXtteR2\u002BN/BVw=="
         ],
         "Content-Type": [
           "text/xml"
         ],
         "ETag": [
-          "\"0x8D8930B992E0F42\""
+          "\u00220x8D8930B992E0F42\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
@@ -394,13 +394,13 @@
           "2459"
         ],
         "Content-MD5": [
-          "atJYOjlwmZjL+hwBC0W5Uw=="
+          "atJYOjlwmZjL\u002BhwBC0W5Uw=="
         ],
         "Content-Type": [
           "text/xml"
         ],
         "ETag": [
-          "\"0x8D8930B994A9E0D\""
+          "\u00220x8D8930B994A9E0D\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
@@ -432,7 +432,7 @@
           "text/xml"
         ],
         "ETag": [
-          "\"0x8D8930B98FF05E8\""
+          "\u00220x8D8930B98FF05E8\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
@@ -464,7 +464,7 @@
           "text/xml"
         ],
         "ETag": [
-          "\"0x8D8930BAFB30EE2\""
+          "\u00220x8D8930BAFB30EE2\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:36:07 GMT"

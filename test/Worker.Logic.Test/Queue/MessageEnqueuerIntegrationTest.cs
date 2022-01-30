@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
@@ -42,7 +42,7 @@ namespace NuGet.Insights.Worker
             PeekedMessage message = await (await ServiceClientFactory.GetQueueServiceClientAsync())
                 .GetQueueClient(Options.Value.WorkQueueName)
                 .PeekMessageAsync();
-            Assert.Equal(@"{""n"":""cls"",""v"":1,""d"":{""r"":""Nëwtönsöft""}}", message.Body.ToString());
+            Assert.Equal(@"{""n"":""cls"",""v"":1,""d"":{""r"":""N\u00EBwt\u00F6ns\u00F6ft""}}", message.Body.ToString());
         }
     }
 }

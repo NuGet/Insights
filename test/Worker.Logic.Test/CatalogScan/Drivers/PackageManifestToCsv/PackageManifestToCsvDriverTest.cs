@@ -1,12 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 using NuGet.Packaging;
 using Xunit;
 using Xunit.Abstractions;
@@ -142,7 +143,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
             Assert.Equal(
-                JsonConvert.SerializeObject(new[]
+                JsonSerializer.Serialize(new[]
                 {
                     new
                     {
@@ -171,7 +172,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
             Assert.Equal(
-                JsonConvert.SerializeObject(new[]
+                JsonSerializer.Serialize(new[]
                 {
                     new
                     {
@@ -194,7 +195,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
                         CopyToOutput = (bool?)true,
                         Flatten = (bool?)false,
                     },
-                }, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }),
+                }, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull }),
                 record.ContentFiles);
         }
 
@@ -216,7 +217,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
             Assert.Equal(
-                JsonConvert.SerializeObject(new
+                JsonSerializer.Serialize(new
                 {
                     Type = "Expression",
                     License = "MS-PL OR Apache-2.0",
@@ -243,7 +244,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
-            Assert.Equal(JsonConvert.SerializeObject(new[]
+            Assert.Equal(JsonSerializer.Serialize(new[]
             {
                 new
                 {
@@ -299,7 +300,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
-            Assert.Equal(JsonConvert.SerializeObject(new[]
+            Assert.Equal(JsonSerializer.Serialize(new[]
             {
                 new
                 {
@@ -331,7 +332,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
-            Assert.Equal(JsonConvert.SerializeObject(new[]
+            Assert.Equal(JsonSerializer.Serialize(new[]
             {
                 new
                 {
@@ -361,7 +362,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
-            Assert.Equal(JsonConvert.SerializeObject(new
+            Assert.Equal(JsonSerializer.Serialize(new
             {
                 Type = "git",
                 Url = "https://github.com/emgarten/Sleet",
@@ -387,7 +388,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
-            Assert.Equal(JsonConvert.SerializeObject(new[]
+            Assert.Equal(JsonSerializer.Serialize(new[]
             {
                 new
                 {

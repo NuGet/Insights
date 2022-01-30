@@ -2,63 +2,55 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
-using Microsoft.Toolkit.HighPerformance;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace NuGet.Insights.Worker
 {
     public static class NameVersionSerializer
     {
-        public static JsonSerializerSettings JsonSerializerSettings => new JsonSerializerSettings
+        public static JsonSerializerOptions JsonSerializerOptions => new()
         {
-            DateTimeZoneHandling = DateTimeZoneHandling.Utc,
-            DateParseHandling = DateParseHandling.DateTimeOffset,
-            NullValueHandling = NullValueHandling.Ignore,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             Converters =
             {
-                new StringEnumConverter(),
+                new JsonStringEnumConverter(),
             },
         };
 
-        public static JsonSerializer JsonSerializer => JsonSerializer.Create(JsonSerializerSettings);
-
         public static ISerializedEntity SerializeData<T>(T message)
         {
-            return new SerializedMessage(() => JToken.FromObject(
+            return new SerializedMessage(() => JsonSerializer.SerializeToElement(
                 message,
-                JsonSerializer));
+                JsonSerializerOptions));
         }
 
         public static ISerializedEntity SerializeMessage<T>(string name, int version, T message)
         {
-            return new SerializedMessage(() => JToken.FromObject(
+            return new SerializedMessage(() => JsonSerializer.SerializeToElement(
                 new NameVersionMessage<T>(name, version, message),
-                JsonSerializer));
+                JsonSerializerOptions));
         }
 
-        public static NameVersionMessage<JToken> DeserializeMessage(string message)
+        public static NameVersionMessage<JsonElement> DeserializeMessage(string message)
         {
-            return JsonConvert.DeserializeObject<NameVersionMessage<JToken>>(
+            return JsonSerializer.Deserialize<NameVersionMessage<JsonElement>>(
                 message,
-                JsonSerializerSettings);
+                JsonSerializerOptions);
         }
 
-        public static NameVersionMessage<JToken> DeserializeMessage(ReadOnlyMemory<byte> message)
+        public static NameVersionMessage<JsonElement> DeserializeMessage(ReadOnlyMemory<byte> message)
         {
-            using (var stream = message.AsStream())
-            using (var streamReader = new StreamReader(stream))
-            using (var textReader = new JsonTextReader(streamReader))
-            {
-                return JsonSerializer.Deserialize<NameVersionMessage<JToken>>(textReader);
-            }
+            return JsonSerializer.Deserialize<NameVersionMessage<JsonElement>>(
+                message.Span,
+                JsonSerializerOptions);
         }
 
-        public static NameVersionMessage<JToken> DeserializeMessage(JToken message)
+        public static NameVersionMessage<JsonElement> DeserializeMessage(JsonElement message)
         {
-            return message.ToObject<NameVersionMessage<JToken>>(JsonSerializer);
+            return JsonSerializer.Deserialize<NameVersionMessage<JsonElement>>(
+                message,
+                JsonSerializerOptions);
         }
     }
 }

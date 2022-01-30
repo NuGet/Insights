@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
 
 namespace NuGet.Insights.Worker
 {
@@ -48,12 +48,12 @@ namespace NuGet.Insights.Worker
             return _schemas.Deserialize(message, _logger);
         }
 
-        public NameVersionMessage<object> Deserialize(JToken message)
+        public NameVersionMessage<object> Deserialize(JsonElement message)
         {
             return _schemas.Deserialize(message, _logger);
         }
 
-        public NameVersionMessage<object> Deserialize(NameVersionMessage<JToken> message)
+        public NameVersionMessage<object> Deserialize(NameVersionMessage<JsonElement> message)
         {
             return _schemas.Deserialize(message, _logger);
         }

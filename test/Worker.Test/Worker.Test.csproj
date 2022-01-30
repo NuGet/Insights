@@ -17,7 +17,4 @@
     <ProjectReference Include="..\..\src\Worker\Worker.csproj" />
     <ProjectReference Include="..\Worker.Logic.Test\Worker.Logic.Test.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Docs\" />
-  </ItemGroup>
 </Project>

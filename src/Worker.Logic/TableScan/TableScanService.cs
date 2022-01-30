@@ -1,10 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
-using Newtonsoft.Json.Linq;
 using NuGet.Insights.Worker.EnqueueCatalogLeafScan;
 using NuGet.Insights.Worker.TableCopy;
 
@@ -41,7 +41,7 @@ namespace NuGet.Insights.Worker
                 _serializer.Serialize(new EnqueueCatalogLeafScansParameters
                 {
                     OneMessagePerId = oneMessagePerId,
-                }).AsJToken());
+                }).AsJsonElement());
         }
 
         public async Task StartTableCopyAsync(
@@ -67,7 +67,7 @@ namespace NuGet.Insights.Worker
                 _serializer.Serialize(new TableCopyParameters
                 {
                     DestinationTableName = destinationTable,
-                }).AsJToken());
+                }).AsJsonElement());
         }
 
         private async Task StartTableScanAsync(
@@ -80,9 +80,9 @@ namespace NuGet.Insights.Worker
             string partitionKeyPrefix,
             int segmentsPerFirstPrefix,
             int segmentsPerSubsequentPrefix,
-            JToken driverParameters)
+            JsonElement driverParameters)
         {
-            JToken scanParameters;
+            JsonElement? scanParameters;
             switch (strategy)
             {
                 case TableScanStrategy.Serial:
@@ -93,7 +93,7 @@ namespace NuGet.Insights.Worker
                     {
                         SegmentsPerFirstPrefix = segmentsPerFirstPrefix,
                         SegmentsPerSubsequentPrefix = segmentsPerSubsequentPrefix,
-                    }).AsJToken();
+                    }).AsJsonElement();
                     break;
                 default:
                     throw new NotImplementedException();

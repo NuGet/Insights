@@ -7,13 +7,13 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using NuGet.Insights.Worker.LoadLatestPackageLeaf;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGetPe;
@@ -29,7 +29,6 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
         private readonly FlatContainerClient _flatContainerClient;
         private readonly HttpSource _httpSource;
         private readonly HttpClient _httpClient;
-        private readonly LatestPackageLeafService _latestPackageLeafService;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<NuGetPackageExplorerToCsvDriver> _logger;
 
@@ -38,7 +37,6 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             FlatContainerClient flatContainerClient,
             HttpSource httpSource,
             HttpClient httpClient,
-            LatestPackageLeafService latestPackageLeafService,
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<NuGetPackageExplorerToCsvDriver> logger)
         {
@@ -46,7 +44,6 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             _flatContainerClient = flatContainerClient;
             _httpSource = httpSource;
             _httpClient = httpClient;
-            _latestPackageLeafService = latestPackageLeafService;
             _options = options;
             _logger = logger;
         }
@@ -217,8 +214,8 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                                     HasSourceLink = file.DebugData?.HasSourceLink,
                                     HasDebugInfo = file.DebugData?.HasDebugInfo,
                                     PdbType = file.DebugData?.PdbType,
-                                    CompilerFlags = compilerFlags != null ? JsonConvert.SerializeObject(compilerFlags) : null,
-                                    SourceUrlRepoInfo = sourceUrlRepoInfo != null ? JsonConvert.SerializeObject(sourceUrlRepoInfo) : null,
+                                    CompilerFlags = compilerFlags != null ? JsonSerializer.Serialize(compilerFlags, JsonSerializerOptions) : null,
+                                    SourceUrlRepoInfo = sourceUrlRepoInfo != null ? JsonSerializer.Serialize(sourceUrlRepoInfo, JsonSerializerOptions) : null,
                                 });
                             }
                         }
@@ -330,6 +327,41 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
         public List<NuGetPackageExplorerFile> Prune(List<NuGetPackageExplorerFile> records, bool isFinalPrune)
         {
             return PackageRecord.Prune(records, isFinalPrune);
+        }
+
+        private static JsonSerializerOptions JsonSerializerOptions { get; } = new JsonSerializerOptions
+        {
+            Converters =
+            {
+                new SourceUrlRepoJsonConverter(),
+            },
+        };
+
+        private class SourceUrlRepoJsonConverter : JsonConverter<SourceUrlRepo>
+        {
+            public override SourceUrlRepo Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Write(Utf8JsonWriter writer, SourceUrlRepo value, JsonSerializerOptions options)
+            {
+                // Each non-abstract class descending from SourceUrlRepo should be in this switch to allow serialization.
+                switch (value)
+                {
+                    case GitHubSourceRepo gitHub:
+                        JsonSerializer.Serialize(writer, gitHub, options);
+                        break;
+                    case InvalidSourceRepo invalid:
+                        JsonSerializer.Serialize(writer, invalid, options);
+                        break;
+                    case UnknownSourceRepo unknown:
+                        JsonSerializer.Serialize(writer, unknown, options);
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
         }
     }
 }
