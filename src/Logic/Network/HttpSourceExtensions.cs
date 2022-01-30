@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
 
+#nullable enable
+
 namespace NuGet.Insights
 {
     public static class HttpSourceExtensions
@@ -56,14 +58,42 @@ namespace NuGet.Insights
                 token);
         }
 
-        public static Task<T> DeserializeUrlAsync<T>(
+        public static async Task<T> DeserializeUrlAsync<T>(
+            this HttpSource httpSource,
+            string url,
+            ILogger logger,
+            CancellationToken token = default) where T : notnull
+        {
+            return await httpSource.DeserializeUrlAsync<T>(
+                url,
+                maxTries: DefaultMaxTries,
+                logger: logger,
+                token: token);
+        }
+
+        public static async Task<T> DeserializeUrlAsync<T>(
+            this HttpSource httpSource,
+            string url,
+            int maxTries,
+            ILogger logger,
+            CancellationToken token = default) where T : notnull
+        {
+            return (await httpSource.DeserializeUrlAsync<T>(
+                url,
+                ignoreNotFounds: false,
+                maxTries: maxTries,
+                logger: logger,
+                token: token))!;
+        }
+
+        public static async Task<T?> DeserializeUrlAsync<T>(
             this HttpSource httpSource,
             string url,
             bool ignoreNotFounds,
             ILogger logger,
-            CancellationToken token = default)
+            CancellationToken token = default) where T : notnull
         {
-            return httpSource.DeserializeUrlAsync<T>(
+            return await httpSource.DeserializeUrlAsync<T>(
                 url,
                 ignoreNotFounds,
                 maxTries: DefaultMaxTries,
@@ -72,15 +102,15 @@ namespace NuGet.Insights
         }
 
 
-        public static Task<T> DeserializeUrlAsync<T>(
+        public static async Task<T?> DeserializeUrlAsync<T>(
             this HttpSource httpSource,
             string url,
             bool ignoreNotFounds,
             int maxTries,
             ILogger logger,
-            CancellationToken token = default)
+            CancellationToken token = default) where T : notnull
         {
-            return httpSource.DeserializeUrlAsync<T>(
+            return await httpSource.DeserializeUrlAsync<T>(
                 url,
                 ignoreNotFounds,
                 maxTries: maxTries,
@@ -90,14 +120,14 @@ namespace NuGet.Insights
         }
 
 
-        public static async Task<T> DeserializeUrlAsync<T>(
+        public static async Task<T?> DeserializeUrlAsync<T>(
             this HttpSource httpSource,
             string url,
             bool ignoreNotFounds,
             int maxTries,
             JsonSerializerOptions options,
             ILogger logger,
-            CancellationToken token = default)
+            CancellationToken token = default) where T : notnull
         {
             var nuGetLogger = logger.ToNuGetLogger();
             return await httpSource.ProcessStreamAsync(
@@ -114,15 +144,24 @@ namespace NuGet.Insights
                         return default;
                     }
 
+                    T? result;
                     try
                     {
-                        return await JsonSerializer.DeserializeAsync<T>(stream, options, token);
+                        result = await JsonSerializer.DeserializeAsync<T>(stream, options, token);
                     }
                     catch (JsonException ex)
                     {
                         logger.LogWarning(ex, "Unable to deserialize {Url} as type {TypeName}.", url, typeof(T).FullName);
                         throw;
                     }
+
+                    if (result is null)
+                    {
+                        logger.LogWarning("Deserialization of {Url} as type {TypeName} resulted in null.", url, typeof(T).FullName);
+                        throw new InvalidOperationException("Deserialization of a URL unexpectedly resulted in null.");
+                    }
+
+                    return result;
                 },
                 nuGetLogger,
                 token);
@@ -143,7 +182,7 @@ namespace NuGet.Insights
                 {
                     if (response.StatusCode == HttpStatusCode.NotFound)
                     {
-                        return Task.FromResult(new BlobMetadata(
+                        return Task.FromResult<BlobMetadata?>(new BlobMetadata(
                             exists: false,
                             hasContentMD5Header: false,
                             contentMD5: null));
@@ -155,13 +194,13 @@ namespace NuGet.Insights
                     if (headerMD5Bytes != null)
                     {
                         var contentMD5 = headerMD5Bytes.ToLowerHex();
-                        return Task.FromResult(new BlobMetadata(
+                        return Task.FromResult<BlobMetadata?>(new BlobMetadata(
                             exists: true,
                             hasContentMD5Header: true,
                             contentMD5: contentMD5));
                     }
 
-                    return Task.FromResult<BlobMetadata>(null);
+                    return Task.FromResult<BlobMetadata?>(null);
                 },
                 nuGetLogger,
                 token);
@@ -189,7 +228,7 @@ namespace NuGet.Insights
                         while (read > 0);
 
                         md5.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
-                        var contentMD5 = md5.Hash.ToLowerHex();
+                        var contentMD5 = md5.Hash!.ToLowerHex();
 
                         return new BlobMetadata(
                             exists: true,

@@ -78,30 +78,31 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             {
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
 
-                (_, var result) = await _flatContainerClient.DownloadPackageContentToFileAsync(
+                var result = await _flatContainerClient.DownloadPackageContentToFileAsync(
                     item.PackageId,
                     item.PackageVersion,
                     CancellationToken.None);
 
-                using (result)
+                if (result is null)
                 {
-                    if (result == null)
-                    {
-                        // We must clear the data related to deleted packages.
-                        await _packageHashService.SetHashesAsync(item, hashes: null);
+                    // We must clear the data related to deleted packages.
+                    await _packageHashService.SetHashesAsync(item, hashes: null);
 
-                        return MakeEmptyResults(item);
-                    }
+                    return MakeEmptyResults(item);
+                }
 
-                    if (result.Type == TempStreamResultType.SemaphoreNotAvailable)
+                using (result.Value.Body)
+                {
+
+                    if (result.Value.Body.Type == TempStreamResultType.SemaphoreNotAvailable)
                     {
                         return DriverResult.TryAgainLater<CsvRecordSet<PackageAssembly>>();
                     }
 
                     // We have downloaded the full .nupkg here so we can capture the calculated hashes.
-                    await _packageHashService.SetHashesAsync(item, result.Hash);
+                    await _packageHashService.SetHashesAsync(item, result.Value.Body.Hash);
 
-                    using var zipArchive = new ZipArchive(result.Stream);
+                    using var zipArchive = new ZipArchive(result.Value.Body.Stream);
                     var entries = zipArchive
                         .Entries
                         .Where(x => FileExtensions.Contains(Path.GetExtension(x.FullName)))

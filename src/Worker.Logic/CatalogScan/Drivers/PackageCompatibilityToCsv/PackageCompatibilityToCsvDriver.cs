@@ -75,8 +75,8 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                     return new List<PackageCompatibility>();
                 }
 
-                (var manifestBytes, var nuspecReader) = await _packageManifestService.GetBytesAndNuspecReaderAsync(item);
-                if (nuspecReader == null)
+                var result = await _packageManifestService.GetBytesAndNuspecReaderAsync(item);
+                if (result == null)
                 {
                     // Ignore packages where the .nuspec is missing. A subsequent scan will produce a deleted record.
                     return new List<PackageCompatibility>();
@@ -115,7 +115,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                     nameof(output.NuspecReader),
                     () =>
                     {
-                        var packageReader = new InMemoryPackageReader(manifestBytes, escapedFiles);
+                        var packageReader = new InMemoryPackageReader(result.Value.ManifestBytes, escapedFiles);
                         return packageReader.GetSupportedFrameworks().ToList();
                     });
 
@@ -124,7 +124,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                     () =>
                     {
                         var packageService = new PackageService();
-                        return packageService.GetSupportedFrameworks(nuspecReader, files);
+                        return packageService.GetSupportedFrameworks(result.Value.NuspecReader, files);
                     });
 
                 output.NuGetGalleryEscaped = GetAndSerializeNested(
@@ -132,7 +132,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                     () =>
                     {
                         var packageService = new PackageService();
-                        return packageService.GetSupportedFrameworks(nuspecReader, escapedFiles);
+                        return packageService.GetSupportedFrameworks(result.Value.NuspecReader, escapedFiles);
                     });
 
                 var nuGetLogger = _logger.ToNuGetLogger();

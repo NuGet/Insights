@@ -62,14 +62,14 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             {
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
 
-                (var nuspecReader, var size) = await _packageManifestService.GetNuspecReaderAndSizeAsync(item);
-                if (nuspecReader == null)
+                var result = await _packageManifestService.GetNuspecReaderAndSizeAsync(item);
+                if (result == null)
                 {
                     // Ignore packages where the .nuspec is missing. A subsequent scan will produce a deleted asset record.
                     return new List<PackageManifestRecord>();
                 }
 
-                return new List<PackageManifestRecord> { GetRecord(scanId, scanTimestamp, leaf, nuspecReader, size) };
+                return new List<PackageManifestRecord> { GetRecord(scanId, scanTimestamp, leaf, result.Value.NuspecReader, result.Value.ManifestLength) };
             }
         }
 

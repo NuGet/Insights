@@ -10,6 +10,8 @@ using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
 using NuGet.Versioning;
 
+#nullable enable
+
 namespace NuGet.Insights
 {
     public class V2Client
@@ -25,7 +27,7 @@ namespace NuGet.Insights
             _logger = logger;
         }
 
-        public async Task<V2Package> GetPackageOrNullAsync(string baseUrl, string id, string version)
+        public async Task<V2Package?> GetPackageOrNullAsync(string baseUrl, string id, string version)
         {
             var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
             var url = $"{baseUrl.TrimEnd('/')}/Packages(Id='{id}',Version='{normalizedVersion}')?hijack=false";

@@ -8,6 +8,8 @@ using Azure.Data.Tables;
 using Microsoft.Extensions.Options;
 using NuGet.Versioning;
 
+#nullable enable
+
 namespace NuGet.Insights
 {
     public class PackageHashService
@@ -39,11 +41,11 @@ namespace NuGet.Insights
                 PartitionKey = pk,
                 RowKey = rk,
                 CommitTimestamp = item.CommitTimestamp,
-                Available = hashes != null,
             };
 
-            if (entity.Available)
+            if (hashes != null)
             {
+                entity.Available = true;
                 entity.MD5 = hashes.MD5;
                 entity.SHA1 = hashes.SHA1;
                 entity.SHA256 = hashes.SHA256;
@@ -53,7 +55,7 @@ namespace NuGet.Insights
             await table.UpsertEntityAsync(entity, mode: TableUpdateMode.Replace);
         }
 
-        public async Task<HashOutput> GetHashesOrNullAsync(string id, string version)
+        public async Task<HashOutput?> GetHashesOrNullAsync(string id, string version)
         {
             var table = await GetTableAsync();
             var pk = GetPartitionKey(id);
@@ -89,8 +91,8 @@ namespace NuGet.Insights
 
         private class HashesEntity : HashOutput, ITableEntity
         {
-            public string PartitionKey { get; set; }
-            public string RowKey { get; set; }
+            public string PartitionKey { get; set; } = default!;
+            public string RowKey { get; set; } = default!;
             public DateTimeOffset? Timestamp { get; set; }
             public ETag ETag { get; set; }
 

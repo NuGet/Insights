@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
 
+#nullable enable
+
 namespace NuGet.Insights
 {
     public class RemoteCursorClient : IRemoteCursorClient
@@ -60,7 +62,6 @@ namespace NuGet.Insights
         {
             var cursor = await _httpSource.DeserializeUrlAsync<JsonCursor>(
                 url,
-                ignoreNotFounds: false,
                 logger: _logger,
                 token: token);
 

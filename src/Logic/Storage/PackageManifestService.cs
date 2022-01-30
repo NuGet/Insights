@@ -17,6 +17,8 @@ using Microsoft.Toolkit.HighPerformance;
 using NuGet.Packaging;
 using NuGet.Protocol;
 
+#nullable enable
+
 namespace NuGet.Insights
 {
     public class PackageManifestService
@@ -49,23 +51,23 @@ namespace NuGet.Insights
             await _wideEntityService.InitializeAsync(_options.Value.PackageManifestTableName);
         }
 
-        public async Task<(NuspecReader, int)> GetNuspecReaderAndSizeAsync(ICatalogLeafItem leafItem)
+        public async Task<(NuspecReader NuspecReader, int ManifestLength)?> GetNuspecReaderAndSizeAsync(ICatalogLeafItem leafItem)
         {
-            (var manifestBytes, var nuspecReader) = await GetBytesAndNuspecReaderAsync(leafItem);
-            if (nuspecReader == null)
+            var result = await GetBytesAndNuspecReaderAsync(leafItem);
+            if (result == null)
             {
-                return (default, default);
+                return null;
             }
 
-            return (nuspecReader, manifestBytes.Length);
+            return (result.Value.NuspecReader, result.Value.ManifestBytes.Length);
         }
 
-        public async Task<(Memory<byte>, NuspecReader)> GetBytesAndNuspecReaderAsync(ICatalogLeafItem leafItem)
+        public async Task<(Memory<byte> ManifestBytes, NuspecReader NuspecReader)?> GetBytesAndNuspecReaderAsync(ICatalogLeafItem leafItem)
         {
             var info = await GetOrUpdateInfoAsync(leafItem);
             if (!info.Available)
             {
-                return (default, default);
+                return null;
             }
 
             return (info.ManifestBytes, new NuspecReader(XmlUtility.LoadXml(info.ManifestBytes.AsStream())));
@@ -163,12 +165,18 @@ namespace NuGet.Insights
 
         private static PackageManifestInfoVersions OutputToData(PackageManifestInfoV1 output)
         {
-            return new PackageManifestInfoVersions { V1 = output };
+            return new PackageManifestInfoVersions(output);
         }
 
         [MessagePackObject]
         public class PackageManifestInfoVersions : PackageWideEntityService.IPackageWideEntity
         {
+            [SerializationConstructor]
+            public PackageManifestInfoVersions(PackageManifestInfoV1 v1)
+            {
+                V1 = v1;
+            }
+
             [Key(0)]
             public PackageManifestInfoV1 V1 { get; set; }
 
@@ -185,7 +193,7 @@ namespace NuGet.Insights
             public bool Available { get; set; }
 
             [Key(3)]
-            public ILookup<string, string> HttpHeaders { get; set; }
+            public ILookup<string, string>? HttpHeaders { get; set; }
 
             [Key(4)]
             public Memory<byte> ManifestBytes { get; set; }

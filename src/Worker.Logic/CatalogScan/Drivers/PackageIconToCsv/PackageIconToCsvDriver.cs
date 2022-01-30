@@ -70,21 +70,22 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             {
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
 
-                (var contentType, var result) = await _flatContainerClient.DownloadPackageIconToFileAsync(
+                var result = await _flatContainerClient.DownloadPackageIconToFileAsync(
                     item.PackageId,
                     item.PackageVersion,
                     CancellationToken.None);
-                using (result)
-                {
-                    if (result == null)
-                    {
-                        return (
-                            TempStreamResultType.Success,
-                            new List<PackageIcon> { new PackageIcon(scanId, scanTimestamp, leaf) { ResultType = PackageIconResultType.NoIcon } }
-                        );
-                    }
 
-                    if (result.Type == TempStreamResultType.SemaphoreNotAvailable)
+                if (result is null)
+                {
+                    return (
+                        TempStreamResultType.Success,
+                        new List<PackageIcon> { new PackageIcon(scanId, scanTimestamp, leaf) { ResultType = PackageIconResultType.NoIcon } }
+                    );
+                }
+
+                using (result.Value.Body)
+                {
+                    if (result.Value.Body.Type == TempStreamResultType.SemaphoreNotAvailable)
                     {
                         return (
                             TempStreamResultType.SemaphoreNotAvailable,
@@ -95,22 +96,22 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
                     var output = new PackageIcon(scanId, scanTimestamp, leaf)
                     {
                         ResultType = PackageIconResultType.Available,
-                        FileSize = result.Stream.Length,
-                        MD5 = result.Hash.MD5.ToBase64(),
-                        SHA1 = result.Hash.SHA1.ToBase64(),
-                        SHA256 = result.Hash.SHA256.ToBase64(),
-                        SHA512 = result.Hash.SHA512.ToBase64(),
-                        ContentType = contentType,
+                        FileSize = result.Value.Body.Stream.Length,
+                        MD5 = result.Value.Body.Hash.MD5.ToBase64(),
+                        SHA1 = result.Value.Body.Hash.SHA1.ToBase64(),
+                        SHA256 = result.Value.Body.Hash.SHA256.ToBase64(),
+                        SHA512 = result.Value.Body.Hash.SHA512.ToBase64(),
+                        ContentType = result.Value.ContentType,
                     };
 
                     // Try to detect the format. ImageMagick appears to not detect .ico files when only given a stream.
-                    result.Stream.Position = 0;
-                    var format = FormatDetector.Detect(result.Stream);
+                    result.Value.Body.Stream.Position = 0;
+                    var format = FormatDetector.Detect(result.Value.Body.Stream);
                     output.HeaderFormat = format.ToString();
 
                     try
                     {
-                        (var autoDetectedFormat, var frames) = GetMagickImageCollection(leaf, result, format);
+                        (var autoDetectedFormat, var frames) = GetMagickImageCollection(leaf, result.Value.Body, format);
                         using (frames)
                         {
                             using var image = frames.First();
