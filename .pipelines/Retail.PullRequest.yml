@@ -77,7 +77,7 @@ stages:
         displayName: "Run tests"
         inputs:
           command: "test"
-          arguments: '--no-build --no-restore --configuration $(BuildConfiguration) --logger trx --blame --collect "Code coverage" --results-directory $(OutputDirectory)/TestResults/'
+          arguments: '--no-build --no-restore --configuration $(BuildConfiguration) --logger trx --blame-hang-timeout 10m --collect "Code coverage" --results-directory $(OutputDirectory)/TestResults/'
           publishTestResults: false
         env:
           NUGETINSIGHTS_STORAGEACCOUNTNAME: nugetinsightstests
