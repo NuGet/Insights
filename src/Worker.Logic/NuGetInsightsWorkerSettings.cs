@@ -32,6 +32,7 @@ namespace NuGet.Insights.Worker
             DownloadToCsvFrequency = TimeSpan.FromHours(3);
             OwnersToCsvFrequency = TimeSpan.FromHours(3);
             VerifiedPackagesToCsvFrequency = TimeSpan.FromHours(3);
+            WorkflowFrequency = TimeSpan.FromDays(1);
 
             WorkQueueName = "work";
             ExpandQueueName = "expand";
@@ -98,6 +99,7 @@ namespace NuGet.Insights.Worker
         public TimeSpan DownloadToCsvFrequency { get; set; }
         public TimeSpan OwnersToCsvFrequency { get; set; }
         public TimeSpan VerifiedPackagesToCsvFrequency { get; set; }
+        public TimeSpan WorkflowFrequency { get; set; }
 
         public string WorkQueueName { get; set; }
         public string ExpandQueueName { get; set; }
