@@ -1,0 +1,254 @@
+[
+  {
+    "odata.etag": "",
+    "PartitionKey": "$DELETE$P$C",
+    "RowKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo$",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "$DELETE$P$C",
+    "RowKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw$",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "$DELETE$P$C",
+    "RowKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw$",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "$DELETE$P$C",
+    "RowKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI$",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "$DELETE$P$C",
+    "RowKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg$",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "$DELETE$P$C",
+    "RowKey": "z2zmdo74WKOmZ74a-KpSTThsf1mjRUJxP137DXms890$",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo$$P$amazonks3",
+    "RowKey": "1.5.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo$$P$lunabot.commands.public",
+    "RowKey": "1.2.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo$$P$lunabot.core",
+    "RowKey": "1.0.4",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo$$P$nut.mediatr.behaviors",
+    "RowKey": "0.0.0-preview.0.44",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo$$P$nut.mediatr.behaviors.fluentvalidation",
+    "RowKey": "0.0.0-preview.0.44",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo$$P$nut.mediatr.servicelike.dependencyinjection",
+    "RowKey": "0.0.0-preview.0.44",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0$$P$amazonks3",
+    "RowKey": "1.5.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0$$P$lunabot.commands.public",
+    "RowKey": "1.2.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0$$P$lunabot.core",
+    "RowKey": "1.0.4",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0$$P$nut.mediatr.behaviors",
+    "RowKey": "0.0.0-preview.0.44",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0$$P$nut.mediatr.behaviors.fluentvalidation",
+    "RowKey": "0.0.0-preview.0.44",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0$$P$nut.mediatr.servicelike.dependencyinjection",
+    "RowKey": "0.0.0-preview.0.44",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw$$P$amazonks3",
+    "RowKey": "1.5.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw$$P$lunabot.commands.public",
+    "RowKey": "1.2.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw$$P$lunabot.core",
+    "RowKey": "1.0.4",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw$$P$nut.mediatr.behaviors",
+    "RowKey": "0.0.0-preview.0.44",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw$$P$nut.mediatr.behaviors.fluentvalidation",
+    "RowKey": "0.0.0-preview.0.44",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw$$P$nut.mediatr.servicelike.dependencyinjection",
+    "RowKey": "0.0.0-preview.0.44",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw$$P$amazonks3",
+    "RowKey": "1.5.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw$$P$lunabot.commands.public",
+    "RowKey": "1.2.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw$$P$lunabot.core",
+    "RowKey": "1.0.4",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw$$P$nut.mediatr.behaviors",
+    "RowKey": "0.0.0-preview.0.44",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw$$P$nut.mediatr.behaviors.fluentvalidation",
+    "RowKey": "0.0.0-preview.0.44",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw$$P$nut.mediatr.servicelike.dependencyinjection",
+    "RowKey": "0.0.0-preview.0.44",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI$$P$amazonks3",
+    "RowKey": "1.5.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI$$P$lunabot.commands.public",
+    "RowKey": "1.2.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI$$P$lunabot.core",
+    "RowKey": "1.0.4",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI$$P$nut.mediatr.behaviors",
+    "RowKey": "0.0.0-preview.0.44",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI$$P$nut.mediatr.behaviors.fluentvalidation",
+    "RowKey": "0.0.0-preview.0.44",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI$$P$nut.mediatr.servicelike.dependencyinjection",
+    "RowKey": "0.0.0-preview.0.44",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg$$P$amazonks3",
+    "RowKey": "1.5.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg$$P$lunabot.commands.public",
+    "RowKey": "1.2.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg$$P$lunabot.core",
+    "RowKey": "1.0.4",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg$$P$nut.mediatr.behaviors",
+    "RowKey": "0.0.0-preview.0.44",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg$$P$nut.mediatr.behaviors.fluentvalidation",
+    "RowKey": "0.0.0-preview.0.44",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg$$P$nut.mediatr.servicelike.dependencyinjection",
+    "RowKey": "0.0.0-preview.0.44",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  }
+]

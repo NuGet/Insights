@@ -12,6 +12,10 @@ using Microsoft.Extensions.Hosting;
 using Moq;
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
 using NuGet.Insights.Worker.KustoIngestion;
+#if ENABLE_CRYPTOAPI
+using NuGet.Insights.Worker.PackageCertificateToCsv;
+using NuGet.Insights.Worker.ReferenceTracking;
+#endif
 using NuGet.Insights.Worker.Workflow;
 using Xunit;
 using Xunit.Abstractions;
@@ -74,6 +78,12 @@ namespace NuGet.Insights.Worker
                     {
                         typeof(CatalogScanUpdateTimer),
                     },
+#if ENABLE_CRYPTOAPI
+                    new List<Type>
+                    {
+                        typeof(CleanupOrphanRecordsTimer<CertificateRecord>),
+                    },
+#endif
                     new List<Type>
                     {
                         typeof(AuxiliaryFileUpdaterTimer<AsOfData<PackageDownloads>>),

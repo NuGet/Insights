@@ -59,6 +59,14 @@ namespace NuGet.Insights.Worker
                         break;
                     }
 
+#if ENABLE_CRYPTOAPI
+                    if (catalogLeafScan.DriverType == CatalogScanDriverType.PackageCertificateToCsv)
+                    {
+                        batchSize = 100;
+                        break;
+                    }
+#endif
+
                     batchSize = 30;
                     break;
             }

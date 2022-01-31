@@ -394,6 +394,20 @@ namespace NuGet.Insights.Worker
                 }
             },
 
+#if ENABLE_CRYPTOAPI
+            {
+                CatalogScanDriverType.PackageCertificateToCsv,
+                new DriverInfo
+                {
+                    DefaultMin = CatalogClient.NuGetOrgMinDeleted,
+                    SetDependencyCursorAsync = async (self, x) =>
+                    {
+                        await self.SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, x);
+                    },
+                }
+            },
+#endif
+
             {
                 CatalogScanDriverType.PackageSignatureToCsv,
                 new DriverInfo

@@ -1,0 +1,512 @@
+[
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$3vx_69E6vAkXZVUspzSGebUxVCPla5I56QTSav_avAk$$P$xfinium.pdf.netcore",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$3vx_69E6vAkXZVUspzSGebUxVCPla5I56QTSav_avAk$$P$xfinium.pdf.netstandard",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$3vx_69E6vAkXZVUspzSGebUxVCPla5I56QTSav_avAk$$P$xfinium.pdf.netstandard",
+    "RowKey": "8.3.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$3vx_69E6vAkXZVUspzSGebUxVCPla5I56QTSav_avAk$$P$xfinium.pdf.render.pcl",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo$$P$esri.arcgisruntime.xamarin.android",
+    "RowKey": "100.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo$$P$featherlight",
+    "RowKey": "1.0.6781.49000",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo$$P$hellojakub.exe",
+    "RowKey": "1.0.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo$$P$workshell.fileformats",
+    "RowKey": "1.0.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo$$P$xfinium.pdf.netcore",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo$$P$xfinium.pdf.netstandard",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo$$P$xfinium.pdf.netstandard",
+    "RowKey": "8.3.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo$$P$xfinium.pdf.render.pcl",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0$$P$esri.arcgisruntime.xamarin.android",
+    "RowKey": "100.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0$$P$featherlight",
+    "RowKey": "1.0.6781.49000",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0$$P$hellojakub.exe",
+    "RowKey": "1.0.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0$$P$workshell.fileformats",
+    "RowKey": "1.0.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0$$P$xfinium.pdf.netcore",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0$$P$xfinium.pdf.netstandard",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0$$P$xfinium.pdf.netstandard",
+    "RowKey": "8.3.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0$$P$xfinium.pdf.render.pcl",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw$$P$esri.arcgisruntime.xamarin.android",
+    "RowKey": "100.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw$$P$featherlight",
+    "RowKey": "1.0.6781.49000",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw$$P$hellojakub.exe",
+    "RowKey": "1.0.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw$$P$workshell.fileformats",
+    "RowKey": "1.0.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw$$P$xfinium.pdf.netcore",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw$$P$xfinium.pdf.netstandard",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw$$P$xfinium.pdf.netstandard",
+    "RowKey": "8.3.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw$$P$xfinium.pdf.render.pcl",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$JkPdkXY4POw0UEJIEKyNORvfiFWjDoJQqgnjUsT6jMQ$$P$workshell.fileformats",
+    "RowKey": "1.0.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw$$P$esri.arcgisruntime.xamarin.android",
+    "RowKey": "100.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw$$P$featherlight",
+    "RowKey": "1.0.6781.49000",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw$$P$hellojakub.exe",
+    "RowKey": "1.0.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw$$P$workshell.fileformats",
+    "RowKey": "1.0.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw$$P$xfinium.pdf.netcore",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw$$P$xfinium.pdf.netstandard",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw$$P$xfinium.pdf.netstandard",
+    "RowKey": "8.3.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw$$P$xfinium.pdf.render.pcl",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$R0W-VhZsroHfCrxBcYSCqIv76Jx4tR2tTHqFOUik6t0$$P$esri.arcgisruntime.xamarin.android",
+    "RowKey": "100.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$ThrdJI-jIpYcJYm0hm_e7IuceZTs0Ti2Jk4tN4-53EE$$P$workshell.fileformats",
+    "RowKey": "1.0.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$ThrdJI-jIpYcJYm0hm_e7IuceZTs0Ti2Jk4tN4-53EE$$P$xfinium.pdf.netcore",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$ThrdJI-jIpYcJYm0hm_e7IuceZTs0Ti2Jk4tN4-53EE$$P$xfinium.pdf.netstandard",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$ThrdJI-jIpYcJYm0hm_e7IuceZTs0Ti2Jk4tN4-53EE$$P$xfinium.pdf.netstandard",
+    "RowKey": "8.3.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$ThrdJI-jIpYcJYm0hm_e7IuceZTs0Ti2Jk4tN4-53EE$$P$xfinium.pdf.render.pcl",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI$$P$esri.arcgisruntime.xamarin.android",
+    "RowKey": "100.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI$$P$featherlight",
+    "RowKey": "1.0.6781.49000",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI$$P$hellojakub.exe",
+    "RowKey": "1.0.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI$$P$workshell.fileformats",
+    "RowKey": "1.0.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI$$P$xfinium.pdf.netcore",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI$$P$xfinium.pdf.netstandard",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI$$P$xfinium.pdf.netstandard",
+    "RowKey": "8.3.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI$$P$xfinium.pdf.render.pcl",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$UvDhxOWOxikpG2AxfwdGcbhdfqgNWwcnNGNTSzK0AjQ$$P$workshell.fileformats",
+    "RowKey": "1.0.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$UvDhxOWOxikpG2AxfwdGcbhdfqgNWwcnNGNTSzK0AjQ$$P$xfinium.pdf.netcore",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$UvDhxOWOxikpG2AxfwdGcbhdfqgNWwcnNGNTSzK0AjQ$$P$xfinium.pdf.netstandard",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$UvDhxOWOxikpG2AxfwdGcbhdfqgNWwcnNGNTSzK0AjQ$$P$xfinium.pdf.netstandard",
+    "RowKey": "8.3.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$UvDhxOWOxikpG2AxfwdGcbhdfqgNWwcnNGNTSzK0AjQ$$P$xfinium.pdf.render.pcl",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$WC3B2Xp5DvBP4lZ7HsiMJrA79umZN8rmoLUDl60gu_g$$P$esri.arcgisruntime.xamarin.android",
+    "RowKey": "100.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$WC3B2Xp5DvBP4lZ7HsiMJrA79umZN8rmoLUDl60gu_g$$P$hellojakub.exe",
+    "RowKey": "1.0.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$WhAh2iwEX5PxJPOHiTvEQfAjnwDMVyv3AUpu45DZRX4$$P$featherlight",
+    "RowKey": "1.0.6781.49000",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$Xm0viPYX3IuAmu5xJEWkGzzeJq-HSiIancmOodxo49U$$P$workshell.fileformats",
+    "RowKey": "1.0.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$Xm0viPYX3IuAmu5xJEWkGzzeJq-HSiIancmOodxo49U$$P$xfinium.pdf.netcore",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$Xm0viPYX3IuAmu5xJEWkGzzeJq-HSiIancmOodxo49U$$P$xfinium.pdf.netstandard",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$Xm0viPYX3IuAmu5xJEWkGzzeJq-HSiIancmOodxo49U$$P$xfinium.pdf.netstandard",
+    "RowKey": "8.3.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$Xm0viPYX3IuAmu5xJEWkGzzeJq-HSiIancmOodxo49U$$P$xfinium.pdf.render.pcl",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$_INNW__eMdult5v5X1c_eVO8v5FW6FJRY-go65LqipM$$P$featherlight",
+    "RowKey": "1.0.6781.49000",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$b_945ACnDBEBHNhZd8RZ-1r5aj3wVAgg0PS4YHh15Y8$$P$workshell.fileformats",
+    "RowKey": "1.0.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$b_945ACnDBEBHNhZd8RZ-1r5aj3wVAgg0PS4YHh15Y8$$P$xfinium.pdf.netcore",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$b_945ACnDBEBHNhZd8RZ-1r5aj3wVAgg0PS4YHh15Y8$$P$xfinium.pdf.netstandard",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$b_945ACnDBEBHNhZd8RZ-1r5aj3wVAgg0PS4YHh15Y8$$P$xfinium.pdf.netstandard",
+    "RowKey": "8.3.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$b_945ACnDBEBHNhZd8RZ-1r5aj3wVAgg0PS4YHh15Y8$$P$xfinium.pdf.render.pcl",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$dDHl9MPBzkaQd08LYeBUQIg7qaAe0Aumq9eAbtOxGM8$$P$featherlight",
+    "RowKey": "1.0.6781.49000",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$ms-rfkPI2IDQayYqlN7u5LRlmYnD0Mrxm69kBeQat98$$P$esri.arcgisruntime.xamarin.android",
+    "RowKey": "100.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$ms-rfkPI2IDQayYqlN7u5LRlmYnD0Mrxm69kBeQat98$$P$hellojakub.exe",
+    "RowKey": "1.0.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$qJLX1OVVY2fHZ59k0RBHPqd2uhg7gc4yRNsjz8uJ7W8$$P$hellojakub.exe",
+    "RowKey": "1.0.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$x0YLDt2htEyOIWSyNOvsw5YqajepNrdKbn1GaCk48IQ$$P$featherlight",
+    "RowKey": "1.0.6781.49000",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg$$P$featherlight",
+    "RowKey": "1.0.6781.49000",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg$$P$hellojakub.exe",
+    "RowKey": "1.0.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg$$P$xfinium.pdf.netstandard",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$yo0PRzZFSuy-xd7sgJmMnr9B0Gxyjzx2zKJBUbxi1GM$$P$featherlight",
+    "RowKey": "1.0.6781.49000",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$z3rBetBH7NX9w2giAxsS1O8Hi28rTF5rpB-P8s9LrWc$$P$esri.arcgisruntime.xamarin.android",
+    "RowKey": "100.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$z3rBetBH7NX9w2giAxsS1O8Hi28rTF5rpB-P8s9LrWc$$P$hellojakub.exe",
+    "RowKey": "1.0.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$z3rBetBH7NX9w2giAxsS1O8Hi28rTF5rpB-P8s9LrWc$$P$workshell.fileformats",
+    "RowKey": "1.0.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$z3rBetBH7NX9w2giAxsS1O8Hi28rTF5rpB-P8s9LrWc$$P$xfinium.pdf.netcore",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$z3rBetBH7NX9w2giAxsS1O8Hi28rTF5rpB-P8s9LrWc$$P$xfinium.pdf.netstandard",
+    "RowKey": "8.3.1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$z3rBetBH7NX9w2giAxsS1O8Hi28rTF5rpB-P8s9LrWc$$P$xfinium.pdf.render.pcl",
+    "RowKey": "8.3.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  }
+]

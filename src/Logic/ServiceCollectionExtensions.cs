@@ -17,6 +17,7 @@ using NuGet.Insights.TablePrefixScan;
 using NuGet.Insights.WideEntities;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using Validation.PackageSigning.ValidateCertificate;
 
 namespace NuGet.Insights
 {
@@ -168,6 +169,8 @@ namespace NuGet.Insights
             serviceCollection.AddTransient<SearchConsistencyService>();
             serviceCollection.AddTransient<PackageConsistencyService>();
             serviceCollection.AddTransient<CrossCheckConsistencyService>();
+
+            serviceCollection.AddTransient<ICertificateVerifier, OnlineCertificateVerifier>();
 
             return serviceCollection;
         }

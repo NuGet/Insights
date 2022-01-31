@@ -126,6 +126,9 @@ namespace NuGet.Insights.Worker
                 case CatalogScanDriverType.PackageArchiveToCsv:
                 case CatalogScanDriverType.PackageAssemblyToCsv:
                 case CatalogScanDriverType.PackageAssetToCsv:
+#if ENABLE_CRYPTOAPI
+                case CatalogScanDriverType.PackageCertificateToCsv:
+#endif
                 case CatalogScanDriverType.PackageSignatureToCsv:
                 case CatalogScanDriverType.PackageManifestToCsv:
                 case CatalogScanDriverType.PackageVersionToCsv:
@@ -236,6 +239,9 @@ namespace NuGet.Insights.Worker
                 case CatalogScanDriverType.PackageArchiveToCsv:
                 case CatalogScanDriverType.PackageAssemblyToCsv:
                 case CatalogScanDriverType.PackageAssetToCsv:
+#if ENABLE_CRYPTOAPI
+                case CatalogScanDriverType.PackageCertificateToCsv:
+#endif
                 case CatalogScanDriverType.PackageSignatureToCsv:
                 case CatalogScanDriverType.PackageManifestToCsv:
                 case CatalogScanDriverType.PackageVersionToCsv:
