@@ -39,3 +39,12 @@ NiCatalogLeafItems | distinct LowerId | count | extend Table = "NiCatalogLeafIte
 // All tables with certificates should have the same fingerprint found
 NiCertificates | distinct Fingerprint | count | extend Table = "NiCertificates"
 | union (NiPackageCertificates | where ResultType != "Deleted" | distinct Fingerprint | count | extend Table = "NiPackageCertificates")
+
+// The package signature table fingerprints should be a subset of the certificate table fingerprints
+NiPackageSignatures
+| mv-expand FingerprintSHA256Hex = pack_array(AuthorSHA256, AuthorTimestampSHA256, RepositorySHA256, RepositoryTimestampSHA256) to typeof(string)
+| where isnotempty(FingerprintSHA256Hex)
+| distinct FingerprintSHA256Hex
+| join kind=leftouter NiCertificates on FingerprintSHA256Hex
+| where isempty(Fingerprint)
+| count
