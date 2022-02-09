@@ -4,6 +4,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -13,9 +14,55 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
     {
         public PackageCertificateToCsvDriverTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
+            FailFastLogLevel = LogLevel.None;
+            AssertLogLevel = LogLevel.None;
         }
 
         public ICatalogLeafToCsvBatchDriver<PackageCertificateRecord, CertificateRecord> Target => Host.Services.GetRequiredService<ICatalogLeafToCsvBatchDriver<PackageCertificateRecord, CertificateRecord>>();
+
+        [Fact]
+        public async Task HandlesCorruptASN1InAuthorTimestamp()
+        {
+            await Target.InitializeAsync();
+            var leaf = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2020.11.04.15.12.15/igniteui.mvc.4.20.1.15.json",
+                LeafType = CatalogLeafType.PackageDetails,
+                PackageId = "IgniteUI.MVC.4",
+                PackageVersion = "20.1.15",
+            };
+
+            var output = await Target.ProcessLeavesAsync(new[] { leaf });
+
+            Assert.Empty(output.Result.Sets1
+                .SelectMany(x => x.Records)
+                .Where(x => x.RelationshipTypes.HasFlag(CertificateRelationshipTypes.IsAuthorTimestampedBy)));
+            Assert.Single(output.Result.Sets1
+                .SelectMany(x => x.Records)
+                .Where(x => x.RelationshipTypes.HasFlag(CertificateRelationshipTypes.IsRepositoryTimestampedBy)));
+        }
+
+        [Fact]
+        public async Task HandlesCorruptEncodingOfAuthorTimestamp()
+        {
+            await Target.InitializeAsync();
+            var leaf = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2022.02.08.11.43.32/avira.managed.remediation.1.2202.701.json",
+                LeafType = CatalogLeafType.PackageDetails,
+                PackageId = "Avira.Managed.Remediation",
+                PackageVersion = "1.2202.701",
+            };
+
+            var output = await Target.ProcessLeavesAsync(new[] { leaf });
+
+            Assert.Empty(output.Result.Sets1
+                .SelectMany(x => x.Records)
+                .Where(x => x.RelationshipTypes.HasFlag(CertificateRelationshipTypes.IsAuthorTimestampedBy)));
+            Assert.Single(output.Result.Sets1
+                .SelectMany(x => x.Records)
+                .Where(x => x.RelationshipTypes.HasFlag(CertificateRelationshipTypes.IsRepositoryTimestampedBy)));
+        }
 
         [Fact]
         public async Task MissingAuthorTimestampingChainCertificate()
