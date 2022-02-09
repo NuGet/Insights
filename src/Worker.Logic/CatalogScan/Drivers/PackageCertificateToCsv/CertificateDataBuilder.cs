@@ -112,7 +112,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
                     },
                     timestamp.SignedCms.Certificates);
             }
-            catch (CryptographicException ex) when (ex.Message == "The ASN.1 data is invalid.")
+            catch (CryptographicException ex) when (ex.IsInvalidDataException())
             {
                 // Ignore this error since this is captured by the PackageSignatureToCsv driver.
                 _logger.LogWarning(ex, "The signature in package {Id} {Version} has invalid timestamp ASN.1.", package.Id, package.Version);

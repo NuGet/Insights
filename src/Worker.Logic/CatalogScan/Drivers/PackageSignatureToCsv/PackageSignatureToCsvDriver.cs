@@ -144,7 +144,7 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
                 timestamp = signature.Timestamps.Single();
                 timestampHasASN1Error = false;
             }
-            catch (CryptographicException ex) when (ex.Message == "The ASN.1 data is invalid.")
+            catch (CryptographicException ex) when (ex.IsInvalidDataException())
             {
                 timestamp = null;
                 timestampHasASN1Error = true;

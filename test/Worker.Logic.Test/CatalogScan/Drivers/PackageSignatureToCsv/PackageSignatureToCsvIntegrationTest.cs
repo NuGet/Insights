@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,6 +16,7 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
         private const string PackageSignatureToCsv_WithDuplicatesInCommitDir = nameof(PackageSignatureToCsv_WithDuplicatesInCommit);
         private const string PackageSignatureToCsv_AuthorSignatureDir = nameof(PackageSignatureToCsv_AuthorSignature);
         private const string PackageSignatureToCsv_BadTimestampDir = nameof(PackageSignatureToCsv_BadTimestamp);
+        private const string PackageSignatureToCsv_BadTimestampEncodingDir = nameof(PackageSignatureToCsv_BadTimestampEncoding);
         private const string PackageSignatureToCsv_WithDeleteDir = nameof(PackageSignatureToCsv_WithDelete);
 
         public class PackageSignatureToCsv : PackageSignatureToCsvIntegrationTest
@@ -145,6 +146,34 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
 
                 // Assert
                 await AssertOutputAsync(PackageSignatureToCsv_BadTimestampDir, Step1, 0);
+            }
+        }
+
+        public class PackageSignatureToCsv_BadTimestampEncoding : PackageSignatureToCsvIntegrationTest
+        {
+            public PackageSignatureToCsv_BadTimestampEncoding(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+                : base(output, factory)
+            {
+            }
+
+            [Fact]
+            public async Task Execute()
+            {
+                ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
+
+                // Arrange
+                var min0 = DateTimeOffset.Parse("2022-02-08T11:43:31.00000000Z");
+                var max1 = DateTimeOffset.Parse("2022-02-08T11:43:32.6621038Z");
+
+                await CatalogScanService.InitializeAsync();
+                await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
+                await SetCursorAsync(min0);
+
+                // Act
+                await UpdateAsync(max1);
+
+                // Assert
+                await AssertOutputAsync(PackageSignatureToCsv_BadTimestampEncodingDir, Step1, 0);
             }
         }
 
