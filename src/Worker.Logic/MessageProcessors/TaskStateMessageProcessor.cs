@@ -44,7 +44,12 @@ namespace NuGet.Insights.Worker
                 }
                 else
                 {
-                    _logger.LogError("Attempt {AttemptCount}: no task state for {StorageSuffix}, {PartitionKey}, {RowKey} was found. Giving up.", message.AttemptCount);
+                    _logger.LogError(
+                        "Attempt {AttemptCount}: no task state for {StorageSuffix}, {PartitionKey}, {RowKey} was found. Giving up.",
+                        message.AttemptCount,
+                        message.TaskStateKey.StorageSuffix,
+                        message.TaskStateKey.PartitionKey,
+                        message.TaskStateKey.RowKey);
                 }
 
                 return;
