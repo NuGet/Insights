@@ -18,6 +18,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
         private const string BuildVersionSetDir = nameof(BuildVersionSet);
         private const string BuildVersionSet_WithDeleteDir = nameof(BuildVersionSet_WithDelete);
         private const string BuildVersionSet_WithDuplicatesDir = nameof(BuildVersionSet_WithDuplicates);
+        private const string BuildVersionSet_WithUnicodeDuplicatesDir = nameof(BuildVersionSet_WithUnicodeDuplicates);
 
         public class BuildVersionSet : BuildVersionSetIntegrationTest
         {
@@ -131,6 +132,50 @@ namespace NuGet.Insights.Worker.BuildVersionSet
 
                 // Assert
                 await AssertOutputAsync(BuildVersionSet_WithDuplicatesDir, Step2);
+            }
+        }
+
+        public class BuildVersionSet_WithUnicodeDuplicates : BuildVersionSetIntegrationTest
+        {
+            public BuildVersionSet_WithUnicodeDuplicates(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+                : base(output, factory)
+            {
+            }
+
+            [Fact]
+            public async Task Execute()
+            {
+                // Arrange
+                var min0 = DateTimeOffset.Parse("2022-01-30T01:13:58.2460944Z").AddTicks(-1);
+                var max1 = min0.AddTicks(1);
+                var min2 = DateTimeOffset.Parse("2022-01-30T01:16:40.6957176Z").AddTicks(-1);
+                var max3 = min2.AddTicks(1);
+
+                await CatalogScanService.InitializeAsync();
+
+                // Act
+                await SetCursorAsync(min0);
+                await UpdateAsync(max1);
+
+                // Assert
+                await AssertOutputAsync(BuildVersionSet_WithUnicodeDuplicatesDir, Step1);
+                var versionSet1 = await VersionSetService.GetAsync();
+                Assert.True(versionSet1.DidIdEverExist("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tost\u00E3o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of"));
+                Assert.False(versionSet1.DidIdEverExist("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tosta\u0303o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of"));
+                Assert.True(versionSet1.DidIdEverExist("Christian-Bollmann-Herzensges\u00E4nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo"));
+                Assert.False(versionSet1.DidIdEverExist("Christian-Bollmann-Herzensgesa\u0308nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo"));
+
+                // Act
+                await SetCursorAsync(min2);
+                await UpdateAsync(max3);
+
+                // Assert
+                await AssertOutputAsync(BuildVersionSet_WithUnicodeDuplicatesDir, Step2);
+                var versionSet2 = await VersionSetService.GetAsync();
+                Assert.True(versionSet2.DidIdEverExist("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tost\u00E3o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of"));
+                Assert.True(versionSet2.DidIdEverExist("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tosta\u0303o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of"));
+                Assert.True(versionSet2.DidIdEverExist("Christian-Bollmann-Herzensges\u00E4nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo"));
+                Assert.True(versionSet2.DidIdEverExist("Christian-Bollmann-Herzensgesa\u0308nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo"));
             }
         }
 

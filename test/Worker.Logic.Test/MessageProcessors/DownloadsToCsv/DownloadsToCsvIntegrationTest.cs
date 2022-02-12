@@ -16,6 +16,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
     {
         public const string DownloadsToCsvDir = nameof(DownloadsToCsv);
         private const string DownloadsToCsv_NonExistentVersionDir = nameof(DownloadsToCsv_NonExistentVersion);
+        private const string DownloadsToCsv_UnicodeDuplicatesDir = nameof(DownloadsToCsv_UnicodeDuplicates);
         private const string DownloadsToCsv_UncheckedIdAndVersionDir = nameof(DownloadsToCsv_UncheckedIdAndVersion);
 
         public DownloadsToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
@@ -219,6 +220,30 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             }
         }
 
+        public class DownloadsToCsv_UnicodeDuplicates : DownloadsToCsvIntegrationTest
+        {
+            public DownloadsToCsv_UnicodeDuplicates(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            {
+            }
+
+            [Fact]
+            public async Task ExecuteAsync()
+            {
+                // Arrange
+                ConfigureAndSetLastModified(DownloadsToCsv_UnicodeDuplicatesDir);
+                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
+                await service.InitializeAsync();
+                await service.StartAsync();
+
+                // Act
+                await ProcessQueueAsync(service);
+
+                // Assert
+                await AssertBlobCountAsync(Options.Value.PackageDownloadContainerName, 1);
+                await AssertCsvBlobAsync(DownloadsToCsv_UnicodeDuplicatesDir, Step1, "latest_downloads.csv.gz");
+            }
+        }
+
         public class DownloadsToCsv_JustLatest : DownloadsToCsvIntegrationTest
         {
             public DownloadsToCsv_JustLatest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
@@ -258,31 +283,32 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             await ProcessQueueAsync(() => { }, async () => !await service.IsRunningAsync());
         }
 
-        private void ConfigureAndSetLastModified()
+        private void ConfigureAndSetLastModified(string dirName = DownloadsToCsvDir)
         {
-            ConfigureSettings = x => x.DownloadsV1Url = $"http://localhost/{TestData}/{DownloadsToCsvDir}/downloads.v1.json";
+            ConfigureSettings = x => x.DownloadsV1Url = $"http://localhost/{TestData}/{dirName}/downloads.v1.json";
 
             // Set the Last-Modified date
-            var fileA = new FileInfo(Path.Combine(TestData, DownloadsToCsvDir, Step1, "downloads.v1.json"))
+            var fileA = new FileInfo(Path.Combine(TestData, dirName, Step1, "downloads.v1.json"))
             {
                 LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z")
             };
-            var fileB = new FileInfo(Path.Combine(TestData, DownloadsToCsvDir, Step2, "downloads.v1.json"))
+            var fileB = new FileInfo(Path.Combine(TestData, dirName, Step2, "downloads.v1.json"));
+            if (fileB.Exists)
             {
-                LastWriteTimeUtc = DateTime.Parse("2021-01-15T19:00:00Z")
-            };
+                fileB.LastWriteTimeUtc = DateTime.Parse("2021-01-15T19:00:00Z");
+            }
 
-            SetData(Step1);
+            SetData(Step1, dirName);
         }
 
-        private void SetData(string stepName)
+        private void SetData(string stepName, string dirName = DownloadsToCsvDir)
         {
             HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
             {
                 if (req.RequestUri.AbsolutePath.EndsWith("/downloads.v1.json"))
                 {
                     var newReq = Clone(req);
-                    newReq.RequestUri = new Uri($"http://localhost/{TestData}/{DownloadsToCsvDir}/{stepName}/downloads.v1.json");
+                    newReq.RequestUri = new Uri($"http://localhost/{TestData}/{dirName}/{stepName}/downloads.v1.json");
                     return await TestDataHttpClient.SendAsync(newReq);
                 }
 

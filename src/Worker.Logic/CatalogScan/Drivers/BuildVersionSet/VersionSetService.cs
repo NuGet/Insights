@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -80,16 +80,16 @@ namespace NuGet.Insights.Worker.BuildVersionSet
             }
         }
 
-        public async Task UpdateAsync(DateTimeOffset commitTimestamp, SortedDictionary<string, SortedDictionary<string, bool>> idToVersionToDeleted)
+        public async Task UpdateAsync(DateTimeOffset commitTimestamp, OrdinalSortedDictionary<OrdinalSortedDictionary<bool>> idToVersionToDeleted)
         {
             // Read the existing data.
-            (var data, var etag) = await ReadOrNullAsync<SortedDictionary<string, SortedDictionary<string, bool>>>();
+            (var data, var etag) = await ReadOrNullAsync<OrdinalSortedDictionary<OrdinalSortedDictionary<bool>>>();
             BlobRequestConditions requestConditions;
             if (data == null)
             {
-                data = new Versions<SortedDictionary<string, SortedDictionary<string, bool>>>
+                data = new Versions<OrdinalSortedDictionary<OrdinalSortedDictionary<bool>>>
                 {
-                    V1 = new DataV1<SortedDictionary<string, SortedDictionary<string, bool>>>
+                    V1 = new DataV1<OrdinalSortedDictionary<OrdinalSortedDictionary<bool>>>
                     {
                         CommitTimestamp = commitTimestamp,
                         IdToVersionToDeleted = idToVersionToDeleted
@@ -114,7 +114,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
                 {
                     if (!data.V1.IdToVersionToDeleted.TryGetValue(newId.Key, out var oldVersions))
                     {
-                        oldVersions = new SortedDictionary<string, bool>();
+                        oldVersions = new OrdinalSortedDictionary<bool>();
                         data.V1.IdToVersionToDeleted.Add(newId.Key, oldVersions);
                         idsAdded++;
                     }
