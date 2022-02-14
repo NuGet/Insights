@@ -17,6 +17,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         private readonly CsvResultStorageContainers _csvRecordContainers;
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly ICslAdminProvider _kustoAdminClient;
+        private readonly KustoDataValidator _kustoDataValidator;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<KustoIngestionMessageProcessor> _logger;
 
@@ -25,6 +26,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             CsvResultStorageContainers csvRecordContainers,
             IMessageEnqueuer messageEnqueuer,
             ICslAdminProvider kustoAdminClient,
+            KustoDataValidator kustoDataValidator,
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<KustoIngestionMessageProcessor> logger)
         {
@@ -32,6 +34,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             _csvRecordContainers = csvRecordContainers;
             _messageEnqueuer = messageEnqueuer;
             _kustoAdminClient = kustoAdminClient;
+            _kustoDataValidator = kustoDataValidator;
             _options = options;
             _logger = logger;
         }
@@ -96,9 +99,22 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 }
                 else
                 {
-                    ingestion.State = KustoIngestionState.SwappingTables;
+                    ingestion.State = KustoIngestionState.Validating;
                     await _storageService.ReplaceIngestionAsync(ingestion);
                 }
+            }
+
+            if (ingestion.State == KustoIngestionState.Validating)
+            {
+                if (dequeueCount > 5)
+                {
+                    throw new InvalidOperationException("The validation has failed too many times.");
+                }
+
+                await _kustoDataValidator.ValidateAsync();
+
+                ingestion.State = KustoIngestionState.SwappingTables;
+                await _storageService.ReplaceIngestionAsync(ingestion);
             }
 
             if (ingestion.State == KustoIngestionState.SwappingTables)

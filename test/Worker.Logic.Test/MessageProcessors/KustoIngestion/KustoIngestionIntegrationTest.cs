@@ -122,6 +122,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             {
                 serviceCollection.AddTransient(x => MockCslAdminProvider.Object);
                 serviceCollection.AddTransient(x => MockKustoQueueIngestClient.Object);
+                serviceCollection.AddTransient(x => MockCslQueryProvider.Object);
             });
         }
     }

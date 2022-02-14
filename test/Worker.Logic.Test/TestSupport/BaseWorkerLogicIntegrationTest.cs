@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,6 +24,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using Moq;
+using Newtonsoft.Json.Linq;
 using NuGet.Insights.ReferenceTracking;
 using NuGet.Insights.WideEntities;
 using NuGet.Insights.Worker.BuildVersionSet;
@@ -82,6 +84,20 @@ namespace NuGet.Insights.Worker
                     var readTable = new CloudTable(tableUri.Uri);
                     return new TableReportIngestionResult(readTable);
                 });
+            MockCslQueryProvider = new Mock<ICslQueryProvider>();
+            MockCslQueryProvider
+                .Setup(x => x.ExecuteQueryAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<ClientRequestProperties>()))
+                .ReturnsAsync(() =>
+                {
+                    var mockReader = new Mock<IDataReader>();
+                    mockReader.SetupSequence(x => x.Read()).Returns(true).Returns(false);
+                    mockReader.Setup(x => x.GetInt64(It.IsAny<int>())).Returns(0);
+                    mockReader.Setup(x => x.GetValue(It.IsAny<int>())).Returns(new JValue((object)null));
+                    return mockReader.Object;
+                });
         }
 
         public Action<NuGetInsightsWorkerSettings> ConfigureWorkerSettings { get; set; }
@@ -102,6 +118,7 @@ namespace NuGet.Insights.Worker
         public Mock<IVersionSet> MockVersionSet { get; } = new Mock<IVersionSet>();
         public Mock<ICslAdminProvider> MockCslAdminProvider { get; }
         public Mock<IKustoQueuedIngestClient> MockKustoQueueIngestClient { get; }
+        public Mock<ICslQueryProvider> MockCslQueryProvider { get; }
 
         protected override void ConfigureHostBuilder(IHostBuilder hostBuilder)
         {

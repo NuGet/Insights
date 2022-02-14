@@ -60,6 +60,7 @@ namespace NuGet.Insights.Worker
 
             serviceCollection.AddTransient<KustoIngestionService>();
             serviceCollection.AddTransient<KustoIngestionStorageService>();
+            serviceCollection.AddTransient<KustoDataValidator>();
             serviceCollection.AddTransient<CsvResultStorageContainers>();
             serviceCollection.AddTransient(x =>
             {
@@ -76,6 +77,11 @@ namespace NuGet.Insights.Worker
             {
                 var connectionStringBuilder = x.GetRequiredService<KustoConnectionStringBuilder>();
                 return KustoClientFactory.CreateCslAdminProvider(connectionStringBuilder);
+            });
+            serviceCollection.AddSingleton(x =>
+            {
+                var connectionStringBuilder = x.GetRequiredService<KustoConnectionStringBuilder>();
+                return KustoClientFactory.CreateCslQueryProvider(connectionStringBuilder);
             });
             serviceCollection.AddSingleton(x =>
             {
