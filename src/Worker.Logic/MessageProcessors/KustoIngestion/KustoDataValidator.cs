@@ -194,9 +194,9 @@ namespace NuGet.Insights.Worker.KustoIngestion
                     }
 
                     var leftOnlyCount = dataReader.GetInt64(0);
-                    var leftOnlySample = (JValue)dataReader.GetValue(1);
+                    var leftOnlySample = (JToken)dataReader.GetValue(1);
                     var rightOnlyCount = dataReader.GetInt64(2);
-                    var rightOnlySample = (JValue)dataReader.GetValue(3);
+                    var rightOnlySample = (JToken)dataReader.GetValue(3);
 
                     if (leftOnlyCount != 0 || rightOnlyCount != 0)
                     {
