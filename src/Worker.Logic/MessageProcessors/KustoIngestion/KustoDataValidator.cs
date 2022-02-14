@@ -162,10 +162,10 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
             foreach (var rightTable in tables.Skip(1))
             {
-                var joinQuery = @$"{leftTable}{Environment.NewLine}{(required ? string.Empty : $"| where isnotempty({column})")}
+                var joinQuery = @$"{leftTable}{(required ? string.Empty : $"{Environment.NewLine}| where isnotempty({column})")}
 | distinct {column}
 | join kind=fullouter (
-    {rightTable}{Environment.NewLine}{(required ? string.Empty : $"    | where isnotempty({column})")}
+    {rightTable}{(required ? string.Empty : $"{Environment.NewLine}    | where isnotempty({column})")}
     | distinct {column}
 )";
 
