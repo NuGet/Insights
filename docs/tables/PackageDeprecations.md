@@ -1,6 +1,6 @@
 # PackageDeprecations
 
-This table has the deprecation information provided by a package owner, if any. Package deprecation is a way of marking a package as not longer intended for use but is short of deleting or (necessarily) unlisting the package.
+This table has the latest deprecation status for every package. Package deprecation is a way of marking a package as not longer intended for use but is short of deleting or (necessarily) unlisting the package. Packages that are currently deprecated will have a `ResultType` of `Deprecated`.
 
 |                              |                                                                                                                       |
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------- |
@@ -24,7 +24,7 @@ This table has the deprecation information provided by a package owner, if any. 
 | Version                | string           | Yes                  | Original case, normalized package version                              |
 | CatalogCommitTimestamp | timestamp        | Yes                  | Latest catalog commit timestamp for the package                        |
 | Created                | timestamp        | Yes, for non-Deleted | When the package version was created                                   |
-| ResultType             | enum             | Yes                  | Type of record (e.g. Deprecated, Deleted)                              |
+| ResultType             | enum             | Yes                  | Type of record (e.g. NotDeprecated, Deprecated, Deleted)               |
 | Message                | string           | Yes, for Deprecated  | The deprecation message provided by the package owner                  |
 | Reasons                | array of strings | Yes, for Deprecated  | The reasons for deprecation.                                           |
 | AlternatePackageId     | string           | No                   | The package ID of the alternate package that should be used instead    |
