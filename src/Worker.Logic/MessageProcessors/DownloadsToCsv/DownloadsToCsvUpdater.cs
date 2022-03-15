@@ -47,7 +47,12 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             var idToVersions = new Dictionary<string, Dictionary<string, long>>(StringComparer.OrdinalIgnoreCase);
             await foreach (var entry in data.Entries)
             {
-                var normalizedVersion = NuGetVersion.Parse(entry.Version).ToNormalizedString();
+                if (!NuGetVersion.TryParse(entry.Version, out var parsedVersion))
+                {
+                    continue;
+                }
+
+                var normalizedVersion = parsedVersion.ToNormalizedString();
                 if (!versionSet.DidVersionEverExist(entry.Id, normalizedVersion))
                 {
                     continue;
