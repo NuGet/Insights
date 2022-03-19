@@ -13,8 +13,6 @@ namespace NuGet.Services.Entities
     {
         private string _targetFramework;
 
-        public Package Package { get; set; }
-
         [StringLength(256)]
         public string TargetFramework
         {
@@ -27,7 +25,7 @@ namespace NuGet.Services.Entities
         }
 
         [NotMapped]
-        public NuGetFramework FrameworkName { get; private set; }
+        public NuGetFramework FrameworkName { get; set; }
 
         public int Key { get; set; }
 
