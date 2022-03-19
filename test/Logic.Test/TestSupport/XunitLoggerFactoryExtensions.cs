@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Concurrent;
@@ -16,23 +16,6 @@ namespace NuGet.Insights
         public static ILoggerFactory AddXunit(this ILoggerFactory loggerFactory, ITestOutputHelper output)
         {
             loggerFactory.AddProvider(new XunitLoggerProvider(output));
-            return loggerFactory;
-        }
-
-        public static ILoggerFactory AddXunit(this ILoggerFactory loggerFactory, ITestOutputHelper output, LogLevel minLevel)
-        {
-            loggerFactory.AddProvider(new XunitLoggerProvider(output, minLevel));
-            return loggerFactory;
-        }
-
-        public static ILoggerFactory AddXunit(
-            this ILoggerFactory loggerFactory,
-            ITestOutputHelper output,
-            LogLevel minLevel,
-            ConcurrentDictionary<LogLevel, int> logLevelToCount,
-            LogLevel throwOn)
-        {
-            loggerFactory.AddProvider(new XunitLoggerProvider(output, minLevel, logLevelToCount, throwOn));
             return loggerFactory;
         }
     }

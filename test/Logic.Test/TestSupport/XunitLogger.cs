@@ -21,13 +21,20 @@ namespace NuGet.Insights
         private readonly ITestOutputHelper _output;
         private readonly ConcurrentDictionary<LogLevel, int> _logLevelToCount;
         private readonly LogLevel _throwOn;
+        private readonly ConcurrentQueue<string> _logMessages;
 
-        public XunitLogger(ITestOutputHelper output, LogLevel minLogLevel, ConcurrentDictionary<LogLevel, int> logLevelToCount, LogLevel throwOn)
+        public XunitLogger(
+            ITestOutputHelper output,
+            LogLevel minLogLevel,
+            ConcurrentDictionary<LogLevel, int> logLevelToCount,
+            LogLevel throwOn,
+            ConcurrentQueue<string> logMessages)
         {
             _minLogLevel = minLogLevel;
             _output = output;
             _logLevelToCount = logLevelToCount;
             _throwOn = throwOn;
+            _logMessages = logMessages;
         }
 
         public void Log<TState>(
@@ -44,6 +51,7 @@ namespace NuGet.Insights
             }
 
             var message = formatter(state, exception);
+            _logMessages?.Enqueue(message);
 
             try
             {

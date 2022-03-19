@@ -130,12 +130,17 @@ namespace NuGet.Insights
             var metric = _telemetryClient.GetMetric($"{nameof(PackageFileService)}.{nameof(GetInfoAsync)}.DurationMs");
             var sw = Stopwatch.StartNew();
 
+            var notFoundMetric = _telemetryClient.GetMetric(
+                $"{nameof(PackageFileService)}.{nameof(GetInfoAsync)}.NotFound",
+                "PackageId",
+                "PackageVersion",
+                "Mode");
+
             try
             {
 
                 if (mode == GetInfoMode.DefaultMiniZip || mode == GetInfoMode.CacheBustMiniZip)
                 {
-
                     var url = await _flatContainerClient.GetPackageContentUrlAsync(leafItem.PackageId, leafItem.PackageVersion);
 
                     // I've noticed cases where NuGet.org CDN caches a request with a specific If-* condition header in the
@@ -147,7 +152,6 @@ namespace NuGet.Insights
                         url = QueryHelpers.AddQueryString(url, "cache-bust", Guid.NewGuid().ToString());
                     }
 
-
                     try
                     {
                         using var reader = await _httpZipProvider.GetReaderAsync(new Uri(url));
@@ -155,6 +159,7 @@ namespace NuGet.Insights
                     }
                     catch (MiniZipHttpException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
                     {
+                        notFoundMetric.TrackValue(1, leafItem.PackageId, leafItem.PackageVersion, mode.ToString());
                         return MakeDeletedInfo(leafItem);
                     }
                     catch (MiniZipHttpException ex) when (mode == GetInfoMode.DefaultMiniZip)
@@ -177,6 +182,7 @@ namespace NuGet.Insights
 
                     if (result is null)
                     {
+                        notFoundMetric.TrackValue(1, leafItem.PackageId, leafItem.PackageVersion, mode.ToString());
                         return MakeDeletedInfo(leafItem);
                     }
 

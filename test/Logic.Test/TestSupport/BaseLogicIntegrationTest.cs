@@ -80,12 +80,12 @@ namespace NuGet.Insights
 
                     serviceCollection.AddSingleton((INuGetInsightsHttpMessageHandlerFactory)HttpMessageHandlerFactory);
 
-                    serviceCollection.AddTransient(s => output.GetTelemetryClient());
+                    serviceCollection.AddTransient<ITelemetryClient>(s => new LoggerTelemetryClient(s.GetRequiredService<ILogger<LoggerTelemetryClient>>()));
 
                     serviceCollection.AddLogging(o =>
                     {
                         o.SetMinimumLevel(LogLevel.Trace);
-                        o.AddProvider(new XunitLoggerProvider(output, LogLevel.Trace, LogLevelToCount, FailFastLogLevel));
+                        o.AddProvider(new XunitLoggerProvider(output, LogLevel.Trace, LogLevelToCount, FailFastLogLevel, LogMessages));
                     });
 
                     serviceCollection.Configure((Action<NuGetInsightsSettings>)ConfigureDefaultsAndSettings);
@@ -151,6 +151,7 @@ namespace NuGet.Insights
         public ServiceClientFactory ServiceClientFactory => Host.Services.GetRequiredService<ServiceClientFactory>();
         public ITelemetryClient TelemetryClient => Host.Services.GetRequiredService<ITelemetryClient>();
         public ILogger Logger => Host.Services.GetRequiredService<ILogger<BaseLogicIntegrationTest>>();
+        public ConcurrentQueue<string> LogMessages { get; } = new ConcurrentQueue<string>();
 
         protected async Task AssertBlobCountAsync(string containerName, int expected)
         {

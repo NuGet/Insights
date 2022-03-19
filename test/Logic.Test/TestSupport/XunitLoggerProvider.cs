@@ -17,6 +17,7 @@ namespace NuGet.Insights
         private readonly LogLevel _minLevel;
         private readonly ConcurrentDictionary<LogLevel, int> _logLevelToCount;
         private readonly LogLevel _throwOn;
+        private readonly ConcurrentQueue<string> _logMessages;
 
         public XunitLoggerProvider(ITestOutputHelper output)
             : this(output, LogLevel.Trace)
@@ -30,17 +31,23 @@ namespace NuGet.Insights
             _throwOn = LogLevel.None;
         }
 
-        public XunitLoggerProvider(ITestOutputHelper output, LogLevel minLevel, ConcurrentDictionary<LogLevel, int> logLevelToCount, LogLevel throwOn)
+        public XunitLoggerProvider(
+            ITestOutputHelper output,
+            LogLevel minLevel,
+            ConcurrentDictionary<LogLevel, int> logLevelToCount,
+            LogLevel throwOn,
+            ConcurrentQueue<string> logMessages)
         {
             _output = output;
             _minLevel = minLevel;
             _logLevelToCount = logLevelToCount;
             _throwOn = throwOn;
+            _logMessages = logMessages;
         }
 
         public ILogger CreateLogger(string categoryName)
         {
-            return new XunitLogger(_output, _minLevel, _logLevelToCount, _throwOn);
+            return new XunitLogger(_output, _minLevel, _logLevelToCount, _throwOn, _logMessages);
         }
 
         public void Dispose()
