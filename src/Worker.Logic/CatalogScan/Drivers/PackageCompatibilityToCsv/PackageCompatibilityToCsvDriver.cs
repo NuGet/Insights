@@ -5,18 +5,25 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Knapcode.MiniZip;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.Services.Entities;
 using NuGetGallery;
+using NuGetGallery.Frameworks;
 
 namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 {
     public class PackageCompatibilityToCsvDriver : ICatalogLeafToCsvDriver<PackageCompatibility>, ICsvResultStorage<PackageCompatibility>
     {
+        private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        };
         private static readonly NuGetFrameworkSorter Sorter = new NuGetFrameworkSorter();
 
         private readonly CatalogClient _catalogClient;
@@ -85,6 +92,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                 var escapedFiles = zipDirectory
                     .Entries
                     .Select(x => x.GetName())
+                    .Select(x => Common.PathUtility.StripLeadingDirectorySeparators(x))
                     .ToList();
                 var files = escapedFiles
                     .Select(x => x.IndexOf('%', StringComparison.Ordinal) >= 0 ? Uri.UnescapeDataString(x) : x)
@@ -119,12 +127,14 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                         return packageReader.GetSupportedFrameworks().ToList();
                     });
 
+                List<NuGetFramework> nuGetGallery = null;
                 output.NuGetGallery = GetAndSerializeNested(
                     nameof(output.NuGetGallery),
                     () =>
                     {
                         var packageService = new PackageService();
-                        return packageService.GetSupportedFrameworks(result.Value.NuspecReader, files);
+                        nuGetGallery = packageService.GetSupportedFrameworks(result.Value.NuspecReader, files).ToList();
+                        return nuGetGallery;
                     });
 
                 output.NuGetGalleryEscaped = GetAndSerializeNested(
@@ -134,6 +144,35 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                         var packageService = new PackageService();
                         return packageService.GetSupportedFrameworks(result.Value.NuspecReader, escapedFiles);
                     });
+
+                if (nuGetGallery != null)
+                {
+                    var compatibilityService = new FrameworkCompatibilityService();
+                    var compatibilityFactory = new PackageFrameworkCompatibilityFactory(compatibilityService);
+
+                    var frameworks = nuGetGallery
+                        .Select(x => new PackageFramework { FrameworkName = x })
+                        .ToList();
+
+                    var compatibility = compatibilityFactory.Create(frameworks);
+
+                    output.NuGetGalleryBadges = JsonSerializer.Serialize(new[]
+                    {
+                        new { ProductName = FrameworkProductNames.Net, Minimum = compatibility.Badges.Net?.GetShortFolderName() },
+                        new { ProductName = FrameworkProductNames.NetFramework, Minimum = compatibility.Badges.NetFramework?.GetShortFolderName() },
+                        new { ProductName = FrameworkProductNames.NetCore, Minimum = compatibility.Badges.NetCore?.GetShortFolderName() },
+                        new { ProductName = FrameworkProductNames.NetStandard, Minimum = compatibility.Badges.NetStandard?.GetShortFolderName() },
+                    }.Where(x => x.Minimum is not null), SerializerOptions);
+
+                    output.NuGetGallerySupported = JsonSerializer.Serialize(compatibility
+                        .Table
+                        .Select(x => new
+                        {
+                            ProductName = x.Key,
+                            Frameworks = x.Value.Select(x => new { Framework = x.Framework.GetShortFolderName(), x.IsComputed }).ToList(),
+                        })
+                        .OrderBy(x => x.ProductName), SerializerOptions);
+                }
 
                 var nuGetLogger = _logger.ToNuGetLogger();
                 output.NU1202 = GetAndSerializeNested(
