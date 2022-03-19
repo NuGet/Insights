@@ -45,6 +45,10 @@ $files = [ordered]@{
             @{
                 Description = "Remove unused methods from ``PackageService``"
                 Path        = "0001-Remove-unused-methods-from-PackageService.patch"
+            },
+            @{
+                Description = "Remove unused property from ``PackageFramework`` and make ``FrameworkName`` settable"
+                Path        = "0003-Remove-unused-property-and-make-framework-name-setta.patch"
             }
         )
     };
@@ -118,6 +122,7 @@ foreach ($pair in $files.GetEnumerator()) {
     else {
         foreach ($patch in $pair.Value.Patches) {
             $readme += "  - [$($patch.Description)]($($patch.Path))"
+            $readme += [Environment]::NewLine
         }
     }
 }

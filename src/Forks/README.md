@@ -27,6 +27,7 @@ Files:
 
 Patches:
   - [Add `ChainInfo` property to `CertificateVerificationResult` to allow reading the chain before disposal](0002-Add-chain-info-property-to-CertificateVerificationResult.patch)
+
 # [NuGet/NuGetGallery](https://github.com/NuGet/NuGetGallery)
 
 Copied license: [`LICENSE.txt`](NuGet/NuGetGallery/LICENSE.txt)
@@ -49,6 +50,8 @@ Files:
 
 Patches:
   - [Remove unused methods from `PackageService`](0001-Remove-unused-methods-from-PackageService.patch)
+  - [Remove unused property from `PackageFramework` and make `FrameworkName` settable](0003-Remove-unused-property-and-make-framework-name-setta.patch)
+
 # [NuGet/ServerCommon](https://github.com/NuGet/ServerCommon)
 
 Copied license: [`License.md`](NuGet/ServerCommon/License.md)
