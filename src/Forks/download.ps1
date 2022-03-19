@@ -27,9 +27,20 @@ $files = [ordered]@{
     "NuGet/NuGetGallery" = @{
         License  = "LICENSE.txt"
         Files    = @(
+            "src/NuGet.Services.Entities/IEntity.cs",
+            "src/NuGet.Services.Entities/PackageFramework.cs",
+            "src/NuGetGallery.Core/Frameworks/FrameworkCompatibilityService.cs",
+            "src/NuGetGallery.Core/Frameworks/FrameworkProductNames.cs",
+            "src/NuGetGallery.Core/Frameworks/IFrameworkCompatibilityService.cs",
+            "src/NuGetGallery.Core/Frameworks/IPackageFrameworkCompatibilityFactory.cs",
+            "src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibility.cs",
+            "src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibilityBadges.cs",
+            "src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibilityFactory.cs",
+            "src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibilityTableData.cs",
+            "src/NuGetGallery.Core/Frameworks/SupportedFrameworks.cs",
             "src/NuGetGallery.Services/PackageManagement/PackageService.cs"
         );
-        Revision = "6df282d39c845f45ebc7fa131ad7a53a6952da00"
+        Revision = "f9913c9f58b635e2c4776dd4abe7e60b8c7aeb9e"
         Patches  = @(
             @{
                 Description = "Remove unused methods from ``PackageService``"
