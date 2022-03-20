@@ -252,7 +252,6 @@ namespace NuGet.Insights.Worker
                 };
 
                 // Arrange
-                await CatalogScanService.InitializeAsync();
                 await WorkflowService.InitializeAsync();
 
                 foreach (var type in CatalogScanCursorService.StartableDriverTypes)

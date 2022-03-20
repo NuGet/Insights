@@ -46,17 +46,11 @@ namespace NuGet.Insights.Worker.Workflow
         {
             await _workflowStorageService.InitializeAsync();
             await _leaseService.InitializeAsync();
-            await _catalogScanUpdateTimer.InitializeAsync();
-            foreach (var service in _cleanupOrphanRecordsTimers)
-            {
-                await service.InitializeAsync();
-            }
-            foreach (var service in _auxiliaryFileUpdaterTimers)
-            {
-                await service.InitializeAsync();
-            }
-            await _kustoIngestionTimer.InitializeAsync();
             await _messageEnqueuer.InitializeAsync();
+            await _timerExecutionService.InitializeAsync(Enumerable.Empty<ITimer>()
+                .Concat(new ITimer[] { _catalogScanUpdateTimer, _kustoIngestionTimer })
+                .Concat(_cleanupOrphanRecordsTimers)
+                .Concat(_auxiliaryFileUpdaterTimers));
         }
 
         public bool HasRequiredConfiguration => _catalogScanUpdateTimer.IsEnabled
