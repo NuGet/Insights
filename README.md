@@ -1,4 +1,4 @@
-# NuGet.Insights *(formerly ExplorePackages)*
+# NuGet.Insights
 
 **Analyze NuGet.org packages 📦 using Azure Functions ⚡.**
 
@@ -26,7 +26,7 @@ The data sets currently produced by NuGet.Insights are listed in [`docs/tables/R
 
 ### Build the code
 
-1. Ensure you have the .NET 3.1 and 5 SDK installed. [Install them if needed](https://dotnet.microsoft.com/download).
+1. Ensure you have the .NET 6 SDK installed. [Install it if needed](https://dotnet.microsoft.com/download).
    ```
    dotnet --info
    ```
@@ -106,6 +106,29 @@ Note that you cannot use Azurite since the latest version of it does not support
 9. Wait until the catalog scan is done.
    - This can be seen by looking at the `workerqueue` queue or by looking at the admin panel seen above.
 
+## Documentation
+
+- **[Tables](docs/tables/README.md) - documentation for all of the data tables produced by this project**
+- **[Adding a new driver](docs/new-driver.md) - a guide to help you enhance NuGet.Insights to suit your needs**
+- [Reusable classes](docs/reusable-classes.md) - interesting or useful classes or concepts supporting this project
+- [Blog posts](docs/blog-posts.md) - blog posts about lessons learned from this project
+- [Cost](docs/cost.md) - approximately how much it costs to run several of the implemented catalog scans
+
+## Projects
+
+Here's a high-level description of main projects in this repository:
+
+- [`Worker`](src/Worker) - the Azure Function itself, a thin adapter between core logic and Azure Functions
+- [`Website`](src/Website) - a website for an admin panel to managed scans
+- [`Worker.Logic`](src/Worker.Logic) - all of the catalog scan and driver logic, this is the most interesting project
+- [`Logic`](src/Logic) - contains more generic logic related to NuGet.org protocol and is not directly related to distributed processing
+
+Other projects are:
+
+- [`Forks`](src/Forks) - download, patch, and list code from other open source projects
+- [`SourceGenerator`](src/SourceGenerator) - AOT source generation logic for reading and writing CSVs
+- [`Tool`](src/Tool) - a command-line app used for pretty much just prototyping code
+
 ## Architecture
 
 The purpose of this repository is to explore the characteristics, oddities, and inconsistencies of NuGet.org's available
@@ -138,6 +161,60 @@ of the driver, this may yield duplicated effort and is often not desired.
 
 The implementation is geared towards Azure Functions Consumption Plan for compute (cheap) and Azure Storage for
 persistence (cheap).
+
+### Workflow
+
+The driver code is chained together with other operational tasks in a sequence of steps called a **workflow**. The
+workflow is run on a regular cadence (e.g. daily). The workflow performs these step for each iteration:
+
+1. Run all catalog scans to read the latest information NuGet.org catalog.
+   - Some catalog scans can run in parallel, others depend on each other.
+1. Clean up orphan records.
+   - Example of orphan record: a certificate that was only referenced by a package that was deleted.
+1. Update auxiliary files.
+   - These data sets contain some info about all packages in a single file.
+1. Import the updates CSVs to Kusto (Azure Data Explorer).
+   - This performs an import of all CSV blobs to new tables and then does an atomic table swap.
+
+If any of these steps does not complete, the workflow hangs and no further worflows can start.
+
+## Drivers
+
+The current drivers for analyzing NuGet.org packages are:
+
+- [`CatalogDataToCsv`](src/Worker.Logic/CatalogScan/Drivers/CatalogDataToCsv/CatalogDataToCsvDriver.cs) - extract data found in the catalog to CSV, e.g. deprecation and vulnerability
+- [`CatalogLeafItemToCsv`](src/Worker.Logic/CatalogScan/Drivers/CatalogLeafItemToCsv/CatalogLeafItemToCsvDriver.cs) - write all catalog leaf items (very minimal data)
+- [`NuGetPackageExplorerToCsv`](src/Worker.Logic/CatalogScan/Drivers/NuGetPackageExplorerToCsv/NuGetPackageExplorerToCsvDriver.cs) - run NuGet Package Explore APIs to determine reproducibility
+- [`PackageArchiveToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageArchiveToCsv/PackageArchiveToCsvDriver.cs) - find info about all ZIP entries in the .nupkg
+- [`PackageAssemblyToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageAssemblyToCsv/PackageAssemblyToCsvDriver.cs) - find stuff like public key tokens in assemblies using `System.Reflection.Metadata`
+- [`PackageAssetToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageAssetToCsv/PackageAssetToCsvDriver.cs) - find assets recognized by NuGet restore
+- [`PackageCertificateToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageCertificateToCsv/PackageCertificateToCsvDriver.cs) - determine relationships between packages and certificates
+- [`PackageCompatibilityToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageCompatibilityToCsv/PackageCompatibilityToCsvDriver.cs) - determine package compatibility with several algorithms
+- [`PackageIconToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageIconToCsv/PackageIconToCsvDriver.cs) - get image metadata for embedded icons and icons from URLs 
+- [`PackageManifestToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageManifestToCsv/PackageManifestToCsvDriver.cs) - extract known data from the .nuspec
+- [`PackageSignatureToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageSignatureToCsv/PackageSignatureToCsvDriver.cs) - parse the NuGet package signature
+- [`PackageVersionToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageVersionToCsv/PackageVersionToCsvDriver.cs) - determine latest version per package ID
+
+Several other supporting drivers exist to populate storage with intermediate results:
+
+- [`BuildVersionSet`](src/Worker.Logic/CatalogScan/Drivers/BuildVersionSet/BuildVersionSetDriver.cs) - serializes all IDs and versions into a `Dictionary`, useful for fast checks
+- [`LoadLatestPackageLeaf`](src/Worker.Logic/CatalogScan/Drivers/LoadLatestPackageLeaf) - write the latest catalog leaf to Table Storage
+- [`LoadPackageArchive`](src/Worker.Logic/CatalogScan/Drivers/LoadPackageArchive/LoadPackageArchiveDriver.cs) - fetch information from the .nupkg and put it in Table Storage
+- [`LoadPackageManifest`](src/Worker.Logic/CatalogScan/Drivers/LoadPackageManifest/LoadPackageManifestDriver.cs) - fetch the .nuspec and put it in Table Storage
+- [`LoadPackageVersion`](src/Worker.Logic/CatalogScan/Drivers/LoadPackageVersion/LoadPackageVersionDriver.cs) - determine listed and SemVer status and put it in Table Storage
+
+Several message processors exist to emit other useful data:
+
+- [`DownloadsToCsv`](src/Worker.Logic/MessageProcessors/DownloadsToCsv/DownloadsToCsvUpdater.cs) - read `downloads.v1.json` and write it to CSV
+- [`OwnersToCsv`](src/Worker.Logic/MessageProcessors/OwnersToCsv/OwnersToCsvUpdater.cs) - read `owners.v2.json` and write it to CSV
+- [`VerifiedPackagesToCsv`](src/Worker.Logic/MessageProcessors/VerifiedPackagesToCsv/VerifiedPackagesToCsvUpdater.cs) - read `verifiedPackages.json` and write it to CSV
+
+Several message processors are used for aggregating or automating other processes:
+
+- [`CsvCompact`](src/Worker.Logic/MessageProcessors/CsvCompact/CsvCompactProcessor.cs) - aggregate CSV records saved to Table Storage into partitioned CSV blobs
+- [`KustoIngestion`](src/Worker.Logic/MessageProcessors/KustoIngestion/KustoIngestionMessageProcessor.cs) - orchestrates ingestion and validation of CSV blobs into Kusto (Azure Data Explorer) tables
+- [`CleanupOrphanRecords`](src/Worker.Logic/MessageProcessors/ReferenceTracking/CleanupOrphanRecordsProcessor.cs) - removes records that are marked as orphans from the `ReferenceTracking` tables
+- [`Workflow`](src/Worker.Logic/MessageProcessors/Workflow/WorkflowRunMessageProcessor.cs) - orchestrates the entire workflow (as mentioned in the **Architecture** section above)
 
 ## Screenshots
 
@@ -178,52 +255,3 @@ into Azure Table Storage. It took about 35 minutes to do this and costed about $
 #### Azure Functions Execution Count
 
 ![Azure Functions Execution Units](docs/find-package-files-execution-units.png)
-
-## Projects
-
-Here's a high-level description of main projects in this repository:
-
-- [`Worker`](src/Worker) - the Azure Function itself, a thin adapter between core logic and Azure Functions
-- [`Website`](src/Website) - a website for an admin panel to managed scans
-- [`Worker.Logic`](src/Worker.Logic) - all of the catalog scan and driver logic, this is the most interesting project
-- [`Logic`](src/Logic) - contains more generic logic related to NuGet.org protocol and is not directly related to distributed processing
-
-Other projects are:
-
-- [`SourceGenerator`](src/SourceGenerator) - AOT source generation logic for reading and writing CSVs
-- [`Tool`](src/Tool) - a command-line app used for pretty much just prototyping code
-
-## Drivers
-
-The current drivers for analyzing NuGet.org packages are:
-
-- [`CatalogDataToCsv`](src/Worker.Logic/CatalogScan/Drivers/CatalogDataToCsv/CatalogDataToCsvDriver.cs) - extract data found in the catalog to CSV, e.g. deprecation and vulnerability
-- [`CatalogLeafItemToCsv`](src/Worker.Logic/CatalogScan/Drivers/CatalogLeafItemToCsv/CatalogLeafItemToCsvDriver.cs) - write all catalog leaf items (very minimal data)
-- [`NuGetPackageExplorerToCsv`](src/Worker.Logic/CatalogScan/Drivers/NuGetPackageExplorerToCsv/NuGetPackageExplorerToCsvDriver.cs) - run NuGet Package Explore APIs to determine reproducibility
-- [`PackageArchiveToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageArchiveToCsv/PackageArchiveToCsvDriver.cs) - find info about all ZIP entries in the .nupkg
-- [`PackageAssemblyToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageAssemblyToCsv/PackageAssemblyToCsvDriver.cs) - find stuff like public key tokens in assemblies using `System.Reflection.Metadata`
-- [`PackageAssetToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageAssetToCsv/PackageAssetToCsvDriver.cs) - find assets recognized by NuGet restore
-- [`PackageCompatibilityToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageCompatibilityToCsv/PackageCompatibilityToCsvDriver.cs) - determine package compatibility with several algorithms
-- [`PackageManifestToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageManifestToCsv/PackageManifestToCsvDriver.cs) - extract known data from the .nuspec
-- [`PackageSignatureToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageSignatureToCsv/PackageSignatureToCsvDriver.cs) - parse the NuGet package signature
-- [`PackageVersionToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageVersionToCsv/PackageVersionToCsvDriver.cs) - determine latest version per package ID
-
-Several other supporting drivers exist to populate storage with intermediate results:
-
-- [`BuildVersionSet`](src/Worker.Logic/CatalogScan/Drivers/BuildVersionSet/BuildVersionSetDriver.cs) - serializes all IDs and versions into a `Dictionary`, useful for fast checks
-- [`LoadLatestPackageLeaf`](src/Worker.Logic/CatalogScan/Drivers/LoadLatestPackageLeaf) - write the latest catalog leaf to Table Storage
-- [`LoadPackageArchive`](src/Worker.Logic/CatalogScan/Drivers/LoadPackageArchive/LoadPackageArchiveDriver.cs) - fetch information from the .nupkg and put it in Table Storage
-- [`LoadPackageManifest`](src/Worker.Logic/CatalogScan/Drivers/LoadPackageManifest/LoadPackageManifestDriver.cs) - fetch the .nuspec and put it in Table Storage
-- [`LoadPackageVersion`](src/Worker.Logic/CatalogScan/Drivers/LoadPackageVersion/LoadPackageVersionDriver.cs) - determine listed and SemVer status and put it in Table Storage
-
-Several message processors exist to emit other useful data:
-
-- [`DownloadsToCsv`](src/Worker.Logic/MessageProcessors/DownloadsToCsv/DownloadsToCsvUpdater.cs) - read `downloads.v1.json` and write it to CSV
-- [`OwnersToCsv`](src/Worker.Logic/MessageProcessors/OwnersToCsv/OwnersToCsvUpdater.cs) - read `owners.v2.json` and write it to CSV
-
-## Other docs
-
-- **[Adding a new driver](docs/new-driver.md) - a guide to help you enhance NuGet.Insights to suit your needs.**
-- [Blog posts](docs/blog-posts.md) - blog posts about lessons learned from this project
-- [Cost](docs/cost.md) - how much it costs to run several of the implemented catalog scans
-- [Notable classes](docs/notable-classes.md) - interesting or useful classes supporting this project

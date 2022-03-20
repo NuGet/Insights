@@ -6,7 +6,7 @@ stages:
     pool:
       vmImage: "windows-latest"
     steps:
-    - script: npm install -g markdown-link-check@3.8.7
+    - script: npm install -g markdown-link-check@3.10.0
       displayName: "Install markdown-link-check"
     - task: PowerShell@2
       displayName: Validate
