@@ -27,17 +27,31 @@ Files:
 
 Patches:
   - [Add `ChainInfo` property to `CertificateVerificationResult` to allow reading the chain before disposal](0002-Add-chain-info-property-to-CertificateVerificationResult.patch)
+
 # [NuGet/NuGetGallery](https://github.com/NuGet/NuGetGallery)
 
 Copied license: [`LICENSE.txt`](NuGet/NuGetGallery/LICENSE.txt)
 
-Copied revision: [`6df282d39c845f45ebc7fa131ad7a53a6952da00`](https://github.com/NuGet/NuGetGallery/tree/6df282d39c845f45ebc7fa131ad7a53a6952da00)
+Copied revision: [`f9913c9f58b635e2c4776dd4abe7e60b8c7aeb9e`](https://github.com/NuGet/NuGetGallery/tree/f9913c9f58b635e2c4776dd4abe7e60b8c7aeb9e)
 
 Files:
+  - [`src/NuGet.Services.Entities/IEntity.cs`](NuGet/NuGetGallery/src/NuGet.Services.Entities/IEntity.cs)
+  - [`src/NuGet.Services.Entities/PackageFramework.cs`](NuGet/NuGetGallery/src/NuGet.Services.Entities/PackageFramework.cs)
+  - [`src/NuGetGallery.Core/Frameworks/FrameworkCompatibilityService.cs`](NuGet/NuGetGallery/src/NuGetGallery.Core/Frameworks/FrameworkCompatibilityService.cs)
+  - [`src/NuGetGallery.Core/Frameworks/FrameworkProductNames.cs`](NuGet/NuGetGallery/src/NuGetGallery.Core/Frameworks/FrameworkProductNames.cs)
+  - [`src/NuGetGallery.Core/Frameworks/IFrameworkCompatibilityService.cs`](NuGet/NuGetGallery/src/NuGetGallery.Core/Frameworks/IFrameworkCompatibilityService.cs)
+  - [`src/NuGetGallery.Core/Frameworks/IPackageFrameworkCompatibilityFactory.cs`](NuGet/NuGetGallery/src/NuGetGallery.Core/Frameworks/IPackageFrameworkCompatibilityFactory.cs)
+  - [`src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibility.cs`](NuGet/NuGetGallery/src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibility.cs)
+  - [`src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibilityBadges.cs`](NuGet/NuGetGallery/src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibilityBadges.cs)
+  - [`src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibilityFactory.cs`](NuGet/NuGetGallery/src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibilityFactory.cs)
+  - [`src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibilityTableData.cs`](NuGet/NuGetGallery/src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibilityTableData.cs)
+  - [`src/NuGetGallery.Core/Frameworks/SupportedFrameworks.cs`](NuGet/NuGetGallery/src/NuGetGallery.Core/Frameworks/SupportedFrameworks.cs)
   - [`src/NuGetGallery.Services/PackageManagement/PackageService.cs`](NuGet/NuGetGallery/src/NuGetGallery.Services/PackageManagement/PackageService.cs)
 
 Patches:
   - [Remove unused methods from `PackageService`](0001-Remove-unused-methods-from-PackageService.patch)
+  - [Remove unused property from `PackageFramework` and make `FrameworkName` settable](0003-Remove-unused-property-and-make-framework-name-setta.patch)
+
 # [NuGet/ServerCommon](https://github.com/NuGet/ServerCommon)
 
 Copied license: [`License.md`](NuGet/ServerCommon/License.md)

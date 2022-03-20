@@ -25,7 +25,7 @@ if ($AllowDeployUser) {
     $context = Get-AzContext
     $homeAccountId = $context.Account.ExtendedProperties.HomeAccountId
     if (!$homeAccountId) {
-        throw "Could not find the 'HomeAccountId' from (Get-AzContext).Account.ExtendedProperties.HomeAccountId."
+        throw "Could not find the 'HomeAccountId' from (Get-AzContext).Account.ExtendedProperties.HomeAccountId. Did you run Connect-AzAccount?"
     }
     else {
         if (!$resourceSettings.WebsiteConfig['NuGet.Insights'].AllowedUsers) {

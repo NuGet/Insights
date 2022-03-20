@@ -5,18 +5,25 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Knapcode.MiniZip;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.Services.Entities;
 using NuGetGallery;
+using NuGetGallery.Frameworks;
 
 namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 {
     public class PackageCompatibilityToCsvDriver : ICatalogLeafToCsvDriver<PackageCompatibility>, ICsvResultStorage<PackageCompatibility>
     {
+        private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        };
         private static readonly NuGetFrameworkSorter Sorter = new NuGetFrameworkSorter();
 
         private readonly CatalogClient _catalogClient;
@@ -85,6 +92,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                 var escapedFiles = zipDirectory
                     .Entries
                     .Select(x => x.GetName())
+                    .Select(x => Common.PathUtility.StripLeadingDirectorySeparators(x))
                     .ToList();
                 var files = escapedFiles
                     .Select(x => x.IndexOf('%', StringComparison.Ordinal) >= 0 ? Uri.UnescapeDataString(x) : x)
@@ -97,7 +105,10 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                 var hasUnsupported = false;
                 var hasAgnostic = false;
                 var brokenFrameworks = new HashSet<string>();
-                string GetAndSerializeNested(string methodName, Func<IEnumerable<NuGetFramework>> getFrameworks)
+                string GetAndSerializeNestedAndOut(
+                    string methodName,
+                    Func<IEnumerable<NuGetFramework>> getFrameworks,
+                    out List<NuGetFramework> roundTripFrameworks)
                 {
                     return GetAndSerialize(
                         item,
@@ -108,7 +119,17 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                         ref hasAgnostic,
                         brokenFrameworks,
                         methodName,
-                        getFrameworks);
+                        getFrameworks,
+                        out roundTripFrameworks);
+                }
+                string GetAndSerializeNested(
+                    string methodName,
+                    Func<IEnumerable<NuGetFramework>> getFrameworks)
+                {
+                    return GetAndSerializeNestedAndOut(
+                        methodName,
+                        getFrameworks,
+                        out _);
                 }
 
                 output.NuspecReader = GetAndSerializeNested(
@@ -119,13 +140,43 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                         return packageReader.GetSupportedFrameworks().ToList();
                     });
 
-                output.NuGetGallery = GetAndSerializeNested(
+                output.NuGetGallery = GetAndSerializeNestedAndOut(
                     nameof(output.NuGetGallery),
                     () =>
                     {
                         var packageService = new PackageService();
-                        return packageService.GetSupportedFrameworks(result.Value.NuspecReader, files);
-                    });
+                        return packageService.GetSupportedFrameworks(result.Value.NuspecReader, files).ToList();
+                    },
+                    out var nuGetGallery);
+
+                if (nuGetGallery != null)
+                {
+                    var compatibilityService = new FrameworkCompatibilityService();
+                    var compatibilityFactory = new PackageFrameworkCompatibilityFactory(compatibilityService);
+
+                    var frameworks = nuGetGallery
+                        .Select(x => new PackageFramework { FrameworkName = x })
+                        .ToList();
+
+                    var compatibility = compatibilityFactory.Create(frameworks);
+
+                    output.NuGetGallerySupported = JsonSerializer.Serialize(compatibility
+                        .Table
+                        .Select(x => new
+                        {
+                            ProductName = x.Key,
+                            Frameworks = x.Value.Select(x => new { Framework = x.Framework.GetShortFolderName(), x.IsComputed }).ToList(),
+                        })
+                        .OrderBy(x => x.ProductName), SerializerOptions);
+
+                    output.NuGetGalleryBadges = JsonSerializer.Serialize(new[]
+                    {
+                        new { ProductName = FrameworkProductNames.Net, Minimum = compatibility.Badges.Net?.GetShortFolderName() },
+                        new { ProductName = FrameworkProductNames.NetFramework, Minimum = compatibility.Badges.NetFramework?.GetShortFolderName() },
+                        new { ProductName = FrameworkProductNames.NetCore, Minimum = compatibility.Badges.NetCore?.GetShortFolderName() },
+                        new { ProductName = FrameworkProductNames.NetStandard, Minimum = compatibility.Badges.NetStandard?.GetShortFolderName() },
+                    }.Where(x => x.Minimum is not null), SerializerOptions);
+                }
 
                 output.NuGetGalleryEscaped = GetAndSerializeNested(
                     nameof(output.NuGetGallery),
@@ -160,7 +211,8 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             ref bool hasAgnostic,
             HashSet<string> brokenFrameworks,
             string methodName,
-            Func<IEnumerable<NuGetFramework>> getFrameworks)
+            Func<IEnumerable<NuGetFramework>> getFrameworks,
+            out List<NuGetFramework> roundTripFrameworks)
         {
             List<string> roundTripShortFolderNames;
             try
@@ -171,7 +223,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                 var originalShortFolderNames = originalFrameworks
                     .Select(x => x.GetShortFolderName())
                     .ToList();
-                var roundTripFrameworks = originalShortFolderNames
+                roundTripFrameworks = originalShortFolderNames
                     .Select(x => NuGetFramework.Parse(x))
                     .OrderBy(x => x, Sorter)
                     .ToList();
@@ -204,6 +256,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             {
                 _logger.LogWarning(ex, "For {Id}/{Version}, failed to determine compatible frameworks using '{MethodName}'.", item.PackageId, item.PackageVersion, methodName);
                 hasError = true;
+                roundTripFrameworks = null;
                 return null;
             }
 

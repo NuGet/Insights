@@ -1,0 +1,2 @@
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,HasError,DoesNotRoundTrip,HasAny,HasUnsupported,HasAgnostic,BrokenFrameworks,NuspecReader,NU1202,NuGetGallery,NuGetGalleryEscaped,NuGetGallerySupported,NuGetGalleryBadges
+,,flexmonster.accelerator,flexmonster.accelerator/2.7.19,Flexmonster.Accelerator,2.7.19,2019-11-18T17:19:38.2541574Z,2019-11-18T17:16:48.877Z,Available,false,true,true,true,false,"[""flexmonster"",""flexmonster,Version=v0.0""]","[""any""]","[""unsupported""]","[""unsupported""]","[""unsupported""]",[],[]
