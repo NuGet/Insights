@@ -306,11 +306,11 @@ namespace NuGet.Insights.Website.Controllers
             }
             else if (disable == true)
             {
-                await _timerExecutionService.SetIsEnabled(timerName, isEnabled: false);
+                await _timerExecutionService.SetIsEnabledAsync(timerName, isEnabled: false);
             }
             else if (enable == true)
             {
-                await _timerExecutionService.SetIsEnabled(timerName, isEnabled: true);
+                await _timerExecutionService.SetIsEnabledAsync(timerName, isEnabled: true);
             }
 
             return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment: timerName);

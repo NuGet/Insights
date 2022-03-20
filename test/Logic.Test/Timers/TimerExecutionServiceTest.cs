@@ -47,7 +47,7 @@ namespace NuGet.Insights
             [InlineData(true)]
             public async Task SetsIsEnabledOnNewEntity(bool isEnabled)
             {
-                await Target.SetIsEnabled(TimerName, isEnabled);
+                await Target.SetIsEnabledAsync(TimerName, isEnabled);
 
                 var entities = await GetEntitiesAsync<TableEntity>();
                 var entity = Assert.Single(entities);
@@ -64,7 +64,7 @@ namespace NuGet.Insights
                 await Target.ExecuteAsync();
                 var after = DateTimeOffset.UtcNow;
 
-                await Target.SetIsEnabled(TimerName, isEnabled);
+                await Target.SetIsEnabledAsync(TimerName, isEnabled);
 
                 var entities = await GetEntitiesAsync<TableEntity>();
                 var entity = Assert.Single(entities);
@@ -160,7 +160,7 @@ namespace NuGet.Insights
             [Fact]
             public async Task DoesNotExecuteTimerDisabledFromStorage()
             {
-                await Target.SetIsEnabled(TimerName, isEnabled: false);
+                await Target.SetIsEnabledAsync(TimerName, isEnabled: false);
 
                 await Target.ExecuteAsync();
 
@@ -172,7 +172,7 @@ namespace NuGet.Insights
             [Fact]
             public async Task ExecutesTimerEnabledForStorage()
             {
-                await Target.SetIsEnabled(TimerName, isEnabled: true);
+                await Target.SetIsEnabledAsync(TimerName, isEnabled: true);
                 Timer.Setup(x => x.AutoStart).Returns(false);
 
                 var before = DateTimeOffset.UtcNow;
@@ -313,11 +313,13 @@ namespace NuGet.Insights
             {
                 var serviceClientFactory = _fixture.GetServiceClientFactory(_output.GetLogger<ServiceClientFactory>());
                 return new TimerExecutionService(
-                    serviceClientFactory,
                     Timers,
                     _fixture.GetLeaseService(serviceClientFactory),
-                    _fixture.Options.Object,
-                    _output.GetTelemetryClient(),
+                    new SpecificTimerExecutionService(
+                        serviceClientFactory,
+                        _fixture.Options.Object,
+                        _output.GetTelemetryClient(),
+                        _output.GetLogger<SpecificTimerExecutionService>()),
                     _output.GetLogger<TimerExecutionService>());
             }
         }

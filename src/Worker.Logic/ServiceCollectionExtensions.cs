@@ -51,6 +51,7 @@ namespace NuGet.Insights.Worker
 
             serviceCollection.AddTransient<CatalogScanStorageService>();
             serviceCollection.AddTransient<CatalogScanCursorService>();
+            serviceCollection.AddTransient<CatalogScanUpdateTimer>();
             serviceCollection.AddTransient<ICatalogScanDriverFactory, CatalogScanDriverFactory>();
             serviceCollection.AddTransient<CatalogScanService>();
             serviceCollection.AddTransient<CatalogScanExpandService>();
@@ -61,6 +62,7 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddTransient<KustoIngestionService>();
             serviceCollection.AddTransient<KustoIngestionStorageService>();
             serviceCollection.AddTransient<KustoDataValidator>();
+            serviceCollection.AddTransient<KustoIngestionTimer>();
             serviceCollection.AddTransient<CsvResultStorageContainers>();
             serviceCollection.AddTransient(x =>
             {
@@ -108,6 +110,7 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddTransient<CursorStorageService>();
 
             serviceCollection.AddTransient<TimerExecutionService>();
+            serviceCollection.AddTransient<SpecificTimerExecutionService>();
             serviceCollection.AddTransient<AppendResultStorageService>();
             serviceCollection.AddTransient<TaskStateStorageService>();
             serviceCollection.AddTransient<ICsvReader, CsvReaderAdapter>();
@@ -186,6 +189,9 @@ namespace NuGet.Insights.Worker
                 // Add the timer
                 serviceCollection.AddTransient(
                     typeof(ITimer),
+                    typeof(AuxiliaryFileUpdaterTimer<>).MakeGenericType(dataType));
+                serviceCollection.AddTransient(
+                    typeof(IAuxiliaryFileUpdaterTimer),
                     typeof(AuxiliaryFileUpdaterTimer<>).MakeGenericType(dataType));
             }
 
@@ -307,6 +313,9 @@ namespace NuGet.Insights.Worker
             // Add the timer
             serviceCollection.AddTransient(
                 typeof(ITimer),
+                typeof(CleanupOrphanRecordsTimer<>).MakeGenericType(dataType));
+            serviceCollection.AddTransient(
+                typeof(ICleanupOrphanRecordsTimer),
                 typeof(CleanupOrphanRecordsTimer<>).MakeGenericType(dataType));
         }
 
