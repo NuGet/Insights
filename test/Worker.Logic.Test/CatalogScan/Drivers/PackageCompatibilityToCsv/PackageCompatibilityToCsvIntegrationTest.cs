@@ -13,6 +13,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
     public class PackageCompatibilityToCsvIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest<PackageCompatibility>
     {
         private const string PackageCompatibilityToCsvDir = nameof(PackageCompatibilityToCsv);
+        private const string PackageCompatibilityToCsv_WithManyAssetsDir = nameof(PackageCompatibilityToCsv_WithManyAssets);
         private const string PackageCompatibilityToCsv_WithDeleteDir = nameof(PackageCompatibilityToCsv_WithDelete);
 
         public class PackageCompatibilityToCsv : PackageCompatibilityToCsvIntegrationTest
@@ -50,6 +51,34 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                 await AssertOutputAsync(PackageCompatibilityToCsvDir, Step2, 0);
                 await AssertOutputAsync(PackageCompatibilityToCsvDir, Step1, 1); // This file is unchanged.
                 await AssertOutputAsync(PackageCompatibilityToCsvDir, Step2, 2);
+            }
+        }
+
+        public class PackageCompatibilityToCsv_WithManyAssets : PackageCompatibilityToCsvIntegrationTest
+        {
+            public PackageCompatibilityToCsv_WithManyAssets(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+                : base(output, factory)
+            {
+            }
+
+            [Fact]
+            public async Task Execute()
+            {
+                // Arrange
+                var max1 = DateTimeOffset.Parse("2021-03-22T20:13:54.6075418Z");
+                var min0 = max1.AddTicks(-1);
+
+                await CatalogScanService.InitializeAsync();
+                await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
+                await SetCursorAsync(CatalogScanDriverType.LoadPackageManifest, max1);
+                await SetCursorAsync(min0);
+
+                // Act
+                await UpdateAsync(max1);
+
+                // Assert
+                await AssertOutputAsync(PackageCompatibilityToCsv_WithManyAssetsDir, Step1, 0);
+                await AssertBlobCountAsync(Options.Value.PackageCompatibilityContainerName, 1);
             }
         }
 
