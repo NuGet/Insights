@@ -212,6 +212,8 @@ namespace NuGet.Insights.Worker
                 ConfigureWorkerSettings = x =>
                 {
                     x.AppendResultStorageBucketCount = 1;
+                    x.KustoConnectionString = "fake connection string";
+                    x.KustoDatabaseName = "fake database name";
                 };
 
                 var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
