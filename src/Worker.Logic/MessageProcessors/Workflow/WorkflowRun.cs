@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -27,7 +27,6 @@ namespace NuGet.Insights.Worker.Workflow
         public DateTimeOffset? Timestamp { get; set; }
         public ETag ETag { get; set; }
 
-        public DateTimeOffset? MaxCommitTimestamp { get; set; }
         public WorkflowRunState State { get; set; }
         public DateTimeOffset Created { get; set; }
         public DateTimeOffset? Completed { get; set; }

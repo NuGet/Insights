@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NuGet.Insights.Worker.ReferenceTracking
 {
-    public class CleanupOrphanRecordsTimer<T> : ITimer where T : ICsvRecord
+    public class CleanupOrphanRecordsTimer<T> : ICleanupOrphanRecordsTimer, ITimer where T : ICsvRecord
     {
         private readonly ICleanupOrphanRecordsService<T> _service;
         private readonly ICleanupOrphanRecordsAdapter<T> _adapter;

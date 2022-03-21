@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
@@ -16,18 +15,14 @@ namespace NuGet.Insights.Worker.Workflow
         {
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("2015-02-01T06:22:45.8488496Z")]
-        public async Task StartsRunWhenNothingIsRunning(string maxCommitTimestamp)
+        [Fact]
+        public async Task StartsRunWhenNothingIsRunning()
         {
-            var parsedMaxCommitTimestamp = maxCommitTimestamp == null ? (DateTimeOffset?)null : DateTimeOffset.Parse(maxCommitTimestamp);
             await WorkflowService.InitializeAsync();
 
-            var run = await WorkflowService.StartAsync(parsedMaxCommitTimestamp);
+            var run = await WorkflowService.StartAsync();
 
             Assert.NotNull(run);
-            Assert.Equal(parsedMaxCommitTimestamp, run.MaxCommitTimestamp);
             var runs = await WorkflowStorageService.GetRunsAsync();
             var actualRun = Assert.Single(runs);
             Assert.Equal(run.GetRunId(), actualRun.GetRunId());
@@ -37,9 +32,9 @@ namespace NuGet.Insights.Worker.Workflow
         public async Task DoesNotStartWhenAlreadyStarted()
         {
             await WorkflowService.InitializeAsync();
-            await WorkflowService.StartAsync(maxCommitTimestamp: null);
+            await WorkflowService.StartAsync();
 
-            var run = await WorkflowService.StartAsync(maxCommitTimestamp: null);
+            var run = await WorkflowService.StartAsync();
 
             Assert.Null(run);
             Assert.Single(await WorkflowStorageService.GetRunsAsync());
@@ -52,7 +47,7 @@ namespace NuGet.Insights.Worker.Workflow
             await CatalogScanService.InitializeAsync();
             await CatalogScanService.UpdateAsync(CatalogScanDriverType.BuildVersionSet);
 
-            var run = await WorkflowService.StartAsync(maxCommitTimestamp: null);
+            var run = await WorkflowService.StartAsync();
 
             Assert.Null(run);
             Assert.Empty(await WorkflowStorageService.GetRunsAsync());
@@ -66,7 +61,7 @@ namespace NuGet.Insights.Worker.Workflow
             await service.InitializeAsync();
             await service.StartAsync();
 
-            var run = await WorkflowService.StartAsync(maxCommitTimestamp: null);
+            var run = await WorkflowService.StartAsync();
 
             Assert.Null(run);
             Assert.Empty(await WorkflowStorageService.GetRunsAsync());
@@ -80,7 +75,7 @@ namespace NuGet.Insights.Worker.Workflow
             await service.InitializeAsync();
             await service.StartAsync();
 
-            var run = await WorkflowService.StartAsync(maxCommitTimestamp: null);
+            var run = await WorkflowService.StartAsync();
 
             Assert.Null(run);
             Assert.Empty(await WorkflowStorageService.GetRunsAsync());
@@ -93,7 +88,7 @@ namespace NuGet.Insights.Worker.Workflow
             await KustoIngestionService.InitializeAsync();
             await KustoIngestionService.StartAsync();
 
-            var run = await WorkflowService.StartAsync(maxCommitTimestamp: null);
+            var run = await WorkflowService.StartAsync();
 
             Assert.Null(run);
             Assert.Empty(await WorkflowStorageService.GetRunsAsync());

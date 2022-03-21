@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 {
-    public class AuxiliaryFileUpdaterTimer<T> : ITimer where T : IAsOfData
+    public class AuxiliaryFileUpdaterTimer<T> : IAuxiliaryFileUpdaterTimer, ITimer where T : IAsOfData
     {
         private readonly IAuxiliaryFileUpdaterService<T> _service;
         private readonly IAuxiliaryFileUpdater<T> _updater;

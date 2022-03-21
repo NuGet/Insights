@@ -26,7 +26,7 @@ namespace NuGet.Insights.Worker.Workflow
 
         public async Task<bool> ExecuteAsync()
         {
-            var workflow = await _service.StartAsync(maxCommitTimestamp: null);
+            var workflow = await _service.StartAsync();
             return workflow is not null;
         }
 

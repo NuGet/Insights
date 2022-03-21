@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using NuGet.Insights.Worker.KustoIngestion;
 
 namespace NuGet.Insights.Worker.Workflow
 {
@@ -20,7 +19,7 @@ namespace NuGet.Insights.Worker.Workflow
                 TransitionAsync: async (self, run) =>
                 {
                     self._logger.LogInformation("Starting all catalog scans.");
-                    await self._catalogScanService.UpdateAllAsync(run.MaxCommitTimestamp);
+                    await self._workflowService.StartCatalogScansAsync();
                 },
                 NextState: WorkflowRunState.CatalogScanWorking),
 
@@ -50,7 +49,7 @@ namespace NuGet.Insights.Worker.Workflow
                 TransitionAsync: async (self, run) =>
                 {
                     self._logger.LogInformation("Starting Kusto ingestion.");
-                    await self._kustoIngestionService.StartAsync();
+                    await self._workflowService.StartKustoIngestionAsync();
                 },
                 NextState: WorkflowRunState.KustoIngestionWorking),
 
@@ -81,23 +80,17 @@ namespace NuGet.Insights.Worker.Workflow
 
         private readonly WorkflowService _workflowService;
         private readonly WorkflowStorageService _storageService;
-        private readonly CatalogScanService _catalogScanService;
-        private readonly KustoIngestionService _kustoIngestionService;
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly ILogger<WorkflowRunMessageProcessor> _logger;
 
         public WorkflowRunMessageProcessor(
             WorkflowService workflowService,
             WorkflowStorageService storageService,
-            CatalogScanService catalogScanService,
-            KustoIngestionService kustoIngestionService,
             IMessageEnqueuer messageEnqueuer,
             ILogger<WorkflowRunMessageProcessor> logger)
         {
             _workflowService = workflowService;
             _storageService = storageService;
-            _catalogScanService = catalogScanService;
-            _kustoIngestionService = kustoIngestionService;
             _messageEnqueuer = messageEnqueuer;
             _logger = logger;
         }

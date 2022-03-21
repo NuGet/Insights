@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Azure.Storage.Queues.Models;
 using Kusto.Ingest;
@@ -210,9 +212,23 @@ namespace NuGet.Insights.Worker
                 ConfigureWorkerSettings = x =>
                 {
                     x.AppendResultStorageBucketCount = 1;
+                    x.KustoConnectionString = "fake connection string";
+                    x.KustoDatabaseName = "fake database name";
                 };
+
+                var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
+                var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
+
                 HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
                 {
+                    if (req.RequestUri.AbsoluteUri == "https://api.nuget.org/v3-flatcontainer/cursor.json")
+                    {
+                        return new HttpResponseMessage(HttpStatusCode.OK)
+                        {
+                            Content = new StringContent(@$"{{""value"":""{max1:O}""}}")
+                        };
+                    }
+
                     if (req.RequestUri.AbsolutePath.EndsWith("/downloads.v1.json"))
                     {
                         var newReq = Clone(req);
@@ -238,11 +254,7 @@ namespace NuGet.Insights.Worker
                 };
 
                 // Arrange
-                await CatalogScanService.InitializeAsync();
                 await WorkflowService.InitializeAsync();
-
-                var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
-                var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
 
                 foreach (var type in CatalogScanCursorService.StartableDriverTypes)
                 {
@@ -250,7 +262,7 @@ namespace NuGet.Insights.Worker
                 }
 
                 // Act
-                var run = await WorkflowService.StartAsync(max1);
+                var run = await WorkflowService.StartAsync();
                 Assert.NotNull(run);
                 var attempts = 0;
                 await ProcessQueueAsync(

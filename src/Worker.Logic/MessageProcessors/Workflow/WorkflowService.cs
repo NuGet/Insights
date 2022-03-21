@@ -15,30 +15,30 @@ namespace NuGet.Insights.Worker.Workflow
     {
         private readonly WorkflowStorageService _workflowStorageService;
         private readonly AutoRenewingStorageLeaseService _leaseService;
-        private readonly CatalogScanStorageService _catalogScanStorageService;
-        private readonly IReadOnlyList<ICleanupOrphanRecordsService> _cleanupOrphanRecordsServices;
-        private readonly IReadOnlyList<IAuxiliaryFileUpdaterService> _auxiliaryFileUpdaterServices;
-        private readonly KustoIngestionService _kustoIngestionService;
-        private readonly KustoIngestionStorageService _kustoIngestionStorageService;
+        private readonly SpecificTimerExecutionService _timerExecutionService;
+        private readonly CatalogScanUpdateTimer _catalogScanUpdateTimer;
+        private readonly IReadOnlyList<ICleanupOrphanRecordsTimer> _cleanupOrphanRecordsTimers;
+        private readonly IReadOnlyList<IAuxiliaryFileUpdaterTimer> _auxiliaryFileUpdaterTimers;
+        private readonly KustoIngestionTimer _kustoIngestionTimer;
         private readonly IMessageEnqueuer _messageEnqueuer;
 
         public WorkflowService(
             WorkflowStorageService workflowStorageService,
             AutoRenewingStorageLeaseService leaseService,
-            CatalogScanStorageService catalogScanStorageService,
-            IEnumerable<ICleanupOrphanRecordsService> cleanupOrphanRecordsServices,
-            IEnumerable<IAuxiliaryFileUpdaterService> auxiliaryFileUpdaterServices,
-            KustoIngestionService kustoIngestionService,
-            KustoIngestionStorageService kustoIngestionStorageService,
+            SpecificTimerExecutionService timerExecutionService,
+            CatalogScanUpdateTimer catalogScanUpdateTimer,
+            IEnumerable<ICleanupOrphanRecordsTimer> cleanupOrphanRecordsTimers,
+            IEnumerable<IAuxiliaryFileUpdaterTimer> auxiliaryFileUpdaterTimers,
+            KustoIngestionTimer kustoIngestionTimer,
             IMessageEnqueuer messageEnqueuer)
         {
             _workflowStorageService = workflowStorageService;
             _leaseService = leaseService;
-            _catalogScanStorageService = catalogScanStorageService;
-            _cleanupOrphanRecordsServices = cleanupOrphanRecordsServices.ToList();
-            _auxiliaryFileUpdaterServices = auxiliaryFileUpdaterServices.ToList();
-            _kustoIngestionService = kustoIngestionService;
-            _kustoIngestionStorageService = kustoIngestionStorageService;
+            _timerExecutionService = timerExecutionService;
+            _catalogScanUpdateTimer = catalogScanUpdateTimer;
+            _cleanupOrphanRecordsTimers = cleanupOrphanRecordsTimers.ToList();
+            _auxiliaryFileUpdaterTimers = auxiliaryFileUpdaterTimers.ToList();
+            _kustoIngestionTimer = kustoIngestionTimer;
             _messageEnqueuer = messageEnqueuer;
         }
 
@@ -46,23 +46,19 @@ namespace NuGet.Insights.Worker.Workflow
         {
             await _workflowStorageService.InitializeAsync();
             await _leaseService.InitializeAsync();
-            await _catalogScanStorageService.InitializeAsync();
-            foreach (var service in _cleanupOrphanRecordsServices)
-            {
-                await service.InitializeAsync();
-            }
-            foreach (var service in _auxiliaryFileUpdaterServices)
-            {
-                await service.InitializeAsync();
-            }
-            await _kustoIngestionService.InitializeAsync();
             await _messageEnqueuer.InitializeAsync();
+            await _timerExecutionService.InitializeAsync(Enumerable.Empty<ITimer>()
+                .Concat(new ITimer[] { _catalogScanUpdateTimer, _kustoIngestionTimer })
+                .Concat(_cleanupOrphanRecordsTimers)
+                .Concat(_auxiliaryFileUpdaterTimers));
         }
 
-        public bool HasRequiredConfiguration => _auxiliaryFileUpdaterServices.All(x => x.HasRequiredConfiguration)
-            && _kustoIngestionService.HasRequiredConfiguration;
+        public bool HasRequiredConfiguration => _catalogScanUpdateTimer.IsEnabled
+            && _cleanupOrphanRecordsTimers.All(x => x.IsEnabled)
+            && _auxiliaryFileUpdaterTimers.All(x => x.IsEnabled)
+            && _kustoIngestionTimer.IsEnabled;
 
-        public async Task<WorkflowRun> StartAsync(DateTimeOffset? maxCommitTimestamp)
+        public async Task<WorkflowRun> StartAsync()
         {
             await using var lease = await _leaseService.TryAcquireAsync("Start-Workflow");
             if (!lease.Acquired)
@@ -78,7 +74,6 @@ namespace NuGet.Insights.Worker.Workflow
             var run = new WorkflowRun(StorageUtility.GenerateDescendingId().ToString())
             {
                 Created = DateTimeOffset.UtcNow,
-                MaxCommitTimestamp = maxCommitTimestamp,
             };
             await _messageEnqueuer.EnqueueAsync(new[]
             {
@@ -106,33 +101,36 @@ namespace NuGet.Insights.Worker.Workflow
                 || await IsKustoIngestionRunningAsync();
         }
 
+        internal async Task StartCatalogScansAsync()
+        {
+            await _timerExecutionService.ExecuteAsync(new[] { _catalogScanUpdateTimer }, executeNow: true);
+        }
+
         internal async Task StartCleanupOrphanRecordsAsync()
         {
-            foreach (var service in _cleanupOrphanRecordsServices)
-            {
-                await service.StartAsync();
-            }
+            await _timerExecutionService.ExecuteAsync(_cleanupOrphanRecordsTimers, executeNow: true);
         }
 
         internal async Task StartAuxiliaryFilesAsync()
         {
-            foreach (var service in _auxiliaryFileUpdaterServices)
-            {
-                await service.StartAsync();
-            }
+            await _timerExecutionService.ExecuteAsync(_auxiliaryFileUpdaterTimers, executeNow: true);
+        }
+
+        internal async Task StartKustoIngestionAsync()
+        {
+            await _timerExecutionService.ExecuteAsync(new[] { _kustoIngestionTimer }, executeNow: true);
         }
 
         internal async Task<bool> AreCatalogScansRunningAsync()
         {
-            var catalogScans = await _catalogScanStorageService.GetIndexScansAsync();
-            return catalogScans.Any(x => x.State != CatalogIndexScanState.Complete);
+            return await _catalogScanUpdateTimer.IsRunningAsync();
         }
 
         internal async Task<bool> AreCleanupOrphanRecordsRunningAsync()
         {
-            foreach (var service in _cleanupOrphanRecordsServices)
+            foreach (var timer in _cleanupOrphanRecordsTimers)
             {
-                if (await service.IsRunningAsync())
+                if (await timer.IsRunningAsync())
                 {
                     return true;
                 }
@@ -143,9 +141,9 @@ namespace NuGet.Insights.Worker.Workflow
 
         internal async Task<bool> AreAuxiliaryFilesRunningAsync()
         {
-            foreach (var service in _auxiliaryFileUpdaterServices)
+            foreach (var timer in _auxiliaryFileUpdaterTimers)
             {
-                if (await service.IsRunningAsync())
+                if (await timer.IsRunningAsync())
                 {
                     return true;
                 }
@@ -156,8 +154,7 @@ namespace NuGet.Insights.Worker.Workflow
 
         internal async Task<bool> IsKustoIngestionRunningAsync()
         {
-            var kustoIngestions = await _kustoIngestionStorageService.GetIngestionsAsync();
-            return kustoIngestions.Any(x => x.State != KustoIngestionState.Complete);
+            return await _kustoIngestionTimer.IsRunningAsync();
         }
     }
 }
