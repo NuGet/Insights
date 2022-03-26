@@ -19,6 +19,8 @@ namespace NuGet.Insights
             FlatContainerBaseUrlOverride = null;
             DownloadsV1Url = null;
             OwnersV2Url = null;
+            VerifiedPackagesV1Url = null;
+            LegacyReadmeUrlPattern = null;
             StorageAccountName = null;
             StorageBlobReadSharedAccessSignature = null;
             KeyVaultName = null;
@@ -27,6 +29,7 @@ namespace NuGet.Insights
             LeaseContainerName = "leases";
             PackageArchiveTableName = "packagearchives";
             PackageManifestTableName = "packagemanifests";
+            PackageReadmeTableName = "packagereadmes";
             PackageHashesTableName = "packagehashes";
             TimerTableName = "timers";
             OwnerToSubjectReferenceTableName = "refsownertosubject";
@@ -48,6 +51,7 @@ namespace NuGet.Insights
         public string DownloadsV1Url { get; set; }
         public string OwnersV2Url { get; set; }
         public string VerifiedPackagesV1Url { get; set; }
+        public string LegacyReadmeUrlPattern { get; set; }
 
         public string StorageAccountName { get; set; }
         public string StorageBlobReadSharedAccessSignature { get; set; }
@@ -58,6 +62,7 @@ namespace NuGet.Insights
         public string LeaseContainerName { get; set; }
         public string PackageArchiveTableName { get; set; }
         public string PackageManifestTableName { get; set; }
+        public string PackageReadmeTableName { get; set; }
         public string PackageHashesTableName { get; set; }
         public string TimerTableName { get; set; }
         public string OwnerToSubjectReferenceTableName { get; set; }
