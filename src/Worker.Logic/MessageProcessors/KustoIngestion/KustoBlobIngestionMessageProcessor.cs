@@ -126,7 +126,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                     .ToList();
                 _logger.LogInformation("Ingestion status: {Statuses}", statusSummary);
 
-                var duration = DateTimeOffset.UtcNow - (blob.Started ?? blob.Timestamp.Value);
+                var duration = DateTimeOffset.UtcNow - blob.Started.Value;
 
                 if (duration > _options.Value.KustoBlobIngestionTimeout)
                 {

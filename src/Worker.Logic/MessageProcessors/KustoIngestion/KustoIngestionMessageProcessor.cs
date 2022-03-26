@@ -72,18 +72,27 @@ namespace NuGet.Insights.Worker.KustoIngestion
             if (ingestion.State == KustoIngestionState.Retrying)
             {
                 var containers = await _storageService.GetContainersAsync(ingestion);
-                var retryContainers = containers.Where(x => x.State == KustoContainerIngestionState.Failed).ToList();
 
-                // Clean up any blob records (i.e. the failed/timed out ones that caused the retry) and restart the container.
-                foreach (var container in retryContainers)
+                // Move the failed containers to the retrying state. This allows us to delete the blob records without
+                // having the containers accidentally move to the completed state when all blob records are gone.
+                var failedContainers = containers.Where(x => x.State == KustoContainerIngestionState.Failed).ToList();
+                foreach (var container in failedContainers)
+                {
+                    container.State = KustoContainerIngestionState.Retrying;
+                }
+                await _storageService.ReplaceContainersAsync(failedContainers);
+
+                // Move the retrying containers to the created state after cleaning up any blob records  (i.e. the
+                // failed/timed out ones that caused the retry)
+                var retryingContainers = containers.Where(x => x.State == KustoContainerIngestionState.Retrying).ToList();
+                foreach (var container in retryingContainers)
                 {
                     container.State = KustoContainerIngestionState.Created;
 
                     var blobs = await _storageService.GetBlobsAsync(container);
                     await _storageService.DeleteBlobsAsync(blobs);
                 }
-
-                await _storageService.ReplaceContainersAsync(retryContainers);
+                await _storageService.ReplaceContainersAsync(retryingContainers);
 
                 ingestion.State = KustoIngestionState.Enqueuing;
                 await _storageService.ReplaceIngestionAsync(ingestion);
