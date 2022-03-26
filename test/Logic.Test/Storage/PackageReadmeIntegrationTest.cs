@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,9 +34,9 @@ namespace NuGet.Insights
             // Assert
             Assert.Single(HttpMessageHandlerFactory.Requests);
             Assert.Equal(ReadmeType.Embedded, info.ReadmeType);
-            Assert.NotNull(info.ReadmeBytes);
+            Assert.Equal(7628, info.ReadmeBytes.Length);
             Assert.NotEmpty(info.HttpHeaders);
-            var readme = Encoding.UTF8.GetString(info.ReadmeBytes.Value.Span);
+            var readme = Encoding.UTF8.GetString(info.ReadmeBytes.Span);
             Assert.StartsWith("# TorSharp", readme);
         }
 
@@ -60,19 +62,38 @@ namespace NuGet.Insights
         }
 
         [Fact]
-        public async Task ReturnsNoneForNoReadmeContentWithLegacyPattern()
+        public async Task ReturnsReadmeContentWithLegacyPattern()
         {
             // This URL pattern is fake.
             ConfigureSettings = x => x.LegacyReadmeUrlPattern = "https://api.nuget.org/v3-flatcontainer/{0}/{1}/legacy-readme";
+            HttpMessageHandlerFactory.OnSendAsync = async (r, b, t) =>
+            {
+                if (r.RequestUri.LocalPath.EndsWith("/legacy-readme"))
+                {
+                    var stream = Resources.LoadMemoryStream(Resources.READMEs.WindowsAzure_Storage_9_3_3);
+                    return new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StreamContent(stream)
+                        {
+                            Headers =
+                            {
+                                ContentType = new MediaTypeHeaderValue("text/plain"),
+                            },
+                        },
+                    };
+                }
+
+                return await b(r, t);
+            };
 
             // Arrange
             await Target.InitializeAsync();
             var leaf = new CatalogLeafItem
             {
-                PackageId = "Knapcode.TorSharp",
-                PackageVersion = "1.0.0",
+                PackageId = "WindowsAzure.Storage",
+                PackageVersion = "9.3.3",
                 Type = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("2021-08-06T00:31:41.2929519Z"),
+                CommitTimestamp = DateTimeOffset.Parse("2020-07-08T17:12:18.5692562Z"),
             };
 
             // Act
@@ -80,10 +101,11 @@ namespace NuGet.Insights
 
             // Assert
             Assert.Equal(2, HttpMessageHandlerFactory.Requests.Count);
-            Assert.Equal(
-                "https://api.nuget.org/v3-flatcontainer/knapcode.torsharp/1.0.0/legacy-readme",
-                HttpMessageHandlerFactory.Requests.ElementAt(1).RequestUri.AbsoluteUri);
-            Assert.Equal(ReadmeType.None, info.ReadmeType);
+            Assert.Equal(ReadmeType.Legacy, info.ReadmeType);
+            Assert.Equal(618, info.ReadmeBytes.Length);
+            Assert.NotEmpty(info.HttpHeaders);
+            var readme = Encoding.UTF8.GetString(info.ReadmeBytes.Span);
+            Assert.StartsWith("Development on this library has shifted focus to the Azure Unified SDK.", readme);
         }
 
         [Fact]

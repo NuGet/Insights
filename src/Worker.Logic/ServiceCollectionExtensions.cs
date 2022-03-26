@@ -26,6 +26,7 @@ using NuGet.Insights.Worker.LoadPackageVersion;
 using NuGet.Insights.Worker.TableCopy;
 using NuGet.Insights.Worker.Workflow;
 using NuGet.Insights.Worker.ReferenceTracking;
+using NuGet.Insights.Worker.LoadPackageReadme;
 
 namespace NuGet.Insights.Worker
 {
@@ -127,6 +128,7 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddLoadPackageCertificate();
 #endif
             serviceCollection.AddLoadPackageManifest();
+            serviceCollection.AddLoadPackageReadme();
             serviceCollection.AddLoadPackageVersion();
             serviceCollection.AddTableCopy();
             serviceCollection.AddBuildVersionSet();
@@ -371,6 +373,11 @@ namespace NuGet.Insights.Worker
         private static void AddLoadPackageManifest(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddTransient<LoadPackageManifestDriver>();
+        }
+
+        private static void AddLoadPackageReadme(this IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddTransient<LoadPackageReadmeDriver>();
         }
 
         private static void AddLoadPackageVersion(this IServiceCollection serviceCollection)

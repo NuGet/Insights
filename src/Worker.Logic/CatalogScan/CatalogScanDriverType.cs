@@ -34,6 +34,13 @@ namespace NuGet.Insights.Worker
         LoadPackageManifest,
 
         /// <summary>
+        /// Implemented by <see cref="LoadPackageReadme.LoadPackageReadmeDriver"/>. Downloads the README from the
+        /// V3 flat container and stores it in Azure Table Storage for other drivers to use. If configured, it also
+        /// attempts to download the legacy README from another storage location if the README is not embedded.
+        /// </summary>
+        LoadPackageReadme,
+
+        /// <summary>
         /// Implemented by <see cref="LoadPackageVersion.LoadPackageVersionDriver"/>. Determines the deleted, listed,
         /// and SemVer status for every package version and stores it in Azure Table Storage for other drivers to use.
         /// </summary>

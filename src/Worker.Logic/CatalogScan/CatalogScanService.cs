@@ -142,6 +142,7 @@ namespace NuGet.Insights.Worker
 
                 case CatalogScanDriverType.LoadPackageArchive:
                 case CatalogScanDriverType.LoadPackageManifest:
+                case CatalogScanDriverType.LoadPackageReadme:
                 case CatalogScanDriverType.LoadPackageVersion:
                     return true;
 
@@ -261,6 +262,7 @@ namespace NuGet.Insights.Worker
                 case CatalogScanDriverType.LoadLatestPackageLeaf:
                 case CatalogScanDriverType.LoadPackageArchive:
                 case CatalogScanDriverType.LoadPackageManifest:
+                case CatalogScanDriverType.LoadPackageReadme:
                 case CatalogScanDriverType.LoadPackageVersion:
                     return await UpdateAsync(
                         driverType,

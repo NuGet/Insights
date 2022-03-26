@@ -194,7 +194,7 @@ namespace NuGet.Insights
             public ILookup<string, string>? HttpHeaders { get; set; }
 
             [Key(3)]
-            public Memory<byte>? ReadmeBytes { get; set; }
+            public Memory<byte> ReadmeBytes { get; set; }
         }
     }
 }
