@@ -55,34 +55,7 @@ namespace NuGet.Insights.Worker
                     It.IsAny<StorageSourceOptions>()))
                 .Returns<string, KustoIngestionProperties, StorageSourceOptions>(async (u, p, o) =>
                 {
-                    var account = CloudStorageAccount.Parse(TestSettings.StorageConnectionString);
-                    var client = account.CreateCloudTableClient();
-                    var writeTable = client.GetTableReference(StoragePrefix + "1kir1");
-                    await writeTable.CreateIfNotExistsAsync();
-                    await writeTable.ExecuteAsync(TableOperation.Insert(new IngestionStatus(o.SourceId)
-                    {
-                        Status = Status.Succeeded,
-                        UpdatedOn = DateTime.UtcNow,
-                    }));
-
-                    string sas;
-                    if (account.Credentials.IsSAS)
-                    {
-                        sas = account.Credentials.SASToken;
-                    }
-                    else
-                    {
-                        // Workaround for https://github.com/Azure/Azurite/issues/959
-                        sas = writeTable.GetSharedAccessSignature(new SharedAccessTablePolicy
-                        {
-                            Permissions = SharedAccessTablePermissions.Query,
-                            SharedAccessExpiryTime = DateTimeOffset.UtcNow.AddDays(7),
-                        });
-                    }
-
-                    var tableUri = new UriBuilder(writeTable.Uri) { Query = sas };
-                    var readTable = new CloudTable(tableUri.Uri);
-                    return new TableReportIngestionResult(readTable);
+                    return await MakeTableReportIngestionResultAsync(o, Status.Succeeded);
                 });
             MockCslQueryProvider = new Mock<ICslQueryProvider>();
             MockCslQueryProvider
@@ -316,6 +289,38 @@ namespace NuGet.Insights.Worker
         protected async Task AssertCompactAsync<T>(string containerName, string testName, string stepName, int bucket, string fileName = null) where T : ICsvRecord
         {
             await AssertCsvBlobAsync<T>(containerName, testName, stepName, fileName, $"compact_{bucket}.csv.gz");
+        }
+
+        public async Task<IKustoIngestionResult> MakeTableReportIngestionResultAsync(StorageSourceOptions options, Status status)
+        {
+            var account = CloudStorageAccount.Parse(TestSettings.StorageConnectionString);
+            var client = account.CreateCloudTableClient();
+            var writeTable = client.GetTableReference(StoragePrefix + "1kir1");
+            await writeTable.CreateIfNotExistsAsync();
+            await writeTable.ExecuteAsync(TableOperation.Insert(new IngestionStatus(options.SourceId)
+            {
+                Status = status,
+                UpdatedOn = DateTime.UtcNow,
+            }));
+
+            string sas;
+            if (account.Credentials.IsSAS)
+            {
+                sas = account.Credentials.SASToken;
+            }
+            else
+            {
+                // Workaround for https://github.com/Azure/Azurite/issues/959
+                sas = writeTable.GetSharedAccessSignature(new SharedAccessTablePolicy
+                {
+                    Permissions = SharedAccessTablePermissions.Query,
+                    SharedAccessExpiryTime = DateTimeOffset.UtcNow.AddDays(7),
+                });
+            }
+
+            var tableUri = new UriBuilder(writeTable.Uri) { Query = sas };
+            var readTable = new CloudTable(tableUri.Uri);
+            return new TableReportIngestionResult(readTable);
         }
 
         protected static SortedDictionary<string, List<string>> NormalizeHeaders(ILookup<string, string> headers)

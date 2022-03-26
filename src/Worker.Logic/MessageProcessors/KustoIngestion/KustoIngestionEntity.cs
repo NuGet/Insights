@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -30,6 +30,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         public ETag ETag { get; set; }
 
         public string StorageSuffix { get; set; }
+        public int AttemptCount { get; set; }
         public KustoIngestionState State { get; set; }
         public DateTimeOffset Created { get; set; }
         public DateTimeOffset? Started { get; set; }
