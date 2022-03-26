@@ -131,6 +131,7 @@ namespace NuGet.Insights.Worker
 #endif
                 case CatalogScanDriverType.PackageSignatureToCsv:
                 case CatalogScanDriverType.PackageManifestToCsv:
+                case CatalogScanDriverType.PackageReadmeToCsv:
                 case CatalogScanDriverType.PackageVersionToCsv:
 #if ENABLE_NPE
                 case CatalogScanDriverType.NuGetPackageExplorerToCsv:
@@ -245,6 +246,7 @@ namespace NuGet.Insights.Worker
 #endif
                 case CatalogScanDriverType.PackageSignatureToCsv:
                 case CatalogScanDriverType.PackageManifestToCsv:
+                case CatalogScanDriverType.PackageReadmeToCsv:
                 case CatalogScanDriverType.PackageVersionToCsv:
 #if ENABLE_NPE
                 case CatalogScanDriverType.NuGetPackageExplorerToCsv:

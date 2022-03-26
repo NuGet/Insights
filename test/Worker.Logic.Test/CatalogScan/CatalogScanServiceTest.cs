@@ -473,6 +473,18 @@ namespace NuGet.Insights.Worker
             },
 
             {
+                CatalogScanDriverType.PackageReadmeToCsv,
+                new DriverInfo
+                {
+                    DefaultMin = CatalogClient.NuGetOrgMinDeleted,
+                    SetDependencyCursorAsync = async (self, x) =>
+                    {
+                        await self.SetCursorAsync(CatalogScanDriverType.LoadPackageReadme, x);
+                    },
+                }
+            },
+
+            {
                 CatalogScanDriverType.PackageVersionToCsv,
                 new DriverInfo
                 {

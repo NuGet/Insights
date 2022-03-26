@@ -87,6 +87,10 @@ namespace NuGet.Insights.Worker
                 new[] { CatalogScanDriverType.LoadPackageManifest }
             },
             {
+                CatalogScanDriverType.PackageReadmeToCsv,
+                new[] { CatalogScanDriverType.LoadPackageReadme }
+            },
+            {
                 CatalogScanDriverType.PackageVersionToCsv,
                 new[] { CatalogScanDriverType.LoadPackageVersion }
             },

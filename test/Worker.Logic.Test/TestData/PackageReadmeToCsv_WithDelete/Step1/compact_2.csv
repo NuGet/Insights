@@ -1,0 +1,6 @@
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Size,LastModified,SHA256,Content
+,,behaviorsample,behaviorsample/1.0.0,BehaviorSample,1.0.0,2020-12-20T02:39:03.372413Z,2020-12-20T02:35:15.58Z,Embedded,48,2021-01-14T20:00:00Z,7xige+pW0rIfUinunqBuVXzLZ8TUs9uaeknBIjVsDHU=,"# Example README
+
+This is an example readme.
+"
+,,nut.mediatr.servicelike.dependencyinjection,nut.mediatr.servicelike.dependencyinjection/0.0.0-preview.0.44,Nut.MediatR.ServiceLike.DependencyInjection,0.0.0-preview.0.44,2020-12-20T02:37:52.9649363Z,2020-12-20T02:35:16.043Z,None,,,,

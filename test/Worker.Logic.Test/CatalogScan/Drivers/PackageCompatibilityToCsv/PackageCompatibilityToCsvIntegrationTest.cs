@@ -79,7 +79,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 
                 // Assert
                 await AssertOutputAsync(PackageCompatibilityToCsv_WithManyAssetsDir, Step1, 0);
-                await AssertBlobCountAsync(Options.Value.PackageCompatibilityContainerName, 1);
+                await AssertBlobCountAsync(DestinationContainerName, 1);
             }
         }
 
@@ -107,7 +107,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 
                 // Assert
                 await AssertOutputAsync(PackageCompatibilityToCsv_WithUnsupportedDir, Step1, 0);
-                await AssertBlobCountAsync(Options.Value.PackageCompatibilityContainerName, 1);
+                await AssertBlobCountAsync(DestinationContainerName, 1);
             }
         }
 

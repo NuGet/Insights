@@ -1,0 +1,108 @@
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Size,LastModified,SHA256,Content
+,,syncfusion.edit.wpf,syncfusion.edit.wpf/19.4.0.56,Syncfusion.Edit.WPF,19.4.0.56,2022-03-14T23:06:36.1633247Z,2022-03-14T23:03:56.52Z,Embedded,6499,2022-03-14T23:06:30Z,N6gKdgwDgcFFGcmDHC4495xRPEb9CLd1LRAimzlHX0M=,"Syncfusion [Syntax Editor](https://www.syncfusion.com/wpf-controls/syntax-editor?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget) for WPF helps you create interactive code editor applications with syntax highlighting features. It provides all basic editing and clipboard operations such as select all, cut, copy, paste, undo, and redo.
+
+## Key features:
+* Basic editing: Allows users to modify and edit text documents and source code files. It supports all common editing operations such as select, cut, copy, paste, select all, and delete.
+* File support: Allows users to open supported file types, make necessary changes, and save them back to the same file type or a different one. It supports all file operations such as create new, open, and save.
+* Syntax highlighting: Highlights content based on the selected language. It provides built-in support for programming languages such as C#, Visual Basic, XAML, and XML.
+* Custom language support: Extends support for user-defined language configurations. Custom language configurations can be created easily and applied to content in the syntax editor.
+* Undo and redo support: Allows users to cancel or apply changes made to the content in the order in which they were performed. Undo and redo can be performed using the built-in context menu or keyboard shortcuts.
+* Line number support: Displays line numbers for text in the syntax editor for easy reference. This feature can be enabled or disabled.
+* Expand and collapse support: Outline program code and expand or collapse the text within blocks to enhance readability.
+* Read-only mode: Displays contents of a file or source code files and prevents users from editing them.
+* Editing commands: Provides built-in RoutedUICommands to perform various edit operations externally using command bindings.
+
+## Related links
+[Learn More about WPF Syntax Editor](https://www.syncfusion.com/wpf-controls/syntax-editor?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget)
+
+[Documentation](https://help.syncfusion.com/wpf/syntax-editor/overview?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget)
+
+[Release History](https://help.syncfusion.com/wpf/release-notes/v19.4.0.56?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget)
+
+[Online Demos](https://github.com/syncfusion/wpf-demos?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget)
+
+[Contact Support](https://www.syncfusion.com/support/directtrac/incidents/newincident/?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget)
+
+[Suggest a feature or report a bug](https://www.syncfusion.com/feedback/wpf?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget)
+
+[Pricing](https://www.syncfusion.com/sales/products/wpf?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget)
+
+## About Syncfusion
+Founded in 2001 and headquartered in Research Triangle Park, N.C., Syncfusion has more than 26,000+ customers and more than 1 million users, including large financial institutions, Fortune 500 companies, and global IT consultancies.
+
+Today, we provide 1600+ components and frameworks for web ([Blazor](https://www.syncfusion.com/blazor-components?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget), [ASP.NET Core](https://www.syncfusion.com/aspnet-core-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget), [ASP.NET MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget), [ASP.NET WebForms](https://www.syncfusion.com/jquery/aspnet-webforms-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget), [JavaScript](https://www.syncfusion.com/javascript-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget), [Angular](https://www.syncfusion.com/angular-ui-components?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget), [React](https://www.syncfusion.com/react-ui-components?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget), [Vue](https://www.syncfusion.com/vue-ui-components?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget), and [Flutter](https://www.syncfusion.com/flutter-widgets?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget)), mobile ([Xamarin](https://www.syncfusion.com/xamarin-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget), [Flutter](https://www.syncfusion.com/flutter-widgets?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget), [UWP](https://www.syncfusion.com/uwp-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget), and [JavaScript](https://www.syncfusion.com/javascript-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget)), and desktop development ([WinForms](https://www.syncfusion.com/winforms-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget), [WPF](https://www.syncfusion.com/wpf-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget), [WinUI](https://www.syncfusion.com/winui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget), [Flutter](https://www.syncfusion.com/flutter-widgets?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget) and [UWP](https://www.syncfusion.com/uwp-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget)). We provide ready-to-deploy enterprise software for dashboards, reports, data integration, and big data processing. Many customers have saved millions in licensing fees by deploying our software.
+
+
+This is a commercial product and requires a paid license for possession or use. Syncfusion’s licensed software, including this component, is subject to the terms and conditions of [Syncfusion's EULA](https://www.syncfusion.com/eula/es/?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget). To acquire a license, you can purchase one [here]( https://www.syncfusion.com/sales/products?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget) or start a free 30-day trial [here](https://www.syncfusion.com/account/manage-trials/start-trials?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget).
+
+___
+
+[sales@syncfusion.com](mailto:sales@syncfusion.com?Subject=Syncfusion%20Edit%20WPF-%20NuGet) | [www.syncfusion.com](https://www.syncfusion.com?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-edit-nuget) | Toll Free: 1-888-9 DOTNET
+
+
+"
+,,syncfusion.gauge.wpf,syncfusion.gauge.wpf/19.4.0.56,Syncfusion.Gauge.WPF,19.4.0.56,2022-03-14T23:06:36.1633247Z,2022-03-14T23:02:31.97Z,None,,,,
+,,syncfusion.sftextinputlayout.wpf,syncfusion.sftextinputlayout.wpf/19.4.0.56,Syncfusion.SfTextInputLayout.WPF,19.4.0.56,2022-03-14T23:06:36.1633247Z,2022-03-14T23:03:38.017Z,Embedded,5452,2022-03-14T23:06:11Z,xkjVci44ADSfrqNsb5EqCgg4MaYhJ/6MCWuOMmtQ9oc=,"Text input control - Decorates the text box with leading and trailing icons, and assistive labels such as floating hint label, counter label, error, and help text.
+
+This package contains common classes and interfaces that are used to decorates the text box with leading and trailing icons, and assistive labels such as floating hint label, counter label, error, and help text.
+
+## Related links
+[Learn More about WPF Text Input Layout Control](https://www.syncfusion.com/wpf-controls/text-input-layout?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget)
+
+[Documentation]( https://help.syncfusion.com/wpf/text-input-layout/overview?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget)
+
+[Release History](https://help.syncfusion.com/wpf/release-notes/v19.4.0.56?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget)
+
+[Online Demos](https://github.com/syncfusion/wpf-demos?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget)
+
+[Contact Support](https://www.syncfusion.com/support/directtrac/incidents/newincident/?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget)
+
+[Suggest a feature or report a bug](https://www.syncfusion.com/feedback/wpf?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget)
+
+[Pricing](https://www.syncfusion.com/sales/products/wpf?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget)
+
+## About Syncfusion
+Founded in 2001 and headquartered in Research Triangle Park, N.C., Syncfusion has more than 26,000+ customers and more than 1 million users, including large financial institutions, Fortune 500 companies, and global IT consultancies.
+
+Today, we provide 1600+ components and frameworks for web ([Blazor](https://www.syncfusion.com/blazor-components?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget), [ASP.NET Core](https://www.syncfusion.com/aspnet-core-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget), [ASP.NET MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget), [ASP.NET WebForms](https://www.syncfusion.com/jquery/aspnet-webforms-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget), [JavaScript](https://www.syncfusion.com/javascript-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget), [Angular](https://www.syncfusion.com/angular-ui-components?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget), [React](https://www.syncfusion.com/react-ui-components?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget), [Vue](https://www.syncfusion.com/vue-ui-components?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget), and [Flutter](https://www.syncfusion.com/flutter-widgets?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget)), mobile ([Xamarin](https://www.syncfusion.com/xamarin-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget), [Flutter](https://www.syncfusion.com/flutter-widgets?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget), [UWP](https://www.syncfusion.com/uwp-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget), and [JavaScript](https://www.syncfusion.com/javascript-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget)), and desktop development ([WinForms](https://www.syncfusion.com/winforms-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget), [WPF](https://www.syncfusion.com/wpf-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget), [WinUI](https://www.syncfusion.com/winui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget), [Flutter](https://www.syncfusion.com/flutter-widgets?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget) and [UWP](https://www.syncfusion.com/uwp-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget)). We provide ready-to-deploy enterprise software for dashboards, reports, data integration, and big data processing. Many customers have saved millions in licensing fees by deploying our software.
+
+
+This is a commercial product and requires a paid license for possession or use. Syncfusion’s licensed software, including this component, is subject to the terms and conditions of [Syncfusion's EULA](https://www.syncfusion.com/eula/es/?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget). To acquire a license, you can purchase one [here]( https://www.syncfusion.com/sales/products?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget) or start a free 30-day trial [here](https://www.syncfusion.com/account/manage-trials/start-trials?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget).
+
+___
+
+[sales@syncfusion.com](mailto:sales@syncfusion.com?Subject=Syncfusion%20TextInputLayout%20WPF-%20NuGet) | [www.syncfusion.com](https://www.syncfusion.com?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-text-input-layout-nuget) | Toll Free: 1-888-9 DOTNET
+
+
+"
+,,syncfusion.shared.wpf.classic,syncfusion.shared.wpf.classic/19.4.0.56,Syncfusion.Shared.WPF.Classic,19.4.0.56,2022-03-14T23:06:07.7549588Z,2022-03-14T23:03:28.63Z,Embedded,5137,2022-03-14T23:05:40Z,Cjmv6ZDiRjFYTRRQ7dJdFoWohKZhlc0A1gBxrb+KO0g=,"This package provides theme XAML files for SkinStorage based themes (Blend, Metro, Office2007, VS2010), and controls (SpellChecker, VistaWindow, SkinPicker) marked as classic in Essential Studio for WPF.
+
+## Related links
+[Learn More about WPF UI Controls](https://www.syncfusion.com/wpf-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget)
+
+[Documentation](https://help.syncfusion.com/wpf/overview?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget)
+
+[Release History](https://help.syncfusion.com/wpf/release-notes/v19.4.0.56?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget)
+
+[Online Demos](https://github.com/syncfusion/wpf-demos?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget)
+
+[Contact Support](https://www.syncfusion.com/support/directtrac/incidents/newincident/?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget)
+
+[Suggest a feature or report a bug](https://www.syncfusion.com/feedback/wpf?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget)
+
+[Pricing](https://www.syncfusion.com/sales/products/wpf?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget)
+
+## About Syncfusion
+Founded in 2001 and headquartered in Research Triangle Park, N.C., Syncfusion has more than 26,000+ customers and more than 1 million users, including large financial institutions, Fortune 500 companies, and global IT consultancies.
+
+Today, we provide 1600+ components and frameworks for web ([Blazor](https://www.syncfusion.com/blazor-components?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget), [ASP.NET Core](https://www.syncfusion.com/aspnet-core-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget), [ASP.NET MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget), [ASP.NET WebForms](https://www.syncfusion.com/jquery/aspnet-webforms-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget), [JavaScript](https://www.syncfusion.com/javascript-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget), [Angular](https://www.syncfusion.com/angular-ui-components?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget), [React](https://www.syncfusion.com/react-ui-components?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget), [Vue](https://www.syncfusion.com/vue-ui-components?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget), and [Flutter](https://www.syncfusion.com/flutter-widgets?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget)), mobile ([Xamarin](https://www.syncfusion.com/xamarin-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget), [Flutter](https://www.syncfusion.com/flutter-widgets?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget), [UWP](https://www.syncfusion.com/uwp-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget), and [JavaScript](https://www.syncfusion.com/javascript-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget)), and desktop development ([WinForms](https://www.syncfusion.com/winforms-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget), [WPF](https://www.syncfusion.com/wpf-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget), [WinUI](https://www.syncfusion.com/winui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget), [Flutter](https://www.syncfusion.com/flutter-widgets?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget) and [UWP](https://www.syncfusion.com/uwp-ui-controls?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget)). We provide ready-to-deploy enterprise software for dashboards, reports, data integration, and big data processing. Many customers have saved millions in licensing fees by deploying our software.
+
+
+This is a commercial product and requires a paid license for possession or use. Syncfusion’s licensed software, including this component, is subject to the terms and conditions of [Syncfusion's EULA](https://www.syncfusion.com/eula/es/?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget). To acquire a license, you can purchase one [here]( https://www.syncfusion.com/sales/products?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget) or start a free 30-day trial [here](https://www.syncfusion.com/account/manage-trials/start-trials?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget).
+
+___
+
+[sales@syncfusion.com](mailto:sales@syncfusion.com?Subject=Syncfusion%20SharedClassic%20WPF-%20NuGet) | [www.syncfusion.com](https://www.syncfusion.com?utm_source=nuget&utm_medium=listing&utm_campaign=wpf-shared-classic-nuget) | Toll Free: 1-888-9 DOTNET
+
+
+"
