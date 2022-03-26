@@ -24,6 +24,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         public DateTimeOffset? Timestamp { get; set; }
         public ETag ETag { get; set; }
 
+        public DateTimeOffset? Started { get; set; }
         public string IngestionId { get; set; }
         public string StorageSuffix { get; set; }
         public KustoBlobIngestionState State { get; set; }

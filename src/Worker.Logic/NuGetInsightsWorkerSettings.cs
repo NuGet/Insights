@@ -33,6 +33,7 @@ namespace NuGet.Insights.Worker
             OwnersToCsvFrequency = TimeSpan.FromHours(3);
             VerifiedPackagesToCsvFrequency = TimeSpan.FromHours(3);
             WorkflowFrequency = TimeSpan.FromDays(1);
+            KustoBlobIngestionTimeout = TimeSpan.FromHours(6);
 
             WorkQueueName = "work";
             ExpandQueueName = "expand";
@@ -100,6 +101,7 @@ namespace NuGet.Insights.Worker
         public TimeSpan OwnersToCsvFrequency { get; set; }
         public TimeSpan VerifiedPackagesToCsvFrequency { get; set; }
         public TimeSpan WorkflowFrequency { get; set; }
+        public TimeSpan KustoBlobIngestionTimeout { get; set; }
 
         public string WorkQueueName { get; set; }
         public string ExpandQueueName { get; set; }

@@ -54,6 +54,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
                 ingestion.Created = DateTimeOffset.UtcNow;
                 ingestion.State = KustoIngestionState.Expanding;
+                ingestion.AttemptCount = 1;
                 await _storageService.ReplaceIngestionAsync(ingestion);
             }
 
@@ -68,10 +69,31 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 await _storageService.ReplaceIngestionAsync(ingestion);
             }
 
+            if (ingestion.State == KustoIngestionState.Retrying)
+            {
+                var containers = await _storageService.GetContainersAsync(ingestion);
+                var retryContainers = containers.Where(x => x.State == KustoContainerIngestionState.Failed).ToList();
+
+                // Clean up any blob records (i.e. the failed/timed out ones that caused the retry) and restart the container.
+                foreach (var container in retryContainers)
+                {
+                    container.State = KustoContainerIngestionState.Created;
+
+                    var blobs = await _storageService.GetBlobsAsync(container);
+                    await _storageService.DeleteBlobsAsync(blobs);
+                }
+
+                await _storageService.ReplaceContainersAsync(retryContainers);
+
+                ingestion.State = KustoIngestionState.Enqueuing;
+                await _storageService.ReplaceIngestionAsync(ingestion);
+            }
+
             if (ingestion.State == KustoIngestionState.Enqueuing)
             {
                 var containers = await _storageService.GetContainersAsync(ingestion);
-                await _messageEnqueuer.EnqueueAsync(containers.Select(x => new KustoContainerIngestionMessage
+                var createdContainers = containers.Where(x => x.State == KustoContainerIngestionState.Created).ToList();
+                await _messageEnqueuer.EnqueueAsync(createdContainers.Select(x => new KustoContainerIngestionMessage
                 {
                     StorageSuffix = x.StorageSuffix,
                     ContainerName = x.GetContainerName(),
@@ -84,15 +106,33 @@ namespace NuGet.Insights.Worker.KustoIngestion
             if (ingestion.State == KustoIngestionState.Working)
             {
                 var containers = await _storageService.GetContainersAsync(ingestion);
-                int incompleteCount;
+                var incompleteCount = containers.Count(x => x.State != KustoContainerIngestionState.Complete && x.State != KustoContainerIngestionState.Failed);
+                var errorCount = containers.Count(x => x.State == KustoContainerIngestionState.Failed);
                 if (containers.Count == 0)
                 {
                     ingestion.State = KustoIngestionState.Finalizing;
                     await _storageService.ReplaceIngestionAsync(ingestion);
                 }
-                else if ((incompleteCount = containers.Count(x => x.State != KustoContainerIngestionState.Complete)) != 0)
+                else if (incompleteCount > 0)
                 {
                     _logger.LogInformation("There are {Count} containers still being ingested into Kusto.", incompleteCount);
+                    message.AttemptCount++;
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
+                    return;
+                }
+                else if (errorCount > 0)
+                {
+                    _logger.LogWarning("There are {Count} containers that could not be fully ingested into Kusto.", errorCount);
+
+                    if (ingestion.AttemptCount >= 5)
+                    {
+                        throw new InvalidOperationException($"At least one container failed to be ingested into Kusto, after {ingestion.AttemptCount} attempts.");
+                    }
+
+                    ingestion.AttemptCount++;
+                    ingestion.State = KustoIngestionState.Retrying;
+                    await _storageService.ReplaceIngestionAsync(ingestion);
+
                     message.AttemptCount++;
                     await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
                     return;

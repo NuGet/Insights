@@ -11,5 +11,6 @@ namespace NuGet.Insights.Worker.KustoIngestion
         Enqueuing,
         Working,
         Complete,
+        Failed,
     }
 }
