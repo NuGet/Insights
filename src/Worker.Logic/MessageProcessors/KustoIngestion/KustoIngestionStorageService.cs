@@ -143,7 +143,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
         public async Task ReplaceContainersAsync(IReadOnlyList<KustoContainerIngestion> containers)
         {
-            var storageSuffix = containers.Select(x => x.StorageSuffix).Single();
+            var storageSuffix = containers.Select(x => x.StorageSuffix).Distinct().Single();
             var table = await GetKustoIngestionTableAsync(storageSuffix);
 
             var batch = new MutableTableTransactionalBatch(table);
@@ -194,7 +194,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
         public async Task DeleteBlobsAsync(IReadOnlyList<KustoBlobIngestion> blobs)
         {
-            var storageSuffix = blobs.Select(x => x.StorageSuffix).Single();
+            var storageSuffix = blobs.Select(x => x.StorageSuffix).Distinct().Single();
             var table = await GetKustoIngestionTableAsync(storageSuffix);
 
             var batch = new MutableTableTransactionalBatch(table);

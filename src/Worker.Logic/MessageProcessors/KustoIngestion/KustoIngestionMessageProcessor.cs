@@ -76,11 +76,14 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 // Move the failed containers to the retrying state. This allows us to delete the blob records without
                 // having the containers accidentally move to the completed state when all blob records are gone.
                 var failedContainers = containers.Where(x => x.State == KustoContainerIngestionState.Failed).ToList();
-                foreach (var container in failedContainers)
+                if (failedContainers.Count > 0)
                 {
-                    container.State = KustoContainerIngestionState.Retrying;
+                    foreach (var container in failedContainers)
+                    {
+                        container.State = KustoContainerIngestionState.Retrying;
+                    }
+                    await _storageService.ReplaceContainersAsync(failedContainers);
                 }
-                await _storageService.ReplaceContainersAsync(failedContainers);
 
                 // Move the retrying containers to the created state after cleaning up any blob records  (i.e. the
                 // failed/timed out ones that caused the retry)
