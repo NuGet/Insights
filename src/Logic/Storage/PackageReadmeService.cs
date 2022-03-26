@@ -196,12 +196,5 @@ namespace NuGet.Insights
             [Key(3)]
             public Memory<byte>? ReadmeBytes { get; set; }
         }
-
-        public enum ReadmeType
-        {
-            None,
-            Legacy,
-            Embedded,
-        }
     }
 }
