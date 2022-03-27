@@ -32,6 +32,7 @@ param (
         "PackageIcons",
         "PackageManifests",
         "PackageOwners",
+        "PackageReadmes",
         "PackageSignatures",
         "PackageVersions",
         "PackageVulnerabilities",
@@ -67,6 +68,7 @@ $tableNameToContainerName = @{
     "PackageIcons"              = "packageicons";
     "PackageManifests"          = "packagemanifests";
     "PackageOwners"             = "packageowners";
+    "PackageReadmes"            = "packagereadmes";
     "PackageSignatures"         = "packagesignatures";
     "PackageVersions"           = "packageversions";
     "PackageVulnerabilities"    = "packagevulnerabilities";
@@ -175,7 +177,7 @@ foreach ($model in $models) {
     }
 
     if ($TableName -and $foundTableName -ne $TableName) {
-        Write-Warning "Skipping undesired table $tableName."
+        Write-Warning "Skipping undesired table $foundTableName."
         continue
     }
 

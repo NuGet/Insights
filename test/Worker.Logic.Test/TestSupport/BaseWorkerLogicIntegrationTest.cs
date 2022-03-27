@@ -128,6 +128,7 @@ namespace NuGet.Insights.Worker
             x.PackageAssetContainerName = $"{StoragePrefix}1fpa1";
             x.PackageAssemblyContainerName = $"{StoragePrefix}1fpi1";
             x.PackageManifestContainerName = $"{StoragePrefix}1pm2c1";
+            x.PackageReadmeContainerName = $"{StoragePrefix}1pmd2c1";
             x.PackageSignatureContainerName = $"{StoragePrefix}1fps1";
             x.CatalogLeafItemContainerName = $"{StoragePrefix}1fcli1";
             x.PackageDownloadContainerName = $"{StoragePrefix}1pd1";
@@ -458,13 +459,44 @@ namespace NuGet.Insights.Worker
                     return response;
                 }
 
+                if (req.RequestUri.AbsolutePath.EndsWith($"/{lowerId}.nuspec"))
+                {
+                    var newReq = Clone(req);
+                    newReq.RequestUri = new Uri($"http://localhost/{TestData}/{lowerId}.{lowerVersion}.nuspec");
+                    var response = await TestDataHttpClient.SendAsync(newReq);
+                    response.EnsureSuccessStatusCode();
+                    return response;
+                }
+
+                if (req.RequestUri.AbsolutePath.EndsWith($"{lowerId}/{lowerVersion}/readme"))
+                {
+                    var newReq = Clone(req);
+                    newReq.RequestUri = new Uri($"http://localhost/{TestData}/{lowerId}.{lowerVersion}.md");
+                    var response = await TestDataHttpClient.SendAsync(newReq);
+                    response.EnsureSuccessStatusCode();
+                    return response;
+                }
+
                 return null;
             };
 
-            var file = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.nupkg.testdata"))
+            var nupkgFile = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.nupkg.testdata"));
+            if (nupkgFile.Exists)
             {
-                LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z")
-            };
+                nupkgFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z");
+            }
+
+            var nuspecFile = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.nuspec"));
+            if (nuspecFile.Exists)
+            {
+                nuspecFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T19:00:00Z");
+            }
+
+            var readmeFile = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.md"));
+            if (readmeFile.Exists)
+            {
+                readmeFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T20:00:00Z");
+            }
         }
 
         protected async Task AssertWideEntityOutputAsync<T>(

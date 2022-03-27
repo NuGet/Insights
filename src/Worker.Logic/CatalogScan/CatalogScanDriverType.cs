@@ -34,6 +34,13 @@ namespace NuGet.Insights.Worker
         LoadPackageManifest,
 
         /// <summary>
+        /// Implemented by <see cref="LoadPackageReadme.LoadPackageReadmeDriver"/>. Downloads the README from the
+        /// V3 flat container and stores it in Azure Table Storage for other drivers to use. If configured, it also
+        /// attempts to download the legacy README from another storage location if the README is not embedded.
+        /// </summary>
+        LoadPackageReadme,
+
+        /// <summary>
         /// Implemented by <see cref="LoadPackageVersion.LoadPackageVersionDriver"/>. Determines the deleted, listed,
         /// and SemVer status for every package version and stores it in Azure Table Storage for other drivers to use.
         /// </summary>
@@ -95,9 +102,15 @@ namespace NuGet.Insights.Worker
         /// <summary>
         /// Implemented by <see cref="PackageManifestToCsv.PackageManifestToCsvDriver"/>. This driver reads all package
         /// manifests (a.k.a. .nuspec files) and dumps the metadata to CSV. This implementation uses NuGet's
-        /// <see cref="NuGet.Packaging.NuspecReader"/> to interpret the data as the NuGet client would.
+        /// <see cref="Packaging.NuspecReader"/> to interpret the data as the NuGet client would.
         /// </summary>
         PackageManifestToCsv,
+
+        /// <summary>
+        /// Implemented by <see cref="PackageReadmeToCsv.PackageReadmeToCsvDriver"/>. This driver reads all package
+        /// readmes and dumps the content and some metadata  to CSV.
+        /// </summary>
+        PackageReadmeToCsv,
 
         /// <summary>
         /// Implemented by <see cref="PackageVersionToCsv.PackageVersionToCsvDriver"/>. This driver determines the

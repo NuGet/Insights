@@ -53,6 +53,10 @@ namespace NuGet.Insights.Worker
                 new[] { FlatContainer }
             },
             {
+                CatalogScanDriverType.LoadPackageReadme,
+                new[] { FlatContainer }
+            },
+            {
                 CatalogScanDriverType.LoadPackageVersion,
                 new[] { FlatContainer }
             },
@@ -81,6 +85,10 @@ namespace NuGet.Insights.Worker
             {
                 CatalogScanDriverType.PackageManifestToCsv,
                 new[] { CatalogScanDriverType.LoadPackageManifest }
+            },
+            {
+                CatalogScanDriverType.PackageReadmeToCsv,
+                new[] { CatalogScanDriverType.LoadPackageReadme }
             },
             {
                 CatalogScanDriverType.PackageVersionToCsv,

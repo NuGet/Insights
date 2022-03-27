@@ -131,6 +131,7 @@ namespace NuGet.Insights.Worker
 #endif
                 case CatalogScanDriverType.PackageSignatureToCsv:
                 case CatalogScanDriverType.PackageManifestToCsv:
+                case CatalogScanDriverType.PackageReadmeToCsv:
                 case CatalogScanDriverType.PackageVersionToCsv:
 #if ENABLE_NPE
                 case CatalogScanDriverType.NuGetPackageExplorerToCsv:
@@ -142,6 +143,7 @@ namespace NuGet.Insights.Worker
 
                 case CatalogScanDriverType.LoadPackageArchive:
                 case CatalogScanDriverType.LoadPackageManifest:
+                case CatalogScanDriverType.LoadPackageReadme:
                 case CatalogScanDriverType.LoadPackageVersion:
                     return true;
 
@@ -244,6 +246,7 @@ namespace NuGet.Insights.Worker
 #endif
                 case CatalogScanDriverType.PackageSignatureToCsv:
                 case CatalogScanDriverType.PackageManifestToCsv:
+                case CatalogScanDriverType.PackageReadmeToCsv:
                 case CatalogScanDriverType.PackageVersionToCsv:
 #if ENABLE_NPE
                 case CatalogScanDriverType.NuGetPackageExplorerToCsv:
@@ -261,6 +264,7 @@ namespace NuGet.Insights.Worker
                 case CatalogScanDriverType.LoadLatestPackageLeaf:
                 case CatalogScanDriverType.LoadPackageArchive:
                 case CatalogScanDriverType.LoadPackageManifest:
+                case CatalogScanDriverType.LoadPackageReadme:
                 case CatalogScanDriverType.LoadPackageVersion:
                     return await UpdateAsync(
                         driverType,

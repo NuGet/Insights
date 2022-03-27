@@ -15,6 +15,7 @@ using NuGet.Insights.Worker.LoadPackageArchive;
 using NuGet.Insights.Worker.PackageCertificateToCsv;
 #endif
 using NuGet.Insights.Worker.LoadPackageManifest;
+using NuGet.Insights.Worker.LoadPackageReadme;
 using NuGet.Insights.Worker.LoadPackageVersion;
 #if ENABLE_NPE
 using NuGet.Insights.Worker.NuGetPackageExplorerToCsv;
@@ -27,6 +28,7 @@ using NuGet.Insights.Worker.PackageIconToCsv;
 using NuGet.Insights.Worker.PackageManifestToCsv;
 using NuGet.Insights.Worker.PackageSignatureToCsv;
 using NuGet.Insights.Worker.PackageVersionToCsv;
+using NuGet.Insights.Worker.PackageReadmeToCsv;
 
 namespace NuGet.Insights.Worker
 {
@@ -54,6 +56,8 @@ namespace NuGet.Insights.Worker
                     return _serviceProvider.GetRequiredService<LoadPackageArchiveDriver>();
                 case CatalogScanDriverType.LoadPackageManifest:
                     return _serviceProvider.GetRequiredService<LoadPackageManifestDriver>();
+                case CatalogScanDriverType.LoadPackageReadme:
+                    return _serviceProvider.GetRequiredService<LoadPackageReadmeDriver>();
                 case CatalogScanDriverType.LoadPackageVersion:
                     return _serviceProvider.GetRequiredService<LoadPackageVersionDriver>();
 #if ENABLE_CRYPTOAPI
@@ -97,6 +101,8 @@ namespace NuGet.Insights.Worker
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageSignature>>();
                 case CatalogScanDriverType.PackageManifestToCsv:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageManifestRecord>>();
+                case CatalogScanDriverType.PackageReadmeToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageReadme>>();
                 case CatalogScanDriverType.PackageVersionToCsv:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageVersionRecord>>();
 #if ENABLE_NPE

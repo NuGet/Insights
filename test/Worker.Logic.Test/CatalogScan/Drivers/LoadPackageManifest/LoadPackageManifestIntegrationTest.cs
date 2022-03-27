@@ -61,24 +61,7 @@ namespace NuGet.Insights.Worker.LoadPackageManifest
             public async Task Execute()
             {
                 // Arrange
-                HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
-                {
-                    if (req.RequestUri.AbsolutePath.EndsWith("/behaviorsample.nuspec"))
-                    {
-                        var newReq = Clone(req);
-                        newReq.RequestUri = new Uri($"http://localhost/{TestData}/behaviorsample.1.0.0.nuspec");
-                        return await TestDataHttpClient.SendAsync(newReq);
-                    }
-
-                    return null;
-                };
-
-                // Set the Last-Modified date for the etag
-                var file = new FileInfo(Path.Combine(TestData, "behaviorsample.1.0.0.nuspec"))
-                {
-                    LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z")
-                };
-
+                MakeDeletedPackageAvailable();
                 var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
                 var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
                 var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");

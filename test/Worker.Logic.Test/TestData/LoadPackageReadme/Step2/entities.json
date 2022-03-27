@@ -1,0 +1,150 @@
+[
+  {
+    "PartitionKey": "auxidus.framework.api",
+    "RowKey": "5.0.3322",
+    "Entity": {
+      "ReadmeType": "None",
+      "CommitTimestamp": "2022-03-14T23:06:07.7549588+00:00",
+      "HttpHeaders": null,
+      "ReadmeHash": null
+    }
+  },
+  {
+    "PartitionKey": "syncfusion.edit.wpf",
+    "RowKey": "19.4.0.56",
+    "Entity": {
+      "ReadmeType": "Embedded",
+      "CommitTimestamp": "2022-03-14T23:06:36.1633247+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "6499"
+        ],
+        "Content-MD5": [
+          "37moH2zEs00B5ai6KVPo1g=="
+        ],
+        "Content-Type": [
+          "binary/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8DA060F465B7B7F\u0022"
+        ],
+        "Last-Modified": [
+          "Mon, 14 Mar 2022 23:06:30 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ]
+      },
+      "ReadmeHash": "37a80a760c0381c14519c9831c2e38f79c513c46fd08b7752d10229b39475f43"
+    }
+  },
+  {
+    "PartitionKey": "syncfusion.gauge.wpf",
+    "RowKey": "19.4.0.56",
+    "Entity": {
+      "ReadmeType": "None",
+      "CommitTimestamp": "2022-03-14T23:06:36.1633247+00:00",
+      "HttpHeaders": null,
+      "ReadmeHash": null
+    }
+  },
+  {
+    "PartitionKey": "syncfusion.sftextinputlayout.wpf",
+    "RowKey": "19.4.0.56",
+    "Entity": {
+      "ReadmeType": "Embedded",
+      "CommitTimestamp": "2022-03-14T23:06:36.1633247+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "5452"
+        ],
+        "Content-MD5": [
+          "LiyZO0WgIkDtgVs95G3NZA=="
+        ],
+        "Content-Type": [
+          "binary/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8DA060F3B5C55CD\u0022"
+        ],
+        "Last-Modified": [
+          "Mon, 14 Mar 2022 23:06:11 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ]
+      },
+      "ReadmeHash": "c648d5722e3800349faea36c6f912a0a083831a62127fe8c096b8e326b50f687"
+    }
+  },
+  {
+    "PartitionKey": "syncfusion.shared.wpf.classic",
+    "RowKey": "19.4.0.56",
+    "Entity": {
+      "ReadmeType": "Embedded",
+      "CommitTimestamp": "2022-03-14T23:06:07.7549588+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "5137"
+        ],
+        "Content-MD5": [
+          "EGzBIASwLojUhkVz9vo\u002BJQ=="
+        ],
+        "Content-Type": [
+          "binary/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8DA060F287F1FCB\u0022"
+        ],
+        "Last-Modified": [
+          "Mon, 14 Mar 2022 23:05:40 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ]
+      },
+      "ReadmeHash": "0a39afe990e24631584d1450edd25d1685a884a66195cd00d60071adbf8a3b48"
+    }
+  },
+  {
+    "PartitionKey": "syncfusion.tools.wpf.classic",
+    "RowKey": "19.4.0.56",
+    "Entity": {
+      "ReadmeType": "Embedded",
+      "CommitTimestamp": "2022-03-14T23:06:07.7549588+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "5100"
+        ],
+        "Content-MD5": [
+          "v9JuFS4RC57kUf\u002Bfp0f8cA=="
+        ],
+        "Content-Type": [
+          "binary/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8DA060F354D9092\u0022"
+        ],
+        "Last-Modified": [
+          "Mon, 14 Mar 2022 23:06:01 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ]
+      },
+      "ReadmeHash": "7c6b9ca9d6178be6fce238ce5fd10240049777858df4ec4f1461a201b07d8e0d"
+    }
+  }
+]

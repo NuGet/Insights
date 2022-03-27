@@ -97,7 +97,7 @@ Ensure the driver can be activated by the catalog scan and admin interface. Upda
 1. Add your driver to the [`CatalogScanCursorService`](../src/Worker.Logic/CatalogScan/CatalogScanCursorService.cs) class.
    - Update the `Dependencies` static. This defines what cursors or other drivers your driver should block on before proceeding.
 1. If your driver implements `ICatalogLeafToCsvDriver<T>`:
-   - Add a CSV compact message schema name to [`SchemaSerializer`](../src/Worker.Logic/Serialization/SchemaSerializer.cs) like `cc.<abbreviation for your driver>`.
+   - Add a CSV compact message schema name to [`SchemaCollectionBuilder`](../src/Worker.Logic/Serialization/SchemaCollectionBuilder.cs) like `cc.<abbreviation for your driver>`.
 1. Add your driver to the `TypeToInfo` static in [`CatalogScanServiceTest.cs`](../test/Worker.Logic.Test/CatalogScan/CatalogScanServiceTest.cs).
    This determines the default catalog timestamp min value for your driver and implements a test function that forces
    your driver's dependency cursors to a specific timestamp.

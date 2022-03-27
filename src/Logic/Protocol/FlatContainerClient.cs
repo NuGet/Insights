@@ -72,6 +72,20 @@ namespace NuGet.Insights
             return url;
         }
 
+        public async Task<string> GetPackageReadmeUrlAsync(string id, string version)
+        {
+            var baseUrl = await GetBaseUrlAsync();
+            return GetPackageReadmeUrl(baseUrl, id, version);
+        }
+
+        public string GetPackageReadmeUrl(string baseUrl, string id, string version)
+        {
+            var lowerId = id.ToLowerInvariant();
+            var lowerVersion = NuGetVersion.Parse(version).ToNormalizedString().ToLowerInvariant();
+            var url = $"{baseUrl.TrimEnd('/')}/{lowerId}/{lowerVersion}/readme";
+            return url;
+        }
+
         public async Task<(ILookup<string, string> Headers, TempStreamResult Body)?> DownloadPackageContentToFileAsync(string id, string version, CancellationToken token)
         {
             var url = await GetPackageContentUrlAsync(id, version);

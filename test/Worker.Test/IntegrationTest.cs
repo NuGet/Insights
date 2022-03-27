@@ -347,6 +347,12 @@ namespace NuGet.Insights.Worker
 
                 var startingNuspecRequestCount = GetNuspecRequestCount();
 
+                // Load the readmes
+                var loadPackageReadme = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageReadme, max1);
+                await UpdateAsync(loadPackageReadme.Scan);
+
+                var startingReadmeRequestCount = GetNuspecRequestCount();
+
                 // Load latest package leaves
                 var loadLatestPackageLeaf = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadLatestPackageLeaf, max1);
                 await UpdateAsync(loadLatestPackageLeaf.Scan);
@@ -392,6 +398,7 @@ namespace NuGet.Insights.Worker
 
                 var finalNupkgRequestCount = GetNupkgRequestCount();
                 var finalNuspecRequestCount = GetNuspecRequestCount();
+                var finalReadmeRequestCount = GetNuspecRequestCount();
 
                 // Assert
                 var rawMessageEnqueuer = Host.Services.GetRequiredService<IRawMessageEnqueuer>();
@@ -405,8 +412,10 @@ namespace NuGet.Insights.Worker
 
                 Assert.NotEqual(0, startingNupkgRequestCount);
                 Assert.NotEqual(0, startingNuspecRequestCount);
+                Assert.NotEqual(0, startingReadmeRequestCount);
                 Assert.Equal(startingNupkgRequestCount, finalNupkgRequestCount);
                 Assert.Equal(startingNuspecRequestCount, finalNuspecRequestCount);
+                Assert.Equal(startingReadmeRequestCount, finalReadmeRequestCount);
 
                 var userAgents = HttpMessageHandlerFactory.Requests.Select(r => r.Headers.UserAgent.ToString()).Distinct();
                 var userAgent = Assert.Single(userAgents);

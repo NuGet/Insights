@@ -35,6 +35,11 @@ namespace NuGet.Insights
             public const string NuGet_Versioning_4_3_0 = "NuGet.Versioning.4.3.0.nuspec";
         }
 
+        public static class READMEs
+        {
+            public const string WindowsAzure_Storage_9_3_3 = "WindowsAzure.Storage.9.3.3.md";
+        }
+
         public static MemoryStream LoadMemoryStream(string resourceName)
         {
             using (var fileStream = GetFileStream(resourceName))

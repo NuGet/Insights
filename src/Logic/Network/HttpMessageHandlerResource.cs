@@ -9,7 +9,7 @@ namespace NuGet.Insights
 {
     /// <summary>
     /// An implementation of <see cref="HttpMessageHandler"/> that does not require provide an
-    /// <see cref="HttpClientHandler"/>, since this type is not needed for <see cref="NuGet.Protocol.HttpSource"/>.
+    /// <see cref="HttpClientHandler"/>, since this type is not needed for <see cref="Protocol.HttpSource"/>.
     /// </summary>
     public class HttpMessageHandlerResource : HttpHandlerResource
     {

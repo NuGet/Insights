@@ -192,6 +192,7 @@ The current drivers for analyzing NuGet.org packages are:
 - [`PackageCompatibilityToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageCompatibilityToCsv/PackageCompatibilityToCsvDriver.cs) - determine package compatibility with several algorithms
 - [`PackageIconToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageIconToCsv/PackageIconToCsvDriver.cs) - get image metadata for embedded icons and icons from URLs 
 - [`PackageManifestToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageManifestToCsv/PackageManifestToCsvDriver.cs) - extract known data from the .nuspec
+- [`PackageReadmeToCsvDriver`](src/Worker.Logic/CatalogScan/Drivers/PackageReadmeToCsv/PackageReadmeToCsvDriver.cs) - extract package README metadata and content
 - [`PackageSignatureToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageSignatureToCsv/PackageSignatureToCsvDriver.cs) - parse the NuGet package signature
 - [`PackageVersionToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageVersionToCsv/PackageVersionToCsvDriver.cs) - determine latest version per package ID
 
@@ -201,6 +202,7 @@ Several other supporting drivers exist to populate storage with intermediate res
 - [`LoadLatestPackageLeaf`](src/Worker.Logic/CatalogScan/Drivers/LoadLatestPackageLeaf) - write the latest catalog leaf to Table Storage
 - [`LoadPackageArchive`](src/Worker.Logic/CatalogScan/Drivers/LoadPackageArchive/LoadPackageArchiveDriver.cs) - fetch information from the .nupkg and put it in Table Storage
 - [`LoadPackageManifest`](src/Worker.Logic/CatalogScan/Drivers/LoadPackageManifest/LoadPackageManifestDriver.cs) - fetch the .nuspec and put it in Table Storage
+- [`LoadPackageReadmeDriver`](src/Worker.Logic/CatalogScan/Drivers/LoadPackageReadme/LoadPackageReadmeDriver.cs) - download package READMEs and put them in Table Storage
 - [`LoadPackageVersion`](src/Worker.Logic/CatalogScan/Drivers/LoadPackageVersion/LoadPackageVersionDriver.cs) - determine listed and SemVer status and put it in Table Storage
 
 Several message processors exist to emit other useful data:
