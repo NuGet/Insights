@@ -10,8 +10,6 @@ param keyVaultName string
 param deploymentContainerName string
 param leaseContainerName string
 
-param tableSasDefinitionName string
-
 param websiteName string
 param websitePlanId string = 'new'
 param websitePlanName string = 'default'
@@ -59,16 +57,8 @@ var sharedConfig = [
     value: leaseContainerName
   }
   {
-    name: 'NuGet.Insights:KeyVaultName'
-    value: keyVaultName
-  }
-  {
     name: 'NuGet.Insights:StorageAccountName'
     value: storageAccountName
-  }
-  {
-    name: 'NuGet.Insights:TableSharedAccessSignatureSecretName'
-    value: '${storageAccountName}-${tableSasDefinitionName}'
   }
   {
     // See: https://github.com/projectkudu/kudu/wiki/Configurable-settings#ensure-update-site-and-update-siteconfig-to-take-effect-synchronously 
@@ -444,7 +434,7 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
   }
 }]
 
-resource blobPermissions 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = [for i in range(0, workerCount + 1): {
+resource blobPermissions 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = [for i in range(0, workerCount + 1): {
   name: guid('FunctionsCanAccessBlob-${i == 0 ? website.id : workers[max(0, i - 1)].id}')
   scope: storageAccount
   properties: {
@@ -454,11 +444,21 @@ resource blobPermissions 'Microsoft.Authorization/roleAssignments@2020-04-01-pre
   }
 }]
 
-resource queuePermissions 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = [for i in range(0, workerCount + 1): {
+resource queuePermissions 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = [for i in range(0, workerCount + 1): {
   name: guid('FunctionsCanAccessQueue-${i == 0 ? website.id : workers[max(0, i - 1)].id}')
   scope: storageAccount
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')
+    principalId: i == 0 ? website.identity.principalId : workers[max(0, i - 1)].identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}]
+
+resource tablePermissions 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = [for i in range(0, workerCount + 1): {
+  name: guid('FunctionsCanAccessTable-${i == 0 ? website.id : workers[max(0, i - 1)].id}')
+  scope: storageAccount
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3')
     principalId: i == 0 ? website.identity.principalId : workers[max(0, i - 1)].identity.principalId
     principalType: 'ServicePrincipal'
   }

@@ -21,8 +21,6 @@ namespace NuGet.Insights
             OwnersV2Url = null;
             StorageAccountName = null;
             StorageBlobReadSharedAccessSignature = null;
-            KeyVaultName = null;
-            TableSharedAccessSignatureSecretName = null;
             StorageConnectionString = StorageUtility.EmulatorConnectionString;
             LeaseContainerName = "leases";
             PackageArchiveTableName = "packagearchives";
@@ -51,8 +49,6 @@ namespace NuGet.Insights
 
         public string StorageAccountName { get; set; }
         public string StorageBlobReadSharedAccessSignature { get; set; }
-        public string KeyVaultName { get; set; }
-        public string TableSharedAccessSignatureSecretName { get; set; }
         public string StorageConnectionString { get; set; }
 
         public string LeaseContainerName { get; set; }

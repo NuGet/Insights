@@ -43,7 +43,6 @@ New-Deployment `
     -ResourceGroupName $ResourceSettings.ResourceGroupName `
     -KeyVaultName $ResourceSettings.KeyVaultName `
     -StorageAccountName $ResourceSettings.StorageAccountName `
-    -TableSasDefinitionName $ResourceSettings.TableSasDefinitionName `
     -AutoRegenerateKey:$ResourceSettings.AutoRegenerateKey `
     -SasValidityPeriod $ResourceSettings.SasValidityPeriod
 
