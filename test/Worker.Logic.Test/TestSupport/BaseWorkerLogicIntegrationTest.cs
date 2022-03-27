@@ -480,20 +480,23 @@ namespace NuGet.Insights.Worker
                 return null;
             };
 
-            var nupkgFile = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.nupkg.testdata"))
+            var nupkgFile = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.nupkg.testdata"));
+            if (nupkgFile.Exists)
             {
-                LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z")
-            };
+                nupkgFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z");
+            }
 
-            var nuspecFile = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.nuspec"))
+            var nuspecFile = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.nuspec"));
+            if (nuspecFile.Exists)
             {
-                LastWriteTimeUtc = DateTime.Parse("2021-01-14T19:00:00Z")
-            };
+                nuspecFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T19:00:00Z");
+            }
 
-            var readmeFile = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.md"))
+            var readmeFile = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.md"));
+            if (readmeFile.Exists)
             {
-                LastWriteTimeUtc = DateTime.Parse("2021-01-14T20:00:00Z")
-            };
+                readmeFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T20:00:00Z");
+            }
         }
 
         protected async Task AssertWideEntityOutputAsync<T>(
