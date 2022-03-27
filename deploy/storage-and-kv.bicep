@@ -73,17 +73,6 @@ resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
   }
 }
 
-// Gives permissions to use secrets
-resource keyVaultReadSecretPermissions 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = [for identity in identities: {
-  name: !empty(identities) ? guid('AppsCanUseKeyVaultSecrets-${identity.tenantId}-${identity.objectId}') : guid('placeholderA')
-  scope: keyVault
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6')
-    principalId: identity.objectId
-    principalType: 'ServicePrincipal'
-  }
-}]
-
 // Gives permissions to read certificates
 resource keyVaultReadPermissions 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = [for identity in identities: {
   name: !empty(identities) ? guid('AppsCanReadKeyVault-${identity.tenantId}-${identity.objectId}') : guid('placeholderB')

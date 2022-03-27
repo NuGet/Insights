@@ -77,9 +77,6 @@ class ResourceSettings {
     [string]$KeyVaultName
     
     [ValidateNotNullOrEmpty()]
-    [string]$TableSasDefinitionName
-    
-    [ValidateNotNullOrEmpty()]
     [string]$DeploymentContainerName
     
     [ValidateNotNullOrEmpty()]
@@ -165,7 +162,6 @@ class ResourceSettings {
         $this.ExistingWebsitePlanId = $d.ExistingWebsitePlanId
 
         # Static settings
-        $this.TableSasDefinitionName = "TableFullAccessSas"
         $this.DeploymentContainerName = "deployment"
         $this.LeaseContainerName = "leases"
         $this.SasValidityPeriod = New-TimeSpan -Days 6
@@ -385,7 +381,6 @@ function New-MainParameters($ResourceSettings, $WebsiteZipUrl, $WorkerZipUrl) {
         keyVaultName                  = $ResourceSettings.KeyVaultName;
         deploymentContainerName       = $ResourceSettings.DeploymentContainerName;
         leaseContainerName            = $ResourceSettings.LeaseContainerName;
-        tableSasDefinitionName        = $ResourceSettings.TableSasDefinitionName;
         websiteName                   = $ResourceSettings.WebsiteName;
         websiteAadClientId            = $ResourceSettings.WebsiteAadAppClientId;
         websiteConfig                 = @($ResourceSettings.WebsiteConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);

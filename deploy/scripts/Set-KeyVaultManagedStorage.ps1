@@ -10,9 +10,6 @@ param (
     [string]$StorageAccountName,
     
     [Parameter(Mandatory = $true)]
-    [string]$TableSasDefinitionName,
-    
-    [Parameter(Mandatory = $true)]
     [switch]$AutoRegenerateKey,
 
     [Parameter(Mandatory = $true)]
@@ -125,28 +122,6 @@ if (!$matchingStorage) {
         }
     }
 }
-
-Write-Status "Generating a template SAS for '$TableSasDefinitionName'..."
-$storageContext = New-AzStorageContext `
-    -StorageAccountName $StorageAccountName `
-    -Protocol Https `
-    -StorageAccountKey $storageEmulatorKey
-$tableSasTemplate = New-AzStorageAccountSASToken `
-    -ExpiryTime (Get-Date "2010-01-01Z").ToUniversalTime() `
-    -Permission "rwdlacu" `
-    -ResourceType Service, Container, Object `
-    -Service Table `
-    -Protocol HttpsOnly `
-    -Context $storageContext
-    
-Write-Status "Creating SAS definition '$TableSasDefinitionName'..."
-Set-AzKeyVaultManagedStorageSasDefinition `
-    -VaultName $KeyVaultName `
-    -AccountName $StorageAccountName `
-    -Name $TableSasDefinitionName `
-    -ValidityPeriod $SasValidityPeriod `
-    -SasType 'account' `
-    -TemplateUri $tableSasTemplate | Out-Default
 
 Write-Status "Removing Key Vault role assignment for '$($currentUser.userPrincipalName)' (object ID $($currentUser.id))..."
 $attempt = 0
