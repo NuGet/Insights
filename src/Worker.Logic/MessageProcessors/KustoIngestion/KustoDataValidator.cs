@@ -50,11 +50,11 @@ namespace NuGet.Insights.Worker.KustoIngestion
             var validations = new ConcurrentBag<Validation>(Enumerable
                 .Empty<Validation>()
 #if ENABLE_CRYPTOAPI
-                .Concat(GetFingerprintValidations())
-                .Concat(GetFingerprintSHA256Validations())
+                .Concat(await GetFingerprintValidationsAsync())
+                .Concat(await GetFingerprintSHA256ValidationsAsync())
 #endif
-                .Concat(GetIdentityValidations())
-                .Concat(GetLowerIdValidations()));
+                .Concat(await GetIdentityValidationsAsync())
+                .Concat(await GetLowerIdValidationsAsync()));
 
             var failures = 0;
 
@@ -114,26 +114,33 @@ namespace NuGet.Insights.Worker.KustoIngestion
             }
         }
 
-        private IEnumerable<Validation> GetIdentityValidations()
+        private async Task<IReadOnlyList<Validation>> GetIdentityValidationsAsync()
         {
-            return GetSetValidations(nameof(PackageRecord.Identity), required: true);
+            return await GetSetValidationsAsync(nameof(PackageRecord.Identity), required: true);
         }
 
-        private IEnumerable<Validation> GetLowerIdValidations()
+        private async Task<IReadOnlyList<Validation>> GetLowerIdValidationsAsync()
         {
-            return GetSetValidations(nameof(PackageRecord.LowerId), required: true);
+            return await GetSetValidationsAsync(nameof(PackageRecord.LowerId), required: true);
         }
 
 #if ENABLE_CRYPTOAPI
-        private IEnumerable<Validation> GetFingerprintValidations()
+        private async Task<IReadOnlyList<Validation>> GetFingerprintValidationsAsync()
         {
-            return GetSetValidations(nameof(CertificateRecord.Fingerprint), required: false);
+            return await GetSetValidationsAsync(nameof(CertificateRecord.Fingerprint), required: false);
         }
 
-        private IEnumerable<Validation> GetFingerprintSHA256Validations()
+        private async Task<IReadOnlyList<Validation>> GetFingerprintSHA256ValidationsAsync()
         {
-            var leftTable = _containers.GetTempKustoTableName(_typeToStorage[typeof(PackageSignature)].ContainerName);
-            var rightTable = _containers.GetTempKustoTableName(_typeToStorage[typeof(CertificateRecord)].ContainerName);
+            var packageSignatureStorage = _typeToStorage[typeof(PackageSignature)];
+            var certificatesStorage = _typeToStorage[typeof(CertificateRecord)];
+            if (!await HasBlobsAsync(packageSignatureStorage) || !await HasBlobsAsync(certificatesStorage))
+            {
+                return Array.Empty<Validation>();
+            }
+
+            var leftTable = _containers.GetTempKustoTableName(packageSignatureStorage.ContainerName);
+            var rightTable = _containers.GetTempKustoTableName(certificatesStorage.ContainerName);
             var column = nameof(CertificateRecord.FingerprintSHA256Hex);
             var joinQuery = @$"{leftTable}
 | mv-expand {column} = pack_array(
@@ -145,18 +152,38 @@ namespace NuGet.Insights.Worker.KustoIngestion
 | distinct {column}
 | join kind=leftouter {rightTable}";
 
-            yield return GetLeftRightValidation(leftTable, rightTable, column, "left outer", joinQuery);
+            return new[] { GetLeftRightValidation(leftTable, rightTable, column, "left outer", joinQuery) };
         }
 #endif
 
-        private IEnumerable<Validation> GetSetValidations(string column, bool required)
+        private async Task<bool> HasBlobsAsync(ICsvResultStorage storage)
         {
-            var tables = _typeToStorage
-                .Values
+            var blobs = await _containers.GetBlobsAsync(storage.ContainerName);
+            return blobs.Count > 0;
+        }
+
+        private async Task<IReadOnlyList<Validation>> GetSetValidationsAsync(string column, bool required)
+        {
+            var storageWithBlobs = new List<ICsvResultStorage>();
+            foreach (var storage in _typeToStorage.Values)
+            {
+                if (await HasBlobsAsync(storage))
+                {
+                    storageWithBlobs.Add(storage);
+                }
+            }
+
+            var tables = storageWithBlobs
                 .Where(x => x.RecordType.GetProperty(column) != null)
                 .Select(x => _containers.GetTempKustoTableName(x.ContainerName))
                 .OrderBy(x => x, StringComparer.Ordinal)
                 .ToList();
+
+            if (tables.Count <= 1)
+            {
+                return Array.Empty<Validation>();
+            }
+
             var leftTable = tables.First();
             var validations = new List<Validation>();
 
@@ -169,8 +196,10 @@ namespace NuGet.Insights.Worker.KustoIngestion
     | distinct {column}
 )";
 
-                yield return GetLeftRightValidation(leftTable, rightTable, column, "full outer", joinQuery);
+                validations.Add(GetLeftRightValidation(leftTable, rightTable, column, "full outer", joinQuery));
             }
+
+            return validations;
         }
 
         private Validation GetLeftRightValidation(string leftTable, string rightTable, string column, string comparisonType, string joinQuery)
