@@ -21,8 +21,8 @@ namespace NuGet.Insights.Worker
             RecordCertificateStatusUpdateTimes = true;
             MoveTempToHome = false;
             DisabledDrivers = new List<CatalogScanDriverType>();
-            OldCatalogIndexScansToKeep = 9;
-            OldWorkflowRunsToKeep = 9;
+            OldCatalogIndexScansToKeep = 49;
+            OldWorkflowRunsToKeep = 49;
 
             AutoStartCatalogScanUpdate = false;
             AutoStartDownloadToCsv = false;
