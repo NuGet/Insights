@@ -3,7 +3,7 @@
     <ZipPublishDirAfterTargets Condition="'$(AzureFunctionsVersion)' != ''">_FunctionsPostPublish</ZipPublishDirAfterTargets>
     <ZipPublishDirAfterTargets Condition="'$(ZipPublishDirAfterTargets)' == ''">AfterPublish</ZipPublishDirAfterTargets>
   </PropertyGroup>
-  <Target Name="ZipPublishDir" AfterTargets="$(ZipPublishDirAfterTargets)">
+  <Target Name="ZipPublishDir" AfterTargets="$(ZipPublishDirAfterTargets)" Condition="'$(EnableZipPublish)' != 'false'">
     <MakeDir
       Directories="$(DeploymentDir)"/>
     <ZipDirectory

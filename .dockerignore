@@ -1,0 +1,12 @@
+.vs
+.github
+.pipelines
+artifacts
+deploy
+docs
+scripts
+test
+.editorconfig
+.gitignore
+Dockerfile
+README.md
