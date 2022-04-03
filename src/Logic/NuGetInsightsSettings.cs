@@ -32,7 +32,6 @@ namespace NuGet.Insights
             TimerTableName = "timers";
             OwnerToSubjectReferenceTableName = "refsownertosubject";
             SubjectToOwnerReferenceTableName = "refssubjecttoowner";
-            IsStorageContainerPublic = false;
             MaxTempMemoryStreamSize = 1024 * 1024 * 196;
             UserManagedIdentityClientId = null;
             TempDirectories = new List<TempStreamDirectory>
@@ -63,7 +62,6 @@ namespace NuGet.Insights
         public string TimerTableName { get; set; }
         public string OwnerToSubjectReferenceTableName { get; set; }
         public string SubjectToOwnerReferenceTableName { get; set; }
-        public bool IsStorageContainerPublic { get; set; }
         public int MaxTempMemoryStreamSize { get; set; }
         public string UserManagedIdentityClientId { get; set; }
         public List<TempStreamDirectory> TempDirectories { get; set; }

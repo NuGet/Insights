@@ -426,7 +426,7 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
           value: 'false'
         }
         {
-          name: 'StorageConnection__queueServiceUri'
+          name: 'QueueTriggerConnection__queueServiceUri'
           value: storageAccount.properties.primaryEndpoints.queue
         }
       ], sharedConfig, workerConfigWithStorage)

@@ -309,3 +309,6 @@ profile.arm.json
 .tools
 **/wwwroot/css/*.min.css
 **/wwwroot/js/*.min.js
+__azurite_db_*
+__blobstorage__
+__queuestorage__
