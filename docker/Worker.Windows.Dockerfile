@@ -15,15 +15,21 @@ ENV ASPNETCORE_URLS=http://+:80 `
     HOST_VERSION=4.3.0 `
     EnableZipPublish=false
 
-COPY . C:\app
+COPY . C:\src\app
 
-RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; `
+RUN mkdir C:\src\host | Out-Null; `
+    cd C:\src\host; `
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; `
     $BuildNumber = $Env:HOST_VERSION.split('.')[-1]; `
-    Invoke-WebRequest -OutFile host.zip https://github.com/Azure/azure-functions-host/archive/v$Env:HOST_VERSION.zip; `
+    $HostUrl = 'https://github.com/Azure/azure-functions-host/archive/v' + $Env:HOST_VERSION + '.zip'; `
+    Write-Host 'Downloading' $HostUrl; `
+    Invoke-WebRequest -OutFile host.zip $HostUrl; `
     Expand-Archive host.zip .; `
     cd azure-functions-host-$Env:HOST_VERSION; `
+    Write-Host 'Publishing host'; `
     dotnet publish /p:BuildNumber=$BuildNumber /p:CommitHash=$Env:HOST_VERSION src\WebJobs.Script.WebHost\WebJobs.Script.WebHost.csproj -c Release --output C:\bin\host; `
-    cd C:\app\src\Worker; `
+    cd C:\src\app\src\Worker; `
+    Write-Host 'Publishing app'; `
     dotnet publish Worker.csproj --output C:\bin\worker
 
 # Start the host
