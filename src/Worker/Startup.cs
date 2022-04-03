@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs;
@@ -32,7 +33,15 @@ namespace NuGet.Insights.Worker
             builder.Services.AddNuGetInsightsWorker();
 
             builder.Services.AddSingleton<INameResolver, CustomNameResolver>();
-            builder.Services.AddSingleton<ITelemetryClient, TelemetryClientWrapper>();
+
+            for (var i = 0; i < builder.Services.Count; i++)
+            {
+                if (builder.Services[i].ImplementationType == typeof(TelemetryClient))
+                {
+                    builder.Services.AddSingleton<ITelemetryClient, TelemetryClientWrapper>();
+                    break;
+                }
+            }
         }
 
         private static void FixCustomMetrics(IFunctionsHostBuilder builder)

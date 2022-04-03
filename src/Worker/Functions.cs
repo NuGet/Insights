@@ -10,7 +10,7 @@ namespace NuGet.Insights.Worker
 {
     public class Functions
     {
-        private const string ConnectionName = "StorageConnection";
+        private const string ConnectionName = "QueueTriggerConnection";
         private static bool _isInitialized = false;
         private readonly TempStreamLeaseScope _tempStreamLeaseScope;
         private readonly TimerExecutionService _timerExecutionService;
