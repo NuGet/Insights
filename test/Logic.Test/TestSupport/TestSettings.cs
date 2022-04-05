@@ -4,6 +4,8 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Xunit;
 
@@ -11,9 +13,46 @@ namespace NuGet.Insights
 {
     public static class TestSettings
     {
+        private static readonly Lazy<StorageType> LazyStorageType = new Lazy<StorageType>(() =>
+        {
+            if (!IsStorageEmulator)
+            {
+                return StorageType.Azure;
+            }
+            else
+            {
+                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    // The legacy emulator does not work on non-Windows platforms.
+                    return StorageType.Azurite;
+                }
+
+                try
+                {
+                    using var httpClient = new HttpClient();
+                    using var request = new HttpRequestMessage(HttpMethod.Get, "http://127.0.0.1:10000/devstoreaccount1");
+                    using var response = httpClient.Send(request);
+
+                    if (response.Headers.TryGetValues("Server", out var serverHeaders)
+                        && serverHeaders.Any(x => x.Contains("Azurite")))
+                    {
+                        // Azurite returns a header like this: "Server: Azurite-Blob/3.16.0"
+                        return StorageType.Azurite;
+                    }
+                }
+                catch
+                {
+                    // Ignore this exception
+                }
+
+                return StorageType.LegacyEmulator;
+            }
+        });
+
         private const string StorageEmulatorConnectionString = StorageUtility.EmulatorConnectionString;
 
         public static bool IsStorageEmulator => StorageConnectionString == StorageEmulatorConnectionString;
+        public static StorageType StorageType => LazyStorageType.Value;
 
         public static string StorageConnectionString
         {
