@@ -451,7 +451,7 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
 }]
 
 resource blobPermissions 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
-  name: guid('FunctionsCanAccessBlob-UserManagedIdentity')
+  name: guid('FunctionsCanAccessBlob-${workerUserManagedIdentity.id}')
   scope: storageAccount
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')
@@ -461,7 +461,7 @@ resource blobPermissions 'Microsoft.Authorization/roleAssignments@2020-10-01-pre
 }
 
 resource queuePermissions 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
-  name: guid('FunctionsCanAccessQueue-UserManagedIdentity')
+  name: guid('FunctionsCanAccessQueue-${workerUserManagedIdentity.id}')
   scope: storageAccount
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')
@@ -471,7 +471,7 @@ resource queuePermissions 'Microsoft.Authorization/roleAssignments@2020-10-01-pr
 }
 
 resource tablePermissions 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
-  name: guid('FunctionsCanAccessTable-UserManagedIdentity')
+  name: guid('FunctionsCanAccessTable-${workerUserManagedIdentity.id}')
   scope: storageAccount
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3')
