@@ -149,17 +149,17 @@ namespace NuGet.Insights
             {
                 blob = new BlobServiceClient(
                     new Uri($"https://{_options.Value.StorageAccountName}.blob.core.windows.net"),
-                    new DefaultAzureCredential(),
+                    new ManagedIdentityCredential(clientId: _options.Value.UserManagedIdentityClientId),
                     options: httpPipelineTransport != null ? new BlobClientOptions { Transport = httpPipelineTransport } : null);
 
                 queue = new QueueServiceClient(
                     new Uri($"https://{_options.Value.StorageAccountName}.queue.core.windows.net"),
-                    new DefaultAzureCredential(),
+                    new ManagedIdentityCredential(clientId: _options.Value.UserManagedIdentityClientId),
                     options: httpPipelineTransport != null ? new QueueClientOptions { Transport = httpPipelineTransport } : null);
 
                 table = new TableServiceClient(
                     new Uri($"https://{_options.Value.StorageAccountName}.table.core.windows.net"),
-                    new DefaultAzureCredential(),
+                    new ManagedIdentityCredential(clientId: _options.Value.UserManagedIdentityClientId),
                     options: httpPipelineTransport != null ? new TableClientOptions { Transport = httpPipelineTransport } : null);
 
                 userDelegationKey = await blob.GetUserDelegationKeyAsync(startsOn: null, expiresOn: sasExpiry);
