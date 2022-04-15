@@ -115,7 +115,8 @@ function New-Bicep($name) {
         New-Item $templatesDir -ItemType Directory | Out-Null
     }
 
-    bicep build $bicepPath --outfile $templatePath
+    $bicepExe, $bicepArgs = Get-Bicep
+    & $bicepExe $bicepArgs @bicepArgs build --file $bicepPath --outfile $templatePath
 
     if ($LASTEXITCODE -ne 0) {
         throw "Command failed with exit code $($LASTEXITCODE): bicep build $bicepPath --outfile $templatePath"
