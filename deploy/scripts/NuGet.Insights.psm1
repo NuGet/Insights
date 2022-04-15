@@ -73,6 +73,9 @@ class ResourceSettings {
     [string]$StorageAccountName
     
     [ValidateNotNullOrEmpty()]
+    [string]$StorageEndpointSuffix
+    
+    [ValidateNotNullOrEmpty()]
     [ValidateLength(1, 24)]
     [string]$KeyVaultName
     
@@ -153,6 +156,7 @@ class ResourceSettings {
         Set-OrDefault WorkerLogLevel "Warning"
         Set-OrDefault ResourceGroupName "NuGet.Insights-$StampName"
         Set-OrDefault StorageAccountName "nugin$($StampName.ToLowerInvariant())"
+        Set-OrDefault StorageEndpointSuffix "core.windows.net"
         Set-OrDefault KeyVaultName "nugin$($StampName.ToLowerInvariant())"
 
         # Optional settings
