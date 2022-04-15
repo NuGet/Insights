@@ -9,6 +9,7 @@ param storageAccountName string
 param keyVaultName string
 param deploymentContainerName string
 param leaseContainerName string
+param location string = resourceGroup().location
 
 param websiteName string
 param websitePlanId string = 'new'
@@ -61,6 +62,10 @@ var sharedConfig = [
     value: storageAccountName
   }
   {
+    name: 'NuGet.Insights:UserManagedIdentityClientId'
+    value: workerUserManagedIdentity.properties.clientId
+  }
+  {
     // See: https://github.com/projectkudu/kudu/wiki/Configurable-settings#ensure-update-site-and-update-siteconfig-to-take-effect-synchronously 
     name: 'WEBSITE_ENABLE_SYNC_UPDATE_SITE'
     value: '1'
@@ -79,12 +84,15 @@ module storageAndKv './storage-and-kv.bicep' = {
   params: {
     storageAccountName: storageAccountName
     keyVaultName: keyVaultName
-    identities: [for i in range(0, workerCount + 1): {
-      tenantId: i == 0 ? website.identity.tenantId : workers[i - 1].identity.tenantId
-      objectId: i == 0 ? website.identity.principalId : workers[i - 1].identity.principalId
-    }]
+    identities: [
+      {
+        tenantId: workerUserManagedIdentity.properties.tenantId
+        objectId: workerUserManagedIdentity.properties.principalId
+      }
+    ]
     deploymentContainerName: deploymentContainerName
     leaseContainerName: leaseContainerName
+    location: location
   }
 }
 
@@ -95,7 +103,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2019-06-01' existing 
 // Application Insights and alerts
 resource appInsights 'Microsoft.Insights/components@2015-05-01' = {
   name: appInsightsName
-  location: resourceGroup().location
+  location: location
   kind: 'web'
   properties: {
     Application_Type: 'web'
@@ -248,7 +256,7 @@ resource recentWorkflowAlert 'Microsoft.Insights/metricAlerts@2018-03-01' = {
 // Website
 resource websitePlan 'Microsoft.Web/serverfarms@2020-09-01' = if (websitePlanId == 'new') {
   name: websitePlanName == 'default' ? '${websiteName}-WebsitePlan' : websitePlanName
-  location: resourceGroup().location
+  location: location
   sku: {
     name: 'B1'
   }
@@ -256,9 +264,12 @@ resource websitePlan 'Microsoft.Web/serverfarms@2020-09-01' = if (websitePlanId 
 
 resource website 'Microsoft.Web/sites@2020-09-01' = {
   name: websiteName
-  location: resourceGroup().location
+  location: location
   identity: {
-    type: 'SystemAssigned'
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${workerUserManagedIdentity.id}': {}
+    }
   }
   properties: {
     serverFarmId: websitePlanId == 'new' ? websitePlan.id : websitePlanId
@@ -373,18 +384,15 @@ var workerConfigWithStorage = concat(workerConfig, isConsumptionPlan ? [
 
 resource workerUserManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
   name: workerUserManagedIdentityName
-  location: resourceGroup().location
+  location: location
 }
 
 resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCount): {
   name: '${workerNamePrefix}${i}'
-  location:  workerPlanLocations[(i / workerCountPerPlan) % length(workerPlanLocations)]
-  dependsOn: [
-    workerUserManagedIdentity
-  ]
+  location: workerPlanLocations[(i / workerCountPerPlan) % length(workerPlanLocations)]
   kind: 'FunctionApp'
   identity: {
-    type: 'SystemAssigned, UserAssigned'
+    type: 'UserAssigned'
     userAssignedIdentities: {
       '${workerUserManagedIdentity.id}': {}
     }
@@ -402,12 +410,16 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
           value: workerLogLevel
         }
         {
-          name: 'AzureWebJobsFeatureFlags'
-          value: 'EnableEnhancedScopes'
-        }
-        {
           name: 'AzureWebJobsStorage__accountName'
           value: storageAccountName
+        }
+        {
+          name: 'AzureWebJobsStorage__credential'
+          value: 'managedidentity'
+        }
+        {
+          name: 'AzureWebJobsStorage__clientId'
+          value: workerUserManagedIdentity.properties.clientId
         }
         {
           name: 'FUNCTIONS_EXTENSION_VERSION'
@@ -418,10 +430,6 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
           value: 'dotnet'
         }
         {
-          name: 'NuGet.Insights:UserManagedIdentityClientId'
-          value: workerUserManagedIdentity.properties.clientId
-        }
-        {
           name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
           value: 'false'
         }
@@ -429,40 +437,48 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
           name: 'QueueTriggerConnection__queueServiceUri'
           value: storageAccount.properties.primaryEndpoints.queue
         }
+        {
+          name: 'QueueTriggerConnection__credential'
+          value: 'managedidentity'
+        }
+        {
+          name: 'QueueTriggerConnection__clientId'
+          value: workerUserManagedIdentity.properties.clientId
+        }
       ], sharedConfig, workerConfigWithStorage)
     }
   }
 }]
 
-resource blobPermissions 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = [for i in range(0, workerCount + 1): {
-  name: guid('FunctionsCanAccessBlob-${i == 0 ? website.id : workers[max(0, i - 1)].id}')
+resource blobPermissions 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+  name: guid('FunctionsCanAccessBlob-${workerUserManagedIdentity.id}')
   scope: storageAccount
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')
-    principalId: i == 0 ? website.identity.principalId : workers[max(0, i - 1)].identity.principalId
+    principalId: workerUserManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
-}]
+}
 
-resource queuePermissions 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = [for i in range(0, workerCount + 1): {
-  name: guid('FunctionsCanAccessQueue-${i == 0 ? website.id : workers[max(0, i - 1)].id}')
+resource queuePermissions 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+  name: guid('FunctionsCanAccessQueue-${workerUserManagedIdentity.id}')
   scope: storageAccount
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')
-    principalId: i == 0 ? website.identity.principalId : workers[max(0, i - 1)].identity.principalId
+    principalId: workerUserManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
-}]
+}
 
-resource tablePermissions 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = [for i in range(0, workerCount + 1): {
-  name: guid('FunctionsCanAccessTable-${i == 0 ? website.id : workers[max(0, i - 1)].id}')
+resource tablePermissions 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+  name: guid('FunctionsCanAccessTable-${workerUserManagedIdentity.id}')
   scope: storageAccount
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3')
-    principalId: i == 0 ? website.identity.principalId : workers[max(0, i - 1)].identity.principalId
+    principalId: workerUserManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
-}]
+}
 
 resource workerDeployments 'Microsoft.Web/sites/extensions@2020-09-01' = [for i in range(0, workerCount): {
   name: 'ZipDeploy'
