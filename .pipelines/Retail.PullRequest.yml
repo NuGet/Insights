@@ -12,7 +12,7 @@ stages:
       displayName: Validate
       inputs:
         targetType: 'inline'
-        script: 'Get-ChildItem $(Build.SourcesDirectory)/*.md -Recurse | % { markdown-link-check $_ }'
+        script: 'Get-ChildItem $(Build.SourcesDirectory)/*.md -Recurse | % { markdown-link-check $_ --config $(Build.SourcesDirectory)/markdown-link-check.config.json }'
         failOnStderr: true
 
 - stage: Build
