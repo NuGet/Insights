@@ -116,7 +116,7 @@ function New-Bicep($name) {
     }
 
     $bicepExe, $bicepArgs = Get-Bicep
-    & $bicepExe $bicepArgs @bicepArgs build --file $bicepPath --outfile $templatePath
+    & $bicepExe $bicepArgs @bicepArgs $bicepPath --outfile $templatePath
 
     if ($LASTEXITCODE -ne 0) {
         throw "Command failed with exit code $($LASTEXITCODE): bicep build $bicepPath --outfile $templatePath"
