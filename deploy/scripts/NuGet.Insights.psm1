@@ -445,10 +445,12 @@ function Get-Bicep() {
     if (Get-Command bicep -ErrorAction Ignore) {
         $bicepExe = "bicep"
         $bicepArgs = @("build")
-    } elseif (Get-Command az -ErrorAction Ignore) {
+    }
+    elseif (Get-Command az -ErrorAction Ignore) {
         $bicepExe = "az"
         $bicepArgs = @("bicep", "build", "--file")
-    } else {
+    }
+    else {
         throw "Neither 'bicep' or 'az' (for 'az bicep') commands could be found. Installation instructions: https://docs.microsoft.com/azure/azure-resource-manager/bicep/install"
     }
 
@@ -459,9 +461,10 @@ function New-Deployment($ResourceGroupName, $DeploymentDir, $DeploymentId, $Depl
     $parametersPath = Join-Path $DeploymentDir "$DeploymentName.deploymentParameters.json"
     New-ParameterFile $Parameters @() $parametersPath
 
-    $templatePath = (Join-Path $DeploymentDir "$DeploymentName.deploymentTemplate.json")
+    $bicepPath = Join-Path $PSScriptRoot $BicepPath
+    $templatePath = Join-Path $DeploymentDir "$DeploymentName.deploymentTemplate.json"
     $bicepExe, $bicepArgs = Get-Bicep
-    & $bicepExe @bicepArgs build (Join-Path $PSScriptRoot $BicepPath) --outfile $templatePath
+    & $bicepExe @bicepArgs $bicepPath --outfile $templatePath
     if ($LASTEXITCODE -ne 0) {
         throw "Command 'bicep build' failed with exit code $LASTEXITCODE."
     }
