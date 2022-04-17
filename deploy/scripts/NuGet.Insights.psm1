@@ -73,6 +73,9 @@ class ResourceSettings {
     [string]$StorageAccountName
     
     [ValidateNotNullOrEmpty()]
+    [string]$StorageEndpointSuffix
+    
+    [ValidateNotNullOrEmpty()]
     [ValidateLength(1, 24)]
     [string]$KeyVaultName
     
@@ -153,6 +156,7 @@ class ResourceSettings {
         Set-OrDefault WorkerLogLevel "Warning"
         Set-OrDefault ResourceGroupName "NuGet.Insights-$StampName"
         Set-OrDefault StorageAccountName "nugin$($StampName.ToLowerInvariant())"
+        Set-OrDefault StorageEndpointSuffix "core.windows.net"
         Set-OrDefault KeyVaultName "nugin$($StampName.ToLowerInvariant())"
 
         # Optional settings
@@ -440,11 +444,13 @@ function New-ParameterFile($Parameters, $PathReferences, $FilePath) {
 function Get-Bicep() {
     if (Get-Command bicep -ErrorAction Ignore) {
         $bicepExe = "bicep"
-        $bicepArgs = @()
-    } elseif (Get-Command az -ErrorAction Ignore) {
+        $bicepArgs = @("build")
+    }
+    elseif (Get-Command az -ErrorAction Ignore) {
         $bicepExe = "az"
-        $bicepArgs = @("bicep")
-    } else {
+        $bicepArgs = @("bicep", "build", "--file")
+    }
+    else {
         throw "Neither 'bicep' or 'az' (for 'az bicep') commands could be found. Installation instructions: https://docs.microsoft.com/azure/azure-resource-manager/bicep/install"
     }
 
@@ -455,9 +461,10 @@ function New-Deployment($ResourceGroupName, $DeploymentDir, $DeploymentId, $Depl
     $parametersPath = Join-Path $DeploymentDir "$DeploymentName.deploymentParameters.json"
     New-ParameterFile $Parameters @() $parametersPath
 
-    $templatePath = (Join-Path $DeploymentDir "$DeploymentName.deploymentTemplate.json")
+    $bicepPath = Join-Path $PSScriptRoot $BicepPath
+    $templatePath = Join-Path $DeploymentDir "$DeploymentName.deploymentTemplate.json"
     $bicepExe, $bicepArgs = Get-Bicep
-    & $bicepExe @bicepArgs build --file (Join-Path $PSScriptRoot $BicepPath) --outfile $templatePath
+    & $bicepExe @bicepArgs $bicepPath --outfile $templatePath
     if ($LASTEXITCODE -ne 0) {
         throw "Command 'bicep build' failed with exit code $LASTEXITCODE."
     }

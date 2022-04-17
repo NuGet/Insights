@@ -335,6 +335,7 @@ namespace NuGet.Insights.Worker
                 "Age",
                 "Cache-Control",
                 "Connection",
+                "Content-MD5",
                 "Date",
                 "Expires",
                 "Server",

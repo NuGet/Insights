@@ -3,6 +3,9 @@ param (
     [Parameter(Mandatory = $true)]
     [string]$ConfigName,
 
+    [Parameter(Mandatory = $true)]
+    [string]$RuntimeIdentifier,
+
     [Parameter(Mandatory = $false)]
     [string]$StampName,
 
@@ -51,7 +54,9 @@ function Publish-Project ($ProjectName) {
     Write-Status "Publishing project '$ProjectName'..."
     dotnet publish (Join-Path $PSScriptRoot "../src/$ProjectName") `
         "/p:DeploymentDir=$deploymentDir" `
-        --configuration Release | Out-Default
+        --configuration Release `
+        --runtime $RuntimeIdentifier `
+        --self-contained false | Out-Default
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to publish $ProjectName."
     }

@@ -9,9 +9,6 @@
         "Content-Length": [
           "745"
         ],
-        "Content-MD5": [
-          "5hPkqgtznBX0aPa\u002BDbGkCg=="
-        ],
         "Content-Type": [
           "text/xml"
         ],
@@ -51,9 +48,6 @@
         "Content-Length": [
           "1243"
         ],
-        "Content-MD5": [
-          "Ay4\u002By8J\u002BkZ2qWNsa/Whrbg=="
-        ],
         "Content-Type": [
           "text/xml"
         ],
@@ -82,9 +76,6 @@
       "HttpHeaders": {
         "Content-Length": [
           "1124"
-        ],
-        "Content-MD5": [
-          "50aRPPLjy8gXb/FU80mg7A=="
         ],
         "Content-Type": [
           "text/xml"
@@ -115,9 +106,6 @@
         "Content-Length": [
           "1262"
         ],
-        "Content-MD5": [
-          "Ij8QMh6CCk8ftZDZwLgHTQ=="
-        ],
         "Content-Type": [
           "text/xml"
         ],
@@ -147,9 +135,6 @@
         "Content-Length": [
           "1191"
         ],
-        "Content-MD5": [
-          "3yU88B5osxmpk7nKwfFoig=="
-        ],
         "Content-Type": [
           "text/xml"
         ],
@@ -178,9 +163,6 @@
       "HttpHeaders": {
         "Content-Length": [
           "1275"
-        ],
-        "Content-MD5": [
-          "MdrWg3wkWir4WVJrfCDeVQ=="
         ],
         "Content-Type": [
           "text/xml"

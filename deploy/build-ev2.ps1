@@ -116,10 +116,9 @@ function New-Bicep($name) {
     }
 
     $bicepExe, $bicepArgs = Get-Bicep
-    & $bicepExe $bicepArgs @bicepArgs build --file $bicepPath --outfile $templatePath
-
+    & $bicepExe @bicepArgs $bicepPath --outfile $templatePath
     if ($LASTEXITCODE -ne 0) {
-        throw "Command failed with exit code $($LASTEXITCODE): bicep build $bicepPath --outfile $templatePath"
+        throw "Command 'bicep build' failed with exit code $LASTEXITCODE."
     }
 }
 
@@ -153,12 +152,14 @@ if (!(Get-Command bicep -ErrorAction Ignore)) {
         curl -Lo bicep.bin https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
         chmod +x ./bicep.bin
         sudo mv ./bicep.bin /usr/local/bin/bicep
-    } elseif ($IsMacOS) {
+    }
+    elseif ($IsMacOS) {
         curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-osx-x64
         chmod +x ./bicep
         sudo spctl --add ./bicep
         sudo mv ./bicep /usr/local/bin/bicep
-    } else {
+    }
+    else {
         $installPath = "$env:USERPROFILE\.bicep"
         $installDir = New-Item -ItemType Directory -Path $installPath -Force
         $installDir.Attributes += 'Hidden'

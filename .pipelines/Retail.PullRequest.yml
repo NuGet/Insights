@@ -12,7 +12,7 @@ stages:
       displayName: Validate
       inputs:
         targetType: 'inline'
-        script: 'Get-ChildItem $(Build.SourcesDirectory)/*.md -Recurse | % { markdown-link-check $_ }'
+        script: 'Get-ChildItem $(Build.SourcesDirectory)/*.md -Recurse | % { markdown-link-check $_ --config $(Build.SourcesDirectory)/markdown-link-check.config.json }'
         failOnStderr: true
 
 - stage: Build
@@ -24,12 +24,15 @@ stages:
         Linux:
           ImageName: "ubuntu-latest"
           DropName: "drop-linux"
+          PublishRuntimeIdentifier: "linux-x64"
         macOS:
           ImageName: "macos-latest"
           DropName: "drop-macos"
+          PublishRuntimeIdentifier: "osx-x64"
         Windows:
           ImageName: "windows-latest"
           DropName: "drop-windows"
+          PublishRuntimeIdentifier: "win-x64"
 
     pool:
       vmImage: $(ImageName)
@@ -105,7 +108,7 @@ stages:
           projects: |
             $(Build.SourcesDirectory)/src/Website/Website.csproj
             $(Build.SourcesDirectory)/src/Worker/Worker.csproj
-          arguments: "--no-build --no-restore --configuration $(BuildConfiguration)"
+          arguments: "--configuration $(BuildConfiguration) --runtime $(PublishRuntimeIdentifier) --self-contained false"
           zipAfterPublish: false
 
       - task: PowerShell@2
