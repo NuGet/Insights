@@ -107,6 +107,14 @@ stages:
             arguments: "--configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false"
             zipAfterPublish: false
 
+        - task: PowerShell@2
+          displayName: "Publish Azure Functions host"
+          inputs:
+            targetType: "filePath"
+            filePath: $(Build.SourcesDirectory)/deploy/build-host.ps1
+            arguments: >
+              -RuntimeIdentifier ${{ rid }}
+              -OutputPath $(OutputDirectory)/deploy/AzureFunctionsHost.zip
 
         - task: PowerShell@2
           displayName: "Generate Ev2 files"
@@ -118,6 +126,7 @@ stages:
               -BuildVersion $(Build.BuildNumber)
               -WebsiteZipPath $(OutputDirectory)/deploy/Website.zip
               -WorkerZipPath $(OutputDirectory)/deploy/Worker.zip
+              -AzureFunctionsHostZipPath $(OutputDirectory)/deploy/AzureFunctionsHost.zip
 
         - task: PublishBuildArtifacts@1
           displayName: "Publish build artifacts"
