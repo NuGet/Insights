@@ -10,7 +10,10 @@ param (
     [string]$WebsiteZipPath,
 
     [Parameter(Mandatory = $true)]
-    [string]$WorkerZipPath
+    [string]$WorkerZipPath,
+
+    [Parameter(Mandatory = $true)]
+    [string]$AzureFunctionsHostZipPath
 )
 
 Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1")
@@ -143,6 +146,10 @@ $ev2 = Join-Path $PSScriptRoot "../artifacts/ExpressV2"
 $serviceResourceName = "Deploy.ResourceInstance"
 $websiteBinPath = "bin/Website.zip"
 $workerBinPath = "bin/Worker.zip"
+$azureFunctionsHostBinPath = "bin/AzureFunctionsHost.zip"
+$workerStandaloneEnvPathPattern = "bin/WorkerStandalone.{0}.env"
+$installWorkerStandaloneSourcePath = Join-Path $PSScriptRoot "scripts\Install-WorkerStandalone.ps1"
+$installWorkerStandalonePath = "bin/Install-WorkerStandalone.ps1"
 
 # Install Bicep, if needed.
 if (!(Get-Command bicep -ErrorAction Ignore)) {
@@ -175,6 +182,11 @@ bicep --version
 New-Bicep "main"
 New-Bicep "storage-and-kv"
 
+$bin = Join-Path $ev2 "bin"
+if (!(Test-Path $bin)) {
+    New-Item $bin -ItemType Directory | Out-Null
+}
+
 # Build the Ev2 artifacts
 foreach ($configName in $ConfigNames) {
     $resourceSettings = Get-ResourceSettings $configName
@@ -204,16 +216,18 @@ foreach ($configName in $ConfigNames) {
     New-ParameterFile $parameters @("websiteZipUrl", "workerZipUrl") $parametersPath
     New-ServiceModelFile $resourceSettings
     New-RolloutSpecFile $resourceSettings
+
+    $standaloneEnv = New-WorkerStandaloneEnv $resourceSettings
+    $standaloneEnvFileName = $workerStandaloneEnvPathPattern -f $resourceSettings.ConfigName
+    $standaloneEnv | Out-EnvFile -FilePath (Join-Path $ev2 $standaloneEnvFileName)
 }
 
 $BuildVersion | Out-File (Join-Path $ev2 "BuildVer.txt") -NoNewline -Encoding UTF8
 
 # Copy the binaries
-$bin = Join-Path $ev2 "bin"
-if (!(Test-Path $bin)) {
-    New-Item $bin -ItemType Directory | Out-Null
-}
 Copy-Item $WebsiteZipPath -Destination (Join-Path $ev2 $websiteBinPath) -Verbose
 Copy-Item $WorkerZipPath -Destination (Join-Path $ev2 $workerBinPath) -Verbose
+Copy-Item $AzureFunctionsHostZipPath -Destination (Join-Path $ev2 $azureFunctionsHostBinPath) -Verbose
+Copy-Item $installWorkerStandaloneSourcePath -Destination (Join-Path $ev2 $installWorkerStandalonePath) -Verbose
 
 Write-Host "Wrote Ev2 files to: $ev2"

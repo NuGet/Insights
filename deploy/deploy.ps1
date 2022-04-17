@@ -16,7 +16,10 @@ param (
     [string]$WebsiteZipPath,
 
     [Parameter(Mandatory = $false)]
-    [string]$WorkerZipPath
+    [string]$WorkerZipPath,
+
+    [Parameter(Mandatory = $false)]
+    [string]$AzureFunctionsHostZipPath
 )
 
 Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1")
@@ -68,12 +71,20 @@ function Publish-Project ($ProjectName) {
 
 if (!$WebsiteZipPath) { $WebsiteZipPath = Publish-Project "Website" }
 if (!$WorkerZipPath) { $WorkerZipPath = Publish-Project "Worker" }
+if (!$AzureFunctionsHostZipPath) {
+    if (!(Test-Path $deploymentDir)) { New-Item $deploymentDir -ItemType Directory | Out-Null }
+    $AzureFunctionsHostZipPath = Join-Path $deploymentDir "AzureFunctionsHost.zip"
+    . (Join-Path $PSScriptRoot "build-host.ps1") `
+        -RuntimeIdentifier $RuntimeIdentifier `
+        -OutputPath $AzureFunctionsHostZipPath
+}
 
 $parameters = @{
-    ResourceSettings = $resourceSettings;
-    DeploymentDir    = $deploymentDir;
-    WebsiteZipPath   = $WebsiteZipPath;
-    WorkerZipPath    = $WorkerZipPath;
+    ResourceSettings          = $resourceSettings;
+    DeploymentDir             = $deploymentDir;
+    WebsiteZipPath            = $WebsiteZipPath;
+    WorkerZipPath             = $WorkerZipPath;
+    AzureFunctionsHostZipPath = $AzureFunctionsHostZipPath;
 }
 
 Write-Status "Using the following deployment parameters:"

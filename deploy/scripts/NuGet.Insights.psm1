@@ -373,6 +373,46 @@ function Get-ResourceSettings($ConfigName, $StampName) {
         $WorkerConfig)
 }
 
+function New-WorkerStandaloneEnv($ResourceSettings) {
+    $config = $ResourceSettings.WebsiteConfig | ConvertTo-FlatConfig
+
+    # Placeholder values will be overridden by the ARM deployment or by the installation script. 
+    $config["APPINSIGHTS_INSTRUMENTATIONKEY"] = "PLACEHOLDER";
+    $config["ASPNETCORE_URLS"] = "PLACEHOLDER";
+    $config["AzureFunctionsJobHost:Logging:Console:IsEnabled"] = "false";
+    $config["AzureWebJobsScriptRoot"] = "false";
+    $config["AzureWebJobsStorage:accountName"] = $ResourceSettings.StorageAccountName;
+    $config["AzureWebJobsStorage:clientId"] = "PLACEHOLDER";
+    $config["AzureWebJobsStorage:credential"] = "managedidentity";
+    $config["NuGet.Insights:LeaseContainerName"] = $ResourceSettings.LeaseContainerName;
+    $config["NuGet.Insights:StorageAccountName"] = $ResourceSettings.StorageAccountName;
+    $config["NuGet.Insights:UserManagedIdentityClientId"] = "PLACEHOLDER";
+    $config["QueueTriggerConnection:clientId"] = "PLACEHOLDER";
+    $config["QueueTriggerConnection:credential"] = "managedidentity";
+    $config["QueueTriggerConnection:queueServiceUri"] = "https://$($ResourceSettings.StorageAccountName).queue.$($ResourceSettings.StorageEndpointSuffix)/";
+    $config["WEBSITE_HOSTNAME"] = "PLACEHOLDER";
+
+    return $config
+}
+
+function Out-EnvFile() {
+    [CmdletBinding()]
+    param (
+        [Parameter(ValueFromPipeline)]
+        $InputObject,
+
+        [Parameter(Mandatory = $true)]
+        [string]$FilePath
+    )
+
+    process {
+        ($InputObject.GetEnumerator() | `
+            ForEach-Object { "$($_.Key)=$($_.Value)" }) `
+            -Join [Environment]::NewLine | `
+            Out-File -FilePath $FilePath
+    }
+}
+
 function New-MainParameters($ResourceSettings, $WebsiteZipUrl, $WorkerZipUrl) {
     $parameters = @{
         appInsightsName               = $ResourceSettings.AppInsightsName;
