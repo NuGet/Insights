@@ -278,6 +278,7 @@ resource website 'Microsoft.Web/sites@2020-09-01' = {
     siteConfig: {
       minTlsVersion: '1.2'
       netFrameworkVersion: 'v5.0'
+      use32BitWorkerProcess: false
       appSettings: concat([
         {
           name: 'AzureAd:Instance'
@@ -404,6 +405,7 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
     siteConfig: {
       minTlsVersion: '1.2'
       alwaysOn: !isConsumptionPlan
+      use32BitWorkerProcess: false
       appSettings: concat([
         {
           name: 'AzureFunctionsJobHost__logging__LogLevel__Default'
