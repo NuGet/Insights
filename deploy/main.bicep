@@ -22,6 +22,7 @@ param websiteZipUrl string
 param workerPlanNamePrefix string
 param workerUserManagedIdentityName string
 param workerNamePrefix string
+param workerHostId string
 @minValue(1)
 param workerPlanCount int
 param workerPlanLocations array
@@ -410,6 +411,10 @@ resource workers 'Microsoft.Web/sites@2020-09-01' = [for i in range(0, workerCou
         {
           name: 'AzureFunctionsJobHost__logging__LogLevel__Default'
           value: workerLogLevel
+        }
+        {
+          name: 'AzureFunctionsWebHost__hostId'
+          value: workerHostId
         }
         {
           name: 'AzureWebJobsStorage__accountName'

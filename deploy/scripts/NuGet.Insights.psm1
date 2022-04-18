@@ -32,6 +32,9 @@ class ResourceSettings {
     [string]$WorkerPlanNamePrefix
     
     [ValidateNotNullOrEmpty()]
+    [string]$WorkerHostId
+    
+    [ValidateNotNullOrEmpty()]
     [string]$WorkerNamePrefix
     
     [ValidateNotNullOrEmpty()]
@@ -148,6 +151,7 @@ class ResourceSettings {
         Set-OrDefault WorkerNamePrefix "NuGetInsights-$StampName-Worker-"
         Set-OrDefault WorkerUserManagedIdentityName "NuGetInsights-$StampName-Worker"
         Set-OrDefault WorkerPlanNamePrefix "NuGetInsights-$StampName-WorkerPlan-"
+        Set-OrDefault WorkerHostId "NuGetInsights-$StampName"
         Set-OrDefault WorkerSku "Y1"
         Set-OrDefault WorkerMinInstances 1
         Set-OrDefault WorkerPlanCount 1
@@ -380,6 +384,7 @@ function New-WorkerStandaloneEnv($ResourceSettings) {
     $config["APPINSIGHTS_INSTRUMENTATIONKEY"] = "PLACEHOLDER";
     $config["ASPNETCORE_URLS"] = "PLACEHOLDER";
     $config["AzureFunctionsJobHost:Logging:Console:IsEnabled"] = "false";
+    $config["AzureFunctionsWebHost:hostId"] = $ResourceSettings.WorkerHostId;
     $config["AzureWebJobsScriptRoot"] = "false";
     $config["AzureWebJobsStorage:accountName"] = $ResourceSettings.StorageAccountName;
     $config["AzureWebJobsStorage:clientId"] = "PLACEHOLDER";
@@ -432,6 +437,7 @@ function New-MainParameters($ResourceSettings, $WebsiteZipUrl, $WorkerZipUrl) {
         workerPlanNamePrefix          = $ResourceSettings.WorkerPlanNamePrefix;
         workerUserManagedIdentityName = $ResourceSettings.WorkerUserManagedIdentityName;
         workerNamePrefix              = $ResourceSettings.WorkerNamePrefix;
+        workerHostId                  = $ResourceSettings.WorkerHostId;
         workerPlanCount               = $ResourceSettings.WorkerPlanCount;
         workerPlanLocations           = $ResourceSettings.WorkerPlanLocations;
         workerCountPerPlan            = $ResourceSettings.WorkerCountPerPlan;
