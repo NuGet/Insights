@@ -39,7 +39,7 @@ namespace NuGet.Insights.Worker
                 await _metricsTimer.InitializeAsync();
                 _isMetricsFunctionInitialized = true;
             }
-            await _metricsTimer.InitializeAsync();
+            await _metricsTimer.ExecuteAsync();
         }
 
         [FunctionName("TimerFunction")]
