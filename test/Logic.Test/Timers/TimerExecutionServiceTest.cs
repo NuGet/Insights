@@ -314,11 +314,13 @@ namespace NuGet.Insights
                 var serviceClientFactory = _fixture.GetServiceClientFactory(_output.GetLogger<ServiceClientFactory>());
                 return new TimerExecutionService(
                     Timers,
+                    _fixture.GetLeaseService(serviceClientFactory),
                     new SpecificTimerExecutionService(
                         serviceClientFactory,
                         _fixture.Options.Object,
                         _output.GetTelemetryClient(),
-                        _output.GetLogger<SpecificTimerExecutionService>()));
+                        _output.GetLogger<SpecificTimerExecutionService>()),
+                    _output.GetLogger<TimerExecutionService>());
             }
         }
 
@@ -353,6 +355,7 @@ namespace NuGet.Insights
                 {
                     StorageConnectionString = TestSettings.StorageConnectionString,
                     TimerTableName = TestSettings.NewStoragePrefix() + "1t1",
+                    LeaseContainerName = TestSettings.NewStoragePrefix() + "1l1",
                 };
                 Options.Setup(x => x.Value).Returns(() => Settings);
             }
@@ -373,11 +376,17 @@ namespace NuGet.Insights
 
                 if (!_created)
                 {
+                    await GetLeaseService(serviceClientFactory).InitializeAsync();
                     await table.CreateIfNotExistsAsync(retry: true);
                     _created = true;
                 }
 
                 return table;
+            }
+
+            public AutoRenewingStorageLeaseService GetLeaseService(ServiceClientFactory serviceClientFactory)
+            {
+                return new AutoRenewingStorageLeaseService(new StorageLeaseService(serviceClientFactory, Options.Object));
             }
 
             public ServiceClientFactory GetServiceClientFactory(ILogger<ServiceClientFactory> logger)

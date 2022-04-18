@@ -37,6 +37,8 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddTransient<IRawMessageEnqueuer, QueueStorageEnqueuer>();
             serviceCollection.AddTransient<IWorkerQueueFactory, WorkerQueueFactory>();
 
+            serviceCollection.AddTransient<MetricsTimer>();
+
             serviceCollection.AddTransient<IGenericMessageProcessor, GenericMessageProcessor>();
             serviceCollection.AddSingleton(x => SchemaCollectionBuilder.Default.Build());
             serviceCollection.AddTransient<SchemaSerializer>();

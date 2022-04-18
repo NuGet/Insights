@@ -9,7 +9,11 @@ using NuGet.Insights.Worker.Workflow;
 
 namespace NuGet.Insights.Worker
 {
-    public class MetricsTimer : ITimer
+    /// <summary>
+    /// This is not implemented as an <see cref="ITimer"/> so it can be explicitly invoked more frequently with less
+    /// concern for concurrency or tracking.
+    /// </summary>
+    public class MetricsTimer
     {
         private static readonly IDictionary<string, string> NoDimensions = new Dictionary<string, string>();
         private readonly WorkflowStorageService _workflowStorageService;
@@ -26,18 +30,10 @@ namespace NuGet.Insights.Worker
             _telemetryClient = telemetryClient;
         }
 
-        public string Name => "Metrics";
-        public TimeSpan Frequency => TimeSpan.FromSeconds(1);
-        public bool AutoStart => true;
-        public bool IsEnabled => true;
-        public int Order => default;
-
-        public async Task<bool> ExecuteAsync()
+        public async Task ExecuteAsync()
         {
             await EmitWorkflowMetricsAsync();
             await EmitQueueSizeMetricsAsync();
-
-            return true;
         }
 
         private async Task EmitWorkflowMetricsAsync()
@@ -94,11 +90,6 @@ namespace NuGet.Insights.Worker
         public async Task InitializeAsync()
         {
             await _messageEnqueuer.InitializeAsync();
-        }
-
-        public Task<bool> IsRunningAsync()
-        {
-            return Task.FromResult(false);
         }
     }
 }

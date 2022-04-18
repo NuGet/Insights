@@ -73,7 +73,6 @@ namespace NuGet.Insights.Worker
                 {
                     new List<Type>
                     {
-                        typeof(MetricsTimer),
                         typeof(WorkflowTimer),
                     },
                     new List<Type>

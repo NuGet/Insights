@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace NuGet.Insights
 {
@@ -13,11 +14,15 @@ namespace NuGet.Insights
         public static readonly string PartitionKey = string.Empty;
 
         private readonly IReadOnlyDictionary<string, ITimer> _nameToTimer;
+        private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly SpecificTimerExecutionService _timerExecutionService;
+        private readonly ILogger<TimerExecutionService> _logger;
 
         public TimerExecutionService(
             IEnumerable<ITimer> timers,
-            SpecificTimerExecutionService timerExecutionService)
+            AutoRenewingStorageLeaseService leaseService,
+            SpecificTimerExecutionService timerExecutionService,
+            ILogger<TimerExecutionService> logger)
         {
             var timerList = timers.ToList();
             var duplicateNames = timerList
@@ -31,11 +36,14 @@ namespace NuGet.Insights
             }
 
             _nameToTimer = timerList.ToDictionary(x => x.Name);
+            _leaseService = leaseService;
             _timerExecutionService = timerExecutionService;
+            _logger = logger;
         }
 
         public async Task InitializeAsync()
         {
+            await _leaseService.InitializeAsync();
             await _timerExecutionService.InitializeAsync(_nameToTimer.Values);
         }
 
@@ -68,7 +76,16 @@ namespace NuGet.Insights
 
         public async Task ExecuteAsync()
         {
-            await _timerExecutionService.ExecuteAsync(_nameToTimer.Values, executeNow: false);
+            await using (var lease = await _leaseService.TryAcquireAsync("TimerExecutionService"))
+            {
+                if (!lease.Acquired)
+                {
+                    _logger.LogInformation("Another thread is executing this method.");
+                    return;
+                }
+
+                await _timerExecutionService.ExecuteAsync(_nameToTimer.Values, executeNow: false);
+            }
         }
     }
 }

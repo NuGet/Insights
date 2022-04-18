@@ -11,30 +11,46 @@ namespace NuGet.Insights.Worker
     public class Functions
     {
         private const string ConnectionName = "QueueTriggerConnection";
-        private static bool _isInitialized = false;
+        private static bool _isMetricsFunctionInitialized = false;
+        private static bool _isTimerFunctionInitialized = false;
+        private readonly MetricsTimer _metricsTimer;
         private readonly TempStreamLeaseScope _tempStreamLeaseScope;
         private readonly TimerExecutionService _timerExecutionService;
         private readonly IGenericMessageProcessor _messageProcessor;
 
         public Functions(
+            MetricsTimer metricsTimer,
             TempStreamLeaseScope tempStreamLeaseScope,
             TimerExecutionService timerExecutionService,
             IGenericMessageProcessor messageProcessor)
         {
+            _metricsTimer = metricsTimer;
             _tempStreamLeaseScope = tempStreamLeaseScope;
             _timerExecutionService = timerExecutionService;
             _messageProcessor = messageProcessor;
         }
 
+        [FunctionName("MetricsFunction")]
+        public async Task MetricsFunction(
+            [TimerTrigger("*/10 * * * * *")] TimerInfo timerInfo)
+        {
+            if (!_isMetricsFunctionInitialized)
+            {
+                await _metricsTimer.InitializeAsync();
+                _isMetricsFunctionInitialized = true;
+            }
+            await _metricsTimer.InitializeAsync();
+        }
+
         [FunctionName("TimerFunction")]
         public async Task TimerAsync(
-            [TimerTrigger("0,15,30,45 * * * * *")] TimerInfo timerInfo)
+            [TimerTrigger("0 * * * * *")] TimerInfo timerInfo)
         {
             await using var scopeOwnership = _tempStreamLeaseScope.TakeOwnership();
-            if (!_isInitialized)
+            if (!_isTimerFunctionInitialized)
             {
                 await _timerExecutionService.InitializeAsync();
-                _isInitialized = true;
+                _isTimerFunctionInitialized = true;
             }
             await _timerExecutionService.ExecuteAsync();
         }
