@@ -89,7 +89,7 @@ class ResourceSettings {
     [string]$LeaseContainerName
     
     [ValidateNotNullOrEmpty()]
-    [TimeSpan]$SasValidityPeriod
+    [TimeSpan]$RegenerationPeriod
     
     [ValidateNotNullOrEmpty()]
     [bool]$AutoRegenerateStorageKey
@@ -172,7 +172,7 @@ class ResourceSettings {
         # Static settings
         $this.DeploymentContainerName = "deployment"
         $this.LeaseContainerName = "leases"
-        $this.SasValidityPeriod = New-TimeSpan -Days 6
+        $this.RegenerationPeriod = New-TimeSpan -Days 14
 
         $isNuGetPackageExplorerToCsvEnabled = "NuGetPackageExplorerToCsv" -notin $this.WorkerConfig["NuGet.Insights"].DisabledDrivers
         $isConsumptionPlan = $this.WorkerSku -eq "Y1"
@@ -487,16 +487,16 @@ function New-ParameterFile($Parameters, $PathReferences, $FilePath) {
     $deploymentParameters | ConvertTo-Json -Depth 100 | Out-File $FilePath -Encoding UTF8
 }
 
-function Get-Bicep() {
-    if (Get-Command bicep -ErrorAction Ignore) {
+function Get-Bicep([switch]$DoNotThrow) {
+    if (Get-Command bicep -CommandType Application -ErrorAction Ignore) {
         $bicepExe = "bicep"
         $bicepArgs = @("build")
     }
-    elseif (Get-Command az -ErrorAction Ignore) {
+    elseif (Get-Command az -CommandType Application -ErrorAction Ignore) {
         $bicepExe = "az"
         $bicepArgs = @("bicep", "build", "--file")
     }
-    else {
+    elseif (!$DoNotThrow) {
         throw "Neither 'bicep' or 'az' (for 'az bicep') commands could be found. Installation instructions: https://docs.microsoft.com/azure/azure-resource-manager/bicep/install"
     }
 

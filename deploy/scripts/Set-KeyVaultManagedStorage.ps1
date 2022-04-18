@@ -12,8 +12,8 @@ param (
     [Parameter(Mandatory = $true)]
     [switch]$AutoRegenerateKey,
 
-    [Parameter(Mandatory = $true)]
-    [TimeSpan]$SasValidityPeriod
+    [Parameter(Mandatory = $false)]
+    [TimeSpan]$RegenerationPeriod
 )
 
 Import-Module (Join-Path $PSScriptRoot "NuGet.Insights.psm1")
@@ -21,14 +21,6 @@ Import-Module (Join-Path $PSScriptRoot "NuGet.Insights.psm1")
 # The application ID for Key Vault managed storage:
 # Source: https://docs.microsoft.com/en-us/azure/key-vault/secrets/overview-storage-keys-powershell
 $keyVaultSpAppId = "cfa8b339-82a2-471a-a3c9-0fc0be7a4093"
-
-# This is the key for Azure Storage Emulator, just for creating a template SAS.
-# Source: https://docs.microsoft.com/en-us/azure/storage/common/storage-use-emulator
-$storageEmulatorKey = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
-
-# This is how frequently the active storage key is swapped. Twice this value is how long a given storage key is value.
-# We round up to the nearest 2 weeks.
-$regenerationPeriod = New-TimeSpan -Days ([Math]::Ceiling($SasValidityPeriod.TotalDays / 7) * 14)
 
 $maxRetries = 30
 
@@ -95,7 +87,7 @@ if (!$matchingStorage) {
             $attempt++
 
             if ($AutoRegenerateKey) {
-                $parameters = @{ RegenerationPeriod = $regenerationPeriod }
+                $parameters = @{ RegenerationPeriod = $RegenerationPeriod }
             }
             else {
                 $parameters = @{ DisableAutoRegenerateKey = $true }

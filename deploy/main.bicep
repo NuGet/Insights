@@ -293,6 +293,10 @@ resource website 'Microsoft.Web/sites@2020-09-01' = {
           name: 'AzureAd:TenantId'
           value: 'common'
         }
+        {
+          name: 'AzureAd:UserAssignedManagedIdentityClientId'
+          value: workerUserManagedIdentity.properties.clientId
+        }
       ], sharedConfig, websiteConfig)
     }
   }

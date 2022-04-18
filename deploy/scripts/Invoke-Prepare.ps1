@@ -44,7 +44,7 @@ New-Deployment `
     -KeyVaultName $ResourceSettings.KeyVaultName `
     -StorageAccountName $ResourceSettings.StorageAccountName `
     -AutoRegenerateKey:$ResourceSettings.AutoRegenerateKey `
-    -SasValidityPeriod $ResourceSettings.SasValidityPeriod
+    -RegenerationPeriod $ResourceSettings.RegenerationPeriod
 
 # Initialize the AAD app, if necessary
 if (!$ResourceSettings.WebsiteAadAppClientId) {

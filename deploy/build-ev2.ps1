@@ -152,7 +152,7 @@ $installWorkerStandaloneSourcePath = Join-Path $PSScriptRoot "scripts\Install-Wo
 $installWorkerStandalonePath = "bin/Install-WorkerStandalone.ps1"
 
 # Install Bicep, if needed.
-if (!(Get-Command bicep -ErrorAction Ignore)) {
+if (!(Get-Command bicep -CommandType Application -ErrorAction Ignore)) {
     Write-Host "Installing Bicep..."
     # Source: https://github.com/Azure/bicep/blob/main/docs/installing.md#manual-with-powershell
     if ($IsLinux) {
@@ -176,7 +176,6 @@ if (!(Get-Command bicep -ErrorAction Ignore)) {
         if (-not $env:path.Contains($installPath)) { $env:path += ";$installPath" }
     }
 }
-bicep --version
 
 # Compile the Bicep templates to raw ARM JSON.
 New-Bicep "main"
