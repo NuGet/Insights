@@ -62,22 +62,25 @@ namespace NuGet.Insights.Worker
 
         private async Task EmitQueueSizeMetricsAsync()
         {
-            await Task.WhenAll(Enum
-                .GetValues(typeof(QueueType))
-                .Cast<QueueType>()
-                .SelectMany(x => new[]
-                {
-                    EmitQueueSizeAsync(_messageEnqueuer.GetApproximateMessageCountAsync(x), x, isPoison: false),
-                    EmitQueueSizeAsync(_messageEnqueuer.GetPoisonApproximateMessageCountAsync(x), x, isPoison: true),
-                })
-                .ToList());
+            var main = 0;
+            var poison = 0;
+            foreach (var x in Enum.GetValues<QueueType>())
+            {
+                main += await EmitQueueSizeAsync(_messageEnqueuer.GetApproximateMessageCountAsync(x), x, isPoison: false);
+                poison += await EmitQueueSizeAsync(_messageEnqueuer.GetPoisonApproximateMessageCountAsync(x), x, isPoison: true);
+            }
+
+            _telemetryClient.GetMetric($"StorageQueueSize.Main").TrackValue(main);
+            _telemetryClient.GetMetric($"StorageQueueSize.Poison").TrackValue(poison);
+            _telemetryClient.GetMetric($"StorageQueueSize").TrackValue(main + poison);
         }
 
-        private async Task EmitQueueSizeAsync(Task<int> countAsync, QueueType queue, bool isPoison)
+        private async Task<int> EmitQueueSizeAsync(Task<int> countAsync, QueueType queue, bool isPoison)
         {
             var count = await countAsync;
             var metric = _telemetryClient.GetMetric($"StorageQueueSize.{queue}.{(isPoison ? "Poison" : "Main")}");
             metric.TrackValue(count);
+            return count;
         }
 
         public async Task InitializeAsync()
