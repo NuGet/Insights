@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Insights.Worker.Workflow;
@@ -10,6 +11,7 @@ namespace NuGet.Insights.Worker
 {
     public class MetricsTimer : ITimer
     {
+        private static readonly IDictionary<string, string> NoDimensions = new Dictionary<string, string>();
         private readonly WorkflowStorageService _workflowStorageService;
         private readonly IRawMessageEnqueuer _messageEnqueuer;
         private readonly ITelemetryClient _telemetryClient;
@@ -25,7 +27,7 @@ namespace NuGet.Insights.Worker
         }
 
         public string Name => "Metrics";
-        public TimeSpan Frequency => TimeSpan.FromSeconds(30);
+        public TimeSpan Frequency => TimeSpan.FromSeconds(1);
         public bool AutoStart => true;
         public bool IsEnabled => true;
         public int Order => default;
@@ -56,8 +58,15 @@ namespace NuGet.Insights.Worker
                 sinceLastCompletion = DateTimeOffset.UtcNow - latestCompletedRun.Completed.Value;
             }
 
-            var metric = _telemetryClient.GetMetric("SinceLastWorkflowCompletedHours");
-            metric.TrackValue(sinceLastCompletion.TotalHours);
+            TrackMetric("SinceLastWorkflowCompletedHours", sinceLastCompletion.TotalHours);
+        }
+
+        private void TrackMetric(string name, double value)
+        {
+            // We use TrackMetric instead of GetMetric here to immediately send the data.
+            // GetMetric uses a 1 minute local aggregation period.
+            // Source: https://docs.microsoft.com/en-us/azure/azure-monitor/app/get-metric
+            _telemetryClient.TrackMetric(name, value, NoDimensions);
         }
 
         private async Task EmitQueueSizeMetricsAsync()
@@ -70,16 +79,15 @@ namespace NuGet.Insights.Worker
                 poison += await EmitQueueSizeAsync(_messageEnqueuer.GetPoisonApproximateMessageCountAsync(x), x, isPoison: true);
             }
 
-            _telemetryClient.GetMetric($"StorageQueueSize.Main").TrackValue(main);
-            _telemetryClient.GetMetric($"StorageQueueSize.Poison").TrackValue(poison);
-            _telemetryClient.GetMetric($"StorageQueueSize").TrackValue(main + poison);
+            TrackMetric("StorageQueueSize.Main", main);
+            TrackMetric("StorageQueueSize.Poison", poison);
+            TrackMetric("StorageQueueSize", main + poison);
         }
 
         private async Task<int> EmitQueueSizeAsync(Task<int> countAsync, QueueType queue, bool isPoison)
         {
             var count = await countAsync;
-            var metric = _telemetryClient.GetMetric($"StorageQueueSize.{queue}.{(isPoison ? "Poison" : "Main")}");
-            metric.TrackValue(count);
+            TrackMetric($"StorageQueueSize.{queue}.{(isPoison ? "Poison" : "Main")}", count);
             return count;
         }
 

@@ -28,7 +28,7 @@ namespace NuGet.Insights.Worker
 
         [FunctionName("TimerFunction")]
         public async Task TimerAsync(
-            [TimerTrigger("0 * * * * *")] TimerInfo timerInfo)
+            [TimerTrigger("0,15,30,45 * * * * *")] TimerInfo timerInfo)
         {
             await using var scopeOwnership = _tempStreamLeaseScope.TakeOwnership();
             if (!_isInitialized)
