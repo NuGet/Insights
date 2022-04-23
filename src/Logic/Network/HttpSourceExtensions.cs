@@ -19,7 +19,7 @@ namespace NuGet.Insights
     {
         private const int DefaultMaxTries = 3;
 
-        private static readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
+        internal static readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
         {
             Converters =
             {

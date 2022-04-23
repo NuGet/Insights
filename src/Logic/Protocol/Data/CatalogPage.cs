@@ -9,6 +9,9 @@ namespace NuGet.Insights
 {
     public class CatalogPage
     {
+        [JsonPropertyName("@id")]
+        public string Url { get; set; }
+
         [JsonPropertyName("commitTimeStamp")]
         public DateTimeOffset CommitTimestamp { get; set; }
 
