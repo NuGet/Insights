@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param (
     [Parameter(Mandatory = $true)]
-    [string]$BuildVersion,
+    [string]$DeploymentLabel,
     
     [Parameter(Mandatory = $true)]
     [string]$HostPattern,
@@ -35,7 +35,7 @@ $dotnetInstallPath = Join-Path $binDir "dotnet-install.ps1"
 $dotnetDir = Join-Path $binDir "Microsoft\dotnet"
 $dotnet = Join-Path $dotnetDir "dotnet.exe"
 $scheduledTaskName = "NuGet.Insights Standalone Worker"
-$installDir = Join-Path $binDir $BuildVersion
+$installDir = Join-Path $binDir $DeploymentLabel
 
 Function Get-Pattern($pattern) {
     if (![IO.Path]::IsPathRooted($pattern)) { $pattern = Join-Path $PSScriptRoot $pattern }
@@ -106,7 +106,7 @@ $hostEnv = [ordered]@{
     "ASPNETCORE_URLS"                                 = "http://localhost:$LocalHealthPort";
     "AzureFunctionsJobHost:Logging:Console:IsEnabled" = "false";
     "AzureWebJobsScriptRoot"                          = $appRoot;
-    "NuGet.Insights:BuildVersion"                     = $BuildVersion;
+    "NuGet.Insights:DeploymentLabel"                  = $DeploymentLabel;
     "WEBSITE_HOSTNAME"                                = "localhost:$LocalHealthPort"
     "DOTNET_gcServer"                                 = "1"
 }

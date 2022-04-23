@@ -142,7 +142,8 @@ function Get-TemplatePath($name) {
 }
 
 # Declare shared variables
-$ev2 = Join-Path $PSScriptRoot "../artifacts/ExpressV2"
+$artifacts = Join-Path $PSScriptRoot "../artifacts"
+$ev2 = Join-Path $artifacts "ExpressV2"
 $serviceResourceName = "Deploy.ResourceInstance"
 $websiteBinPath = "bin/Website.zip"
 $workerBinPath = "bin/Worker.zip"
@@ -150,6 +151,8 @@ $azureFunctionsHostBinPath = "bin/AzureFunctionsHost.zip"
 $workerStandaloneEnvPathPattern = "bin/WorkerStandalone.{0}.env"
 $installWorkerStandaloneSourcePath = Join-Path $PSScriptRoot "scripts\Install-WorkerStandalone.ps1"
 $installWorkerStandalonePath = "bin/Install-WorkerStandalone.ps1"
+$setDeploymentLabelSourcePath = Join-Path $PSScriptRoot "scripts\Set-DeploymentLabel.ps1"
+$setDeploymentLabelPath = "Set-DeploymentLabel.ps1"
 
 # Install Bicep, if needed.
 if (!(Get-Command bicep -CommandType Application -ErrorAction Ignore)) {
@@ -210,7 +213,7 @@ foreach ($configName in $ConfigNames) {
         throw "A website AAD client ID is required for generating Ev2 artifacts. You can use the prepare.ps1 script to create the AAD app registration for the first time. Specify a value in file $configPath at JSON path $.deployment.WebsiteAadAppClientId."
     }
 
-    $parameters = New-MainParameters $resourceSettings $websiteBinPath $workerBinPath
+    $parameters = New-MainParameters $resourceSettings $websiteBinPath $workerBinPath "PLACEHOLDER"
     $parametersPath = Join-Path $ev2 (Get-ParametersPath $resourceSettings.ConfigName)
     New-ParameterFile $parameters @("websiteZipUrl", "workerZipUrl") $parametersPath
     New-ServiceModelFile $resourceSettings
@@ -223,10 +226,11 @@ foreach ($configName in $ConfigNames) {
 
 $BuildVersion | Out-File (Join-Path $ev2 "BuildVer.txt") -NoNewline -Encoding UTF8
 
-# Copy the binaries
+# Copy the runtime assets
 Copy-Item $WebsiteZipPath -Destination (Join-Path $ev2 $websiteBinPath) -Verbose
 Copy-Item $WorkerZipPath -Destination (Join-Path $ev2 $workerBinPath) -Verbose
 Copy-Item $AzureFunctionsHostZipPath -Destination (Join-Path $ev2 $azureFunctionsHostBinPath) -Verbose
 Copy-Item $installWorkerStandaloneSourcePath -Destination (Join-Path $ev2 $installWorkerStandalonePath) -Verbose
-
 Write-Host "Wrote Ev2 files to: $ev2"
+
+Copy-Item $setDeploymentLabelSourcePath -Destination (Join-Path $artifacts $setDeploymentLabelPath) -Verbose

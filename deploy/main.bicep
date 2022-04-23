@@ -1,4 +1,5 @@
 // Parameters
+param deploymentLabel string
 param appInsightsName string
 param appInsightsDailyCapGb int
 param actionGroupName string
@@ -53,6 +54,10 @@ var sharedConfig = [
   {
     name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
     value: '~2'
+  }
+  {
+    name: 'NuGet.Insights:DeploymentLabel'
+    value: deploymentLabel
   }
   {
     name: 'NuGet.Insights:LeaseContainerName'

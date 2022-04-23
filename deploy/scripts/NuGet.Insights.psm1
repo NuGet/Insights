@@ -418,8 +418,9 @@ function Out-EnvFile() {
     }
 }
 
-function New-MainParameters($ResourceSettings, $WebsiteZipUrl, $WorkerZipUrl) {
+function New-MainParameters($ResourceSettings, $WebsiteZipUrl, $WorkerZipUrl, $DeploymentLabel) {
     $parameters = @{
+        deploymentLabel               = $DeploymentLabel;
         appInsightsName               = $ResourceSettings.AppInsightsName;
         appInsightsDailyCapGb         = $ResourceSettings.AppInsightsDailyCapGb;
         actionGroupName               = $ResourceSettings.ActionGroupName;
@@ -503,7 +504,7 @@ function Get-Bicep([switch]$DoNotThrow) {
     return $bicepExe, $bicepArgs
 }
 
-function New-Deployment($ResourceGroupName, $DeploymentDir, $DeploymentId, $DeploymentName, $BicepPath, $Parameters) {
+function New-Deployment($ResourceGroupName, $DeploymentDir, $DeploymentLabel, $DeploymentName, $BicepPath, $Parameters) {
     $parametersPath = Join-Path $DeploymentDir "$DeploymentName.deploymentParameters.json"
     New-ParameterFile $Parameters @() $parametersPath
 
@@ -518,7 +519,7 @@ function New-Deployment($ResourceGroupName, $DeploymentDir, $DeploymentId, $Depl
     return New-AzResourceGroupDeployment `
         -TemplateFile $templatePath `
         -ResourceGroupName $ResourceGroupName `
-        -Name "$DeploymentId-$DeploymentName" `
+        -Name "$DeploymentLabel-$DeploymentName" `
         -TemplateParameterFile $parametersPath `
         -ErrorAction Stop
 }
@@ -550,10 +551,10 @@ function Approve-SubscriptionId($configuredSubscriptionId) {
     Write-Status "Using subscription: $($context.Subscription.Id)"
 }
 
-function Get-DeploymentLocals($DeploymentId, $DeploymentDir) {
-    if (!$DeploymentId) {
-        $DeploymentId = (Get-Date).ToUniversalTime().ToString("yyyyMMddHHmmss")
-        Write-Status "Using deployment ID: $DeploymentId"
+function Get-DeploymentLocals($DeploymentLabel, $DeploymentDir) {
+    if (!$DeploymentLabel) {
+        $DeploymentLabel = (Get-Date).ToUniversalTime().ToString("yyyyMMddHHmmss")
+        Write-Status "Using deployment label: $DeploymentLabel"
     }
 
     if (!$DeploymentDir) {
@@ -561,7 +562,7 @@ function Get-DeploymentLocals($DeploymentId, $DeploymentDir) {
         Write-Status "Using deployment directory: $DeploymentDir"
     }
 
-    return $DeploymentId, $DeploymentDir
+    return $DeploymentLabel, $DeploymentDir
 }
 
 # Source: https://stackoverflow.com/a/57599481

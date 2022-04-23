@@ -4,7 +4,7 @@ param (
     $ResourceSettings,
     
     [Parameter(Mandatory = $false)]
-    [string]$DeploymentId,
+    [string]$DeploymentLabel,
 
     [Parameter(Mandatory = $false)]
     [string]$DeploymentDir,
@@ -21,12 +21,12 @@ param (
 
 Import-Module (Join-Path $PSScriptRoot "NuGet.Insights.psm1")
 
-$DeploymentId, $DeploymentDir = Get-DeploymentLocals $DeploymentId $DeploymentDir
+$DeploymentLabel, $DeploymentDir = Get-DeploymentLocals $DeploymentLabel $DeploymentDir
 
 # Prepare the storage and Key Vault
 . (Join-Path $PSScriptRoot "Invoke-Prepare.ps1") `
     -ResourceSettings $ResourceSettings `
-    -DeploymentId $DeploymentId `
+    -DeploymentLabel $DeploymentLabel `
     -DeploymentDir $DeploymentDir
 
 # Verify the number of function app is not decreasing. This is not supported by the script.
@@ -71,21 +71,21 @@ $workerStandaloneEnvPath = Join-Path $DeploymentDir "WorkerStandalone.env"
 New-WorkerStandaloneEnv $ResourceSettings | Out-EnvFile -FilePath $workerStandaloneEnvPath
 $installWorkerStandalonePath = Join-Path $PSScriptRoot "Install-WorkerStandalone.ps1"
 
-$websiteZipUrl = New-DeploymentFile $WebsiteZipPath "$DeploymentId/Website.zip"
-$workerZipUrl = New-DeploymentFile $WorkerZipPath "$DeploymentId/Worker.zip"
-$azureFunctionsHostZipUrl = New-DeploymentFile $AzureFunctionsHostZipPath "$DeploymentId/AzureFunctionsHost.zip"
-$workerStandaloneEnvUrl = New-DeploymentFile $workerStandaloneEnvPath "$DeploymentId/WorkerStandalone.env"
-$installWorkerStandaloneUrl = New-DeploymentFile $installWorkerStandalonePath "$DeploymentId/Install-WorkerStandalone.ps1"
+$websiteZipUrl = New-DeploymentFile $WebsiteZipPath "$DeploymentLabel/Website.zip"
+$workerZipUrl = New-DeploymentFile $WorkerZipPath "$DeploymentLabel/Worker.zip"
+$azureFunctionsHostZipUrl = New-DeploymentFile $AzureFunctionsHostZipPath "$DeploymentLabel/AzureFunctionsHost.zip"
+$workerStandaloneEnvUrl = New-DeploymentFile $workerStandaloneEnvPath "$DeploymentLabel/WorkerStandalone.env"
+$installWorkerStandaloneUrl = New-DeploymentFile $installWorkerStandalonePath "$DeploymentLabel/Install-WorkerStandalone.ps1"
 
 # Deploy the resources using the main ARM template
 Write-Status "Deploying the resources..."
 New-Deployment `
     -ResourceGroupName $ResourceSettings.ResourceGroupName `
     -DeploymentDir $DeploymentDir `
-    -DeploymentId $DeploymentId `
+    -DeploymentLabel $DeploymentLabel `
     -DeploymentName "main" `
     -BicepPath "../main.bicep" `
-    -Parameters (New-MainParameters $ResourceSettings $websiteZipUrl $workerZipUrl)
+    -Parameters (New-MainParameters $ResourceSettings $websiteZipUrl $workerZipUrl $DeploymentLabel)
 
 # Warm up the workers, since initial deployment appears to leave them in a hibernation state.
 Write-Status "Warming up the website and workers..."
