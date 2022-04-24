@@ -374,12 +374,12 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
                 .ToList();
         }
 
-        Task<ICatalogLeafItem> ICsvResultStorage<PackageCertificateRecord>.MakeReprocessItemOrNullAsync(PackageCertificateRecord record)
+        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageCertificateRecord record)
         {
             throw new NotImplementedException();
         }
 
-        Task<ICatalogLeafItem> ICsvResultStorage<CertificateRecord>.MakeReprocessItemOrNullAsync(CertificateRecord record)
+        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(CertificateRecord record)
         {
             throw new NotImplementedException();
         }

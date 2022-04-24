@@ -37,10 +37,6 @@ namespace NuGet.Insights.Worker
                 new[] { FlatContainer }
             },
             {
-                CatalogScanDriverType.CatalogLeafItemToCsv,
-                new[] { FlatContainer }
-            },
-            {
                 CatalogScanDriverType.LoadLatestPackageLeaf,
                 new[] { FlatContainer }
             },

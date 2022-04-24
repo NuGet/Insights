@@ -29,7 +29,7 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScanPerId
             var parameters = (CatalogIndexScanMessage)_serializer.Deserialize(pageScan.DriverParameters).Data;
             var indexScan = await _storageService.GetIndexScanAsync(parameters.CursorName, parameters.ScanId);
             var table = await _storageService.GetLeafScanTableAsync(indexScan.StorageSuffix);
-            return new LatestCatalogLeafScanPerIdStorage(table, indexScan);
+            return new LatestCatalogLeafScanPerIdStorage(table, indexScan, pageScan.Url);
         }
     }
 }

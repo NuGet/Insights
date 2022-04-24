@@ -60,35 +60,35 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             await _packageHashService.InitializeAsync();
         }
 
-        public async Task<DriverResult<CsvRecordSet<PackageAssembly>>> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSet<PackageAssembly>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
 
-            if (item.Type == CatalogLeafType.PackageDelete)
+            if (leafScan.LeafType == CatalogLeafType.PackageDelete)
             {
-                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
                 // We must clear the data related to deleted packages.
-                await _packageHashService.SetHashesAsync(item, hashes: null);
+                await _packageHashService.SetHashesAsync(leafScan, hashes: null);
 
-                return MakeResults(item, new List<PackageAssembly> { new PackageAssembly(scanId, scanTimestamp, leaf) });
+                return MakeResults(leafScan, new List<PackageAssembly> { new PackageAssembly(scanId, scanTimestamp, leaf) });
             }
             else
             {
-                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
                 var result = await _flatContainerClient.DownloadPackageContentToFileAsync(
-                    item.PackageId,
-                    item.PackageVersion,
+                    leafScan.PackageId,
+                    leafScan.PackageVersion,
                     CancellationToken.None);
 
                 if (result is null)
                 {
                     // We must clear the data related to deleted packages.
-                    await _packageHashService.SetHashesAsync(item, hashes: null);
+                    await _packageHashService.SetHashesAsync(leafScan, hashes: null);
 
-                    return MakeEmptyResults(item);
+                    return MakeEmptyResults(leafScan);
                 }
 
                 using (result.Value.Body)
@@ -100,7 +100,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                     }
 
                     // We have downloaded the full .nupkg here so we can capture the calculated hashes.
-                    await _packageHashService.SetHashesAsync(item, result.Value.Body.Hash);
+                    await _packageHashService.SetHashesAsync(leafScan, result.Value.Body.Hash);
 
                     using var zipArchive = new ZipArchive(result.Value.Body.Stream);
                     var entries = zipArchive
@@ -125,7 +125,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                         assemblies.Add(assemblyResult.Value);
                     }
 
-                    return MakeResults(item, assemblies);
+                    return MakeResults(leafScan, assemblies);
                 }
             }
         }
@@ -305,7 +305,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             assembly.CustomAttributes = JsonSerializer.Serialize(info.NameToParameters);
         }
 
-        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageAssembly record)
+        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageAssembly record)
         {
             throw new NotImplementedException();
         }

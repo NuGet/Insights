@@ -42,27 +42,27 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
         {
             await _packageManifestService.InitializeAsync();
         }
-        public async Task<DriverResult<CsvRecordSet<PackageManifestRecord>>> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSet<PackageManifestRecord>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
-            var records = await ProcessLeafInternalAsync(item);
-            return DriverResult.Success(new CsvRecordSet<PackageManifestRecord>(PackageRecord.GetBucketKey(item), records));
+            var records = await ProcessLeafInternalAsync(leafScan);
+            return DriverResult.Success(new CsvRecordSet<PackageManifestRecord>(PackageRecord.GetBucketKey(leafScan), records));
         }
 
-        private async Task<List<PackageManifestRecord>> ProcessLeafInternalAsync(ICatalogLeafItem item)
+        private async Task<List<PackageManifestRecord>> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
 
-            if (item.Type == CatalogLeafType.PackageDelete)
+            if (leafScan.LeafType == CatalogLeafType.PackageDelete)
             {
-                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
                 return new List<PackageManifestRecord> { new PackageManifestRecord(scanId, scanTimestamp, leaf) };
             }
             else
             {
-                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
-                var result = await _packageManifestService.GetNuspecReaderAndSizeAsync(item);
+                var result = await _packageManifestService.GetNuspecReaderAndSizeAsync(leafScan);
                 if (result == null)
                 {
                     // Ignore packages where the .nuspec is missing. A subsequent scan will produce a deleted asset record.
@@ -173,7 +173,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             return JsonSerializer.Serialize(input, JsonSerializerOptions);
         }
 
-        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageManifestRecord record)
+        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageManifestRecord record)
         {
             throw new NotImplementedException();
         }

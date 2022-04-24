@@ -21,17 +21,17 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
         public async Task HandlesEmbeddedReadme()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 PackageId = "Knapcode.TorSharp",
                 PackageVersion = "2.8.1",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 CommitTimestamp = DateTimeOffset.Parse("2021-08-06T00:31:15.51Z"),
                 Url = "https://api.nuget.org/v3/catalog0/data/2021.08.06.00.31.41/knapcode.torsharp.2.8.1.json",
             };
 
             // Act
-            var result = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var result = await Target.ProcessLeafAsync(leaf);
 
             // Assert
         }

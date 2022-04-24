@@ -42,25 +42,25 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             return Task.CompletedTask;
         }
 
-        public async Task<DriverResult<CsvRecordSet<PackageIcon>>> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSet<PackageIcon>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
-            (var resultType, var records) = await ProcessLeafInternalAsync(item);
+            (var resultType, var records) = await ProcessLeafInternalAsync(leafScan);
             if (resultType == TempStreamResultType.SemaphoreNotAvailable)
             {
                 return DriverResult.TryAgainLater<CsvRecordSet<PackageIcon>>();
             }
 
-            return DriverResult.Success(new CsvRecordSet<PackageIcon>(PackageRecord.GetBucketKey(item), records));
+            return DriverResult.Success(new CsvRecordSet<PackageIcon>(PackageRecord.GetBucketKey(leafScan), records));
         }
 
-        public async Task<(TempStreamResultType, List<PackageIcon>)> ProcessLeafInternalAsync(ICatalogLeafItem item)
+        public async Task<(TempStreamResultType, List<PackageIcon>)> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
 
-            if (item.Type == CatalogLeafType.PackageDelete)
+            if (leafScan.LeafType == CatalogLeafType.PackageDelete)
             {
-                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
                 return (
                     TempStreamResultType.Success,
                     new List<PackageIcon> { new PackageIcon(scanId, scanTimestamp, leaf) }
@@ -68,11 +68,11 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             }
             else
             {
-                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
                 var result = await _flatContainerClient.DownloadPackageIconToFileAsync(
-                    item.PackageId,
-                    item.PackageVersion,
+                    leafScan.PackageId,
+                    leafScan.PackageVersion,
                     CancellationToken.None);
 
                 if (result is null)
@@ -189,7 +189,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             return PackageRecord.Prune(records, isFinalPrune);
         }
 
-        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageIcon record)
+        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageIcon record)
         {
             throw new NotImplementedException();
         }

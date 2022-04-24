@@ -66,7 +66,7 @@ and how it fetches and persists data about packages.
    information in a catalog leaf item (package ID + version + leaf URL + type). You can do whatever you want to process
    that package. It's up to you to fetch the data about the package you care about and persist the results.
 
-   - Example implementation: [`CatalogLeafItemToCsv`](../src/Worker.Logic/CatalogScan/Drivers/CatalogLeafItemToCsv/CatalogLeafItemToCsvDriver.cs).
+   - Example implementation: [`BuildVersionSet`](../src/Worker.Logic/CatalogScan/Drivers/BuildVersionSet/BuildVersionSetDriver.cs).
      This driver operates that this level since it doesn't even need to process each leaf item individually. Instead, it
      can just observe the data at the [catalog page](https://docs.microsoft.com/en-us/nuget/api/catalog-resource#catalog-page)
      level and drive each leaf item to CSV.

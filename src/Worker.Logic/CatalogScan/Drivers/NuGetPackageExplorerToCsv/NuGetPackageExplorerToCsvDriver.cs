@@ -57,33 +57,33 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             return Task.CompletedTask;
         }
 
-        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(NuGetPackageExplorerRecord record)
+        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(NuGetPackageExplorerRecord record)
         {
             throw new NotImplementedException();
         }
 
-        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(NuGetPackageExplorerFile record)
+        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(NuGetPackageExplorerFile record)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<DriverResult<CsvRecordSets<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>>> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSets<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
-            (var record, var files) = await ProcessLeafInternalAsync(item, attemptCount);
-            var bucketKey = PackageRecord.GetBucketKey(item);
+            (var record, var files) = await ProcessLeafInternalAsync(leafScan);
+            var bucketKey = PackageRecord.GetBucketKey(leafScan);
             return DriverResult.Success(new CsvRecordSets<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>(
                 new CsvRecordSet<NuGetPackageExplorerRecord>(bucketKey, record != null ? new[] { record } : Array.Empty<NuGetPackageExplorerRecord>()),
                 new CsvRecordSet<NuGetPackageExplorerFile>(bucketKey, files ?? Array.Empty<NuGetPackageExplorerFile>())));
         }
 
-        private async Task<(NuGetPackageExplorerRecord, IReadOnlyList<NuGetPackageExplorerFile>)> ProcessLeafInternalAsync(ICatalogLeafItem item, int attemptCount)
+        private async Task<(NuGetPackageExplorerRecord, IReadOnlyList<NuGetPackageExplorerFile>)> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
 
-            if (item.Type == CatalogLeafType.PackageDelete)
+            if (leafScan.LeafType == CatalogLeafType.PackageDelete)
             {
-                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
                 return (
                     new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf),
                     new[] { new NuGetPackageExplorerFile(scanId, scanTimestamp, leaf) }
@@ -91,7 +91,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             }
             else
             {
-                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
                 var tempDir = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "npe"));
                 if (!Directory.Exists(tempDir))
@@ -102,7 +102,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                 var tempPath = Path.Combine(tempDir, StorageUtility.GenerateDescendingId().ToString() + ".nupkg");
                 try
                 {
-                    var exists = await DownloadToFileAsync(leaf, attemptCount, tempPath);
+                    var exists = await DownloadToFileAsync(leaf, leafScan.AttemptCount, tempPath);
                     if (!exists)
                     {
                         // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted record.
@@ -113,7 +113,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                         "Loading ZIP package for {Id} {Version} on attempt {AttemptCount}.",
                         leaf.PackageId,
                         leaf.PackageVersion,
-                        attemptCount);
+                        leafScan.AttemptCount);
 
                     ZipPackage zipPackage;
                     try
@@ -147,7 +147,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                                 "Starting symbol validation for {Id} {Version} on attempt {AttemptCount}.",
                                 leaf.PackageId,
                                 leaf.PackageVersion,
-                                attemptCount);
+                                leafScan.AttemptCount);
                             var symbolValidatorTask = symbolValidator.Validate(cts.Token);
 
                             var resultTask = await Task.WhenAny(delayTask, symbolValidatorTask);
@@ -155,7 +155,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                             {
                                 cts.Cancel();
 
-                                if (attemptCount > 3)
+                                if (leafScan.AttemptCount > 3)
                                 {
                                     _logger.LogWarning("Package {Id} {Version} had its symbol validation timeout.", leaf.PackageId, leaf.PackageVersion);
                                     return MakeSingleItem(scanId, scanTimestamp, leaf, NuGetPackageExplorerResultType.Timeout);
@@ -176,7 +176,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                             "Loading signature data for {Id} {Version} on attempt {AttemptCount}.",
                             leaf.PackageId,
                             leaf.PackageVersion,
-                            attemptCount);
+                            leafScan.AttemptCount);
 
                         await zipPackage.LoadSignatureDataAsync();
 
@@ -197,7 +197,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                                 "Getting all files for {Id} {Version} on attempt {AttemptCount}.",
                                 leaf.PackageId,
                                 leaf.PackageVersion,
-                                attemptCount);
+                                leafScan.AttemptCount);
 
                             foreach (var file in symbolValidator.GetAllFiles())
                             {

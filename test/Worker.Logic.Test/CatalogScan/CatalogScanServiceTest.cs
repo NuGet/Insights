@@ -221,7 +221,6 @@ namespace NuGet.Insights.Worker
                 {
                     CatalogScanDriverType.BuildVersionSet,
                     CatalogScanDriverType.CatalogDataToCsv,
-                    CatalogScanDriverType.CatalogLeafItemToCsv,
                     CatalogScanDriverType.LoadLatestPackageLeaf,
                     CatalogScanDriverType.LoadPackageArchive,
                     CatalogScanDriverType.LoadPackageManifest,
@@ -435,19 +434,6 @@ namespace NuGet.Insights.Worker
             },
 
             {
-                CatalogScanDriverType.CatalogLeafItemToCsv,
-                new DriverInfo
-                {
-                    DefaultMin = CatalogClient.NuGetOrgMin,
-                    SetDependencyCursorAsync = (self, x) =>
-                    {
-                        self.FlatContainerCursor = x;
-                        return Task.CompletedTask;
-                    },
-                }
-            },
-
-            {
                 CatalogScanDriverType.LoadLatestPackageLeaf,
                 new DriverInfo
                 {
@@ -541,7 +527,7 @@ namespace NuGet.Insights.Worker
                 CatalogScanDriverType.CatalogDataToCsv,
                 new DriverInfo
                 {
-                    DefaultMin = CatalogClient.NuGetOrgMinDeleted,
+                    DefaultMin = CatalogClient.NuGetOrgMin,
                     SetDependencyCursorAsync = (self, x) =>
                     {
                         self.FlatContainerCursor = x;

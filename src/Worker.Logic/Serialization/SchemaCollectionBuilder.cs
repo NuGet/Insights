@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
 using NuGet.Insights.Worker.CatalogDataToCsv;
-using NuGet.Insights.Worker.CatalogLeafItemToCsv;
 using NuGet.Insights.Worker.EnqueueCatalogLeafScan;
 using NuGet.Insights.Worker.KustoIngestion;
 using NuGet.Insights.Worker.LoadLatestPackageLeaf;

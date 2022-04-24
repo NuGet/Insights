@@ -34,6 +34,6 @@ namespace NuGet.Insights.Worker
         /// </summary>
         /// <param name="record">The record to test for reprocessing.</param>
         /// <returns>A catalog leaf item that should be reprocessing, null if the record should not be reprocessed.</returns>
-        Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(T record);
+        Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(T record);
     }
 }

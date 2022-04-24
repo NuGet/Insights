@@ -23,15 +23,15 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
         public async Task SimplePackage()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.10.05.23.43.05/microsoft.codecoverage.1.0.3.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "Microsoft.CodeCoverage",
                 PackageVersion = "1.0.3",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
@@ -52,15 +52,15 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
         public async Task ComplexPackage()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.10.15.01.02.18/newtonsoft.json.11.0.1.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "Newtonsoft.Json",
                 PackageVersion = "11.0.1",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
@@ -81,15 +81,15 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
         public async Task InvalidPortable()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.11.30.01.37.28/chatwork.api.0.3.2.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "Chatwork.Api",
                 PackageVersion = "0.3.2",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
@@ -110,15 +110,15 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
         public async Task UnsupportedFramework()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2021.07.17.13.16.14/lagovista.useradmin.rest.3.0.1522.906.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "LagoVista.UserAdmin.Rest",
                 PackageVersion = "3.0.1522.906",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
@@ -139,15 +139,15 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
         public async Task BrokenFrameworkDueToPercent()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.12.07.00.07.31/bbv.common.windows.7.1.1187.412.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "bbv.Common.Windows",
                 PackageVersion = "7.1.1187.412",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
@@ -168,15 +168,15 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
         public async Task BrokenFrameworkDueToSpace()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2020.04.18.18.06.11/base4entity.2.1.8.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "Base4Entity",
                 PackageVersion = "2.1.8",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
@@ -197,15 +197,15 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
         public async Task BrokenFrameworkDueToUnderscore()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.11.23.01.41.56/abb.ahc.models.api.5.0.1.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "ABB.AHC.Models.API",
                 PackageVersion = "5.0.1",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);

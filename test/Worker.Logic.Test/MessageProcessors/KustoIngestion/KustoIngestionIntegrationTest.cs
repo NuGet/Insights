@@ -38,11 +38,8 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
                 await CatalogScanService.InitializeAsync();
                 await SetCursorAsync(CatalogScanDriverType.LoadPackageManifest, max1);
-                await SetCursorAsync(CatalogScanDriverType.CatalogLeafItemToCsv, min0);
                 await SetCursorAsync(CatalogScanDriverType.PackageManifestToCsv, min0);
-                var catalogLeafItemToCsvResult = await CatalogScanService.UpdateAsync(CatalogScanDriverType.CatalogLeafItemToCsv, max1);
                 var packageManifestToCsvResult = await CatalogScanService.UpdateAsync(CatalogScanDriverType.PackageManifestToCsv, max1);
-                await UpdateAsync(catalogLeafItemToCsvResult.Scan);
                 await UpdateAsync(packageManifestToCsvResult.Scan);
 
                 await KustoIngestionService.InitializeAsync();
@@ -52,29 +49,20 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 ingestion = await UpdateAsync(ingestion);
 
                 // Assert
-                VerifyCommand(".drop table ACatalogLeafItemsZ_Temp ifexists", Times.Once());
                 VerifyCommand(".drop table APackageManifestsZ_Temp ifexists", Times.Once());
-                VerifyCommandStartsWith(".create table ACatalogLeafItemsZ_Temp (", Times.Once());
                 VerifyCommandStartsWith(".create table APackageManifestsZ_Temp (", Times.Once());
-                VerifyCommand(".alter-merge table ACatalogLeafItemsZ_Temp policy retention softdelete = 30d", Times.Once());
                 VerifyCommand(".alter-merge table APackageManifestsZ_Temp policy retention softdelete = 30d", Times.Once());
-                VerifyCommandStartsWith(".create table ACatalogLeafItemsZ_Temp ingestion csv mapping 'BlobStorageMapping'", Times.Once());
                 VerifyCommandStartsWith(".create table APackageManifestsZ_Temp ingestion csv mapping 'BlobStorageMapping'", Times.Once());
-                VerifyCommand(".drop tables (ACatalogLeafItemsZ_Old, APackageManifestsZ_Old) ifexists", Times.Exactly(2));
-                VerifyCommand(".rename tables ACatalogLeafItemsZ_Old = ACatalogLeafItemsZ ifexists, ACatalogLeafItemsZ = ACatalogLeafItemsZ_Temp, APackageManifestsZ_Old = APackageManifestsZ ifexists, APackageManifestsZ = APackageManifestsZ_Temp", Times.Once());
+                VerifyCommand(".drop tables (APackageManifestsZ_Old) ifexists", Times.Exactly(2));
+                VerifyCommand(".rename tables APackageManifestsZ_Old = APackageManifestsZ ifexists, APackageManifestsZ = APackageManifestsZ_Temp", Times.Once());
                 if (applyPartitioningPolicy)
                 {
-                    VerifyCommandStartsWith(".alter table ACatalogLeafItemsZ_Temp policy partitioning '{'", Times.Once());
                     VerifyCommandStartsWith(".alter table APackageManifestsZ_Temp policy partitioning '{'", Times.Once());
                 }
                 Assert.Equal(
-                    applyPartitioningPolicy ? 13 : 11,
+                    applyPartitioningPolicy ? 8 : 7,
                     MockCslAdminProvider.Invocations.Count(x => x.Method.Name != nameof(IDisposable.Dispose)));
 
-                MockKustoQueueIngestClient.Verify(x => x.IngestFromStorageAsync(
-                    It.Is<string>(y => y.Contains($"/{Options.Value.CatalogLeafItemContainerName}/compact_0.csv.gz?")),
-                    It.IsAny<KustoIngestionProperties>(),
-                    It.IsAny<StorageSourceOptions>()), Times.Once);
                 MockKustoQueueIngestClient.Verify(x => x.IngestFromStorageAsync(
                     It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainerName}/compact_0.csv.gz?")),
                     It.IsAny<KustoIngestionProperties>(),
@@ -83,7 +71,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                     It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainerName}/compact_1.csv.gz?")),
                     It.IsAny<KustoIngestionProperties>(),
                     It.IsAny<StorageSourceOptions>()), Times.Once);
-                Assert.Equal(3, MockKustoQueueIngestClient.Invocations.Count(x => x.Method.Name != nameof(IDisposable.Dispose)));
+                Assert.Equal(2, MockKustoQueueIngestClient.Invocations.Count(x => x.Method.Name != nameof(IDisposable.Dispose)));
                 var urls = MockKustoQueueIngestClient
                     .Invocations
                     .Where(x => x.Method.Name == nameof(IKustoQueuedIngestClient.IngestFromStorageAsync))
@@ -136,11 +124,8 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
                 await CatalogScanService.InitializeAsync();
                 await SetCursorAsync(CatalogScanDriverType.LoadPackageManifest, max1);
-                await SetCursorAsync(CatalogScanDriverType.CatalogLeafItemToCsv, min0);
                 await SetCursorAsync(CatalogScanDriverType.PackageManifestToCsv, min0);
-                var catalogLeafItemToCsvResult = await CatalogScanService.UpdateAsync(CatalogScanDriverType.CatalogLeafItemToCsv, max1);
                 var packageManifestToCsvResult = await CatalogScanService.UpdateAsync(CatalogScanDriverType.PackageManifestToCsv, max1);
-                await UpdateAsync(catalogLeafItemToCsvResult.Scan);
                 await UpdateAsync(packageManifestToCsvResult.Scan);
 
                 await KustoIngestionService.InitializeAsync();
@@ -150,26 +135,16 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 ingestion = await UpdateAsync(ingestion);
 
                 // Assert
-                VerifyCommand(".drop table ACatalogLeafItemsZ_Temp ifexists", Times.Once());
                 VerifyCommand(".drop table APackageManifestsZ_Temp ifexists", Times.Exactly(3));
-                VerifyCommandStartsWith(".create table ACatalogLeafItemsZ_Temp (", Times.Once());
                 VerifyCommandStartsWith(".create table APackageManifestsZ_Temp (", Times.Exactly(3));
-                VerifyCommand(".alter-merge table ACatalogLeafItemsZ_Temp policy retention softdelete = 30d", Times.Once());
                 VerifyCommand(".alter-merge table APackageManifestsZ_Temp policy retention softdelete = 30d", Times.Exactly(3));
-                VerifyCommandStartsWith(".create table ACatalogLeafItemsZ_Temp ingestion csv mapping 'BlobStorageMapping'", Times.Once());
                 VerifyCommandStartsWith(".create table APackageManifestsZ_Temp ingestion csv mapping 'BlobStorageMapping'", Times.Exactly(3));
-                VerifyCommand(".drop tables (ACatalogLeafItemsZ_Old, APackageManifestsZ_Old) ifexists", Times.Exactly(2));
-                VerifyCommand(".rename tables ACatalogLeafItemsZ_Old = ACatalogLeafItemsZ ifexists, ACatalogLeafItemsZ = ACatalogLeafItemsZ_Temp, APackageManifestsZ_Old = APackageManifestsZ ifexists, APackageManifestsZ = APackageManifestsZ_Temp", Times.Once());
-                VerifyCommandStartsWith(".alter table ACatalogLeafItemsZ_Temp policy partitioning '{'", Times.Once());
+                VerifyCommand(".rename tables APackageManifestsZ_Old = APackageManifestsZ ifexists, APackageManifestsZ = APackageManifestsZ_Temp", Times.Once());
                 VerifyCommandStartsWith(".alter table APackageManifestsZ_Temp policy partitioning '{'", Times.Exactly(3));
                 Assert.Equal(
-                    23,
+                    18,
                     MockCslAdminProvider.Invocations.Count(x => x.Method.Name != nameof(IDisposable.Dispose)));
 
-                MockKustoQueueIngestClient.Verify(x => x.IngestFromStorageAsync(
-                    It.Is<string>(y => y.Contains($"/{Options.Value.CatalogLeafItemContainerName}/compact_0.csv.gz?")),
-                    It.IsAny<KustoIngestionProperties>(),
-                    It.IsAny<StorageSourceOptions>()), Times.Once);
                 MockKustoQueueIngestClient.Verify(x => x.IngestFromStorageAsync(
                     It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainerName}/compact_0.csv.gz?")),
                     It.IsAny<KustoIngestionProperties>(),
@@ -178,7 +153,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                     It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainerName}/compact_1.csv.gz?")),
                     It.IsAny<KustoIngestionProperties>(),
                     It.IsAny<StorageSourceOptions>()), Times.Exactly(3));
-                Assert.Equal(7, MockKustoQueueIngestClient.Invocations.Count(x => x.Method.Name != nameof(IDisposable.Dispose)));
+                Assert.Equal(6, MockKustoQueueIngestClient.Invocations.Count(x => x.Method.Name != nameof(IDisposable.Dispose)));
                 var urls = MockKustoQueueIngestClient
                     .Invocations
                     .Where(x => x.Method.Name == nameof(IKustoQueuedIngestClient.IngestFromStorageAsync))

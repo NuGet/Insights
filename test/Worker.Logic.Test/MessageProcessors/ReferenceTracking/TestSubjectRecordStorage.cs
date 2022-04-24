@@ -20,7 +20,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
 
         public string ResultContainerName => _options.Value.CatalogLeafItemContainerName;
 
-        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(TestSubjectRecord record)
+        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(TestSubjectRecord record)
         {
             throw new NotImplementedException();
         }

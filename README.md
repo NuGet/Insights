@@ -183,7 +183,6 @@ If any of these steps does not complete, the workflow hangs and no further worfl
 The current drivers for analyzing NuGet.org packages are:
 
 - [`CatalogDataToCsv`](src/Worker.Logic/CatalogScan/Drivers/CatalogDataToCsv/CatalogDataToCsvDriver.cs) - extract data found in the catalog to CSV, e.g. deprecation and vulnerability
-- [`CatalogLeafItemToCsv`](src/Worker.Logic/CatalogScan/Drivers/CatalogLeafItemToCsv/CatalogLeafItemToCsvDriver.cs) - write all catalog leaf items (very minimal data)
 - [`NuGetPackageExplorerToCsv`](src/Worker.Logic/CatalogScan/Drivers/NuGetPackageExplorerToCsv/NuGetPackageExplorerToCsvDriver.cs) - run NuGet Package Explore APIs to determine reproducibility
 - [`PackageArchiveToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageArchiveToCsv/PackageArchiveToCsvDriver.cs) - find info about all ZIP entries in the .nupkg
 - [`PackageAssemblyToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageAssemblyToCsv/PackageAssemblyToCsvDriver.cs) - find stuff like public key tokens in assemblies using `System.Reflection.Metadata`

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -47,6 +47,19 @@ namespace NuGet.Insights.Worker
             {
                 new CatalogScanToCsvStorage<T1>(storage1.ResultContainerName, 0, this),
                 new CatalogScanToCsvStorage<T2>(storage2.ResultContainerName, 1, this),
+            };
+        }
+
+        public IReadOnlyList<ICsvTemporaryStorage> Create<T1, T2, T3>(ICsvResultStorage<T1> storage1, ICsvResultStorage<T2> storage2, ICsvResultStorage<T3> storage3)
+            where T1 : class, ICsvRecord
+            where T2 : class, ICsvRecord
+            where T3 : class, ICsvRecord
+        {
+            return new ICsvTemporaryStorage[]
+            {
+                new CatalogScanToCsvStorage<T1>(storage1.ResultContainerName, 0, this),
+                new CatalogScanToCsvStorage<T2>(storage2.ResultContainerName, 1, this),
+                new CatalogScanToCsvStorage<T3>(storage3.ResultContainerName, 2, this),
             };
         }
 

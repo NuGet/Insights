@@ -41,26 +41,26 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
             await _packageReadmeService.InitializeAsync();
         }
 
-        public async Task<DriverResult<CsvRecordSet<PackageReadme>>> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSet<PackageReadme>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
-            var records = await ProcessLeafInternalAsync(item);
-            return DriverResult.Success(new CsvRecordSet<PackageReadme>(PackageRecord.GetBucketKey(item), records));
+            var records = await ProcessLeafInternalAsync(leafScan);
+            return DriverResult.Success(new CsvRecordSet<PackageReadme>(PackageRecord.GetBucketKey(leafScan), records));
         }
 
-        private async Task<List<PackageReadme>> ProcessLeafInternalAsync(ICatalogLeafItem item)
+        private async Task<List<PackageReadme>> ProcessLeafInternalAsync(CatalogLeafScan leafItem)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
 
-            if (item.Type == CatalogLeafType.PackageDelete)
+            if (leafItem.LeafType == CatalogLeafType.PackageDelete)
             {
-                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafItem.LeafType, leafItem.Url);
                 return new List<PackageReadme> { new PackageReadme(scanId, scanTimestamp, leaf) };
             }
             else
             {
-                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
-                var info = await _packageReadmeService.GetOrUpdateInfoAsync(item);
+                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafItem.LeafType, leafItem.Url);
+                var info = await _packageReadmeService.GetOrUpdateInfoAsync(leafItem);
                 return new List<PackageReadme> { GetRecord(scanId, scanTimestamp, leaf, info) };
             }
         }
@@ -110,7 +110,7 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
             return record;
         }
 
-        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageReadme record)
+        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageReadme record)
         {
             throw new NotImplementedException();
         }

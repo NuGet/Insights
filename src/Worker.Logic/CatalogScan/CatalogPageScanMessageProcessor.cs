@@ -144,6 +144,7 @@ namespace NuGet.Insights.Worker
                     DriverType = scan.DriverType,
                     DriverParameters = scan.DriverParameters,
                     Url = x.Url,
+                    PageUrl = scan.Url,
                     LeafType = x.Type,
                     CommitId = x.CommitId,
                     CommitTimestamp = x.CommitTimestamp,

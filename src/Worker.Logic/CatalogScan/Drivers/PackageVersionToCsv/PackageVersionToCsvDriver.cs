@@ -37,19 +37,19 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
             await _storageService.InitializeAsync();
         }
 
-        public async Task<DriverResult<CsvRecordSet<PackageVersionRecord>>> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSet<PackageVersionRecord>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
-            var records = await ProcessLeafInternalAsync(item);
-            return DriverResult.Success(new CsvRecordSet<PackageVersionRecord>(bucketKey: item.PackageId.ToLowerInvariant(), records: records));
+            var records = await ProcessLeafInternalAsync(leafScan);
+            return DriverResult.Success(new CsvRecordSet<PackageVersionRecord>(bucketKey: leafScan.PackageId.ToLowerInvariant(), records: records));
         }
 
-        private async Task<List<PackageVersionRecord>> ProcessLeafInternalAsync(ICatalogLeafItem item)
+        private async Task<List<PackageVersionRecord>> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
 
             // Fetch all of the known versions for this package ID.
-            var entities = await _storageService.GetAsync(item.PackageId);
+            var entities = await _storageService.GetAsync(leafScan.PackageId);
 
             // Parse the NuGet version for all entities
             var entityToNuGetVersion = entities
@@ -98,7 +98,7 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
             return records;
         }
 
-        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageVersionRecord record)
+        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageVersionRecord record)
         {
             throw new NotImplementedException();
         }

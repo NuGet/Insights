@@ -117,7 +117,7 @@ namespace NuGet.Insights.Worker
             switch (driverType)
             {
                 case CatalogScanDriverType.BuildVersionSet:
-                case CatalogScanDriverType.CatalogLeafItemToCsv:
+                case CatalogScanDriverType.CatalogDataToCsv:
                     return false;
 
                 case CatalogScanDriverType.LoadLatestPackageLeaf:
@@ -138,7 +138,6 @@ namespace NuGet.Insights.Worker
 #endif
                 case CatalogScanDriverType.PackageCompatibilityToCsv:
                 case CatalogScanDriverType.PackageIconToCsv:
-                case CatalogScanDriverType.CatalogDataToCsv:
                     return null;
 
                 case CatalogScanDriverType.LoadPackageArchive:
@@ -230,10 +229,10 @@ namespace NuGet.Insights.Worker
 
             switch (driverType)
             {
-                case CatalogScanDriverType.CatalogLeafItemToCsv:
-                    return await UpdateAsync(
+                case CatalogScanDriverType.CatalogDataToCsv:
+                    return await UpdateCatalogLeafToCsvAsync(
                         driverType,
-                        parameters: null,
+                        onlyLatestLeaves: false,
                         CatalogClient.NuGetOrgMin,
                         max,
                         continueWithDependents);
@@ -253,10 +252,10 @@ namespace NuGet.Insights.Worker
 #endif
                 case CatalogScanDriverType.PackageCompatibilityToCsv:
                 case CatalogScanDriverType.PackageIconToCsv:
-                case CatalogScanDriverType.CatalogDataToCsv:
                     return await UpdateCatalogLeafToCsvAsync(
                         driverType,
                         onlyLatestLeaves.GetValueOrDefault(true),
+                        onlyLatestLeaves.GetValueOrDefault(true) ? CatalogClient.NuGetOrgMinDeleted : CatalogClient.NuGetOrgMinAvailable,
                         max,
                         continueWithDependents);
 
@@ -313,6 +312,7 @@ namespace NuGet.Insights.Worker
         private async Task<CatalogScanServiceResult> UpdateCatalogLeafToCsvAsync(
             CatalogScanDriverType driverType,
             bool onlyLatestLeaves,
+            DateTimeOffset min,
             DateTimeOffset? max,
             bool continueWithDependents)
         {
@@ -324,7 +324,7 @@ namespace NuGet.Insights.Worker
             return await UpdateAsync(
                 driverType,
                 parameters: _serializer.Serialize(parameters).AsString(),
-                onlyLatestLeaves ? CatalogClient.NuGetOrgMinDeleted : CatalogClient.NuGetOrgMinAvailable,
+                min,
                 max,
                 continueWithDependents);
         }

@@ -62,4 +62,36 @@ namespace NuGet.Insights.Worker
                 result.TryAgainLater);
         }
     }
+
+    public class CatalogLeafScanToCsvBatchAdapter<T1, T2, T3> : BaseCatalogLeafScanToCsvBatchAdapter, ICatalogLeafScanBatchDriver
+        where T1 : class, ICsvRecord
+        where T2 : class, ICsvRecord
+        where T3 : class, ICsvRecord
+    {
+        private readonly ICatalogLeafToCsvBatchDriver<T1, T2, T3> _driver;
+
+        public CatalogLeafScanToCsvBatchAdapter(
+            SchemaSerializer schemaSerializer,
+            CsvTemporaryStorageFactory intermediateStorageFactory,
+            ICsvResultStorage<T1> resultStorage1,
+            ICsvResultStorage<T2> resultStorage2,
+            ICsvResultStorage<T3> resultStorage3,
+            ICatalogLeafToCsvBatchDriver<T1, T2, T3> driver) : base(
+                schemaSerializer,
+                intermediateStorageFactory,
+                intermediateStorageFactory.Create(resultStorage1, resultStorage2, resultStorage3),
+                driver)
+        {
+            _driver = driver;
+        }
+
+        protected override async Task<BatchMessageProcessorResult<IReadOnlyList<IReadOnlyList<ICsvRecordSet<ICsvRecord>>>, CatalogLeafScan>> ProcessLeafAsync(IReadOnlyList<CatalogLeafScan> leafScans)
+        {
+            var result = await _driver.ProcessLeavesAsync(leafScans);
+            return new BatchMessageProcessorResult<IReadOnlyList<IReadOnlyList<ICsvRecordSet<ICsvRecord>>>, CatalogLeafScan>(
+                result.Result,
+                result.Failed,
+                result.TryAgainLater);
+        }
+    }
 }

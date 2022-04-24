@@ -55,34 +55,34 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             await _packageManifestService.InitializeAsync();
         }
 
-        public async Task<DriverResult<CsvRecordSet<PackageCompatibility>>> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSet<PackageCompatibility>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
-            var records = await ProcessLeafInternalAsync(item);
-            return DriverResult.Success(new CsvRecordSet<PackageCompatibility>(PackageRecord.GetBucketKey(item), records));
+            var records = await ProcessLeafInternalAsync(leafScan);
+            return DriverResult.Success(new CsvRecordSet<PackageCompatibility>(PackageRecord.GetBucketKey(leafScan), records));
         }
 
-        private async Task<List<PackageCompatibility>> ProcessLeafInternalAsync(ICatalogLeafItem item)
+        private async Task<List<PackageCompatibility>> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
 
-            if (item.Type == CatalogLeafType.PackageDelete)
+            if (leafScan.LeafType == CatalogLeafType.PackageDelete)
             {
-                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
                 return new List<PackageCompatibility> { new PackageCompatibility(scanId, scanTimestamp, leaf) };
             }
             else
             {
-                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
-                var zipDirectory = await _packageFileService.GetZipDirectoryAsync(item);
+                var zipDirectory = await _packageFileService.GetZipDirectoryAsync(leafScan);
                 if (zipDirectory == null)
                 {
                     // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted record.
                     return new List<PackageCompatibility>();
                 }
 
-                var result = await _packageManifestService.GetBytesAndNuspecReaderAsync(item);
+                var result = await _packageManifestService.GetBytesAndNuspecReaderAsync(leafScan);
                 if (result == null)
                 {
                     // Ignore packages where the .nuspec is missing. A subsequent scan will produce a deleted record.
@@ -111,7 +111,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                     out List<NuGetFramework> roundTripFrameworks)
                 {
                     return GetAndSerialize(
-                        item,
+                        leafScan,
                         ref hasError,
                         ref doesNotRoundTrip,
                         ref hasAny,
@@ -268,7 +268,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             return PackageRecord.Prune(records, isFinalPrune);
         }
 
-        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageCompatibility record)
+        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageCompatibility record)
         {
             throw new NotImplementedException();
         }

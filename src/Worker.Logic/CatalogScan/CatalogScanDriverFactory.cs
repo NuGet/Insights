@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NuGet.Insights.Worker.BuildVersionSet;
 using NuGet.Insights.Worker.CatalogDataToCsv;
-using NuGet.Insights.Worker.CatalogLeafItemToCsv;
 using NuGet.Insights.Worker.FindLatestCatalogLeafScanPerId;
 using NuGet.Insights.Worker.LoadLatestPackageLeaf;
 using NuGet.Insights.Worker.LoadPackageArchive;
@@ -87,8 +86,6 @@ namespace NuGet.Insights.Worker
 
                 case CatalogScanDriverType.BuildVersionSet:
                     return _serviceProvider.GetRequiredService<BuildVersionSetDriver>();
-                case CatalogScanDriverType.CatalogLeafItemToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafItemToCsvDriver>();
                 case CatalogScanDriverType.LoadLatestPackageLeaf:
                     return _serviceProvider.GetRequiredService<FindLatestLeafDriver<LatestPackageLeaf>>();
                 case CatalogScanDriverType.PackageArchiveToCsv:
@@ -114,7 +111,7 @@ namespace NuGet.Insights.Worker
                 case CatalogScanDriverType.PackageIconToCsv:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageIcon>>();
                 case CatalogScanDriverType.CatalogDataToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageDeprecationRecord, PackageVulnerabilityRecord>>();
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageDeprecationRecord, PackageVulnerabilityRecord, CatalogLeafItemRecord>>();
                 default:
                     throw new NotSupportedException($"Catalog scan driver type '{driverType}' is not supported.");
             }

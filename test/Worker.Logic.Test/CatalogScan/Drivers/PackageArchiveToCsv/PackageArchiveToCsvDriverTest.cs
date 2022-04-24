@@ -25,17 +25,17 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
         [Fact]
         public async Task ReturnsDeleted()
         {
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2017.11.08.17.42.28/nuget.platform.1.0.0.json",
-                Type = CatalogLeafType.PackageDelete,
+                LeafType = CatalogLeafType.PackageDelete,
                 CommitTimestamp = DateTimeOffset.Parse("2017-11-08T17:42:28.5677911Z"),
                 PackageId = "NuGet.Platform",
                 PackageVersion = "1.0.0",
             };
             await InitializeAsync(leaf);
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(Assert.Single(output.Value.Sets1).Records);
@@ -48,17 +48,17 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
         public async Task ReturnsEmptyIfMissing()
         {
             // This package was deleted by a subsequent leaf.
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2015.06.13.03.41.09/nuget.platform.1.0.0.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 CommitTimestamp = DateTimeOffset.Parse("2015-06-13T03:41:09.5185838Z"),
                 PackageId = "NuGet.Platform",
                 PackageVersion = "1.0.0",
             };
             await InitializeAsync(leaf);
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             Assert.Empty(Assert.Single(output.Value.Sets1).Records);
@@ -69,17 +69,17 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
         [Fact]
         public async Task GetsPackageArchiveEntries()
         {
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.08.28.22.26.57/loshar.my.package.1.0.0.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 CommitTimestamp = DateTimeOffset.Parse("2018-08-28T22:26:57.4218948Z"),
                 PackageId = "Loshar.My.Package",
                 PackageVersion = "1.0.0",
             };
             await InitializeAsync(leaf);
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var archive = Assert.Single(Assert.Single(output.Value.Sets1).Records);
@@ -186,17 +186,17 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
         [Fact]
         public async Task AcceptsDuplicateEntries()
         {
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2019.12.03.16.44.55/microsoft.extensions.configuration.3.1.0.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 CommitTimestamp = DateTimeOffset.Parse("2019-12-03T16:44:55.0668686Z"),
                 PackageId = "Microsoft.Extensions.Configuration",
                 PackageVersion = "3.1.0",
             };
             await InitializeAsync(leaf);
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var archive = Assert.Single(Assert.Single(output.Value.Sets1).Records);
@@ -244,10 +244,10 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Empty(entries[7].Comment);
         }
 
-        private async Task InitializeAsync(CatalogLeafItem leaf)
+        private async Task InitializeAsync(CatalogLeafScan leaf)
         {
             await PackageAssemblyToCsv.InitializeAsync();
-            await PackageAssemblyToCsv.ProcessLeafAsync(leaf, attemptCount: 1);
+            await PackageAssemblyToCsv.ProcessLeafAsync(leaf);
             await Target.InitializeAsync();
         }
     }

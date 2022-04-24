@@ -10,11 +10,40 @@ using Xunit.Abstractions;
 
 namespace NuGet.Insights.Worker.CatalogDataToCsv
 {
-    public class CatalogDataToCsvIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest<PackageDeprecationRecord, PackageVulnerabilityRecord>
+    public class CatalogDataToCsvIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest<PackageDeprecationRecord, PackageVulnerabilityRecord, CatalogLeafItemRecord>
     {
+        private const string CatalogDataToCsvDir = nameof(CatalogDataToCsv);
         private const string CatalogDataToCsv_DeprecationDir = nameof(CatalogDataToCsv_Deprecation);
         private const string CatalogDataToCsv_VulnerabilitiesDir = nameof(CatalogDataToCsv_Vulnerabilities);
+        private const string CatalogDataToCsv_WithDuplicatesDir = nameof(CatalogDataToCsv_WithDuplicates);
         private const string CatalogDataToCsv_WithDeleteDir = nameof(CatalogDataToCsv_WithDelete);
+
+        public class CatalogDataToCsv : CatalogDataToCsvIntegrationTest
+        {
+            public CatalogDataToCsv(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+                : base(output, factory)
+            {
+            }
+
+            [Fact]
+            public async Task Execute()
+            {
+                ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
+
+                // Arrange
+                var min0 = DateTimeOffset.Parse("2020-12-27T05:06:30.4180312Z");
+                var max1 = DateTimeOffset.Parse("2020-12-27T05:07:45.7628472Z");
+
+                await CatalogScanService.InitializeAsync();
+                await SetCursorAsync(min0);
+
+                // Act
+                await UpdateAsync(max1);
+
+                // Assert
+                await AssertOutputAsync(CatalogDataToCsvDir, Step1, 0);
+            }
+        }
 
         public class CatalogDataToCsv_Deprecation : CatalogDataToCsvIntegrationTest
         {
@@ -39,11 +68,13 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
                 // Assert
                 await AssertBlobCountAsync(DestinationContainerName1, 3);
                 await AssertBlobCountAsync(DestinationContainerName2, 3);
+                await AssertBlobCountAsync(DestinationContainerName3, 3);
                 await AssertOutputAsync(CatalogDataToCsv_DeprecationDir, Step1, 0);
                 await AssertOutputAsync(CatalogDataToCsv_DeprecationDir, Step1, 1);
                 await AssertOutputAsync(CatalogDataToCsv_DeprecationDir, Step1, 2);
             }
         }
+
         public class CatalogDataToCsv_Vulnerabilities : CatalogDataToCsvIntegrationTest
         {
             public CatalogDataToCsv_Vulnerabilities(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
@@ -67,9 +98,37 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
                 // Assert
                 await AssertBlobCountAsync(DestinationContainerName1, 3);
                 await AssertBlobCountAsync(DestinationContainerName2, 3);
+                await AssertBlobCountAsync(DestinationContainerName3, 3);
                 await AssertOutputAsync(CatalogDataToCsv_VulnerabilitiesDir, Step1, 0);
                 await AssertOutputAsync(CatalogDataToCsv_VulnerabilitiesDir, Step1, 1);
                 await AssertOutputAsync(CatalogDataToCsv_VulnerabilitiesDir, Step1, 2);
+            }
+        }
+
+        public class CatalogDataToCsv_WithDuplicates : CatalogDataToCsvIntegrationTest
+        {
+            public CatalogDataToCsv_WithDuplicates(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+                : base(output, factory)
+            {
+            }
+
+            [Fact]
+            public async Task Execute()
+            {
+                ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
+
+                // Arrange
+                var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z");
+                var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
+
+                await CatalogScanService.InitializeAsync();
+                await SetCursorAsync(min0);
+
+                // Act
+                await UpdateAsync(max1);
+
+                // Assert
+                await AssertOutputAsync(CatalogDataToCsv_WithDuplicatesDir, Step1, 0);
             }
         }
 
@@ -117,8 +176,9 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
 
         protected override string DestinationContainerName1 => Options.Value.PackageDeprecationContainerName;
         protected override string DestinationContainerName2 => Options.Value.PackageVulnerabilityContainerName;
+        protected override string DestinationContainerName3 => Options.Value.CatalogLeafItemContainerName;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.CatalogDataToCsv;
-        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType };
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => Enumerable.Empty<CatalogScanDriverType>();
         public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();
     }
 }

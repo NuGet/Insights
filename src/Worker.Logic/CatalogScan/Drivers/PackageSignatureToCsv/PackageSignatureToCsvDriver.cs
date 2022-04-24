@@ -41,27 +41,27 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
             await _packageFileService.InitializeAsync();
         }
 
-        public async Task<DriverResult<CsvRecordSet<PackageSignature>>> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSet<PackageSignature>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
-            var records = await ProcessLeafInternalAsync(item);
-            return DriverResult.Success(new CsvRecordSet<PackageSignature>(PackageRecord.GetBucketKey(item), records));
+            var records = await ProcessLeafInternalAsync(leafScan);
+            return DriverResult.Success(new CsvRecordSet<PackageSignature>(PackageRecord.GetBucketKey(leafScan), records));
         }
 
-        private async Task<List<PackageSignature>> ProcessLeafInternalAsync(ICatalogLeafItem item)
+        private async Task<List<PackageSignature>> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
 
-            if (item.Type == CatalogLeafType.PackageDelete)
+            if (leafScan.LeafType == CatalogLeafType.PackageDelete)
             {
-                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
                 return new List<PackageSignature> { new PackageSignature(scanId, scanTimestamp, leaf) };
             }
             else
             {
-                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
-                var primarySignature = await _packageFileService.GetPrimarySignatureAsync(item);
+                var primarySignature = await _packageFileService.GetPrimarySignatureAsync(leafScan);
                 if (primarySignature == null)
                 {
                     // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted record.
@@ -171,7 +171,7 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
             };
         }
 
-        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageSignature record)
+        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageSignature record)
         {
             throw new NotImplementedException();
         }

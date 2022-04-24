@@ -23,15 +23,15 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         public async Task Gif_Animated_Opaque()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.12.19.11.35.46/fastmicroservices.marconi.web.0.1.1.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "FastMicroservices.Marconi.Web",
                 PackageVersion = "0.1.1",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
@@ -50,15 +50,15 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         public async Task Gif_Animated_Transparent()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.11.29.06.21.31/csharpgl.1.0.7.4.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "CSharpGL",
                 PackageVersion = "1.0.7.4",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
@@ -77,15 +77,15 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         public async Task Gif_NonAnimated_Transparent()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.11.25.11.09.46/google.adwords.examples.vb.21.1.0.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "Google.AdWords.Examples.VB",
                 PackageVersion = "21.1.0",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
@@ -104,15 +104,15 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         public async Task Gif_NonAnimated_Opaque()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.12.14.18.07.34/czmq.2.1.0.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "czmq",
                 PackageVersion = "2.1.0",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
@@ -131,15 +131,15 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         public async Task Png_Transparent()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.11.18.21.30.27/accord.controls.audio.3.6.2-alpha.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "Accord.Controls.Audio",
                 PackageVersion = "3.6.2-alpha",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
@@ -158,15 +158,15 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         public async Task Svg()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2019.07.09.09.39.04/antdesign.checkbox.0.0.15-alpha.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "AntDesign.Checkbox",
                 PackageVersion = "0.0.15-alpha",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
@@ -186,15 +186,15 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         public async Task Jpeg()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.12.01.22.07.33/dk.android.floatingactionbutton.1.2.0.300.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "DK.Android.FloatingActionButton",
                 PackageVersion = "1.2.0.300",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
@@ -213,15 +213,15 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         public async Task Ico_SingleResolution_Transparent()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.12.19.19.58.46/nettle.data.1.0.0.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "Nettle.Data",
                 PackageVersion = "1.0.0",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
@@ -240,15 +240,15 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         public async Task Ico_SingleResolution_Opaque()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2019.02.28.14.01.05/wl.1.0.0.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "WL",
                 PackageVersion = "1.0.0",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
@@ -267,15 +267,15 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         public async Task Ico_MultipleResolutions_Transparent()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2021.03.29.20.30.00/microsoft.windows.cppwinrt.2.0.210329.4.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "Microsoft.Windows.CppWinRT",
                 PackageVersion = "2.0.210329.4",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
@@ -295,15 +295,15 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         public async Task Icon_MultipleResolutions_Opaque()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.12.13.15.31.08/a3d.0.0.2.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "a3d",
                 PackageVersion = "0.0.2",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
@@ -323,15 +323,15 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         public async Task Ico_MultipleFormats()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2019.10.28.09.55.04/eltra.1.2.3.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "Eltra",
                 PackageVersion = "1.2.3",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
@@ -352,15 +352,15 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         public async Task Gif87_Animated()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.12.19.08.38.23/xamarinshimmer.2.0.0.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "XamarinShimmer",
                 PackageVersion = "2.0.0",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
@@ -380,15 +380,15 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         public async Task Gif87_NonAnimated()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.11.29.02.15.15/lua.5.3.4.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "Lua",
                 PackageVersion = "5.3.4",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);

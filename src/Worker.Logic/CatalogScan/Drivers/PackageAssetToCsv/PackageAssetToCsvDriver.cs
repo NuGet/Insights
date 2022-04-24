@@ -54,27 +54,27 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             await _packageFileService.InitializeAsync();
         }
 
-        public async Task<DriverResult<CsvRecordSet<PackageAsset>>> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSet<PackageAsset>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
-            var records = await ProcessLeafInternalAsync(item);
-            return DriverResult.Success(new CsvRecordSet<PackageAsset>(PackageRecord.GetBucketKey(item), records));
+            var records = await ProcessLeafInternalAsync(leafScan);
+            return DriverResult.Success(new CsvRecordSet<PackageAsset>(PackageRecord.GetBucketKey(leafScan), records));
         }
 
-        private async Task<List<PackageAsset>> ProcessLeafInternalAsync(ICatalogLeafItem item)
+        private async Task<List<PackageAsset>> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
 
-            if (item.Type == CatalogLeafType.PackageDelete)
+            if (leafScan.LeafType == CatalogLeafType.PackageDelete)
             {
-                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
                 return new List<PackageAsset> { new PackageAsset(scanId, scanTimestamp, leaf) };
             }
             else
             {
-                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
-                var zipDirectory = await _packageFileService.GetZipDirectoryAsync(item);
+                var zipDirectory = await _packageFileService.GetZipDirectoryAsync(leafScan);
                 if (zipDirectory == null)
                 {
                     // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted asset record.
@@ -200,7 +200,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
                 && ex.Message.EndsWith("'. A hyphen may not be in any of the portable framework names.");
         }
 
-        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageAsset record)
+        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageAsset record)
         {
             throw new NotImplementedException();
         }

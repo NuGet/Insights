@@ -7,130 +7,129 @@ parameters:
     - osx-x64
     - win-x64
 
-stages:
-- stage: markdown_link_check
-  dependsOn: []
-  jobs:
-  - job: scan
+jobs:
+- ${{ each rid in parameters.rids }}:
+  - job: ${{ replace(rid, '-', '_') }}
+  
     pool:
-      vmImage: windows-latest
+      ${{ if startsWith(rid, 'linux-') }}:
+        name: Azure Pipelines
+        vmImage: ubuntu-latest
+      ${{ elseif startsWith(rid, 'osx-') }}:
+        name: Azure Pipelines
+        vmImage: macos-latest
+      ${{ elseif startsWith(rid, 'win-') }}:
+        name: Azure Pipelines
+        vmImage: windows-latest
+
+    variables:
+      - group: NuGet.Insights
+      - name: BuildConfiguration
+        value: Release
+      - name: BuildSolution
+        value: "$(Build.SourcesDirectory)/NuGet.Insights.sln"
+      - name: OutputDirectory
+        value: "$(Build.SourcesDirectory)/artifacts"
+      - name: BUILDSECMON_OPT_IN
+        value: true
+
     steps:
-    - script: npm install -g markdown-link-check@3.10.0
-      displayName: "Install markdown-link-check"
-    - task: PowerShell@2
-      displayName: Validate
-      inputs:
-        targetType: 'inline'
-        script: 'Get-ChildItem $(Build.SourcesDirectory)/*.md -Recurse | % { markdown-link-check $_ --config $(Build.SourcesDirectory)/markdown-link-check.config.json }'
-        failOnStderr: true
+      - task: UseDotNet@2
+        displayName: "Install .NET SDK from global.json"
+        inputs:
+          packageType: sdk
+          useGlobalJson: true
+          performMultiLevelLookup: true
+      
+      - task: NuGetAuthenticate@0
+        displayName: "NuGet authenticate"
 
-- stage: build
-  dependsOn: []
-  jobs:
-  - ${{ each rid in parameters.rids }}:
-    - job: ${{ replace(rid, '-', '_') }}
-    
-      pool:
-        ${{ if startsWith(rid, 'linux-') }}:
-          vmImage: ubuntu-latest
-        ${{ elseif startsWith(rid, 'osx-') }}:
-          vmImage: macos-latest
-        ${{ elseif startsWith(rid, 'win-') }}:
-          vmImage: windows-latest
+      - task: DotNetCoreCLI@2
+        displayName: "Restore"
+        inputs:
+          command: "restore"
+          feedsToUse: "config"
+          nugetConfigPath: "$(Build.SourcesDirectory)/NuGet.config"
+          projects: $(BuildSolution)
 
-      variables:
-        - group: NuGet.Insights
-        - name: BuildConfiguration
-          value: Release
-        - name: BuildSolution
-          value: "$(Build.SourcesDirectory)/NuGet.Insights.sln"
-        - name: OutputDirectory
-          value: "$(Build.SourcesDirectory)/artifacts"
+      - task: DotNetCoreCLI@2
+        displayName: "Build"
+        inputs:
+          command: "custom"
+          projects: $(BuildSolution)
+          custom: "build"
+          arguments: "--no-restore --configuration $(BuildConfiguration)"
 
-      steps:
-        - task: UseDotNet@2
-          displayName: "Install .NET SDK from global.json"
-          inputs:
-            packageType: sdk
-            useGlobalJson: true
-            performMultiLevelLookup: true
-        
+      - task: DotNetCoreCLI@2
+        displayName: "Run tests"
+        inputs:
+          command: "test"
+          projects: $(BuildSolution)
+          arguments: '--no-build --no-restore --configuration $(BuildConfiguration) --logger trx --blame-hang-timeout 10m --collect "Code coverage" --results-directory $(OutputDirectory)/TestResults/'
+          publishTestResults: false
+        env:
+          NUGETINSIGHTS_STORAGEACCOUNTNAME: nugetinsightstests
+          NUGETINSIGHTS_STORAGESAS: $(nugetinsightstests-BlobQueueTableFullAccessSas)
+          NUGETINSIGHTS_STORAGEBLOBREADSAS: $(nugetinsightstests-BlobReadSas)
 
-        - task: DotNetCoreCLI@2
-          displayName: "Restore"
-          inputs:
-            command: "restore"
-            feedsToUse: "config"
-            nugetConfigPath: "$(Build.SourcesDirectory)/NuGet.config"
-            projects: $(BuildSolution)
+      - task: PublishTestResults@2
+        displayName: "Publish test results"
+        inputs:
+          testResultsFormat: VSTest
+          testResultsFiles: "$(OutputDirectory)/TestResults/**/*.trx"
+          failTaskOnFailedTests: true
 
-        - task: DotNetCoreCLI@2
-          displayName: "Build"
-          inputs:
-            command: "custom"
-            projects: $(BuildSolution)
-            custom: "build"
-            arguments: "--no-restore --configuration $(BuildConfiguration)"
+      - task: PowerShell@2
+        displayName: "Checking for Forks changes"
+        inputs:
+          targetType: "filePath"
+          filePath: $(Build.SourcesDirectory)/src/Forks/download.ps1
 
-        - task: DotNetCoreCLI@2
-          displayName: "Run tests"
-          inputs:
-            command: "test"
-            arguments: '--no-build --no-restore --configuration $(BuildConfiguration) --logger trx --blame-hang-timeout 10m --collect "Code coverage" --results-directory $(OutputDirectory)/TestResults/'
-            publishTestResults: false
-          env:
-            NUGETINSIGHTS_STORAGEACCOUNTNAME: nugetinsightstests
-            NUGETINSIGHTS_STORAGESAS: $(nugetinsightstests-BlobQueueTableFullAccessSas)
-            NUGETINSIGHTS_STORAGEBLOBREADSAS: $(nugetinsightstests-BlobReadSas)
+      - script: npm install -g markdown-link-check@3.10.0
+        displayName: "Install markdown-link-check"
 
-        - task: PublishTestResults@2
-          displayName: "Publish test results"
-          inputs:
-            testResultsFormat: VSTest
-            testResultsFiles: "$(OutputDirectory)/TestResults/**/*.trx"
-            failTaskOnFailedTests: true
+      - task: PowerShell@2
+        displayName: Validate markdown
+        inputs:
+          targetType: 'inline'
+          script: 'Get-ChildItem $(Build.SourcesDirectory)/*.md -Recurse | % { markdown-link-check $_ --config $(Build.SourcesDirectory)/markdown-link-check.config.json }'
+          failOnStderr: true
 
-        - task: PowerShell@2
-          displayName: "Checking for Forks changes"
-          inputs:
-            targetType: "filePath"
-            filePath: $(Build.SourcesDirectory)/src/Forks/download.ps1
+      - task: DotNetCoreCLI@2
+        displayName: "Publish projects to ZIP"
+        inputs:
+          command: publish
+          publishWebProjects: false
+          projects: |
+            $(Build.SourcesDirectory)/src/Website/Website.csproj
+            $(Build.SourcesDirectory)/src/Worker/Worker.csproj
+          arguments: "--configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false"
+          zipAfterPublish: false
 
-        - task: DotNetCoreCLI@2
-          displayName: "Publish projects to ZIP"
-          inputs:
-            command: publish
-            publishWebProjects: false
-            projects: |
-              $(Build.SourcesDirectory)/src/Website/Website.csproj
-              $(Build.SourcesDirectory)/src/Worker/Worker.csproj
-            arguments: "--configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false"
-            zipAfterPublish: false
+      - task: PowerShell@2
+        displayName: "Publish Azure Functions host"
+        inputs:
+          targetType: "filePath"
+          filePath: $(Build.SourcesDirectory)/deploy/build-host.ps1
+          arguments: >
+            -RuntimeIdentifier ${{ rid }}
+            -OutputPath $(OutputDirectory)/deploy/AzureFunctionsHost.zip
 
-        - task: PowerShell@2
-          displayName: "Publish Azure Functions host"
-          inputs:
-            targetType: "filePath"
-            filePath: $(Build.SourcesDirectory)/deploy/build-host.ps1
-            arguments: >
-              -RuntimeIdentifier ${{ rid }}
-              -OutputPath $(OutputDirectory)/deploy/AzureFunctionsHost.zip
+      - task: PowerShell@2
+        displayName: "Generate Ev2 files"
+        inputs:
+          targetType: "filePath"
+          filePath: $(Build.SourcesDirectory)/deploy/build-ev2.ps1
+          arguments: >
+            -ConfigNames ev2-dev-usnc
+            -BuildVersion $(Build.BuildNumber)
+            -WebsiteZipPath $(OutputDirectory)/deploy/Website.zip
+            -WorkerZipPath $(OutputDirectory)/deploy/Worker.zip
+            -AzureFunctionsHostZipPath $(OutputDirectory)/deploy/AzureFunctionsHost.zip
 
-        - task: PowerShell@2
-          displayName: "Generate Ev2 files"
-          inputs:
-            targetType: "filePath"
-            filePath: $(Build.SourcesDirectory)/deploy/build-ev2.ps1
-            arguments: >
-              -ConfigNames ev2-dev-usnc
-              -BuildVersion $(Build.BuildNumber)
-              -WebsiteZipPath $(OutputDirectory)/deploy/Website.zip
-              -WorkerZipPath $(OutputDirectory)/deploy/Worker.zip
-              -AzureFunctionsHostZipPath $(OutputDirectory)/deploy/AzureFunctionsHost.zip
-
-        - task: PublishBuildArtifacts@1
-          displayName: "Publish build artifacts"
-          inputs:
-            pathToPublish: $(OutputDirectory)/ExpressV2
-            artifactName: drop-${{ rid }}
-            Parallel: true
+      - task: PublishBuildArtifacts@1
+        displayName: "Publish build artifacts"
+        inputs:
+          pathToPublish: $(OutputDirectory)/ExpressV2
+          artifactName: drop-${{ rid }}
+          Parallel: true

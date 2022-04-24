@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -12,9 +13,10 @@ using Microsoft.Extensions.Options;
 namespace NuGet.Insights.Worker.CatalogDataToCsv
 {
     public class CatalogDataToCsvDriver :
-        ICatalogLeafToCsvDriver<PackageDeprecationRecord, PackageVulnerabilityRecord>,
+        ICatalogLeafToCsvDriver<PackageDeprecationRecord, PackageVulnerabilityRecord, CatalogLeafItemRecord>,
         ICsvResultStorage<PackageDeprecationRecord>,
-        ICsvResultStorage<PackageVulnerabilityRecord>
+        ICsvResultStorage<PackageVulnerabilityRecord>,
+        ICsvResultStorage<CatalogLeafItemRecord>
     {
         private readonly CatalogClient _catalogClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
@@ -30,42 +32,46 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
         public bool SingleMessagePerId => false;
         string ICsvResultStorage<PackageDeprecationRecord>.ResultContainerName => _options.Value.PackageDeprecationContainerName;
         string ICsvResultStorage<PackageVulnerabilityRecord>.ResultContainerName => _options.Value.PackageVulnerabilityContainerName;
+        string ICsvResultStorage<CatalogLeafItemRecord>.ResultContainerName => _options.Value.CatalogLeafItemContainerName;
 
         public Task InitializeAsync()
         {
             return Task.CompletedTask;
         }
 
-        public async Task<DriverResult<CsvRecordSets<PackageDeprecationRecord, PackageVulnerabilityRecord>>> ProcessLeafAsync(
-            ICatalogLeafItem item,
-            int attemptCount)
+        public async Task<DriverResult<CsvRecordSets<PackageDeprecationRecord, PackageVulnerabilityRecord, CatalogLeafItemRecord>>> ProcessLeafAsync(
+            CatalogLeafScan leafScan)
         {
-            (var deprecation, var vulnerabilities) = await ProcessLeafInternalAsync(item);
-            var bucketKey = PackageRecord.GetBucketKey(item);
-            return DriverResult.Success(new CsvRecordSets<PackageDeprecationRecord, PackageVulnerabilityRecord>(
+            (var deprecation, var vulnerabilities, var leafRecord) = await ProcessLeafInternalAsync(leafScan);
+            var bucketKey = PackageRecord.GetBucketKey(leafScan);
+            return DriverResult.Success(new CsvRecordSets<PackageDeprecationRecord, PackageVulnerabilityRecord, CatalogLeafItemRecord>(
                 new CsvRecordSet<PackageDeprecationRecord>(bucketKey, new[] { deprecation }),
-                new CsvRecordSet<PackageVulnerabilityRecord>(bucketKey, vulnerabilities)));
+                new CsvRecordSet<PackageVulnerabilityRecord>(bucketKey, vulnerabilities),
+                new CsvRecordSet<CatalogLeafItemRecord>(bucketKey, new[] { leafRecord })));
         }
 
-        private async Task<(PackageDeprecationRecord, IReadOnlyList<PackageVulnerabilityRecord>)> ProcessLeafInternalAsync(ICatalogLeafItem item)
+        private async Task<(PackageDeprecationRecord, IReadOnlyList<PackageVulnerabilityRecord>, CatalogLeafItemRecord)> ProcessLeafInternalAsync(
+            CatalogLeafScan leafScan)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
 
-            if (item.Type == CatalogLeafType.PackageDelete)
+            if (leafScan.LeafType == CatalogLeafType.PackageDelete)
             {
-                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
                 return (
                     new PackageDeprecationRecord(scanId, scanTimestamp, leaf),
-                    new[] { new PackageVulnerabilityRecord(scanId, scanTimestamp, leaf) }
+                    new[] { new PackageVulnerabilityRecord(scanId, scanTimestamp, leaf) },
+                    new CatalogLeafItemRecord(leaf, leafScan.PageUrl)
                 );
             }
             else
             {
-                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
                 return (
                     GetDeprecation(scanId, scanTimestamp, leaf),
-                    GetVulnerabilities(scanId, scanTimestamp, leaf)
+                    GetVulnerabilities(scanId, scanTimestamp, leaf),
+                    new CatalogLeafItemRecord(leaf, leafScan.PageUrl)
                 );
             }
         }
@@ -133,12 +139,26 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             return PackageRecord.Prune(records, isFinalPrune);
         }
 
-        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageDeprecationRecord record)
+        public List<CatalogLeafItemRecord> Prune(List<CatalogLeafItemRecord> records, bool isFinalPrune)
+        {
+            return records
+                .Distinct()
+                .OrderBy(x => x.CommitTimestamp)
+                .ThenBy(x => x.Identity, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
+
+        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageDeprecationRecord record)
         {
             throw new NotImplementedException();
         }
 
-        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageVulnerabilityRecord record)
+        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageVulnerabilityRecord record)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(CatalogLeafItemRecord record)
         {
             throw new NotImplementedException();
         }

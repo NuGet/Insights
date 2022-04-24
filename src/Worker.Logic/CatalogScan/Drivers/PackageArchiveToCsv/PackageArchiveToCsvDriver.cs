@@ -47,12 +47,12 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             return PackageRecord.Prune(records, isFinalPrune);
         }
 
-        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageArchiveRecord record)
+        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageArchiveRecord record)
         {
             throw new NotImplementedException();
         }
 
-        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageArchiveEntry record)
+        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageArchiveEntry record)
         {
             throw new NotImplementedException();
         }
@@ -63,23 +63,23 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             await _packageHashService.InitializeAsync();
         }
 
-        public async Task<DriverResult<CsvRecordSets<PackageArchiveRecord, PackageArchiveEntry>>> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSets<PackageArchiveRecord, PackageArchiveEntry>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
-            (var archive, var entries) = await ProcessLeafInternalAsync(item);
-            var bucketKey = PackageRecord.GetBucketKey(item);
+            (var archive, var entries) = await ProcessLeafInternalAsync(leafScan);
+            var bucketKey = PackageRecord.GetBucketKey(leafScan);
             return DriverResult.Success(new CsvRecordSets<PackageArchiveRecord, PackageArchiveEntry>(
                 new CsvRecordSet<PackageArchiveRecord>(bucketKey, archive != null ? new[] { archive } : Array.Empty<PackageArchiveRecord>()),
                 new CsvRecordSet<PackageArchiveEntry>(bucketKey, entries ?? Array.Empty<PackageArchiveEntry>())));
         }
 
-        private async Task<(PackageArchiveRecord, IReadOnlyList<PackageArchiveEntry>)> ProcessLeafInternalAsync(ICatalogLeafItem item)
+        private async Task<(PackageArchiveRecord, IReadOnlyList<PackageArchiveEntry>)> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
 
-            if (item.Type == CatalogLeafType.PackageDelete)
+            if (leafScan.LeafType == CatalogLeafType.PackageDelete)
             {
-                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
                 return (
                     new PackageArchiveRecord(scanId, scanTimestamp, leaf),
                     new[] { new PackageArchiveEntry(scanId, scanTimestamp, leaf) }
@@ -87,16 +87,16 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             }
             else
             {
-                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
-                (var zipDirectory, var size) = await _packageFileService.GetZipDirectoryAndSizeAsync(item);
+                (var zipDirectory, var size) = await _packageFileService.GetZipDirectoryAndSizeAsync(leafScan);
                 if (zipDirectory == null)
                 {
                     // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted asset record.
                     return (null, null);
                 }
 
-                var hashes = await _packageHashService.GetHashesOrNullAsync(item.PackageId, item.PackageVersion);
+                var hashes = await _packageHashService.GetHashesOrNullAsync(leafScan.PackageId, leafScan.PackageVersion);
                 if (hashes == null)
                 {
                     // Ignore packages where the hashes are missing. A subsequent scan will produce a deleted asset record.
@@ -146,7 +146,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
                 // NuGet packages must contain contain at least a .nuspec file.
                 if (!entries.Any())
                 {
-                    throw new InvalidOperationException($"ZIP archive has no entries for catalog leaf item {item.Url}");
+                    throw new InvalidOperationException($"ZIP archive has no entries for catalog leaf item {leafScan.Url}");
                 }
 
                 return (archive, entries);

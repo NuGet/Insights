@@ -24,7 +24,8 @@ namespace NuGet.Insights
     Version: string,
     Type: string,
     Url: string,
-    PageUrl: string
+    PageUrl: string,
+    IsListed: bool
 )",
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
@@ -39,7 +40,8 @@ namespace NuGet.Insights
     '{""Column"":""Version"",""DataType"":""string"",""Properties"":{""Ordinal"":5}},'
     '{""Column"":""Type"",""DataType"":""string"",""Properties"":{""Ordinal"":6}},'
     '{""Column"":""Url"",""DataType"":""string"",""Properties"":{""Ordinal"":7}},'
-    '{""Column"":""PageUrl"",""DataType"":""string"",""Properties"":{""Ordinal"":8}}'
+    '{""Column"":""PageUrl"",""DataType"":""string"",""Properties"":{""Ordinal"":8}},'
+    '{""Column"":""IsListed"",""DataType"":""bool"",""Properties"":{""Ordinal"":9}}'
 ']'",
         };
 
@@ -56,10 +58,10 @@ namespace NuGet.Insights
   ']'
 '}'";
 
-        private static readonly bool CatalogLeafItemRecordAddTypeToDefaultTableName = AddTypeToDefaultTableName(typeof(NuGet.Insights.Worker.CatalogLeafItemToCsv.CatalogLeafItemRecord), CatalogLeafItemRecordDefaultTableName);
+        private static readonly bool CatalogLeafItemRecordAddTypeToDefaultTableName = AddTypeToDefaultTableName(typeof(NuGet.Insights.Worker.CatalogDataToCsv.CatalogLeafItemRecord), CatalogLeafItemRecordDefaultTableName);
 
-        private static readonly bool CatalogLeafItemRecordAddTypeToDDL = AddTypeToDDL(typeof(NuGet.Insights.Worker.CatalogLeafItemToCsv.CatalogLeafItemRecord), CatalogLeafItemRecordDDL);
+        private static readonly bool CatalogLeafItemRecordAddTypeToDDL = AddTypeToDDL(typeof(NuGet.Insights.Worker.CatalogDataToCsv.CatalogLeafItemRecord), CatalogLeafItemRecordDDL);
 
-        private static readonly bool CatalogLeafItemRecordAddTypeToPartitioningPolicy = AddTypeToPartitioningPolicy(typeof(NuGet.Insights.Worker.CatalogLeafItemToCsv.CatalogLeafItemRecord), CatalogLeafItemRecordPartitioningPolicy);
+        private static readonly bool CatalogLeafItemRecordAddTypeToPartitioningPolicy = AddTypeToPartitioningPolicy(typeof(NuGet.Insights.Worker.CatalogDataToCsv.CatalogLeafItemRecord), CatalogLeafItemRecordPartitioningPolicy);
     }
 }

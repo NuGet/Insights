@@ -17,12 +17,11 @@ namespace NuGet.Insights.Worker
         {
         }
 
-        protected abstract Task<(DriverResult, IReadOnlyList<ICsvRecordSet<ICsvRecord>>)>
-            ProcessLeafAsync(ICatalogLeafItem item, int attemptCount);
+        protected abstract Task<(DriverResult, IReadOnlyList<ICsvRecordSet<ICsvRecord>>)> ProcessLeafInternalAsync(CatalogLeafScan leafScan);
 
         public async Task<DriverResult> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
-            (var result, var sets) = await ProcessLeafAsync(leafScan, leafScan.AttemptCount);
+            (var result, var sets) = await ProcessLeafInternalAsync(leafScan);
             if (result.Type == DriverResultType.TryAgainLater)
             {
                 return result;

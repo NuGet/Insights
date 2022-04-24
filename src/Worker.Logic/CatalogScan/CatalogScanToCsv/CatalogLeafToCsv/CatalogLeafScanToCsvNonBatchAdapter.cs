@@ -23,9 +23,9 @@ namespace NuGet.Insights.Worker
             _driver = driver;
         }
 
-        protected override async Task<(DriverResult, IReadOnlyList<ICsvRecordSet<ICsvRecord>>)> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount)
+        protected override async Task<(DriverResult, IReadOnlyList<ICsvRecordSet<ICsvRecord>>)> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
         {
-            var result = await _driver.ProcessLeafAsync(item, attemptCount);
+            var result = await _driver.ProcessLeafAsync(leafScan);
             if (result.Type == DriverResultType.Success)
             {
                 return (result, new[] { result.Value });
@@ -57,12 +57,48 @@ namespace NuGet.Insights.Worker
             _driver = driver;
         }
 
-        protected override async Task<(DriverResult, IReadOnlyList<ICsvRecordSet<ICsvRecord>>)> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount)
+        protected override async Task<(DriverResult, IReadOnlyList<ICsvRecordSet<ICsvRecord>>)> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
         {
-            var result = await _driver.ProcessLeafAsync(item, attemptCount);
+            var result = await _driver.ProcessLeafAsync(leafScan);
             if (result.Type == DriverResultType.Success)
             {
                 return (result, new ICsvRecordSet<ICsvRecord>[] { result.Value.Sets1[0], result.Value.Sets2[0] });
+            }
+            else
+            {
+                return (result, default);
+            }
+        }
+    }
+
+    public class CatalogLeafScanToCsvNonBatchAdapter<T1, T2, T3> : BaseCatalogLeafScanToCsvNonBatchAdapter, ICatalogLeafScanNonBatchDriver
+        where T1 : class, ICsvRecord
+        where T2 : class, ICsvRecord
+        where T3 : class, ICsvRecord
+    {
+        private readonly ICatalogLeafToCsvDriver<T1, T2, T3> _driver;
+
+        public CatalogLeafScanToCsvNonBatchAdapter(
+            SchemaSerializer schemaSerializer,
+            CsvTemporaryStorageFactory intermediateStorageFactory,
+            ICsvResultStorage<T1> resultStorage1,
+            ICsvResultStorage<T2> resultStorage2,
+            ICsvResultStorage<T3> resultStorage3,
+            ICatalogLeafToCsvDriver<T1, T2, T3> driver) : base(
+                schemaSerializer,
+                intermediateStorageFactory,
+                intermediateStorageFactory.Create(resultStorage1, resultStorage2, resultStorage3),
+                driver)
+        {
+            _driver = driver;
+        }
+
+        protected override async Task<(DriverResult, IReadOnlyList<ICsvRecordSet<ICsvRecord>>)> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
+        {
+            var result = await _driver.ProcessLeafAsync(leafScan);
+            if (result.Type == DriverResultType.Success)
+            {
+                return (result, new ICsvRecordSet<ICsvRecord>[] { result.Value.Sets1[0], result.Value.Sets2[0], result.Value.Sets3[0] });
             }
             else
             {
