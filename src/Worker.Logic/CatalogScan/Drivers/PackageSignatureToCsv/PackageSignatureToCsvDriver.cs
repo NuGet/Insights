@@ -5,10 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Text.RegularExpressions;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using NuGet.Packaging.Signing;
 
 namespace NuGet.Insights.Worker.PackageSignatureToCsv
@@ -32,9 +31,9 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
         public string ResultContainerName => _options.Value.PackageSignatureContainerName;
         public bool SingleMessagePerId => false;
 
-        public List<PackageSignature> Prune(List<PackageSignature> records)
+        public List<PackageSignature> Prune(List<PackageSignature> records, bool isFinalPrune)
         {
-            return PackageRecord.Prune(records);
+            return PackageRecord.Prune(records, isFinalPrune);
         }
 
         public async Task InitializeAsync()
@@ -42,27 +41,27 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
             await _packageFileService.InitializeAsync();
         }
 
-        public async Task<DriverResult<CsvRecordSet<PackageSignature>>> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSet<PackageSignature>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
-            var records = await ProcessLeafInternalAsync(item);
-            return DriverResult.Success(new CsvRecordSet<PackageSignature>(PackageRecord.GetBucketKey(item), records));
+            var records = await ProcessLeafInternalAsync(leafScan);
+            return DriverResult.Success(new CsvRecordSet<PackageSignature>(PackageRecord.GetBucketKey(leafScan), records));
         }
 
-        private async Task<List<PackageSignature>> ProcessLeafInternalAsync(ICatalogLeafItem item)
+        private async Task<List<PackageSignature>> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
 
-            if (item.Type == CatalogLeafType.PackageDelete)
+            if (leafScan.LeafType == CatalogLeafType.PackageDelete)
             {
-                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
                 return new List<PackageSignature> { new PackageSignature(scanId, scanTimestamp, leaf) };
             }
             else
             {
-                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
-                var primarySignature = await _packageFileService.GetPrimarySignatureAsync(item);
+                var primarySignature = await _packageFileService.GetPrimarySignatureAsync(leafScan);
                 if (primarySignature == null)
                 {
                     // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted record.
@@ -133,7 +132,7 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
             output.RepositoryTimestampIssuer = info.TimestampIssuer;
             output.RepositoryTimestampValue = info.TimestampValue;
             output.RepositoryTimestampHasASN1Error = info.TimestampHasASN1Error;
-            output.PackageOwners = JsonConvert.SerializeObject(signature.PackageOwners);
+            output.PackageOwners = JsonSerializer.Serialize(signature.PackageOwners);
         }
 
         private SignatureInfo GetInfo(Signature signature)
@@ -145,7 +144,7 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
                 timestamp = signature.Timestamps.Single();
                 timestampHasASN1Error = false;
             }
-            catch (CryptographicException ex) when (ex.Message == "The ASN.1 data is invalid.")
+            catch (CryptographicException ex) when (ex.IsInvalidDataException())
             {
                 timestamp = null;
                 timestampHasASN1Error = true;
@@ -155,54 +154,24 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
             {
                 TimestampHasASN1Error = timestampHasASN1Error,
 
-                SHA1 = signature.SignerInfo.Certificate.Thumbprint,
-                SHA256 = CertificateUtility.GetHashString(signature.SignerInfo.Certificate, NuGet.Common.HashAlgorithmName.SHA256),
-                Subject = FixDistinguishedName(signature.SignerInfo.Certificate.Subject),
+                SHA1 = signature.SignerInfo.Certificate.GetSHA1HexFingerprint(),
+                SHA256 = signature.SignerInfo.Certificate.GetSHA256HexFingerprint(),
+                Subject = signature.SignerInfo.Certificate.GetSubjectXplat(),
                 NotBefore = signature.SignerInfo.Certificate.NotBefore.ToUniversalTime(),
                 NotAfter = signature.SignerInfo.Certificate.NotAfter.ToUniversalTime(),
-                Issuer = FixDistinguishedName(signature.SignerInfo.Certificate.Issuer),
+                Issuer = signature.SignerInfo.Certificate.GetIssuerXplat(),
 
-                TimestampSHA1 = timestamp?.SignerInfo.Certificate.Thumbprint,
-                TimestampSHA256 = timestamp != null ? CertificateUtility.GetHashString(timestamp.SignerInfo.Certificate, NuGet.Common.HashAlgorithmName.SHA256) : null,
-                TimestampSubject = FixDistinguishedName(timestamp?.SignerInfo.Certificate.Subject),
+                TimestampSHA1 = timestamp?.SignerInfo.Certificate.GetSHA1HexFingerprint(),
+                TimestampSHA256 = timestamp != null ? timestamp.SignerInfo.Certificate.GetSHA256HexFingerprint() : null,
+                TimestampSubject = timestamp?.SignerInfo.Certificate.GetSubjectXplat(),
                 TimestampNotBefore = timestamp?.SignerInfo.Certificate.NotBefore.ToUniversalTime(),
                 TimestampNotAfter = timestamp?.SignerInfo.Certificate.NotAfter.ToUniversalTime(),
-                TimestampIssuer = FixDistinguishedName(timestamp?.SignerInfo.Certificate.Issuer),
+                TimestampIssuer = timestamp?.SignerInfo.Certificate.GetIssuerXplat(),
                 TimestampValue = timestamp?.GeneralizedTime.ToUniversalTime(),
             };
         }
 
-        /// <summary>
-        /// Use to bring OID parsing on Windows up to parity with OpenSSL. This is not exhaustive but is based on OIDs
-        /// found in NuGet package signatures on NuGet.org. The purpose of this conversation is so that CSV output is
-        /// the same no matter the platform that's running the driver.
-        /// </summary>
-        private static readonly IReadOnlyDictionary<Regex, string> OidReplacements = new Dictionary<string, string>
-        {
-            // Source: https://github.com/openssl/openssl/blob/7303c5821779613e9a7fe239990662f80284a693/crypto/objects/objects.txt
-            { "2.5.4.15", "businessCategory" },
-            { "2.5.4.97", "organizationIdentifier" },
-            { "1.3.6.1.4.1.311.60.2.1.1", "jurisdictionLocalityName" },
-            { "1.3.6.1.4.1.311.60.2.1.2", "jurisdictionStateOrProvinceName" },
-            { "1.3.6.1.4.1.311.60.2.1.3", "jurisdictionCountryName" },
-        }.ToDictionary(x => new Regex(@$"(^|, )OID\.{Regex.Escape(x.Key)}="), x => @$"$1{x.Value}=");
-
-        private static string FixDistinguishedName(string name)
-        {
-            if (name is null)
-            {
-                return null;
-            }
-
-            foreach (var pair in OidReplacements)
-            {
-                name = pair.Key.Replace(name, pair.Value);
-            }
-
-            return name;
-        }
-
-        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageSignature record)
+        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageSignature record)
         {
             throw new NotImplementedException();
         }

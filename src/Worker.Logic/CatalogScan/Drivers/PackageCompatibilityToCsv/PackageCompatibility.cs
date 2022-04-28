@@ -42,5 +42,11 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 
         [KustoType("dynamic")]
         public string NuGetGalleryEscaped { get; set; }
+
+        [KustoType("dynamic")]
+        public string NuGetGallerySupported { get; set; }
+
+        [KustoType("dynamic")]
+        public string NuGetGalleryBadges { get; set; }
     }
 }

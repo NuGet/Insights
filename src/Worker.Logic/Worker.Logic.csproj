@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>NuGet.Insights.Worker.Logic</AssemblyName>
     <RootNamespace>NuGet.Insights.Worker</RootNamespace>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
@@ -13,13 +13,14 @@
   <ItemGroup Condition="'$(EnableNPE)' != 'true'">
     <Compile Remove="CatalogScan\Drivers\NuGetPackageExplorerToCsv\*" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="..\Logic\IsExternalInit.cs" Link="IsExternalInit.cs" />
+  <ItemGroup Condition="'$(EnableCryptoAPI)' != 'true'">
+    <Compile Remove="CatalogScan\Drivers\PackageCertificateToCsv\*" />
+    <Compile Remove="MessageProcessors\ReferenceTracking\CleanupOrphanCertificateRecordsAdapter.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="8.1.0" />
-    <PackageReference Include="Microsoft.Azure.Kusto.Ingest" Version="9.2.0" />
-    <PackageReference Include="Sylvan.Data.Csv" Version="1.1.7" />
+    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="8.5.0" />
+    <PackageReference Include="Microsoft.Azure.Kusto.Ingest" Version="9.4.1" />
+    <PackageReference Include="Sylvan.Data.Csv" Version="1.1.10" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Logic\Logic.csproj" />

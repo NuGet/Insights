@@ -1,0 +1,44 @@
+[
+  {
+    "odata.etag": "",
+    "PartitionKey": "S$0$Subject0$O$Owner0",
+    "RowKey": "",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "S$1$Subject1$O$Owner0",
+    "RowKey": "",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "S$2$Subject2$O$Owner0",
+    "RowKey": "",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "S$3$Subject3$O$Owner0",
+    "RowKey": "",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "S$3$Subject3$O$Owner1",
+    "RowKey": "",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "S$4$Subject4$O$Owner1",
+    "RowKey": "",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "S$6$Subject6$O$Owner1",
+    "RowKey": "",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  }
+]

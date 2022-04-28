@@ -12,11 +12,11 @@ using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Security;
 using System.Security.Cryptography;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 
 namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 {
@@ -50,9 +50,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         public string ResultContainerName => _options.Value.PackageAssemblyContainerName;
         public bool SingleMessagePerId => false;
 
-        public List<PackageAssembly> Prune(List<PackageAssembly> records)
+        public List<PackageAssembly> Prune(List<PackageAssembly> records, bool isFinalPrune)
         {
-            return PackageRecord.Prune(records);
+            return PackageRecord.Prune(records, isFinalPrune);
         }
 
         public async Task InitializeAsync()
@@ -60,69 +60,73 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             await _packageHashService.InitializeAsync();
         }
 
-        public async Task<DriverResult<CsvRecordSet<PackageAssembly>>> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSet<PackageAssembly>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
 
-            if (item.Type == CatalogLeafType.PackageDelete)
+            if (leafScan.LeafType == CatalogLeafType.PackageDelete)
             {
-                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
                 // We must clear the data related to deleted packages.
-                await _packageHashService.SetHashesAsync(item, hashes: null);
+                await _packageHashService.SetHashesAsync(leafScan, hashes: null);
 
-                return MakeResults(item, new List<PackageAssembly> { new PackageAssembly(scanId, scanTimestamp, leaf) });
+                return MakeResults(leafScan, new List<PackageAssembly> { new PackageAssembly(scanId, scanTimestamp, leaf) });
             }
             else
             {
-                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
-                using var result = await _flatContainerClient.DownloadPackageContentToFileAsync(
-                    item.PackageId,
-                    item.PackageVersion,
+                var result = await _flatContainerClient.DownloadPackageContentToFileAsync(
+                    leafScan.PackageId,
+                    leafScan.PackageVersion,
                     CancellationToken.None);
 
-                if (result == null)
+                if (result is null)
                 {
                     // We must clear the data related to deleted packages.
-                    await _packageHashService.SetHashesAsync(item, hashes: null);
+                    await _packageHashService.SetHashesAsync(leafScan, hashes: null);
 
-                    return MakeEmptyResults(item);
+                    return MakeEmptyResults(leafScan);
                 }
 
-                if (result.Type == TempStreamResultType.SemaphoreNotAvailable)
+                using (result.Value.Body)
                 {
-                    return DriverResult.TryAgainLater<CsvRecordSet<PackageAssembly>>();
-                }
 
-                // We have downloaded the full .nupkg here so we can capture the calculated hashes.
-                await _packageHashService.SetHashesAsync(item, result.Hash);
-
-                using var zipArchive = new ZipArchive(result.Stream);
-                var entries = zipArchive
-                    .Entries
-                    .Where(x => FileExtensions.Contains(Path.GetExtension(x.FullName)))
-                    .ToList();
-
-                if (!entries.Any())
-                {
-                    return MakeNoAssemblies(scanId, scanTimestamp, leaf);
-                }
-
-                var assemblies = new List<PackageAssembly>();
-                foreach (var entry in entries)
-                {
-                    var assemblyResult = await AnalyzeAsync(scanId, scanTimestamp, leaf, entry);
-                    if (assemblyResult.Type == DriverResultType.TryAgainLater)
+                    if (result.Value.Body.Type == TempStreamResultType.SemaphoreNotAvailable)
                     {
                         return DriverResult.TryAgainLater<CsvRecordSet<PackageAssembly>>();
                     }
 
-                    assemblies.Add(assemblyResult.Value);
-                }
+                    // We have downloaded the full .nupkg here so we can capture the calculated hashes.
+                    await _packageHashService.SetHashesAsync(leafScan, result.Value.Body.Hash);
 
-                return MakeResults(item, assemblies);
+                    using var zipArchive = new ZipArchive(result.Value.Body.Stream);
+                    var entries = zipArchive
+                        .Entries
+                        .Where(x => FileExtensions.Contains(Path.GetExtension(x.FullName)))
+                        .ToList();
+
+                    if (!entries.Any())
+                    {
+                        return MakeNoAssemblies(scanId, scanTimestamp, leaf);
+                    }
+
+                    var assemblies = new List<PackageAssembly>();
+                    foreach (var entry in entries)
+                    {
+                        var assemblyResult = await AnalyzeAsync(scanId, scanTimestamp, leaf, entry);
+                        if (assemblyResult.Type == DriverResultType.TryAgainLater)
+                        {
+                            return DriverResult.TryAgainLater<CsvRecordSet<PackageAssembly>>();
+                        }
+
+                        assemblies.Add(assemblyResult.Value);
+                    }
+
+                    return MakeResults(leafScan, assemblies);
+                }
             }
         }
 
@@ -287,7 +291,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
             if (publicKeyTokenBytes != null)
             {
-                assembly.PublicKeyToken = publicKeyTokenBytes.ToHex();
+                assembly.PublicKeyToken = publicKeyTokenBytes.ToLowerHex();
             }
         }
 
@@ -297,11 +301,11 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             assembly.EdgeCases |= info.EdgeCases;
             assembly.CustomAttributesTotalCount = info.TotalCount;
             assembly.CustomAttributesTotalDataLength = info.TotalDataLength;
-            assembly.CustomAttributesFailedDecode = JsonConvert.SerializeObject(info.FailedDecode);
-            assembly.CustomAttributes = JsonConvert.SerializeObject(info.NameToParameters);
+            assembly.CustomAttributesFailedDecode = JsonSerializer.Serialize(info.FailedDecode);
+            assembly.CustomAttributes = JsonSerializer.Serialize(info.NameToParameters);
         }
 
-        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageAssembly record)
+        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageAssembly record)
         {
             throw new NotImplementedException();
         }

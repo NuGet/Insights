@@ -3,10 +3,10 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json.Linq;
 
 namespace NuGet.Insights.Worker
 {
@@ -59,6 +59,14 @@ namespace NuGet.Insights.Worker
                         break;
                     }
 
+#if ENABLE_CRYPTOAPI
+                    if (catalogLeafScan.DriverType == CatalogScanDriverType.PackageCertificateToCsv)
+                    {
+                        batchSize = 100;
+                        break;
+                    }
+#endif
+
                     batchSize = 30;
                     break;
             }
@@ -77,11 +85,11 @@ namespace NuGet.Insights.Worker
                     {
                         SchemaName = serializer.Name,
                         SchemaVersion = serializer.LatestVersion,
-                        Messages = new List<JToken>(),
+                        Messages = new List<JsonElement>(),
                     });
                 }
 
-                batches.Last().Messages.Add(serializer.SerializeData(message).AsJToken());
+                batches.Last().Messages.Add(serializer.SerializeData(message).AsJsonElement());
             }
 
             _logger.LogInformation(

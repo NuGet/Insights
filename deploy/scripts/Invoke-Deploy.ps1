@@ -4,7 +4,7 @@ param (
     $ResourceSettings,
     
     [Parameter(Mandatory = $false)]
-    [string]$DeploymentId,
+    [string]$DeploymentLabel,
 
     [Parameter(Mandatory = $false)]
     [string]$DeploymentDir,
@@ -13,17 +13,20 @@ param (
     [string]$WebsiteZipPath,
 
     [Parameter(Mandatory = $true)]
-    [string]$WorkerZipPath
+    [string]$WorkerZipPath,
+
+    [Parameter(Mandatory = $true)]
+    [string]$AzureFunctionsHostZipPath
 )
 
 Import-Module (Join-Path $PSScriptRoot "NuGet.Insights.psm1")
 
-$DeploymentId, $DeploymentDir = Get-DeploymentLocals $DeploymentId $DeploymentDir
+$DeploymentLabel, $DeploymentDir = Get-DeploymentLocals $DeploymentLabel $DeploymentDir
 
 # Prepare the storage and Key Vault
 . (Join-Path $PSScriptRoot "Invoke-Prepare.ps1") `
     -ResourceSettings $ResourceSettings `
-    -DeploymentId $DeploymentId `
+    -DeploymentLabel $DeploymentLabel `
     -DeploymentDir $DeploymentDir
 
 # Verify the number of function app is not decreasing. This is not supported by the script.
@@ -41,18 +44,18 @@ if ($existingWorkerCount -gt $deployingWorkerCount) {
 
 # Upload the project ZIPs
 $storageAccountKey = (Get-AzStorageAccountKey `
-    -ResourceGroupName $ResourceSettings.ResourceGroupName `
-    -Name $ResourceSettings.StorageAccountName)[0].Value
+        -ResourceGroupName $ResourceSettings.ResourceGroupName `
+        -Name $ResourceSettings.StorageAccountName)[0].Value
 $storageContext = New-AzStorageContext `
     -StorageAccountName $ResourceSettings.StorageAccountName `
     -StorageAccountKey $storageAccountKey
 
-function New-DeploymentZip ($ZipPath, $BlobName) {
-    Write-Status "Uploading the ZIP to '$BlobName'..."
+function New-DeploymentFile ($Path, $BlobName) {
+    Write-Status "Uploading to '$BlobName'..."
     Set-AzStorageBlobContent `
         -Context $storageContext `
         -Container $Resourcesettings.DeploymentContainerName `
-        -File $ZipPath `
+        -File $Path `
         -Blob $BlobName | Out-Default
     return New-AzStorageBlobSASToken `
         -Container $ResourceSettings.DeploymentContainerName `
@@ -64,18 +67,25 @@ function New-DeploymentZip ($ZipPath, $BlobName) {
         -FullUri
 }
 
-$websiteZipUrl = New-DeploymentZip $WebsiteZipPath "Website-$DeploymentId.zip"
-$workerZipUrl = New-DeploymentZip $WorkerZipPath "Worker-$DeploymentId.zip"
+$workerStandaloneEnvPath = Join-Path $DeploymentDir "WorkerStandalone.env"
+New-WorkerStandaloneEnv $ResourceSettings | Out-EnvFile -FilePath $workerStandaloneEnvPath
+$installWorkerStandalonePath = Join-Path $PSScriptRoot "Install-WorkerStandalone.ps1"
+
+$websiteZipUrl = New-DeploymentFile $WebsiteZipPath "$DeploymentLabel/Website.zip"
+$workerZipUrl = New-DeploymentFile $WorkerZipPath "$DeploymentLabel/Worker.zip"
+$azureFunctionsHostZipUrl = New-DeploymentFile $AzureFunctionsHostZipPath "$DeploymentLabel/AzureFunctionsHost.zip"
+$workerStandaloneEnvUrl = New-DeploymentFile $workerStandaloneEnvPath "$DeploymentLabel/WorkerStandalone.env"
+$installWorkerStandaloneUrl = New-DeploymentFile $installWorkerStandalonePath "$DeploymentLabel/Install-WorkerStandalone.ps1"
 
 # Deploy the resources using the main ARM template
 Write-Status "Deploying the resources..."
 New-Deployment `
     -ResourceGroupName $ResourceSettings.ResourceGroupName `
     -DeploymentDir $DeploymentDir `
-    -DeploymentId $DeploymentId `
+    -DeploymentLabel $DeploymentLabel `
     -DeploymentName "main" `
     -BicepPath "../main.bicep" `
-    -Parameters (New-MainParameters $ResourceSettings $websiteZipUrl $workerZipUrl)
+    -Parameters (New-MainParameters $ResourceSettings $websiteZipUrl $workerZipUrl $DeploymentLabel)
 
 # Warm up the workers, since initial deployment appears to leave them in a hibernation state.
 Write-Status "Warming up the website and workers..."

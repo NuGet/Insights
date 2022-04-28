@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Azure.Storage.Queues.Models;
 using Kusto.Ingest;
@@ -11,9 +13,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Moq;
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
-using NuGet.Insights.Worker.DownloadsToCsv;
 using NuGet.Insights.Worker.KustoIngestion;
-using NuGet.Insights.Worker.OwnersToCsv;
+#if ENABLE_CRYPTOAPI
+using NuGet.Insights.Worker.PackageCertificateToCsv;
+using NuGet.Insights.Worker.ReferenceTracking;
+#endif
 using NuGet.Insights.Worker.Workflow;
 using Xunit;
 using Xunit.Abstractions;
@@ -69,17 +73,23 @@ namespace NuGet.Insights.Worker
                 {
                     new List<Type>
                     {
-                        typeof(MetricsTimer),
                         typeof(WorkflowTimer),
                     },
                     new List<Type>
                     {
                         typeof(CatalogScanUpdateTimer),
                     },
+#if ENABLE_CRYPTOAPI
                     new List<Type>
                     {
-                        typeof(AuxiliaryFileUpdaterTimer<PackageDownloadSet>),
-                        typeof(AuxiliaryFileUpdaterTimer<PackageOwnerSet>),
+                        typeof(CleanupOrphanRecordsTimer<CertificateRecord>),
+                    },
+#endif
+                    new List<Type>
+                    {
+                        typeof(AuxiliaryFileUpdaterTimer<AsOfData<PackageDownloads>>),
+                        typeof(AuxiliaryFileUpdaterTimer<AsOfData<PackageOwner>>),
+                        typeof(AuxiliaryFileUpdaterTimer<AsOfData<VerifiedPackage>>),
                     },
                     new List<Type>
                     {
@@ -126,18 +136,21 @@ namespace NuGet.Insights.Worker
                 {
                     x.DownloadsV1Url = $"http://localhost/{TestData}/DownloadsToCsv/{Step1}/downloads.v1.json";
                     x.OwnersV2Url = $"http://localhost/{TestData}/OwnersToCsv/{Step1}/owners.v2.json";
+                    x.VerifiedPackagesV1Url = $"http://localhost/{TestData}/VerifiedPackagesToCsv/{Step1}/verifiedPackages.json";
                 };
                 ConfigureWorkerSettings = x =>
                 {
                     x.AutoStartDownloadToCsv = true;
                     x.AutoStartOwnersToCsv = true;
+                    x.AutoStartVerifiedPackagesToCsv = true;
                 };
 
                 // Arrange
-                HttpMessageHandlerFactory.OnSendAsync = async req =>
+                HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
                 {
                     if (req.RequestUri.AbsoluteUri == Options.Value.DownloadsV1Url
-                     || req.RequestUri.AbsoluteUri == Options.Value.OwnersV2Url)
+                     || req.RequestUri.AbsoluteUri == Options.Value.OwnersV2Url
+                     || req.RequestUri.AbsoluteUri == Options.Value.VerifiedPackagesV1Url)
                     {
                         return await TestDataHttpClient.SendAsync(Clone(req));
                     }
@@ -162,6 +175,7 @@ namespace NuGet.Insights.Worker
                 // Assert
                 await AssertBlobCountAsync(Options.Value.PackageDownloadContainerName, 1);
                 await AssertBlobCountAsync(Options.Value.PackageOwnerContainerName, 1);
+                await AssertBlobCountAsync(Options.Value.VerifiedPackageContainerName, 1);
             }
         }
 
@@ -179,6 +193,7 @@ namespace NuGet.Insights.Worker
                 {
                     serviceCollection.AddTransient(x => MockCslAdminProvider.Object);
                     serviceCollection.AddTransient(x => MockKustoQueueIngestClient.Object);
+                    serviceCollection.AddTransient(x => MockCslQueryProvider.Object);
                 });
             }
 
@@ -189,26 +204,48 @@ namespace NuGet.Insights.Worker
                 {
                     x.MaxTempMemoryStreamSize = 0;
                     x.TempDirectories[0].MaxConcurrentWriters = 1;
-                    x.DownloadsV1Url = $"http://localhost/{TestData}/{DownloadsToCsvIntegrationTest.DownloadsToCsvDir}/downloads.v1.json";
-                    x.OwnersV2Url = $"http://localhost/{TestData}/{OwnersToCsvIntegrationTest.OwnersToCsvDir}/owners.v2.json";
+                    x.DownloadsV1Url = $"http://localhost/{TestData}/DownloadsToCsv/downloads.v1.json";
+                    x.OwnersV2Url = $"http://localhost/{TestData}/OwnersToCsv/owners.v2.json";
+                    x.VerifiedPackagesV1Url = $"http://localhost/{TestData}/VerifiedPackagesToCsv/verifiedPackages.json";
                 };
                 ConfigureWorkerSettings = x =>
                 {
                     x.AppendResultStorageBucketCount = 1;
+                    x.KustoConnectionString = "fake connection string";
+                    x.KustoDatabaseName = "fake database name";
                 };
-                HttpMessageHandlerFactory.OnSendAsync = async req =>
+
+                var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
+                var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
+
+                HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
                 {
+                    if (req.RequestUri.AbsoluteUri == "https://api.nuget.org/v3-flatcontainer/cursor.json")
+                    {
+                        return new HttpResponseMessage(HttpStatusCode.OK)
+                        {
+                            Content = new StringContent(@$"{{""value"":""{max1:O}""}}")
+                        };
+                    }
+
                     if (req.RequestUri.AbsolutePath.EndsWith("/downloads.v1.json"))
                     {
                         var newReq = Clone(req);
-                        newReq.RequestUri = new Uri($"http://localhost/{TestData}/{DownloadsToCsvIntegrationTest.DownloadsToCsvDir}/{Step1}/downloads.v1.json");
+                        newReq.RequestUri = new Uri($"http://localhost/{TestData}/DownloadsToCsv/{Step1}/downloads.v1.json");
                         return await TestDataHttpClient.SendAsync(newReq);
                     }
 
                     if (req.RequestUri.AbsolutePath.EndsWith("/owners.v2.json"))
                     {
                         var newReq = Clone(req);
-                        newReq.RequestUri = new Uri($"http://localhost/{TestData}/{OwnersToCsvIntegrationTest.OwnersToCsvDir}/{Step1}/owners.v2.json");
+                        newReq.RequestUri = new Uri($"http://localhost/{TestData}/OwnersToCsv/{Step1}/owners.v2.json");
+                        return await TestDataHttpClient.SendAsync(newReq);
+                    }
+
+                    if (req.RequestUri.AbsolutePath.EndsWith("/verifiedPackages.json"))
+                    {
+                        var newReq = Clone(req);
+                        newReq.RequestUri = new Uri($"http://localhost/{TestData}/VerifiedPackagesToCsv/{Step1}/verifiedPackages.json");
                         return await TestDataHttpClient.SendAsync(newReq);
                     }
 
@@ -216,11 +253,7 @@ namespace NuGet.Insights.Worker
                 };
 
                 // Arrange
-                await CatalogScanService.InitializeAsync();
                 await WorkflowService.InitializeAsync();
-
-                var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
-                var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
 
                 foreach (var type in CatalogScanCursorService.StartableDriverTypes)
                 {
@@ -228,7 +261,7 @@ namespace NuGet.Insights.Worker
                 }
 
                 // Act
-                var run = await WorkflowService.StartAsync(max1);
+                var run = await WorkflowService.StartAsync();
                 Assert.NotNull(run);
                 var attempts = 0;
                 await ProcessQueueAsync(
@@ -241,7 +274,7 @@ namespace NuGet.Insights.Worker
                         }
 
                         attempts++;
-                        if (attempts > 30)
+                        if (attempts > 60)
                         {
                             return true;
                         }
@@ -249,7 +282,8 @@ namespace NuGet.Insights.Worker
                         await Task.Delay(1000);
 
                         return false;
-                    });
+                    },
+                    workerCount: 8);
 
                 // Assert
                 // Make sure all scans completed.
@@ -312,6 +346,12 @@ namespace NuGet.Insights.Worker
 
                 var startingNuspecRequestCount = GetNuspecRequestCount();
 
+                // Load the readmes
+                var loadPackageReadme = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageReadme, max1);
+                await UpdateAsync(loadPackageReadme.Scan);
+
+                var startingReadmeRequestCount = GetNuspecRequestCount();
+
                 // Load latest package leaves
                 var loadLatestPackageLeaf = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadLatestPackageLeaf, max1);
                 await UpdateAsync(loadLatestPackageLeaf.Scan);
@@ -357,6 +397,7 @@ namespace NuGet.Insights.Worker
 
                 var finalNupkgRequestCount = GetNupkgRequestCount();
                 var finalNuspecRequestCount = GetNuspecRequestCount();
+                var finalReadmeRequestCount = GetNuspecRequestCount();
 
                 // Assert
                 var rawMessageEnqueuer = Host.Services.GetRequiredService<IRawMessageEnqueuer>();
@@ -370,8 +411,10 @@ namespace NuGet.Insights.Worker
 
                 Assert.NotEqual(0, startingNupkgRequestCount);
                 Assert.NotEqual(0, startingNuspecRequestCount);
+                Assert.NotEqual(0, startingReadmeRequestCount);
                 Assert.Equal(startingNupkgRequestCount, finalNupkgRequestCount);
                 Assert.Equal(startingNuspecRequestCount, finalNuspecRequestCount);
+                Assert.Equal(startingReadmeRequestCount, finalReadmeRequestCount);
 
                 var userAgents = HttpMessageHandlerFactory.Requests.Select(r => r.Headers.UserAgent.ToString()).Distinct();
                 var userAgent = Assert.Single(userAgents);

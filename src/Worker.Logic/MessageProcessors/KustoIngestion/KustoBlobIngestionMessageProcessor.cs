@@ -112,6 +112,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
                 blob.StatusUrl = tableUrl.Uri.AbsoluteUri;
                 blob.State = KustoBlobIngestionState.Working;
+                blob.Started = DateTimeOffset.UtcNow;
                 await _storageService.ReplaceBlobAsync(blob);
             }
 
@@ -125,7 +126,20 @@ namespace NuGet.Insights.Worker.KustoIngestion
                     .ToList();
                 _logger.LogInformation("Ingestion status: {Statuses}", statusSummary);
 
-                if (statusList.Any(x => x.Status == Status.Pending))
+                var duration = DateTimeOffset.UtcNow - blob.Started.Value;
+
+                if (duration > _options.Value.KustoBlobIngestionTimeout)
+                {
+                    _logger.LogWarning(
+                        "The ingestion of blob {ContainerName}{BlobName} timed out after {Duration}.",
+                        blob.GetContainerName(),
+                        blob.GetBlobName(),
+                        duration);
+
+                    blob.State = KustoBlobIngestionState.TimedOut;
+                    await _storageService.ReplaceBlobAsync(blob);
+                }
+                else if (statusList.Any(x => x.Status == Status.Pending))
                 {
                     message.AttemptCount++;
                     await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount, factor: 10));
@@ -133,7 +147,14 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 }
                 else if (statusList.Any(x => x.Status != Status.Succeeded))
                 {
-                    throw new InvalidOperationException($"The ingestion did not succeed. The statuses were: {string.Join(", ", statusSummary)}");
+                    _logger.LogWarning(
+                        "The ingestion of blob {ContainerName}{BlobName} did not succeed. The statuses were: {StatusSummary}",
+                        blob.GetContainerName(),
+                        blob.GetBlobName(),
+                        statusSummary);
+
+                    blob.State = KustoBlobIngestionState.Failed;
+                    await _storageService.ReplaceBlobAsync(blob);
                 }
                 else
                 {

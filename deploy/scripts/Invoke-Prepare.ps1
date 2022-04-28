@@ -4,7 +4,7 @@ param (
     $ResourceSettings,
     
     [Parameter(Mandatory = $false)]
-    [string]$DeploymentId,
+    [string]$DeploymentLabel,
 
     [Parameter(Mandatory = $false)]
     [string]$DeploymentDir
@@ -12,7 +12,7 @@ param (
 
 Import-Module (Join-Path $PSScriptRoot "NuGet.Insights.psm1")
 
-$DeploymentId, $DeploymentDir = Get-DeploymentLocals $DeploymentId $DeploymentDir
+$DeploymentLabel, $DeploymentDir = Get-DeploymentLocals $DeploymentLabel $DeploymentDir
 
 # Make sure the resource group is created
 Write-Status "Ensuring the resource group '$($ResourceSettings.ResourceGroupName)' exists..."
@@ -27,7 +27,7 @@ Write-Status "Ensuring the storage account, Key Vault, and deployment container 
 New-Deployment `
     -ResourceGroupName $ResourceSettings.ResourceGroupName `
     -DeploymentDir $DeploymentDir `
-    -DeploymentId $DeploymentId `
+    -DeploymentLabel $DeploymentLabel `
     -DeploymentName "storage-and-kv" `
     -BicepPath "../storage-and-kv.bicep" `
     -Parameters @{
@@ -43,9 +43,8 @@ New-Deployment `
     -ResourceGroupName $ResourceSettings.ResourceGroupName `
     -KeyVaultName $ResourceSettings.KeyVaultName `
     -StorageAccountName $ResourceSettings.StorageAccountName `
-    -TableSasDefinitionName $ResourceSettings.TableSasDefinitionName `
     -AutoRegenerateKey:$ResourceSettings.AutoRegenerateKey `
-    -SasValidityPeriod $ResourceSettings.SasValidityPeriod
+    -RegenerationPeriod $ResourceSettings.RegenerationPeriod
 
 # Initialize the AAD app, if necessary
 if (!$ResourceSettings.WebsiteAadAppClientId) {
@@ -53,9 +52,9 @@ if (!$ResourceSettings.WebsiteAadAppClientId) {
 
     # Make the app service support the website for login
     . (Join-Path $PSScriptRoot "Initialize-AadAppForWebsite.ps1") `
-        -ObjectId $aadApp.ObjectId `
+        -ObjectId $aadApp.id `
         -BaseUrl (Get-AppServiceBaseUrl $ResourceSettings.WebsiteName)
 
-    $ResourceSettings.WebsiteAadAppClientId = $aadApp.ApplicationId
-    Write-Host "The AAD app registration client ID is $($aadApp.ApplicationId)."
+    $ResourceSettings.WebsiteAadAppClientId = $aadApp.appId
+    Write-Host "The AAD app registration client ID is $($aadApp.appId)."
 }

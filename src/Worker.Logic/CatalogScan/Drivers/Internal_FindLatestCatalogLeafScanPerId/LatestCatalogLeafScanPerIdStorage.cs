@@ -11,11 +11,13 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScanPerId
         private static readonly string LeafId = string.Empty;
 
         private readonly CatalogIndexScan _indexScan;
+        private readonly string _pageUrl;
 
-        public LatestCatalogLeafScanPerIdStorage(TableClient table, CatalogIndexScan indexScan)
+        public LatestCatalogLeafScanPerIdStorage(TableClient table, CatalogIndexScan indexScan, string pageUrl)
         {
             Table = table;
             _indexScan = indexScan;
+            _pageUrl = pageUrl;
         }
 
         public TableClient Table { get; }
@@ -38,6 +40,7 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScanPerId
                 DriverType = _indexScan.DriverType,
                 DriverParameters = _indexScan.DriverParameters,
                 Url = item.Url,
+                PageUrl = _pageUrl,
                 LeafType = item.Type,
                 CommitId = item.CommitId,
                 CommitTimestamp = item.CommitTimestamp,

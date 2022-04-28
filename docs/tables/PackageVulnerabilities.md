@@ -41,7 +41,7 @@ Package vulnerability information on NuGet.org is sourced from GitHub's security
 
 ## Severity schema
 
-The set of non-numeric values is defined by the [`SecurityAdvisorySeverity`](https://developer.github.com/v4/enum/securityadvisoryseverity/) enum on GitHub's GraphQL API.
+The set of non-numeric values is defined by the [`SecurityAdvisorySeverity`](https://docs.github.com/en/graphql/reference/enums#securityadvisoryseverity) enum on GitHub's GraphQL API.
 
 | Numeric value | Description |
 | ------------- | ----------- |

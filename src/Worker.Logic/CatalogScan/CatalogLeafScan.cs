@@ -34,6 +34,7 @@ namespace NuGet.Insights.Worker
         public string ScanId { get; set; }
         public string PageId { get; set; }
         public string Url { get; set; }
+        public string PageUrl { get; set; }
         public CatalogLeafType LeafType { get; set; }
         public string CommitId { get; set; }
         public DateTimeOffset CommitTimestamp { get; set; } = new DateTimeOffset(1900, 1, 1, 0, 0, 0, TimeSpan.Zero);

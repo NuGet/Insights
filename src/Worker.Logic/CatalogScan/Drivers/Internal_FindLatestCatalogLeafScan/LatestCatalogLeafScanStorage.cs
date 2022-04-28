@@ -10,11 +10,13 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScan
     public class LatestCatalogLeafScanStorage : ILatestPackageLeafStorage<CatalogLeafScan>
     {
         private readonly CatalogIndexScan _indexScan;
+        private readonly string _pageUrl;
 
-        public LatestCatalogLeafScanStorage(TableClient table, CatalogIndexScan indexScan)
+        public LatestCatalogLeafScanStorage(TableClient table, CatalogIndexScan indexScan, string pageUrl)
         {
             Table = table;
             _indexScan = indexScan;
+            _pageUrl = pageUrl;
         }
 
         public TableClient Table { get; }
@@ -37,6 +39,7 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScan
                 DriverType = _indexScan.DriverType,
                 DriverParameters = _indexScan.DriverParameters,
                 Url = item.Url,
+                PageUrl = _pageUrl,
                 LeafType = item.Type,
                 CommitId = item.CommitId,
                 CommitTimestamp = item.CommitTimestamp,

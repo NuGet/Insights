@@ -8,10 +8,11 @@ namespace NuGet.Insights.Worker
     public interface ICatalogLeafToCsvDriver
     {
         /// <summary>
-        /// Whether or not the <see cref="ProcessLeafAsync(CatalogLeafItem, int)"/> should only be called once per
-        /// package ID in the catalog scan. Returning <c>true</c> means you expect to process latest data once per 
-        /// package ID. Returning <c>false</c> means you expect to process the latest data once per package ID and
-        /// version.
+        /// Whether or not the <see cref="ICatalogLeafToCsvDriver{T}.ProcessLeafAsync(ICatalogLeafItem, int)"/> or
+        /// <see cref="ICatalogLeafToCsvBatchDriver{T}.ProcessLeavesAsync(System.Collections.Generic.IReadOnlyList{CatalogLeafScan})"/>
+        /// should only be called once per package ID in the catalog scan. Returning <c>true</c> means you expect to
+        /// process latest data once per package ID. Returning <c>false</c> means you expect to process the latest data
+        /// once per package ID and version.
         /// </summary>
         bool SingleMessagePerId { get; }
 
@@ -24,12 +25,11 @@ namespace NuGet.Insights.Worker
     public interface ICatalogLeafToCsvDriver<T> : ICatalogLeafToCsvDriver where T : class, ICsvRecord
     {
         /// <summary>
-        /// Process each catalog leaf item and return CSV rows to accumulate in Azure Blob storage.
+        /// Process each catalog leaf scan and return CSV rows to accumulate in Azure Blob storage.
         /// </summary>
-        /// <param name="item">The catalog leaf item to process.</param>
-        /// <param name="attemptCount">The current attempt count for this catalog leaf item.</param>
+        /// <param name="leafScan">The catalog leaf scan to process.</param>
         /// <returns>The result, either try again later or a list of records that will be written to CSV.</returns>
-        Task<DriverResult<CsvRecordSet<T>>> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount);
+        Task<DriverResult<CsvRecordSet<T>>> ProcessLeafAsync(CatalogLeafScan leafScan);
     }
 
     public interface ICatalogLeafToCsvDriver<T1, T2> : ICatalogLeafToCsvDriver
@@ -37,11 +37,23 @@ namespace NuGet.Insights.Worker
         where T2 : class, ICsvRecord
     {
         /// <summary>
-        /// Process each catalog leaf item and return CSV rows to accumulate in Azure Blob storage.
+        /// Process each catalog leaf scan and return CSV rows to accumulate in Azure Blob storage.
         /// </summary>
-        /// <param name="item">The catalog leaf item to process.</param>
-        /// <param name="attemptCount">The current attempt count for this catalog leaf item.</param>
+        /// <param name="leafScan">The catalog leaf scan to process.</param>
         /// <returns>The result, either try again later or a list of records that will be written to CSV.</returns>
-        Task<DriverResult<CsvRecordSets<T1, T2>>> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount);
+        Task<DriverResult<CsvRecordSets<T1, T2>>> ProcessLeafAsync(CatalogLeafScan leafScan);
+    }
+
+    public interface ICatalogLeafToCsvDriver<T1, T2, T3> : ICatalogLeafToCsvDriver
+        where T1 : class, ICsvRecord
+        where T2 : class, ICsvRecord
+        where T3 : class, ICsvRecord
+    {
+        /// <summary>
+        /// Process each catalog leaf scan and return CSV rows to accumulate in Azure Blob storage.
+        /// </summary>
+        /// <param name="leafScan">The catalog leaf scan to process.</param>
+        /// <returns>The result, either try again later or a list of records that will be written to CSV.</returns>
+        Task<DriverResult<CsvRecordSets<T1, T2, T3>>> ProcessLeafAsync(CatalogLeafScan leafScan);
     }
 }

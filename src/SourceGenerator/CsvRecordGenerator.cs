@@ -138,6 +138,10 @@ namespace NuGet.Insights
                 return;
             }
 
+            // This is a very hacky way of not adding duplicate types. For example, the KustoDDL type really only needs
+            // to exist in NuGet.Insights.Worker.Logic and in no other project.
+            var isTestAssembly = context.Compilation.AssemblyName.EndsWith(".Test");
+
             // System.Diagnostics.Debugger.Launch();
 
             var nullable = context.Compilation.GetTypeByMetadataName("System.Nullable`1");
@@ -306,24 +310,27 @@ namespace NuGet.Insights
                             KustoDDL.CsvMappingName),
                         Encoding.UTF8));
 
-                context.AddSource(
-                    $"{typeName}.KustoDDL.cs",
-                    SourceText.From(
-                        string.Format(
-                            KustoDDLTemplate,
-                            symbol.ContainingNamespace,
-                            kustoTableName,
-                            kustoTableConstantBuilder.GetResult(),
-                            typeName,
-                            kustoPartitioningPolicyConstantBuilder.GetResult(),
-                            kustoMappingConstantBuilder.GetResult(),
-                            KustoDDL.CsvMappingName),
-                        Encoding.UTF8));
+                if (!isTestAssembly)
+                {
+                    context.AddSource(
+                        $"{typeName}.KustoDDL.cs",
+                        SourceText.From(
+                            string.Format(
+                                KustoDDLTemplate,
+                                symbol.ContainingNamespace,
+                                kustoTableName,
+                                kustoTableConstantBuilder.GetResult(),
+                                typeName,
+                                kustoPartitioningPolicyConstantBuilder.GetResult(),
+                                kustoMappingConstantBuilder.GetResult(),
+                                KustoDDL.CsvMappingName),
+                            Encoding.UTF8));
+                }
 
                 sourceAdded = true;
             }
 
-            if (sourceAdded)
+            if (sourceAdded && !isTestAssembly)
             {
                 AddType(context, typeof(CsvUtility));
                 AddType(context, typeof(KustoDDL));

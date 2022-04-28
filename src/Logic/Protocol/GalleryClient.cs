@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,6 +10,8 @@ using AngleSharp.Html.Parser;
 using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
 using NuGet.Versioning;
+
+#nullable enable
 
 namespace NuGet.Insights
 {
@@ -86,7 +88,7 @@ namespace NuGet.Insights
                 CancellationToken.None);
         }
 
-        private MutableState DetermineState(string baseUrl, PackageIdentity packageIdentity, MemoryStream responseBody)
+        private MutableState? DetermineState(string baseUrl, PackageIdentity packageIdentity, MemoryStream responseBody)
         {
             var state = new MutableState();
 
@@ -98,7 +100,7 @@ namespace NuGet.Insights
                 return null;
             }
 
-            var metaTitleEl = document.Head.QuerySelector("meta[property='og:title']");
+            var metaTitleEl = document.Head?.QuerySelector("meta[property='og:title']");
             if (metaTitleEl == null)
             {
                 return null;
@@ -139,7 +141,7 @@ namespace NuGet.Insights
             }
 
             // Determine whether the package has an icon
-            var metaImageEl = document.Head.QuerySelector("meta[property='og:image']");
+            var metaImageEl = document.Head?.QuerySelector("meta[property='og:image']");
             if (metaImageEl == null)
             {
                 return null;
@@ -188,8 +190,8 @@ namespace NuGet.Insights
 
         private class MutableState
         {
-            public string PackageId { get; set; }
-            public string PackageVersion { get; set; }
+            public string? PackageId { get; set; }
+            public string? PackageVersion { get; set; }
             public PackageDeletedStatus? PackageDeletedStatus { get; set; }
             public bool? IsListed { get; set; }
             public bool? HasIcon { get; set; }

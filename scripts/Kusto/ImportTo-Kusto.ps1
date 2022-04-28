@@ -18,20 +18,25 @@ param (
     [Parameter(Mandatory = $false)]
     [ValidateSet(
         "CatalogLeafItems",
+        "Certificates",
         "NuGetPackageExplorerFiles",
         "NuGetPackageExplorers",
         "PackageArchiveEntries",
         "PackageArchives",
         "PackageAssemblies",
         "PackageAssets",
+        "PackageCertificates",
         "PackageCompatibilities",
-        "PackageDownloads",
         "PackageDeprecations",
+        "PackageDownloads",
+        "PackageIcons",
         "PackageManifests",
         "PackageOwners",
+        "PackageReadmes",
         "PackageSignatures",
         "PackageVersions",
-        "PackageVulnerabilities")]
+        "PackageVulnerabilities",
+        "VerifiedPackages")]
     [string]$TableName,
 
     [Parameter(Mandatory = $false)]
@@ -49,20 +54,25 @@ param (
 
 $tableNameToContainerName = @{
     "CatalogLeafItems"          = "catalogleafitems";
+    "Certificates"              = "certificates";
     "NuGetPackageExplorerFiles" = "nugetpackageexplorerfiles";
     "NuGetPackageExplorers"     = "nugetpackageexplorer";
     "PackageArchiveEntries"     = "packagearchiveentries";
     "PackageArchives"           = "packagearchives";
     "PackageAssemblies"         = "packageassemblies";
     "PackageAssets"             = "packageassets";
+    "PackageCertificates"       = "packagecertificates";
     "PackageCompatibilities"    = "packagecompatibilities";
     "PackageDeprecations"       = "packagedeprecations";
     "PackageDownloads"          = "packagedownloads";
+    "PackageIcons"              = "packageicons";
     "PackageManifests"          = "packagemanifests";
     "PackageOwners"             = "packageowners";
+    "PackageReadmes"            = "packagereadmes";
     "PackageSignatures"         = "packagesignatures";
     "PackageVersions"           = "packageversions";
     "PackageVulnerabilities"    = "packagevulnerabilities";
+    "VerifiedPackages"          = "verifiedpackages";
 }
 
 if ($TableName -and !$tableNameToContainerName[$TableName]) {
@@ -167,7 +177,7 @@ foreach ($model in $models) {
     }
 
     if ($TableName -and $foundTableName -ne $TableName) {
-        Write-Warning "Skipping undesired table $tableName."
+        Write-Warning "Skipping undesired table $foundTableName."
         continue
     }
 

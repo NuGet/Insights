@@ -1,16 +1,17 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using NuGet.Protocol;
+
+#nullable enable
 
 namespace NuGet.Insights
 {
@@ -18,11 +19,11 @@ namespace NuGet.Insights
     {
         private const int DefaultMaxTries = 3;
 
-        private static readonly JsonSerializer Serializer = new JsonSerializer
+        internal static readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
         {
-            DateParseHandling = DateParseHandling.None,
             Converters =
             {
+                new AssumeUniversalDateTimeConverter(),
                 new AssumeUniversalDateTimeOffsetConverter(),
             },
         };
@@ -57,35 +58,15 @@ namespace NuGet.Insights
                 token);
         }
 
-        public static Task<T> DeserializeUrlAsync<T>(
+        public static async Task<T> DeserializeUrlAsync<T>(
             this HttpSource httpSource,
             string url,
-            bool ignoreNotFounds,
             ILogger logger,
-            CancellationToken token = default)
+            CancellationToken token = default) where T : notnull
         {
-            return httpSource.DeserializeUrlAsync<T>(
+            return await httpSource.DeserializeUrlAsync<T>(
                 url,
-                ignoreNotFounds,
                 maxTries: DefaultMaxTries,
-                serializer: Serializer,
-                logger: logger,
-                token: token);
-        }
-
-        public static Task<T> DeserializeUrlAsync<T>(
-            this HttpSource httpSource,
-            string url,
-            bool ignoreNotFounds,
-            int maxTries,
-            ILogger logger,
-            CancellationToken token = default)
-        {
-            return httpSource.DeserializeUrlAsync<T>(
-                url,
-                ignoreNotFounds,
-                maxTries,
-                serializer: Serializer,
                 logger: logger,
                 token: token);
         }
@@ -93,11 +74,60 @@ namespace NuGet.Insights
         public static async Task<T> DeserializeUrlAsync<T>(
             this HttpSource httpSource,
             string url,
+            int maxTries,
+            ILogger logger,
+            CancellationToken token = default) where T : notnull
+        {
+            return (await httpSource.DeserializeUrlAsync<T>(
+                url,
+                ignoreNotFounds: false,
+                maxTries: maxTries,
+                logger: logger,
+                token: token))!;
+        }
+
+        public static async Task<T?> DeserializeUrlAsync<T>(
+            this HttpSource httpSource,
+            string url,
+            bool ignoreNotFounds,
+            ILogger logger,
+            CancellationToken token = default) where T : notnull
+        {
+            return await httpSource.DeserializeUrlAsync<T>(
+                url,
+                ignoreNotFounds,
+                maxTries: DefaultMaxTries,
+                logger: logger,
+                token: token);
+        }
+
+
+        public static async Task<T?> DeserializeUrlAsync<T>(
+            this HttpSource httpSource,
+            string url,
             bool ignoreNotFounds,
             int maxTries,
-            JsonSerializer serializer,
             ILogger logger,
-            CancellationToken token = default)
+            CancellationToken token = default) where T : notnull
+        {
+            return await httpSource.DeserializeUrlAsync<T>(
+                url,
+                ignoreNotFounds,
+                maxTries: maxTries,
+                options: JsonSerializerOptions,
+                logger: logger,
+                token: token);
+        }
+
+
+        public static async Task<T?> DeserializeUrlAsync<T>(
+            this HttpSource httpSource,
+            string url,
+            bool ignoreNotFounds,
+            int maxTries,
+            JsonSerializerOptions options,
+            ILogger logger,
+            CancellationToken token = default) where T : notnull
         {
             var nuGetLogger = logger.ToNuGetLogger();
             return await httpSource.ProcessStreamAsync(
@@ -107,27 +137,31 @@ namespace NuGet.Insights
                     MaxTries = maxTries,
                     RequestTimeout = TimeSpan.FromSeconds(30),
                 },
-                stream =>
+                async stream =>
                 {
                     if (stream == null)
                     {
-                        return Task.FromResult(default(T));
+                        return default;
                     }
 
-                    using (var textReader = new StreamReader(stream))
-                    using (var jsonReader = new JsonTextReader(textReader))
+                    T? result;
+                    try
                     {
-                        try
-                        {
-                            var result = serializer.Deserialize<T>(jsonReader);
-                            return Task.FromResult(result);
-                        }
-                        catch (JsonException)
-                        {
-                            logger.LogWarning("Unable to deserialize {Url} as type {TypeName}.", url, typeof(T).Name);
-                            throw;
-                        }
+                        result = await JsonSerializer.DeserializeAsync<T>(stream, options, token);
                     }
+                    catch (JsonException ex)
+                    {
+                        logger.LogWarning(ex, "Unable to deserialize {Url} as type {TypeName}.", url, typeof(T).FullName);
+                        throw;
+                    }
+
+                    if (result is null)
+                    {
+                        logger.LogWarning("Deserialization of {Url} as type {TypeName} resulted in null.", url, typeof(T).FullName);
+                        throw new InvalidOperationException("Deserialization of a URL unexpectedly resulted in null.");
+                    }
+
+                    return result;
                 },
                 nuGetLogger,
                 token);
@@ -148,7 +182,7 @@ namespace NuGet.Insights
                 {
                     if (response.StatusCode == HttpStatusCode.NotFound)
                     {
-                        return Task.FromResult(new BlobMetadata(
+                        return Task.FromResult<BlobMetadata?>(new BlobMetadata(
                             exists: false,
                             hasContentMD5Header: false,
                             contentMD5: null));
@@ -159,14 +193,14 @@ namespace NuGet.Insights
                     var headerMD5Bytes = response.Content.Headers.ContentMD5;
                     if (headerMD5Bytes != null)
                     {
-                        var contentMD5 = headerMD5Bytes.ToHex();
-                        return Task.FromResult(new BlobMetadata(
+                        var contentMD5 = headerMD5Bytes.ToLowerHex();
+                        return Task.FromResult<BlobMetadata?>(new BlobMetadata(
                             exists: true,
                             hasContentMD5Header: true,
                             contentMD5: contentMD5));
                     }
 
-                    return Task.FromResult<BlobMetadata>(null);
+                    return Task.FromResult<BlobMetadata?>(null);
                 },
                 nuGetLogger,
                 token);
@@ -194,7 +228,7 @@ namespace NuGet.Insights
                         while (read > 0);
 
                         md5.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
-                        var contentMD5 = md5.Hash.ToHex();
+                        var contentMD5 = md5.Hash!.ToLowerHex();
 
                         return new BlobMetadata(
                             exists: true,

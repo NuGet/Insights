@@ -106,12 +106,18 @@ namespace NuGet.Insights.Worker
             }
         }
 
+        /// <summary>
+        /// The tri-state return type has the following meanings:
+        /// - null: the driver type supports run with or without the latest leaves scan
+        /// - false: the driver type cannot run with "only latest leaves = false"
+        /// - true: the driver type can only run with "only latest leaves = true"
+        /// </summary>
         public bool? GetOnlyLatestLeavesSupport(CatalogScanDriverType driverType)
         {
             switch (driverType)
             {
                 case CatalogScanDriverType.BuildVersionSet:
-                case CatalogScanDriverType.CatalogLeafItemToCsv:
+                case CatalogScanDriverType.CatalogDataToCsv:
                     return false;
 
                 case CatalogScanDriverType.LoadLatestPackageLeaf:
@@ -120,19 +126,23 @@ namespace NuGet.Insights.Worker
                 case CatalogScanDriverType.PackageArchiveToCsv:
                 case CatalogScanDriverType.PackageAssemblyToCsv:
                 case CatalogScanDriverType.PackageAssetToCsv:
+#if ENABLE_CRYPTOAPI
+                case CatalogScanDriverType.PackageCertificateToCsv:
+#endif
                 case CatalogScanDriverType.PackageSignatureToCsv:
                 case CatalogScanDriverType.PackageManifestToCsv:
+                case CatalogScanDriverType.PackageReadmeToCsv:
                 case CatalogScanDriverType.PackageVersionToCsv:
 #if ENABLE_NPE
                 case CatalogScanDriverType.NuGetPackageExplorerToCsv:
 #endif
                 case CatalogScanDriverType.PackageCompatibilityToCsv:
                 case CatalogScanDriverType.PackageIconToCsv:
-                case CatalogScanDriverType.CatalogDataToCsv:
                     return null;
 
                 case CatalogScanDriverType.LoadPackageArchive:
                 case CatalogScanDriverType.LoadPackageManifest:
+                case CatalogScanDriverType.LoadPackageReadme:
                 case CatalogScanDriverType.LoadPackageVersion:
                     return true;
 
@@ -219,10 +229,10 @@ namespace NuGet.Insights.Worker
 
             switch (driverType)
             {
-                case CatalogScanDriverType.CatalogLeafItemToCsv:
-                    return await UpdateAsync(
+                case CatalogScanDriverType.CatalogDataToCsv:
+                    return await UpdateCatalogLeafToCsvAsync(
                         driverType,
-                        parameters: null,
+                        onlyLatestLeaves: false,
                         CatalogClient.NuGetOrgMin,
                         max,
                         continueWithDependents);
@@ -230,18 +240,22 @@ namespace NuGet.Insights.Worker
                 case CatalogScanDriverType.PackageArchiveToCsv:
                 case CatalogScanDriverType.PackageAssemblyToCsv:
                 case CatalogScanDriverType.PackageAssetToCsv:
+#if ENABLE_CRYPTOAPI
+                case CatalogScanDriverType.PackageCertificateToCsv:
+#endif
                 case CatalogScanDriverType.PackageSignatureToCsv:
                 case CatalogScanDriverType.PackageManifestToCsv:
+                case CatalogScanDriverType.PackageReadmeToCsv:
                 case CatalogScanDriverType.PackageVersionToCsv:
 #if ENABLE_NPE
                 case CatalogScanDriverType.NuGetPackageExplorerToCsv:
 #endif
                 case CatalogScanDriverType.PackageCompatibilityToCsv:
                 case CatalogScanDriverType.PackageIconToCsv:
-                case CatalogScanDriverType.CatalogDataToCsv:
                     return await UpdateCatalogLeafToCsvAsync(
                         driverType,
                         onlyLatestLeaves.GetValueOrDefault(true),
+                        onlyLatestLeaves.GetValueOrDefault(true) ? CatalogClient.NuGetOrgMinDeleted : CatalogClient.NuGetOrgMinAvailable,
                         max,
                         continueWithDependents);
 
@@ -249,6 +263,7 @@ namespace NuGet.Insights.Worker
                 case CatalogScanDriverType.LoadLatestPackageLeaf:
                 case CatalogScanDriverType.LoadPackageArchive:
                 case CatalogScanDriverType.LoadPackageManifest:
+                case CatalogScanDriverType.LoadPackageReadme:
                 case CatalogScanDriverType.LoadPackageVersion:
                     return await UpdateAsync(
                         driverType,
@@ -294,32 +309,10 @@ namespace NuGet.Insights.Worker
                 max);
         }
 
-        private async Task<CatalogScanServiceResult> ReprocessCatalogLeafToCsvAsync(CatalogScanDriverType driverType)
-        {
-            var parameters = new CatalogLeafToCsvParameters
-            {
-                Mode = CatalogLeafToCsvMode.Reprocess,
-            };
-
-            var cursorValue = await _cursorService.GetCursorValueAsync(driverType);
-            var scanId = StorageUtility.GenerateDescendingId();
-            var scan = await GetOrStartCursorlessAsync(
-                scanId.ToString(),
-                scanId.Unique,
-                driverType,
-                parameters: _serializer.Serialize(parameters).AsString(),
-                CatalogClient.NuGetOrgMinAvailable,
-                cursorValue);
-
-            return new CatalogScanServiceResult(
-                CatalogScanServiceResultType.NewStarted,
-                dependencyName: null,
-                scan);
-        }
-
         private async Task<CatalogScanServiceResult> UpdateCatalogLeafToCsvAsync(
             CatalogScanDriverType driverType,
             bool onlyLatestLeaves,
+            DateTimeOffset min,
             DateTimeOffset? max,
             bool continueWithDependents)
         {
@@ -331,7 +324,7 @@ namespace NuGet.Insights.Worker
             return await UpdateAsync(
                 driverType,
                 parameters: _serializer.Serialize(parameters).AsString(),
-                onlyLatestLeaves ? CatalogClient.NuGetOrgMinDeleted : CatalogClient.NuGetOrgMinAvailable,
+                min,
                 max,
                 continueWithDependents);
         }

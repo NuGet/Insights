@@ -41,9 +41,12 @@ $appServicePatch = @{
     identifierUris = @();
     signInAudience = "AzureADandPersonalMicrosoftAccount";
     web            = @{
-        homePageUrl  = $BaseUrl;
-        redirectUris = @("$BaseUrl/signin-oidc")
-        logoutUrl    = "$BaseUrl/signout-oidc"
+        homePageUrl           = $BaseUrl;
+        implicitGrantSettings = @{
+            enableIdTokenIssuance     = $true;
+        };
+        redirectUris          = @("$BaseUrl/signin-oidc");
+        logoutUrl             = "$BaseUrl/signout-oidc";
     }
 }
 
@@ -58,6 +61,12 @@ if ($app.signInAudience -eq $appServicePatch.signInAudience) {
 }
 if ($app.web.homePageUrl -eq $appServicePatch.web.homePageUrl) {
     $appServicePatch.web.Remove("homePageUrl")
+}
+if ($app.web.implicitGrantSettings.enableIdTokenIssuance -eq $appServicePatch.web.implicitGrantSettings.enableIdTokenIssuance) {
+    $appServicePatch.web.implicitGrantSettings.Remove("enableIdTokenIssuance")
+}
+if ($appServicePatch.web.implicitGrantSettings.Count -eq 0) {
+    $appServicePatch.web.Remove("implicitGrantSettings")
 }
 if ($app.web.redirectUris -eq $appServicePatch.web.redirectUris) {
     $appServicePatch.web.Remove("redirectUris")

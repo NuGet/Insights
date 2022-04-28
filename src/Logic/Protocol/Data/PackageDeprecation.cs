@@ -2,19 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace NuGet.Insights
 {
     public class PackageDeprecation
     {
-        [JsonProperty("message")]
+        [JsonPropertyName("message")]
         public string Message { get; set; }
 
-        [JsonProperty("reasons")]
+        [JsonPropertyName("reasons")]
         public List<string> Reasons { get; set; }
 
-        [JsonProperty("alternatePackage")]
+        [JsonPropertyName("alternatePackage")]
         public PackageDeprecationAlternatePackage AlternatePackage { get; set; }
     }
 }

@@ -35,8 +35,10 @@ can help illustrate the differences between several approaches.
 | BrokenFrameworks       | array of strings | Yes, for Available unless HasError | Framework strings found that don't roundtrip properly                                                                                                                                                                            |
 | NuspecReader           | array of strings | Yes, for Available unless HasError | Frameworks via `NuspecReader.GetSupportedFrameworks`                                                                                                                                                                             |
 | NU1202                 | array of strings | Yes, for Available unless HasError | Frameworks mentioned in the NU1202 error                                                                                                                                                                                         |
-| NuGetGallery           | array of strings | Yes, for Available unless HasError | Frameworks via same logic a NuGetGallery **except `any` is included**, with URL-encoded paths decoded                                                                                                                                                         |
-| NuGetGalleryEscaped    | array of strings | Yes, for Available unless HasError | Frameworks via same logic a NuGetGallery **except `any` is included**, with URL-encoded left encoded                                                                                                                                                          |
+| NuGetGallery           | array of strings | Yes, for Available unless HasError | Frameworks via same logic a NuGet.org **except `any` is included**, with URL-encoded paths decoded                                                                                                                               |
+| NuGetGalleryEscaped    | array of strings | Yes, for Available unless HasError | Frameworks via same logic a NuGetGallery **except `any` is included**, with URL-encoded left encoded                                                                                                                             |
+| NuGetGallerySupported  | array of objects | Yes, for Available unless HasError | Expanded list of all supported frameworks, as shown on NuGet.org                                                                                                                                                                 |
+| NuGetGalleryBadges     | array of objects | Yes, for Available unless HasError | List of framework badges (minimum framework version for common frameworks), as shown on NuGet.org                                                                                                                                |
 
 If HasError is true, one or more of the framework columns may be empty. This may be for many reasons but the most common is that the package was packed in a non-standard way and has an invalid framework in one of the file paths.
 
@@ -78,3 +80,31 @@ This solution is meant to provide a view of framework compatibility that conside
 ## NuGetGalleryEscaped schema
 
 Same as the NuGetGallerySchema column except the logic was executed on file paths that were not URL decoded. The reason this column exists is because naive analysis of NuGet package ZIP paths may result in leaving URL-encoded paths as-is. This can lead to differences in how frameworks in file paths are parsed. NuGet/NuGet.Client `PackageArchiveReader` decodes file paths containing the `%` sign ([source](https://github.com/NuGet/NuGet.Client/blob/1e359e8d48e4f7d13e106b1a9178ed3622a3a0b8/src/NuGet.Core/NuGet.Packaging/PackageExtraction/ZipArchiveExtensions.cs#L30-L48)) so this column illustrates what analysis would look like if this decoding do NOT happen.
+
+## NuGetGallerySupported schema
+
+The NuGetGallerySupported field is an array of objects. Each object has the following schema.
+
+| Property name | Data type        | Required | Description                                                                     |
+| ------------- | ---------------- | -------- | ------------------------------------------------------------------------------- |
+| ProductName   | string           | true     | The human readable product name of the target framework (e.g. `.NET Framework`) |
+| Frameworks    | array of objects | true     | The expanded list of project frameworks that support this package               |
+
+Each Framework object has the following schema.
+
+| Property name | Data type | Required | Description                                                                                                                               |
+| ------------- | --------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework     | string    | true     | The framework string (e.g. `netstandard1.1`)                                                                                              |
+| IsComputed    | bool      | true     | If false, an asset exists in the package with this `Framework`, otherwise it's computed to be compatible by framework compatibility rules |
+
+
+## NuGetGalleryBadges schema
+
+The NuGetGalleryBadges field is an array of objects. Each object has the following schema.
+
+This array does not contain all frameworks. It just contains the most popular ones like .NET, .NET Core, .NET Standard, and .NET Framework.
+
+| Property name | Data type | Required | Description                                                                         |
+| ------------- | --------- | -------- | ----------------------------------------------------------------------------------- |
+| ProductName   | string    | true     | The human readable product name of the target framework (e.g. `.NET Framework`)     |
+| Minimum       | string    | true     | The minimum framework version for the product name that is supported by the package |

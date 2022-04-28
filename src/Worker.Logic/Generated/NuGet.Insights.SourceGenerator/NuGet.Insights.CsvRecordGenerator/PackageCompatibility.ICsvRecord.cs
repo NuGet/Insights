@@ -32,7 +32,9 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
         NuspecReader: dynamic,
         NU1202: dynamic,
         NuGetGallery: dynamic,
-        NuGetGalleryEscaped: dynamic
+        NuGetGalleryEscaped: dynamic,
+        NuGetGallerySupported: dynamic,
+        NuGetGalleryBadges: dynamic
     );
 
     .alter-merge table PackageCompatibilities policy retention softdelete = 30d;
@@ -68,17 +70,19 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
         '{"Column":"NuspecReader","DataType":"dynamic","Properties":{"Ordinal":15}},'
         '{"Column":"NU1202","DataType":"dynamic","Properties":{"Ordinal":16}},'
         '{"Column":"NuGetGallery","DataType":"dynamic","Properties":{"Ordinal":17}},'
-        '{"Column":"NuGetGalleryEscaped","DataType":"dynamic","Properties":{"Ordinal":18}}'
+        '{"Column":"NuGetGalleryEscaped","DataType":"dynamic","Properties":{"Ordinal":18}},'
+        '{"Column":"NuGetGallerySupported","DataType":"dynamic","Properties":{"Ordinal":19}},'
+        '{"Column":"NuGetGalleryBadges","DataType":"dynamic","Properties":{"Ordinal":20}}'
     ']'
 
     */
     partial record PackageCompatibility
     {
-        public int FieldCount => 19;
+        public int FieldCount => 21;
 
         public void WriteHeader(TextWriter writer)
         {
-            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,HasError,DoesNotRoundTrip,HasAny,HasUnsupported,HasAgnostic,BrokenFrameworks,NuspecReader,NU1202,NuGetGallery,NuGetGalleryEscaped");
+            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,HasError,DoesNotRoundTrip,HasAny,HasUnsupported,HasAgnostic,BrokenFrameworks,NuspecReader,NU1202,NuGetGallery,NuGetGalleryEscaped,NuGetGallerySupported,NuGetGalleryBadges");
         }
 
         public void Write(List<string> fields)
@@ -102,6 +106,8 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             fields.Add(NU1202);
             fields.Add(NuGetGallery);
             fields.Add(NuGetGalleryEscaped);
+            fields.Add(NuGetGallerySupported);
+            fields.Add(NuGetGalleryBadges);
         }
 
         public void Write(TextWriter writer)
@@ -143,6 +149,10 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             CsvUtility.WriteWithQuotes(writer, NuGetGallery);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, NuGetGalleryEscaped);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, NuGetGallerySupported);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, NuGetGalleryBadges);
             writer.WriteLine();
         }
 
@@ -185,6 +195,10 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             await CsvUtility.WriteWithQuotesAsync(writer, NuGetGallery);
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, NuGetGalleryEscaped);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, NuGetGallerySupported);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, NuGetGalleryBadges);
             await writer.WriteLineAsync();
         }
 
@@ -211,6 +225,8 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                 NU1202 = getNextField(),
                 NuGetGallery = getNextField(),
                 NuGetGalleryEscaped = getNextField(),
+                NuGetGallerySupported = getNextField(),
+                NuGetGalleryBadges = getNextField(),
             };
         }
     }

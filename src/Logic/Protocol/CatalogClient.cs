@@ -3,15 +3,16 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using NuGet.Protocol;
+
+#nullable enable
 
 namespace NuGet.Insights
 {
@@ -75,12 +76,7 @@ namespace NuGet.Insights
 
         public async Task<CatalogIndex> GetCatalogIndexAsync(string url)
         {
-            return await _httpSource.DeserializeUrlAsync<CatalogIndex>(
-                url,
-                ignoreNotFounds: false,
-                maxTries: 3,
-                serializer: CatalogJsonSerialization.Serializer,
-                logger: _logger);
+            return await _httpSource.DeserializeUrlAsync<CatalogIndex>(url, logger: _logger);
         }
 
         public async Task<DateTimeOffset> GetCommitTimestampAsync()
@@ -103,17 +99,11 @@ namespace NuGet.Insights
                         throw new InvalidOperationException($"Expected an HTTP 206 Partial Content response. Got HTTP {(int)response.StatusCode} {response.ReasonPhrase}.");
                     }
 
-                    using var stream = await response.Content.ReadAsStreamAsync();
-                    using var reader = new StreamReader(stream);
-                    using var jsonReader = new JsonTextReader(reader);
-                    while (jsonReader.Read())
+                    var bytes = await response.Content.ReadAsByteArrayAsync();
+                    var output = ReadCommitTimestamp(bytes);
+                    if (output != null)
                     {
-                        if (jsonReader.TokenType == JsonToken.PropertyName
-                            && jsonReader.Depth == 1
-                            && (string)jsonReader.Value == "commitTimeStamp")
-                        {
-                            return jsonReader.ReadAsString();
-                        }
+                        return output;
                     }
 
                     throw new InvalidOperationException($"Could not find the commit timestamp in the first {length} bytes of the catalog index.");
@@ -124,6 +114,33 @@ namespace NuGet.Insights
             return DateTimeOffset.Parse(commitTimestamp);
         }
 
+        private string? ReadCommitTimestamp(byte[] bytes)
+        {
+            var jsonReader = new Utf8JsonReader(bytes);
+            var found = false;
+            while (jsonReader.Read())
+            {
+                if (found)
+                {
+                    if (jsonReader.TokenType == JsonTokenType.String)
+                    {
+                        return jsonReader.GetString();
+                    }
+
+                    found = false;
+                }
+
+                if (jsonReader.TokenType == JsonTokenType.PropertyName
+                    && jsonReader.CurrentDepth == 1
+                    && jsonReader.GetString() == "commitTimeStamp")
+                {
+                    found = true;
+                }
+            }
+
+            return null;
+        }
+
         public async Task<CatalogIndex> GetCatalogIndexAsync()
         {
             var url = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.Catalog);
@@ -132,12 +149,7 @@ namespace NuGet.Insights
 
         public async Task<CatalogPage> GetCatalogPageAsync(string url)
         {
-            return await _httpSource.DeserializeUrlAsync<CatalogPage>(
-                url,
-                ignoreNotFounds: false,
-                maxTries: 3,
-                serializer: CatalogJsonSerialization.Serializer,
-                logger: _logger);
+            return await _httpSource.DeserializeUrlAsync<CatalogPage>(url, _logger);
         }
 
         public async Task<IReadOnlyList<CatalogPageItem>> GetCatalogPageItemsAsync(
@@ -158,19 +170,9 @@ namespace NuGet.Insights
             switch (type)
             {
                 case CatalogLeafType.PackageDelete:
-                    return await _httpSource.DeserializeUrlAsync<PackageDeleteCatalogLeaf>(
-                        url,
-                        ignoreNotFounds: false,
-                        maxTries: 3,
-                        serializer: CatalogJsonSerialization.Serializer,
-                        logger: _logger);
+                    return await _httpSource.DeserializeUrlAsync<PackageDeleteCatalogLeaf>(url, _logger);
                 case CatalogLeafType.PackageDetails:
-                    return await _httpSource.DeserializeUrlAsync<PackageDetailsCatalogLeaf>(
-                        url,
-                        ignoreNotFounds: false,
-                        maxTries: 3,
-                        serializer: CatalogJsonSerialization.Serializer,
-                        logger: _logger);
+                    return await _httpSource.DeserializeUrlAsync<PackageDetailsCatalogLeaf>(url, _logger);
                 default:
                     throw new NotImplementedException($"Catalog leaf type {type} is not supported.");
             }

@@ -1,7 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace NuGet.Insights.Worker
 {
@@ -15,13 +15,13 @@ namespace NuGet.Insights.Worker
             RowKey = rowKey;
         }
 
-        [JsonProperty("s")]
+        [JsonPropertyName("s")]
         public string StorageSuffix { get; }
 
-        [JsonProperty("p")]
+        [JsonPropertyName("p")]
         public string PartitionKey { get; }
 
-        [JsonProperty("r")]
+        [JsonPropertyName("r")]
         public string RowKey { get; }
 
         public TaskStateKey WithRowKeySuffix(string rowKeySuffix)

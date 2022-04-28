@@ -141,6 +141,20 @@ namespace NuGet.Insights.Worker.KustoIngestion
             container.UpdateETag(response);
         }
 
+        public async Task ReplaceContainersAsync(IReadOnlyList<KustoContainerIngestion> containers)
+        {
+            var storageSuffix = containers.Select(x => x.StorageSuffix).Distinct().Single();
+            var table = await GetKustoIngestionTableAsync(storageSuffix);
+
+            var batch = new MutableTableTransactionalBatch(table);
+            foreach (var container in containers)
+            {
+                batch.UpdateEntity(container, container.ETag, TableUpdateMode.Replace);
+            }
+
+            await batch.SubmitBatchAsync();
+        }
+
         public async Task ReplaceBlobAsync(KustoBlobIngestion blob)
         {
             _logger.LogInformation(
@@ -176,6 +190,26 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
             var table = await GetKustoIngestionTableAsync(blob.StorageSuffix);
             await table.DeleteEntityAsync(blob, blob.ETag);
+        }
+
+        public async Task DeleteBlobsAsync(IReadOnlyList<KustoBlobIngestion> blobs)
+        {
+            var storageSuffix = blobs.Select(x => x.StorageSuffix).Distinct().Single();
+            var table = await GetKustoIngestionTableAsync(storageSuffix);
+
+            var batch = new MutableTableTransactionalBatch(table);
+            foreach (var blob in blobs)
+            {
+                batch.DeleteEntity(blob.PartitionKey, blob.RowKey, blob.ETag);
+
+                if (batch.Count >= StorageUtility.MaxBatchSize)
+                {
+                    await batch.SubmitBatchAsync();
+                    batch = new MutableTableTransactionalBatch(table);
+                }
+            }
+
+            await batch.SubmitBatchIfNotEmptyAsync();
         }
 
         public async Task AddBlobsAsync(KustoContainerIngestion container, IReadOnlyList<KustoBlobIngestion> blobs)

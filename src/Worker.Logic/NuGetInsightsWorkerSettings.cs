@@ -15,19 +15,25 @@ namespace NuGet.Insights.Worker
             EnqueueWorkers = 1;
             AppendResultStorageBucketCount = 1000; // Azure Data Explorer can only import up to 1000 blobs.
             AllowBatching = true;
+            DisableMessageDelay = false;
             RunAllCatalogScanDriversAsBatch = false;
             OnlyKeepLatestInAuxiliaryFileUpdater = true;
+            RecordCertificateStatusUpdateTimes = true;
             MoveTempToHome = false;
             DisabledDrivers = new List<CatalogScanDriverType>();
-            OldCatalogIndexScansToKeep = 9;
-            OldWorkflowRunsToKeep = 9;
+            OldCatalogIndexScansToKeep = 49;
+            OldWorkflowRunsToKeep = 49;
 
             AutoStartCatalogScanUpdate = false;
             AutoStartDownloadToCsv = false;
             AutoStartOwnersToCsv = false;
+            AutoStartVerifiedPackagesToCsv = false;
             CatalogScanUpdateFrequency = TimeSpan.FromHours(6);
             DownloadToCsvFrequency = TimeSpan.FromHours(3);
             OwnersToCsvFrequency = TimeSpan.FromHours(3);
+            VerifiedPackagesToCsvFrequency = TimeSpan.FromHours(3);
+            WorkflowFrequency = TimeSpan.FromDays(1);
+            KustoBlobIngestionTimeout = TimeSpan.FromHours(6);
 
             WorkQueueName = "work";
             ExpandQueueName = "expand";
@@ -46,10 +52,12 @@ namespace NuGet.Insights.Worker
             PackageAssetContainerName = "packageassets";
             PackageAssemblyContainerName = "packageassemblies";
             PackageManifestContainerName = "packagemanifests";
+            PackageReadmeContainerName = "packagereadmes";
             PackageSignatureContainerName = "packagesignatures";
             CatalogLeafItemContainerName = "catalogleafitems";
             PackageDownloadContainerName = "packagedownloads";
             PackageOwnerContainerName = "packageowners";
+            VerifiedPackageContainerName = "verifiedpackages";
             PackageArchiveContainerName = "packagearchives";
             PackageArchiveEntryContainerName = "packagearchiveentries";
             PackageVersionTableName = "packageversions";
@@ -60,6 +68,8 @@ namespace NuGet.Insights.Worker
             PackageVulnerabilityContainerName = "packagevulnerabilities";
             PackageIconContainerName = "packageicons";
             PackageCompatibilityContainerName = "packagecompatibilities";
+            PackageCertificateContainerName = "packagecertificates";
+            CertificateContainerName = "certificates";
 
             KustoConnectionString = null;
             KustoDatabaseName = null;
@@ -74,8 +84,10 @@ namespace NuGet.Insights.Worker
         public int EnqueueWorkers { get; set; }
         public int AppendResultStorageBucketCount { get; set; }
         public bool AllowBatching { get; set; }
+        public bool DisableMessageDelay { get; set; }
         public bool RunAllCatalogScanDriversAsBatch { get; set; }
         public bool OnlyKeepLatestInAuxiliaryFileUpdater { get; set; }
+        public bool RecordCertificateStatusUpdateTimes { get; set; }
         public bool MoveTempToHome { get; set; }
         public List<CatalogScanDriverType> DisabledDrivers { get; set; }
         public int OldCatalogIndexScansToKeep { get; set; }
@@ -84,9 +96,13 @@ namespace NuGet.Insights.Worker
         public bool AutoStartCatalogScanUpdate { get; set; }
         public bool AutoStartDownloadToCsv { get; set; }
         public bool AutoStartOwnersToCsv { get; set; }
+        public bool AutoStartVerifiedPackagesToCsv { get; set; }
         public TimeSpan CatalogScanUpdateFrequency { get; set; }
         public TimeSpan DownloadToCsvFrequency { get; set; }
         public TimeSpan OwnersToCsvFrequency { get; set; }
+        public TimeSpan VerifiedPackagesToCsvFrequency { get; set; }
+        public TimeSpan WorkflowFrequency { get; set; }
+        public TimeSpan KustoBlobIngestionTimeout { get; set; }
 
         public string WorkQueueName { get; set; }
         public string ExpandQueueName { get; set; }
@@ -105,10 +121,12 @@ namespace NuGet.Insights.Worker
         public string PackageAssetContainerName { get; set; }
         public string PackageAssemblyContainerName { get; set; }
         public string PackageManifestContainerName { get; set; }
+        public string PackageReadmeContainerName { get; set; }
         public string PackageSignatureContainerName { get; set; }
         public string CatalogLeafItemContainerName { get; set; }
         public string PackageDownloadContainerName { get; set; }
         public string PackageOwnerContainerName { get; set; }
+        public string VerifiedPackageContainerName { get; set; }
         public string PackageArchiveContainerName { get; set; }
         public string PackageArchiveEntryContainerName { get; set; }
         public string PackageVersionTableName { get; set; }
@@ -119,6 +137,8 @@ namespace NuGet.Insights.Worker
         public string PackageVulnerabilityContainerName { get; set; }
         public string PackageIconContainerName { get; set; }
         public string PackageCompatibilityContainerName { get; set; }
+        public string PackageCertificateContainerName { get; set; }
+        public string CertificateContainerName { get; set; }
 
         public string KustoConnectionString { get; set; }
         public string KustoDatabaseName { get; set; }

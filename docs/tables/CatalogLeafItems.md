@@ -15,22 +15,23 @@ some packages were created before their first commit timestamp.
 | Parent tables                |                                                                                                                                                                                         |
 | Column used for partitioning | PageUrl                                                                                                                                                                                 |
 | Data file container name     | catalogleafitems                                                                                                                                                                        |
-| Driver implementation        | [`CatalogLeafItemToCsvDriver`](../../src/Worker.Logic/CatalogScan/Drivers/CatalogLeafItemToCsv/CatalogLeafItemToCsvDriver.cs)                                                           |
-| Record type                  | [`CatalogLeafItemRecord`](../../src/Worker.Logic/CatalogScan/Drivers/CatalogLeafItemToCsv/CatalogLeafItemRecord.cs)                                                                     |
+| Driver implementation        | [`CatalogDataToCsvDriver`](../../src/Worker.Logic/CatalogScan/Drivers/CatalogDataToCsv/CatalogDataToCsvDriver.cs)         |
+| Record type                  | [`CatalogLeafItemRecord`](../../src/Worker.Logic/CatalogScan/Drivers/CatalogDataToCsv/CatalogLeafItemRecord.cs)                                                                     |
 
 ## Table schema
 
-| Column name     | Data type | Required | Description                                                            |
-| --------------- | --------- | -------- | ---------------------------------------------------------------------- |
-| CommitId        | string    | Yes      | A unique identifier for the batch of items written to the catalog      |
-| CommitTimestamp | timestamp | Yes      | When the item was written to the catalog                               |
-| LowerId         | string    | Yes      | Lowercase package ID. Good for joins                                   |
-| Identity        | string    | Yes      | Lowercase package ID and lowercase, normalized version. Good for joins |
-| Id              | string    | Yes      | Original case package ID                                               |
-| Version         | string    | Yes      | Original case, normalized package version                              |
-| Type            | enum      | Yes      | The type of catalog leaf item                                          |
-| Url             | string    | Yes      | The URL to the full leaf JSON document                                 |
-| PageUrl         | string    | Yes      | The URL to the page containing the leaf item                           |
+| Column name     | Data type | Required                | Description                                                            |
+| --------------- | --------- | ----------------------- | ---------------------------------------------------------------------- |
+| CommitId        | string    | Yes                     | A unique identifier for the batch of items written to the catalog      |
+| CommitTimestamp | timestamp | Yes                     | When the item was written to the catalog                               |
+| LowerId         | string    | Yes                     | Lowercase package ID. Good for joins                                   |
+| Identity        | string    | Yes                     | Lowercase package ID and lowercase, normalized version. Good for joins |
+| Id              | string    | Yes                     | Original case package ID                                               |
+| Version         | string    | Yes                     | Original case, normalized package version                              |
+| Type            | enum      | Yes                     | The type of catalog leaf item                                          |
+| Url             | string    | Yes                     | The URL to the full leaf JSON document                                 |
+| PageUrl         | string    | Yes                     | The URL to the page containing the leaf item                           |
+| IsListed        | bool      | Yes, for PackageDetails | Whether or not the package is marked as listed in this leaf            |
 
 ## Type schema
 

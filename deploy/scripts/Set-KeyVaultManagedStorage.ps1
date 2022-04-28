@@ -10,13 +10,10 @@ param (
     [string]$StorageAccountName,
     
     [Parameter(Mandatory = $true)]
-    [string]$TableSasDefinitionName,
-    
-    [Parameter(Mandatory = $true)]
     [switch]$AutoRegenerateKey,
 
-    [Parameter(Mandatory = $true)]
-    [TimeSpan]$SasValidityPeriod
+    [Parameter(Mandatory = $false)]
+    [TimeSpan]$RegenerationPeriod
 )
 
 Import-Module (Join-Path $PSScriptRoot "NuGet.Insights.psm1")
@@ -24,14 +21,6 @@ Import-Module (Join-Path $PSScriptRoot "NuGet.Insights.psm1")
 # The application ID for Key Vault managed storage:
 # Source: https://docs.microsoft.com/en-us/azure/key-vault/secrets/overview-storage-keys-powershell
 $keyVaultSpAppId = "cfa8b339-82a2-471a-a3c9-0fc0be7a4093"
-
-# This is the key for Azure Storage Emulator, just for creating a template SAS.
-# Source: https://docs.microsoft.com/en-us/azure/storage/common/storage-use-emulator
-$storageEmulatorKey = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
-
-# This is how frequently the active storage key is swapped. Twice this value is how long a given storage key is value.
-# We round up to the nearest 2 weeks.
-$regenerationPeriod = New-TimeSpan -Days ([Math]::Ceiling($SasValidityPeriod.TotalDays / 7) * 14)
 
 $maxRetries = 30
 
@@ -70,7 +59,7 @@ while ($true) {
         break
     }
     catch {
-        if ($attempt -lt $maxRetries -and $_.Exception.Response.StatusCode -eq 403) {
+        if ($attempt -lt $maxRetries -and ($_.Exception.Response.StatusCode -eq 403 -or $_.Exception.InnerException.Response.StatusCode -eq 403)) {
             Write-Warning "Attempt $($attempt) - HTTP 403 Forbidden. Trying again in 10 seconds."
             Start-Sleep 10
             continue
@@ -98,7 +87,7 @@ if (!$matchingStorage) {
             $attempt++
 
             if ($AutoRegenerateKey) {
-                $parameters = @{ RegenerationPeriod = $regenerationPeriod }
+                $parameters = @{ RegenerationPeriod = $RegenerationPeriod }
             }
             else {
                 $parameters = @{ DisableAutoRegenerateKey = $true }
@@ -125,28 +114,6 @@ if (!$matchingStorage) {
         }
     }
 }
-
-Write-Status "Generating a template SAS for '$TableSasDefinitionName'..."
-$storageContext = New-AzStorageContext `
-    -StorageAccountName $StorageAccountName `
-    -Protocol Https `
-    -StorageAccountKey $storageEmulatorKey
-$tableSasTemplate = New-AzStorageAccountSASToken `
-    -ExpiryTime (Get-Date "2010-01-01Z").ToUniversalTime() `
-    -Permission "rwdlacu" `
-    -ResourceType Service, Container, Object `
-    -Service Table `
-    -Protocol HttpsOnly `
-    -Context $storageContext
-    
-Write-Status "Creating SAS definition '$TableSasDefinitionName'..."
-Set-AzKeyVaultManagedStorageSasDefinition `
-    -VaultName $KeyVaultName `
-    -AccountName $StorageAccountName `
-    -Name $TableSasDefinitionName `
-    -ValidityPeriod $SasValidityPeriod `
-    -SasType 'account' `
-    -TemplateUri $tableSasTemplate | Out-Default
 
 Write-Status "Removing Key Vault role assignment for '$($currentUser.userPrincipalName)' (object ID $($currentUser.id))..."
 $attempt = 0

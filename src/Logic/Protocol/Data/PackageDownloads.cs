@@ -1,8 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 
 namespace NuGet.Insights
 {
@@ -22,8 +21,8 @@ namespace NuGet.Insights
         public bool Equals(PackageDownloads other)
         {
             return other != null &&
-                   Id == other.Id &&
-                   Version == other.Version &&
+                   StringComparer.OrdinalIgnoreCase.Equals(Id, other.Id) &&
+                   StringComparer.OrdinalIgnoreCase.Equals(Version, other.Version) &&
                    Downloads == other.Downloads;
         }
 
@@ -34,12 +33,11 @@ namespace NuGet.Insights
 
         public override int GetHashCode()
         {
-            var hashCode = -710329939;
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Id);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Version);
-            hashCode = hashCode * -1521134295 + Downloads.GetHashCode();
-            return hashCode;
+            var hashCode = new HashCode();
+            hashCode.Add(Id, StringComparer.OrdinalIgnoreCase);
+            hashCode.Add(Version, StringComparer.OrdinalIgnoreCase);
+            hashCode.Add(Downloads);
+            return hashCode.ToHashCode();
         }
-
     }
 }

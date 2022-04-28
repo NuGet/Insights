@@ -12,10 +12,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NuGet.Configuration;
+using NuGet.Insights.ReferenceTracking;
 using NuGet.Insights.TablePrefixScan;
 using NuGet.Insights.WideEntities;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using Validation.PackageSigning.ValidateCertificate;
 
 namespace NuGet.Insights
 {
@@ -127,11 +129,13 @@ namespace NuGet.Insights
             serviceCollection.AddTransient<AutoRenewingStorageLeaseService>();
             serviceCollection.AddTransient<StorageSemaphoreLeaseService>();
             serviceCollection.AddTransient<TablePrefixScanner>();
+            serviceCollection.AddTransient<ReferenceTracker>();
             serviceCollection.AddTransient<WideEntityService>();
             serviceCollection.AddTransient<PackageWideEntityService>();
             serviceCollection.AddTransient<PackageFileService>();
             serviceCollection.AddTransient<PackageHashService>();
             serviceCollection.AddTransient<PackageManifestService>();
+            serviceCollection.AddTransient<PackageReadmeService>();
 
             serviceCollection.AddSingleton<ITelemetryClient>(s => NullTelemetryClient.Instance);
 
@@ -147,10 +151,10 @@ namespace NuGet.Insights
             serviceCollection.AddTransient<FlatContainerClient>();
             serviceCollection.AddTransient<RegistrationClient>();
             serviceCollection.AddTransient<SearchClient>();
-            serviceCollection.AddTransient<IPackageDownloadsClient, PackageDownloadsClient>();
-            serviceCollection.AddTransient<DownloadsV1JsonDeserializer>();
+            serviceCollection.AddTransient<BlobStorageJsonClient>();
+            serviceCollection.AddTransient<PackageDownloadsClient>();
             serviceCollection.AddTransient<PackageOwnersClient>();
-            serviceCollection.AddTransient<OwnersV2JsonDeserializer>();
+            serviceCollection.AddTransient<VerifiedPackagesClient>();
             serviceCollection.AddTransient<CatalogClient>();
             serviceCollection.AddSingleton<CatalogCommitTimestampProvider>();
             serviceCollection.AddTransient<IRemoteCursorClient, RemoteCursorClient>();
@@ -166,6 +170,8 @@ namespace NuGet.Insights
             serviceCollection.AddTransient<SearchConsistencyService>();
             serviceCollection.AddTransient<PackageConsistencyService>();
             serviceCollection.AddTransient<CrossCheckConsistencyService>();
+
+            serviceCollection.AddTransient<ICertificateVerifier, OnlineCertificateVerifier>();
 
             return serviceCollection;
         }

@@ -9,7 +9,7 @@ using System.IO;
 using System.Threading.Tasks;
 using NuGet.Insights;
 
-namespace NuGet.Insights.Worker.CatalogLeafItemToCsv
+namespace NuGet.Insights.Worker.CatalogDataToCsv
 {
     /* Kusto DDL:
 
@@ -24,7 +24,8 @@ namespace NuGet.Insights.Worker.CatalogLeafItemToCsv
         Version: string,
         Type: string,
         Url: string,
-        PageUrl: string
+        PageUrl: string,
+        IsListed: bool
     );
 
     .alter-merge table CatalogLeafItems policy retention softdelete = 30d;
@@ -52,17 +53,18 @@ namespace NuGet.Insights.Worker.CatalogLeafItemToCsv
         '{"Column":"Version","DataType":"string","Properties":{"Ordinal":5}},'
         '{"Column":"Type","DataType":"string","Properties":{"Ordinal":6}},'
         '{"Column":"Url","DataType":"string","Properties":{"Ordinal":7}},'
-        '{"Column":"PageUrl","DataType":"string","Properties":{"Ordinal":8}}'
+        '{"Column":"PageUrl","DataType":"string","Properties":{"Ordinal":8}},'
+        '{"Column":"IsListed","DataType":"bool","Properties":{"Ordinal":9}}'
     ']'
 
     */
     partial record CatalogLeafItemRecord
     {
-        public int FieldCount => 9;
+        public int FieldCount => 10;
 
         public void WriteHeader(TextWriter writer)
         {
-            writer.WriteLine("CommitId,CommitTimestamp,LowerId,Identity,Id,Version,Type,Url,PageUrl");
+            writer.WriteLine("CommitId,CommitTimestamp,LowerId,Identity,Id,Version,Type,Url,PageUrl,IsListed");
         }
 
         public void Write(List<string> fields)
@@ -76,6 +78,7 @@ namespace NuGet.Insights.Worker.CatalogLeafItemToCsv
             fields.Add(Type.ToString());
             fields.Add(Url);
             fields.Add(PageUrl);
+            fields.Add(CsvUtility.FormatBool(IsListed));
         }
 
         public void Write(TextWriter writer)
@@ -97,6 +100,8 @@ namespace NuGet.Insights.Worker.CatalogLeafItemToCsv
             CsvUtility.WriteWithQuotes(writer, Url);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, PageUrl);
+            writer.Write(',');
+            writer.Write(CsvUtility.FormatBool(IsListed));
             writer.WriteLine();
         }
 
@@ -119,6 +124,8 @@ namespace NuGet.Insights.Worker.CatalogLeafItemToCsv
             await CsvUtility.WriteWithQuotesAsync(writer, Url);
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, PageUrl);
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatBool(IsListed));
             await writer.WriteLineAsync();
         }
 
@@ -135,6 +142,7 @@ namespace NuGet.Insights.Worker.CatalogLeafItemToCsv
                 Type = Enum.Parse<NuGet.Insights.CatalogLeafType>(getNextField()),
                 Url = getNextField(),
                 PageUrl = getNextField(),
+                IsListed = CsvUtility.ParseNullable(getNextField(), bool.Parse),
             };
         }
     }

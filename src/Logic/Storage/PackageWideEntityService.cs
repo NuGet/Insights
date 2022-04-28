@@ -8,6 +8,8 @@ using MessagePack;
 using NuGet.Insights.WideEntities;
 using NuGet.Versioning;
 
+#nullable enable
+
 namespace NuGet.Insights
 {
     public class PackageWideEntityService
@@ -128,7 +130,7 @@ namespace NuGet.Insights
             return newOutput;
         }
 
-        private async Task<(WideEntity ExistingEntity, T MatchingInfo)> GetExistingAsync<T>(
+        private async Task<(WideEntity? ExistingEntity, T? MatchingInfo)> GetExistingAsync<T>(
             string tableName,
             string partitionKey,
             string rowKey,

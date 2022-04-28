@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
 using NuGet.Versioning;
+
+#nullable enable
 
 namespace NuGet.Insights
 {
@@ -25,20 +27,20 @@ namespace NuGet.Insights
             _logger = logger;
         }
 
-        public async Task<RegistrationLeaf> GetRegistrationLeafOrNullAsync(string baseUrl, string id, string version)
+        public async Task<RegistrationLeaf?> GetRegistrationLeafOrNullAsync(string baseUrl, string id, string version)
         {
             var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
             var leafUrl = $"{baseUrl.TrimEnd('/')}/{id.ToLowerInvariant()}/{normalizedVersion.ToLowerInvariant()}.json";
             return await _httpSource.DeserializeUrlAsync<RegistrationLeaf>(leafUrl, ignoreNotFounds: true, logger: _logger);
         }
 
-        public async Task<RegistrationLeaf> GetRegistrationLeafOrNullAsync(string id, string version)
+        public async Task<RegistrationLeaf?> GetRegistrationLeafOrNullAsync(string id, string version)
         {
             var baseUrl = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.RegistrationSemVer2);
             return await GetRegistrationLeafOrNullAsync(baseUrl, id, version);
         }
 
-        public async Task<RegistrationLeafItem> GetRegistrationLeafItemOrNullAsync(string baseUrl, string id, string version)
+        public async Task<RegistrationLeafItem?> GetRegistrationLeafItemOrNullAsync(string baseUrl, string id, string version)
         {
             var result = await GetRegistrationLeafItemResultAsync(baseUrl, id, version, justExists: false);
             return result.Result;
@@ -95,7 +97,7 @@ namespace NuGet.Insights
             return new RegistrationLeafItemResult(exists: false, result: null);
         }
 
-        public async Task<RegistrationIndex> GetRegistrationIndex(string baseUrl, string id)
+        public async Task<RegistrationIndex?> GetRegistrationIndex(string baseUrl, string id)
         {
             var indexUrl = $"{baseUrl.TrimEnd('/')}/{id.ToLowerInvariant()}/index.json";
             return await _httpSource.DeserializeUrlAsync<RegistrationIndex>(indexUrl, ignoreNotFounds: true, logger: _logger);
@@ -103,19 +105,19 @@ namespace NuGet.Insights
 
         public async Task<RegistrationPage> GetRegistrationPage(string pageUrl)
         {
-            return await _httpSource.DeserializeUrlAsync<RegistrationPage>(pageUrl, ignoreNotFounds: false, logger: _logger);
+            return await _httpSource.DeserializeUrlAsync<RegistrationPage>(pageUrl, logger: _logger);
         }
 
         private class RegistrationLeafItemResult
         {
-            public RegistrationLeafItemResult(bool exists, RegistrationLeafItem result)
+            public RegistrationLeafItemResult(bool exists, RegistrationLeafItem? result)
             {
                 Exists = exists;
                 Result = result;
             }
 
             public bool Exists { get; }
-            public RegistrationLeafItem Result { get; }
+            public RegistrationLeafItem? Result { get; }
         }
     }
 }

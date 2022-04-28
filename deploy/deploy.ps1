@@ -3,6 +3,9 @@ param (
     [Parameter(Mandatory = $true)]
     [string]$ConfigName,
 
+    [Parameter(Mandatory = $true)]
+    [string]$RuntimeIdentifier,
+
     [Parameter(Mandatory = $false)]
     [string]$StampName,
 
@@ -13,7 +16,10 @@ param (
     [string]$WebsiteZipPath,
 
     [Parameter(Mandatory = $false)]
-    [string]$WorkerZipPath
+    [string]$WorkerZipPath,
+
+    [Parameter(Mandatory = $false)]
+    [string]$AzureFunctionsHostZipPath
 )
 
 Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1")
@@ -25,7 +31,7 @@ if ($AllowDeployUser) {
     $context = Get-AzContext
     $homeAccountId = $context.Account.ExtendedProperties.HomeAccountId
     if (!$homeAccountId) {
-        throw "Could not find the 'HomeAccountId' from (Get-AzContext).Account.ExtendedProperties.HomeAccountId."
+        throw "Could not find the 'HomeAccountId' from (Get-AzContext).Account.ExtendedProperties.HomeAccountId. Did you run Connect-AzAccount?"
     }
     else {
         if (!$resourceSettings.WebsiteConfig['NuGet.Insights'].AllowedUsers) {
@@ -51,7 +57,9 @@ function Publish-Project ($ProjectName) {
     Write-Status "Publishing project '$ProjectName'..."
     dotnet publish (Join-Path $PSScriptRoot "../src/$ProjectName") `
         "/p:DeploymentDir=$deploymentDir" `
-        --configuration Release | Out-Default
+        --configuration Release `
+        --runtime $RuntimeIdentifier `
+        --self-contained false | Out-Default
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to publish $ProjectName."
     }
@@ -63,12 +71,20 @@ function Publish-Project ($ProjectName) {
 
 if (!$WebsiteZipPath) { $WebsiteZipPath = Publish-Project "Website" }
 if (!$WorkerZipPath) { $WorkerZipPath = Publish-Project "Worker" }
+if (!$AzureFunctionsHostZipPath) {
+    if (!(Test-Path $deploymentDir)) { New-Item $deploymentDir -ItemType Directory | Out-Null }
+    $AzureFunctionsHostZipPath = Join-Path $deploymentDir "AzureFunctionsHost.zip"
+    . (Join-Path $PSScriptRoot "build-host.ps1") `
+        -RuntimeIdentifier $RuntimeIdentifier `
+        -OutputPath $AzureFunctionsHostZipPath
+}
 
 $parameters = @{
-    ResourceSettings = $resourceSettings;
-    DeploymentDir    = $deploymentDir;
-    WebsiteZipPath   = $WebsiteZipPath;
-    WorkerZipPath    = $WorkerZipPath;
+    ResourceSettings          = $resourceSettings;
+    DeploymentDir             = $deploymentDir;
+    WebsiteZipPath            = $WebsiteZipPath;
+    WorkerZipPath             = $WorkerZipPath;
+    AzureFunctionsHostZipPath = $AzureFunctionsHostZipPath;
 }
 
 Write-Status "Using the following deployment parameters:"

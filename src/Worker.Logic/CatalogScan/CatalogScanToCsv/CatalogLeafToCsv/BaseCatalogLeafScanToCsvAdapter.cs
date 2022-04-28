@@ -30,9 +30,9 @@ namespace NuGet.Insights.Worker
         {
             foreach (var storage in _storage)
             {
-                await storage.InitializeAsync(indexScan);
+                await storage.InitializeAsync(indexScan.StorageSuffix);
             }
-            await _storageFactory.InitializeAsync(indexScan);
+            await _storageFactory.InitializeAsync(indexScan.StorageSuffix);
             await _driver.InitializeAsync();
         }
 
@@ -91,44 +91,16 @@ namespace NuGet.Insights.Worker
             throw new NotSupportedException();
         }
 
-        private CatalogLeafToCsvParameters DeserializeParameters(string driverParameters)
+        protected CatalogLeafToCsvParameters DeserializeParameters(string driverParameters)
         {
             return (CatalogLeafToCsvParameters)_schemaSerializer.Deserialize(driverParameters).Data;
-        }
-
-        protected abstract Task<(DriverResult, IReadOnlyList<ICsvRecordSet<ICsvRecord>>)> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount);
-
-        protected static T GetValueOrDefault<T>(DriverResult<T> result)
-        {
-            if (result.Type == DriverResultType.Success)
-            {
-                return result.Value;
-            }
-
-            return default;
-        }
-
-        public async Task<DriverResult> ProcessLeafAsync(CatalogLeafScan leafScan)
-        {
-            (var result, var sets) = await ProcessLeafAsync(leafScan, leafScan.AttemptCount);
-            if (result.Type == DriverResultType.TryAgainLater)
-            {
-                return result;
-            }
-
-            for (var setIndex = 0; setIndex < _storage.Count; setIndex++)
-            {
-                await _storage[setIndex].AppendAsync(leafScan.StorageSuffix, sets[setIndex]);
-            }
-
-            return result;
         }
 
         public async Task StartAggregateAsync(CatalogIndexScan indexScan)
         {
             foreach (var storage in _storage)
             {
-                await storage.StartAggregateAsync(indexScan);
+                await storage.StartAggregateAsync(indexScan.GetScanId(), indexScan.StorageSuffix);
             }
         }
 
@@ -136,7 +108,7 @@ namespace NuGet.Insights.Worker
         {
             foreach (var storage in _storage)
             {
-                if (!await storage.IsAggregateCompleteAsync(indexScan))
+                if (!await storage.IsAggregateCompleteAsync(indexScan.GetScanId(), indexScan.StorageSuffix))
                 {
                     return false;
                 }
@@ -147,10 +119,10 @@ namespace NuGet.Insights.Worker
 
         public async Task FinalizeAsync(CatalogIndexScan indexScan)
         {
-            await _storageFactory.FinalizeAsync(indexScan);
+            await _storageFactory.FinalizeAsync(indexScan.StorageSuffix);
             foreach (var storage in _storage)
             {
-                await storage.FinalizeAsync(indexScan);
+                await storage.FinalizeAsync(indexScan.StorageSuffix);
             }
         }
     }

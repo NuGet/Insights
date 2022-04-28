@@ -37,10 +37,6 @@ namespace NuGet.Insights.Worker
                 new[] { FlatContainer }
             },
             {
-                CatalogScanDriverType.CatalogLeafItemToCsv,
-                new[] { FlatContainer }
-            },
-            {
                 CatalogScanDriverType.LoadLatestPackageLeaf,
                 new[] { FlatContainer }
             },
@@ -50,6 +46,10 @@ namespace NuGet.Insights.Worker
             },
             {
                 CatalogScanDriverType.LoadPackageManifest,
+                new[] { FlatContainer }
+            },
+            {
+                CatalogScanDriverType.LoadPackageReadme,
                 new[] { FlatContainer }
             },
             {
@@ -68,6 +68,12 @@ namespace NuGet.Insights.Worker
                 CatalogScanDriverType.PackageAssemblyToCsv,
                 new[] { FlatContainer }
             },
+#if ENABLE_CRYPTOAPI
+            {
+                CatalogScanDriverType.PackageCertificateToCsv,
+                new[] { CatalogScanDriverType.LoadPackageArchive }
+            },
+#endif
             {
                 CatalogScanDriverType.PackageSignatureToCsv,
                 new[] { CatalogScanDriverType.LoadPackageArchive }
@@ -75,6 +81,10 @@ namespace NuGet.Insights.Worker
             {
                 CatalogScanDriverType.PackageManifestToCsv,
                 new[] { CatalogScanDriverType.LoadPackageManifest }
+            },
+            {
+                CatalogScanDriverType.PackageReadmeToCsv,
+                new[] { CatalogScanDriverType.LoadPackageReadme }
             },
             {
                 CatalogScanDriverType.PackageVersionToCsv,

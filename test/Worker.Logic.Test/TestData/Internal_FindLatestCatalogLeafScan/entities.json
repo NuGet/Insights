@@ -7,6 +7,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.blogging.admin.application.contracts",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.blogging.admin.application.contracts.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11613.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
     "CommitTimestamp": "2020-12-27T05:06:57.5902613+00:00",
@@ -17,7 +18,7 @@
     "PartitionKey": "parent-scan-id-aiwins.blogging.admin.application.contracts",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -27,6 +28,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.clientsimulation.web",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.clientsimulation.web.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11613.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
     "CommitTimestamp": "2020-12-27T05:06:57.5902613+00:00",
@@ -37,7 +39,7 @@
     "PartitionKey": "parent-scan-id-aiwins.clientsimulation.web",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -47,6 +49,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.docs.admin.httpapi.client",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.docs.admin.httpapi.client.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11613.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
     "CommitTimestamp": "2020-12-27T05:06:57.5902613+00:00",
@@ -57,7 +60,7 @@
     "PartitionKey": "parent-scan-id-aiwins.docs.admin.httpapi.client",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -67,6 +70,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.docs.domain.shared",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.docs.domain.shared.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11614.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
     "CommitTimestamp": "2020-12-27T05:07:21.9968244+00:00",
@@ -77,7 +81,7 @@
     "PartitionKey": "parent-scan-id-aiwins.docs.domain.shared",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -87,6 +91,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.rocket.featuremanagement.application.contracts",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.rocket.featuremanagement.application.contracts.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11613.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
     "CommitTimestamp": "2020-12-27T05:06:57.5902613+00:00",
@@ -97,7 +102,7 @@
     "PartitionKey": "parent-scan-id-aiwins.rocket.featuremanagement.application.contracts",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -107,6 +112,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.rocket.identity.application.contracts",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.rocket.identity.application.contracts.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11613.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
     "CommitTimestamp": "2020-12-27T05:06:57.5902613+00:00",
@@ -117,7 +123,7 @@
     "PartitionKey": "parent-scan-id-aiwins.rocket.identity.application.contracts",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -127,6 +133,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.rocket.identityserver.application",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.rocket.identityserver.application.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11613.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
     "CommitTimestamp": "2020-12-27T05:06:57.5902613+00:00",
@@ -137,7 +144,7 @@
     "PartitionKey": "parent-scan-id-aiwins.rocket.identityserver.application",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -147,6 +154,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.rocket.identityserver.domain",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.rocket.identityserver.domain.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11613.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
     "CommitTimestamp": "2020-12-27T05:06:57.5902613+00:00",
@@ -157,7 +165,7 @@
     "PartitionKey": "parent-scan-id-aiwins.rocket.identityserver.domain",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -167,6 +175,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.rocket.permissionmanagement.domain.shared",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.rocket.permissionmanagement.domain.shared.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11613.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
     "CommitTimestamp": "2020-12-27T05:06:57.5902613+00:00",
@@ -177,7 +186,7 @@
     "PartitionKey": "parent-scan-id-aiwins.rocket.permissionmanagement.domain.shared",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -187,6 +196,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.rocket.permissionmanagement.entityframeworkcore",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.rocket.permissionmanagement.entityframeworkcore.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11613.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
     "CommitTimestamp": "2020-12-27T05:06:57.5902613+00:00",
@@ -197,7 +207,7 @@
     "PartitionKey": "parent-scan-id-aiwins.rocket.permissionmanagement.entityframeworkcore",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -207,6 +217,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.rocket.permissionmanagement.httpapi.client",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.rocket.permissionmanagement.httpapi.client.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11613.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
     "CommitTimestamp": "2020-12-27T05:06:57.5902613+00:00",
@@ -217,7 +228,7 @@
     "PartitionKey": "parent-scan-id-aiwins.rocket.permissionmanagement.httpapi.client",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -227,6 +238,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.rocket.settingmanagement.domain.shared",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.rocket.settingmanagement.domain.shared.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11614.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
     "CommitTimestamp": "2020-12-27T05:07:21.9968244+00:00",
@@ -237,7 +249,7 @@
     "PartitionKey": "parent-scan-id-aiwins.rocket.settingmanagement.domain.shared",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -247,6 +259,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.rocket.storage.database.domain",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.rocket.storage.database.domain.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11614.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
     "CommitTimestamp": "2020-12-27T05:07:21.9968244+00:00",
@@ -257,7 +270,7 @@
     "PartitionKey": "parent-scan-id-aiwins.rocket.storage.database.domain",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -267,6 +280,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.rocket.storage.database.mongodb",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.rocket.storage.database.mongodb.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11614.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
     "CommitTimestamp": "2020-12-27T05:07:21.9968244+00:00",
@@ -277,7 +291,7 @@
     "PartitionKey": "parent-scan-id-aiwins.rocket.storage.database.mongodb",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -287,6 +301,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.rocket.tenantmanagement.application",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.rocket.tenantmanagement.application.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11613.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
     "CommitTimestamp": "2020-12-27T05:06:57.5902613+00:00",
@@ -297,7 +312,7 @@
     "PartitionKey": "parent-scan-id-aiwins.rocket.tenantmanagement.application",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -307,6 +322,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.rocket.tenantmanagement.application.contracts",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.rocket.tenantmanagement.application.contracts.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11614.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
     "CommitTimestamp": "2020-12-27T05:07:21.9968244+00:00",
@@ -317,7 +333,7 @@
     "PartitionKey": "parent-scan-id-aiwins.rocket.tenantmanagement.application.contracts",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -327,6 +343,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.rocket.tenantmanagement.domain",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.rocket.tenantmanagement.domain.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11614.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
     "CommitTimestamp": "2020-12-27T05:07:21.9968244+00:00",
@@ -337,7 +354,7 @@
     "PartitionKey": "parent-scan-id-aiwins.rocket.tenantmanagement.domain",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -347,6 +364,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.rocket.tenantmanagement.entityframeworkcore",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.rocket.tenantmanagement.entityframeworkcore.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11613.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
     "CommitTimestamp": "2020-12-27T05:06:57.5902613+00:00",
@@ -357,7 +375,7 @@
     "PartitionKey": "parent-scan-id-aiwins.rocket.tenantmanagement.entityframeworkcore",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -367,6 +385,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.rocket.tenantmanagement.httpapi.client",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.rocket.tenantmanagement.httpapi.client.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11614.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
     "CommitTimestamp": "2020-12-27T05:07:21.9968244+00:00",
@@ -377,7 +396,7 @@
     "PartitionKey": "parent-scan-id-aiwins.rocket.tenantmanagement.httpapi.client",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -387,6 +406,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.rocket.tenantmanagement.web",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.rocket.tenantmanagement.web.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11614.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
     "CommitTimestamp": "2020-12-27T05:07:21.9968244+00:00",
@@ -397,7 +417,7 @@
     "PartitionKey": "parent-scan-id-aiwins.rocket.tenantmanagement.web",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -407,6 +427,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.rocket.users.abstractions",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.rocket.users.abstractions.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11614.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
     "CommitTimestamp": "2020-12-27T05:07:21.9968244+00:00",
@@ -417,7 +438,7 @@
     "PartitionKey": "parent-scan-id-aiwins.rocket.users.abstractions",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -427,6 +448,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.rocket.users.domain",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.rocket.users.domain.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11614.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
     "CommitTimestamp": "2020-12-27T05:07:21.9968244+00:00",
@@ -437,7 +459,7 @@
     "PartitionKey": "parent-scan-id-aiwins.rocket.users.domain",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -447,6 +469,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.rocket.users.domain.shared",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.rocket.users.domain.shared.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11613.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
     "CommitTimestamp": "2020-12-27T05:06:57.5902613+00:00",
@@ -457,7 +480,7 @@
     "PartitionKey": "parent-scan-id-aiwins.rocket.users.domain.shared",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -467,6 +490,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.rocket.users.mongodb",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.rocket.users.mongodb.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11613.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
     "CommitTimestamp": "2020-12-27T05:06:57.5902613+00:00",
@@ -477,7 +501,7 @@
     "PartitionKey": "parent-scan-id-aiwins.rocket.users.mongodb",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -487,6 +511,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.rocket.virtualfileexplorer.web",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.rocket.virtualfileexplorer.web.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11614.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
     "CommitTimestamp": "2020-12-27T05:07:21.9968244+00:00",
@@ -497,7 +522,7 @@
     "PartitionKey": "parent-scan-id-aiwins.rocket.virtualfileexplorer.web",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -507,6 +532,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.saas.domain",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.saas.domain.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11614.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
     "CommitTimestamp": "2020-12-27T05:07:21.9968244+00:00",
@@ -517,7 +543,7 @@
     "PartitionKey": "parent-scan-id-aiwins.saas.domain",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -527,6 +553,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.saas.host.httpapi",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.saas.host.httpapi.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11614.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
     "CommitTimestamp": "2020-12-27T05:07:21.9968244+00:00",
@@ -537,7 +564,7 @@
     "PartitionKey": "parent-scan-id-aiwins.saas.host.httpapi",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -547,6 +574,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.saas.tenant.application",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.saas.tenant.application.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11614.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
     "CommitTimestamp": "2020-12-27T05:07:21.9968244+00:00",
@@ -557,7 +585,7 @@
     "PartitionKey": "parent-scan-id-aiwins.saas.tenant.application",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -567,6 +595,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "aiwins.saas.tenant.httpapi.client",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.saas.tenant.httpapi.client.4.9.9.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11614.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
     "CommitTimestamp": "2020-12-27T05:07:21.9968244+00:00",
@@ -577,7 +606,7 @@
     "PartitionKey": "parent-scan-id-aiwins.saas.tenant.httpapi.client",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "StorageSuffix": "parentstoragesuffix",
@@ -587,6 +616,7 @@
     "ScanId": "parent-scan-id",
     "PageId": "cloudmersive.apiclient.netcore.documentanddataconvert",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/cloudmersive.apiclient.netcore.documentanddataconvert.2.1.8.json",
+    "PageUrl": "https://api.nuget.org/v3/catalog0/page11614.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
     "CommitTimestamp": "2020-12-27T05:07:21.9968244+00:00",
@@ -597,6 +627,6 @@
     "PartitionKey": "parent-scan-id-cloudmersive.apiclient.netcore.documentanddataconvert",
     "RowKey": "2.1.8",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   }
 ]

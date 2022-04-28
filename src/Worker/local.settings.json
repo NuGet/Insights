@@ -3,6 +3,6 @@
   "Values": {
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-    "StorageConnection": "UseDevelopmentStorage=true"
+    "QueueTriggerConnection": "UseDevelopmentStorage=true"
   }
 }

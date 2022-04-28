@@ -19,6 +19,10 @@
     <EnableNPE Condition="'$(EnableNPE)' == '' and $([MSBuild]::IsOSPlatform('Windows'))">true</EnableNPE>
     <EnableNPE Condition="'$(EnableNPE)' == ''">false</EnableNPE>
     <DefineConstants Condition="'$(EnableNPE)' == 'true'">$(DefineConstants);ENABLE_NPE</DefineConstants>
+    
+    <EnableCryptoAPI Condition="'$(EnableCryptoAPI)' == '' and $([MSBuild]::IsOSPlatform('Windows'))">true</EnableCryptoAPI>
+    <EnableCryptoAPI Condition="'$(EnableCryptoAPI)' == ''">false</EnableCryptoAPI>
+    <DefineConstants Condition="'$(EnableCryptoAPI)' == 'true'">$(DefineConstants);ENABLE_CRYPTOAPI</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">

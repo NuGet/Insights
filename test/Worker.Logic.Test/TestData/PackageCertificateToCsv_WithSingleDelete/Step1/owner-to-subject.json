@@ -1,0 +1,62 @@
+[
+  {
+    "PartitionKey": "P$deltax$C",
+    "RowKey": "1.0.0",
+    "Entity": {
+      "Committed": [
+        {
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "RepositoryTimestampingChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "RepositoryTimestampingChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "ulpjCZSyuPVisweioyRZmCMu8KlO6Avs5c6gtc7KYfk",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "IsRepositoryCodeSignedBy",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "IsRepositoryTimestampedBy",
+            "RepositoryTimestampingChainContains"
+          ]
+        }
+      ],
+      "ToAdd": [],
+      "ToDelete": []
+    }
+  }
+]

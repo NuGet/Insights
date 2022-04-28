@@ -66,7 +66,7 @@ and how it fetches and persists data about packages.
    information in a catalog leaf item (package ID + version + leaf URL + type). You can do whatever you want to process
    that package. It's up to you to fetch the data about the package you care about and persist the results.
 
-   - Example implementation: [`CatalogLeafItemToCsv`](../src/Worker.Logic/CatalogScan/Drivers/CatalogLeafItemToCsv/CatalogLeafItemToCsvDriver.cs).
+   - Example implementation: [`BuildVersionSet`](../src/Worker.Logic/CatalogScan/Drivers/BuildVersionSet/BuildVersionSetDriver.cs).
      This driver operates that this level since it doesn't even need to process each leaf item individually. Instead, it
      can just observe the data at the [catalog page](https://docs.microsoft.com/en-us/nuget/api/catalog-resource#catalog-page)
      level and drive each leaf item to CSV.
@@ -97,7 +97,7 @@ Ensure the driver can be activated by the catalog scan and admin interface. Upda
 1. Add your driver to the [`CatalogScanCursorService`](../src/Worker.Logic/CatalogScan/CatalogScanCursorService.cs) class.
    - Update the `Dependencies` static. This defines what cursors or other drivers your driver should block on before proceeding.
 1. If your driver implements `ICatalogLeafToCsvDriver<T>`:
-   - Add a CSV compact message schema name to [`SchemaSerializer`](../src/Worker.Logic/Serialization/SchemaSerializer.cs) like `cc.<abbreviation for your driver>`.
+   - Add a CSV compact message schema name to [`SchemaCollectionBuilder`](../src/Worker.Logic/Serialization/SchemaCollectionBuilder.cs) like `cc.<abbreviation for your driver>`.
 1. Add your driver to the `TypeToInfo` static in [`CatalogScanServiceTest.cs`](../test/Worker.Logic.Test/CatalogScan/CatalogScanServiceTest.cs).
    This determines the default catalog timestamp min value for your driver and implements a test function that forces
    your driver's dependency cursors to a specific timestamp.

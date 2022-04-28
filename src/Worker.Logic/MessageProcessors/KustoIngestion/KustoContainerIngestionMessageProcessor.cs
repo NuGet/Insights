@@ -127,16 +127,35 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
             if (container.State == KustoContainerIngestionState.Working)
             {
-                var countLowerBound = await _storageService.GetBlobCountLowerBoundAsync(container.StorageSuffix, container.GetContainerName());
-                if (countLowerBound > 0)
+                var blobs = await _storageService.GetBlobsAsync(container);
+                var pendingCount = blobs.Count(x => x.State == KustoBlobIngestionState.Created || x.State == KustoBlobIngestionState.Working);
+                var failedCount = blobs.Count - pendingCount; // Successfully completed records are deleted so a row is either incomplete or it failed.
+                if (pendingCount > 0)
                 {
                     _logger.LogInformation(
-                        "There are at least {CountLowerBound} blobs in container {ContainerName} still being ingested into Kusto.",
-                        countLowerBound,
+                        "There are {Count} blobs in container {ContainerName} still being ingested into Kusto.",
+                        pendingCount,
                         container.GetContainerName());
                     message.AttemptCount++;
                     await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
                     return;
+                }
+                else if (failedCount > 0)
+                {
+                    var stateSummary = blobs
+                        .GroupBy(x => x.State)
+                        .OrderBy(x => x.Key.ToString())
+                        .Select(x => $"{x.Key} ({x.Count()}x)")
+                        .ToList();
+
+                    _logger.LogWarning(
+                        "There are {Count} blobs in container {ContainerName} that were not ingested properly. The states were: {StateSummary}",
+                        failedCount,
+                        container.GetContainerName(),
+                        stateSummary);
+
+                    container.State = KustoContainerIngestionState.Failed;
+                    await _storageService.ReplaceContainerAsync(container);
                 }
                 else
                 {

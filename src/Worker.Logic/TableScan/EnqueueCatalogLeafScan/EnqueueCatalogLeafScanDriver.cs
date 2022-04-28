@@ -1,11 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 
 namespace NuGet.Insights.Worker.EnqueueCatalogLeafScan
 {
@@ -34,14 +34,14 @@ namespace NuGet.Insights.Worker.EnqueueCatalogLeafScan
 
         public IList<string> SelectColumns => _selectColumns;
 
-        public Task InitializeAsync(JToken parameters)
+        public Task InitializeAsync(JsonElement? parameters)
         {
             return Task.CompletedTask;
         }
 
-        public async Task ProcessEntitySegmentAsync(string tableName, JToken parameters, IReadOnlyList<CatalogLeafScan> entities)
+        public async Task ProcessEntitySegmentAsync(string tableName, JsonElement? parameters, IReadOnlyList<CatalogLeafScan> entities)
         {
-            var deserializedParameters = (EnqueueCatalogLeafScansParameters)_serializer.Deserialize(parameters).Data;
+            var deserializedParameters = (EnqueueCatalogLeafScansParameters)_serializer.Deserialize(parameters.Value).Data;
 
             if (deserializedParameters.OneMessagePerId)
             {

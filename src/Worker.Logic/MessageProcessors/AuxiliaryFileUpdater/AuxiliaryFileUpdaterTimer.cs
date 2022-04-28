@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 {
-    public class AuxiliaryFileUpdaterTimer<T> : ITimer where T : IAsOfData
+    public class AuxiliaryFileUpdaterTimer<T> : IAuxiliaryFileUpdaterTimer, ITimer where T : IAsOfData
     {
         private readonly IAuxiliaryFileUpdaterService<T> _service;
         private readonly IAuxiliaryFileUpdater<T> _updater;
@@ -23,7 +23,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
         public TimeSpan Frequency => _updater.Frequency;
         public bool IsEnabled => _service.HasRequiredConfiguration;
         public bool AutoStart => _updater.AutoStart;
-        public int Order => 20;
+        public int Order => 30;
 
         public async Task<bool> ExecuteAsync()
         {

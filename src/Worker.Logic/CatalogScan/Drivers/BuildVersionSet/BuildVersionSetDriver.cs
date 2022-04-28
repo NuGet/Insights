@@ -1,8 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -67,14 +66,14 @@ namespace NuGet.Insights.Worker.BuildVersionSet
         {
             var descendingBatches = await _aggregateStorageService.GetDescendingBatchesAsync(indexScan.StorageSuffix);
 
-            var idToVersionToDeleted = new SortedDictionary<string, SortedDictionary<string, bool>>();
+            var idToVersionToDeleted = new OrdinalSortedDictionary<OrdinalSortedDictionary<bool>>();
             foreach (var batch in descendingBatches)
             {
                 foreach (var leaf in batch.Leaves)
                 {
                     if (!idToVersionToDeleted.TryGetValue(leaf.LowerId, out var versions))
                     {
-                        versions = new SortedDictionary<string, bool>();
+                        versions = new OrdinalSortedDictionary<bool>();
                         idToVersionToDeleted.Add(leaf.LowerId, versions);
                     }
 

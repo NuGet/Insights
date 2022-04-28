@@ -213,35 +213,44 @@ namespace NuGet.Insights.Worker
                 var heading = $"{propertyName} schema";
                 Assert.Contains(heading, headings);
 
-                var table = info.GetTableAfterHeading(heading);
-
-                // Verify the table header
-                var headerRow = Assert.IsType<TableRow>(table[0]);
-                Assert.True(headerRow.IsHeader);
-                Assert.InRange(headerRow.Count, 1, 2);
-                Assert.Equal("Enum value", info.ToPlainText(headerRow[0]));
-
-                var rows = table.Skip(1).ToList();
-                var enumNames = Enum
-                    .GetNames(enumType)
-                    .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
-                    .ToList();
-                Assert.Equal(enumNames.Count, rows.Count);
-
-                // Verify table rows
-                var index = 0;
-                foreach (var rowObj in rows)
+                var nextObj = info.GetNextObject(heading);
+                if (nextObj is HtmlBlock htmlBlock && htmlBlock.Type == HtmlBlockType.Comment)
                 {
-                    _output.WriteLine("Testing row: " + info.GetMarkdown(rowObj));
-                    var row = Assert.IsType<TableRow>(rowObj);
-                    Assert.False(row.IsHeader);
+                    var comment = info.ToPlainText(htmlBlock);
+                    Assert.Equal("<!-- NO TABLE -->", comment);
+                }
+                else
+                {
+                    var table = info.GetTableAfterHeading(heading);
 
-                    // Verify the enum name exists and is in the proper order in the table
-                    var enumName = info.ToPlainText(row[0]);
-                    Assert.Contains(enumName, enumNames);
-                    Assert.Equal(enumNames[index], enumName);
+                    // Verify the table header
+                    var headerRow = Assert.IsType<TableRow>(table[0]);
+                    Assert.True(headerRow.IsHeader);
+                    Assert.InRange(headerRow.Count, 1, 2);
+                    Assert.Equal("Enum value", info.ToPlainText(headerRow[0]));
 
-                    index++;
+                    var rows = table.Skip(1).ToList();
+                    var enumNames = Enum
+                        .GetNames(enumType)
+                        .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+                        .ToList();
+                    Assert.Equal(enumNames.Count, rows.Count);
+
+                    // Verify table rows
+                    var index = 0;
+                    foreach (var rowObj in rows)
+                    {
+                        _output.WriteLine("Testing row: " + info.GetMarkdown(rowObj));
+                        var row = Assert.IsType<TableRow>(rowObj);
+                        Assert.False(row.IsHeader);
+
+                        // Verify the enum name exists and is in the proper order in the table
+                        var enumName = info.ToPlainText(row[0]);
+                        Assert.Contains(enumName, enumNames);
+                        Assert.Equal(enumNames[index], enumName);
+
+                        index++;
+                    }
                 }
             }
         }

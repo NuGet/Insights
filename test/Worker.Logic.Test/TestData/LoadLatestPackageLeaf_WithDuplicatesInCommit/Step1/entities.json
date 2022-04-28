@@ -12,7 +12,7 @@
     "PartitionKey": "bridgearduinoserialtomqttsplitcsv",
     "RowKey": "1.0.0.25",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/swiftprotocol.1.0.1-alpha1.json",
@@ -27,7 +27,7 @@
     "PartitionKey": "swiftprotocol",
     "RowKey": "1.0.1-alpha1",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.office2016colorful.wpf46.15.4.0.17.json",
@@ -42,7 +42,7 @@
     "PartitionKey": "syncfusion.themes.office2016colorful.wpf46",
     "RowKey": "15.4.0.17",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.office2016colorful.wpf46.15.4.0.20.json",
@@ -57,7 +57,7 @@
     "PartitionKey": "syncfusion.themes.office2016colorful.wpf46",
     "RowKey": "15.4.0.20",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.office2016colorful.wpf46.16.1.0.24.json",
@@ -72,7 +72,7 @@
     "PartitionKey": "syncfusion.themes.office2016colorful.wpf46",
     "RowKey": "16.1.0.24",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.office2016darkgray.wpf46.15.4.0.17.json",
@@ -87,7 +87,7 @@
     "PartitionKey": "syncfusion.themes.office2016darkgray.wpf46",
     "RowKey": "15.4.0.17",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.office2016darkgray.wpf46.15.4.0.20.json",
@@ -102,7 +102,7 @@
     "PartitionKey": "syncfusion.themes.office2016darkgray.wpf46",
     "RowKey": "15.4.0.20",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.office2016darkgray.wpf46.16.1.0.24.json",
@@ -117,7 +117,7 @@
     "PartitionKey": "syncfusion.themes.office2016darkgray.wpf46",
     "RowKey": "16.1.0.24",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.office2016white.wpf46.15.4.0.17.json",
@@ -132,7 +132,7 @@
     "PartitionKey": "syncfusion.themes.office2016white.wpf46",
     "RowKey": "15.4.0.17",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.office2016white.wpf46.15.4.0.20.json",
@@ -147,7 +147,7 @@
     "PartitionKey": "syncfusion.themes.office2016white.wpf46",
     "RowKey": "15.4.0.20",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.office2016white.wpf46.16.1.0.24.json",
@@ -162,7 +162,7 @@
     "PartitionKey": "syncfusion.themes.office2016white.wpf46",
     "RowKey": "16.1.0.24",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.office365.wpf46.15.4.0.17.json",
@@ -177,7 +177,7 @@
     "PartitionKey": "syncfusion.themes.office365.wpf46",
     "RowKey": "15.4.0.17",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.office365.wpf46.15.4.0.20.json",
@@ -192,7 +192,7 @@
     "PartitionKey": "syncfusion.themes.office365.wpf46",
     "RowKey": "15.4.0.20",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.office365.wpf46.16.1.0.24.json",
@@ -207,7 +207,7 @@
     "PartitionKey": "syncfusion.themes.office365.wpf46",
     "RowKey": "16.1.0.24",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.saffron.wpf46.15.4.0.17.json",
@@ -222,7 +222,7 @@
     "PartitionKey": "syncfusion.themes.saffron.wpf46",
     "RowKey": "15.4.0.17",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.saffron.wpf46.15.4.0.20.json",
@@ -237,7 +237,7 @@
     "PartitionKey": "syncfusion.themes.saffron.wpf46",
     "RowKey": "15.4.0.20",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.saffron.wpf46.16.1.0.24.json",
@@ -252,7 +252,7 @@
     "PartitionKey": "syncfusion.themes.saffron.wpf46",
     "RowKey": "16.1.0.24",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.visualstudio2013.wpf46.15.4.0.17.json",
@@ -267,7 +267,7 @@
     "PartitionKey": "syncfusion.themes.visualstudio2013.wpf46",
     "RowKey": "15.4.0.17",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.visualstudio2013.wpf46.15.4.0.20.json",
@@ -282,7 +282,7 @@
     "PartitionKey": "syncfusion.themes.visualstudio2013.wpf46",
     "RowKey": "15.4.0.20",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.visualstudio2013.wpf46.16.1.0.24.json",
@@ -297,6 +297,6 @@
     "PartitionKey": "syncfusion.themes.visualstudio2013.wpf46",
     "RowKey": "16.1.0.24",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   }
 ]

@@ -1,105 +1,101 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 
+#nullable enable
+
 namespace NuGet.Insights
 {
-    public class PackageDownloadsClient : IPackageDownloadsClient
+    public class PackageDownloadsClient
     {
-        private readonly HttpClient _httpClient;
-        private readonly IThrottle _throttle;
-        private readonly DownloadsV1JsonDeserializer _deserializer;
+        private static readonly JsonSerializerOptions JsonSerializerOptions = new()
+        {
+            Converters = { new PackageIdDownloadsConverter() },
+        };
+
+        private readonly BlobStorageJsonClient _storageClient;
         private readonly IOptions<NuGetInsightsSettings> _options;
 
-        public PackageDownloadsClient(
-            HttpClient httpClient,
-            IThrottle throttle,
-            DownloadsV1JsonDeserializer deserializer,
-            IOptions<NuGetInsightsSettings> options)
+        public PackageDownloadsClient(BlobStorageJsonClient storageClient, IOptions<NuGetInsightsSettings> options)
         {
-            _httpClient = httpClient;
-            _throttle = throttle;
-            _deserializer = deserializer;
+            _storageClient = storageClient;
             _options = options;
         }
 
-        public async Task<PackageDownloadSet> GetPackageDownloadSetAsync(string etag)
+        public async Task<AsOfData<PackageDownloads>> GetAsync()
         {
             if (_options.Value.DownloadsV1Url == null)
             {
                 throw new InvalidOperationException("The downloads.v1.json URL is required.");
             }
 
-            var disposables = new Stack<IDisposable>();
-            try
+            return await _storageClient.DownloadAsync(_options.Value.DownloadsV1Url, DeserializeAsync);
+        }
+
+        private static async IAsyncEnumerable<PackageDownloads> DeserializeAsync(Stream stream)
+        {
+            var items = JsonSerializer.DeserializeAsyncEnumerable<PackageIdDownloads>(stream, JsonSerializerOptions);
+            await foreach (var item in items)
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, _options.Value.DownloadsV1Url);
-                disposables.Push(request);
-
-                // Prior to this version, Azure Blob Storage did not put quotes around etag headers...
-                request.Headers.TryAddWithoutValidation("x-ms-version", "2017-04-17");
-
-                if (etag != null)
+                if (item is null)
                 {
-                    request.Headers.TryAddWithoutValidation("If-None-Match", etag);
+                    continue;
                 }
 
-                await _throttle.WaitAsync();
-                var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-                disposables.Push(response);
-
-                string newEtag;
-                TextReader textReader;
-                if (response.StatusCode == HttpStatusCode.OK)
+                foreach (var version in item.Versions)
                 {
-                    newEtag = response.Headers.ETag.ToString();
-
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    disposables.Push(stream);
-
-                    textReader = new StreamReader(stream);
-                    disposables.Push(textReader);
+                    yield return new PackageDownloads(item.Id, version.Version, version.Downloads);
                 }
-                else if (etag != null && response.StatusCode == HttpStatusCode.NotModified)
-                {
-                    newEtag = etag;
-
-                    textReader = new StringReader("[]");
-                    disposables.Push(textReader);
-                }
-                else
-                {
-                    response.Dispose();
-                    throw new HttpRequestException($"Response status code is not 200 OK: {((int)response.StatusCode)} ({response.ReasonPhrase})");
-                }
-
-                var asOfTimestamp = response.Content.Headers.LastModified.Value.ToUniversalTime();
-
-                return new PackageDownloadSet(
-                    asOfTimestamp,
-                    _options.Value.DownloadsV1Url,
-                    newEtag,
-                    _deserializer.DeserializeAsync(textReader, disposables, _throttle));
             }
-            catch
+        }
+
+        private class PackageIdDownloadsConverter : JsonConverter<PackageIdDownloads>
+        {
+            public override PackageIdDownloads Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
-                _throttle.Release();
-
-                while (disposables.Any())
+                reader.AssertType(JsonTokenType.StartArray);
+                reader.AssertReadAndType(JsonTokenType.String);
+                var output = new PackageIdDownloads(reader.GetString()!);
+                reader.AssertRead();
+                while (reader.TokenType == JsonTokenType.StartArray)
                 {
-                    disposables.Pop()?.Dispose();
+                    reader.AssertReadAndType(JsonTokenType.String);
+                    var version = reader.GetString()!;
+                    reader.AssertReadAndType(JsonTokenType.Number);
+                    var downloads = reader.GetInt64();
+                    reader.AssertReadAndType(JsonTokenType.EndArray);
+                    output.Versions.Add((version, downloads));
+                    reader.AssertRead();
                 }
 
-                throw;
+                reader.AssertType(JsonTokenType.EndArray);
+
+                return output;
             }
+
+            public override void Write(Utf8JsonWriter writer, PackageIdDownloads value, JsonSerializerOptions options)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private class PackageIdDownloads
+        {
+            public PackageIdDownloads(string id)
+            {
+                Id = id;
+                Versions = new List<(string Version, long Downloads)>();
+            }
+
+            public string Id { get; }
+            public List<(string Version, long Downloads)> Versions { get; }
         }
     }
 }

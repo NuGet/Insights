@@ -46,7 +46,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
             return $"latest_{blobName}.csv.gz";
         }
 
-        public async Task<bool> ProcessAsync(AuxiliaryFileUpdaterMessage<T> message, long dequeueCount)
+        public async Task<TaskStateProcessResult> ProcessAsync(AuxiliaryFileUpdaterMessage<T> message, TaskState taskState, long dequeueCount)
         {
             await InitializeAsync();
 
@@ -82,7 +82,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
                         _updater.OperationName,
                         data.AsOfTimestamp,
                         versionSetCommitTimestamp);
-                    return true;
+                    return TaskStateProcessResult.Complete;
                 }
             }
 
@@ -105,7 +105,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
                     latestRequestConditions);
             }
 
-            return true;
+            return TaskStateProcessResult.Delay;
         }
 
         private async Task<(long uncompressedLength, ETag etag)> WriteDataAsync(IVersionSet versionSet, T data, BlobClient destBlob)

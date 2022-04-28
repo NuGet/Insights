@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -31,43 +32,56 @@ namespace NuGet.Insights.Worker
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly WideEntityService _wideEntityService;
         private readonly ICsvReader _csvReader;
+        private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<AppendResultStorageService> _logger;
 
         public AppendResultStorageService(
             ServiceClientFactory serviceClientFactory,
             WideEntityService wideEntityService,
             ICsvReader csvReader,
+            ITelemetryClient telemetryClient,
             ILogger<AppendResultStorageService> logger)
         {
             _serviceClientFactory = serviceClientFactory;
             _wideEntityService = wideEntityService;
             _csvReader = csvReader;
+            _telemetryClient = telemetryClient;
             _logger = logger;
         }
 
-        public async Task InitializeAsync(string srcContainer, string destContainer)
+        public async Task InitializeAsync(string srcTable, string destContainer)
         {
-            await _wideEntityService.CreateTableAsync(srcContainer);
+            await _wideEntityService.CreateTableAsync(srcTable);
             await (await GetContainerAsync(destContainer)).CreateIfNotExistsAsync(retry: true);
         }
 
-        public async Task DeleteAsync(string containerName)
+        public async Task DeleteAsync(string srcTable)
         {
-            await _wideEntityService.DeleteTableAsync(containerName);
+            await _wideEntityService.DeleteTableAsync(srcTable);
         }
 
-        public async Task AppendAsync(string tableName, int bucketCount, string bucketKey, IReadOnlyList<ICsvRecord> records)
+        public async Task AppendAsync(string srcTable, int bucketCount, IEnumerable<ICsvRecordSet<ICsvRecord>> sets)
         {
-            var bucket = GetBucket(bucketCount, bucketKey);
+            var bucketGroups = sets
+                .SelectMany(x => x.Records.Select(y => (x.BucketKey, Record: y)))
+                .GroupBy(x => GetBucket(bucketCount, x.BucketKey), x => x.Record);
 
+            foreach (var group in bucketGroups)
+            {
+                await AppendAsync(srcTable, group.Key, group.ToList());
+            }
+        }
+
+        private async Task AppendAsync(string srcTable, int bucket, IReadOnlyList<ICsvRecord> records)
+        {
             // Append the data.
-            await AppendToTableAsync(bucket, tableName, records);
+            await AppendToTableAsync(bucket, srcTable, records);
 
             // Append a marker to show that this bucket has data.
             try
             {
                 await _wideEntityService.InsertAsync(
-                   tableName,
+                   srcTable,
                    partitionKey: string.Empty,
                    rowKey: bucket.ToString(),
                    content: Array.Empty<byte>());
@@ -78,9 +92,9 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        public async Task<IReadOnlyList<T>> ReadAsync<T>(string containerName, int bucket) where T : ICsvRecord
+        public async Task<IReadOnlyList<T>> ReadAsync<T>(string destContainer, int bucket) where T : ICsvRecord
         {
-            var compactBlob = await GetCompactBlobAsync(containerName, bucket);
+            var compactBlob = await GetCompactBlobAsync(destContainer, bucket);
 
             try
             {
@@ -93,7 +107,7 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        private async Task AppendToTableAsync(int bucket, string tableName, IReadOnlyList<ICsvRecord> records)
+        private async Task AppendToTableAsync(int bucket, string srcTable, IReadOnlyList<ICsvRecord> records)
         {
             var bytes = Serialize(records);
             try
@@ -105,7 +119,7 @@ namespace NuGet.Insights.Worker
                     var rowKey = StorageUtility.GenerateDescendingId().ToString();
                     try
                     {
-                        await _wideEntityService.InsertAsync(tableName, partitionKey: bucket.ToString(), rowKey, content: bytes);
+                        await _wideEntityService.InsertAsync(srcTable, partitionKey: bucket.ToString(), rowKey, content: bytes);
                         break;
                     }
                     catch (RequestFailedException ex) when (attempt < 3 && ex.Status == (int)HttpStatusCode.Conflict)
@@ -128,8 +142,8 @@ namespace NuGet.Insights.Worker
             {
                 var firstHalf = records.Take(records.Count / 2).ToList();
                 var secondHalf = records.Skip(firstHalf.Count).ToList();
-                await AppendToTableAsync(bucket, tableName, firstHalf);
-                await AppendToTableAsync(bucket, tableName, secondHalf);
+                await AppendToTableAsync(bucket, srcTable, firstHalf);
+                await AppendToTableAsync(bucket, srcTable, secondHalf);
             }
         }
 
@@ -138,38 +152,107 @@ namespace NuGet.Insights.Worker
             string destContainer,
             int bucket,
             bool force,
-            Func<List<T>, List<T>> prune) where T : ICsvRecord
+            Prune<T> prune) where T : ICsvRecord
         {
             var appendRecords = new List<T>();
+            const int PruneEveryNEntity = 500;
+
+            var recordType = typeof(T).FullName;
+            var stopwatch = Stopwatch.StartNew();
+
+            var entityCount = 0;
 
             if (!force || srcTable != null)
             {
-                var entities = await _wideEntityService.RetrieveAsync(srcTable, partitionKey: bucket.ToString());
-
-                if (entities.Any())
+                var pruneRecordCountMetric = GetPruneRecordCountMetric();
+                var pruneRecordDeltaMetric = GetPruneRecordDeltaMetric();
+                var entities = _wideEntityService.RetrieveAsync(
+                    srcTable,
+                    partitionKey: bucket.ToString(),
+                    minRowKey: null,
+                    maxRowKey: null,
+                    includeData: true,
+                    maxPerPage: StorageUtility.MaxTakeCount);
+                await foreach (var entity in entities)
                 {
-                    foreach (var entity in entities)
+                    entityCount++;
+                    using var stream = entity.GetStream();
+                    var records = Deserialize<T>(stream);
+                    appendRecords.AddRange(records);
+
+                    // Proactively prune to avoid out of memory exceptions.
+                    if (entityCount % PruneEveryNEntity == PruneEveryNEntity - 1 && appendRecords.Any())
                     {
-                        using var stream = entity.GetStream();
-                        var records = Deserialize<T>(stream);
-                        appendRecords.AddRange(records);
+                        var initialCount = appendRecords.Count;
+                        pruneRecordCountMetric.TrackValue(appendRecords.Count, destContainer, recordType, "false");
+                        appendRecords = prune(appendRecords, isFinalPrune: false);
+                        pruneRecordDeltaMetric.TrackValue(appendRecords.Count - initialCount, destContainer, recordType, "false");
                     }
                 }
-                else if (!force)
+
+                if (!appendRecords.Any() && !force)
                 {
                     // If there are no entities, then there's no new data. We can stop here.
+                    GetPruneEntityCountMetric().TrackValue(entityCount, destContainer, recordType);
                     return;
                 }
             }
 
-            await CompactAsync(appendRecords, destContainer, bucket, prune);
+            GetPruneEntityCountMetric().TrackValue(entityCount, destContainer, recordType);
+
+            await CompactAsync(appendRecords, destContainer, recordType, bucket, prune);
+
+            GetCompactDurationMsMetric().TrackValue(stopwatch.Elapsed.TotalMilliseconds, destContainer, recordType);
+        }
+
+        private IMetric GetCompactDurationMsMetric()
+        {
+            return _telemetryClient.GetMetric(
+                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.DurationMs",
+                "DestContainer",
+                "RecordType");
+        }
+
+        private IMetric GetPruneRecordCountMetric()
+        {
+            return _telemetryClient.GetMetric(
+                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.PruneRecordCount",
+                "DestContainer",
+                "RecordType",
+                "IsFinalPrune");
+        }
+
+        private IMetric GetPruneRecordDeltaMetric()
+        {
+            return _telemetryClient.GetMetric(
+                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.PruneRecordDelta",
+                "DestContainer",
+                "RecordType",
+                "IsFinalPrune");
+        }
+
+        private IMetric GetRecordCountMetric()
+        {
+            return _telemetryClient.GetMetric(
+                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.RecordCount",
+                "DestContainer",
+                "RecordType");
+        }
+
+        private IMetric GetPruneEntityCountMetric()
+        {
+            return _telemetryClient.GetMetric(
+                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.EntityCount",
+                "DestContainer",
+                "RecordType");
         }
 
         private async Task CompactAsync<T>(
             List<T> records,
             string destContainer,
+            string recordType,
             int bucket,
-            Func<List<T>, List<T>> prune) where T : ICsvRecord
+            Prune<T> prune) where T : ICsvRecord
         {
             var compactBlob = await GetCompactBlobAsync(destContainer, bucket);
 
@@ -187,8 +270,13 @@ namespace NuGet.Insights.Worker
 
             if (records.Any())
             {
-                records = prune(records);
+                var initialCount = records.Count;
+                GetPruneRecordCountMetric().TrackValue(records.Count, destContainer, recordType, "true");
+                records = prune(records, isFinalPrune: true);
+                GetPruneRecordDeltaMetric().TrackValue(records.Count - initialCount, destContainer, recordType, "true");
             }
+
+            GetRecordCountMetric().TrackValue(records.Count, destContainer, recordType);
 
             using var stream = SerializeRecords(records, writeHeader: true, gzip: true, out var uncompressedLength);
 
@@ -268,15 +356,15 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        public async Task<List<int>> GetAppendedBucketsAsync(string tableName)
+        public async Task<List<int>> GetAppendedBucketsAsync(string srcTable)
         {
-            var markerEntities = await _wideEntityService.RetrieveAsync(tableName, partitionKey: string.Empty);
+            var markerEntities = await _wideEntityService.RetrieveAsync(srcTable, partitionKey: string.Empty);
             return markerEntities.Select(x => int.Parse(x.RowKey)).ToList();
         }
 
-        public async Task<List<int>> GetCompactedBucketsAsync(string containerName)
+        public async Task<List<int>> GetCompactedBucketsAsync(string destContainer)
         {
-            var container = await GetContainerAsync(containerName);
+            var container = await GetContainerAsync(destContainer);
             var buckets = new List<int>();
 
             if (!await container.ExistsAsync())
@@ -295,15 +383,15 @@ namespace NuGet.Insights.Worker
             return buckets;
         }
 
-        public async Task<Uri> GetCompactedBlobUrlAsync(string containerName, int bucket)
+        public async Task<Uri> GetCompactedBlobUrlAsync(string destContainer, int bucket)
         {
-            var blob = await GetCompactBlobAsync(containerName, bucket);
+            var blob = await GetCompactBlobAsync(destContainer, bucket);
             return blob.Uri;
         }
 
-        private async Task<BlobClient> GetCompactBlobAsync(string container, int bucket)
+        private async Task<BlobClient> GetCompactBlobAsync(string destContainer, int bucket)
         {
-            return (await GetContainerAsync(container)).GetBlobClient($"{CompactPrefix}{bucket}.csv.gz");
+            return (await GetContainerAsync(destContainer)).GetBlobClient($"{CompactPrefix}{bucket}.csv.gz");
         }
 
         private static byte[] Serialize(IReadOnlyList<ICsvRecord> records)

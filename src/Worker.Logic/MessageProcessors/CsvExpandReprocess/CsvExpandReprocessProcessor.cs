@@ -49,27 +49,28 @@ namespace NuGet.Insights.Worker
 
             var records = await _appendResultStorageService.ReadAsync<T>(_csvStorage.ResultContainerName, message.Bucket);
 
-            var items = new List<ICatalogLeafItem>();
+            var items = new List<(ICatalogLeafItem LeafItem, string PageUrl)>();
             foreach (var record in records)
             {
-                var item = await _csvStorage.MakeReprocessItemOrNullAsync(record);
+                (var item, var pageUrl) = await _csvStorage.MakeReprocessItemOrNullAsync(record);
                 if (item != null)
                 {
-                    items.Add(item);
+                    items.Add((item, pageUrl));
                 }
             }
 
             var reprocessLeaves = items
-                .Select(x => new CatalogLeafScan(indexScan.StorageSuffix, indexScan.GetScanId(), GetPageId(x.PackageId), GetLeafId(x.PackageVersion))
+                .Select(x => new CatalogLeafScan(indexScan.StorageSuffix, indexScan.GetScanId(), GetPageId(x.LeafItem.PackageId), GetLeafId(x.LeafItem.PackageVersion))
                 {
                     DriverType = indexScan.DriverType,
                     DriverParameters = indexScan.DriverParameters,
-                    Url = x.Url,
-                    LeafType = x.Type,
-                    CommitId = x.CommitId,
-                    CommitTimestamp = x.CommitTimestamp,
-                    PackageId = x.PackageId,
-                    PackageVersion = x.PackageVersion,
+                    Url = x.LeafItem.Url,
+                    PageUrl = x.PageUrl,
+                    LeafType = x.LeafItem.Type,
+                    CommitId = x.LeafItem.CommitId,
+                    CommitTimestamp = x.LeafItem.CommitTimestamp,
+                    PackageId = x.LeafItem.PackageId,
+                    PackageVersion = x.LeafItem.PackageVersion,
                 })
                 .GroupBy(x => x.Url)
                 .Select(g => g.OrderByDescending(x => x.CommitTimestamp).First());

@@ -1,12 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using NuGet.Protocol;
+
+#nullable enable
 
 namespace NuGet.Insights
 {
@@ -60,7 +62,6 @@ namespace NuGet.Insights
         {
             var cursor = await _httpSource.DeserializeUrlAsync<JsonCursor>(
                 url,
-                ignoreNotFounds: false,
                 logger: _logger,
                 token: token);
 
@@ -69,7 +70,7 @@ namespace NuGet.Insights
 
         private class JsonCursor
         {
-            [JsonProperty("value")]
+            [JsonPropertyName("value")]
             public DateTimeOffset Value { get; set; }
         }
     }

@@ -53,14 +53,14 @@ namespace NuGet.Insights.Worker
         public DateTimeOffset CatalogCommitTimestamp { get; set; }
         public DateTimeOffset? Created { get; set; }
 
-        public static List<T> Prune<T>(List<T> records) where T : PackageRecord, IEquatable<T>
+        public static List<T> Prune<T>(List<T> records, bool isFinalPrune) where T : PackageRecord, IEquatable<T>
         {
             return records
                 .GroupBy(x => x, PackageRecordIdVersionComparer.Instance) // Group by unique package version
                 .Select(g => g
                     .GroupBy(x => new { x.ScanId, x.CatalogCommitTimestamp }) // Group package version records by scan and catalog commit timestamp
                     .OrderByDescending(x => x.Key.CatalogCommitTimestamp)
-                    .ThenByDescending(x => x.First().ScanTimestamp)
+                    .ThenByDescending(x => x.First().ScanTimestamp ?? DateTimeOffset.MinValue)
                     .First())
                 .SelectMany(g => g)
                 .OrderBy(x => x.Id, StringComparer.OrdinalIgnoreCase)
@@ -68,10 +68,12 @@ namespace NuGet.Insights.Worker
                 .Distinct()
                 .Select(x =>
                 {
-                    /// Clear these properties before persisting to Blob Bstorage, since their purpose is handle
-                    /// duplicate records appended to <see cref="AppendResultStorageService"/>.
-                    x.ScanId = null;
-                    x.ScanTimestamp = null;
+                    if (isFinalPrune)
+                    {
+                        x.ScanId = null;
+                        x.ScanTimestamp = null;
+                    }
+
                     return x;
                 })
                 .ToList();

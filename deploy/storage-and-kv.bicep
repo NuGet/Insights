@@ -3,10 +3,11 @@ param keyVaultName string
 param identities array
 param deploymentContainerName string
 param leaseContainerName string
+param location string = resourceGroup().location
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2019-06-01' = {
   name: storageAccountName
-  location: resourceGroup().location
+  location: location
   kind: 'StorageV2'
   sku: {
     name: 'Standard_LRS'
@@ -24,16 +25,23 @@ resource deploymentContainer 'Microsoft.Storage/storageAccounts/blobServices/con
   ]
 }
 
+resource leaseContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2019-06-01' = {
+  name: '${storageAccountName}/default/${leaseContainerName}'
+  dependsOn: [
+    storageAccount
+  ]
+}
+
 resource deploymentContainerPolicy 'Microsoft.Storage/storageAccounts/managementPolicies@2019-06-01' = {
   name: '${storageAccountName}/default'
   dependsOn: [
-    storageAccount
+    leaseContainer
   ]
   properties: {
     policy: {
       rules: [
         {
-          name: 'DeleteDeploymentBlobs'
+          name: 'DeleteOldBlobs'
           type: 'Lifecycle'
           definition: {
             actions: {
@@ -48,7 +56,6 @@ resource deploymentContainerPolicy 'Microsoft.Storage/storageAccounts/management
                 'blockBlob'
               ]
               prefixMatch: [
-                '${deploymentContainerName}/'
                 '${leaseContainerName}/'
               ]
             }
@@ -61,7 +68,7 @@ resource deploymentContainerPolicy 'Microsoft.Storage/storageAccounts/management
 
 resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
   name: keyVaultName
-  location: resourceGroup().location
+  location: location
   properties: {
     tenantId: subscription().tenantId
     sku: {
@@ -73,7 +80,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
   }
 }
 
-// Gives permissions to use secrets
+// Gives permissions to read certificates
 resource keyVaultReadSecretPermissions 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = [for identity in identities: {
   name: !empty(identities) ? guid('AppsCanUseKeyVaultSecrets-${identity.tenantId}-${identity.objectId}') : guid('placeholderA')
   scope: keyVault
@@ -84,7 +91,6 @@ resource keyVaultReadSecretPermissions 'Microsoft.Authorization/roleAssignments@
   }
 }]
 
-// Gives permissions to read certificates
 resource keyVaultReadPermissions 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = [for identity in identities: {
   name: !empty(identities) ? guid('AppsCanReadKeyVault-${identity.tenantId}-${identity.objectId}') : guid('placeholderB')
   scope: keyVault

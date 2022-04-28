@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -61,24 +61,7 @@ namespace NuGet.Insights.Worker.LoadPackageManifest
             public async Task Execute()
             {
                 // Arrange
-                HttpMessageHandlerFactory.OnSendAsync = async req =>
-                {
-                    if (req.RequestUri.AbsolutePath.EndsWith("/behaviorsample.nuspec"))
-                    {
-                        var newReq = Clone(req);
-                        newReq.RequestUri = new Uri($"http://localhost/{TestData}/behaviorsample.1.0.0.nuspec");
-                        return await TestDataHttpClient.SendAsync(newReq);
-                    }
-
-                    return null;
-                };
-
-                // Set the Last-Modified date for the etag
-                var file = new FileInfo(Path.Combine(TestData, "behaviorsample.1.0.0.nuspec"))
-                {
-                    LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z")
-                };
-
+                MakeDeletedPackageAvailable();
                 var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
                 var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
                 var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
@@ -131,7 +114,7 @@ namespace NuGet.Insights.Worker.LoadPackageManifest
                     if (entity.V1.Available)
                     {
                         using var algorithm = SHA256.Create();
-                        manifestHash = algorithm.ComputeHash(entity.V1.ManifestBytes.ToArray()).ToHex();
+                        manifestHash = algorithm.ComputeHash(entity.V1.ManifestBytes.ToArray()).ToLowerHex();
                         httpHeaders = NormalizeHeaders(entity.V1.HttpHeaders);
                     }
 

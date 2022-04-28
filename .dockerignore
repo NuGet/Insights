@@ -1,0 +1,6 @@
+*
+!src
+!Directory.Build.props
+!Directory.Build.targets
+!global.json
+!NuGet.config

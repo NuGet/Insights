@@ -7,13 +7,13 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using NuGet.Insights.Worker.LoadLatestPackageLeaf;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGetPe;
@@ -29,7 +29,6 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
         private readonly FlatContainerClient _flatContainerClient;
         private readonly HttpSource _httpSource;
         private readonly HttpClient _httpClient;
-        private readonly LatestPackageLeafService _latestPackageLeafService;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<NuGetPackageExplorerToCsvDriver> _logger;
 
@@ -38,7 +37,6 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             FlatContainerClient flatContainerClient,
             HttpSource httpSource,
             HttpClient httpClient,
-            LatestPackageLeafService latestPackageLeafService,
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<NuGetPackageExplorerToCsvDriver> logger)
         {
@@ -46,7 +44,6 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             _flatContainerClient = flatContainerClient;
             _httpSource = httpSource;
             _httpClient = httpClient;
-            _latestPackageLeafService = latestPackageLeafService;
             _options = options;
             _logger = logger;
         }
@@ -60,33 +57,33 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             return Task.CompletedTask;
         }
 
-        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(NuGetPackageExplorerRecord record)
+        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(NuGetPackageExplorerRecord record)
         {
             throw new NotImplementedException();
         }
 
-        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(NuGetPackageExplorerFile record)
+        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(NuGetPackageExplorerFile record)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<DriverResult<CsvRecordSets<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>>> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSets<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
-            (var record, var files) = await ProcessLeafInternalAsync(item, attemptCount);
-            var bucketKey = PackageRecord.GetBucketKey(item);
+            (var record, var files) = await ProcessLeafInternalAsync(leafScan);
+            var bucketKey = PackageRecord.GetBucketKey(leafScan);
             return DriverResult.Success(new CsvRecordSets<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>(
                 new CsvRecordSet<NuGetPackageExplorerRecord>(bucketKey, record != null ? new[] { record } : Array.Empty<NuGetPackageExplorerRecord>()),
                 new CsvRecordSet<NuGetPackageExplorerFile>(bucketKey, files ?? Array.Empty<NuGetPackageExplorerFile>())));
         }
 
-        private async Task<(NuGetPackageExplorerRecord, IReadOnlyList<NuGetPackageExplorerFile>)> ProcessLeafInternalAsync(ICatalogLeafItem item, int attemptCount)
+        private async Task<(NuGetPackageExplorerRecord, IReadOnlyList<NuGetPackageExplorerFile>)> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
 
-            if (item.Type == CatalogLeafType.PackageDelete)
+            if (leafScan.LeafType == CatalogLeafType.PackageDelete)
             {
-                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
                 return (
                     new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf),
                     new[] { new NuGetPackageExplorerFile(scanId, scanTimestamp, leaf) }
@@ -94,7 +91,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             }
             else
             {
-                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
                 var tempDir = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "npe"));
                 if (!Directory.Exists(tempDir))
@@ -105,7 +102,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                 var tempPath = Path.Combine(tempDir, StorageUtility.GenerateDescendingId().ToString() + ".nupkg");
                 try
                 {
-                    var exists = await DownloadToFileAsync(leaf, attemptCount, tempPath);
+                    var exists = await DownloadToFileAsync(leaf, leafScan.AttemptCount, tempPath);
                     if (!exists)
                     {
                         // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted record.
@@ -116,7 +113,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                         "Loading ZIP package for {Id} {Version} on attempt {AttemptCount}.",
                         leaf.PackageId,
                         leaf.PackageVersion,
-                        attemptCount);
+                        leafScan.AttemptCount);
 
                     ZipPackage zipPackage;
                     try
@@ -150,7 +147,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                                 "Starting symbol validation for {Id} {Version} on attempt {AttemptCount}.",
                                 leaf.PackageId,
                                 leaf.PackageVersion,
-                                attemptCount);
+                                leafScan.AttemptCount);
                             var symbolValidatorTask = symbolValidator.Validate(cts.Token);
 
                             var resultTask = await Task.WhenAny(delayTask, symbolValidatorTask);
@@ -158,7 +155,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                             {
                                 cts.Cancel();
 
-                                if (attemptCount > 3)
+                                if (leafScan.AttemptCount > 3)
                                 {
                                     _logger.LogWarning("Package {Id} {Version} had its symbol validation timeout.", leaf.PackageId, leaf.PackageVersion);
                                     return MakeSingleItem(scanId, scanTimestamp, leaf, NuGetPackageExplorerResultType.Timeout);
@@ -179,7 +176,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                             "Loading signature data for {Id} {Version} on attempt {AttemptCount}.",
                             leaf.PackageId,
                             leaf.PackageVersion,
-                            attemptCount);
+                            leafScan.AttemptCount);
 
                         await zipPackage.LoadSignatureDataAsync();
 
@@ -200,7 +197,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                                 "Getting all files for {Id} {Version} on attempt {AttemptCount}.",
                                 leaf.PackageId,
                                 leaf.PackageVersion,
-                                attemptCount);
+                                leafScan.AttemptCount);
 
                             foreach (var file in symbolValidator.GetAllFiles())
                             {
@@ -217,8 +214,8 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                                     HasSourceLink = file.DebugData?.HasSourceLink,
                                     HasDebugInfo = file.DebugData?.HasDebugInfo,
                                     PdbType = file.DebugData?.PdbType,
-                                    CompilerFlags = compilerFlags != null ? JsonConvert.SerializeObject(compilerFlags) : null,
-                                    SourceUrlRepoInfo = sourceUrlRepoInfo != null ? JsonConvert.SerializeObject(sourceUrlRepoInfo) : null,
+                                    CompilerFlags = compilerFlags != null ? JsonSerializer.Serialize(compilerFlags, JsonSerializerOptions) : null,
+                                    SourceUrlRepoInfo = sourceUrlRepoInfo != null ? JsonSerializer.Serialize(sourceUrlRepoInfo, JsonSerializerOptions) : null,
                                 });
                             }
                         }
@@ -322,14 +319,49 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             );
         }
 
-        public List<NuGetPackageExplorerRecord> Prune(List<NuGetPackageExplorerRecord> records)
+        public List<NuGetPackageExplorerRecord> Prune(List<NuGetPackageExplorerRecord> records, bool isFinalPrune)
         {
-            return PackageRecord.Prune(records);
+            return PackageRecord.Prune(records, isFinalPrune);
         }
 
-        public List<NuGetPackageExplorerFile> Prune(List<NuGetPackageExplorerFile> records)
+        public List<NuGetPackageExplorerFile> Prune(List<NuGetPackageExplorerFile> records, bool isFinalPrune)
         {
-            return PackageRecord.Prune(records);
+            return PackageRecord.Prune(records, isFinalPrune);
+        }
+
+        private static JsonSerializerOptions JsonSerializerOptions { get; } = new JsonSerializerOptions
+        {
+            Converters =
+            {
+                new SourceUrlRepoJsonConverter(),
+            },
+        };
+
+        private class SourceUrlRepoJsonConverter : JsonConverter<SourceUrlRepo>
+        {
+            public override SourceUrlRepo Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Write(Utf8JsonWriter writer, SourceUrlRepo value, JsonSerializerOptions options)
+            {
+                // Each non-abstract class descending from SourceUrlRepo should be in this switch to allow serialization.
+                switch (value)
+                {
+                    case GitHubSourceRepo gitHub:
+                        JsonSerializer.Serialize(writer, gitHub, options);
+                        break;
+                    case InvalidSourceRepo invalid:
+                        JsonSerializer.Serialize(writer, invalid, options);
+                        break;
+                    case UnknownSourceRepo unknown:
+                        JsonSerializer.Serialize(writer, unknown, options);
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
         }
     }
 }

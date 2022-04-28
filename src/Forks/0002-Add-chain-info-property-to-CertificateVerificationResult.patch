@@ -1,0 +1,180 @@
+From 434b6517b9c5103589a8db0d050f9360d0b60c80 Mon Sep 17 00:00:00 2001
+From: Joel Verhagen <joel.verhagen@gmail.com>
+Date: Sun, 16 Jan 2022 20:46:34 -0800
+Subject: [PATCH] Add chain info property to CertificateVerificationResult
+
+---
+ .../CertificateVerificationResult.cs          | 22 ++++++++++++++++---
+ .../ICertificateVerifier.cs                   |  6 ++---
+ .../OnlineCertificateVerifier.cs              | 20 +++++++++--------
+ 3 files changed, 33 insertions(+), 15 deletions(-)
+
+diff --git a/src/Forks/NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationResult.cs b/src/Forks/NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationResult.cs
+index 87f16a6d..b058e198 100644
+--- a/src/Forks/NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationResult.cs
++++ b/src/Forks/NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationResult.cs
+@@ -11,18 +11,20 @@ namespace Validation.PackageSigning.ValidateCertificate
+     /// The result of a <see cref="X509Certificate2"/> verification by the
+     /// <see cref="ICertificateValidationService"/>.
+     /// </summary>
+-    public class CertificateVerificationResult
++    public class CertificateVerificationResult<T>
+     {
+         /// <summary>
+         /// Create a new verification result.
+         /// </summary>
+         /// <param name="status">The determined status of the verified certificate.</param>
+         /// <param name="statusFlags">The flags explaining the certificate's status.</param>
++        /// <param name="chainInfo">Information extracted from the built chain.</param>
+         /// <param name="statusUpdateTime">The time the revocation info was published.</param>
+         /// <param name="revocationTime">The date the certificate was revoked, if applicable.</param>
+         public CertificateVerificationResult(
+             EndCertificateStatus status,
+             X509ChainStatusFlags statusFlags,
++            T chainInfo,
+             DateTime? statusUpdateTime = null,
+             DateTime? revocationTime = null)
+         {
+@@ -84,6 +86,7 @@ namespace Validation.PackageSigning.ValidateCertificate
+             StatusFlags = statusFlags;
+             StatusUpdateTime = statusUpdateTime;
+             RevocationTime = revocationTime;
++            ChainInfo = chainInfo;
+         }
+ 
+         /// <summary>
+@@ -109,6 +112,11 @@ namespace Validation.PackageSigning.ValidateCertificate
+         /// </summary>
+         public DateTime? RevocationTime { get; }
+ 
++        /// <summary>
++        /// Information extracted from the built chain. This is used to capture state from the chain before it is disposed.
++        /// </summary>
++        public T ChainInfo { get; }
++
+         /// <summary>
+         /// Convert a verification to a human readable string.
+         /// </summary>
+@@ -143,6 +151,7 @@ namespace Validation.PackageSigning.ValidateCertificate
+             private X509ChainStatusFlags _statusFlags;
+             private DateTime? _statusUpdateTime;
+             private DateTime? _revocationTime;
++            private T _chainInfo;
+ 
+             public Builder WithStatus(EndCertificateStatus value)
+             {
+@@ -168,11 +177,18 @@ namespace Validation.PackageSigning.ValidateCertificate
+                 return this;
+             }
+ 
+-            public CertificateVerificationResult Build()
++            public Builder WithChainInfo(T chainInfo)
++            {
++                _chainInfo = chainInfo;
++                return this;
++            }
++
++            public CertificateVerificationResult<T> Build()
+             {
+-                return new CertificateVerificationResult(
++                return new CertificateVerificationResult<T>(
+                     _status,
+                     _statusFlags,
++                    _chainInfo,
+                     _statusUpdateTime,
+                     _revocationTime);
+             }
+diff --git a/src/Forks/NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/ICertificateVerifier.cs b/src/Forks/NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/ICertificateVerifier.cs
+index ca6a2137..d416f0fd 100644
+--- a/src/Forks/NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/ICertificateVerifier.cs
++++ b/src/Forks/NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/ICertificateVerifier.cs
+@@ -19,7 +19,7 @@ namespace Validation.PackageSigning.ValidateCertificate
+         /// <param name="extraCertificates">A collection of certificates that may be used to build the certificate chain.</param>
+         /// <returns>The result of the verification.</returns>
+         [Obsolete("This will be removed when integration tests are created")]
+-        CertificateVerificationResult VerifyCertificate(X509Certificate2 certificate, X509Certificate2[] extraCertificates);
++        CertificateVerificationResult<T> VerifyCertificate<T>(X509Certificate2 certificate, X509Certificate2[] extraCertificates, Func<X509Chain, T> getChainInfo);
+ 
+         /// <summary>
+         /// Determine the status of a code signing <see cref="X509Certificate2"/>.
+@@ -27,7 +27,7 @@ namespace Validation.PackageSigning.ValidateCertificate
+         /// <param name="certificate">The certificate to verify.</param>
+         /// <param name="extraCertificates">A collection of certificates that may be used to build the certificate chain.</param>
+         /// <returns>The result of the verification.</returns>
+-        CertificateVerificationResult VerifyCodeSigningCertificate(X509Certificate2 certificate, IReadOnlyList<X509Certificate2> extraCertificates);
++        CertificateVerificationResult<T> VerifyCodeSigningCertificate<T>(X509Certificate2 certificate, IReadOnlyList<X509Certificate2> extraCertificates, Func<X509Chain, T> getChainInfo);
+ 
+         /// <summary>
+         /// Determine the status of a timestamping <see cref="X509Certificate2"/>.
+@@ -35,6 +35,6 @@ namespace Validation.PackageSigning.ValidateCertificate
+         /// <param name="certificate">The certificate to verify.</param>
+         /// <param name="extraCertificates">A collection of certificates that may be used to build the certificate chain.</param>
+         /// <returns>The result of the verification.</returns>
+-        CertificateVerificationResult VerifyTimestampingCertificate(X509Certificate2 certificate, IReadOnlyList<X509Certificate2> extraCertificates);
++        CertificateVerificationResult<T> VerifyTimestampingCertificate<T>(X509Certificate2 certificate, IReadOnlyList<X509Certificate2> extraCertificates, Func<X509Chain, T> getChainInfo);
+     }
+ }
+diff --git a/src/Forks/NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/OnlineCertificateVerifier.cs b/src/Forks/NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/OnlineCertificateVerifier.cs
+index abbef9d9..ce15c711 100644
+--- a/src/Forks/NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/OnlineCertificateVerifier.cs
++++ b/src/Forks/NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/OnlineCertificateVerifier.cs
+@@ -40,22 +40,22 @@ namespace Validation.PackageSigning.ValidateCertificate
+         /// </summary>
+         private const CertTrustErrorStatus OfflineErrorStatusFlags = CertTrustErrorStatus.CERT_TRUST_REVOCATION_STATUS_UNKNOWN | CertTrustErrorStatus.CERT_TRUST_IS_OFFLINE_REVOCATION;
+ 
+-        public CertificateVerificationResult VerifyCertificate(X509Certificate2 certificate, X509Certificate2[] extraCertificates)
++        public CertificateVerificationResult<T> VerifyCertificate<T>(X509Certificate2 certificate, X509Certificate2[] extraCertificates, Func<X509Chain, T> getChainInfo)
+         {
+-            return VerifyCertificate(certificate, extraCertificates, applicationPolicy: null);
++            return VerifyCertificate(certificate, extraCertificates, applicationPolicy: null, getChainInfo);
+         }
+ 
+-        public CertificateVerificationResult VerifyCodeSigningCertificate(X509Certificate2 certificate, IReadOnlyList<X509Certificate2> extraCertificates)
++        public CertificateVerificationResult<T> VerifyCodeSigningCertificate<T>(X509Certificate2 certificate, IReadOnlyList<X509Certificate2> extraCertificates, Func<X509Chain, T> getChainInfo)
+         {
+-            return VerifyCertificate(certificate, extraCertificates, applicationPolicy: new Oid(CodeSigningEku));
++            return VerifyCertificate(certificate, extraCertificates, applicationPolicy: new Oid(CodeSigningEku), getChainInfo);
+         }
+ 
+-        public CertificateVerificationResult VerifyTimestampingCertificate(X509Certificate2 certificate, IReadOnlyList<X509Certificate2> extraCertificates)
++        public CertificateVerificationResult<T> VerifyTimestampingCertificate<T>(X509Certificate2 certificate, IReadOnlyList<X509Certificate2> extraCertificates, Func<X509Chain, T> getChainInfo)
+         {
+-            return VerifyCertificate(certificate, extraCertificates, applicationPolicy: new Oid(TimeStampingEku));
++            return VerifyCertificate(certificate, extraCertificates, applicationPolicy: new Oid(TimeStampingEku), getChainInfo);
+         }
+ 
+-        private CertificateVerificationResult VerifyCertificate(X509Certificate2 certificate, IReadOnlyList<X509Certificate2> extraCertificates, Oid applicationPolicy)
++        private CertificateVerificationResult<T> VerifyCertificate<T>(X509Certificate2 certificate, IReadOnlyList<X509Certificate2> extraCertificates, Oid applicationPolicy, Func<X509Chain, T> getChainInfo)
+         {
+             X509Chain chain = null;
+ 
+@@ -74,7 +74,7 @@ namespace Validation.PackageSigning.ValidateCertificate
+                 chain.ChainPolicy.RevocationMode = X509RevocationMode.Online;
+                 chain.ChainPolicy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
+ 
+-                var resultBuilder = new CertificateVerificationResult.Builder();
++                var resultBuilder = new CertificateVerificationResult<T>.Builder();
+ 
+                 if (chain.Build(certificate))
+                 {
+@@ -89,6 +89,8 @@ namespace Validation.PackageSigning.ValidateCertificate
+ 
+                 AddRevocationInfo(chain, certificate, resultBuilder);
+ 
++                resultBuilder.WithChainInfo(getChainInfo(chain));
++
+                 return resultBuilder.Build();
+             }
+             finally
+@@ -170,7 +172,7 @@ namespace Validation.PackageSigning.ValidateCertificate
+             return result;
+         }
+ 
+-        private unsafe void AddRevocationInfo(X509Chain chain, X509Certificate2 certificate, CertificateVerificationResult.Builder resultBuilder)
++        private unsafe void AddRevocationInfo<T>(X509Chain chain, X509Certificate2 certificate, CertificateVerificationResult<T>.Builder resultBuilder)
+         {
+             var addedRef = false;
+             var chainHandle = chain.SafeHandle;
+-- 
+2.31.1.windows.1
+

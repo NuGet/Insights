@@ -4,12 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using ImageMagick;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 
 namespace NuGet.Insights.Worker.PackageIconToCsv
 {
@@ -42,25 +42,25 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             return Task.CompletedTask;
         }
 
-        public async Task<DriverResult<CsvRecordSet<PackageIcon>>> ProcessLeafAsync(ICatalogLeafItem item, int attemptCount)
+        public async Task<DriverResult<CsvRecordSet<PackageIcon>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
-            (var resultType, var records) = await ProcessLeafInternalAsync(item);
+            (var resultType, var records) = await ProcessLeafInternalAsync(leafScan);
             if (resultType == TempStreamResultType.SemaphoreNotAvailable)
             {
                 return DriverResult.TryAgainLater<CsvRecordSet<PackageIcon>>();
             }
 
-            return DriverResult.Success(new CsvRecordSet<PackageIcon>(PackageRecord.GetBucketKey(item), records));
+            return DriverResult.Success(new CsvRecordSet<PackageIcon>(PackageRecord.GetBucketKey(leafScan), records));
         }
 
-        public async Task<(TempStreamResultType, List<PackageIcon>)> ProcessLeafInternalAsync(ICatalogLeafItem item)
+        public async Task<(TempStreamResultType, List<PackageIcon>)> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
 
-            if (item.Type == CatalogLeafType.PackageDelete)
+            if (leafScan.LeafType == CatalogLeafType.PackageDelete)
             {
-                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
                 return (
                     TempStreamResultType.Success,
                     new List<PackageIcon> { new PackageIcon(scanId, scanTimestamp, leaf) }
@@ -68,23 +68,24 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             }
             else
             {
-                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
-                (var contentType, var result) = await _flatContainerClient.DownloadPackageIconToFileAsync(
-                    item.PackageId,
-                    item.PackageVersion,
+                var result = await _flatContainerClient.DownloadPackageIconToFileAsync(
+                    leafScan.PackageId,
+                    leafScan.PackageVersion,
                     CancellationToken.None);
-                using (result)
-                {
-                    if (result == null)
-                    {
-                        return (
-                            TempStreamResultType.Success,
-                            new List<PackageIcon> { new PackageIcon(scanId, scanTimestamp, leaf) { ResultType = PackageIconResultType.NoIcon } }
-                        );
-                    }
 
-                    if (result.Type == TempStreamResultType.SemaphoreNotAvailable)
+                if (result is null)
+                {
+                    return (
+                        TempStreamResultType.Success,
+                        new List<PackageIcon> { new PackageIcon(scanId, scanTimestamp, leaf) { ResultType = PackageIconResultType.NoIcon } }
+                    );
+                }
+
+                using (result.Value.Body)
+                {
+                    if (result.Value.Body.Type == TempStreamResultType.SemaphoreNotAvailable)
                     {
                         return (
                             TempStreamResultType.SemaphoreNotAvailable,
@@ -95,22 +96,22 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
                     var output = new PackageIcon(scanId, scanTimestamp, leaf)
                     {
                         ResultType = PackageIconResultType.Available,
-                        FileSize = result.Stream.Length,
-                        MD5 = result.Hash.MD5.ToBase64(),
-                        SHA1 = result.Hash.SHA1.ToBase64(),
-                        SHA256 = result.Hash.SHA256.ToBase64(),
-                        SHA512 = result.Hash.SHA512.ToBase64(),
-                        ContentType = contentType,
+                        FileSize = result.Value.Body.Stream.Length,
+                        MD5 = result.Value.Body.Hash.MD5.ToBase64(),
+                        SHA1 = result.Value.Body.Hash.SHA1.ToBase64(),
+                        SHA256 = result.Value.Body.Hash.SHA256.ToBase64(),
+                        SHA512 = result.Value.Body.Hash.SHA512.ToBase64(),
+                        ContentType = result.Value.ContentType,
                     };
 
                     // Try to detect the format. ImageMagick appears to not detect .ico files when only given a stream.
-                    result.Stream.Position = 0;
-                    var format = FormatDetector.Detect(result.Stream);
+                    result.Value.Body.Stream.Position = 0;
+                    var format = FormatDetector.Detect(result.Value.Body.Stream);
                     output.HeaderFormat = format.ToString();
 
                     try
                     {
-                        (var autoDetectedFormat, var frames) = GetMagickImageCollection(leaf, result, format);
+                        (var autoDetectedFormat, var frames) = GetMagickImageCollection(leaf, result.Value.Body, format);
                         using (frames)
                         {
                             using var image = frames.First();
@@ -147,9 +148,9 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
                             output.Height = image.Height;
                             output.IsOpaque = image.IsOpaque;
                             output.FrameCount = frames.Count;
-                            output.FrameFormats = JsonConvert.SerializeObject(frameFormats);
-                            output.FrameDimensions = JsonConvert.SerializeObject(frameDimensions);
-                            output.FrameAttributeNames = JsonConvert.SerializeObject(frameAttributeNames.Except(IgnoredAttributes).OrderBy(x => x).ToList());
+                            output.FrameFormats = JsonSerializer.Serialize(frameFormats);
+                            output.FrameDimensions = JsonSerializer.Serialize(frameDimensions);
+                            output.FrameAttributeNames = JsonSerializer.Serialize(frameAttributeNames.Except(IgnoredAttributes).OrderBy(x => x).ToList());
                         }
                     }
                     catch (Exception ex) when (ex is not OutOfMemoryException)
@@ -183,12 +184,12 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             return (false, new MagickImageCollection(result.Stream, format));
         }
 
-        public List<PackageIcon> Prune(List<PackageIcon> records)
+        public List<PackageIcon> Prune(List<PackageIcon> records, bool isFinalPrune)
         {
-            return PackageRecord.Prune(records);
+            return PackageRecord.Prune(records, isFinalPrune);
         }
 
-        public Task<ICatalogLeafItem> MakeReprocessItemOrNullAsync(PackageIcon record)
+        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageIcon record)
         {
             throw new NotImplementedException();
         }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -23,7 +23,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         public TimeSpan Frequency => TimeSpan.FromDays(1);
         public bool AutoStart => false;
         public bool IsEnabled => _kustoIngestionService.HasRequiredConfiguration;
-        public int Order => 30;
+        public int Order => 40;
 
         public async Task InitializeAsync()
         {

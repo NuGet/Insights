@@ -1,12 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 using NuGet.Packaging;
 using Xunit;
 using Xunit.Abstractions;
@@ -86,15 +87,15 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
         public async Task HandlesFormatExceptionFromContentFiles()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2019.10.31.20.06.37/apploggersenner007.1.1.8.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "AppLoggerSenner007",
                 PackageVersion = "1.1.8",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
@@ -107,15 +108,15 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
         public async Task HandlesMissingIdFromDependencyGroups()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.11.02.00.39.04/baseline.0.5.0.3.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "Baseline",
                 PackageVersion = "0.5.0.3",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
@@ -128,21 +129,21 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
         public async Task SerializesPackageTypes()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2021.02.20.19.21.13/dotnet-reportgenerator-globaltool.4.8.6.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "dotnet-reportgenerator-globaltool",
                 PackageVersion = "4.8.6",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
             Assert.Equal(
-                JsonConvert.SerializeObject(new[]
+                JsonSerializer.Serialize(new[]
                 {
                     new
                     {
@@ -157,21 +158,21 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
         public async Task SerializesContentFiles()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.11.29.14.49.51/contentfilesexample.1.0.2.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "ContentFilesExample",
                 PackageVersion = "1.0.2",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
             Assert.Equal(
-                JsonConvert.SerializeObject(new[]
+                JsonSerializer.Serialize(new[]
                 {
                     new
                     {
@@ -194,7 +195,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
                         CopyToOutput = (bool?)true,
                         Flatten = (bool?)false,
                     },
-                }, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }),
+                }, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull }),
                 record.ContentFiles);
         }
 
@@ -202,21 +203,21 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
         public async Task SerializesLicenseExpression()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2021.02.20.15.53.38/csvhelper.24.0.1.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "CsvHelper",
                 PackageVersion = "24.0.1",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
             Assert.Equal(
-                JsonConvert.SerializeObject(new
+                JsonSerializer.Serialize(new
                 {
                     Type = "Expression",
                     License = "MS-PL OR Apache-2.0",
@@ -230,20 +231,20 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
         public async Task SerializesDependencies()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2020.12.16.06.30.20/knapcode.torsharp.2.5.0.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "Knapcode.TorSharp",
                 PackageVersion = "2.5.0",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
-            Assert.Equal(JsonConvert.SerializeObject(new[]
+            Assert.Equal(JsonSerializer.Serialize(new[]
             {
                 new
                 {
@@ -286,20 +287,20 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
         public async Task SerializesFrameworkAssemblyGroups()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2020.12.16.06.30.20/knapcode.torsharp.2.5.0.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "Knapcode.TorSharp",
                 PackageVersion = "2.5.0",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
-            Assert.Equal(JsonConvert.SerializeObject(new[]
+            Assert.Equal(JsonSerializer.Serialize(new[]
             {
                 new
                 {
@@ -318,20 +319,20 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
         public async Task SerializesReferenceGroups()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2015.07.22.19.22.26/bundletransformer.core.1.9.69.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "BundleTransformer.Core",
                 PackageVersion = "1.9.69",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
-            Assert.Equal(JsonConvert.SerializeObject(new[]
+            Assert.Equal(JsonSerializer.Serialize(new[]
             {
                 new
                 {
@@ -348,20 +349,20 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
         public async Task SerializesRepositoryMetadata()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2021.01.03.03.09.45/sleet.4.0.18.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "Sleet",
                 PackageVersion = "4.0.18",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
-            Assert.Equal(JsonConvert.SerializeObject(new
+            Assert.Equal(JsonSerializer.Serialize(new
             {
                 Type = "git",
                 Url = "https://github.com/emgarten/Sleet",
@@ -374,20 +375,20 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
         public async Task SerializesFrameworkReferenceGroups()
         {
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2020.08.11.18.53.37/microsoft.toolkit.wpf.ui.controls.6.1.2.json",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "Microsoft.Toolkit.Wpf.UI.Controls",
                 PackageVersion = "6.1.2",
             };
 
-            var output = await Target.ProcessLeafAsync(leaf, attemptCount: 1);
+            var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value.Records);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
-            Assert.Equal(JsonConvert.SerializeObject(new[]
+            Assert.Equal(JsonSerializer.Serialize(new[]
             {
                 new
                 {

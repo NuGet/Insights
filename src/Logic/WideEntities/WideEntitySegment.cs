@@ -8,14 +8,14 @@ using Azure.Data.Tables;
 
 namespace NuGet.Insights.WideEntities
 {
-    internal class WideEntitySegment : Dictionary<string, object>, ITableEntity
+    public class WideEntitySegment : Dictionary<string, object>, ITableEntity
     {
         internal const string SegmentCountPropertyName = "C";
 
         /// <summary>
         /// The separator between the user-provided wide entity row key and the wide entity index suffix.
         /// </summary>
-        internal const char RowKeySeparator = '~';
+        public const char RowKeySeparator = '~';
 
         /// <summary>
         /// The row key suffix for index 0.
@@ -26,7 +26,7 @@ namespace NuGet.Insights.WideEntities
         /// 16 properties names.
         /// MAX_ENTITY_SIZE / MAX_BINARY_PROPERTY_SIZE = 1 MiB / 64 KiB = 16
         /// </summary>
-        private static readonly IReadOnlyList<string> ChunkPropertyNames = new[] { "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S" };
+        internal static readonly IReadOnlyList<string> ChunkPropertyNames = new[] { "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S" };
 
         private string _rowKeyPrefix;
         private int _index = -1;

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -41,12 +41,24 @@ namespace NuGet.Insights.Worker
             await AddAsync(taskStateKey.StorageSuffix, taskStateKey.PartitionKey, new[] { taskStateKey.RowKey });
         }
 
+        public async Task AddAsync(TaskState taskState)
+        {
+            await AddAsync(taskState.StorageSuffix, taskState.PartitionKey, new[] { taskState });
+        }
+
         public async Task AddAsync(string storageSuffix, string partitionKey, IReadOnlyList<string> rowKeys)
         {
             await AddAsync(
                 storageSuffix,
                 partitionKey,
                 rowKeys.Select(r => new TaskState(storageSuffix, partitionKey, r)).ToList());
+        }
+
+        public async Task UpdateAsync(TaskState taskState)
+        {
+            var table = await GetTableAsync(taskState.StorageSuffix);
+            var response = await table.UpdateEntityAsync(taskState, taskState.ETag, TableUpdateMode.Replace);
+            taskState.UpdateETag(response);
         }
 
         public async Task AddAsync(string storageSuffix, string partitionKey, IReadOnlyList<TaskState> taskStates)
@@ -72,6 +84,16 @@ namespace NuGet.Insights.Worker
         {
             return await (await GetTableAsync(storageSuffix))
                 .QueryAsync<TaskState>(x => x.PartitionKey == partitionKey)
+                .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
+        }
+
+        public async Task<IReadOnlyList<TaskState>> GetByRowKeyPrefixAsync(string storageSuffix, string partitionKey, string rowKeyPrefix)
+        {
+            return await (await GetTableAsync(storageSuffix))
+                .QueryAsync<TaskState>(
+                    x => x.PartitionKey == partitionKey
+                      && x.RowKey.CompareTo(rowKeyPrefix) >= 0
+                      && x.RowKey.CompareTo(rowKeyPrefix + char.MaxValue) < 0)
                 .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
         }
 
@@ -112,6 +134,39 @@ namespace NuGet.Insights.Worker
         {
             await (await GetTableAsync(taskState.StorageSuffix))
                 .DeleteEntityAsync(taskState.PartitionKey, taskState.RowKey);
+        }
+
+        public async Task DeleteAsync(IReadOnlyList<TaskState> taskStates)
+        {
+            if (taskStates.Count == 0)
+            {
+                return;
+            }
+
+            var keys = taskStates
+                .Select(x => new { x.StorageSuffix, x.PartitionKey })
+                .Distinct()
+                .ToList();
+
+            if (keys.Count != 1)
+            {
+                throw new ArgumentException("All task states must have the same storage suffix and partition key.");
+            }
+
+            var table = await GetTableAsync(keys[0].StorageSuffix);
+            var batch = new MutableTableTransactionalBatch(table);
+
+            foreach (var taskState in taskStates)
+            {
+                batch.DeleteEntity(taskState.PartitionKey, taskState.RowKey, taskState.ETag);
+                if (batch.Count > StorageUtility.MaxBatchSize)
+                {
+                    await batch.SubmitBatchAsync();
+                    batch = new MutableTableTransactionalBatch(table);
+                }
+            }
+
+            await batch.SubmitBatchIfNotEmptyAsync();
         }
 
         private async Task<TableClient> GetTableAsync(string suffix)

@@ -36,7 +36,7 @@ jobs:
         keyvault: ${{ secrets.NUGETINSIGHTS_KEYVAULTNAME }}
         secrets: '${{ secrets.NUGETINSIGHTS_STORAGESASSECRETNAME }}, ${{ secrets.NUGETINSIGHTS_STORAGEBLOBREADSASSECRETNAME }}'
       id: keyVault
-    - run: dotnet test --no-build --verbosity normal
+    - run: dotnet test --no-build --blame-hang-timeout 10m --verbosity normal
       env:
         NUGETINSIGHTS_STORAGEACCOUNTNAME: ${{ secrets.NUGETINSIGHTS_STORAGEACCOUNTNAME }}
         NUGETINSIGHTS_STORAGESAS: ${{ steps.keyVault.outputs[secrets.NUGETINSIGHTS_STORAGESASSECRETNAME] }}

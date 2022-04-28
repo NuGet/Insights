@@ -1,9 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Text.Json;
 using System.Xml.Linq;
-using Newtonsoft.Json;
 
 namespace NuGet.Insights
 {
@@ -35,6 +35,11 @@ namespace NuGet.Insights
             public const string NuGet_Versioning_4_3_0 = "NuGet.Versioning.4.3.0.nuspec";
         }
 
+        public static class READMEs
+        {
+            public const string WindowsAzure_Storage_9_3_3 = "WindowsAzure.Storage.9.3.3.md";
+        }
+
         public static MemoryStream LoadMemoryStream(string resourceName)
         {
             using (var fileStream = GetFileStream(resourceName))
@@ -57,11 +62,8 @@ namespace NuGet.Insights
 
         public static T LoadJson<T>(string resourceName)
         {
-            using (var reader = new StreamReader(GetFileStream(resourceName)))
-            using (var jsonReader = new JsonTextReader(reader))
-            {
-                return new JsonSerializer().Deserialize<T>(jsonReader);
-            }
+            using var stream = GetFileStream(resourceName);
+            return JsonSerializer.Deserialize<T>(stream);
         }
 
         public static XDocument LoadXml(string resourceName)

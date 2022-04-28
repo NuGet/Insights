@@ -1,8 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace NuGet.Insights.Worker
 {
@@ -39,14 +39,14 @@ namespace NuGet.Insights.Worker
             return SerializeMessage((T)message);
         }
 
-        public object Deserialize(int schemaVersion, JToken data)
+        public object Deserialize(int schemaVersion, JsonElement data)
         {
             if (schemaVersion != V1)
             {
                 throw new FormatException($"The only version for schema '{Name}' supported is {V1}.");
             }
 
-            return data.ToObject<T>(NameVersionSerializer.JsonSerializer);
+            return JsonSerializer.Deserialize<T>(data, NameVersionSerializer.JsonSerializerOptions);
         }
     }
 }

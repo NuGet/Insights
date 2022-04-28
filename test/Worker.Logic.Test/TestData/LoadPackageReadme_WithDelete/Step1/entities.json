@@ -1,0 +1,95 @@
+[
+  {
+    "PartitionKey": "amazonks3",
+    "RowKey": "1.5.0",
+    "Entity": {
+      "ReadmeType": "None",
+      "CommitTimestamp": "2020-12-20T02:39:20.5757299+00:00",
+      "HttpHeaders": null,
+      "ReadmeHash": null
+    }
+  },
+  {
+    "PartitionKey": "behaviorsample",
+    "RowKey": "1.0.0",
+    "Entity": {
+      "ReadmeType": "Embedded",
+      "CommitTimestamp": "2020-12-20T02:39:03.372413+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "48"
+        ],
+        "Content-Type": [
+          "text/markdown"
+        ],
+        "ETag": [
+          "\u00221d6eaafd6ec6030\u0022"
+        ],
+        "Last-Modified": [
+          "Thu, 14 Jan 2021 20:00:00 GMT"
+        ]
+      },
+      "ReadmeHash": "ef18a07bea56d2b21f5229ee9ea06e557ccb67c4d4b3db9a7a49c122356c0c75"
+    }
+  },
+  {
+    "PartitionKey": "lunabot.commands.public",
+    "RowKey": "1.2.0",
+    "Entity": {
+      "ReadmeType": "None",
+      "CommitTimestamp": "2020-12-20T03:01:57.2082154+00:00",
+      "HttpHeaders": null,
+      "ReadmeHash": null
+    }
+  },
+  {
+    "PartitionKey": "lunabot.core",
+    "RowKey": "1.0.4",
+    "Entity": {
+      "ReadmeType": "None",
+      "CommitTimestamp": "2020-12-20T02:39:20.5757299+00:00",
+      "HttpHeaders": null,
+      "ReadmeHash": null
+    }
+  },
+  {
+    "PartitionKey": "nut.mediatr.behaviors",
+    "RowKey": "0.0.0-preview.0.44",
+    "Entity": {
+      "ReadmeType": "None",
+      "CommitTimestamp": "2020-12-20T02:37:52.9649363+00:00",
+      "HttpHeaders": null,
+      "ReadmeHash": null
+    }
+  },
+  {
+    "PartitionKey": "nut.mediatr.behaviors.fluentvalidation",
+    "RowKey": "0.0.0-preview.0.44",
+    "Entity": {
+      "ReadmeType": "None",
+      "CommitTimestamp": "2020-12-20T02:37:52.9649363+00:00",
+      "HttpHeaders": null,
+      "ReadmeHash": null
+    }
+  },
+  {
+    "PartitionKey": "nut.mediatr.servicelike.dependencyinjection",
+    "RowKey": "0.0.0-preview.0.44",
+    "Entity": {
+      "ReadmeType": "None",
+      "CommitTimestamp": "2020-12-20T02:37:52.9649363+00:00",
+      "HttpHeaders": null,
+      "ReadmeHash": null
+    }
+  },
+  {
+    "PartitionKey": "servicelikesample",
+    "RowKey": "1.0.0",
+    "Entity": {
+      "ReadmeType": "None",
+      "CommitTimestamp": "2020-12-20T02:39:37.8102297+00:00",
+      "HttpHeaders": null,
+      "ReadmeHash": null
+    }
+  }
+]

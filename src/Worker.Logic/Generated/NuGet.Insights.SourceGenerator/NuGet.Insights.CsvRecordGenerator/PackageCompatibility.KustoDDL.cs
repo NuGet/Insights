@@ -32,7 +32,9 @@ namespace NuGet.Insights
     NuspecReader: dynamic,
     NU1202: dynamic,
     NuGetGallery: dynamic,
-    NuGetGalleryEscaped: dynamic
+    NuGetGalleryEscaped: dynamic,
+    NuGetGallerySupported: dynamic,
+    NuGetGalleryBadges: dynamic
 )",
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
@@ -55,7 +57,9 @@ namespace NuGet.Insights
     '{""Column"":""NuspecReader"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":15}},'
     '{""Column"":""NU1202"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":16}},'
     '{""Column"":""NuGetGallery"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":17}},'
-    '{""Column"":""NuGetGalleryEscaped"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":18}}'
+    '{""Column"":""NuGetGalleryEscaped"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":18}},'
+    '{""Column"":""NuGetGallerySupported"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":19}},'
+    '{""Column"":""NuGetGalleryBadges"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":20}}'
 ']'",
         };
 

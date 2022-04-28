@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using NuGet.Commands;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.Protocol.Core.Types;
@@ -34,6 +35,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                 new List<GraphNode<RemoteResolveResult>>(),
                 new RemoteWalkContext(
                     new SourceCacheContext(),
+                    PackageSourceMapping.GetPackageSourceMapping(NullSettings.Instance),
                     NullLogger.Instance),
                 logger,
                 NuGetFramework.AnyFramework);

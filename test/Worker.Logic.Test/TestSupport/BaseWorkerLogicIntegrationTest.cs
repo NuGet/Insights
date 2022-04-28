@@ -4,11 +4,19 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using Azure.Data.Tables;
 using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
+using DiffPlex;
+using DiffPlex.DiffBuilder;
+using DiffPlex.DiffBuilder.Model;
 using Kusto.Data.Common;
 using Kusto.Ingest;
+using MessagePack;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -16,9 +24,13 @@ using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using Moq;
+using Newtonsoft.Json.Linq;
+using NuGet.Insights.ReferenceTracking;
+using NuGet.Insights.WideEntities;
 using NuGet.Insights.Worker.BuildVersionSet;
 using NuGet.Insights.Worker.KustoIngestion;
 using NuGet.Insights.Worker.Workflow;
+using NuGet.Versioning;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -43,34 +55,21 @@ namespace NuGet.Insights.Worker
                     It.IsAny<StorageSourceOptions>()))
                 .Returns<string, KustoIngestionProperties, StorageSourceOptions>(async (u, p, o) =>
                 {
-                    var account = CloudStorageAccount.Parse(TestSettings.StorageConnectionString);
-                    var client = account.CreateCloudTableClient();
-                    var writeTable = client.GetTableReference(StoragePrefix + "1kir1");
-                    await writeTable.CreateIfNotExistsAsync();
-                    await writeTable.ExecuteAsync(TableOperation.Insert(new IngestionStatus(o.SourceId)
-                    {
-                        Status = Status.Succeeded,
-                        UpdatedOn = DateTime.UtcNow,
-                    }));
-
-                    string sas;
-                    if (account.Credentials.IsSAS)
-                    {
-                        sas = account.Credentials.SASToken;
-                    }
-                    else
-                    {
-                        // Workaround for https://github.com/Azure/Azurite/issues/959
-                        sas = writeTable.GetSharedAccessSignature(new SharedAccessTablePolicy
-                        {
-                            Permissions = SharedAccessTablePermissions.Query,
-                            SharedAccessExpiryTime = DateTimeOffset.UtcNow.AddDays(7),
-                        });
-                    }
-
-                    var tableUri = new UriBuilder(writeTable.Uri) { Query = sas };
-                    var readTable = new CloudTable(tableUri.Uri);
-                    return new TableReportIngestionResult(readTable);
+                    return await MakeTableReportIngestionResultAsync(o, Status.Succeeded);
+                });
+            MockCslQueryProvider = new Mock<ICslQueryProvider>();
+            MockCslQueryProvider
+                .Setup(x => x.ExecuteQueryAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<ClientRequestProperties>()))
+                .ReturnsAsync(() =>
+                {
+                    var mockReader = new Mock<IDataReader>();
+                    mockReader.SetupSequence(x => x.Read()).Returns(true).Returns(false);
+                    mockReader.Setup(x => x.GetInt64(It.IsAny<int>())).Returns(0);
+                    mockReader.Setup(x => x.GetValue(It.IsAny<int>())).Returns(new JValue((object)null));
+                    return mockReader.Object;
                 });
         }
 
@@ -92,6 +91,7 @@ namespace NuGet.Insights.Worker
         public Mock<IVersionSet> MockVersionSet { get; } = new Mock<IVersionSet>();
         public Mock<ICslAdminProvider> MockCslAdminProvider { get; }
         public Mock<IKustoQueuedIngestClient> MockKustoQueueIngestClient { get; }
+        public Mock<ICslQueryProvider> MockCslQueryProvider { get; }
 
         protected override void ConfigureHostBuilder(IHostBuilder hostBuilder)
         {
@@ -106,6 +106,7 @@ namespace NuGet.Insights.Worker
 
         protected void ConfigureWorkerDefaultsAndSettings(NuGetInsightsWorkerSettings x)
         {
+            x.DisableMessageDelay = true;
             x.AppendResultStorageBucketCount = 3;
             x.KustoDatabaseName = "TestKustoDb";
 
@@ -127,10 +128,12 @@ namespace NuGet.Insights.Worker
             x.PackageAssetContainerName = $"{StoragePrefix}1fpa1";
             x.PackageAssemblyContainerName = $"{StoragePrefix}1fpi1";
             x.PackageManifestContainerName = $"{StoragePrefix}1pm2c1";
+            x.PackageReadmeContainerName = $"{StoragePrefix}1pmd2c1";
             x.PackageSignatureContainerName = $"{StoragePrefix}1fps1";
             x.CatalogLeafItemContainerName = $"{StoragePrefix}1fcli1";
             x.PackageDownloadContainerName = $"{StoragePrefix}1pd1";
             x.PackageOwnerContainerName = $"{StoragePrefix}1po1";
+            x.VerifiedPackageContainerName = $"{StoragePrefix}1vp1";
             x.PackageArchiveContainerName = $"{StoragePrefix}1pa2c1";
             x.PackageArchiveEntryContainerName = $"{StoragePrefix}1pae2c1";
             x.NuGetPackageExplorerContainerName = $"{StoragePrefix}1npe2c1";
@@ -139,6 +142,8 @@ namespace NuGet.Insights.Worker
             x.PackageVulnerabilityContainerName = $"{StoragePrefix}1pu1";
             x.PackageIconContainerName = $"{StoragePrefix}1pi1";
             x.PackageCompatibilityContainerName = $"{StoragePrefix}1pc1";
+            x.PackageCertificateContainerName = $"{StoragePrefix}1pr1";
+            x.CertificateContainerName = $"{StoragePrefix}1r1";
 
             ConfigureDefaultsAndSettings(x);
 
@@ -220,7 +225,7 @@ namespace NuGet.Insights.Worker
             });
         }
 
-        protected async Task ProcessQueueAsync(Action foundMessage, Func<Task<bool>> isCompleteAsync)
+        protected async Task ProcessQueueAsync(Action foundMessage, Func<Task<bool>> isCompleteAsync, int workerCount = 1)
         {
             var expandQueue = await WorkerQueueFactory.GetQueueAsync(QueueType.Expand);
             var workerQueue = await WorkerQueueFactory.GetQueueAsync(QueueType.Work);
@@ -245,42 +250,320 @@ namespace NuGet.Insights.Worker
             bool isComplete;
             do
             {
-                while (true)
-                {
-                    (var queueType, var queue, var message) = await ReceiveMessageAsync();
-                    if (message != null)
+                await Task.WhenAll(Enumerable
+                    .Range(0, workerCount)
+                    .Select(async x =>
                     {
-                        foundMessage();
-                        using (var scope = Host.Services.CreateScope())
+                        while (true)
                         {
-                            await ProcessMessageAsync(scope.ServiceProvider, queueType, message);
-                        }
+                            (var queueType, var queue, var message) = await ReceiveMessageAsync();
+                            if (message != null)
+                            {
+                                foundMessage();
+                                using (var scope = Host.Services.CreateScope())
+                                {
+                                    await ProcessMessageAsync(scope.ServiceProvider, queueType, message);
+                                }
 
-                        await queue.DeleteMessageAsync(message.MessageId, message.PopReceipt);
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
+                                await queue.DeleteMessageAsync(message.MessageId, message.PopReceipt);
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                    }));
 
                 isComplete = await isCompleteAsync();
             }
             while (!isComplete);
         }
 
-
         protected virtual async Task ProcessMessageAsync(IServiceProvider serviceProvider, QueueType queue, QueueMessage message)
         {
             var leaseScope = serviceProvider.GetRequiredService<TempStreamLeaseScope>();
             await using var scopeOwnership = leaseScope.TakeOwnership();
             var messageProcessor = serviceProvider.GetRequiredService<IGenericMessageProcessor>();
-            await messageProcessor.ProcessSingleAsync(QueueType.Work, message.Body.ToMemory(), message.DequeueCount);
+            await messageProcessor.ProcessSingleAsync(queue, message.Body.ToMemory(), message.DequeueCount);
         }
 
-        protected async Task AssertCompactAsync<T>(string containerName, string testName, string stepName, int bucket) where T : ICsvRecord
+        protected async Task AssertCompactAsync<T>(string containerName, string testName, string stepName, int bucket, string fileName = null) where T : ICsvRecord
         {
-            await AssertCsvBlobAsync<T>(containerName, testName, stepName, $"compact_{bucket}.csv.gz");
+            await AssertCsvBlobAsync<T>(containerName, testName, stepName, fileName, $"compact_{bucket}.csv.gz");
+        }
+
+        public async Task<IKustoIngestionResult> MakeTableReportIngestionResultAsync(StorageSourceOptions options, Status status)
+        {
+            var account = CloudStorageAccount.Parse(TestSettings.StorageConnectionString);
+            var client = account.CreateCloudTableClient();
+            var writeTable = client.GetTableReference(StoragePrefix + "1kir1");
+            await writeTable.CreateIfNotExistsAsync();
+            await writeTable.ExecuteAsync(TableOperation.Insert(new IngestionStatus(options.SourceId)
+            {
+                Status = status,
+                UpdatedOn = DateTime.UtcNow,
+            }));
+
+            string sas;
+            if (account.Credentials.IsSAS)
+            {
+                sas = account.Credentials.SASToken;
+            }
+            else
+            {
+                // Workaround for https://github.com/Azure/Azurite/issues/959
+                sas = writeTable.GetSharedAccessSignature(new SharedAccessTablePolicy
+                {
+                    Permissions = SharedAccessTablePermissions.Query,
+                    SharedAccessExpiryTime = DateTimeOffset.UtcNow.AddDays(7),
+                });
+            }
+
+            var tableUri = new UriBuilder(writeTable.Uri) { Query = sas };
+            var readTable = new CloudTable(tableUri.Uri);
+            return new TableReportIngestionResult(readTable);
+        }
+
+        protected static SortedDictionary<string, List<string>> NormalizeHeaders(ILookup<string, string> headers)
+        {
+            // These headers are unstable
+            var ignoredHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Accept-Ranges",
+                "Access-Control-Allow-Origin",
+                "Access-Control-Expose-Headers",
+                "Age",
+                "Cache-Control",
+                "Connection",
+                "Content-MD5",
+                "Date",
+                "Expires",
+                "Server",
+                "Strict-Transport-Security",
+                "X-Azure-Ref",
+                "X-Azure-Ref-OriginShield",
+                "X-Cache",
+                "X-CDN-Rewrite",
+                "X-Content-Type-Options",
+                "x-ms-lease-state",
+                "x-ms-request-id",
+                "x-ms-version",
+            };
+
+            return new SortedDictionary<string, List<string>>(headers
+                .Where(x => !ignoredHeaders.Contains(x.Key))
+                .Select(grouping =>
+                {
+                    if (grouping.Key == "ETag")
+                    {
+                        var values = new List<string>();
+                        foreach (var value in grouping)
+                        {
+                            if (!value.StartsWith("\""))
+                            {
+                                values.Add("\"" + value + "\"");
+                            }
+                            else
+                            {
+                                values.Add(value);
+                            }
+                        }
+
+                        return values.GroupBy(x => grouping.Key).Single();
+                    }
+                    else
+                    {
+                        return grouping;
+                    }
+                })
+                .ToDictionary(x => x.Key, x => x.ToList()));
+        }
+
+        protected async Task AssertEntityOutputAsync<T>(
+            TableClient table,
+            string dir,
+            Action<T> cleanEntity = null,
+            string fileName = "entities.json") where T : class, Azure.Data.Tables.ITableEntity, new()
+        {
+            var entities = await table.QueryAsync<T>().ToListAsync();
+
+            // Workaround: https://github.com/Azure/azure-sdk-for-net/issues/21023
+            var setTimestamp = typeof(T).GetProperty(nameof(Azure.Data.Tables.ITableEntity.Timestamp));
+
+            foreach (var entity in entities)
+            {
+                entity.ETag = default;
+                setTimestamp.SetValue(entity, DateTimeOffset.MinValue);
+                cleanEntity?.Invoke(entity);
+            }
+
+            var actual = SerializeTestJson(entities);
+            var testDataFile = Path.Combine(TestData, dir, fileName);
+            AssertEqualWithDiff(testDataFile, actual);
+        }
+
+        private void AssertEqualWithDiff(string expectedPath, string actual)
+        {
+            if (OverwriteTestData)
+            {
+                OverwriteTestDataAndCopyToSource(expectedPath, actual);
+            }
+
+            var expected = File.ReadAllText(expectedPath);
+
+            if (expected != actual && expected.Length > 0 && actual.Length > 0)
+            {
+                // Source: https://github.com/mmanela/diffplex/blob/2dda9db84569cf3c8413acdfc0ed440973632817/DiffPlex.ConsoleRunner/Program.cs
+                var inlineBuilder = new InlineDiffBuilder(new Differ());
+                var result = inlineBuilder.BuildDiffModel(expected, actual);
+
+                Output.WriteLine("");
+                Output.WriteLine("DIFF: ");
+                Output.WriteLine(new string('-', 80));
+
+                foreach (var line in result.Lines)
+                {
+                    switch (line.Type)
+                    {
+                        case ChangeType.Inserted:
+                            Output.WriteLine("+ " + line.Text);
+                            break;
+                        case ChangeType.Deleted:
+                            Output.WriteLine("+ " + line.Text);
+                            break;
+                        default:
+                            Output.WriteLine("  " + line.Text);
+                            break;
+                    }
+                }
+
+                Output.WriteLine(new string('-', 80));
+                Output.WriteLine("");
+            }
+
+            Assert.Equal(expected, actual);
+        }
+
+        protected void MakeDeletedPackageAvailable(string id = "BehaviorSample", string version = "1.0.0")
+        {
+            var lowerId = id.ToLowerInvariant();
+            var lowerVersion = NuGetVersion.Parse(version).ToNormalizedString().ToLowerInvariant();
+
+            HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
+            {
+                if (req.RequestUri.AbsolutePath.EndsWith($"/{lowerId}.{lowerVersion}.nupkg"))
+                {
+                    var newReq = Clone(req);
+                    newReq.RequestUri = new Uri($"http://localhost/{TestData}/{lowerId}.{lowerVersion}.nupkg.testdata");
+                    var response = await TestDataHttpClient.SendAsync(newReq);
+                    response.EnsureSuccessStatusCode();
+                    return response;
+                }
+
+                if (req.RequestUri.AbsolutePath.EndsWith($"/{lowerId}.nuspec"))
+                {
+                    var newReq = Clone(req);
+                    newReq.RequestUri = new Uri($"http://localhost/{TestData}/{lowerId}.{lowerVersion}.nuspec");
+                    var response = await TestDataHttpClient.SendAsync(newReq);
+                    response.EnsureSuccessStatusCode();
+                    return response;
+                }
+
+                if (req.RequestUri.AbsolutePath.EndsWith($"{lowerId}/{lowerVersion}/readme"))
+                {
+                    var newReq = Clone(req);
+                    newReq.RequestUri = new Uri($"http://localhost/{TestData}/{lowerId}.{lowerVersion}.md");
+                    var response = await TestDataHttpClient.SendAsync(newReq);
+                    response.EnsureSuccessStatusCode();
+                    return response;
+                }
+
+                return null;
+            };
+
+            var nupkgFile = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.nupkg.testdata"));
+            if (nupkgFile.Exists)
+            {
+                nupkgFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z");
+            }
+
+            var nuspecFile = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.nuspec"));
+            if (nuspecFile.Exists)
+            {
+                nuspecFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T19:00:00Z");
+            }
+
+            var readmeFile = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.md"));
+            if (readmeFile.Exists)
+            {
+                readmeFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T20:00:00Z");
+            }
+        }
+
+        protected async Task AssertWideEntityOutputAsync<T>(
+            string tableName,
+            string dir,
+            Func<Stream, T> deserializeEntity,
+            string fileName = "entities.json")
+        {
+            var service = Host.Services.GetRequiredService<WideEntityService>();
+
+            var wideEntities = await service.RetrieveAsync(tableName);
+            var entities = new List<(string PartitionKey, string RowKey, T Entity)>();
+            foreach (var wideEntity in wideEntities)
+            {
+                var entity = deserializeEntity(wideEntity.GetStream());
+                entities.Add((wideEntity.PartitionKey, wideEntity.RowKey, entity));
+            }
+
+            var actual = SerializeTestJson(entities.Select(x => new { x.PartitionKey, x.RowKey, x.Entity }));
+            var testDataFile = Path.Combine(TestData, dir, fileName);
+            AssertEqualWithDiff(testDataFile, actual);
+        }
+
+        protected async Task AssertOwnerToSubjectAsync<T>(
+            string testName,
+            string stepName,
+            Func<byte[], T> deserializeEntity,
+            string fileName = null)
+        {
+            var dir = Path.Combine(testName, stepName);
+
+            await AssertWideEntityOutputAsync(
+                Options.Value.OwnerToSubjectReferenceTableName,
+                dir,
+                stream =>
+                {
+                    var edges = MessagePackSerializer.Deserialize<OwnerToSubjectEdges>(stream, NuGetInsightsMessagePack.Options);
+
+                    return new
+                    {
+                        Committed = edges.Committed.Select(x =>
+                        {
+                            return new
+                            {
+                                x.PartitionKey,
+                                x.RowKey,
+                                Data = deserializeEntity(x.Data),
+                            };
+                        }),
+                        edges.ToAdd,
+                        edges.ToDelete,
+                    };
+                },
+                fileName: fileName ?? "owner-to-subject.json");
+        }
+
+        protected async Task AssertSubjectToOwnerAsync(string testName, string stepName, string fileName = null)
+        {
+            var dir = Path.Combine(testName, stepName);
+
+            var table = (await ServiceClientFactory.GetTableServiceClientAsync())
+                .GetTableClient(Options.Value.SubjectToOwnerReferenceTableName);
+            await AssertEntityOutputAsync<Azure.Data.Tables.TableEntity>(
+                table,
+                dir,
+                fileName: fileName ?? "subject-to-owner.json");
         }
 
         private class TableReportIngestionResult : IKustoIngestionResult

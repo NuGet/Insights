@@ -9,8 +9,8 @@ namespace NuGet.Insights
     {
         public DocsFactAttribute()
         {
-#if !ENABLE_NPE
-            Skip = "This Fact is skipped because ENABLE_NPE is not defined.";
+#if !ENABLE_NPE || !ENABLE_CRYPTOAPI
+            Skip = "This Fact is skipped because ENABLE_NPE or ENABLE_CRYPTOAPI is not defined.";
 #endif
         }
     }

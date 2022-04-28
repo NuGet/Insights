@@ -1,19 +1,19 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
 using NuGet.Insights.Worker.BuildVersionSet;
 
 namespace NuGet.Insights.Worker.OwnersToCsv
 {
-    public class OwnersToCsvUpdater : IAuxiliaryFileUpdater<PackageOwnerSet>
+    public class OwnersToCsvUpdater : IAuxiliaryFileUpdater<AsOfData<PackageOwner>>
     {
         private readonly PackageOwnersClient _packageOwnersClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
@@ -34,18 +34,18 @@ namespace NuGet.Insights.Worker.OwnersToCsv
         public bool AutoStart => _options.Value.AutoStartOwnersToCsv;
         public Type RecordType => typeof(PackageOwnerRecord);
 
-        public async Task<PackageOwnerSet> GetDataAsync()
+        public async Task<AsOfData<PackageOwner>> GetDataAsync()
         {
-            return await _packageOwnersClient.GetPackageOwnerSetAsync();
+            return await _packageOwnersClient.GetAsync();
         }
 
-        public async Task WriteAsync(IVersionSet versionSet, PackageOwnerSet data, StreamWriter writer)
+        public async Task WriteAsync(IVersionSet versionSet, AsOfData<PackageOwner> data, StreamWriter writer)
         {
             var record = new PackageOwnerRecord { AsOfTimestamp = data.AsOfTimestamp };
             record.WriteHeader(writer);
 
             var idToOwners = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-            await foreach (var entry in data.Owners)
+            await foreach (var entry in data.Entries)
             {
                 if (!versionSet.DidIdEverExist(entry.Id))
                 {
@@ -89,7 +89,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             {
                 record.LowerId = pair.Key.ToLowerInvariant();
                 record.Id = pair.Key;
-                record.Owners = JsonConvert.SerializeObject(pair.Value.OrderBy(x => x, StringComparer.OrdinalIgnoreCase));
+                record.Owners = JsonSerializer.Serialize(pair.Value.OrderBy(x => x, StringComparer.OrdinalIgnoreCase));
                 record.Write(writer);
             }
 

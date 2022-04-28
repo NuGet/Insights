@@ -9,14 +9,11 @@
         "Content-Length": [
           "745"
         ],
-        "Content-MD5": [
-          "5hPkqgtznBX0aPa+DbGkCg=="
-        ],
         "Content-Type": [
           "text/xml"
         ],
         "ETag": [
-          "\"0x8D8A4907FE65FDF\""
+          "\u00220x8D8A4907FE65FDF\u0022"
         ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:39:40 GMT"
@@ -51,14 +48,11 @@
         "Content-Length": [
           "1243"
         ],
-        "Content-MD5": [
-          "Ay4+y8J+kZ2qWNsa/Whrbg=="
-        ],
         "Content-Type": [
           "text/xml"
         ],
         "ETag": [
-          "\"0x8D8A493B1169DA5\""
+          "\u00220x8D8A493B1169DA5\u0022"
         ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 03:02:31 GMT"
@@ -83,14 +77,11 @@
         "Content-Length": [
           "1124"
         ],
-        "Content-MD5": [
-          "50aRPPLjy8gXb/FU80mg7A=="
-        ],
         "Content-Type": [
           "text/xml"
         ],
         "ETag": [
-          "\"0x8D8A4907FE10786\""
+          "\u00220x8D8A4907FE10786\u0022"
         ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:39:40 GMT"
@@ -115,14 +106,11 @@
         "Content-Length": [
           "1262"
         ],
-        "Content-MD5": [
-          "Ij8QMh6CCk8ftZDZwLgHTQ=="
-        ],
         "Content-Type": [
           "text/xml"
         ],
         "ETag": [
-          "\"0x8D8A4905A4EDAA9\""
+          "\u00220x8D8A4905A4EDAA9\u0022"
         ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:38:37 GMT"
@@ -147,14 +135,11 @@
         "Content-Length": [
           "1191"
         ],
-        "Content-MD5": [
-          "3yU88B5osxmpk7nKwfFoig=="
-        ],
         "Content-Type": [
           "text/xml"
         ],
         "ETag": [
-          "\"0x8D8A4905A5740E6\""
+          "\u00220x8D8A4905A5740E6\u0022"
         ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:38:37 GMT"
@@ -179,14 +164,11 @@
         "Content-Length": [
           "1275"
         ],
-        "Content-MD5": [
-          "MdrWg3wkWir4WVJrfCDeVQ=="
-        ],
         "Content-Type": [
           "text/xml"
         ],
         "ETag": [
-          "\"0x8D8A4905A427BFC\""
+          "\u00220x8D8A4905A427BFC\u0022"
         ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:38:36 GMT"

@@ -1,43 +1,43 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using Azure.Data.Tables;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace NuGet.Insights.Worker
 {
     public class TableScanMessage<T> where T : class, ITableEntity, new()
     {
-        [JsonProperty("b")]
+        [JsonPropertyName("b")]
         public DateTimeOffset Started { get; set; }
 
-        [JsonProperty("ts")]
+        [JsonPropertyName("ts")]
         public TaskStateKey TaskStateKey { get; set; }
 
-        [JsonProperty("t")]
+        [JsonPropertyName("t")]
         public TableScanDriverType DriverType { get; set; }
 
-        [JsonProperty("n")]
+        [JsonPropertyName("n")]
         public string TableName { get; set; }
 
-        [JsonProperty("s")]
+        [JsonPropertyName("s")]
         public TableScanStrategy Strategy { get; set; }
 
-        [JsonProperty("c")]
+        [JsonPropertyName("c")]
         public int TakeCount { get; set; }
 
-        [JsonProperty("p")]
+        [JsonPropertyName("p")]
         public string PartitionKeyPrefix { get; set; }
 
-        [JsonProperty("e")]
+        [JsonPropertyName("e")]
         public bool ExpandPartitionKeys { get; set; }
 
-        [JsonProperty("v")]
-        public JToken ScanParameters { get; set; }
+        [JsonPropertyName("v")]
+        public JsonElement? ScanParameters { get; set; }
 
-        [JsonProperty("d")]
-        public JToken DriverParameters { get; set; }
+        [JsonPropertyName("d")]
+        public JsonElement? DriverParameters { get; set; }
     }
 }

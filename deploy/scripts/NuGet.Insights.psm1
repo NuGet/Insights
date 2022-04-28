@@ -32,6 +32,9 @@ class ResourceSettings {
     [string]$WorkerPlanNamePrefix
     
     [ValidateNotNullOrEmpty()]
+    [string]$WorkerHostId
+    
+    [ValidateNotNullOrEmpty()]
     [string]$WorkerNamePrefix
     
     [ValidateNotNullOrEmpty()]
@@ -73,11 +76,11 @@ class ResourceSettings {
     [string]$StorageAccountName
     
     [ValidateNotNullOrEmpty()]
-    [ValidateLength(1, 24)]
-    [string]$KeyVaultName
+    [string]$StorageEndpointSuffix
     
     [ValidateNotNullOrEmpty()]
-    [string]$TableSasDefinitionName
+    [ValidateLength(1, 24)]
+    [string]$KeyVaultName
     
     [ValidateNotNullOrEmpty()]
     [string]$DeploymentContainerName
@@ -86,7 +89,7 @@ class ResourceSettings {
     [string]$LeaseContainerName
     
     [ValidateNotNullOrEmpty()]
-    [TimeSpan]$SasValidityPeriod
+    [TimeSpan]$RegenerationPeriod
     
     [ValidateNotNullOrEmpty()]
     [bool]$AutoRegenerateStorageKey
@@ -148,6 +151,7 @@ class ResourceSettings {
         Set-OrDefault WorkerNamePrefix "NuGetInsights-$StampName-Worker-"
         Set-OrDefault WorkerUserManagedIdentityName "NuGetInsights-$StampName-Worker"
         Set-OrDefault WorkerPlanNamePrefix "NuGetInsights-$StampName-WorkerPlan-"
+        Set-OrDefault WorkerHostId "NuGetInsights-$StampName"
         Set-OrDefault WorkerSku "Y1"
         Set-OrDefault WorkerMinInstances 1
         Set-OrDefault WorkerPlanCount 1
@@ -156,6 +160,7 @@ class ResourceSettings {
         Set-OrDefault WorkerLogLevel "Warning"
         Set-OrDefault ResourceGroupName "NuGet.Insights-$StampName"
         Set-OrDefault StorageAccountName "nugin$($StampName.ToLowerInvariant())"
+        Set-OrDefault StorageEndpointSuffix "core.windows.net"
         Set-OrDefault KeyVaultName "nugin$($StampName.ToLowerInvariant())"
 
         # Optional settings
@@ -165,10 +170,9 @@ class ResourceSettings {
         $this.ExistingWebsitePlanId = $d.ExistingWebsitePlanId
 
         # Static settings
-        $this.TableSasDefinitionName = "TableFullAccessSas"
         $this.DeploymentContainerName = "deployment"
         $this.LeaseContainerName = "leases"
-        $this.SasValidityPeriod = New-TimeSpan -Days 6
+        $this.RegenerationPeriod = New-TimeSpan -Days 14
 
         $isNuGetPackageExplorerToCsvEnabled = "NuGetPackageExplorerToCsv" -notin $this.WorkerConfig["NuGet.Insights"].DisabledDrivers
         $isConsumptionPlan = $this.WorkerSku -eq "Y1"
@@ -373,8 +377,50 @@ function Get-ResourceSettings($ConfigName, $StampName) {
         $WorkerConfig)
 }
 
-function New-MainParameters($ResourceSettings, $WebsiteZipUrl, $WorkerZipUrl) {
+function New-WorkerStandaloneEnv($ResourceSettings) {
+    $config = $ResourceSettings.WebsiteConfig | ConvertTo-FlatConfig
+
+    # Placeholder values will be overridden by the ARM deployment or by the installation script. 
+    $config["APPINSIGHTS_INSTRUMENTATIONKEY"] = "PLACEHOLDER";
+    $config["ASPNETCORE_URLS"] = "PLACEHOLDER";
+    $config["AzureFunctionsJobHost:Logging:Console:IsEnabled"] = "false";
+    $config["AzureFunctionsWebHost:hostId"] = $ResourceSettings.WorkerHostId;
+    $config["AzureWebJobsScriptRoot"] = "false";
+    $config["AzureWebJobsStorage:accountName"] = $ResourceSettings.StorageAccountName;
+    $config["AzureWebJobsStorage:clientId"] = "PLACEHOLDER";
+    $config["AzureWebJobsStorage:credential"] = "managedidentity";
+    $config["NuGet.Insights:LeaseContainerName"] = $ResourceSettings.LeaseContainerName;
+    $config["NuGet.Insights:StorageAccountName"] = $ResourceSettings.StorageAccountName;
+    $config["NuGet.Insights:UserManagedIdentityClientId"] = "PLACEHOLDER";
+    $config["QueueTriggerConnection:clientId"] = "PLACEHOLDER";
+    $config["QueueTriggerConnection:credential"] = "managedidentity";
+    $config["QueueTriggerConnection:queueServiceUri"] = "https://$($ResourceSettings.StorageAccountName).queue.$($ResourceSettings.StorageEndpointSuffix)/";
+    $config["WEBSITE_HOSTNAME"] = "PLACEHOLDER";
+
+    return $config
+}
+
+function Out-EnvFile() {
+    [CmdletBinding()]
+    param (
+        [Parameter(ValueFromPipeline)]
+        $InputObject,
+
+        [Parameter(Mandatory = $true)]
+        [string]$FilePath
+    )
+
+    process {
+        ($InputObject.GetEnumerator() | `
+            ForEach-Object { "$($_.Key)=$($_.Value)" }) `
+            -Join [Environment]::NewLine | `
+            Out-File -FilePath $FilePath
+    }
+}
+
+function New-MainParameters($ResourceSettings, $WebsiteZipUrl, $WorkerZipUrl, $DeploymentLabel) {
     $parameters = @{
+        deploymentLabel               = $DeploymentLabel;
         appInsightsName               = $ResourceSettings.AppInsightsName;
         appInsightsDailyCapGb         = $ResourceSettings.AppInsightsDailyCapGb;
         actionGroupName               = $ResourceSettings.ActionGroupName;
@@ -385,7 +431,6 @@ function New-MainParameters($ResourceSettings, $WebsiteZipUrl, $WorkerZipUrl) {
         keyVaultName                  = $ResourceSettings.KeyVaultName;
         deploymentContainerName       = $ResourceSettings.DeploymentContainerName;
         leaseContainerName            = $ResourceSettings.LeaseContainerName;
-        tableSasDefinitionName        = $ResourceSettings.TableSasDefinitionName;
         websiteName                   = $ResourceSettings.WebsiteName;
         websiteAadClientId            = $ResourceSettings.WebsiteAadAppClientId;
         websiteConfig                 = @($ResourceSettings.WebsiteConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
@@ -393,6 +438,7 @@ function New-MainParameters($ResourceSettings, $WebsiteZipUrl, $WorkerZipUrl) {
         workerPlanNamePrefix          = $ResourceSettings.WorkerPlanNamePrefix;
         workerUserManagedIdentityName = $ResourceSettings.WorkerUserManagedIdentityName;
         workerNamePrefix              = $ResourceSettings.WorkerNamePrefix;
+        workerHostId                  = $ResourceSettings.WorkerHostId;
         workerPlanCount               = $ResourceSettings.WorkerPlanCount;
         workerPlanLocations           = $ResourceSettings.WorkerPlanLocations;
         workerCountPerPlan            = $ResourceSettings.WorkerCountPerPlan;
@@ -442,12 +488,30 @@ function New-ParameterFile($Parameters, $PathReferences, $FilePath) {
     $deploymentParameters | ConvertTo-Json -Depth 100 | Out-File $FilePath -Encoding UTF8
 }
 
-function New-Deployment($ResourceGroupName, $DeploymentDir, $DeploymentId, $DeploymentName, $BicepPath, $Parameters) {
+function Get-Bicep([switch]$DoNotThrow) {
+    if (Get-Command bicep -CommandType Application -ErrorAction Ignore) {
+        $bicepExe = "bicep"
+        $bicepArgs = @("build")
+    }
+    elseif (Get-Command az -CommandType Application -ErrorAction Ignore) {
+        $bicepExe = "az"
+        $bicepArgs = @("bicep", "build", "--file")
+    }
+    elseif (!$DoNotThrow) {
+        throw "Neither 'bicep' or 'az' (for 'az bicep') commands could be found. Installation instructions: https://docs.microsoft.com/azure/azure-resource-manager/bicep/install"
+    }
+
+    return $bicepExe, $bicepArgs
+}
+
+function New-Deployment($ResourceGroupName, $DeploymentDir, $DeploymentLabel, $DeploymentName, $BicepPath, $Parameters) {
     $parametersPath = Join-Path $DeploymentDir "$DeploymentName.deploymentParameters.json"
     New-ParameterFile $Parameters @() $parametersPath
 
-    $templatePath = (Join-Path $DeploymentDir "$DeploymentName.deploymentTemplate.json")
-    bicep build (Join-Path $PSScriptRoot $BicepPath) --outfile $templatePath
+    $bicepPath = Join-Path $PSScriptRoot $BicepPath
+    $templatePath = Join-Path $DeploymentDir "$DeploymentName.deploymentTemplate.json"
+    $bicepExe, $bicepArgs = Get-Bicep
+    & $bicepExe @bicepArgs $bicepPath --outfile $templatePath
     if ($LASTEXITCODE -ne 0) {
         throw "Command 'bicep build' failed with exit code $LASTEXITCODE."
     }
@@ -455,7 +519,7 @@ function New-Deployment($ResourceGroupName, $DeploymentDir, $DeploymentId, $Depl
     return New-AzResourceGroupDeployment `
         -TemplateFile $templatePath `
         -ResourceGroupName $ResourceGroupName `
-        -Name "$DeploymentId-$DeploymentName" `
+        -Name "$DeploymentLabel-$DeploymentName" `
         -TemplateParameterFile $parametersPath `
         -ErrorAction Stop
 }
@@ -487,10 +551,10 @@ function Approve-SubscriptionId($configuredSubscriptionId) {
     Write-Status "Using subscription: $($context.Subscription.Id)"
 }
 
-function Get-DeploymentLocals($DeploymentId, $DeploymentDir) {
-    if (!$DeploymentId) {
-        $DeploymentId = (Get-Date).ToUniversalTime().ToString("yyyyMMddHHmmss")
-        Write-Status "Using deployment ID: $DeploymentId"
+function Get-DeploymentLocals($DeploymentLabel, $DeploymentDir) {
+    if (!$DeploymentLabel) {
+        $DeploymentLabel = (Get-Date).ToUniversalTime().ToString("yyyyMMddHHmmss")
+        Write-Status "Using deployment label: $DeploymentLabel"
     }
 
     if (!$DeploymentDir) {
@@ -498,7 +562,7 @@ function Get-DeploymentLocals($DeploymentId, $DeploymentDir) {
         Write-Status "Using deployment directory: $DeploymentDir"
     }
 
-    return $DeploymentId, $DeploymentDir
+    return $DeploymentLabel, $DeploymentDir
 }
 
 # Source: https://stackoverflow.com/a/57599481

@@ -19,17 +19,19 @@ namespace NuGet.Insights
             FlatContainerBaseUrlOverride = null;
             DownloadsV1Url = null;
             OwnersV2Url = null;
+            VerifiedPackagesV1Url = null;
+            LegacyReadmeUrlPattern = null;
             StorageAccountName = null;
             StorageBlobReadSharedAccessSignature = null;
-            KeyVaultName = null;
-            TableSharedAccessSignatureSecretName = null;
             StorageConnectionString = StorageUtility.EmulatorConnectionString;
             LeaseContainerName = "leases";
             PackageArchiveTableName = "packagearchives";
             PackageManifestTableName = "packagemanifests";
+            PackageReadmeTableName = "packagereadmes";
             PackageHashesTableName = "packagehashes";
             TimerTableName = "timers";
-            IsStorageContainerPublic = false;
+            OwnerToSubjectReferenceTableName = "refsownertosubject";
+            SubjectToOwnerReferenceTableName = "refssubjecttoowner";
             MaxTempMemoryStreamSize = 1024 * 1024 * 196;
             UserManagedIdentityClientId = null;
             TempDirectories = new List<TempStreamDirectory>
@@ -45,19 +47,21 @@ namespace NuGet.Insights
         public string FlatContainerBaseUrlOverride { get; set; }
         public string DownloadsV1Url { get; set; }
         public string OwnersV2Url { get; set; }
+        public string VerifiedPackagesV1Url { get; set; }
+        public string LegacyReadmeUrlPattern { get; set; }
 
         public string StorageAccountName { get; set; }
         public string StorageBlobReadSharedAccessSignature { get; set; }
-        public string KeyVaultName { get; set; }
-        public string TableSharedAccessSignatureSecretName { get; set; }
         public string StorageConnectionString { get; set; }
 
         public string LeaseContainerName { get; set; }
         public string PackageArchiveTableName { get; set; }
         public string PackageManifestTableName { get; set; }
+        public string PackageReadmeTableName { get; set; }
         public string PackageHashesTableName { get; set; }
         public string TimerTableName { get; set; }
-        public bool IsStorageContainerPublic { get; set; }
+        public string OwnerToSubjectReferenceTableName { get; set; }
+        public string SubjectToOwnerReferenceTableName { get; set; }
         public int MaxTempMemoryStreamSize { get; set; }
         public string UserManagedIdentityClientId { get; set; }
         public List<TempStreamDirectory> TempDirectories { get; set; }

@@ -1,6 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,6 +11,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NuGet.Protocol;
 using NuGet.Versioning;
+
+#nullable enable
 
 namespace NuGet.Insights
 {
@@ -67,26 +72,45 @@ namespace NuGet.Insights
             return url;
         }
 
-        public async Task<TempStreamResult> DownloadPackageContentToFileAsync(string id, string version, CancellationToken token)
+        public async Task<string> GetPackageReadmeUrlAsync(string id, string version)
         {
-            var url = await GetPackageContentUrlAsync(id, version);
-            (_, var result) = await DownloadUrlToFileAsync(url, token);
-            return result;
+            var baseUrl = await GetBaseUrlAsync();
+            return GetPackageReadmeUrl(baseUrl, id, version);
         }
 
-        public async Task<(string ContentType, TempStreamResult Result)> DownloadPackageIconToFileAsync(string id, string version, CancellationToken token)
+        public string GetPackageReadmeUrl(string baseUrl, string id, string version)
         {
-            var url = await GetPackageIconUrlAsync(id, version);
+            var lowerId = id.ToLowerInvariant();
+            var lowerVersion = NuGetVersion.Parse(version).ToNormalizedString().ToLowerInvariant();
+            var url = $"{baseUrl.TrimEnd('/')}/{lowerId}/{lowerVersion}/readme";
+            return url;
+        }
+
+        public async Task<(ILookup<string, string> Headers, TempStreamResult Body)?> DownloadPackageContentToFileAsync(string id, string version, CancellationToken token)
+        {
+            var url = await GetPackageContentUrlAsync(id, version);
             return await DownloadUrlToFileAsync(url, token);
         }
 
-        private async Task<(string, TempStreamResult)> DownloadUrlToFileAsync(string url, CancellationToken token)
+        public async Task<(string? ContentType, TempStreamResult Body)?> DownloadPackageIconToFileAsync(string id, string version, CancellationToken token)
+        {
+            var url = await GetPackageIconUrlAsync(id, version);
+            var result = await DownloadUrlToFileAsync(url, token);
+            if (result is null)
+            {
+                return null;
+            }
+
+            return (result.Value.Headers["Content-Type"].FirstOrDefault(), result.Value.Body);
+        }
+
+        private async Task<(ILookup<string, string> Headers, TempStreamResult Body)?> DownloadUrlToFileAsync(string url, CancellationToken token)
         {
             var nuGetLogger = _logger.ToNuGetLogger();
             var writer = _tempStreamService.GetWriter();
 
-            string contentType = null;
-            TempStreamResult result = null;
+            ILookup<string, string>? headers = null;
+            TempStreamResult? result = null;
             try
             {
                 do
@@ -101,7 +125,18 @@ namespace NuGet.Insights
                             }
 
                             response.EnsureSuccessStatusCode();
-                            contentType = response.Content.Headers.ContentType?.ToString();
+
+                            headers = Enumerable.Empty<KeyValuePair<string, IEnumerable<string>>>()
+                                .Concat(response.Headers)
+                                .Concat(response.Content.Headers)
+                                .SelectMany(x => x.Value.Select(y => new { x.Key, Value = y }))
+                                .ToLookup(x => x.Key, x => x.Value, StringComparer.OrdinalIgnoreCase);
+
+                            if (response.Content.Headers.ContentLength is null)
+                            {
+                                throw new InvalidOperationException($"No Content-Length header was returned for package URL: {url}");
+                            }
+
                             using var networkStream = await response.Content.ReadAsStreamAsync();
                             return await writer.CopyToTempStreamAsync(
                                 networkStream,
@@ -113,12 +148,12 @@ namespace NuGet.Insights
 
                     if (result == null)
                     {
-                        return (contentType, null);
+                        return null;
                     }
                 }
                 while (result.Type == TempStreamResultType.NeedNewStream);
 
-                return (contentType, result);
+                return (headers!, result);
             }
             catch
             {
@@ -186,7 +221,7 @@ namespace NuGet.Insights
             return index.Versions.Contains(lowerVersion);
         }
 
-        public async Task<FlatContainerIndex> GetIndexAsync(string baseUrl, string id)
+        public async Task<FlatContainerIndex?> GetIndexAsync(string baseUrl, string id)
         {
             var lowerId = id.ToLowerInvariant();
             var packageUrl = $"{baseUrl.TrimEnd('/')}/{lowerId}/index.json";

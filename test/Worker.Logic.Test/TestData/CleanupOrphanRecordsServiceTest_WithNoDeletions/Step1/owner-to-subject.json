@@ -1,0 +1,92 @@
+[
+  {
+    "PartitionKey": "O$Owner0$S",
+    "RowKey": "",
+    "Entity": {
+      "Committed": [
+        {
+          "PartitionKey": "0",
+          "RowKey": "Subject0",
+          "Data": "U3ViamVjdDA="
+        },
+        {
+          "PartitionKey": "1",
+          "RowKey": "Subject1",
+          "Data": "U3ViamVjdDE="
+        },
+        {
+          "PartitionKey": "2",
+          "RowKey": "Subject2",
+          "Data": "U3ViamVjdDI="
+        },
+        {
+          "PartitionKey": "3",
+          "RowKey": "Subject3",
+          "Data": "U3ViamVjdDM="
+        }
+      ],
+      "ToAdd": [],
+      "ToDelete": []
+    }
+  },
+  {
+    "PartitionKey": "O$Owner1$S",
+    "RowKey": "",
+    "Entity": {
+      "Committed": [
+        {
+          "PartitionKey": "3",
+          "RowKey": "Subject3",
+          "Data": "U3ViamVjdDM="
+        },
+        {
+          "PartitionKey": "4",
+          "RowKey": "Subject4",
+          "Data": "U3ViamVjdDQ="
+        },
+        {
+          "PartitionKey": "5",
+          "RowKey": "Subject5",
+          "Data": "U3ViamVjdDU="
+        },
+        {
+          "PartitionKey": "6",
+          "RowKey": "Subject6",
+          "Data": "U3ViamVjdDY="
+        }
+      ],
+      "ToAdd": [],
+      "ToDelete": []
+    }
+  },
+  {
+    "PartitionKey": "O$Owner2$S",
+    "RowKey": "",
+    "Entity": {
+      "Committed": [
+        {
+          "PartitionKey": "6",
+          "RowKey": "Subject6",
+          "Data": "U3ViamVjdDY="
+        },
+        {
+          "PartitionKey": "7",
+          "RowKey": "Subject7",
+          "Data": "U3ViamVjdDc="
+        },
+        {
+          "PartitionKey": "8",
+          "RowKey": "Subject8",
+          "Data": "U3ViamVjdDg="
+        },
+        {
+          "PartitionKey": "9",
+          "RowKey": "Subject9",
+          "Data": "U3ViamVjdDk="
+        }
+      ],
+      "ToAdd": [],
+      "ToDelete": []
+    }
+  }
+]

@@ -3,12 +3,18 @@
 
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Identity;
 
 namespace NuGet.Insights
 {
     public static class ByteArrayExtensions
     {
-        public static string ToHex(this byte[] bytes)
+        public static string ToUpperHex(this byte[] bytes)
+        {
+            return BitConverter.ToString(bytes).Replace("-", string.Empty).ToUpperInvariant();
+        }
+
+        public static string ToLowerHex(this byte[] bytes)
         {
             return BitConverter.ToString(bytes).Replace("-", string.Empty).ToLowerInvariant();
         }

@@ -9,16 +9,18 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Core.Pipeline;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+using Microsoft.Extensions.Options;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -39,6 +41,7 @@ namespace NuGet.Insights
         public const string TestData = "TestData";
         public const string Step1 = "Step1";
         public const string Step2 = "Step2";
+        public const string Step3 = "Step3";
 
         /// <summary>
         /// This should only be on when generating new test data locally. It should never be checked in as true.
@@ -77,12 +80,12 @@ namespace NuGet.Insights
 
                     serviceCollection.AddSingleton((INuGetInsightsHttpMessageHandlerFactory)HttpMessageHandlerFactory);
 
-                    serviceCollection.AddTransient(s => output.GetTelemetryClient());
+                    serviceCollection.AddTransient<ITelemetryClient>(s => new LoggerTelemetryClient(s.GetRequiredService<ILogger<LoggerTelemetryClient>>()));
 
                     serviceCollection.AddLogging(o =>
                     {
                         o.SetMinimumLevel(LogLevel.Trace);
-                        o.AddProvider(new XunitLoggerProvider(output, LogLevel.Trace, LogLevelToCount, FailFastLogLevel));
+                        o.AddProvider(new XunitLoggerProvider(output, LogLevel.Trace, LogLevelToCount, FailFastLogLevel, LogMessages));
                     });
 
                     serviceCollection.Configure((Action<NuGetInsightsSettings>)ConfigureDefaultsAndSettings);
@@ -108,7 +111,10 @@ namespace NuGet.Insights
             x.LeaseContainerName = $"{StoragePrefix}1l1";
             x.PackageArchiveTableName = $"{StoragePrefix}1pa1";
             x.PackageManifestTableName = $"{StoragePrefix}1pm1";
+            x.PackageReadmeTableName = $"{StoragePrefix}1prm1";
             x.PackageHashesTableName = $"{StoragePrefix}1ph1";
+            x.OwnerToSubjectReferenceTableName = $"{StoragePrefix}1ro2s1";
+            x.SubjectToOwnerReferenceTableName = $"{StoragePrefix}1rs2o1";
             x.TimerTableName = $"{StoragePrefix}1t1";
 
             if (ConfigureSettings != null)
@@ -146,6 +152,7 @@ namespace NuGet.Insights
         public ServiceClientFactory ServiceClientFactory => Host.Services.GetRequiredService<ServiceClientFactory>();
         public ITelemetryClient TelemetryClient => Host.Services.GetRequiredService<ITelemetryClient>();
         public ILogger Logger => Host.Services.GetRequiredService<ILogger<BaseLogicIntegrationTest>>();
+        public ConcurrentQueue<string> LogMessages { get; } = new ConcurrentQueue<string>();
 
         protected async Task AssertBlobCountAsync(string containerName, int expected)
         {
@@ -153,11 +160,6 @@ namespace NuGet.Insights
             var container = client.GetBlobContainerClient(containerName);
             var blobs = await container.GetBlobsAsync().ToListAsync();
             Assert.Equal(expected, blobs.Count);
-        }
-
-        protected async Task AssertCsvBlobAsync<T>(string containerName, string testName, string stepName, string blobName) where T : ICsvRecord
-        {
-            await AssertCsvBlobAsync<T>(containerName, testName, stepName, fileName: null, blobName);
         }
 
         protected async Task AssertCsvBlobAsync<T>(string containerName, string testName, string stepName, string fileName, string blobName) where T : ICsvRecord
@@ -300,21 +302,16 @@ namespace NuGet.Insights
 
         public static string SerializeTestJson(object obj)
         {
-            var serializer = new JsonSerializer
+            var json = JsonSerializer.Serialize(obj, new JsonSerializerOptions
             {
-                NullValueHandling = NullValueHandling.Include,
-                Formatting = Formatting.Indented,
+                WriteIndented = true,
                 Converters =
                 {
-                    new StringEnumConverter(),
-                }
-            };
-            var stringWriter = new StringWriter { NewLine = "\n" };
-            using (var jsonWriter = new JsonTextWriter(stringWriter))
-            {
-                serializer.Serialize(jsonWriter, obj);
-            }
-            return stringWriter.ToString();
+                    new JsonStringEnumConverter(),
+                },
+            });
+
+            return json.Replace("\r\n", "\n");
         }
 
         public static HttpRequestMessage Clone(HttpRequestMessage req)
@@ -333,21 +330,25 @@ namespace NuGet.Insights
             return clone;
         }
 
+        public delegate Task<HttpResponseMessage> GetResponseAsync(CancellationToken token);
+        public delegate Task<HttpResponseMessage> SendMessageAsync(HttpRequestMessage request, CancellationToken token);
+        public delegate Task<HttpResponseMessage> SendMessageWithBaseAsync(HttpRequestMessage request, SendMessageAsync baseSendAsync, CancellationToken token);
+
         public class TestHttpMessageHandlerFactory : INuGetInsightsHttpMessageHandlerFactory
         {
-            public Func<HttpRequestMessage, Task<HttpResponseMessage>> OnSendAsync { get; set; }
+            public SendMessageWithBaseAsync OnSendAsync { get; set; }
 
             public ConcurrentQueue<HttpRequestMessage> Requests { get; } = new ConcurrentQueue<HttpRequestMessage>();
 
             public DelegatingHandler Create()
             {
-                return new TestHttpMessageHandler(async req =>
+                return new TestHttpMessageHandler(async (req, baseSendAsync, token) =>
                 {
                     Requests.Enqueue(req);
 
                     if (OnSendAsync != null)
                     {
-                        return await OnSendAsync(req);
+                        return await OnSendAsync(req, baseSendAsync, token);
                     }
 
                     return null;
@@ -357,22 +358,43 @@ namespace NuGet.Insights
 
         public class TestHttpMessageHandler : DelegatingHandler
         {
-            private readonly Func<HttpRequestMessage, Task<HttpResponseMessage>> _onSendAsync;
+            private readonly SendMessageWithBaseAsync _onSendAsync;
 
-            public TestHttpMessageHandler(Func<HttpRequestMessage, Task<HttpResponseMessage>> onSendAsync)
+            public TestHttpMessageHandler(SendMessageWithBaseAsync onSendAsync)
             {
                 _onSendAsync = onSendAsync;
             }
 
-            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken token)
             {
-                var response = await _onSendAsync(request);
+                var response = await _onSendAsync(request, base.SendAsync, token);
                 if (response != null)
                 {
                     return response;
                 }
 
-                return await base.SendAsync(request, cancellationToken);
+                return await base.SendAsync(request, token);
+            }
+        }
+
+        public class TestServiceClientFactory : ServiceClientFactory
+        {
+            public TestServiceClientFactory(
+                HttpClientHandler httpClientHandler,
+                IOptions<NuGetInsightsSettings> options,
+                ILogger<ServiceClientFactory> logger) : base(options, logger)
+            {
+                HttpClientHandler = httpClientHandler;
+            }
+
+            public HttpClientHandler HttpClientHandler { get; }
+            public TestHttpMessageHandlerFactory HandlerFactory { get; } = new TestHttpMessageHandlerFactory();
+
+            protected override HttpPipelineTransport GetHttpPipelineTransport()
+            {
+                var testHandler = HandlerFactory.Create();
+                testHandler.InnerHandler = HttpClientHandler;
+                return new HttpClientTransport(testHandler);
             }
         }
     }

@@ -1,0 +1,6 @@
+[
+  "Microsoft.Extensions.Logging",
+  "Knapcode.TorSharp",
+  "Knapcode.KitchenSink",
+  "Newtonsoft.Json"
+]

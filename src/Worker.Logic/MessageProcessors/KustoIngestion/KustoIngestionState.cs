@@ -7,8 +7,10 @@ namespace NuGet.Insights.Worker.KustoIngestion
     {
         Created,
         Expanding,
+        Retrying,
         Enqueuing,
         Working,
+        Validating,
         SwappingTables,
         DroppingOldTables,
         Finalizing,

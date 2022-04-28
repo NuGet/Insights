@@ -21,13 +21,15 @@
     "AlertPrefix": "[Insights] ",
     "KeyVaultName": "ev2-dev-usnc-insights",
     "ResourceGroupName": "ev2-dev-usnc-insights",
-    "StorageAccountName": "jverdevusncinsights",
+    "StorageAccountName": "ev2devusncinsights",
+    "StorageEndpointSuffix": "core.windows.net",
     "WebsiteAadAppName": "ev2-dev-insights",
     "WebsiteAadAppClientId": "00000000-0000-0000-0000-000000000000",
     "WebsiteName": "ev2-dev-usnc-insights",
     "WebsitePlanName": "ev2-dev-usnc-insights",
     "WorkerNamePrefix": "ev2-dev-usnc-insights-worker-",
     "WorkerPlanNamePrefix": "ev2-dev-usnc-insights-worker-",
+    "WorkerHostId": "ev2-dev-usnc-insights",
     "WorkerUserManagedIdentityName": "ev2-dev-usnc-insights-worker"
   },
   "AppSettings": {

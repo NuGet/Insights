@@ -14,7 +14,7 @@
     "PartitionKey": "amazonks3",
     "RowKey": "1.5.0",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Prefix": null,
@@ -31,7 +31,7 @@
     "PartitionKey": "behaviorsample",
     "RowKey": "1.0.0",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Prefix": null,
@@ -48,7 +48,7 @@
     "PartitionKey": "lunabot.commands.public",
     "RowKey": "1.2.0",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Prefix": null,
@@ -65,7 +65,7 @@
     "PartitionKey": "lunabot.core",
     "RowKey": "1.0.4",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Prefix": null,
@@ -82,7 +82,7 @@
     "PartitionKey": "nut.mediatr.behaviors",
     "RowKey": "0.0.0-preview.0.44",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Prefix": null,
@@ -99,7 +99,7 @@
     "PartitionKey": "nut.mediatr.behaviors.fluentvalidation",
     "RowKey": "0.0.0-preview.0.44",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Prefix": null,
@@ -116,7 +116,7 @@
     "PartitionKey": "nut.mediatr.servicelike.dependencyinjection",
     "RowKey": "0.0.0-preview.0.44",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   },
   {
     "Prefix": null,
@@ -133,6 +133,6 @@
     "PartitionKey": "servicelikesample",
     "RowKey": "1.0.0",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": {}
+    "ETag": null
   }
 ]

@@ -1,11 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
-using Newtonsoft.Json.Linq;
 
 namespace NuGet.Insights.Worker.TableCopy
 {
@@ -27,7 +27,7 @@ namespace NuGet.Insights.Worker.TableCopy
 
         public IList<string> SelectColumns => StorageUtility.MinSelectColumns;
 
-        public async Task InitializeAsync(JToken parameters)
+        public async Task InitializeAsync(JsonElement? parameters)
         {
             var deserializedParameters = DeserializeParameters(parameters);
 
@@ -37,7 +37,7 @@ namespace NuGet.Insights.Worker.TableCopy
             await table.CreateIfNotExistsAsync(retry: true);
         }
 
-        public async Task ProcessEntitySegmentAsync(string tableName, JToken parameters, IReadOnlyList<T> entities)
+        public async Task ProcessEntitySegmentAsync(string tableName, JsonElement? parameters, IReadOnlyList<T> entities)
         {
             var deserializedParameters = DeserializeParameters(parameters);
 
@@ -82,9 +82,9 @@ namespace NuGet.Insights.Worker.TableCopy
                 });
         }
 
-        private TableCopyParameters DeserializeParameters(JToken parameters)
+        private TableCopyParameters DeserializeParameters(JsonElement? parameters)
         {
-            return (TableCopyParameters)_serializer.Deserialize(parameters).Data;
+            return (TableCopyParameters)_serializer.Deserialize(parameters.Value).Data;
         }
     }
 }

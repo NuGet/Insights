@@ -1,13 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace NuGet.Insights
 {
-    public abstract class BaseCatalogLeafConverter : JsonConverter
+    public abstract class BaseCatalogLeafConverter : JsonConverter<CatalogLeafType>
     {
         private readonly IReadOnlyDictionary<CatalogLeafType, string> _fromType;
 
@@ -16,16 +17,11 @@ namespace NuGet.Insights
             _fromType = fromType;
         }
 
-        public override bool CanConvert(Type objectType)
+        public override void Write(Utf8JsonWriter writer, CatalogLeafType value, JsonSerializerOptions options)
         {
-            return objectType == typeof(CatalogLeafType);
-        }
-
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            if (_fromType.TryGetValue((CatalogLeafType)value, out var output))
+            if (_fromType.TryGetValue(value, out var output))
             {
-                writer.WriteValue(output);
+                writer.WriteStringValue(output);
                 return;
             }
 

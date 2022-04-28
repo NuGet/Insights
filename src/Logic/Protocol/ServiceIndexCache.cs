@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+
+#nullable enable
 
 namespace NuGet.Insights
 {
@@ -51,7 +53,13 @@ namespace NuGet.Insights
         public async Task<string> GetUrlAsync(string type)
         {
             var urls = await GetUrlsAsync(type);
-            return urls.FirstOrDefault();
+            var url = urls.FirstOrDefault();
+            if (url is null)
+            {
+                throw new InvalidOperationException($"No URL was found in the service index for type '{type}'.");
+            }
+
+            return url;
         }
     }
 }
