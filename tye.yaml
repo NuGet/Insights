@@ -7,9 +7,7 @@ services:
   - name: worker
     azureFunction: src/Worker/
   - name: storage
-    # Patched version of Azurite while blocking issues exist.
-    # Tracking issue: https://github.com/NuGet/Insights/issues/30
-    image: ghcr.io/joelverhagen/azurite:edge
+    image: mcr.microsoft.com/azure-storage/azurite:latest
     volumes:
       - target: /data
         source: ./azurite/
