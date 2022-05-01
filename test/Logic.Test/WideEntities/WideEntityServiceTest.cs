@@ -72,10 +72,7 @@ namespace NuGet.Insights.WideEntities
                 Assert.Empty(retrieved);
             }
 
-            /// <summary>
-            /// This test fails on Azurite due to https://github.com/Azure/Azurite/issues/1319.
-            /// </summary>
-            [StorageTypeFact(StorageType.Azure | StorageType.LegacyEmulator)]
+            [Fact]
             public async Task FailsWhenCannotSplitBatch()
             {
                 // Arrange
