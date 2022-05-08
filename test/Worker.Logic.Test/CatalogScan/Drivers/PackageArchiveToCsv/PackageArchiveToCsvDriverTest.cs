@@ -63,7 +63,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             Assert.Empty(Assert.Single(output.Value.Sets1).Records);
             Assert.Empty(Assert.Single(output.Value.Sets2).Records);
-            Assert.Contains("Metric emitted: PackageFileService.GetInfoAsync.NotFound NuGet.Platform 1.0.0 DefaultMiniZip = 1", LogMessages);
+            Assert.Contains("Metric emitted: FileDownloader.GetZipDirectoryReaderAsync.NotFound NuGet.Platform 1.0.0 Nupkg DefaultMiniZip = 1", LogMessages);
         }
 
         [Fact]

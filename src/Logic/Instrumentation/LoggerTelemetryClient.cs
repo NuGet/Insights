@@ -37,6 +37,11 @@ namespace NuGet.Insights
             return new LoggerMetric(metricId, new[] { dimension1Name, dimension2Name, dimension3Name }, _logger);
         }
 
+        public IMetric GetMetric(string metricId, string dimension1Name, string dimension2Name, string dimension3Name, string dimension4Name)
+        {
+            return new LoggerMetric(metricId, new[] { dimension1Name, dimension2Name, dimension3Name, dimension4Name }, _logger);
+        }
+
         public void TrackMetric(string name, double value, IDictionary<string, string> properties)
         {
             _logger.LogInformation("Metric emitted: {MetricName} = {MetricValue} with properties {Properties}", name, value, JsonSerializer.Serialize(properties));

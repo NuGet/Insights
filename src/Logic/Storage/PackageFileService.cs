@@ -3,17 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Security.Cryptography.Pkcs;
-using System.Threading;
 using System.Threading.Tasks;
 using Knapcode.MiniZip;
 using MessagePack;
-using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Toolkit.HighPerformance;
 using NuGet.Packaging.Signing;
@@ -26,28 +21,22 @@ namespace NuGet.Insights
     {
         private readonly PackageWideEntityService _wideEntityService;
         private readonly FlatContainerClient _flatContainerClient;
-        private readonly HttpZipProvider _httpZipProvider;
+        private readonly FileDownloader _fileDownloader;
         private readonly MZipFormat _mzipFormat;
-        private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<NuGetInsightsSettings> _options;
-        private readonly ILogger<PackageFileService> _logger;
 
         public PackageFileService(
             PackageWideEntityService wideEntityService,
             FlatContainerClient flatContainerClient,
-            HttpZipProvider httpZipProvider,
+            FileDownloader fileDownloader,
             MZipFormat mzipFormat,
-            ITelemetryClient telemetryClient,
-            IOptions<NuGetInsightsSettings> options,
-            ILogger<PackageFileService> logger)
+            IOptions<NuGetInsightsSettings> options)
         {
             _wideEntityService = wideEntityService;
             _flatContainerClient = flatContainerClient;
-            _httpZipProvider = httpZipProvider;
+            _fileDownloader = fileDownloader;
             _mzipFormat = mzipFormat;
-            _telemetryClient = telemetryClient;
             _options = options;
-            _logger = logger;
         }
 
         public async Task InitializeAsync()
@@ -110,97 +99,25 @@ namespace NuGet.Insights
 
         private async Task<PackageFileInfoV1> GetInfoAsync(ICatalogLeafItem leafItem)
         {
-            return await GetInfoAsync(leafItem, GetInfoMode.DefaultMiniZip);
-        }
-
-        private enum GetInfoMode
-        {
-            DefaultMiniZip,
-            CacheBustMiniZip,
-            FullDownload,
-        }
-
-        private async Task<PackageFileInfoV1> GetInfoAsync(ICatalogLeafItem leafItem, GetInfoMode mode)
-        {
             if (leafItem.Type == CatalogLeafType.PackageDelete)
             {
                 return MakeDeletedInfo(leafItem);
             }
 
-            var metric = _telemetryClient.GetMetric($"{nameof(PackageFileService)}.{nameof(GetInfoAsync)}.DurationMs");
-            var sw = Stopwatch.StartNew();
+            var url = await _flatContainerClient.GetPackageContentUrlAsync(leafItem.PackageId, leafItem.PackageVersion);
 
-            var notFoundMetric = _telemetryClient.GetMetric(
-                $"{nameof(PackageFileService)}.{nameof(GetInfoAsync)}.NotFound",
-                "PackageId",
-                "PackageVersion",
-                "Mode");
+            using var reader = await _fileDownloader.GetZipDirectoryReaderAsync(
+                leafItem.PackageId,
+                leafItem.PackageVersion,
+                ArtifactFileType.Nupkg,
+                url);
 
-            try
+            if (reader is null)
             {
-
-                if (mode == GetInfoMode.DefaultMiniZip || mode == GetInfoMode.CacheBustMiniZip)
-                {
-                    var url = await _flatContainerClient.GetPackageContentUrlAsync(leafItem.PackageId, leafItem.PackageVersion);
-
-                    // I've noticed cases where NuGet.org CDN caches a request with a specific If-* condition header in the
-                    // request. When subsequent requests come with a different If-* condition header, Blob Storage errors out
-                    // with an HTTP 400 and a "MultipleConditionHeadersNotSupported" error code. This seems like a bug in the
-                    // NuGet CDN, where a "Vary: If-Match" or similar is missing.
-                    if (mode == GetInfoMode.CacheBustMiniZip)
-                    {
-                        url = QueryHelpers.AddQueryString(url, "cache-bust", Guid.NewGuid().ToString());
-                    }
-
-                    try
-                    {
-                        using var reader = await _httpZipProvider.GetReaderAsync(new Uri(url));
-                        return await GetInfoAsync(leafItem, reader.Properties, reader);
-                    }
-                    catch (MiniZipHttpException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
-                    {
-                        notFoundMetric.TrackValue(1, leafItem.PackageId, leafItem.PackageVersion, mode.ToString());
-                        return MakeDeletedInfo(leafItem);
-                    }
-                    catch (MiniZipHttpException ex) when (mode == GetInfoMode.DefaultMiniZip)
-                    {
-                        _logger.LogInformation(ex, "Fetching package {Id} {Version} failed using MiniZip. Trying again with cache busting.", leafItem.PackageId, leafItem.PackageVersion);
-                        return await GetInfoAsync(leafItem, GetInfoMode.CacheBustMiniZip);
-                    }
-                    catch (MiniZipHttpException ex) when (mode == GetInfoMode.CacheBustMiniZip)
-                    {
-                        _logger.LogInformation(ex, "Fetching package {Id} {Version} failed using MiniZip. Trying again with a full download.", leafItem.PackageId, leafItem.PackageVersion);
-                        return await GetInfoAsync(leafItem, GetInfoMode.FullDownload);
-                    }
-                }
-                else if (mode == GetInfoMode.FullDownload)
-                {
-                    var result = await _flatContainerClient.DownloadPackageContentToFileAsync(
-                        leafItem.PackageId,
-                        leafItem.PackageVersion,
-                        CancellationToken.None);
-
-                    if (result is null)
-                    {
-                        notFoundMetric.TrackValue(1, leafItem.PackageId, leafItem.PackageVersion, mode.ToString());
-                        return MakeDeletedInfo(leafItem);
-                    }
-
-                    using (result.Value.Body)
-                    {
-                        using var reader = new ZipDirectoryReader(result.Value.Body.Stream);
-                        return await GetInfoAsync(leafItem, result.Value.Headers, reader);
-                    }
-                }
-                else
-                {
-                    throw new NotImplementedException();
-                }
+                return MakeDeletedInfo(leafItem);
             }
-            finally
-            {
-                metric.TrackValue(sw.ElapsedMilliseconds);
-            }
+
+            return await GetInfoAsync(leafItem, reader.Properties, reader);
         }
 
         private async Task<PackageFileInfoV1> GetInfoAsync(

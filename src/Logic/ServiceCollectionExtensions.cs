@@ -121,6 +121,7 @@ namespace NuGet.Insights
                         exponent: 2)
                 });
             serviceCollection.AddTransient<MZipFormat>();
+            serviceCollection.AddTransient<FileDownloader>();
 
             serviceCollection.AddTransient<SearchServiceCursorReader>();
             serviceCollection.AddTransient<IProgressReporter, NullProgressReporter>();
