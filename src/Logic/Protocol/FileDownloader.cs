@@ -20,6 +20,7 @@ namespace NuGet.Insights
     public enum ArtifactFileType
     {
         Nupkg,
+        Snupkg,
     }
 
     public class FileDownloader
@@ -148,19 +149,19 @@ namespace NuGet.Insights
                     {
                         return await _httpZipProvider.GetReaderAsync(new Uri(url));
                     }
-                    catch (MiniZipHttpException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+                    catch (MiniZipHttpException notFoundEx) when (notFoundEx.StatusCode == HttpStatusCode.NotFound)
                     {
                         notFoundMetric.TrackValue(1, id, version, fileType.ToString(), mode.ToString());
                         return null;
                     }
-                    catch (MiniZipHttpException ex) when (mode == ZipDownloadMode.DefaultMiniZip)
+                    catch (MiniZipHttpException defaultEx) when (mode == ZipDownloadMode.DefaultMiniZip)
                     {
-                        _logger.LogInformation(ex, "Fetching {FileType} {Url} for {Id} {Version} failed using MiniZip. Trying again with cache busting.", fileType, url, id, version);
+                        _logger.LogInformation(defaultEx, "Fetching {FileType} {Url} for {Id} {Version} failed using MiniZip. Trying again with cache busting.", fileType, url, id, version);
                         return await GetZipDirectoryReaderAsync(id, version, fileType, url, ZipDownloadMode.CacheBustMiniZip);
                     }
-                    catch (MiniZipHttpException ex) when (mode == ZipDownloadMode.CacheBustMiniZip)
+                    catch (MiniZipHttpException cacheBustEx) when (mode == ZipDownloadMode.CacheBustMiniZip)
                     {
-                        _logger.LogInformation(ex, "Fetching {FileType} {Url} for {Id} {Version} failed using MiniZip. Trying again with a full download.", fileType, url, id, version);
+                        _logger.LogInformation(cacheBustEx, "Fetching {FileType} {Url} for {Id} {Version} failed using MiniZip. Trying again with a full download.", fileType, url, id, version);
                         return await GetZipDirectoryReaderAsync(id, version, fileType, url, ZipDownloadMode.FullDownload);
                     }
                 }

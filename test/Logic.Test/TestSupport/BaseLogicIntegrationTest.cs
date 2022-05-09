@@ -110,6 +110,7 @@ namespace NuGet.Insights
 
             x.LeaseContainerName = $"{StoragePrefix}1l1";
             x.PackageArchiveTableName = $"{StoragePrefix}1pa1";
+            x.SymbolPackageArchiveTableName = $"{StoragePrefix}1sa1";
             x.PackageManifestTableName = $"{StoragePrefix}1pm1";
             x.PackageReadmeTableName = $"{StoragePrefix}1prm1";
             x.PackageHashesTableName = $"{StoragePrefix}1ph1";

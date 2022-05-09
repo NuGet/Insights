@@ -14,6 +14,7 @@ namespace NuGet.Insights
         {
             GalleryBaseUrl = "https://www.nuget.org";
             PackagesContainerBaseUrl = "https://globalcdn.nuget.org/packages";
+            SymbolPackagesContainerBaseUrl = "https://globalcdn.nuget.org/symbol-packages";
             V2BaseUrl = "https://www.nuget.org/api/v2";
             V3ServiceIndex = "https://api.nuget.org/v3/index.json";
             FlatContainerBaseUrlOverride = null;
@@ -26,6 +27,7 @@ namespace NuGet.Insights
             StorageConnectionString = StorageUtility.EmulatorConnectionString;
             LeaseContainerName = "leases";
             PackageArchiveTableName = "packagearchives";
+            SymbolPackageArchiveTableName = "symbolpackagearchives";
             PackageManifestTableName = "packagemanifests";
             PackageReadmeTableName = "packagereadmes";
             PackageHashesTableName = "packagehashes";
@@ -42,6 +44,7 @@ namespace NuGet.Insights
 
         public string GalleryBaseUrl { get; set; }
         public string PackagesContainerBaseUrl { get; set; }
+        public string SymbolPackagesContainerBaseUrl { get; set; }
         public string V2BaseUrl { get; set; }
         public string V3ServiceIndex { get; set; }
         public string FlatContainerBaseUrlOverride { get; set; }
@@ -56,6 +59,7 @@ namespace NuGet.Insights
 
         public string LeaseContainerName { get; set; }
         public string PackageArchiveTableName { get; set; }
+        public string SymbolPackageArchiveTableName { get; set; }
         public string PackageManifestTableName { get; set; }
         public string PackageReadmeTableName { get; set; }
         public string PackageHashesTableName { get; set; }

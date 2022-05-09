@@ -137,6 +137,7 @@ namespace NuGet.Insights
             serviceCollection.AddTransient<PackageHashService>();
             serviceCollection.AddTransient<PackageManifestService>();
             serviceCollection.AddTransient<PackageReadmeService>();
+            serviceCollection.AddTransient<SymbolPackageFileService>();
 
             serviceCollection.AddSingleton<ITelemetryClient>(s => NullTelemetryClient.Instance);
 
