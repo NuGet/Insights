@@ -205,6 +205,12 @@
   },
   {
     "odata.etag": "",
+    "PartitionKey": "C$ulpjCZSyuPVisweioyRZmCMu8KlO6Avs5c6gtc7KYfk$$P$behaviorsample",
+    "RowKey": "1.0.0",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
     "PartitionKey": "C$xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg$$P$amazonks3",
     "RowKey": "1.5.0",
     "Timestamp": "0001-01-01T00:00:00+00:00"
@@ -243,12 +249,6 @@
     "odata.etag": "",
     "PartitionKey": "C$xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg$$P$nut.mediatr.servicelike.dependencyinjection",
     "RowKey": "0.0.0-preview.0.44",
-    "Timestamp": "0001-01-01T00:00:00+00:00"
-  },
-  {
-    "odata.etag": "",
-    "PartitionKey": "C$z2zmdo74WKOmZ74a-KpSTThsf1mjRUJxP137DXms890$$P$behaviorsample",
-    "RowKey": "1.0.0",
     "Timestamp": "0001-01-01T00:00:00+00:00"
   }
 ]

@@ -478,6 +478,15 @@ namespace NuGet.Insights.Worker
                     return response;
                 }
 
+                if (req.RequestUri.AbsolutePath.EndsWith($"/{lowerId}.{lowerVersion}.snupkg"))
+                {
+                    var newReq = Clone(req);
+                    newReq.RequestUri = new Uri($"http://localhost/{TestData}/{lowerId}.{lowerVersion}.snupkg.testdata");
+                    var response = await TestDataHttpClient.SendAsync(newReq);
+                    response.EnsureSuccessStatusCode();
+                    return response;
+                }
+
                 return null;
             };
 
@@ -497,6 +506,12 @@ namespace NuGet.Insights.Worker
             if (readmeFile.Exists)
             {
                 readmeFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T20:00:00Z");
+            }
+
+            var snupkgFile = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.snupkg.testdata"));
+            if (snupkgFile.Exists)
+            {
+                snupkgFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T21:00:00Z");
             }
         }
 

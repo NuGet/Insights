@@ -226,6 +226,7 @@ namespace NuGet.Insights.Worker
                     CatalogScanDriverType.LoadPackageManifest,
                     CatalogScanDriverType.LoadPackageReadme,
                     CatalogScanDriverType.LoadPackageVersion,
+                    CatalogScanDriverType.LoadSymbolPackageArchive,
                     CatalogScanDriverType.PackageAssemblyToCsv,
                     CatalogScanDriverType.PackageIconToCsv,
                 },
@@ -319,6 +320,19 @@ namespace NuGet.Insights.Worker
 
             {
                 CatalogScanDriverType.LoadPackageArchive,
+                new DriverInfo
+                {
+                    DefaultMin = CatalogClient.NuGetOrgMinDeleted,
+                    SetDependencyCursorAsync = (self, x) =>
+                    {
+                        self.FlatContainerCursor = x;
+                        return Task.CompletedTask;
+                    },
+                }
+            },
+
+            {
+                CatalogScanDriverType.LoadSymbolPackageArchive,
                 new DriverInfo
                 {
                     DefaultMin = CatalogClient.NuGetOrgMinDeleted,

@@ -1,0 +1,116 @@
+[
+  {
+    "PartitionKey": "appany.hotchocolate.fluentvalidation",
+    "RowKey": "0.2.1",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2021-03-22T20:15:23.6403188+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "12614"
+        ],
+        "Content-Type": [
+          "binary/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8D8ED6EB6B15B75\u0022"
+        ],
+        "Last-Modified": [
+          "Mon, 22 Mar 2021 20:11:44 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-copy-completion-time": [
+          "Mon, 22 Mar 2021 20:11:44 GMT"
+        ],
+        "x-ms-copy-id": [
+          "7d7ac817-c956-4462-84e4-12a10f0af6ba"
+        ],
+        "x-ms-copy-progress": [
+          "12614/12614"
+        ],
+        "x-ms-copy-source": [
+          "https://nugetgallery.blob.core.windows.net/validation/validation-sets/27e3f891-0b03-4abd-8ff9-8490873cbf7f/appany.hotchocolate.fluentvalidation.0.2.1.snupkg"
+        ],
+        "x-ms-copy-status": [
+          "success"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "Zi73DIcS1RendkkwmEJgOgq\u002BMdQ8LF0QE5yRVxanvRecd6\u002BGgQStFO6XEMYnoQZeWqsgITGNB8EO8bqZbxBCVg=="
+        ]
+      },
+      "MZipHash": "658521341e269f947f5eba1ec87284de9a5827bb6bb590aca9529df77e304fb1"
+    }
+  },
+  {
+    "PartitionKey": "karcero.engine.core",
+    "RowKey": "1.0.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2021-03-22T20:15:23.6403188+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "newtonsoft.json",
+    "RowKey": "13.0.1",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2021-03-22T20:13:54.6075418+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "750829"
+        ],
+        "Content-Type": [
+          "binary/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8D8ED6EDCF11441\u0022"
+        ],
+        "Last-Modified": [
+          "Mon, 22 Mar 2021 20:12:48 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-copy-completion-time": [
+          "Mon, 22 Mar 2021 20:12:48 GMT"
+        ],
+        "x-ms-copy-id": [
+          "9c52dba3-e6ef-4a62-b0d7-1dfc010abd5f"
+        ],
+        "x-ms-copy-progress": [
+          "750829/750829"
+        ],
+        "x-ms-copy-source": [
+          "https://nugetgallery.blob.core.windows.net/validation/validation-sets/6157dfcf-ec5c-45e5-812e-68d19991ec45/newtonsoft.json.13.0.1.snupkg"
+        ],
+        "x-ms-copy-status": [
+          "success"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "vaWuAPufkOrRT0f48FuX90NnymmB/hrLUvg\u002BXsQUHkaht/cwpqkLYcNlUPrjiak7Uhw4uX14dcXUT/NznHHHHg=="
+        ]
+      },
+      "MZipHash": "7f60ee52e75640227bdcea907723c1b7d1c15b18de2700a79dd16d26f96b3ee1"
+    }
+  },
+  {
+    "PartitionKey": "pulumi.gcp",
+    "RowKey": "4.16.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2021-03-22T20:15:23.6403188+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  }
+]

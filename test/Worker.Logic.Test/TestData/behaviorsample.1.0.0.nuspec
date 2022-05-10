@@ -4,10 +4,11 @@
     <id>BehaviorSample</id>
     <version>1.0.0</version>
     <authors>BehaviorSample</authors>
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <readme>README.md</readme>
     <description>Package Description</description>
     <dependencies>
-      <group targetFramework="net5.0" />
+      <group targetFramework=".NETCoreApp3.1" />
+      <group targetFramework="net6.0" />
     </dependencies>
   </metadata>
 </package>

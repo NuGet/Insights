@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,16 +11,16 @@ using MessagePack;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace NuGet.Insights.Worker.LoadPackageArchive
+namespace NuGet.Insights.Worker.LoadSymbolPackageArchive
 {
-    public class LoadPackageArchiveIntegrationTest : BaseCatalogScanIntegrationTest
+    public class LoadSymbolPackageArchiveIntegrationTest : BaseCatalogScanIntegrationTest
     {
-        public const string LoadPackageArchiveDir = nameof(LoadPackageArchive);
-        public const string LoadPackageArchive_WithDeleteDir = nameof(LoadPackageArchive_WithDelete);
+        public const string LoadSymbolPackageArchiveDir = nameof(LoadSymbolPackageArchive);
+        public const string LoadSymbolPackageArchive_WithDeleteDir = nameof(LoadSymbolPackageArchive_WithDelete);
 
-        public class LoadPackageArchive : LoadPackageArchiveIntegrationTest
+        public class LoadSymbolPackageArchive : LoadSymbolPackageArchiveIntegrationTest
         {
-            public LoadPackageArchive(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public LoadSymbolPackageArchive(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -29,9 +29,9 @@ namespace NuGet.Insights.Worker.LoadPackageArchive
             public async Task Execute()
             {
                 // Arrange
-                var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
-                var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
-                var max2 = DateTimeOffset.Parse("2020-11-27T19:36:50.4909042Z");
+                var min0 = DateTimeOffset.Parse("2021-03-22T20:13:00.3409860Z");
+                var max1 = DateTimeOffset.Parse("2021-03-22T20:13:54.6075418Z");
+                var max2 = DateTimeOffset.Parse("2021-03-22T20:15:23.6403188Z");
 
                 await CatalogScanService.InitializeAsync();
                 await SetCursorAsync(min0);
@@ -40,19 +40,19 @@ namespace NuGet.Insights.Worker.LoadPackageArchive
                 await UpdateAsync(max1);
 
                 // Assert
-                await AssertOutputAsync(LoadPackageArchiveDir, Step1);
+                await AssertOutputAsync(LoadSymbolPackageArchiveDir, Step1);
 
                 // Act
                 await UpdateAsync(max2);
 
                 // Assert
-                await AssertOutputAsync(LoadPackageArchiveDir, Step2);
+                await AssertOutputAsync(LoadSymbolPackageArchiveDir, Step2);
             }
         }
 
-        public class LoadPackageArchive_WithDelete : LoadPackageArchiveIntegrationTest
+        public class LoadSymbolPackageArchive_WithDelete : LoadSymbolPackageArchiveIntegrationTest
         {
-            public LoadPackageArchive_WithDelete(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public LoadSymbolPackageArchive_WithDelete(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -73,47 +73,45 @@ namespace NuGet.Insights.Worker.LoadPackageArchive
                 await UpdateAsync(max1);
 
                 // Assert
-                await AssertOutputAsync(LoadPackageArchive_WithDeleteDir, Step1);
+                await AssertOutputAsync(LoadSymbolPackageArchive_WithDeleteDir, Step1);
 
                 // Act
                 await UpdateAsync(max2);
 
                 // Assert
-                await AssertOutputAsync(LoadPackageArchive_WithDeleteDir, Step2);
+                await AssertOutputAsync(LoadSymbolPackageArchive_WithDeleteDir, Step2);
             }
         }
 
-        public LoadPackageArchiveIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+        public LoadSymbolPackageArchiveIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
         }
 
-        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.LoadPackageArchive;
+        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.LoadSymbolPackageArchive;
         public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType };
         public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();
 
         protected override IEnumerable<string> GetExpectedTableNames()
         {
-            return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageArchiveTableName });
+            return base.GetExpectedTableNames().Concat(new[] { Options.Value.SymbolPackageArchiveTableName });
         }
 
         private async Task AssertOutputAsync(string testName, string stepName)
         {
             await AssertWideEntityOutputAsync(
-                Options.Value.PackageArchiveTableName,
+                Options.Value.SymbolPackageArchiveTableName,
                 Path.Combine(testName, stepName),
                 stream =>
                 {
-                    var entity = MessagePackSerializer.Deserialize<PackageFileService.PackageFileInfoVersions>(stream, NuGetInsightsMessagePack.Options);
+                    var entity = MessagePackSerializer.Deserialize<SymbolPackageFileService.SymbolPackageFileInfoVersions>(stream, NuGetInsightsMessagePack.Options);
 
                     string mzipHash = null;
-                    string signatureHash = null;
                     SortedDictionary<string, List<string>> httpHeaders = null;
 
                     if (entity.V1.Available)
                     {
                         using var algorithm = SHA256.Create();
                         mzipHash = algorithm.ComputeHash(entity.V1.MZipBytes.ToArray()).ToLowerHex();
-                        signatureHash = algorithm.ComputeHash(entity.V1.SignatureBytes.ToArray()).ToLowerHex();
                         httpHeaders = NormalizeHeaders(entity.V1.HttpHeaders);
                     }
 
@@ -123,7 +121,6 @@ namespace NuGet.Insights.Worker.LoadPackageArchive
                         entity.V1.CommitTimestamp,
                         HttpHeaders = httpHeaders,
                         MZipHash = mzipHash,
-                        SignatureHash = signatureHash,
                     };
                 });
         }

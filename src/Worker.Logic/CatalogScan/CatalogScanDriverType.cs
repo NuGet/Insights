@@ -28,6 +28,12 @@ namespace NuGet.Insights.Worker
         LoadPackageArchive,
 
         /// <summary>
+        /// Implemented by <see cref="LoadSymbolPackageArchive.LoadSymbolPackageArchiveDriver"/>. Downloads interesting parts of the .snupkg
+        /// file stored in the symbol packages container and stores the data in Azure Table Storage for other drivers to use.
+        /// </summary>
+        LoadSymbolPackageArchive,
+
+        /// <summary>
         /// Implemented by <see cref="LoadPackageManifest.LoadPackageManifestDriver"/>. Downloads the .nuspec from the
         /// V3 flat container and stores it in Azure Table Storage for other drivers to use.
         /// </summary>

@@ -3,29 +3,10 @@
     "PartitionKey": "amazonks3",
     "RowKey": "1.5.0",
     "Entity": {
-      "Available": true,
+      "Available": false,
       "CommitTimestamp": "2020-12-20T02:39:20.5757299+00:00",
-      "HttpHeaders": {
-        "Content-Length": [
-          "745"
-        ],
-        "Content-Type": [
-          "text/xml"
-        ],
-        "ETag": [
-          "\u00220x8D8A4907FE65FDF\u0022"
-        ],
-        "Last-Modified": [
-          "Sun, 20 Dec 2020 02:39:40 GMT"
-        ],
-        "x-ms-blob-type": [
-          "BlockBlob"
-        ],
-        "x-ms-lease-status": [
-          "unlocked"
-        ]
-      },
-      "ManifestHash": "7931eeb24309e7f5dac865a167883a4be57869a3607326f626ba20eeafd374cf"
+      "HttpHeaders": null,
+      "MZipHash": null
     }
   },
   {
@@ -36,74 +17,36 @@
       "CommitTimestamp": "2020-12-20T02:39:03.372413+00:00",
       "HttpHeaders": {
         "Content-Length": [
-          "474"
+          "13654"
         ],
         "ETag": [
-          "\u00221d6eaa77527f9da\u0022"
+          "\u00221d6eab838b0fd56\u0022"
         ],
         "Last-Modified": [
-          "Thu, 14 Jan 2021 19:00:00 GMT"
+          "Thu, 14 Jan 2021 21:00:00 GMT"
         ]
       },
-      "ManifestHash": "14a85131fdad32e3352120acc7349c2e3118bab704c33b987d1933bda3572aa8"
+      "MZipHash": "5176ecc14b4d8d3d28e12141f1f819f46e8d6b414c812ceb8b02663633b33a4a"
     }
   },
   {
     "PartitionKey": "lunabot.commands.public",
     "RowKey": "1.2.0",
     "Entity": {
-      "Available": true,
+      "Available": false,
       "CommitTimestamp": "2020-12-20T03:01:57.2082154+00:00",
-      "HttpHeaders": {
-        "Content-Length": [
-          "1243"
-        ],
-        "Content-Type": [
-          "text/xml"
-        ],
-        "ETag": [
-          "\u00220x8D8A493B1169DA5\u0022"
-        ],
-        "Last-Modified": [
-          "Sun, 20 Dec 2020 03:02:31 GMT"
-        ],
-        "x-ms-blob-type": [
-          "BlockBlob"
-        ],
-        "x-ms-lease-status": [
-          "unlocked"
-        ]
-      },
-      "ManifestHash": "1da8bd9a516c1b0b2d1efbb3070106c77838005cab1b5c973dbd90799c3c1072"
+      "HttpHeaders": null,
+      "MZipHash": null
     }
   },
   {
     "PartitionKey": "lunabot.core",
     "RowKey": "1.0.4",
     "Entity": {
-      "Available": true,
+      "Available": false,
       "CommitTimestamp": "2020-12-20T02:39:20.5757299+00:00",
-      "HttpHeaders": {
-        "Content-Length": [
-          "1124"
-        ],
-        "Content-Type": [
-          "text/xml"
-        ],
-        "ETag": [
-          "\u00220x8D8A4907FE10786\u0022"
-        ],
-        "Last-Modified": [
-          "Sun, 20 Dec 2020 02:39:40 GMT"
-        ],
-        "x-ms-blob-type": [
-          "BlockBlob"
-        ],
-        "x-ms-lease-status": [
-          "unlocked"
-        ]
-      },
-      "ManifestHash": "649c1db124de7e3c17e379efd7efe38c19797a2c7d35810c578d5bc93ff7d2ec"
+      "HttpHeaders": null,
+      "MZipHash": null
     }
   },
   {
@@ -114,25 +57,28 @@
       "CommitTimestamp": "2020-12-20T02:37:52.9649363+00:00",
       "HttpHeaders": {
         "Content-Length": [
-          "1262"
+          "10075"
         ],
         "Content-Type": [
-          "text/xml"
+          "binary/octet-stream"
         ],
         "ETag": [
-          "\u00220x8D8A4905A4EDAA9\u0022"
+          "\u00220x8D8A490837254E0\u0022"
         ],
         "Last-Modified": [
-          "Sun, 20 Dec 2020 02:38:37 GMT"
+          "Sun, 20 Dec 2020 02:39:46 GMT"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
         ],
         "x-ms-lease-status": [
           "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "ysL8/1vPNb7WUjBC0wvIEsyW/MJHNbpei/LJqx50nPZhqzIJqI9BNVcxzlKwTn2IGXJPcgHm2htMEHmphK4zog=="
         ]
       },
-      "ManifestHash": "5317dbb9cd0a25683b74949955bedc45b6a7ba10b156c5dfdfbcd6695d099aba"
+      "MZipHash": "76c8fd5cf8fd300d052e23f6903892c90d1e8504330450417ee2d34ec7c106ca"
     }
   },
   {
@@ -143,25 +89,28 @@
       "CommitTimestamp": "2020-12-20T02:37:52.9649363+00:00",
       "HttpHeaders": {
         "Content-Length": [
-          "1191"
+          "8029"
         ],
         "Content-Type": [
-          "text/xml"
+          "binary/octet-stream"
         ],
         "ETag": [
-          "\u00220x8D8A4905A5740E6\u0022"
+          "\u00220x8D8A4903E458B1F\u0022"
         ],
         "Last-Modified": [
-          "Sun, 20 Dec 2020 02:38:37 GMT"
+          "Sun, 20 Dec 2020 02:37:49 GMT"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
         ],
         "x-ms-lease-status": [
           "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "y2X38jWt38RiWywPTMgH28\u002BTxbRYPxzonVuGWqUWTYnYr9DGf2JXI16HPHqMN81FJ\u002Bwdk6FogthETCyyrdDiSA=="
         ]
       },
-      "ManifestHash": "496e5a13376d734c9f2fc35b559cc05287e9c08a579210c7f1a67724065a903f"
+      "MZipHash": "bcf882d2536d17f843005c5a540a2524cdf1952df25812649c31278c26d40990"
     }
   },
   {
@@ -172,25 +121,28 @@
       "CommitTimestamp": "2020-12-20T02:37:52.9649363+00:00",
       "HttpHeaders": {
         "Content-Length": [
-          "1275"
+          "8147"
         ],
         "Content-Type": [
-          "text/xml"
+          "binary/octet-stream"
         ],
         "ETag": [
-          "\u00220x8D8A4905A427BFC\u0022"
+          "\u00220x8D8A4903BAC7744\u0022"
         ],
         "Last-Modified": [
-          "Sun, 20 Dec 2020 02:38:36 GMT"
+          "Sun, 20 Dec 2020 02:37:45 GMT"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
         ],
         "x-ms-lease-status": [
           "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "Gv6drkwzlLfGgmbkbJdNQyEDNeKLJ5VoG7x0Lzs5oGSfr7zZingJh/\u002BaQ\u002BGuvk7S3ldH3Avfj/33QUjT6cRM/A=="
         ]
       },
-      "ManifestHash": "1de17015ddebeab8a1421091841254f3939b739399fb524c354edb43803ad551"
+      "MZipHash": "14a2c728eb608f53b452e046b71f20ef1ef91af91a289f717600f1c4c0f80868"
     }
   },
   {
@@ -200,7 +152,7 @@
       "Available": false,
       "CommitTimestamp": "2020-12-20T02:39:37.8102297+00:00",
       "HttpHeaders": null,
-      "ManifestHash": null
+      "MZipHash": null
     }
   }
 ]

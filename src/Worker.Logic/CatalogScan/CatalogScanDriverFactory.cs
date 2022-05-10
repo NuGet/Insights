@@ -28,6 +28,7 @@ using NuGet.Insights.Worker.PackageManifestToCsv;
 using NuGet.Insights.Worker.PackageSignatureToCsv;
 using NuGet.Insights.Worker.PackageVersionToCsv;
 using NuGet.Insights.Worker.PackageReadmeToCsv;
+using NuGet.Insights.Worker.LoadSymbolPackageArchive;
 
 namespace NuGet.Insights.Worker
 {
@@ -53,6 +54,8 @@ namespace NuGet.Insights.Worker
             {
                 case CatalogScanDriverType.LoadPackageArchive:
                     return _serviceProvider.GetRequiredService<LoadPackageArchiveDriver>();
+                case CatalogScanDriverType.LoadSymbolPackageArchive:
+                    return _serviceProvider.GetRequiredService<LoadSymbolPackageArchiveDriver>();
                 case CatalogScanDriverType.LoadPackageManifest:
                     return _serviceProvider.GetRequiredService<LoadPackageManifestDriver>();
                 case CatalogScanDriverType.LoadPackageReadme:

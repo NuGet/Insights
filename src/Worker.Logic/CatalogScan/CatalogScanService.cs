@@ -141,6 +141,7 @@ namespace NuGet.Insights.Worker
                     return null;
 
                 case CatalogScanDriverType.LoadPackageArchive:
+                case CatalogScanDriverType.LoadSymbolPackageArchive:
                 case CatalogScanDriverType.LoadPackageManifest:
                 case CatalogScanDriverType.LoadPackageReadme:
                 case CatalogScanDriverType.LoadPackageVersion:
@@ -262,6 +263,7 @@ namespace NuGet.Insights.Worker
                 case CatalogScanDriverType.BuildVersionSet:
                 case CatalogScanDriverType.LoadLatestPackageLeaf:
                 case CatalogScanDriverType.LoadPackageArchive:
+                case CatalogScanDriverType.LoadSymbolPackageArchive:
                 case CatalogScanDriverType.LoadPackageManifest:
                 case CatalogScanDriverType.LoadPackageReadme:
                 case CatalogScanDriverType.LoadPackageVersion:
