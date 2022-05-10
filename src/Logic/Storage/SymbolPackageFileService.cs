@@ -53,7 +53,7 @@ namespace NuGet.Insights
             return (await reader.ReadAsync(), destStream.Length, info.HttpHeaders);
         }
 
-        public async Task<IReadOnlyDictionary<ICatalogLeafItem, PackageFileInfoV1>> UpdateBatchAsync(string id, IReadOnlyCollection<ICatalogLeafItem> leafItems)
+        public async Task<IReadOnlyDictionary<ICatalogLeafItem, SymbolPackageFileInfoV1>> UpdateBatchAsync(string id, IReadOnlyCollection<ICatalogLeafItem> leafItems)
         {
             return await _wideEntityService.UpdateBatchAsync(
                 _options.Value.SymbolPackageArchiveTableName,
@@ -64,7 +64,7 @@ namespace NuGet.Insights
                 DataToOutput);
         }
 
-        public async Task<PackageFileInfoV1> GetOrUpdateInfoAsync(ICatalogLeafItem leafItem)
+        public async Task<SymbolPackageFileInfoV1> GetOrUpdateInfoAsync(ICatalogLeafItem leafItem)
         {
             return await _wideEntityService.GetOrUpdateInfoAsync(
                 _options.Value.SymbolPackageArchiveTableName,
@@ -74,7 +74,7 @@ namespace NuGet.Insights
                 DataToOutput);
         }
 
-        private async Task<PackageFileInfoV1> GetInfoAsync(ICatalogLeafItem leafItem)
+        private async Task<SymbolPackageFileInfoV1> GetInfoAsync(ICatalogLeafItem leafItem)
         {
             if (leafItem.Type == CatalogLeafType.PackageDelete)
             {
@@ -99,14 +99,14 @@ namespace NuGet.Insights
             return await GetInfoAsync(leafItem, reader.Properties, reader);
         }
 
-        private async Task<PackageFileInfoV1> GetInfoAsync(
+        private async Task<SymbolPackageFileInfoV1> GetInfoAsync(
             ICatalogLeafItem leafItem,
             ILookup<string, string> headers,
             ZipDirectoryReader reader)
         {
             using var destStream = new MemoryStream();
             await _mzipFormat.WriteAsync(reader.Stream, destStream);
-            return new PackageFileInfoV1
+            return new SymbolPackageFileInfoV1
             {
                 CommitTimestamp = leafItem.CommitTimestamp,
                 Available = true,
@@ -115,42 +115,42 @@ namespace NuGet.Insights
             };
         }
 
-        private static PackageFileInfoV1 MakeDeletedInfo(ICatalogLeafItem leafItem)
+        private static SymbolPackageFileInfoV1 MakeDeletedInfo(ICatalogLeafItem leafItem)
         {
-            return new PackageFileInfoV1
+            return new SymbolPackageFileInfoV1
             {
                 CommitTimestamp = leafItem.CommitTimestamp,
                 Available = false,
             };
         }
 
-        private static PackageFileInfoV1 DataToOutput(PackageFileInfoVersions data)
+        private static SymbolPackageFileInfoV1 DataToOutput(SymbolPackageFileInfoVersions data)
         {
             return data.V1;
         }
 
-        private static PackageFileInfoVersions OutputToData(PackageFileInfoV1 output)
+        private static SymbolPackageFileInfoVersions OutputToData(SymbolPackageFileInfoV1 output)
         {
-            return new PackageFileInfoVersions(output);
+            return new SymbolPackageFileInfoVersions(output);
         }
 
         [MessagePackObject]
-        public class PackageFileInfoVersions : PackageWideEntityService.IPackageWideEntity
+        public class SymbolPackageFileInfoVersions : PackageWideEntityService.IPackageWideEntity
         {
             [SerializationConstructor]
-            public PackageFileInfoVersions(PackageFileInfoV1 v1)
+            public SymbolPackageFileInfoVersions(SymbolPackageFileInfoV1 v1)
             {
                 V1 = v1;
             }
 
             [Key(0)]
-            public PackageFileInfoV1 V1 { get; set; }
+            public SymbolPackageFileInfoV1 V1 { get; set; }
 
             DateTimeOffset PackageWideEntityService.IPackageWideEntity.CommitTimestamp => V1.CommitTimestamp;
         }
 
         [MessagePackObject]
-        public class PackageFileInfoV1
+        public class SymbolPackageFileInfoV1
         {
             [Key(1)]
             public DateTimeOffset CommitTimestamp { get; set; }

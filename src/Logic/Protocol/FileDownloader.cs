@@ -147,7 +147,12 @@ namespace NuGet.Insights
 
                     try
                     {
-                        return await _httpZipProvider.GetReaderAsync(new Uri(url));
+                        var reader = await _httpZipProvider.GetReaderAsync(new Uri(url));
+
+                        // Read the ZIP reader proactively to warm the cache to find any HTTP exceptions that might occur.
+                        await reader.ReadAsync();
+
+                        return reader;
                     }
                     catch (MiniZipHttpException notFoundEx) when (notFoundEx.StatusCode == HttpStatusCode.NotFound)
                     {
@@ -175,10 +180,7 @@ namespace NuGet.Insights
                         return null;
                     }
 
-                    using (result.Value.Body)
-                    {
-                        return new ZipDirectoryReader(result.Value.Body.Stream);
-                    }
+                    return new ZipDirectoryReader(result.Value.Body.Stream);
                 }
                 else
                 {
