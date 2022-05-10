@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -39,24 +39,18 @@ namespace NuGet.Insights
             await _wideEntityService.InitializeAsync(_options.Value.SymbolPackageArchiveTableName);
         }
 
-        public async Task<ZipDirectory?> GetZipDirectoryAsync(ICatalogLeafItem leafItem)
-        {
-            (var zipDirectory, _) = await GetZipDirectoryAndSizeAsync(leafItem);
-            return zipDirectory;
-        }
-
-        public async Task<(ZipDirectory? directory, long size)> GetZipDirectoryAndSizeAsync(ICatalogLeafItem leafItem)
+        public async Task<(ZipDirectory? directory, long size, ILookup<string, string>? headers)> GetZipDirectoryAsync(ICatalogLeafItem leafItem)
         {
             var info = await GetOrUpdateInfoAsync(leafItem);
             if (!info.Available)
             {
-                return (null, 0);
+                return (null, 0, null);
             }
 
             using var srcStream = info.MZipBytes.AsStream();
             using var destStream = await _mzipFormat.ReadAsync(srcStream);
             var reader = new ZipDirectoryReader(destStream);
-            return (await reader.ReadAsync(), destStream.Length);
+            return (await reader.ReadAsync(), destStream.Length, info.HttpHeaders);
         }
 
         public async Task<IReadOnlyDictionary<ICatalogLeafItem, PackageFileInfoV1>> UpdateBatchAsync(string id, IReadOnlyCollection<ICatalogLeafItem> leafItems)
