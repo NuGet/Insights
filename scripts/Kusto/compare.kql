@@ -1,9 +1,9 @@
 // Package-specific tables should all have the same identity count
 NiCatalogLeafItems | distinct Identity | count | extend Table = "NiCatalogLeafItems"
-| union (NiNuGetPackageExplorers | distinct Identity | count | extend Table = "NiNuGetPackageExplorers")
 | union (NiNuGetPackageExplorerFiles | distinct Identity | count | extend Table = "NiNuGetPackageExplorerFiles")
-| union (NiPackageArchives | distinct Identity | count | extend Table = "NiPackageArchives")
+| union (NiNuGetPackageExplorers | distinct Identity | count | extend Table = "NiNuGetPackageExplorers")
 | union (NiPackageArchiveEntries | distinct Identity | count | extend Table = "NiPackageArchiveEntries")
+| union (NiPackageArchives | distinct Identity | count | extend Table = "NiPackageArchives")
 | union (NiPackageAssemblies | distinct Identity | count | extend Table = "NiPackageAssemblies")
 | union (NiPackageAssets | distinct Identity | count | extend Table = "NiPackageAssets")
 | union (NiPackageCertificates | distinct Identity | count | extend Table = "NiPackageCertificates")
@@ -15,13 +15,15 @@ NiCatalogLeafItems | distinct Identity | count | extend Table = "NiCatalogLeafIt
 | union (NiPackageSignatures | distinct Identity | count | extend Table = "NiPackageSignatures")
 | union (NiPackageVersions | distinct Identity | count | extend Table = "NiPackageVersions")
 | union (NiPackageVulnerabilities | distinct Identity | count | extend Table = "NiPackageVulnerabilities")
+| union (NiSymbolPackageArchiveEntries | distinct Identity | count | extend Table = "NiSymbolPackageArchiveEntries")
+| union (NiSymbolPackageArchives | distinct Identity | count | extend Table = "NiSymbolPackageArchives")
 
 // All tables should all have the same ID count
 NiCatalogLeafItems | distinct LowerId | count | extend Table = "NiCatalogLeafItems"
-| union (NiNuGetPackageExplorers | distinct LowerId | count | extend Table = "NiNuGetPackageExplorers")
 | union (NiNuGetPackageExplorerFiles | distinct LowerId | count  | extend Table = "NiNuGetPackageExplorerFiles")
-| union (NiPackageArchives | distinct LowerId | count | extend Table = "NiPackageArchives")
+| union (NiNuGetPackageExplorers | distinct LowerId | count | extend Table = "NiNuGetPackageExplorers")
 | union (NiPackageArchiveEntries | distinct LowerId | count  | extend Table = "NiPackageArchiveEntries")
+| union (NiPackageArchives | distinct LowerId | count | extend Table = "NiPackageArchives")
 | union (NiPackageAssemblies | distinct LowerId | count  | extend Table = "NiPackageAssemblies")
 | union (NiPackageAssets | distinct LowerId | count  | extend Table = "NiPackageAssets")
 | union (NiPackageCertificates | distinct LowerId | count | extend Table = "NiPackageCertificates")
@@ -34,6 +36,8 @@ NiCatalogLeafItems | distinct LowerId | count | extend Table = "NiCatalogLeafIte
 | union (NiPackageSignatures | distinct LowerId | count  | extend Table = "NiPackageSignatures")
 | union (NiPackageVersions | distinct LowerId | count  | extend Table = "NiPackageVersions")
 | union (NiPackageVulnerabilities | distinct LowerId | count | extend Table = "NiPackageVulnerabilities")
+| union (NiSymbolPackageArchiveEntries | distinct LowerId | count  | extend Table = "NiSymbolPackageArchiveEntries")
+| union (NiSymbolPackageArchives | distinct LowerId | count | extend Table = "NiSymbolPackageArchives")
 | union (NiVerifiedPackages | distinct LowerId | count | extend Table = "NiVerifiedPackages")
 
 // All tables with certificates should have the same fingerprint found

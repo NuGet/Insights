@@ -9,6 +9,9 @@
         "Content-Length": [
           "12614"
         ],
+        "Content-MD5": [
+          "9CMu6cQOfA8a9XGsipU26Q=="
+        ],
         "Content-Type": [
           "binary/octet-stream"
         ],
@@ -20,21 +23,6 @@
         ],
         "x-ms-blob-type": [
           "BlockBlob"
-        ],
-        "x-ms-copy-completion-time": [
-          "Mon, 22 Mar 2021 20:11:44 GMT"
-        ],
-        "x-ms-copy-id": [
-          "7d7ac817-c956-4462-84e4-12a10f0af6ba"
-        ],
-        "x-ms-copy-progress": [
-          "12614/12614"
-        ],
-        "x-ms-copy-source": [
-          "https://nugetgallery.blob.core.windows.net/validation/validation-sets/27e3f891-0b03-4abd-8ff9-8490873cbf7f/appany.hotchocolate.fluentvalidation.0.2.1.snupkg"
-        ],
-        "x-ms-copy-status": [
-          "success"
         ],
         "x-ms-lease-status": [
           "unlocked"
@@ -66,6 +54,9 @@
         "Content-Length": [
           "750829"
         ],
+        "Content-MD5": [
+          "jRzvirf3Q1udIjn2m1L6vQ=="
+        ],
         "Content-Type": [
           "binary/octet-stream"
         ],
@@ -77,21 +68,6 @@
         ],
         "x-ms-blob-type": [
           "BlockBlob"
-        ],
-        "x-ms-copy-completion-time": [
-          "Mon, 22 Mar 2021 20:12:48 GMT"
-        ],
-        "x-ms-copy-id": [
-          "9c52dba3-e6ef-4a62-b0d7-1dfc010abd5f"
-        ],
-        "x-ms-copy-progress": [
-          "750829/750829"
-        ],
-        "x-ms-copy-source": [
-          "https://nugetgallery.blob.core.windows.net/validation/validation-sets/6157dfcf-ec5c-45e5-812e-68d19991ec45/newtonsoft.json.13.0.1.snupkg"
-        ],
-        "x-ms-copy-status": [
-          "success"
         ],
         "x-ms-lease-status": [
           "unlocked"

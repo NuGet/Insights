@@ -114,7 +114,7 @@ namespace NuGet.Insights.Worker.LoadPackageArchive
                         using var algorithm = SHA256.Create();
                         mzipHash = algorithm.ComputeHash(entity.V1.MZipBytes.ToArray()).ToLowerHex();
                         signatureHash = algorithm.ComputeHash(entity.V1.SignatureBytes.ToArray()).ToLowerHex();
-                        httpHeaders = NormalizeHeaders(entity.V1.HttpHeaders);
+                        httpHeaders = NormalizeHeaders(entity.V1.HttpHeaders, ignore: Enumerable.Empty<string>());
                     }
 
                     return new

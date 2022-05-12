@@ -194,6 +194,7 @@ The current drivers for analyzing NuGet.org packages are:
 - [`PackageReadmeToCsvDriver`](src/Worker.Logic/CatalogScan/Drivers/PackageReadmeToCsv/PackageReadmeToCsvDriver.cs) - extract package README metadata and content
 - [`PackageSignatureToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageSignatureToCsv/PackageSignatureToCsvDriver.cs) - parse the NuGet package signature
 - [`PackageVersionToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageVersionToCsv/PackageVersionToCsvDriver.cs) - determine latest version per package ID
+- [`SymbolPackageArchiveToCsv`](src/Worker.Logic/CatalogScan/Drivers/SymbolPackageArchiveToCsv/SymbolPackageArchiveToCsvDriver.cs) - find info about all ZIP entries in the .snupkg
 
 Several other supporting drivers exist to populate storage with intermediate results:
 
@@ -203,6 +204,7 @@ Several other supporting drivers exist to populate storage with intermediate res
 - [`LoadPackageManifest`](src/Worker.Logic/CatalogScan/Drivers/LoadPackageManifest/LoadPackageManifestDriver.cs) - fetch the .nuspec and put it in Table Storage
 - [`LoadPackageReadmeDriver`](src/Worker.Logic/CatalogScan/Drivers/LoadPackageReadme/LoadPackageReadmeDriver.cs) - download package READMEs and put them in Table Storage
 - [`LoadPackageVersion`](src/Worker.Logic/CatalogScan/Drivers/LoadPackageVersion/LoadPackageVersionDriver.cs) - determine listed and SemVer status and put it in Table Storage
+- [`LoadSymbolPackageArchive`](src/Worker.Logic/CatalogScan/Drivers/LoadSymbolPackageArchive/LoadSymbolPackageArchiveDriver.cs) - fetch information from the .snupkg and put it in Table Storage
 
 Several message processors exist to emit other useful data:
 

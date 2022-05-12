@@ -1,0 +1,3 @@
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Size,OffsetAfterEndOfCentralDirectory,CentralDirectorySize,OffsetOfCentralDirectory,EntryCount,Comment,HeaderMD5,HeaderSHA512
+,,behaviorsample,behaviorsample/1.0.0,BehaviorSample,1.0.0,2020-12-20T03:03:53.7885893Z,,Deleted,0,0,0,0,0,,,
+,,nut.mediatr.servicelike.dependencyinjection,nut.mediatr.servicelike.dependencyinjection/0.0.0-preview.0.44,Nut.MediatR.ServiceLike.DependencyInjection,0.0.0-preview.0.44,2020-12-20T02:37:52.9649363Z,2020-12-20T02:35:16.043Z,Available,8147,8129,457,7668,5,,JCD64IUPxyIPOXyMGwiZnw==,Gv6drkwzlLfGgmbkbJdNQyEDNeKLJ5VoG7x0Lzs5oGSfr7zZingJh/+aQ+Guvk7S3ldH3Avfj/33QUjT6cRM/A==

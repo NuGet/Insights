@@ -19,11 +19,17 @@
         "Content-Length": [
           "13654"
         ],
+        "Content-MD5": [
+          "uOano6u6YpWBVxA3XZWdUg=="
+        ],
         "ETag": [
           "\u00221d6eab838b0fd56\u0022"
         ],
         "Last-Modified": [
           "Thu, 14 Jan 2021 21:00:00 GMT"
+        ],
+        "x-ms-meta-SHA512": [
+          "ihFkShylFVhanyS\u002BlVmr0vYmVnAkUB70VJVvGEMWcKAs2gIjlSsWYhWMZYU9/UzyKhRBVxqUe5PIAoTjpbcfCQ=="
         ]
       },
       "MZipHash": "5176ecc14b4d8d3d28e12141f1f819f46e8d6b414c812ceb8b02663633b33a4a"
@@ -59,6 +65,9 @@
         "Content-Length": [
           "10075"
         ],
+        "Content-MD5": [
+          "QNA6Bus8A4cBmQy6a2FK6Q=="
+        ],
         "Content-Type": [
           "binary/octet-stream"
         ],
@@ -91,6 +100,9 @@
         "Content-Length": [
           "8029"
         ],
+        "Content-MD5": [
+          "6TkDqp6fCtKBxeNNcOC64A=="
+        ],
         "Content-Type": [
           "binary/octet-stream"
         ],
@@ -122,6 +134,9 @@
       "HttpHeaders": {
         "Content-Length": [
           "8147"
+        ],
+        "Content-MD5": [
+          "JCD64IUPxyIPOXyMGwiZnw=="
         ],
         "Content-Type": [
           "binary/octet-stream"

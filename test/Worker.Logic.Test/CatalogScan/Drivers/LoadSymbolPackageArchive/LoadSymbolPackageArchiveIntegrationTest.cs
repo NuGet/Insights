@@ -112,7 +112,7 @@ namespace NuGet.Insights.Worker.LoadSymbolPackageArchive
                     {
                         using var algorithm = SHA256.Create();
                         mzipHash = algorithm.ComputeHash(entity.V1.MZipBytes.ToArray()).ToLowerHex();
-                        httpHeaders = NormalizeHeaders(entity.V1.HttpHeaders);
+                        httpHeaders = NormalizeHeaders(entity.V1.HttpHeaders, ignore: Enumerable.Empty<string>());
                     }
 
                     return new

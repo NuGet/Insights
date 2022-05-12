@@ -1,0 +1,2 @@
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Size,OffsetAfterEndOfCentralDirectory,CentralDirectorySize,OffsetOfCentralDirectory,EntryCount,Comment,HeaderMD5,HeaderSHA512
+,,newtonsoft.json,newtonsoft.json/13.0.1,Newtonsoft.Json,13.0.1,2021-03-22T20:13:54.6075418Z,2021-03-22T20:10:49.407Z,Available,750829,750811,869,749938,11,,jRzvirf3Q1udIjn2m1L6vQ==,vaWuAPufkOrRT0f48FuX90NnymmB/hrLUvg+XsQUHkaht/cwpqkLYcNlUPrjiak7Uhw4uX14dcXUT/NznHHHHg==

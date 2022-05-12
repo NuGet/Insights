@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
 using Azure.Storage.Queues;
@@ -136,6 +137,8 @@ namespace NuGet.Insights.Worker
             x.VerifiedPackageContainerName = $"{StoragePrefix}1vp1";
             x.PackageArchiveContainerName = $"{StoragePrefix}1pa2c1";
             x.PackageArchiveEntryContainerName = $"{StoragePrefix}1pae2c1";
+            x.SymbolPackageArchiveContainerName = $"{StoragePrefix}1sa2c1";
+            x.SymbolPackageArchiveEntryContainerName = $"{StoragePrefix}1sae2c1";
             x.NuGetPackageExplorerContainerName = $"{StoragePrefix}1npe2c1";
             x.NuGetPackageExplorerFileContainerName = $"{StoragePrefix}1npef2c1";
             x.PackageDeprecationContainerName = $"{StoragePrefix}1pe1";
@@ -324,7 +327,7 @@ namespace NuGet.Insights.Worker
             return new TableReportIngestionResult(readTable);
         }
 
-        protected static SortedDictionary<string, List<string>> NormalizeHeaders(ILookup<string, string> headers)
+        protected static SortedDictionary<string, List<string>> NormalizeHeaders(ILookup<string, string> headers, IEnumerable<string> ignore)
         {
             // These headers are unstable
             var ignoredHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -335,7 +338,6 @@ namespace NuGet.Insights.Worker
                 "Age",
                 "Cache-Control",
                 "Connection",
-                "Content-MD5",
                 "Date",
                 "Expires",
                 "Server",
@@ -348,7 +350,17 @@ namespace NuGet.Insights.Worker
                 "x-ms-lease-state",
                 "x-ms-request-id",
                 "x-ms-version",
+                "x-ms-copy-completion-time",
+                "x-ms-copy-id",
+                "x-ms-copy-progress",
+                "x-ms-copy-source",
+                "x-ms-copy-status",
             };
+
+            foreach (var header in ignore)
+            {
+                ignoredHeaders.Add(header);
+            }
 
             return new SortedDictionary<string, List<string>>(headers
                 .Where(x => !ignoredHeaders.Contains(x.Key))
@@ -449,6 +461,11 @@ namespace NuGet.Insights.Worker
             var lowerId = id.ToLowerInvariant();
             var lowerVersion = NuGetVersion.Parse(version).ToNormalizedString().ToLowerInvariant();
 
+            var nupkgFile = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.nupkg.testdata"));
+            var nuspecFile = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.nuspec"));
+            var readmeFile = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.md"));
+            var snupkgFile = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.snupkg.testdata"));
+
             HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
             {
                 if (req.RequestUri.AbsolutePath.EndsWith($"/{lowerId}.{lowerVersion}.nupkg"))
@@ -484,34 +501,50 @@ namespace NuGet.Insights.Worker
                     newReq.RequestUri = new Uri($"http://localhost/{TestData}/{lowerId}.{lowerVersion}.snupkg.testdata");
                     var response = await TestDataHttpClient.SendAsync(newReq);
                     response.EnsureSuccessStatusCode();
+                    SetBlobResponseHeaders(response, snupkgFile.FullName);
                     return response;
                 }
 
                 return null;
             };
 
-            var nupkgFile = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.nupkg.testdata"));
             if (nupkgFile.Exists)
             {
                 nupkgFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z");
             }
 
-            var nuspecFile = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.nuspec"));
             if (nuspecFile.Exists)
             {
                 nuspecFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T19:00:00Z");
             }
 
-            var readmeFile = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.md"));
             if (readmeFile.Exists)
             {
                 readmeFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T20:00:00Z");
             }
 
-            var snupkgFile = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.snupkg.testdata"));
             if (snupkgFile.Exists)
             {
                 snupkgFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T21:00:00Z");
+            }
+        }
+
+        private void SetBlobResponseHeaders(HttpResponseMessage response, string sourcePath)
+        {
+            using (var fileStream = File.OpenRead(sourcePath))
+            {
+                using var hashes = IncrementalHash.CreateAll();
+                var buffer = new byte[1024 * 64];
+                int read;
+                while ((read = fileStream.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    hashes.TransformBlock(buffer, 0, read);
+                }
+
+                hashes.TransformFinalBlock();
+
+                response.Content.Headers.TryAddWithoutValidation("Content-MD5", hashes.Output.MD5.ToBase64());
+                response.Content.Headers.TryAddWithoutValidation("x-ms-meta-SHA512", hashes.Output.SHA512.ToBase64());
             }
         }
 

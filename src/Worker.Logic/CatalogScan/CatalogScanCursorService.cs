@@ -65,6 +65,10 @@ namespace NuGet.Insights.Worker
                 new[] { CatalogScanDriverType.LoadPackageArchive, CatalogScanDriverType.PackageAssemblyToCsv }
             },
             {
+                CatalogScanDriverType.SymbolPackageArchiveToCsv,
+                new[] { CatalogScanDriverType.LoadSymbolPackageArchive }
+            },
+            {
                 CatalogScanDriverType.PackageAssetToCsv,
                 new[] { CatalogScanDriverType.LoadPackageArchive }
             },

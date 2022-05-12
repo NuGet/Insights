@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -280,7 +280,7 @@ namespace NuGet.Insights.Worker
                 }
                 catch (Exception ex) when (!throwOnException)
                 {
-                    _logger.LogError(ex, "Processing a catalog leaf scan failed.");
+                    _logger.LogError(ex, "Processing a catalog leaf scan failed for {Id} {Version}.", scan.PackageId, scan.PackageVersion);
                     failed.Add(message);
                 }
             }

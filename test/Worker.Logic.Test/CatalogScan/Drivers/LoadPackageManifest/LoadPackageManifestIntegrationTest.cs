@@ -115,7 +115,7 @@ namespace NuGet.Insights.Worker.LoadPackageManifest
                     {
                         using var algorithm = SHA256.Create();
                         manifestHash = algorithm.ComputeHash(entity.V1.ManifestBytes.ToArray()).ToLowerHex();
-                        httpHeaders = NormalizeHeaders(entity.V1.HttpHeaders);
+                        httpHeaders = NormalizeHeaders(entity.V1.HttpHeaders, ignore: new[] { "Content-MD5" } );
                     }
 
                     return new

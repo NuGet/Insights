@@ -32,8 +32,18 @@ namespace NuGet.Insights.Worker
 {
     public static class ServiceCollectionExtensions
     {
+        private class Marker
+        {
+        }
+
         public static IServiceCollection AddNuGetInsightsWorker(this IServiceCollection serviceCollection)
         {
+            // Avoid re-adding all the services.
+            if (serviceCollection.Any(x => x.ServiceType == typeof(Marker)))
+            {
+                return serviceCollection;
+            }
+
             serviceCollection.AddTransient<IRawMessageEnqueuer, QueueStorageEnqueuer>();
             serviceCollection.AddTransient<IWorkerQueueFactory, WorkerQueueFactory>();
 

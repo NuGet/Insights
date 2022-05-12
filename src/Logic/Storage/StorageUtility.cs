@@ -18,6 +18,9 @@ namespace NuGet.Insights
         public const string Timestamp = "Timestamp";
         public const string ETag = "odata.etag";
 
+        public const string MD5Header = "Content-MD5";
+        public const string SHA512Header = "x-ms-meta-SHA512";
+
         /// <summary>
         /// See: https://docs.microsoft.com/en-us/azure/data-explorer/lightingest#recommendations
         /// </summary>

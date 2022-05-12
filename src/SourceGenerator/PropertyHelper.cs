@@ -81,8 +81,6 @@ namespace NuGet.Insights
                 case "ushort?":
                 case "short":
                 case "short?":
-                case "uint":
-                case "uint?":
                 case "int":
                 case "int?":
                     return "int";
@@ -91,6 +89,8 @@ namespace NuGet.Insights
                 case "double":
                 case "double?":
                     return "real";
+                case "uint":
+                case "uint?":
                 case "long":
                 case "long?":
                     return "long";

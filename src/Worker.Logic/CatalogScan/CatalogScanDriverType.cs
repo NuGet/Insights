@@ -66,9 +66,15 @@ namespace NuGet.Insights.Worker
 
         /// <summary>
         /// Implemented by <see cref="PackageArchiveToCsv.PackageArchiveToCsvDriver"/>.
-        /// Extracts metadata about each entry in a package's ZIP archive.
+        /// Extracts metadata about each entry in a package's ZIP archive (the .nupkg file).
         /// </summary>
         PackageArchiveToCsv,
+
+        /// <summary>
+        /// Implemented by <see cref="SymbolPackageArchiveToCsv.SymbolPackageArchiveToCsvDriver"/>.
+        /// Extracts metadata about each entry in a symbol package's ZIP archive (the .snupkg file).
+        /// </summary>
+        SymbolPackageArchiveToCsv,
 
         /// <summary>
         /// Implemented by <see cref="PackageAssemblyToCsv.PackageAssemblyToCsvDriver"/>. For packages that contain

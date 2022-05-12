@@ -49,6 +49,9 @@
         "Content-Length": [
           "10075"
         ],
+        "Content-MD5": [
+          "QNA6Bus8A4cBmQy6a2FK6Q=="
+        ],
         "Content-Type": [
           "binary/octet-stream"
         ],
@@ -81,6 +84,9 @@
         "Content-Length": [
           "8029"
         ],
+        "Content-MD5": [
+          "6TkDqp6fCtKBxeNNcOC64A=="
+        ],
         "Content-Type": [
           "binary/octet-stream"
         ],
@@ -112,6 +118,9 @@
       "HttpHeaders": {
         "Content-Length": [
           "8147"
+        ],
+        "Content-MD5": [
+          "JCD64IUPxyIPOXyMGwiZnw=="
         ],
         "Content-Type": [
           "binary/octet-stream"

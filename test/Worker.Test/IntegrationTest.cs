@@ -319,6 +319,7 @@ namespace NuGet.Insights.Worker
             {
                 ConfigureSettings = x =>
                 {
+                    x.LegacyReadmeUrlPattern = "https://api.nuget.org/legacy-readmes/{0}/{1}/README.md"; // fake
                     x.MaxTempMemoryStreamSize = 0;
                     x.TempDirectories[0].MaxConcurrentWriters = 1;
                 };
@@ -350,13 +351,19 @@ namespace NuGet.Insights.Worker
                 var loadPackageReadme = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageReadme, max1);
                 await UpdateAsync(loadPackageReadme.Scan);
 
-                var startingReadmeRequestCount = GetNuspecRequestCount();
+                var startingReadmeRequestCount = GetReadmeRequestCount();
 
                 // Load latest package leaves
                 var loadLatestPackageLeaf = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadLatestPackageLeaf, max1);
                 await UpdateAsync(loadLatestPackageLeaf.Scan);
 
                 Assert.Equal(0, GetNupkgRequestCount());
+
+                // Load the symbol packages
+                var loadSymbolPackageArchive = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadSymbolPackageArchive, max1);
+                await UpdateAsync(loadSymbolPackageArchive.Scan);
+
+                var startingSnupkgRequestCount = GetSnupkgRequestCount();
 
                 // Load the packages, process package assemblies, and run NuGet Package Explorer.
                 var loadPackageArchive = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageArchive, max1);
@@ -371,6 +378,7 @@ namespace NuGet.Insights.Worker
 #endif
 
                 var startingNupkgRequestCount = GetNupkgRequestCount();
+                var intermediateSnupkgRequestCount = GetSnupkgRequestCount();
 
                 // Load the versions
                 var loadPackageVersion = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageVersion, max1);
@@ -397,7 +405,8 @@ namespace NuGet.Insights.Worker
 
                 var finalNupkgRequestCount = GetNupkgRequestCount();
                 var finalNuspecRequestCount = GetNuspecRequestCount();
-                var finalReadmeRequestCount = GetNuspecRequestCount();
+                var finalReadmeRequestCount = GetReadmeRequestCount();
+                var finalSnupkgRequestCount = GetSnupkgRequestCount();
 
                 // Assert
                 var rawMessageEnqueuer = Host.Services.GetRequiredService<IRawMessageEnqueuer>();
@@ -412,9 +421,16 @@ namespace NuGet.Insights.Worker
                 Assert.NotEqual(0, startingNupkgRequestCount);
                 Assert.NotEqual(0, startingNuspecRequestCount);
                 Assert.NotEqual(0, startingReadmeRequestCount);
+                Assert.NotEqual(0, startingSnupkgRequestCount);
+#if ENABLE_NPE
+                Assert.NotEqual(startingSnupkgRequestCount, intermediateSnupkgRequestCount);
+#else
+                Assert.Equal(startingSnupkgRequestCount, intermediateSnupkgRequestCount);
+#endif
                 Assert.Equal(startingNupkgRequestCount, finalNupkgRequestCount);
                 Assert.Equal(startingNuspecRequestCount, finalNuspecRequestCount);
                 Assert.Equal(startingReadmeRequestCount, finalReadmeRequestCount);
+                Assert.Equal(intermediateSnupkgRequestCount, finalSnupkgRequestCount);
 
                 var userAgents = HttpMessageHandlerFactory.Requests.Select(r => r.Headers.UserAgent.ToString()).Distinct();
                 var userAgent = Assert.Single(userAgents);
@@ -431,6 +447,16 @@ namespace NuGet.Insights.Worker
         private int GetNupkgRequestCount()
         {
             return HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsoluteUri.EndsWith(".nupkg"));
+        }
+
+        private int GetReadmeRequestCount()
+        {
+            return HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsoluteUri.EndsWith(".md"));
+        }
+
+        private int GetSnupkgRequestCount()
+        {
+            return HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsoluteUri.EndsWith(".snupkg"));
         }
     }
 }

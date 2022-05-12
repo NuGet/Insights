@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
@@ -23,6 +24,10 @@ namespace NuGet.Insights
 {
     public static class ServiceCollectionExtensions
     {
+        private class Marker
+        {
+        }
+
         public const string HttpClientName = "NuGet.Insights";
         public const string LoggingHttpClientName = "NuGet.Insights.Logging";
 
@@ -60,6 +65,12 @@ namespace NuGet.Insights
             string programVersion = null,
             string programUrl = null)
         {
+            // Avoid re-adding all the services.
+            if (serviceCollection.Any(x => x.ServiceType == typeof(Marker)))
+            {
+                return serviceCollection;
+            }
+
             serviceCollection.AddMemoryCache();
 
             var userAgent = GetUserAgent(programName, programVersion, programUrl);
