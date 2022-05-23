@@ -52,6 +52,7 @@ $hostProjectPath = Join-Path $hostSrcDir "src/WebJobs.Script.WebHost/WebJobs.Scr
 $Env:PublishWithAspNetCoreTargetManifest = "false"
 
 # Clear repo-level NuGet and MSBuild settings so that the host publish step is isolated.
+Write-Host "Resetting repository level settings"
 @"
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
@@ -70,14 +71,15 @@ $Env:PublishWithAspNetCoreTargetManifest = "false"
 "<Project></Project>" | Out-File (Join-Path $artifactsDir ".\Directory.Build.props") -Encoding UTF8
 "<Project></Project>" | Out-File (Join-Path $artifactsDir ".\Directory.Build.targets") -Encoding UTF8
 
-Write-Host "Publishing Azure Functions host"
+Write-Host "Publishing host"
 dotnet publish $hostProjectPath -c Release --output $hostBinDir --runtime $RuntimeIdentifier --self-contained false
 
 # Delete all out-of-process (non-.NET) workers to make the package smaller.
 Remove-DirSafe (Join-Path $hostBinDir "workers/*")
 
 # Zip the host and app for a stand-alone Azure Functions deployment.
-Write-Host "Zipping host"
+$hostBinZip = Resolve-Path $hostBinZip
+Write-Host "Zipping host to $hostBinZip"
 if (Test-Path $hostBinZip) { Remove-Item $hostBinZip }
 Compress-Archive -Path (Join-Path $hostBinDir "*") -DestinationPath $hostBinZip
 

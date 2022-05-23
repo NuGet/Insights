@@ -15,7 +15,7 @@ param (
     [Parameter(Mandatory = $true)]
     [string]$WorkerZipPath,
 
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $false)]
     [string]$AzureFunctionsHostZipPath
 )
 
@@ -52,13 +52,24 @@ $storageContext = New-AzStorageContext `
 
 function New-DeploymentFile ($Path, $BlobName) {
     Write-Status "Uploading to '$BlobName'..."
+
+    $container = Get-AzStorageContainer `
+        -Name $Resourcesettings.LocalDeploymentContainerName `
+        -Context $storageContext `
+        -ErrorAction SilentlyContinue
+    if (!$container) {
+        New-AzStorageContainer `
+            -Context $storageContext `
+            -Name $Resourcesettings.LocalDeploymentContainerName | Out-Null 
+    }
+
     Set-AzStorageBlobContent `
         -Context $storageContext `
-        -Container $Resourcesettings.DeploymentContainerName `
+        -Container $Resourcesettings.LocalDeploymentContainerName `
         -File $Path `
         -Blob $BlobName | Out-Default
     return New-AzStorageBlobSASToken `
-        -Container $ResourceSettings.DeploymentContainerName `
+        -Container $ResourceSettings.LocalDeploymentContainerName `
         -Blob $BlobName `
         -Permission r `
         -Protocol HttpsOnly `
@@ -67,25 +78,42 @@ function New-DeploymentFile ($Path, $BlobName) {
         -FullUri
 }
 
+$spotWorkerUploadScriptPath = Join-Path $PSScriptRoot "Set-SpotWorkerDeploymentFiles.ps1"
 $workerStandaloneEnvPath = Join-Path $DeploymentDir "WorkerStandalone.env"
 New-WorkerStandaloneEnv $ResourceSettings | Out-EnvFile -FilePath $workerStandaloneEnvPath
 $installWorkerStandalonePath = Join-Path $PSScriptRoot "Install-WorkerStandalone.ps1"
 
 $websiteZipUrl = New-DeploymentFile $WebsiteZipPath "$DeploymentLabel/Website.zip"
 $workerZipUrl = New-DeploymentFile $WorkerZipPath "$DeploymentLabel/Worker.zip"
-$azureFunctionsHostZipUrl = New-DeploymentFile $AzureFunctionsHostZipPath "$DeploymentLabel/AzureFunctionsHost.zip"
-$workerStandaloneEnvUrl = New-DeploymentFile $workerStandaloneEnvPath "$DeploymentLabel/WorkerStandalone.env"
-$installWorkerStandaloneUrl = New-DeploymentFile $installWorkerStandalonePath "$DeploymentLabel/Install-WorkerStandalone.ps1"
+
+if ($ResourceSettings.UseSpotWorkers) {
+    if (!$AzureFunctionsHostZipPath) {
+        throw "No AzureFunctionsHostZipPath parameter was provided but at least one of the configurations has UseSpotWorkers set to true."
+    }
+
+    $spotWorkerUploadScriptUrl = New-DeploymentFile $spotWorkerUploadScriptPath "$DeploymentLabel/Set-SpotWorkerDeploymentFiles.ps1"
+    $azureFunctionsHostZipUrl = New-DeploymentFile $AzureFunctionsHostZipPath "$DeploymentLabel/AzureFunctionsHost.zip"
+    $workerStandaloneEnvUrl = New-DeploymentFile $workerStandaloneEnvPath "$DeploymentLabel/WorkerStandalone.env"
+    $installWorkerStandaloneUrl = New-DeploymentFile $installWorkerStandalonePath "$DeploymentLabel/Install-WorkerStandalone.ps1"
+}
 
 # Deploy the resources using the main ARM template
-Write-Status "Deploying the resources..."
+Write-Status "Deploying the main resources..."
 New-Deployment `
     -ResourceGroupName $ResourceSettings.ResourceGroupName `
     -DeploymentDir $DeploymentDir `
     -DeploymentLabel $DeploymentLabel `
     -DeploymentName "main" `
-    -BicepPath "../main.bicep" `
-    -Parameters (New-MainParameters $ResourceSettings $websiteZipUrl $workerZipUrl $DeploymentLabel)
+    -BicepPath "../bicep/main.bicep" `
+    -Parameters (New-MainParameters `
+        -ResourceSettings $ResourceSettings `
+        -WebsiteZipUrl $websiteZipUrl `
+        -WorkerZipUrl $workerZipUrl `
+        -SpotWorkerUploadScriptUrl $spotWorkerUploadScriptUrl `
+        -AzureFunctionsHostZipUrl $azureFunctionsHostZipUrl `
+        -WorkerStandaloneEnvUrl $workerStandaloneEnvUrl `
+        -InstallWorkerStandaloneUrl $installWorkerStandaloneUrl `
+        -DeploymentLabel $DeploymentLabel)
 
 # Warm up the workers, since initial deployment appears to leave them in a hibernation state.
 Write-Status "Warming up the website and workers..."
@@ -104,7 +132,7 @@ foreach ($appName in @($ResourceSettings.WebsiteName) + (0..($deployingWorkerCou
             break
         }
         catch {
-            if ($attempt -lt 10 -and $_.Exception.Response.StatusCode -ge 500) {
+            if ($attempt -lt 120 -and $_.Exception.Response.StatusCode -ge 500) {
                 Start-Sleep -Seconds 5
                 continue
             }

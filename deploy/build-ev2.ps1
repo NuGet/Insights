@@ -12,7 +12,7 @@ param (
     [Parameter(Mandatory = $true)]
     [string]$WorkerZipPath,
 
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $false)]
     [string]$AzureFunctionsHostZipPath
 )
 
@@ -110,7 +110,7 @@ function New-RolloutSpecFile($resourceSettings) {
 }
 
 function New-Bicep($name) {
-    $bicepPath = Join-Path $PSScriptRoot "$name.bicep"
+    $bicepPath = Join-Path $PSScriptRoot "bicep/$name.bicep"
     $templatePath = Join-Path $ev2 (Get-TemplatePath $name)
 
     $templatesDir = Split-Path $templatePath
@@ -190,6 +190,7 @@ if (!(Test-Path $bin)) {
 }
 
 # Build the Ev2 artifacts
+$anyUseSpotWorkers = $false
 foreach ($configName in $ConfigNames) {
     $resourceSettings = Get-ResourceSettings $configName
 
@@ -222,6 +223,8 @@ foreach ($configName in $ConfigNames) {
     $standaloneEnv = New-WorkerStandaloneEnv $resourceSettings
     $standaloneEnvFileName = $workerStandaloneEnvPathPattern -f $resourceSettings.ConfigName
     $standaloneEnv | Out-EnvFile -FilePath (Join-Path $ev2 $standaloneEnvFileName)
+
+    $anyUseSpotWorkers = $anyUseSpotWorkers -or $resourceSettings.UseSpotWorkers
 }
 
 $BuildVersion | Out-File (Join-Path $ev2 "BuildVer.txt") -NoNewline -Encoding UTF8
@@ -229,7 +232,12 @@ $BuildVersion | Out-File (Join-Path $ev2 "BuildVer.txt") -NoNewline -Encoding UT
 # Copy the runtime assets
 Copy-Item $WebsiteZipPath -Destination (Join-Path $ev2 $websiteBinPath) -Verbose
 Copy-Item $WorkerZipPath -Destination (Join-Path $ev2 $workerBinPath) -Verbose
-Copy-Item $AzureFunctionsHostZipPath -Destination (Join-Path $ev2 $azureFunctionsHostBinPath) -Verbose
+if ($anyUseSpotWorkers) {
+    if (!$AzureFunctionsHostZipPath) {
+        throw "No AzureFunctionsHostZipPath parameter was provided but at least one of the configurations has UseSpotWorkers set to true."
+    }
+    Copy-Item $AzureFunctionsHostZipPath -Destination (Join-Path $ev2 $azureFunctionsHostBinPath) -Verbose
+}
 Copy-Item $installWorkerStandaloneSourcePath -Destination (Join-Path $ev2 $installWorkerStandalonePath) -Verbose
 Write-Host "Wrote Ev2 files to: $ev2"
 

@@ -71,8 +71,9 @@ function Publish-Project ($ProjectName) {
 
 if (!$WebsiteZipPath) { $WebsiteZipPath = Publish-Project "Website" }
 if (!$WorkerZipPath) { $WorkerZipPath = Publish-Project "Worker" }
-if (!$AzureFunctionsHostZipPath) {
+if (!$AzureFunctionsHostZipPath -and $resourceSettings.UseSpotWorkers) {
     if (!(Test-Path $deploymentDir)) { New-Item $deploymentDir -ItemType Directory | Out-Null }
+    Write-Status "Publishing Azure Functions Host..."
     $AzureFunctionsHostZipPath = Join-Path $deploymentDir "AzureFunctionsHost.zip"
     . (Join-Path $PSScriptRoot "build-host.ps1") `
         -RuntimeIdentifier $RuntimeIdentifier `
