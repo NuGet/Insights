@@ -156,6 +156,7 @@ namespace NuGet.Insights.Worker
                 SchemaSerializer,
                 MessageBatcher.Object,
                 RawMessageEnqueuer.Object,
+                output.GetTelemetryClient(),
                 output.GetLogger<MessageEnqueuer>());
         }
 

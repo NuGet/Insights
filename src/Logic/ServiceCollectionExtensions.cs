@@ -150,7 +150,7 @@ namespace NuGet.Insights
             serviceCollection.AddTransient<PackageReadmeService>();
             serviceCollection.AddTransient<SymbolPackageFileService>();
 
-            serviceCollection.AddSingleton<ITelemetryClient>(s => NullTelemetryClient.Instance);
+            serviceCollection.AddSingleton<ITelemetryClient, TelemetryClientWrapper>();
 
             serviceCollection.AddTransient<TempStreamService>();
             serviceCollection.AddTransient<TempStreamWriter>();

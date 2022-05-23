@@ -18,6 +18,7 @@ namespace NuGet.Insights.Worker
         private readonly CatalogScanStorageService _storageService;
         private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
+        private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<CatalogScanService> _logger;
 
         public CatalogScanService(
@@ -27,6 +28,7 @@ namespace NuGet.Insights.Worker
             CatalogScanStorageService catalogScanStorageService,
             AutoRenewingStorageLeaseService leaseService,
             IOptions<NuGetInsightsWorkerSettings> options,
+            ITelemetryClient telemetryClient,
             ILogger<CatalogScanService> logger)
         {
             _cursorService = cursorService;
@@ -35,6 +37,7 @@ namespace NuGet.Insights.Worker
             _storageService = catalogScanStorageService;
             _leaseService = leaseService;
             _options = options;
+            _telemetryClient = telemetryClient;
             _logger = logger;
         }
 
@@ -228,6 +231,11 @@ namespace NuGet.Insights.Worker
                     throw new ArgumentException("Only using all leaves is supported for this driver type.", nameof(onlyLatestLeaves));
                 }
             }
+
+            _telemetryClient.TrackMetric(
+                "CatalogScan.Update",
+                1,
+                new Dictionary<string, string> { { "DriverType", driverType.ToString() } });
 
             switch (driverType)
             {

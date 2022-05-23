@@ -3,7 +3,7 @@
 
 using Microsoft.ApplicationInsights;
 
-namespace NuGet.Insights.Worker
+namespace NuGet.Insights
 {
     public class MetricWrapper : IMetric
     {

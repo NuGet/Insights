@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.ApplicationInsights;
 
-namespace NuGet.Insights.Worker
+namespace NuGet.Insights
 {
     public class TelemetryClientWrapper : ITelemetryClient
     {

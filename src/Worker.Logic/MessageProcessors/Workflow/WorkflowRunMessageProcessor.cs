@@ -81,17 +81,20 @@ namespace NuGet.Insights.Worker.Workflow
         private readonly WorkflowService _workflowService;
         private readonly WorkflowStorageService _storageService;
         private readonly IMessageEnqueuer _messageEnqueuer;
+        private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<WorkflowRunMessageProcessor> _logger;
 
         public WorkflowRunMessageProcessor(
             WorkflowService workflowService,
             WorkflowStorageService storageService,
             IMessageEnqueuer messageEnqueuer,
+            ITelemetryClient telemetryClient,
             ILogger<WorkflowRunMessageProcessor> logger)
         {
             _workflowService = workflowService;
             _storageService = storageService;
             _messageEnqueuer = messageEnqueuer;
+            _telemetryClient = telemetryClient;
             _logger = logger;
         }
 
@@ -118,6 +121,10 @@ namespace NuGet.Insights.Worker.Workflow
                 }
                 else
                 {
+                    _telemetryClient.TrackMetric(
+                        "Workflow.StateTransition",
+                        1,
+                        new Dictionary<string, string> { { "NextState", transition.NextState.ToString() } });
                     await transition.TransitionAsync(this, run);
 
                     run.State = transition.NextState;

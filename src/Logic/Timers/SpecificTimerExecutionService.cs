@@ -167,6 +167,11 @@ namespace NuGet.Insights
             bool executed;
             try
             {
+                _telemetryClient.TrackMetric(
+                    "Timer.Execute",
+                    1,
+                    new Dictionary<string, string> { { "Name", entity.GetName() } });
+
                 executed = await timer.ExecuteAsync();
                 if (executed)
                 {
