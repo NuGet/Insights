@@ -78,8 +78,7 @@ dotnet publish $hostProjectPath -c Release --output $hostBinDir --runtime $Runti
 Remove-DirSafe (Join-Path $hostBinDir "workers/*")
 
 # Zip the host and app for a stand-alone Azure Functions deployment.
-$hostBinZip = Resolve-Path $hostBinZip
-Write-Host "Zipping host to $hostBinZip"
+Write-Host "Zipping host to `"$hostBinZip`""
 if (Test-Path $hostBinZip) { Remove-Item $hostBinZip }
 Compress-Archive -Path (Join-Path $hostBinDir "*") -DestinationPath $hostBinZip
 
