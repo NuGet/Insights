@@ -127,8 +127,6 @@ class ResourceSettings {
         [Hashtable]$WebsiteConfig,
         [Hashtable]$WorkerConfig) {
 
-        $d = $DeploymentConfig
-        
         # Required settings
         $this.ConfigName = $ConfigName
         $this.StampName = $StampName
@@ -137,23 +135,27 @@ class ResourceSettings {
 
         $defaults = New-Object System.Collections.ArrayList
         function Set-OrDefault($key, $default, $target, $keyPrefix) {
-            if (!$target) {
+            if ($null -eq $target) {
+                $source = $DeploymentConfig
                 $target = $this
             }
+            else { 
+                $source = $target
+            }
 
-            if ($null -eq $d[$key]) {
+            if ($null -eq $source[$key]) {
                 $defaults.Add("$($keyPrefix)$($key)")
                 $target.$key = $default
             }
             else {
-                $target.$key = $d[$key]
+                $target.$key = $source[$key]
             }
         }
 
         # Settings with defaults
-        if ($d.WebsiteAadAppClientId) {
+        if ($DeploymentConfig.WebsiteAadAppClientId) {
             $this.WebsiteAadAppName = $null
-            $this.WebsiteAadAppClientId = $d.WebsiteAadAppClientId
+            $this.WebsiteAadAppClientId = $DeploymentConfig.WebsiteAadAppClientId
         }
         else {
             Set-OrDefault "WebsiteAadAppName" "NuGet.Insights-$StampName-Website"
@@ -189,10 +191,10 @@ class ResourceSettings {
         Set-OrDefault UseSpotWorkers $false
 
         # Optional settings
-        $this.SubscriptionId = $d.SubscriptionId
-        $this.ServiceTreeId = $d.ServiceTreeId
-        $this.EnvironmentName = $d.EnvironmentName
-        $this.ExistingWebsitePlanId = $d.ExistingWebsitePlanId
+        $this.SubscriptionId = $DeploymentConfig.SubscriptionId
+        $this.ServiceTreeId = $DeploymentConfig.ServiceTreeId
+        $this.EnvironmentName = $DeploymentConfig.EnvironmentName
+        $this.ExistingWebsitePlanId = $DeploymentConfig.ExistingWebsitePlanId
 
         # Spot worker settings
         if ($this.UseSpotWorkers) {
@@ -212,7 +214,7 @@ class ResourceSettings {
                 for ($i = 0; $i -lt $this.SpotWorkerSpecs.Count; $i++) {
                     $keyPrefix = "SpotWorkerSpecs[$i]."
                     $target = $this.SpotWorkerSpecs[$i]
-    
+
                     Set-OrDefault NamePrefix "NuGetInsights-$StampName-SpotWorker-$i-" $target $keyPrefix
                     Set-OrDefault Location $this.Location $target $keyPrefix
                     Set-OrDefault Sku "Standard_D2as_v4" $target $keyPrefix
@@ -271,7 +273,7 @@ class ResourceSettings {
             $this.AutoRegenerateStorageKey = $true
         }
 
-        if ($d.RejectDefaults -and $defaults) {
+        if ($DeploymentConfig.RejectDefaults -and $defaults) {
             throw "Defaults are not allowed for config '$ConfigName'. Specify the following properties on the object at JSON path $.deployment: $defaults"
         }
     }
