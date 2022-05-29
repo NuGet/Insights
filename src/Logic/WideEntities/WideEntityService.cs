@@ -160,7 +160,7 @@ namespace NuGet.Insights.WideEntities
 
         private async IAsyncEnumerable<WideEntity> RetrieveAsync(string tableName, TableClient table, string partitionKey, string minRowKey, string maxRowKey, bool includeData, int maxPerPage)
         {
-            using var metrics = _telemetryClient.StartQueryLoopMetrics("TableName", tableName);
+            using var metrics = _telemetryClient.StartQueryLoopMetrics(dimension1Name: "TableName", dimension1Value: tableName);
 
             var noRowKeys = false;
             if (minRowKey == null)
