@@ -111,7 +111,7 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2021-11-01' = {
         imageReference: {
           publisher: 'MicrosoftWindowsServer'
           offer: 'WindowsServer'
-          sku: '2019-Datacenter-smalldisk'
+          sku: '2022-datacenter-core-smalldisk'
           version: 'latest'
         }
       }
@@ -128,6 +128,11 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2021-11-01' = {
                     subnet: {
                       id: vnet.properties.subnets[0].id
                     }
+                    /* Enable a public IP address so you can RDP into an instance for debugging purposes.
+                    publicIPAddressConfiguration: {
+                      name: ipConfigName
+                    }
+                    */
                   }
                 }
               ]
@@ -192,9 +197,6 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2021-11-01' = {
     }
     upgradePolicy: {
       mode: 'Automatic'
-      automaticOSUpgradePolicy: {
-        enableAutomaticOSUpgrade: true
-      }
     }
   }
 }
