@@ -270,7 +270,7 @@ resource autoscale 'Microsoft.Insights/autoscalesettings@2015-04-01' = {
               statistic: 'Average'
               timeWindow: 'PT10M'
               timeAggregation: 'Average'
-              operator: 'LessThanOrEqual'
+              operator: 'LessThan'
               threshold: 15
             }
             scaleAction: {

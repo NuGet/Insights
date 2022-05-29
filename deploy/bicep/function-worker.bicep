@@ -61,13 +61,13 @@ resource workerPlanAutoScale 'Microsoft.Insights/autoscalesettings@2015-04-01' =
               timeWindow: 'PT10M'
               timeAggregation: 'Average'
               operator: 'GreaterThan'
-              threshold: 15
+              threshold: 25
             }
             scaleAction: {
               direction: 'Increase'
               type: 'ChangeCount'
+              cooldown: 'PT1M'
               value: '5'
-              cooldown: 'PT3M'
             }
           }
           {
@@ -77,16 +77,16 @@ resource workerPlanAutoScale 'Microsoft.Insights/autoscalesettings@2015-04-01' =
               metricResourceUri: workerPlan.id
               timeGrain: 'PT1M'
               statistic: 'Average'
-              timeWindow: 'PT5M'
+              timeWindow: 'PT10M'
               timeAggregation: 'Average'
               operator: 'LessThan'
-              threshold: 5
+              threshold: 15
             }
             scaleAction: {
               direction: 'Decrease'
               type: 'ChangeCount'
-              value: '5'
-              cooldown: 'PT1M'
+              cooldown: 'PT2M'
+              value: '10'
             }
           }
         ]
