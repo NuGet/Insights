@@ -43,7 +43,7 @@ class ResourceSettings {
     [ValidateNotNullOrEmpty()]
     [string]$UserManagedIdentityName
     
-    [ValidateSet("Y1", "S1", "S2", "S3", "P1v2", "P2v2", "P3v2", "P1v3", "P2v3", "P3v3")]
+    [ValidateSet("Y1", "B1", "B2", "B3", "S1", "S2", "S3", "P1v2", "P2v2", "P3v2", "P1v3", "P2v3", "P3v3")]
     [string]$WorkerSku
     
     [ValidateRange(1, 30)]
@@ -178,16 +178,17 @@ class ResourceSettings {
         Set-OrDefault WorkerHostId "NuGetInsights-$StampName"
         Set-OrDefault WorkerSku "Y1"
         Set-OrDefault WorkerMinInstances 1
-        $defaultWorkerMaxInstances = if ($this.WorkerSku.StartsWith("P")) { 30 } else { 10 }
+        $isPremiumPlan = $this.WorkerSku.StartsWith("P")
+        $defaultWorkerMaxInstances = if ($isPremiumPlan) { 30 } else { 10 }
         Set-OrDefault WorkerMaxInstances $defaultWorkerMaxInstances
         Set-OrDefault WorkerPlanCount 1
         Set-OrDefault WorkerPlanLocations @($this.Location)
         Set-OrDefault WorkerCountPerPlan 1
         Set-OrDefault WorkerLogLevel "Warning"
         Set-OrDefault ResourceGroupName "NuGet.Insights-$StampName"
-        Set-OrDefault StorageAccountName "nugin$($StampName.ToLowerInvariant())"
+        Set-OrDefault StorageAccountName "nugin$($StampName.Replace('-', '').ToLowerInvariant())"
         Set-OrDefault StorageEndpointSuffix "core.windows.net"
-        Set-OrDefault KeyVaultName "nugin$($StampName.ToLowerInvariant())"
+        Set-OrDefault KeyVaultName "nugin$($StampName.Replace('-', '').ToLowerInvariant())"
         Set-OrDefault UseSpotWorkers $false
 
         # Optional settings
@@ -250,11 +251,11 @@ class ResourceSettings {
                 }
             }
 
-            # Default the storage queue trigger batch size to 1 when NuGetPackageExplorerToCsv is enabled. We do this to
-            # eliminate the parallelism in the worker process so that we can easily control the number of total parallel
+            # Reduce the storage queue trigger batch size when NuGetPackageExplorerToCsv is enabled. We do this to
+            # reduce the parallelism in the worker process so that we can easily control the number of total parallel
             # queue messages are being processed and therefore are using the HOME file share.
             if ($null -eq $this.WorkerConfig.AzureFunctionsJobHost__extensions__queues__batchSize) {
-                if ($this.WorkerSku -eq "P1v2") {
+                if ($isPremiumPlan -or $this.UseSpotWorkers) {
                     $this.WorkerConfig.AzureFunctionsJobHost__extensions__queues__batchSize = 8
                 }
                 else {
