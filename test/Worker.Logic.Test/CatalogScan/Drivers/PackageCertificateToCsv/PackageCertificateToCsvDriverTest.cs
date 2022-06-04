@@ -56,7 +56,8 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
 
             var output = await Target.ProcessLeavesAsync(new[] { leaf });
 
-            Assert.Empty(output.Result.Sets1
+            // .NET Runtime 6.0.0 fails to read this. 6.0.5 succeeds.
+            Assert.Single(output.Result.Sets1
                 .SelectMany(x => x.Records)
                 .Where(x => x.RelationshipTypes.HasFlag(CertificateRelationshipTypes.IsAuthorTimestampedBy)));
             Assert.Single(output.Result.Sets1

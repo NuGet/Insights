@@ -173,6 +173,7 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
                 await UpdateAsync(max1);
 
                 // Assert
+                // .NET Runtime 6.0.0 fails to read the author signature of Avira.Managed.Remediation 1.2202.701. 6.0.5 succeeds.
                 await AssertOutputAsync(PackageSignatureToCsv_BadTimestampEncodingDir, Step1, 0);
             }
         }
