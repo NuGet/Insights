@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -201,12 +201,12 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             await AssertOutputAsync(PackageAssetToCsv_WithDuplicatesDir, Step1, 0);
 
             var duplicatePackageRequests = HttpMessageHandlerFactory
-                .Requests
-                .Where(x => x.RequestUri.AbsolutePath.EndsWith("/gosms.ge-sms-api.1.0.1.nupkg"))
+                .Responses
+                .Where(x => x.RequestMessage.RequestUri.AbsolutePath.EndsWith("/gosms.ge-sms-api.1.0.1.nupkg"))
                 .ToList();
             var onlyLatestLeaves = LatestLeavesTypes.Contains(DriverType);
-            Assert.Equal(onlyLatestLeaves ? 1 : 2, duplicatePackageRequests.Where(x => x.Method == HttpMethod.Head).Count());
-            Assert.Equal(onlyLatestLeaves ? 1 : 2, duplicatePackageRequests.Where(x => x.Method == HttpMethod.Get).Count());
+            Assert.Equal(onlyLatestLeaves ? 1 : 2, duplicatePackageRequests.Where(x => x.RequestMessage.Method == HttpMethod.Head && x.IsSuccessStatusCode).Count());
+            Assert.Equal(onlyLatestLeaves ? 1 : 2, duplicatePackageRequests.Where(x => x.RequestMessage.Method == HttpMethod.Get && x.IsSuccessStatusCode).Count());
         }
 
         protected override IEnumerable<string> GetExpectedCursorNames()

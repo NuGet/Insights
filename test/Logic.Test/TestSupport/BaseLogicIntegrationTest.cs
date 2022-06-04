@@ -341,40 +341,52 @@ namespace NuGet.Insights
 
             public ConcurrentQueue<HttpRequestMessage> Requests { get; } = new ConcurrentQueue<HttpRequestMessage>();
 
+            public ConcurrentQueue<HttpResponseMessage> Responses { get; } = new ConcurrentQueue<HttpResponseMessage>();
+
             public DelegatingHandler Create()
             {
                 return new TestHttpMessageHandler(async (req, baseSendAsync, token) =>
                 {
-                    Requests.Enqueue(req);
-
                     if (OnSendAsync != null)
                     {
                         return await OnSendAsync(req, baseSendAsync, token);
                     }
 
                     return null;
-                });
+                }, Requests, Responses);
             }
         }
 
         public class TestHttpMessageHandler : DelegatingHandler
         {
             private readonly SendMessageWithBaseAsync _onSendAsync;
+            private readonly ConcurrentQueue<HttpRequestMessage> _requestQueue;
+            private readonly ConcurrentQueue<HttpResponseMessage> _responseQueue;
 
-            public TestHttpMessageHandler(SendMessageWithBaseAsync onSendAsync)
+            public TestHttpMessageHandler(
+                SendMessageWithBaseAsync onSendAsync,
+                ConcurrentQueue<HttpRequestMessage> requestQueue,
+                ConcurrentQueue<HttpResponseMessage> responseQueue)
             {
                 _onSendAsync = onSendAsync;
+                _requestQueue = requestQueue;
+                _responseQueue = responseQueue;
             }
 
             protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken token)
             {
+                _requestQueue.Enqueue(request);
+
                 var response = await _onSendAsync(request, base.SendAsync, token);
                 if (response != null)
                 {
+                    _responseQueue.Enqueue(response);
                     return response;
                 }
 
-                return await base.SendAsync(request, token);
+                response = await base.SendAsync(request, token);
+                _responseQueue.Enqueue(response);
+                return response;
             }
         }
 
