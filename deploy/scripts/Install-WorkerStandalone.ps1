@@ -27,11 +27,10 @@ param (
 
 $ErrorActionPreference = "Stop"
 
-$dotnetInstallUrl = "https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.ps1"
+$dotnetInstallPattern = "dotnet-install.ps1"
 $dotnetChannel = "6.0"
 $dotnetRuntime = "aspnetcore"
 $binDir = "C:\bin"
-$dotnetInstallPath = Join-Path $binDir "dotnet-install.ps1"
 $dotnetDir = Join-Path $binDir "Microsoft\dotnet"
 $dotnet = Join-Path $dotnetDir "dotnet.exe"
 $scheduledTaskName = "NuGet.Insights Standalone Worker"
@@ -64,9 +63,8 @@ Function Expand-Pattern($type, $pattern) {
 }
 
 # Download and install the .NET runtime
-[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 if (!(Test-Path $installDir)) { New-Item $installDir -ItemType Directory | Out-Null }
-Invoke-WebRequest $dotnetInstallUrl -OutFile $dotnetInstallPath
+$dotnetInstallPath = Get-Pattern $dotnetInstallPattern
 & $dotnetInstallPath -Channel $dotnetChannel -Runtime $dotnetRuntime -InstallDir $dotnetDir -NoPath
 Write-Host ""
 
