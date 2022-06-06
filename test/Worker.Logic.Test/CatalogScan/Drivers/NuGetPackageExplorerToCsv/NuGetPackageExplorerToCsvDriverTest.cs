@@ -403,5 +403,29 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             var file = Assert.Single(Assert.Single(output.Value.Sets2).Records);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
+
+        /// <summary>
+        /// Tracked by https://github.com/NuGetPackageExplorer/NuGetPackageExplorer/issues/1505
+        /// </summary>
+        [Fact]
+        public async Task ToolsPropertyMissingFromDepsJsonFileIsInvalidMetadata()
+        {
+            await Target.InitializeAsync();
+            var leaf = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2022.06.04.19.46.05/jetbrains.resharper.globaltools.2022.2.0-eap03.json",
+                LeafType = CatalogLeafType.PackageDetails,
+                PackageId = "JetBrains.ReSharper.GlobalTools",
+                PackageVersion = "2022.2.0-eap03",
+            };
+
+            var output = await Target.ProcessLeafAsync(leaf);
+
+            Assert.Equal(DriverResultType.Success, output.Type);
+            var record = Assert.Single(Assert.Single(output.Value.Sets1).Records);
+            Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
+            var file = Assert.Single(Assert.Single(output.Value.Sets2).Records);
+            Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
+        }
     }
 }
