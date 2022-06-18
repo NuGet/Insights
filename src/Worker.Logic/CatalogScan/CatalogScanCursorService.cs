@@ -101,7 +101,7 @@ namespace NuGet.Insights.Worker
 #if ENABLE_NPE
             {
                 CatalogScanDriverType.NuGetPackageExplorerToCsv,
-                new[] { FlatContainer, CatalogScanDriverType.LoadLatestPackageLeaf }
+                new[] { FlatContainer }
             },
 #endif
             {
