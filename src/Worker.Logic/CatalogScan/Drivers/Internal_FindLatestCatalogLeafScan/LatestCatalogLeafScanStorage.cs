@@ -22,14 +22,14 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScan
         public TableClient Table { get; }
         public string CommitTimestampColumnName => nameof(CatalogLeafScan.CommitTimestamp);
 
-        public string GetPartitionKey(string packageId)
+        public string GetPartitionKey(ICatalogLeafItem item)
         {
-            return CatalogLeafScan.GetPartitionKey(_indexScan.GetScanId(), GetPageId(packageId));
+            return CatalogLeafScan.GetPartitionKey(_indexScan.GetScanId(), GetPageId(item.PackageId));
         }
 
-        public string GetRowKey(string packageVersion)
+        public string GetRowKey(ICatalogLeafItem item)
         {
-            return GetLeafId(packageVersion);
+            return GetLeafId(item.PackageVersion);
         }
 
         public Task<CatalogLeafScan> MapAsync(ICatalogLeafItem item)

@@ -28,38 +28,41 @@ namespace NuGet.Insights.Worker
         }
 
         public async Task AddAsync(
-            string packageId,
             IReadOnlyList<ICatalogLeafItem> items,
             ILatestPackageLeafStorage<T> storage,
             bool allowRetries)
         {
-            var maxAttempts = allowRetries ? 5 : 1;
-            var attempt = 0;
-            while (true)
+            foreach (var group in items.GroupBy(storage.GetPartitionKey))
             {
-                attempt++;
-                try
+                var maxAttempts = allowRetries ? 5 : 1;
+                var attempt = 0;
+                var groupList = group.ToList();
+
+                while (true)
                 {
-                    await AddAsync(packageId, items, storage);
-                    break;
-                }
-                catch (RequestFailedException ex) when (attempt < maxAttempts
-                    && (ex.Status == (int)HttpStatusCode.Conflict
-                        || ex.Status == (int)HttpStatusCode.PreconditionFailed))
-                {
-                    _logger.LogWarning(
-                        ex,
-                        "Attempt {Attempt}: adding entities for package ID {PackageId} failed due to an HTTP {StatusCode}. Trying again.",
-                        attempt,
-                        packageId,
-                        ex.Status);
+                    attempt++;
+                    try
+                    {
+                        await AddAsync(group.Key, groupList, storage);
+                        break;
+                    }
+                    catch (RequestFailedException ex) when (attempt < maxAttempts
+                        && (ex.Status == (int)HttpStatusCode.Conflict
+                            || ex.Status == (int)HttpStatusCode.PreconditionFailed))
+                    {
+                        _logger.LogWarning(
+                            ex,
+                            "Attempt {Attempt}: adding entities for partition key {PartitionKey} failed due to an HTTP {StatusCode}. Trying again.",
+                            attempt,
+                            group.Key,
+                            ex.Status);
+                    }
                 }
             }
         }
 
-        private async Task AddAsync(string packageId, IReadOnlyList<ICatalogLeafItem> items, ILatestPackageLeafStorage<T> storage)
+        private async Task AddAsync(string partitionKey, IReadOnlyList<ICatalogLeafItem> items, ILatestPackageLeafStorage<T> storage)
         {
-            var partitionKey = storage.GetPartitionKey(packageId);
             (var rowKeyToItem, var rowKeyToETag) = await GetExistingsRowsAsync(partitionKey, items, storage);
 
             // Add the row keys that remain. These are the versions that are not in Table Storage or are newer than the
@@ -108,7 +111,7 @@ namespace NuGet.Insights.Worker
 
             // Sort items by lexicographical order, since this is what table storage does.
             var itemList = items
-                .Select(x => new { Item = x, RowKey = storage.GetRowKey(x.PackageVersion) })
+                .Select(x => new { Item = x, RowKey = storage.GetRowKey(x) })
                 .GroupBy(x => x.RowKey)
                 .Select(x => x.OrderByDescending(x => x.Item.CommitTimestamp).First())
                 .OrderBy(x => x.RowKey, StringComparer.Ordinal)

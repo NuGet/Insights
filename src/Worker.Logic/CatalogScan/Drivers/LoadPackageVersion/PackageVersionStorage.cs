@@ -21,14 +21,14 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
         public TableClient Table { get; }
         public string CommitTimestampColumnName => nameof(PackageVersionEntity.CommitTimestamp);
 
-        public string GetPartitionKey(string packageId)
+        public string GetPartitionKey(ICatalogLeafItem item)
         {
-            return PackageVersionEntity.GetPartitionKey(packageId);
+            return PackageVersionEntity.GetPartitionKey(item.PackageId);
         }
 
-        public string GetRowKey(string packageVersion)
+        public string GetRowKey(ICatalogLeafItem item)
         {
-            return PackageVersionEntity.GetRowKey(packageVersion);
+            return PackageVersionEntity.GetRowKey(item.PackageVersion);
         }
 
         public async Task<PackageVersionEntity> MapAsync(ICatalogLeafItem item)

@@ -10,8 +10,8 @@ namespace NuGet.Insights.Worker
     {
         TableClient Table { get; }
         Task<T> MapAsync(ICatalogLeafItem item);
-        string GetPartitionKey(string packageId);
-        string GetRowKey(string packageVersion);
+        string GetPartitionKey(ICatalogLeafItem item);
+        string GetRowKey(ICatalogLeafItem item);
         string CommitTimestampColumnName { get; }
     }
 }

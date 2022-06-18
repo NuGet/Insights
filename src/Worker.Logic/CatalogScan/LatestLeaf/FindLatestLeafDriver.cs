@@ -56,12 +56,7 @@ namespace NuGet.Insights.Worker
 
         private async Task AddAsync(List<CatalogLeafItem> items, ILatestPackageLeafStorage<T> storage)
         {
-            var packageIdGroups = items.GroupBy(x => x.PackageId, StringComparer.OrdinalIgnoreCase);
-            foreach (var group in packageIdGroups)
-            {
-                await _storageService.AddAsync(group.Key, group.ToList(), storage, allowRetries: true);
-            }
-
+            await _storageService.AddAsync(items, storage, allowRetries: true);
             _logger.LogInformation("Updated latest leaf entities for {Count} items.", items.Count);
         }
 
