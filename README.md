@@ -258,3 +258,7 @@ into Azure Table Storage. It took about 35 minutes to do this and costed about $
 #### Azure Functions Execution Count
 
 ![Azure Functions Execution Units](docs/find-package-files-execution-units.png)
+
+## Trademarks
+
+This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft trademarks or logos is subject to and must follow Microsoft’s Trademark & Brand Guidelines. Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or logos are subject to those third-party’s policies.
