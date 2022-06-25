@@ -178,7 +178,7 @@ namespace NuGet.Insights
             [Key(0)]
             public PackageReadmeInfoV1 V1 { get; set; }
 
-            DateTimeOffset PackageWideEntityService.IPackageWideEntity.CommitTimestamp => V1.CommitTimestamp;
+            DateTimeOffset? PackageWideEntityService.IPackageWideEntity.CommitTimestamp => V1.CommitTimestamp;
         }
 
         [MessagePackObject]
