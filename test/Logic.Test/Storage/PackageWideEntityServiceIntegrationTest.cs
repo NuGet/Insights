@@ -13,168 +13,313 @@ namespace NuGet.Insights
 {
     public class PackageWideEntityServiceIntegrationTest : BaseLogicIntegrationTest
     {
-        [Fact]
-        public async Task FetchesDataForNewItem()
+        public class TheUpdateBatchAsyncMethod : PackageWideEntityServiceIntegrationTest
         {
-            await Target.InitializeAsync(TableName);
+            [Fact]
+            public async Task FetchesDataForNewItem()
+            {
+                await Target.InitializeAsync(TableName);
 
-            var output = await UpdateBatchAsync();
+                var output = await UpdateBatchAsync();
 
-            var pair = Assert.Single(output);
-            Assert.Same(Item, pair.Key);
-            Assert.Equal(Item.CommitTimestamp, pair.Value.CommitTimestamp);
-            Assert.True(DataFetched);
+                var pair = Assert.Single(output);
+                Assert.Same(Item, pair.Key);
+                Assert.Equal(Item.CommitTimestamp, pair.Value.CommitTimestamp);
+                Assert.True(DataFetched);
+            }
+
+            [Fact]
+            public async Task FetchesDataForUpdatedItem()
+            {
+                await Target.InitializeAsync(TableName);
+                await UpdateBatchAsync();
+                DataFetched = false;
+                Item.CommitTimestamp += TimeSpan.FromDays(1);
+
+                var output = await UpdateBatchAsync();
+
+                var pair = Assert.Single(output);
+                Assert.Same(Item, pair.Key);
+                Assert.Equal(CommitTimestamp.AddDays(1), pair.Value.CommitTimestamp);
+                Assert.Equal(Item.CommitTimestamp, pair.Value.CommitTimestamp);
+                Assert.True(DataFetched);
+            }
+
+            [Fact]
+            public async Task DoesNotFetchDataForOldItem()
+            {
+                await Target.InitializeAsync(TableName);
+                await UpdateBatchAsync();
+                DataFetched = false;
+                Item.CommitTimestamp -= TimeSpan.FromDays(1);
+
+                var output = await UpdateBatchAsync();
+
+                var pair = Assert.Single(output);
+                Assert.Same(Item, pair.Key);
+                Assert.Equal(CommitTimestamp, pair.Value.CommitTimestamp);
+                Assert.Equal(Item.CommitTimestamp.Value.AddDays(1), pair.Value.CommitTimestamp);
+                Assert.False(DataFetched);
+            }
+
+            [Fact]
+            public async Task FetchesDataForExistingItemWhenInputHasNoCommitTimestamp()
+            {
+                await Target.InitializeAsync(TableName);
+                await UpdateBatchAsync();
+                DataFetched = false;
+                Item.CommitTimestamp = null;
+
+                var output = await UpdateBatchAsync();
+
+                var pair = Assert.Single(output);
+                Assert.Same(Item, pair.Key);
+                Assert.Equal(Item.CommitTimestamp, pair.Value.CommitTimestamp);
+                Assert.Null(pair.Value.CommitTimestamp);
+                Assert.True(DataFetched);
+            }
+
+            [Fact]
+            public async Task FetchesDataForExistingItemWhenExistingHasNoCommitTimestamp()
+            {
+                await Target.InitializeAsync(TableName);
+                Item.CommitTimestamp = null;
+                await UpdateBatchAsync();
+                DataFetched = false;
+                Item.CommitTimestamp = CommitTimestamp;
+
+                var output = await UpdateBatchAsync();
+
+                var pair = Assert.Single(output);
+                Assert.Same(Item, pair.Key);
+                Assert.Equal(CommitTimestamp, pair.Value.CommitTimestamp);
+                Assert.Equal(Item.CommitTimestamp, pair.Value.CommitTimestamp);
+                Assert.True(DataFetched);
+            }
+
+            [Fact]
+            public async Task FetchesDataForExistingItemWhenInputAndExistingHasNoCommitTimestamp()
+            {
+                await Target.InitializeAsync(TableName);
+                Item.CommitTimestamp = null;
+                await UpdateBatchAsync();
+                DataFetched = false;
+
+                var output = await UpdateBatchAsync();
+
+                var pair = Assert.Single(output);
+                Assert.Same(Item, pair.Key);
+                Assert.Equal(Item.CommitTimestamp, pair.Value.CommitTimestamp);
+                Assert.Null(pair.Value.CommitTimestamp);
+                Assert.True(DataFetched);
+            }
+
+            [Fact]
+            public async Task NullableModelWithNonNullValueCanOperateOnNonNullableData()
+            {
+                await Target.InitializeAsync(TableName);
+                await UpdateNonNullBatchAsync();
+                DataFetched = false;
+                Item.CommitTimestamp += TimeSpan.FromDays(1);
+
+                var output = await UpdateBatchAsync();
+
+                var pair = Assert.Single(output);
+                Assert.Same(Item, pair.Key);
+                Assert.Equal(CommitTimestamp.AddDays(1), pair.Value.CommitTimestamp);
+                Assert.Equal(Item.CommitTimestamp, pair.Value.CommitTimestamp);
+                Assert.True(DataFetched);
+            }
+
+            [Fact]
+            public async Task NullableModelWithNullValueCanOperateOnNonNullableData()
+            {
+                await Target.InitializeAsync(TableName);
+                await UpdateNonNullBatchAsync();
+                DataFetched = false;
+                Item.CommitTimestamp = null;
+
+                var output = await UpdateBatchAsync();
+
+                var pair = Assert.Single(output);
+                Assert.Same(Item, pair.Key);
+                Assert.Equal(Item.CommitTimestamp, pair.Value.CommitTimestamp);
+                Assert.Null(pair.Value.CommitTimestamp);
+                Assert.True(DataFetched);
+            }
+
+            [Fact]
+            public async Task NonNullableModelCanOperateOnNullableDataWithNonNullValue()
+            {
+                await Target.InitializeAsync(TableName);
+                await UpdateBatchAsync();
+                DataFetched = false;
+                Item.CommitTimestamp += TimeSpan.FromDays(1);
+
+                var output = await UpdateNonNullBatchAsync();
+
+                var pair = Assert.Single(output);
+                Assert.Same(Item, pair.Key);
+                Assert.Equal(CommitTimestamp.AddDays(1), pair.Value.CommitTimestamp);
+                Assert.Equal(Item.CommitTimestamp, pair.Value.CommitTimestamp);
+                Assert.True(DataFetched);
+            }
+
+            [Fact]
+            public async Task NonNullableModelCannotOperateOnNullableDataWithNullValue()
+            {
+                await Target.InitializeAsync(TableName);
+                Item.CommitTimestamp = null;
+                await UpdateBatchAsync();
+                DataFetched = false;
+                Item.CommitTimestamp = CommitTimestamp;
+
+                var ex = await Assert.ThrowsAsync<MessagePackSerializationException>(() => UpdateNonNullBatchAsync());
+                Assert.Contains("Unexpected msgpack code 192 (nil) encountered.", ex.ToString());
+                Assert.False(DataFetched);
+            }
+
+            public TheUpdateBatchAsyncMethod(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            {
+            }
+
+            protected async Task<IReadOnlyDictionary<IPackageIdentityCommit, TestPackageWideEntityV1>> UpdateBatchAsync()
+            {
+                return await Target.UpdateBatchAsync(
+                    TableName,
+                    Item.PackageId,
+                    new[] { Item },
+                    x =>
+                    {
+                        DataFetched = true;
+                        return Task.FromResult(new TestPackageWideEntityV1 { CommitTimestamp = x.CommitTimestamp });
+                    },
+                    x => new TestPackageWideEntityVersions(x),
+                    x => x.V1);
+            }
+
+            protected async Task<IReadOnlyDictionary<IPackageIdentityCommit, NonNullTestPackageWideEntityV1>> UpdateNonNullBatchAsync()
+            {
+                return await Target.UpdateBatchAsync(
+                    TableName,
+                    Item.PackageId,
+                    new[] { Item },
+                    x =>
+                    {
+                        DataFetched = true;
+                        return Task.FromResult(new NonNullTestPackageWideEntityV1 { CommitTimestamp = x.CommitTimestamp.Value });
+                    },
+                    x => new NonNullTestPackageWideEntityVersions(x),
+                    x => x.V1);
+            }
         }
 
-        [Fact]
-        public async Task FetchesDataForUpdatedItem()
+        public class TheGetOrUpdateInfoAsyncMethod : PackageWideEntityServiceIntegrationTest
         {
-            await Target.InitializeAsync(TableName);
-            await UpdateBatchAsync();
-            DataFetched = false;
-            Item.CommitTimestamp += TimeSpan.FromDays(1);
+            [Fact]
+            public async Task FetchesDataForNewItem()
+            {
+                await Target.InitializeAsync(TableName);
 
-            var output = await UpdateBatchAsync();
+                var output = await GetOrUpdateInfoAsync();
 
-            var pair = Assert.Single(output);
-            Assert.Same(Item, pair.Key);
-            Assert.Equal(CommitTimestamp.AddDays(1), pair.Value.CommitTimestamp);
-            Assert.Equal(Item.CommitTimestamp, pair.Value.CommitTimestamp);
-            Assert.True(DataFetched);
-        }
+                Assert.Equal(Item.CommitTimestamp, output.CommitTimestamp);
+                Assert.True(DataFetched);
+            }
 
-        [Fact]
-        public async Task DoesNotFetchDataForOldItem()
-        {
-            await Target.InitializeAsync(TableName);
-            await UpdateBatchAsync();
-            DataFetched = false;
-            Item.CommitTimestamp -= TimeSpan.FromDays(1);
+            [Fact]
+            public async Task FetchesDataForUpdatedItem()
+            {
+                await Target.InitializeAsync(TableName);
+                await GetOrUpdateInfoAsync();
+                DataFetched = false;
+                Item.CommitTimestamp += TimeSpan.FromDays(1);
 
-            var output = await UpdateBatchAsync();
+                var output = await GetOrUpdateInfoAsync();
 
-            var pair = Assert.Single(output);
-            Assert.Same(Item, pair.Key);
-            Assert.Equal(CommitTimestamp, pair.Value.CommitTimestamp);
-            Assert.Equal(Item.CommitTimestamp.Value.AddDays(1), pair.Value.CommitTimestamp);
-            Assert.False(DataFetched);
-        }
+                Assert.Equal(CommitTimestamp.AddDays(1), output.CommitTimestamp);
+                Assert.Equal(Item.CommitTimestamp, output.CommitTimestamp);
+                Assert.True(DataFetched);
+            }
 
-        [Fact]
-        public async Task FetchesDataForExistingItemWhenInputHasNoCommitTimestamp()
-        {
-            await Target.InitializeAsync(TableName);
-            await UpdateBatchAsync();
-            DataFetched = false;
-            Item.CommitTimestamp = null;
+            [Fact]
+            public async Task DoesNotFetchDataForOldItem()
+            {
+                await Target.InitializeAsync(TableName);
+                await GetOrUpdateInfoAsync();
+                DataFetched = false;
+                Item.CommitTimestamp -= TimeSpan.FromDays(1);
 
-            var output = await UpdateBatchAsync();
+                var output = await GetOrUpdateInfoAsync();
 
-            var pair = Assert.Single(output);
-            Assert.Same(Item, pair.Key);
-            Assert.Equal(Item.CommitTimestamp, pair.Value.CommitTimestamp);
-            Assert.Null(pair.Value.CommitTimestamp);
-            Assert.True(DataFetched);
-        }
+                Assert.Equal(CommitTimestamp, output.CommitTimestamp);
+                Assert.Equal(Item.CommitTimestamp.Value.AddDays(1), output.CommitTimestamp);
+                Assert.False(DataFetched);
+            }
 
-        [Fact]
-        public async Task FetchesDataForExistingItemWhenExistingHasNoCommitTimestamp()
-        {
-            await Target.InitializeAsync(TableName);
-            Item.CommitTimestamp = null;
-            await UpdateBatchAsync();
-            DataFetched = false;
-            Item.CommitTimestamp = CommitTimestamp;
+            [Fact]
+            public async Task DoesNotFetchDataForExistingItemWhenInputHasNoCommitTimestamp()
+            {
+                await Target.InitializeAsync(TableName);
+                await GetOrUpdateInfoAsync();
+                DataFetched = false;
+                Item.CommitTimestamp = null;
 
-            var output = await UpdateBatchAsync();
+                var output = await GetOrUpdateInfoAsync();
 
-            var pair = Assert.Single(output);
-            Assert.Same(Item, pair.Key);
-            Assert.Equal(CommitTimestamp, pair.Value.CommitTimestamp);
-            Assert.Equal(Item.CommitTimestamp, pair.Value.CommitTimestamp);
-            Assert.True(DataFetched);
-        }
+                Assert.Equal(CommitTimestamp, output.CommitTimestamp);
+                Assert.Null(Item.CommitTimestamp);
+                Assert.False(DataFetched);
+            }
 
-        [Fact]
-        public async Task FetchesDataForExistingItemWhenInputAndExistingHasNoCommitTimestamp()
-        {
-            await Target.InitializeAsync(TableName);
-            Item.CommitTimestamp = null;
-            await UpdateBatchAsync();
-            DataFetched = false;
+            [Fact]
+            public async Task FetchesDataForExistingItemWhenExistingHasNoCommitTimestamp()
+            {
+                await Target.InitializeAsync(TableName);
+                Item.CommitTimestamp = null;
+                await GetOrUpdateInfoAsync();
+                DataFetched = false;
+                Item.CommitTimestamp = CommitTimestamp;
 
-            var output = await UpdateBatchAsync();
+                var output = await GetOrUpdateInfoAsync();
 
-            var pair = Assert.Single(output);
-            Assert.Same(Item, pair.Key);
-            Assert.Equal(Item.CommitTimestamp, pair.Value.CommitTimestamp);
-            Assert.Null(pair.Value.CommitTimestamp);
-            Assert.True(DataFetched);
-        }
+                Assert.Equal(CommitTimestamp, output.CommitTimestamp);
+                Assert.Equal(Item.CommitTimestamp, CommitTimestamp);
+                Assert.True(DataFetched);
+            }
 
-        [Fact]
-        public async Task NullableModelWithNonNullValueCanOperateOnNonNullableData()
-        {
-            await Target.InitializeAsync(TableName);
-            await UpdateNonNullBatchAsync();
-            DataFetched = false;
-            Item.CommitTimestamp += TimeSpan.FromDays(1);
+            [Fact]
+            public async Task DoesNotFetchDataForExistingItemWhenInputAndExistingHasNoCommitTimestamp()
+            {
+                await Target.InitializeAsync(TableName);
+                Item.CommitTimestamp = null;
+                await GetOrUpdateInfoAsync();
+                DataFetched = false;
 
-            var output = await UpdateBatchAsync();
+                var output = await GetOrUpdateInfoAsync();
 
-            var pair = Assert.Single(output);
-            Assert.Same(Item, pair.Key);
-            Assert.Equal(CommitTimestamp.AddDays(1), pair.Value.CommitTimestamp);
-            Assert.Equal(Item.CommitTimestamp, pair.Value.CommitTimestamp);
-            Assert.True(DataFetched);
-        }
+                Assert.Equal(Item.CommitTimestamp, output.CommitTimestamp);
+                Assert.Null(output.CommitTimestamp);
+                Assert.False(DataFetched);
+            }
 
-        [Fact]
-        public async Task NullableModelWithNullValueCanOperateOnNonNullableData()
-        {
-            await Target.InitializeAsync(TableName);
-            await UpdateNonNullBatchAsync();
-            DataFetched = false;
-            Item.CommitTimestamp = null;
+            public TheGetOrUpdateInfoAsyncMethod(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            {
+            }
 
-            var output = await UpdateBatchAsync();
-
-            var pair = Assert.Single(output);
-            Assert.Same(Item, pair.Key);
-            Assert.Equal(Item.CommitTimestamp, pair.Value.CommitTimestamp);
-            Assert.Null(pair.Value.CommitTimestamp);
-            Assert.True(DataFetched);
-        }
-
-        [Fact]
-        public async Task NonNullableModelCanOperateOnNullableDataWithNonNullValue()
-        {
-            await Target.InitializeAsync(TableName);
-            await UpdateBatchAsync();
-            DataFetched = false;
-            Item.CommitTimestamp += TimeSpan.FromDays(1);
-
-            var output = await UpdateNonNullBatchAsync();
-
-            var pair = Assert.Single(output);
-            Assert.Same(Item, pair.Key);
-            Assert.Equal(CommitTimestamp.AddDays(1), pair.Value.CommitTimestamp);
-            Assert.Equal(Item.CommitTimestamp, pair.Value.CommitTimestamp);
-            Assert.True(DataFetched);
-        }
-
-        [Fact]
-        public async Task NonNullableModelCannotOperateOnNullableDataWithNullValue()
-        {
-            await Target.InitializeAsync(TableName);
-            Item.CommitTimestamp = null;
-            await UpdateBatchAsync();
-            DataFetched = false;
-            Item.CommitTimestamp = CommitTimestamp;
-
-            var ex = await Assert.ThrowsAsync<MessagePackSerializationException>(() => UpdateNonNullBatchAsync());
-            Assert.Contains("Unexpected msgpack code 192 (nil) encountered.", ex.ToString());
-            Assert.False(DataFetched);
+            protected async Task<TestPackageWideEntityV1> GetOrUpdateInfoAsync()
+            {
+                return await Target.GetOrUpdateInfoAsync(
+                    TableName,
+                    Item,
+                    x =>
+                    {
+                        DataFetched = true;
+                        return Task.FromResult(new TestPackageWideEntityV1 { CommitTimestamp = x.CommitTimestamp });
+                    },
+                    x => new TestPackageWideEntityVersions(x),
+                    x => x.V1);
+            }
         }
 
         public PackageWideEntityServiceIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
@@ -189,36 +334,6 @@ namespace NuGet.Insights
         public DateTimeOffset CommitTimestamp { get; set; }
         public PackageIdentityWithoutCommit Item { get; }
         public bool DataFetched { get; set; }
-
-        protected async Task<IReadOnlyDictionary<IPackageIdentityCommit, TestPackageWideEntityV1>> UpdateBatchAsync()
-        {
-            return await Target.UpdateBatchAsync(
-                TableName,
-                Item.PackageId,
-                new[] { Item },
-                x =>
-                {
-                    DataFetched = true;
-                    return Task.FromResult(new TestPackageWideEntityV1 { CommitTimestamp = x.CommitTimestamp });
-                },
-                x => new TestPackageWideEntityVersions(x),
-                x => x.V1);
-        }
-
-        protected async Task<IReadOnlyDictionary<IPackageIdentityCommit, NonNullTestPackageWideEntityV1>> UpdateNonNullBatchAsync()
-        {
-            return await Target.UpdateBatchAsync(
-                TableName,
-                Item.PackageId,
-                new[] { Item },
-                x =>
-                {
-                    DataFetched = true;
-                    return Task.FromResult(new NonNullTestPackageWideEntityV1 { CommitTimestamp = x.CommitTimestamp.Value });
-                },
-                x => new NonNullTestPackageWideEntityVersions(x),
-                x => x.V1);
-        }
 
         public class PackageIdentityWithoutCommit : IPackageIdentityCommit
         {
