@@ -188,7 +188,7 @@ namespace NuGet.Insights
                 return await Target.UpdateBatchAsync(
                     TableName,
                     Item.PackageId,
-                    new[] { Item },
+                    new[] { (IPackageIdentityCommit)Item },
                     x =>
                     {
                         DataFetched = true;
@@ -203,7 +203,7 @@ namespace NuGet.Insights
                 return await Target.UpdateBatchAsync(
                     TableName,
                     Item.PackageId,
-                    new[] { Item },
+                    new[] { (IPackageIdentityCommit)Item },
                     x =>
                     {
                         DataFetched = true;

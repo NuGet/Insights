@@ -31,39 +31,17 @@ namespace NuGet.Insights
             await _wideEntityService.CreateTableAsync(tableName);
         }
 
-        public async Task<IReadOnlyDictionary<ICatalogLeafItem, TOutput>> UpdateBatchAsync<TData, TOutput>(
+        public async Task<IReadOnlyDictionary<TItem, TOutput>> UpdateBatchAsync<TItem, TData, TOutput>(
             string tableName,
             string id,
-            IReadOnlyCollection<ICatalogLeafItem> leafItems,
-            Func<ICatalogLeafItem, Task<TOutput>> fetchOutputAsync,
+            IReadOnlyCollection<TItem> items,
+            Func<TItem, Task<TOutput>> fetchOutputAsync,
             Func<TOutput, TData> outputToData,
             Func<TData, TOutput> dataToOutput)
+            where TItem : IPackageIdentityCommit
             where TData : IPackageWideEntity
         {
-            // This dictionary uses reference equality, not based on values.
-            var adapterToLeafItem = leafItems.ToDictionary(x => (IPackageIdentityCommit)new CatalogLeafItemAdapter(x));
-
-            var output = await UpdateBatchAsync(
-                tableName,
-                id,
-                adapterToLeafItem.Keys,
-                x => fetchOutputAsync(adapterToLeafItem[x]),
-                outputToData,
-                dataToOutput);
-
-            return output.ToDictionary(x => adapterToLeafItem[x.Key], x => x.Value);
-        }
-
-        public async Task<IReadOnlyDictionary<IPackageIdentityCommit, TOutput>> UpdateBatchAsync<TData, TOutput>(
-            string tableName,
-            string id,
-            IReadOnlyCollection<IPackageIdentityCommit> items,
-            Func<IPackageIdentityCommit, Task<TOutput>> fetchOutputAsync,
-            Func<TOutput, TData> outputToData,
-            Func<TData, TOutput> dataToOutput)
-            where TData : IPackageWideEntity
-        {
-            var rowKeyToItem = new Dictionary<string, IPackageIdentityCommit>();
+            var rowKeyToItem = new Dictionary<string, TItem>();
             foreach (var item in items)
             {
                 if (!StringComparer.OrdinalIgnoreCase.Equals(id, item.PackageId))
@@ -88,7 +66,7 @@ namespace NuGet.Insights
             //   2. The row exists but the data is stale. This means we must fetch the info and replace it in the table.
             //   3. The row exists and is not stale. We can just return the data in the table.
             var batch = new List<WideEntityOperation>();
-            var output = new Dictionary<IPackageIdentityCommit, TOutput>();
+            var output = new Dictionary<TItem, TOutput>();
             foreach (var (rowKey, item) in rowKeyToItem)
             {
                 (var existingEntity, var matchingData) = await GetExistingAsync<TData>(
@@ -124,28 +102,13 @@ namespace NuGet.Insights
             return output;
         }
 
-        public async Task<TOutput> GetOrUpdateInfoAsync<TData, TOutput>(
+        public async Task<TOutput> GetOrUpdateInfoAsync<TItem, TData, TOutput>(
             string tableName,
-            ICatalogLeafItem leafItem,
-            Func<ICatalogLeafItem, Task<TOutput>> fetchOutputAsync,
+            TItem item,
+            Func<TItem, Task<TOutput>> fetchOutputAsync,
             Func<TOutput, TData> outputToData,
             Func<TData, TOutput> dataToOutput)
-            where TData : IPackageWideEntity
-        {
-            return await GetOrUpdateInfoAsync(
-                tableName,
-                new CatalogLeafItemAdapter(leafItem),
-                x => fetchOutputAsync(leafItem),
-                outputToData,
-                dataToOutput);
-        }
-
-        public async Task<TOutput> GetOrUpdateInfoAsync<TData, TOutput>(
-            string tableName,
-            IPackageIdentityCommit item,
-            Func<IPackageIdentityCommit, Task<TOutput>> fetchOutputAsync,
-            Func<TOutput, TData> outputToData,
-            Func<TData, TOutput> dataToOutput)
+            where TItem : IPackageIdentityCommit
             where TData : IPackageWideEntity
         {
             var partitionKey = GetPartitionKey(item.PackageId);
@@ -347,20 +310,6 @@ namespace NuGet.Insights
         public interface IPackageWideEntity
         {
             DateTimeOffset? CommitTimestamp { get; }
-        }
-
-        private class CatalogLeafItemAdapter : IPackageIdentityCommit
-        {
-            private readonly ICatalogLeafItem _leafItem;
-
-            public CatalogLeafItemAdapter(ICatalogLeafItem leafItem)
-            {
-                _leafItem = leafItem;
-            }
-
-            public string PackageId => _leafItem.PackageId;
-            public string PackageVersion => _leafItem.PackageVersion;
-            public DateTimeOffset? CommitTimestamp => _leafItem.CommitTimestamp;
         }
     }
 }

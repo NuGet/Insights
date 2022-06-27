@@ -26,5 +26,7 @@ namespace NuGet.Insights
 
         [JsonPropertyName("nuget:version")]
         public string PackageVersion { get; set; }
+
+        DateTimeOffset? IPackageIdentityCommit.CommitTimestamp => CommitTimestamp;
     }
 }

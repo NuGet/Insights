@@ -44,6 +44,7 @@ namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
         public ETag ETag { get; set; }
 
         CatalogLeafType ICatalogLeafItem.Type => LeafType;
+        DateTimeOffset? IPackageIdentityCommit.CommitTimestamp => CommitTimestamp;
 
         public string GetLowerId()
         {
