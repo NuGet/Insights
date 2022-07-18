@@ -227,7 +227,9 @@ namespace NuGet.Insights.Worker
                     CatalogScanDriverType.LoadPackageReadme,
                     CatalogScanDriverType.LoadPackageVersion,
                     CatalogScanDriverType.LoadSymbolPackageArchive,
+#if ENABLE_NPE
                     CatalogScanDriverType.NuGetPackageExplorerToCsv,
+#endif
                     CatalogScanDriverType.PackageAssemblyToCsv,
                     CatalogScanDriverType.PackageIconToCsv,
                 },
