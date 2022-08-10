@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -25,6 +26,8 @@ namespace NuGet.Insights
             StorageAccountName = null;
             StorageBlobReadSharedAccessSignature = null;
             StorageConnectionString = StorageUtility.EmulatorConnectionString;
+            ServiceClientRefreshPeriod = TimeSpan.FromMinutes(30);
+            ServiceClientSasDuration = TimeSpan.FromHours(12);
             LeaseContainerName = "leases";
             PackageArchiveTableName = "packagearchives";
             SymbolPackageArchiveTableName = "symbolpackagearchives";
@@ -56,6 +59,8 @@ namespace NuGet.Insights
         public string StorageAccountName { get; set; }
         public string StorageBlobReadSharedAccessSignature { get; set; }
         public string StorageConnectionString { get; set; }
+        public TimeSpan ServiceClientRefreshPeriod { get; set; }
+        public TimeSpan ServiceClientSasDuration { get; set; }
 
         public string LeaseContainerName { get; set; }
         public string PackageArchiveTableName { get; set; }

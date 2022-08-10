@@ -39,7 +39,7 @@ resource website 'Microsoft.Web/sites@2020-09-01' = {
     httpsOnly: true
     siteConfig: {
       minTlsVersion: '1.2'
-      alwaysOn: true
+      alwaysOn: false // I've run into problems with the AAD client certificate not refreshing...
       use32BitWorkerProcess: false
       netFrameworkVersion: 'v6.0'
       appSettings: concat([

@@ -18,8 +18,6 @@ namespace NuGet.Insights
 {
     public class ServiceClientFactory
     {
-        private static readonly TimeSpan DefaultRefreshPeriod = TimeSpan.FromHours(1);
-
         private readonly SemaphoreSlim _lock = new SemaphoreSlim(1);
         private ServiceClients _serviceClients;
 
@@ -127,10 +125,11 @@ namespace NuGet.Insights
                 return TimeSpan.Zero;
             }
 
-            // Refresh at half of the SAS duration.
-            var originalDuration = serviceClients.SharedAccessSignatureExpiry - serviceClients.Created;
-            var halfUntilExpiry = serviceClients.Created + (originalDuration / 2);
-            var untilRefresh = halfUntilExpiry - DateTimeOffset.UtcNow;
+            // Refresh at half of the SAS duration or the default refresh period, whichever is lesser.
+            var sasDuration = serviceClients.SharedAccessSignatureExpiry - serviceClients.Created;
+            var refreshPeriod = TimeSpan.FromTicks(Math.Min(sasDuration.Ticks / 2, _options.Value.ServiceClientRefreshPeriod.Ticks));
+            var sinceCreated = DateTimeOffset.UtcNow - serviceClients.Created;
+            var untilRefresh = refreshPeriod - sinceCreated;
 
             return untilRefresh > TimeSpan.Zero ? untilRefresh : TimeSpan.Zero;
         }
@@ -143,7 +142,7 @@ namespace NuGet.Insights
             QueueServiceClient queue;
             TableServiceClient table;
             UserDelegationKey userDelegationKey;
-            DateTimeOffset sasExpiry = DateTimeOffset.UtcNow.Add(2 * DefaultRefreshPeriod);
+            DateTimeOffset sasExpiry = DateTimeOffset.UtcNow.Add(_options.Value.ServiceClientSasDuration);
 
             if (_options.Value.StorageAccountName != null)
             {
