@@ -136,7 +136,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 {
                     _logger.LogWarning("There are {Count} containers that could not be fully ingested into Kusto.", errorCount);
 
-                    if (ingestion.AttemptCount >= 5)
+                    if (ingestion.AttemptCount >= _options.Value.KustoIngestionMaxAttempts)
                     {
                         throw new InvalidOperationException($"At least one container failed to be ingested into Kusto, after {ingestion.AttemptCount} attempts.");
                     }
@@ -145,8 +145,12 @@ namespace NuGet.Insights.Worker.KustoIngestion
                     ingestion.State = KustoIngestionState.Retrying;
                     await _storageService.ReplaceIngestionAsync(ingestion);
 
-                    message.AttemptCount++;
-                    await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
+                    // Delay the message based on the ingestion attempt count. If we're encountering recurring failures
+                    // from Kusto, it's wise to slow down and try again a bit later.
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(
+                        ingestion.AttemptCount - 1, // First retry should be immediate
+                        factor: 60, // Delay by one more minute each attempt
+                        maxSeconds: 600)); // Only wait for up to 10 minutes between attempts
                     return;
                 }
                 else

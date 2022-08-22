@@ -54,7 +54,12 @@ namespace NuGet.Insights
 
         public static TimeSpan GetMessageDelay(int attemptCount, int factor)
         {
-            return TimeSpan.FromSeconds(Math.Min(Math.Max(attemptCount * factor, 0), 60));
+            return GetMessageDelay(attemptCount, factor, maxSeconds: 60);
+        }
+
+        public static TimeSpan GetMessageDelay(int attemptCount, int factor, int maxSeconds)
+        {
+            return TimeSpan.FromSeconds(Math.Min(Math.Max(attemptCount * factor, 0), maxSeconds));
         }
 
         public static DateTimeOffset GetSasExpiry(string sas)
