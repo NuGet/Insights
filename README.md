@@ -99,7 +99,8 @@ You can go the first URL which is the website URL. in your web browser click on
 the **Admin** link in the nav bar. Then, you can start a short run using the
 "All catalog scans" section, "Use custom max" checkbox, and "Start all" button.
 
-You're ready to go!
+For more information about running catalog scans, see [Starting a catalog
+scan](#starting-a-catalog-scan).
 
 ## Running locally
 
@@ -114,7 +115,7 @@ emulator](#using-a-standalone-azure-storage-emulator).
 2. [Install Project
    Tye](https://github.com/dotnet/tye/blob/main/docs/getting_started.md#installing-tye)
    if you haven't already. 
-3. Make sure you have Docker installed since this is used for running Azurite.
+3. Make sure you have Docker installed since it is used for running Azurite.
 4. Execute `tye run` in the root of the repository.
 5. Open the Tye dashboard using the URL printed to stdout, e.g.
    ```
@@ -150,8 +151,15 @@ Proceed to the [Starting a catalog scan](#starting-a-catalog-scan) section.
 
 ### Starting a catalog scan
 
-Once you have opened the website URL in your web browser of choise, follow these
-steps to start your first catalog scan.
+A **catalog scan** is a unit of work for NuGet.Insights which runs analysis
+against all of the packages published during some time range. The time range for
+a catalog scan is bounded by the previous NuGet V3 catalog commit timestamp used
+(as an exclusive minimum) and an arbitrary timestamp to process up to (as an
+inclusive maximum). For more information, see the [architecture
+section](#architecture).
+
+Once you have opened the website URL in your web browser of choice, follow these
+steps to start your first catalog scan from the NuGet.Insights admin panel.
 
 1. In your web browser, viewing the website URL, click on the "Admin" link in
    the navigation bar.
@@ -171,7 +179,9 @@ steps to start your first catalog scan.
 3. Make sure the background worker is running (either via Tye or starting the
    Worker project from the terminal).
 4. Wait until the catalog scan is done. You can check the current progress by
-   refreshing the admin panel.
+   refreshing the admin panel and looking at the number of messages in the
+   queues (first section in the admin panel) or by looking at the catalog scan
+   record created in the previous step.
 
 If you ran a driver like **Load package archive**, data will be populated into
 your Azure Table Storage emulator. If you ran a driver like **Package asset to
