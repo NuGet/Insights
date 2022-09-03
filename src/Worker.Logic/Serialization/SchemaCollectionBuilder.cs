@@ -23,6 +23,7 @@ using NuGet.Insights.Worker.PackageReadmeToCsv;
 using NuGet.Insights.Worker.PackageSignatureToCsv;
 using NuGet.Insights.Worker.PackageVersionToCsv;
 using NuGet.Insights.Worker.ReferenceTracking;
+using NuGet.Insights.Worker.SymbolPackageArchiveToCsv;
 using NuGet.Insights.Worker.TableCopy;
 using NuGet.Insights.Worker.Workflow;
 
@@ -48,6 +49,8 @@ namespace NuGet.Insights.Worker
             new SchemaV1<CsvCompactMessage<CatalogLeafItemRecord>>("cc.fcli"),
             new SchemaV1<CsvCompactMessage<PackageArchiveRecord>>("cc.pa2c"),
             new SchemaV1<CsvCompactMessage<PackageArchiveEntry>>("cc.pae2c"),
+            new SchemaV1<CsvCompactMessage<SymbolPackageArchiveRecord>>("cc.sa2c"),
+            new SchemaV1<CsvCompactMessage<SymbolPackageArchiveEntry>>("cc.sae2c"),
             new SchemaV1<CsvCompactMessage<PackageAsset>>("cc.fpa"),
             new SchemaV1<CsvCompactMessage<PackageAssembly>>("cc.fpi"),
             new SchemaV1<CsvCompactMessage<PackageManifestRecord>>("cc.pm2c"),

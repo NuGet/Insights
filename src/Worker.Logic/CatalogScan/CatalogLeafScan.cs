@@ -49,6 +49,7 @@ namespace NuGet.Insights.Worker
         public ETag ETag { get; set; }
 
         CatalogLeafType ICatalogLeafItem.Type => LeafType;
+        DateTimeOffset? IPackageIdentityCommit.CommitTimestamp => CommitTimestamp;
 
         public static string GetPartitionKey(string scanId, string pageId)
         {

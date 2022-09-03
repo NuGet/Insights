@@ -46,16 +46,15 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
             var storage = await _storageService.GetLatestPackageLeafStorageAsync();
             foreach (var group in leafScans.GroupBy(x => x.PackageId, StringComparer.OrdinalIgnoreCase))
             {
-                var packageId = group.Key;
-                var leafItems = group.Cast<ICatalogLeafItem>().ToList();
+                var leafItems = group.ToList();
 
                 try
                 {
-                    await _latestLeafStorageService.AddAsync(packageId, leafItems, storage, allowRetries: true);
+                    await _latestLeafStorageService.AddAsync(leafItems, storage, allowRetries: true);
                 }
                 catch (Exception ex) when (leafScans.Count != 1)
                 {
-                    _logger.LogError(ex, "Updating package package version info failed for {Id} with {Count} versions.", packageId, leafItems.Count);
+                    _logger.LogError(ex, "Updating package package version info failed for {Id} with {Count} versions.", group.Key, leafItems.Count);
                     failed.AddRange(group);
                 }
             }

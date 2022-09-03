@@ -45,6 +45,10 @@ namespace NuGet.Insights.Worker
                 new[] { FlatContainer }
             },
             {
+                CatalogScanDriverType.LoadSymbolPackageArchive,
+                new[] { FlatContainer }
+            },
+            {
                 CatalogScanDriverType.LoadPackageManifest,
                 new[] { FlatContainer }
             },
@@ -59,6 +63,10 @@ namespace NuGet.Insights.Worker
             {
                 CatalogScanDriverType.PackageArchiveToCsv,
                 new[] { CatalogScanDriverType.LoadPackageArchive, CatalogScanDriverType.PackageAssemblyToCsv }
+            },
+            {
+                CatalogScanDriverType.SymbolPackageArchiveToCsv,
+                new[] { CatalogScanDriverType.LoadSymbolPackageArchive }
             },
             {
                 CatalogScanDriverType.PackageAssetToCsv,
@@ -93,7 +101,7 @@ namespace NuGet.Insights.Worker
 #if ENABLE_NPE
             {
                 CatalogScanDriverType.NuGetPackageExplorerToCsv,
-                new[] { FlatContainer, CatalogScanDriverType.LoadLatestPackageLeaf }
+                new[] { FlatContainer }
             },
 #endif
             {

@@ -89,7 +89,7 @@ namespace NuGet.Insights
 
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(
                     () => Target.ReleaseAsync(leaseResultA));
-                Assert.Equal("The lease has been acquired by someone else.", ex.Message);
+                Assert.Equal("The lease has been acquired by someone else, or transient errors happened.", ex.Message);
             }
         }
 
@@ -107,7 +107,7 @@ namespace NuGet.Insights
 
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(
                     () => Target.RenewAsync(leaseResultA));
-                Assert.Equal("The lease has been acquired by someone else.", ex.Message);
+                Assert.Equal("The lease has been acquired by someone else, or transient errors happened.", ex.Message);
             }
         }
 

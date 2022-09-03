@@ -1,0 +1,16 @@
+{
+  "Deployment": {
+    "Location": "West US 2",
+    "WorkerPlanCount": 1,
+    "WorkerCountPerPlan": 1,
+    "WorkerMaxInstances": 1,
+    "WorkerLogLevel": "Warning",
+    "WorkerSku": "B1",
+    "UseSpotWorkers": true,
+    "SpotWorkerSpecs": [
+      {
+        "MaxInstances": 11
+      }
+    ]
+  }
+}

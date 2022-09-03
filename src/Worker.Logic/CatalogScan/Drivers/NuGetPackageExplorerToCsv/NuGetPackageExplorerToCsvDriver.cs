@@ -219,7 +219,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                                 });
                             }
                         }
-                        catch (FileNotFoundException ex)
+                        catch (Exception ex) when (ex is FileNotFoundException || ex is FormatException)
                         {
                             _logger.LogWarning(ex, "Could not get symbol validator files for {Id} {Version}.", leaf.PackageId, leaf.PackageVersion);
                             return MakeSingleItem(scanId, scanTimestamp, leaf, NuGetPackageExplorerResultType.InvalidMetadata);

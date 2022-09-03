@@ -27,21 +27,24 @@ any special knowledge of NuGet-specific interpretation of the ZIP file.
 | Created                          | timestamp | Yes, for Available | When the package version was created                                                      |
 | ResultType                       | enum      | Yes                | Type of record (e.g. Available, Deleted)                                                  |
 | Size                             | long      | Yes, for Available | The size of the .nupkg in bytes                                                           |
-| MD5                              | string    | Yes, for Available | The Base64 encoded MD5 hash of the .nupkg                                                 |
-| SHA1                             | string    | Yes, for Available | The Base64 encoded SHA1 hash of the .nupkg                                                |
-| SHA256                           | string    | Yes, for Available | The Base64 encoded SHA256 hash of the .nupkg                                              |
-| SHA512                           | string    | Yes, for Available | The Base64 encoded SHA512 hash of the .nupkg                                              |
 | OffsetAfterEndOfCentralDirectory | long      | Yes, for Available | Byte offset after the end of central directory signature, typically 18 less than the Size |
 | CentralDirectorySize             | uint      | Yes, for Available | Size of central directory in bytes                                                        |
 | OffsetOfCentralDirectory         | uint      | Yes, for Available | Byte offset of the central directory                                                      |
 | EntryCount                       | int       | Yes, for Available | The number of entries in the ZIP                                                          |
 | Comment                          | string    | No                 | The comment at the end of the ZIP archive                                                 |
+| HeaderMD5                        | string    | No                 | The Base64 encoded MD5 hash of the .nupkg from the HTTP header                            |
+| HeaderSHA512                     | string    | No                 | The Base64 encoded SHA512 hash of the .nupkg from the HTTP header                         |
+| MD5                              | string    | Yes, for Available | The Base64 encoded MD5 hash of the .nupkg                                                 |
+| SHA1                             | string    | Yes, for Available | The Base64 encoded SHA1 hash of the .nupkg                                                |
+| SHA256                           | string    | Yes, for Available | The Base64 encoded SHA256 hash of the .nupkg                                              |
+| SHA512                           | string    | Yes, for Available | The Base64 encoded SHA512 hash of the .nupkg                                              |
 
 ## ResultType schema
 
 The ResultType enum indicates the possible variants of records.
 
-| Enum value | Description                                         |
-| ---------- | --------------------------------------------------- |
-| Available  | The package is available and processed successfully |
-| Deleted    | The package is deleted and no metadata is available |
+| Enum value   | Description                                         |
+| ------------ | --------------------------------------------------- |
+| Available    | The package is available and processed successfully |
+| Deleted      | The package is deleted and no metadata is available |
+| DoesNotExist | Unused                                              |

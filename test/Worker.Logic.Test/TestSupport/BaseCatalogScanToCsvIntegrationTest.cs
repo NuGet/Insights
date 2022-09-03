@@ -26,6 +26,11 @@ namespace NuGet.Insights.Worker
         {
             await AssertCompactAsync<T>(DestinationContainerName, testName, stepName, bucket);
         }
+
+        protected async Task AssertBlobCountAsync(int expected)
+        {
+            await AssertBlobCountAsync(DestinationContainerName, expected);
+        }
     }
 
     public abstract class BaseCatalogScanToCsvIntegrationTest<T1, T2> : BaseCatalogScanIntegrationTest
@@ -44,6 +49,12 @@ namespace NuGet.Insights.Worker
         {
             yield return DestinationContainerName1;
             yield return DestinationContainerName2;
+        }
+
+        protected async Task AssertBlobCountAsync(int expected)
+        {
+            await AssertBlobCountAsync(DestinationContainerName1, expected);
+            await AssertBlobCountAsync(DestinationContainerName2, expected);
         }
 
         protected async Task AssertOutputAsync(string testName, string stepName, int bucket)
@@ -90,6 +101,13 @@ namespace NuGet.Insights.Worker
             await AssertOutputT1Async(testName, stepName, bucket);
             await AssertOutputT2Async(testName, stepName, bucket);
             await AssertOutputT3Async(testName, stepName, bucket);
+        }
+
+        protected async Task AssertBlobCountAsync(int expected)
+        {
+            await AssertBlobCountAsync(DestinationContainerName1, expected);
+            await AssertBlobCountAsync(DestinationContainerName2, expected);
+            await AssertBlobCountAsync(DestinationContainerName3, expected);
         }
 
         protected async Task AssertOutputT1Async(string testName, string stepName, int bucket, string fileName = null)

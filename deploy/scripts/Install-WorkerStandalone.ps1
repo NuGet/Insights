@@ -27,11 +27,10 @@ param (
 
 $ErrorActionPreference = "Stop"
 
-$dotnetInstallUrl = "https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.ps1"
+$dotnetInstallPattern = "dotnet-install.ps1"
 $dotnetChannel = "6.0"
 $dotnetRuntime = "aspnetcore"
 $binDir = "C:\bin"
-$dotnetInstallPath = Join-Path $binDir "dotnet-install.ps1"
 $dotnetDir = Join-Path $binDir "Microsoft\dotnet"
 $dotnet = Join-Path $dotnetDir "dotnet.exe"
 $scheduledTaskName = "NuGet.Insights Standalone Worker"
@@ -64,9 +63,8 @@ Function Expand-Pattern($type, $pattern) {
 }
 
 # Download and install the .NET runtime
-[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 if (!(Test-Path $installDir)) { New-Item $installDir -ItemType Directory | Out-Null }
-Invoke-WebRequest $dotnetInstallUrl -OutFile $dotnetInstallPath
+$dotnetInstallPath = Get-Pattern $dotnetInstallPattern
 & $dotnetInstallPath -Channel $dotnetChannel -Runtime $dotnetRuntime -InstallDir $dotnetDir -NoPath
 Write-Host ""
 
@@ -103,12 +101,12 @@ foreach ($line in Get-Content $envPath) {
     $scriptEnv[$splits[0]] = $splits[1]
 }
 $hostEnv = [ordered]@{
-    "ASPNETCORE_URLS"                                 = "http://localhost:$LocalHealthPort";
-    "AzureFunctionsJobHost:Logging:Console:IsEnabled" = "false";
-    "AzureWebJobsScriptRoot"                          = $appRoot;
-    "NuGet.Insights:DeploymentLabel"                  = $DeploymentLabel;
-    "WEBSITE_HOSTNAME"                                = "localhost:$LocalHealthPort"
-    "DOTNET_gcServer"                                 = "1"
+    "ASPNETCORE_URLS"                                    = "http://localhost:$LocalHealthPort";
+    "AzureFunctionsJobHost__Logging__Console__IsEnabled" = "false";
+    "AzureWebJobsScriptRoot"                             = $appRoot;
+    "NuGet.Insights:DeploymentLabel"                     = $DeploymentLabel;
+    "WEBSITE_HOSTNAME"                                   = "localhost:$LocalHealthPort"
+    "DOTNET_gcServer"                                    = "1"
 }
 
 if ($ApplicationInsightsInstrumentationKey) {
@@ -116,9 +114,9 @@ if ($ApplicationInsightsInstrumentationKey) {
 }
 
 if ($UserManagedIdentityClientId) {
-    $hostEnv["AzureWebJobsStorage:clientId"] = $UserManagedIdentityClientId;
+    $hostEnv["AzureWebJobsStorage__clientId"] = $UserManagedIdentityClientId;
     $hostEnv["NuGet.Insights:UserManagedIdentityClientId"] = $UserManagedIdentityClientId;
-    $hostEnv["QueueTriggerConnection:clientId"] = $UserManagedIdentityClientId;
+    $hostEnv["QueueTriggerConnection__clientId"] = $UserManagedIdentityClientId;
 }
 
 foreach ($pair in $hostEnv.GetEnumerator()) {

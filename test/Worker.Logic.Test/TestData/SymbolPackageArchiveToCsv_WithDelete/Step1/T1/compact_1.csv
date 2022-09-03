@@ -1,0 +1,3 @@
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Size,OffsetAfterEndOfCentralDirectory,CentralDirectorySize,OffsetOfCentralDirectory,EntryCount,Comment,HeaderMD5,HeaderSHA512
+,,lunabot.core,lunabot.core/1.0.4,LunaBot.Core,1.0.4,2020-12-20T02:39:20.5757299Z,2020-12-20T02:33:43.64Z,DoesNotExist,0,0,0,0,0,,,
+,,nut.mediatr.behaviors.fluentvalidation,nut.mediatr.behaviors.fluentvalidation/0.0.0-preview.0.44,Nut.MediatR.Behaviors.FluentValidation,0.0.0-preview.0.44,2020-12-20T02:37:52.9649363Z,2020-12-20T02:35:16.733Z,Available,8029,8011,447,7560,5,,6TkDqp6fCtKBxeNNcOC64A==,y2X38jWt38RiWywPTMgH28+TxbRYPxzonVuGWqUWTYnYr9DGf2JXI16HPHqMN81FJ+wdk6FogthETCyyrdDiSA==

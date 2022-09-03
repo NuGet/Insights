@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
@@ -23,6 +24,10 @@ namespace NuGet.Insights
 {
     public static class ServiceCollectionExtensions
     {
+        private class Marker
+        {
+        }
+
         public const string HttpClientName = "NuGet.Insights";
         public const string LoggingHttpClientName = "NuGet.Insights.Logging";
 
@@ -60,6 +65,12 @@ namespace NuGet.Insights
             string programVersion = null,
             string programUrl = null)
         {
+            // Avoid re-adding all the services.
+            if (serviceCollection.Any(x => x.ServiceType == typeof(Marker)))
+            {
+                return serviceCollection;
+            }
+
             serviceCollection.AddMemoryCache();
 
             var userAgent = GetUserAgent(programName, programVersion, programUrl);
@@ -121,6 +132,7 @@ namespace NuGet.Insights
                         exponent: 2)
                 });
             serviceCollection.AddTransient<MZipFormat>();
+            serviceCollection.AddTransient<FileDownloader>();
 
             serviceCollection.AddTransient<SearchServiceCursorReader>();
             serviceCollection.AddTransient<IProgressReporter, NullProgressReporter>();
@@ -136,8 +148,9 @@ namespace NuGet.Insights
             serviceCollection.AddTransient<PackageHashService>();
             serviceCollection.AddTransient<PackageManifestService>();
             serviceCollection.AddTransient<PackageReadmeService>();
+            serviceCollection.AddTransient<SymbolPackageFileService>();
 
-            serviceCollection.AddSingleton<ITelemetryClient>(s => NullTelemetryClient.Instance);
+            serviceCollection.AddSingleton<ITelemetryClient, TelemetryClientWrapper>();
 
             serviceCollection.AddTransient<TempStreamService>();
             serviceCollection.AddTransient<TempStreamWriter>();

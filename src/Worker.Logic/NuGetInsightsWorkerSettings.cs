@@ -60,6 +60,8 @@ namespace NuGet.Insights.Worker
             VerifiedPackageContainerName = "verifiedpackages";
             PackageArchiveContainerName = "packagearchives";
             PackageArchiveEntryContainerName = "packagearchiveentries";
+            SymbolPackageArchiveContainerName = "symbolpackagearchives";
+            SymbolPackageArchiveEntryContainerName = "symbolpackagearchiveentries";
             PackageVersionTableName = "packageversions";
             PackageVersionContainerName = "packageversions";
             NuGetPackageExplorerContainerName = "nugetpackageexplorer";
@@ -77,6 +79,7 @@ namespace NuGet.Insights.Worker
             KustoApplyPartitioningPolicy = true;
             KustoTableNameFormat = "{0}";
             OldKustoIngestionsToKeep = 9;
+            KustoIngestionMaxAttempts = 10;
         }
 
         public bool UseBulkEnqueueStrategy { get; set; }
@@ -129,6 +132,8 @@ namespace NuGet.Insights.Worker
         public string VerifiedPackageContainerName { get; set; }
         public string PackageArchiveContainerName { get; set; }
         public string PackageArchiveEntryContainerName { get; set; }
+        public string SymbolPackageArchiveContainerName { get; set; }
+        public string SymbolPackageArchiveEntryContainerName { get; set; }
         public string PackageVersionTableName { get; set; }
         public string PackageVersionContainerName { get; set; }
         public string NuGetPackageExplorerContainerName { get; set; }
@@ -146,5 +151,6 @@ namespace NuGet.Insights.Worker
         public bool KustoApplyPartitioningPolicy { get; set; }
         public string KustoTableNameFormat { get; set; }
         public int OldKustoIngestionsToKeep { get; set; }
+        public int KustoIngestionMaxAttempts { get; set; }
     }
 }

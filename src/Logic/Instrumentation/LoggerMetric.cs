@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -63,6 +63,13 @@ namespace NuGet.Insights
         {
             AssertDimensionCount(3);
             _logger.LogInformation("Metric emitted: {MetricId} {Dimension1Name} {Dimension2Name} {Dimension3Name} = {MetricValue}", _metricId, dimension1Value, dimension2Value, dimension3Value, metricValue);
+            return true;
+        }
+
+        public bool TrackValue(double metricValue, string dimension1Value, string dimension2Value, string dimension3Value, string dimension4Value)
+        {
+            AssertDimensionCount(4);
+            _logger.LogInformation("Metric emitted: {MetricId} {Dimension1Name} {Dimension2Name} {Dimension3Name} {Dimension4Name} = {MetricValue}", _metricId, dimension1Value, dimension2Value, dimension3Value, dimension4Value, metricValue);
             return true;
         }
     }

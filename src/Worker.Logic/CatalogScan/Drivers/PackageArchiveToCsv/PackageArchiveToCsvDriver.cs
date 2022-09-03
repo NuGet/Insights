@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Knapcode.MiniZip;
 using Microsoft.Extensions.Options;
+using static NuGet.Insights.StorageUtility;
 
 namespace NuGet.Insights.Worker.PackageArchiveToCsv
 {
@@ -89,33 +90,39 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             {
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
-                (var zipDirectory, var size) = await _packageFileService.GetZipDirectoryAndSizeAsync(leafScan);
+                (var zipDirectory, var size, var headers) = await _packageFileService.GetZipDirectoryAndSizeAsync(leafScan);
                 if (zipDirectory == null)
                 {
-                    // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted asset record.
+                    // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted record.
                     return (null, null);
                 }
 
                 var hashes = await _packageHashService.GetHashesOrNullAsync(leafScan.PackageId, leafScan.PackageVersion);
                 if (hashes == null)
                 {
-                    // Ignore packages where the hashes are missing. A subsequent scan will produce a deleted asset record.
+                    // Ignore packages where the hashes are missing. A subsequent scan will produce a deleted record.
                     return (null, null);
                 }
+
+                // Necessary because of https://github.com/neuecc/MessagePack-CSharp/issues/1431
+                var headerMD5 = headers.Contains(MD5Header) ? headers[MD5Header].SingleOrDefault() : null;
+                var headerSHA512 = headers.Contains(SHA512Header) ? headers[SHA512Header].SingleOrDefault() : null;
 
                 var archive = new PackageArchiveRecord(scanId, scanTimestamp, leaf)
                 {
                     Size = size,
-                    MD5 = hashes.MD5.ToBase64(),
-                    SHA1 = hashes.SHA1.ToBase64(),
-                    SHA256 = hashes.SHA256.ToBase64(),
-                    SHA512 = hashes.SHA512.ToBase64(),
-
                     OffsetAfterEndOfCentralDirectory = zipDirectory.OffsetAfterEndOfCentralDirectory,
                     CentralDirectorySize = zipDirectory.CentralDirectorySize,
                     OffsetOfCentralDirectory = zipDirectory.OffsetOfCentralDirectory,
                     EntryCount = zipDirectory.Entries.Count,
                     Comment = zipDirectory.GetComment(),
+
+                    MD5 = hashes.MD5.ToBase64(),
+                    SHA1 = hashes.SHA1.ToBase64(),
+                    SHA256 = hashes.SHA256.ToBase64(),
+                    SHA512 = hashes.SHA512.ToBase64(),
+                    HeaderMD5 = headerMD5,
+                    HeaderSHA512 = headerSHA512,
                 };
                 var entries = new List<PackageArchiveEntry>();
 

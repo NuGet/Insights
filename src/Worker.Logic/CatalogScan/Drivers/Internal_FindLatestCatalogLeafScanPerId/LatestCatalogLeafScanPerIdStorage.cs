@@ -23,12 +23,12 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScanPerId
         public TableClient Table { get; }
         public string CommitTimestampColumnName => nameof(CatalogLeafScan.CommitTimestamp);
 
-        public string GetPartitionKey(string packageId)
+        public string GetPartitionKey(ICatalogLeafItem item)
         {
-            return CatalogLeafScan.GetPartitionKey(_indexScan.GetScanId(), GetPageId(packageId));
+            return CatalogLeafScan.GetPartitionKey(_indexScan.GetScanId(), GetPageId(item.PackageId));
         }
 
-        public string GetRowKey(string packageVersion)
+        public string GetRowKey(ICatalogLeafItem item)
         {
             return LeafId;
         }

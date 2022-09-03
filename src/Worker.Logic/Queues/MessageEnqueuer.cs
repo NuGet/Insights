@@ -22,17 +22,20 @@ namespace NuGet.Insights.Worker
         private readonly SchemaSerializer _serializer;
         private readonly IMessageBatcher _batcher;
         private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
+        private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<MessageEnqueuer> _logger;
 
         public MessageEnqueuer(
             SchemaSerializer serializer,
             IMessageBatcher batcher,
             IRawMessageEnqueuer rawMessageEnqueuer,
+            ITelemetryClient telemetryClient,
             ILogger<MessageEnqueuer> logger)
         {
             _serializer = serializer;
             _batcher = batcher;
             _rawMessageEnqueuer = rawMessageEnqueuer;
+            _telemetryClient = telemetryClient;
             _logger = logger;
         }
 
@@ -48,17 +51,17 @@ namespace NuGet.Insights.Worker
 
         public Task EnqueueAsync<T>(IReadOnlyList<T> messages, Func<T, IReadOnlyList<T>> split)
         {
-            return EnqueueAsync(_rawMessageEnqueuer.AddAsync, messages, split, _serializer.GetSerializer<T>(), TimeSpan.Zero);
+            return EnqueueAsync(isPoison: false, _rawMessageEnqueuer.AddAsync, messages, split, _serializer.GetSerializer<T>(), TimeSpan.Zero);
         }
 
         public Task EnqueueAsync<T>(IReadOnlyList<T> messages, TimeSpan notBefore)
         {
-            return EnqueueAsync(_rawMessageEnqueuer.AddAsync, messages, NoSplit, _serializer.GetSerializer<T>(), notBefore);
+            return EnqueueAsync(isPoison: false, _rawMessageEnqueuer.AddAsync, messages, NoSplit, _serializer.GetSerializer<T>(), notBefore);
         }
 
         internal Task EnqueueAsync<T>(IReadOnlyList<T> messages, ISchemaSerializer<T> serializer, TimeSpan notBefore)
         {
-            return EnqueueAsync(_rawMessageEnqueuer.AddAsync, messages, NoSplit, serializer, notBefore);
+            return EnqueueAsync(isPoison: false, _rawMessageEnqueuer.AddAsync, messages, NoSplit, serializer, notBefore);
         }
 
         public Task EnqueuePoisonAsync<T>(IReadOnlyList<T> messages)
@@ -68,10 +71,11 @@ namespace NuGet.Insights.Worker
 
         public Task EnqueuePoisonAsync<T>(IReadOnlyList<T> messages, TimeSpan notBefore)
         {
-            return EnqueueAsync(_rawMessageEnqueuer.AddPoisonAsync, messages, NoSplit, _serializer.GetSerializer<T>(), notBefore);
+            return EnqueueAsync(isPoison: true, _rawMessageEnqueuer.AddPoisonAsync, messages, NoSplit, _serializer.GetSerializer<T>(), notBefore);
         }
 
         private async Task EnqueueAsync<T>(
+            bool isPoison,
             AddAsync addAsync,
             IReadOnlyList<T> messages,
             Func<T, IReadOnlyList<T>> split,
@@ -81,11 +85,12 @@ namespace NuGet.Insights.Worker
             // Determine which queue the messages should go into, by type.
             var queue = GetQueueType<T>();
 
-            await EnqueueAsync(queue, addAsync, messages, split, serializer, notBefore);
+            await EnqueueAsync(queue, isPoison, addAsync, messages, split, serializer, notBefore);
         }
 
         private async Task EnqueueAsync<T>(
             QueueType queue,
+            bool isPoison,
             AddAsync addAsync,
             IReadOnlyList<T> messages,
             Func<T, IReadOnlyList<T>> split,
@@ -103,6 +108,7 @@ namespace NuGet.Insights.Worker
             {
                 await EnqueueAsync(
                     queue,
+                    isPoison,
                     addAsync,
                     batches,
                     NoSplit,
@@ -128,6 +134,7 @@ namespace NuGet.Insights.Worker
                     serializedMessages.Add(serializedMessage.AsString());
                 }
 
+                TrackEnqueue(queue, isPoison, serializedMessages.Count);
                 await addAsync(queue, serializedMessages, notBefore);
             }
             else
@@ -166,7 +173,7 @@ namespace NuGet.Insights.Worker
                         var newBatchMessageLength = batchMessageLength + ",".Length + innerDataLength;
                         if (newBatchMessageLength > _rawMessageEnqueuer.MaxMessageSize)
                         {
-                            await EnqueueBulkEnqueueMessageAsync(addAsync, batchMessage, batchMessageLength);
+                            await EnqueueBulkEnqueueMessageAsync(isPoison, addAsync, batchMessage, batchMessageLength);
                             batch.Clear();
                             batch.Add(innerData.AsJsonElement());
                             batchMessageLength = emptyBatchMessageLength + innerDataLength;
@@ -181,7 +188,7 @@ namespace NuGet.Insights.Worker
 
                 if (batch.Count > 0)
                 {
-                    await EnqueueBulkEnqueueMessageAsync(addAsync, batchMessage, batchMessageLength);
+                    await EnqueueBulkEnqueueMessageAsync(isPoison, addAsync, batchMessage, batchMessageLength);
                 }
             }
         }
@@ -242,7 +249,7 @@ namespace NuGet.Insights.Worker
             return false;
         }
 
-        private async Task EnqueueBulkEnqueueMessageAsync(AddAsync addAsync, HomogeneousBulkEnqueueMessage batchMessage, int expectedLength)
+        private async Task EnqueueBulkEnqueueMessageAsync(bool isPoison, AddAsync addAsync, HomogeneousBulkEnqueueMessage batchMessage, int expectedLength)
         {
             var rawMessage = _serializer.Serialize(batchMessage).AsString();
             if (GetMessageLength(rawMessage) != expectedLength)
@@ -254,7 +261,22 @@ namespace NuGet.Insights.Worker
             }
 
             _logger.LogInformation("Enqueueing a bulk enqueue message containing {Count} individual messages.", batchMessage.Messages.Count);
+            TrackEnqueue(QueueType.Expand, isPoison, 1);
             await addAsync(QueueType.Expand, new[] { rawMessage }, TimeSpan.Zero);
+
+        }
+
+        private void TrackEnqueue(QueueType queue, bool isPoison, int count)
+        {
+            _telemetryClient
+                .GetMetric($"{nameof(MessageEnqueuer)}.Enqueue.{queue}.{(isPoison ? "Poison" : "Main")}")
+                .TrackValue(count);
+            _telemetryClient
+                .GetMetric($"{nameof(MessageEnqueuer)}.Enqueue.{(isPoison ? "Poison" : "Main")}")
+                .TrackValue(count);
+            _telemetryClient
+                .GetMetric($"{nameof(MessageEnqueuer)}.Enqueue")
+                .TrackValue(count);
         }
 
         private int GetMessageLength(HomogeneousBulkEnqueueMessage batchMessage)

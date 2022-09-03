@@ -32,7 +32,6 @@ namespace NuGet.Insights.Worker
             builder.Services.AddNuGetInsightsWorker();
 
             builder.Services.AddSingleton<INameResolver, CustomNameResolver>();
-            builder.Services.AddSingleton<ITelemetryClient, TelemetryClientWrapper>();
         }
 
         private static void FixCustomMetrics(IFunctionsHostBuilder builder)

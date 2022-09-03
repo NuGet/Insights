@@ -9,5 +9,11 @@
         "Accept-Encoding": "gzip"
       }
     }
+  ],
+  "ignorePatterns": [
+    {
+      "pattern": "^https://aka\\.ms/opensource/"
+    }
+
   ]
 }

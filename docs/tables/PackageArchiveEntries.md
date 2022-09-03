@@ -44,7 +44,8 @@ knowledge of NuGet-specific interpretation of the ZIP file entries.
 
 The ResultType enum indicates the possible variants of records.
 
-| Enum value | Description                                         |
-| ---------- | --------------------------------------------------- |
-| Available  | The package is available and processed successfully |
-| Deleted    | The package is deleted and no metadata is available |
+| Enum value   | Description                                         |
+| ------------ | --------------------------------------------------- |
+| Available    | The package is available and processed successfully |
+| Deleted      | The package is deleted and no metadata is available |
+| DoesNotExist | Unused                                              |

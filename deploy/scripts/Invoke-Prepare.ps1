@@ -23,19 +23,18 @@ New-AzResourceGroup `
     -ErrorAction Stop | Out-Default
 
 # Deploy the storage account, Key Vault, and deployment container.
-Write-Status "Ensuring the storage account, Key Vault, and deployment container exist..."
+Write-Status "Ensuring the storage account, Key Vault, and base containers exist..."
 New-Deployment `
     -ResourceGroupName $ResourceSettings.ResourceGroupName `
     -DeploymentDir $DeploymentDir `
     -DeploymentLabel $DeploymentLabel `
     -DeploymentName "storage-and-kv" `
-    -BicepPath "../storage-and-kv.bicep" `
+    -BicepPath "../bicep/storage-and-kv.bicep" `
     -Parameters @{
-    storageAccountName      = $ResourceSettings.StorageAccountName;
-    keyVaultName            = $ResourceSettings.KeyVaultName;
-    identities              = @();
-    deploymentContainerName = $ResourceSettings.DeploymentContainerName;
-    leaseContainerName      = $ResourceSettings.LeaseContainerName
+    location           = $ResourceSettings.Location;
+    storageAccountName = $ResourceSettings.StorageAccountName;
+    keyVaultName       = $ResourceSettings.KeyVaultName;
+    leaseContainerName = $ResourceSettings.LeaseContainerName
 } | Out-Default
 
 # Manage the storage account in Key Vault

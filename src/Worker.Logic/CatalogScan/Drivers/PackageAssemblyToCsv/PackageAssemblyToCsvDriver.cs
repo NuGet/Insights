@@ -25,6 +25,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         private readonly CatalogClient _catalogClient;
         private readonly PackageHashService _packageHashService;
         private readonly FlatContainerClient _flatContainerClient;
+        private readonly FileDownloader _fileDownloader;
         private readonly TempStreamService _tempStreamService;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<PackageAssemblyToCsvDriver> _logger;
@@ -35,6 +36,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             CatalogClient catalogClient,
             PackageHashService packageHashService,
             FlatContainerClient flatContainerClient,
+            FileDownloader fileDownloader,
             TempStreamService tempStreamService,
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<PackageAssemblyToCsvDriver> logger)
@@ -42,6 +44,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             _catalogClient = catalogClient;
             _packageHashService = packageHashService;
             _flatContainerClient = flatContainerClient;
+            _fileDownloader = fileDownloader;
             _tempStreamService = tempStreamService;
             _options = options;
             _logger = logger;
@@ -78,10 +81,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             {
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
-                var result = await _flatContainerClient.DownloadPackageContentToFileAsync(
-                    leafScan.PackageId,
-                    leafScan.PackageVersion,
-                    CancellationToken.None);
+                var url = await _flatContainerClient.GetPackageContentUrlAsync(leafScan.PackageId, leafScan.PackageVersion);
+                var result = await _fileDownloader.DownloadUrlToFileAsync(url, CancellationToken.None);
 
                 if (result is null)
                 {

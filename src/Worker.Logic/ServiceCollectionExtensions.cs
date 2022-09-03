@@ -26,13 +26,24 @@ using NuGet.Insights.Worker.TableCopy;
 using NuGet.Insights.Worker.Workflow;
 using NuGet.Insights.Worker.ReferenceTracking;
 using NuGet.Insights.Worker.LoadPackageReadme;
+using NuGet.Insights.Worker.LoadSymbolPackageArchive;
 
 namespace NuGet.Insights.Worker
 {
     public static class ServiceCollectionExtensions
     {
+        private class Marker
+        {
+        }
+
         public static IServiceCollection AddNuGetInsightsWorker(this IServiceCollection serviceCollection)
         {
+            // Avoid re-adding all the services.
+            if (serviceCollection.Any(x => x.ServiceType == typeof(Marker)))
+            {
+                return serviceCollection;
+            }
+
             serviceCollection.AddTransient<IRawMessageEnqueuer, QueueStorageEnqueuer>();
             serviceCollection.AddTransient<IWorkerQueueFactory, WorkerQueueFactory>();
 
@@ -124,6 +135,7 @@ namespace NuGet.Insights.Worker
 
             serviceCollection.AddLoadLatestPackageLeaf();
             serviceCollection.AddLoadPackageArchive();
+            serviceCollection.AddLoadSymbolPackageArchive();
 #if ENABLE_CRYPTOAPI
             serviceCollection.AddLoadPackageCertificate();
 #endif
@@ -383,6 +395,11 @@ namespace NuGet.Insights.Worker
         private static void AddLoadPackageArchive(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddTransient<LoadPackageArchiveDriver>();
+        }
+
+        private static void AddLoadSymbolPackageArchive(this IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddTransient<LoadSymbolPackageArchiveDriver>();
         }
 
 #if ENABLE_CRYPTOAPI

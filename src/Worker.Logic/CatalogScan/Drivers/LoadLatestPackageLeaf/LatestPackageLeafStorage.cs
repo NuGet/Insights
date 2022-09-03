@@ -27,14 +27,14 @@ namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
 
         public TableClient Table { get; }
 
-        public string GetPartitionKey(string packageId)
+        public string GetPartitionKey(ICatalogLeafItem item)
         {
-            return LatestPackageLeaf.GetPartitionKey(packageId);
+            return LatestPackageLeaf.GetPartitionKey(item.PackageId);
         }
 
-        public string GetRowKey(string packageVersion)
+        public string GetRowKey(ICatalogLeafItem item)
         {
-            return LatestPackageLeaf.GetRowKey(packageVersion);
+            return LatestPackageLeaf.GetRowKey(item.PackageVersion);
         }
 
         public string CommitTimestampColumnName => nameof(LatestPackageLeaf.CommitTimestamp);

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -36,7 +36,7 @@ namespace NuGet.Insights
             var second = await Target.GetOrUpdateInfoAsync(leafItem);
 
             // Assert
-            Assert.Equal(2 * requestCount, HttpMessageHandlerFactory.Requests.Count);
+            Assert.InRange(HttpMessageHandlerFactory.Requests.Count, 2 * (requestCount - 1), 2 * requestCount); // 412 retries might occur on the GET If-Match, so allow for that.
             Assert.Equal(timestampA, first.CommitTimestamp);
             Assert.Equal(timestampB, second.CommitTimestamp);
         }

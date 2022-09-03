@@ -28,6 +28,12 @@ namespace NuGet.Insights.Worker
         LoadPackageArchive,
 
         /// <summary>
+        /// Implemented by <see cref="LoadSymbolPackageArchive.LoadSymbolPackageArchiveDriver"/>. Downloads interesting parts of the .snupkg
+        /// file stored in the symbol packages container and stores the data in Azure Table Storage for other drivers to use.
+        /// </summary>
+        LoadSymbolPackageArchive,
+
+        /// <summary>
         /// Implemented by <see cref="LoadPackageManifest.LoadPackageManifestDriver"/>. Downloads the .nuspec from the
         /// V3 flat container and stores it in Azure Table Storage for other drivers to use.
         /// </summary>
@@ -60,9 +66,15 @@ namespace NuGet.Insights.Worker
 
         /// <summary>
         /// Implemented by <see cref="PackageArchiveToCsv.PackageArchiveToCsvDriver"/>.
-        /// Extracts metadata about each entry in a package's ZIP archive.
+        /// Extracts metadata about each entry in a package's ZIP archive (the .nupkg file).
         /// </summary>
         PackageArchiveToCsv,
+
+        /// <summary>
+        /// Implemented by <see cref="SymbolPackageArchiveToCsv.SymbolPackageArchiveToCsvDriver"/>.
+        /// Extracts metadata about each entry in a symbol package's ZIP archive (the .snupkg file).
+        /// </summary>
+        SymbolPackageArchiveToCsv,
 
         /// <summary>
         /// Implemented by <see cref="PackageAssemblyToCsv.PackageAssemblyToCsvDriver"/>. For packages that contain

@@ -89,6 +89,7 @@ namespace NuGet.Insights.Worker
 
         public async Task InitializeAsync()
         {
+            await _workflowStorageService.InitializeAsync();
             await _messageEnqueuer.InitializeAsync();
         }
     }

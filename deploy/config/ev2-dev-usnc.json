@@ -10,6 +10,7 @@
     "ServiceTreeId": "00000000-0000-0000-0000-000000000000",
     "WorkerSku": "S1",
     "WorkerMinInstances": 1,
+    "WorkerMaxInstances": 10,
     "WorkerCountPerPlan": 1,
     "WorkerPlanCount": 1,
     "WorkerLogLevel": "Warning",
@@ -29,8 +30,10 @@
     "WebsitePlanName": "ev2-dev-usnc-insights",
     "WorkerNamePrefix": "ev2-dev-usnc-insights-worker-",
     "WorkerPlanNamePrefix": "ev2-dev-usnc-insights-worker-",
+    "WorkerAutoscaleNamePrefix": "ev2-dev-usnc-insights-worker-",
     "WorkerHostId": "ev2-dev-usnc-insights",
-    "WorkerUserManagedIdentityName": "ev2-dev-usnc-insights-worker"
+    "UserManagedIdentityName": "ev2-dev-usnc-insights-worker",
+    "UseSpotWorkers": false
   },
   "AppSettings": {
     "Shared": {

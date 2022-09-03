@@ -5,13 +5,11 @@ using System;
 
 namespace NuGet.Insights
 {
-    public interface ICatalogLeafItem
+    public interface ICatalogLeafItem : IPackageIdentityCommit
     {
         string Url { get; }
         string CommitId { get; }
-        DateTimeOffset CommitTimestamp { get; }
-        string PackageId { get; }
-        string PackageVersion { get; }
         CatalogLeafType Type { get; }
+        public new DateTimeOffset CommitTimestamp { get; }
     }
 }

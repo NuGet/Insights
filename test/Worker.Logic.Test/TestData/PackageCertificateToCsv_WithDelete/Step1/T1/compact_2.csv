@@ -1,5 +1,5 @@
 ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Fingerprint,RelationshipTypes
-,,behaviorsample,behaviorsample/1.0.0,BehaviorSample,1.0.0,2020-12-20T02:39:03.372413Z,2020-12-20T02:35:15.58Z,Available,z2zmdo74WKOmZ74a-KpSTThsf1mjRUJxP137DXms890,"PrimarySignedCmsContains, IsRepositoryCodeSignedBy, RepositoryCodeSigningChainContains"
+,,behaviorsample,behaviorsample/1.0.0,BehaviorSample,1.0.0,2020-12-20T02:39:03.372413Z,2020-12-20T02:35:15.58Z,Available,ulpjCZSyuPVisweioyRZmCMu8KlO6Avs5c6gtc7KYfk,"PrimarySignedCmsContains, IsRepositoryCodeSignedBy, RepositoryCodeSigningChainContains"
 ,,behaviorsample,behaviorsample/1.0.0,BehaviorSample,1.0.0,2020-12-20T02:39:03.372413Z,2020-12-20T02:35:15.58Z,Available,PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw,"PrimarySignedCmsContains, RepositoryCodeSigningChainContains"
 ,,behaviorsample,behaviorsample/1.0.0,BehaviorSample,1.0.0,2020-12-20T02:39:03.372413Z,2020-12-20T02:35:15.58Z,Available,UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI,"PrimarySignedCmsContains, RepositoryCodeSigningChainContains"
 ,,behaviorsample,behaviorsample/1.0.0,BehaviorSample,1.0.0,2020-12-20T02:39:03.372413Z,2020-12-20T02:35:15.58Z,Available,xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg,"RepositoryTimestampSignedCmsContains, IsRepositoryTimestampedBy, RepositoryTimestampingChainContains"

@@ -36,6 +36,8 @@ param (
         "PackageSignatures",
         "PackageVersions",
         "PackageVulnerabilities",
+        "SymbolPackageArchiveEntries",
+        "SymbolPackageArchives",
         "VerifiedPackages")]
     [string]$TableName,
 
@@ -53,26 +55,28 @@ param (
 )
 
 $tableNameToContainerName = @{
-    "CatalogLeafItems"          = "catalogleafitems";
-    "Certificates"              = "certificates";
-    "NuGetPackageExplorerFiles" = "nugetpackageexplorerfiles";
-    "NuGetPackageExplorers"     = "nugetpackageexplorer";
-    "PackageArchiveEntries"     = "packagearchiveentries";
-    "PackageArchives"           = "packagearchives";
-    "PackageAssemblies"         = "packageassemblies";
-    "PackageAssets"             = "packageassets";
-    "PackageCertificates"       = "packagecertificates";
-    "PackageCompatibilities"    = "packagecompatibilities";
-    "PackageDeprecations"       = "packagedeprecations";
-    "PackageDownloads"          = "packagedownloads";
-    "PackageIcons"              = "packageicons";
-    "PackageManifests"          = "packagemanifests";
-    "PackageOwners"             = "packageowners";
-    "PackageReadmes"            = "packagereadmes";
-    "PackageSignatures"         = "packagesignatures";
-    "PackageVersions"           = "packageversions";
-    "PackageVulnerabilities"    = "packagevulnerabilities";
-    "VerifiedPackages"          = "verifiedpackages";
+    "CatalogLeafItems"            = "catalogleafitems";
+    "Certificates"                = "certificates";
+    "NuGetPackageExplorerFiles"   = "nugetpackageexplorerfiles";
+    "NuGetPackageExplorers"       = "nugetpackageexplorer";
+    "PackageArchiveEntries"       = "packagearchiveentries";
+    "PackageArchives"             = "packagearchives";
+    "PackageAssemblies"           = "packageassemblies";
+    "PackageAssets"               = "packageassets";
+    "PackageCertificates"         = "packagecertificates";
+    "PackageCompatibilities"      = "packagecompatibilities";
+    "PackageDeprecations"         = "packagedeprecations";
+    "PackageDownloads"            = "packagedownloads";
+    "PackageIcons"                = "packageicons";
+    "PackageManifests"            = "packagemanifests";
+    "PackageOwners"               = "packageowners";
+    "PackageReadmes"              = "packagereadmes";
+    "PackageSignatures"           = "packagesignatures";
+    "PackageVersions"             = "packageversions";
+    "PackageVulnerabilities"      = "packagevulnerabilities";
+    "SymbolPackageArchiveEntries" = "symbolpackagearchiveentries";
+    "SymbolPackageArchives"       = "symbolpackagearchives";
+    "VerifiedPackages"            = "verifiedpackages";
 }
 
 if ($TableName -and !$tableNameToContainerName[$TableName]) {

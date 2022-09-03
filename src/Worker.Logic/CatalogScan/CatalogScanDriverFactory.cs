@@ -28,6 +28,8 @@ using NuGet.Insights.Worker.PackageManifestToCsv;
 using NuGet.Insights.Worker.PackageSignatureToCsv;
 using NuGet.Insights.Worker.PackageVersionToCsv;
 using NuGet.Insights.Worker.PackageReadmeToCsv;
+using NuGet.Insights.Worker.LoadSymbolPackageArchive;
+using NuGet.Insights.Worker.SymbolPackageArchiveToCsv;
 
 namespace NuGet.Insights.Worker
 {
@@ -53,6 +55,8 @@ namespace NuGet.Insights.Worker
             {
                 case CatalogScanDriverType.LoadPackageArchive:
                     return _serviceProvider.GetRequiredService<LoadPackageArchiveDriver>();
+                case CatalogScanDriverType.LoadSymbolPackageArchive:
+                    return _serviceProvider.GetRequiredService<LoadSymbolPackageArchiveDriver>();
                 case CatalogScanDriverType.LoadPackageManifest:
                     return _serviceProvider.GetRequiredService<LoadPackageManifestDriver>();
                 case CatalogScanDriverType.LoadPackageReadme:
@@ -90,6 +94,8 @@ namespace NuGet.Insights.Worker
                     return _serviceProvider.GetRequiredService<FindLatestLeafDriver<LatestPackageLeaf>>();
                 case CatalogScanDriverType.PackageArchiveToCsv:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageArchiveRecord, PackageArchiveEntry>>();
+                case CatalogScanDriverType.SymbolPackageArchiveToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<SymbolPackageArchiveRecord, SymbolPackageArchiveEntry>>();
                 case CatalogScanDriverType.PackageAssemblyToCsv:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageAssembly>>();
                 case CatalogScanDriverType.PackageAssetToCsv:

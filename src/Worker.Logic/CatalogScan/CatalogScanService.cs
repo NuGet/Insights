@@ -18,6 +18,7 @@ namespace NuGet.Insights.Worker
         private readonly CatalogScanStorageService _storageService;
         private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
+        private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<CatalogScanService> _logger;
 
         public CatalogScanService(
@@ -27,6 +28,7 @@ namespace NuGet.Insights.Worker
             CatalogScanStorageService catalogScanStorageService,
             AutoRenewingStorageLeaseService leaseService,
             IOptions<NuGetInsightsWorkerSettings> options,
+            ITelemetryClient telemetryClient,
             ILogger<CatalogScanService> logger)
         {
             _cursorService = cursorService;
@@ -35,6 +37,7 @@ namespace NuGet.Insights.Worker
             _storageService = catalogScanStorageService;
             _leaseService = leaseService;
             _options = options;
+            _telemetryClient = telemetryClient;
             _logger = logger;
         }
 
@@ -124,6 +127,7 @@ namespace NuGet.Insights.Worker
                     return true;
 
                 case CatalogScanDriverType.PackageArchiveToCsv:
+                case CatalogScanDriverType.SymbolPackageArchiveToCsv:
                 case CatalogScanDriverType.PackageAssemblyToCsv:
                 case CatalogScanDriverType.PackageAssetToCsv:
 #if ENABLE_CRYPTOAPI
@@ -141,6 +145,7 @@ namespace NuGet.Insights.Worker
                     return null;
 
                 case CatalogScanDriverType.LoadPackageArchive:
+                case CatalogScanDriverType.LoadSymbolPackageArchive:
                 case CatalogScanDriverType.LoadPackageManifest:
                 case CatalogScanDriverType.LoadPackageReadme:
                 case CatalogScanDriverType.LoadPackageVersion:
@@ -227,6 +232,11 @@ namespace NuGet.Insights.Worker
                 }
             }
 
+            _telemetryClient.TrackMetric(
+                "CatalogScan.Update",
+                1,
+                new Dictionary<string, string> { { "DriverType", driverType.ToString() } });
+
             switch (driverType)
             {
                 case CatalogScanDriverType.CatalogDataToCsv:
@@ -238,6 +248,7 @@ namespace NuGet.Insights.Worker
                         continueWithDependents);
 
                 case CatalogScanDriverType.PackageArchiveToCsv:
+                case CatalogScanDriverType.SymbolPackageArchiveToCsv:
                 case CatalogScanDriverType.PackageAssemblyToCsv:
                 case CatalogScanDriverType.PackageAssetToCsv:
 #if ENABLE_CRYPTOAPI
@@ -262,6 +273,7 @@ namespace NuGet.Insights.Worker
                 case CatalogScanDriverType.BuildVersionSet:
                 case CatalogScanDriverType.LoadLatestPackageLeaf:
                 case CatalogScanDriverType.LoadPackageArchive:
+                case CatalogScanDriverType.LoadSymbolPackageArchive:
                 case CatalogScanDriverType.LoadPackageManifest:
                 case CatalogScanDriverType.LoadPackageReadme:
                 case CatalogScanDriverType.LoadPackageVersion:

@@ -18,6 +18,9 @@ namespace NuGet.Insights
         public const string Timestamp = "Timestamp";
         public const string ETag = "odata.etag";
 
+        public const string MD5Header = "Content-MD5";
+        public const string SHA512Header = "x-ms-meta-SHA512";
+
         /// <summary>
         /// See: https://docs.microsoft.com/en-us/azure/data-explorer/lightingest#recommendations
         /// </summary>
@@ -51,7 +54,12 @@ namespace NuGet.Insights
 
         public static TimeSpan GetMessageDelay(int attemptCount, int factor)
         {
-            return TimeSpan.FromSeconds(Math.Min(Math.Max(attemptCount * factor, 0), 60));
+            return GetMessageDelay(attemptCount, factor, maxSeconds: 60);
+        }
+
+        public static TimeSpan GetMessageDelay(int attemptCount, int factor, int maxSeconds)
+        {
+            return TimeSpan.FromSeconds(Math.Min(Math.Max(attemptCount * factor, 0), maxSeconds));
         }
 
         public static DateTimeOffset GetSasExpiry(string sas)

@@ -226,6 +226,10 @@ namespace NuGet.Insights.Worker
                     CatalogScanDriverType.LoadPackageManifest,
                     CatalogScanDriverType.LoadPackageReadme,
                     CatalogScanDriverType.LoadPackageVersion,
+                    CatalogScanDriverType.LoadSymbolPackageArchive,
+#if ENABLE_NPE
+                    CatalogScanDriverType.NuGetPackageExplorerToCsv,
+#endif
                     CatalogScanDriverType.PackageAssemblyToCsv,
                     CatalogScanDriverType.PackageIconToCsv,
                 },
@@ -331,6 +335,19 @@ namespace NuGet.Insights.Worker
             },
 
             {
+                CatalogScanDriverType.LoadSymbolPackageArchive,
+                new DriverInfo
+                {
+                    DefaultMin = CatalogClient.NuGetOrgMinDeleted,
+                    SetDependencyCursorAsync = (self, x) =>
+                    {
+                        self.FlatContainerCursor = x;
+                        return Task.CompletedTask;
+                    },
+                }
+            },
+
+            {
                 CatalogScanDriverType.LoadPackageManifest,
                 new DriverInfo
                 {
@@ -378,6 +395,18 @@ namespace NuGet.Insights.Worker
                     {
                         await self.SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, x);
                         await self.SetCursorAsync(CatalogScanDriverType.PackageAssemblyToCsv, x);
+                    },
+                }
+            },
+
+            {
+                CatalogScanDriverType.SymbolPackageArchiveToCsv,
+                new DriverInfo
+                {
+                    DefaultMin = CatalogClient.NuGetOrgMinDeleted,
+                    SetDependencyCursorAsync = async (self, x) =>
+                    {
+                        await self.SetCursorAsync(CatalogScanDriverType.LoadSymbolPackageArchive, x);
                     },
                 }
             },
@@ -488,10 +517,10 @@ namespace NuGet.Insights.Worker
                 new DriverInfo
                 {
                     DefaultMin = CatalogClient.NuGetOrgMinDeleted,
-                    SetDependencyCursorAsync = async (self, x) =>
+                    SetDependencyCursorAsync = (self, x) =>
                     {
                         self.FlatContainerCursor = x;
-                        await self.SetCursorAsync(CatalogScanDriverType.LoadLatestPackageLeaf, x);
+                        return Task.CompletedTask;
                     },
                 }
             },
