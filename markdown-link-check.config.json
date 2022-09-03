@@ -13,7 +13,10 @@
   "ignorePatterns": [
     {
       "pattern": "^https://aka\\.ms/opensource/"
+    },
+    {
+      "@comment": "The SSL certificate is currently expired.",
+      "pattern": "^https://dotnetfoundation\\.org/"
     }
-
   ]
 }
