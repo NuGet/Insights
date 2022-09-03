@@ -305,6 +305,7 @@ __pycache__/
 # OpenCover UI analysis results
 OpenCover/
 
+# NuGet.Insights stuff
 profile.arm.json
 .tools
 **/wwwroot/css/*.min.css
@@ -312,3 +313,5 @@ profile.arm.json
 __azurite_db_*
 __blobstorage__
 __queuestorage__
+/.tye/
+/azurite

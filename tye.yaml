@@ -1,0 +1,20 @@
+name: NuGet.Insights
+services:
+  - name: website
+    project: src/Website/Website.csproj
+    bindings:
+      - protocol: "http"
+  - name: worker
+    azureFunction: src/Worker/
+  - name: storage
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    volumes:
+      - target: /data
+        source: ./azurite/
+    bindings:
+      - name: blobs
+        port: 10000
+      - name: queues
+        port: 10001
+      - name: tables
+        port: 10002
