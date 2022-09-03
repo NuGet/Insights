@@ -104,14 +104,24 @@ scan](#starting-a-catalog-scan).
 
 ## Running locally
 
-Use one of the following approaches to run NuGet.Insights locally. [Using
-Project Tye](#using-project-tye) is the easiest if you have Docker installed,
-otherwise [use a standalone Azure Storage
+Use one of the following approaches to run Insights locally. [Using Project
+Tye](#using-project-tye) is the easiest if you have Docker installed, otherwise
+[use a standalone Azure Storage
 emulator](#using-a-standalone-azure-storage-emulator).
 
 ### Using Project Tye
 
-1. Clone the repository.
+From Project Tye's GitHub page:
+
+> Tye is a developer tool that makes developing, testing, and deploying
+> microservices and distributed applications easier. Project Tye includes a
+> local orchestrator to make developing microservices easier and the ability to
+> deploy microservices to Kubernetes with minimal configuration.
+
+It's a great way to run the Insights website, worker, and the Azurite storage
+emulator all at once with a single command.
+
+1. Clone the Insights repository.
 2. [Install Project
    Tye](https://github.com/dotnet/tye/blob/main/docs/getting_started.md#installing-tye)
    if you haven't already. 
@@ -151,15 +161,15 @@ Proceed to the [Starting a catalog scan](#starting-a-catalog-scan) section.
 
 ### Starting a catalog scan
 
-A **catalog scan** is a unit of work for NuGet.Insights which runs analysis
-against all of the packages published during some time range. The time range for
-a catalog scan is bounded by the previous NuGet V3 catalog commit timestamp used
+A **catalog scan** is a unit of work for Insights which runs analysis against
+all of the packages published during some time range. The time range for a
+catalog scan is bounded by the previous NuGet V3 catalog commit timestamp used
 (as an exclusive minimum) and an arbitrary timestamp to process up to (as an
 inclusive maximum). For more information, see the [architecture
 section](#architecture).
 
 Once you have opened the website URL in your web browser of choice, follow these
-steps to start your first catalog scan from the NuGet.Insights admin panel.
+steps to start your first catalog scan from the Insights admin panel.
 
 1. In your web browser, viewing the website URL, click on the "Admin" link in
    the navigation bar.
@@ -195,7 +205,7 @@ understand what the worker is doing.
 - **[Tables](docs/tables/README.md) - documentation for all of the data tables
   produced by this project**
 - **[Adding a new driver](docs/new-driver.md) - a guide to help you enhance
-  NuGet.Insights to suit your needs**
+  Insights to suit your needs**
 - [Reusable classes](docs/reusable-classes.md) - interesting or useful classes
   or concepts supporting this project
 - [Blog posts](docs/blog-posts.md) - blog posts about lessons learned from this
