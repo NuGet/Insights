@@ -194,11 +194,20 @@ steps to start your first catalog scan from the Insights admin panel.
    record created in the previous step.
 
 If you ran a driver like **Load package archive**, data will be populated into
-your Azure Table Storage emulator. If you ran a driver like **Package asset to
-CSV**, CSV files will be populated into your Azure Blob Storage emulator.
+your Azure Table Storage emulator in the `packagearchives` table. If you ran a
+driver like **Package asset to CSV**, CSV files will be populated into your
+Azure Blob Storage emulator in the `packageassets` container.
 
-You can check the application logs or the Azure Queue Storage queues to
-understand what the worker is doing.
+You can use the [Azure Storage
+Explorer](https://azure.microsoft.com/en-us/products/storage/storage-explorer/)
+to interact with your Azure Storage endpoints (either the storage emulator
+running locally or in Azure).
+
+When running locally, uou can check the application logs shown in the Tye
+dashboard or terminal stdout. When running in Azure, you can use Application
+Insights (note the default logging is Warning or higher to reduce cost). You can
+also look at the Azure Queue Storage queues to understand what sort of work the
+Worker has left.
 
 ## Documentation
 
