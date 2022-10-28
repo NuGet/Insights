@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -49,8 +49,24 @@ namespace NuGet.Insights.Worker
             var scan = await _storageService.GetIndexScanAsync(message.CursorName, message.ScanId);
             if (scan == null)
             {
-                await Task.Delay(TimeSpan.FromSeconds(dequeueCount * 15));
-                throw new InvalidOperationException($"The catalog index scan '{message.ScanId}' with cursor '{message.CursorName}' should have already been created.");
+                if (message.AttemptCount < 10)
+                {
+                    _logger.LogWarning("After {AttemptCount} attempts, the catalog index scan '{ScanId}' with cursor '{CursorName}' should have already been created. Retrying.",
+                        message.AttemptCount,
+                        message.ScanId,
+                        message.CursorName);
+                    message.AttemptCount++;
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
+                    return;
+                }
+                else
+                {
+                    _logger.LogError("After {AttemptCount} attempts, the catalog index scan '{ScanId}' with cursor '{CursorName}' should have already been created. Giving up.",
+                        message.AttemptCount,
+                        message.ScanId,
+                        message.CursorName);
+                    return;
+                }
             }
 
             var driver = _driverFactory.Create(scan.DriverType);
