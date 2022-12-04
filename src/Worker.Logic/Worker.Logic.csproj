@@ -21,6 +21,9 @@
     <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="8.5.0" />
     <PackageReference Include="Microsoft.Azure.Kusto.Ingest" Version="9.4.1" />
     <PackageReference Include="Sylvan.Data.Csv" Version="1.1.10" />
+    
+    <!-- This package was pulled in to resolve a Component Governance alert. -->
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Logic\Logic.csproj" />
