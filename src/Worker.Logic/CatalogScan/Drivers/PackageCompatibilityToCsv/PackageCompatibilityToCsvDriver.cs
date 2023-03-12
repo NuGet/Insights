@@ -142,11 +142,10 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 
                 output.NuGetGallery = GetAndSerializeNestedAndOut(
                     nameof(output.NuGetGallery),
-                    () =>
-                    {
-                        var packageService = new PackageService();
-                        return packageService.GetSupportedFrameworks(result.Value.NuspecReader, files).ToList();
-                    },
+                    () => AssetFrameworkHelper.GetAssetFrameworks(
+                        result.Value.NuspecReader.GetId(),
+                        result.Value.NuspecReader.GetPackageTypes(),
+                        files),
                     out var nuGetGallery);
 
                 if (nuGetGallery != null)
@@ -180,11 +179,10 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 
                 output.NuGetGalleryEscaped = GetAndSerializeNested(
                     nameof(output.NuGetGallery),
-                    () =>
-                    {
-                        var packageService = new PackageService();
-                        return packageService.GetSupportedFrameworks(result.Value.NuspecReader, escapedFiles);
-                    });
+                    () => AssetFrameworkHelper.GetAssetFrameworks(
+                        result.Value.NuspecReader.GetId(),
+                        result.Value.NuspecReader.GetPackageTypes(),
+                        escapedFiles));
 
                 var nuGetLogger = _logger.ToNuGetLogger();
                 output.NU1202 = GetAndSerializeNested(

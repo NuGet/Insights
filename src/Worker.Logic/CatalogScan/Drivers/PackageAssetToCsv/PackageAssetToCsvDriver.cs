@@ -108,11 +108,11 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             var assets = new List<PackageAsset>();
             foreach (var pair in patternSets)
             {
-                List<ContentItemGroup> groups;
+                var groups = new List<ContentItemGroup>();
                 try
                 {
                     // We must enumerate the item groups here to force the exception to be thrown, if any.
-                    groups = contentItemCollection.FindItemGroups(pair.Value).ToList();
+                    contentItemCollection.PopulateItemGroups(pair.Value, groups);
                 }
                 catch (ArgumentException ex) when (IsInvalidDueToHyphenInPortal(ex))
                 {

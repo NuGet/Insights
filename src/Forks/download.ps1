@@ -38,14 +38,10 @@ $files = [ordered]@{
             "src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibilityFactory.cs",
             "src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibilityTableData.cs",
             "src/NuGetGallery.Core/Frameworks/SupportedFrameworks.cs",
-            "src/NuGetGallery.Services/PackageManagement/PackageService.cs"
+            "src/NuGetGallery.Core/Services/AssetFrameworkHelper.cs"
         );
-        Revision = "f9913c9f58b635e2c4776dd4abe7e60b8c7aeb9e"
+        Revision = "3382ee77c723ef3bf87d84fc79964f5bba780d18"
         Patches  = @(
-            @{
-                Description = "Remove unused methods from ``PackageService``"
-                Path        = "0001-Remove-unused-methods-from-PackageService.patch"
-            },
             @{
                 Description = "Remove unused property from ``PackageFramework`` and make ``FrameworkName`` settable"
                 Path        = "0003-Remove-unused-property-and-make-framework-name-setta.patch"

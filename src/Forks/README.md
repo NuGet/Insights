@@ -32,7 +32,7 @@ Patches:
 
 Copied license: [`LICENSE.txt`](NuGet/NuGetGallery/LICENSE.txt)
 
-Copied revision: [`f9913c9f58b635e2c4776dd4abe7e60b8c7aeb9e`](https://github.com/NuGet/NuGetGallery/tree/f9913c9f58b635e2c4776dd4abe7e60b8c7aeb9e)
+Copied revision: [`3382ee77c723ef3bf87d84fc79964f5bba780d18`](https://github.com/NuGet/NuGetGallery/tree/3382ee77c723ef3bf87d84fc79964f5bba780d18)
 
 Files:
   - [`src/NuGet.Services.Entities/IEntity.cs`](NuGet/NuGetGallery/src/NuGet.Services.Entities/IEntity.cs)
@@ -46,10 +46,9 @@ Files:
   - [`src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibilityFactory.cs`](NuGet/NuGetGallery/src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibilityFactory.cs)
   - [`src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibilityTableData.cs`](NuGet/NuGetGallery/src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibilityTableData.cs)
   - [`src/NuGetGallery.Core/Frameworks/SupportedFrameworks.cs`](NuGet/NuGetGallery/src/NuGetGallery.Core/Frameworks/SupportedFrameworks.cs)
-  - [`src/NuGetGallery.Services/PackageManagement/PackageService.cs`](NuGet/NuGetGallery/src/NuGetGallery.Services/PackageManagement/PackageService.cs)
+  - [`src/NuGetGallery.Core/Services/AssetFrameworkHelper.cs`](NuGet/NuGetGallery/src/NuGetGallery.Core/Services/AssetFrameworkHelper.cs)
 
 Patches:
-  - [Remove unused methods from `PackageService`](0001-Remove-unused-methods-from-PackageService.patch)
   - [Remove unused property from `PackageFramework` and make `FrameworkName` settable](0003-Remove-unused-property-and-make-framework-name-setta.patch)
 
 # [NuGet/ServerCommon](https://github.com/NuGet/ServerCommon)

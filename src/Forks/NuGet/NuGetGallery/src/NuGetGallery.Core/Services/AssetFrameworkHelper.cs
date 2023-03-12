@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+﻿﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,13 +8,12 @@ using System.Linq;
 using NuGet.Client;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.RuntimeModel;
 
 namespace NuGetGallery
 {
-    public class PackageService
+    public static class AssetFrameworkHelper
     {
         /// <summary>
         /// This method combines the logic used in restore operations to make a determination about the TFM supported by the package.
@@ -28,10 +27,10 @@ namespace NuGetGallery
         /// - If this isn't a tools package, we look for build-time, runtime, content and resource file patterns
         /// For added details on the various cases, see unit tests targeting this method.
         /// </summary>
-        public virtual IEnumerable<NuGetFramework> GetSupportedFrameworks(NuspecReader nuspecReader, IList<string> packageFiles)
+        public static IEnumerable<NuGetFramework> GetAssetFrameworks(string packageId, IReadOnlyList<PackageType> packageTypes, IList<string> packageFiles)
         {
             var supportedTFMs = Enumerable.Empty<NuGetFramework>();
-            if (packageFiles != null && packageFiles.Any() && nuspecReader != null)
+            if (packageFiles != null && packageFiles.Any())
             {
                 // Setup content items for analysis
                 var items = new ContentItemCollection();
@@ -40,13 +39,12 @@ namespace NuGetGallery
                 var conventions = new ManagedCodeConventions(runtimeGraph);
 
                 // Let's test for tools packages first--they're a special case
-                var groups = Enumerable.Empty<ContentItemGroup>();
-                var packageTypes = nuspecReader.GetPackageTypes();
+                var groups = new List<ContentItemGroup>();
                 if (packageTypes.Count == 1 && (packageTypes[0] == PackageType.DotnetTool ||
                                                 packageTypes[0] == PackageType.DotnetCliTool))
                 {
                     // Only a package that is a tool package (and nothing else) will be matched against tools pattern set
-                    groups = items.FindItemGroups(conventions.Patterns.ToolsAssemblies);
+                    items.PopulateItemGroups(conventions.Patterns.ToolsAssemblies, groups);
                 }
                 else
                 {
@@ -69,15 +67,25 @@ namespace NuGetGallery
                     };
 
                     // We'll create a set of "groups" --these are content items which satisfy file pattern sets
-                    var standardGroups = patterns
-                        .SelectMany(p => items.FindItemGroups(p));
+                    foreach (var pattern in patterns)
+                    {
+                        items.PopulateItemGroups(pattern, groups);
+                    }
 
                     // Filter out MSBuild assets that don't match the package ID and append to groups we already have
-                    var packageId = nuspecReader.GetId();
-                    var msbuildGroups = msbuildPatterns
-                        .SelectMany(p => items.FindItemGroups(p))
-                        .Where(g => HasBuildItemsForPackageId(g.Items, packageId));
-                    groups = standardGroups.Concat(msbuildGroups);
+                    var msbuildGroups = new List<ContentItemGroup>();
+                    foreach (var pattern in msbuildPatterns)
+                    {
+                        items.PopulateItemGroups(pattern, msbuildGroups);
+                    }
+
+                    foreach (var group in msbuildGroups)
+                    {
+                        if (HasBuildItemsForPackageId(group.Items, packageId))
+                        {
+                            groups.Add(group);
+                        }
+                    }
                 }
 
                 // Now that we have a collection of groups which have made it through the pattern set filter, let's transform them into TFMs
@@ -114,6 +122,35 @@ namespace NuGetGallery
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Framework Generation shortname identifiers used by the Search Service for framework filtering.
+        /// </summary>
+        public static class FrameworkGenerationIdentifiers
+        {
+            public const string Net = "net";
+
+            public const string NetFramework = "netframework";
+
+            public const string NetCoreApp = "netcoreapp";
+
+            public const string NetStandard = "netstandard";
+        }
+
+
+        /// <summary>
+        /// Framework Generation display names used in the Gallery UI.
+        /// </summary>
+        public static class FrameworkGenerationDisplayNames
+        {
+            public const string Net = ".NET";
+
+            public const string NetFramework = ".NET Framework";
+
+            public const string NetCoreApp = ".NET Core";
+
+            public const string NetStandard = ".NET Standard";
         }
     }
 }
