@@ -30,6 +30,7 @@ using NuGet.Insights.Worker.PackageVersionToCsv;
 using NuGet.Insights.Worker.PackageReadmeToCsv;
 using NuGet.Insights.Worker.LoadSymbolPackageArchive;
 using NuGet.Insights.Worker.SymbolPackageArchiveToCsv;
+using NuGet.Insights.Worker.PackageContentToCsv;
 
 namespace NuGet.Insights.Worker
 {
@@ -118,6 +119,8 @@ namespace NuGet.Insights.Worker
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageIcon>>();
                 case CatalogScanDriverType.CatalogDataToCsv:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageDeprecationRecord, PackageVulnerabilityRecord, CatalogLeafItemRecord>>();
+                case CatalogScanDriverType.PackageContentToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageContent>>();
                 default:
                     throw new NotSupportedException($"Catalog scan driver type '{driverType}' is not supported.");
             }

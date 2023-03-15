@@ -110,6 +110,7 @@ namespace NuGet.Insights.Worker
             x.DisableMessageDelay = true;
             x.AppendResultStorageBucketCount = 3;
             x.KustoDatabaseName = "TestKustoDb";
+            x.PackageContentFileExtensions = new List<string> { ".txt" };
 
             x.WorkQueueName = $"{StoragePrefix}1wq1";
             x.ExpandQueueName = $"{StoragePrefix}1eq1";
@@ -147,6 +148,7 @@ namespace NuGet.Insights.Worker
             x.PackageCompatibilityContainerName = $"{StoragePrefix}1pc1";
             x.PackageCertificateContainerName = $"{StoragePrefix}1pr1";
             x.CertificateContainerName = $"{StoragePrefix}1r1";
+            x.PackageContentContainerName = $"{StoragePrefix}1pco1";
 
             ConfigureDefaultsAndSettings(x);
 

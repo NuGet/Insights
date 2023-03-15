@@ -35,6 +35,10 @@ namespace NuGet.Insights.Worker
             WorkflowFrequency = TimeSpan.FromDays(1);
             KustoBlobIngestionTimeout = TimeSpan.FromHours(6);
 
+            PackageContentFileExtensions = new List<string>();
+            PackageContentMaxSizePerPackage = 1024 * 16;
+            PackageContentMaxSizePerFile = 1024 * 16;
+
             WorkQueueName = "work";
             ExpandQueueName = "expand";
             CursorTableName = "cursors";
@@ -72,6 +76,7 @@ namespace NuGet.Insights.Worker
             PackageCompatibilityContainerName = "packagecompatibilities";
             PackageCertificateContainerName = "packagecertificates";
             CertificateContainerName = "certificates";
+            PackageContentContainerName = "packagecontents";
 
             KustoConnectionString = null;
             KustoDatabaseName = null;
@@ -106,6 +111,15 @@ namespace NuGet.Insights.Worker
         public TimeSpan VerifiedPackagesToCsvFrequency { get; set; }
         public TimeSpan WorkflowFrequency { get; set; }
         public TimeSpan KustoBlobIngestionTimeout { get; set; }
+
+        /// <summary>
+        /// The types of package content to index in <see cref="PackageContentToCsv.PackageContentToCsvDriver"/>. The
+        /// order of this list is significant (entries are processed in the matching order). The values are treated as
+        /// file path suffixes so be sure to include a dot (".") if you want file extension behavior.
+        /// </summary>
+        public List<string> PackageContentFileExtensions { get; set; }
+        public int PackageContentMaxSizePerPackage { get; set; }
+        public int PackageContentMaxSizePerFile { get; set; }
 
         public string WorkQueueName { get; set; }
         public string ExpandQueueName { get; set; }
@@ -144,6 +158,7 @@ namespace NuGet.Insights.Worker
         public string PackageCompatibilityContainerName { get; set; }
         public string PackageCertificateContainerName { get; set; }
         public string CertificateContainerName { get; set; }
+        public string PackageContentContainerName { get; set; }
 
         public string KustoConnectionString { get; set; }
         public string KustoDatabaseName { get; set; }

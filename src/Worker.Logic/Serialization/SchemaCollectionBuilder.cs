@@ -17,6 +17,7 @@ using NuGet.Insights.Worker.PackageAssetToCsv;
 using NuGet.Insights.Worker.PackageCertificateToCsv;
 #endif
 using NuGet.Insights.Worker.PackageCompatibilityToCsv;
+using NuGet.Insights.Worker.PackageContentToCsv;
 using NuGet.Insights.Worker.PackageIconToCsv;
 using NuGet.Insights.Worker.PackageManifestToCsv;
 using NuGet.Insights.Worker.PackageReadmeToCsv;
@@ -61,6 +62,7 @@ namespace NuGet.Insights.Worker
             new SchemaV1<CsvCompactMessage<PackageVulnerabilityRecord>>("cc.pu2c"),
             new SchemaV1<CsvCompactMessage<PackageIcon>>("cc.pi2c"),
             new SchemaV1<CsvCompactMessage<PackageCompatibility>>("cc.pc2c"),
+            new SchemaV1<CsvCompactMessage<PackageContent>>("cc.pco2c"),
             
 #if ENABLE_CRYPTOAPI
             new SchemaV1<CsvCompactMessage<CertificateRecord>>("cc.r2c"),

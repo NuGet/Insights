@@ -149,5 +149,11 @@ namespace NuGet.Insights.Worker
         /// metadata found there, e.g. deprecation and vulnerability metadata.
         /// </summary>
         CatalogDataToCsv,
+
+        /// <summary>
+        /// Implemented by <see cref="PackageContentToCsv.PackageContentToCsvDriver"/>. This driver loads package
+        /// content with specific file extensions much like <see cref="PackageReadmeToCsv.PackageReadmeToCsvDriver"/>.
+        /// </summary>
+        PackageContentToCsv,
     }
 }

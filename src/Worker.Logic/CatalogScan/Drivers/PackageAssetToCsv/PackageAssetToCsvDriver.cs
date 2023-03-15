@@ -19,6 +19,21 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 {
     public class PackageAssetToCsvDriver : ICatalogLeafToCsvDriver<PackageAsset>, ICsvResultStorage<PackageAsset>
     {
+        public static IReadOnlyDictionary<string, PatternSet> PatternSets { get; }
+
+        static PackageAssetToCsvDriver()
+        {
+            var runtimeGraph = new RuntimeGraph();
+            var conventions = new ManagedCodeConventions(runtimeGraph);
+
+            PatternSets = conventions
+                .Patterns
+                .GetType()
+                .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty)
+                .Where(x => x.Name != nameof(ManagedCodeConventions.Patterns.AnyTargettedFile)) // This pattern is unused.
+                .ToDictionary(x => x.Name, x => (PatternSet)x.GetGetMethod().Invoke(conventions.Patterns, null));
+        }
+
         private readonly CatalogClient _catalogClient;
         private readonly PackageFileService _packageFileService;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
@@ -95,18 +110,8 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             var contentItemCollection = new ContentItemCollection();
             contentItemCollection.Load(files);
 
-            var runtimeGraph = new RuntimeGraph();
-            var conventions = new ManagedCodeConventions(runtimeGraph);
-
-            var patternSets = conventions
-                .Patterns
-                .GetType()
-                .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty)
-                .Where(x => x.Name != nameof(ManagedCodeConventions.Patterns.AnyTargettedFile)) // This pattern is unused.
-                .ToDictionary(x => x.Name, x => (PatternSet)x.GetGetMethod().Invoke(conventions.Patterns, null));
-
             var assets = new List<PackageAsset>();
-            foreach (var pair in patternSets)
+            foreach (var pair in PatternSets)
             {
                 var groups = new List<ContentItemGroup>();
                 try
@@ -114,7 +119,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
                     // We must enumerate the item groups here to force the exception to be thrown, if any.
                     contentItemCollection.PopulateItemGroups(pair.Value, groups);
                 }
-                catch (ArgumentException ex) when (IsInvalidDueToHyphenInPortal(ex))
+                catch (ArgumentException ex) when (IsInvalidDueToHyphenInProfile(ex))
                 {
                     return GetErrorResult(scanId, scanTimestamp, leaf, ex, "Package {Id} {Version} contains a portable framework with a hyphen in the profile.");
                 }
@@ -193,7 +198,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
                 && ex.Message.EndsWith("'. A portable framework must have at least one framework in the profile.");
         }
 
-        private static bool IsInvalidDueToHyphenInPortal(ArgumentException ex)
+        public static bool IsInvalidDueToHyphenInProfile(ArgumentException ex)
         {
             return
                 ex.Message.StartsWith("Invalid portable frameworks '")

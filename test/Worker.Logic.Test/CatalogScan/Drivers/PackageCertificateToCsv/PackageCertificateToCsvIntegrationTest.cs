@@ -78,8 +78,8 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             public async Task Execute()
             {
                 // Arrange
-                var min0 = DateTimeOffset.Parse("2019-01-20T20:18:09.4921589Z");
-                var max1 = DateTimeOffset.Parse("2019-01-20T20:19:02.4981969Z");
+                var min0 = DateTimeOffset.Parse("2023-01-17T09:51:59.7223256Z");
+                var max1 = DateTimeOffset.Parse("2023-01-17T09:52:47.3352455Z");
 
                 await CatalogScanService.InitializeAsync();
                 await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);

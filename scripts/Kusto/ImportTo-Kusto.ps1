@@ -27,6 +27,7 @@ param (
         "PackageAssets",
         "PackageCertificates",
         "PackageCompatibilities",
+        "PackageContents",
         "PackageDeprecations",
         "PackageDownloads",
         "PackageIcons",
@@ -65,6 +66,7 @@ $tableNameToContainerName = @{
     "PackageAssets"               = "packageassets";
     "PackageCertificates"         = "packagecertificates";
     "PackageCompatibilities"      = "packagecompatibilities";
+    "PackageContents"             = "packagecontents";
     "PackageDeprecations"         = "packagedeprecations";
     "PackageDownloads"            = "packagedownloads";
     "PackageIcons"                = "packageicons";

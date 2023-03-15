@@ -116,6 +116,10 @@ namespace NuGet.Insights.Worker
                 CatalogScanDriverType.CatalogDataToCsv,
                 new[] { FlatContainer }
             },
+            {
+                CatalogScanDriverType.PackageContentToCsv,
+                new[] { CatalogScanDriverType.LoadPackageArchive }
+            },
         }.ToDictionary(x => x.Key, x => (IReadOnlyList<CatalogScanDriverType>)x.Value.ToList());
 
         private static readonly IReadOnlyDictionary<CatalogScanDriverType, IReadOnlyList<CatalogScanDriverType>> Dependents = Dependencies

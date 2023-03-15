@@ -142,6 +142,7 @@ namespace NuGet.Insights.Worker
 #endif
                 case CatalogScanDriverType.PackageCompatibilityToCsv:
                 case CatalogScanDriverType.PackageIconToCsv:
+                case CatalogScanDriverType.PackageContentToCsv:
                     return null;
 
                 case CatalogScanDriverType.LoadPackageArchive:
@@ -263,6 +264,7 @@ namespace NuGet.Insights.Worker
 #endif
                 case CatalogScanDriverType.PackageCompatibilityToCsv:
                 case CatalogScanDriverType.PackageIconToCsv:
+                case CatalogScanDriverType.PackageContentToCsv:
                     return await UpdateCatalogLeafToCsvAsync(
                         driverType,
                         onlyLatestLeaves.GetValueOrDefault(true),
