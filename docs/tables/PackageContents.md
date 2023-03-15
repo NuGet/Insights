@@ -9,7 +9,7 @@ configurable by file extension and maximum cumulative file size per package.
 | Child tables                 |                                                                                                                             |
 | Parent tables                |                                                                                                                             |
 | Column used for partitioning | Identity                                                                                                                    |
-| Data file container name     | packagecontents                                                                                                              |
+| Data file container name     | packagecontents                                                                                                             |
 | Driver implementation        | [`PackageContentToCsvDriver`](../../src/Worker.Logic/CatalogScan/Drivers/PackageContentToCsv/PackageContentToCsvDriver.cs ) |
 | Record type                  | [`PackageContent`](../../src/Worker.Logic/CatalogScan/Drivers/PackageContentToCsv/PackageContent.cs)                        |
 

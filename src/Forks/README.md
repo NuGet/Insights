@@ -19,6 +19,7 @@ Copied license: [`LICENSE.txt`](NuGet/NuGet.Jobs/LICENSE.txt)
 Copied revision: [`be3a837ea4add2d6376f16da562d67f83699cce0`](https://github.com/NuGet/NuGet.Jobs/tree/be3a837ea4add2d6376f16da562d67f83699cce0)
 
 Files:
+  - [`src/Catalog/Helpers/Utils.cs`](NuGet/NuGet.Jobs/src/Catalog/Helpers/Utils.cs)
   - [`src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationException.cs`](NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationException.cs)
   - [`src/Validation.PackageSigning.ValidateCertificate/Primitives.cs`](NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/Primitives.cs)
   - [`src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationResult.cs`](NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationResult.cs)
@@ -26,6 +27,7 @@ Files:
   - [`src/Validation.PackageSigning.ValidateCertificate/OnlineCertificateVerifier.cs`](NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/OnlineCertificateVerifier.cs)
 
 Patches:
+  - [Trim unneeeded code from Utils.cs to allow just simple tag splitting](0001-Trim-unneeded-code-from-Utils.cs.patch)
   - [Add `ChainInfo` property to `CertificateVerificationResult` to allow reading the chain before disposal](0002-Add-chain-info-property-to-CertificateVerificationResult.patch)
 
 # [NuGet/NuGetGallery](https://github.com/NuGet/NuGetGallery)

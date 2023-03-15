@@ -53,7 +53,8 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
         FrameworkAssemblyGroups: dynamic,
         FrameworkRefGroups: dynamic,
         ContentFilesHasFormatException: bool,
-        DependencyGroupsHasMissingId: bool
+        DependencyGroupsHasMissingId: bool,
+        SplitTags: dynamic
     );
 
     .alter-merge table PackageManifests policy retention softdelete = 30d;
@@ -110,17 +111,18 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
         '{"Column":"FrameworkAssemblyGroups","DataType":"dynamic","Properties":{"Ordinal":36}},'
         '{"Column":"FrameworkRefGroups","DataType":"dynamic","Properties":{"Ordinal":37}},'
         '{"Column":"ContentFilesHasFormatException","DataType":"bool","Properties":{"Ordinal":38}},'
-        '{"Column":"DependencyGroupsHasMissingId","DataType":"bool","Properties":{"Ordinal":39}}'
+        '{"Column":"DependencyGroupsHasMissingId","DataType":"bool","Properties":{"Ordinal":39}},'
+        '{"Column":"SplitTags","DataType":"dynamic","Properties":{"Ordinal":40}}'
     ']'
 
     */
     partial record PackageManifestRecord
     {
-        public int FieldCount => 40;
+        public int FieldCount => 41;
 
         public void WriteHeader(TextWriter writer)
         {
-            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Size,OriginalId,OriginalVersion,MinClientVersion,DevelopmentDependency,IsServiceable,Authors,Copyright,Description,Icon,IconUrl,Language,LicenseUrl,Owners,ProjectUrl,Readme,ReleaseNotes,RequireLicenseAcceptance,Summary,Tags,Title,PackageTypes,LicenseMetadata,RepositoryMetadata,ReferenceGroups,ContentFiles,DependencyGroups,FrameworkAssemblyGroups,FrameworkRefGroups,ContentFilesHasFormatException,DependencyGroupsHasMissingId");
+            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Size,OriginalId,OriginalVersion,MinClientVersion,DevelopmentDependency,IsServiceable,Authors,Copyright,Description,Icon,IconUrl,Language,LicenseUrl,Owners,ProjectUrl,Readme,ReleaseNotes,RequireLicenseAcceptance,Summary,Tags,Title,PackageTypes,LicenseMetadata,RepositoryMetadata,ReferenceGroups,ContentFiles,DependencyGroups,FrameworkAssemblyGroups,FrameworkRefGroups,ContentFilesHasFormatException,DependencyGroupsHasMissingId,SplitTags");
         }
 
         public void Write(List<string> fields)
@@ -165,6 +167,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             fields.Add(FrameworkRefGroups);
             fields.Add(CsvUtility.FormatBool(ContentFilesHasFormatException));
             fields.Add(CsvUtility.FormatBool(DependencyGroupsHasMissingId));
+            fields.Add(SplitTags);
         }
 
         public void Write(TextWriter writer)
@@ -248,6 +251,8 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             writer.Write(CsvUtility.FormatBool(ContentFilesHasFormatException));
             writer.Write(',');
             writer.Write(CsvUtility.FormatBool(DependencyGroupsHasMissingId));
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, SplitTags);
             writer.WriteLine();
         }
 
@@ -332,6 +337,8 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             await writer.WriteAsync(CsvUtility.FormatBool(ContentFilesHasFormatException));
             await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatBool(DependencyGroupsHasMissingId));
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, SplitTags);
             await writer.WriteLineAsync();
         }
 
@@ -379,6 +386,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
                 FrameworkRefGroups = getNextField(),
                 ContentFilesHasFormatException = bool.Parse(getNextField()),
                 DependencyGroupsHasMissingId = bool.Parse(getNextField()),
+                SplitTags = getNextField(),
             };
         }
     }

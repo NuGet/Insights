@@ -10,6 +10,7 @@ $files = [ordered]@{
     "NuGet/NuGet.Jobs"   = @{
         License  = "LICENSE.txt"
         Files    = @(
+            "src/Catalog/Helpers/Utils.cs",
             "src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationException.cs",
             "src/Validation.PackageSigning.ValidateCertificate/Primitives.cs",
             "src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationResult.cs",
@@ -18,6 +19,10 @@ $files = [ordered]@{
         );
         Revision = "be3a837ea4add2d6376f16da562d67f83699cce0"
         Patches  = @(
+            @{
+                Description = "Trim unneeeded code from Utils.cs to allow just simple tag splitting"
+                Path        = "0001-Trim-unneeded-code-from-Utils.cs.patch"
+            },
             @{
                 Description = "Add ``ChainInfo`` property to ``CertificateVerificationResult`` to allow reading the chain before disposal"
                 Path        = "0002-Add-chain-info-property-to-CertificateVerificationResult.patch"

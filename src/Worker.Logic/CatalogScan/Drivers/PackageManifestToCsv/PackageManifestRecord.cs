@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -76,5 +76,8 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
 
         public bool ContentFilesHasFormatException { get; set; }
         public bool DependencyGroupsHasMissingId { get; set; }
+
+        [KustoType("dynamic")]
+        public string SplitTags { get; set; }
     }
 }

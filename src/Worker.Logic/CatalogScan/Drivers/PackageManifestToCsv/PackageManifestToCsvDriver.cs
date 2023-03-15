@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.Options;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Services.Metadata.Catalog;
 using NuGet.Versioning;
 
 namespace NuGet.Insights.Worker.PackageManifestToCsv
@@ -112,8 +114,15 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             ReadRepositoryMetadata(nuspecReader, record);
             ReadContentFiles(nuspecReader, record);
             ReadDependencyGroups(nuspecReader, record);
+            SplitTags(record);
 
             return record;
+        }
+
+        private static void SplitTags(PackageManifestRecord record)
+        {
+            var splitTags = string.IsNullOrWhiteSpace(record.Tags) ? Array.Empty<string>() : Utils.SplitTags(record.Tags);
+            record.SplitTags = JsonSerialize(splitTags);
         }
 
         private static void ReadLicenseMetadata(NuspecReader nuspecReader, PackageManifestRecord record)

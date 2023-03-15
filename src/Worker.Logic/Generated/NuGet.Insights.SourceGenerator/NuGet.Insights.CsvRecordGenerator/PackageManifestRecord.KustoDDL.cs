@@ -53,7 +53,8 @@ namespace NuGet.Insights
     FrameworkAssemblyGroups: dynamic,
     FrameworkRefGroups: dynamic,
     ContentFilesHasFormatException: bool,
-    DependencyGroupsHasMissingId: bool
+    DependencyGroupsHasMissingId: bool,
+    SplitTags: dynamic
 )",
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
@@ -97,7 +98,8 @@ namespace NuGet.Insights
     '{""Column"":""FrameworkAssemblyGroups"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":36}},'
     '{""Column"":""FrameworkRefGroups"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":37}},'
     '{""Column"":""ContentFilesHasFormatException"",""DataType"":""bool"",""Properties"":{""Ordinal"":38}},'
-    '{""Column"":""DependencyGroupsHasMissingId"",""DataType"":""bool"",""Properties"":{""Ordinal"":39}}'
+    '{""Column"":""DependencyGroupsHasMissingId"",""DataType"":""bool"",""Properties"":{""Ordinal"":39}},'
+    '{""Column"":""SplitTags"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":40}}'
 ']'",
         };
 
