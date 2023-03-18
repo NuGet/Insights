@@ -49,42 +49,72 @@ namespace NuGet.Insights
             await _wideEntityService.InitializeAsync(_options.Value.PackageReadmeTableName);
         }
 
-        public async Task<IReadOnlyDictionary<ICatalogLeafItem, PackageReadmeInfoV1>> UpdateBatchAsync(string id, IReadOnlyCollection<ICatalogLeafItem> leafItems)
+        public async Task<IReadOnlyDictionary<ICatalogLeafItem, PackageReadmeInfoV1>> UpdateBatchFromLeafItemsAsync(
+            string id,
+            IReadOnlyCollection<ICatalogLeafItem> leafItems)
         {
             return await _wideEntityService.UpdateBatchAsync(
                 _options.Value.PackageReadmeTableName,
                 id,
                 leafItems,
+                GetInfoFromLeafItemAsync,
+                OutputToData,
+                DataToOutput);
+        }
+
+        public async Task<IReadOnlyDictionary<IPackageIdentityCommit, PackageReadmeInfoV1>> UpdateBatchAsync(
+            string id,
+            IReadOnlyCollection<IPackageIdentityCommit> items)
+        {
+            return await _wideEntityService.UpdateBatchAsync(
+                _options.Value.PackageReadmeTableName,
+                id,
+                items,
                 GetInfoAsync,
                 OutputToData,
                 DataToOutput);
         }
 
-        public async Task<PackageReadmeInfoV1> GetOrUpdateInfoAsync(ICatalogLeafItem leafItem)
+        public async Task<PackageReadmeInfoV1> GetOrUpdateInfoFromLeafItemAsync(ICatalogLeafItem leafItem)
         {
             return await _wideEntityService.GetOrUpdateInfoAsync(
                 _options.Value.PackageReadmeTableName,
                 leafItem,
+                GetInfoFromLeafItemAsync,
+                OutputToData,
+                DataToOutput);
+        }
+
+        public async Task<PackageReadmeInfoV1> GetOrUpdateInfoAsync(IPackageIdentityCommit item)
+        {
+            return await _wideEntityService.GetOrUpdateInfoAsync(
+                _options.Value.PackageReadmeTableName,
+                item,
                 GetInfoAsync,
                 OutputToData,
                 DataToOutput);
         }
 
-        private async Task<PackageReadmeInfoV1> GetInfoAsync(ICatalogLeafItem leafItem)
+        private async Task<PackageReadmeInfoV1> GetInfoFromLeafItemAsync(ICatalogLeafItem leafItem)
         {
             if (leafItem.Type == CatalogLeafType.PackageDelete)
             {
                 return MakeUnavailableInfo(leafItem);
             }
 
-            var embeddedUrl = await _flatContainerClient.GetPackageReadmeUrlAsync(leafItem.PackageId, leafItem.PackageVersion);
+            return await GetInfoAsync(leafItem);
+        }
+
+        private async Task<PackageReadmeInfoV1> GetInfoAsync(IPackageIdentityCommit item)
+        {
+            var embeddedUrl = await _flatContainerClient.GetPackageReadmeUrlAsync(item.PackageId, item.PackageVersion);
 
             var urls = new List<(ReadmeType, string)> { (ReadmeType.Embedded, embeddedUrl) };
 
             if (_options.Value.LegacyReadmeUrlPattern != null)
             {
-                var lowerId = leafItem.PackageId.ToLowerInvariant();
-                var lowerVersion = leafItem.ParsePackageVersion().ToNormalizedString().ToLowerInvariant();
+                var lowerId = item.PackageId.ToLowerInvariant();
+                var lowerVersion = item.ParsePackageVersion().ToNormalizedString().ToLowerInvariant();
                 var legacyUrl = string.Format(_options.Value.LegacyReadmeUrlPattern, lowerId, lowerVersion);
 
                 urls.Add((ReadmeType.Legacy, legacyUrl));
@@ -124,7 +154,7 @@ namespace NuGet.Insights
 
                             return new PackageReadmeInfoV1
                             {
-                                CommitTimestamp = leafItem.CommitTimestamp,
+                                CommitTimestamp = item.CommitTimestamp,
                                 ReadmeType = readmeType,
                                 HttpHeaders = headers,
                                 ReadmeBytes = new Memory<byte>(destStream.GetBuffer(), 0, (int)destStream.Length),
@@ -139,7 +169,7 @@ namespace NuGet.Insights
                     }
                 }
 
-                return MakeUnavailableInfo(leafItem);
+                return MakeUnavailableInfo(item);
             }
             finally
             {
@@ -147,11 +177,11 @@ namespace NuGet.Insights
             }
         }
 
-        private static PackageReadmeInfoV1 MakeUnavailableInfo(ICatalogLeafItem leafItem)
+        private static PackageReadmeInfoV1 MakeUnavailableInfo(IPackageIdentityCommit item)
         {
             return new PackageReadmeInfoV1
             {
-                CommitTimestamp = leafItem.CommitTimestamp,
+                CommitTimestamp = item.CommitTimestamp,
                 ReadmeType = ReadmeType.None,
             };
         }
@@ -185,7 +215,7 @@ namespace NuGet.Insights
         public class PackageReadmeInfoV1
         {
             [Key(0)]
-            public DateTimeOffset CommitTimestamp { get; set; }
+            public DateTimeOffset? CommitTimestamp { get; set; }
 
             [Key(1)]
             public ReadmeType ReadmeType { get; set; }

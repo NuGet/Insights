@@ -29,7 +29,7 @@ namespace NuGet.Insights
             };
 
             // Act
-            var info = await Target.GetOrUpdateInfoAsync(leaf);
+            var info = await Target.GetOrUpdateInfoFromLeafItemAsync(leaf);
 
             // Assert
             Assert.Single(HttpMessageHandlerFactory.Requests);
@@ -54,7 +54,7 @@ namespace NuGet.Insights
             };
 
             // Act
-            var info = await Target.GetOrUpdateInfoAsync(leaf);
+            var info = await Target.GetOrUpdateInfoFromLeafItemAsync(leaf);
 
             // Assert
             Assert.Single(HttpMessageHandlerFactory.Requests);
@@ -97,7 +97,7 @@ namespace NuGet.Insights
             };
 
             // Act
-            var info = await Target.GetOrUpdateInfoAsync(leaf);
+            var info = await Target.GetOrUpdateInfoFromLeafItemAsync(leaf);
 
             // Assert
             Assert.Equal(2, HttpMessageHandlerFactory.Requests.Count);
@@ -122,7 +122,7 @@ namespace NuGet.Insights
             };
 
             // Act
-            var info = await Target.GetOrUpdateInfoAsync(leaf);
+            var info = await Target.GetOrUpdateInfoFromLeafItemAsync(leaf);
 
             // Assert
             Assert.Empty(HttpMessageHandlerFactory.Requests);

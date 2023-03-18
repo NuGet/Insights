@@ -33,7 +33,7 @@ namespace NuGet.Insights
                 };
 
                 // Act
-                var info = await Target.GetOrUpdateInfoAsync(leafItem);
+                var info = await Target.GetOrUpdateInfoFromLeafItemAsync(leafItem);
 
                 // Assert
                 Assert.True(info.Available);
@@ -57,7 +57,7 @@ namespace NuGet.Insights
                 };
 
                 // Act
-                var info = await Target.GetOrUpdateInfoAsync(leafItem);
+                var info = await Target.GetOrUpdateInfoFromLeafItemAsync(leafItem);
 
                 // Assert
                 Assert.False(info.Available);
@@ -85,11 +85,11 @@ namespace NuGet.Insights
                     PackageVersion = "13.0.1",
                     Type = CatalogLeafType.PackageDetails,
                 };
-                await Target.GetOrUpdateInfoAsync(leafItem);
+                await Target.GetOrUpdateInfoFromLeafItemAsync(leafItem);
                 HttpMessageHandlerFactory.Requests.Clear();
 
                 // Act
-                (var directory, var size, var headers) = await Target.GetZipDirectoryAsync(leafItem);
+                (var directory, var size, var headers) = await Target.GetZipDirectoryFromLeafItemAsync(leafItem);
 
                 // Assert
                 Assert.Equal(11, directory.Entries.Count);

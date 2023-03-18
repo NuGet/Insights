@@ -60,7 +60,7 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
             else
             {
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafItem.LeafType, leafItem.Url);
-                var info = await _packageReadmeService.GetOrUpdateInfoAsync(leafItem);
+                var info = await _packageReadmeService.GetOrUpdateInfoFromLeafItemAsync(leafItem);
                 return new List<PackageReadme> { GetRecord(scanId, scanTimestamp, leaf, info) };
             }
         }

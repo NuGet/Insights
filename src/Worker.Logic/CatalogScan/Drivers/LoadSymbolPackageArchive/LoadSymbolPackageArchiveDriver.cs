@@ -45,7 +45,7 @@ namespace NuGet.Insights.Worker.LoadSymbolPackageArchive
                 var leafItems = group.Cast<ICatalogLeafItem>().ToList();
                 try
                 {
-                    await _symbolPackageFileService.UpdateBatchAsync(group.Key, leafItems);
+                    await _symbolPackageFileService.UpdateBatchFromLeafItemsAsync(group.Key, leafItems);
                 }
                 catch (Exception ex) when (leafScans.Count != 1)
                 {

@@ -45,7 +45,7 @@ namespace NuGet.Insights.Worker.LoadPackageReadme
                 var leafItems = group.Cast<ICatalogLeafItem>().ToList();
                 try
                 {
-                    await _packageReadmeService.UpdateBatchAsync(group.Key, leafItems);
+                    await _packageReadmeService.UpdateBatchFromLeafItemsAsync(group.Key, leafItems);
                 }
                 catch (Exception ex) when (leafScans.Count != 1)
                 {

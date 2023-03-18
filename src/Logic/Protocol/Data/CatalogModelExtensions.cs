@@ -114,7 +114,7 @@ namespace NuGet.Insights
         /// </summary>
         /// <param name="leaf">The catalog leaf.</param>
         /// <returns>The package version.</returns>
-        public static NuGetVersion ParsePackageVersion(this ICatalogLeafItem leaf)
+        public static NuGetVersion ParsePackageVersion(this IPackageIdentityCommit leaf)
         {
             return NuGetVersion.Parse(leaf.PackageVersion);
         }

@@ -39,9 +39,9 @@ namespace NuGet.Insights
             await _wideEntityService.InitializeAsync(_options.Value.SymbolPackageArchiveTableName);
         }
 
-        public async Task<(ZipDirectory? directory, long size, ILookup<string, string>? headers)> GetZipDirectoryAsync(ICatalogLeafItem leafItem)
+        public async Task<(ZipDirectory? directory, long size, ILookup<string, string>? headers)> GetZipDirectoryFromLeafItemAsync(ICatalogLeafItem leafItem)
         {
-            var info = await GetOrUpdateInfoAsync(leafItem);
+            var info = await GetOrUpdateInfoFromLeafItemAsync(leafItem);
             if (!info.Available)
             {
                 return (null, 0, null);
@@ -53,7 +53,22 @@ namespace NuGet.Insights
             return (await reader.ReadAsync(), destStream.Length, info.HttpHeaders);
         }
 
-        public async Task<IReadOnlyDictionary<ICatalogLeafItem, SymbolPackageFileInfoV1>> UpdateBatchAsync(string id, IReadOnlyCollection<ICatalogLeafItem> leafItems)
+        public async Task<IReadOnlyDictionary<ICatalogLeafItem, SymbolPackageFileInfoV1>> UpdateBatchFromLeafItemsAsync(
+            string id,
+            IReadOnlyCollection<ICatalogLeafItem> leafItems)
+        {
+            return await _wideEntityService.UpdateBatchAsync(
+                _options.Value.SymbolPackageArchiveTableName,
+                id,
+                leafItems,
+                GetInfoFromLeafItemAsync,
+                OutputToData,
+                DataToOutput);
+        }
+
+        public async Task<IReadOnlyDictionary<IPackageIdentityCommit, SymbolPackageFileInfoV1>> UpdateBatchAsync(
+            string id,
+            IReadOnlyCollection<IPackageIdentityCommit> leafItems)
         {
             return await _wideEntityService.UpdateBatchAsync(
                 _options.Value.SymbolPackageArchiveTableName,
@@ -64,43 +79,58 @@ namespace NuGet.Insights
                 DataToOutput);
         }
 
-        public async Task<SymbolPackageFileInfoV1> GetOrUpdateInfoAsync(ICatalogLeafItem leafItem)
+        public async Task<SymbolPackageFileInfoV1> GetOrUpdateInfoFromLeafItemAsync(ICatalogLeafItem leafItem)
         {
             return await _wideEntityService.GetOrUpdateInfoAsync(
                 _options.Value.SymbolPackageArchiveTableName,
                 leafItem,
+                GetInfoFromLeafItemAsync,
+                OutputToData,
+                DataToOutput);
+        }
+
+        public async Task<SymbolPackageFileInfoV1> GetOrUpdateInfoAsync(IPackageIdentityCommit item)
+        {
+            return await _wideEntityService.GetOrUpdateInfoAsync(
+                _options.Value.SymbolPackageArchiveTableName,
+                item,
                 GetInfoAsync,
                 OutputToData,
                 DataToOutput);
         }
 
-        private async Task<SymbolPackageFileInfoV1> GetInfoAsync(ICatalogLeafItem leafItem)
+        private async Task<SymbolPackageFileInfoV1> GetInfoFromLeafItemAsync(ICatalogLeafItem leafItem)
         {
             if (leafItem.Type == CatalogLeafType.PackageDelete)
             {
                 return MakeDeletedInfo(leafItem);
             }
 
+            return await GetInfoAsync(leafItem);
+        }
+
+        private async Task<SymbolPackageFileInfoV1> GetInfoAsync(IPackageIdentityCommit item)
+        {
             var url = $"{_options.Value.SymbolPackagesContainerBaseUrl.TrimEnd('/')}/" +
-                $"{leafItem.PackageId.ToLowerInvariant()}." +
-                $"{leafItem.ParsePackageVersion().ToNormalizedString().ToLowerInvariant()}.snupkg";
+                $"{item.PackageId.ToLowerInvariant()}." +
+                $"{item.ParsePackageVersion().ToNormalizedString().ToLowerInvariant()}.snupkg";
 
             using var reader = await _fileDownloader.GetZipDirectoryReaderAsync(
-                leafItem.PackageId,
-                leafItem.PackageVersion,
+                item.PackageId,
+                item.PackageVersion,
                 ArtifactFileType.Snupkg,
                 url);
 
             if (reader is null)
             {
-                return MakeDeletedInfo(leafItem);
+                return MakeDeletedInfo(item);
             }
 
-            return await GetInfoAsync(leafItem, reader.Properties, reader);
+            return await GetInfoAsync(item, reader.Properties, reader);
         }
 
         private async Task<SymbolPackageFileInfoV1> GetInfoAsync(
-            ICatalogLeafItem leafItem,
+            IPackageIdentityCommit item,
             ILookup<string, string> headers,
             ZipDirectoryReader reader)
         {
@@ -108,18 +138,18 @@ namespace NuGet.Insights
             await _mzipFormat.WriteAsync(reader.Stream, destStream);
             return new SymbolPackageFileInfoV1
             {
-                CommitTimestamp = leafItem.CommitTimestamp,
+                CommitTimestamp = item.CommitTimestamp,
                 Available = true,
                 HttpHeaders = headers,
                 MZipBytes = new Memory<byte>(destStream.GetBuffer(), 0, (int)destStream.Length),
             };
         }
 
-        private static SymbolPackageFileInfoV1 MakeDeletedInfo(ICatalogLeafItem leafItem)
+        private static SymbolPackageFileInfoV1 MakeDeletedInfo(IPackageIdentityCommit item)
         {
             return new SymbolPackageFileInfoV1
             {
-                CommitTimestamp = leafItem.CommitTimestamp,
+                CommitTimestamp = item.CommitTimestamp,
                 Available = false,
             };
         }
