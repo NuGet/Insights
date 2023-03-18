@@ -5,7 +5,10 @@ using System;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
+using Microsoft.Extensions.Options;
 using NuGet.Insights.Worker.EnqueueCatalogLeafScan;
+using NuGet.Insights.Worker.ProcessBucketRange;
+using NuGet.Insights.Worker.LoadBucketedPackage;
 using NuGet.Insights.Worker.TableCopy;
 
 namespace NuGet.Insights.Worker
@@ -14,13 +17,16 @@ namespace NuGet.Insights.Worker
     {
         private readonly IMessageEnqueuer _enqueuer;
         private readonly SchemaSerializer _serializer;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
 
         public TableScanService(
             IMessageEnqueuer enqueuer,
-            SchemaSerializer serializer)
+            SchemaSerializer serializer,
+            IOptions<NuGetInsightsWorkerSettings> options)
         {
             _enqueuer = enqueuer;
             _serializer = serializer;
+            _options = options;
         }
 
         public async Task StartEnqueueCatalogLeafScansAsync(
@@ -43,6 +49,37 @@ namespace NuGet.Insights.Worker
                 _serializer.Serialize(new EnqueueCatalogLeafScansParameters
                 {
                     OneMessagePerId = oneMessagePerId,
+                }).AsJsonElement());
+        }
+
+        public async Task StartProcessingBucketRangeAsync(
+            TaskStateKey taskStateKey,
+            int minBucketIndex,
+            int maxBucketIndex,
+            CatalogScanDriverType driverType,
+            string scanId,
+            bool enqueue)
+        {
+            var partitionKeyLowerBound = minBucketIndex > 0 ? BucketedPackage.GetBucketString(minBucketIndex - 1) : null;
+            var partitionKeyUpperBound = maxBucketIndex < BucketedPackage.BucketCount - 1 ? BucketedPackage.GetBucketString(maxBucketIndex + 1) : null;
+
+            await StartTableScanAsync<BucketedPackage>(
+                taskStateKey,
+                TableScanDriverType.ProcessBucketRange,
+                _options.Value.BucketedPackageTableName,
+                TableScanStrategy.PrefixScan,
+                StorageUtility.MaxTakeCount,
+                expandPartitionKeys: true,
+                partitionKeyPrefix: string.Empty,
+                partitionKeyLowerBound: partitionKeyLowerBound,
+                partitionKeyUpperBound: partitionKeyUpperBound,
+                segmentsPerFirstPrefix: 1,
+                segmentsPerSubsequentPrefix: 1,
+                _serializer.Serialize(new ProcessBucketRangeParameters
+                {
+                    DriverType = driverType,
+                    ScanId = scanId,
+                    Enqueue = enqueue,
                 }).AsJsonElement());
         }
 

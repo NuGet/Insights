@@ -1,0 +1,1467 @@
+[
+  {
+    "PartitionKey": "akinzekeel.blazorgrid",
+    "RowKey": "0.9.1-preview",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T22:45:09.7486419+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "akinzekeel.blazorgrid.abstractions",
+    "RowKey": "0.9.1-beta",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T22:09:02.7017175+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "ambientservices",
+    "RowKey": "3.1.49",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T22:01:44.950465+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "aptacode.pathfinder",
+    "RowKey": "1.0.4-ci-20201127-220435",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T22:07:03.4184021+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "aptacode.pathfinder",
+    "RowKey": "1.0.4-ci-20201127-221610",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T22:18:24.8983178+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "bannerlord.buildresources",
+    "RowKey": "1.0.0.29",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:12:00.9818964+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "bannerlord.buildresources",
+    "RowKey": "1.0.0.31",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:31:01.1582409+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "binarydatadecoders.apple2",
+    "RowKey": "0.3.0-dev-buildreportfordacpac.7",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:39:49.9590226+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "binarydatadecoders.archives",
+    "RowKey": "0.3.0-dev-buildreportfordacpac.7",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:38:47.4734936+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "binarydatadecoders.codeanalysis",
+    "RowKey": "0.3.0-dev-buildreportfordacpac.7",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:39:07.7238834+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "binarydatadecoders.codeanalysis.structuredlog",
+    "RowKey": "0.3.0-dev-buildreportfordacpac.7",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:39:07.7238834+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "binarydatadecoders.cryptography",
+    "RowKey": "0.3.0-dev-buildreportfordacpac.7",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:39:28.5367693+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "binarydatadecoders.io",
+    "RowKey": "0.3.0-dev-buildreportfordacpac.7",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:39:49.9590226+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "binarydatadecoders.io.abstractions",
+    "RowKey": "0.3.0-dev-buildreportfordacpac.7",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:38:47.4734936+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "binarydatadecoders.io.ports",
+    "RowKey": "0.3.0-dev-buildreportfordacpac.7",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:38:47.4734936+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "binarydatadecoders.io.usbhids",
+    "RowKey": "0.3.0-dev-buildreportfordacpac.7",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:38:47.4734936+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "binarydatadecoders.net",
+    "RowKey": "0.3.0-dev-buildreportfordacpac.7",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:38:47.4734936+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "binarydatadecoders.quarta.radexone",
+    "RowKey": "0.3.0-dev-buildreportfordacpac.7",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:38:47.4734936+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "binarydatadecoders.text.json",
+    "RowKey": "0.3.0-dev-buildreportfordacpac.7",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:38:47.4734936+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "binarydatadecoders.toolkit",
+    "RowKey": "0.3.0-dev-buildreportfordacpac.7",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:38:47.4734936+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "binarydatadecoders.toolkit.abstractions",
+    "RowKey": "0.3.0-dev-buildreportfordacpac.7",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:38:47.4734936+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "binarydatadecoders.xslt.cli",
+    "RowKey": "0.3.0-dev-buildreportfordacpac.7",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:39:28.5367693+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "bolero",
+    "RowKey": "0.16.27",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T23:00:45.1174863+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "brahma.fsharp.opencl.printer",
+    "RowKey": "2.0.0-alpha3",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:35:25.9912198+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "bruteflow.kafka",
+    "RowKey": "2.1.1",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:14:37.1409411+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "cerint.logger",
+    "RowKey": "2020.11.27.1",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T23:25:52.4020871+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "cinecoder",
+    "RowKey": "3.33.39.48013",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:25:55.4028196+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "citizenfx.core.client",
+    "RowKey": "1.0.3244",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T23:21:42.4913224+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "citizenfx.core.client",
+    "RowKey": "1.0.3245",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T23:35:39.8184265+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "citizenfx.core.server",
+    "RowKey": "1.0.3245",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T23:30:23.047595+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "cogito.autofac",
+    "RowKey": "3.0.9",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:01:22.5184422+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "cogito.autofac.dependencyinjection",
+    "RowKey": "3.0.9",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:01:03.6587278+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "complianceauditsystems.acabimcommonservices",
+    "RowKey": "1.0.168",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T22:13:00.2049598+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "complianceauditsystems.acabimcommonservices",
+    "RowKey": "1.0.169",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T22:27:54.2673799+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "dangl.avacloud.client.public",
+    "RowKey": "1.17.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:40:42.6630318+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "dangl.avacloud.client.shared",
+    "RowKey": "1.17.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:40:42.6630318+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "danilovsoft.microorm",
+    "RowKey": "3.3.5",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T22:23:24.1063333+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "dexih.connections.azure",
+    "RowKey": "1.1.1138",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T20:59:16.3911483+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "dexih.connections.dexih",
+    "RowKey": "1.1.1138",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T20:59:37.0321499+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "dexih.connections.flatfile",
+    "RowKey": "1.1.1138",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T20:59:37.0321499+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "dexih.connections.github",
+    "RowKey": "1.1.1138",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T20:59:37.0321499+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "dexih.connections.mongo",
+    "RowKey": "1.1.1138",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T20:59:37.0321499+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "dexih.connections.mysql",
+    "RowKey": "1.1.1138",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T20:59:16.3911483+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "dexih.connections.postgressql",
+    "RowKey": "1.1.1138",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T20:59:37.0321499+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "dexih.connections.sftp",
+    "RowKey": "1.1.1138",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T20:59:16.3911483+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "dexih.connections.sqlite",
+    "RowKey": "1.1.1138",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T20:59:37.0321499+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "dexih.connections.sqlserver",
+    "RowKey": "1.1.1138",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T20:59:37.0321499+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "dexih.connections.webservice.restful",
+    "RowKey": "1.1.1138",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T20:59:37.0321499+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "dexih.functions",
+    "RowKey": "1.1.1138",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T20:59:16.3911483+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "dexih.functions.builtin",
+    "RowKey": "1.1.1138",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T20:59:16.3911483+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "dexih.functions.external",
+    "RowKey": "1.1.1138",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T20:59:16.3911483+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "dexih.functions.financial",
+    "RowKey": "1.1.1138",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T20:59:37.0321499+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "dexih.functions.ml",
+    "RowKey": "1.1.1138",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T20:59:37.0321499+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "dexih.transforms",
+    "RowKey": "1.1.1138",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T20:59:16.3911483+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "dnt.deskly.efcore.services",
+    "RowKey": "1.1.3.1",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T22:22:27.5115494+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "dnt.deskly.efcore.services",
+    "RowKey": "1.1.3",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T22:01:44.950465+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "dogged",
+    "RowKey": "0.1.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T22:09:56.3587144+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "easysoftware.mvvmmini.core",
+    "RowKey": "1.0.2",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T22:54:22.335357+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "elevatetextiles.azure.storage",
+    "RowKey": "1.0.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:02:45.0512013+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "etch.orchardcore.defaulttheme",
+    "RowKey": "0.6.7-rc2",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T23:38:09.3205839+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "etch.orchardcore.themeboilerplate",
+    "RowKey": "0.6.7",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T23:39:33.5877516+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "ext.net.abstractions",
+    "RowKey": "7.2.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:08:22.5065284+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "ext.net.classic",
+    "RowKey": "7.2.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:05:15.3039289+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "ext.net.classic.charts",
+    "RowKey": "7.2.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:05:15.3039289+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "ext.net.classic.charts.resources",
+    "RowKey": "7.2.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:08:22.5065284+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "ext.net.classic.theme.aria",
+    "RowKey": "7.2.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:06:04.5701802+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "ext.net.classic.theme.classic",
+    "RowKey": "7.2.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:07:27.0243983+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "ext.net.classic.theme.crisp",
+    "RowKey": "7.2.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:08:22.5065284+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "ext.net.classic.theme.crisptouch",
+    "RowKey": "7.2.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:06:04.5701802+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "ext.net.classic.theme.graphite",
+    "RowKey": "7.2.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:08:22.5065284+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "ext.net.classic.theme.gray",
+    "RowKey": "7.2.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:07:27.0243983+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "ext.net.classic.theme.material",
+    "RowKey": "7.2.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:06:04.5701802+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "ext.net.classic.theme.neptune",
+    "RowKey": "7.2.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:06:25.4610771+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "ext.net.classic.theme.neptunetouch",
+    "RowKey": "7.2.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:08:22.5065284+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "ext.net.classic.theme.spotless",
+    "RowKey": "7.2.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:06:45.6800877+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "ext.net.classic.theme.triton",
+    "RowKey": "7.2.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:07:06.852226+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "fable.antd",
+    "RowKey": "3.78.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T22:26:27.6876131+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "fable.antd",
+    "RowKey": "3.79.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T23:24:26.0099053+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "fsharpwrap",
+    "RowKey": "0.4.1",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:07:27.0243983+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "generatedmapper",
+    "RowKey": "0.4.0-preview",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:50:32.0322661+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "generatedmapper.abstractions",
+    "RowKey": "0.4.0-preview",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:50:14.703821+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "generatedmapper.attributes",
+    "RowKey": "0.4.0-preview",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:50:14.703821+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "gosms.ge-sms-api",
+    "RowKey": "1.0.1",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T22:04:27.1811992+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "highprecisiontimestamps",
+    "RowKey": "0.0.5.1-beta",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T21:13:13.0300571+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "21090"
+        ],
+        "Content-MD5": [
+          "BWtmXxIjHtqg2xk2vVxfUw=="
+        ],
+        "Content-Type": [
+          "binary/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8D893193EEC5427\u0022"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 21:13:11 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "ivK6jav1v\u002B/FUZNLioVtOHwE2So1/0vKf82SKmoAJncnD9z3W06DiH0DfBYk86pLb09EFAhH0eDlO8xvmVAtpA=="
+        ]
+      },
+      "MZipHash": "46034d76affe52049377c1a3680cd1ad539bb7dc10446c61df3d6a775a1861fd"
+    }
+  },
+  {
+    "PartitionKey": "ibannet",
+    "RowKey": "4.3.0",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T22:45:29.0145269+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "207369"
+        ],
+        "Content-MD5": [
+          "h14DXzn2zlDXSi\u002BOJoLTbw=="
+        ],
+        "Content-Type": [
+          "binary/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8D893268CDF36F4\u0022"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 22:48:25 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "ekxFoVXXPhI4PSPRuEY2RqmqwzIeXx9WjMMH/RlRunPI\u002BpdNPW1Krx6nBmIg9ugeJ\u002Bj/DXOnctxggba3/vZoQg=="
+        ]
+      },
+      "MZipHash": "c5fa2b4b5409a848c48e5d4f3d07baa0ca28372730a8b98a38851702142d8b0e"
+    }
+  },
+  {
+    "PartitionKey": "ibannet.dataannotations",
+    "RowKey": "4.3.0",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T22:45:48.7804198+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "126599"
+        ],
+        "Content-MD5": [
+          "/IlEYLvU1hr3kd00fklSxg=="
+        ],
+        "Content-Type": [
+          "binary/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8D893268793401E\u0022"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 22:48:16 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "SMySN/\u002Bh0dIQfmXBok447s\u002BurYfCBjRu1uB4CYyYXWqPK8STbLu7qcS/YHVo91cxX5cJNLn3HgVULvRO1RFPiw=="
+        ]
+      },
+      "MZipHash": "8afe03fab2a69e184db86db821b66840ebff8cbec9e6727523beea36fa38f730"
+    }
+  },
+  {
+    "PartitionKey": "ibannet.dependencyinjection.autofac",
+    "RowKey": "4.3.0",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T22:45:29.0145269+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "45096"
+        ],
+        "Content-MD5": [
+          "O49bAncY0uTvmCSaZLdG4w=="
+        ],
+        "Content-Type": [
+          "binary/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8D8932689D435ED\u0022"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 22:48:20 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "PjKFncUZcQx9OX1AzbEhLK84ffp7xDDBhRA3tOn2/gRKRUWuJhI28M8s8OT3I/VkqLQAIPTPzEUeI7GefkSpWA=="
+        ]
+      },
+      "MZipHash": "451a6d32271bf3b024964c239e62d1f67a75b67c79f8f12d17f11c4d0b1da443"
+    }
+  },
+  {
+    "PartitionKey": "ibannet.dependencyinjection.serviceprovider",
+    "RowKey": "4.3.0",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T22:46:41.5310648+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "44282"
+        ],
+        "Content-MD5": [
+          "yOIc5QbS/Yeqx9bi9\u002Bmq3A=="
+        ],
+        "Content-Type": [
+          "binary/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8D893261DE26CEB\u0022"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 22:45:19 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "aVWvv5Qb3gdtsrO6Sd41ehRyz4z5by83z//pucO\u002BapQhsJyF43RpXMH\u002B3RFPI3YJsNMgjyO897uHX9\u002BmwImJmg=="
+        ]
+      },
+      "MZipHash": "30baa184ab98b0892b6cca5270667472e62457bf881535df6dd824f0585efdb1"
+    }
+  },
+  {
+    "PartitionKey": "inshapardaz.database.migrations",
+    "RowKey": "1.0.42",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T22:50:15.1746166+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "jetstream.infrastructure.entities",
+    "RowKey": "1.0.10",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T23:22:26.0389849+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "jetstream.infrastructure.entities",
+    "RowKey": "1.0.8",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:57:56.5246426+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "jetstream.infrastructure.entities",
+    "RowKey": "1.0.9",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T22:22:06.8705544+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "jetstream.infrastructure.middleware",
+    "RowKey": "1.0.3",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:57:56.5246426+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "jetstream.infrastructure.registrations",
+    "RowKey": "1.0.4",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:46:43.1688053+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "jetstream.infrastructure.registrations",
+    "RowKey": "1.0.5",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:57:56.5246426+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "jetstream.infrastructure.registrations",
+    "RowKey": "1.0.6",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T23:22:04.038588+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "legacyjsonapidotnetcore",
+    "RowKey": "3.1.2",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:43:43.3851095+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "likenesscomparer",
+    "RowKey": "0.1.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T23:33:57.0514571+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "litenetwork.server",
+    "RowKey": "1.0.0-rc.3",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:23:26.5406711+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "livetranslate.core",
+    "RowKey": "1.0.0-ci-20201127-221303",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T22:15:32.7546041+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "lzma.core",
+    "RowKey": "0.9.0-ci-20201127-230137",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T23:04:21.9016062+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "maketypespublic",
+    "RowKey": "1.0.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:51:23.4550854+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "marketinplatformapi-test",
+    "RowKey": "1.2.18",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:58:12.5094058+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "modulos.messaging",
+    "RowKey": "0.1.5",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:35:25.9912198+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "networktoolkit",
+    "RowKey": "1.0.0-alpha2",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T22:18:03.3823447+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "octoversion.core",
+    "RowKey": "0.2.156",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:32:57.4259998+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "oneline",
+    "RowKey": "3.0.4",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T23:14:14.9843388+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "ormi",
+    "RowKey": "3.0.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T23:14:36.3440985+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "softcircuits.csvparser",
+    "RowKey": "2.4.2",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:38:26.6605889+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "stl.fusion",
+    "RowKey": "0.7.50",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T21:30:08.1573423+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "124465"
+        ],
+        "Content-MD5": [
+          "d9A8bvU8TNvW06MmgvFwtQ=="
+        ],
+        "Content-Type": [
+          "binary/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8D8931B803FCBB7\u0022"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 21:29:19 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "NSN6j6xoXsTEYbWU7VbLxCz8u05\u002BJUEj51muxcjeonIL015cEJq6q1P8PSqQfZVhnTppa4/1v\u002Bs93QY4T48cKA=="
+        ]
+      },
+      "MZipHash": "2fb37da6776f0ed402dfa47ed3be7f05c575e16427e60ad000ee20183d12e703"
+    }
+  },
+  {
+    "PartitionKey": "stl.fusion.blazor",
+    "RowKey": "0.7.50",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T21:30:08.1573423+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "27901"
+        ],
+        "Content-MD5": [
+          "cXRrD8BSkAt6r94s\u002B7jTNg=="
+        ],
+        "Content-Type": [
+          "binary/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8D8931B92924FB2\u0022"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 21:29:50 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "FTH1fqu6XOY39qdjISgP1C4b/so0XMZ3ttCRVav3HmbKuU9tTSt8jsGemv1cbs43sdnbGooEeb7c883bTC17Zw=="
+        ]
+      },
+      "MZipHash": "b893a4ba67c727589a4f187ffc3d3c3e47e79ea71034705dba9f1374057a685a"
+    }
+  },
+  {
+    "PartitionKey": "stl.fusion.client",
+    "RowKey": "0.7.50",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T21:30:08.1573423+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "36104"
+        ],
+        "Content-MD5": [
+          "GChETE6qjESx9uhlmQXB2w=="
+        ],
+        "Content-Type": [
+          "binary/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8D8931B864D403D\u0022"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 21:29:29 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "ZKLY\u002BpEaF9mCcP48cvfHryjIl30\u002BmcKXAvninPFbqEAtzf9MkrZkmzNjwQpoXq8IiaTa6Emdi2o/XqXuB8LnKg=="
+        ]
+      },
+      "MZipHash": "906d439b6ec9988e4f1c4b7fa7385ce8d221c0744de0a9b039f4189bda413a70"
+    }
+  },
+  {
+    "PartitionKey": "stl.testing",
+    "RowKey": "0.7.50",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T21:30:08.1573423+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "36216"
+        ],
+        "Content-MD5": [
+          "NwTOUGnM8lJqgk6DMQbKAg=="
+        ],
+        "Content-Type": [
+          "binary/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8D8931B8779CBC1\u0022"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 21:29:31 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "j2aF62RWb/Bkir5SyrY2o558ZeECRIs9FcUD9mI2YdxcR\u002BZbhVat9b823e3Q4ZJQRjgPqB5c75obSHXJLDRwWQ=="
+        ]
+      },
+      "MZipHash": "1340cf942263d7f0644e3434ac41f9188b5bd7919fe9ba5b3d86e14de9ab1306"
+    }
+  },
+  {
+    "PartitionKey": "tarkovmarket.net",
+    "RowKey": "1.0.0",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T23:35:21.1619585+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "twitch.net.api",
+    "RowKey": "0.0.1-beta-20201127224051",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T22:43:06.2001818+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "twitch.net.client",
+    "RowKey": "0.0.1-beta-20201127224051",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T22:42:46.1686456+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "twitch.net.communication",
+    "RowKey": "0.0.1-beta-20201127224051",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T22:42:46.1686456+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "vit.cofide.gestioncuentas.models",
+    "RowKey": "1.0.18",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T22:44:17.9667395+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "vl.trackobjects",
+    "RowKey": "0.0.2-alpha",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T22:59:01.2095283+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "wolf.net",
+    "RowKey": "4.0.0-alpha1",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:22:02.2889897+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "xofz.core",
+    "RowKey": "1.8.61",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T23:29:44.1562731+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "xofz.core98",
+    "RowKey": "1.4.57",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T23:30:03.6722545+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "xofz.timekeeper98",
+    "RowKey": "1.1.75",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T23:30:23.047595+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "ypf.mspromotions.dto",
+    "RowKey": "1.0.4.24",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2020-11-27T21:52:47.1907502+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  }
+]

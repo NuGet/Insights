@@ -22,6 +22,7 @@ namespace NuGet.Insights.Worker
                 await Target.InitializeAsync();
                 var scan = new CatalogIndexScan
                 {
+                    BucketRanges = "23-42",
                     Completed = new DateTimeOffset(2023, 11, 18, 3, 0, 0, TimeSpan.Zero),
                     ContinueUpdate = true,
                     Created = new DateTimeOffset(2023, 11, 18, 1, 0, 0, TimeSpan.Zero),
@@ -46,6 +47,7 @@ namespace NuGet.Insights.Worker
                 Assert.Equal(
                     """
                     {
+                      "BucketRanges": "23-42",
                       "Completed": "2023-11-18T03:00:00.0000000\u002B00:00",
                       "ContinueUpdate": "True",
                       "Created": "2023-11-18T01:00:00.0000000\u002B00:00",

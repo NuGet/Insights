@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NuGet.Insights.Worker;
+using NuGet.Insights.Worker.LoadBucketedPackage;
 
 namespace NuGet.Insights.Website.Controllers
 {
@@ -169,6 +171,8 @@ namespace NuGet.Insights.Website.Controllers
             bool useCustomCursor,
             bool? onlyLatestLeaves,
             string cursor,
+            bool useBucketRanges,
+            string bucketRanges,
             bool start,
             bool abort,
             bool overrideCursor,
@@ -195,7 +199,37 @@ namespace NuGet.Insights.Website.Controllers
 
             if (start)
             {
-                (var success, var message) = await UpdateCatalogScanAsync(driverType, onlyLatestLeaves, parsedCursor);
+                CatalogScanServiceResult result;
+                if (useBucketRanges)
+                {
+                    List<int> parsedBuckets;
+                    try
+                    {
+                        parsedBuckets = BucketRange.ParseBuckets(bucketRanges).ToList();
+                    }
+                    catch (Exception ex) when (ex is FormatException || ex is OverflowException || ex is ArgumentOutOfRangeException)
+                    {
+                        return Redirect(success: false, message: $"Could not parse bucket ranges: {bucketRanges}.<br />" + ex.Message, fragment);
+                    }
+
+                    if (parsedBuckets.Count == 0)
+                    {
+                        return Redirect(success: false, message: $"At least one bucket must be specified.", fragment);
+                    }
+
+                    var descendingId = StorageUtility.GenerateDescendingId();
+                    result = await _catalogScanService.UpdateAsync(
+                        descendingId.ToString() + $"-r{parsedBuckets.Count}",
+                        descendingId.Unique,
+                        driverType,
+                        parsedBuckets);
+                }
+                else
+                {
+                    result = await _catalogScanService.UpdateAsync(driverType, parsedCursor, onlyLatestLeaves);
+                }
+
+                (var success, var message) = HandleCatalogScanServiceResult(result, useBucketRanges);
                 return Redirect(success, message, fragment);
             }
             else if (abort)
@@ -227,19 +261,16 @@ namespace NuGet.Insights.Website.Controllers
             }
         }
 
-        private async Task<(bool Success, string Message)> UpdateCatalogScanAsync(
-            CatalogScanDriverType driverType,
-            bool? onlyLatestLeaves,
-            DateTimeOffset? max)
+        private (bool Success, string Message) HandleCatalogScanServiceResult(CatalogScanServiceResult result, bool useBucketRanges)
         {
-            var result = await _catalogScanService.UpdateAsync(driverType, max, onlyLatestLeaves);
-
             switch (result.Type)
             {
                 case CatalogScanServiceResultType.AlreadyRunning:
                     return (false, $"Scan <b>{result.Scan.ScanId}</b> is already running.");
-                case CatalogScanServiceResultType.BlockedByDependency:
+                case CatalogScanServiceResultType.BlockedByDependency when !useBucketRanges:
                     return (false, $"The scan can't use that max because it's beyond the <b>{result.DependencyName}</b> cursor.");
+                case CatalogScanServiceResultType.BlockedByDependency when useBucketRanges:
+                    return (false, $"The scan can't start because the <b>{result.DependencyName}</b> cursor doesn't match this driver's cursor.");
                 case CatalogScanServiceResultType.FullyCaughtUpWithDependency:
                     return (true, $"The scan is fully caught up with the <b>{result.DependencyName}</b> cursor.");
                 case CatalogScanServiceResultType.MinAfterMax:

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
+using NuGet.Insights.Worker.LoadBucketedPackage;
 using NuGet.Insights.Worker.LoadLatestPackageLeaf;
 using Xunit;
 using Xunit.Abstractions;
@@ -101,6 +102,7 @@ namespace NuGet.Insights.Worker
             typeof(HomogeneousBulkEnqueueMessage),
             typeof(TableScanMessage<CatalogLeafScan>),
             typeof(TableScanMessage<LatestPackageLeaf>),
+            typeof(TableScanMessage<BucketedPackage>),
         };
 
         public static HashSet<string> ExpandSchemaNames

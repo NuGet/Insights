@@ -11,6 +11,7 @@
     string statusText = null;
     string statusTitle = null;
     var latestIsAborted = Model.LatestScans.FirstOrDefault()?.State == CatalogIndexScanState.Aborted;
+    var anyBucketRanges = Model.LatestScans.Any(x => x.BucketRanges is not null);
     var isRunning = Model.LatestScans.Any(x => !x.State.IsTerminal());
     if (latestIsAborted)
     {
@@ -40,10 +41,10 @@
                 <input type="hidden" name="driverType" value="@Model.DriverType" />
                 @if (!Model.OnlyLatestLeavesSupport.HasValue)
                 {
-                    <div class="form-check mr-1">
+                    <div class="form-check only-latest-leaves mr-1">
                         <input class="form-check-input" type="checkbox" id="@Model.DriverType.ToString()-onlyLatestLeaves" name="onlyLatestLeaves" checked="checked" value="true" />
                         <label class="form-check-label" for="@Model.DriverType.ToString()-onlyLatestLeaves"
-                               title="Only process the latest catalog leaf per package. This is generally a good idea since most drivers don't need to reprocess a package multiple times if it has multiple catalog leaves.'">Only latest leaves</label>
+                               title="Only process the latest catalog leaf per package. This is generally a good idea since most drivers don't need to reprocess a package multiple times if it has multiple catalog leaves.">Only latest leaves</label>
                     </div>
                 }
                 <div class="form-check mr-1">
@@ -54,6 +55,18 @@
                 <div class="form-group custom-cursor mr-1" style="display: none">
                     <label class="sr-only" for="@Model.DriverType-cursor">Custom cursor</label>
                     <input type="text" class="form-control" name="cursor" id="@Model.DriverType-cursor" value="@Model.DefaultMax.ToZulu()">
+                </div>
+                @if (Model.SupportsBucketRangeProcessing)
+                {
+                    <div class="form-check mr-1">
+                        <input class="form-check-input" type="checkbox" id="@Model.DriverType.ToString()-useBucketRanges" name="useBucketRanges" value="true" />
+                        <label class="form-check-label" for="@Model.DriverType.ToString()-useBucketRanges"
+                               title="Run this driver on a given range of buckets. This can be used to reprocess a subset of packages that are already processed.">Process bucket ranges</label>
+                    </div>
+                }
+                <div class="form-group bucket-ranges mr-1" style="display: none">
+                    <label class="sr-only" for="@Model.DriverType-bucketRanges">Bucket ranges</label>
+                    <input type="text" class="form-control" name="bucketRanges" id="@Model.DriverType-bucketRanges" placeholder="42,77 or 1,22-33">
                 </div>
                 <div class="form-group">
                     <button type="submit" class="btn btn-primary mr-1" name="start" disabled="@isRunning" value="true">
@@ -110,6 +123,10 @@
                 <th>State</th>
                 <th>Min</th>
                 <th>Max</th>
+                @if (anyBucketRanges)
+                {
+                    <th>Buckets</th>
+                }
                 <th>Runtime</th>
             </tr>
         </thead>
@@ -119,8 +136,22 @@
                 <tr>
                     <td>@scan.ScanId</td>
                     <td>@scan.State</td>
-                    <td>@scan.Min?.ToZulu()</td>
-                    <td>@scan.Max?.ToZulu()</td>
+                    @if (scan.BucketRanges is null)
+                    {
+                        <td>@scan.Min?.ToZulu()</td>
+                        <td>@scan.Max?.ToZulu()</td>
+                        if (anyBucketRanges)
+                        {
+                            <td></td>
+                        }
+                    }
+                    else
+                    {
+                        <td></td>
+                        <td></td>
+                        <td>@scan.BucketRanges</td>
+                    }
+
                     <td>@scan.Completed.GetRuntime(scan.Started)</td>
                 </tr>
             }

@@ -329,6 +329,7 @@ namespace NuGet.Insights.Worker
                 runtime.TotalMinutes,
                 new Dictionary<string, string>
                 {
+                    { nameof(scan.BucketRanges), scan.BucketRanges },
                     { nameof(scan.Completed), scan.Completed?.ToString("O") },
                     { nameof(scan.ContinueUpdate), scan.ContinueUpdate.ToString() },
                     { nameof(scan.Created), scan.Created.ToString("O") },

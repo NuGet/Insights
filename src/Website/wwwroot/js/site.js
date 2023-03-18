@@ -53,11 +53,34 @@
     }
 
     $(function () {
-        $('input[name="useCustomCursor"]').change(function () {
+        function setCheckboxes() {
             var card = $(this).parents('.card')
-            card.find('.custom-cursor').toggle(this.checked);
-            card.find('button[name="overrideCursor"]').toggle(this.checked);
-        });
+            var onlyLatestLeaves = card.find('input[name="onlyLatestLeaves"]');
+            var useCustomCursor = card.find('input[name="useCustomCursor"]');
+            var useBucketRanges = card.find('input[name="useBucketRanges"]');
+
+            var customCursorChecked = false;
+            var bucketRangesChecked = false;
+
+            if (this == useCustomCursor[0]) {
+                customCursorChecked = useCustomCursor.prop('checked');
+            } else if (this == useBucketRanges[0]) {
+                customCursorChecked = false;
+                bucketRangesChecked = useBucketRanges.prop('checked');
+            }
+            
+            useCustomCursor.prop('checked', customCursorChecked);
+            card.find('.custom-cursor').toggle(customCursorChecked);
+            card.find('button[name="overrideCursor"]').toggle(customCursorChecked);
+            
+            useBucketRanges.prop('checked', bucketRangesChecked);
+            card.find('.bucket-ranges').toggle(bucketRangesChecked);
+            
+            onlyLatestLeaves.prop('disabled', bucketRangesChecked);
+        }
+
+        $('input[name="useCustomCursor"]').on('change', setCheckboxes);
+        $('input[name="useBucketRanges"]').on('change', setCheckboxes);
 
         $('button').on('click', function () {
             if ($(this).hasClass('btn-danger')) {

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Azure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NuGet.Insights.Worker.LoadBucketedPackage;
 
 namespace NuGet.Insights.Worker
 {
@@ -137,6 +138,19 @@ namespace NuGet.Insights.Worker
         {
             var scan = await GetLatestIncompleteScanAsync(driverType);
             if (scan is null)
+            {
+                return null;
+            }
+
+            await AbortAsync(scan, delete: false);
+
+            return scan;
+        }
+
+        public async Task<CatalogIndexScan> AbortAsync(CatalogScanDriverType driverType, string scanId)
+        {
+            var scan = await _storageService.GetIndexScanAsync(driverType, scanId);
+            if (scan is null || scan.State.IsTerminal())
             {
                 return null;
             }
@@ -320,11 +334,10 @@ namespace NuGet.Insights.Worker
             DateTimeOffset min,
             DateTimeOffset max)
         {
-            return await GetOrStartCursorlessAsync(
+            return await GetOrStartFindLatestCatalogLeafScanAsync(
                 CatalogScanDriverType.Internal_FindLatestCatalogLeafScan,
                 scanId,
                 storageSuffix,
-                onlyLatestLeaves: null,
                 parentDriverType,
                 parentScanId,
                 min,
@@ -339,15 +352,125 @@ namespace NuGet.Insights.Worker
             DateTimeOffset min,
             DateTimeOffset max)
         {
-            return await GetOrStartCursorlessAsync(
+            return await GetOrStartFindLatestCatalogLeafScanAsync(
                 CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId,
                 scanId,
                 storageSuffix,
-                onlyLatestLeaves: null,
                 parentDriverType,
                 parentScanId,
                 min,
                 max);
+        }
+
+        public bool SupportsBucketRangeProcessing(CatalogScanDriverType driverType)
+        {
+            switch (driverType)
+            {
+                case CatalogScanDriverType.LoadBucketedPackage: // bucket range processing depends on this driver
+                case CatalogScanDriverType.CatalogDataToCsv: // needs all catalog leaves, not just latest
+                case CatalogScanDriverType.PackageVersionToCsv: // processes individual IDs not versions
+                    return false;
+
+                case CatalogScanDriverType.BuildVersionSet:
+                case CatalogScanDriverType.LoadLatestPackageLeaf:
+                case CatalogScanDriverType.PackageArchiveToCsv:
+                case CatalogScanDriverType.SymbolPackageArchiveToCsv:
+                case CatalogScanDriverType.PackageAssemblyToCsv:
+                case CatalogScanDriverType.PackageAssetToCsv:
+#if ENABLE_CRYPTOAPI
+                case CatalogScanDriverType.PackageCertificateToCsv:
+#endif
+                case CatalogScanDriverType.PackageSignatureToCsv:
+                case CatalogScanDriverType.PackageManifestToCsv:
+                case CatalogScanDriverType.PackageReadmeToCsv:
+                case CatalogScanDriverType.PackageLicenseToCsv:
+#if ENABLE_NPE
+                case CatalogScanDriverType.NuGetPackageExplorerToCsv:
+#endif
+                case CatalogScanDriverType.PackageCompatibilityToCsv:
+                case CatalogScanDriverType.PackageIconToCsv:
+                case CatalogScanDriverType.PackageContentToCsv:
+                case CatalogScanDriverType.LoadPackageArchive:
+                case CatalogScanDriverType.LoadSymbolPackageArchive:
+                case CatalogScanDriverType.LoadPackageManifest:
+                case CatalogScanDriverType.LoadPackageReadme:
+                case CatalogScanDriverType.LoadPackageVersion:
+                    return true;
+
+                default:
+                    throw new NotSupportedException();
+            }
+        }
+
+        public async Task<CatalogScanServiceResult> UpdateAsync(
+            string scanId,
+            string storageSuffix,
+            CatalogScanDriverType driverType,
+            IEnumerable<int> buckets)
+        {
+            if (!SupportsBucketRangeProcessing(driverType))
+            {
+                throw new ArgumentException($"The driver {driverType} is not supported for bucket range processing.", nameof(driverType));
+            }
+
+            var existing = await _storageService.GetIndexScanAsync(driverType, scanId);
+            if (existing is not null)
+            {
+                return new CatalogScanServiceResult(CatalogScanServiceResultType.AlreadyRunning, dependencyName: null, existing);
+            }
+
+            var disabledOrStarted = await CheckForDisabledOrStartAsync(driverType);
+            if (disabledOrStarted is not null)
+            {
+                return disabledOrStarted;
+            }
+
+            var cursors = (await _cursorService.GetCursorsAsync()).ToDictionary(x => x.Key, x => x.Value.Value);
+            var loadBucketedPackageCursor = cursors[CatalogScanDriverType.LoadBucketedPackage];
+            var dependencies = CatalogScanCursorService.GetTransitiveClosure(driverType).Where(x => x != driverType);
+            foreach (var dependency in dependencies)
+            {
+                // If a dependency hasn't caught up with LoadBucketedPackage, that means there may be packages that
+                // haven't been processed by the dependency, but have been loaded in to the bucketed packages table.
+                // If we were to process the provided buckets with this driver, it may encounter packages that have
+                // never seen by a dependency.
+                if (loadBucketedPackageCursor > cursors[dependency])
+                {
+                    return new CatalogScanServiceResult(
+                        CatalogScanServiceResultType.BlockedByDependency,
+                        dependency.ToString(),
+                        scan: null);
+                }
+            }
+
+            await using (var lease = await GetStartDriverLeaseAsync(driverType, parentDriverType: null))
+            {
+                if (!lease.Acquired)
+                {
+                    return new CatalogScanServiceResult(CatalogScanServiceResultType.UnavailableLease, dependencyName: null, scan: null);
+                }
+
+                disabledOrStarted = await CheckForDisabledOrStartAsync(driverType);
+                if (disabledOrStarted is not null)
+                {
+                    return disabledOrStarted;
+                }
+
+                var newScan = await StartWithoutLeaseAsync(
+                    driverType,
+                    scanId,
+                    storageSuffix,
+                    onlyLatestLeaves: true, // the Bucketed Packages table only keeps the latest catalog leaf per version
+                    parentDriverType: null,
+                    parentScanId: null,
+                    cursorName: NoCursor,
+                    min: null,
+                    max: null,
+                    bucketRanges: BucketRange.BucketsToRanges(buckets),
+                    continueWithDependents: false);
+
+                return new CatalogScanServiceResult(CatalogScanServiceResultType.NewStarted, dependencyName: null, newScan);
+            }
         }
 
         private async Task<CatalogScanServiceResult> UpdateAsync(
@@ -440,6 +563,7 @@ namespace NuGet.Insights.Worker
                     cursor.Name,
                     min,
                     max.Value,
+                    bucketRanges: null,
                     continueWithDependents);
 
                 return new CatalogScanServiceResult(CatalogScanServiceResultType.NewStarted, dependencyName: null, newScan);
@@ -463,12 +587,11 @@ namespace NuGet.Insights.Worker
             return null;
         }
 
-        private async Task<CatalogIndexScan> GetOrStartCursorlessAsync(
+        private async Task<CatalogIndexScan> GetOrStartFindLatestCatalogLeafScanAsync(
             CatalogScanDriverType driverType,
             string scanId,
             string storageSuffix,
-            bool? onlyLatestLeaves,
-            CatalogScanDriverType? parentDriverType,
+            CatalogScanDriverType parentDriverType,
             string parentScanId,
             DateTimeOffset min,
             DateTimeOffset max)
@@ -499,12 +622,13 @@ namespace NuGet.Insights.Worker
                     driverType,
                     scanId,
                     storageSuffix,
-                    onlyLatestLeaves,
+                    onlyLatestLeaves: null,
                     parentDriverType,
                     parentScanId,
                     NoCursor,
                     min,
                     max,
+                    bucketRanges: null,
                     continueWithDependents: false);
             }
         }
@@ -517,8 +641,9 @@ namespace NuGet.Insights.Worker
             CatalogScanDriverType? parentDriverType,
             string parentScanId,
             string cursorName,
-            DateTimeOffset min,
-            DateTimeOffset max,
+            DateTimeOffset? min,
+            DateTimeOffset? max,
+            string bucketRanges,
             bool continueWithDependents)
         {
             // Start a new scan.
@@ -539,6 +664,7 @@ namespace NuGet.Insights.Worker
                 CursorName = cursorName,
                 Min = min,
                 Max = max,
+                BucketRanges = bucketRanges,
                 ContinueUpdate = continueWithDependents,
             };
             await _storageService.InsertAsync(catalogIndexScan);

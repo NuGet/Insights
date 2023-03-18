@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
 using NuGet.Insights.Worker.CatalogDataToCsv;
 using NuGet.Insights.Worker.EnqueueCatalogLeafScan;
+using NuGet.Insights.Worker.ProcessBucketRange;
 using NuGet.Insights.Worker.KustoIngestion;
+using NuGet.Insights.Worker.LoadBucketedPackage;
 using NuGet.Insights.Worker.LoadLatestPackageLeaf;
 #if ENABLE_NPE
 using NuGet.Insights.Worker.NuGetPackageExplorerToCsv;
@@ -80,6 +82,7 @@ namespace NuGet.Insights.Worker
 #endif
 
             new SchemaV1<TableScanMessage<CatalogLeafScan>>("ts.cls"),
+            new SchemaV1<TableScanMessage<BucketedPackage>>("ts.bp"),
             new SchemaV1<TableScanMessage<LatestPackageLeaf>>("ts.lpf"),
 
             new SchemaV1<TableRowCopyMessage<LatestPackageLeaf>>("trc.lpf"),
@@ -96,6 +99,7 @@ namespace NuGet.Insights.Worker
             new SchemaV1<TablePrefixScanPrefixQueryParameters>("tps.pq"),
 
             new SchemaV1<EnqueueCatalogLeafScansParameters>("ecls"),
+            new SchemaV1<ProcessBucketRangeParameters>("etrb"),
             new SchemaV1<TableCopyParameters>("tc"),
 
             new SchemaV1<CleanupOrphanRecordsParameters>("cor"),

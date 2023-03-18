@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using NuGet.Insights.Worker.LoadBucketedPackage;
 
 namespace NuGet.Insights.Worker
 {
@@ -110,22 +111,34 @@ namespace NuGet.Insights.Worker
                 await _storageService.ReplaceAsync(scan);
             }
 
-            switch (scan.Result.Value)
+            if (scan.BucketRanges is null)
             {
-                case CatalogIndexScanResult.ExpandAllLeaves:
-                    await ExpandAllLeavesAsync(message, scan, driver);
-                    break;
-                case CatalogIndexScanResult.ExpandLatestLeaves:
-                    await ExpandLatestLeavesAsync(message, scan, driver, perId: false);
-                    break;
-                case CatalogIndexScanResult.ExpandLatestLeavesPerId:
-                    await ExpandLatestLeavesAsync(message, scan, driver, perId: true);
-                    break;
-                case CatalogIndexScanResult.Processed:
-                    await CompleteAsync(scan);
-                    break;
-                default:
-                    throw new NotSupportedException($"Catalog index scan result '{scan.Result}' is not supported.");
+                switch (scan.Result.Value)
+                {
+                    case CatalogIndexScanResult.ExpandAllLeaves:
+                        await ExpandAllLeavesAsync(message, scan, driver);
+                        break;
+                    case CatalogIndexScanResult.ExpandLatestLeaves:
+                        await ExpandLatestLeavesAsync(message, scan, driver, perId: false);
+                        break;
+                    case CatalogIndexScanResult.ExpandLatestLeavesPerId:
+                        await ExpandLatestLeavesAsync(message, scan, driver, perId: true);
+                        break;
+                    case CatalogIndexScanResult.Processed:
+                        await CompleteAsync(scan);
+                        break;
+                    default:
+                        throw new NotSupportedException($"Catalog index scan result '{scan.Result}' is not supported.");
+                }
+            }
+            else
+            {
+                if (scan.Result.Value != CatalogIndexScanResult.ExpandLatestLeaves)
+                {
+                    throw new NotSupportedException($"Processing bucket ranges is not supported with the {scan.Result.Value} mode.");
+                }
+
+                await ExpandBucketRangesAsync(message, scan, driver);
             }
         }
 
@@ -256,6 +269,101 @@ namespace NuGet.Insights.Worker
             var enqueuePerId = perId;
 
             await HandleEnqueueAggregateAndFinalizeStatesAsync(message, scan, driver, taskStateKey, enqueuePerId);
+        }
+
+        private async Task ExpandBucketRangesAsync(CatalogIndexScanMessage message, CatalogIndexScan scan, ICatalogScanDriver driver)
+        {
+            var taskStatePk = $"{scan.ScanId}-{TableScanDriverType.ProcessBucketRange}";
+
+            // Initialized: add task states for the table scans per bucket range
+            if (scan.State == CatalogIndexScanState.Initialized)
+            {
+                // Set the catalog scan min and max. These aren't used for a proper catalog scan but may be used for logging or analysis purposes.
+                scan.Min = CatalogClient.NuGetOrgMin;
+                var cursorName = CatalogScanCursorService.GetCursorName(CatalogScanDriverType.LoadBucketedPackage);
+                var cursor = await _cursorStorageService.GetOrCreateAsync(cursorName);
+                scan.Max = cursor.Value;
+
+                // Create task states.
+                await _taskStateStorageService.InitializeAsync(scan.StorageSuffix);
+                await _taskStateStorageService.AddAsync(
+                    scan.StorageSuffix,
+                    taskStatePk,
+                    BucketRange.ParseRanges(scan.BucketRanges).Select(x => x.ToString()).ToList());
+
+                scan.State = CatalogIndexScanState.Expanding;
+                await _storageService.ReplaceAsync(scan);
+            }
+
+            // Expanding: start the table scans which create the leaf scans and enqueue a message for each
+            if (scan.State == CatalogIndexScanState.Expanding)
+            {
+                var taskStates = await _taskStateStorageService.GetByRowKeyPrefixAsync(
+                   scan.StorageSuffix,
+                   taskStatePk,
+                   rowKeyPrefix: string.Empty);
+
+                foreach (var taskState in taskStates)
+                {
+                    var range = BucketRange.Parse(taskState.RowKey);
+                    var started = taskState.Parameters is not null;
+                    if (!started)
+                    {
+                        await _tableScanService.StartProcessingBucketRangeAsync(
+                            taskState.GetKey(),
+                            range.Min,
+                            range.Max,
+                            scan.DriverType,
+                            scan.ScanId,
+                            enqueue: true);
+
+                        taskState.Parameters = "started";
+                        await _taskStateStorageService.UpdateAsync(taskState);
+                    }
+                }
+
+                scan.State = CatalogIndexScanState.Enqueuing;
+                await _storageService.ReplaceAsync(scan);
+            }
+
+            // Enqueuing: wait for the table scans to complete, signaling that all leaf scans have been created
+            if (scan.State == CatalogIndexScanState.Enqueuing)
+            {
+                var taskStateCount = await _taskStateStorageService.GetCountLowerBoundAsync(
+                   scan.StorageSuffix,
+                   taskStatePk);
+
+                if (taskStateCount > 0)
+                {
+                    _logger.LogInformation("Still enqueuing reprocessed catalog leaf scans.");
+                    message.AttemptCount++;
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
+                    return;
+                }
+                else
+                {
+                    scan.State = CatalogIndexScanState.Working;
+                    await _storageService.ReplaceAsync(scan);
+                }
+            }
+
+            // Working: wait for all the leaf scans to be completed
+            if (scan.State == CatalogIndexScanState.Working)
+            {
+                if (!await AreLeafScansCompleteAsync(scan))
+                {
+                    message.AttemptCount++;
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
+                    return;
+                }
+                else
+                {
+                    scan.State = CatalogIndexScanState.StartingAggregate;
+                    await _storageService.ReplaceAsync(scan);
+                }
+            }
+
+            await HandleAggregateAndFinalizeStatesAsync(message, scan, driver);
         }
 
         private async Task<bool> ArePageScansCompleteAsync(CatalogIndexScan scan)

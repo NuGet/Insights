@@ -16,7 +16,6 @@ using Microsoft.Extensions.Options;
 using NuGet.Insights.StorageNoOpRetry;
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
 using NuGet.Insights.Worker.BuildVersionSet;
-using NuGet.Insights.Worker.EnqueueCatalogLeafScan;
 using NuGet.Insights.Worker.FindLatestCatalogLeafScan;
 using NuGet.Insights.Worker.FindLatestCatalogLeafScanPerId;
 using NuGet.Insights.Worker.KustoIngestion;
@@ -108,6 +107,7 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddTransient<CsvTemporaryStorageFactory>();
             AddTableScan<LatestPackageLeaf>(serviceCollection);
             AddTableScan<CatalogLeafScan>(serviceCollection);
+            AddTableScan<BucketedPackage>(serviceCollection);
 
             serviceCollection.AddTransient<KustoIngestionService>();
             serviceCollection.AddTransient<KustoIngestionStorageService>();
@@ -193,7 +193,10 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddTransient<ILatestPackageLeafStorageFactory<CatalogLeafScanPerId>, LatestCatalogLeafScanPerIdStorageFactory>();
             serviceCollection.AddTransient<FindLatestLeafDriver<CatalogLeafScanPerId>>();
 
-            serviceCollection.AddTransient<EnqueueCatalogLeafScansDriver>();
+            foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ITableScanDriver<>)))
+            {
+                serviceCollection.AddTransient(implementationType);
+            }
 
             serviceCollection.AddTransient<CursorStorageService>();
 

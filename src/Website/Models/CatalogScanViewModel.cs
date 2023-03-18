@@ -18,6 +18,7 @@ namespace NuGet.Insights.Website
         public DateTimeOffset DefaultMax { get; set; }
 
         public bool? OnlyLatestLeavesSupport { get; set; }
+        public bool SupportsBucketRangeProcessing { get; set; }
         public bool IsEnabled { get; set; }
     }
 }

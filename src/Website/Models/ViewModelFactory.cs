@@ -98,6 +98,7 @@ namespace NuGet.Insights.Website
                     LatestScans = latestScans,
                     Dependencies = CatalogScanCursorService.GetDependencies(driverType),
                     OnlyLatestLeavesSupport = _catalogScanService.GetOnlyLatestLeavesSupport(driverType),
+                    SupportsBucketRangeProcessing = _catalogScanService.SupportsBucketRangeProcessing(driverType),
                     IsEnabled = _catalogScanService.IsEnabled(driverType),
                 });
             }

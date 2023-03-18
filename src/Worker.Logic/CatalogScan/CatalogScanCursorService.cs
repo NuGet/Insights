@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -157,7 +158,7 @@ namespace NuGet.Insights.Worker
 
         public static IReadOnlyList<CatalogScanDriverType> StartableDriverTypes => SortedDriverTypes;
 
-        public string GetCursorName(CatalogScanDriverType driverType)
+        public static string GetCursorName(CatalogScanDriverType driverType)
         {
             return $"CatalogScan-{driverType}";
         }
@@ -224,18 +225,55 @@ namespace NuGet.Insights.Worker
             return KeyValuePair.Create(dependencyName, max);
         }
 
+        private static ConcurrentDictionary<CatalogScanDriverType, IReadOnlyList<CatalogScanDriverType>> TransitiveClosureCache = new();
+
+        public static IReadOnlyList<CatalogScanDriverType> GetTransitiveClosure(CatalogScanDriverType driverType)
+        {
+            return TransitiveClosureCache.GetOrAdd(driverType, driverType =>
+            {
+                var output = new List<CatalogScanDriverType>();
+                var explored = new HashSet<CatalogScanDriverType>();
+                var toExpand = new Queue<CatalogScanDriverType>();
+                toExpand.Enqueue(driverType);
+
+                while (toExpand.Count > 0)
+                {
+                    var next = toExpand.Dequeue();
+                    if (explored.Add(next))
+                    {
+                        output.Add(next);
+
+                        foreach (var dependency in GetDependencies(next))
+                        {
+                            toExpand.Enqueue(dependency);
+                        }
+                    }
+                }
+
+                output.Reverse();
+                return output;
+            });
+        }
+
+        private static ConcurrentDictionary<CatalogScanDriverType, IReadOnlyList<CatalogScanDriverType>> DependenciesCache = new();
+
         public static IReadOnlyList<CatalogScanDriverType> GetDependencies(CatalogScanDriverType driverType)
         {
-            var edges = GetEdges(driverType, Dependencies);
-            return edges.Intersect(ValidDriverTypes).ToList();
+            return DependenciesCache.GetOrAdd(driverType, driverType =>
+            {
+                var edges = GetEdges(driverType, Dependencies);
+                return edges.Intersect(ValidDriverTypes).ToList();
+            });
         }
+
+        private static ConcurrentDictionary<CatalogScanDriverType, IReadOnlyList<CatalogScanDriverType>> DependentsCache = new();
 
         public static IReadOnlyList<CatalogScanDriverType> GetDependents(CatalogScanDriverType driverType)
         {
-            return GetEdges(driverType, Dependents);
+            return DependentsCache.GetOrAdd(driverType, driverType => GetEdges(driverType, Dependents));
         }
 
-        public static IReadOnlyList<CatalogScanDriverType> GetFlatContainerDependents()
+        private static Lazy<IReadOnlyList<CatalogScanDriverType>> FlatContainerDependentsCache = new Lazy<IReadOnlyList<CatalogScanDriverType>>(() =>
         {
             var dependents = new List<CatalogScanDriverType>();
             foreach ((var driverType, var dependencies) in Dependencies)
@@ -247,6 +285,11 @@ namespace NuGet.Insights.Worker
             }
 
             return dependents;
+        });
+
+        public static IReadOnlyList<CatalogScanDriverType> GetFlatContainerDependents()
+        {
+            return FlatContainerDependentsCache.Value;
         }
 
         private static IReadOnlyList<CatalogScanDriverType> GetEdges(

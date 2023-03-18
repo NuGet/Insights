@@ -41,6 +41,7 @@ namespace NuGet.Insights.Worker
         public CatalogIndexScanResult? Result { get; set; }
         public DateTimeOffset? Completed { get; set; }
         public bool ContinueUpdate { get; set; }
+        public string BucketRanges { get; set; }
 
         public string PartitionKey { get; set; }
         public string RowKey { get; set; }
