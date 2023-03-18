@@ -158,6 +158,7 @@ namespace NuGet.Insights.Worker
             x.SymbolPackageArchiveContainerName = $"{StoragePrefix}1sa2c1";
             x.SymbolPackageArchiveEntryContainerName = $"{StoragePrefix}1sae2c1";
             x.TaskStateTableName = $"{StoragePrefix}1ts1";
+            x.TimedReprocessTableName = $"{StoragePrefix}1tr1";
             x.VerifiedPackageContainerName = $"{StoragePrefix}1vp1";
             x.VersionSetAggregateTableName = $"{StoragePrefix}1vsa1";
             x.VersionSetContainerName = $"{StoragePrefix}1vs1";

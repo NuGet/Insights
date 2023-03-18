@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -32,7 +32,7 @@ namespace NuGet.Insights.Worker
         public TimeSpan Frequency => _options.Value.CatalogScanUpdateFrequency;
         public bool AutoStart => _options.Value.AutoStartCatalogScanUpdate;
         public bool IsEnabled => true;
-        public int Order => 10;
+        public int Order => 20;
         public bool CanAbort => false;
         public bool CanDestroy => false;
 

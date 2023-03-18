@@ -23,7 +23,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
         public TimeSpan Frequency => TimeSpan.FromHours(4);
         public bool AutoStart => false;
         public bool IsEnabled => true;
-        public int Order => 20;
+        public int Order => 30;
         public bool CanAbort => false;
         public bool CanDestroy => false;
 

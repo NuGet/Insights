@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Azure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NuGet.Insights.Worker.LoadBucketedPackage;
 
 namespace NuGet.Insights.Worker
 {
@@ -320,11 +321,10 @@ namespace NuGet.Insights.Worker
             DateTimeOffset min,
             DateTimeOffset max)
         {
-            return await GetOrStartCursorlessAsync(
+            return await GetOrStartFindLatestCatalogLeafScanAsync(
                 CatalogScanDriverType.Internal_FindLatestCatalogLeafScan,
                 scanId,
                 storageSuffix,
-                onlyLatestLeaves: null,
                 parentDriverType,
                 parentScanId,
                 min,
@@ -339,15 +339,71 @@ namespace NuGet.Insights.Worker
             DateTimeOffset min,
             DateTimeOffset max)
         {
-            return await GetOrStartCursorlessAsync(
+            return await GetOrStartFindLatestCatalogLeafScanAsync(
                 CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId,
                 scanId,
                 storageSuffix,
-                onlyLatestLeaves: null,
                 parentDriverType,
                 parentScanId,
                 min,
                 max);
+        }
+
+        public async Task<CatalogScanServiceResult> UpdateAsync(
+            string scanId,
+            string storageSuffix,
+            CatalogScanDriverType driverType,
+            IEnumerable<int> buckets)
+        {
+            switch (driverType)
+            {
+                case CatalogScanDriverType.CatalogDataToCsv: // needs all catalog leaves, not just latest
+                case CatalogScanDriverType.PackageVersionToCsv: // processes individual IDs not versions
+                case CatalogScanDriverType.Internal_FindLatestCatalogLeafScan: // implementation detail of catalog scanning
+                case CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId: // implementation detail of catalog scanning
+                    throw new ArgumentException($"The driver {driverType} is not supported for bucket range processing.");
+            }
+
+            var existing = await _storageService.GetIndexScanAsync(driverType, scanId);
+            if (existing is not null)
+            {
+                return new CatalogScanServiceResult(CatalogScanServiceResultType.AlreadyRunning, dependencyName: null, existing);
+            }
+
+            var disabledOrStarted = await CheckForDisabledOrStartAsync(driverType);
+            if (disabledOrStarted is not null)
+            {
+                return disabledOrStarted;
+            }
+
+            await using (var lease = await GetStartDriverLeaseAsync(driverType, parentDriverType: null))
+            {
+                if (!lease.Acquired)
+                {
+                    return new CatalogScanServiceResult(CatalogScanServiceResultType.UnavailableLease, dependencyName: null, scan: null);
+                }
+
+                disabledOrStarted = await CheckForDisabledOrStartAsync(driverType);
+                if (disabledOrStarted is not null)
+                {
+                    return disabledOrStarted;
+                }
+
+                var newScan = await StartWithoutLeaseAsync(
+                    driverType,
+                    scanId,
+                    storageSuffix,
+                    onlyLatestLeaves: true, // the Bucketed Packages table only keeps the latest catalog leaf per version
+                    parentDriverType: null,
+                    parentScanId: null,
+                    cursorName: NoCursor,
+                    min: null,
+                    max: null,
+                    bucketRanges: BucketRange.BucketsToRanges(buckets),
+                    continueWithDependents: false);
+
+                return new CatalogScanServiceResult(CatalogScanServiceResultType.NewStarted, dependencyName: null, newScan);
+            }
         }
 
         private async Task<CatalogScanServiceResult> UpdateAsync(
@@ -440,6 +496,7 @@ namespace NuGet.Insights.Worker
                     cursor.Name,
                     min,
                     max.Value,
+                    bucketRanges: null,
                     continueWithDependents);
 
                 return new CatalogScanServiceResult(CatalogScanServiceResultType.NewStarted, dependencyName: null, newScan);
@@ -463,12 +520,11 @@ namespace NuGet.Insights.Worker
             return null;
         }
 
-        private async Task<CatalogIndexScan> GetOrStartCursorlessAsync(
+        private async Task<CatalogIndexScan> GetOrStartFindLatestCatalogLeafScanAsync(
             CatalogScanDriverType driverType,
             string scanId,
             string storageSuffix,
-            bool? onlyLatestLeaves,
-            CatalogScanDriverType? parentDriverType,
+            CatalogScanDriverType parentDriverType,
             string parentScanId,
             DateTimeOffset min,
             DateTimeOffset max)
@@ -499,12 +555,13 @@ namespace NuGet.Insights.Worker
                     driverType,
                     scanId,
                     storageSuffix,
-                    onlyLatestLeaves,
+                    onlyLatestLeaves: null,
                     parentDriverType,
                     parentScanId,
                     NoCursor,
                     min,
                     max,
+                    bucketRanges: null,
                     continueWithDependents: false);
             }
         }
@@ -517,8 +574,9 @@ namespace NuGet.Insights.Worker
             CatalogScanDriverType? parentDriverType,
             string parentScanId,
             string cursorName,
-            DateTimeOffset min,
-            DateTimeOffset max,
+            DateTimeOffset? min,
+            DateTimeOffset? max,
+            string bucketRanges,
             bool continueWithDependents)
         {
             // Start a new scan.
@@ -539,6 +597,7 @@ namespace NuGet.Insights.Worker
                 CursorName = cursorName,
                 Min = min,
                 Max = max,
+                BucketRanges = bucketRanges,
                 ContinueUpdate = continueWithDependents,
             };
             await _storageService.InsertAsync(catalogIndexScan);

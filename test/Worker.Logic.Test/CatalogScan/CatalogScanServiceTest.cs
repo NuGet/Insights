@@ -127,6 +127,75 @@ namespace NuGet.Insights.Worker
             }
         }
 
+        public class TheUpdateAsyncWithBucketsMethod : CatalogScanServiceTest
+        {
+            [Fact]
+            public async Task AlreadyRunning()
+            {
+                // Arrange
+                await CatalogScanService.InitializeAsync(); 
+                var first = await CatalogScanService.UpdateAsync(ScanId, StorageSuffix, DriverType, Buckets);
+
+                // Act
+                var result = await CatalogScanService.UpdateAsync(ScanId, StorageSuffix, DriverType, Buckets);
+
+                // Assert
+                Assert.Equal(CatalogScanServiceResultType.AlreadyRunning, result.Type);
+                Assert.Equal(first.Scan.ScanId, result.Scan.ScanId);
+                Assert.Equal(ScanId, result.Scan.ScanId);
+            }
+
+            [Fact]
+            public async Task Disabled()
+            {
+                // Arrange
+                ConfigureWorkerSettings = x => x.DisabledDrivers.Add(DriverType);
+                await CatalogScanService.InitializeAsync();
+
+                // Act
+                var result = await CatalogScanService.UpdateAsync(ScanId, StorageSuffix, DriverType, Buckets);
+
+                // Assert
+                Assert.Equal(CatalogScanServiceResultType.Disabled, result.Type);
+                Assert.Null(result.Scan);
+                Assert.Null(result.DependencyName);
+            }
+
+            [Fact]
+            public async Task StartsWithBuckets()
+            {
+                // Arrange
+                await CatalogScanService.InitializeAsync();
+
+                // Act
+                var result = await CatalogScanService.UpdateAsync(ScanId, StorageSuffix, DriverType, Buckets);
+
+                // Assert
+                Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);
+                Assert.Equal(DriverType, result.Scan.DriverType);
+                Assert.Equal(ScanId, result.Scan.ScanId);
+                Assert.Equal("23-25,42", result.Scan.BucketRanges);
+                Assert.Null(result.Scan.Min);
+                Assert.Null(result.Scan.Max);
+                Assert.Equal(string.Empty, result.Scan.CursorName);
+                Assert.False(result.Scan.ContinueUpdate);
+                Assert.True(result.Scan.OnlyLatestLeaves);
+                Assert.Null(result.Scan.ParentDriverType);
+                Assert.Null(result.Scan.ParentScanId);
+            }
+
+            public string ScanId { get; }
+            public string StorageSuffix { get; }
+            public int[] Buckets { get; }
+
+            public TheUpdateAsyncWithBucketsMethod(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            {
+                ScanId = "my-scan-id";
+                StorageSuffix = "zz";
+                Buckets = new[] { 23, 24, 42, 25 };
+            }
+        }
+
         public class TheUpdateAsyncMethod : CatalogScanServiceTest
         {
             [Fact]

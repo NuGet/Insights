@@ -20,6 +20,7 @@ using NuGet.Insights.Worker.KustoIngestion;
 #if ENABLE_CRYPTOAPI
 using NuGet.Insights.Worker.PackageCertificateToCsv;
 using NuGet.Insights.Worker.ReferenceTracking;
+using NuGet.Insights.Worker.TimedReprocess;
 #endif
 using NuGet.Insights.Worker.Workflow;
 using Xunit;
@@ -77,6 +78,10 @@ namespace NuGet.Insights.Worker
                     new List<Type>
                     {
                         typeof(WorkflowTimer),
+                    },
+                    new List<Type>
+                    {
+                        typeof(TimedReprocessTimer),
                     },
                     new List<Type>
                     {

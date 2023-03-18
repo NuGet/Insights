@@ -16,7 +16,6 @@ using Microsoft.Extensions.Options;
 using NuGet.Insights.StorageNoOpRetry;
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
 using NuGet.Insights.Worker.BuildVersionSet;
-using NuGet.Insights.Worker.EnqueueCatalogLeafScan;
 using NuGet.Insights.Worker.FindLatestCatalogLeafScan;
 using NuGet.Insights.Worker.FindLatestCatalogLeafScanPerId;
 using NuGet.Insights.Worker.KustoIngestion;
@@ -32,6 +31,7 @@ using NuGet.Insights.Worker.PackageCertificateToCsv;
 #endif
 using NuGet.Insights.Worker.ReferenceTracking;
 using NuGet.Insights.Worker.TableCopy;
+using NuGet.Insights.Worker.TimedReprocess;
 using NuGet.Insights.Worker.Workflow;
 
 namespace NuGet.Insights.Worker
@@ -108,6 +108,7 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddTransient<CsvTemporaryStorageFactory>();
             AddTableScan<LatestPackageLeaf>(serviceCollection);
             AddTableScan<CatalogLeafScan>(serviceCollection);
+            AddTableScan<BucketedPackage>(serviceCollection);
 
             serviceCollection.AddTransient<KustoIngestionService>();
             serviceCollection.AddTransient<KustoIngestionStorageService>();
@@ -193,7 +194,10 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddTransient<ILatestPackageLeafStorageFactory<CatalogLeafScanPerId>, LatestCatalogLeafScanPerIdStorageFactory>();
             serviceCollection.AddTransient<FindLatestLeafDriver<CatalogLeafScanPerId>>();
 
-            serviceCollection.AddTransient<EnqueueCatalogLeafScansDriver>();
+            foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ITableScanDriver<>)))
+            {
+                serviceCollection.AddTransient(implementationType);
+            }
 
             serviceCollection.AddTransient<CursorStorageService>();
 
@@ -220,6 +224,7 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddLoadPackageVersion();
             serviceCollection.AddTableCopy();
             serviceCollection.AddBuildVersionSet();
+            serviceCollection.AddTimedReprocess();
 
             foreach (var serviceType in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementing<ITimer>())
             {
@@ -502,6 +507,13 @@ namespace NuGet.Insights.Worker
         {
             serviceCollection.AddTransient<LoadPackageVersionDriver>();
             serviceCollection.AddTransient<PackageVersionStorageService>();
+        }
+
+        private static void AddTimedReprocess(this IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddTransient<TimedReprocessService>();
+            serviceCollection.AddTransient<TimedReprocessStorageService>();
+            serviceCollection.AddTransient<TimedReprocessTimer>();
         }
     }
 }

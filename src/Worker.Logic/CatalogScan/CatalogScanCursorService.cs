@@ -157,7 +157,7 @@ namespace NuGet.Insights.Worker
 
         public static IReadOnlyList<CatalogScanDriverType> StartableDriverTypes => SortedDriverTypes;
 
-        public string GetCursorName(CatalogScanDriverType driverType)
+        public static string GetCursorName(CatalogScanDriverType driverType)
         {
             return $"CatalogScan-{driverType}";
         }

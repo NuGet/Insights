@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
 using NuGet.Insights.Worker.CatalogDataToCsv;
 using NuGet.Insights.Worker.EnqueueCatalogLeafScan;
+using NuGet.Insights.Worker.ProcessBucketRange;
 using NuGet.Insights.Worker.KustoIngestion;
+using NuGet.Insights.Worker.LoadBucketedPackage;
 using NuGet.Insights.Worker.LoadLatestPackageLeaf;
 #if ENABLE_NPE
 using NuGet.Insights.Worker.NuGetPackageExplorerToCsv;
@@ -27,6 +29,7 @@ using NuGet.Insights.Worker.PackageVersionToCsv;
 using NuGet.Insights.Worker.ReferenceTracking;
 using NuGet.Insights.Worker.SymbolPackageArchiveToCsv;
 using NuGet.Insights.Worker.TableCopy;
+using NuGet.Insights.Worker.TimedReprocess;
 using NuGet.Insights.Worker.Workflow;
 
 namespace NuGet.Insights.Worker
@@ -46,6 +49,8 @@ namespace NuGet.Insights.Worker
             new SchemaV1<KustoIngestionMessage>("ki"),
             new SchemaV1<KustoContainerIngestionMessage>("kci"),
             new SchemaV1<KustoBlobIngestionMessage>("kbi"),
+
+            new SchemaV1<TimedReprocessMessage>("tr"),
 
             new SchemaV1<WorkflowRunMessage>("wr"),
 
@@ -80,6 +85,7 @@ namespace NuGet.Insights.Worker
 #endif
 
             new SchemaV1<TableScanMessage<CatalogLeafScan>>("ts.cls"),
+            new SchemaV1<TableScanMessage<BucketedPackage>>("ts.bp"),
             new SchemaV1<TableScanMessage<LatestPackageLeaf>>("ts.lpf"),
 
             new SchemaV1<TableRowCopyMessage<LatestPackageLeaf>>("trc.lpf"),
@@ -96,6 +102,7 @@ namespace NuGet.Insights.Worker
             new SchemaV1<TablePrefixScanPrefixQueryParameters>("tps.pq"),
 
             new SchemaV1<EnqueueCatalogLeafScansParameters>("ecls"),
+            new SchemaV1<ProcessBucketRangeParameters>("etrb"),
             new SchemaV1<TableCopyParameters>("tc"),
 
             new SchemaV1<CleanupOrphanRecordsParameters>("cor"),
