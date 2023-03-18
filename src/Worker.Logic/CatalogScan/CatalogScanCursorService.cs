@@ -41,6 +41,10 @@ namespace NuGet.Insights.Worker
                 new[] { FlatContainer }
             },
             {
+                CatalogScanDriverType.LoadBucketedPackage,
+                new[] { FlatContainer }
+            },
+            {
                 CatalogScanDriverType.LoadPackageArchive,
                 new[] { FlatContainer }
             },

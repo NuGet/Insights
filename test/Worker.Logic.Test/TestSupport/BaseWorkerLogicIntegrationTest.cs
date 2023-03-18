@@ -122,6 +122,7 @@ namespace NuGet.Insights.Worker
             x.KustoDatabaseName = "TestKustoDb";
             x.PackageContentFileExtensions = new List<string> { ".txt" };
 
+            x.BucketedPackageTableName = $"{StoragePrefix}1bp1";
             x.CatalogIndexScanTableName = $"{StoragePrefix}1cis1";
             x.CatalogLeafItemContainerName = $"{StoragePrefix}1fcli1";
             x.CatalogLeafScanTableName = $"{StoragePrefix}1cls1";

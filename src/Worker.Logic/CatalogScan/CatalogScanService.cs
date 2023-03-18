@@ -87,6 +87,7 @@ namespace NuGet.Insights.Worker
                     return false;
 
                 case CatalogScanDriverType.LoadLatestPackageLeaf:
+                case CatalogScanDriverType.LoadBucketedPackage:
                     return true;
 
                 case CatalogScanDriverType.PackageArchiveToCsv:
@@ -320,6 +321,7 @@ namespace NuGet.Insights.Worker
 
                 case CatalogScanDriverType.BuildVersionSet:
                 case CatalogScanDriverType.LoadLatestPackageLeaf:
+                case CatalogScanDriverType.LoadBucketedPackage:
                 case CatalogScanDriverType.LoadPackageArchive:
                 case CatalogScanDriverType.LoadSymbolPackageArchive:
                 case CatalogScanDriverType.LoadPackageManifest:

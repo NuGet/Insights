@@ -59,6 +59,13 @@ namespace NuGet.Insights.Worker
         LoadLatestPackageLeaf,
 
         /// <summary>
+        /// Implemented by <see cref="LoadBucketedPackage.BucketedPackageStorage"/> and <see cref="FindLatestLeafDriver{T}"/>.
+        /// This driver records the latest catalog leaf URL for each package version to Azure Table Storage partitions them
+        /// into 1000 buckets.
+        /// </summary>
+        LoadBucketedPackage,
+
+        /// <summary>
         /// Implemented by <see cref="BuildVersionSet.BuildVersionSetDriver"/>. Builds a compact data structure that
         /// can be loaded in memory to quickly determine if a package ID and version exists on NuGet.org.
         /// </summary>

@@ -32,6 +32,7 @@ using NuGet.Insights.Worker.LoadSymbolPackageArchive;
 using NuGet.Insights.Worker.SymbolPackageArchiveToCsv;
 using NuGet.Insights.Worker.PackageContentToCsv;
 using NuGet.Insights.Worker.PackageLicenseToCsv;
+using NuGet.Insights.Worker.LoadBucketedPackage;
 
 namespace NuGet.Insights.Worker
 {
@@ -94,6 +95,8 @@ namespace NuGet.Insights.Worker
                     return _serviceProvider.GetRequiredService<BuildVersionSetDriver>();
                 case CatalogScanDriverType.LoadLatestPackageLeaf:
                     return _serviceProvider.GetRequiredService<FindLatestLeafDriver<LatestPackageLeaf>>();
+                case CatalogScanDriverType.LoadBucketedPackage:
+                    return _serviceProvider.GetRequiredService<FindLatestLeafDriver<BucketedPackage>>();
                 case CatalogScanDriverType.PackageArchiveToCsv:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageArchiveRecord, PackageArchiveEntry>>();
                 case CatalogScanDriverType.SymbolPackageArchiveToCsv:

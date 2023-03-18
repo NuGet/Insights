@@ -12,6 +12,7 @@ The following drivers are currently implemented in NuGet Insights.
 | --------------------------------------------------------- | --------------------------------------------------------------------- |
 | [BuildVersionSet](BuildVersionSet.md)                     | Build a lookup dictionary of all IDs and version for in-memory usage  |
 | [CatalogDataToCsv](CatalogDataToCsv.md)                   | Write catalog data directly to CSV                                    |
+| [LoadBucketedPackage](LoadBucketedPackage.md)             | Bucketize latest catalog leaf info per package version                |
 | [LoadLatestPackageLeaf](LoadLatestPackageLeaf.md)         | Test the "load latest" distributed algorithm used in several places   |
 | [LoadPackageArchive](LoadPackageArchive.md)               | Load package .nupkg metadata and package signature into table storage |
 | [LoadPackageManifest](LoadPackageManifest.md)             | Load package .nuspec into table storage                               |
@@ -62,6 +63,7 @@ flowchart LR
     FlatContainer[<a href='https://learn.microsoft.com/en-us/nuget/api/package-base-address-resource'>NuGet.org V3 package content</a>]
     FlatContainer --> BuildVersionSet
     FlatContainer --> CatalogDataToCsv
+    FlatContainer --> LoadBucketedPackage
     FlatContainer --> LoadLatestPackageLeaf
     FlatContainer --> LoadPackageArchive
     FlatContainer --> LoadPackageManifest

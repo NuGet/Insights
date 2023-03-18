@@ -65,6 +65,7 @@ namespace NuGet.Insights.Worker
         public string VersionSetContainerName { get; set; } = "versionset";
         public string KustoIngestionTableName { get; set; } = "kustoingestions";
         public string WorkflowRunTableName { get; set; } = "workflowruns";
+        public string BucketedPackageTableName { get; set; } = "bucketedpackages";
 
         public string LatestPackageLeafTableName { get; set; } = "latestpackageleaves";
         public string PackageAssetContainerName { get; set; } = "packageassets";

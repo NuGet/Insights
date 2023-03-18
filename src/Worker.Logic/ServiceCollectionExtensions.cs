@@ -20,6 +20,7 @@ using NuGet.Insights.Worker.EnqueueCatalogLeafScan;
 using NuGet.Insights.Worker.FindLatestCatalogLeafScan;
 using NuGet.Insights.Worker.FindLatestCatalogLeafScanPerId;
 using NuGet.Insights.Worker.KustoIngestion;
+using NuGet.Insights.Worker.LoadBucketedPackage;
 using NuGet.Insights.Worker.LoadLatestPackageLeaf;
 using NuGet.Insights.Worker.LoadPackageArchive;
 using NuGet.Insights.Worker.LoadPackageManifest;
@@ -208,6 +209,7 @@ namespace NuGet.Insights.Worker
             }
 
             serviceCollection.AddLoadLatestPackageLeaf();
+            serviceCollection.AddLoadBucketedPackage();
             serviceCollection.AddLoadPackageArchive();
             serviceCollection.AddLoadSymbolPackageArchive();
 #if ENABLE_CRYPTOAPI
@@ -464,6 +466,14 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddTransient<LatestPackageLeafStorageFactory>();
             serviceCollection.AddTransient<ILatestPackageLeafStorageFactory<LatestPackageLeaf>, LatestPackageLeafStorageFactory>();
             serviceCollection.AddTransient<FindLatestLeafDriver<LatestPackageLeaf>>();
+        }
+
+        private static void AddLoadBucketedPackage(this IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddTransient<BucketedPackageService>();
+            serviceCollection.AddTransient<BucketedPackageStorageFactory>();
+            serviceCollection.AddTransient<ILatestPackageLeafStorageFactory<BucketedPackage>, BucketedPackageStorageFactory>();
+            serviceCollection.AddTransient<FindLatestLeafDriver<BucketedPackage>>();
         }
 
         private static void AddLoadPackageArchive(this IServiceCollection serviceCollection)
