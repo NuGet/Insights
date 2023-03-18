@@ -7,7 +7,6 @@ using Azure.Data.Tables;
 
 namespace NuGet.Insights.Worker.Workflow
 {
-
     public class WorkflowRun : ITableEntity
     {
         public static readonly string DefaultPartitionKey = string.Empty;
@@ -30,6 +29,7 @@ namespace NuGet.Insights.Worker.Workflow
         public WorkflowRunState State { get; set; }
         public DateTimeOffset Created { get; set; }
         public DateTimeOffset? Completed { get; set; }
+        public int AttemptCount { get; set; }
 
         public string GetRunId()
         {

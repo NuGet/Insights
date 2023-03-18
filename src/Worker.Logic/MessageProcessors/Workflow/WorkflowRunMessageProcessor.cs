@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using NuGet.Insights.Worker.KustoIngestion;
 
 namespace NuGet.Insights.Worker.Workflow
 {
@@ -20,8 +22,8 @@ namespace NuGet.Insights.Worker.Workflow
                 {
                     self._logger.LogInformation("Starting all catalog scans.");
                     await self._workflowService.StartCatalogScansAsync();
-                },
-                NextState: WorkflowRunState.CatalogScanWorking),
+                    return WorkflowRunState.CatalogScanWorking;
+                }),
 
             new WorkflowStateTransition(
                 CurrentState: WorkflowRunState.CatalogScanWorking,
@@ -30,8 +32,8 @@ namespace NuGet.Insights.Worker.Workflow
                 {
                     self._logger.LogInformation("Starting cleanup of orphan records.");
                     await self._workflowService.StartCleanupOrphanRecordsAsync();
-                },
-                NextState: WorkflowRunState.CleanupOrphanRecordsWorking),
+                    return WorkflowRunState.CleanupOrphanRecordsWorking;
+                }),
 
             new WorkflowStateTransition(
                 CurrentState: WorkflowRunState.CleanupOrphanRecordsWorking,
@@ -40,8 +42,8 @@ namespace NuGet.Insights.Worker.Workflow
                 {
                     self._logger.LogInformation("Starting auxiliary file processors.");
                     await self._workflowService.StartAuxiliaryFilesAsync();
-                },
-                NextState: WorkflowRunState.AuxiliaryFilesWorking),
+                    return WorkflowRunState.AuxiliaryFilesWorking;
+                }),
 
             new WorkflowStateTransition(
                 CurrentState: WorkflowRunState.AuxiliaryFilesWorking,
@@ -50,17 +52,29 @@ namespace NuGet.Insights.Worker.Workflow
                 {
                     self._logger.LogInformation("Starting Kusto ingestion.");
                     await self._workflowService.StartKustoIngestionAsync();
-                },
-                NextState: WorkflowRunState.KustoIngestionWorking),
+                    return WorkflowRunState.KustoIngestionWorking;
+                }),
 
             new WorkflowStateTransition(
                 CurrentState: WorkflowRunState.KustoIngestionWorking,
                 IsIncompleteAsync: self => self._workflowService.IsKustoIngestionRunningAsync(),
-                TransitionAsync: (self, run) =>
+                TransitionAsync: async (self, run) =>
                 {
-                    return Task.CompletedTask;
-                },
-                NextState: WorkflowRunState.Finalizing),
+                    var latestState = await self._kustoIngestionStorageService.GetLatestStateAsync();
+                    if (latestState != KustoIngestionState.Complete)
+                    {
+                        if (run.AttemptCount >= self._options.Value.WorkflowMaxAttempts)
+                        {
+                            throw new InvalidOperationException($"The workflow could not complete due to Kusto {latestState} state after {run.AttemptCount} attempts.");
+                        }
+
+                        self._logger.LogWarning("Retrying the entire workflow due to Kusto {latestState} state.", latestState);
+                        run.AttemptCount++;
+                        return WorkflowRunState.Created;
+                    }
+
+                    return WorkflowRunState.Finalizing;
+                }),
 
             new WorkflowStateTransition(
                 CurrentState: WorkflowRunState.Finalizing,
@@ -68,11 +82,10 @@ namespace NuGet.Insights.Worker.Workflow
                 TransitionAsync: async (self, run) =>
                 {
                     await self._storageService.DeleteOldRunsAsync(run.GetRunId());
-
                     self._logger.LogInformation("The workflow is complete.");
                     run.Completed = DateTimeOffset.UtcNow;
-                },
-                NextState: WorkflowRunState.Complete),
+                    return WorkflowRunState.Complete;
+                }),
         };
 
         private static readonly IReadOnlyDictionary<WorkflowRunState, WorkflowStateTransition> CurrentStateToTransition = Transitions
@@ -80,21 +93,27 @@ namespace NuGet.Insights.Worker.Workflow
 
         private readonly WorkflowService _workflowService;
         private readonly WorkflowStorageService _storageService;
+        private readonly KustoIngestionStorageService _kustoIngestionStorageService;
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly ITelemetryClient _telemetryClient;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<WorkflowRunMessageProcessor> _logger;
 
         public WorkflowRunMessageProcessor(
             WorkflowService workflowService,
             WorkflowStorageService storageService,
+            KustoIngestionStorageService kustoIngestionStorageService,
             IMessageEnqueuer messageEnqueuer,
             ITelemetryClient telemetryClient,
+            IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<WorkflowRunMessageProcessor> logger)
         {
             _workflowService = workflowService;
             _storageService = storageService;
+            _kustoIngestionStorageService = kustoIngestionStorageService;
             _messageEnqueuer = messageEnqueuer;
             _telemetryClient = telemetryClient;
+            _options = options;
             _logger = logger;
         }
 
@@ -121,13 +140,14 @@ namespace NuGet.Insights.Worker.Workflow
                 }
                 else
                 {
+                    var nextState = await transition.TransitionAsync(this, run);
+
                     _telemetryClient.TrackMetric(
                         "Workflow.StateTransition",
                         1,
-                        new Dictionary<string, string> { { "NextState", transition.NextState.ToString() } });
-                    await transition.TransitionAsync(this, run);
+                        new Dictionary<string, string> { { "NextState", nextState.ToString() } });
+                    run.State = nextState;
 
-                    run.State = transition.NextState;
                     await _storageService.ReplaceRunAsync(run);
                 }
             }
@@ -136,7 +156,6 @@ namespace NuGet.Insights.Worker.Workflow
         private record WorkflowStateTransition(
             WorkflowRunState CurrentState,
             Func<WorkflowRunMessageProcessor, Task<bool>> IsIncompleteAsync,
-            Func<WorkflowRunMessageProcessor, WorkflowRun, Task> TransitionAsync,
-            WorkflowRunState NextState);
+            Func<WorkflowRunMessageProcessor, WorkflowRun, Task<WorkflowRunState>> TransitionAsync);
     }
 }

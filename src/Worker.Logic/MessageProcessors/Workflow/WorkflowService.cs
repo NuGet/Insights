@@ -74,6 +74,7 @@ namespace NuGet.Insights.Worker.Workflow
             var run = new WorkflowRun(StorageUtility.GenerateDescendingId().ToString())
             {
                 Created = DateTimeOffset.UtcNow,
+                AttemptCount = 1,
             };
             await _messageEnqueuer.EnqueueAsync(new[]
             {

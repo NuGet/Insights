@@ -175,6 +175,25 @@ namespace NuGet.Insights.Worker
             return await UpdateAsync(result.Scan);
         }
 
+        protected async Task<WorkflowRun> UpdateAsync(WorkflowRun run)
+        {
+            Assert.NotNull(run);
+            await ProcessQueueAsync(() => { }, async () =>
+            {
+                run = await WorkflowStorageService.GetRunAsync(run.GetRunId());
+
+                if (run.State != WorkflowRunState.Complete)
+                {
+                    await Task.Delay(TimeSpan.FromMilliseconds(100));
+                    return false;
+                }
+
+                return true;
+            });
+
+            return run;
+        }
+
         protected async Task<KustoIngestionEntity> UpdateAsync(KustoIngestionEntity ingestion)
         {
             Assert.NotNull(ingestion);
@@ -182,7 +201,7 @@ namespace NuGet.Insights.Worker
             {
                 ingestion = await KustoIngestionStorageService.GetIngestionAsync(ingestion.GetIngestionId());
 
-                if (ingestion.State != KustoIngestionState.Complete)
+                if (ingestion.State != KustoIngestionState.Complete && ingestion.State != KustoIngestionState.FailedValidation)
                 {
                     await Task.Delay(TimeSpan.FromMilliseconds(100));
                     return false;

@@ -23,6 +23,7 @@ namespace NuGet.Insights.Worker
             DisabledDrivers = new List<CatalogScanDriverType>();
             OldCatalogIndexScansToKeep = 49;
             OldWorkflowRunsToKeep = 49;
+            WorkflowMaxAttempts = 5;
 
             AutoStartCatalogScanUpdate = false;
             AutoStartDownloadToCsv = false;
@@ -85,6 +86,7 @@ namespace NuGet.Insights.Worker
             KustoTableNameFormat = "{0}";
             OldKustoIngestionsToKeep = 9;
             KustoIngestionMaxAttempts = 10;
+            KustoValidationMaxAttempts = 3;
         }
 
         public bool UseBulkEnqueueStrategy { get; set; }
@@ -100,6 +102,7 @@ namespace NuGet.Insights.Worker
         public List<CatalogScanDriverType> DisabledDrivers { get; set; }
         public int OldCatalogIndexScansToKeep { get; set; }
         public int OldWorkflowRunsToKeep { get; set; }
+        public int WorkflowMaxAttempts { get; set; }
 
         public bool AutoStartCatalogScanUpdate { get; set; }
         public bool AutoStartDownloadToCsv { get; set; }
@@ -167,5 +170,6 @@ namespace NuGet.Insights.Worker
         public string KustoTableNameFormat { get; set; }
         public int OldKustoIngestionsToKeep { get; set; }
         public int KustoIngestionMaxAttempts { get; set; }
+        public int KustoValidationMaxAttempts { get; set; }
     }
 }

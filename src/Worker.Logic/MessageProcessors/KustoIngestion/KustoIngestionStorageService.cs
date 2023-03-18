@@ -51,7 +51,16 @@ namespace NuGet.Insights.Worker.KustoIngestion
             var ingestions = await table
                 .QueryAsync<KustoIngestionEntity>(x => x.PartitionKey == KustoIngestionEntity.DefaultPartitionKey)
                 .ToListAsync();
-            return ingestions.Any(x => x.State != KustoIngestionState.Complete);
+            return ingestions.Any(x => x.State != KustoIngestionState.Complete && x.State != KustoIngestionState.FailedValidation);
+        }
+
+        public async Task<KustoIngestionState> GetLatestStateAsync()
+        {
+            var table = await GetKustoIngestionTableAsync();
+            var ingestions = await table
+                .QueryAsync<KustoIngestionEntity>(x => x.PartitionKey == KustoIngestionEntity.DefaultPartitionKey)
+                .ToListAsync();
+            return ingestions.OrderByDescending(x => x.Created).First().State;
         }
 
         public async Task DeleteOldIngestionsAsync(string currentIngestionId)
@@ -66,7 +75,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 .OrderByDescending(x => x.Created)
                 .Skip(_options.Value.OldCatalogIndexScansToKeep)
                 .OrderBy(x => x.Created)
-                .Where(x => x.State == KustoIngestionState.Complete)
+                .Where(x => x.State == KustoIngestionState.Complete || x.State == KustoIngestionState.FailedValidation)
                 .ToList();
             _logger.LogInformation("Deleting {Count} old Kusto ingestions.", oldIngestionsToDelete.Count);
 

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using NuGet.Insights.ReferenceTracking;
 
 namespace NuGet.Insights.Worker.ReferenceTracking
 {
@@ -13,6 +14,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
         private readonly ICleanupOrphanRecordsAdapter<T> _adapter;
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly TaskStateStorageService _taskStateStorageService;
+        private readonly ReferenceTracker _referenceTracker;
         private readonly SchemaSerializer _schemaSerializer;
 
         public CleanupOrphanRecordsService(
@@ -20,12 +22,14 @@ namespace NuGet.Insights.Worker.ReferenceTracking
             ICleanupOrphanRecordsAdapter<T> adapter,
             IMessageEnqueuer messageEnqueuer,
             TaskStateStorageService taskStateStorageService,
+            ReferenceTracker referenceTracker,
             SchemaSerializer schemaSerializer)
         {
             _leaseService = leaseService;
             _adapter = adapter;
             _messageEnqueuer = messageEnqueuer;
             _taskStateStorageService = taskStateStorageService;
+            _referenceTracker = referenceTracker;
             _schemaSerializer = schemaSerializer;
         }
 
@@ -34,6 +38,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
             await _leaseService.InitializeAsync();
             await _messageEnqueuer.InitializeAsync();
             await _taskStateStorageService.InitializeAsync(StorageSuffix);
+            await _referenceTracker.InitializeAsync();
         }
 
         private string OperationName => $"CleanupOrphans-{_adapter.OwnerType}-{_adapter.SubjectType}";

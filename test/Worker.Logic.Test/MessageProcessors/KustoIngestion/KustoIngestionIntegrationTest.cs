@@ -2,15 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Data;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Kusto.Data.Common;
 using Kusto.Ingest;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -49,6 +52,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 ingestion = await UpdateAsync(ingestion);
 
                 // Assert
+                Assert.Equal(KustoIngestionState.Complete, ingestion.State);
                 VerifyCommand(".drop table APackageManifestsZ_Temp ifexists", Times.Once());
                 VerifyCommandStartsWith(".create table APackageManifestsZ_Temp (", Times.Once());
                 VerifyCommand(".alter-merge table APackageManifestsZ_Temp policy retention softdelete = 30d", Times.Once());
@@ -135,6 +139,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 ingestion = await UpdateAsync(ingestion);
 
                 // Assert
+                Assert.Equal(KustoIngestionState.Complete, ingestion.State);
                 VerifyCommand(".drop table APackageManifestsZ_Temp ifexists", Times.Exactly(3));
                 VerifyCommandStartsWith(".create table APackageManifestsZ_Temp (", Times.Exactly(3));
                 VerifyCommand(".alter-merge table APackageManifestsZ_Temp policy retention softdelete = 30d", Times.Exactly(3));
@@ -166,6 +171,65 @@ namespace NuGet.Insights.Worker.KustoIngestion
             }
 
             public KustoIngestion_RetriesFailedBlob(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            {
+                FailFastLogLevel = LogLevel.None;
+                AssertLogLevel = LogLevel.None;
+            }
+        }
+
+        public class KustoIngestion_MarksFailureWhenValidationFailsTooManyTimes : KustoIngestionIntegrationTest
+        {
+            [Fact]
+            public async Task ExecuteAsync()
+            {
+                ConfigureWorkerSettings = x =>
+                {
+                    x.KustoTableNameFormat = "A{0}Z";
+                    x.AppendResultStorageBucketCount = 2;
+                    x.KustoValidationMaxAttempts = 1;
+                };
+
+                // Arrange
+                MockCslQueryProvider
+                    .Setup(x => x.ExecuteQueryAsync(
+                        It.IsAny<string>(),
+                        It.IsAny<string>(),
+                        It.IsAny<ClientRequestProperties>()))
+                    .ReturnsAsync(() =>
+                    {
+                        var mockReader = new Mock<IDataReader>();
+                        mockReader.SetupSequence(x => x.Read()).Returns(true).Returns(false);
+                        mockReader.Setup(x => x.GetValue(It.IsAny<int>())).Returns(new JValue((object)null));
+                        mockReader
+                            .SetupSequence(x => x.GetInt64(It.IsAny<int>()))
+                            .Returns(0)
+                            .Returns(1);
+                        return mockReader.Object;
+                    });
+
+                var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z");
+                var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
+
+                await CatalogScanService.InitializeAsync();
+                await SetCursorAsync(CatalogScanDriverType.LoadPackageManifest, max1);
+                await SetCursorAsync(CatalogScanDriverType.PackageManifestToCsv, min0);
+                await SetCursorAsync(CatalogScanDriverType.CatalogDataToCsv, min0);
+                var packageManifestToCsvResult = await CatalogScanService.UpdateAsync(CatalogScanDriverType.PackageManifestToCsv, max1);
+                var catalogDataToCsvResult = await CatalogScanService.UpdateAsync(CatalogScanDriverType.CatalogDataToCsv, max1);
+                await UpdateAsync(packageManifestToCsvResult.Scan);
+                await UpdateAsync(catalogDataToCsvResult.Scan);
+
+                await KustoIngestionService.InitializeAsync();
+
+                // Act
+                var ingestion = await KustoIngestionService.StartAsync();
+                ingestion = await UpdateAsync(ingestion);
+
+                // Assert
+                Assert.Equal(KustoIngestionState.FailedValidation, ingestion.State);
+            }
+
+            public KustoIngestion_MarksFailureWhenValidationFailsTooManyTimes(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
             {
                 FailFastLogLevel = LogLevel.None;
                 AssertLogLevel = LogLevel.None;

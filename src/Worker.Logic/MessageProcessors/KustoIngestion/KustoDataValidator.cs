@@ -45,7 +45,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             _logger = logger;
         }
 
-        public async Task ValidateAsync()
+        public async Task<bool> ValidateAsync()
         {
             var validations = new ConcurrentBag<Validation>(Enumerable
                 .Empty<Validation>()
@@ -108,10 +108,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 })
                 .ToList());
 
-            if (failures > 0)
-            {
-                throw new InvalidOperationException("At least one Kusto validation failed. Inspect the error logs.");
-            }
+            return failures == 0;
         }
 
         private async Task<IReadOnlyList<Validation>> GetIdentityValidationsAsync()

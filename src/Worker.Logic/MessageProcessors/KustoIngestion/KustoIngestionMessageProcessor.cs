@@ -162,12 +162,26 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
             if (ingestion.State == KustoIngestionState.Validating)
             {
-                if (dequeueCount > 5)
+                var validationAttempts = 0;
+                bool valid;
+                do
                 {
-                    throw new InvalidOperationException("The validation has failed too many times.");
-                }
+                    if (validationAttempts > 0)
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(10));
+                    }
 
-                await _kustoDataValidator.ValidateAsync();
+                    valid = await _kustoDataValidator.ValidateAsync();
+                    validationAttempts++;
+                }
+                while (!valid && validationAttempts < _options.Value.KustoValidationMaxAttempts);
+
+                if (!valid)
+                {
+                    _logger.LogWarning("The Kusto validation failed.");
+                    await CleanUpAndSetTerminalStateAsync(ingestion, KustoIngestionState.FailedValidation);
+                    return;
+                }
 
                 ingestion.State = KustoIngestionState.SwappingTables;
                 await _storageService.ReplaceIngestionAsync(ingestion);
@@ -192,15 +206,19 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
             if (ingestion.State == KustoIngestionState.Finalizing)
             {
-                await _storageService.DeleteChildTableAsync(ingestion.StorageSuffix);
-                await _storageService.DeleteOldIngestionsAsync(ingestion.GetIngestionId());
-
                 _logger.LogInformation("The Kusto ingestion is complete.");
-
-                ingestion.Completed = DateTimeOffset.UtcNow;
-                ingestion.State = KustoIngestionState.Complete;
-                await _storageService.ReplaceIngestionAsync(ingestion);
+                await CleanUpAndSetTerminalStateAsync(ingestion, KustoIngestionState.Complete);
             }
+        }
+
+        private async Task CleanUpAndSetTerminalStateAsync(KustoIngestionEntity ingestion, KustoIngestionState terminalState)
+        {
+            await _storageService.DeleteChildTableAsync(ingestion.StorageSuffix);
+            await _storageService.DeleteOldIngestionsAsync(ingestion.GetIngestionId());
+
+            ingestion.Completed = DateTimeOffset.UtcNow;
+            ingestion.State = terminalState;
+            await _storageService.ReplaceIngestionAsync(ingestion);
         }
 
         private async Task SwapIngestedTablesAsync(KustoIngestionEntity ingestion)

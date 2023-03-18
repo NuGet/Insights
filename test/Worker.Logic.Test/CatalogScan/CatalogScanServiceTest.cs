@@ -598,9 +598,9 @@ namespace NuGet.Insights.Worker
         {
             base.ConfigureHostBuilder(hostBuilder);
 
-            hostBuilder.ConfigureServices(x =>
+            hostBuilder.ConfigureServices(serviceCollection =>
             {
-                x.AddSingleton(RemoteCursorClient.Object);
+                serviceCollection.AddSingleton(RemoteCursorClient.Object);
             });
         }
 
