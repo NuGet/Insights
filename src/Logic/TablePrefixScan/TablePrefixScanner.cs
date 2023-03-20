@@ -58,6 +58,27 @@ namespace NuGet.Insights.TablePrefixScan
         public async Task<List<T>> ListAsync<T>(
             TableClient table,
             string partitionKeyPrefix,
+            string partitionKeyLowerBound,
+            string partitionKeyUpperBound,
+            IList<string> selectColumns,
+            int takeCount)
+            where T : class, ITableEntity, new()
+        {
+            return await ListAsync<T>(
+                table,
+                partitionKeyPrefix,
+                partitionKeyLowerBound,
+                partitionKeyUpperBound,
+                selectColumns,
+                takeCount,
+                expandPartitionKeys: true,
+                segmentsPerFirstPrefix: 1,
+                segmentsPerSubsequentPrefix: 1);
+        }
+
+        public async Task<List<T>> ListAsync<T>(
+            TableClient table,
+            string partitionKeyPrefix,
             IList<string> selectColumns,
             int takeCount,
             bool expandPartitionKeys,
@@ -68,6 +89,37 @@ namespace NuGet.Insights.TablePrefixScan
             var output = await ListAsync<T, T>(
                 table,
                 partitionKeyPrefix,
+                partitionKeyLowerBound: null,
+                partitionKeyUpperBound: null,
+                selectColumns,
+                takeCount,
+                expandPartitionKeys,
+                segmentsPerFirstPrefix,
+                segmentsPerSubsequentPrefix,
+                addSegment: (x, o) => o.AddRange(x));
+
+            _logger.LogInformation("Completed prefix scan. Found {Count} entities.", output.Count);
+
+            return output;
+        }
+
+        public async Task<List<T>> ListAsync<T>(
+            TableClient table,
+            string partitionKeyPrefix,
+            string partitionKeyLowerBound,
+            string partitionKeyUpperBound,
+            IList<string> selectColumns,
+            int takeCount,
+            bool expandPartitionKeys,
+            int segmentsPerFirstPrefix,
+            int segmentsPerSubsequentPrefix)
+            where T : class, ITableEntity, new()
+        {
+            var output = await ListAsync<T, T>(
+                table,
+                partitionKeyPrefix,
+                partitionKeyLowerBound,
+                partitionKeyUpperBound,
                 selectColumns,
                 takeCount,
                 expandPartitionKeys,
@@ -93,6 +145,8 @@ namespace NuGet.Insights.TablePrefixScan
             var output = await ListAsync<T, IReadOnlyList<T>>(
                 table,
                 partitionKeyPrefix,
+                partitionKeyLowerBound: null,
+                partitionKeyUpperBound: null,
                 selectColumns,
                 takeCount,
                 expandPartitionKeys,
@@ -108,6 +162,8 @@ namespace NuGet.Insights.TablePrefixScan
         private async Task<List<TOutput>> ListAsync<T, TOutput>(
             TableClient table,
             string partitionKeyPrefix,
+            string partitionKeyLowerBound,
+            string partitionKeyUpperBound,
             IList<string> selectColumns,
             int takeCount,
             bool expandPartitionKeys,
@@ -123,11 +179,15 @@ namespace NuGet.Insights.TablePrefixScan
             _logger.LogInformation(
                 "Starting prefix scan with " +
                 "partition key prefix '{Prefix}', " +
+                "partition key lower bound '{LowerBound}', " +
+                "partition key upper bound '{UpperBound}', " +
                 "select columns '{SelectColumns}', " +
                 "take count {TakeCount}, " +
                 "segments per first prefix {SegmentsPerFirstPrefix}, " +
                 "segments per subsequent prefix {SegmentsPerSubsequentPrefix}.",
                 partitionKeyPrefix,
+                partitionKeyLowerBound,
+                partitionKeyUpperBound,
                 selectColumns,
                 takeCount,
                 segmentsPerFirstPrefix,
@@ -135,7 +195,7 @@ namespace NuGet.Insights.TablePrefixScan
 
             var output = new List<TOutput>();
             var parameters = new TableQueryParameters(table, selectColumns, takeCount, expandPartitionKeys);
-            var start = new TablePrefixScanStart(parameters, partitionKeyPrefix);
+            var start = new TablePrefixScanStart(parameters, partitionKeyPrefix, partitionKeyLowerBound, partitionKeyUpperBound);
             var initialSteps = Start(start);
             initialSteps.Reverse();
             var remainingSteps = new Stack<TablePrefixScanStep>(initialSteps);
@@ -179,14 +239,43 @@ namespace NuGet.Insights.TablePrefixScan
             // Originally I have a NULL character '\0' for both the row key and partition key prefix lower bound but
             // the Azure Storage Emulator behaved different for this. It looked like it completely ignored the '\0'
             // included in the query. Real Azure Table Storage does not ignore the NULL byte.
-            if (start.PartitionKeyPrefix.Length > 0 && start.Parameters.ExpandPartitionKeys)
+
+            if (start.Parameters.ExpandPartitionKeys
+                && (start.PartitionKeyLowerBound is null || string.CompareOrdinal(start.PartitionKeyPrefix, start.PartitionKeyLowerBound) > 0)
+                && (start.PartitionKeyUpperBound is null || string.CompareOrdinal(start.PartitionKeyPrefix, start.PartitionKeyUpperBound) < 0))
             {
                 steps.Add(new TablePrefixScanPartitionKeyQuery(start.Parameters, nextDepth, start.PartitionKeyPrefix, rowKeySkip: null));
             }
-            steps.Add(new TablePrefixScanPrefixQuery(start.Parameters, nextDepth, start.PartitionKeyPrefix, start.PartitionKeyPrefix));
+
+            var defaultLowerBound = start.PartitionKeyPrefix;
+            var defaultUpperBound = start.PartitionKeyPrefix + char.MaxValue;
+
+            steps.Add(new TablePrefixScanPrefixQuery(
+                start.Parameters,
+                nextDepth,
+                partitionKeyPrefix: start.PartitionKeyPrefix,
+                partitionKeyLowerBound: Max(defaultLowerBound, start.PartitionKeyLowerBound ?? defaultLowerBound),
+                partitionKeyUpperBound: Min(defaultUpperBound, start.PartitionKeyUpperBound ?? defaultUpperBound)));
 
             return steps;
         }
+
+        /*
+        public List<TablePrefixScanStep> Start(TableRangeScanStart start)
+        {
+            var steps = new List<TablePrefixScanStep>();
+            var nextDepth = start.Depth + 1;
+
+            steps.Add(new TablePrefixScanPrefixQuery(
+                start.Parameters,
+                nextDepth,
+                partitionKeyPrefix: string.Empty,
+                partitionKeyLowerBound: start.PartitionKeyLowerBound,
+                partitionKeyUpperBound: start.PartitionKeyUpperBound));
+
+            return steps;
+        }
+        */
 
         public async Task<List<TablePrefixScanStep>> ExecutePartitionKeyQueryAsync<T>(TablePrefixScanPartitionKeyQuery query) where T : class, ITableEntity, new()
         {
@@ -276,7 +365,7 @@ namespace NuGet.Insights.TablePrefixScan
             //    QUERY = get 3 entities where PK > '$2\uffff' and PK < '$\uffff'
             //
             var output = new List<TablePrefixScanStep>();
-            var upperBound = query.PartitionKeyPrefix + char.MaxValue;
+            var upperBound = query.PartitionKeyUpperBound;
             string lastPartitionKey = null;
             var segmentsPerPrefix = segmentsPerFirstPrefix;
 
@@ -374,8 +463,23 @@ namespace NuGet.Insights.TablePrefixScan
 
                 // Expand the next prefix of the last partition key.
                 var nextPrefix = IncrementPrefix(step.PartitionKeyPrefix, last.PartitionKey);
-                yield return new TablePrefixScanPrefixQuery(step.Parameters, nextDepth, nextPrefix, last.PartitionKey);
+                yield return new TablePrefixScanPrefixQuery(
+                    step.Parameters,
+                    nextDepth,
+                    partitionKeyPrefix: nextPrefix,
+                    partitionKeyLowerBound: Max(step.PartitionKeyLowerBound, last.PartitionKey),
+                    partitionKeyUpperBound: Min(step.PartitionKeyUpperBound, nextPrefix + char.MaxValue));
             }
+        }
+
+        private static string Min(string a, string b)
+        {
+            return string.CompareOrdinal(a, b) < 0 ? a : b;
+        }
+
+        private static string Max(string a, string b)
+        {
+            return string.CompareOrdinal(a, b) > 0 ? a : b;
         }
     }
 }

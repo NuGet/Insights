@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -237,6 +237,95 @@ namespace NuGet.Insights.TablePrefixScan
                 actual.Select(x => x.PartitionKey).Distinct().ToList());
         }
 
+        public static TheoryData<string, string, string, string, string, int, int> HandlesUpperAndLowerBoundsTestData
+        {
+            get
+            {
+                var data = new TheoryData<string, string, string, string, string, int, int>();
+
+                foreach (var takeCount in new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1000 })
+                {
+                    data.Add("", "___", "000", null, null, 0, takeCount);
+                    data.Add("", "000", "___", "AK1/R1", "ZK1/R1", 23, takeCount);
+                    data.Add("", "BB", "CC", null, null, 0, takeCount);
+                    data.Add("", null, "PPPP", "/R1", "PPPN/R1", 16, takeCount);
+                    data.Add("A", "PPPP", "ZZZZ", null, null, 0, takeCount);
+                    data.Add("AK1", "-", "_", "AK1/R1", "AK1/R1", 1, takeCount);
+                    data.Add("AK1", "-", "~", "AK1/R1", "AK1/R1", 1, takeCount);
+                    data.Add("AK1", "-", null, "AK1/R1", "AK1/R1", 1, takeCount);
+                    data.Add("AK1", null, "_", "AK1/R1", "AK1/R1", 1, takeCount);
+                    data.Add("AK1", null, "~", "AK1/R1", "AK1/R1", 1, takeCount);
+                    data.Add("P", "PA", "PN", "PM/R1", "PM/R1", 1, takeCount);
+                    data.Add("P", "PA", "PPPP", "PM/R1", "PPPN/R1", 12, takeCount);
+                    data.Add("P", "PPAAAAAAAAAA", null, "PPM/R1", "PZ/R1", 15, takeCount);
+                    data.Add("P", null, "PPPP", "P/R1", "PPPN/R1", 14, takeCount);
+                    data.Add("PP", "A", null, "PP/R1", "PPZ/R1", 16, takeCount);
+                    data.Add("PPP", "AAAA", "ZZZZ", "PPP/R1", "PPPZ/R1", 11, takeCount);
+                    data.Add("PPPP", "PPPP", "PPPPPPP", "PPPPP/R1", "PPPPPP/R1", 2, takeCount);
+                    data.Add("PPPP", "PPPPA", "PPPPPPP", "PPPPP/R1", "PPPPPP/R1", 2, takeCount);
+                    data.Add("PPPP", "PPPPP", "PPPPPPP", "PPPPPP/R1", "PPPPPP/R1", 1, takeCount);
+                    data.Add("PPPP", "PPPPPP", "PPPPPPP", null, null, 0, takeCount);
+                }
+
+                return data;
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HandlesUpperAndLowerBoundsTestData))]
+        public async Task HandlesUpperAndLowerBounds(string prefix, string lowerBound, string upperBound, string first, string last, int expectedCount, int takeCount)
+        {
+            (var table, var all) = await _fixture.SortAndInsertAsync(Enumerable
+                .Empty<TestEntity>()
+                .Concat(GenerateTestEntities("AK", 1, 1))
+                .Concat(new[]
+                {
+                    new TestEntity("", "R1"),
+                    new TestEntity("P", "R1"),
+                    new TestEntity("PA", "R1"),
+                    new TestEntity("PM", "R1"),
+                    new TestEntity("PN", "R1"),
+                    new TestEntity("PP", "R1"),
+                    new TestEntity("PPA", "R1"),
+                    new TestEntity("PPM", "R1"),
+                    new TestEntity("PPN", "R1"),
+                    new TestEntity("PPP", "R1"),
+                    new TestEntity("PPP", "R2"),
+                    new TestEntity("PPP", "R3"),
+                    new TestEntity("PPPA", "R1"),
+                    new TestEntity("PPPM", "R1"),
+                    new TestEntity("PPPN", "R1"),
+                    new TestEntity("PPPP", "R1"),
+                    new TestEntity("PPPPP", "R1"),
+                    new TestEntity("PPPPPP", "R1"),
+                    new TestEntity("PPPPPPP", "R1"),
+                    new TestEntity("PPPZ", "R1"),
+                    new TestEntity("PPZ", "R1"),
+                    new TestEntity("PZ", "R1"),
+                })
+                .Concat(GenerateTestEntities("ZK", 1, 1)));
+            var expected = all.Where(x =>
+                x.PartitionKey.StartsWith(prefix)
+                && (lowerBound is null || string.CompareOrdinal(x.PartitionKey, lowerBound) > 0)
+                && (upperBound is null || string.CompareOrdinal(x.PartitionKey, upperBound) < 0)).ToList();
+
+            var actual = await Target.ListAsync<TestEntity>(
+                table,
+                prefix,
+                lowerBound,
+                upperBound,
+                MinSelectColumns,
+                takeCount);
+
+            Assert.Equal(expectedCount, actual.Count);
+            if (expectedCount > 0)
+            {
+                Assert.Equal(first, actual.First().ToString());
+                Assert.Equal(last, actual.Last().ToString());
+            }
+            Assert.Equal(expected, actual);
+        }
+
         [Theory]
         [MemberData(nameof(IncludesPartitionKeyMatchingPrefixTestData))]
         public async Task IncludesPartitionKeyMatchingPrefix(int prefixLength, int expectedCount, int takeCount)
@@ -249,18 +338,18 @@ namespace NuGet.Insights.TablePrefixScan
                     new TestEntity("P", "R1"),
                     new TestEntity("PA", "R1"),
                     new TestEntity("PP", "R1"),
-                    new TestEntity("PZ", "R1"),
                     new TestEntity("PPA", "R1"),
                     new TestEntity("PPP", "R1"),
                     new TestEntity("PPP", "R2"),
                     new TestEntity("PPP", "R3"),
-                    new TestEntity("PPZ", "R1"),
                     new TestEntity("PPPA", "R1"),
                     new TestEntity("PPPP", "R1"),
-                    new TestEntity("PPPZ", "R1"),
                     new TestEntity("PPPPP", "R1"),
                     new TestEntity("PPPPPP", "R1"),
                     new TestEntity("PPPPPPP", "R1"),
+                    new TestEntity("PPPZ", "R1"),
+                    new TestEntity("PPZ", "R1"),
+                    new TestEntity("PZ", "R1"),
                 })
                 .Concat(GenerateTestEntities("ZK", 1, 1)));
             var prefix = new string('P', prefixLength);

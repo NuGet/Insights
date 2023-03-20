@@ -21,5 +21,8 @@ namespace NuGet.Insights.Worker
 
         [JsonPropertyName("m")]
         public string PartitionKeyLowerBound { get; set; }
+
+        [JsonPropertyName("u")]
+        public string PartitionKeyUpperBound { get; set; }
     }
 }

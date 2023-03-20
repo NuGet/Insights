@@ -109,7 +109,9 @@ namespace NuGet.Insights.Worker
                     segmentsPerSubsequentPrefix = startParameters.SegmentsPerSubsequentPrefix;
                     currentStep = new TablePrefixScanStart(
                         tableQueryParameters,
-                        message.PartitionKeyPrefix);
+                        message.PartitionKeyPrefix,
+                        partitionKeyLowerBound: null,
+                        partitionKeyUpperBound: null);
                     break;
 
                 case TablePrefixScanPartitionKeyQueryParameters partitionKeyQueryParameters:
@@ -129,7 +131,8 @@ namespace NuGet.Insights.Worker
                         tableQueryParameters,
                         prefixQueryParameters.Depth,
                         prefixQueryParameters.PartitionKeyPrefix,
-                        prefixQueryParameters.PartitionKeyLowerBound);
+                        prefixQueryParameters.PartitionKeyLowerBound,
+                        prefixQueryParameters.PartitionKeyUpperBound);
                     break;
 
                 default:
@@ -208,6 +211,7 @@ namespace NuGet.Insights.Worker
                                 Depth = prefixQuery.Depth,
                                 PartitionKeyPrefix = prefixQuery.PartitionKeyPrefix,
                                 PartitionKeyLowerBound = prefixQuery.PartitionKeyLowerBound,
+                                PartitionKeyUpperBound = prefixQuery.PartitionKeyUpperBound,
                             },
                             taskStates));
                         break;
