@@ -18,6 +18,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         private readonly CsvResultStorageContainers _csvRecordContainers;
         private readonly ICslAdminProvider _kustoAdminClient;
         private readonly IMessageEnqueuer _messageEnqueuer;
+        private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<KustoContainerIngestionMessageProcessor> _logger;
 
@@ -27,6 +28,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             CsvResultStorageContainers csvRecordContainers,
             ICslAdminProvider kustoAdminClient,
             IMessageEnqueuer messageEnqueuer,
+            ITelemetryClient telemetryClient,
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<KustoContainerIngestionMessageProcessor> logger)
         {
@@ -35,6 +37,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             _csvRecordContainers = csvRecordContainers;
             _kustoAdminClient = kustoAdminClient;
             _messageEnqueuer = messageEnqueuer;
+            _telemetryClient = telemetryClient;
             _options = options;
             _logger = logger;
         }
@@ -60,6 +63,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 }
 
                 container.State = KustoContainerIngestionState.CreatingTable;
+                container.Started = DateTimeOffset.UtcNow;
                 await _storageService.ReplaceContainerAsync(container);
             }
 
@@ -148,6 +152,11 @@ namespace NuGet.Insights.Worker.KustoIngestion
                         .Select(x => $"{x.Key} ({x.Count()}x)")
                         .ToList();
 
+                    _telemetryClient.TrackMetric(
+                        nameof(KustoContainerIngestionMessageProcessor) + ".Failed.ElapsedMs",
+                        (DateTimeOffset.UtcNow - container.Started.Value).TotalMilliseconds,
+                        new Dictionary<string, string> { { "ContainerName", container.GetContainerName() } });
+
                     _logger.LogWarning(
                         "There are {Count} blobs in container {ContainerName} that were not ingested properly. The states were: {StateSummary}",
                         failedCount,
@@ -159,6 +168,11 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 }
                 else
                 {
+                    _telemetryClient.TrackMetric(
+                        nameof(KustoContainerIngestionMessageProcessor) + ".Complete.ElapsedMs",
+                        (DateTimeOffset.UtcNow - container.Started.Value).TotalMilliseconds,
+                        new Dictionary<string, string> { { "ContainerName", container.GetContainerName() } });
+
                     container.State = KustoContainerIngestionState.Complete;
                     await _storageService.ReplaceContainerAsync(container);
                 }

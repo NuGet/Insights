@@ -18,6 +18,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly ICslAdminProvider _kustoAdminClient;
         private readonly KustoDataValidator _kustoDataValidator;
+        private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<KustoIngestionMessageProcessor> _logger;
 
@@ -27,6 +28,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             IMessageEnqueuer messageEnqueuer,
             ICslAdminProvider kustoAdminClient,
             KustoDataValidator kustoDataValidator,
+            ITelemetryClient telemetryClient,
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<KustoIngestionMessageProcessor> logger)
         {
@@ -35,6 +37,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             _messageEnqueuer = messageEnqueuer;
             _kustoAdminClient = kustoAdminClient;
             _kustoDataValidator = kustoDataValidator;
+            _telemetryClient = telemetryClient;
             _options = options;
             _logger = logger;
         }
@@ -52,7 +55,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             {
                 _logger.LogInformation("The Kusto ingestion is starting.");
 
-                ingestion.Created = DateTimeOffset.UtcNow;
+                ingestion.Started = DateTimeOffset.UtcNow;
                 ingestion.State = KustoIngestionState.Expanding;
                 ingestion.AttemptCount = 1;
                 await _storageService.ReplaceIngestionAsync(ingestion);
@@ -90,6 +93,11 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 var retryingContainers = containers.Where(x => x.State == KustoContainerIngestionState.Retrying).ToList();
                 foreach (var container in retryingContainers)
                 {
+                    _telemetryClient.TrackMetric(
+                        nameof(KustoIngestionMessageProcessor) + ".RetryingContainer.ElapsedMs",
+                        (DateTimeOffset.UtcNow - container.Started.Value).TotalMilliseconds,
+                        new Dictionary<string, string> { { "ContainerName", container.GetContainerName() } });
+
                     container.State = KustoContainerIngestionState.Created;
 
                     var blobs = await _storageService.GetBlobsAsync(container);
@@ -141,6 +149,11 @@ namespace NuGet.Insights.Worker.KustoIngestion
                         throw new InvalidOperationException($"At least one container failed to be ingested into Kusto, after {ingestion.AttemptCount} attempts.");
                     }
 
+                    _telemetryClient.TrackMetric(
+                        nameof(KustoIngestionMessageProcessor) + ".Retrying.ElapsedMs",
+                        (DateTimeOffset.UtcNow - ingestion.Started.Value).TotalMilliseconds,
+                        new Dictionary<string, string>());
+
                     ingestion.AttemptCount++;
                     ingestion.State = KustoIngestionState.Retrying;
                     await _storageService.ReplaceIngestionAsync(ingestion);
@@ -168,6 +181,11 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 {
                     if (validationAttempts > 0)
                     {
+                        _telemetryClient.TrackMetric(
+                            nameof(KustoIngestionMessageProcessor) + ".RetryingValidation.ElapsedMs",
+                            (DateTimeOffset.UtcNow - ingestion.Started.Value).TotalMilliseconds,
+                            new Dictionary<string, string>());
+
                         await Task.Delay(TimeSpan.FromSeconds(10));
                     }
 
@@ -178,6 +196,11 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
                 if (!valid)
                 {
+                    _telemetryClient.TrackMetric(
+                        nameof(KustoIngestionMessageProcessor) + ".FailedValidation.ElapsedMs",
+                        (DateTimeOffset.UtcNow - ingestion.Started.Value).TotalMilliseconds,
+                        new Dictionary<string, string>());
+
                     _logger.LogWarning("The Kusto validation failed.");
                     await CleanUpAndSetTerminalStateAsync(ingestion, KustoIngestionState.FailedValidation);
                     return;
@@ -206,6 +229,11 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
             if (ingestion.State == KustoIngestionState.Finalizing)
             {
+                _telemetryClient.TrackMetric(
+                    nameof(KustoIngestionMessageProcessor) + ".Complete.ElapsedMs",
+                    (DateTimeOffset.UtcNow - ingestion.Started.Value).TotalMilliseconds,
+                    new Dictionary<string, string>());
+
                 _logger.LogInformation("The Kusto ingestion is complete.");
                 await CleanUpAndSetTerminalStateAsync(ingestion, KustoIngestionState.Complete);
             }

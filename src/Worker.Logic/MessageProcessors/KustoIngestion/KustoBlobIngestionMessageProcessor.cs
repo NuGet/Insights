@@ -52,7 +52,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             var blob = await _storageService.GetBlobAsync(message.StorageSuffix, message.ContainerName, message.BlobName);
             if (blob == null)
             {
-                _logger.LogWarning("No matching Kusto container ingestion was found.");
+                _logger.LogWarning("No matching Kusto blob ingestion was found.");
                 return;
             }
 
@@ -130,6 +130,16 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
                 if (duration > _options.Value.KustoBlobIngestionTimeout)
                 {
+                    _telemetryClient.TrackMetric(
+                        nameof(KustoBlobIngestionMessageProcessor) + ".TimedOut.ElapsedMs",
+                        duration.TotalMilliseconds,
+                        new Dictionary<string, string>
+                        {
+                            { "ContainerName", blob.GetContainerName() },
+                            { "BlobName", blob.GetBlobName() },
+                            { "SourceId", blob.SourceId.ToString() },
+                        });
+
                     _logger.LogWarning(
                         "The ingestion of blob {ContainerName}{BlobName} timed out after {Duration}.",
                         blob.GetContainerName(),
@@ -147,6 +157,17 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 }
                 else if (statusList.Any(x => x.Status != Status.Succeeded))
                 {
+                    _telemetryClient.TrackMetric(
+                        nameof(KustoBlobIngestionMessageProcessor) + ".Failed.ElapsedMs",
+                        duration.TotalMilliseconds,
+                        new Dictionary<string, string>
+                        {
+                            { "ContainerName", blob.GetContainerName() },
+                            { "BlobName", blob.GetBlobName() },
+                            { "SourceId", blob.SourceId.ToString() },
+                            { "StatusSummary", string.Join(", ", statusSummary) },
+                        });
+
                     _logger.LogWarning(
                         "The ingestion of blob {ContainerName}{BlobName} did not succeed. The statuses were: {StatusSummary}",
                         blob.GetContainerName(),
@@ -158,6 +179,11 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 }
                 else
                 {
+                    _telemetryClient.TrackMetric(
+                        nameof(KustoBlobIngestionMessageProcessor) + ".Complete.ElapsedMs",
+                        duration.TotalMilliseconds,
+                        new Dictionary<string, string>());
+
                     _logger.LogInformation(
                         "The ingestion of blob {ContainerName}{BlobName} is complete.",
                         blob.GetContainerName(),
