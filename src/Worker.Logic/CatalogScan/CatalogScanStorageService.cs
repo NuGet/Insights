@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -72,6 +72,11 @@ namespace NuGet.Insights.Worker
         public async Task<IReadOnlyList<CatalogLeafScan>> GetLeafScansAsync(string storageSuffix, string scanId, string pageId)
         {
             var table = await GetLeafScanTableAsync(storageSuffix);
+            return await GetLeafScansAsync(table, scanId, pageId);
+        }
+
+        private async Task<IReadOnlyList<CatalogLeafScan>> GetLeafScansAsync(TableClient table, string scanId, string pageId)
+        {
             return await table
                 .QueryAsync<CatalogLeafScan>(x => x.PartitionKey == CatalogLeafScan.GetPartitionKey(scanId, pageId))
                 .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
@@ -116,12 +121,27 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        public async Task InsertAsync(IReadOnlyList<CatalogLeafScan> leafScans)
+        public async Task InsertMissingAsync(IReadOnlyList<CatalogLeafScan> leafScans)
         {
-            foreach (var group in leafScans.GroupBy(x => x.StorageSuffix))
+            foreach (var group in leafScans.GroupBy(x => new { x.StorageSuffix, x.ScanId, x.PageId }))
             {
-                var table = await GetLeafScanTableAsync(group.Key);
-                await SubmitBatchesAsync(group.Key, table, group, (b, i) => b.AddEntity(i));
+                var table = await GetLeafScanTableAsync(group.Key.StorageSuffix);
+                var createdLeaves = await GetLeafScansAsync(table, group.Key.ScanId, group.Key.PageId);
+
+                var allUrls = leafScans.Select(x => x.Url).ToHashSet();
+                var createdUrls = createdLeaves.Select(x => x.Url).ToHashSet();
+                var uncreatedUrls = allUrls.Except(createdUrls).ToHashSet();
+
+                if (createdUrls.Except(allUrls).Any())
+                {
+                    throw new InvalidOperationException("There should not be any extra leaf scan entities.");
+                }
+
+                var uncreatedLeafScans = leafScans
+                    .Where(x => uncreatedUrls.Contains(x.Url))
+                    .ToList();
+
+                await SubmitBatchesAsync(group.Key.StorageSuffix, table, group, (b, i) => b.AddEntity(i));
             }
         }
 

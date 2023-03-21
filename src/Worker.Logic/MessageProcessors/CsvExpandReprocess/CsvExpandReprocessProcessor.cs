@@ -73,21 +73,10 @@ namespace NuGet.Insights.Worker
                     PackageVersion = x.LeafItem.PackageVersion,
                 })
                 .GroupBy(x => x.Url)
-                .Select(g => g.OrderByDescending(x => x.CommitTimestamp).First());
+                .Select(g => g.OrderByDescending(x => x.CommitTimestamp).First())
+                .ToList();
 
-            foreach (var leafScans in reprocessLeaves.GroupBy(x => new { x.StorageSuffix, x.ScanId, x.PageId }))
-            {
-                var createdLeaves = await _catalogScanStorageService.GetLeafScansAsync(leafScans.Key.StorageSuffix, leafScans.Key.ScanId, leafScans.Key.PageId);
-
-                var allUrls = leafScans.Select(x => x.Url).ToHashSet();
-                var createdUrls = createdLeaves.Select(x => x.Url).ToHashSet();
-                var uncreatedUrls = allUrls.Except(createdUrls).ToHashSet();
-
-                var uncreatedLeafScans = leafScans
-                    .Where(x => uncreatedUrls.Contains(x.Url))
-                    .ToList();
-                await _catalogScanStorageService.InsertAsync(uncreatedLeafScans);
-            }
+            await _catalogScanStorageService.InsertMissingAsync(reprocessLeaves);
 
             await _taskStateStorageService.DeleteAsync(taskState);
         }
