@@ -70,7 +70,10 @@ namespace NuGet.Insights.Worker
 
         private async Task ProcessSerialAsync(TableScanMessage<T> message)
         {
-            if (message.PartitionKeyPrefix != string.Empty || !message.ExpandPartitionKeys)
+            if (message.PartitionKeyPrefix != string.Empty
+                || message.PartitionKeyLowerBound is not null
+                || message.PartitionKeyUpperBound is not null
+                || !message.ExpandPartitionKeys)
             {
                 throw new NotImplementedException();
             }
@@ -110,8 +113,8 @@ namespace NuGet.Insights.Worker
                     currentStep = new TablePrefixScanStart(
                         tableQueryParameters,
                         message.PartitionKeyPrefix,
-                        partitionKeyLowerBound: null,
-                        partitionKeyUpperBound: null);
+                        message.PartitionKeyLowerBound,
+                        message.PartitionKeyUpperBound);
                     break;
 
                 case TablePrefixScanPartitionKeyQueryParameters partitionKeyQueryParameters:
@@ -266,6 +269,8 @@ namespace NuGet.Insights.Worker
                 TakeCount = originalMessage.TakeCount,
                 ExpandPartitionKeys = originalMessage.ExpandPartitionKeys,
                 PartitionKeyPrefix = originalMessage.PartitionKeyPrefix,
+                PartitionKeyLowerBound = originalMessage.PartitionKeyLowerBound,
+                PartitionKeyUpperBound = originalMessage.PartitionKeyUpperBound,
                 ScanParameters = serializedParameters.AsJsonElement(),
                 DriverParameters = originalMessage.DriverParameters,
             };

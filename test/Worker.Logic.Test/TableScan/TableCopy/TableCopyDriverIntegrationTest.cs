@@ -28,7 +28,7 @@ namespace NuGet.Insights.Worker.TableCopy
             [Fact]
             public Task ExecuteAsync()
             {
-                return CopyAsync(TableScanStrategy.Serial);
+                return CopyAsync(TableScanStrategy.Serial, lowerBound: null, upperBound: null);
             }
         }
 
@@ -41,11 +41,24 @@ namespace NuGet.Insights.Worker.TableCopy
             [Fact]
             public Task ExecuteAsync()
             {
-                return CopyAsync(TableScanStrategy.PrefixScan);
+                return CopyAsync(TableScanStrategy.PrefixScan, lowerBound: null, upperBound: null);
             }
         }
 
-        private async Task CopyAsync(TableScanStrategy strategy)
+        public class CopyAsync_PrefixScan_WithBounds : TableCopyDriverIntegrationTest
+        {
+            public CopyAsync_PrefixScan_WithBounds(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            {
+            }
+
+            [Fact]
+            public Task ExecuteAsync()
+            {
+                return CopyAsync(TableScanStrategy.PrefixScan, lowerBound: "dexih.connections.bbbbb", upperBound: "uuuuu");
+            }
+        }
+
+        private async Task CopyAsync(TableScanStrategy strategy, string lowerBound, string upperBound)
         {
             // Arrange
             var min0 = DateTimeOffset.Parse("2020-11-27T20:58:24.1558179Z");
@@ -74,6 +87,8 @@ namespace NuGet.Insights.Worker.TableCopy
                 Options.Value.LatestPackageLeafTableName,
                 destTableName,
                 partitionKeyPrefix: string.Empty,
+                partitionKeyLowerBound: lowerBound,
+                partitionKeyUpperBound: upperBound,
                 strategy,
                 takeCount: 10,
                 segmentsPerFirstPrefix: 1,
@@ -81,8 +96,17 @@ namespace NuGet.Insights.Worker.TableCopy
             await UpdateAsync(taskStateKey);
 
             // Assert
-            var sourceEntities = await sourceTable.QueryAsync<LatestPackageLeaf>().ToListAsync();
+            var allSourceEntities = (await sourceTable.QueryAsync<LatestPackageLeaf>().ToListAsync()).ToList();
+            var sourceEntities = allSourceEntities
+                .Where(x => lowerBound is null || string.CompareOrdinal(x.PartitionKey, lowerBound) > 0)
+                .Where(x => upperBound is null || string.CompareOrdinal(x.PartitionKey, upperBound) < 0)
+                .ToList();
             var destinationEntities = await destinationTable.QueryAsync<LatestPackageLeaf>().ToListAsync();
+
+            if (lowerBound is not null || upperBound is not null)
+            {
+                Assert.True(allSourceEntities.Count > sourceEntities.Count);
+            }
 
             Assert.All(sourceEntities.Zip(destinationEntities), pair =>
             {

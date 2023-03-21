@@ -31,6 +31,12 @@ namespace NuGet.Insights.Worker
         [JsonPropertyName("p")]
         public string PartitionKeyPrefix { get; set; }
 
+        [JsonPropertyName("m")]
+        public string PartitionKeyLowerBound { get; set; }
+
+        [JsonPropertyName("u")]
+        public string PartitionKeyUpperBound { get; set; }
+
         [JsonPropertyName("e")]
         public bool ExpandPartitionKeys { get; set; }
 
