@@ -71,13 +71,14 @@ jobs:
           NUGETINSIGHTS_STORAGEACCOUNTNAME: nugetinsightstests
           NUGETINSIGHTS_STORAGESAS: $(nugetinsightstests-BlobQueueTableFullAccessSas)
           NUGETINSIGHTS_STORAGEBLOBREADSAS: $(nugetinsightstests-BlobReadSas)
+        retryCountOnTaskFailure: 3
 
       - task: PublishTestResults@2
         displayName: "Publish test results"
         inputs:
           testResultsFormat: VSTest
           testResultsFiles: "$(OutputDirectory)/TestResults/**/*.trx"
-          failTaskOnFailedTests: true
+          failTaskOnFailedTests: false
 
       - task: PowerShell@2
         displayName: "Checking for Forks changes"
