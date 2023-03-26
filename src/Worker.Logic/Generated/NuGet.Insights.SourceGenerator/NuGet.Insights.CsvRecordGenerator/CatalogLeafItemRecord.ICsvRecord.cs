@@ -25,7 +25,15 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
         Type: string,
         Url: string,
         PageUrl: string,
-        IsListed: bool
+        Published: datetime,
+        IsListed: bool,
+        Created: datetime,
+        LastEdited: datetime,
+        PackageSize: long,
+        PackageHash: string,
+        PackageHashAlgorithm: string,
+        Deprecation: dynamic,
+        Vulnerabilities: dynamic
     );
 
     .alter-merge table CatalogLeafItems policy retention softdelete = 30d;
@@ -54,17 +62,25 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
         '{"Column":"Type","DataType":"string","Properties":{"Ordinal":6}},'
         '{"Column":"Url","DataType":"string","Properties":{"Ordinal":7}},'
         '{"Column":"PageUrl","DataType":"string","Properties":{"Ordinal":8}},'
-        '{"Column":"IsListed","DataType":"bool","Properties":{"Ordinal":9}}'
+        '{"Column":"Published","DataType":"datetime","Properties":{"Ordinal":9}},'
+        '{"Column":"IsListed","DataType":"bool","Properties":{"Ordinal":10}},'
+        '{"Column":"Created","DataType":"datetime","Properties":{"Ordinal":11}},'
+        '{"Column":"LastEdited","DataType":"datetime","Properties":{"Ordinal":12}},'
+        '{"Column":"PackageSize","DataType":"long","Properties":{"Ordinal":13}},'
+        '{"Column":"PackageHash","DataType":"string","Properties":{"Ordinal":14}},'
+        '{"Column":"PackageHashAlgorithm","DataType":"string","Properties":{"Ordinal":15}},'
+        '{"Column":"Deprecation","DataType":"dynamic","Properties":{"Ordinal":16}},'
+        '{"Column":"Vulnerabilities","DataType":"dynamic","Properties":{"Ordinal":17}}'
     ']'
 
     */
     partial record CatalogLeafItemRecord
     {
-        public int FieldCount => 10;
+        public int FieldCount => 18;
 
         public void WriteHeader(TextWriter writer)
         {
-            writer.WriteLine("CommitId,CommitTimestamp,LowerId,Identity,Id,Version,Type,Url,PageUrl,IsListed");
+            writer.WriteLine("CommitId,CommitTimestamp,LowerId,Identity,Id,Version,Type,Url,PageUrl,Published,IsListed,Created,LastEdited,PackageSize,PackageHash,PackageHashAlgorithm,Deprecation,Vulnerabilities");
         }
 
         public void Write(List<string> fields)
@@ -78,7 +94,15 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             fields.Add(Type.ToString());
             fields.Add(Url);
             fields.Add(PageUrl);
+            fields.Add(CsvUtility.FormatDateTimeOffset(Published));
             fields.Add(CsvUtility.FormatBool(IsListed));
+            fields.Add(CsvUtility.FormatDateTimeOffset(Created));
+            fields.Add(CsvUtility.FormatDateTimeOffset(LastEdited));
+            fields.Add(PackageSize.ToString());
+            fields.Add(PackageHash);
+            fields.Add(PackageHashAlgorithm);
+            fields.Add(Deprecation);
+            fields.Add(Vulnerabilities);
         }
 
         public void Write(TextWriter writer)
@@ -101,7 +125,23 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, PageUrl);
             writer.Write(',');
+            writer.Write(CsvUtility.FormatDateTimeOffset(Published));
+            writer.Write(',');
             writer.Write(CsvUtility.FormatBool(IsListed));
+            writer.Write(',');
+            writer.Write(CsvUtility.FormatDateTimeOffset(Created));
+            writer.Write(',');
+            writer.Write(CsvUtility.FormatDateTimeOffset(LastEdited));
+            writer.Write(',');
+            writer.Write(PackageSize);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, PackageHash);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, PackageHashAlgorithm);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, Deprecation);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, Vulnerabilities);
             writer.WriteLine();
         }
 
@@ -125,7 +165,23 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, PageUrl);
             await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(Published));
+            await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatBool(IsListed));
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(Created));
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(LastEdited));
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(PackageSize.ToString());
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, PackageHash);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, PackageHashAlgorithm);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, Deprecation);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, Vulnerabilities);
             await writer.WriteLineAsync();
         }
 
@@ -142,7 +198,15 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
                 Type = Enum.Parse<NuGet.Insights.CatalogLeafType>(getNextField()),
                 Url = getNextField(),
                 PageUrl = getNextField(),
+                Published = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
                 IsListed = CsvUtility.ParseNullable(getNextField(), bool.Parse),
+                Created = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
+                LastEdited = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
+                PackageSize = CsvUtility.ParseNullable(getNextField(), long.Parse),
+                PackageHash = getNextField(),
+                PackageHashAlgorithm = getNextField(),
+                Deprecation = getNextField(),
+                Vulnerabilities = getNextField(),
             };
         }
     }

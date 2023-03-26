@@ -17,8 +17,8 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
         private const string CatalogDataToCsv_VulnerabilitiesDir = nameof(CatalogDataToCsv_Vulnerabilities);
         private const string CatalogDataToCsv_WithDuplicatesDir = nameof(CatalogDataToCsv_WithDuplicates);
         private const string CatalogDataToCsv_WithDeleteDir = nameof(CatalogDataToCsv_WithDelete);
-        private const string CatalogDataToCsv_WithSpecialK_NLSDir = nameof(CatalogDataToCsv_WithSpecialK_NLS);
-        private const string CatalogDataToCsv_WithSpecialK_ICUDir = nameof(CatalogDataToCsv_WithSpecialK_ICU);
+        private const string CatalogDataToCsv_WithSpecialK_NLSDir = nameof(CatalogDataToCsv_WithKelvinK_NLS);
+        private const string CatalogDataToCsv_WithSpecialK_ICUDir = nameof(CatalogDataToCsv_WithKelvinK_ICU);
 
         public class CatalogDataToCsv : CatalogDataToCsvIntegrationTest
         {
@@ -171,9 +171,9 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             }
         }
 
-        public class CatalogDataToCsv_WithSpecialK_NLS : CatalogDataToCsv_WithSpecialK
+        public class CatalogDataToCsv_WithKelvinK_NLS : CatalogDataToCsv_WithKelvinK
         {
-            public CatalogDataToCsv_WithSpecialK_NLS(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public CatalogDataToCsv_WithKelvinK_NLS(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
@@ -185,23 +185,25 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             }
         }
 
-        public class CatalogDataToCsv_WithSpecialK_ICU : CatalogDataToCsv_WithSpecialK
+        public class CatalogDataToCsv_WithKelvinK_ICU : CatalogDataToCsv_WithKelvinK
         {
-            public CatalogDataToCsv_WithSpecialK_ICU(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public CatalogDataToCsv_WithKelvinK_ICU(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }
 
+            // [OSPlatformFact(OSPlatformType.Linux | OSPlatformType.OSX | OSPlatformType.FreeBSD | OSPlatformType.Windows)]
             [OSPlatformFact(OSPlatformType.Linux | OSPlatformType.OSX | OSPlatformType.FreeBSD)]
             public async Task Execute()
             {
+                // Environment.SetEnvironmentVariable("NUGET_INSIGHTS_ALLOW_ICU", "true");
                 await RunTestAsync(CatalogDataToCsv_WithSpecialK_ICUDir);
             }
         }
 
-        public abstract class CatalogDataToCsv_WithSpecialK : CatalogDataToCsvIntegrationTest
+        public abstract class CatalogDataToCsv_WithKelvinK : CatalogDataToCsvIntegrationTest
         {
-            public CatalogDataToCsv_WithSpecialK(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+            public CatalogDataToCsv_WithKelvinK(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
                 : base(output, factory)
             {
             }

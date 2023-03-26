@@ -25,7 +25,15 @@ namespace NuGet.Insights
     Type: string,
     Url: string,
     PageUrl: string,
-    IsListed: bool
+    Published: datetime,
+    IsListed: bool,
+    Created: datetime,
+    LastEdited: datetime,
+    PackageSize: long,
+    PackageHash: string,
+    PackageHashAlgorithm: string,
+    Deprecation: dynamic,
+    Vulnerabilities: dynamic
 )",
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
@@ -41,7 +49,15 @@ namespace NuGet.Insights
     '{""Column"":""Type"",""DataType"":""string"",""Properties"":{""Ordinal"":6}},'
     '{""Column"":""Url"",""DataType"":""string"",""Properties"":{""Ordinal"":7}},'
     '{""Column"":""PageUrl"",""DataType"":""string"",""Properties"":{""Ordinal"":8}},'
-    '{""Column"":""IsListed"",""DataType"":""bool"",""Properties"":{""Ordinal"":9}}'
+    '{""Column"":""Published"",""DataType"":""datetime"",""Properties"":{""Ordinal"":9}},'
+    '{""Column"":""IsListed"",""DataType"":""bool"",""Properties"":{""Ordinal"":10}},'
+    '{""Column"":""Created"",""DataType"":""datetime"",""Properties"":{""Ordinal"":11}},'
+    '{""Column"":""LastEdited"",""DataType"":""datetime"",""Properties"":{""Ordinal"":12}},'
+    '{""Column"":""PackageSize"",""DataType"":""long"",""Properties"":{""Ordinal"":13}},'
+    '{""Column"":""PackageHash"",""DataType"":""string"",""Properties"":{""Ordinal"":14}},'
+    '{""Column"":""PackageHashAlgorithm"",""DataType"":""string"",""Properties"":{""Ordinal"":15}},'
+    '{""Column"":""Deprecation"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":16}},'
+    '{""Column"":""Vulnerabilities"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":17}}'
 ']'",
         };
 

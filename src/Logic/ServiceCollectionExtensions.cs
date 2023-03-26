@@ -77,7 +77,7 @@ namespace NuGet.Insights
             {
                 string error = null;
 
-                if (!HasExpectedInvariantBehavior())
+                if (!HasNlsInvariantBehavior())
                 {
                     error = $"The behavior of {nameof(string.ToLowerInvariant)} is not expected. Check for breaking changes in {nameof(CultureInfo.InvariantCulture)}.";
                 }
@@ -300,7 +300,7 @@ namespace NuGet.Insights
         /// <summary>
         /// Source: https://learn.microsoft.com/en-us/dotnet/core/extensions/globalization-icu#determine-if-your-app-is-using-icu
         /// </summary>
-        private static bool IcuMode()
+        internal static bool IcuMode()
         {
             SortVersion sortVersion = CultureInfo.InvariantCulture.CompareInfo.Version;
             byte[] bytes = sortVersion.SortId.ToByteArray();
@@ -308,7 +308,7 @@ namespace NuGet.Insights
             return version != 0 && version == sortVersion.FullVersion;
         }
 
-        private static bool HasExpectedInvariantBehavior()
+        internal static bool HasNlsInvariantBehavior()
         {
             // This is the lowest value Unicode character where ToLowerVariant behaves differently on ICU vs. NLS.
             return "ǅ".ToLowerInvariant() == "ǅ";

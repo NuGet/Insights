@@ -1,2 +1,0 @@
-CommitId,CommitTimestamp,LowerId,Identity,Id,Version,Type,Url,PageUrl,IsListed
-d3c98ee3-8cf4-42d7-8c73-455431225003,2021-08-11T23:39:31.9024782Z,awssdk.core,awssdk.core/1.0.0,AWSSDK.Core,1.0.0,PackageDelete,https://api.nuget.org/v3/catalog0/data/2021.08.11.23.39.31/awssd%E2%84%AA.core.1.0.0.json,https://api.nuget.org/v3/catalog0/page13272.json,
