@@ -1,0 +1,2 @@
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Message,Reasons,AlternatePackageId,AlternateVersionRange
+,,awssdk.core,awssdk.core/1.0.0,AWSSDK.Core,1.0.0,2021-08-11T23:39:31.9024782Z,,Deleted,,,,

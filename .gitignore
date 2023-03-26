@@ -315,3 +315,6 @@ __blobstorage__
 __queuestorage__
 /.tye/
 /azurite
+src/Worker/Properties/serviceDependencies.json
+src/Worker/Properties/**/* - Zip Deploy.json
+src/Worker/Properties/**/*.arm.json

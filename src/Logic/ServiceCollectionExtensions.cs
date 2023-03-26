@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -69,6 +71,33 @@ namespace NuGet.Insights
             if (serviceCollection.Any(x => x.ServiceType == typeof(Marker)))
             {
                 return serviceCollection;
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                string error = null;
+
+                if (!HasExpectedInvariantBehavior())
+                {
+                    error = $"The behavior of {nameof(string.ToLowerInvariant)} is not expected. Check for breaking changes in {nameof(CultureInfo.InvariantCulture)}.";
+                }
+
+                if (IcuMode())
+                {
+                    error = "ICU mode is not supported on Windows. NLS must be used. See https://learn.microsoft.com/en-us/dotnet/core/extensions/globalization-icu#use-nls-instead-of-icu.";
+                }
+
+                if (error is not null)
+                {
+                    if (AllowIcu())
+                    {
+                        Console.WriteLine($"Environment {AllowIcuEnvName} has been set to true so the following error is suppressed:" + Environment.NewLine + error);
+                    }
+                    else
+                    {
+                        throw new NotSupportedException(error);
+                    }
+                }
             }
 
             serviceCollection.AddMemoryCache();
@@ -253,6 +282,36 @@ namespace NuGet.Insights
             builder.Append(")");
 
             return builder.ToString();
+        }
+
+        private const string AllowIcuEnvName = "NUGET_INSIGHTS_ALLOW_ICU";
+
+        private static bool AllowIcu()
+        {
+            var value = Environment.GetEnvironmentVariable(AllowIcuEnvName);
+            if (bool.TryParse(value, out var parsed))
+            {
+                return parsed;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Source: https://learn.microsoft.com/en-us/dotnet/core/extensions/globalization-icu#determine-if-your-app-is-using-icu
+        /// </summary>
+        private static bool IcuMode()
+        {
+            SortVersion sortVersion = CultureInfo.InvariantCulture.CompareInfo.Version;
+            byte[] bytes = sortVersion.SortId.ToByteArray();
+            int version = bytes[3] << 24 | bytes[2] << 16 | bytes[1] << 8 | bytes[0];
+            return version != 0 && version == sortVersion.FullVersion;
+        }
+
+        private static bool HasExpectedInvariantBehavior()
+        {
+            // This is the lowest value Unicode character where ToLowerVariant behaves differently on ICU vs. NLS.
+            return "ǅ".ToLowerInvariant() == "ǅ";
         }
     }
 }

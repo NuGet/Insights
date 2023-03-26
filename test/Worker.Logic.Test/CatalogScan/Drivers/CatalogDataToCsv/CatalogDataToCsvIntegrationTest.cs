@@ -17,6 +17,8 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
         private const string CatalogDataToCsv_VulnerabilitiesDir = nameof(CatalogDataToCsv_Vulnerabilities);
         private const string CatalogDataToCsv_WithDuplicatesDir = nameof(CatalogDataToCsv_WithDuplicates);
         private const string CatalogDataToCsv_WithDeleteDir = nameof(CatalogDataToCsv_WithDelete);
+        private const string CatalogDataToCsv_WithSpecialK_NLSDir = nameof(CatalogDataToCsv_WithSpecialK_NLS);
+        private const string CatalogDataToCsv_WithSpecialK_ICUDir = nameof(CatalogDataToCsv_WithSpecialK_ICU);
 
         public class CatalogDataToCsv : CatalogDataToCsvIntegrationTest
         {
@@ -166,6 +168,60 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
                 await AssertOutputAsync(CatalogDataToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
                 await AssertOutputAsync(CatalogDataToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
                 await AssertOutputAsync(CatalogDataToCsv_WithDeleteDir, Step2, 2);
+            }
+        }
+
+        public class CatalogDataToCsv_WithSpecialK_NLS : CatalogDataToCsv_WithSpecialK
+        {
+            public CatalogDataToCsv_WithSpecialK_NLS(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+                : base(output, factory)
+            {
+            }
+
+            [OSPlatformFact(OSPlatformType.Windows)]
+            public async Task Execute()
+            {
+                await RunTestAsync(CatalogDataToCsv_WithSpecialK_NLSDir);
+            }
+        }
+
+        public class CatalogDataToCsv_WithSpecialK_ICU : CatalogDataToCsv_WithSpecialK
+        {
+            public CatalogDataToCsv_WithSpecialK_ICU(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+                : base(output, factory)
+            {
+            }
+
+            [OSPlatformFact(OSPlatformType.Linux | OSPlatformType.OSX | OSPlatformType.FreeBSD)]
+            public async Task Execute()
+            {
+                await RunTestAsync(CatalogDataToCsv_WithSpecialK_ICUDir);
+            }
+        }
+
+        public abstract class CatalogDataToCsv_WithSpecialK : CatalogDataToCsvIntegrationTest
+        {
+            public CatalogDataToCsv_WithSpecialK(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+                : base(output, factory)
+            {
+            }
+
+            protected async Task RunTestAsync(string dir)
+            {
+                ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
+
+                // Arrange
+                var min0 = DateTimeOffset.Parse("2021-08-11T23:38:05.65091Z");
+                var max1 = DateTimeOffset.Parse("2021-08-11T23:39:31.9024782Z");
+
+                await CatalogScanService.InitializeAsync();
+                await SetCursorAsync(min0);
+
+                // Act
+                await UpdateAsync(max1);
+
+                // Assert
+                await AssertOutputAsync(dir, Step1, 0);
             }
         }
 
