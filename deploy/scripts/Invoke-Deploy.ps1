@@ -118,7 +118,7 @@ New-Deployment `
 # Warm up the workers, since initial deployment appears to leave them in a hibernation state.
 Write-Status "Warming up the website and workers..."
 foreach ($appName in @($ResourceSettings.WebsiteName) + (0..($deployingWorkerCount - 1) | ForEach-Object { $ResourceSettings.WorkerNamePrefix + $_ })) {
-    $url = "$(Get-AppServiceBaseUrl $appName)/"    
+    $url = "$(Get-AppServiceBaseUrl $appName)/"
     $attempt = 0;
     while ($true) {
         $attempt++
@@ -132,6 +132,10 @@ foreach ($appName in @($ResourceSettings.WebsiteName) + (0..($deployingWorkerCou
             break
         }
         catch {
+            if ($attempt -eq 24) {
+                Write-Host "$url is still not ready... we'll keep trying!"
+            }
+
             if ($attempt -lt 120 -and $_.Exception.Response.StatusCode -ge 500) {
                 Start-Sleep -Seconds 5
                 continue
@@ -142,3 +146,6 @@ foreach ($appName in @($ResourceSettings.WebsiteName) + (0..($deployingWorkerCou
         }
     }
 }
+
+Write-Status "Deployment is complete."
+Write-Host "Go to here for the admin panel: $(Get-AppServiceBaseUrl $ResourceSettings.WebsiteName)/Admin"
