@@ -128,7 +128,7 @@ namespace NuGet.Insights.Worker
                 var table = await GetLeafScanTableAsync(group.Key.StorageSuffix);
                 var createdLeaves = await GetLeafScansAsync(table, group.Key.ScanId, group.Key.PageId);
 
-                var allUrls = leafScans.Select(x => x.Url).ToHashSet();
+                var allUrls = group.Select(x => x.Url).ToHashSet();
                 var createdUrls = createdLeaves.Select(x => x.Url).ToHashSet();
                 var uncreatedUrls = allUrls.Except(createdUrls).ToHashSet();
 
@@ -137,11 +137,11 @@ namespace NuGet.Insights.Worker
                     throw new InvalidOperationException("There should not be any extra leaf scan entities.");
                 }
 
-                var uncreatedLeafScans = leafScans
+                var uncreatedLeafScans = group
                     .Where(x => uncreatedUrls.Contains(x.Url))
                     .ToList();
 
-                await SubmitBatchesAsync(group.Key.StorageSuffix, table, group, (b, i) => b.AddEntity(i));
+                await SubmitBatchesAsync(group.Key.StorageSuffix, table, uncreatedLeafScans, (b, i) => b.AddEntity(i));
             }
         }
 
