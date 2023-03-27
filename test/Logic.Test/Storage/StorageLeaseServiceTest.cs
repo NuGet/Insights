@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
@@ -187,22 +188,40 @@ namespace NuGet.Insights
             [Fact]
             public async Task ManyThreadsDoNotCauseException()
             {
+                var sw = Stopwatch.StartNew();
+                var leaseDuration = TimeSpan.FromSeconds(15);
                 await Task.WhenAll(Enumerable
                     .Range(0, 16)
                     .Select(async x =>
                     {
                         foreach (var i in Enumerable.Range(0, 50))
                         {
-                            Output.WriteLine($"[{x}] Trying to acquire lease {i}...");
-                            var result = await Target.TryAcquireAsync(i.ToString(), TimeSpan.FromSeconds(15));
-                            if (result.Acquired)
+                            try
                             {
-                                Output.WriteLine($"[{x}] Releasing lease {i}...");
-                                await Target.ReleaseAsync(result);
+                                Output.WriteLine($"[{sw.Elapsed}] [{x}] Trying to acquire lease {i}...");
+                                var acquireSw = Stopwatch.StartNew();
+                                var result = await Target.TryAcquireAsync(i.ToString(), leaseDuration);
+                                if (result.Acquired)
+                                {
+                                    Output.WriteLine($"[{sw.Elapsed}] [{x}] Releasing lease {i}...");
+                                    try
+                                    {
+                                        await Target.ReleaseAsync(result);
+                                    }
+                                    catch (InvalidOperationException) when (acquireSw.Elapsed >= leaseDuration)
+                                    {
+                                        Output.WriteLine($"[{sw.Elapsed}] [{x}] Timeout for lease {i}, failed to release.");
+                                    }
+                                }
+                                else
+                                {
+                                    Output.WriteLine($"[{sw.Elapsed}] [{x}] Could not acquire lease {i}.");
+                                }
                             }
-                            else
+                            catch (Exception ex)
                             {
-                                Output.WriteLine($"[{x}] Could not acquire lease {i}.");
+                                Output.WriteLine($"[{sw.Elapsed}] [{x}] Error: " + ex.Message.Split('\n').First().Trim());
+                                throw;
                             }
                         }
                     }));

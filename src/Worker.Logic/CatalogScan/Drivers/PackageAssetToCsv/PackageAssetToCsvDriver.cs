@@ -19,21 +19,6 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 {
     public class PackageAssetToCsvDriver : ICatalogLeafToCsvDriver<PackageAsset>, ICsvResultStorage<PackageAsset>
     {
-        public static IReadOnlyDictionary<string, PatternSet> PatternSets { get; }
-
-        static PackageAssetToCsvDriver()
-        {
-            var runtimeGraph = new RuntimeGraph();
-            var conventions = new ManagedCodeConventions(runtimeGraph);
-
-            PatternSets = conventions
-                .Patterns
-                .GetType()
-                .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty)
-                .Where(x => x.Name != nameof(ManagedCodeConventions.Patterns.AnyTargettedFile)) // This pattern is unused.
-                .ToDictionary(x => x.Name, x => (PatternSet)x.GetGetMethod().Invoke(conventions.Patterns, null));
-        }
-
         private readonly CatalogClient _catalogClient;
         private readonly PackageFileService _packageFileService;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
@@ -111,7 +96,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             contentItemCollection.Load(files);
 
             var assets = new List<PackageAsset>();
-            foreach (var pair in PatternSets)
+            foreach (var pair in GetPatternSets())
             {
                 var groups = new List<ContentItemGroup>();
                 try
@@ -183,6 +168,19 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             }
 
             return assets;
+        }
+
+        internal static Dictionary<string, PatternSet> GetPatternSets()
+        {
+            var runtimeGraph = new RuntimeGraph();
+            var conventions = new ManagedCodeConventions(runtimeGraph);
+
+            return conventions
+                .Patterns
+                .GetType()
+                .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty)
+                .Where(x => x.Name != nameof(ManagedCodeConventions.Patterns.AnyTargettedFile)) // This pattern is unused.
+                .ToDictionary(x => x.Name, x => (PatternSet)x.GetGetMethod().Invoke(conventions.Patterns, null));
         }
 
         private List<PackageAsset> GetErrorResult(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf, Exception ex, string message)

@@ -118,7 +118,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
                     var groups = new List<ContentItemGroup>();
                     var contentItemCollection = new ContentItemCollection();
                     contentItemCollection.Load(zipArchive.Entries.Select(e => e.FullName));
-                    foreach (var pair in PackageAssetToCsvDriver.PatternSets)
+                    foreach (var pair in PackageAssetToCsvDriver.GetPatternSets())
                     {
                         try
                         {
