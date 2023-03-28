@@ -7,9 +7,11 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using Azure;
 using Azure.Data.Tables;
 using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
@@ -295,7 +297,14 @@ namespace NuGet.Insights.Worker
                                     await ProcessMessageAsync(scope.ServiceProvider, queueType, message);
                                 }
 
-                                await queue.DeleteMessageAsync(message.MessageId, message.PopReceipt);
+                                try
+                                {
+                                    await queue.DeleteMessageAsync(message.MessageId, message.PopReceipt);
+                                }
+                                catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
+                                {
+                                    // Ignore, some other thread processed the message and completed it first.
+                                }
                             }
                             else
                             {
